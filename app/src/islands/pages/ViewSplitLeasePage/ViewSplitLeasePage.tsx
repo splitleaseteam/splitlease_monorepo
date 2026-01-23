@@ -17,6 +17,11 @@ declare global {
 }
 
 // FORCE RELOAD v9 - timestamp: 1737561500000 - NUCLEAR CACHE BUST
+declare global {
+  interface Window {
+    __VSL_v9?: number;
+  }
+}
 if (typeof window !== 'undefined') {
   window.__VSL_v9 = Date.now();
   console.log('🔄🔄🔄 ViewSplitLeasePage v9 LOADED - NUCLEAR CACHE BUST - ' + window.__VSL_v9);
@@ -954,6 +959,7 @@ export default function ViewSplitLeasePage() {
         <Header />
         <main style={{ minHeight: '70vh', paddingTop: 'calc(80px + 2rem)' }}>
           <ErrorState error={error} />
+          <ErrorState error={error} onRetry={null} />
         </main>
         <Footer />
       </>
@@ -2114,8 +2120,8 @@ export default function ViewSplitLeasePage() {
             </div>
             {/* Schedule Pattern Highlight - shows actual weeks for alternating patterns */}
             <SchedulePatternHighlight
+              pattern={null}
               reservationSpan={reservationSpan}
-              weeksOffered={listing?.['Weeks offered']}
             />
           </div>
 

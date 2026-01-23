@@ -171,12 +171,13 @@ function LoadingState() {
 function ErrorState({ message, onRetry }) {
   return (
     <div className="error-message">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 8v4M12 16h.01" />
-      </svg>
+      <img
+        src="/assets/images/filter-error-illustration.png"
+        alt="Adjust filters illustration"
+        style={{ width: '200px', height: 'auto', marginBottom: '16px' }}
+      />
       <h3>Unable to Load Listings</h3>
-      <p>{message || 'Failed to load listings. Please try again.'}</p>
+      <p>{message || 'We had trouble loading listings. Please try refreshing the page or adjusting your filters.'}</p>
       {onRetry && (
         <button className="retry-btn" onClick={onRetry}>
           Retry
@@ -929,9 +930,10 @@ export default function SearchPage() {
             </div>
 
             <div className="filter-popup-body">
+              {/* Row 1: Borough, Week Pattern, Price Range - 3 column grid */}
               {/* Borough Select */}
               <div className="filter-popup-group">
-                <label className="filter-popup-label">Borough</label>
+                <label className="filter-popup-label">BOROUGH</label>
                 <select
                   className="filter-popup-select"
                   value={selectedBorough}
@@ -954,7 +956,7 @@ export default function SearchPage() {
 
               {/* Week Pattern */}
               <div className="filter-popup-group">
-                <label className="filter-popup-label">Week Pattern</label>
+                <label className="filter-popup-label">WEEK PATTERN</label>
                 <select
                   className="filter-popup-select"
                   value={weekPattern}
@@ -969,7 +971,7 @@ export default function SearchPage() {
 
               {/* Price Range */}
               <div className="filter-popup-group">
-                <label className="filter-popup-label">Price Range</label>
+                <label className="filter-popup-label">PRICE RANGE</label>
                 <select
                   className="filter-popup-select"
                   value={priceTier}
@@ -983,33 +985,17 @@ export default function SearchPage() {
                 </select>
               </div>
 
-              {/* Neighborhoods */}
+              {/* Row 2: Neighborhoods - full width search input */}
               <div className="filter-popup-group filter-popup-group--full-width">
-                <label className="filter-popup-label">Neighborhoods</label>
-                <div className="filter-popup-neighborhoods">
-                  {neighborhoods.length === 0 ? (
-                    <div className="neighborhood-list-empty">Loading neighborhoods...</div>
-                  ) : (
-                    <div className="neighborhood-checkbox-grid">
-                      {neighborhoods.map(neighborhood => (
-                        <label key={neighborhood.id} className="neighborhood-checkbox-item-popup">
-                          <input
-                            type="checkbox"
-                            checked={selectedNeighborhoods.includes(neighborhood.id)}
-                            onChange={() => {
-                              if (selectedNeighborhoods.includes(neighborhood.id)) {
-                                setSelectedNeighborhoods(selectedNeighborhoods.filter(id => id !== neighborhood.id));
-                              } else {
-                                setSelectedNeighborhoods([...selectedNeighborhoods, neighborhood.id]);
-                              }
-                            }}
-                          />
-                          <span>{neighborhood.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <label className="filter-popup-label">NEIGHBORHOODS</label>
+                <NeighborhoodSearchFilter
+                  neighborhoods={neighborhoods}
+                  selectedNeighborhoods={selectedNeighborhoods}
+                  onNeighborhoodsChange={setSelectedNeighborhoods}
+                  neighborhoodSearch={neighborhoodSearch}
+                  onNeighborhoodSearchChange={setNeighborhoodSearch}
+                  searchInputId="neighborhoodSearchPopup"
+                />
               </div>
             </div>
 
