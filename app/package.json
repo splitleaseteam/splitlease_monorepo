@@ -44,7 +44,8 @@
     "zod": "^4.1.12"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.53.1"
+    "@rollup/rollup-linux-x64-gnu": "^4.53.1",
+    "lightningcss-linux-x64-gnu": "^1.29.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
