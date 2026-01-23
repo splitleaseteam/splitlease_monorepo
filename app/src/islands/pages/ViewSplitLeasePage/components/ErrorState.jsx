@@ -1,6 +1,12 @@
 import { COLORS } from '../../../../lib/constants.js';
 
-export function ErrorState({ error, onRetry }) {
+/**
+ * Error state component for displaying error messages
+ * @param {Object} props
+ * @param {string|Error} props.error - The error to display
+ * @param {Function} [props.onRetry] - Optional retry callback
+ */
+export function ErrorState({ error, onRetry = undefined }) {
   const message = typeof error === 'string' ? error : error?.message;
 
   return (

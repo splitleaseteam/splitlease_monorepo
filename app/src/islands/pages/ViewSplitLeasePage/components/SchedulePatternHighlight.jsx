@@ -63,9 +63,13 @@ export function calculateActualWeeks(reservationSpan, weeksOffered) {
 
 /**
  * Component to display schedule pattern info when applicable
+ * @param {Object} props
+ * @param {Object} [props.pattern] - Pre-computed pattern info (optional)
+ * @param {number} props.reservationSpan - The reservation span in weeks
+ * @param {string} [props.weeksOffered] - The weeks offered pattern string (e.g., "One week on, one week off")
  */
-export function SchedulePatternHighlight({ pattern, reservationSpan }) {
-  const patternInfo = pattern || calculateActualWeeks(reservationSpan, '');
+export function SchedulePatternHighlight({ pattern, reservationSpan, weeksOffered }) {
+  const patternInfo = pattern || calculateActualWeeks(reservationSpan, weeksOffered || '');
 
   if (!patternInfo.showHighlight) {
     return null;

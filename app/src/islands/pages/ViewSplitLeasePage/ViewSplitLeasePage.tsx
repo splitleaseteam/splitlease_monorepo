@@ -9,6 +9,13 @@
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
+// Type declaration for custom window property
+declare global {
+  interface Window {
+    __VSL_v9?: number;
+  }
+}
+
 // FORCE RELOAD v9 - timestamp: 1737561500000 - NUCLEAR CACHE BUST
 if (typeof window !== 'undefined') {
   window.__VSL_v9 = Date.now();
@@ -946,7 +953,7 @@ export default function ViewSplitLeasePage() {
       <>
         <Header />
         <main style={{ minHeight: '70vh', paddingTop: 'calc(80px + 2rem)' }}>
-          <ErrorState message={error} />
+          <ErrorState error={error} />
         </main>
         <Footer />
       </>
