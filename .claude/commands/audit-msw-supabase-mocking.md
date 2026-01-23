@@ -101,20 +101,6 @@ http.get(`${SUPABASE_URL}/rest/v1/[table_name]`, ({ request }) => {
 })
 ```
 
-## Implementation Priority
-
-| Priority | Component | Effort | Impact |
-|----------|-----------|--------|--------|
-| P0 | [name] | Low/Med/High | [why critical] |
-| P1 | [name] | Low/Med/High | [why important] |
-| P2 | [name] | Low/Med/High | [nice to have] |
-
-## Next Steps
-
-1. Set up MSW infrastructure (if not present)
-2. Create shared handlers in `src/mocks/`
-3. Add tests for P0 items
-4. ...
 ```
 
 ---

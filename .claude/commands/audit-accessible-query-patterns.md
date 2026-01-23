@@ -164,22 +164,6 @@ module.exports = {
 }
 ```
 
-## Implementation Priority
-
-| Priority | Issue | Files Affected | Impact |
-|----------|-------|----------------|--------|
-| P0 | CSS class selectors | X files | Breaks on style changes |
-| P1 | Missing accessible names | X files | Ambiguous queries |
-| P1 | Component accessibility | X components | Tests can't use role |
-| P2 | Exact text matching | X files | Breaks on content changes |
-
-## Next Steps
-
-1. Install `eslint-plugin-testing-library`
-2. Fix P0 CSS/ID selectors
-3. Add accessible names to components
-4. Add `{ name: '...' }` to role queries
-5. Migrate dynamic text to test IDs
 ```
 
 ---

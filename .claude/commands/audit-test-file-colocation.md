@@ -205,23 +205,6 @@ for test in tests/components/*.test.tsx; do
 done
 ```
 
-## Implementation Priority
-
-| Priority | Task | Files Affected |
-|----------|------|----------------|
-| P0 | Migrate centralized tests | X files |
-| P1 | Create missing test files | X files |
-| P1 | Move files into folders | X files |
-| P2 | Add barrel exports | X folders |
-| P2 | Remove orphaned tests | X files |
-
-## Next Steps
-
-1. Run migration script for centralized tests
-2. Update vitest config
-3. Add VS Code file nesting
-4. Create missing test file placeholders
-5. Update import paths
 ```
 
 ---

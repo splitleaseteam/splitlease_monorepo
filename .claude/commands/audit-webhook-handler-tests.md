@@ -208,33 +208,6 @@ export function generateTwilioSignature(
 }
 ```
 
-## Implementation Priority
-
-| Priority | Handler | Gap | Impact |
-|----------|---------|-----|--------|
-| P0 | Stripe payment | No signature test | Security |
-| P0 | Stripe payment | No idempotency test | Double processing |
-| P1 | Stripe refund | No tests | Financial |
-| P1 | Twilio SMS | No signature test | Security |
-| P2 | Zapier | No secret test | Security |
-
-## Webhook Testing Checklist
-
-- [ ] Signature validation (valid, invalid, missing)
-- [ ] Timestamp validation (fresh, expired)
-- [ ] Payload parsing (valid JSON, malformed)
-- [ ] Idempotency (duplicate event handling)
-- [ ] Business logic (status updates, notifications)
-- [ ] Error responses (retry vs no-retry)
-- [ ] Logging (audit trail)
-
-## Next Steps
-
-1. Create signature generation helpers
-2. Create event factory functions
-3. Add signature validation tests
-4. Add idempotency tests
-5. Add side effect tests
 ```
 
 ---

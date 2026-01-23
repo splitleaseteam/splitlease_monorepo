@@ -243,22 +243,6 @@ it('retries on button click', async () => {
 })
 ```
 
-## Implementation Priority
-
-| Priority | Component | Missing Tests | Impact |
-|----------|-----------|---------------|--------|
-| P0 | ListingGrid | All states | Core feature |
-| P0 | SearchResults | Error, Empty | User facing |
-| P1 | BookingHistory | Loading, Error | User dashboard |
-| P2 | SaveButton | Optimistic rollback | UX |
-
-## Next Steps
-
-1. Add loading state tests for P0 components
-2. Add error state + retry tests
-3. Add empty state tests
-4. Add accessibility assertions
-5. Add optimistic update tests
 ```
 
 ---

@@ -397,24 +397,6 @@ it('tabs through form fields in order', async () => {
 })
 ```
 
-## Implementation Priority
-
-| Priority | Form | Missing Tests | Impact |
-|----------|------|---------------|--------|
-| P0 | LoginForm | All tests | Auth critical |
-| P0 | BookingForm | Validation, submission | Revenue critical |
-| P1 | CreateListingForm | Multi-step, validation | Core feature |
-| P1 | SearchForm | Debounce, filters | User experience |
-| P2 | ImageUploadForm | File validation | Content quality |
-
-## Next Steps
-
-1. Add validation tests for P0 forms
-2. Add submission state tests
-3. Add error handling tests
-4. Add keyboard navigation tests
-5. Add multi-step form tests
-6. Add file upload tests
 ```
 
 ---

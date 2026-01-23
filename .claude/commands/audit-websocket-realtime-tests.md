@@ -210,35 +210,6 @@ vi.mock('@/lib/supabase', () => {
 })
 ```
 
-## Implementation Priority
-
-| Priority | Item | Impact |
-|----------|------|--------|
-| P0 | Chat message tests | Core feature |
-| P0 | Connection/reconnection tests | Reliability |
-| P1 | Supabase realtime tests | Live updates |
-| P1 | Typing indicator tests | UX |
-| P2 | Presence tests | Nice-to-have |
-
-## Test Checklist
-
-- [ ] Connection established on mount
-- [ ] Messages sent correctly
-- [ ] Messages received and displayed
-- [ ] Reconnection on disconnect
-- [ ] Typing indicators work
-- [ ] Presence (online/offline) works
-- [ ] Cleanup on unmount
-- [ ] Error states handled
-- [ ] Offline mode graceful degradation
-
-## Next Steps
-
-1. Create MockWebSocket class
-2. Add WebSocket mock to test setup
-3. Create Supabase channel mocks
-4. Add unit tests for chat hooks
-5. Add E2E tests with routeWebSocket()
 ```
 
 ---

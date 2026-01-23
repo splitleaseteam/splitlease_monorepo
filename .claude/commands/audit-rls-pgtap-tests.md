@@ -207,22 +207,6 @@ select is(
 | bookings | ? | ? | ? | ? | ? | ? |
 | messages | ? | ? | ? | ? | ? | ? |
 
-## Implementation Priority
-
-| Priority | Table | Gap | Risk Level |
-|----------|-------|-----|------------|
-| P0 | [name] | No tests | High - PII data |
-| P0 | [name] | Missing cross-tenant test | High - Security |
-| P1 | [name] | Missing UPDATE/DELETE tests | Medium |
-| P2 | [name] | Missing admin tests | Low |
-
-## Next Steps
-
-1. Enable pgTAP extension if not present
-2. Create test helper functions
-3. Add pgTAP tests for P0 tables
-4. Add cross-tenant access tests
-5. Add to CI/CD pipeline
 ```
 
 ---

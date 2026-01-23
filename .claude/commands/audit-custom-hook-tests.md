@@ -601,25 +601,6 @@ describe('useDebounce', () => {
 })
 ```
 
-## Implementation Priority
-
-| Priority | Hook | Missing Tests | Impact |
-|----------|------|---------------|--------|
-| P0 | useAuth | Context, login/logout | Auth critical |
-| P0 | useBooking | Async, validation | Revenue critical |
-| P1 | useListings | Async, filtering | Core feature |
-| P1 | useBookingForm | State, computed | UX critical |
-| P2 | useDebounce | Timer, cleanup | Performance |
-| P2 | useLocalStorage | Read, write, remove | Data persistence |
-
-## Next Steps
-
-1. Create provider wrappers for context-dependent hooks
-2. Add initial state tests for all hooks
-3. Add async tests with MSW for data fetching hooks
-4. Add validation and computed value tests for form hooks
-5. Add timer tests for debounce/throttle hooks
-6. Add localStorage tests for persistence hooks
 ```
 
 ---

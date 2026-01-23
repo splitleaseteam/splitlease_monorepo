@@ -184,22 +184,6 @@ function generateWebhookSignature(payload: string, secret: string): string {
 | Test mode keys isolated from prod | ? |
 | Card data never logged | ? |
 
-## Implementation Priority
-
-| Priority | Component | Gap Type | Impact |
-|----------|-----------|----------|--------|
-| P0 | Checkout | No tests | Revenue-critical |
-| P0 | Webhook handler | No signature tests | Security |
-| P1 | Refunds | Missing tests | Support-impacting |
-| P2 | Subscription | Partial coverage | Feature |
-
-## Next Steps
-
-1. Set up MSW handlers for Stripe API
-2. Create webhook signature test helper
-3. Add checkout component unit tests
-4. Add E2E tests for main checkout flow
-5. Add webhook handler tests with signature validation
 ```
 
 ---

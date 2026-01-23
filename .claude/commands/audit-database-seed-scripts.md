@@ -178,22 +178,6 @@ tests/
 └── setup.ts              # Global test setup
 ```
 
-## Implementation Priority
-
-| Priority | Item | Impact | Files Affected |
-|----------|------|--------|----------------|
-| P0 | User factory | Foundation | X files |
-| P0 | Cleanup utilities | Test isolation | X files |
-| P1 | Listing factory | Common entity | X files |
-| P2 | Full seed orchestration | E2E tests | X files |
-
-## Next Steps
-
-1. Create `tests/fixtures/` directory structure
-2. Implement user factory with faker.js
-3. Implement cleanup utilities respecting FK order
-4. Migrate inline data creation to factories
-5. Add global test setup with proper cleanup
 ```
 
 ---

@@ -177,22 +177,6 @@ e2e/
     └── *.spec.ts          # Tests using page objects
 ```
 
-## Implementation Priority
-
-| Priority | Item | Impact | Effort |
-|----------|------|--------|--------|
-| P0 | Create BasePage | Foundation | Low |
-| P0 | LoginPage | Used everywhere | Low |
-| P1 | [Most used page] | Reduces duplication | Medium |
-| P2 | Component POs | Reusability | Medium |
-
-## Migration Steps
-
-1. Create `e2e/pages/BasePage.ts` with common functionality
-2. Create page objects for most-used pages
-3. Create fixture file to instantiate page objects
-4. Update test files to import and use page objects
-5. Extract common components into component page objects
 ```
 
 ---

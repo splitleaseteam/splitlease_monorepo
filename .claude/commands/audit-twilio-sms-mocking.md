@@ -178,31 +178,6 @@ export default function twilio() {
 }
 ```
 
-## Implementation Priority
-
-| Priority | Item | Impact |
-|----------|------|--------|
-| P0 | Booking confirmation mock | Core feature |
-| P1 | Reminder notification mock | User experience |
-| P1 | Message template tests | Content verification |
-| P2 | OTP/2FA mock | Security feature |
-
-## Test Checklist
-
-- [ ] SMS sent with correct recipient
-- [ ] SMS content matches template
-- [ ] Invalid phone numbers handled
-- [ ] Rate limits tested
-- [ ] Message not sent on payment failure
-- [ ] Both buyer and seller notified
-
-## Next Steps
-
-1. Create twilioHandlers.ts MSW handlers
-2. Add module mock for simpler tests
-3. Test booking confirmation SMS
-4. Test reminder notifications
-5. Test message templates
 ```
 
 ---

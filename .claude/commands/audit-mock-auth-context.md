@@ -158,21 +158,6 @@ export function renderAsAdmin(ui) { ... }
 export function renderAsGuest(ui) { ... }
 ```
 
-## Implementation Priority
-
-| Priority | Component | Gap Type | Impact |
-|----------|-----------|----------|--------|
-| P0 | [name] | No tests | Auth-critical component |
-| P1 | [name] | Missing role tests | Role-based UI |
-| P2 | [name] | Missing transition tests | Auth flows |
-
-## Next Steps
-
-1. Create/update MockAuthProvider if needed
-2. Create user/session fixtures
-3. Add render helpers
-4. Add tests for P0 components
-5. ...
 ```
 
 ---

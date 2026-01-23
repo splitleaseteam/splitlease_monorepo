@@ -475,45 +475,6 @@ jobs:
           TEST_SELLER_PASSWORD: ${{ secrets.TEST_SELLER_PASSWORD }}
 ```
 
-## Implementation Priority
-
-| Priority | Item | Impact |
-|----------|------|--------|
-| P0 | Create auth.setup.ts | Enable reusable auth |
-| P0 | Configure storage state | Save auth between tests |
-| P1 | Add multi-role support | Test all user types |
-| P1 | Refactor redundant logins | Speed up test suite |
-| P2 | Add auth fixtures | Multi-role test scenarios |
-| P2 | Implement API auth | Even faster setup |
-
-## File Organization
-```
-e2e/
-├── auth.setup.ts              # Authentication setup
-├── global-setup.ts            # Optional global setup
-├── fixtures/
-│   └── auth.ts                # Auth fixtures
-├── tests/
-│   ├── booking.buyer.spec.ts  # Buyer tests
-│   ├── listings.seller.spec.ts # Seller tests
-│   ├── admin.admin.spec.ts    # Admin tests
-│   └── public.guest.spec.ts   # Guest tests
-playwright/
-└── .auth/                     # Auth state files (gitignored)
-    ├── buyer.json
-    ├── seller.json
-    └── admin.json
-```
-
-## Next Steps
-
-1. Create auth.setup.ts with login flow
-2. Configure Playwright projects with storage state
-3. Add setup project dependency
-4. Refactor tests to remove inline logins
-5. Add multi-role support
-6. Add auth fixtures for mixed-role tests
-7. Implement API-based auth for faster setup
 ```
 
 ---

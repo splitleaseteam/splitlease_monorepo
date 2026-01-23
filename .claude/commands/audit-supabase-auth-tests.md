@@ -222,24 +222,6 @@ export function MockAuthProvider({ children, user, loading }) {
 }
 ```
 
-## Implementation Priority
-
-| Priority | Item | Impact |
-|----------|------|--------|
-| P0 | Sign in flow tests | User access |
-| P0 | Protected route tests | Security |
-| P1 | Sign up flow tests | User onboarding |
-| P1 | Session management tests | Session security |
-| P2 | Password reset tests | Account recovery |
-
-## Next Steps
-
-1. Create auth test helpers
-2. Add MSW handlers for auth endpoints
-3. Test sign in flow (integration)
-4. Test protected routes (unit)
-5. Test sign up flow
-6. Test session refresh
 ```
 
 ---
