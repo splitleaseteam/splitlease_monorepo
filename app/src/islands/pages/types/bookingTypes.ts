@@ -8,6 +8,8 @@
  * @architecture Type Definitions
  */
 
+import type { RefObject, Dispatch, SetStateAction } from 'react';
+
 /**
  * Listing Object - Complete listing data structure
  */
@@ -280,8 +282,8 @@ export interface UseViewSplitLeaseLogicReturn {
   // UI State
   isMobile: boolean;
   shouldLoadMap: boolean;
-  mapRef: React.RefObject<any>;
-  hasAutoZoomedRef: React.RefObject<boolean>;
+  mapRef: RefObject<any>;
+  hasAutoZoomedRef: RefObject<boolean>;
 
   // Handlers: Schedule
   handleScheduleChange: (dayObjects: Day[]) => void;
@@ -304,9 +306,9 @@ export interface UseViewSplitLeaseLogicReturn {
   handleLoadMap: () => void;
 
   // Setters
-  setShowAuthModal: React.Dispatch<React.SetStateAction<boolean>>;
-  setStrictMode: React.Dispatch<React.SetStateAction<boolean>>;
-  setShouldLoadMap: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowAuthModal: Dispatch<SetStateAction<boolean>>;
+  setStrictMode: Dispatch<SetStateAction<boolean>>;
+  setShouldLoadMap: Dispatch<SetStateAction<boolean>>;
 }
 
 /**
@@ -339,9 +341,6 @@ export interface BookingWidgetProps {
   onMoveInDateChange: (date: string) => void;
   onReservationSpanChange: (span: number) => void;
   onSubmit: () => void;
-  informationalTexts?: Record<string, InformationalText>;
-  activeInfoTooltip?: string | null;
-  setActiveInfoTooltip?: (id: string | null) => void;
 }
 
 export interface ListingHeaderProps {
@@ -350,6 +349,8 @@ export interface ListingHeaderProps {
   onToggleFavorite: () => void;
   onLocationClick: () => void;
   isAuthenticated: boolean;
+  userId?: string | null;
+  onRequireAuth?: () => void;
 }
 
 export interface DescriptionSectionProps {
@@ -371,7 +372,7 @@ export interface MapSectionProps {
   neighborhood?: string;
   shouldLoad: boolean;
   onLoadMap: () => void;
-  mapRef: React.RefObject<any>;
+  mapRef: RefObject<any>;
 }
 
 export interface HostInfoCardProps {

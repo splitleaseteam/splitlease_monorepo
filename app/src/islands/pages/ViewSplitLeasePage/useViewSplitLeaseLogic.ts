@@ -17,20 +17,27 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useAuthenticatedUser } from '../../hooks/useAuthenticatedUser.js';
-import { supabase } from '../../lib/supabase.js';
-import { logger } from '../../lib/logger.js';
-import { 
-  fetchListingComplete, 
-  getListingIdFromUrl, 
-  fetchZatPriceConfiguration 
-} from '../../lib/listingDataFetcher.js';
-import { calculatePricingBreakdown } from '../../lib/priceCalculations.js';
-import { validateScheduleSelection } from '../../lib/availabilityValidation.js';
-import { checkAuthStatus } from '../../lib/auth.js';
-import { createProposal } from '../../lib/proposalService.js';
-import { createDay } from '../../lib/scheduleSelector/dayHelpers.js';
-import { fetchInformationalTexts } from '../../lib/informationalTextsFetcher.js';
+import type { UseViewSplitLeaseLogicOptions } from '../types/bookingTypes.js';
+// @ts-ignore - JS module without type declarations
+import { useAuthenticatedUser } from '../../../../hooks/useAuthenticatedUser';
+// @ts-ignore - JS module without type declarations
+import { supabase } from '../../../../lib/supabase';
+// @ts-ignore - JS module without type declarations
+import { logger } from '../../../../lib/logger';
+// @ts-ignore - JS module without type declarations
+import { fetchListingComplete, getListingIdFromUrl, fetchZatPriceConfiguration } from '../../../../lib/listingDataFetcher';
+// @ts-ignore - JS module without type declarations
+import { calculatePricingBreakdown } from '../../../../lib/priceCalculations';
+// @ts-ignore - JS module without type declarations
+import { validateScheduleSelection } from '../../../../lib/availabilityValidation';
+// @ts-ignore - JS module without type declarations
+import { checkAuthStatus } from '../../../../lib/auth';
+// @ts-ignore - JS module without type declarations
+import { createProposal } from '../../../../lib/proposalService';
+// @ts-ignore - JS module without type declarations
+import { createDay } from '../../../../lib/scheduleSelector/dayHelpers';
+// @ts-ignore - JS module without type declarations
+import { fetchInformationalTexts } from '../../../../lib/informationalTextsFetcher';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -102,7 +109,8 @@ function calculateSmartMoveInDate(dayNumbers, minDate) {
 // MAIN HOOK
 // ============================================================================
 
-export function useViewSplitLeaseLogic({ mode = 'view', listingId: customListingId } = {}) {
+export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = {}) {
+  const { mode = 'view', listingId: customListingId } = options;
   
   // ==========================================================================
   // AUTH (JWT-based)

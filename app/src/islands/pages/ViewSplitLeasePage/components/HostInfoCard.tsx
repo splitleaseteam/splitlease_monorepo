@@ -16,7 +16,8 @@
  */
 
 import { memo } from 'react';
-import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
+// @ts-ignore - JS module without type declarations
+import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './HostInfoCard.module.css';
 
 const HostInfoCard = memo(function HostInfoCard({

@@ -230,13 +230,13 @@ export const CACHE_CONFIG = {
    * Time-to-live for listing data cache in milliseconds
    * @default 300000 (5 minutes)
    */
-  listingCacheTTL: 5 * 60 * 1000 as const,
+  listingCacheTTL: 300000 as const,
 
   /**
    * Time-to-live for user data cache in milliseconds
    * @default 60000 (1 minute)
    */
-  userCacheTTL: 60 * 1000 as const,
+  userCacheTTL: 60000 as const,
 
   /**
    * Whether to use cached data as fallback when fetch fails

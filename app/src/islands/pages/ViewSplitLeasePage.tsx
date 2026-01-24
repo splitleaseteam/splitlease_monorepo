@@ -11,20 +11,20 @@
  */
 
 import { useState } from 'react';
-import { useViewSplitLeaseLogic } from './useViewSplitLeaseLogic.js';
-import Header from '../shared/Header.jsx';
-import Footer from '../shared/Footer.jsx';
-import CreateProposalFlowV2 from '../shared/CreateProposalFlowV2.jsx';
-import ContactHostMessaging from '../shared/ContactHostMessaging.jsx';
-import SignUpLoginModal from '../shared/SignUpLoginModal.jsx';
-import ProposalSuccessModal from '../modals/ProposalSuccessModal.jsx';
-import { PhotoGallery } from './components/PhotoGallery.jsx';
-import { BookingWidget } from './components/BookingWidget.jsx';
-import { ListingHeader } from './components/ListingHeader.jsx';
-import { DescriptionSection } from './components/DescriptionSection.jsx';
-import { AmenitiesGrid } from './components/AmenitiesGrid.jsx';
-import { MapSection } from './components/MapSection.jsx';
-import { HostInfoCard } from './components/HostInfoCard.jsx';
+import { useViewSplitLeaseLogic } from './ViewSplitLeasePage/useViewSplitLeaseLogic';
+import Header from '../shared/Header';
+import Footer from '../shared/Footer';
+import CreateProposalFlowV2 from '../shared/CreateProposalFlowV2';
+import ContactHostMessaging from '../shared/ContactHostMessaging';
+import SignUpLoginModal from '../shared/SignUpLoginModal';
+import ProposalSuccessModal from '../modals/ProposalSuccessModal';
+import { PhotoGallery } from './ViewSplitLeasePage/components/PhotoGallery';
+import { BookingWidget } from './ViewSplitLeasePage/components/BookingWidget';
+import { ListingHeader } from './ViewSplitLeasePage/components/ListingHeader';
+import { DescriptionSection } from './ViewSplitLeasePage/components/DescriptionSection';
+import { AmenitiesGrid } from './ViewSplitLeasePage/components/AmenitiesGrid';
+import { MapSection } from './ViewSplitLeasePage/components/MapSection';
+import { HostInfoCard } from './ViewSplitLeasePage/components/HostInfoCard';
 import styles from './ViewSplitLeasePage.module.css';
 
 // ============================================================================
@@ -198,6 +198,8 @@ export default function ViewSplitLeasePage() {
                         onToggleFavorite={handleToggleFavorite}
                         onLocationClick={() => scrollToSection('map-section')}
                         isAuthenticated={isAuthenticated}
+                        userId={authUserId}
+                        onRequireAuth={() => setShowAuthModal(true)}
                     />
 
                     <DescriptionSection
@@ -281,8 +283,10 @@ export default function ViewSplitLeasePage() {
 
             {showContactHostModal && (
                 <ContactHostMessaging
+                    isOpen={showContactHostModal}
                     listing={listing}
                     onClose={handleCloseContactModal}
+                    onLoginRequired={() => setShowAuthModal(true)}
                 />
             )}
 

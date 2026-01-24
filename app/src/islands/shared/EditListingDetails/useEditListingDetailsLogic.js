@@ -263,6 +263,13 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     }
   }, [listing]);
 
+  // Auto-hide manual address fields when address becomes validated
+  useEffect(() => {
+    if (isAddressValid) {
+      setShowManualAddress(false);
+    }
+  }, [isAddressValid]);
+
   // Initialize Google Maps Autocomplete when Property Info section is active
   useEffect(() => {
     // Only initialize for name or location sections

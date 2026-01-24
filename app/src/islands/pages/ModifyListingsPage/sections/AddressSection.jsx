@@ -7,6 +7,7 @@
  * @param {function} [props.onVerifyAddress] - Address verification callback
  */
 
+import { useState, useEffect } from 'react';
 import { FormInput, FormDropdown, SectionContainer } from '../shared';
 import {
   spaceTypes,
@@ -25,6 +26,16 @@ export default function AddressSection({
   onSave,
   lastSaved
 }) {
+  const [showManualInputs, setShowManualInputs] = useState(false);
+
+  // Reset manual inputs state when listing changes or address is validated
+  useEffect(() => {
+    const address = listing['Location - Address'] || {};
+    if (address.validated) {
+      setShowManualInputs(false);
+    }
+  }, [listing._id, listing['Location - Address']?.validated]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     onUpdate({ [name]: value });
@@ -49,6 +60,22 @@ export default function AddressSection({
   };
 
   const address = listing['Location - Address'] || {};
+
+  // Debug logging to understand validated state
+  console.log('[AddressSection] Current address state:', {
+    listingId: listing._id,
+    address: address,
+    validated: address.validated,
+    hasCoordinates: !!(address.lat && address.lng),
+    showManualInputs: showManualInputs
+  });
+
+  // Prefill values for manual inputs
+  const cityValue = listing['Location - City'] || '';
+  const boroughValue = listing.boroughName || listing['Location - Borough'] || '';
+  const stateValue = listing['Location - State'] || '';
+  const zipValue = listing['Location - Zip Code'] || '';
+  const neighborhoodValue = listing.neighborhoodName || listing['Location - Hood'] || '';
 
   return (
     <SectionContainer
@@ -91,48 +118,82 @@ export default function AddressSection({
           )}
         </div>
 
-        {/* Street Number and Street Name */}
-        <FormInput
-          label="Street Number"
-          name="number"
-          value={address.number}
-          onChange={handleAddressChange}
-          placeholder="123"
-        />
-        <FormInput
-          label="Street Name"
-          name="street"
-          value={address.street}
-          onChange={handleAddressChange}
-          placeholder="Main St"
-        />
+        {/* Toggle for manual inputs - only show if address is NOT validated */}
+        {!address.validated && (
+          <div style={styles.fullWidth}>
+            <button
+              type="button"
+              onClick={() => setShowManualInputs(!showManualInputs)}
+              style={styles.toggleButton}
+            >
+              {showManualInputs ? '− Hide manual inputs' : '+ Show manual inputs'}
+            </button>
+          </div>
+        )}
 
-        {/* State and Zip */}
-        <FormInput
-          label="State"
-          name="Location - State"
-          value={listing['Location - State']}
-          onChange={handleChange}
-          placeholder="New York"
-        />
-        <FormInput
-          label="Zip Code"
-          name="Location - Zip Code"
-          value={listing['Location - Zip Code']}
-          onChange={handleChange}
-          placeholder="11201"
-        />
+        {/* Manual inputs - conditionally rendered */}
+        {showManualInputs && !address.validated && (
+          <>
+            {/* Street Number and Street Name */}
+            <FormInput
+              label="Street Number"
+              name="number"
+              value={address.number}
+              onChange={handleAddressChange}
+              placeholder="123"
+            />
+            <FormInput
+              label="Street Name"
+              name="street"
+              value={address.street}
+              onChange={handleAddressChange}
+              placeholder="Main St"
+            />
 
-        {/* Neighborhood */}
-        <div style={styles.fullWidth}>
-          <FormInput
-            label="Neighborhood (manual input)"
-            name="neighborhood (manual input by user)"
-            value={listing['neighborhood (manual input by user)']}
-            onChange={handleChange}
-            placeholder="Park Slope"
-          />
-        </div>
+            {/* City and Borough */}
+            <FormInput
+              label="City"
+              name="Location - City"
+              value={cityValue}
+              onChange={handleChange}
+              placeholder="New York"
+            />
+            <FormInput
+              label="Borough"
+              name="boroughName"
+              value={boroughValue}
+              onChange={handleChange}
+              placeholder="Brooklyn"
+            />
+
+            {/* State and Zip */}
+            <FormInput
+              label="State"
+              name="Location - State"
+              value={stateValue}
+              onChange={handleChange}
+              placeholder="New York"
+            />
+            <FormInput
+              label="Zip Code"
+              name="Location - Zip Code"
+              value={zipValue}
+              onChange={handleChange}
+              placeholder="11201"
+            />
+
+            {/* Neighborhood */}
+            <div style={styles.fullWidth}>
+              <FormInput
+                label="Neighborhood (manual input)"
+                name="neighborhood (manual input by user)"
+                value={neighborhoodValue}
+                onChange={handleChange}
+                placeholder="Park Slope"
+              />
+            </div>
+          </>
+        )}
 
         {/* Type of Space */}
         <FormDropdown
@@ -257,5 +318,22 @@ const styles = {
     fontSize: '0.75rem',
     fontWeight: '500',
     borderRadius: '9999px'
+  },
+  toggleButton: {
+    width: '100%',
+    padding: '0.5rem 1rem',
+    marginTop: '0.5rem',
+    fontSize: '0.8125rem',
+    fontWeight: '500',
+    color: '#6b7280',
+    backgroundColor: '#f3f4f6',
+    border: '1px solid #d1d5db',
+    borderRadius: '0.375rem',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    '&:hover': {
+      backgroundColor: '#e5e7eb',
+      borderColor: '#9ca3af'
+    }
   }
 };

@@ -11,14 +11,17 @@
  * @param {Function} props.onToggleFavorite - Favorite toggle handler
  * @param {Function} props.onLocationClick - Location pill click handler (scroll to map)
  * @param {boolean} props.isAuthenticated - Whether user is logged in
- * 
+ * @param {string|null} [props.userId] - Current user ID (for favorite button)
+ * @param {Function} [props.onRequireAuth] - Auth required callback (for favorite button)
+ *
  * @architecture Presentational Component
  * @performance Memoized
  */
 
 import { memo } from 'react';
-import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton.jsx';
-import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
+import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton';
+// @ts-ignore - JS module without type declarations
+import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './ListingHeader.module.css';
 
 const ListingHeader = memo(function ListingHeader({
@@ -26,7 +29,9 @@ const ListingHeader = memo(function ListingHeader({
     isFavorited,
     onToggleFavorite,
     onLocationClick,
-    isAuthenticated
+    isAuthenticated,
+    userId,
+    onRequireAuth
 }) {
 
     const handleShare = async () => {
@@ -96,10 +101,11 @@ const ListingHeader = memo(function ListingHeader({
 
                     <FavoriteButton
                         listingId={listing._id}
+                        userId={userId || null}
                         initialFavorited={isFavorited}
                         onToggle={onToggleFavorite}
+                        onRequireAuth={onRequireAuth || (() => {})}
                         size="medium"
-                        showLabel={true}
                     />
                 </div>
             </div>

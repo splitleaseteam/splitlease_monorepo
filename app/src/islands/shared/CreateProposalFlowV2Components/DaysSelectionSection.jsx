@@ -144,7 +144,7 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
       numberOfNightsAvailable: listing['# of nights available'] || 7,
       active: listing.Active,
       approved: listing.Approved,
-      datesBlocked: listing['Dates - Blocked'] || [],
+      datesBlocked: Array.isArray(listing['Dates - Blocked']) ? listing['Dates - Blocked'] : [],
       complete: listing.Complete,
       confirmedAvailability: listing.confirmedAvailability,
       checkInTime: listing['NEW Date Check-in Time'] || '3:00 pm',

@@ -22,17 +22,13 @@
  * @param {Function} props.onMoveInDateChange - Move-in date change handler
  * @param {Function} props.onReservationSpanChange - Reservation span change handler
  * @param {Function} props.onSubmit - Submit handler (opens proposal modal)
- * @param {object} props.informationalTexts - Informational text lookup
- * @param {string|null} props.activeInfoTooltip - Currently active tooltip
- * @param {Function} props.setActiveInfoTooltip - Set active tooltip handler
- * 
+ *
  * @architecture Presentational Component (receives all data via props)
  * @performance Memoized to prevent unnecessary re-renders
  */
 
-import { memo, useRef } from 'react';
-import ListingScheduleSelector from '../../../shared/ListingScheduleSelector.jsx';
-import InformationalText from '../../../shared/InformationalText.jsx';
+import { memo } from 'react';
+import ListingScheduleSelector from '../../../shared/ListingScheduleSelector';
 import styles from './BookingWidget.module.css';
 
 const BookingWidget = memo(function BookingWidget({
@@ -50,15 +46,9 @@ const BookingWidget = memo(function BookingWidget({
     onScheduleChange,
     onMoveInDateChange,
     onReservationSpanChange,
-    onSubmit,
-    informationalTexts = {},
-    activeInfoTooltip,
-    setActiveInfoTooltip
+    onSubmit
 }) {
 
-    const moveInInfoRef = useRef(null);
-    const reservationSpanInfoRef = useRef(null);
-    const flexibilityInfoRef = useRef(null);
 
     // Reservation span options
     const reservationSpanOptions = [
@@ -128,13 +118,6 @@ const BookingWidget = memo(function BookingWidget({
                 <div className={styles.scheduleSelectorSection}>
                     <label className={styles.sectionLabel}>
                         Select Your Weekly Schedule
-                        <InformationalText
-                            tag="aligned schedule with move-in"
-                            texts={informationalTexts}
-                            activeTooltip={activeInfoTooltip}
-                            setActiveTooltip={setActiveInfoTooltip}
-                            triggerRef={moveInInfoRef}
-                        />
                     </label>
                     <div className={styles.scheduleSelectorWrapper}>
                         <ListingScheduleSelector
@@ -163,13 +146,6 @@ const BookingWidget = memo(function BookingWidget({
                 <div className={styles.inputSection}>
                     <label className={styles.sectionLabel} htmlFor="move-in-date">
                         Move-In Date
-                        <InformationalText
-                            tag="move-in flexibility"
-                            texts={informationalTexts}
-                            activeTooltip={activeInfoTooltip}
-                            setActiveTooltip={setActiveInfoTooltip}
-                            triggerRef={flexibilityInfoRef}
-                        />
                     </label>
                     <input
                         id="move-in-date"
@@ -191,13 +167,6 @@ const BookingWidget = memo(function BookingWidget({
                 <div className={styles.inputSection}>
                     <label className={styles.sectionLabel} htmlFor="reservation-span">
                         Reservation Length
-                        <InformationalText
-                            tag="Reservation Span"
-                            texts={informationalTexts}
-                            activeTooltip={activeInfoTooltip}
-                            setActiveTooltip={setActiveInfoTooltip}
-                            triggerRef={reservationSpanInfoRef}
-                        />
                     </label>
                     <select
                         id="reservation-span"
