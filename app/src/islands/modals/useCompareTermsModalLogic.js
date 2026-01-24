@@ -19,6 +19,7 @@ import { supabase } from '../../lib/supabase.js';
 import { acceptCounteroffer, declineCounteroffer, getTermsComparison } from '../../logic/workflows/proposals/counterofferWorkflow.js';
 import { formatPrice, formatDate } from '../../lib/proposals/dataTransformers.js';
 import { DAY_NAMES } from '../../lib/dayUtils.js';
+import { nightsToDays } from '../shared/HostEditingProposal/types.js';
 
 /**
  * Parse days selected array to consistent format
@@ -161,9 +162,20 @@ export function useCompareTermsModalLogic({
     if (!proposal) return null;
 
     const moveInDate = proposal['hc move in date'];
-    const daysSelected = parseDaysSelected(proposal['hc days selected'] || proposal['Days Selected']);
     const checkInDay = proposal['hc check in day'] ?? proposal['check in day'];
     const checkOutDay = proposal['hc check out day'] ?? proposal['check out day'];
+
+    // Parse nights selected to calculate days (nights + checkout day)
+    // This ensures we display all days including checkout even if hc_days_selected was saved incorrectly
+    const hcNightsSelected = proposal['hc nights selected'];
+    let daysSelected;
+    if (hcNightsSelected && Array.isArray(hcNightsSelected) && hcNightsSelected.length > 0) {
+      // Derive days from nights (includes checkout day via nightsToDays)
+      daysSelected = nightsToDays(hcNightsSelected);
+    } else {
+      // Fall back to stored days selected
+      daysSelected = parseDaysSelected(proposal['hc days selected'] || proposal['Days Selected']);
+    }
     const nightsPerWeek = proposal['hc nights per week'] ?? proposal['nights per week (num)'] ?? daysSelected.length ?? 0;
     const reservationWeeks = proposal['hc reservation span (weeks)'] ?? proposal['Reservation Span (Weeks)'] ?? 0;
     const nightlyPrice = proposal['hc nightly price'] ?? proposal['proposal nightly price'] ?? 0;
