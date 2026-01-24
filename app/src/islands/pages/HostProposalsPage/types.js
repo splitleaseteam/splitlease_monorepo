@@ -623,25 +623,28 @@ export function getStatusTagConfig(proposal) {
     return { text: 'Guest Counter', variant: 'counteroffer' };
   }
 
-  // Check for "Awaiting Rental Application" states (full Bubble status strings)
-  if (statusKey === 'Proposal Submitted by guest - Awaiting Rental Application' ||
-      statusKey === 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application') {
+  // Check for "Awaiting Rental Application" states (normalized snake_case format)
+  // Original Bubble: "Proposal Submitted by guest - Awaiting Rental Application"
+  if (statusKey === 'proposal_submitted_by_guest_-_awaiting_rental_application' ||
+      statusKey === 'proposal_submitted_for_guest_by_split_lease_-_awaiting_rental_application') {
     return { text: 'Awaiting Rental App', variant: 'default' };
   }
 
-  // Check for pending confirmation state
-  if (statusKey === 'Proposal Submitted for guest by Split Lease - Pending Confirmation' ||
-      statusKey === 'Pending Confirmation') {
+  // Check for pending confirmation state (normalized snake_case format)
+  // Original Bubble: "Proposal Submitted for guest by Split Lease - Pending Confirmation"
+  if (statusKey === 'proposal_submitted_for_guest_by_split_lease_-_pending_confirmation' ||
+      statusKey === 'pending_confirmation') {
     return { text: 'Pending Confirmation', variant: 'default' };
   }
 
-  // Check for host counteroffer awaiting guest review (full Bubble status string)
-  if (statusKey === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+  // Check for host counteroffer awaiting guest review (normalized snake_case format)
+  // Original Bubble: "Host Counteroffer Submitted / Awaiting Guest Review"
+  if (statusKey === 'host_counteroffer_submitted_/_awaiting_guest_review') {
     return { text: 'Awaiting Guest Review', variant: 'default' };
   }
 
-  // Legacy 'Pending' status - typically means awaiting rental application
-  if (statusKey === 'Pending') {
+  // Legacy 'pending' status - typically means awaiting rental application
+  if (statusKey === 'pending') {
     return { text: 'Awaiting Rental App', variant: 'default' };
   }
 
