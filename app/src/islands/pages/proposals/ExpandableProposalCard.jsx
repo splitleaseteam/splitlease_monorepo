@@ -523,10 +523,31 @@ export default function ExpandableProposalCard({
   const [isConfirming, setIsConfirming] = useState(false);
 
   // Calculate content height for animation
+  // Use ResizeObserver to handle nested accordion expansions (e.g., "Why This Proposal?")
   useEffect(() => {
-    if (contentRef.current) {
-      setContentHeight(isExpanded ? contentRef.current.scrollHeight : 0);
+    if (!contentRef.current) return;
+
+    if (!isExpanded) {
+      setContentHeight(0);
+      return;
     }
+
+    // Set initial height
+    setContentHeight(contentRef.current.scrollHeight);
+
+    // Observe content size changes for nested accordions
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // Use scrollHeight to get full content height including overflow
+        setContentHeight(entry.target.scrollHeight);
+      }
+    });
+
+    resizeObserver.observe(contentRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [isExpanded, proposal]);
 
   // Extract data
