@@ -207,10 +207,17 @@ export default function PricingEditSection({
 
   // Handle back button click - show confirmation if changes exist
   const handleBackClick = useCallback(() => {
+    console.log('🔙 Go Back clicked:', { hasChanges, onCloseExists: typeof onClose === 'function' });
     if (hasChanges) {
+      console.log('📋 Showing confirmation modal');
       setShowConfirmModal(true);
     } else {
-      onClose();
+      console.log('✅ No changes, calling onClose()');
+      if (typeof onClose === 'function') {
+        onClose();
+      } else {
+        console.error('❌ onClose is not a function:', onClose);
+      }
     }
   }, [hasChanges, onClose]);
 
@@ -537,17 +544,28 @@ export default function PricingEditSection({
       )}
 
       {showConfirmModal && (
-        <div className="pricing-edit-modal-overlay">
-          <div className="pricing-edit-modal">
-            <h3>Discard Changes?</h3>
-            <p>You have unsaved changes. Are you sure you want to leave without saving?</p>
-            <div className="pricing-edit-modal-actions">
-              <button className="pricing-edit-modal-cancel" onClick={() => setShowConfirmModal(false)}>
-                Keep Editing
+        <div className="host-modal-backdrop" onClick={() => setShowConfirmModal(false)}>
+          <div className="host-modal host-modal--small" onClick={(e) => e.stopPropagation()}>
+            <div className="host-modal__header">
+              <h3 className="host-modal__title">Discard Changes?</h3>
+              <button className="host-modal__close" onClick={() => setShowConfirmModal(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
               </button>
-              <button className="pricing-edit-modal-confirm" onClick={onClose}>
-                Discard Changes
-              </button>
+            </div>
+            <div className="host-modal__content">
+              <p className="host-confirm-modal__message">
+                You have unsaved changes. Are you sure you want to leave without saving?
+              </p>
+              <div className="host-confirm-modal__actions">
+                <button className="btn btn--secondary" onClick={() => setShowConfirmModal(false)}>
+                  Keep Editing
+                </button>
+                <button className="btn btn--danger" onClick={onClose}>
+                  Discard Changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
