@@ -250,9 +250,12 @@ bubble_sync/
 
 ## Cron Job
 
-Runs every 5 minutes via `pg_cron`:
+⚠️ **REMOVED** - Cron jobs have been removed as of 2026-01-24.
+
+Previously ran every 5 minutes via `pg_cron`:
 
 ```sql
+-- REMOVED - See migrations/20260124_remove_cron_jobs.sql
 SELECT cron.schedule(
   'process-bubble-sync-queue',
   '*/5 * * * *',
@@ -262,6 +265,8 @@ SELECT cron.schedule(
   )$$
 );
 ```
+
+Queue processing is now triggered manually or via application logic, not scheduled cron jobs.
 
 ---
 

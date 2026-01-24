@@ -284,7 +284,9 @@ function calculateActualWeeks(reservationSpan, weeksOffered) {
  * Component to display schedule pattern info when applicable
  */
 function SchedulePatternHighlight({ reservationSpan, weeksOffered }) {
+  console.log('[SchedulePatternHighlight] weeksOffered:', weeksOffered, 'reservationSpan:', reservationSpan);
   const patternInfo = calculateActualWeeks(reservationSpan, weeksOffered);
+  console.log('[SchedulePatternHighlight] patternInfo:', patternInfo);
 
   if (!patternInfo.showHighlight) {
     return null;

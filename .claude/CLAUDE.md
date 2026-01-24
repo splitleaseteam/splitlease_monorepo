@@ -248,6 +248,7 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - **Informational text triggers**: When adding a `?` icon to open informational text modals, make the accompanying text label clickable too (not just the `?`). Wrap both the text and `?` in a single clickable container.
 - **ALWAYS invoke `/fp-rater` skill after creating or updating code files** - Output the FP rating table at the bottom of your response (table only, no explanations)
 - **ALWAYS invoke `/slack-webhook` skill after completing each task or prompt** - Send a 1-line summary to Slack (e.g., "Implemented user auth flow" or "Fixed proposal sync bug"). Use `--type success` for completions, `--type error` for failures. This is MANDATORY for all task completions.
+- **Never recommend cache clearing unless stale code execution is proven**
 
 ### DON'T
 - Expose API keys in frontend code
@@ -258,7 +259,6 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - Manually edit `_redirects` or `_routes.json` (auto-generated)
 - **Send entire formData to updateListing** - always filter to changed fields only
 - **Use project-specific abbreviations** - Always use full, descriptive names for directories, files, variables, and functions. For example, use `functional/` not `fp/`, use `configuration/` not `cfg/`, use `utilities/` not `util/`, use `manager` not `mgr`. Industry-standard terms (API, URL, JSON, HTTP, HTML, CSS, DOM, SQL) are acceptable.
-- **Recommend cache clearing unless stale code execution is proven** - When code changes don't appear in the browser, first verify the correct file is being loaded (check import paths, duplicate files, build output). Cache is rarely the real culprit; stale files or wrong imports are far more common.
 
 ### Database Update Pattern (CRITICAL)
 
