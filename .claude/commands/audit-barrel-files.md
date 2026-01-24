@@ -1,6 +1,6 @@
 ---
 name: audit-barrel-files
-description: Detect and report barrel/hub files using AST dependency analysis. Creates a plan in .claude/plans/New/ and notifies via Slack webhook.
+description: Detect and report barrel/hub files using AST dependency analysis. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Barrel & Hub Files Audit (AST-Based)
@@ -13,17 +13,17 @@ You are conducting a comprehensive barrel and hub file audit using the AST Depen
 
 1. **Run `/prime`** to understand the codebase structure
 2. **Invoke `ast-dependency-analyzer` skill** to get dependency analysis
-3. **Create a plan** in `.claude/plans/New/` with timestamp format `YYYYMMDDHHMMSS-barrel-files-audit.md`
+3. **Identify opportunities** in `.claude/plans/Opportunities/YYMMDD/` with timestamp format `YYYYMMDDHHMMSS-barrel-files-audit.md` (where YYMMDD is today's date folder)
 4. **Send Slack notification** via `TINYTASKAGENT` webhook
 
 ---
 
-## Plan Template
+## Opportunity Report Template
 
-Create a plan file at `.claude/plans/New/YYYYMMDDHHMMSS-barrel-files-audit.md` using this structure:
+Create an opportunity file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-barrel-files-audit.md` (where YYMMDD is today's date) using this structure:
 
 ```markdown
-# Audit Plan: Barrel & Hub Files Analysis
+# Opportunity Report: Barrel & Hub Files Analysis
 
 **Created**: [timestamp]
 **Status**: Analysis Complete
@@ -180,13 +180,13 @@ Files with high dependency counts: [count]
 After creating the plan, send a Slack webhook:
 
 ```bash
-python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Barrel & hub files audit complete: [X] barrels, [Y] hubs found - Plan: .claude/plans/New/[plan-name].md" --type success
+python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Barrel & hub files audit complete: [X] barrels, [Y] hubs found - Opportunities: .claude/plans/Opportunities/YYMMDD/[report-name].md" --type success
 ```
 
 ## Output Requirements
 
 1. **Invoke `ast-dependency-analyzer` skill** for accurate detection
-2. **Create plan** in `.claude/plans/New/YYYYMMDDHHMMSS-barrel-files-audit.md`
+2. **Create plan** in `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-barrel-files-audit.md`
 3. **Use the template above** for plan structure
 4. **Include specific findings** - file paths, consumer counts, severity
 5. **Send Slack notification** after plan creation
@@ -194,10 +194,10 @@ python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/
 
 ## If No Barrels Found
 
-If the AST analysis finds NO barrel files, still create a plan documenting the clean state:
+If the AST analysis finds NO barrel files, still create an opportunity report documenting the clean state:
 
 ```markdown
-# Audit Plan: Barrel & Hub Files Analysis
+# Opportunity Report: Barrel & Hub Files Analysis
 
 **Created**: [timestamp]
 **Status**: Analysis Complete - No Barrels Found

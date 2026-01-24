@@ -1,6 +1,6 @@
 ---
 name: audit-supabase-auth-tests
-description: Audit the codebase to find Supabase authentication flows (signup, signin, session management, password reset) that lack proper test coverage. Identifies gaps in auth testing for protected routes and user account security.
+description: Audit the codebase to find Supabase authentication flows (signup, signin, session management, password reset) that lack proper test coverage. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Supabase Auth Testing Audit
@@ -60,10 +60,10 @@ For each auth-related file, check if:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-supabase-auth-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-supabase-auth-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Supabase Auth Testing Audit Report
+# Supabase Auth Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -291,7 +291,7 @@ it('redirects unauthenticated users', () => {
 2. Be specific - include exact file paths and line numbers
 3. Be actionable - provide test templates
 4. Only report gaps - do not list already tested flows unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-supabase-auth-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-supabase-auth-tests.md`
 
 ## Post-Audit Actions
 

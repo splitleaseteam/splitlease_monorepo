@@ -1,6 +1,6 @@
 ---
 name: audit-twilio-sms-mocking
-description: Audit the codebase to find SMS notification features (Twilio) that lack proper test mocking. Identifies components sending SMS without MSW handlers or module mocks for testing.
+description: Audit the codebase to find SMS notification features (Twilio) that lack proper test mocking. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Twilio SMS Mocking Audit
@@ -49,10 +49,10 @@ For each SMS-related file, check if:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-twilio-sms-mocking.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-twilio-sms-mocking.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Twilio SMS Mocking Audit Report
+# Twilio SMS Mocking Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -256,7 +256,7 @@ it('does not send SMS on payment failure', async () => {
 2. Be specific - include exact file paths and function names
 3. Be actionable - provide mock templates
 4. Only report gaps - do not list mocked functions unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-twilio-sms-mocking.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-twilio-sms-mocking.md`
 
 ## Post-Audit Actions
 

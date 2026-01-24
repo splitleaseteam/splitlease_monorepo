@@ -1,6 +1,6 @@
 ---
 name: audit-rls-pgtap-tests
-description: Audit the codebase to find Supabase tables with Row-Level Security (RLS) policies that lack pgTAP tests. Identifies gaps in multi-tenant data isolation testing to prevent cross-user data leakage.
+description: Audit the codebase to find Supabase tables with Row-Level Security (RLS) policies that lack pgTAP tests. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # RLS pgTAP Testing Audit
@@ -58,10 +58,10 @@ For each table with RLS:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-rls-pgtap-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-rls-pgtap-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# RLS pgTAP Testing Audit Report
+# RLS pgTAP Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -347,7 +347,7 @@ select is(
 2. Be specific - include exact file paths and policy names
 3. Be actionable - provide SQL templates for missing tests
 4. Only report gaps - do not list tables that already have proper pgTAP coverage unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-rls-pgtap-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-rls-pgtap-tests.md`
 
 ## Post-Audit Actions
 

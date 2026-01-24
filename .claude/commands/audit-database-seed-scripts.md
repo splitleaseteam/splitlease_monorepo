@@ -1,6 +1,6 @@
 ---
 name: audit-database-seed-scripts
-description: Audit the codebase to find tests that create data inline without proper factories or seed scripts. Identifies opportunities for reproducible test data with proper relationships.
+description: Audit the codebase to find tests that create data inline without proper factories or seed scripts. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Database Seed Scripts Audit
@@ -54,10 +54,10 @@ For each test file, check:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-database-seed-scripts.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-database-seed-scripts.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Database Seed Scripts Audit Report
+# Database Seed Scripts Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -290,7 +290,7 @@ export async function seedMarketplace(client) {
 2. Be specific - include exact file paths and line numbers for inline data creation
 3. Be actionable - provide factory templates for missing entities
 4. Only report gaps - do not list tests that already use proper factories unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-database-seed-scripts.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-database-seed-scripts.md`
 
 ## Post-Audit Actions
 

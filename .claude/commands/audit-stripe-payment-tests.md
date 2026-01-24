@@ -1,6 +1,6 @@
 ---
 name: audit-stripe-payment-tests
-description: Audit the codebase to find Stripe payment integrations (checkout flows, payment intents, webhooks, refunds) that lack proper testing. Identifies gaps in payment flow testing, webhook handling tests, and E2E checkout coverage.
+description: Audit the codebase to find Stripe payment integrations (checkout flows, payment intents, webhooks, refunds) that lack proper testing. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Stripe Payment Testing Audit
@@ -63,10 +63,10 @@ For each identified file, check if:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-stripe-payment-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-stripe-payment-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Stripe Payment Testing Audit Report
+# Stripe Payment Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -296,7 +296,7 @@ test('handles 3D Secure authentication', async ({ page }) => {
 2. Be specific - include exact file paths and line numbers where Stripe operations occur
 3. Be actionable - provide clear next steps for each gap found
 4. Only report gaps - do not list files that already have proper Stripe test coverage unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-stripe-payment-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-stripe-payment-tests.md`
 
 ## Post-Audit Actions
 
