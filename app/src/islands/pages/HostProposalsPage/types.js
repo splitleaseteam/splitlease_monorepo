@@ -635,6 +635,16 @@ export function getStatusTagConfig(proposal) {
     return { text: 'Pending Confirmation', variant: 'default' };
   }
 
+  // Check for host counteroffer awaiting guest review (full Bubble status string)
+  if (statusKey === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+    return { text: 'Awaiting Guest Review', variant: 'default' };
+  }
+
+  // Legacy 'Pending' status - typically means awaiting rental application
+  if (statusKey === 'Pending') {
+    return { text: 'Awaiting Rental App', variant: 'default' };
+  }
+
   // Map status to display config (normalized keys)
   const statusMap = {
     proposal_submitted: { text: 'Review', variant: 'attention' },

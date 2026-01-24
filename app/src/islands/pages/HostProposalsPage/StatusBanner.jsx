@@ -89,6 +89,26 @@ function getStatusBannerConfig(proposal) {
     };
   }
 
+  // Check for host counteroffer awaiting guest review (full Bubble status string)
+  if (status === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+    return {
+      variant: 'default',
+      icon: Clock,
+      title: 'Awaiting Guest Review',
+      message: `${guestName} is reviewing your counteroffer`
+    };
+  }
+
+  // Legacy 'Pending' status - typically means awaiting rental application
+  if (status === 'Pending') {
+    return {
+      variant: 'default',
+      icon: Clock,
+      title: 'Awaiting Rental Application',
+      message: `Waiting for ${guestName} to submit rental application`
+    };
+  }
+
   // Status-based configs (normalized keys)
   const configs = {
     proposal_submitted: {
