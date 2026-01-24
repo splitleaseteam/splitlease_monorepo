@@ -93,6 +93,10 @@ export function InfoGrid({ proposal }) {
   if (typeof originalDays === 'string') {
     try { originalDays = JSON.parse(originalDays); } catch { originalDays = []; }
   }
+  let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
+  if (typeof originalNights === 'string') {
+    try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
+  }
 
   // HC values (host counteroffer)
   const hcMoveIn = proposal?.['hc move in date'];
@@ -101,6 +105,10 @@ export function InfoGrid({ proposal }) {
   if (typeof hcDays === 'string') {
     try { hcDays = JSON.parse(hcDays); } catch { hcDays = []; }
   }
+  let hcNights = proposal?.['hc nights selected'] || [];
+  if (typeof hcNights === 'string') {
+    try { hcNights = JSON.parse(hcNights); } catch { hcNights = []; }
+  }
 
   // Display values: prioritize HC values when counteroffer happened
   // When counteroffer exists, show HC values as current; otherwise use normalized or original
@@ -108,6 +116,7 @@ export function InfoGrid({ proposal }) {
   const moveOut = proposal?.end_date || proposal?.move_out_date;
   const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
   const daysSelected = (isCounteroffer && hcDays.length > 0) ? hcDays : (proposal?.days_selected || proposal?.Days_Selected || originalDays);
+  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
 
   // Comparison flags - detect which values changed
   // Only show strikethrough if there's actual HC data that differs from original
@@ -121,6 +130,14 @@ export function InfoGrid({ proposal }) {
     originalDays.length > 0 &&
     (hcDays.length !== originalDays.length ||
       !hcDays.every((day, index) => day === originalDays[index]));
+
+  // Nights changed: check if HC nights exist AND differ from original nights
+  // This is what determines the "Nights" display value
+  const nightsChanged = isCounteroffer &&
+    hcNights.length > 0 &&
+    originalNights.length > 0 &&
+    (hcNights.length !== originalNights.length ||
+      !hcNights.every((night, index) => night === originalNights[index]));
 
   // Calculate duration from dates if not provided
   let duration = weeks;
@@ -173,11 +190,11 @@ export function InfoGrid({ proposal }) {
       <div className="hp7-info-item">
         <div className="hp7-info-label">Nights</div>
         <div className="hp7-info-value">
-          {daysChanged && (
-            <span className="hp7-strikethrough">{Math.max(0, originalDays.length - 1)}/week</span>
+          {nightsChanged && (
+            <span className="hp7-strikethrough">{originalNights.length}/week</span>
           )}
-          <span className={daysChanged ? 'hp7-changed-value' : ''}>
-            {getNightsPerWeek(proposal)}
+          <span className={nightsChanged ? 'hp7-changed-value' : ''}>
+            {nightsSelected.length > 0 ? `${nightsSelected.length}/week` : getNightsPerWeek(proposal)}
           </span>
         </div>
       </div>
