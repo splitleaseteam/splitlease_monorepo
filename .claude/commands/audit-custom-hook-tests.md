@@ -1,6 +1,6 @@
 ---
 name: audit-custom-hook-tests
-description: Audit the codebase to find custom React hooks (useBooking, useListings, useAuth) that lack proper test coverage using renderHook. Identifies gaps in state, async, and context-dependent hook tests.
+description: Audit the codebase to find custom React hooks (useBooking, useListings, useAuth) that lack proper test coverage using renderHook. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Custom Hook Testing Audit
@@ -62,10 +62,10 @@ For each custom hook, check if tests exist for:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-custom-hook-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-custom-hook-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Custom Hook Testing Audit Report
+# Custom Hook Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -723,7 +723,7 @@ it('fetches data', async () => {
 2. Be specific - include exact file paths and hook types
 3. Be actionable - provide test templates
 4. Only report gaps - do not list tested hooks unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-custom-hook-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-custom-hook-tests.md`
 
 ## Post-Audit Actions
 

@@ -1,6 +1,6 @@
 ---
 name: audit-vitest-rtl-setup
-description: Audit the codebase to verify Vitest and React Testing Library configuration is complete and properly set up. Identifies missing setup files, incorrect configuration, and missing test infrastructure.
+description: Audit the codebase to verify Vitest and React Testing Library configuration is complete and properly set up. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Vitest + RTL Setup Audit
@@ -56,10 +56,10 @@ For each configuration area:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-vitest-rtl-setup.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-vitest-rtl-setup.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Vitest + RTL Setup Audit Report
+# Vitest + RTL Setup Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -283,7 +283,7 @@ afterEach(() => cleanup())
 2. Be specific - include exact file paths and line numbers
 3. Be actionable - provide complete code templates for missing files
 4. Only report gaps - do not list correctly configured items unless summarizing
-5. Create the output file with timestamp format: `YYMMDD-audit-vitest-rtl-setup.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-vitest-rtl-setup.md`
 
 ## Post-Audit Actions
 

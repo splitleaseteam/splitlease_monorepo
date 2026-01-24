@@ -1,6 +1,6 @@
 ---
 name: audit-orphan-files
-description: Detect orphan files (dead code) using AST dependency analysis. Creates a plan in .claude/plans/New/ and notifies via Slack webhook.
+description: Detect orphan files (dead code) using AST dependency analysis. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Orphan Files Audit (Dead Code Detection)
@@ -14,17 +14,17 @@ You are conducting a comprehensive orphan file audit to identify dead code that 
 1. **Run `/prime`** to understand the codebase structure
 2. **Invoke `ast-dependency-analyzer` skill** to get dependency analysis
 3. **Check git history** for each orphan file (last modified date)
-4. **Create a plan** in `.claude/plans/New/` with timestamp format `YYYYMMDDHHMMSS-orphan-files-audit.md`
+4. **Identify opportunities** in `.claude/plans/Opportunities/YYMMDD/` with timestamp format `YYYYMMDDHHMMSS-orphan-files-audit.md` (where YYMMDD is today's date folder)
 5. **Send Slack notification** via `TINYTASKAGENT` webhook
 
 ---
 
-## Plan Template
+## Opportunity Report Template
 
-Create a plan file at `.claude/plans/New/YYYYMMDDHHMMSS-orphan-files-audit.md` using this structure:
+Create an opportunity file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-orphan-files-audit.md` (where YYMMDD is today's date) using this structure:
 
 ```markdown
-# Audit Plan: Orphan Files Analysis (Dead Code Detection)
+# Opportunity Report: Orphan Files Analysis (Dead Code Detection)
 
 **Created**: [timestamp]
 **Status**: Analysis Complete
@@ -243,7 +243,7 @@ The following files have zero dependents but should NOT be removed:
 After creating the plan, send a Slack webhook:
 
 ```bash
-python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Orphan files audit complete: [X] dead files found - [Y] safe to delete - Plan: .claude/plans/New/[plan-name].md" --type success
+python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Orphan files audit complete: [X] dead files found - [Y] safe to delete - Opportunities: .claude/plans/Opportunities/YYMMDD/[report-name].md" --type success
 ```
 
 ## Output Requirements
@@ -251,7 +251,7 @@ python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/
 1. **Invoke `ast-dependency-analyzer` skill** to get reverse_dependencies
 2. **Check git history** for each orphan file (last modified date)
 3. **Apply exclusions** (entry points, tests, configs)
-4. **Create plan** in `.claude/plans/New/YYYYMMDDHHMMSS-orphan-files-audit.md`
+4. **Create opportunity report** in `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-orphan-files-audit.md`
 5. **Use the template above** for plan structure
 6. **Include specific findings** - file paths, staleness, recommendations
 7. **Send Slack notification** after plan creation
@@ -259,10 +259,10 @@ python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/
 
 ## If No Orphans Found
 
-If the AST analysis finds NO orphan files, still create a plan documenting the clean state:
+If the AST analysis finds NO orphan files, still create an opportunity report documenting the clean state:
 
 ```markdown
-# Audit Plan: Orphan Files Analysis
+# Opportunity Report: Orphan Files Analysis
 
 **Created**: [timestamp]
 **Status**: Analysis Complete - No Orphans Found

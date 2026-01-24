@@ -1,6 +1,6 @@
 ---
 name: audit-webhook-handler-tests
-description: Audit the codebase to find webhook handlers (Stripe, Twilio, Zapier) that lack proper tests for signature verification, idempotency, and business logic. Identifies gaps in payment and integration webhook testing.
+description: Audit the codebase to find webhook handlers (Stripe, Twilio, Zapier) that lack proper tests for signature verification, idempotency, and business logic. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Webhook Handler Testing Audit
@@ -50,10 +50,10 @@ For each webhook handler:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-webhook-handler-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-webhook-handler-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Webhook Handler Testing Audit Report
+# Webhook Handler Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -285,7 +285,7 @@ it('processes same event only once', async () => {
 2. Be specific - include exact file paths and handler names
 3. Be actionable - provide test helper templates
 4. Only report gaps - do not list tested handlers unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-webhook-handler-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-webhook-handler-tests.md`
 
 ## Post-Audit Actions
 

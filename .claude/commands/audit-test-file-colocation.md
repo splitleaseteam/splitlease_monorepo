@@ -1,6 +1,6 @@
 ---
 name: audit-test-file-colocation
-description: Audit the codebase to find test files in centralized folders that should be co-located with their source files. Identifies opportunities for better discoverability and maintainability.
+description: Audit the codebase to find test files in centralized folders that should be co-located with their source files. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Test File Co-location Audit
@@ -48,10 +48,10 @@ For each source file, check:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-test-file-colocation.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-test-file-colocation.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Test File Co-location Audit Report
+# Test File Co-location Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -275,7 +275,7 @@ export type { ButtonProps } from './Button'
 2. Be specific - include exact file paths for migration
 3. Be actionable - provide migration commands
 4. Only report gaps - do not list already co-located tests unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-test-file-colocation.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-test-file-colocation.md`
 
 ## Post-Audit Actions
 

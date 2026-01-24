@@ -1,6 +1,6 @@
 ---
-name: functional-programming
-description: Audit codebase for functional programming (FP) violations using the functional-code skill. Reviews purity, immutability, declarative style, error handling, and separation of concerns. Creates timestamped MD report and notifies via Slack webhook.
+name: audit-functional-programming
+description: Audit codebase for functional programming (FP) violations using the functional-code skill. Reviews purity, immutability, declarative style, error handling, and separation of concerns. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Functional Programming Audit
@@ -26,10 +26,10 @@ Use the Skill tool to invoke the `functional-code` skill. This will audit the co
 
 ## Step 3: Create the Audit Document
 
-After the functional-code skill completes its analysis, create an MD file at `.claude/plans/Documents/<timestamp>-functional-programming-audit.md` with the following structure:
+After the functional-code skill completes its analysis, create an MD file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-functional-programming-audit.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Functional Programming Audit Report
+# Functional Programming Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** Split Lease
 
@@ -119,7 +119,7 @@ python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/
 1. Be thorough - review the functional-code skill's output comprehensively
 2. Be specific - include exact file paths, line numbers, and code snippets
 3. Be actionable - provide specific fix suggestions for each violation
-4. Use timestamp format: `YYYYMMDDHHMMSS-functional-programming-audit.md`
+4. Save to `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-functional-programming-audit.md`
 5. Only report actual violations found - do not fabricate issues
 
 ## Reference: FP Principles

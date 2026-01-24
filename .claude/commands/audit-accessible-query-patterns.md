@@ -1,6 +1,6 @@
 ---
 name: audit-accessible-query-patterns
-description: Audit the codebase to find tests with brittle selectors (CSS classes, IDs) that should use accessible queries (getByRole, getByLabelText). Identifies opportunities for stable, accessibility-enforcing test selectors.
+description: Audit the codebase to find tests with brittle selectors (CSS classes, IDs) that should use accessible queries (getByRole, getByLabelText). Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Accessible Query Patterns Audit
@@ -57,10 +57,10 @@ For each test file, check:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-accessible-query-patterns.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-accessible-query-patterns.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Accessible Query Patterns Audit Report
+# Accessible Query Patterns Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -240,7 +240,7 @@ screen.getByTestId('result-count')
 2. Be specific - include exact file paths and line numbers for brittle selectors
 3. Be actionable - provide exact replacement queries
 4. Only report gaps - do not list tests that already use proper queries unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-accessible-query-patterns.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-accessible-query-patterns.md`
 
 ## Post-Audit Actions
 
