@@ -1,349 +1,275 @@
 ---
 name: audit-orphan-files
-description: Detect orphan files (dead code) using AST dependency analysis. Identifies files with no consumers that haven't been updated in a while - prime candidates for tree-shaking/removal. Creates timestamped MD report and notifies via Slack webhook.
+description: Detect orphan files (dead code) using AST dependency analysis. Creates a plan in .claude/plans/New/ and notifies via Slack webhook.
 ---
 
 # Orphan Files Audit (Dead Code Detection)
 
 > **Note:** This slash command uses the `ast-dependency-analyzer` skill to identify files that nothing imports from (orphan files) and cross-references with git history to find stale code.
 
-You are conducting a comprehensive orphan file audit to identify dead code that can be safely removed. Orphan files are files that exist in the codebase but **nothing imports from** them.
+You are conducting a comprehensive orphan file audit to identify dead code that can be safely removed.
 
-## Step 1: Prime the Codebase
+## Your Task
 
-**Execute `/prime`** to understand the full codebase structure.
+1. **Run `/prime`** to understand the codebase structure
+2. **Invoke `ast-dependency-analyzer` skill** to get dependency analysis
+3. **Check git history** for each orphan file (last modified date)
+4. **Create a plan** in `.claude/plans/New/` with timestamp format `YYYYMMDDHHMMSS-orphan-files-audit.md`
+5. **Send Slack notification** via `TINYTASKAGENT` webhook
 
-## Step 2: Run AST Dependency Analysis
+---
 
-**Invoke the `ast-dependency-analyzer` skill** to analyze the codebase.
+## Plan Template
 
-The skill will provide:
-- **reverse_dependencies**: Who depends on each file (key for finding orphans)
-- Files with **zero dependents** are orphans
-
-## Step 3: Identify Orphan Files
-
-From the AST analysis output, identify orphan files:
-
-### Orphan Detection Logic
-
-**Orphan File = File with zero reverse_dependencies**
-
-From the `reverse_dependencies` map in the AST output:
-- Files with empty or missing `reverse_dependencies` lists have **no consumers**
-- These are candidates for removal
-
-### Exclusion Criteria (False Positives)
-
-Some files have zero dependents but should NOT be removed:
-
-| File Type | Reason | Action |
-|-----------|--------|--------|
-| **Entry points** | `main.jsx`, `index.html`, `vite.config.js` | Framework-required |
-| **Page components** | Have HTML entry points | Keep |
-| **Test files** | Not imported by app code | Keep |
-| **CSS/SCSS files** | Imported via different mechanism | Manual review |
-| **Configuration** | `tsconfig.json`, `.eslintrc.js` | Keep |
-| **Type definition files** | `.d.ts` files | Keep |
-| **Storybook/docs** | Documentation files | Keep |
-
-### Severity Assessment
-
-| Severity | Criteria | Action |
-|----------|----------|--------|
-| **High** | Orphan + not modified in 6+ months | Strong removal candidate |
-| **Medium** | Orphan + not modified in 3-6 months | Review before removal |
-| **Low** | Orphan + recently modified | May be in development, keep |
-
-## Step 4: Check Git History for Stale Files
-
-For each orphan file, check when it was last modified:
-
-```bash
-# Get last modified date for a file
-git log -1 --format="%ai" -- path/to/file.js
-
-# Get last modified date for multiple files
-git log -1 --format="%ai %H %s" -- path/to/file1.js path/to/file2.js
-```
-
-**Interpretation:**
-- Files not modified in 6+ months are likely stale/abandoned
-- Recently modified orphans may be new features in progress
-
-## Step 5: Create the Audit Document
-
-Create an MD file at `.claude/plans/Documents/<timestamp>-audit-orphan-files.md` with the following structure:
+Create a plan file at `.claude/plans/New/YYYYMMDDHHMMSS-orphan-files-audit.md` using this structure:
 
 ```markdown
-# Orphan Files Audit Report (Dead Code Detection)
-**Generated:** <timestamp>
-**Codebase:** Split Lease
-**Method:** AST-based dependency analysis + git history
+# Audit Plan: Orphan Files Analysis (Dead Code Detection)
 
-## Executive Summary
-- Total files analyzed: X
-- Orphan files found: X (no reverse dependencies)
-- High priority removals: X (stale + orphan)
-- Medium priority reviews: X
-- Low priority (keep): X
-- Total potential deletions: X lines of code
+**Created**: [timestamp]
+**Status**: Analysis Complete
+**Severity**: [based on stale code count]
+**Affected Area**: Codebase - dead/unused files
 
-## Orphan Files by Severity
+## 1. System Context
 
-### 🔴 High Priority (Orphan + Stale)
+### 1.1 Architecture Understanding
+- **Architecture Pattern**: [from codebase]
+- **Tech Stack**: React 18, Vite, JavaScript/TypeScript
+- **Analysis Method**: AST-based dependency analysis + git history
 
-Files with no consumers AND not modified in 6+ months:
+### 1.2 Domain Context
+- **Purpose**: Identify orphan files (dead code) - files with no consumers
+- **Orphan Definition**: Files with zero `reverse_dependencies` - nothing imports from them
+- **Stale Code**: Orphan files not modified in 3+ months
+- **Why It Matters**: Dead code bloats codebase, confuses developers, increases maintenance burden
 
-#### [file_path]
-- **Last Modified:** [date from git]
-- **Days Since Modified:** [X days]
-- **File Type:** Component | Utility | Page | Other
-- **Lines of Code:** [X]
-- **Export Summary:** [what it exports]
+### 1.3 Entry Points and Dependencies
+- **Analysis Tool**: `ast-dependency-analyzer` skill + git log
+- **Data Source**: `app/src` directory
+- **Key Outputs**:
+  - `reverse_dependencies`: Who depends on each file (empty = orphan)
+  - Git history: Last modified date for staleness assessment
 
-**Reason for Orphan Status:**
-- Not imported by any other file
-- Appears to be dead/abandoned code
+## 2. Analysis Methodology
 
-**Recommendation:** DELETE - Safe to remove, high confidence
+### 2.1 Detection Criteria
 
-#### [another file]
-[Same structure]
+**Orphan Files**:
+- Files with `reverse_dependencies` count = 0 (no consumers)
+- Files NOT imported by any other file in the codebase
 
-### 🟡 Medium Priority (Orphan + Moderately Stale)
+**Severity Assessment**:
+- **High**: Orphan + 6+ months since last commit → DELETE (safe)
+- **Medium**: Orphan + 3-6 months since last commit → REVIEW first
+- **Low**: Orphan + recently modified → KEEP (may be in development)
 
-Files with no consumers, modified 3-6 months ago:
+**Exclusion Criteria** (False Positives):
+- Entry points (`main.jsx`, `index.html`)
+- Configuration files (`vite.config.js`, `tsconfig.json`)
+- Test files (`*.test.js`, `*.spec.js`)
+- Type definitions (`*.d.ts`)
+- Files with HTML entry points
+- CSS/SCSS files (different import mechanism)
 
-#### [file_path]
-- **Last Modified:** [date from git]
-- **Days Since Modified:** [X days]
-- **File Type:** Component | Utility | Page | Other
+### 2.2 Git History Analysis
 
-**Recommendation:** REVIEW - Check with team before deleting
+For each orphan file, check staleness:
+```bash
+git log -1 --format="%ai %s" -- path/to/file.js
+```
 
-### 🟢 Low Priority (Orphan + Recent)
+**Interpretation**:
+- Files not modified in 6+ months = stale/abandoned
+- Recently modified orphans = WIP or experimental
 
-Files with no consumers but recently modified:
+### 2.3 Files Analyzed
 
-#### [file_path]
-- **Last Modified:** [date from git]
-- **Days Since Modified:** [X days]
-- **File Type:** Component | Utility | Page | Other
+Total JS/TS files analyzed: [from AST output]
+Orphan files found: [count]
+After exclusions applied: [count]
 
-**Recommendation:** KEEP - May be in development or used in non-standard way
+## 3. Findings
 
-## Excluded Files (False Positives)
+### 3.1 Orphan Files by Severity
+
+#### 🔴 High Priority (Orphan + Stale - DELETE)
+
+| File Path | Last Modified | Days Stale | LOC | File Type | Action |
+|-----------|---------------|------------|-----|-----------|--------|
+| `app/src/...` | [date] | X | X | Component/Utility | DELETE |
+
+**Details**:
+[For each high priority orphan, provide:]
+- File path
+- Last modified date from git
+- Days since modification
+- What it exports (from symbol_table)
+- Reason it's safe to delete
+
+#### 🟡 Medium Priority (Orphan + Moderately Stale - REVIEW)
+
+| File Path | Last Modified | Days Stale | LOC | File Type | Action |
+|-----------|---------------|------------|-----|-----------|--------|
+| `app/src/...` | [date] | X | X | Component/Utility | REVIEW |
+
+#### 🟢 Low Priority (Orphan + Recent - KEEP)
+
+| File Path | Last Modified | Days Stale | LOC | File Type | Action |
+|-----------|---------------|------------|-----|-----------|--------|
+| `app/src/...` | [date] | X | X | Component/Utility | KEEP |
+
+### 3.2 Excluded Files (False Positives)
 
 The following files have zero dependents but should NOT be removed:
 
-| File | Reason | Last Modified |
-|------|--------|---------------|
+| File Path | Reason | Last Modified |
+|-----------|--------|---------------|
 | `app/src/main.jsx` | Entry point (Vite) | [date] |
 | `app/index.html` | HTML entry point | [date] |
 | `app/vite.config.js` | Configuration | [date] |
-| `app/src/pages/SomePage/index.jsx` | Has HTML entry | [date] |
 
-## Orphan Files by Type
+### 3.3 Summary Statistics
 
-### Components
-| File | Last Modified | Days Stale | LOC | Action |
-|------|---------------|------------|-----|--------|
-| `app/src/islands/shared/OldWidget.jsx` | 2024-06-15 | 220 | 45 | Delete |
+- **Total orphan files**: X
+- **High priority (safe to delete)**: X
+- **Medium priority (review first)**: X
+- **Low priority (keep)**: X
+- **Total potential deletions**: X files, X lines of code
+- **Percentage of codebase**: X%
 
-### Utilities
-| File | Last Modified | Days Stale | LOC | Action |
-|------|---------------|------------|-----|--------|
-| `app/src/lib/deprecatedHelpers.js` | 2024-03-10 | 315 | 120 | Delete |
+## 4. Stale Code Metrics
 
-### Pages
-| File | Last Modified | Days Stale | Has HTML | Action |
-|------|---------------|------------|----------|--------|
-| `app/src/islands/pages/OldFeaturePage.jsx` | 2024-05-20 | 245 | Yes | Review |
+### 4.1 Age Distribution
 
-## Stale Code Metrics
+| Age Range | Count | Percentage |
+|-----------|-------|------------|
+| 365+ days old | X | X% |
+| 180-364 days old | X | X% |
+| 90-179 days old | X | X% |
+| 30-89 days old | X | X% |
+| <30 days old | X | X% |
 
-**Age Distribution of Orphan Files:**
-- Orphan files 365+ days old: X
-- Orphan files 180-364 days old: X
-- Orphan files 90-179 days old: X
-- Orphan files 30-89 days old: X
-- Orphan files <30 days old: X
+### 4.2 File Type Distribution
 
-**Potential Code Reduction:**
-- Total files safe to delete: X
-- Estimated lines of code: X
-- Percentage of codebase: X%
+| Type | Count | Total LOC |
+|------|-------|-----------|
+| Components | X | X |
+| Utilities | X | X |
+| Pages | X | X |
+| Other | X | X |
 
-**Risk Assessment:**
-- High confidence removals: X (6+ months stale)
-- Medium confidence: X (3-6 months stale)
-- Low confidence: X (recent orphans)
+### 4.3 Risk Assessment
 
-## Removal Roadmap
+**Risk Level**: [High/Medium/Low]
+
+**Confidence Levels**:
+- High confidence removals (6+ months stale): X
+- Medium confidence (3-6 months stale): X
+- Low confidence (recent orphans): X
+
+## 5. Removal Roadmap
 
 ### Phase 1: Safe Deletes (High Confidence)
-1. [High priority orphan file 1]
-2. [High priority orphan file 2]
+
+1. [High priority orphan file 1] - DELETE
+2. [High priority orphan file 2] - DELETE
+3. [High priority orphan file 3] - DELETE
 
 ### Phase 2: Review Before Delete (Medium Confidence)
-1. [Medium priority file 1] - Confirm with team
-2. [Medium priority file 2] - Check documentation references
+
+1. [Medium priority file 1] - Review with team first
+2. [Medium priority file 2] - Check external references
 
 ### Phase 3: Keep / Monitor (Low Confidence)
-1. [Low priority file 1] - May be in progress
-2. [Low priority file 2] - Check external usage
 
-## Recommendations
+1. [Low priority file 1] - Keep (may be in progress)
+2. [Low priority file 2] - Monitor for usage
+
+## 6. Recommendations
 
 ### Immediate Actions
 - [ ] Review high priority orphans with development team
 - [ ] Delete confirmed dead code (Phase 1)
 - [ ] Update documentation after removal
+- [ ] Commit deletions with descriptive messages
 
 ### Prevention
 - [ ] Add lint rule to detect new unused files
 - [ ] Require code review for new component additions
 - [ ] Regular orphan audits (quarterly)
+- [ ] Document entry point files to exclude
 
 ### Process Improvements
 - [ ] Establish file removal process for deprecated features
-- [ ] Document entry point files to exclude from audits
+- [ ] Add pre-commit hook to flag potential orphans
 - [ ] Consider automatic tree-shaking in build process
+- [ ] Track file creation vs deletion rate
 
-## AST Analysis Metadata
+## 7. Potential Code Reduction
 
-**Analysis Settings:**
-- Root directory: `app/src`
-- Files analyzed: X
-- Files with zero dependents: X
-- Analysis timestamp: [from AST output]
+**Files Safe to Delete**: X
+**Estimated Lines of Code**: X
+**Percentage of Codebase**: X%
 
-**Git History Summary:**
-- Oldest orphan file: [file] ([days] days)
-- Most recent orphan: [file] ([days] days)
-- Average orphan age: [days] days
+**Impact**:
+- Reduced bundle size: X KB
+- Faster build times: X seconds
+- Reduced maintenance burden: X fewer files to understand
+
+## 8. References
+
+### Relevant Files
+| File | Purpose | Action |
+|------|---------|--------|
+| `app/src/...` | [description] | DELETE/REVIEW/KEEP |
+
+### Related Documentation
+- `.claude/skills/ast-dependency-analyzer/SKILL.md` - Analysis tool reference
+- [Other relevant docs]
+
+## 9. Next Steps
+
+1. Get team approval for Phase 1 deletions
+2. Create backup branch before deletions
+3. Execute Phase 1 removals
+4. Run tests to verify no breakage
+5. Update any documentation references
+6. Plan Phase 2 reviews
 ```
 
-## Step 6: Report to Slack
+## Slack Notification Format
 
-After creating the audit document, send a webhook POST request to the URL in the `TINYTASKAGENT` environment variable:
+After creating the plan, send a Slack webhook:
 
 ```bash
-python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Orphan files audit complete: [X] dead files found - [Y] safe to delete - Report: [filepath]" --type success
+python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Orphan files audit complete: [X] dead files found - [Y] safe to delete - Plan: .claude/plans/New/[plan-name].md" --type success
 ```
-
-## Detection Reference
-
-### What Makes an Orphan File?
-
-An **orphan file** is a source file that exists in the codebase but **nothing imports from**:
-
-```javascript
-// app/src/islands/shared/OldWidget.jsx
-export default function OldWidget() {
-  return <div>Old feature</div>;
-}
-
-// This file is an ORPHAN if:
-// - No other file does: import OldWidget from './OldWidget'
-// - No HTML entry point references it
-// - reverse_dependencies list is empty
-```
-
-**Why Orphans Happen:**
-- Feature was replaced but old file not deleted
-- Experimental code that was abandoned
-- Refactoring left behind unused files
-- Component renamed but old file not removed
-- Feature flag removed but dependent code not cleaned up
-
-### Orphan vs Tree-Shaking
-
-| Aspect | Orphan Files | Tree-Shaking |
-|--------|--------------|--------------|
-| **Detection** | No imports at all (file-level) | Unused exports within imported files |
-| **Removal** | Delete entire file | Build tool eliminates unused code |
-| **Impact** | Clear file removal | Smaller bundle size |
-| **Detection Method** | AST `reverse_dependencies` | Build tools (Webpack, Rollup) |
-
-Orphan files are a **coarser** dead code detection - entire files that nothing uses.
-
-### AST Detection for Orphans
-
-From the `ast-dependency-analyzer` skill:
-
-```python
-# Find orphans using reverse_dependencies
-orphans = []
-for file_path in context.symbol_table.keys():
-    dependents = context.reverse_dependencies.get(file_path, [])
-    if len(dependents) == 0:
-        orphans.append(file_path)
-```
-
-### Git History for Staleness
-
-```bash
-# Get last commit that touched the file
-git log -1 --format="%ai %s" -- path/to/file.js
-
-# Output: 2024-03-15 10:30:00 +0000 "Add new feature"
-
-# Calculate days since modified
-# Use current date minus last modified date
-```
-
-### Exclusion Patterns
-
-**Files to ALWAYS exclude from orphan removal:**
-
-| Pattern | Examples | Reason |
-|---------|----------|--------|
-| `main.{js,jsx,ts}` | `main.jsx`, `main.tsx` | Entry point |
-| `vite.config.js` | `vite.config.js` | Build config |
-| `index.html` | `index.html` | HTML entry |
-| **.{test,spec}.{js,ts} | `*.test.js` | Test files |
-| `*.d.ts` | `*.d.ts` | Type definitions |
-| `package.json` | `package.json` | Package config |
-| `tsconfig.json` | `tsconfig.json` | TS config |
-| `.eslintrc.js` | `.eslintrc.js` | Lint config |
-
-**Files to MANUAL REVIEW:**
-
-| Pattern | Examples | Reason |
-|---------|----------|--------|
-| `**/pages/**/index.{js,jsx}` | Page components | May have HTML entry |
-| `**/public/**` | Static assets | Different import mechanism |
-| `**/*.css` | Stylesheets | Imported via CSS |
-| `**/*.scss` | Stylesheets | Imported via CSS |
 
 ## Output Requirements
 
-1. **Start with `/prime`** - Understand codebase structure
-2. **Use `ast-dependency-analyzer` skill** - Get reverse_dependencies
-3. **Check git history** - Determine staleness of each orphan
-4. **Apply exclusions** - Filter out entry points, tests, config files
-5. **Categorize by severity** - Based on staleness (high/medium/low)
-6. **Be actionable** - Provide clear delete/review/keep recommendations
-7. **Be accurate** - Only report actual orphans from AST analysis
-8. **Use timestamp format** - `YYYYMMDDHHMMSS-audit-orphan-files.md`
+1. **Invoke `ast-dependency-analyzer` skill** to get reverse_dependencies
+2. **Check git history** for each orphan file (last modified date)
+3. **Apply exclusions** (entry points, tests, configs)
+4. **Create plan** in `.claude/plans/New/YYYYMMDDHHMMSS-orphan-files-audit.md`
+5. **Use the template above** for plan structure
+6. **Include specific findings** - file paths, staleness, recommendations
+7. **Send Slack notification** after plan creation
+8. **Be accurate** - Only report actual orphans from AST analysis
 
 ## If No Orphans Found
 
-If the AST analysis finds NO orphan files:
+If the AST analysis finds NO orphan files, still create a plan documenting the clean state:
 
 ```markdown
-# Orphan Files Audit Report
-**Generated:** <timestamp>
-**Codebase:** Split Lease
-**Method:** AST-based dependency analysis
+# Audit Plan: Orphan Files Analysis
 
-## Executive Summary
-- Total files analyzed: X
-- Orphan files found: **0**
+**Created**: [timestamp]
+**Status**: Analysis Complete - No Orphans Found
+**Severity**: N/A
+**Result**: Codebase has no dead files
 
-## Result
+## Summary
 
 No orphan files (files with zero imports) were detected in this codebase.
 
@@ -352,6 +278,6 @@ This indicates:
 - No obvious dead code at the file level
 - Good codebase hygiene
 
-**Note:** This doesn't guarantee all code is used - there may be unused
+**Note**: This doesn't guarantee all code is used - there may be unused
 exports within imported files (tree-shaking can catch those).
 ```
