@@ -1,269 +1,346 @@
 ---
 name: audit-barrel-files
-description: Detect and report barrel files (index.js/ts with re-exports) in the codebase. Identifies pure barrels, mixed barrels, hub files, and consumers. Creates timestamped MD report and notifies via Slack webhook.
+description: Detect and report barrel/hub files using AST dependency analysis. Identifies pure barrels, mixed barrels, and hub files across ALL JS/TS files (not just index). Creates timestamped MD report and notifies via Slack webhook.
 ---
 
-# Barrel Files Audit
+# Barrel & Hub Files Audit (AST-Based)
 
-You are conducting a comprehensive barrel file audit to identify index files that re-export from other modules, creating dense dependency graphs that hinder refactoring.
+You are conducting a comprehensive barrel and hub file audit using the AST Dependency Analyzer. This approach is superior to regex-based detection because it:
 
-## Step 1: Prime the Codebase (GET FULL FILE LIST)
+- Uses **tree-sitter AST parsing** for accurate export/import extraction
+- Analyzes **ALL JS/TS files**, not just index files
+- Builds **complete dependency graph** with reverse dependencies
+- Detects **hub files** (files that many others depend on)
+- Supports **caching** for fast re-runs
 
-**CRITICAL: Start by executing `/prime`**
+## Step 1: Prime the Codebase
 
-This will run `git ls-files` to list ALL files in the project. Use this complete file list as the foundation for your audit. DO NOT skip this step - you must understand the full codebase structure before detecting barrels.
+**Execute `/prime`** to understand the full codebase structure.
 
-From the `/prime` output, identify ALL `index.{js,jsx,ts,tsx}` files that exist in the codebase.
+## Step 2: Run AST Dependency Analysis
 
-## Step 2: Comprehensive File Review
+Use the Python AST analyzer from the adws directory:
 
-For EACH index file identified from the `/prime` output:
+```bash
+# Navigate to adws directory
+cd "c:\Users\Split Lease\Documents\Split Lease - Dev\adws"
 
-1. **Read the file completely** using the Read tool
-2. **Analyze its content** to determine if it's a barrel file
-3. **Categorize it** as one of:
+# Run the analysis on the app/src directory
+python -c "
+import sys
+sys.path.insert(0, '.')
+from adw_modules.ast_dependency_analyzer import analyze_dependencies
 
-### Barrel Categories
+# Analyze the entire app/src directory
+context = analyze_dependencies('app/src', force_refresh=True)
 
-| Category | Definition | Action |
-|----------|------------|--------|
-| **PURE_BARREL** | Only re-exports (`export * from`, `export { x } from`) | High priority for removal |
-| **MIXED** | Has re-exports AND actual logic/code | Needs extraction first |
-| **ENTRY_POINT** | Framework entry point or actual component | Keep (not a barrel) |
+# Get markdown output
+print(context.to_prompt_context())
+"
+```
 
-### Detection Patterns
+This will output:
+- **Symbol Table**: All exports by file
+- **Dependency Graph**: All imports by file
+- **Reverse Dependencies**: Who depends on each file (consumers)
 
-**Barrel Indicators (re-exports):**
-- `export * from './module'`
-- `export { foo, bar } from './module'`
-- `export { default as Component } from './Component'`
-- `export default from './module'`
+## Step 3: Analyze the AST Output for Barrels
 
-**Logic Indicators (NOT a barrel):**
-- `function foo() {}`
-- `const foo = () => {}`
-- `const [state, setState] = useState()`
-- `return (<JSX ...>)`
-- `class Component extends ...`
-- React hooks usage
+From the AST analysis output, identify barrel files using these criteria:
 
-### Severity Scoring
+### Barrel Detection Logic
+
+**Barrel File = File with RE_EXPORT exports**
+
+From the `symbol_table` in the AST output, find files where:
+- `export_type = "re-export"` (the export comes from another module)
+
+**Categorization:**
+
+| Category | Criteria |
+|----------|----------|
+| **PURE_BARREL** | File has ONLY `re-export` type exports (no declarations, no named exports without source) |
+| **MIXED** | File has `re-export` exports AND other export types (declaration, named, default) |
+| **HUB_FILE** | File has high `reverse_dependencies` count (many files import from it) |
+
+**Severity Scoring:**
 
 | Severity | Criteria |
 |----------|----------|
-| **High** | Has `export *` (star exports hide origin) OR re-exports from 5+ sources |
-| **Medium** | Re-exports from 3-4 sources OR multiple named re-exports |
-| **Low** | Re-exports from 1-2 sources OR single default re-export |
+| **High** | Has star re-export (`name = "*"`) OR re-exports from 5+ sources OR 20+ consumers |
+| **Medium** | Re-exports from 3-4 sources OR 10-19 consumers |
+| **Low** | Re-exports from 1-2 sources OR <10 consumers |
 
-## Step 3: Find Barrel Consumers (COMPREHENSIVE SEARCH)
+### What Makes a Hub File?
 
-For EACH barrel file identified, use Grep to find ALL files that import from it:
+A **hub file** is any file that many other files depend on, creating a bottleneck:
 
-**Search Strategy:**
-- If barrel is at `app/src/logic/calculators/index.js`
-- Search for imports matching:
-  - `from ['"].*calculators['"]` (imports from directory)
-  - `from ['"].*calculators/index['"]` (explicit index imports)
-  - `from ['"].*calculators.js['"]` (if using .js extension)
+- **High hub**: 20+ files import from it
+- **Medium hub**: 10-19 files import from it
+- **Low hub**: 5-9 files import from it
 
-**For each barrel, document:**
-- Total consumer count
-- List of all consumer files with line numbers
-- What each consumer imports from the barrel
+Hub files are NOT necessarily barrels—they could be legitimate utilities or components. But they deserve attention because:
+- Changes to them ripple to many files
+- They represent tight coupling points in the codebase
 
 ## Step 4: Create the Audit Document
 
 Create an MD file at `.claude/plans/Documents/<timestamp>-audit-barrel-files.md` with the following structure:
 
 ```markdown
-# Barrel Files Audit Report
+# Barrel & Hub Files Audit Report
 **Generated:** <timestamp>
 **Codebase:** Split Lease
+**Method:** AST-based dependency analysis
 
 ## Executive Summary
-- Index files scanned: X
+- Total files analyzed: X
 - Barrel files found: X
 - Pure barrels (removable): X
 - Mixed barrels (need extraction): X
+- Hub files identified: X
 - High severity: X
 - Medium severity: X
 - Low severity: X
 
-## Barrel Files by Severity
+## Barrel Files (Re-exporters)
 
-### 🔴 High Severity (Star Exports or Many Sources)
+### 🔴 High Severity Barrels
 
-#### [file path]
+#### [file_path]
 **Type:** PURE_BARREL | MIXED
-**Re-exports:** X sources
-**Exports:** [list of exported names]
-**Consumers:** X files
+**Re-export Sources:** X
+**Star Exports:** Yes/No
+**Consumers:** X files (from reverse_dependencies)
 
-**Re-export Sources:**
-| Source | Exports |
-|--------|---------|
-| `./module1` | foo, bar |
-| `./module2` | baz |
+**Re-export Details:**
+| Export Name | Source Module | Line |
+|-------------|---------------|------|
+| `calculatePrice` | `./pricing/calculate` | 5 |
+| `*` | `./utils` | 10 |
 
-**Consumer Files:**
-- `path/to/consumer1.js` (line X)
-- `path/to/consumer2.js` (line X)
+**Top Consumers:**
+| Consumer File | What It Imports |
+|---------------|-----------------|
+| `path/to/file1.js` | calculatePrice, validate |
+| `path/to/file2.js` | * |
 
-**Impact if Removed:** High/Medium/Low (estimated refactoring effort)
+**Impact if Removed:** High/Medium/Low
+**Estimated Refactoring Effort:** X files need import updates
 
-### 🟡 Medium Severity
+### 🟡 Medium Severity Barrels
+[Same structure as above]
 
-[Repeat structure for medium severity barrels]
+### 🟢 Low Severity Barrels
+[Same structure as above]
 
-### 🟢 Low Severity
+## Hub Files (Highly Depended Upon)
 
-[Repeat structure for low severity barrels]
+Files that many other files depend on (potential bottlenecks):
 
-## Barrel Files by Category
+| File | Consumer Count | Type | Notes |
+|------|----------------|------|-------|
+| `app/src/lib/supabase.js` | 47 | Utility | Core database client |
+| `app/src/lib/auth.js` | 32 | Mixed | Auth utilities |
+| `app/src/logic/calculators/index.js` | 23 | Pure Barrel | Should be removed |
+
+### Hub File Analysis
+
+#### `app/src/lib/supabase.js` (47 consumers)
+- **Type:** Utility (legitimate hub)
+- **Risk:** High - changes affect 47 files
+- **Recommendation:** Keep as-is, but consider breaking into smaller modules if it grows
+
+#### `app/src/logic/calculators/index.js` (23 consumers)
+- **Type:** Pure Barrel
+- **Action:** Remove - update 23 consumers to import directly
+
+## Files by Category
 
 ### Pure Barrels (Safe to Remove)
 
 | File | Re-exports | Consumers | Severity |
 |------|------------|-----------|----------|
-| `app/src/logic/calculators/index.js` | 6 | 12 | High |
+| `app/src/logic/calculators/index.js` | 6 | 23 | High |
 | `app/src/islands/shared/FavoriteButton/index.js` | 1 | 3 | Low |
 
 ### Mixed Barrels (Require Extraction First)
 
 | File | Issue | Recommendation |
 |------|-------|----------------|
-| `app/src/logic/workflows/index.js` | Has utility functions + re-exports | Extract utilities to separate file |
+| `app/src/lib/utils/index.js` | Re-exports + helper functions | Extract helpers to `helpers.js` |
+| `app/src/logic/workflows/index.js` | Re-exports + workflow orchestrators | Extract orchestrators to separate file |
 
-### Entry Points (Not Barrels)
+### Non-Barrel Hubs (Legitimate)
 
-| File | Reason |
-|------|--------|
-| `app/src/main.jsx` | Vite entry point |
-| `app/src/islands/pages/SearchPage/index.jsx` | Contains component logic |
+| File | Consumers | Reason to Keep |
+|------|-----------|----------------|
+| `app/src/lib/supabase.js` | 47 | Core database client |
+| `app/src/lib/auth.js` | 32 | Authentication utilities |
 
-## Dependency Analysis
+## Dependency Health Metrics
 
-### Most Consumed Barrels
+**Distribution of Dependency Counts:**
+- Files with 0 dependents: X (leaf nodes)
+- Files with 1-4 dependents: X
+- Files with 5-9 dependents: X (low hubs)
+- Files with 10-19 dependents: X (medium hubs)
+- Files with 20+ dependents: X (high hubs)
 
-| Barrel | Consumer Count | Risk |
-|--------|----------------|------|
-| `app/src/logic/index.js` | 47 | High - many files to update |
-| `app/src/lib/auth/index.js` | 23 | Medium |
-
-### Circular Dependencies
-
-[Check for and report any barrels that import from each other]
+**Barrel Prevalence:**
+- Pure barrels: X% of all files
+- Files with any re-exports: X% of all files
 
 ## Removal Roadmap
 
 ### Phase 1: Quick Wins (Low Risk, Few Consumers)
-1. [Low severity barrel with 1-2 consumers]
-2. [Another low severity barrel]
+1. [Low severity pure barrel with <5 consumers]
+2. [Another low severity pure barrel]
 
 ### Phase 2: Medium Impact
-1. [Medium severity barrels]
-2. [Pure barrels with moderate consumers]
+1. [Medium severity pure barrels]
+2. [Pure barrels with moderate consumer counts]
 
 ### Phase 3: High Impact (Requires Planning)
-1. [High severity barrels with many consumers]
+1. [High severity pure barrels with many consumers]
 2. [Mixed barrels requiring extraction]
 
 ## Recommendations
 
-1. **Immediate Actions:**
-   - [ ] Start with Phase 1 barrels (quick wins)
-   - [ ] Update import path conventions if needed
+### Immediate Actions
+- [ ] Start with Phase 1 barrels (quick wins)
+- [ ] Document import path conventions for team
 
-2. **Process Improvements:**
-   - [ ] Add pre-commit hook to detect new barrel files
-   - [ ] Document import conventions for team
+### Structural Improvements
+- [ ] Consider breaking up high-count hub files into smaller modules
+- [ ] Add pre-commit hook to detect new barrel files
+- [ ] Establish direct import convention for new code
 
-3. **Technical Debt:**
-   - [ ] Prioritize mixed barrels for logic extraction
-   - [ ] Consider import aliases for frequently-used deep paths
+### Technical Debt
+- [ ] Prioritize mixed barrels for logic extraction
+- [ ] Plan migration for high-severity barrels
+
+## AST Analysis Metadata
+
+**Analysis Settings:**
+- Root directory: `app/src`
+- Files analyzed: X
+- Parse errors: X
+- Total exports: X
+- Total imports: X
+- Analysis timestamp: [from AST output]
+
+**Dependency Graph Summary:**
+- Average dependents per file: X
+- Median dependents per file: X
+- Max dependents: X ([file path])
 ```
 
 ## Step 5: Report to Slack
 
-After creating the audit document, send a webhook POST request to the URL in the `TINYTASKAGENT` environment variable (found in root `.env`) with:
+After creating the audit document, send a webhook POST request to the URL in the `TINYTASKAGENT` environment variable:
 
 ```bash
-python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Barrel files audit complete: [X] barrels found - Report: [filepath]" --type success
+python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" "Barrel & hub files audit complete: [X] barrels, [Y] hubs found - Report: [filepath]" --type success
 ```
 
 ## Detection Reference
 
 ### What Makes a Barrel File?
 
-A **barrel file** is typically an `index.js` (or .ts/.jsx) that re-exports from other modules:
+A **barrel file** re-exports from other modules:
 
 ```javascript
-// Pure barrel - only re-exports
+// Pure barrel - only re-exports (AST: export_type = "re-export")
 export * from './calculators';
 export { validateUser } from './validators';
 export { default as Auth } from './auth';
 
-// Mixed barrel - re-exports + logic
+// Mixed barrel - re-exports + declarations (AST: mixed export types)
 import { API_URL } from './config';
 export * from './calculators';
-export const getApiUrl = () => API_URL;  // <- actual logic here!
+export const getApiUrl = () => API_URL;  // <- declaration here
 ```
+
+**AST Detection vs Regex:**
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| **AST (tree-sitter)** | Accurate, handles edge cases, distinguishes export types | Requires external tool |
+| **Regex** | Simple, no dependencies | Misses edge cases, false positives |
 
 ### Why Remove Barrels?
 
 | Issue | Without Barrels | With Barrels |
 |--------|-----------------|--------------|
-| Import path clarity | `from './logic/calculators/pricing/calculatePrice'` | `from './logic'` (obscures location) |
+| Import path clarity | `from './logic/calculators/pricing'` | `from './logic'` (obscures location) |
 | Dependency graph | Sparse, direct connections | Dense, indirect connections |
-| Refactoring impact | Clear, localized changes | Unclear, rippling effects |
+| Refactoring impact | Clear, localized changes | Uncertain, rippling effects |
 | Tree-shaking | Better optimization | May include unused exports |
 
-### Detection Rules
+### AST Export Types
 
-**Is a PURE_BARREL if:**
-- File is named `index.js/jsx/ts/tsx`
-- Contains 1+ re-export statements
-- Contains NO function/class declarations
-- Contains NO React hooks usage
-- Contains NO JSX return statements
+The AST analyzer categorizes exports into:
 
-**Is MIXED if:**
-- Contains re-exports AND has logic indicators
-- Needs extraction before removal
+| Type | Example | Barrel? |
+|------|---------|---------|
+| `re-export` | `export { foo } from './bar'` | **YES** |
+| `named` | `export { foo, bar }` | NO (local exports) |
+| `default` | `export default function()` | NO (local exports) |
+| `declaration` | `export const foo = ...` | NO (local exports) |
+| `type` | `export type { Foo }` | Maybe (type-only barrel) |
 
-**Is ENTRY_POINT if:**
-- Contains actual component or logic code
-- No re-exports (or minimal, alongside main code)
+**Pure Barrel Detection:**
+```python
+# In AST terms:
+pure_barrel = all(exp.export_type == "re-export" for exp in file.exports)
+mixed_barrel = any(exp.export_type == "re-export" for exp in file.exports) and \
+               any(exp.export_type != "re-export" for exp in file.exports)
+```
 
 ## Output Requirements
 
-1. **Start with `/prime`** - This is mandatory to get the complete file list
-2. **Read EVERY index file** - Do not skip or assume - actually Read each file
-3. **Be thorough** - Scan ALL index files found in the `/prime` output
-4. **Be specific** - Include exact file paths, line numbers, and export names
-5. **Be actionable** - Provide consumer counts and severity assessment
-6. **Be accurate** - Only report actual barrel files found - do NOT fabricate issues
-7. **Use timestamp format** - `YYYYMMDDHHMMSS-audit-barrel-files.md`
+1. **Start with `/prime`** - Understand codebase structure
+2. **Use AST analyzer** - Run the Python script for accurate detection
+3. **Analyze ALL files** - Not just index files
+4. **Detect BOTH barrels and hubs** - Barrels re-export, hubs have many consumers
+5. **Be specific** - Include exact file paths, line numbers, export names
+6. **Be actionable** - Provide consumer counts and severity assessment
+7. **Be accurate** - Only report actual findings from AST analysis
+8. **Use timestamp format** - `YYYYMMDDHHMMSS-audit-barrel-files.md`
 
 ## If No Barrels Found
 
-If your comprehensive review finds NO barrel files in the codebase, the report should clearly state:
+If the AST analysis finds NO barrel files:
 
 ```markdown
-# Barrel Files Audit Report
+# Barrel & Hub Files Audit Report
 **Generated:** <timestamp>
 **Codebase:** Split Lease
+**Method:** AST-based dependency analysis
 
 ## Executive Summary
-- Index files scanned: X
+- Total files analyzed: X
 - Barrel files found: **0**
+- Hub files identified: X
 
 ## Result
 
-No barrel files were detected in this codebase. All index files are either:
-- Entry points with actual logic/code
-- Component files that happen to be named index
-- Framework-required entry points
+No barrel files (re-export files) were detected in this codebase.
 
-This codebase has a clean dependency structure with direct imports.
+### Hub Files Found
+
+The following files are highly depended upon (not barrels, but worth noting):
+
+| File | Consumers | Type |
+|------|-----------|------|
+| `app/src/lib/supabase.js` | 47 | Utility |
+| `app/src/lib/auth.js` | 32 | Utility |
+
+These are legitimate utility modules, not barrels.
+
+This codebase has a clean dependency structure with:
+- No re-export barrel files
+- Direct imports throughout
+- Well-defined utility hubs
 ```
