@@ -150,9 +150,16 @@ export async function fetchListingComplete(listingId) {
     // 2. Fetch photos - check if embedded in Features - Photos or in listing_photo table
     let sortedPhotos = [];
     const embeddedPhotos = parseJsonField(listingData['Features - Photos']);
+    console.log('📷 Raw Features - Photos:', listingData['Features - Photos']);
+    console.log('📷 Parsed embeddedPhotos:', embeddedPhotos);
+    console.log('📷 embeddedPhotos.length:', embeddedPhotos.length);
+    console.log('📷 embeddedPhotos[0] type:', typeof embeddedPhotos[0]);
+
     const hasEmbeddedObjects = embeddedPhotos.length > 0 &&
       typeof embeddedPhotos[0] === 'object' &&
       embeddedPhotos[0] !== null;
+
+    console.log('📷 hasEmbeddedObjects:', hasEmbeddedObjects);
 
     if (hasEmbeddedObjects) {
       // Photos are embedded objects with URLs
@@ -165,6 +172,17 @@ export async function fetchListingComplete(listingId) {
         Caption: photo.caption || photo.Caption || ''
       }));
       console.log('📷 Embedded photos from Features - Photos:', sortedPhotos.length);
+    } else if (embeddedPhotos.length > 0 && typeof embeddedPhotos[0] === 'string') {
+      // Photos are embedded as string URLs (legacy format)
+      sortedPhotos = embeddedPhotos.map((url, index) => ({
+        _id: `string_${index}`,
+        Photo: url,
+        'Photo (thumbnail)': url,
+        toggleMainPhoto: index === 0,
+        SortOrder: index,
+        Caption: ''
+      }));
+      console.log('📷 Embedded string URLs from Features - Photos:', sortedPhotos.length);
     } else {
       // Legacy: fetch from listing_photo table
       const { data: photosData, error: photosError } = await supabase
