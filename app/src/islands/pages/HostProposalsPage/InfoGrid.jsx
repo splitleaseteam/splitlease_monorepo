@@ -102,11 +102,12 @@ export function InfoGrid({ proposal }) {
     try { hcDays = JSON.parse(hcDays); } catch { hcDays = []; }
   }
 
-  // Fallback values from normalized fields
-  const moveIn = proposal?.start_date || proposal?.move_in_date || (isCounteroffer && hcMoveIn ? hcMoveIn : originalMoveIn);
+  // Display values: prioritize HC values when counteroffer happened
+  // When counteroffer exists, show HC values as current; otherwise use normalized or original
+  const moveIn = (isCounteroffer && hcMoveIn) ? hcMoveIn : (proposal?.start_date || proposal?.move_in_date || originalMoveIn);
   const moveOut = proposal?.end_date || proposal?.move_out_date;
-  const weeks = proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || (isCounteroffer && hcWeeks != null ? hcWeeks : originalWeeks);
-  const daysSelected = proposal?.days_selected || proposal?.Days_Selected || (isCounteroffer && hcDays.length > 0 ? hcDays : originalDays);
+  const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
+  const daysSelected = (isCounteroffer && hcDays.length > 0) ? hcDays : (proposal?.days_selected || proposal?.Days_Selected || originalDays);
 
   // Comparison flags - detect which values changed
   // Only show strikethrough if there's actual HC data that differs from original
