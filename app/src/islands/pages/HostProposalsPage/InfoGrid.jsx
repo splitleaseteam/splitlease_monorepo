@@ -109,10 +109,17 @@ export function InfoGrid({ proposal }) {
   const daysSelected = proposal?.days_selected || proposal?.Days_Selected || (isCounteroffer && hcDays.length > 0 ? hcDays : originalDays);
 
   // Comparison flags - detect which values changed
+  // Only show strikethrough if there's actual HC data that differs from original
   const moveInChanged = isCounteroffer && hcMoveIn && hcMoveIn !== originalMoveIn;
   const durationChanged = isCounteroffer && hcWeeks != null && hcWeeks !== originalWeeks;
-  const daysChanged = isCounteroffer && hcDays.length > 0 &&
-    JSON.stringify([...hcDays].sort()) !== JSON.stringify([...originalDays].sort());
+
+  // Days changed: check if HC days exist AND differ from original days
+  // Order matters for day schedules, and we compare arrays directly without sorting
+  const daysChanged = isCounteroffer &&
+    hcDays.length > 0 &&
+    originalDays.length > 0 &&
+    (hcDays.length !== originalDays.length ||
+      !hcDays.every((day, index) => day === originalDays[index]));
 
   // Calculate duration from dates if not provided
   let duration = weeks;
