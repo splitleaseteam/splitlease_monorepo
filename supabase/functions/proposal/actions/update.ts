@@ -262,6 +262,10 @@ export async function handleUpdate(
     updates["hc check out day"] = input.hc_check_out;
     updatedFields.push("hc_check_out");
   }
+  if (input.hc_house_rules !== undefined) {
+    updates["hc house rules"] = input.hc_house_rules;
+    updatedFields.push("hc_house_rules");
+  }
 
   // Cancellation reason
   if (input.reason_for_cancellation !== undefined) {

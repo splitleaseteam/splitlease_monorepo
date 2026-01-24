@@ -530,7 +530,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           "hc move in date",
           "hc check in day",
           "hc check out day",
-          "hc nights per week"
+          "hc nights per week",
+          "hc house rules"
         `)
         .eq('Listing', listingId)
         .neq('Deleted', true)
@@ -855,6 +856,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         checkOut,
         nightsSelected,
         daysSelected,
+        newHouseRules,
         moveInDate
       } = counterofferData;
 
@@ -922,7 +924,12 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         hc_cleaning_fee: parseFloat(originalCleaningFee) || 0,
         hc_damage_deposit: parseFloat(originalDamageDeposit) || 0,
         hc_total_price: hcTotalPrice,
-        hc_four_week_rent: hcFourWeekRent
+        hc_four_week_rent: hcFourWeekRent,
+
+        // House rules - convert to array of IDs
+        hc_house_rules: Array.isArray(newHouseRules)
+          ? newHouseRules.map(rule => rule.id || rule._id || rule).filter(Boolean)
+          : []
       };
 
       console.log('[useHostProposalsPageLogic] Converted payload with ALL hc_ fields:', payload);
