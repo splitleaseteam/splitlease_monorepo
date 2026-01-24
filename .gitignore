@@ -79,6 +79,12 @@ claude-max-output.jsonl
 # Goodbye skill temporary files (may contain webhook URLs)
 .claude/condensed_summary.json
 
+# Claude temp directory (worktrees, scratch files)
+.claude/temp/
+
+# Root-level temp worktree directories
+_temp_*/
+
 storage.json
 
 deep_specs/

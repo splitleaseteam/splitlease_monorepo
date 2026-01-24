@@ -550,6 +550,7 @@
 ### migrations/20251210_queue_processing_cron.sql
 [INTENT]: Setup pg_cron job to process sync_queue every 5 minutes
 [JOB]: SELECT cron.schedule('process-bubble-sync-queue', '*/5 * * * *', $$SELECT net.http_post(...)$$)
+[STATUS]: ⚠️ REMOVED - See migrations/20260124_remove_cron_jobs.sql
 
 ---
 

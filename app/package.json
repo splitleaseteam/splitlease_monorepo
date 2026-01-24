@@ -43,6 +43,10 @@
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.12"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.53.1",
+    "lightningcss-linux-x64-gnu": "^1.29.3"
+  },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.23",
