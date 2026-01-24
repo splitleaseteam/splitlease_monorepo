@@ -5,7 +5,9 @@ description: Detect and report barrel/hub files using AST dependency analysis. I
 
 # Barrel & Hub Files Audit (AST-Based)
 
-You are conducting a comprehensive barrel and hub file audit using the AST Dependency Analyzer. This approach is superior to regex-based detection because it:
+> **Note:** This slash command uses the `ast-dependency-analyzer` skill. The skill provides general-purpose AST dependency analysis that can be used for many tasks (barrel detection, circular dependencies, orphan files, etc.). This command focuses specifically on barrel and hub file detection.
+
+You are conducting a comprehensive barrel and hub file audit using the AST Dependency Analyzer skill. This approach is superior to regex-based detection because it:
 
 - Uses **tree-sitter AST parsing** for accurate export/import extraction
 - Analyzes **ALL JS/TS files**, not just index files
@@ -19,25 +21,14 @@ You are conducting a comprehensive barrel and hub file audit using the AST Depen
 
 ## Step 2: Run AST Dependency Analysis
 
-Use the Python AST analyzer from the adws directory:
+**Invoke the `ast-dependency-analyzer` skill** to analyze the codebase.
 
-```bash
-# Navigate to adws directory
-cd "c:\Users\Split Lease\Documents\Split Lease - Dev\adws"
+The skill will use tree-sitter AST parsing to extract:
+- **Symbol Table**: All exports by file (with export types)
+- **Dependency Graph**: All imports by file (with resolved paths)
+- **Reverse Dependencies**: Who depends on each file (consumers)
 
-# Run the analysis on the app/src directory
-python -c "
-import sys
-sys.path.insert(0, '.')
-from adw_modules.ast_dependency_analyzer import analyze_dependencies
-
-# Analyze the entire app/src directory
-context = analyze_dependencies('app/src', force_refresh=True)
-
-# Get markdown output
-print(context.to_prompt_context())
-"
-```
+The skill outputs a `DependencyContext` object with complete dependency information.
 
 This will output:
 - **Symbol Table**: All exports by file
@@ -301,10 +292,10 @@ mixed_barrel = any(exp.export_type == "re-export" for exp in file.exports) and \
 ## Output Requirements
 
 1. **Start with `/prime`** - Understand codebase structure
-2. **Use AST analyzer** - Run the Python script for accurate detection
-3. **Analyze ALL files** - Not just index files
+2. **Use `ast-dependency-analyzer` skill** - Invoke skill for accurate AST-based detection
+3. **Analyze ALL files** - Not just index files - the skill analyzes all JS/TS files
 4. **Detect BOTH barrels and hubs** - Barrels re-export, hubs have many consumers
-5. **Be specific** - Include exact file paths, line numbers, export names
+5. **Be specific** - Include exact file paths, line numbers, export names from skill output
 6. **Be actionable** - Provide consumer counts and severity assessment
 7. **Be accurate** - Only report actual findings from AST analysis
 8. **Use timestamp format** - `YYYYMMDDHHMMSS-audit-barrel-files.md`
