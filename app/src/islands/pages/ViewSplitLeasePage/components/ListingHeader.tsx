@@ -1,0 +1,161 @@
+/**
+ * ListingHeader Component
+ * 
+ * Displays listing title, location, host info, and action buttons (favorite, share).
+ * Includes neighborhood pill that scrolls to map when clicked.
+ * 
+ * @component
+ * @param {object} props
+ * @param {object} props.listing - Listing data
+ * @param {boolean} props.isFavorited - Whether listing is favorited by current user
+ * @param {Function} props.onToggleFavorite - Favorite toggle handler
+ * @param {Function} props.onLocationClick - Location pill click handler (scroll to map)
+ * @param {boolean} props.isAuthenticated - Whether user is logged in
+ * 
+ * @architecture Presentational Component
+ * @performance Memoized
+ */
+
+import { memo } from 'react';
+import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton.jsx';
+import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
+import styles from './ListingHeader.module.css';
+
+const ListingHeader = memo(function ListingHeader({
+    listing,
+    isFavorited,
+    onToggleFavorite,
+    onLocationClick,
+    isAuthenticated
+}) {
+
+    const handleShare = async () => {
+        const url = window.location.href;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: listing.Name,
+                    text: `Check out this listing: ${listing.Name}`,
+                    url: url
+                });
+            } catch (err) {
+                // User cancelled share, no action needed
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            try {
+                await navigator.clipboard.writeText(url);
+                // Show toast notification (if toast service available)
+                console.log('Link copied to clipboard');
+            } catch (err) {
+                console.error('Failed to copy link');
+            }
+        }
+    };
+
+    return (
+        <header className={styles.listingHeaderContainer}>
+            {/* Title */}
+            <h1 className={styles.listingTitle}>{listing.Name}</h1>
+
+            {/* Meta Row */}
+            <div className={styles.metaRow}>
+                {/* Location Pill */}
+                <button
+                    onClick={onLocationClick}
+                    className={styles.locationPill}
+                    aria-label={`View ${listing.neighborhoodName} on map`}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                    </svg>
+                    <span>{listing.neighborhoodName || 'Neighborhood'}, {listing.boroughName || 'NYC'}</span>
+                    <svg className={styles.locationArrow} width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </button>
+
+                {/* Action Buttons */}
+                <div className={styles.actionButtons}>
+                    <button
+                        onClick={handleShare}
+                        className={styles.actionButton}
+                        aria-label="Share listing"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        </svg>
+                        Share
+                    </button>
+
+                    <FavoriteButton
+                        listingId={listing._id}
+                        initialFavorited={isFavorited}
+                        onToggle={onToggleFavorite}
+                        size="medium"
+                        showLabel={true}
+                    />
+                </div>
+            </div>
+
+            {/* Property Type & Specs */}
+            <div className={styles.specsRow}>
+                <span className={styles.specItem}>
+                    <strong>{listing['Features - Type of Space'] || 'Entire Place'}</strong>
+                </span>
+                <span className={styles.specDivider}>•</span>
+                <span className={styles.specItem}>
+                    <strong>{listing['Features - Qty Guests'] || 1}</strong> {listing['Features - Qty Guests'] === 1 ? 'guest' : 'guests'}
+                </span>
+                <span className={styles.specDivider}>•</span>
+                <span className={styles.specItem}>
+                    <strong>
+                        {listing['Features - Qty Bedrooms'] === 0
+                            ? 'Studio'
+                            : `${listing['Features - Qty Bedrooms']} ${listing['Features - Qty Bedrooms'] === 1 ? 'bedroom' : 'bedrooms'}`
+                        }
+                    </strong>
+                </span>
+                <span className={styles.specDivider}>•</span>
+                <span className={styles.specItem}>
+                    <strong>{listing['Features - Qty Bathrooms'] || 1}</strong> {listing['Features - Qty Bathrooms'] === 1 ? 'bath' : 'baths'}
+                </span>
+            </div>
+
+            {/* Host Info */}
+            {listing.hostData && (
+                <div className={styles.hostRow}>
+                    {listing.hostData.image ? (
+                        <img
+                            src={listing.hostData.image}
+                            alt={listing.hostData.name}
+                            className={styles.hostAvatar}
+                        />
+                    ) : (
+                        <div className={styles.hostAvatarPlaceholder}>
+                            {(listing.hostData.name || 'H').charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                    <span className={styles.hostName}>
+                        Hosted by {formatHostName({ fullName: listing.hostData.name || 'Host' })}
+                        {listing.hostData.verified && (
+                            <svg className={styles.verifiedBadge} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        )}
+                    </span>
+                </div>
+            )}
+        </header>
+    );
+});
+
+ListingHeader.displayName = 'ListingHeader';
+
+export { ListingHeader };
