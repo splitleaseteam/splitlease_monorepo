@@ -7,21 +7,21 @@ description: Detect and report barrel files (index.js/ts with re-exports) in the
 
 You are conducting a comprehensive barrel file audit to identify index files that re-export from other modules, creating dense dependency graphs that hinder refactoring.
 
-## Step 1: Prime the Codebase Context
+## Step 1: Prime the Codebase (GET FULL FILE LIST)
 
-First, run the `/prime` slash command to get a comprehensive understanding of the codebase structure.
+**CRITICAL: Start by executing `/prime`**
 
-## Step 2: Detect Barrel Files
+This will run `git ls-files` to list ALL files in the project. Use this complete file list as the foundation for your audit. DO NOT skip this step - you must understand the full codebase structure before detecting barrels.
 
-Use Glob to find all index files in the codebase:
+From the `/prime` output, identify ALL `index.{js,jsx,ts,tsx}` files that exist in the codebase.
 
-```bash
-# Find all index.js/jsx/ts/tsx files
-Glob: "**/index.{js,jsx,ts,tsx}"
-# Exclude: node_modules, dist, build
-```
+## Step 2: Comprehensive File Review
 
-For each index file found, read and analyze it to categorize as:
+For EACH index file identified from the `/prime` output:
+
+1. **Read the file completely** using the Read tool
+2. **Analyze its content** to determine if it's a barrel file
+3. **Categorize it** as one of:
 
 ### Barrel Categories
 
@@ -55,22 +55,21 @@ For each index file found, read and analyze it to categorize as:
 | **Medium** | Re-exports from 3-4 sources OR multiple named re-exports |
 | **Low** | Re-exports from 1-2 sources OR single default re-export |
 
-## Step 3: Find Barrel Consumers
+## Step 3: Find Barrel Consumers (COMPREHENSIVE SEARCH)
 
-For each barrel file identified, search for files that import from it:
+For EACH barrel file identified, use Grep to find ALL files that import from it:
 
-```javascript
-// If barrel is at: app/src/logic/calculators/index.js
-// Search for imports like:
-import { calculatePrice } from '../logic/calculators'
-import { calculatePrice } from '../logic/calculators/index'
-```
+**Search Strategy:**
+- If barrel is at `app/src/logic/calculators/index.js`
+- Search for imports matching:
+  - `from ['"].*calculators['"]` (imports from directory)
+  - `from ['"].*calculators/index['"]` (explicit index imports)
+  - `from ['"].*calculators.js['"]` (if using .js extension)
 
-Use Grep to find consumers:
-```
-Pattern: from.*<barrel_dir_name>['"]
-Example: from.*calculators['"]
-```
+**For each barrel, document:**
+- Total consumer count
+- List of all consumer files with line numbers
+- What each consumer imports from the barrel
 
 ## Step 4: Create the Audit Document
 
@@ -238,8 +237,33 @@ export const getApiUrl = () => API_URL;  // <- actual logic here!
 
 ## Output Requirements
 
-1. Be thorough - scan ALL index files in the codebase
-2. Be specific - include exact file paths, line numbers, and export names
-3. Be actionable - provide consumer counts and severity assessment
-4. Use timestamp format: `YYYYMMDDHHMMSS-audit-barrel-files.md`
-5. Only report actual barrel files found - do not fabricate issues
+1. **Start with `/prime`** - This is mandatory to get the complete file list
+2. **Read EVERY index file** - Do not skip or assume - actually Read each file
+3. **Be thorough** - Scan ALL index files found in the `/prime` output
+4. **Be specific** - Include exact file paths, line numbers, and export names
+5. **Be actionable** - Provide consumer counts and severity assessment
+6. **Be accurate** - Only report actual barrel files found - do NOT fabricate issues
+7. **Use timestamp format** - `YYYYMMDDHHMMSS-audit-barrel-files.md`
+
+## If No Barrels Found
+
+If your comprehensive review finds NO barrel files in the codebase, the report should clearly state:
+
+```markdown
+# Barrel Files Audit Report
+**Generated:** <timestamp>
+**Codebase:** Split Lease
+
+## Executive Summary
+- Index files scanned: X
+- Barrel files found: **0**
+
+## Result
+
+No barrel files were detected in this codebase. All index files are either:
+- Entry points with actual logic/code
+- Component files that happen to be named index
+- Framework-required entry points
+
+This codebase has a clean dependency structure with direct imports.
+```
