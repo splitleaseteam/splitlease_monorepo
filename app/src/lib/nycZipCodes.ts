@@ -199,3 +199,28 @@ export function isValidServiceArea(zipCode: string, state?: string, county?: str
 
   return false;
 }
+
+/**
+ * Map borough name to city name for FK lookup
+ * All NYC boroughs map to "New York", Hudson County maps to "Jersey City"
+ * @param {string} borough - The borough name (e.g., "Manhattan", "Brooklyn", "Hudson County, NJ")
+ * @returns {string | null} The city name for FK lookup, or null if not recognized
+ */
+export function getCityForBorough(borough: string): string | null {
+  if (!borough) return null;
+
+  const normalizedBorough = borough.toLowerCase().trim();
+
+  // NYC boroughs all belong to New York City
+  const nycBoroughs = ['manhattan', 'brooklyn', 'queens', 'bronx', 'staten island'];
+  if (nycBoroughs.includes(normalizedBorough)) {
+    return 'New York';
+  }
+
+  // Hudson County, NJ maps to Jersey City
+  if (normalizedBorough === 'hudson county, nj' || normalizedBorough === 'hudson county') {
+    return 'Jersey City';
+  }
+
+  return null;
+}

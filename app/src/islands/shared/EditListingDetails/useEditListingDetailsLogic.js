@@ -10,8 +10,9 @@ import { getCommonSafetyFeatures } from './services/safetyFeaturesService';
 import { getCommonInUnitAmenities, getCommonBuildingAmenities } from './services/amenitiesService';
 import { getNeighborhoodByZipCode, getNeighborhoodDescriptionWithFallback } from './services/neighborhoodService';
 import { getBoroughIdByName } from './services/boroughService';
+import { getCityIdByName } from './services/cityService';
 import { uploadPhoto } from '../../../lib/photoUpload';
-import { isValidServiceArea, getBoroughForZipCode, NYC_BOUNDS, isHudsonCountyNJ } from '../../../lib/nycZipCodes';
+import { isValidServiceArea, getBoroughForZipCode, getCityForBorough, NYC_BOUNDS, isHudsonCountyNJ } from '../../../lib/nycZipCodes';
 
 /**
  * Field focus configuration - maps focusField identifiers to their parent sections
@@ -539,6 +540,29 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
           // If we can't find the borough ID, don't save this field to avoid FK errors
           console.warn('⚠️ Could not find borough ID for:', boroughName, '- skipping borough update');
           delete changedFields['Location - Borough'];
+        }
+      }
+
+      // Convert city name to FK ID if city was changed (city is derived from borough)
+      // The database expects a foreign key ID, not the city name string
+      if (changedFields['Location - City'] || changedFields['Location - Borough']) {
+        // Determine the current borough name (from form data, since changedFields may have converted ID)
+        const currentBoroughName = formData['Location - Borough'] || listing['Location - Borough'];
+
+        // Derive city name from borough
+        const cityName = getCityForBorough(currentBoroughName) || formData['Location - City'];
+
+        if (cityName) {
+          const cityId = await getCityIdByName(cityName);
+          if (cityId) {
+            changedFields['Location - City'] = cityId;
+            console.log('🏙️ Converted city name to ID:', cityName, '->', cityId);
+          } else {
+            // If we can't find the city ID, show warning but allow save without city field
+            console.warn('⚠️ Could not find city ID for:', cityName, '- removing city from update');
+            delete changedFields['Location - City'];
+            showToast('City lookup failed', `Could not find city "${cityName}" in database`, 'warning');
+          }
         }
       }
 
