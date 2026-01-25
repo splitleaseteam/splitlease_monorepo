@@ -1,6 +1,6 @@
 ---
 name: audit-msw-supabase-mocking
-description: Audit the codebase to find components and hooks that fetch from Supabase but lack MSW mocking for tests. Identifies opportunities for fast, isolated testing with Mock Service Worker.
+description: Audit the codebase to find components and hooks that fetch from Supabase but lack MSW mocking for tests. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # MSW Supabase Mocking Audit
@@ -51,10 +51,10 @@ For each identified file, check if:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-msw-supabase-mocking.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-msw-supabase-mocking.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# MSW Supabase Mocking Audit Report
+# MSW Supabase Mocking Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -223,7 +223,7 @@ http.post(`${SUPABASE_URL}/storage/v1/object/:bucket/:path*`, () => {
 2. Be specific - include exact file paths and line numbers where Supabase calls occur
 3. Be actionable - provide clear next steps for each gap found
 4. Only report gaps - do not list files that already have proper MSW coverage unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-msw-supabase-mocking.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-msw-supabase-mocking.md`
 
 ## Post-Audit Actions
 

@@ -181,8 +181,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
           </div>
         </div>
 
-        {/* Manual Address Fields - Show when toggled or always show if address is valid */}
-        {(showManualAddress || isAddressValid) && (
+        {/* Manual Address Fields - Show when toggled AND address is NOT validated */}
+        {showManualAddress && !isAddressValid && (
           <div className={`eld-manual-fields ${showManualAddress && !isAddressValid ? 'eld-manual-fields-expanded' : ''}`}>
             {showManualAddress && !isAddressValid && (
               <p className="eld-manual-hint">

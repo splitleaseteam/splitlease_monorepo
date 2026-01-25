@@ -1,6 +1,6 @@
 ---
 name: audit-coverage-thresholds
-description: Audit the codebase to verify test coverage configuration, per-directory thresholds, and CI enforcement. Identifies gaps in coverage requirements for critical vs non-critical code paths.
+description: Audit the codebase to verify test coverage configuration, per-directory thresholds, and CI enforcement. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Coverage Thresholds Audit
@@ -55,10 +55,10 @@ For coverage configuration, verify:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-coverage-thresholds.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-coverage-thresholds.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Coverage Thresholds Audit Report
+# Coverage Thresholds Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -485,7 +485,7 @@ const debugOnly = () => console.log('debug')
 2. Be specific - include exact paths and current values
 3. Be actionable - provide complete configuration templates
 4. Only report gaps - do not list configured items unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-coverage-thresholds.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-coverage-thresholds.md`
 
 ## Post-Audit Actions
 

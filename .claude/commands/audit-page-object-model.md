@@ -1,6 +1,6 @@
 ---
 name: audit-page-object-model
-description: Audit the codebase to find E2E tests with scattered selectors that would benefit from Page Object Model pattern. Identifies opportunities to encapsulate page selectors and interactions for maintainable Playwright tests.
+description: Audit the codebase to find E2E tests with scattered selectors that would benefit from Page Object Model pattern. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Page Object Model Audit
@@ -53,10 +53,10 @@ For each E2E test file, check:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-page-object-model.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-page-object-model.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Page Object Model Audit Report
+# Page Object Model Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -294,7 +294,7 @@ export const test = base.extend<Pages>({
 2. Be specific - include exact file paths and line numbers for scattered selectors
 3. Be actionable - provide code templates for recommended page objects
 4. Only report gaps - do not list tests that already use POM properly unless as reference examples
-5. Create the output file with timestamp format: `YYMMDD-audit-page-object-model.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-page-object-model.md`
 
 ## Post-Audit Actions
 

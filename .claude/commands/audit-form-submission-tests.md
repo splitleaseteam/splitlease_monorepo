@@ -1,6 +1,6 @@
 ---
 name: audit-form-submission-tests
-description: Audit the codebase to find form components (login, booking, search, file upload) that lack proper test coverage using userEvent. Identifies gaps in validation, submission, and error handling tests.
+description: Audit the codebase to find form components (login, booking, search, file upload) that lack proper test coverage using userEvent. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Form Submission Testing Audit
@@ -65,10 +65,10 @@ For each form component, check if tests exist for:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-form-submission-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-form-submission-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Form Submission Testing Audit Report
+# Form Submission Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -511,7 +511,7 @@ it('debounces search input', async () => {
 2. Be specific - include exact file paths and form types
 3. Be actionable - provide test templates
 4. Only report gaps - do not list tested forms unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-form-submission-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-form-submission-tests.md`
 
 ## Post-Audit Actions
 
