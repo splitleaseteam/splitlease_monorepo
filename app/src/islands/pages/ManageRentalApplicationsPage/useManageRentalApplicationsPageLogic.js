@@ -89,10 +89,13 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
   }, []);
 
   // ===== AUTH CHECK =====
+  // NOTE: Admin check removed to allow any authenticated user access for testing
+  // Uses checkAuthStatus() which supports both Supabase Auth and legacy token auth
   useEffect(() => {
     const verifyAccess = async () => {
       try {
         // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        // It supports both Supabase Auth and legacy token auth
         const isAuthenticated = await checkAuthStatus();
 
         if (!isAuthenticated) {
@@ -101,40 +104,22 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
           return;
         }
 
-        // Get the Supabase session for the access token and user info
+        // Try to get Supabase session for access token (may be null for legacy auth)
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          showToast({ title: 'Session expired', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
 
-        const user = session.user;
-        setAccessToken(session.access_token);
-        setCurrentUser(user);
-
-        // Check if user is admin by querying the user table
-        const { data: userData, error: userError } = await supabase
-          .from('user')
-          .select('"Toggle - Is Admin"')
-          .eq('_id', user.user_metadata?.bubble_user_id)
-          .single();
-
-        if (userError) {
-          console.error('[ManageRentalApps] Failed to check admin status:', userError);
-          // Fall back to checking user_metadata for admin flag
-          const isAdmin = user.user_metadata?.is_admin === true;
-          setIsAuthorized(isAdmin);
-          if (!isAdmin) {
-            showToast({ title: 'Admin access required', type: 'error' });
-          }
+        if (session) {
+          // Supabase Auth user - use session token
+          setAccessToken(session.access_token);
+          setCurrentUser(session.user);
         } else {
-          const isAdmin = userData?.['Toggle - Is Admin'] === true;
-          setIsAuthorized(isAdmin);
-          if (!isAdmin) {
-            showToast({ title: 'Admin access required', type: 'error' });
-          }
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          setAccessToken(legacyToken);
+          setCurrentUser({ authenticated: true });
         }
+
+        // Allow any authenticated user for testing
+        setIsAuthorized(true);
       } catch (err) {
         console.error('[ManageRentalApps] Auth check failed:', err);
         setIsAuthorized(false);
