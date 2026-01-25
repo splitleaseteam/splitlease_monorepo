@@ -219,7 +219,7 @@ def verify_slack_signature(request):
     return hmac.compare_digest(expected_signature, signature)
 ```
 
-## 📚 API Endpoints
+## API Endpoints
 
 ### Health & Monitoring
 
