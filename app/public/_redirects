@@ -129,10 +129,6 @@
 /favorite-listings  /_internal/favorite-listings-view  200
 /favorite-listings/  /_internal/favorite-listings-view  200
 
-# /favorite-listings-v2 → favorite-listings-v2.html
-/favorite-listings-v2  /_internal/favorite-listings-v2-view  200
-/favorite-listings-v2/  /_internal/favorite-listings-v2-view  200
-
 # /rental-application → rental-application.html
 /rental-application  /_internal/rental-application-view  200
 /rental-application/  /_internal/rental-application-view  200
@@ -165,10 +161,6 @@
 # /visit-manual → visit-manual.html
 /visit-manual  /_internal/visit-manual-view  200
 /visit-manual/  /_internal/visit-manual-view  200
-
-# /signup-trial-host → signup-trial-host.html
-/signup-trial-host  /_internal/signup-trial-host-view  200
-/signup-trial-host/  /_internal/signup-trial-host-view  200
 
 # /_internal-test
 /_internal-test  /_internal-test.html  200

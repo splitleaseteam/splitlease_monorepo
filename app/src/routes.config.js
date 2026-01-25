@@ -300,7 +300,8 @@ export const routes = [
     protected: true,
     cloudflareInternal: true,
     internalName: 'favorite-listings-v2-view',
-    hasDynamicSegment: false
+    hasDynamicSegment: false,
+    devOnly: true  // HTML/JSX files not yet created
   },
   {
     path: '/rental-application',
@@ -383,7 +384,8 @@ export const routes = [
     protected: false,
     cloudflareInternal: true,
     internalName: 'signup-trial-host-view',
-    hasDynamicSegment: false
+    hasDynamicSegment: false,
+    devOnly: true  // Has broken import (saveAuthTokens)
   },
 
   // ===== INTERNAL/DEV PAGES =====
