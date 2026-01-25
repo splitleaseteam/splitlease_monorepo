@@ -27,6 +27,13 @@ jobs:
             echo "🚀 Starting deployment to PythonAnywhere"
             echo "======================================"
 
+            # Check if repository exists, clone if not
+            if [ ! -d "/home/${{ secrets.PA_USERNAME }}/pythonanywhere" ]; then
+              echo "📦 Repository not found. Cloning from GitHub..."
+              cd /home/${{ secrets.PA_USERNAME }}
+              git clone https://github.com/splitleaseteam/splitlease.git pythonanywhere
+            fi
+
             # Navigate to repository directory
             cd /home/${{ secrets.PA_USERNAME }}/pythonanywhere
 
@@ -34,7 +41,7 @@ jobs:
             git pull origin main
 
             echo "📦 Installing dependencies for mysite..."
-            cd mysite
+            cd pythonanywhere/mysite
             pip3 install --user -r requirements.txt
 
             echo "📦 Installing dependencies for mysite2..."
