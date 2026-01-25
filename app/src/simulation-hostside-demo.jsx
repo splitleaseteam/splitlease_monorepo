@@ -8,7 +8,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import SimulationHostsideDemoPage from './islands/pages/SimulationHostsideDemoPage/SimulationHostsideDemoPage.jsx';
-import './styles/global.css';
+import './styles/main.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
