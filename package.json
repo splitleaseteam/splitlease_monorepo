@@ -11,7 +11,8 @@
     "deploy:dev": "node app/scripts/check-branch.js --block-main && cd app && bun run build:dev && wrangler pages deploy dist --project-name splitlease --branch development",
     "lint": "cd app && bun run lint",
     "lint:fix": "cd app && bun run lint:fix",
-    "lint:check": "cd app && bun run lint:check"
+    "lint:check": "cd app && bun run lint:check",
+    "test": "cd app && bun run test"
   },
   "description": "Split Lease application monorepo - Cloudflare Pages deployment - Root directory: app",
   "devDependencies": {
