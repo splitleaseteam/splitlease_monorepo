@@ -18,6 +18,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
 import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -132,13 +133,18 @@ export function useQuickPricePageLogic({ showToast }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-        if (!user || !session) {
+        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
           showToast({ title: 'Authentication required', type: 'error' });
           window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
-        setAccessToken(session.access_token);
+        // Get the Supabase session for the access token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAccessToken(session.access_token);
+        }
       } catch (err) {
         console.error('[QuickPrice] Auth check failed:', err);
         showToast({ title: 'Authentication failed', type: 'error' });

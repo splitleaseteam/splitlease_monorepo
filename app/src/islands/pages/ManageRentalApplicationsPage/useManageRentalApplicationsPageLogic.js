@@ -92,14 +92,24 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
   useEffect(() => {
     const verifyAccess = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
+        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        const isAuthenticated = await checkAuthStatus();
 
-        if (!user || !session) {
+        if (!isAuthenticated) {
           showToast({ title: 'Authentication required', type: 'error' });
           window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
 
+        // Get the Supabase session for the access token and user info
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          showToast({ title: 'Session expired', type: 'error' });
+          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
+          return;
+        }
+
+        const user = session.user;
         setAccessToken(session.access_token);
         setCurrentUser(user);
 
