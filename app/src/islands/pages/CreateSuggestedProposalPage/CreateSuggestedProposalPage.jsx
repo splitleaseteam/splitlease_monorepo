@@ -13,7 +13,6 @@
  * - Uses 0-indexed day format (0=Sunday through 6=Saturday)
  */
 
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { useCreateSuggestedProposalLogic } from './useCreateSuggestedProposalLogic.js';
 import StepProgress from './components/StepProgress.jsx';
@@ -143,8 +142,6 @@ export default function CreateSuggestedProposalPage() {
 
   return (
     <>
-      <Header />
-
       <main className="csp-main">
         <div className="csp-container">
           {/* Page Header */}

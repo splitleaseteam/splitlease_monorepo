@@ -12,7 +12,6 @@
  * - ONLY renders UI based on pre-calculated state
  */
 
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 
 // Section components
@@ -100,8 +99,7 @@ export default function AiToolsPage() {
   if (loading) {
     return (
       <div className="ai-tools-page-wrapper">
-        <Header />
-        <main className="ai-tools-main">
+                <main className="ai-tools-main">
           <div className="ai-tools-container">
             <div className="loading-state">
               <div className="spinner"></div>
@@ -121,8 +119,7 @@ export default function AiToolsPage() {
   if (error) {
     return (
       <div className="ai-tools-page-wrapper">
-        <Header />
-        <main className="ai-tools-main">
+                <main className="ai-tools-main">
           <div className="ai-tools-container">
             <div className="error-state">
               <div className="error-icon">&#9888;</div>
@@ -146,8 +143,7 @@ export default function AiToolsPage() {
   if (!isAdmin) {
     return (
       <div className="ai-tools-page-wrapper">
-        <Header />
-        <main className="ai-tools-main">
+                <main className="ai-tools-main">
           <div className="ai-tools-container">
             <div className="unauthorized-state">
               <div className="unauthorized-icon">&#128274;</div>
@@ -170,8 +166,7 @@ export default function AiToolsPage() {
 
   return (
     <div className="ai-tools-page-wrapper">
-      <Header />
-
+      
       <main className="ai-tools-main">
         <div className="ai-tools-container">
           {/* Page Header */}

@@ -18,7 +18,6 @@
  */
 
 import { useState } from 'react';
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { useProposalManagePageLogic } from './useProposalManagePageLogic.js';
 import FilterSection from './FilterSection.jsx';
@@ -106,8 +105,7 @@ export default function ProposalManagePage() {
   if (authState.shouldRedirect) {
     return (
       <>
-        <Header />
-        <main className="pm-main-content">
+                <main className="pm-main-content">
           <div className="pm-page">
             <LoadingState />
           </div>
@@ -119,8 +117,7 @@ export default function ProposalManagePage() {
 
   return (
     <>
-      <Header />
-
+      
       <main className="pm-main-content">
         <div className="pm-page">
           {/* Page Header */}

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import EmailPreviewSidebar from '../shared/EmailPreviewSidebar.jsx';
 import { supabase } from '../../lib/supabase.js';
@@ -264,8 +263,7 @@ export default function InternalTestPage() {
 
   return (
     <>
-      <Header />
-
+      
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',

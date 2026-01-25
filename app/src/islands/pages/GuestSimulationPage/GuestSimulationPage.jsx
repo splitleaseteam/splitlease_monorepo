@@ -16,7 +16,6 @@
  * @module islands/pages/GuestSimulationPage/GuestSimulationPage
  */
 
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { ToastProvider } from '../../shared/Toast.jsx';
 import { useGuestSimulationLogic } from './useGuestSimulationLogic.js';
@@ -64,7 +63,6 @@ export default function GuestSimulationPage() {
   if (authState.isLoading) {
     return (
       <div className="gsim-page">
-        <Header />
         <main className="gsim-main">
           <div className="gsim-loading">
             <div className="gsim-loading__spinner" />
@@ -80,7 +78,6 @@ export default function GuestSimulationPage() {
   return (
     <ToastProvider>
       <div className="gsim-page">
-        <Header />
         <main className="gsim-main">
           <div className="gsim-container">
             {/* Page Header */}

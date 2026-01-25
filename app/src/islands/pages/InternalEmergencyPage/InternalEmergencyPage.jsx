@@ -11,7 +11,6 @@
  */
 
 import React from 'react';
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { useInternalEmergencyPageLogic } from './useInternalEmergencyPageLogic.js';
 import EmergencyList from './components/EmergencyList.jsx';
@@ -61,8 +60,7 @@ export default function InternalEmergencyPage() {
   if (loading) {
     return (
       <div className="internal-emergency-page">
-        <Header />
-        <main className="emergency-main">
+                <main className="emergency-main">
           <div className="emergency-container">
             <div className="loading-state">
               <div className="spinner"></div>
@@ -82,8 +80,7 @@ export default function InternalEmergencyPage() {
   if (error) {
     return (
       <div className="internal-emergency-page">
-        <Header />
-        <main className="emergency-main">
+                <main className="emergency-main">
           <div className="emergency-container">
             <div className="error-state">
               <div className="error-icon">&#9888;</div>
@@ -106,8 +103,7 @@ export default function InternalEmergencyPage() {
 
   return (
     <div className="internal-emergency-page">
-      <Header />
-
+      
       <main className="emergency-main">
         <div className="emergency-container">
           {/* Page Header */}

@@ -13,7 +13,6 @@
  * - Corporate internal tool (admin/corporate roles only)
  */
 
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { useGuestRelationshipsDashboardLogic } from './useGuestRelationshipsDashboardLogic.js';
 import CreateCustomerForm from './components/CreateCustomerForm.jsx';
@@ -137,8 +136,6 @@ export default function GuestRelationshipsDashboard() {
 
   return (
     <>
-      <Header />
-
       <main className="grd-main">
         <div className="grd-container">
           {/* Page Header */}
