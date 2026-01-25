@@ -86,6 +86,8 @@ function normalizeLease(lease) {
     paidToDate: lease['Paid to Date from Guest'],
     contract: lease.Contract,
     supplementalAgreement: lease['supplemental agreement'],
+    hostPayoutSchedule: lease['Host Payout Schedule'] || null,
+    periodicTenancyAgreement: lease['Periodic Tenancy Agreement'] || null,
     createdDate: lease['Created Date'],
     modifiedDate: lease['Modified Date'],
     // Related data
@@ -629,20 +631,96 @@ export function useHostLeasesPageLogic() {
 
   /**
    * Submit guest review
+   *
+   * Creates a review record in mainreview table and updates the stay
+   * to link the review.
+   *
+   * @param {Object} reviewData - Review data from modal
+   * @param {number} reviewData.overallRating - 1-5 star rating
+   * @param {string} reviewData.reviewText - Written review
+   * @param {boolean} reviewData.wouldRecommend - Would recommend guest
    */
   const handleSubmitGuestReview = useCallback(async (reviewData) => {
+    if (!reviewTargetStay) {
+      showToast({ title: 'Error', content: 'No stay selected for review.', type: 'error' });
+      return;
+    }
+
     try {
       console.log('[useHostLeasesPageLogic] Submitting guest review:', reviewData);
 
-      // TODO: Call review submission Edge Function
-      showToast({ title: 'Coming Soon', content: 'Guest review feature coming soon!', type: 'info' });
+      const userId = user?.userId || user?._id;
+      const stayId = reviewTargetStay.id;
+
+      // Find the lease that contains this stay to get the guest ID
+      const lease = leases.find(l => l.stays?.some(s => s.id === stayId));
+      const guestId = lease?.guestId || reviewTargetStay.guestId;
+
+      if (!guestId) {
+        throw new Error('Could not determine guest ID for review');
+      }
+
+      // Generate a unique review ID (Bubble-style)
+      const reviewId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+      // Create the review record in mainreview table
+      // Schema: _id, Reviewer, Reviewee/Target, Stay, Lease, House Manual, Visit,
+      // Created By, type, Rating Details (JSONB), Created Date, Modified Date
+      const { error: reviewError } = await supabase
+        .from('mainreview')
+        .insert({
+          _id: reviewId,
+          Reviewer: userId,
+          'Reviewee/Target': guestId,
+          Stay: stayId,
+          Lease: lease?.id,
+          'Created By': userId,
+          type: 'Host to Guest',
+          'Created Date': new Date().toISOString(),
+          'Modified Date': new Date().toISOString(),
+          // Store rating data in Rating Details JSONB field
+          'Rating Details': JSON.stringify({
+            overallRating: reviewData.overallRating,
+            cleanlinessRating: reviewData.cleanlinessRating || null,
+            communicationRating: reviewData.communicationRating || null,
+            houseRulesRating: reviewData.houseRulesRating || null,
+            reviewText: reviewData.reviewText || '',
+            wouldRecommend: reviewData.wouldRecommend ?? true,
+          }),
+        });
+
+      if (reviewError) {
+        console.error('[useHostLeasesPageLogic] Error creating review:', reviewError);
+        throw new Error(`Failed to create review: ${reviewError.message}`);
+      }
+
+      // Update the stay to link the review
+      const { error: stayError } = await supabase
+        .from('bookings_stays')
+        .update({
+          'Review Submitted by Host': reviewId,
+          'Modified Date': new Date().toISOString(),
+        })
+        .eq('_id', stayId);
+
+      if (stayError) {
+        console.error('[useHostLeasesPageLogic] Error updating stay:', stayError);
+        // Review was created but stay update failed - not critical
+        console.warn('Review created but stay link update failed');
+      }
+
+      showToast({ title: 'Success', content: 'Your review has been submitted!', type: 'success' });
+
+      // Refresh leases to update the UI
+      const leasesResult = await fetchHostLeases(userId, selectedListing?.id);
+      setLeases(leasesResult);
 
       handleCloseReviewModal();
     } catch (err) {
       console.error('Failed to submit guest review:', err);
-      showToast({ title: 'Error', content: 'Failed to submit review. Please try again.', type: 'error' });
+      showToast({ title: 'Error', content: err.message || 'Failed to submit review. Please try again.', type: 'error' });
     }
-  }, [handleCloseReviewModal]);
+  }, [reviewTargetStay, user, leases, selectedListing, handleCloseReviewModal]);
 
   /**
    * Open date change detail modal
@@ -665,13 +743,24 @@ export function useHostLeasesPageLogic() {
    */
   const handleOpenDocument = useCallback((documentType, lease) => {
     let url = null;
+    let documentName = 'Document';
 
     switch (documentType) {
       case 'contract':
         url = lease.contract;
+        documentName = 'Lease Contract';
         break;
       case 'supplemental':
         url = lease.supplementalAgreement;
+        documentName = 'Supplemental Agreement';
+        break;
+      case 'payoutSchedule':
+        url = lease.hostPayoutSchedule;
+        documentName = 'Payout Schedule';
+        break;
+      case 'periodicTenancy':
+        url = lease.periodicTenancyAgreement;
+        documentName = 'Periodic Tenancy Agreement';
         break;
       default:
         console.warn('Unknown document type:', documentType);
@@ -680,7 +769,7 @@ export function useHostLeasesPageLogic() {
     if (url) {
       window.open(url, '_blank');
     } else {
-      showToast({ title: 'Not Available', content: 'Document is not available yet.', type: 'info' });
+      showToast({ title: 'Not Available', content: `${documentName} is not available yet.`, type: 'info' });
     }
   }, []);
 

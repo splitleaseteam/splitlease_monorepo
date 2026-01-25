@@ -1,10 +1,14 @@
 /**
  * PdfLinksRow Component
  *
- * Displays PDF document links for contract and supplemental agreement.
+ * Displays PDF document links for lease documents:
+ * - Lease Contract
+ * - Supplemental Agreement
+ * - Payout Schedule
+ * - Periodic Tenancy Agreement
  */
 import React from 'react';
-import { FileText, ExternalLink } from 'lucide-react';
+import { FileText, ExternalLink, Calendar, DollarSign, FileCheck } from 'lucide-react';
 
 /**
  * PdfLinksRow displays document links
@@ -12,15 +16,50 @@ import { FileText, ExternalLink } from 'lucide-react';
  * @param {Object} props
  * @param {string} props.contract - Contract PDF URL
  * @param {string} props.supplementalAgreement - Supplemental agreement PDF URL
+ * @param {string} props.hostPayoutSchedule - Host payout schedule PDF URL
+ * @param {string} props.periodicTenancyAgreement - Periodic tenancy agreement PDF URL
  * @param {Function} props.onOpenDocument - Handler to open document
  */
-export function PdfLinksRow({ contract, supplementalAgreement, onOpenDocument }) {
-  const hasContract = !!contract;
-  const hasSupplemental = !!supplementalAgreement;
+export function PdfLinksRow({
+  contract,
+  supplementalAgreement,
+  hostPayoutSchedule,
+  periodicTenancyAgreement,
+  onOpenDocument
+}) {
+  const documents = [
+    {
+      key: 'contract',
+      label: 'Lease Contract',
+      url: contract,
+      icon: FileText,
+      title: 'View lease contract'
+    },
+    {
+      key: 'supplemental',
+      label: 'Supplemental Agreement',
+      url: supplementalAgreement,
+      icon: FileCheck,
+      title: 'View supplemental agreement'
+    },
+    {
+      key: 'payoutSchedule',
+      label: 'Payout Schedule',
+      url: hostPayoutSchedule,
+      icon: DollarSign,
+      title: 'View host payout schedule'
+    },
+    {
+      key: 'periodicTenancy',
+      label: 'Periodic Tenancy',
+      url: periodicTenancyAgreement,
+      icon: Calendar,
+      title: 'View periodic tenancy agreement'
+    }
+  ];
 
-  if (!hasContract && !hasSupplemental) {
-    return null;
-  }
+  // Filter to only documents that exist or show all as clickable (shows "not available" toast)
+  const hasAnyDocument = documents.some(doc => !!doc.url);
 
   return (
     <div className="hl-pdf-links-row">
@@ -29,30 +68,20 @@ export function PdfLinksRow({ contract, supplementalAgreement, onOpenDocument })
         <span>Documents</span>
       </div>
       <div className="hl-pdf-links">
-        {hasContract && (
+        {documents.map(({ key, label, url, icon: Icon, title }) => (
           <button
+            key={key}
             type="button"
-            className="hl-pdf-link"
-            onClick={() => onOpenDocument?.('contract')}
-            title="View lease contract"
+            className={`hl-pdf-link${url ? '' : ' hl-pdf-link-disabled'}`}
+            onClick={() => onOpenDocument?.(key)}
+            title={url ? title : `${label} not available`}
+            aria-label={url ? title : `${label} not available`}
           >
-            <FileText size={14} />
-            Lease Contract
+            <Icon size={14} />
+            {label}
             <ExternalLink size={12} />
           </button>
-        )}
-        {hasSupplemental && (
-          <button
-            type="button"
-            className="hl-pdf-link"
-            onClick={() => onOpenDocument?.('supplemental')}
-            title="View supplemental agreement"
-          >
-            <FileText size={14} />
-            Supplemental Agreement
-            <ExternalLink size={12} />
-          </button>
-        )}
+        ))}
       </div>
     </div>
   );

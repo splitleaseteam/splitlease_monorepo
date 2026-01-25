@@ -91,6 +91,29 @@ function generateRedirects() {
       lines.push(`${basePath}.html  /${route.file}  200`);
       lines.push('');
     }
+
+    // Process aliases that differ from the base path
+    // This ensures alternative URLs (e.g., /verify-users for /_internal/verify-users) work
+    if (route.aliases && route.aliases.length > 0) {
+      const target = route.cloudflareInternal && route.internalName
+        ? `/_internal/${route.internalName}`
+        : `/${route.file}`;
+
+      for (const alias of route.aliases) {
+        // Skip aliases that are just the basePath with .html extension
+        if (alias === `${basePath}.html` || alias === basePath) continue;
+        // Skip aliases already covered by the main path rules
+        if (alias.startsWith(basePath)) continue;
+
+        lines.push(`# Alias: ${alias} → ${route.file}`);
+        lines.push(`${alias}  ${target}  200`);
+        // Add trailing slash variant if alias doesn't end with .html
+        if (!alias.endsWith('.html')) {
+          lines.push(`${alias}/  ${target}  200`);
+        }
+        lines.push('');
+      }
+    }
   }
 
   lines.push('# Note: Cloudflare Pages automatically serves /404.html for not found routes');

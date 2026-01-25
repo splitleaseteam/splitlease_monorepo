@@ -48,6 +48,8 @@ export function LeaseCard({ lease, expanded = {}, handlers }) {
     dateChangeRequests = [],
     contract,
     supplementalAgreement,
+    hostPayoutSchedule,
+    periodicTenancyAgreement,
   } = lease;
 
   const pendingDateChanges = dateChangeRequests.filter(dcr => dcr.status?.toLowerCase() === 'pending');
@@ -107,6 +109,8 @@ export function LeaseCard({ lease, expanded = {}, handlers }) {
           <PdfLinksRow
             contract={contract}
             supplementalAgreement={supplementalAgreement}
+            hostPayoutSchedule={hostPayoutSchedule}
+            periodicTenancyAgreement={periodicTenancyAgreement}
             onOpenDocument={(type) => handlers.onOpenDocument?.(type, lease)}
           />
 
