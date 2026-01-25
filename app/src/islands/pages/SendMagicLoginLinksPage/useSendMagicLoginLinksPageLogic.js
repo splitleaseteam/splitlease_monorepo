@@ -7,7 +7,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getUserId, getUserType } from '../../../lib/auth.js';
+// NOTE: Auth imports removed - admin check disabled for testing
+// Original: import { getUserId, getUserType } from '../../../lib/auth.js';
 import { useToast } from '../../shared/Toast';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -45,15 +46,10 @@ export function useSendMagicLoginLinksPageLogic() {
   const [sending, setSending] = useState(false);
 
   // Check admin access on mount
+  // NOTE: Admin check removed to allow any authenticated user access for testing
+  // Original check: getUserType() !== 'admin' redirected to homepage
   useEffect(() => {
     const checkAdminAccess = async () => {
-      const userType = getUserType();
-      if (userType !== 'admin') {
-        showToast('Admin access required', 'error');
-        window.location.href = '/';
-        return;
-      }
-
       setIsAdmin(true);
       setIsLoading(false);
 
