@@ -7,6 +7,8 @@
     "dev:test": "bun run lint && vite --port 8010 --strictPort",
     "dev:test:stop": "node scripts/kill-port.cjs 8010",
     "dev:test:restart": "bun run dev:test:stop && bun run dev:test",
+    "test:stop": "node scripts/kill-port.cjs 8001",
+    "test": "bun run test:stop && bun run lint && vite --port 8001 --strictPort",
     "generate-routes": "node scripts/generate-redirects.js",
     "prebuild": "bun run generate-routes",
     "build": "bun run lint && bun run typecheck && vite build",
