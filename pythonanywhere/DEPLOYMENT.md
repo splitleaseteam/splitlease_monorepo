@@ -217,7 +217,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDvcblPVASqIPTfqc0xzWg8+f9m501O7NTSj7whCkbt
 
 ### Modify Deployment Script
 
-Edit `.github/workflows/deploy.yml` to customize:
+Edit `../.github/workflows/deploy-pythonanywhere.yml` (at repository root) to customize:
 
 **Change Repository Path:**
 ```yaml
@@ -272,7 +272,7 @@ flask db upgrade  # Flask-Migrate
    ```bash
    ls /home/YOUR_USERNAME/
    ```
-2. Update `.github/workflows/deploy.yml` with correct path
+2. Update `../.github/workflows/deploy-pythonanywhere.yml` (at repository root) with correct path
 
 ### Problem: "WSGI file not found"
 
