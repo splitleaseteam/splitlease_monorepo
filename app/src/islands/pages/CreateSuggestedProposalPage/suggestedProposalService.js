@@ -402,7 +402,7 @@ export async function parseCallTranscription(transcription) {
     let parsed;
     try {
       parsed = typeof completion === 'string' ? JSON.parse(completion) : completion;
-    } catch (parseError) {
+    } catch (_parseError) {
       console.error('[suggestedProposalService] Failed to parse AI response:', completion);
       throw new Error('AI returned invalid JSON response');
     }

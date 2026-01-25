@@ -588,7 +588,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       if (typeof houseRulesRaw === 'string') {
         try {
           proposalHouseRuleIds = JSON.parse(houseRulesRaw);
-        } catch (e) {
+        } catch (_e) {
           proposalHouseRuleIds = [];
         }
       } else if (Array.isArray(houseRulesRaw)) {

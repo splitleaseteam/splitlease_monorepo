@@ -275,7 +275,7 @@ export function getNightsAsDayNames(nightsSelected) {
   if (typeof nightsSelected === 'string') {
     try {
       nights = JSON.parse(nightsSelected);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }
@@ -314,7 +314,7 @@ export function getCheckInOutFromDays(daysSelected) {
   if (typeof daysSelected === 'string') {
     try {
       days = JSON.parse(daysSelected);
-    } catch (e) {
+    } catch (_e) {
       return { checkInDay: '', checkOutDay: '' };
     }
   }
@@ -397,7 +397,7 @@ export function getCheckInOutFromNights(nightsSelected) {
   if (typeof nightsSelected === 'string') {
     try {
       nights = JSON.parse(nightsSelected);
-    } catch (e) {
+    } catch (_e) {
       return { checkInDay: '', checkOutDay: '' };
     }
   }
