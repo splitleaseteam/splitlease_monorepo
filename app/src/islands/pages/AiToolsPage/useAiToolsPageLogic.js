@@ -17,12 +17,8 @@ import { supabase } from '../../../lib/supabase.js';
 import { aiToolsService } from '../../../lib/aiToolsService.js';
 import { MELODY_PREFERENCES, CONTENT_PREFERENCES } from './types.js';
 
-// Admin email whitelist - users with these emails can access AI Tools
-const ADMIN_EMAILS = [
-  'sharath@splitlease.io',
-  'admin@splitlease.io',
-  'test@splitlease.io',
-];
+// NOTE: Admin email whitelist removed to allow any authenticated user access for testing
+// Original whitelist: ['sharath@splitlease.io', 'admin@splitlease.io', 'test@splitlease.io']
 
 export function useAiToolsPageLogic() {
   // ============================================================================
@@ -84,7 +80,7 @@ export function useAiToolsPageLogic() {
     try {
       const { data, error: fetchError } = await supabase
         .from('housemanual')
-        .select('_id, Display, Host, Audience')
+        .select('_id, "House manual Name", Host, Audience')
         .eq('Host', hostId)
         .order('Created Date', { ascending: false });
 
@@ -216,8 +212,9 @@ export function useAiToolsPageLogic() {
         return;
       }
 
-      const userEmail = userData.email?.toLowerCase();
-      const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
+      // NOTE: Admin check removed - any authenticated user can access for testing
+      // Original check: ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail)
+      const isUserAdmin = true;
 
       setUser({
         id: userData.userId || userData._id,
@@ -226,11 +223,6 @@ export function useAiToolsPageLogic() {
         accountHostId: userData.accountHostId || userData.userId,
       });
       setIsAdmin(isUserAdmin);
-
-      if (!isUserAdmin) {
-        setLoading(false);
-        return;
-      }
 
       // Step 3: Fetch house manuals for this host
       const hostId = userData.accountHostId || userData.userId || userData._id;

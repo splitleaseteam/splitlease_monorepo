@@ -108,7 +108,7 @@ export default defineConfig({
       name: 'multi-page-routing',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          handleRouting(req, ''); // No prefix in dev mode - Vite serves public/ at root
+          handleRouting(req, '/public');
           next();
         });
       },

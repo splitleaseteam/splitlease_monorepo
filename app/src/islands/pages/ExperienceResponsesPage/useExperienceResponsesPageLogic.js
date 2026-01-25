@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from '../../shared/Toast';
 import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 
@@ -49,6 +49,9 @@ function adaptResponse(rawResponse) {
 }
 
 export function useExperienceResponsesPageLogic() {
+  // ===== TOAST =====
+  const { showToast } = useToast();
+
   // ===== AUTH STATE =====
   const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
 
@@ -70,14 +73,25 @@ export function useExperienceResponsesPageLogic() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
+        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        const isAuthenticated = await checkAuthStatus();
 
-        if (!user || !session) {
+        if (!isAuthenticated) {
           setAuthState('unauthorized');
-          toast.error('Authentication required');
+          showToast({ title: 'Authentication required', type: 'error' });
           window.location.href =
             '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
           return;
+        }
+
+        // Get the Supabase session for the access token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          // Legacy token auth user - verify token exists
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (!legacyToken) {
+            console.warn('[ExperienceResponses] No session or legacy token found');
+          }
         }
 
         // Admin check will be done server-side via RLS policies
@@ -86,12 +100,12 @@ export function useExperienceResponsesPageLogic() {
       } catch (err) {
         console.error('[ExperienceResponses] Auth check failed:', err);
         setAuthState('unauthorized');
-        toast.error('Authentication failed');
+        showToast({ title: 'Authentication failed', type: 'error' });
       }
     };
 
     checkAuth();
-  }, []);
+  }, [showToast]);
 
   // ===== FETCH RESPONSES =====
   const fetchResponses = useCallback(async () => {
@@ -136,7 +150,7 @@ export function useExperienceResponsesPageLogic() {
     } catch (err) {
       console.error('[ExperienceResponses] Fetch error:', err);
       setError(err.message || 'Failed to load responses');
-      toast.error('Failed to load responses');
+      showToast({ title: 'Failed to load responses', type: 'error' });
     } finally {
       setIsLoading(false);
     }

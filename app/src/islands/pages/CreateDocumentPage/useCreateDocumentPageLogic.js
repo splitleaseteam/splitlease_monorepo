@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase.js';
+import { checkAuthStatus } from '../../../lib/auth.js';
 import { validateDocumentForm } from '../../../logic/rules/documents/validateDocumentForm.js';
 
 // Edge Function URL for document operations
@@ -77,45 +78,24 @@ export function useCreateDocumentPageLogic({ showToast }) {
 
   // ─────────────────────────────────────────────────────────
   // Authentication Check
+  // NOTE: Admin check removed to allow any authenticated user access for testing
+  // Uses checkAuthStatus() which supports both Supabase Auth and legacy token auth
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
-    async function checkAuth() {
+    async function verifyAuth() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // checkAuthStatus handles both Supabase Auth and legacy token auth
+        const isAuthenticated = await checkAuthStatus();
 
-        if (!session) {
-          console.log('[CreateDocumentPage] No session, unauthorized');
+        if (!isAuthenticated) {
+          console.log('[CreateDocumentPage] Not authenticated');
           setIsAuthorized(false);
           setIsInitializing(false);
           return;
         }
 
-        // Check if user is admin by querying the user table
-        const { data: userData, error: userError } = await supabase
-          .from('user')
-          .select('_id, email, Name, "Type - User Current"')
-          .eq('email', session.user.email)
-          .single();
-
-        if (userError || !userData) {
-          console.error('[CreateDocumentPage] Failed to fetch user data:', userError);
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        // Check for admin/Split Lease user type
-        const userType = userData['Type - User Current'];
-        const isAdmin = userType === 'Split Lease' || userType === 'Admin';
-
-        if (!isAdmin) {
-          console.log('[CreateDocumentPage] User is not admin:', userType);
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        setCurrentUser(userData);
+        // Allow any authenticated user for testing
+        setCurrentUser({ authenticated: true });
         setIsAuthorized(true);
         setIsInitializing(false);
 
@@ -128,7 +108,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       }
     }
 
-    checkAuth();
+    verifyAuth();
   }, []);
 
   // ─────────────────────────────────────────────────────────

@@ -135,7 +135,7 @@ export async function updatePassword(newPassword) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
-        } catch (parseErr) {
+        } catch (_parseErr) {
           // Silent - use default message
         }
       } else if (error.context?.body) {
@@ -147,7 +147,7 @@ export async function updatePassword(newPassword) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
-        } catch (parseErr) {
+        } catch (_parseErr) {
           // Silent - use default message
         }
       }

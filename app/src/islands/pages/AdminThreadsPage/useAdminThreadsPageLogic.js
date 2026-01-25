@@ -14,8 +14,9 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import toast from 'react-hot-toast';
 import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
+import { useToast } from '../../shared/Toast';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const PAGE_SIZE = 20;
@@ -113,6 +114,9 @@ function adaptMessage(rawMessage, rawThread) {
 }
 
 export function useAdminThreadsPageLogic() {
+  // ===== TOAST =====
+  const { showToast } = useToast();
+
   // ===== AUTH STATE =====
   const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
   const [accessToken, setAccessToken] = useState(null);
@@ -144,17 +148,29 @@ export function useAdminThreadsPageLogic() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
+        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        const isAuthenticated = await checkAuthStatus();
 
-        if (!user || !session) {
+        if (!isAuthenticated) {
           setAuthState('unauthorized');
-          toast.error('Authentication required');
+          showToast({ title: 'Authentication required', type: 'error' });
           window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
 
-        setAccessToken(session.access_token);
-        setCurrentUser(user);
+        // Get the Supabase session for the access token and user info
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAccessToken(session.access_token);
+          setCurrentUser(session.user);
+        } else {
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+            setCurrentUser({ authenticated: true, legacy: true });
+          }
+        }
 
         // Admin check will be done server-side
         // For now, assume authorized if authenticated
@@ -162,12 +178,12 @@ export function useAdminThreadsPageLogic() {
       } catch (err) {
         console.error('[AdminThreads] Auth check failed:', err);
         setAuthState('unauthorized');
-        toast.error('Authentication failed');
+        showToast({ title: 'Authentication failed', type: 'error' });
       }
     };
 
     checkAuth();
-  }, []);
+  }, [showToast]);
 
   // ===== FETCH THREADS =====
   const fetchThreads = useCallback(async () => {
@@ -203,7 +219,7 @@ export function useAdminThreadsPageLogic() {
     } catch (err) {
       console.error('[AdminThreads] Fetch error:', err);
       setError(err.message);
-      toast.error('Failed to load threads');
+      showToast({ title: 'Failed to load threads', type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -347,11 +363,11 @@ export function useAdminThreadsPageLogic() {
 
           // Remove from local state
           setThreads(prev => prev.filter(t => t.id !== thread.id));
-          toast.success('Thread deleted');
+          showToast({ title: 'Thread deleted', type: 'success' });
           setConfirmDialog(null);
         } catch (err) {
           console.error('[AdminThreads] Delete error:', err);
-          toast.error(err.message || 'Failed to delete thread');
+          showToast({ title: err.message || 'Failed to delete thread', type: 'error' });
         } finally {
           setIsLoading(false);
         }
@@ -398,11 +414,11 @@ export function useAdminThreadsPageLogic() {
         throw new Error(result.error || 'Failed to send reminder');
       }
 
-      toast.success(`Reminder sent to ${recipientType}`);
+      showToast({ title: `Reminder sent to ${recipientType}`, type: 'success' });
       setReminderModal(null);
     } catch (err) {
       console.error('[AdminThreads] Reminder error:', err);
-      toast.error(err.message || 'Failed to send reminder');
+      showToast({ title: err.message || 'Failed to send reminder', type: 'error' });
     } finally {
       setIsSendingReminder(false);
     }

@@ -18,6 +18,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
 import {
   canConfirmMeeting,
   canDeleteMeeting,
@@ -110,14 +111,24 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-        if (!user || !session) {
+        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
           showToast({ title: 'Authentication required', type: 'error' });
           window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
-        // TODO: Add admin role check when auth supports roles
-        setAccessToken(session.access_token);
+        // Get the Supabase session for the access token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAccessToken(session.access_token);
+        } else {
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+          }
+        }
       } catch (err) {
         console.error('[ManageVirtualMeetings] Auth check failed:', err);
         showToast({ title: 'Authentication failed', type: 'error' });

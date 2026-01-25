@@ -31,7 +31,7 @@ function parseDaysSelected(daysSelected) {
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }
