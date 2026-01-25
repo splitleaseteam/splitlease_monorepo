@@ -84,6 +84,16 @@ export function useExperienceResponsesPageLogic() {
           return;
         }
 
+        // Get the Supabase session for the access token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          // Legacy token auth user - verify token exists
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (!legacyToken) {
+            console.warn('[ExperienceResponses] No session or legacy token found');
+          }
+        }
+
         // Admin check will be done server-side via RLS policies
         // For now, assume authorized if authenticated
         setAuthState('authorized');
@@ -95,7 +105,7 @@ export function useExperienceResponsesPageLogic() {
     };
 
     checkAuth();
-  }, []);
+  }, [showToast]);
 
   // ===== FETCH RESPONSES =====
   const fetchResponses = useCallback(async () => {

@@ -163,6 +163,13 @@ export function useAdminThreadsPageLogic() {
         if (session?.access_token) {
           setAccessToken(session.access_token);
           setCurrentUser(session.user);
+        } else {
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+            setCurrentUser({ authenticated: true, legacy: true });
+          }
         }
 
         // Admin check will be done server-side

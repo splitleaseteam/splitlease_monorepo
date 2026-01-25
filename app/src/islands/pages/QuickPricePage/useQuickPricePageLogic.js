@@ -144,6 +144,12 @@ export function useQuickPricePageLogic({ showToast }) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
           setAccessToken(session.access_token);
+        } else {
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+          }
         }
       } catch (err) {
         console.error('[QuickPrice] Auth check failed:', err);
