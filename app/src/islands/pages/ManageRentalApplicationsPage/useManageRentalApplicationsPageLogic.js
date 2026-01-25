@@ -15,7 +15,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus, getSupabaseSession } from '../../../lib/auth.js';
+import { checkAuthStatus } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
