@@ -80,7 +80,7 @@ export function useAiToolsPageLogic() {
     try {
       const { data, error: fetchError } = await supabase
         .from('housemanual')
-        .select('_id, Display, Host, Audience')
+        .select('_id, "House manual Name", Host, Audience')
         .eq('Host', hostId)
         .order('Created Date', { ascending: false });
 
