@@ -137,3 +137,77 @@ Implementation/
 .temp-cohost-request/
 .temp-host-editing-proposal/
 .claude/CLAUDE copy.md
+
+# ============================================================================
+# PythonAnywhere Backend (pythonanywhere/)
+# ============================================================================
+
+# Python - Additional patterns
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments - Additional
+ENV/
+env.bak/
+venv.bak/
+
+# Environment & Config - PythonAnywhere specific
+pythonanywhere/**/config.py
+pythonanywhere/**/.env
+!pythonanywhere/**/.env.example
+
+# Credentials & OAuth Tokens - PythonAnywhere specific
+pythonanywhere/credentials/
+pythonanywhere/**/credentials/
+token.pickle
+token.json
+client_secret*.json
+service_account*.json
+
+# SSH Keys (GitHub Actions Deployment)
+pythonanywhere/pa_deploy_key
+pythonanywhere/pa_deploy_key.pub
+*.pem
+*.key
+!*.pub.key
+
+# Database - Additional patterns
+*.db-journal
+
+# Generated Documents (User Data)
+pythonanywhere/mysite/modules/temp/
+pythonanywhere/mysite/modules/*/temp/
+pythonanywhere/mysite/temp/
+pythonanywhere/**/temp/supplemental/
+pythonanywhere/**/*.docx
+!pythonanywhere/mysite/modules/templates/**/*.docx
+pythonanywhere/**/*.pdf
+!pythonanywhere/**/*template*.pdf
+
+# Flask - Specific patterns
+instance/
+.webassets-cache
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# OS - Additional patterns
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db

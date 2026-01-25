@@ -1,0 +1,63 @@
+name: Deploy to PythonAnywhere
+
+on:
+  push:
+    branches:
+      - main      # Trigger on push to main branch
+      - master    # Also support master branch name
+  workflow_dispatch:  # Allow manual triggering from GitHub UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to PythonAnywhere
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PA_HOST }}
+          username: ${{ secrets.PA_USERNAME }}
+          key: ${{ secrets.PA_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "======================================"
+            echo "🚀 Starting deployment to PythonAnywhere"
+            echo "======================================"
+
+            # Navigate to repository directory
+            cd /home/${{ secrets.PA_USERNAME }}/pythonanywhere
+
+            echo "📥 Pulling latest code from GitHub..."
+            git pull origin main
+
+            echo "📦 Installing dependencies for mysite..."
+            cd mysite
+            pip3 install --user -r requirements.txt
+
+            echo "📦 Installing dependencies for mysite2..."
+            cd ../mysite2
+            pip3 install --user -r requirements.txt
+
+            echo "📦 Installing dependencies for mysite3..."
+            cd ../mysite3
+            pip3 install --user -r requirements.txt
+
+            echo "🔄 Reloading web app..."
+            # Touch WSGI file to trigger reload
+            touch /var/www/${{ secrets.PA_USERNAME }}_pythonanywhere_com_wsgi.py
+
+            echo "======================================"
+            echo "✅ Deployment completed successfully!"
+            echo "======================================"
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment succeeded"
+          else
+            echo "❌ Deployment failed"
+          fi
