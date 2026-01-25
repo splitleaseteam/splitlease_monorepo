@@ -13,7 +13,6 @@
  * - Corporate internal tool (admin/corporate roles only)
  */
 
-import Footer from '../../shared/Footer.jsx';
 import { useGuestRelationshipsDashboardLogic } from './useGuestRelationshipsDashboardLogic.js';
 import CreateCustomerForm from './components/CreateCustomerForm.jsx';
 import GuestSearch from './components/GuestSearch.jsx';
@@ -253,8 +252,6 @@ export default function GuestRelationshipsDashboard() {
         {/* Loading Overlay */}
         {isLoading && <LoadingOverlay />}
       </main>
-
-      <Footer />
 
       {/* Toast Notifications */}
       {toast && (

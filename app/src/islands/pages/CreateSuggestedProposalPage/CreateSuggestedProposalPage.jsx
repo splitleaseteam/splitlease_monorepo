@@ -13,7 +13,6 @@
  * - Uses 0-indexed day format (0=Sunday through 6=Saturday)
  */
 
-import Footer from '../../shared/Footer.jsx';
 import { useCreateSuggestedProposalLogic } from './useCreateSuggestedProposalLogic.js';
 import StepProgress from './components/StepProgress.jsx';
 import ListingSearch from './components/ListingSearch.jsx';
@@ -309,8 +308,6 @@ export default function CreateSuggestedProposalPage() {
         {/* Loading Overlay */}
         {isCreating && <LoadingOverlay />}
       </main>
-
-      <Footer />
 
       {/* Success Modal */}
       {showSuccessModal && (

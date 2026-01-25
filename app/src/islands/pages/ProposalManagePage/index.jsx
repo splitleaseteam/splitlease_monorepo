@@ -18,7 +18,6 @@
  */
 
 import { useState } from 'react';
-import Footer from '../../shared/Footer.jsx';
 import { useProposalManagePageLogic } from './useProposalManagePageLogic.js';
 import FilterSection from './FilterSection.jsx';
 import ProposalItem from './ProposalItem.jsx';
@@ -110,8 +109,7 @@ export default function ProposalManagePage() {
             <LoadingState />
           </div>
         </main>
-        <Footer />
-      </>
+              </>
     );
   }
 
@@ -194,7 +192,6 @@ export default function ProposalManagePage() {
         </div>
       </main>
 
-      <Footer />
-    </>
+          </>
   );
 }

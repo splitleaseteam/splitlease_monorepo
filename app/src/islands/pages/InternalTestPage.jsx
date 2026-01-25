@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Footer from '../shared/Footer.jsx';
 import EmailPreviewSidebar from '../shared/EmailPreviewSidebar.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { renderGeneralEmailTemplate } from '../../lib/emailTemplateRenderer.js';
@@ -359,8 +358,6 @@ export default function InternalTestPage() {
           </ul>
         </div>
       </main>
-
-      <Footer />
 
       {/* Email Preview Sidebar */}
       <EmailPreviewSidebar

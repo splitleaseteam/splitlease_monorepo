@@ -12,8 +12,6 @@
  * - ONLY renders UI based on pre-calculated state
  */
 
-import Footer from '../../shared/Footer.jsx';
-
 // Section components
 import HeyGenSection from './components/HeyGenSection.jsx';
 import ElevenLabsSection from './components/ElevenLabsSection.jsx';
@@ -107,8 +105,7 @@ export default function AiToolsPage() {
             </div>
           </div>
         </main>
-        <Footer />
-      </div>
+              </div>
     );
   }
 
@@ -131,8 +128,7 @@ export default function AiToolsPage() {
             </div>
           </div>
         </main>
-        <Footer />
-      </div>
+              </div>
     );
   }
 
@@ -155,8 +151,7 @@ export default function AiToolsPage() {
             </div>
           </div>
         </main>
-        <Footer />
-      </div>
+              </div>
     );
   }
 
@@ -278,7 +273,6 @@ export default function AiToolsPage() {
         </div>
       </main>
 
-      <Footer />
-    </div>
+          </div>
   );
 }

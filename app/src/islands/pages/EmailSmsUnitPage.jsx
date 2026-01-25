@@ -1,4 +1,3 @@
-import Footer from '../shared/Footer.jsx';
 import useEmailSmsUnitPageLogic from './useEmailSmsUnitPageLogic.js';
 
 /**
@@ -63,8 +62,7 @@ export default function EmailSmsUnitPage() {
                 <main style={styles.loadingContainer}>
           <p>Loading templates...</p>
         </main>
-        <Footer />
-      </>
+              </>
     );
   }
 
@@ -75,8 +73,7 @@ export default function EmailSmsUnitPage() {
                 <main style={styles.errorContainer}>
           <p style={styles.errorText}>{error}</p>
         </main>
-        <Footer />
-      </>
+              </>
     );
   }
 
@@ -358,8 +355,7 @@ export default function EmailSmsUnitPage() {
         </div>
       </section>
 
-      <Footer />
-    </>
+          </>
   );
 }
 

@@ -19,7 +19,6 @@
  * - Admin-only access with Gold Standard Auth Pattern
  */
 
-import Footer from '../../shared/Footer.jsx';
 import { useListingsOverviewPageLogic } from './useListingsOverviewPageLogic.js';
 import ListingsHeader from './components/ListingsHeader.jsx';
 import ListingsFilterPanel from './components/ListingsFilterPanel.jsx';
@@ -313,8 +312,7 @@ export default function ListingsOverviewPage() {
             <LoadingState />
           </div>
         </main>
-        <Footer />
-      </>
+              </>
     );
   }
 
@@ -405,8 +403,7 @@ export default function ListingsOverviewPage() {
         </div>
       </main>
 
-      <Footer />
-
+      
       {/* Generic Modal */}
       <Modal
         isOpen={modalContent.isOpen}

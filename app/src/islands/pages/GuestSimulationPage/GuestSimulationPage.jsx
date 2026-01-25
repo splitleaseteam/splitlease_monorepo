@@ -16,7 +16,6 @@
  * @module islands/pages/GuestSimulationPage/GuestSimulationPage
  */
 
-import Footer from '../../shared/Footer.jsx';
 import { ToastProvider } from '../../shared/Toast.jsx';
 import { useGuestSimulationLogic } from './useGuestSimulationLogic.js';
 import StepProgress from './components/StepProgress.jsx';
@@ -69,7 +68,6 @@ export default function GuestSimulationPage() {
             <p>Loading...</p>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -276,7 +274,6 @@ export default function GuestSimulationPage() {
             )}
           </div>
         </main>
-        <Footer />
       </div>
     </ToastProvider>
   );

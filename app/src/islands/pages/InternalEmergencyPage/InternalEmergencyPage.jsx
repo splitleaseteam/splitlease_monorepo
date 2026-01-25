@@ -11,7 +11,6 @@
  */
 
 import React from 'react';
-import Footer from '../../shared/Footer.jsx';
 import { useInternalEmergencyPageLogic } from './useInternalEmergencyPageLogic.js';
 import EmergencyList from './components/EmergencyList.jsx';
 import EmergencyDetails from './components/EmergencyDetails.jsx';
@@ -68,8 +67,7 @@ export default function InternalEmergencyPage() {
             </div>
           </div>
         </main>
-        <Footer />
-      </div>
+              </div>
     );
   }
 
@@ -92,8 +90,7 @@ export default function InternalEmergencyPage() {
             </div>
           </div>
         </main>
-        <Footer />
-      </div>
+              </div>
     );
   }
 
@@ -207,7 +204,6 @@ export default function InternalEmergencyPage() {
         </div>
       </main>
 
-      <Footer />
-    </div>
+          </div>
   );
 }
