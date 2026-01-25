@@ -398,19 +398,19 @@ export const routes = [
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/create-suggested-proposal',
+    path: '/_create-suggested-proposal',
     file: 'create-suggested-proposal.html',
-    aliases: ['/_internal/create-suggested-proposal.html'],
+    aliases: ['/_create-suggested-proposal.html'],
     protected: false,
     cloudflareInternal: true,
     internalName: 'create-suggested-proposal-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/leases-overview',
+    path: '/_leases-overview',
     file: 'leases-overview.html',
-    aliases: ['/_internal/leases-overview.html'],
-    protected: true,
+    aliases: ['/_leases-overview.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'leases-overview-view',
     hasDynamicSegment: false
@@ -437,10 +437,10 @@ export const routes = [
 
   // ===== SIMULATION PAGES =====
   {
-    path: '/_internal/guest-simulation',
+    path: '/_guest-simulation',
     file: 'guest-simulation.html',
-    aliases: ['/_internal/guest-simulation.html', '/simulation-guest-proposals-mobile-day1'],
-    protected: false,  // Auth handled in-page for usability testing
+    aliases: ['/_guest-simulation.html', '/simulation-guest-proposals-mobile-day1'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'guest-simulation-view',
     hasDynamicSegment: false
@@ -484,100 +484,100 @@ export const routes = [
 
   // ===== CORPORATE INTERNAL TOOLS =====
   {
-    path: '/_internal/guest-relationships',
+    path: '/_guest-relationships',
     file: 'guest-relationships.html',
-    aliases: ['/_internal/guest-relationships.html', '/guest-relationships'],
-    protected: true,
+    aliases: ['/_guest-relationships.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'guest-relationships-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/manage-virtual-meetings',
+    path: '/_manage-virtual-meetings',
     file: 'manage-virtual-meetings.html',
-    aliases: ['/_internal/manage-virtual-meetings.html', '/manage-virtual-meetings'],
-    protected: true,
+    aliases: ['/_manage-virtual-meetings.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'manage-virtual-meetings-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/manage-informational-texts',
+    path: '/_manage-informational-texts',
     file: 'manage-informational-texts.html',
-    aliases: ['/_internal/manage-informational-texts.html', '/manage-informational-texts'],
-    protected: true,
+    aliases: ['/_manage-informational-texts.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'manage-informational-texts-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/quick-price',
+    path: '/_quick-price',
     file: 'quick-price.html',
-    aliases: ['/_internal/quick-price.html', '/quick-price'],
-    protected: true,
+    aliases: ['/_quick-price.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'quick-price-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/verify-users',
+    path: '/_verify-users',
     file: 'verify-users.html',
-    aliases: ['/_internal/verify-users.html', '/verify-users'],
-    protected: true,
+    aliases: ['/_verify-users.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'verify-users-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/co-host-requests',
+    path: '/_co-host-requests',
     file: 'co-host-requests.html',
-    aliases: ['/_internal/co-host-requests.html', '/co-host-requests'],
-    protected: true,
+    aliases: ['/_co-host-requests.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'co-host-requests-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/simulation-admin',
+    path: '/_simulation-admin',
     file: 'simulation-admin.html',
-    aliases: ['/_internal/simulation-admin.html', '/simulation-admin'],
-    protected: true,
+    aliases: ['/_simulation-admin.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'simulation-admin-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/send-magic-login-links',
+    path: '/_send-magic-login-links',
     file: 'send-magic-login-links.html',
-    aliases: ['/_internal/send-magic-login-links.html', '/send-magic-login-links'],
-    protected: true,
+    aliases: ['/_send-magic-login-links.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'send-magic-login-links-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/modify-listings',
+    path: '/_modify-listings',
     file: 'modify-listings.html',
-    aliases: ['/_internal/modify-listings.html', '/modify-listings'],
-    protected: true,
+    aliases: ['/_modify-listings.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'modify-listings-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/message-curation',
+    path: '/_message-curation',
     file: 'message-curation.html',
-    aliases: ['/_internal/message-curation.html', '/message-curation'],
-    protected: true,
+    aliases: ['/_message-curation.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'message-curation-view',
     hasDynamicSegment: false
   },
   {
-    path: '/_internal/usability-data-management',
+    path: '/_usability-data-management',
     file: 'usability-data-management.html',
-    aliases: ['/_internal/usability-data-management.html', '/usability-data-management'],
-    protected: true,
+    aliases: ['/_usability-data-management.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'usability-data-management-view',
     hasDynamicSegment: false
@@ -585,10 +585,10 @@ export const routes = [
 
   // ===== AI TOOLS (INTERNAL) =====
   {
-    path: '/_internal/ai-tools',
+    path: '/_ai-tools',
     file: 'ai-tools.html',
-    aliases: ['/_internal/ai-tools.html', '/ai-tools'],
-    protected: true,
+    aliases: ['/_ai-tools.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'ai-tools-view',
     hasDynamicSegment: false
@@ -596,10 +596,10 @@ export const routes = [
 
   // ===== EMERGENCY MANAGEMENT (INTERNAL) =====
   {
-    path: '/_internal/emergency',
+    path: '/_emergency',
     file: 'internal-emergency.html',
-    aliases: ['/_internal/emergency.html', '/internal-emergency'],
-    protected: true,
+    aliases: ['/_emergency.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'internal-emergency-view',
     hasDynamicSegment: false
@@ -607,10 +607,10 @@ export const routes = [
 
   // ===== ADMIN THREADS MANAGEMENT =====
   {
-    path: '/_internal/admin-threads',
+    path: '/_admin-threads',
     file: 'admin-threads.html',
-    aliases: ['/_internal/admin-threads.html', '/admin-threads'],
-    protected: true,
+    aliases: ['/_admin-threads.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'admin-threads-view',
     hasDynamicSegment: false
@@ -618,22 +618,22 @@ export const routes = [
 
   // ===== MANAGE RENTAL APPLICATIONS (INTERNAL) =====
   {
-    path: '/_internal/manage-rental-applications',
+    path: '/_manage-rental-applications',
     file: 'manage-rental-applications.html',
-    aliases: ['/_internal/manage-rental-applications.html', '/manage-rental-applications'],
-    protected: true,
+    aliases: ['/_manage-rental-applications.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'manage-rental-applications-view',
     hasDynamicSegment: true,
-    dynamicPattern: '/_internal/manage-rental-applications/:id'
+    dynamicPattern: '/_manage-rental-applications/:id'
   },
 
   // ===== CREATE DOCUMENT (INTERNAL) =====
   {
-    path: '/_internal/create-document',
+    path: '/_create-document',
     file: 'create-document.html',
-    aliases: ['/_internal/create-document.html', '/create-document'],
-    protected: true,
+    aliases: ['/_create-document.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'create-document-view',
     hasDynamicSegment: false
@@ -641,10 +641,10 @@ export const routes = [
 
   // ===== PROPOSAL MANAGEMENT (INTERNAL) =====
   {
-    path: '/_internal/proposal-manage',
+    path: '/_proposal-manage',
     file: 'proposal-manage.html',
-    aliases: ['/_internal/proposal-manage.html', '/proposal-manage'],
-    protected: true,
+    aliases: ['/_proposal-manage.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'proposal-manage-view',
     hasDynamicSegment: false
@@ -652,10 +652,10 @@ export const routes = [
 
   // ===== LISTINGS OVERVIEW (INTERNAL) =====
   {
-    path: '/_internal/listings-overview',
+    path: '/_listings-overview',
     file: 'listings-overview.html',
-    aliases: ['/_internal/listings-overview.html', '/listings-overview'],
-    protected: true,
+    aliases: ['/_listings-overview.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'listings-overview-view',
     hasDynamicSegment: false
@@ -663,10 +663,10 @@ export const routes = [
 
   // ===== EXPERIENCE RESPONSES (INTERNAL) =====
   {
-    path: '/_internal/experience-responses',
+    path: '/_experience-responses',
     file: 'experience-responses.html',
-    aliases: ['/_internal/experience-responses.html', '/experience-responses'],
-    protected: true,
+    aliases: ['/_experience-responses.html'],
+    protected: false,
     cloudflareInternal: true,
     internalName: 'experience-responses-view',
     hasDynamicSegment: false
