@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from '../../shared/Toast';
 import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 
@@ -49,6 +49,9 @@ function adaptResponse(rawResponse) {
 }
 
 export function useExperienceResponsesPageLogic() {
+  // ===== TOAST =====
+  const { showToast } = useToast();
+
   // ===== AUTH STATE =====
   const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
 
@@ -74,7 +77,7 @@ export function useExperienceResponsesPageLogic() {
 
         if (!user || !session) {
           setAuthState('unauthorized');
-          toast.error('Authentication required');
+          showToast({ title: 'Authentication required', type: 'error' });
           window.location.href =
             '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
           return;
@@ -86,7 +89,7 @@ export function useExperienceResponsesPageLogic() {
       } catch (err) {
         console.error('[ExperienceResponses] Auth check failed:', err);
         setAuthState('unauthorized');
-        toast.error('Authentication failed');
+        showToast({ title: 'Authentication failed', type: 'error' });
       }
     };
 
@@ -136,7 +139,7 @@ export function useExperienceResponsesPageLogic() {
     } catch (err) {
       console.error('[ExperienceResponses] Fetch error:', err);
       setError(err.message || 'Failed to load responses');
-      toast.error('Failed to load responses');
+      showToast({ title: 'Failed to load responses', type: 'error' });
     } finally {
       setIsLoading(false);
     }
