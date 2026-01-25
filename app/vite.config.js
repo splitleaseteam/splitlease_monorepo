@@ -98,7 +98,7 @@ export default defineConfig({
       name: 'multi-page-routing',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          handleRouting(req, '/public');
+          handleRouting(req, ''); // No prefix in dev mode - Vite serves public/ at root
           next();
         });
       },
@@ -272,7 +272,9 @@ export default defineConfig({
         '_internal-test': resolve(__dirname, 'public/_internal-test.html'),
         'reset-password': resolve(__dirname, 'public/reset-password.html'),
         'messages': resolve(__dirname, 'public/messages.html'),
-        'auth-verify': resolve(__dirname, 'public/auth-verify.html')
+        'auth-verify': resolve(__dirname, 'public/auth-verify.html'),
+        'verify-users': resolve(__dirname, 'public/verify-users.html'),
+        'ai-tools': resolve(__dirname, 'public/ai-tools.html')
       },
       output: {
         // Ensure HTML files are output to dist root, not dist/public

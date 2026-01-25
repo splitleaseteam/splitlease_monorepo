@@ -17,6 +17,7 @@
         "lottie-react": "^2.4.1",
         "lucide-react": "^0.553.0",
         "motion-utils": "^12.23.6",
+        "node-releases": "^2.0.27",
         "qrcode.react": "^4.2.0",
         "react": "^18.2.0",
         "react-datepicker": "^8.9.0",
