@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "split-lease",
@@ -17,6 +16,7 @@
         "lottie-react": "^2.4.1",
         "lucide-react": "^0.553.0",
         "motion-utils": "^12.23.6",
+        "node-releases": "^2.0.27",
         "qrcode.react": "^4.2.0",
         "react": "^18.2.0",
         "react-datepicker": "^8.9.0",
@@ -42,6 +42,10 @@
         "tailwindcss": "^4.1.18",
         "typescript": "^5.9.3",
         "vite": "^5.0.0",
+      },
+      "optionalDependencies": {
+        "@rollup/rollup-linux-x64-gnu": "^4.53.1",
+        "lightningcss-linux-x64-gnu": "^1.29.3",
       },
     },
   },
