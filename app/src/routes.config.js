@@ -391,10 +391,11 @@ export const routes = [
   // ===== INTERNAL/DEV PAGES =====
   {
     path: '/_internal-test',
-    file: '_internal-test.html',
+    file: 'internal-test.html',
     aliases: ['/_internal-test.html'],
     protected: false,
-    cloudflareInternal: false,
+    cloudflareInternal: true,
+    internalName: 'internal-test-view',
     hasDynamicSegment: false
   },
   {
@@ -417,10 +418,11 @@ export const routes = [
   },
   {
     path: '/_email-sms-unit',
-    file: '_email-sms-unit.html',
+    file: 'email-sms-unit.html',
     aliases: ['/_email-sms-unit.html'],
     protected: false,
-    cloudflareInternal: false,
+    cloudflareInternal: true,
+    internalName: 'email-sms-unit-view',
     hasDynamicSegment: false
   },
 

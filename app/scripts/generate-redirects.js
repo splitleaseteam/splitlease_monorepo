@@ -28,10 +28,56 @@ function generateRedirects() {
   ];
 
   // Group routes by type for organized output
+  // IMPORTANT: Underscore-prefixed routes MUST come first due to Cloudflare processing quirks
   const dynamicRoutes = routes.filter(r => r.hasDynamicSegment && !r.devOnly);
   const staticRoutes = routes.filter(r => !r.hasDynamicSegment && !r.devOnly);
 
-  // Dynamic routes first (more specific) - these need special handling
+  // Separate underscore-prefixed routes (must come first for Cloudflare compatibility)
+  const underscoreRoutes = staticRoutes.filter(r => getBasePath(r).startsWith('/_'));
+  const regularStaticRoutes = staticRoutes.filter(r => !getBasePath(r).startsWith('/_'));
+
+  // Underscore-prefixed routes FIRST (Cloudflare has issues with these if they come later)
+  lines.push('# ===== UNDERSCORE-PREFIXED INTERNAL ROUTES =====');
+  lines.push('# These routes MUST come first due to Cloudflare\'s handling of underscore paths');
+  lines.push('');
+
+  for (const route of underscoreRoutes) {
+    const basePath = getBasePath(route);
+
+    if (route.cloudflareInternal && route.internalName) {
+      lines.push(`# ${basePath} → ${route.file}`);
+      lines.push(`${basePath}  /_internal/${route.internalName}  200`);
+      lines.push(`${basePath}/  /_internal/${route.internalName}  200`);
+    } else {
+      // For non-cloudflareInternal underscore routes, use _internal pattern anyway
+      // to avoid Cloudflare's restriction on serving underscore-prefixed files
+      const internalName = route.file.replace('.html', '-view').replace(/^_/, '');
+      lines.push(`# ${basePath} → ${route.file} (auto-converted to _internal pattern)`);
+      lines.push(`${basePath}  /_internal/${internalName}  200`);
+      lines.push(`${basePath}/  /_internal/${internalName}  200`);
+    }
+
+    // Process aliases for underscore routes
+    if (route.aliases && route.aliases.length > 0) {
+      const target = route.cloudflareInternal && route.internalName
+        ? `/_internal/${route.internalName}`
+        : `/_internal/${route.file.replace('.html', '-view').replace(/^_/, '')}`;
+
+      for (const alias of route.aliases) {
+        if (alias === `${basePath}.html` || alias === basePath) continue;
+        if (alias.startsWith(basePath)) continue;
+
+        lines.push(`# Alias: ${alias} → ${route.file}`);
+        lines.push(`${alias}  ${target}  200`);
+        if (!alias.endsWith('.html')) {
+          lines.push(`${alias}/  ${target}  200`);
+        }
+      }
+    }
+    lines.push('');
+  }
+
+  // Dynamic routes second (more specific) - these need special handling
   lines.push('# ===== DYNAMIC ROUTES (with parameters) =====');
   lines.push('# These routes use _internal/ files to avoid Cloudflare\'s 308 redirects');
   lines.push('');
@@ -63,11 +109,11 @@ function generateRedirects() {
     lines.push('');
   }
 
-  // Static routes
+  // Static routes (excluding underscore-prefixed, which are handled above)
   lines.push('# ===== STATIC PAGES =====');
   lines.push('');
 
-  for (const route of staticRoutes) {
+  for (const route of regularStaticRoutes) {
     const basePath = getBasePath(route);
 
     // Skip routes that don't need explicit redirects

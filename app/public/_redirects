@@ -3,6 +3,104 @@
 #
 # See: https://developers.cloudflare.com/pages/configuration/redirects/
 
+# ===== UNDERSCORE-PREFIXED INTERNAL ROUTES =====
+# These routes MUST come first due to Cloudflare's handling of underscore paths
+
+# /_internal-test → internal-test.html
+/_internal-test  /_internal/internal-test-view  200
+/_internal-test/  /_internal/internal-test-view  200
+
+# /_create-suggested-proposal → create-suggested-proposal.html
+/_create-suggested-proposal  /_internal/create-suggested-proposal-view  200
+/_create-suggested-proposal/  /_internal/create-suggested-proposal-view  200
+
+# /_leases-overview → leases-overview.html
+/_leases-overview  /_internal/leases-overview-view  200
+/_leases-overview/  /_internal/leases-overview-view  200
+
+# /_email-sms-unit → email-sms-unit.html
+/_email-sms-unit  /_internal/email-sms-unit-view  200
+/_email-sms-unit/  /_internal/email-sms-unit-view  200
+
+# /_guest-simulation → guest-simulation.html
+/_guest-simulation  /_internal/guest-simulation-view  200
+/_guest-simulation/  /_internal/guest-simulation-view  200
+# Alias: /simulation-guest-proposals-mobile-day1 → guest-simulation.html
+/simulation-guest-proposals-mobile-day1  /_internal/guest-simulation-view  200
+/simulation-guest-proposals-mobile-day1/  /_internal/guest-simulation-view  200
+
+# /_guest-relationships → guest-relationships.html
+/_guest-relationships  /_internal/guest-relationships-view  200
+/_guest-relationships/  /_internal/guest-relationships-view  200
+
+# /_manage-virtual-meetings → manage-virtual-meetings.html
+/_manage-virtual-meetings  /_internal/manage-virtual-meetings-view  200
+/_manage-virtual-meetings/  /_internal/manage-virtual-meetings-view  200
+
+# /_manage-informational-texts → manage-informational-texts.html
+/_manage-informational-texts  /_internal/manage-informational-texts-view  200
+/_manage-informational-texts/  /_internal/manage-informational-texts-view  200
+
+# /_quick-price → quick-price.html
+/_quick-price  /_internal/quick-price-view  200
+/_quick-price/  /_internal/quick-price-view  200
+
+# /_verify-users → verify-users.html
+/_verify-users  /_internal/verify-users-view  200
+/_verify-users/  /_internal/verify-users-view  200
+
+# /_co-host-requests → co-host-requests.html
+/_co-host-requests  /_internal/co-host-requests-view  200
+/_co-host-requests/  /_internal/co-host-requests-view  200
+
+# /_simulation-admin → simulation-admin.html
+/_simulation-admin  /_internal/simulation-admin-view  200
+/_simulation-admin/  /_internal/simulation-admin-view  200
+
+# /_send-magic-login-links → send-magic-login-links.html
+/_send-magic-login-links  /_internal/send-magic-login-links-view  200
+/_send-magic-login-links/  /_internal/send-magic-login-links-view  200
+
+# /_modify-listings → modify-listings.html
+/_modify-listings  /_internal/modify-listings-view  200
+/_modify-listings/  /_internal/modify-listings-view  200
+
+# /_message-curation → message-curation.html
+/_message-curation  /_internal/message-curation-view  200
+/_message-curation/  /_internal/message-curation-view  200
+
+# /_usability-data-management → usability-data-management.html
+/_usability-data-management  /_internal/usability-data-management-view  200
+/_usability-data-management/  /_internal/usability-data-management-view  200
+
+# /_ai-tools → ai-tools.html
+/_ai-tools  /_internal/ai-tools-view  200
+/_ai-tools/  /_internal/ai-tools-view  200
+
+# /_emergency → internal-emergency.html
+/_emergency  /_internal/internal-emergency-view  200
+/_emergency/  /_internal/internal-emergency-view  200
+
+# /_admin-threads → admin-threads.html
+/_admin-threads  /_internal/admin-threads-view  200
+/_admin-threads/  /_internal/admin-threads-view  200
+
+# /_create-document → create-document.html
+/_create-document  /_internal/create-document-view  200
+/_create-document/  /_internal/create-document-view  200
+
+# /_proposal-manage → proposal-manage.html
+/_proposal-manage  /_internal/proposal-manage-view  200
+/_proposal-manage/  /_internal/proposal-manage-view  200
+
+# /_listings-overview → listings-overview.html
+/_listings-overview  /_internal/listings-overview-view  200
+/_listings-overview/  /_internal/listings-overview-view  200
+
+# /_experience-responses → experience-responses.html
+/_experience-responses  /_internal/experience-responses-view  200
+/_experience-responses/  /_internal/experience-responses-view  200
+
 # ===== DYNAMIC ROUTES (with parameters) =====
 # These routes use _internal/ files to avoid Cloudflare's 308 redirects
 
@@ -162,32 +260,6 @@
 /visit-manual  /_internal/visit-manual-view  200
 /visit-manual/  /_internal/visit-manual-view  200
 
-# /_internal-test
-/_internal-test  /_internal-test.html  200
-/_internal-test/  /_internal-test.html  200
-/_internal-test.html  /_internal-test.html  200
-
-# /_create-suggested-proposal → create-suggested-proposal.html
-/_create-suggested-proposal  /_internal/create-suggested-proposal-view  200
-/_create-suggested-proposal/  /_internal/create-suggested-proposal-view  200
-
-# /_leases-overview → leases-overview.html
-/_leases-overview  /_internal/leases-overview-view  200
-/_leases-overview/  /_internal/leases-overview-view  200
-
-# /_email-sms-unit
-/_email-sms-unit  /_email-sms-unit.html  200
-/_email-sms-unit/  /_email-sms-unit.html  200
-/_email-sms-unit.html  /_email-sms-unit.html  200
-
-# /_guest-simulation → guest-simulation.html
-/_guest-simulation  /_internal/guest-simulation-view  200
-/_guest-simulation/  /_internal/guest-simulation-view  200
-
-# Alias: /simulation-guest-proposals-mobile-day1 → guest-simulation.html
-/simulation-guest-proposals-mobile-day1  /_internal/guest-simulation-view  200
-/simulation-guest-proposals-mobile-day1/  /_internal/guest-simulation-view  200
-
 # /simulation-guest-mobile → simulation-guest-mobile.html
 /simulation-guest-mobile  /_internal/simulation-guest-mobile-view  200
 /simulation-guest-mobile/  /_internal/simulation-guest-mobile-view  200
@@ -219,78 +291,6 @@
 # Alias: /host-simulation → simulation-host-mobile.html
 /host-simulation  /_internal/simulation-host-mobile-view  200
 /host-simulation/  /_internal/simulation-host-mobile-view  200
-
-# /_guest-relationships → guest-relationships.html
-/_guest-relationships  /_internal/guest-relationships-view  200
-/_guest-relationships/  /_internal/guest-relationships-view  200
-
-# /_manage-virtual-meetings → manage-virtual-meetings.html
-/_manage-virtual-meetings  /_internal/manage-virtual-meetings-view  200
-/_manage-virtual-meetings/  /_internal/manage-virtual-meetings-view  200
-
-# /_manage-informational-texts → manage-informational-texts.html
-/_manage-informational-texts  /_internal/manage-informational-texts-view  200
-/_manage-informational-texts/  /_internal/manage-informational-texts-view  200
-
-# /_quick-price → quick-price.html
-/_quick-price  /_internal/quick-price-view  200
-/_quick-price/  /_internal/quick-price-view  200
-
-# /_verify-users → verify-users.html
-/_verify-users  /_internal/verify-users-view  200
-/_verify-users/  /_internal/verify-users-view  200
-
-# /_co-host-requests → co-host-requests.html
-/_co-host-requests  /_internal/co-host-requests-view  200
-/_co-host-requests/  /_internal/co-host-requests-view  200
-
-# /_simulation-admin → simulation-admin.html
-/_simulation-admin  /_internal/simulation-admin-view  200
-/_simulation-admin/  /_internal/simulation-admin-view  200
-
-# /_send-magic-login-links → send-magic-login-links.html
-/_send-magic-login-links  /_internal/send-magic-login-links-view  200
-/_send-magic-login-links/  /_internal/send-magic-login-links-view  200
-
-# /_modify-listings → modify-listings.html
-/_modify-listings  /_internal/modify-listings-view  200
-/_modify-listings/  /_internal/modify-listings-view  200
-
-# /_message-curation → message-curation.html
-/_message-curation  /_internal/message-curation-view  200
-/_message-curation/  /_internal/message-curation-view  200
-
-# /_usability-data-management → usability-data-management.html
-/_usability-data-management  /_internal/usability-data-management-view  200
-/_usability-data-management/  /_internal/usability-data-management-view  200
-
-# /_ai-tools → ai-tools.html
-/_ai-tools  /_internal/ai-tools-view  200
-/_ai-tools/  /_internal/ai-tools-view  200
-
-# /_emergency → internal-emergency.html
-/_emergency  /_internal/internal-emergency-view  200
-/_emergency/  /_internal/internal-emergency-view  200
-
-# /_admin-threads → admin-threads.html
-/_admin-threads  /_internal/admin-threads-view  200
-/_admin-threads/  /_internal/admin-threads-view  200
-
-# /_create-document → create-document.html
-/_create-document  /_internal/create-document-view  200
-/_create-document/  /_internal/create-document-view  200
-
-# /_proposal-manage → proposal-manage.html
-/_proposal-manage  /_internal/proposal-manage-view  200
-/_proposal-manage/  /_internal/proposal-manage-view  200
-
-# /_listings-overview → listings-overview.html
-/_listings-overview  /_internal/listings-overview-view  200
-/_listings-overview/  /_internal/listings-overview-view  200
-
-# /_experience-responses → experience-responses.html
-/_experience-responses  /_internal/experience-responses-view  200
-/_experience-responses/  /_internal/experience-responses-view  200
 
 # /report-emergency → report-emergency.html
 /report-emergency  /_internal/report-emergency-view  200
