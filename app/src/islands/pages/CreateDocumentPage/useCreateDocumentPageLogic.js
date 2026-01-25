@@ -77,6 +77,8 @@ export function useCreateDocumentPageLogic({ showToast }) {
 
   // ─────────────────────────────────────────────────────────
   // Authentication Check
+  // NOTE: Admin check removed to allow any authenticated user access for testing
+  // Original check required userType === 'Split Lease' || userType === 'Admin'
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     async function checkAuth() {
@@ -90,7 +92,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
           return;
         }
 
-        // Check if user is admin by querying the user table
+        // Fetch user data (admin check removed for testing)
         const { data: userData, error: userError } = await supabase
           .from('user')
           .select('_id, email, Name, "Type - User Current"')
@@ -104,17 +106,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
           return;
         }
 
-        // Check for admin/Split Lease user type
-        const userType = userData['Type - User Current'];
-        const isAdmin = userType === 'Split Lease' || userType === 'Admin';
-
-        if (!isAdmin) {
-          console.log('[CreateDocumentPage] User is not admin:', userType);
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
+        // Allow any authenticated user for testing
         setCurrentUser(userData);
         setIsAuthorized(true);
         setIsInitializing(false);

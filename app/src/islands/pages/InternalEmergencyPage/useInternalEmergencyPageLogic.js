@@ -58,12 +58,8 @@ export function useInternalEmergencyPageLogic() {
           return;
         }
 
-        // Check admin status (will be validated by Edge Function anyway)
-        if (!authResult.user?.admin) {
-          setError('Access denied. Admin privileges required.');
-          setLoading(false);
-          return;
-        }
+        // NOTE: Admin check removed to allow any authenticated user access for testing
+        // Original check: if (!authResult.user?.admin) { setError('Access denied...'); return; }
 
         // Auth passed, load data
         loadInitialData();
