@@ -238,6 +238,15 @@ export const routes = [
     excludeFromFunctions: true
   },
   {
+    path: '/host-leases',
+    file: 'host-leases.html',
+    aliases: ['/host-leases.html'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'host-leases-view',
+    hasDynamicSegment: false
+  },
+  {
     path: '/self-listing',
     file: 'self-listing.html',
     aliases: ['/self-listing.html'],
