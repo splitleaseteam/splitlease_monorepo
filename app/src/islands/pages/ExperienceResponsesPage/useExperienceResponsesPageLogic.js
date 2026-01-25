@@ -73,9 +73,10 @@ export function useExperienceResponsesPageLogic() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
+        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
+        const isAuthenticated = await checkAuthStatus();
 
-        if (!user || !session) {
+        if (!isAuthenticated) {
           setAuthState('unauthorized');
           showToast({ title: 'Authentication required', type: 'error' });
           window.location.href =
