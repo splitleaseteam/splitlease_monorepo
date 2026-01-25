@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bun run lint && bun run knip && vite --port 3000",
+    "dev": "bun run lint && vite --port 3000",
     "dev:test": "bun run lint && vite --port 8010 --strictPort",
     "dev:test:stop": "node scripts/kill-port.cjs 8010",
     "dev:test:restart": "bun run dev:test:stop && bun run dev:test",

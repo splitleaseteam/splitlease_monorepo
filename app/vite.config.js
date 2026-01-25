@@ -20,6 +20,16 @@ function handleRouting(req, publicPrefix = '') {
   const [urlPath, queryStringPart] = url.split('?');
   const queryString = queryStringPart ? `?${queryStringPart}` : '';
 
+  // Skip Vite's internal requests and source files
+  // These should be handled by Vite's dev server, not our routing
+  if (urlPath.startsWith('/src/') ||
+      urlPath.startsWith('/@vite/') ||
+      urlPath.startsWith('/@react-refresh') ||
+      urlPath.startsWith('/node_modules/') ||
+      urlPath.includes('.')) {
+    return; // Don't rewrite - let Vite handle it
+  }
+
   // Special handling for help-center category routes (e.g., /help-center/guests)
   // Must check before general route matching
   // The category is extracted from the URL by the client-side JavaScript
@@ -274,7 +284,8 @@ export default defineConfig({
         'messages': resolve(__dirname, 'public/messages.html'),
         'auth-verify': resolve(__dirname, 'public/auth-verify.html'),
         'verify-users': resolve(__dirname, 'public/verify-users.html'),
-        'ai-tools': resolve(__dirname, 'public/ai-tools.html')
+        'ai-tools': resolve(__dirname, 'public/ai-tools.html'),
+        'listings-overview': resolve(__dirname, 'public/listings-overview.html')
       },
       output: {
         // Ensure HTML files are output to dist root, not dist/public
