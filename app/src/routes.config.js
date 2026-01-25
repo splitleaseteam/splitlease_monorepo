@@ -225,6 +225,19 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== GUEST LEASES =====
+  {
+    path: '/guest-leases',
+    file: 'guest-leases.html',
+    aliases: ['/guest-leases.html', '/my-leases'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'guest-leases-view',
+    hasDynamicSegment: true,
+    dynamicPattern: '/guest-leases/:userId',
+    excludeFromFunctions: true
+  },
+
   // ===== HOST/LISTING MANAGEMENT =====
   {
     path: '/host-proposals',

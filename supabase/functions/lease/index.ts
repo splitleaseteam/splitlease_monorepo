@@ -41,11 +41,11 @@ import {
 
 console.log('[lease] Edge Function initializing...');
 
-const ALLOWED_ACTIONS = ['create', 'get', 'generate_dates', 'get_host_leases'] as const;
+const ALLOWED_ACTIONS = ['create', 'get', 'generate_dates', 'get_host_leases', 'get_guest_leases'] as const;
 type Action = (typeof ALLOWED_ACTIONS)[number];
 
 // Actions that require authentication
-const AUTH_REQUIRED_ACTIONS = new Set<Action>(['get', 'get_host_leases']);
+const AUTH_REQUIRED_ACTIONS = new Set<Action>(['get', 'get_host_leases', 'get_guest_leases']);
 
 Deno.serve(async (req: Request) => {
   try {
@@ -132,6 +132,13 @@ Deno.serve(async (req: Request) => {
         console.log('[lease] Loading get_host_leases handler...');
         const { handleGetHostLeases } = await import('./handlers/getHostLeases.ts');
         result = await handleGetHostLeases(payload, user, supabase);
+        break;
+      }
+
+      case 'get_guest_leases': {
+        console.log('[lease] Loading get_guest_leases handler...');
+        const { handleGetGuestLeases } = await import('./handlers/getGuestLeases.ts');
+        result = await handleGetGuestLeases(payload, user, supabase);
         break;
       }
 

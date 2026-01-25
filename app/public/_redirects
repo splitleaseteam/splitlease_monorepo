@@ -29,6 +29,11 @@
 # /help-center/:category → help-center-category.html (wildcard only, base handled separately)
 /help-center/*  /_internal/help-center-category-view  200
 
+# /guest-leases → guest-leases.html
+/guest-leases  /_internal/guest-leases-view  200
+/guest-leases/  /_internal/guest-leases-view  200
+/guest-leases/*  /_internal/guest-leases-view  200
+
 # /host-proposals → host-proposals.html
 /host-proposals  /_internal/host-proposals-view  200
 /host-proposals/  /_internal/host-proposals-view  200
