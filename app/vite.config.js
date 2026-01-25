@@ -102,6 +102,12 @@ function copyDirectory(src, dest) {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // Fix motion-utils broken ESM exports by using CJS version (absolute path)
+      'motion-utils': resolve(__dirname, 'node_modules/motion-utils/dist/cjs/index.js'),
+    },
+  },
   plugins: [
     react(),
     {
