@@ -50,16 +50,16 @@ export function useInternalEmergencyPageLogic() {
   // ============================================================================
 
   useEffect(() => {
-    async function checkAuth() {
+    async function verifyAuth() {
       try {
-        const authResult = await checkAuthStatus();
-        if (!authResult.authenticated) {
+        // checkAuthStatus() returns boolean (true if authenticated)
+        const isAuthenticated = await checkAuthStatus();
+        if (!isAuthenticated) {
           window.location.href = '/?login=true&redirect=' + encodeURIComponent(window.location.pathname);
           return;
         }
 
         // NOTE: Admin check removed to allow any authenticated user access for testing
-        // Original check: if (!authResult.user?.admin) { setError('Access denied...'); return; }
 
         // Auth passed, load data
         loadInitialData();
@@ -70,7 +70,7 @@ export function useInternalEmergencyPageLogic() {
       }
     }
 
-    checkAuth();
+    verifyAuth();
   }, []);
 
   // ============================================================================

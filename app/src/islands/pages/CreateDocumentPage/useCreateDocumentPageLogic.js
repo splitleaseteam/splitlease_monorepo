@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase.js';
+import { checkAuthStatus } from '../../../lib/auth.js';
 import { validateDocumentForm } from '../../../logic/rules/documents/validateDocumentForm.js';
 
 // Edge Function URL for document operations
@@ -78,36 +79,23 @@ export function useCreateDocumentPageLogic({ showToast }) {
   // ─────────────────────────────────────────────────────────
   // Authentication Check
   // NOTE: Admin check removed to allow any authenticated user access for testing
-  // Original check required userType === 'Split Lease' || userType === 'Admin'
+  // Uses checkAuthStatus() which supports both Supabase Auth and legacy token auth
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
-    async function checkAuth() {
+    async function verifyAuth() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // checkAuthStatus handles both Supabase Auth and legacy token auth
+        const isAuthenticated = await checkAuthStatus();
 
-        if (!session) {
-          console.log('[CreateDocumentPage] No session, unauthorized');
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        // Fetch user data (admin check removed for testing)
-        const { data: userData, error: userError } = await supabase
-          .from('user')
-          .select('_id, email, Name, "Type - User Current"')
-          .eq('email', session.user.email)
-          .single();
-
-        if (userError || !userData) {
-          console.error('[CreateDocumentPage] Failed to fetch user data:', userError);
+        if (!isAuthenticated) {
+          console.log('[CreateDocumentPage] Not authenticated');
           setIsAuthorized(false);
           setIsInitializing(false);
           return;
         }
 
         // Allow any authenticated user for testing
-        setCurrentUser(userData);
+        setCurrentUser({ authenticated: true });
         setIsAuthorized(true);
         setIsInitializing(false);
 
@@ -120,7 +108,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       }
     }
 
-    checkAuth();
+    verifyAuth();
   }, []);
 
   // ─────────────────────────────────────────────────────────
