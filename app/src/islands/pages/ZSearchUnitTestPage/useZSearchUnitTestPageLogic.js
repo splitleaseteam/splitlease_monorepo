@@ -165,6 +165,9 @@ export function useZSearchUnitTestPageLogic() {
       if (filters.showActive) {
         query = query.eq('Active', true);
       }
+      if (filters.showApproved) {
+        query = query.eq('Approved', true);
+      }
       if (filters.showComplete) {
         query = query.eq('"Complete"', true);
       }
@@ -207,13 +210,13 @@ export function useZSearchUnitTestPageLogic() {
 
       if (fetchError) throw fetchError;
 
-      // Client-side filtering for days availability
+      // Client-side filtering for days and nights availability
       // Note: This is done client-side because Supabase array containment queries
       // can be complex. For production, consider moving to a stored procedure.
-      const filteredByDays = filterListingsByDaysAvailability(data || [], filters.selectedDays);
+      const filteredByAvailability = filterListingsByAvailability(data || [], filters.selectedDays);
 
       // Transform listings for display
-      const transformedListings = filteredByDays.map(listing => ({
+      const transformedListings = filteredByAvailability.map(listing => ({
         id: listing._id,
         name: listing.Name || 'Untitled Listing',
         borough: getBoroughName(listing['Location - Borough']),
@@ -324,50 +327,78 @@ export function useZSearchUnitTestPageLogic() {
 }
 
 /**
- * Filter listings by days availability (client-side)
+ * Parse an array field that might be stored as JSON string or native array
+ */
+function parseArrayField(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+/**
+ * Filter listings by days and nights availability (client-side)
  * Implements the search algorithm:
  *   Days_Available CONTAINS [Selected Days]
  *   AND Days_Not_Available NOT_OVERLAPS [Selected Days]
+ *   AND Nights_Available CONTAINS [Selected Nights]
+ *   AND Nights_Not_Available NOT_OVERLAPS [Selected Days]
+ *
+ * Note: Selected Nights are derived from Selected Days (the nights you sleep
+ * during your stay correspond to the days you're staying)
  */
-function filterListingsByDaysAvailability(listings, selectedDays) {
+function filterListingsByAvailability(listings, selectedDays) {
   if (!selectedDays || selectedDays.length === 0) {
     return listings;
   }
 
+  // Selected nights = the nights corresponding to selected days
+  // When staying on days [1,2,3,4,5] (Mon-Fri), you need nights [1,2,3,4,5]
+  const selectedNights = selectedDays;
+
   return listings.filter(listing => {
-    // Parse days available from listing
-    let daysAvailable = [];
-    try {
-      const rawDays = listing['Days Available (List of Days)'];
-      if (Array.isArray(rawDays)) {
-        daysAvailable = rawDays;
-      } else if (typeof rawDays === 'string') {
-        daysAvailable = JSON.parse(rawDays);
-      }
-    } catch (e) {
-      // If parsing fails, include listing by default
-      return true;
-    }
+    // Parse days available
+    const daysAvailable = parseArrayField(listing['Days Available (List of Days)']);
 
-    // Check if all selected days are available
+    // Parse days not available
+    const daysNotAvailable = parseArrayField(listing['Days_Not_Available']);
+
+    // Parse nights available
+    const nightsAvailable = parseArrayField(listing['Nights_Available']);
+
+    // Parse nights not available
+    const nightsNotAvailable = parseArrayField(listing['Nights_Not_Available']);
+
+    // Check 1: Days_Available CONTAINS [Selected Days]
+    // All selected days must be in the available days list
     const allDaysAvailable = selectedDays.every(day => daysAvailable.includes(day));
+    if (!allDaysAvailable) return false;
 
-    // Parse days NOT available
-    let daysNotAvailable = [];
-    try {
-      const rawNotAvailable = listing['Days_Not_Available'];
-      if (Array.isArray(rawNotAvailable)) {
-        daysNotAvailable = rawNotAvailable;
-      } else if (typeof rawNotAvailable === 'string') {
-        daysNotAvailable = JSON.parse(rawNotAvailable);
-      }
-    } catch (e) {
-      daysNotAvailable = [];
+    // Check 2: Days_Not_Available NOT_OVERLAPS [Selected Days]
+    // No selected day should be in the not-available days list
+    const noDaysBlocked = !selectedDays.some(day => daysNotAvailable.includes(day));
+    if (!noDaysBlocked) return false;
+
+    // Check 3: Nights_Available CONTAINS [Selected Nights]
+    // All selected nights must be available (if nights data exists)
+    // Note: If nightsAvailable is empty, we skip this check (legacy data may not have nights)
+    if (nightsAvailable.length > 0) {
+      const allNightsAvailable = selectedNights.every(night => nightsAvailable.includes(night));
+      if (!allNightsAvailable) return false;
     }
 
-    // Check that selected days don't overlap with not-available days
-    const noOverlapWithNotAvailable = !selectedDays.some(day => daysNotAvailable.includes(day));
+    // Check 4: Nights_Not_Available NOT_OVERLAPS [Selected Days]
+    // Per algorithm spec, this checks selectedDays against nightsNotAvailable
+    const noNightsBlocked = !selectedDays.some(day => nightsNotAvailable.includes(day));
+    if (!noNightsBlocked) return false;
 
-    return allDaysAvailable && noOverlapWithNotAvailable;
+    return true;
   });
 }
