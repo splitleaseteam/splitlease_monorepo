@@ -1,0 +1,136 @@
+/**
+ * PaymentRecordsTable Component Styles
+ */
+
+.payment-records {
+  /* Container */
+}
+
+.payment-records__empty {
+  text-align: center;
+  padding: 24px;
+  color: #6B6B6B;
+}
+
+/* Desktop Table */
+.payment-records__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payment-records__table th,
+.payment-records__table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.payment-records__table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B6B6B;
+  text-transform: uppercase;
+  background: #F7F8F9;
+}
+
+.payment-records__date {
+  white-space: nowrap;
+}
+
+.payment-records__actual-date {
+  display: block;
+  font-size: 12px;
+  color: #6B6B6B;
+}
+
+.payment-records__amount {
+  font-weight: 600;
+  color: #4D4D4D;
+}
+
+.payment-records__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.payment-records__status.paid {
+  color: #166534;
+}
+
+.payment-records__status.pending {
+  color: #92400E;
+}
+
+.payment-records__receipt {
+  text-align: center;
+}
+
+.payment-records__no-receipt {
+  color: #6B6B6B;
+}
+
+/* Mobile Cards */
+.payment-records__cards {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .payment-records__table {
+    display: none;
+  }
+
+  .payment-records__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .payment-records__card {
+    background: #F7F8F9;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .payment-records__card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .payment-records__card-date {
+    font-size: 14px;
+    color: #4D4D4D;
+  }
+
+  .payment-records__card-status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .payment-records__card-status.paid {
+    background: #DCFCE7;
+    color: #166534;
+  }
+
+  .payment-records__card-status.pending {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+
+  .payment-records__card-amount {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4D4D4D;
+    margin-bottom: 12px;
+  }
+
+  .payment-records__card .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

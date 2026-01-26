@@ -17,6 +17,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
 import { adaptLeaseFromSupabase } from '../../../logic/processors/leases/adaptLeaseFromSupabase';
 import { filterLeases } from '../../../logic/processors/leases/filterLeases';
 import { sortLeases } from '../../../logic/processors/leases/sortLeases';
@@ -88,25 +89,29 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     { value: 'cancelled', label: 'Mark Cancelled' },
   ], []);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-        if (!user || !session) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
+        // Try to get authentication token if user is logged in
+        // No redirect if not authenticated - this is an internal page accessible without login
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAccessToken(session.access_token);
+        } else {
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+          }
         }
-        setAccessToken(session.access_token);
       } catch (err) {
         console.error('[LeasesOverview] Auth check failed:', err);
-        showToast({ title: 'Authentication failed', type: 'error' });
-        window.location.href = '/';
+        // No redirect - just log the error
       }
     };
     checkAuth();
-  }, [showToast]);
+  }, []);
 
   // ===== FETCH LEASES =====
   const fetchLeases = useCallback(async () => {

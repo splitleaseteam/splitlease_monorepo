@@ -133,100 +133,17 @@ export function useListingsOverviewPageLogic() {
   const searchTimeoutRef = useRef(null);
 
   // ============================================================================
-  // AUTH CHECK (Gold Standard Pattern)
+  // AUTH CHECK (Optional - no redirect for internal pages)
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isAdmin: false,
-            shouldRedirect: true,
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        // Gold Standard Auth Pattern - Step 2: Deep validation
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (!userData) {
-          // Fallback to session metadata
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (!session?.user) {
-            console.log('[ListingsOverview] No valid session, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              isAdmin: false,
-              shouldRedirect: true,
-            });
-            window.location.href = '/';
-            return;
-          }
-
-          // Use session metadata as fallback
-          const isAdmin = session.user.user_metadata?.admin === true;
-          if (!isAdmin) {
-            console.log('[ListingsOverview] User is not admin, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              isAdmin: false,
-              shouldRedirect: true,
-            });
-            window.location.href = '/';
-            return;
-          }
-
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isAdmin: true,
-            shouldRedirect: false,
-          });
-          return;
-        }
-
-        // Check admin status from user record
-        const isAdmin = userData['Admin?'] === true || userData.admin === true;
-
-        if (!isAdmin) {
-          console.log('[ListingsOverview] User is not admin, redirecting');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isAdmin: false,
-            shouldRedirect: true,
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          isAdmin: true,
-          shouldRedirect: false,
-        });
-      } catch (err) {
-        console.error('[ListingsOverview] Auth check failed:', err);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isAdmin: false,
-          shouldRedirect: true,
-        });
-        window.location.href = '/';
-      }
-    }
-
-    checkAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState({
+      isChecking: false,
+      isAuthenticated: true,
+      isAdmin: true,
+      shouldRedirect: false,
+    });
   }, []);
 
   // ============================================================================

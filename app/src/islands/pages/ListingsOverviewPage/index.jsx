@@ -19,8 +19,6 @@
  * - Admin-only access with Gold Standard Auth Pattern
  */
 
-import Header from '../../shared/Header.jsx';
-import Footer from '../../shared/Footer.jsx';
 import { useListingsOverviewPageLogic } from './useListingsOverviewPageLogic.js';
 import ListingsHeader from './components/ListingsHeader.jsx';
 import ListingsFilterPanel from './components/ListingsFilterPanel.jsx';
@@ -309,14 +307,12 @@ export default function ListingsOverviewPage() {
   if (authState.shouldRedirect) {
     return (
       <>
-        <Header />
-        <main className="lo-main-content">
+                <main className="lo-main-content">
           <div className="lo-page">
             <LoadingState />
           </div>
         </main>
-        <Footer />
-      </>
+              </>
     );
   }
 
@@ -346,8 +342,7 @@ export default function ListingsOverviewPage() {
 
   return (
     <>
-      <Header />
-
+      
       <main className="lo-main-content">
         <div className="lo-page">
           {/* Page Header */}
@@ -408,8 +403,7 @@ export default function ListingsOverviewPage() {
         </div>
       </main>
 
-      <Footer />
-
+      
       {/* Generic Modal */}
       <Modal
         isOpen={modalContent.isOpen}

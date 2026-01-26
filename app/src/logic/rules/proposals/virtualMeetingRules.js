@@ -52,7 +52,7 @@ function parseSuggestedDates(suggestedDates) {
     try {
       const parsed = JSON.parse(suggestedDates);
       return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }

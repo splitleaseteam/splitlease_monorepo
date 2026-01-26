@@ -62,7 +62,7 @@ function formatShortDate(dateStr) {
       month: 'short',
       day: 'numeric'
     });
-  } catch (e) {
+  } catch (_e) {
     return '';
   }
 }
@@ -92,7 +92,7 @@ function formatDateTime(dateTimeStr) {
     };
 
     return date.toLocaleString('en-US', options).replace(',', '');
-  } catch (e) {
+  } catch (_e) {
     return dateTimeStr;
   }
 }
@@ -106,7 +106,7 @@ function isFutureDateTime(dateTimeStr) {
   try {
     const date = new Date(dateTimeStr);
     return date.getTime() > Date.now();
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }
@@ -125,7 +125,7 @@ function parseSuggestedDates(suggestedDates) {
     try {
       const parsed = JSON.parse(suggestedDates);
       return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }

@@ -1,0 +1,142 @@
+/**
+ * DateChangeRequestsTable Component Styles
+ */
+
+.date-change-requests {
+  /* Container */
+}
+
+.date-change-requests__empty {
+  text-align: center;
+  padding: 24px;
+  color: #6B6B6B;
+}
+
+.date-change-requests__empty p {
+  margin-bottom: 12px;
+}
+
+.date-change-requests__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.date-change-requests__item {
+  background: #F7F8F9;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.date-change-requests__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.date-change-requests__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.date-change-requests__status--pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.date-change-requests__status--accepted {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.date-change-requests__status--rejected {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.date-change-requests__status--expired {
+  background: #E5E5E5;
+  color: #4D4D4D;
+}
+
+.date-change-requests__status--expiring {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.date-change-requests__status--cancelled {
+  background: #E5E5E5;
+  color: #6B6B6B;
+}
+
+.date-change-requests__date {
+  font-size: 12px;
+  color: #6B6B6B;
+}
+
+.date-change-requests__details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-change-requests__change {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.date-change-requests__label {
+  color: #6B6B6B;
+  min-width: 80px;
+}
+
+.date-change-requests__value {
+  color: #4D4D4D;
+  font-weight: 500;
+}
+
+.date-change-requests__message {
+  margin-top: 8px;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+}
+
+.date-change-requests__message .date-change-requests__label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.date-change-requests__message p {
+  margin: 0;
+  font-size: 14px;
+  color: #4D4D4D;
+}
+
+.date-change-requests__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #E5E5E5;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .date-change-requests__actions {
+    flex-direction: column;
+  }
+
+  .date-change-requests__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

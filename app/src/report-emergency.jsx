@@ -8,7 +8,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ReportEmergencyPage from './islands/pages/ReportEmergencyPage/ReportEmergencyPage.jsx';
-import './index.css';
+import './styles/main.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

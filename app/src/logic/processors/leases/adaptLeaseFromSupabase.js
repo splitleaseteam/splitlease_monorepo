@@ -53,6 +53,7 @@ export function adaptLeaseFromSupabase(row) {
 
   return {
     // Core identifiers
+    _id: row._id,
     id: row._id,
     bubbleId: row.bubble_id,
     agreementNumber: row['Agreement Number'] || null,
@@ -88,11 +89,25 @@ export function adaptLeaseFromSupabase(row) {
       ? row.stays.map(adaptStayFromSupabase)
       : parseJsonbArray(row['List of Stays']),
 
-    // Documents (if attached)
+    // Payment records (from join)
+    paymentRecords: Array.isArray(row.paymentRecords)
+      ? row.paymentRecords.map(adaptPaymentRecordFromSupabase)
+      : [],
+
+    // Date change requests (from join)
+    dateChangeRequests: Array.isArray(row.dateChangeRequests)
+      ? row.dateChangeRequests.map(adaptDateChangeRequestFromSupabase)
+      : [],
+
+    // Documents
     documents: row.documents || [],
+    periodicTenancyAgreement: row['Periodic Tenancy Agreement'] || null,
+    supplementalAgreement: row['supplemental agreement'] || row['Supplemental Agreement'] || null,
+    creditCardAuthorizationForm: row['Form Credit Card Authorization'] || null,
 
     // Other fields
     thread: row.Thread || null,
+    checkInCode: row['Check-in Code'] || null,
     cancellationPolicy: row['Cancellation Policy'] || null,
     hostPayoutSchedule: row['Host Payout Schedule'] || null,
     wereDocumentsGenerated: row['were documents generated?'] || false,
@@ -121,12 +136,15 @@ function adaptUserFromSupabase(user) {
   if (!user) return null;
 
   return {
+    _id: user._id,
     id: user._id,
     email: user.email || user.Email || null,
-    firstName: user['First Name'] || user.first_name || null,
-    lastName: user['Last Name'] || user.last_name || null,
-    phone: user.Phone || user.phone || null,
+    firstName: user['Name - First'] || user['First Name'] || user.first_name || null,
+    lastName: user['Name - Last'] || user['Last Name'] || user.last_name || null,
+    fullName: user['Name - Full'] || null,
+    phone: user['Phone Number'] || user.Phone || user.phone || null,
     avatarUrl: user['Profile Photo'] || user.avatar_url || null,
+    isVerified: user['user verified?'] || false,
   };
 }
 
@@ -137,14 +155,15 @@ function adaptListingFromSupabase(listing) {
   if (!listing) return null;
 
   return {
+    _id: listing._id,
     id: listing._id,
-    name: listing['Listing Title'] || listing.name || 'Unnamed Listing',
+    name: listing.Name || listing['Listing Title'] || listing.name || 'Unnamed Listing',
     address: listing.Address || listing.address || null,
     neighborhood: listing.Neighborhood || listing.neighborhood || null,
     city: listing.City || listing.city || null,
     state: listing.State || listing.state || null,
     zipCode: listing['Zip Code'] || listing.zip_code || null,
-    imageUrl: listing['Primary Image'] || listing.image_url || null,
+    imageUrl: listing['Cover Photo'] || listing['Primary Image'] || listing.image_url || null,
   };
 }
 
@@ -155,6 +174,7 @@ function adaptStayFromSupabase(stay) {
   if (!stay) return null;
 
   return {
+    _id: stay._id,
     id: stay._id,
     status: stay['Stay Status'] || 'unknown',
     checkIn: parseDate(stay['Check In (night)']),
@@ -165,6 +185,58 @@ function adaptStayFromSupabase(stay) {
     firstIndex: parseInt(stay['first index']) || null,
     lastIndex: parseInt(stay['last index']) || null,
     nights: parseJsonbArray(stay.Nights),
+    dates: parseJsonbArray(stay['Dates - List of dates in this period']),
+    reviewSubmittedByGuest: stay['Review Submitted by Guest'] || null,
+    reviewSubmittedByHost: stay['Review Submitted by Host'] || null,
+  };
+}
+
+/**
+ * Adapt payment record from Supabase
+ */
+function adaptPaymentRecordFromSupabase(payment) {
+  if (!payment) return null;
+
+  return {
+    _id: payment._id,
+    id: payment._id,
+    leaseId: payment['Booking - Reservation'],
+    paymentNumber: payment['Payment #'],
+    scheduledDate: parseDate(payment['Scheduled Date']),
+    actualDate: parseDate(payment['Actual Date']),
+    rent: parseFloat(payment['Rent Amount']) || 0,
+    maintenanceFee: parseFloat(payment['Maintenance Fee']) || 0,
+    damageDeposit: parseFloat(payment['Damage Deposit']) || 0,
+    totalAmount: parseFloat(payment['Total Amount']) || 0,
+    bankTransactionNumber: payment['Bank Transaction Number'] || null,
+    receiptUrl: payment['Payment Receipt'] || null,
+    isPaid: payment['Is Paid'] || false,
+    isRefunded: payment['Is Refunded'] || false,
+  };
+}
+
+/**
+ * Adapt date change request from Supabase
+ */
+function adaptDateChangeRequestFromSupabase(dcr) {
+  if (!dcr) return null;
+
+  return {
+    _id: dcr._id,
+    id: dcr._id,
+    leaseId: dcr.Lease,
+    requestedById: dcr['Requested by'],
+    requestReceiverId: dcr['Request receiver'],
+    requestedBy: dcr.requestedByUser ? adaptUserFromSupabase(dcr.requestedByUser) : null,
+    requestStatus: dcr.status,
+    stayAssociated1: dcr['Stay Associated 1'],
+    stayAssociated2: dcr['Stay Associated 2'],
+    requestType: dcr['Request Type'],
+    listOfOldDates: parseJsonbArray(dcr['Original Date']),
+    listOfNewDates: parseJsonbArray(dcr['Requested Date']),
+    priceAdjustment: dcr['Price Adjustment'],
+    dateAdded: parseDate(dcr['Created Date']),
+    visibleToGuest: dcr['visible to guest'] ?? true,
   };
 }
 

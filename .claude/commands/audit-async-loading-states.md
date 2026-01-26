@@ -1,6 +1,6 @@
 ---
 name: audit-async-loading-states
-description: Audit the codebase to find components with async data fetching that lack proper loading, error, and empty state tests. Identifies gaps in UX state testing.
+description: Audit the codebase to find components with async data fetching that lack proper loading, error, and empty state tests. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # Async Loading States Testing Audit
@@ -68,10 +68,10 @@ For each async component, check if tests exist for:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-async-loading-states.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-async-loading-states.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# Async Loading States Testing Audit Report
+# Async Loading States Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -274,7 +274,7 @@ it('retries on button click', async () => {
 2. Be specific - include exact file paths and line numbers
 3. Be actionable - provide test templates
 4. Only report gaps - do not list tested states unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-async-loading-states.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-async-loading-states.md`
 
 ## Post-Audit Actions
 

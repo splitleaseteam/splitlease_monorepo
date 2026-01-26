@@ -31,7 +31,7 @@ function parseDaysSelected(daysSelected) {
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }
@@ -215,9 +215,18 @@ export function useCompareTermsModalLogic({
     return proposal?.negotiationSummaries || [];
   }, [proposal]);
 
-  // Get house rules
+  // Get house rules - prioritize counteroffer values if present
   const houseRules = useMemo(() => {
-    const rules = proposal?.houseRules || proposal?.listing?.houseRules || [];
+    const hasCounteroffer = proposal?.['counter offer happened'];
+    const hcRules = proposal?.['hc house rules'] || proposal?.hcHouseRules;
+
+    // If counteroffer happened and has house rules, use those
+    if (hasCounteroffer && Array.isArray(hcRules) && hcRules.length > 0) {
+      return hcRules;
+    }
+
+    // Otherwise fall back to original proposal or listing house rules
+    const rules = proposal?.houseRules || proposal?.['House Rules'] || proposal?.listing?.houseRules || [];
     return Array.isArray(rules) ? rules : [];
   }, [proposal]);
 

@@ -1,6 +1,6 @@
 ---
 name: audit-websocket-realtime-tests
-description: Audit the codebase to find WebSocket and real-time features (chat, notifications, Supabase Realtime) that lack proper test coverage. Identifies gaps in connection, messaging, and presence testing.
+description: Audit the codebase to find WebSocket and real-time features (chat, notifications, Supabase Realtime) that lack proper test coverage. Identifies OPPORTUNITIES for improvement in .claude/plans/Opportunities/ and notifies via Slack webhook.
 ---
 
 # WebSocket Realtime Testing Audit
@@ -59,10 +59,10 @@ For each real-time feature, check if:
 
 ## Step 3: Create the Audit Document
 
-Create an md file at `.claude/plans/Documents/<timestamp>-audit-websocket-realtime-tests.md` with the following structure:
+Create an md file at `.claude/plans/Opportunities/YYMMDD/YYYYMMDDHHMMSS-audit-websocket-realtime-tests.md` (where YYMMDD is today's date folder) with the following structure:
 
 ```markdown
-# WebSocket Realtime Testing Audit Report
+# WebSocket Realtime Testing Opportunity Report
 **Generated:** <timestamp>
 **Codebase:** <project name>
 
@@ -282,7 +282,7 @@ await page.routeWebSocket('wss://*/realtime/*', ws => {
 2. Be specific - include exact file paths and line numbers
 3. Be actionable - provide mock class templates
 4. Only report gaps - do not list tested features unless as reference
-5. Create the output file with timestamp format: `YYMMDD-audit-websocket-realtime-tests.md`
+5. Create the output file in `.claude/plans/Opportunities/YYMMDD/` with timestamp format: `YYYYMMDDHHMMSS-audit-websocket-realtime-tests.md`
 
 ## Post-Audit Actions
 

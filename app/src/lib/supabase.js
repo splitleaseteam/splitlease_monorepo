@@ -9,6 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Default export for compatibility with files using default import syntax
+export default supabase;
+
 // Process any pending OAuth login callback immediately
 // This runs when the supabase module is first imported (early in app lifecycle)
 // Using dynamic import to avoid circular dependency (oauthCallbackHandler imports auth.js which imports supabase.js)
