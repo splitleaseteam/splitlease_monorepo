@@ -687,6 +687,17 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== Z-SEARCH UNIT TEST (INTERNAL) =====
+  {
+    path: '/_internal/z-search-unit-test',
+    file: 'z-search-unit-test.html',
+    aliases: ['/_internal/z-search-unit-test.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-search-unit-test-view',
+    hasDynamicSegment: false
+  },
+
   // ===== GUEST EMERGENCY SUBMISSION (PUBLIC) =====
   {
     path: '/report-emergency',

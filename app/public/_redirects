@@ -101,6 +101,10 @@
 /_experience-responses  /_internal/experience-responses-view  200
 /_experience-responses/  /_internal/experience-responses-view  200
 
+# /_internal/z-search-unit-test → z-search-unit-test.html
+/_internal/z-search-unit-test  /_internal/z-search-unit-test-view  200
+/_internal/z-search-unit-test/  /_internal/z-search-unit-test-view  200
+
 # ===== DYNAMIC ROUTES (with parameters) =====
 # These routes use _internal/ files to avoid Cloudflare's 308 redirects
 
