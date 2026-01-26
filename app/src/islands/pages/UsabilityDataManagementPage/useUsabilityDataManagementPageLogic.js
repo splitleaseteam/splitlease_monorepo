@@ -133,12 +133,7 @@ export function useUsabilityDataManagementPageLogic() {
       setHosts(result.users || []);
     } catch (error) {
       console.error('[Hosts] Load error:', error);
-      if (error.message.includes('Admin or corporate')) {
-        setIsAuthorized(false);
-        setAuthError('Admin or corporate access required.');
-      } else {
-        showAlertMessage('Error', `Failed to load hosts: ${error.message}`);
-      }
+      showAlertMessage('Error', `Failed to load hosts: ${error.message}`);
     } finally {
       setHostsLoading(false);
     }
