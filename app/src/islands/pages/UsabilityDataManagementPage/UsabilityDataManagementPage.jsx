@@ -13,7 +13,7 @@ import ProposalDeletionSection from './components/ProposalDeletionSection';
 import ProposalConfirmationModal from './components/ProposalConfirmationModal';
 import AlertOverlay from './components/AlertOverlay';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader';
-import '../../styles/usability-data-management.css';
+import '../../../styles/usability-data-management.css';
 
 export default function UsabilityDataManagementPage() {
   const logic = useUsabilityDataManagementPageLogic();
