@@ -8,10 +8,10 @@
  * Auth: None (internal test page)
  *
  * Test Sections:
- * 1. Freeform 4o-mini - Functional test
- * 2. Freeform o1-mini - Functional test
+ * 1. Freeform 4o - Functional test (uses 4o-mini model)
+ * 2. Freeform 01-mini - Functional test
  * 3. Freeform o1 - (did not work as of 1/13/25)
- * 4. GPT-4.1-mini Image Parse - Image URL parsing test
+ * 4. GPT 4.1 - Image Parse - Image URL parsing test (uses gpt-4.1-mini)
  */
 
 import { useZUnitChatgptModelsPageLogic } from './useZUnitChatgptModelsPageLogic.js';
@@ -64,6 +64,7 @@ function ResponseDisplay({ response }) {
  * @param {boolean} [props.isImageTest=false] - Whether this is an image test section
  * @param {string} [props.imageUrl] - Image URL (for image test sections)
  * @param {Function} [props.onImageUrlChange] - Image URL change handler
+ * @param {string} [props.buttonLabel] - Custom button label (overrides default)
  */
 function TestSection({
   title,
@@ -76,9 +77,10 @@ function TestSection({
   onTest,
   isImageTest = false,
   imageUrl,
-  onImageUrlChange
+  onImageUrlChange,
+  buttonLabel: customButtonLabel
 }) {
-  const buttonLabel = isImageTest ? 'Test Image Parse' : `Test ${title.split(' ').pop()}`;
+  const buttonLabel = customButtonLabel || (isImageTest ? 'Test gpt-4.1-mini Image Parse' : `Test ${title.split(' ').pop()}`);
 
   return (
     <div className="zucm-section">
@@ -180,9 +182,9 @@ export default function ZUnitChatgptModelsPage() {
 
       {/* Main content container */}
       <div className="zucm-container">
-        {/* Section 1: Freeform 4o-mini */}
+        {/* Section 1: Freeform 4o */}
         <TestSection
-          title="Freeform 4o-mini"
+          title="Freeform 4o"
           subtitle="Functional test"
           prompt={section1.prompt}
           onPromptChange={handleSection1PromptChange}
@@ -190,11 +192,12 @@ export default function ZUnitChatgptModelsPage() {
           loading={section1.loading}
           error={section1.error}
           onTest={handleSection1Test}
+          buttonLabel="Test 4o-mini"
         />
 
-        {/* Section 2: Freeform o1-mini */}
+        {/* Section 2: Freeform 01-mini */}
         <TestSection
-          title="Freeform o1-mini"
+          title="Freeform 01-mini"
           subtitle="Functional test"
           prompt={section2.prompt}
           onPromptChange={handleSection2PromptChange}
@@ -202,6 +205,7 @@ export default function ZUnitChatgptModelsPage() {
           loading={section2.loading}
           error={section2.error}
           onTest={handleSection2Test}
+          buttonLabel="Test o1-mini"
         />
 
         {/* Section 3: Freeform o1 */}
@@ -216,9 +220,9 @@ export default function ZUnitChatgptModelsPage() {
           onTest={handleSection3Test}
         />
 
-        {/* Section 4: GPT-4.1-mini Image Parse */}
+        {/* Section 4: GPT 4.1 - Image Parse */}
         <TestSection
-          title="GPT-4.1-mini Image Parse"
+          title="GPT 4.1 - Image Parse"
           subtitle="Image URL parsing test"
           prompt={section4.prompt}
           onPromptChange={handleSection4PromptChange}
