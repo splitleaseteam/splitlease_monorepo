@@ -259,6 +259,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Force cache invalidation with build timestamp
+    assetsInlineLimit: 0,
     rollupOptions: {
       // Use Route Registry to generate inputs automatically
       // This ensures ALL routes are included in the build
