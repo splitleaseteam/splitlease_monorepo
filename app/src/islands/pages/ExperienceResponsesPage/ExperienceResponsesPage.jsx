@@ -21,6 +21,7 @@ import ResponseDetail from './components/ResponseDetail';
 import LoadingState from './components/LoadingState';
 import EmptyState from './components/EmptyState';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import './ExperienceResponsesPage.css';
 
 export default function ExperienceResponsesPage() {
   const logic = useExperienceResponsesPageLogic();
