@@ -720,6 +720,17 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== Z-UNIT CHATGPT MODELS (INTERNAL) =====
+  {
+    path: '/_internal/z-unit-chatgpt-models',
+    file: 'z-unit-chatgpt-models.html',
+    aliases: ['/_internal/z-unit-chatgpt-models.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-unit-chatgpt-models-view',
+    hasDynamicSegment: false
+  },
+
   // ===== GUEST EMERGENCY SUBMISSION (PUBLIC) =====
   {
     path: '/report-emergency',

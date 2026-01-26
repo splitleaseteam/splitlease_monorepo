@@ -113,6 +113,10 @@
 /_internal/z-pricing-unit-test  /_internal/z-pricing-unit-test-view  200
 /_internal/z-pricing-unit-test/  /_internal/z-pricing-unit-test-view  200
 
+# /_internal/z-unit-chatgpt-models → z-unit-chatgpt-models.html
+/_internal/z-unit-chatgpt-models  /_internal/z-unit-chatgpt-models-view  200
+/_internal/z-unit-chatgpt-models/  /_internal/z-unit-chatgpt-models-view  200
+
 # ===== DYNAMIC ROUTES (with parameters) =====
 # These routes use _internal/ files to avoid Cloudflare's 308 redirects
 
