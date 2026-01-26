@@ -698,6 +698,28 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== Z-EMAILS UNIT (INTERNAL) =====
+  {
+    path: '/_internal/z-emails-unit',
+    file: 'z-emails-unit.html',
+    aliases: ['/_internal/z-emails-unit.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-emails-unit-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-PRICING UNIT TEST (INTERNAL) =====
+  {
+    path: '/_internal/z-pricing-unit-test',
+    file: 'z-pricing-unit-test.html',
+    aliases: ['/_internal/z-pricing-unit-test.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-pricing-unit-test-view',
+    hasDynamicSegment: false
+  },
+
   // ===== GUEST EMERGENCY SUBMISSION (PUBLIC) =====
   {
     path: '/report-emergency',
