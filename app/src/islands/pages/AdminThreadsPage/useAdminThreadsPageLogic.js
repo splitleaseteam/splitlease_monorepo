@@ -144,21 +144,12 @@ export function useAdminThreadsPageLogic() {
   const [reminderModal, setReminderModal] = useState(null);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
-        const isAuthenticated = await checkAuthStatus();
-
-        if (!isAuthenticated) {
-          setAuthState('unauthorized');
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        // Get the Supabase session for the access token and user info
+        // Try to get authentication token if user is logged in
+        // No redirect if not authenticated - this is an internal page accessible without login
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
           setAccessToken(session.access_token);
@@ -172,18 +163,17 @@ export function useAdminThreadsPageLogic() {
           }
         }
 
-        // Admin check will be done server-side
-        // For now, assume authorized if authenticated
+        // Always set authorized for internal pages
         setAuthState('authorized');
       } catch (err) {
         console.error('[AdminThreads] Auth check failed:', err);
-        setAuthState('unauthorized');
-        showToast({ title: 'Authentication failed', type: 'error' });
+        // No redirect - just log the error and continue
+        setAuthState('authorized');
       }
     };
 
     checkAuth();
-  }, [showToast]);
+  }, []);
 
   // ===== FETCH THREADS =====
   const fetchThreads = useCallback(async () => {

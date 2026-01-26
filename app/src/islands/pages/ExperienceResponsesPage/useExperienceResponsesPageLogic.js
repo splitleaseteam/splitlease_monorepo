@@ -69,43 +69,12 @@ export function useExperienceResponsesPageLogic() {
   // ===== SELECTION STATE =====
   const [selectedId, setSelectedId] = useState(null);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
-        const isAuthenticated = await checkAuthStatus();
-
-        if (!isAuthenticated) {
-          setAuthState('unauthorized');
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href =
-            '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        // Get the Supabase session for the access token
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          // Legacy token auth user - verify token exists
-          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-          if (!legacyToken) {
-            console.warn('[ExperienceResponses] No session or legacy token found');
-          }
-        }
-
-        // Admin check will be done server-side via RLS policies
-        // For now, assume authorized if authenticated
-        setAuthState('authorized');
-      } catch (err) {
-        console.error('[ExperienceResponses] Auth check failed:', err);
-        setAuthState('unauthorized');
-        showToast({ title: 'Authentication failed', type: 'error' });
-      }
-    };
-
-    checkAuth();
-  }, [showToast]);
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState('authorized');
+  }, []);
 
   // ===== FETCH RESPONSES =====
   const fetchResponses = useCallback(async () => {

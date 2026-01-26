@@ -88,23 +88,12 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
     return urlParams.get('id');
   }, []);
 
-  // ===== AUTH CHECK =====
-  // NOTE: Admin check removed to allow any authenticated user access for testing
-  // Uses checkAuthStatus() which supports both Supabase Auth and legacy token auth
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
     const verifyAccess = async () => {
       try {
-        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
-        // It supports both Supabase Auth and legacy token auth
-        const isAuthenticated = await checkAuthStatus();
-
-        if (!isAuthenticated) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        // Try to get Supabase session for access token (may be null for legacy auth)
+        // Try to get authentication token if user is logged in
+        // No redirect if not authenticated - this is an internal page accessible without login
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
@@ -114,23 +103,25 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
         } else {
           // Legacy token auth user - get token from secure storage
           const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-          setAccessToken(legacyToken);
-          setCurrentUser({ authenticated: true });
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+            setCurrentUser({ authenticated: true });
+          }
         }
 
-        // Allow any authenticated user for testing
+        // Always authorize for internal pages
         setIsAuthorized(true);
       } catch (err) {
         console.error('[ManageRentalApps] Auth check failed:', err);
-        setIsAuthorized(false);
-        showToast({ title: 'Authentication failed', type: 'error' });
+        // No redirect - just log the error and authorize anyway
+        setIsAuthorized(true);
       } finally {
         setIsInitializing(false);
       }
     };
 
     verifyAccess();
-  }, [showToast]);
+  }, []);
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload = {}) => {

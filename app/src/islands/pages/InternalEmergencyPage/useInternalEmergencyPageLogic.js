@@ -46,31 +46,13 @@ export function useInternalEmergencyPageLogic() {
   const [statusFilter, setStatusFilter] = useState('');
 
   // ============================================================================
-  // Authentication Check
+  // Initialization (no auth redirect for internal pages)
   // ============================================================================
 
   useEffect(() => {
-    async function verifyAuth() {
-      try {
-        // checkAuthStatus() returns boolean (true if authenticated)
-        const isAuthenticated = await checkAuthStatus();
-        if (!isAuthenticated) {
-          window.location.href = '/?login=true&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        // NOTE: Admin check removed to allow any authenticated user access for testing
-
-        // Auth passed, load data
-        loadInitialData();
-      } catch (authError) {
-        console.error('[InternalEmergencyPage] Auth check failed:', authError);
-        setError('Authentication failed. Please log in again.');
-        setLoading(false);
-      }
-    }
-
-    verifyAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Just load the data directly
+    loadInitialData();
   }, []);
 
   // ============================================================================

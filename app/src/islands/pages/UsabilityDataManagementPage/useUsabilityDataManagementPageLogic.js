@@ -6,7 +6,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
 import {
   listHosts,
   listGuests,
@@ -46,10 +45,10 @@ export function useUsabilityDataManagementPageLogic() {
   // ============================================================================
   // Authentication State
   // ============================================================================
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState(null);
+  const [isAuthenticated] = useState(true);
+  const [isAuthorized] = useState(true);
+  const [authLoading] = useState(false);
+  const [authError] = useState(null);
 
   // ============================================================================
   // Data State
@@ -110,59 +109,13 @@ export function useUsabilityDataManagementPageLogic() {
   const dayPattern = formatDayPattern(selectedDayIndices);
 
   // ============================================================================
-  // Authentication
-  // ============================================================================
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        setAuthLoading(true);
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthError('Please log in to access this page.');
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          return;
-        }
-
-        setIsAuthenticated(true);
-
-        // Validate token and check authorization
-        // The Edge Function will verify admin/corporate status
-        const userData = await validateTokenAndFetchUser();
-        if (!userData) {
-          setAuthError('Session expired. Please log in again.');
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          return;
-        }
-
-        // Assume authorized for now - actual check happens on first API call
-        setIsAuthorized(true);
-
-      } catch (error) {
-        console.error('[Auth] Error:', error);
-        setAuthError(error.message);
-        setIsAuthenticated(false);
-        setIsAuthorized(false);
-      } finally {
-        setAuthLoading(false);
-      }
-    }
-
-    checkAuth();
-  }, []);
-
-  // ============================================================================
   // Load Initial Data
   // ============================================================================
   useEffect(() => {
-    if (isAuthenticated && isAuthorized) {
-      loadHosts();
-      loadGuests();
-      setDefaultMoveInDate();
-    }
-  }, [isAuthenticated, isAuthorized]);
+    loadHosts();
+    loadGuests();
+    setDefaultMoveInDate();
+  }, [loadHosts, loadGuests, setDefaultMoveInDate]);
 
   const setDefaultMoveInDate = useCallback(() => {
     const today = new Date();
