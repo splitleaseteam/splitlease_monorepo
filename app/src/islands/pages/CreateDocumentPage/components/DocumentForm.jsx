@@ -10,7 +10,7 @@
  * Uses the existing FormDropdown and FormInput patterns from ModifyListingsPage
  */
 
-import React from 'react';
+import './DocumentForm.css';
 
 export default function DocumentForm({
   policyDocuments,
@@ -48,32 +48,28 @@ export default function DocumentForm({
 
   if (isLoading) {
     return (
-      <div style={styles.loadingContainer}>
+      <div className="create-document-form__loading">
         <p>Loading form data...</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} style={styles.form}>
+    <form onSubmit={onSubmit} className="create-document-form">
       {/* Policy Document Selector */}
-      <div style={styles.field}>
-        <label htmlFor="selectedPolicyId" style={styles.label}>
+      <div className="create-document-form__field">
+        <label htmlFor="selectedPolicyId" className="create-document-form__label">
           Policy Document
-          <span style={styles.required}>*</span>
+          <span className="create-document-form__required">*</span>
         </label>
-        <div style={styles.selectWrapper}>
+        <div className="create-document-form__select-wrapper">
           <select
             id="selectedPolicyId"
             name="selectedPolicyId"
             value={formState.selectedPolicyId}
             onChange={handlePolicyChange}
             disabled={isSubmitting}
-            style={{
-              ...styles.select,
-              ...(formErrors.selectedPolicyId ? styles.selectError : {}),
-              ...(formState.selectedPolicyId === '' ? styles.selectPlaceholder : {})
-            }}
+            className={`create-document-form__select${formErrors.selectedPolicyId ? ' is-error' : ''}${formState.selectedPolicyId === '' ? ' is-placeholder' : ''}`}
           >
             <option value="" disabled>
               Select a policy document...
@@ -87,18 +83,18 @@ export default function DocumentForm({
           <ChevronIcon />
         </div>
         {formErrors.selectedPolicyId && (
-          <p style={styles.errorText}>{formErrors.selectedPolicyId}</p>
+          <p className="create-document-form__error">{formErrors.selectedPolicyId}</p>
         )}
-        <p style={styles.helpText}>
+        <p className="create-document-form__help">
           Select the policy document template to use
         </p>
       </div>
 
       {/* Document Title Input */}
-      <div style={styles.field}>
-        <label htmlFor="documentTitle" style={styles.label}>
+      <div className="create-document-form__field">
+        <label htmlFor="documentTitle" className="create-document-form__label">
           Document Title
-          <span style={styles.required}>*</span>
+          <span className="create-document-form__required">*</span>
         </label>
         <input
           id="documentTitle"
@@ -109,42 +105,35 @@ export default function DocumentForm({
           placeholder="Enter document title..."
           disabled={isSubmitting}
           maxLength={255}
-          style={{
-            ...styles.input,
-            ...(formErrors.documentTitle ? styles.inputError : {})
-          }}
+          className={`create-document-form__input${formErrors.documentTitle ? ' is-error' : ''}`}
         />
-        <div style={styles.inputMeta}>
-          <span style={styles.charCount}>
+        <div className="create-document-form__input-meta">
+          <span className="create-document-form__char-count">
             {formState.documentTitle.length}/255
           </span>
         </div>
         {formErrors.documentTitle && (
-          <p style={styles.errorText}>{formErrors.documentTitle}</p>
+          <p className="create-document-form__error">{formErrors.documentTitle}</p>
         )}
-        <p style={styles.helpText}>
+        <p className="create-document-form__help">
           This title will be shown to the host. Auto-fills from selected policy.
         </p>
       </div>
 
       {/* Host User Selector */}
-      <div style={styles.field}>
-        <label htmlFor="selectedHostId" style={styles.label}>
+      <div className="create-document-form__field">
+        <label htmlFor="selectedHostId" className="create-document-form__label">
           Assign to Host
-          <span style={styles.required}>*</span>
+          <span className="create-document-form__required">*</span>
         </label>
-        <div style={styles.selectWrapper}>
+        <div className="create-document-form__select-wrapper">
           <select
             id="selectedHostId"
             name="selectedHostId"
             value={formState.selectedHostId}
             onChange={handleHostChange}
             disabled={isSubmitting}
-            style={{
-              ...styles.select,
-              ...(formErrors.selectedHostId ? styles.selectError : {}),
-              ...(formState.selectedHostId === '' ? styles.selectPlaceholder : {})
-            }}
+            className={`create-document-form__select${formErrors.selectedHostId ? ' is-error' : ''}${formState.selectedHostId === '' ? ' is-placeholder' : ''}`}
           >
             <option value="" disabled>
               Select a host...
@@ -158,22 +147,19 @@ export default function DocumentForm({
           <ChevronIcon />
         </div>
         {formErrors.selectedHostId && (
-          <p style={styles.errorText}>{formErrors.selectedHostId}</p>
+          <p className="create-document-form__error">{formErrors.selectedHostId}</p>
         )}
-        <p style={styles.helpText}>
+        <p className="create-document-form__help">
           The host who will receive this document
         </p>
       </div>
 
       {/* Submit Button */}
-      <div style={styles.actions}>
+      <div className="create-document-form__actions">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{
-            ...styles.submitButton,
-            ...(isSubmitting ? styles.submitButtonDisabled : {})
-          }}
+          className={`create-document-form__submit${isSubmitting ? ' is-disabled' : ''}`}
         >
           {isSubmitting ? 'Creating...' : 'Create Document'}
         </button>
@@ -185,7 +171,7 @@ export default function DocumentForm({
 function ChevronIcon() {
   return (
     <svg
-      style={styles.chevron}
+      className="create-document-form__chevron"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -199,124 +185,3 @@ function ChevronIcon() {
     </svg>
   );
 }
-
-const styles = {
-  form: {
-    backgroundColor: '#ffffff',
-    padding: '2rem',
-    borderRadius: '0.5rem',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e5e7eb'
-  },
-  loadingContainer: {
-    padding: '2rem',
-    textAlign: 'center',
-    color: '#6b7280'
-  },
-  field: {
-    marginBottom: '1.5rem'
-  },
-  label: {
-    display: 'block',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: '0.375rem'
-  },
-  required: {
-    color: '#ef4444',
-    marginLeft: '0.25rem'
-  },
-  selectWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center'
-  },
-  select: {
-    width: '100%',
-    padding: '0.625rem 2.5rem 0.625rem 0.75rem',
-    fontSize: '0.875rem',
-    border: '1px solid #d1d5db',
-    borderRadius: '0.375rem',
-    backgroundColor: '#ffffff',
-    color: '#1f2937',
-    outline: 'none',
-    cursor: 'pointer',
-    appearance: 'none',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
-    boxSizing: 'border-box'
-  },
-  selectPlaceholder: {
-    color: '#9ca3af'
-  },
-  selectError: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2'
-  },
-  chevron: {
-    position: 'absolute',
-    right: '0.75rem',
-    width: '1rem',
-    height: '1rem',
-    color: '#6b7280',
-    pointerEvents: 'none'
-  },
-  input: {
-    width: '100%',
-    padding: '0.625rem 0.75rem',
-    fontSize: '0.875rem',
-    border: '1px solid #d1d5db',
-    borderRadius: '0.375rem',
-    backgroundColor: '#ffffff',
-    color: '#1f2937',
-    outline: 'none',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
-    boxSizing: 'border-box'
-  },
-  inputError: {
-    borderColor: '#ef4444',
-    backgroundColor: '#fef2f2'
-  },
-  inputMeta: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    marginTop: '0.25rem'
-  },
-  charCount: {
-    fontSize: '0.75rem',
-    color: '#9ca3af'
-  },
-  helpText: {
-    fontSize: '0.75rem',
-    color: '#6b7280',
-    marginTop: '0.25rem',
-    margin: 0
-  },
-  errorText: {
-    fontSize: '0.75rem',
-    color: '#ef4444',
-    marginTop: '0.25rem',
-    margin: 0
-  },
-  actions: {
-    marginTop: '2rem',
-    paddingTop: '1.5rem',
-    borderTop: '1px solid #e5e7eb'
-  },
-  submitButton: {
-    width: '100%',
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
-    fontWeight: '500',
-    color: '#ffffff',
-    backgroundColor: '#6366f1',
-    border: 'none',
-    borderRadius: '0.375rem',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s'
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#a5b4fc',
-    cursor: 'not-allowed'
-  }
-};

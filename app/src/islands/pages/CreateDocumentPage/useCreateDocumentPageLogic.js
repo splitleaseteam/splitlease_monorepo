@@ -2,7 +2,7 @@
  * useCreateDocumentPageLogic - Business logic for CreateDocumentPage
  *
  * Handles:
- * - Authentication and authorization checks
+ * - Optional auth token lookup
  * - Fetching policy documents from Bubble (via Edge Function)
  * - Fetching host users from Supabase (via Edge Function)
  * - Form state management
@@ -23,13 +23,17 @@ const DOCUMENT_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1
  */
 async function callDocumentApi(action, payload = {}) {
   const { data: { session } } = await supabase.auth.getSession();
+  const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+  const accessToken = session?.access_token || legacyToken;
+  const headers = { 'Content-Type': 'application/json' };
+
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
 
   const response = await fetch(DOCUMENT_FUNCTION_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session?.access_token || ''}`
-    },
+    headers,
     body: JSON.stringify({ action, payload })
   });
 
@@ -53,13 +57,6 @@ const INITIAL_FORM_STATE = {
 
 export function useCreateDocumentPageLogic({ showToast }) {
   // ─────────────────────────────────────────────────────────
-  // Authentication State
-  // ─────────────────────────────────────────────────────────
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // ─────────────────────────────────────────────────────────
   // Data State
   // ─────────────────────────────────────────────────────────
   const [policyDocuments, setPolicyDocuments] = useState([]);
@@ -76,19 +73,15 @@ export function useCreateDocumentPageLogic({ showToast }) {
   const [lastCreatedDocument, setLastCreatedDocument] = useState(null);
 
   // ─────────────────────────────────────────────────────────
-  // Initialization (Auth removed for modernization)
+  // Initialization
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     const initializePage = async () => {
       try {
-        setCurrentUser({ authenticated: false });
-        setIsAuthorized(true);
-        setIsInitializing(false);
         await loadInitialData();
       } catch (err) {
         console.error('[CreateDocumentPage] Init failed:', err);
         setError(err.message);
-        setIsInitializing(false);
       }
     };
 
@@ -216,11 +209,6 @@ export function useCreateDocumentPageLogic({ showToast }) {
   // Return public API
   // ─────────────────────────────────────────────────────────
   return {
-    // Auth state
-    isInitializing,
-    isAuthorized,
-    currentUser,
-
     // Data
     policyDocuments,
     hostUsers,

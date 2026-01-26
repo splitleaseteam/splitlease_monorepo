@@ -15,7 +15,7 @@
  */
 
 import { useAdminThreadsPageLogic } from './useAdminThreadsPageLogic';
-import AdminHeader from './components/AdminHeader';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 import FilterBar from './components/FilterBar';
 import ThreadList from './components/ThreadList';
 import ThreadCard from './components/ThreadCard';
@@ -24,30 +24,11 @@ import EmptyState from './components/EmptyState';
 import ErrorState from './components/ErrorState';
 import ConfirmDialog from './components/ConfirmDialog';
 import ReminderModal from './components/ReminderModal';
+import '../../../styles/pages/admin-threads.css';
+
 
 export default function AdminThreadsPage() {
   const logic = useAdminThreadsPageLogic();
-
-  // Not authenticated yet
-  if (logic.authState === 'checking') {
-    return (
-      <div className="admin-threads">
-        <LoadingState message="Checking authentication..." />
-      </div>
-    );
-  }
-
-  // Not admin
-  if (logic.authState === 'unauthorized') {
-    return (
-      <div className="admin-threads">
-        <ErrorState
-          message="You do not have permission to access this page."
-          onRetry={null}
-        />
-      </div>
-    );
-  }
 
   // Loading state
   if (logic.isLoading && !logic.threads.length) {

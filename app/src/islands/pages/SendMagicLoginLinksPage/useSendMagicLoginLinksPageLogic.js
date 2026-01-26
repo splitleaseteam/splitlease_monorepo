@@ -16,8 +16,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export function useSendMagicLoginLinksPageLogic() {
   const { showToast } = useToast();
 
-  // Auth state
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Page state
   const [isLoading, setIsLoading] = useState(true);
 
   // Step state
@@ -45,31 +44,24 @@ export function useSendMagicLoginLinksPageLogic() {
   const [generatedLink, setGeneratedLink] = useState('');
   const [sending, setSending] = useState(false);
 
-  // Check admin access on mount
-  // NOTE: Admin check removed to allow any authenticated user access for testing
-  // Original check: getUserType() !== 'admin' redirected to homepage
+  // Initialize page data
   useEffect(() => {
-    const checkAdminAccess = async () => {
-      setIsAdmin(true);
+    const init = async () => {
       setIsLoading(false);
-
-      // Load destination pages immediately
       await loadDestinationPages();
     };
 
-    checkAdminAccess();
+    init();
   }, []);
 
   // Load users when search text changes (debounced)
   useEffect(() => {
-    if (!isAdmin) return;
-
     const timeoutId = setTimeout(() => {
       loadUsers();
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [searchText, isAdmin]);
+  }, [searchText]);
 
   /**
    * Call Edge Function action
@@ -235,8 +227,7 @@ export function useSendMagicLoginLinksPageLogic() {
   };
 
   return {
-    // Auth
-    isAdmin,
+    // Page
     isLoading,
 
     // Step navigation

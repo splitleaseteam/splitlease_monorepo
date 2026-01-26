@@ -24,11 +24,8 @@ export function useAiToolsPageLogic() {
   // STATE
   // ============================================================================
 
-  // Auth state
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Data selection state
   const [houseManuals, setHouseManuals] = useState([]);
@@ -190,13 +187,6 @@ export function useAiToolsPageLogic() {
     setError(null);
 
     try {
-      setUser({
-        authenticated: false,
-        email: null,
-        isAdmin: false,
-      });
-      setIsAdmin(true);
-
       const narratorsList = await fetchNarrators();
       setNarrators(narratorsList);
       if (narratorsList.length > 0) {
@@ -532,11 +522,9 @@ export function useAiToolsPageLogic() {
   // ============================================================================
 
   return {
-    // Auth & Loading
-    user,
+    // Loading
     loading,
     error,
-    isAdmin,
 
     // Data
     houseManuals,

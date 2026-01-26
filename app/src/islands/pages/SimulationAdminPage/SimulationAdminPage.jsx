@@ -19,6 +19,7 @@ import TesterInfoDisplay from './components/TesterInfoDisplay.jsx';
 import StatisticsBar from './components/StatisticsBar.jsx';
 import ConfirmationModal from './components/ConfirmationModal.jsx';
 import './SimulationAdminPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function SimulationAdminPage() {
   const {
@@ -75,6 +76,7 @@ export default function SimulationAdminPage() {
 
   return (
     <div className="simulation-admin-page">
+      <AdminHeader />
       {/* Header */}
       <header className="simulation-admin-header">
         <div className="header-content">

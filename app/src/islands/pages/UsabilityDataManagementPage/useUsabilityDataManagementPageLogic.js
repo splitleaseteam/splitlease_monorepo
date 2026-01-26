@@ -43,14 +43,6 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
 
 export function useUsabilityDataManagementPageLogic() {
   // ============================================================================
-  // Authentication State
-  // ============================================================================
-  const [isAuthenticated] = useState(true);
-  const [isAuthorized] = useState(true);
-  const [authLoading] = useState(false);
-  const [authError] = useState(null);
-
-  // ============================================================================
   // Data State
   // ============================================================================
   const [hosts, setHosts] = useState([]);
@@ -397,12 +389,6 @@ Thread ID: ${result.threadId}`);
   // Return API
   // ============================================================================
   return {
-    // Auth
-    isAuthenticated,
-    isAuthorized,
-    authLoading,
-    authError,
-
     // Constants
     reservationSpans: RESERVATION_SPANS,
     dayLabels: DAY_LABELS,

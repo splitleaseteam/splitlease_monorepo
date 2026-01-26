@@ -1,4 +1,5 @@
 import useEmailSmsUnitPageLogic from './useEmailSmsUnitPageLogic.js';
+import AdminHeader from '../shared/AdminHeader/AdminHeader';
 
 /**
  * EmailSmsUnitPage - Internal page for email templates and SMS testing
@@ -59,6 +60,7 @@ export default function EmailSmsUnitPage() {
   if (loading) {
     return (
       <>
+        <AdminHeader />
                 <main style={styles.loadingContainer}>
           <p>Loading templates...</p>
         </main>
@@ -70,16 +72,18 @@ export default function EmailSmsUnitPage() {
   if (error) {
     return (
       <>
-                <main style={styles.errorContainer}>
+        <AdminHeader />
+        <main style={styles.errorContainer}>
           <p style={styles.errorText}>{error}</p>
         </main>
-              </>
+      </>
     );
   }
 
   return (
     <>
-            <main style={styles.container}>
+      <AdminHeader />
+      <main style={styles.container}>
         {/* Left Panel - Template Selection & Form */}
         <section style={styles.leftPanel}>
           <h1 style={styles.pageTitle}>Email & SMS Unit</h1>

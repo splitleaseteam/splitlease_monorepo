@@ -23,6 +23,7 @@ import FilterSection from './FilterSection.jsx';
 import ProposalItem from './ProposalItem.jsx';
 import QuickProposalCreation from './QuickProposalCreation.jsx';
 import './ProposalManagePage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -104,18 +105,19 @@ export default function ProposalManagePage() {
   if (authState.shouldRedirect) {
     return (
       <>
-                <main className="pm-main-content">
+        <AdminHeader />
+        <main className="pm-main-content">
           <div className="pm-page">
             <LoadingState />
           </div>
         </main>
-              </>
+      </>
     );
   }
 
   return (
     <>
-      
+      <AdminHeader />
       <main className="pm-main-content">
         <div className="pm-page">
           {/* Page Header */}

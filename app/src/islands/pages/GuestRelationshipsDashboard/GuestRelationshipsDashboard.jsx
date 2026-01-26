@@ -23,6 +23,7 @@ import ListingsSection from './components/ListingsSection.jsx';
 import KnowledgeBaseSection from './components/KnowledgeBaseSection.jsx';
 import Toast from './components/Toast.jsx';
 import './GuestRelationshipsDashboard.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -135,6 +136,7 @@ export default function GuestRelationshipsDashboard() {
 
   return (
     <>
+      <AdminHeader />
       <main className="grd-main">
         <div className="grd-container">
           {/* Page Header */}

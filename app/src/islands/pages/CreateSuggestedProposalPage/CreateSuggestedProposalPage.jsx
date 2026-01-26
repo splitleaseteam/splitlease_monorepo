@@ -25,6 +25,7 @@ import ProposalSummary from './components/ProposalSummary.jsx';
 import SuccessModal from './components/SuccessModal.jsx';
 import ConfirmationPanel from './components/ConfirmationPanel.jsx';
 import './CreateSuggestedProposalPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -141,6 +142,7 @@ export default function CreateSuggestedProposalPage() {
 
   return (
     <>
+      <AdminHeader />
       <main className="csp-main">
         <div className="csp-container">
           {/* Page Header */}

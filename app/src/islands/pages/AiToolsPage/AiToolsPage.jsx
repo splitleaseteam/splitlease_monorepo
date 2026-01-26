@@ -22,6 +22,7 @@ import { useAiToolsPageLogic } from './useAiToolsPageLogic.js';
 
 // Styles
 import '../../../styles/ai-tools.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function AiToolsPage() {
   // ============================================================================
@@ -29,11 +30,9 @@ export default function AiToolsPage() {
   // ============================================================================
 
   const {
-    // Auth & Loading
-    user,
+    // Loading
     loading,
     error,
-    isAdmin,
 
     // Data
     houseManuals,
@@ -97,6 +96,7 @@ export default function AiToolsPage() {
   if (loading) {
     return (
       <div className="ai-tools-page-wrapper">
+        <AdminHeader />
                 <main className="ai-tools-main">
           <div className="ai-tools-container">
             <div className="loading-state">
@@ -116,7 +116,8 @@ export default function AiToolsPage() {
   if (error) {
     return (
       <div className="ai-tools-page-wrapper">
-                <main className="ai-tools-main">
+        <AdminHeader />
+        <main className="ai-tools-main">
           <div className="ai-tools-container">
             <div className="error-state">
               <div className="error-icon">&#9888;</div>
@@ -133,34 +134,12 @@ export default function AiToolsPage() {
   }
 
   // ============================================================================
-  // RENDER - Unauthorized State
-  // ============================================================================
-
-  if (!isAdmin) {
-    return (
-      <div className="ai-tools-page-wrapper">
-                <main className="ai-tools-main">
-          <div className="ai-tools-container">
-            <div className="unauthorized-state">
-              <div className="unauthorized-icon">&#128274;</div>
-              <h2>Access Denied</h2>
-              <p>This page is restricted to administrators only.</p>
-              <button onClick={() => window.location.href = '/'} className="btn btn--primary">
-                Go to Homepage
-              </button>
-            </div>
-          </div>
-        </main>
-              </div>
-    );
-  }
-
-  // ============================================================================
   // RENDER - Main Page
   // ============================================================================
 
   return (
     <div className="ai-tools-page-wrapper">
+      <AdminHeader />
       
       <main className="ai-tools-main">
         <div className="ai-tools-container">

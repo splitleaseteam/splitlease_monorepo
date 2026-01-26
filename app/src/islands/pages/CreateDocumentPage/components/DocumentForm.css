@@ -1,0 +1,136 @@
+.create-document-form {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.create-document-form__loading {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.create-document-form__field {
+  margin-bottom: 1.5rem;
+}
+
+.create-document-form__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.375rem;
+}
+
+.create-document-form__required {
+  color: #ef4444;
+  margin-left: 0.25rem;
+}
+
+.create-document-form__select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.create-document-form__select {
+  width: 100%;
+  padding: 0.625rem 2.5rem 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  color: #1f2937;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.create-document-form__select.is-placeholder {
+  color: #9ca3af;
+}
+
+.create-document-form__select.is-error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.create-document-form__chevron {
+  position: absolute;
+  right: 0.75rem;
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.create-document-form__input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #ffffff;
+  color: #1f2937;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.create-document-form__input.is-error {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.create-document-form__input-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.create-document-form__char-count {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.create-document-form__help {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.create-document-form__error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.create-document-form__actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.create-document-form__submit {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #6366f1;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.create-document-form__submit.is-disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+}

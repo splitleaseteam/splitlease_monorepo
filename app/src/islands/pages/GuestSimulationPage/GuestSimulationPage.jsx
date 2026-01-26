@@ -22,6 +22,7 @@ import StepProgress from './components/StepProgress.jsx';
 import LoginSection from './components/LoginSection.jsx';
 import StepCard from './components/StepCard.jsx';
 import './GuestSimulationPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function GuestSimulationPage() {
   const {
@@ -62,6 +63,7 @@ export default function GuestSimulationPage() {
   if (authState.isLoading) {
     return (
       <div className="gsim-page">
+        <AdminHeader />
         <main className="gsim-main">
           <div className="gsim-loading">
             <div className="gsim-loading__spinner" />
@@ -75,6 +77,7 @@ export default function GuestSimulationPage() {
   // Main simulation view
   return (
     <ToastProvider>
+      <AdminHeader />
       <div className="gsim-page">
         <main className="gsim-main">
           <div className="gsim-container">
