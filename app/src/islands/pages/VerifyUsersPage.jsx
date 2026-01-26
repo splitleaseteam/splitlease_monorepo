@@ -13,6 +13,8 @@
  */
 
 import useVerifyUsersPageLogic from './useVerifyUsersPageLogic.js';
+import AdminHeader from '../shared/AdminHeader/AdminHeader';
+import './VerifyUsersPage.css';
 
 export default function VerifyUsersPage() {
   const {
@@ -55,17 +57,18 @@ export default function VerifyUsersPage() {
   } = useVerifyUsersPageLogic();
 
   return (
-    <div style={styles.container}>
+    <div className="verify-users-page">
+      <AdminHeader />
       {/* Header */}
-      <header style={styles.header}>
-        <h1 style={styles.title}>User Verification</h1>
-        <p style={styles.subtitle}>
+      <header className="verify-users-header">
+        <h1 className="verify-users-title">User Verification</h1>
+        <p className="verify-users-subtitle">
           Verify user identity by reviewing their submitted documents
         </p>
       </header>
 
       {/* Main Content */}
-      <main style={styles.main}>
+      <main className="verify-users-main">
         {/* User Selection */}
         <UserSelect
           selectedUser={selectedUser}
@@ -104,8 +107,8 @@ export default function VerifyUsersPage() {
       </main>
 
       {/* Footer */}
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>
+      <footer className="verify-users-footer">
+        <p className="verify-users-footer-text">
           Split Lease Admin Dashboard - Internal Use Only
         </p>
       </footer>
@@ -139,34 +142,31 @@ function UserSelect({
   setIsDropdownOpen,
 }) {
   return (
-    <div style={styles.userSelectContainer}>
-      <h2 style={styles.sectionTitle}>Select User</h2>
+    <div className="verify-users-select-container">
+      <h2 className="verify-users-section-title">Select User</h2>
 
-      <div style={styles.userSelectRow}>
+      <div className="verify-users-select-row">
         {/* Email Input Field */}
-        <div style={styles.emailInputContainer}>
+        <div className="verify-users-email-container">
           <input
             type="text"
             placeholder="Type user's email"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             onFocus={() => setIsDropdownOpen(true)}
-            style={styles.emailInput}
+            className="verify-users-email-input"
             disabled={!!selectedUser}
           />
         </div>
 
         {/* User Dropdown Selector */}
-        <div style={styles.dropdownContainer} ref={dropdownRef}>
+        <div className="verify-users-dropdown-container" ref={dropdownRef}>
           <div
             onClick={onDropdownToggle}
-            style={{
-              ...styles.dropdownTrigger,
-              ...(isDropdownOpen ? styles.dropdownTriggerActive : {}),
-            }}
+            className={`verify-users-dropdown-trigger ${isDropdownOpen ? 'verify-users-dropdown-trigger--active' : ''}`}
             tabIndex={0}
           >
-            <span style={selectedUser ? styles.dropdownTextSelected : styles.dropdownTextPlaceholder}>
+            <span className={selectedUser ? 'verify-users-dropdown-text--selected' : 'verify-users-dropdown-text--placeholder'}>
               {selectedUser
                 ? `${selectedUser.fullName} - ${selectedUser.email}`
                 : 'Choose an option...'}
@@ -176,9 +176,9 @@ function UserSelect({
 
           {/* Dropdown List */}
           {isDropdownOpen && (
-            <div style={styles.dropdownList}>
+            <div className="verify-users-dropdown-list">
               {isSearching ? (
-                <div style={styles.dropdownLoading}>Searching...</div>
+                <div className="verify-users-dropdown-loading">Searching...</div>
               ) : searchResults.length > 0 ? (
                 searchResults.map((user) => (
                   <UserDropdownItem
@@ -189,7 +189,7 @@ function UserSelect({
                   />
                 ))
               ) : (
-                <div style={styles.dropdownEmpty}>No users found</div>
+                <div className="verify-users-dropdown-empty">No users found</div>
               )}
             </div>
           )}
@@ -197,7 +197,7 @@ function UserSelect({
 
         {/* Clear Selection Button */}
         {selectedUser && (
-          <button onClick={onClear} style={styles.clearButton}>
+          <button onClick={onClear} className="verify-users-clear-button">
             Clear
           </button>
         )}
@@ -210,31 +210,28 @@ function UserDropdownItem({ user, isSelected, onSelect }) {
   return (
     <div
       onClick={() => onSelect(user)}
-      style={{
-        ...styles.dropdownItem,
-        ...(isSelected ? styles.dropdownItemSelected : {}),
-      }}
+      className={`verify-users-dropdown-item ${isSelected ? 'verify-users-dropdown-item--selected' : ''}`}
     >
-      <div style={styles.dropdownItemContent}>
+      <div className="verify-users-dropdown-item-content">
         {user.profilePhoto ? (
           <img
             src={user.profilePhoto}
             alt={user.fullName}
-            style={styles.dropdownAvatar}
+            className="verify-users-dropdown-avatar"
           />
         ) : (
-          <div style={styles.dropdownAvatarPlaceholder}>
-            <span style={styles.dropdownAvatarInitial}>
+          <div className="verify-users-dropdown-avatar-placeholder">
+            <span className="verify-users-dropdown-avatar-initial">
               {user.fullName?.charAt(0) || '?'}
             </span>
           </div>
         )}
         <div>
-          <p style={styles.dropdownItemName}>{user.fullName}</p>
-          <p style={styles.dropdownItemEmail}>{user.email}</p>
+          <p className="verify-users-dropdown-item-name">{user.fullName}</p>
+          <p className="verify-users-dropdown-item-email">{user.email}</p>
         </div>
         {user.isVerified && (
-          <span style={styles.verifiedBadge}>Verified</span>
+          <span className="verify-users-verified-badge">Verified</span>
         )}
       </div>
     </div>
@@ -252,12 +249,12 @@ function IdentityVerificationContainer({
   getCompletenessColor,
 }) {
   return (
-    <div style={styles.verificationContainer}>
-      <h2 style={styles.verificationTitle}>Identity Verification</h2>
+    <div className="verify-users-verification-container">
+      <h2 className="verify-users-verification-title">Identity Verification</h2>
 
-      <div style={styles.verificationContent}>
+      <div className="verify-users-verification-content">
         {/* Image Grid - 2x2 layout */}
-        <div style={styles.imageGrid}>
+        <div className="verify-users-image-grid">
           {documentSections.map((section) => (
             <ImageCard
               key={section.key}
@@ -271,35 +268,35 @@ function IdentityVerificationContainer({
         </div>
 
         {/* Verification Toggle - Right side */}
-        <div style={styles.toggleSection}>
+        <div className="verify-users-toggle-section">
           <VerificationToggle
             isVerified={user.isVerified}
             onToggle={onToggleVerification}
             disabled={isProcessing}
           />
           {isProcessing && (
-            <p style={styles.processingText}>Processing...</p>
+            <p className="verify-users-processing-text">Processing...</p>
           )}
         </div>
       </div>
 
       {/* User Info Summary */}
-      <div style={styles.userSummary}>
-        <div style={styles.userSummaryItem}>
-          <span style={styles.userSummaryLabel}>Email:</span> {user.email}
+      <div className="verify-users-summary">
+        <div className="verify-users-summary-item">
+          <span className="verify-users-summary-label">Email:</span> {user.email}
         </div>
-        <div style={styles.userSummaryItem}>
-          <span style={styles.userSummaryLabel}>Phone:</span>{' '}
+        <div className="verify-users-summary-item">
+          <span className="verify-users-summary-label">Phone:</span>{' '}
           {user.phoneNumber || 'Not provided'}
         </div>
-        <div style={styles.userSummaryItem}>
-          <span style={styles.userSummaryLabel}>Profile Completeness:</span>{' '}
+        <div className="verify-users-summary-item">
+          <span className="verify-users-summary-label">Profile Completeness:</span>{' '}
           <span style={{ color: getCompletenessColor(user.profileCompleteness || 0) }}>
             {user.profileCompleteness || 0}%
           </span>
         </div>
-        <div style={styles.userSummaryItem}>
-          <span style={styles.userSummaryLabel}>Tasks Completed:</span>{' '}
+        <div className="verify-users-summary-item">
+          <span className="verify-users-summary-label">Tasks Completed:</span>{' '}
           {user.tasksCompleted?.length > 0
             ? user.tasksCompleted.join(', ')
             : 'None'}
@@ -317,30 +314,27 @@ function ImageCard({ imageUrl, label, title, userName, onClick }) {
   };
 
   return (
-    <div style={styles.imageCardContainer}>
-      <label style={styles.imageCardLabel}>{label}</label>
+    <div className="verify-users-image-card-container">
+      <label className="verify-users-image-card-label">{label}</label>
       <div
         onClick={handleClick}
-        style={{
-          ...styles.imageCard,
-          ...(imageUrl ? styles.imageCardWithImage : styles.imageCardEmpty),
-        }}
+        className={`verify-users-image-card ${imageUrl ? 'verify-users-image-card--with-image' : 'verify-users-image-card--empty'}`}
       >
         {imageUrl ? (
           <>
             <img
               src={imageUrl}
               alt={label}
-              style={styles.imageCardImg}
+              className="verify-users-image-card-img"
             />
-            <div style={styles.imageCardOverlay}>
-              <span style={styles.imageCardOverlayText}>Click to view</span>
+            <div className="verify-users-image-card-overlay">
+              <span className="verify-users-image-card-overlay-text">Click to view</span>
             </div>
           </>
         ) : (
-          <div style={styles.imageCardPlaceholder}>
+          <div className="verify-users-image-card-placeholder">
             <ImagePlaceholderIcon />
-            <span style={styles.imageCardPlaceholderText}>No image available</span>
+            <span className="verify-users-placeholder-text">No image available</span>
           </div>
         )}
       </div>
@@ -351,34 +345,36 @@ function ImageCard({ imageUrl, label, title, userName, onClick }) {
 // ===== VERIFICATION TOGGLE =====
 
 function VerificationToggle({ isVerified, onToggle, disabled }) {
+  const buttonClasses = [
+    'verify-users-toggle-button',
+    isVerified ? 'verify-users-toggle-button--active' : 'verify-users-toggle-button--inactive',
+    disabled ? 'verify-users-toggle-button--disabled' : '',
+  ].filter(Boolean).join(' ');
+
+  const knobClasses = [
+    'verify-users-toggle-knob',
+    isVerified ? 'verify-users-toggle-knob--active' : 'verify-users-toggle-knob--inactive',
+  ].join(' ');
+
+  const statusClasses = [
+    'verify-users-toggle-status',
+    isVerified ? 'verify-users-toggle-status--verified' : 'verify-users-toggle-status--not-verified',
+  ].join(' ');
+
   return (
-    <div style={styles.toggleContainer}>
-      <label style={styles.toggleLabel}>User Verified?</label>
+    <div className="verify-users-toggle-container">
+      <label className="verify-users-toggle-label">User Verified?</label>
       <button
         type="button"
         onClick={() => !disabled && onToggle(!isVerified)}
         disabled={disabled}
-        style={{
-          ...styles.toggleButton,
-          ...(isVerified ? styles.toggleButtonActive : styles.toggleButtonInactive),
-          ...(disabled ? styles.toggleButtonDisabled : {}),
-        }}
+        className={buttonClasses}
         role="switch"
         aria-checked={isVerified}
       >
-        <span
-          style={{
-            ...styles.toggleKnob,
-            ...(isVerified ? styles.toggleKnobActive : styles.toggleKnobInactive),
-          }}
-        />
+        <span className={knobClasses} />
       </button>
-      <span
-        style={{
-          ...styles.toggleStatus,
-          ...(isVerified ? styles.toggleStatusVerified : styles.toggleStatusNotVerified),
-        }}
-      >
+      <span className={statusClasses}>
         {isVerified ? 'Verified' : 'Not Verified'}
       </span>
     </div>
@@ -395,22 +391,22 @@ function ImageModal({ imageUrl, title, onClose, onOpenExternal }) {
   };
 
   return (
-    <div style={styles.modalOverlay} onClick={handleBackdropClick}>
-      <div style={styles.modalContent}>
+    <div className="verify-users-modal-overlay" onClick={handleBackdropClick}>
+      <div className="verify-users-modal-content">
         {/* Header */}
-        <div style={styles.modalHeader}>
-          <h3 style={styles.modalTitle}>{title}</h3>
-          <div style={styles.modalActions}>
+        <div className="verify-users-modal-header">
+          <h3 className="verify-users-modal-title">{title}</h3>
+          <div className="verify-users-modal-actions">
             <button
               onClick={onOpenExternal}
-              style={styles.modalIconButton}
+              className="verify-users-modal-icon-button"
               title="Open in new tab"
             >
               <ExternalLinkIcon />
             </button>
             <button
               onClick={onClose}
-              style={styles.modalIconButton}
+              className="verify-users-modal-icon-button"
               title="Close"
             >
               <CloseIcon />
@@ -419,11 +415,11 @@ function ImageModal({ imageUrl, title, onClose, onOpenExternal }) {
         </div>
 
         {/* Image */}
-        <div style={styles.modalImageContainer}>
+        <div className="verify-users-modal-image-container">
           <img
             src={imageUrl}
             alt={title}
-            style={styles.modalImage}
+            className="verify-users-modal-image"
           />
         </div>
       </div>
@@ -435,8 +431,8 @@ function ImageModal({ imageUrl, title, onClose, onOpenExternal }) {
 
 function LoadingState() {
   return (
-    <div style={styles.stateContainer}>
-      <div style={styles.spinner} />
+    <div className="verify-users-state-container">
+      <div className="verify-users-spinner" />
       <span>Loading user...</span>
     </div>
   );
@@ -444,7 +440,7 @@ function LoadingState() {
 
 function ErrorState({ message }) {
   return (
-    <div style={styles.errorContainer}>
+    <div className="verify-users-error-container">
       <span>{message}</span>
     </div>
   );
@@ -452,10 +448,10 @@ function ErrorState({ message }) {
 
 function EmptyState() {
   return (
-    <div style={styles.emptyContainer}>
+    <div className="verify-users-empty-container">
       <UserIcon />
-      <h3 style={styles.emptyTitle}>No User Selected</h3>
-      <p style={styles.emptyText}>
+      <h3 className="verify-users-empty-title">No User Selected</h3>
+      <p className="verify-users-empty-text">
         Search for a user by email or select from the dropdown above to begin verification
       </p>
     </div>
@@ -464,9 +460,9 @@ function EmptyState() {
 
 function Instructions() {
   return (
-    <div style={styles.instructions}>
-      <h4 style={styles.instructionsTitle}>Verification Instructions</h4>
-      <ul style={styles.instructionsList}>
+    <div className="verify-users-instructions">
+      <h4 className="verify-users-instructions-title">Verification Instructions</h4>
+      <ul className="verify-users-instructions-list">
         <li>1. Select a user from the dropdown or search by email address</li>
         <li>2. Review all four identity documents (profile photo, selfie with ID, front and back of government ID)</li>
         <li>3. Click on any image to view it in full size</li>
@@ -482,10 +478,7 @@ function Instructions() {
 function ChevronIcon({ isOpen }) {
   return (
     <svg
-      style={{
-        ...styles.chevronIcon,
-        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-      }}
+      className={`verify-users-chevron-icon ${isOpen ? 'verify-users-chevron-icon--open' : ''}`}
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -503,7 +496,7 @@ function ChevronIcon({ isOpen }) {
 function UserIcon() {
   return (
     <svg
-      style={styles.userIcon}
+      className="verify-users-user-icon"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -521,7 +514,7 @@ function UserIcon() {
 function ImagePlaceholderIcon() {
   return (
     <svg
-      style={styles.imagePlaceholderIcon}
+      className="verify-users-placeholder-icon"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -573,556 +566,3 @@ function CloseIcon() {
     </svg>
   );
 }
-
-// ===== STYLES =====
-
-const styles = {
-  // Container
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#f3f4f6',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-
-  // Header
-  header: {
-    backgroundColor: 'white',
-    borderBottom: '1px solid #e5e7eb',
-    padding: '1rem 2rem',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#111827',
-    margin: '0 0 0.25rem 0',
-  },
-  subtitle: {
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    margin: 0,
-  },
-
-  // Main
-  main: {
-    flex: 1,
-    maxWidth: '80rem',
-    width: '100%',
-    margin: '0 auto',
-    padding: '2rem',
-  },
-
-  // Footer
-  footer: {
-    backgroundColor: 'white',
-    borderTop: '1px solid #e5e7eb',
-    padding: '1rem 2rem',
-    marginTop: 'auto',
-  },
-  footerText: {
-    textAlign: 'center',
-    fontSize: '0.875rem',
-    color: '#6b7280',
-    margin: 0,
-  },
-
-  // User Select
-  userSelectContainer: {
-    marginBottom: '2rem',
-  },
-  sectionTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: '1rem',
-  },
-  userSelectRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '1rem',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-  },
-  emailInputContainer: {
-    width: '290px',
-  },
-  emailInput: {
-    width: '100%',
-    height: '43px',
-    padding: '0 1rem',
-    border: '2px solid #d1d5db',
-    borderRadius: '0.5rem',
-    backgroundColor: 'white',
-    color: '#374151',
-    fontSize: '0.875rem',
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-  dropdownContainer: {
-    position: 'relative',
-    width: '451px',
-  },
-  dropdownTrigger: {
-    width: '100%',
-    height: '44px',
-    padding: '0 1rem',
-    border: '2px solid #d1d5db',
-    borderRadius: '0.5rem',
-    backgroundColor: 'white',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    transition: 'border-color 0.15s',
-    boxSizing: 'border-box',
-  },
-  dropdownTriggerActive: {
-    borderColor: '#52ABEC',
-  },
-  dropdownTextSelected: {
-    color: '#1f2937',
-    fontSize: '0.875rem',
-  },
-  dropdownTextPlaceholder: {
-    color: '#9ca3af',
-    fontSize: '0.875rem',
-  },
-  chevronIcon: {
-    width: '20px',
-    height: '20px',
-    color: '#9ca3af',
-    transition: 'transform 0.15s',
-  },
-  dropdownList: {
-    position: 'absolute',
-    zIndex: 10,
-    width: '100%',
-    marginTop: '0.25rem',
-    backgroundColor: 'white',
-    border: '1px solid #e5e7eb',
-    borderRadius: '0.5rem',
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-    maxHeight: '240px',
-    overflowY: 'auto',
-  },
-  dropdownLoading: {
-    padding: '0.75rem 1rem',
-    color: '#6b7280',
-    textAlign: 'center',
-    fontSize: '0.875rem',
-  },
-  dropdownEmpty: {
-    padding: '0.75rem 1rem',
-    color: '#6b7280',
-    textAlign: 'center',
-    fontSize: '0.875rem',
-  },
-  dropdownItem: {
-    padding: '0.75rem 1rem',
-    cursor: 'pointer',
-    borderBottom: '1px solid #f3f4f6',
-    transition: 'background-color 0.15s',
-  },
-  dropdownItemSelected: {
-    backgroundColor: '#eff6ff',
-  },
-  dropdownItemContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-  },
-  dropdownAvatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    objectFit: 'cover',
-  },
-  dropdownAvatarPlaceholder: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    backgroundColor: '#e5e7eb',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dropdownAvatarInitial: {
-    color: '#6b7280',
-    fontSize: '0.875rem',
-  },
-  dropdownItemName: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#1f2937',
-    margin: 0,
-  },
-  dropdownItemEmail: {
-    fontSize: '0.75rem',
-    color: '#6b7280',
-    margin: 0,
-  },
-  verifiedBadge: {
-    marginLeft: 'auto',
-    padding: '0.125rem 0.5rem',
-    backgroundColor: '#dcfce7',
-    color: '#15803d',
-    fontSize: '0.75rem',
-    borderRadius: '9999px',
-  },
-  clearButton: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    color: '#4b5563',
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderRadius: '0.5rem',
-    cursor: 'pointer',
-    transition: 'all 0.15s',
-  },
-
-  // Verification Container
-  verificationContainer: {
-    border: '2px solid #4D4D4D',
-    borderRadius: '20px',
-    backgroundColor: 'white',
-    padding: '1.5rem',
-    marginBottom: '2rem',
-  },
-  verificationTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: '1.5rem',
-  },
-  verificationContent: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '1.5rem',
-  },
-  imageGrid: {
-    flex: 1,
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '1rem',
-  },
-  toggleSection: {
-    width: '128px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderLeft: '1px solid #e5e7eb',
-    paddingLeft: '1.5rem',
-  },
-  processingText: {
-    marginTop: '0.5rem',
-    fontSize: '0.75rem',
-    color: '#6b7280',
-  },
-
-  // Image Card
-  imageCardContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  imageCardLabel: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: '0.5rem',
-  },
-  imageCard: {
-    position: 'relative',
-    width: '100%',
-    aspectRatio: '4/3',
-    border: '2px dashed',
-    borderRadius: '0.5rem',
-    overflow: 'hidden',
-    transition: 'all 0.15s',
-  },
-  imageCardWithImage: {
-    borderColor: '#d1d5db',
-    cursor: 'pointer',
-  },
-  imageCardEmpty: {
-    borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
-  },
-  imageCardImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  imageCardOverlay: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: 0,
-    transition: 'all 0.15s',
-  },
-  imageCardOverlayText: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: '0.25rem 0.75rem',
-    borderRadius: '9999px',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#374151',
-  },
-  imageCardPlaceholder: {
-    position: 'absolute',
-    inset: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#9ca3af',
-  },
-  imagePlaceholderIcon: {
-    width: '40px',
-    height: '40px',
-    marginBottom: '0.5rem',
-  },
-  imageCardPlaceholderText: {
-    fontSize: '0.875rem',
-  },
-
-  // Verification Toggle
-  toggleContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  toggleLabel: {
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#374151',
-  },
-  toggleButton: {
-    position: 'relative',
-    display: 'inline-flex',
-    height: '32px',
-    width: '56px',
-    alignItems: 'center',
-    borderRadius: '9999px',
-    transition: 'background-color 0.2s',
-    border: 'none',
-    cursor: 'pointer',
-    outline: 'none',
-  },
-  toggleButtonActive: {
-    backgroundColor: '#22c55e',
-  },
-  toggleButtonInactive: {
-    backgroundColor: '#d1d5db',
-  },
-  toggleButtonDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  },
-  toggleKnob: {
-    display: 'inline-block',
-    height: '24px',
-    width: '24px',
-    borderRadius: '9999px',
-    backgroundColor: 'white',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s',
-  },
-  toggleKnobActive: {
-    transform: 'translateX(28px)',
-  },
-  toggleKnobInactive: {
-    transform: 'translateX(4px)',
-  },
-  toggleStatus: {
-    fontSize: '0.75rem',
-    fontWeight: '500',
-  },
-  toggleStatusVerified: {
-    color: '#16a34a',
-  },
-  toggleStatusNotVerified: {
-    color: '#6b7280',
-  },
-
-  // User Summary
-  userSummary: {
-    marginTop: '1.5rem',
-    paddingTop: '1rem',
-    borderTop: '1px solid #e5e7eb',
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '1rem',
-    fontSize: '0.875rem',
-    color: '#4b5563',
-  },
-  userSummaryItem: {
-    display: 'inline',
-  },
-  userSummaryLabel: {
-    fontWeight: '500',
-  },
-
-  // States
-  stateContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '3rem',
-    color: '#6b7280',
-    gap: '1rem',
-  },
-  spinner: {
-    width: '32px',
-    height: '32px',
-    border: '3px solid #e5e7eb',
-    borderTopColor: '#3b82f6',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-  },
-  errorContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '3rem',
-    color: '#dc2626',
-    gap: '1rem',
-  },
-  emptyContainer: {
-    border: '2px dashed #d1d5db',
-    borderRadius: '20px',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    padding: '3rem',
-    textAlign: 'center',
-    marginBottom: '2rem',
-  },
-  userIcon: {
-    width: '64px',
-    height: '64px',
-    margin: '0 auto 1rem',
-    color: '#9ca3af',
-  },
-  emptyTitle: {
-    fontSize: '1.125rem',
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: '0.5rem',
-  },
-  emptyText: {
-    color: '#6b7280',
-    margin: 0,
-  },
-
-  // Instructions
-  instructions: {
-    backgroundColor: '#eff6ff',
-    border: '1px solid #bfdbfe',
-    borderRadius: '0.5rem',
-    padding: '1rem',
-  },
-  instructionsTitle: {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#1e40af',
-    marginBottom: '0.5rem',
-  },
-  instructionsList: {
-    fontSize: '0.875rem',
-    color: '#1d4ed8',
-    margin: 0,
-    paddingLeft: 0,
-    listStyle: 'none',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.25rem',
-  },
-
-  // Modal
-  modalOverlay: {
-    position: 'fixed',
-    inset: 0,
-    zIndex: 50,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    backdropFilter: 'blur(4px)',
-  },
-  modalContent: {
-    position: 'relative',
-    maxWidth: '56rem',
-    maxHeight: '90vh',
-    margin: '1rem',
-  },
-  modalHeader: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: '0.5rem',
-    borderTopRightRadius: '0.5rem',
-    padding: '0.75rem 1rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  modalTitle: {
-    fontSize: '1.125rem',
-    fontWeight: '600',
-    color: '#1f2937',
-    margin: 0,
-  },
-  modalActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  modalIconButton: {
-    padding: '0.5rem',
-    color: '#4b5563',
-    backgroundColor: 'transparent',
-    border: 'none',
-    borderRadius: '0.5rem',
-    cursor: 'pointer',
-    transition: 'all 0.15s',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalImageContainer: {
-    backgroundColor: '#f3f4f6',
-    borderBottomLeftRadius: '0.5rem',
-    borderBottomRightRadius: '0.5rem',
-    overflow: 'hidden',
-  },
-  modalImage: {
-    maxWidth: '100%',
-    maxHeight: '75vh',
-    objectFit: 'contain',
-    display: 'block',
-    margin: '0 auto',
-  },
-};
-
-// Add keyframes for spinner animation
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  /* Hover effects */
-  .image-card-with-image:hover {
-    border-color: #52ABEC;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-
-  .image-card-with-image:hover .image-card-overlay {
-    background-color: rgba(0, 0, 0, 0.2);
-    opacity: 1;
-  }
-`;
-document.head.appendChild(styleSheet);

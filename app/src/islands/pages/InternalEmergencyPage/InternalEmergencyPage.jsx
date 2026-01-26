@@ -10,12 +10,12 @@
  * - ONLY renders UI based on pre-calculated state
  */
 
-import React from 'react';
 import { useInternalEmergencyPageLogic } from './useInternalEmergencyPageLogic.js';
 import EmergencyList from './components/EmergencyList.jsx';
 import EmergencyDetails from './components/EmergencyDetails.jsx';
 import CommunicationPanel from './components/CommunicationPanel.jsx';
 import './InternalEmergencyPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function InternalEmergencyPage() {
   // ============================================================================
@@ -59,6 +59,7 @@ export default function InternalEmergencyPage() {
   if (loading) {
     return (
       <div className="internal-emergency-page">
+        <AdminHeader />
                 <main className="emergency-main">
           <div className="emergency-container">
             <div className="loading-state">
@@ -78,7 +79,8 @@ export default function InternalEmergencyPage() {
   if (error) {
     return (
       <div className="internal-emergency-page">
-                <main className="emergency-main">
+        <AdminHeader />
+        <main className="emergency-main">
           <div className="emergency-container">
             <div className="error-state">
               <div className="error-icon">&#9888;</div>
@@ -100,6 +102,7 @@ export default function InternalEmergencyPage() {
 
   return (
     <div className="internal-emergency-page">
+      <AdminHeader />
       
       <main className="emergency-main">
         <div className="emergency-container">
