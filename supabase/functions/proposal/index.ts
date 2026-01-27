@@ -90,13 +90,12 @@ Deno.serve(async (req: Request) => {
         const { handleUpdate } = await import("./actions/update.ts");
         console.log('[proposal] Update handler loaded');
 
-        // Authentication required
+        // Optional authentication - soft headers pattern for internal admin pages
         const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
-          return new Response(
-            JSON.stringify({ success: false, error: 'Authentication required' }),
-            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        if (user) {
+          console.log(`[proposal:update] Authenticated user: ${user.email} (${user.id})`);
+        } else {
+          console.log('[proposal:update] No auth - proceeding as internal page request');
         }
         result = await handleUpdate(payload, user, supabase);
         break;
