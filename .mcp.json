@@ -1,8 +1,10 @@
 {
     "mcpServers": {
         "knip": {
-            "command": "npx",
+            "command": "cmd",
             "args": [
+                "/c",
+                "npx",
                 "-y",
                 "@knip/mcp"
             ]
@@ -12,8 +14,10 @@
             "url": "https://mcp.supabase.com/mcp"
         },
         "playwright": {
-            "command": "npx",
+            "command": "cmd",
             "args": [
+                "/c",
+                "npx",
                 "-y",
                 "@playwright/mcp"
             ]
