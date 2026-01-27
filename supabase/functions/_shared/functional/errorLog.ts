@@ -155,23 +155,21 @@ const getRelativeTime = (isoTimestamp: string): string => {
     return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   }
 
-  // Format time as "3:15 PM EST" (assuming EST for now)
-  const timeStr = then.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'America/New_York',
-  });
+  // Format time as "3:15 PM" (UTC - Deno doesn't support timezone data)
+  const hours = then.getUTCHours();
+  const minutes = then.getUTCMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  const timeStr = `${displayHours}:${displayMinutes} ${ampm} UTC`;
 
   // Yesterday
   if (diffMins < 2880) return `Yesterday at ${timeStr}`;
 
   // Today or earlier
-  const dateStr = then.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'America/New_York',
-  });
+  const month = then.toLocaleString('en-US', { month: 'short' }).split(' ')[0];
+  const day = then.getUTCDate();
+  const dateStr = `${month} ${day}`;
   return `${dateStr} at ${timeStr}`;
 };
 
