@@ -70,10 +70,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (OPTIONAL for internal pages)
+    // NOTE: Authentication is now optional - internal pages can access without auth
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+
+    if (user) {
+      console.log(`[message-curation] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[message-curation] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -81,7 +85,7 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Verify user is admin or corporate user
+    // Verify user is admin or corporate user (only if authenticated)
     // NOTE: Admin/corporate role check removed to allow any authenticated user access for testing
     // const isAuthorized = await checkAdminOrCorporateStatus(supabase, user.email);
     // if (!isAuthorized) {
