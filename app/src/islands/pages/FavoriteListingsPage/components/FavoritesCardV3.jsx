@@ -2,13 +2,14 @@
  * FavoritesCardV3 Component
  *
  * Premium "Featured + Stack" design for favorites.
- * Layout: Large hero image + 2 stacked thumbnails on right
+ * Layout: Large hero image + 2 stacked slots (photo + embedded mini-map)
  *
  * Design Features:
  * - Premium purple color scheme (#1E0A3C primary)
  * - Gold accents for verified badges
  * - Glassmorphism effects
- * - Photo count badge on last thumbnail
+ * - Photo count badge on photo thumbnail
+ * - EMBEDDED MINI-MAP: Second slot shows listing location (replaces disconnected sidebar)
  * - Heart button in action bar
  *
  * To switch back to V2, change USE_CARD_V3 to false in FavoriteListingsPage.jsx
@@ -216,8 +217,22 @@ const FavoritesCardV3 = ({
     window.location.href = `/messages?listing=${listing.id}`;
   };
 
+  const handleMapClick = (e) => {
+    e.stopPropagation();
+    // Trigger callback to parent (can open full map modal or scroll to sidebar map)
+    onMapClick?.(listing);
+  };
+
   // Responsive layout: stack images vertically on mobile
   const isCompact = isMobile || isSmallMobile;
+
+  // Generate Google Static Maps URL for mini-map preview
+  const lat = listing.latitude || listing.lat || 40.7128;
+  const lng = listing.longitude || listing.lng || -74.006;
+  const mapZoom = 14;
+  const mapSize = '300x200';
+  const mapStyle = 'feature:all|element:geometry|color:0xf5f0fa|saturation:-50&style=feature:road|element:geometry|color:0xe8e0f0&style=feature:water|element:geometry|color:0xd4c8e8';
+  const miniMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${mapZoom}&size=${mapSize}&scale=2&markers=color:0x6D31C2|${lat},${lng}&style=${mapStyle}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}`;
 
   const styles = {
     card: {
@@ -301,6 +316,66 @@ const FavoritesCardV3 = ({
       color: 'white',
       letterSpacing: '0.05em',
     },
+
+    // MINI-MAP THUMBNAIL
+    miniMapContainer: {
+      flex: 1,
+      borderRadius: TOKENS.radius.md,
+      overflow: 'hidden',
+      position: 'relative',
+      cursor: 'pointer',
+      border: `2px solid ${TOKENS.colors.primaryLight}`,
+      transition: 'all 0.2s ease',
+    },
+    miniMapImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      filter: 'saturate(0.9)',
+    },
+    miniMapOverlay: {
+      position: 'absolute',
+      inset: 0,
+      background: 'linear-gradient(180deg, rgba(109, 49, 194, 0) 50%, rgba(109, 49, 194, 0.15) 100%)',
+      pointerEvents: 'none',
+    },
+    miniMapBadge: {
+      position: 'absolute',
+      bottom: TOKENS.spacing.sm,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '6px 12px',
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      borderRadius: TOKENS.radius.pill,
+      fontSize: '10px',
+      fontWeight: 700,
+      color: TOKENS.colors.primaryAccent,
+      textTransform: 'uppercase',
+      letterSpacing: '0.08em',
+      boxShadow: '0 2px 8px rgba(109, 49, 194, 0.2)',
+      whiteSpace: 'nowrap',
+    },
+    miniMapPin: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -100%)',
+      width: '32px',
+      height: '32px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: `linear-gradient(135deg, ${TOKENS.colors.primaryRich} 0%, ${TOKENS.colors.primaryAccent} 100%)`,
+      borderRadius: '50% 50% 50% 0',
+      rotate: '-45deg',
+      boxShadow: '0 4px 12px rgba(109, 49, 194, 0.4)',
+    },
+
     favoriteOverlay: {
       position: 'absolute',
       top: TOKENS.spacing.md,
@@ -586,20 +661,46 @@ const FavoritesCardV3 = ({
             )}
           </div>
 
-          {/* Stacked Thumbnails (hidden on mobile) */}
+          {/* Stacked Thumbnails: Photo + Mini-Map (hidden on mobile) */}
           <div style={styles.stackedPreviews}>
+            {/* Photo thumbnail with count */}
             <div style={styles.stackedPreview}>
               <img src={thumbPhoto1} alt="Room view" style={styles.previewImage} />
-            </div>
-            <div style={styles.stackedPreview}>
-              <img src={thumbPhoto2} alt="Room view" style={styles.previewImage} />
               <div style={styles.photoCount}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                   <circle cx="8.5" cy="8.5" r="1.5" />
                   <polyline points="21 15 16 10 5 21" />
                 </svg>
-                {photoCount} PHOTOS
+                {photoCount}
+              </div>
+            </div>
+
+            {/* Mini-Map thumbnail */}
+            <div
+              style={styles.miniMapContainer}
+              onClick={handleMapClick}
+              role="button"
+              tabIndex={0}
+              aria-label="View on map"
+            >
+              <img
+                src={miniMapUrl}
+                alt={`Map showing ${listing.location || listing.neighborhood || 'location'}`}
+                style={styles.miniMapImage}
+                onError={(e) => {
+                  // Fallback to a styled placeholder if map fails to load
+                  e.target.style.background = `linear-gradient(135deg, ${TOKENS.colors.primaryLight} 0%, #E8E0F0 100%)`;
+                  e.target.style.opacity = '0.5';
+                }}
+              />
+              <div style={styles.miniMapOverlay} />
+              <div style={styles.miniMapBadge}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                VIEW MAP
               </div>
             </div>
           </div>
