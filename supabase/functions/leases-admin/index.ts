@@ -175,33 +175,12 @@ async function handleList(
 ) {
   const { limit = 500, offset = 0 } = payload;
 
+  // Note: Simplified query without FK relationships due to schema limitations
+  // The guest, host, and listing data will need to be fetched separately or
+  // the relationships need to be properly defined in the database
   const { data, error, count } = await supabase
     .from('bookings_leases')
-    .select(`
-      *,
-      guest:Guest(
-        _id,
-        email,
-        "First Name",
-        "Last Name",
-        Phone
-      ),
-      host:Host(
-        _id,
-        email,
-        "First Name",
-        "Last Name"
-      ),
-      listing:Listing(
-        _id,
-        "Listing Title",
-        Address,
-        Neighborhood,
-        City,
-        State,
-        "Zip Code"
-      )
-    `, { count: 'exact' })
+    .select('*', { count: 'exact' })
     .order('Created Date', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -254,15 +233,10 @@ async function handleGet(
     throw new Error('leaseId is required');
   }
 
+  // Note: Simplified query without FK relationships due to schema limitations
   const { data, error } = await supabase
     .from('bookings_leases')
-    .select(`
-      *,
-      guest:Guest(*),
-      host:Host(*),
-      listing:Listing(*),
-      proposal:Proposal(*)
-    `)
+    .select('*')
     .eq('_id', leaseId)
     .single();
 
@@ -477,22 +451,10 @@ async function handleBulkExport(
     throw new Error('leaseIds array is required');
   }
 
+  // Note: Simplified query without FK relationships due to schema limitations
   const { data, error } = await supabase
     .from('bookings_leases')
-    .select(`
-      _id,
-      "Agreement Number",
-      "Lease Status",
-      "Reservation Period : Start",
-      "Reservation Period : End",
-      "Total Rent",
-      "Total Compensation",
-      "Paid to Date from Guest",
-      "Created Date",
-      guest:Guest(email, "First Name", "Last Name"),
-      host:Host(email, "First Name", "Last Name"),
-      listing:Listing("Listing Title", Address)
-    `)
+    .select('*')
     .in('_id', leaseIds);
 
   if (error) {
@@ -506,15 +468,10 @@ async function handleBulkExport(
   // Generate CSV
   const headers = [
     'ID', 'Agreement Number', 'Status', 'Start Date', 'End Date',
-    'Total Rent', 'Paid to Date', 'Guest Email', 'Guest Name',
-    'Host Email', 'Host Name', 'Listing', 'Address', 'Created Date'
+    'Total Rent', 'Paid to Date', 'Created Date'
   ];
 
   const rows = (data || []).map((lease: Record<string, unknown>) => {
-    const guest = lease.guest as Record<string, string> | null;
-    const host = lease.host as Record<string, string> | null;
-    const listing = lease.listing as Record<string, string> | null;
-
     return [
       lease._id,
       lease['Agreement Number'] || '',
@@ -523,12 +480,6 @@ async function handleBulkExport(
       lease['Reservation Period : End'] || '',
       lease['Total Rent'] || 0,
       lease['Paid to Date from Guest'] || 0,
-      guest?.email || '',
-      `${guest?.['First Name'] || ''} ${guest?.['Last Name'] || ''}`.trim(),
-      host?.email || '',
-      `${host?.['First Name'] || ''} ${host?.['Last Name'] || ''}`.trim(),
-      listing?.['Listing Title'] || '',
-      listing?.Address || '',
       lease['Created Date'] || '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
   });
