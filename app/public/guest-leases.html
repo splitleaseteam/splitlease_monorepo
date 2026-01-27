@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Split Lease - Internal Test</title>
-  <meta name="description" content="Internal test page for Split Lease development">
+  <title>My Leases | Split Lease</title>
+  <meta name="description" content="View and manage your leases, stays, and check-in/checkout on Split Lease">
   <link rel="icon" type="image/png" href="/assets/images/split-lease-purple-circle.png">
   <!-- CSS is imported in JSX entry files and bundled by Vite -->
 
@@ -19,10 +19,15 @@
         a.appendChild(r);
     })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
   </script>
+
+  <!-- config.js is imported in JSX entry files and bundled by Vite -->
 </head>
 <body>
+  <!-- Skip Link for Keyboard Users -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
   <div id="root"></div>
 
-  <script type="module" src="/src/_internal-test.jsx"></script>
+  <script type="module" src="/src/guest-leases.jsx"></script>
 </body>
 </html>

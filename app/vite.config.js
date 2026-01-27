@@ -20,6 +20,16 @@ function handleRouting(req, publicPrefix = '') {
   const [urlPath, queryStringPart] = url.split('?');
   const queryString = queryStringPart ? `?${queryStringPart}` : '';
 
+  // Skip Vite's internal requests and source files
+  // These should be handled by Vite's dev server, not our routing
+  if (urlPath.startsWith('/src/') ||
+      urlPath.startsWith('/@vite/') ||
+      urlPath.startsWith('/@react-refresh') ||
+      urlPath.startsWith('/node_modules/') ||
+      urlPath.includes('.')) {
+    return; // Don't rewrite - let Vite handle it
+  }
+
   // Special handling for help-center category routes (e.g., /help-center/guests)
   // Must check before general route matching
   // The category is extracted from the URL by the client-side JavaScript
@@ -92,13 +102,19 @@ function copyDirectory(src, dest) {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // Fix motion-utils broken ESM exports by using CJS version (absolute path)
+      'motion-utils': resolve(__dirname, 'node_modules/motion-utils/dist/cjs/index.js'),
+    },
+  },
   plugins: [
     react(),
     {
       name: 'multi-page-routing',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          handleRouting(req, ''); // No prefix in dev mode - Vite serves public/ at root
+          handleRouting(req, '/public');
           next();
         });
       },
@@ -243,39 +259,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Force cache invalidation with build timestamp
+    assetsInlineLimit: 0,
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'public/index.html'),
-        search: resolve(__dirname, 'public/search.html'),
-        'view-split-lease': resolve(__dirname, 'public/view-split-lease.html'),
-        'preview-split-lease': resolve(__dirname, 'public/preview-split-lease.html'),
-        '404': resolve(__dirname, 'public/404.html'),
-        faq: resolve(__dirname, 'public/faq.html'),
-        policies: resolve(__dirname, 'public/policies.html'),
-        'list-with-us': resolve(__dirname, 'public/list-with-us.html'),
-        'guest-success': resolve(__dirname, 'public/guest-success.html'),
-        'host-success': resolve(__dirname, 'public/host-success.html'),
-        'why-split-lease': resolve(__dirname, 'public/why-split-lease.html'),
-        'guest-proposals': resolve(__dirname, 'public/guest-proposals.html'),
-        careers: resolve(__dirname, 'public/careers.html'),
-        'account-profile': resolve(__dirname, 'public/account-profile.html'),
-        'self-listing': resolve(__dirname, 'public/self-listing.html'),
-        'self-listing-v2': resolve(__dirname, 'public/self-listing-v2.html'),
-        'help-center': resolve(__dirname, 'public/help-center.html'),
-        'help-center-category': resolve(__dirname, 'public/help-center-category.html'),
-        'rental-application': resolve(__dirname, 'public/rental-application.html'),
-        'listing-dashboard': resolve(__dirname, 'public/listing-dashboard.html'),
-        'host-overview': resolve(__dirname, 'public/host-overview.html'),
-        'host-proposals': resolve(__dirname, 'public/host-proposals.html'),
-        'favorite-listings': resolve(__dirname, 'public/favorite-listings.html'),
-        'about-us': resolve(__dirname, 'public/about-us.html'),
-        '_internal-test': resolve(__dirname, 'public/_internal-test.html'),
-        'reset-password': resolve(__dirname, 'public/reset-password.html'),
-        'messages': resolve(__dirname, 'public/messages.html'),
-        'auth-verify': resolve(__dirname, 'public/auth-verify.html'),
-        'verify-users': resolve(__dirname, 'public/verify-users.html'),
-        'ai-tools': resolve(__dirname, 'public/ai-tools.html')
-      },
+      // Use Route Registry to generate inputs automatically
+      // This ensures ALL routes are included in the build
+      input: buildRollupInputs(resolve(__dirname, 'public')),
       output: {
         // Ensure HTML files are output to dist root, not dist/public
         assetFileNames: (assetInfo) => {

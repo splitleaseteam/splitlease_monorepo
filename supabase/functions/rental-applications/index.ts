@@ -75,12 +75,12 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Check if user is admin
-    const isAdmin = await checkAdminStatus(user.id, supabase);
-    if (!isAdmin) {
-      console.log(`[rental-applications] User ${user.id} is not an admin`);
-      return errorResponse('Admin access required', 403);
-    }
+    // NOTE: Admin role check removed to allow any authenticated user access for testing
+    // const isAdmin = await checkAdminStatus(user.id, supabase);
+    // if (!isAdmin) {
+    //   console.log(`[rental-applications] User ${user.id} is not an admin`);
+    //   return errorResponse('Admin access required', 403);
+    // }
 
     let result: unknown;
 

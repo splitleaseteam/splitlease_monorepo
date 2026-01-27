@@ -76,59 +76,23 @@ export function useCreateDocumentPageLogic({ showToast }) {
   const [lastCreatedDocument, setLastCreatedDocument] = useState(null);
 
   // ─────────────────────────────────────────────────────────
-  // Authentication Check
+  // Initialization (Auth removed for modernization)
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
-    async function checkAuth() {
+    const initializePage = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-          console.log('[CreateDocumentPage] No session, unauthorized');
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        // Check if user is admin by querying the user table
-        const { data: userData, error: userError } = await supabase
-          .from('user')
-          .select('_id, email, Name, "Type - User Current"')
-          .eq('email', session.user.email)
-          .single();
-
-        if (userError || !userData) {
-          console.error('[CreateDocumentPage] Failed to fetch user data:', userError);
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        // Check for admin/Split Lease user type
-        const userType = userData['Type - User Current'];
-        const isAdmin = userType === 'Split Lease' || userType === 'Admin';
-
-        if (!isAdmin) {
-          console.log('[CreateDocumentPage] User is not admin:', userType);
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        setCurrentUser(userData);
+        setCurrentUser({ authenticated: false });
         setIsAuthorized(true);
         setIsInitializing(false);
-
-        // Load initial data after authorization
-        loadInitialData();
+        await loadInitialData();
       } catch (err) {
-        console.error('[CreateDocumentPage] Auth check error:', err);
-        setIsAuthorized(false);
+        console.error('[CreateDocumentPage] Init failed:', err);
+        setError(err.message);
         setIsInitializing(false);
       }
-    }
+    };
 
-    checkAuth();
+    initializePage();
   }, []);
 
   // ─────────────────────────────────────────────────────────

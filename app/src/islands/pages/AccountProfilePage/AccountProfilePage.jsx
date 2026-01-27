@@ -23,6 +23,7 @@ import FixedSaveBar from './components/shared/FixedSaveBar.jsx';
 import ReferralBanner from './components/ReferralBanner.jsx';
 import ReferralModal from './components/ReferralModal.jsx';
 import RentalApplicationWizardModal from '../../shared/RentalApplicationWizardModal/RentalApplicationWizardModal.jsx';
+import IdentityVerification from '../../shared/IdentityVerification/IdentityVerification.jsx';
 import './AccountProfilePage.css';
 
 // ============================================================================
@@ -241,6 +242,19 @@ export default function AccountProfilePage() {
             }}
           />
         )}
+
+        {/* Identity Verification Modal */}
+        <IdentityVerification
+          isOpen={logic.showIdentityVerificationModal}
+          onClose={logic.handleCloseIdentityVerificationModal}
+          onSubmit={logic.handleIdentityVerificationSubmit}
+          userId={logic.profileUserId}
+          onAlertTriggered={(config) => {
+            if (window.showToast) {
+              window.showToast(config);
+            }
+          }}
+        />
 
         <Footer />
       </div>

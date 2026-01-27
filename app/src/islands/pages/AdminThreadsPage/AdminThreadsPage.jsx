@@ -14,7 +14,6 @@
  * @see useAdminThreadsPageLogic.js for all business logic
  */
 
-import { Toaster } from 'react-hot-toast';
 import { useAdminThreadsPageLogic } from './useAdminThreadsPageLogic';
 import AdminHeader from './components/AdminHeader';
 import FilterBar from './components/FilterBar';
@@ -56,7 +55,7 @@ export default function AdminThreadsPage() {
       <div className="admin-threads">
         <AdminHeader />
         <LoadingState message="Loading threads..." />
-        <Toaster position="top-right" />
+        {/* Toast notifications provided by ToastProvider in entry file */}
       </div>
     );
   }
@@ -70,7 +69,7 @@ export default function AdminThreadsPage() {
           message={logic.error}
           onRetry={logic.handleRetry}
         />
-        <Toaster position="top-right" />
+        {/* Toast notifications provided by ToastProvider in entry file */}
       </div>
     );
   }
@@ -184,7 +183,7 @@ export default function AdminThreadsPage() {
         </div>
       )}
 
-      <Toaster position="top-right" />
+      {/* Toast notifications provided by ToastProvider in entry file */}
     </div>
   );
 }

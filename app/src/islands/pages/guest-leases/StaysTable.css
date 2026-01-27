@@ -1,0 +1,136 @@
+/**
+ * StaysTable Component Styles
+ */
+
+.stays-table {
+  /* Container */
+}
+
+.stays-table__empty {
+  text-align: center;
+  padding: 24px;
+  color: #6B6B6B;
+}
+
+.stays-table__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stays-table__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #F7F8F9;
+  border-radius: 8px;
+  gap: 12px;
+}
+
+.stays-table__info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.stays-table__week {
+  font-weight: 600;
+  color: #4D4D4D;
+  white-space: nowrap;
+}
+
+.stays-table__dates {
+  color: #6B6B6B;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.stays-table__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stays-table__status--upcoming {
+  background: #E0E7FF;
+  color: #3730A3;
+}
+
+.stays-table__status--starting {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.stays-table__status--active {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.stays-table__status--completed {
+  background: #E5E5E5;
+  color: #4D4D4D;
+}
+
+.stays-table__status--unknown {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.stays-table__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stays-table__toggle {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px dashed #7C3AED;
+  border-radius: 8px;
+  color: #7C3AED;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.stays-table__toggle:hover {
+  background: #F5F3FF;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .stays-table__row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stays-table__info {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .stays-table__actions {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .stays-table__actions .btn {
+    flex: 1;
+    min-width: 100px;
+    justify-content: center;
+  }
+}

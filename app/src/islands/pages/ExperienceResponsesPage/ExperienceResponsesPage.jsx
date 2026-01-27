@@ -14,7 +14,6 @@
  * @see useExperienceResponsesPageLogic.js for all business logic
  */
 
-import { Toaster } from 'react-hot-toast';
 import { useExperienceResponsesPageLogic } from './useExperienceResponsesPageLogic';
 import FilterBar from './components/FilterBar';
 import ResponseList from './components/ResponseList';
@@ -54,7 +53,7 @@ export default function ExperienceResponsesPage() {
           <h1 className="er-title">Experience Responses</h1>
         </header>
         <LoadingState message="Loading responses..." />
-        <Toaster position="top-right" />
+        {/* Toast notifications provided by ToastProvider in entry file */}
       </div>
     );
   }
@@ -73,7 +72,7 @@ export default function ExperienceResponsesPage() {
             Try Again
           </button>
         </div>
-        <Toaster position="top-right" />
+        {/* Toast notifications provided by ToastProvider in entry file */}
       </div>
     );
   }
@@ -136,7 +135,7 @@ export default function ExperienceResponsesPage() {
         </div>
       )}
 
-      <Toaster position="top-right" />
+      {/* Toast notifications provided by ToastProvider in entry file */}
     </div>
   );
 }

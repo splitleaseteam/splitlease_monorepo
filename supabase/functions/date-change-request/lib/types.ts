@@ -218,3 +218,59 @@ export const THROTTLE_LIMIT = SOFT_WARNING_THRESHOLD;
 
 // Throttle level type
 export type ThrottleLevel = 'none' | 'soft_warning' | 'hard_block';
+
+// ─────────────────────────────────────────────────────────────
+// Notification Types
+// ─────────────────────────────────────────────────────────────
+
+export type NotificationEvent = 'SUBMITTED' | 'ACCEPTED' | 'REJECTED';
+
+export interface NotificationRecipient {
+  userId: string;
+  email: string | null;
+  firstName: string | null;
+  phone: string | null;
+  notificationPreferences: {
+    email_notifications?: boolean;
+    sms_notifications?: boolean;
+  } | null;
+  role: 'guest' | 'host';
+}
+
+export interface NotificationContext {
+  event: NotificationEvent;
+  requestId: string;
+  requestType: RequestType;
+  leaseId: string;
+  agreementNumber: string | null;
+  dateAdded: string | null;
+  dateRemoved: string | null;
+  priceRate: number | null;
+  requestedBy: NotificationRecipient;
+  receiver: NotificationRecipient;
+  message: string | null;
+  answerMessage: string | null;
+}
+
+export interface NotificationContent {
+  subject: string;
+  emailBody: string;
+  smsBody: string;
+  inAppMessage: string;
+  ctaButtonText: string;
+  ctaUrl: string;
+}
+
+export interface DateChangeNotificationParams {
+  event: NotificationEvent;
+  requestId: string;
+  requestType: RequestType;
+  leaseId: string;
+  dateAdded: string | null;
+  dateRemoved: string | null;
+  priceRate: number | null;
+  requestedById: string;
+  receiverId: string;
+  message: string | null;
+  answerMessage: string | null;
+}
