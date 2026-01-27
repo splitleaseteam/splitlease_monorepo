@@ -114,8 +114,8 @@ export async function createThread(
     .from('thread')
     .insert({
       _id: threadId,
-      "-Host User": params.hostUserId,
-      "-Guest User": params.guestUserId,
+      host_user_id: params.hostUserId,
+      guest_user_id: params.guestUserId,
       "Listing": params.listingId || null,
       "Proposal": params.proposalId || null,
       "Thread Subject": params.subject || null,
@@ -153,8 +153,8 @@ export async function findExistingThread(
   let query = supabase
     .from('thread')
     .select('_id')
-    .eq('"-Host User"', hostUserId)
-    .eq('"-Guest User"', guestUserId);
+    .eq('host_user_id', hostUserId)
+    .eq('guest_user_id', guestUserId);
 
   if (listingId) {
     query = query.eq('"Listing"', listingId);
@@ -179,7 +179,7 @@ export async function getThread(
 ): Promise<{ _id: string; hostUser: string; guestUser: string; listing?: string } | null> {
   const { data, error } = await supabase
     .from('thread')
-    .select('_id, "-Host User", "-Guest User", "Listing"')
+    .select('_id, host_user_id, guest_user_id, "Listing"')
     .eq('_id', threadId)
     .single();
 
@@ -189,8 +189,8 @@ export async function getThread(
 
   return {
     _id: data._id,
-    hostUser: data['-Host User'],
-    guestUser: data['-Guest User'],
+    hostUser: data.host_user_id,
+    guestUser: data.guest_user_id,
     listing: data['Listing'],
   };
 }
@@ -240,11 +240,11 @@ export async function createMessage(
     .from('_message')
     .insert({
       _id: messageId,
-      "Associated Thread/Conversation": params.threadId,
+      thread_id: params.threadId,
       "Message Body": params.messageBody,
-      "-Originator User": params.senderUserId,
-      "-Host User": thread.hostUser,
-      "-Guest User": thread.guestUser,
+      originator_user_id: params.senderUserId,
+      host_user_id: thread.hostUser,
+      guest_user_id: thread.guestUser,
       "is Split Bot": params.isSplitBot || false,
       "is Visible to Host": params.visibleToHost ?? true,
       "is Visible to Guest": params.visibleToGuest ?? true,
@@ -307,7 +307,7 @@ export async function getUnreadCount(
   const { count, error } = await supabase
     .from('_message')
     .select('*', { count: 'exact', head: true })
-    .eq('"Associated Thread/Conversation"', threadId)
+    .eq('thread_id', threadId)
     .contains('"Unread Users"', [userId]);
 
   if (error) {
@@ -492,11 +492,11 @@ export async function createSplitBotMessage(
     .from('_message')
     .insert({
       _id: messageId,
-      "Associated Thread/Conversation": params.threadId,
+      thread_id: params.threadId,
       "Message Body": params.messageBody,
-      "-Originator User": SPLITBOT_USER_ID,
-      "-Host User": thread.hostUser,
-      "-Guest User": thread.guestUser,
+      originator_user_id: SPLITBOT_USER_ID,
+      host_user_id: thread.hostUser,
+      guest_user_id: thread.guestUser,
       "is Split Bot": true,
       "is Forwarded": true, // SplitBot messages are marked as forwarded per Bubble pattern
       "is Visible to Host": params.visibleToHost,

@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
         // Note: Bubble column names with special chars need quoted in .eq()
         const { data: thread, error: threadError } = await supabase
           .from("thread")
-          .select('_id, "-Guest User"')
+          .select('_id, guest_user_id')
           .eq('"Proposal"', proposal._id)
           .maybeSingle();
 
@@ -135,8 +135,8 @@ Deno.serve(async (req) => {
         const { data: splitBotMessage, error: messageError } = await supabase
           .from("_message")
           .select('_id, "Message Body", "Created Date"')
-          .eq('"Associated Thread/Conversation"', thread._id)
-          .eq('"-Originator User"', SPLITBOT_USER_ID)
+          .eq('thread_id', thread._id)
+          .eq('originator_user_id', SPLITBOT_USER_ID)
           .eq('"is Split Bot"', true)
           .order('"Created Date"', { ascending: true })
           .limit(1)
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
             .insert({
               _id: newId,
               "Proposal associated": proposal._id,
-              "Created By": thread["-Guest User"] || proposal.Guest,
+              "Created By": thread.guest_user_id || proposal.Guest,
               "Created Date": splitBotMessage["Created Date"] || now,
               "Modified Date": now,
               summary: messageBody,

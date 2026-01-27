@@ -229,8 +229,8 @@ export async function handleAdminSendReminder(
       _id,
       "Thread Subject",
       "~Last Message",
-      "-Host User",
-      "-Guest User"
+      host_user_id,
+      guest_user_id
     `)
     .eq('_id', payload.threadId)
     .maybeSingle();
@@ -240,7 +240,7 @@ export async function handleAdminSendReminder(
   }
 
   // Step 4: Fetch host and guest user data
-  const userIds = [thread['-Host User'], thread['-Guest User']].filter(Boolean);
+  const userIds = [thread.host_user_id, thread.guest_user_id].filter(Boolean);
 
   const { data: users, error: usersError } = await supabaseAdmin
     .from('user')
@@ -256,8 +256,8 @@ export async function handleAdminSendReminder(
     return acc;
   }, {} as Record<string, typeof users[0]>);
 
-  const hostUser = thread['-Host User'] ? userMap[thread['-Host User']] : null;
-  const guestUser = thread['-Guest User'] ? userMap[thread['-Guest User']] : null;
+  const hostUser = thread.host_user_id ? userMap[thread.host_user_id] : null;
+  const guestUser = thread.guest_user_id ? userMap[thread.guest_user_id] : null;
 
   // Step 5: Send notifications
   const sentTo: AdminSendReminderResult['sentTo'] = [];

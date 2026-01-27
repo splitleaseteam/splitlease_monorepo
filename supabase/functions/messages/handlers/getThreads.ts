@@ -21,8 +21,8 @@ interface Thread {
   last_message_time: string;
   unread_count: number;
   is_with_splitbot: boolean;
-  '-Host User': string;
-  '-Guest User': string;
+  host_user_id: string;
+  guest_user_id: string;
 }
 
 interface GetThreadsResult {
@@ -76,10 +76,13 @@ export async function handleGetThreads(
   }
 
   // Step 1: Query threads where user is host or guest
-  // Uses RPC function because PostgREST .or() doesn't handle column names
-  // with leading hyphens ("-Host User", "-Guest User") correctly
+  // Direct query now works with normalized column names
   const { data: threads, error: threadsError } = await supabaseAdmin
-    .rpc('get_user_threads', { user_id: userBubbleId });
+    .from('thread')
+    .select('*')
+    .or(`host_user_id.eq.${userBubbleId},guest_user_id.eq.${userBubbleId}`)
+    .order('"Modified Date"', { ascending: false, nullsFirst: false })
+    .limit(20);
 
   console.log('[getThreads] Query result:', {
     threadCount: threads?.length || 0,
@@ -103,8 +106,8 @@ export async function handleGetThreads(
   const listingIds = new Set<string>();
 
   threads.forEach(thread => {
-    const hostId = thread['-Host User'];
-    const guestId = thread['-Guest User'];
+    const hostId = thread.host_user_id;
+    const guestId = thread.guest_user_id;
     const contactId = hostId === userBubbleId ? guestId : hostId;
     if (contactId) contactIds.add(contactId);
     if (thread['Listing']) listingIds.add(thread['Listing']);
@@ -151,14 +154,14 @@ export async function handleGetThreads(
   if (threadIds.length > 0) {
     const { data: unreadData, error: unreadError } = await supabaseAdmin
       .from('_message')
-      .select('"Associated Thread/Conversation"')
-      .in('"Associated Thread/Conversation"', threadIds)
+      .select('thread_id')
+      .in('thread_id', threadIds)
       .contains('"Unread Users"', JSON.stringify([userBubbleId]));
 
     if (!unreadError && unreadData) {
       // Count messages per thread
       unreadCountMap = unreadData.reduce((acc, msg) => {
-        const threadId = msg['Associated Thread/Conversation'];
+        const threadId = msg.thread_id;
         acc[threadId] = (acc[threadId] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -167,8 +170,8 @@ export async function handleGetThreads(
 
   // Step 6: Transform threads to UI format
   const transformedThreads: Thread[] = threads.map(thread => {
-    const hostId = thread['-Host User'];
-    const guestId = thread['-Guest User'];
+    const hostId = thread.host_user_id;
+    const guestId = thread.guest_user_id;
     const contactId = hostId === userBubbleId ? guestId : hostId;
     const contact = contactId ? contactMap[contactId] : null;
 
@@ -191,8 +194,8 @@ export async function handleGetThreads(
 
     return {
       _id: thread._id,
-      '-Host User': hostId,
-      '-Guest User': guestId,
+      host_user_id: hostId,
+      guest_user_id: guestId,
       contact_name: contact?.name || 'Split Lease',
       contact_avatar: contact?.avatar,
       property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
