@@ -71,8 +71,17 @@ Deno.serve(async (req: Request) => {
         const { handleCreate } = await import("./actions/create.ts");
         console.log('[proposal] Create handler loaded');
 
-        // Authentication check - create is public for now
-        result = await handleCreate(payload, null, supabase);
+        // SECURITY: Require authentication for proposal creation
+        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+        if (!user) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Authentication required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        console.log(`[proposal:create] Authenticated user: ${user.id}`);
+        result = await handleCreate(payload, user, supabase);
         break;
       }
 

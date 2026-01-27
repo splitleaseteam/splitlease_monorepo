@@ -12,28 +12,20 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 import { aiToolsService } from '../../../lib/aiToolsService.js';
 import { MELODY_PREFERENCES, CONTENT_PREFERENCES } from './types.js';
 
-// Admin email whitelist - users with these emails can access AI Tools
-const ADMIN_EMAILS = [
-  'sharath@splitlease.io',
-  'admin@splitlease.io',
-  'test@splitlease.io',
-];
+// NOTE: Admin email whitelist removed to allow any authenticated user access for testing
+// Original whitelist: ['sharath@splitlease.io', 'admin@splitlease.io', 'test@splitlease.io']
 
 export function useAiToolsPageLogic() {
   // ============================================================================
   // STATE
   // ============================================================================
 
-  // Auth state
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Data selection state
   const [houseManuals, setHouseManuals] = useState([]);
@@ -80,12 +72,11 @@ export function useAiToolsPageLogic() {
   // DATA FETCHING
   // ============================================================================
 
-  const fetchHouseManuals = useCallback(async (hostId) => {
+  const fetchHouseManuals = useCallback(async () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('housemanual')
-        .select('_id, Display, Host, Audience')
-        .eq('Host', hostId)
+        .select('_id, Display, Host, Listing')
         .order('Created Date', { ascending: false });
 
       if (fetchError) throw fetchError;
@@ -171,18 +162,21 @@ export function useAiToolsPageLogic() {
   }, []);
 
   const fetchNarrators = useCallback(async () => {
-    // Static list of ElevenLabs narrators - these could be fetched from an API
     return [
-      { id: 'rachel', name: 'Rachel', description: 'Warm, conversational American female voice' },
-      { id: 'drew', name: 'Drew', description: 'Well-rounded American male voice' },
-      { id: 'clyde', name: 'Clyde', description: 'Deep, authoritative American male voice' },
-      { id: 'paul', name: 'Paul', description: 'Clear, neutral American male voice' },
-      { id: 'domi', name: 'Domi', description: 'Expressive American female voice' },
-      { id: 'dave', name: 'Dave', description: 'British conversational male voice' },
-      { id: 'fin', name: 'Fin', description: 'Irish male voice with warm tone' },
-      { id: 'sarah', name: 'Sarah', description: 'Soft American female voice' },
-      { id: 'antoni', name: 'Antoni', description: 'Well-rounded American male voice' },
-      { id: 'thomas', name: 'Thomas', description: 'British narrator voice' },
+      { id: 'david-attenborough', name: 'David Attenborough', description: 'English' },
+      { id: 'ricardo-darin', name: 'Ricardo Darin', description: 'Spanish' },
+      { id: 'serhiy-prytula', name: 'Serhiy Prytula', description: 'Ukrainian' },
+      { id: 'olena', name: 'Olena', description: 'Ukrainian' },
+      { id: 'eric-braa', name: 'Eric Braa', description: 'English' },
+      { id: 'snoop-dogg', name: 'Snoop Dogg', description: 'English' },
+      { id: 'larry-david', name: 'Larry David', description: 'English' },
+      { id: 'jerry-seinfeld', name: 'Jerry Seinfeld', description: 'English' },
+      { id: 'barack-obama', name: 'Barack Obama', description: 'English' },
+      { id: 'meryl-streep', name: 'Meryl Streep', description: 'English' },
+      { id: 'morgan-freeman', name: 'Morgan Freeman', description: 'English' },
+      { id: 'martha-stewart', name: 'Martha Stewart', description: 'English' },
+      { id: 'mary-poppins', name: 'Mary Poppins', description: 'English' },
+      { id: 'steve-irwin', name: 'Steve Irwin', description: 'English' },
     ];
   }, []);
 
@@ -195,50 +189,12 @@ export function useAiToolsPageLogic() {
     setError(null);
 
     try {
-      // Step 1: Check auth status
-      const isAuthenticated = await checkAuthStatus();
+      const [manuals, narratorsList] = await Promise.all([
+        fetchHouseManuals(),
+        fetchNarrators(),
+      ]);
 
-      if (!isAuthenticated) {
-        setError('Please log in to access AI Tools');
-        setLoading(false);
-        setTimeout(() => {
-          window.location.href = '/?login=true';
-        }, 2000);
-        return;
-      }
-
-      // Step 2: Validate user and check admin status
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-      if (!userData) {
-        setError('Unable to verify user. Please log in again.');
-        setLoading(false);
-        return;
-      }
-
-      const userEmail = userData.email?.toLowerCase();
-      const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
-
-      setUser({
-        id: userData.userId || userData._id,
-        email: userData.email,
-        firstName: userData['Name - First'] || userData.firstName || 'User',
-        accountHostId: userData.accountHostId || userData.userId,
-      });
-      setIsAdmin(isUserAdmin);
-
-      if (!isUserAdmin) {
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: Fetch house manuals for this host
-      const hostId = userData.accountHostId || userData.userId || userData._id;
-      const manuals = await fetchHouseManuals(hostId);
       setHouseManuals(manuals);
-
-      // Step 4: Fetch narrators list
-      const narratorsList = await fetchNarrators();
       setNarrators(narratorsList);
       if (narratorsList.length > 0) {
         setSelectedNarrator(narratorsList[0].id);
@@ -573,11 +529,9 @@ export function useAiToolsPageLogic() {
   // ============================================================================
 
   return {
-    // Auth & Loading
-    user,
+    // Loading
     loading,
     error,
-    isAdmin,
 
     // Data
     houseManuals,

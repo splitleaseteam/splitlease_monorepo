@@ -275,7 +275,7 @@ export function getNightsAsDayNames(nightsSelected) {
   if (typeof nightsSelected === 'string') {
     try {
       nights = JSON.parse(nightsSelected);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }
@@ -314,7 +314,7 @@ export function getCheckInOutFromDays(daysSelected) {
   if (typeof daysSelected === 'string') {
     try {
       days = JSON.parse(daysSelected);
-    } catch (e) {
+    } catch (_e) {
       return { checkInDay: '', checkOutDay: '' };
     }
   }
@@ -397,7 +397,7 @@ export function getCheckInOutFromNights(nightsSelected) {
   if (typeof nightsSelected === 'string') {
     try {
       nights = JSON.parse(nightsSelected);
-    } catch (e) {
+    } catch (_e) {
       return { checkInDay: '', checkOutDay: '' };
     }
   }
@@ -623,7 +623,32 @@ export function getStatusTagConfig(proposal) {
     return { text: 'Guest Counter', variant: 'counteroffer' };
   }
 
-  // Map status to display config
+  // Check for "Awaiting Rental Application" states (normalized snake_case format)
+  // Original Bubble: "Proposal Submitted by guest - Awaiting Rental Application"
+  if (statusKey === 'proposal_submitted_by_guest_-_awaiting_rental_application' ||
+      statusKey === 'proposal_submitted_for_guest_by_split_lease_-_awaiting_rental_application') {
+    return { text: 'Awaiting Rental App', variant: 'default' };
+  }
+
+  // Check for pending confirmation state (normalized snake_case format)
+  // Original Bubble: "Proposal Submitted for guest by Split Lease - Pending Confirmation"
+  if (statusKey === 'proposal_submitted_for_guest_by_split_lease_-_pending_confirmation' ||
+      statusKey === 'pending_confirmation') {
+    return { text: 'Pending Confirmation', variant: 'default' };
+  }
+
+  // Check for host counteroffer awaiting guest review (normalized snake_case format)
+  // Original Bubble: "Host Counteroffer Submitted / Awaiting Guest Review"
+  if (statusKey === 'host_counteroffer_submitted_/_awaiting_guest_review') {
+    return { text: 'Awaiting Guest Review', variant: 'default' };
+  }
+
+  // Legacy 'pending' status - typically means awaiting rental application
+  if (statusKey === 'pending') {
+    return { text: 'Awaiting Rental App', variant: 'default' };
+  }
+
+  // Map status to display config (normalized keys)
   const statusMap = {
     proposal_submitted: { text: 'Review', variant: 'attention' },
     host_review: { text: 'Review', variant: 'attention' },

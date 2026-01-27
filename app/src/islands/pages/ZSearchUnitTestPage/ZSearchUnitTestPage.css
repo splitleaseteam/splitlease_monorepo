@@ -1,0 +1,335 @@
+/* Z-Search Unit Test Page Styles */
+
+.zsut-page {
+  min-height: 100vh;
+  background-color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header */
+.zsut-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #E5E7EB;
+  background: #FAFAFA;
+}
+
+.zsut-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.zsut-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #6B7280;
+}
+
+/* Container */
+.zsut-container {
+  display: flex;
+  gap: 24px;
+  padding: 24px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Filter Sidebar */
+.zsut-filters {
+  width: 300px;
+  flex-shrink: 0;
+  padding: 20px;
+  background: #FAFAFA;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+  height: fit-content;
+}
+
+.zsut-filters h2 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.zsut-filter-group {
+  margin-bottom: 20px;
+}
+
+.zsut-filter-group > label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.zsut-select,
+.zsut-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  background: #FFFFFF;
+  color: #111827;
+}
+
+.zsut-select:focus,
+.zsut-input:focus {
+  outline: none;
+  border-color: #4B47CE;
+  box-shadow: 0 0 0 3px rgba(75, 71, 206, 0.1);
+}
+
+.zsut-select:disabled {
+  background: #F3F4F6;
+  color: #9CA3AF;
+}
+
+/* Checkbox Group */
+.zsut-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zsut-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.zsut-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #4B47CE;
+}
+
+/* Price Inputs */
+.zsut-price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zsut-price-inputs .zsut-input {
+  width: 100px;
+}
+
+.zsut-price-inputs span {
+  color: #6B7280;
+  font-size: 14px;
+}
+
+/* Buttons */
+.zsut-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zsut-btn-primary {
+  background: #4B47CE;
+  color: #FFFFFF;
+  border: none;
+}
+
+.zsut-btn-primary:hover {
+  background: #3F3BB0;
+}
+
+.zsut-btn-secondary {
+  background: #FFFFFF;
+  color: #374151;
+  border: 1px solid #D1D5DB;
+  width: 100%;
+}
+
+.zsut-btn-secondary:hover {
+  background: #F9FAFB;
+}
+
+/* Results Section */
+.zsut-results {
+  flex: 1;
+  min-width: 0;
+}
+
+.zsut-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.zsut-results-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.zsut-count {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+/* Listings Grid */
+.zsut-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* Listing Card */
+.zsut-listing-card {
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.zsut-listing-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.zsut-listing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.zsut-listing-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.zsut-listing-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4B47CE;
+  white-space: nowrap;
+}
+
+.zsut-listing-location {
+  font-size: 14px;
+  color: #6B7280;
+  margin-bottom: 12px;
+}
+
+.zsut-listing-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.zsut-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.zsut-badge-active {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.zsut-badge-complete {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.zsut-listing-id {
+  font-size: 12px;
+  color: #9CA3AF;
+  font-family: monospace;
+}
+
+/* Loading State */
+.zsut-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6B7280;
+}
+
+.zsut-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #E5E7EB;
+  border-top-color: #4B47CE;
+  border-radius: 50%;
+  animation: zsut-spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes zsut-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.zsut-error {
+  text-align: center;
+  padding: 60px 20px;
+  color: #DC2626;
+}
+
+.zsut-error p {
+  margin-bottom: 16px;
+}
+
+/* Empty State */
+.zsut-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6B7280;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .zsut-container {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .zsut-filters {
+    width: 100%;
+  }
+
+  .zsut-listings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .zsut-header {
+    padding: 16px;
+  }
+
+  .zsut-listings-grid {
+    grid-template-columns: 1fr;
+  }
+}

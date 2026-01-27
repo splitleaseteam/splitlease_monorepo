@@ -6,7 +6,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
 import {
   listHosts,
   listGuests,
@@ -43,14 +42,6 @@ const RESERVATION_SPANS = [
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
 
 export function useUsabilityDataManagementPageLogic() {
-  // ============================================================================
-  // Authentication State
-  // ============================================================================
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [authError, setAuthError] = useState(null);
-
   // ============================================================================
   // Data State
   // ============================================================================
@@ -110,59 +101,19 @@ export function useUsabilityDataManagementPageLogic() {
   const dayPattern = formatDayPattern(selectedDayIndices);
 
   // ============================================================================
-  // Authentication
-  // ============================================================================
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        setAuthLoading(true);
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthError('Please log in to access this page.');
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          return;
-        }
-
-        setIsAuthenticated(true);
-
-        // Validate token and check authorization
-        // The Edge Function will verify admin/corporate status
-        const userData = await validateTokenAndFetchUser();
-        if (!userData) {
-          setAuthError('Session expired. Please log in again.');
-          setIsAuthenticated(false);
-          setIsAuthorized(false);
-          return;
-        }
-
-        // Assume authorized for now - actual check happens on first API call
-        setIsAuthorized(true);
-
-      } catch (error) {
-        console.error('[Auth] Error:', error);
-        setAuthError(error.message);
-        setIsAuthenticated(false);
-        setIsAuthorized(false);
-      } finally {
-        setAuthLoading(false);
-      }
-    }
-
-    checkAuth();
-  }, []);
-
-  // ============================================================================
   // Load Initial Data
   // ============================================================================
   useEffect(() => {
-    if (isAuthenticated && isAuthorized) {
-      loadHosts();
-      loadGuests();
-      setDefaultMoveInDate();
+    loadHosts();
+    loadGuests();
+    setDefaultMoveInDate();
+  }, [loadHosts, loadGuests, setDefaultMoveInDate]);
+
+  useEffect(() => {
+    if (window.$crisp?.push) {
+      window.$crisp.push(["do", "chat:hide"]);
     }
-  }, [isAuthenticated, isAuthorized]);
+  }, []);
 
   const setDefaultMoveInDate = useCallback(() => {
     const today = new Date();
@@ -180,12 +131,7 @@ export function useUsabilityDataManagementPageLogic() {
       setHosts(result.users || []);
     } catch (error) {
       console.error('[Hosts] Load error:', error);
-      if (error.message.includes('Admin or corporate')) {
-        setIsAuthorized(false);
-        setAuthError('Admin or corporate access required.');
-      } else {
-        showAlertMessage('Error', `Failed to load hosts: ${error.message}`);
-      }
+      showAlertMessage('Error', `Failed to load hosts: ${error.message}`);
     } finally {
       setHostsLoading(false);
     }
@@ -449,12 +395,6 @@ Thread ID: ${result.threadId}`);
   // Return API
   // ============================================================================
   return {
-    // Auth
-    isAuthenticated,
-    isAuthorized,
-    authLoading,
-    authError,
-
     // Constants
     reservationSpans: RESERVATION_SPANS,
     dayLabels: DAY_LABELS,

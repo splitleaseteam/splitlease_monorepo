@@ -71,8 +71,23 @@ function hasGuestCounteroffer(proposal) {
  */
 export function ProposalCardBody({ proposal, handlers = {} }) {
   const guest = proposal?.guest || proposal?.user || {};
+
+  // Check if counteroffer happened
+  const isCounteroffer = proposal?.['counter offer happened'] ||
+    proposal?.counterOfferHappened ||
+    proposal?.counter_offer_happened;
+
   // Use nights_selected for the pill display (hosts see nights, not days)
-  const nightsSelected = proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || [];
+  // Prioritize HC nights when counteroffer exists
+  let hcNightsSelected = proposal?.['hc nights selected'] || [];
+  if (typeof hcNightsSelected === 'string') {
+    try { hcNightsSelected = JSON.parse(hcNightsSelected); } catch { hcNightsSelected = []; }
+  }
+
+  const nightsSelected = (isCounteroffer && hcNightsSelected.length > 0)
+    ? hcNightsSelected
+    : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || []);
+
   const declined = isDeclined(proposal);
   const showCompareTerms = hasGuestCounteroffer(proposal);
 
@@ -127,6 +142,7 @@ export function ProposalCardBody({ proposal, handlers = {} }) {
         onEditCounter={() => handlers.onEditCounter?.(proposal)}
         onWithdraw={() => handlers.onWithdraw?.(proposal)}
         onRemove={() => handlers.onRemove?.(proposal)}
+        onRequestRentalApp={() => handlers.onRequestRentalApp?.(proposal)}
       />
     </div>
   );

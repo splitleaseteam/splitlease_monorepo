@@ -944,7 +944,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             logger.error('   Detailed error from response:', errorBody.error);
           }
-        } catch (parseErr) {
+        } catch (_parseErr) {
           // Silent - just for logging
         }
       } else if (error.context?.body) {
@@ -956,7 +956,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             logger.error('   Detailed error from response:', errorBody.error);
           }
-        } catch (parseErr) {
+        } catch (_parseErr) {
           // Silent - just for logging
         }
       }
@@ -1322,7 +1322,7 @@ export async function updatePassword(newPassword) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
-        } catch (parseErr) {
+        } catch (_parseErr) {
           // Silent - use default message
         }
       } else if (error.context?.body) {
@@ -1334,7 +1334,7 @@ export async function updatePassword(newPassword) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
-        } catch (parseErr) {
+        } catch (_parseErr) {
           // Silent - use default message
         }
       }

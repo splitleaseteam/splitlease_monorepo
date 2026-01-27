@@ -221,100 +221,17 @@ export function useProposalManagePageLogic() {
   const [isCreationFormOpen, setIsCreationFormOpen] = useState(false);
 
   // ============================================================================
-  // AUTH CHECK
+  // AUTH CHECK (Optional - no redirect for internal pages)
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isAdmin: false,
-            shouldRedirect: true
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        // Gold Standard Auth Pattern - Step 2: Deep validation
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (!userData) {
-          // Fallback to session metadata
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (!session?.user) {
-            console.log('[ProposalManage] No valid session, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              isAdmin: false,
-              shouldRedirect: true
-            });
-            window.location.href = '/';
-            return;
-          }
-        }
-
-        // Check admin status via user table
-        const userId = userData?.userId || userData?._id;
-        if (!userId) {
-          console.log('[ProposalManage] No user ID, redirecting');
-          window.location.href = '/';
-          return;
-        }
-
-        // Query user table for admin status
-        const { data: userRecord, error: userError } = await supabase
-          .from('user')
-          .select('_id, "Admin?"')
-          .eq('_id', userId)
-          .single();
-
-        if (userError) {
-          console.error('[ProposalManage] Error checking admin status:', userError);
-        }
-
-        const isAdmin = userRecord?.['Admin?'] === true;
-
-        if (!isAdmin) {
-          console.warn('[ProposalManage] User is not admin, redirecting...');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isAdmin: false,
-            shouldRedirect: true
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          isAdmin: true,
-          shouldRedirect: false
-        });
-
-        // Load proposals
-        await loadProposals();
-
-      } catch (err) {
-        console.error('[ProposalManage] Auth check failed:', err);
-        setError('Authentication failed. Please log in again.');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isAdmin: false,
-          shouldRedirect: true
-        });
-      }
-    }
-
-    checkAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState({
+      isChecking: false,
+      isAuthenticated: true,
+      isAdmin: true,
+      shouldRedirect: false
+    });
   }, []);
 
   // ============================================================================

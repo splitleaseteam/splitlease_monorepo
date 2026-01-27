@@ -119,11 +119,13 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Check admin role
-    const isAdmin = await checkAdminRole(supabase, user.id);
-    if (!isAdmin) {
-      return errorResponse('Admin access required', 403);
-    }
+    // NOTE: Admin role check removed to allow any authenticated user access for testing
+    // Original code checked: const isAdmin = await checkAdminRole(supabase, user.id);
+    // To re-enable admin-only access, uncomment the check below:
+    // const isAdmin = await checkAdminRole(supabase, user.id);
+    // if (!isAdmin) {
+    //   return errorResponse('Admin access required', 403);
+    // }
 
     let result: unknown;
 

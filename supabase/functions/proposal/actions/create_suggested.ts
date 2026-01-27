@@ -510,8 +510,8 @@ export async function handleCreateSuggested(
     _id: threadId,
     Proposal: proposalId,
     Listing: input.listingId,
-    "-Guest User": input.guestId,
-    "-Host User": hostUserData._id,
+    guest_user_id: input.guestId,
+    host_user_id: hostUserData._id,
     "Created Date": now,
     "Modified Date": now,
   };

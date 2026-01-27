@@ -112,16 +112,17 @@ export default function useSimulationAdminPageLogic() {
    */
   async function callEdgeFunction(action, payload = {}) {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('You must be logged in to perform this action');
+    const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+    const accessToken = session?.access_token || legacyToken;
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
     }
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/simulation-admin`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 

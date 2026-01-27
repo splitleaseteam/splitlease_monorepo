@@ -1,0 +1,41 @@
+# Flask Framework and Extensions
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Session==0.5.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Google API Dependencies (for Calendar Automation)
+google-api-python-client==2.108.0
+google-auth==2.25.2
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
+
+# HTTP Requests and API Calls
+requests==2.31.0
+
+# PDF Generation (for House Manual and Contracts)
+reportlab==4.0.7
+PyPDF2==3.0.1
+
+# Document Processing
+python-docx==1.1.0
+
+# Slack Notifications (for logging)
+slack-sdk==3.26.1
+
+# Database
+SQLAlchemy==2.0.23
+
+# Utilities
+pathlib==1.0.1
+
+# Date and Time Utilities
+pytz==2023.3.post1
+
+# Security
+Werkzeug==3.0.1
+
+# WSGI Server (for production)
+gunicorn==21.2.0

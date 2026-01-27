@@ -46,35 +46,13 @@ export function useInternalEmergencyPageLogic() {
   const [statusFilter, setStatusFilter] = useState('');
 
   // ============================================================================
-  // Authentication Check
+  // Initialization (no auth redirect for internal pages)
   // ============================================================================
 
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const authResult = await checkAuthStatus();
-        if (!authResult.authenticated) {
-          window.location.href = '/?login=true&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        // Check admin status (will be validated by Edge Function anyway)
-        if (!authResult.user?.admin) {
-          setError('Access denied. Admin privileges required.');
-          setLoading(false);
-          return;
-        }
-
-        // Auth passed, load data
-        loadInitialData();
-      } catch (authError) {
-        console.error('[InternalEmergencyPage] Auth check failed:', authError);
-        setError('Authentication failed. Please log in again.');
-        setLoading(false);
-      }
-    }
-
-    checkAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Just load the data directly
+    loadInitialData();
   }, []);
 
   // ============================================================================

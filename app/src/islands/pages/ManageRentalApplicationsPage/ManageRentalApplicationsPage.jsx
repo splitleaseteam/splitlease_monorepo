@@ -18,15 +18,19 @@ import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationDetailView from './components/ApplicationDetailView.jsx';
 import EditApplicationModal from './modals/EditApplicationModal.jsx';
 import { useToast } from '../../shared/Toast.jsx';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import '../../../styles/pages/manage-rental-applications.css';
+
 
 export default function ManageRentalApplicationsPage() {
   const { showToast } = useToast();
   const logic = useManageRentalApplicationsPageLogic({ showToast });
 
   // Loading state
-  if (logic.isInitializing) {
+  if (logic.isLoading && !logic.applications.length && logic.viewMode === 'list') {
     return (
       <div className="manage-rental-apps">
+        <AdminHeader />
         <div className="manage-rental-apps__loading">
           <div className="spinner" />
           <p>Loading...</p>
@@ -35,21 +39,9 @@ export default function ManageRentalApplicationsPage() {
     );
   }
 
-  // Unauthorized
-  if (!logic.isAuthorized) {
-    return (
-      <div className="manage-rental-apps">
-        <div className="manage-rental-apps__unauthorized">
-          <h2>Access Denied</h2>
-          <p>You are not authorized to view this page. Admin access required.</p>
-          <a href="/" className="btn btn--primary">Return to Home</a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="manage-rental-apps">
+      <AdminHeader />
       {/* Header */}
       <header className="manage-rental-apps__header">
         <div className="manage-rental-apps__header-content">

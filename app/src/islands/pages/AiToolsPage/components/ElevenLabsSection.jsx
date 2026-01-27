@@ -10,13 +10,13 @@
 import PropTypes from 'prop-types';
 
 export default function ElevenLabsSection({
-  selectedHouseManual,
-  selectedVisit,
-  narrations,
-  narrators,
-  selectedNarrator,
-  narrationScript,
-  narrationStatus,
+  selectedHouseManual = '',
+  selectedVisit = '',
+  narrations = [],
+  narrators = [],
+  selectedNarrator = '',
+  narrationScript = '',
+  narrationStatus = { loading: false, error: null, message: null },
   onNarratorSelect,
   onScriptChange,
   onGenerateScript,
@@ -197,12 +197,3 @@ ElevenLabsSection.propTypes = {
   onAttach: PropTypes.func.isRequired,
 };
 
-ElevenLabsSection.defaultProps = {
-  selectedHouseManual: '',
-  selectedVisit: '',
-  narrations: [],
-  narrators: [],
-  selectedNarrator: '',
-  narrationScript: '',
-  narrationStatus: { loading: false, error: null, message: null },
-};

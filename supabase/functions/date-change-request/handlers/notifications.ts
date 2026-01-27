@@ -1,0 +1,623 @@
+/**
+ * Notifications Handler for Date Change Request Edge Function
+ * Split Lease - Supabase Edge Functions
+ *
+ * Orchestrates multi-channel notification delivery for date change requests:
+ * - Email (via send-email Edge Function with magic links)
+ * - SMS (via send-sms Edge Function)
+ * - In-app messaging (via messages Edge Function)
+ *
+ * Notifications are non-blocking - failures are logged but don't fail
+ * the main operation.
+ *
+ * Key Design: The `isRequester` flag determines notification perspective:
+ * - TRUE: "You've requested..." (recipient initiated the request)
+ * - FALSE: "[Name] requested..." (recipient is receiving the request)
+ */
+
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  NotificationContext,
+  NotificationRecipient,
+  DateChangeNotificationParams,
+  RequestType,
+  NotificationEvent,
+} from '../lib/types.ts';
+import { generateNotificationContent } from '../lib/notificationContent.ts';
+import { sendEmail, EMAIL_TEMPLATES } from '../../_shared/emailUtils.ts';
+
+// ─────────────────────────────────────────────────────────────
+// Configuration
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Email template IDs
+ * GENERAL: Used for SUBMITTED and REJECTED events
+ * CELEBRATION: Used for ACCEPTED events (approval)
+ */
+const DATE_CHANGE_EMAIL_TEMPLATES = {
+  GENERAL: EMAIL_TEMPLATES.BASIC_EMAIL,
+  CELEBRATION: EMAIL_TEMPLATES.BASIC_EMAIL, // TODO: Create celebration template if desired
+};
+
+/**
+ * BCC recipients for internal tracking
+ * These Slack channel emails pipe directly into Slack
+ */
+const DATE_CHANGE_BCC_EMAILS: readonly string[] = [
+  'customer-reservations-aaaadcrzzindbwl2eznwtujfvm@splitlease.slack.com',
+  'emails-for-review-aaaagbdra6rjlq6q3pqevmxgym@splitlease.slack.com',
+  'splitleaseteam@gmail.com',
+];
+
+/**
+ * Split Lease Twilio phone number for SMS
+ */
+const SMS_FROM_NUMBER = '+14155692985';
+
+// ─────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────
+
+interface UserQueryResult {
+  _id: string;
+  email: string | null;
+  'First Name': string | null;
+  'Cell phone number': string | null;
+  'notification preferences': {
+    email_notifications?: boolean;
+    sms_notifications?: boolean;
+  } | null;
+}
+
+interface UsersResult {
+  requester: NotificationRecipient | null;
+  receiver: NotificationRecipient | null;
+}
+
+interface MagicLinksResult {
+  requester: string;
+  receiver: string;
+}
+
+interface LeaseQueryResult {
+  'Agreement Number': string | null;
+  Guest: string | null;
+  Host: string | null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Main Entry Point
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Send date change request notifications to both parties via all channels.
+ *
+ * This is the main entry point called from create, accept, and decline handlers.
+ * All notifications are non-blocking - failures are logged but don't fail
+ * the main operation.
+ *
+ * @param supabase - Supabase client
+ * @param params - Notification parameters including event, request details, and user IDs
+ */
+export async function sendDateChangeRequestNotifications(
+  supabase: SupabaseClient,
+  params: DateChangeNotificationParams
+): Promise<void> {
+  console.log(`[dcr:notifications] Sending ${params.event} notifications for request:`, params.requestId);
+
+  // Step 1: Fetch all required data
+  const [users, lease] = await Promise.all([
+    fetchUsers(supabase, params.requestedById, params.receiverId, params.leaseId),
+    fetchLease(supabase, params.leaseId),
+  ]);
+
+  if (!users.requester || !users.receiver) {
+    console.warn('[dcr:notifications] Missing user data, skipping notifications');
+    return;
+  }
+
+  if (!lease) {
+    console.warn('[dcr:notifications] Missing lease data, skipping notifications');
+    return;
+  }
+
+  // Step 2: Generate magic links for both users
+  const magicLinks = await generateMagicLinks(
+    supabase,
+    users.requester,
+    users.receiver,
+    params.leaseId,
+    params.requestId
+  );
+
+  // Step 3: Build notification context
+  const context: NotificationContext = {
+    event: params.event,
+    requestId: params.requestId,
+    requestType: params.requestType,
+    leaseId: params.leaseId,
+    agreementNumber: lease['Agreement Number'],
+    dateAdded: params.dateAdded,
+    dateRemoved: params.dateRemoved,
+    priceRate: params.priceRate,
+    requestedBy: users.requester,
+    receiver: users.receiver,
+    message: params.message,
+    answerMessage: params.answerMessage,
+  };
+
+  // Step 4: Send all notifications concurrently (non-blocking)
+  const results = await Promise.allSettled([
+    // Requester notifications (isRequester = true)
+    sendEmailNotification(context, 'requester', magicLinks.requester),
+    sendSmsNotification(context, 'requester'),
+
+    // Receiver notifications (isRequester = false)
+    sendEmailNotification(context, 'receiver', magicLinks.receiver),
+    sendSmsNotification(context, 'receiver'),
+
+    // In-app message (single message visible to both)
+    sendInAppNotification(supabase, context),
+  ]);
+
+  // Log results summary
+  const fulfilled = results.filter(r => r.status === 'fulfilled').length;
+  const rejected = results.filter(r => r.status === 'rejected').length;
+  console.log(`[dcr:notifications] Complete: ${fulfilled} succeeded, ${rejected} failed`);
+}
+
+// ─────────────────────────────────────────────────────────────
+// User Data Fetching
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Fetch user data for both requester and receiver
+ */
+async function fetchUsers(
+  supabase: SupabaseClient,
+  requesterId: string,
+  receiverId: string,
+  leaseId: string
+): Promise<UsersResult> {
+  // Fetch users
+  const { data: users, error: usersError } = await supabase
+    .from('user')
+    .select('_id, email, "First Name", "Cell phone number", "notification preferences"')
+    .in('_id', [requesterId, receiverId]);
+
+  if (usersError || !users) {
+    console.warn('[dcr:notifications] User fetch failed:', usersError?.message);
+    return { requester: null, receiver: null };
+  }
+
+  const requesterData = users.find(u => u._id === requesterId) as UserQueryResult | undefined;
+  const receiverData = users.find(u => u._id === receiverId) as UserQueryResult | undefined;
+
+  // Fetch lease to determine roles
+  const { data: lease, error: leaseError } = await supabase
+    .from('bookings_leases')
+    .select('"Guest", "Host"')
+    .eq('_id', leaseId)
+    .maybeSingle();
+
+  if (leaseError || !lease) {
+    console.warn('[dcr:notifications] Lease fetch for roles failed:', leaseError?.message);
+    return { requester: null, receiver: null };
+  }
+
+  // Determine roles based on lease participants
+  const requesterRole: 'guest' | 'host' = lease.Guest === requesterId ? 'guest' : 'host';
+  const receiverRole: 'guest' | 'host' = requesterRole === 'guest' ? 'host' : 'guest';
+
+  return {
+    requester: requesterData ? mapToRecipient(requesterData, requesterRole) : null,
+    receiver: receiverData ? mapToRecipient(receiverData, receiverRole) : null,
+  };
+}
+
+/**
+ * Map database user record to NotificationRecipient
+ */
+function mapToRecipient(user: UserQueryResult, role: 'guest' | 'host'): NotificationRecipient {
+  return {
+    userId: user._id,
+    email: user.email,
+    firstName: user['First Name'],
+    phone: user['Cell phone number'],
+    notificationPreferences: user['notification preferences'],
+    role,
+  };
+}
+
+/**
+ * Fetch lease data including Agreement Number
+ */
+async function fetchLease(
+  supabase: SupabaseClient,
+  leaseId: string
+): Promise<LeaseQueryResult | null> {
+  const { data, error } = await supabase
+    .from('bookings_leases')
+    .select('"Agreement Number", "Guest", "Host"')
+    .eq('_id', leaseId)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('[dcr:notifications] Lease fetch failed:', error.message);
+    return null;
+  }
+
+  return data;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Magic Link Generation
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Generate magic login links for both parties
+ */
+async function generateMagicLinks(
+  supabase: SupabaseClient,
+  requester: NotificationRecipient,
+  receiver: NotificationRecipient,
+  leaseId: string,
+  requestId: string
+): Promise<MagicLinksResult> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.warn('[dcr:notifications] Missing env vars for magic links');
+    return { requester: '', receiver: '' };
+  }
+
+  const [requesterLink, receiverLink] = await Promise.all([
+    generateSingleMagicLink(
+      supabaseUrl,
+      serviceRoleKey,
+      supabase,
+      requester.email,
+      requester.userId,
+      requester.role === 'guest' ? 'guest-leases' : 'host-leases',
+      requestId,
+      leaseId
+    ),
+    generateSingleMagicLink(
+      supabaseUrl,
+      serviceRoleKey,
+      supabase,
+      receiver.email,
+      receiver.userId,
+      receiver.role === 'guest' ? 'guest-leases' : 'host-leases',
+      requestId,
+      leaseId
+    ),
+  ]);
+
+  return {
+    requester: requesterLink,
+    receiver: receiverLink,
+  };
+}
+
+/**
+ * Generate a single magic link and audit it
+ */
+async function generateSingleMagicLink(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  supabase: SupabaseClient,
+  email: string | null,
+  userId: string,
+  destinationPage: string,
+  requestId: string,
+  leaseId: string
+): Promise<string> {
+  if (!email) {
+    console.log('[dcr:notifications] No email for magic link generation');
+    return '';
+  }
+
+  try {
+    const redirectTo = `https://split.lease/${destinationPage}?request=${requestId}`;
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/auth-user`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'generate_magic_link',
+        payload: {
+          email,
+          redirectTo,
+        },
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success && result.data?.action_link) {
+      // Audit the magic link
+      await auditMagicLink(supabase, userId, destinationPage, { requestId, leaseId });
+      return result.data.action_link;
+    }
+
+    console.warn('[dcr:notifications] Magic link generation failed:', result.error);
+    return '';
+  } catch (error) {
+    console.warn('[dcr:notifications] Magic link exception:', (error as Error).message);
+    return '';
+  }
+}
+
+/**
+ * Audit magic link creation for security tracking
+ */
+async function auditMagicLink(
+  supabase: SupabaseClient,
+  userId: string,
+  destinationPage: string,
+  attachedData: Record<string, unknown>
+): Promise<void> {
+  try {
+    await supabase.from('magic_link_audit').insert({
+      user_id: userId,
+      destination_page: destinationPage,
+      attached_data: attachedData,
+      link_generated_at: new Date().toISOString(),
+      created_by: 'date-change-request-notifications',
+      sent_via: 'email',
+    });
+  } catch (error) {
+    console.warn('[dcr:notifications] Magic link audit failed:', (error as Error).message);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Email Notifications
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Send email notification to a recipient
+ *
+ * @param context - Full notification context
+ * @param recipientType - 'requester' or 'receiver'
+ * @param magicLink - Pre-generated magic link for this recipient
+ */
+async function sendEmailNotification(
+  context: NotificationContext,
+  recipientType: 'requester' | 'receiver',
+  magicLink: string
+): Promise<void> {
+  const recipient = recipientType === 'requester' ? context.requestedBy : context.receiver;
+
+  // Check if user wants email notifications
+  if (!shouldSendEmail(recipient.notificationPreferences)) {
+    console.log(`[dcr:notifications] Skipping email for ${recipientType} (preference)`);
+    return;
+  }
+
+  if (!recipient.email) {
+    console.log(`[dcr:notifications] Skipping email for ${recipientType} (no email)`);
+    return;
+  }
+
+  // CRITICAL: Determine if this recipient is the one who initiated the request
+  const isRequester = recipientType === 'requester';
+
+  const content = generateNotificationContent(context, recipient.role, isRequester);
+  const templateId = context.event === 'ACCEPTED'
+    ? DATE_CHANGE_EMAIL_TEMPLATES.CELEBRATION
+    : DATE_CHANGE_EMAIL_TEMPLATES.GENERAL;
+
+  try {
+    await sendEmail({
+      templateId,
+      toEmail: recipient.email,
+      toName: recipient.firstName || undefined,
+      subject: content.subject,
+      variables: {
+        first_name: recipient.firstName || 'there',
+        body_intro: content.emailBody,
+        button_text: content.ctaButtonText,
+        button_url: magicLink || content.ctaUrl,
+      },
+      bccEmails: DATE_CHANGE_BCC_EMAILS,
+    });
+
+    console.log(`[dcr:notifications] Email sent to ${recipientType}: ${recipient.email}`);
+  } catch (error) {
+    console.warn(`[dcr:notifications] Email failed for ${recipientType} (non-blocking):`, (error as Error).message);
+  }
+}
+
+/**
+ * Check if user wants email notifications
+ */
+function shouldSendEmail(prefs: { email_notifications?: boolean } | null): boolean {
+  if (!prefs || typeof prefs !== 'object') return true; // Default to yes
+  return prefs.email_notifications !== false;
+}
+
+// ─────────────────────────────────────────────────────────────
+// SMS Notifications
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Send SMS notification to a recipient
+ */
+async function sendSmsNotification(
+  context: NotificationContext,
+  recipientType: 'requester' | 'receiver'
+): Promise<void> {
+  const recipient = recipientType === 'requester' ? context.requestedBy : context.receiver;
+
+  // Check if user wants SMS notifications
+  if (!shouldSendSms(recipient.notificationPreferences)) {
+    console.log(`[dcr:notifications] Skipping SMS for ${recipientType} (preference)`);
+    return;
+  }
+
+  if (!recipient.phone) {
+    console.log(`[dcr:notifications] Skipping SMS for ${recipientType} (no phone)`);
+    return;
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.warn('[dcr:notifications] Missing env vars for SMS');
+    return;
+  }
+
+  // CRITICAL: Determine if this recipient is the one who initiated the request
+  const isRequester = recipientType === 'requester';
+
+  // Get the other person's name for the SMS content
+  const otherPersonName = isRequester
+    ? context.receiver.firstName || 'the other party'
+    : context.requestedBy.firstName || 'the other party';
+
+  const content = generateNotificationContent(context, recipient.role, isRequester);
+
+  const formattedPhone = formatPhoneToE164(recipient.phone);
+  if (!formattedPhone) {
+    console.warn(`[dcr:notifications] Invalid phone number for ${recipientType}`);
+    return;
+  }
+
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'send',
+        payload: {
+          to: formattedPhone,
+          from: SMS_FROM_NUMBER,
+          body: content.smsBody,
+        },
+      }),
+    });
+
+    console.log(`[dcr:notifications] SMS sent to ${recipientType}`);
+  } catch (error) {
+    console.warn(`[dcr:notifications] SMS failed for ${recipientType} (non-blocking):`, (error as Error).message);
+  }
+}
+
+/**
+ * Check if user wants SMS notifications
+ */
+function shouldSendSms(prefs: { sms_notifications?: boolean } | null): boolean {
+  if (!prefs || typeof prefs !== 'object') return false; // Default to no
+  return prefs.sms_notifications === true;
+}
+
+/**
+ * Format phone number to E.164 format (+15551234567)
+ */
+function formatPhoneToE164(phone: string): string | null {
+  if (!phone) return null;
+
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+
+  // Handle US numbers
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+
+  // Already has country code
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+
+  // International format
+  if (digits.length > 10) {
+    return `+${digits}`;
+  }
+
+  // Invalid format
+  return null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// In-App Notifications
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Send in-app message notification to the lease's messaging thread
+ */
+async function sendInAppNotification(
+  supabase: SupabaseClient,
+  context: NotificationContext
+): Promise<void> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.warn('[dcr:notifications] Missing env vars for in-app message');
+    return;
+  }
+
+  // Find the messaging thread for this lease
+  const { data: thread, error: threadError } = await supabase
+    .from('messaging_threads')
+    .select('_id')
+    .eq('lease', context.leaseId)
+    .maybeSingle();
+
+  if (threadError || !thread) {
+    console.warn('[dcr:notifications] No messaging thread found for lease:', context.leaseId);
+    return;
+  }
+
+  // Use neutral content for in-app (visible to both parties)
+  const content = generateNotificationContent(context, 'guest', false);
+
+  try {
+    await fetch(`${supabaseUrl}/functions/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'send_splitbot_message',
+        payload: {
+          threadId: thread._id,
+          ctaName: getCTANameForEvent(context.event, context.requestType),
+          recipientRole: 'both',
+          customMessageBody: content.inAppMessage,
+        },
+      }),
+    });
+
+    console.log('[dcr:notifications] In-app message sent');
+  } catch (error) {
+    console.warn('[dcr:notifications] In-app message failed (non-blocking):', (error as Error).message);
+  }
+}
+
+/**
+ * Map notification event to CTA name for in-app messaging
+ */
+function getCTANameForEvent(event: NotificationEvent, _requestType: RequestType): string {
+  // Map to existing CTA names in os_messaging_cta table
+  // These may need to be created if they don't exist
+  const ctaMap: Record<NotificationEvent, string> = {
+    SUBMITTED: 'date_change_requested',
+    ACCEPTED: 'date_change_approved',
+    REJECTED: 'date_change_declined',
+  };
+  return ctaMap[event];
+}

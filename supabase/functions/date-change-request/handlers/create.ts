@@ -20,6 +20,7 @@ import {
   EXPIRATION_HOURS,
 } from "../lib/types.ts";
 import { validateCreateInput } from "../lib/validators.ts";
+import { sendDateChangeRequestNotifications } from "./notifications.ts";
 
 /**
  * Handle create date change request
@@ -184,6 +185,28 @@ export async function handleCreate(
   }
 
   console.log(`[date-change-request:create] Request created successfully`);
+
+  // ================================================
+  // SEND NOTIFICATIONS (non-blocking)
+  // ================================================
+
+  try {
+    await sendDateChangeRequestNotifications(supabase, {
+      event: 'SUBMITTED',
+      requestId: requestId,
+      requestType: input.typeOfRequest,
+      leaseId: input.leaseId,
+      dateAdded: input.dateAdded || null,
+      dateRemoved: input.dateRemoved || null,
+      priceRate: input.priceRate || null,
+      requestedById: input.requestedById,
+      receiverId: input.receiverId,
+      message: input.message || null,
+      answerMessage: null,
+    });
+  } catch (notificationError) {
+    console.error(`[date-change-request:create] Notification error (non-blocking):`, notificationError);
+  }
 
   // ================================================
   // ENQUEUE BUBBLE SYNC

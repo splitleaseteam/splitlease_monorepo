@@ -13,8 +13,6 @@
  * - Corporate internal tool (admin/corporate roles only)
  */
 
-import Header from '../../shared/Header.jsx';
-import Footer from '../../shared/Footer.jsx';
 import { useGuestRelationshipsDashboardLogic } from './useGuestRelationshipsDashboardLogic.js';
 import CreateCustomerForm from './components/CreateCustomerForm.jsx';
 import GuestSearch from './components/GuestSearch.jsx';
@@ -25,6 +23,7 @@ import ListingsSection from './components/ListingsSection.jsx';
 import KnowledgeBaseSection from './components/KnowledgeBaseSection.jsx';
 import Toast from './components/Toast.jsx';
 import './GuestRelationshipsDashboard.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -137,8 +136,7 @@ export default function GuestRelationshipsDashboard() {
 
   return (
     <>
-      <Header />
-
+      <AdminHeader />
       <main className="grd-main">
         <div className="grd-container">
           {/* Page Header */}
@@ -256,8 +254,6 @@ export default function GuestRelationshipsDashboard() {
         {/* Loading Overlay */}
         {isLoading && <LoadingOverlay />}
       </main>
-
-      <Footer />
 
       {/* Toast Notifications */}
       {toast && (

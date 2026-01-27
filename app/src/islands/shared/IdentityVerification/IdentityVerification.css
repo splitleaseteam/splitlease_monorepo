@@ -1,0 +1,592 @@
+/* Identity Verification Modal Styles */
+/* Following Split Lease modal patterns from ConfirmDeleteModal */
+
+/* ============================================================================
+   MODAL OVERLAY
+   ============================================================================ */
+.identity-verification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: identityVerificationFadeIn 0.2s ease;
+}
+
+@keyframes identityVerificationFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================================
+   MODAL CONTAINER
+   ============================================================================ */
+.identity-verification-container {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: identityVerificationSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes identityVerificationSlideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   MOBILE GRAB HANDLE
+   ============================================================================ */
+.identity-verification-grab-handle {
+  display: none;
+  width: 36px;
+  height: 4px;
+  background: #E7E0EC;
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+
+/* ============================================================================
+   HEADER SECTION
+   ============================================================================ */
+.identity-verification-header {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid #E7E0EC;
+  gap: 16px;
+}
+
+.identity-verification-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.identity-verification-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F0F7FF;
+  border-radius: 10px;
+}
+
+.identity-verification-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: #31135D;
+  stroke-width: 2;
+  fill: none;
+}
+
+.identity-verification-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.identity-verification-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1C1B1F;
+  margin: 0 0 4px;
+}
+
+.identity-verification-description {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #49454F;
+  margin: 0;
+}
+
+.identity-verification-close-btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #49454F;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.identity-verification-close-btn:hover {
+  background-color: #F7F2FA;
+}
+
+.identity-verification-close-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* ============================================================================
+   MODAL BODY (SCROLLABLE)
+   ============================================================================ */
+.identity-verification-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ============================================================================
+   DOCUMENT TYPE SELECT
+   ============================================================================ */
+.document-type-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.document-type-select__label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1C1B1F;
+}
+
+.document-type-select__required {
+  color: #DC3545;
+  margin-left: 4px;
+}
+
+.document-type-select__input {
+  height: 48px;
+  padding: 0 16px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #1C1B1F;
+  background: #FFFFFF;
+  border: 1px solid #E7E0EC;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2349454F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 44px;
+}
+
+.document-type-select__input:focus {
+  outline: none;
+  border-color: #31135D;
+  box-shadow: 0 0 0 3px rgba(49, 19, 93, 0.1);
+}
+
+/* ============================================================================
+   FILE UPLOAD FIELD
+   ============================================================================ */
+.file-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-upload-field__label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1C1B1F;
+}
+
+.file-upload-field__required {
+  color: #DC3545;
+  margin-left: 4px;
+}
+
+.file-upload-field__dropzone {
+  border: 2px dashed #E7E0EC;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.file-upload-field__dropzone:hover {
+  border-color: #31135D;
+  background-color: #F7F2FA;
+}
+
+.file-upload-field__dropzone:focus {
+  outline: none;
+  border-color: #31135D;
+  box-shadow: 0 0 0 3px rgba(49, 19, 93, 0.1);
+}
+
+.file-upload-field__input {
+  display: none;
+}
+
+/* Placeholder state */
+.file-upload-field__placeholder {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.file-upload-field__placeholder-icon {
+  width: 48px;
+  height: 48px;
+  background: #F7F2FA;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-upload-field__placeholder-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: #31135D;
+  stroke-width: 2;
+  fill: none;
+}
+
+.file-upload-field__placeholder-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #31135D;
+  margin: 0;
+}
+
+.file-upload-field__placeholder-hint {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: #79747E;
+  margin: 0;
+}
+
+/* Preview state */
+.file-upload-field__preview {
+  position: relative;
+}
+
+.file-upload-field__preview-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.file-upload-field__preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-upload-field__dropzone:hover .file-upload-field__preview-overlay {
+  opacity: 1;
+}
+
+.file-upload-field__remove-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #FFFFFF;
+  border: none;
+  border-radius: 100px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1C1B1F;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.file-upload-field__remove-btn:hover {
+  background: #F7F2FA;
+}
+
+.file-upload-field__remove-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.file-upload-field__preview-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-upload-field__filename {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-upload-field__filesize {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+/* Help text */
+.file-upload-field__help {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  background: #F0F7FF;
+  border-radius: 8px;
+}
+
+.file-upload-field__help-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.file-upload-field__help-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: #3B82F6;
+  stroke-width: 2;
+  fill: none;
+}
+
+.file-upload-field__help-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #3B82F6;
+  margin: 0;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+.identity-verification-footer {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 16px 24px;
+  background-color: #FFFFFF;
+  border-top: 1px solid #E7E0EC;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+.identity-verification-btn {
+  height: 44px;
+  padding: 0 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid transparent;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Secondary Button */
+.identity-verification-btn--secondary {
+  background: transparent;
+  border-color: #31135D;
+  color: #31135D;
+}
+
+.identity-verification-btn--secondary:hover:not(:disabled) {
+  background-color: #31135D;
+  color: #FFFFFF;
+}
+
+.identity-verification-btn--secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.identity-verification-btn--secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary Button */
+.identity-verification-btn--primary {
+  background: #31135D;
+  border-color: #31135D;
+  color: #FFFFFF;
+}
+
+.identity-verification-btn--primary:hover:not(:disabled) {
+  background-color: #4A1F8C;
+  border-color: #4A1F8C;
+}
+
+.identity-verification-btn--primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.identity-verification-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading spinner */
+.identity-verification-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: identityVerificationSpin 0.8s linear infinite;
+}
+
+@keyframes identityVerificationSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+   RESPONSIVE - TABLET
+   ============================================================================ */
+@media (max-width: 700px) {
+  .identity-verification-title {
+    font-size: 18px;
+  }
+
+  .identity-verification-container {
+    max-width: 100%;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - MOBILE BOTTOM SHEET
+   ============================================================================ */
+@media (max-width: 480px) {
+  .identity-verification-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .identity-verification-container {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    max-height: 90vh;
+    animation: identityVerificationSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes identityVerificationSlideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .identity-verification-grab-handle {
+    display: block;
+  }
+
+  .identity-verification-header {
+    padding: 12px 16px 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .identity-verification-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .identity-verification-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+
+  .identity-verification-body {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .identity-verification-footer {
+    padding: 12px 16px 24px;
+    flex-direction: column-reverse;
+  }
+
+  .identity-verification-btn {
+    width: 100%;
+  }
+
+  .file-upload-field__preview-image {
+    height: 160px;
+  }
+
+  .file-upload-field__placeholder {
+    padding: 24px 16px;
+  }
+}

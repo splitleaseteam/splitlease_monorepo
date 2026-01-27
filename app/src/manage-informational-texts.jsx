@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import ManageInformationalTextsPage from './islands/pages/ManageInformationalTextsPage.jsx';
+import ManageInformationalTextsPage from './islands/pages/ManageInformationalTextsPage';
 import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 import { ToastProvider } from './islands/shared/Toast';
 

@@ -238,7 +238,8 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 ### DO
 - Use Edge Functions for all API calls (never call external APIs from frontend)
 - Run `bun run generate-routes` after any route changes in `routes.config.js`
-- Commit after each meaningful change (do not push unless asked)
+- Commit after each meaningful change (do not push unless asked) and always use the `/git-commits` skill to structure the commit message
+- **Provide a changelog of modified files** - After any file updates or creations, include a bulleted list of all files that were changed (e.g., "**Files Changed:** • `app/src/lib/auth.js` • `app/src/islands/pages/LoginPage.jsx`")
 - Use 0-indexed days (0=Sunday through 6=Saturday) everywhere
 - Use the four-layer logic architecture for business logic
 - Use `mcp-tool-specialist` subagent for all MCP tool invocations
@@ -248,6 +249,7 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - **Informational text triggers**: When adding a `?` icon to open informational text modals, make the accompanying text label clickable too (not just the `?`). Wrap both the text and `?` in a single clickable container.
 - **ALWAYS invoke `/fp-rater` skill after creating or updating code files** - Output the FP rating table at the bottom of your response (table only, no explanations)
 - **ALWAYS invoke `/slack-webhook` skill after completing each task or prompt** - Send a 1-line summary to Slack (e.g., "Implemented user auth flow" or "Fixed proposal sync bug"). Use `--type success` for completions, `--type error` for failures. This is MANDATORY for all task completions.
+- **Never recommend cache clearing unless stale code execution is proven**
 
 ### DON'T
 - Expose API keys in frontend code

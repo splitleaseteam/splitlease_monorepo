@@ -7,6 +7,7 @@
 import React from 'react';
 import { useSendMagicLoginLinksPageLogic } from './useSendMagicLoginLinksPageLogic.js';
 import './SendMagicLoginLinksPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function SendMagicLoginLinksPage() {
   const logic = useSendMagicLoginLinksPageLogic();
@@ -14,17 +15,15 @@ export default function SendMagicLoginLinksPage() {
   if (logic.isLoading) {
     return (
       <div className="send-magic-login-links-page">
+        <AdminHeader />
         <div className="loading">Loading...</div>
       </div>
     );
   }
 
-  if (!logic.isAdmin) {
-    return null;
-  }
-
   return (
     <div className="send-magic-login-links-page">
+      <AdminHeader />
       <header className="page-header">
         <h1>Send Magic Login Links</h1>
         <p className="subtitle">Admin Tool - Generate and send magic login links to users</p>

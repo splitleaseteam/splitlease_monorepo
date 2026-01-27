@@ -188,19 +188,19 @@ function ScheduleSection() {
       id: 'weeknight',
       label: 'Weeknights',
       lottieUrl: '/assets/lotties/days-of-the-week.json',
-      days: '2,3,4,5,6',
+      days: '1,2,3,4,5',  // 0-based: Mon(1), Tue(2), Wed(3), Thu(4), Fri(5)
     },
     {
       id: 'weekend',
       label: 'Weekends',
       lottieUrl: '/assets/lotties/weekends.json',
-      days: '6,7,1,2',
+      days: '5,6,0,1',    // 0-based: Fri(5), Sat(6), Sun(0), Mon(1)
     },
     {
       id: 'fullweek',
       label: 'Weeks of the Month',
       lottieUrl: '/assets/lotties/weeks-of-the-month.json',
-      days: '1,2,3,4,5,6,7',
+      days: '0,1,2,3,4,5,6',  // 0-based: All days Sun(0) through Sat(6)
     },
   ];
 
@@ -769,14 +769,16 @@ export default function HomePage() {
   }
 
   const handleExploreRentals = () => {
-    // Navigate to search page with current day selection
-    if (selectedDays.length > 0) {
-      // Convert 0-based indices to 1-based for URL (0→1, 1→2, etc.)
-      const oneBased = selectedDays.map(idx => idx + 1);
-      const daysParam = oneBased.join(',');
+    // Read the days-selected parameter directly from the current URL
+    // The SearchScheduleSelector updates the URL in real-time as user selects days
+    const urlParams = new URLSearchParams(window.location.search);
+    const daysParam = urlParams.get('days-selected');
+
+    if (daysParam) {
+      // Pass through the URL parameter directly to the search page
       window.location.href = `/search.html?days-selected=${daysParam}`;
     } else {
-      // No selection, navigate without parameter
+      // No selection in URL, navigate without parameter
       window.location.href = '/search.html';
     }
   };
