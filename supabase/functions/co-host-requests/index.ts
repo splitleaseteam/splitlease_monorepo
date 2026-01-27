@@ -280,11 +280,11 @@ function toJsRequest(
     createdDate: dbRow['Created Date'],
     modifiedDate: dbRow['Modified Date'],
     // Joined data
-    hostName: hostData ? `${hostData['Name - First'] || ''} ${hostData['Name - Last'] || ''}`.trim() || 'Unknown' : 'Unknown',
+    hostName: hostData?.['Name - Full'] || 'Unknown',
     hostEmail: hostData?.email || null,
     hostPhone: hostData?.['Phone Number (as text)'] || null,
     hostPhoto: hostData?.['Profile Photo'] || null,
-    cohostName: cohostData ? `${cohostData['Name - First'] || ''} ${cohostData['Name - Last'] || ''}`.trim() || null : null,
+    cohostName: cohostData?.['Name - Full'] || null,
     cohostEmail: cohostData?.email || null,
     cohostPhoto: cohostData?.['Profile Photo'] || null,
     listingName: listingData?.['Name'] || null,
@@ -314,11 +314,11 @@ async function enrichRequestsWithRelations(
   const [hostsResult, cohostsResult, listingsResult] = await Promise.all([
     hostIds.size > 0 ? supabase
       .from('user')
-      .select('_id, email, "Name - First", "Name - Last", "Phone Number (as text)", "Profile Photo"')
+      .select('_id, email, "Name - Full", "Phone Number (as text)", "Profile Photo"')
       .in('_id', Array.from(hostIds)) : { data: [] },
     cohostIds.size > 0 ? supabase
       .from('user')
-      .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
+      .select('_id, email, "Name - Full", "Profile Photo"')
       .in('_id', Array.from(cohostIds)) : { data: [] },
     listingIds.size > 0 ? supabase
       .from('listing')
@@ -530,7 +530,7 @@ async function handleAssignCoHost(
   // Verify the co-host user exists
   const { data: cohostUser, error: cohostError } = await supabase
     .from('user')
-    .select('_id, "Name - First", "Name - Last"')
+    .select('_id, "Name - Full"')
     .eq('_id', cohostUserId)
     .single();
 
@@ -538,8 +538,8 @@ async function handleAssignCoHost(
     throw new Error('Co-host user not found');
   }
 
-  // Construct full name from first and last
-  const fullName = `${cohostUser['Name - First'] || ''} ${cohostUser['Name - Last'] || ''}`.trim() || 'Assigned';
+  // Get full name from user record
+  const fullName = cohostUser['Name - Full'] || 'Assigned';
 
   const now = new Date().toISOString();
 
@@ -682,8 +682,8 @@ async function handleGetAvailableCoHosts(
 
   let query = supabase
     .from('user')
-    .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
-    .order('"Name - First"', { ascending: true })
+    .select('_id, email, "Name - Full", "Profile Photo"')
+    .order('"Name - Full"', { ascending: true })
     .limit(limit);
 
   const { data, error } = await query;
@@ -699,16 +699,14 @@ async function handleGetAvailableCoHosts(
     const searchLower = searchText.toLowerCase();
     users = users.filter(user =>
       (user.email || '').toLowerCase().includes(searchLower) ||
-      ((user['Name - First'] || '')).toLowerCase().includes(searchLower) ||
-      ((user['Name - Last'] || '')).toLowerCase().includes(searchLower) ||
-      ((`${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim())).toLowerCase().includes(searchLower)
+      ((user['Name - Full'] || '')).toLowerCase().includes(searchLower)
     );
   }
 
   const cohosts = users.map(user => ({
     id: user._id,
     email: user.email,
-    name: `${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim() || user.email,
+    name: user['Name - Full'] || user.email,
     photo: user['Profile Photo'],
   }));
 
