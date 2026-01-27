@@ -25,6 +25,7 @@ export function processTemplate(
 /**
  * Replace placeholders in a JSON template string
  * Values are escaped to be JSON-safe (handles quotes, newlines, backslashes)
+ * Also cleans up JSON syntax issues that result from empty placeholder replacement
  *
  * @param template - The JSON template string with placeholders
  * @param variables - Key-value pairs for replacement
@@ -34,7 +35,9 @@ export function processTemplateJson(
   template: string,
   variables: Record<string, string>
 ): string {
-  return processTemplateInternal(template, variables, true);
+  const processed = processTemplateInternal(template, variables, true);
+  // Clean up JSON syntax issues from Bubble-style templates
+  return cleanupJsonSyntax(processed);
 }
 
 /**
@@ -110,6 +113,40 @@ function escapeJsonString(text: string): string {
   const escaped = JSON.stringify(text);
   // JSON.stringify adds quotes around the string, remove them
   return escaped.slice(1, -1);
+}
+
+/**
+ * Clean up JSON syntax issues that result from Bubble-style template processing
+ * Bubble templates use structural placeholders ($$cc$$, $$bcc$$, etc.) that sit
+ * outside of JSON string values. When replaced with empty strings, they leave
+ * syntax holes. This function repairs the JSON.
+ */
+function cleanupJsonSyntax(json: string): string {
+  let cleaned = json;
+
+  // 1. Remove trailing commas before ] or } (with optional whitespace)
+  //    Matches: ,] or ,} with any whitespace/newlines between
+  cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+
+  // 2. Remove empty lines and consolidate whitespace
+  //    Replace multiple newlines/spaces with single space (but preserve structure)
+  cleaned = cleaned.replace(/\n\s*\n/g, '\n');
+
+  // 3. Fix missing commas between properties
+  //    Pattern: "value" followed by whitespace then "key": (missing comma)
+  cleaned = cleaned.replace(/(")\s*\n\s*(")/g, '$1,\n  $2');
+
+  // 4. Fix missing commas after } or ] followed by "key":
+  //    Pattern: } or ] followed by whitespace then "key": (missing comma)
+  cleaned = cleaned.replace(/([}\]])\s*\n\s*(")/g, '$1,\n  $2');
+
+  // 5. Remove any double commas that might result from cleanup
+  cleaned = cleaned.replace(/,\s*,/g, ',');
+
+  // 6. Final pass: remove trailing commas again (cleanup might create new ones)
+  cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+
+  return cleaned;
 }
 
 /**

@@ -98,20 +98,55 @@ function normalizeVariableNames(variables: Record<string, string>): Record<strin
     normalized['logo url'] = '';
     normalized['logo_url'] = '';
   }
-  if (!normalized['attachment']) {
-    normalized['attachment'] = '';
-  }
+
+  // STRUCTURAL PLACEHOLDERS: These sit outside JSON string values in Bubble templates
+  // They need to be valid JSON fragments or empty strings
+  // The template structure is: "to": [...] $$cc$$ $$bcc$$
+  // When populated, these should inject: , "cc": [{"email": "..."}]
+
+  // Handle $$cc$$ - needs to be empty (will be injected via SendGrid body later if needed)
   if (!normalized['cc']) {
     normalized['cc'] = '';
   }
+
+  // Handle $$bcc$$ - needs to be empty (will be injected via SendGrid body later if needed)
   if (!normalized['bcc']) {
     normalized['bcc'] = '';
   }
+
+  // Handle $$from name$$ - should be: , "name": "Value" or empty
+  // This is injected after "email": "..." in the from object
+  const fromName = variables.from_name || variables['from name'] || DEFAULT_FROM_NAME;
+  if (fromName) {
+    normalized['from name'] = `, "name": "${escapeJsonValue(fromName)}"`;
+  } else {
+    normalized['from name'] = '';
+  }
+
+  // Handle $$reply_to$$ - should be: "reply_to": {"email": "..."}, or empty
+  // This sits between "from" and "subject"
   if (!normalized['reply_to']) {
     normalized['reply_to'] = '';
   }
 
+  // Handle $$attachment$$ - should be empty for now (attachments not implemented)
+  if (!normalized['attachment']) {
+    normalized['attachment'] = '';
+  }
+
   return normalized;
+}
+
+/**
+ * Escape a string value for safe JSON embedding
+ */
+function escapeJsonValue(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t');
 }
 
 /**
