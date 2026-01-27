@@ -677,11 +677,6 @@ async function handleGetAvailableCoHosts(
     .order('Name - Full', { ascending: true })
     .limit(limit);
 
-  if (searchText) {
-    const searchLower = searchText.toLowerCase();
-    query = query.or(`email.ilike.%${searchLower}%,"Name - Full".ilike.%${searchLower}%`);
-  }
-
   const { data, error } = await query;
 
   if (error) {
@@ -689,7 +684,19 @@ async function handleGetAvailableCoHosts(
     throw new Error(`Failed to get co-hosts: ${error.message}`);
   }
 
-  const cohosts = (data || []).map(user => ({
+  // Filter by search text on the results (client-side) to avoid column name issues
+  let users = data || [];
+  if (searchText) {
+    const searchLower = searchText.toLowerCase();
+    users = users.filter(user =>
+      (user.email || '').toLowerCase().includes(searchLower) ||
+      ((user['Name - Full'] || '')).toLowerCase().includes(searchLower) ||
+      ((user['Name - First'] || '')).toLowerCase().includes(searchLower) ||
+      ((user['Name - Last'] || '')).toLowerCase().includes(searchLower)
+    );
+  }
+
+  const cohosts = users.map(user => ({
     id: user._id,
     email: user.email,
     name: `${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim() || user['Name - Full'] || user.email,
