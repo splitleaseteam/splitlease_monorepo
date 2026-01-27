@@ -1,11 +1,15 @@
 /**
  * FavoritesCardV3 Component
  *
- * Horizontal compact card with mini-map for favorites.
- * Minimal Premium aesthetic with Apple-like elegance.
+ * Premium "Featured + Stack" design for favorites.
+ * Layout: Large hero image + 2 stacked thumbnails on right
  *
- * Layout: Image (left) | Details (center) | Mini Map (right)
- * Mobile: Vertical stack, map hidden
+ * Design Features:
+ * - Premium purple color scheme (#1E0A3C primary)
+ * - Gold accents for verified badges
+ * - Glassmorphism effects
+ * - Photo count badge on last thumbnail
+ * - Heart button in action bar
  *
  * To switch back to V2, change USE_CARD_V3 to false in FavoriteListingsPage.jsx
  */
@@ -13,33 +17,50 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import { useDeviceDetection } from '../../../../hooks/useDeviceDetection.js';
 
-/**
- * Builds a Google Static Maps URL for mini-map display
- * Uses window.ENV.GOOGLE_MAPS_API_KEY (runtime config pattern)
- */
-const buildStaticMapUrl = ({ lat, lng, width = 280, height = 320, zoom = 14 }) => {
-  // Access API key from runtime config (window.ENV) set by config.js
-  const apiKey = typeof window !== 'undefined' ? window.ENV?.GOOGLE_MAPS_API_KEY : null;
-  if (!apiKey || !lat || !lng) return null;
-
-  const markerColor = '6366F1'; // Purple without #
-
-  return `https://maps.googleapis.com/maps/api/staticmap?`
-    + `center=${lat},${lng}`
-    + `&zoom=${zoom}`
-    + `&size=${width}x${height}`
-    + `&scale=2`
-    + `&maptype=roadmap`
-    + `&markers=color:0x${markerColor}|${lat},${lng}`
-    + `&style=feature:poi|visibility:off`
-    + `&style=feature:transit|visibility:off`
-    + `&key=${apiKey}`;
+// Premium Design Tokens
+const TOKENS = {
+  colors: {
+    primary: '#1E0A3C',
+    primaryRich: '#31135D',
+    primaryAccent: '#6D31C2',
+    primaryLight: '#F5F0FA',
+    text: '#0D0D0D',
+    textSecondary: '#3D3D3D',
+    textMuted: '#6B6B6B',
+    textLight: '#9A9A9A',
+    gold: '#C9A962',
+    goldLight: '#F5EFE0',
+    danger: '#C53030',
+    border: 'rgba(0, 0, 0, 0.06)',
+    card: '#FFFFFF',
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '12px',
+    lg: '16px',
+    xl: '24px',
+  },
+  radius: {
+    sm: '8px',
+    md: '12px',
+    lg: '16px',
+    xl: '24px',
+    pill: '100px',
+  },
+  shadows: {
+    sm: '0 1px 2px rgba(0, 0, 0, 0.04)',
+    md: '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)',
+    lg: '0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
+    xl: '0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05)',
+    glow: '0 0 40px rgba(109, 49, 194, 0.15)',
+  },
 };
 
 /**
  * FavoriteButton with confirmation popup
  */
-const FavoriteButton = ({ onConfirmRemove }) => {
+const FavoriteButton = ({ onConfirmRemove, style }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
@@ -56,31 +77,31 @@ const FavoriteButton = ({ onConfirmRemove }) => {
 
   const styles = {
     container: {
-      position: 'absolute',
-      top: '10px',
-      right: '10px',
-      zIndex: 10,
+      position: 'relative',
+      ...style,
     },
     button: {
       all: 'unset',
-      width: '32px',
-      height: '32px',
-      borderRadius: '50%',
-      background: 'rgba(255,255,255,0.95)',
+      minHeight: '44px',
+      minWidth: '44px',
+      padding: TOKENS.spacing.md,
+      borderRadius: TOKENS.radius.pill,
+      background: 'rgba(197, 48, 48, 0.1)',
+      border: '1px solid rgba(197, 48, 48, 0.2)',
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-      transition: 'all 0.2s ease',
+      transition: 'all 0.15s ease',
+      boxSizing: 'border-box',
     },
     popup: {
       position: 'absolute',
-      top: '40px',
+      bottom: '52px',
       right: '0',
       background: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+      borderRadius: TOKENS.radius.md,
+      boxShadow: TOKENS.shadows.lg,
       padding: '14px',
       minWidth: '180px',
       zIndex: 100,
@@ -88,7 +109,7 @@ const FavoriteButton = ({ onConfirmRemove }) => {
     popupText: {
       fontSize: '13px',
       fontWeight: 600,
-      color: '#1E293B',
+      color: TOKENS.colors.text,
       marginBottom: '10px',
       textAlign: 'center',
     },
@@ -100,10 +121,10 @@ const FavoriteButton = ({ onConfirmRemove }) => {
       flex: 1,
       padding: '8px 12px',
       minHeight: '40px',
-      borderRadius: '8px',
-      border: '1px solid #E2E8F0',
+      borderRadius: TOKENS.radius.sm,
+      border: `1px solid ${TOKENS.colors.border}`,
       background: 'white',
-      color: '#64748B',
+      color: TOKENS.colors.textMuted,
       fontSize: '12px',
       fontWeight: 600,
       cursor: 'pointer',
@@ -112,9 +133,9 @@ const FavoriteButton = ({ onConfirmRemove }) => {
       flex: 1,
       padding: '8px 12px',
       minHeight: '40px',
-      borderRadius: '8px',
+      borderRadius: TOKENS.radius.sm,
       border: 'none',
-      background: '#EF4444',
+      background: TOKENS.colors.danger,
       color: 'white',
       fontSize: '12px',
       fontWeight: 600,
@@ -130,7 +151,7 @@ const FavoriteButton = ({ onConfirmRemove }) => {
         onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
         aria-label="Remove from favorites"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" strokeWidth="2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill={TOKENS.colors.danger} stroke={TOKENS.colors.danger} strokeWidth="2">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </button>
@@ -149,7 +170,7 @@ const FavoriteButton = ({ onConfirmRemove }) => {
 };
 
 /**
- * FavoritesCardV3 - Horizontal compact card with mini-map
+ * FavoritesCardV3 - Premium "Featured + Stack" design
  */
 const FavoritesCardV3 = ({
   listing,
@@ -161,31 +182,18 @@ const FavoritesCardV3 = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [configLoaded, setConfigLoaded] = useState(!!window.ENV?.GOOGLE_MAPS_API_KEY);
 
   const { isMobile, isSmallMobile, isTouchDevice, isTablet } = useDeviceDetection();
 
-  // Re-render when config.js loads window.ENV
-  useEffect(() => {
-    if (configLoaded) return;
-
-    const handleConfigLoad = () => setConfigLoaded(true);
-    window.addEventListener('env-config-loaded', handleConfigLoad);
-
-    // Check if already loaded
-    if (window.ENV?.GOOGLE_MAPS_API_KEY) {
-      setConfigLoaded(true);
-    }
-
-    return () => window.removeEventListener('env-config-loaded', handleConfigLoad);
-  }, [configLoaded]);
-
   const photos = listing.images || [];
   const hasProposal = !!proposalForListing;
-  const coordinates = listing.coordinates;
-  const hasCoordinates = coordinates?.lat && coordinates?.lng;
+  const photoCount = photos.length || 1;
 
-  // Navigate to listing page on card click
+  // Get first 3 photos for the grid
+  const mainPhoto = photos[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&h=600&fit=crop&q=90';
+  const thumbPhoto1 = photos[1] || photos[0] || mainPhoto;
+  const thumbPhoto2 = photos[2] || photos[1] || photos[0] || mainPhoto;
+
   const handleCardClick = () => {
     window.location.href = `/listing?id=${listing.id}`;
   };
@@ -202,292 +210,453 @@ const FavoritesCardV3 = ({
     }
   };
 
-  const handleMapClick = (e) => {
+  const handleMessage = (e) => {
     e.stopPropagation();
-    onMapClick?.(listing);
+    // Navigate to messages or open message modal
+    window.location.href = `/messages?listing=${listing.id}`;
   };
 
-  const currentPhotoUrl = photos[0] || '';
-  const mapUrl = hasCoordinates ? buildStaticMapUrl({
-    lat: coordinates.lat,
-    lng: coordinates.lng,
-    width: 280,
-    height: 320,
-    zoom: 14
-  }) : null;
-
-  // Debug: Log map URL status (remove after debugging)
-  useEffect(() => {
-    console.log('🗺️ FavoritesCardV3 Map Debug:', {
-      listingId: listing.id,
-      hasCoordinates,
-      coordinates,
-      apiKeyExists: !!window.ENV?.GOOGLE_MAPS_API_KEY,
-      configLoaded,
-      mapUrl: mapUrl ? mapUrl.substring(0, 100) + '...' : null
-    });
-  }, [listing.id, hasCoordinates, configLoaded, mapUrl]);
-
-  // Responsive values
-  const isDesktop = !isMobile && !isTablet;
-  const showMap = isDesktop || isTablet;
+  // Responsive layout: stack images vertically on mobile
+  const isCompact = isMobile || isSmallMobile;
 
   const styles = {
     card: {
       all: 'unset',
       display: 'flex',
-      flexDirection: isMobile ? 'column' : 'row',
-      background: '#FFFFFF',
-      borderRadius: isSmallMobile ? '12px' : isMobile ? '14px' : '16px',
-      border: '1px solid #E2E8F0',
+      flexDirection: 'column',
+      background: TOKENS.colors.card,
+      borderRadius: TOKENS.radius.xl,
       overflow: 'hidden',
-      boxShadow: (isHovered && !isTouchDevice)
-        ? '0 8px 24px rgba(0,0,0,0.08)'
-        : '0 1px 3px rgba(0,0,0,0.04)',
-      transition: isTouchDevice ? 'none' : 'all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
-      transform: (isHovered && !isTouchDevice) ? 'translateY(-2px)' : 'none',
+      boxShadow: isHovered && !isTouchDevice ? `${TOKENS.shadows.xl}, ${TOKENS.shadows.glow}` : TOKENS.shadows.md,
+      transition: isTouchDevice ? 'none' : 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+      transform: isHovered && !isTouchDevice ? 'translateY(-6px)' : 'none',
       cursor: 'pointer',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      border: `1px solid ${TOKENS.colors.border}`,
       boxSizing: 'border-box',
     },
 
-    // IMAGE SECTION (Left)
-    imageSection: {
+    // HERO SECTION - Featured + Stack layout
+    heroSection: {
       position: 'relative',
-      width: isMobile ? '100%' : isTablet ? '130px' : '140px',
-      minWidth: isMobile ? '100%' : isTablet ? '130px' : '140px',
-      height: isMobile ? '180px' : isTablet ? '130px' : '140px',
-      overflow: 'hidden',
-      flexShrink: 0,
+      padding: TOKENS.spacing.lg,
+      paddingBottom: 0,
     },
-    image: {
+    stackedContainer: {
+      display: 'flex',
+      gap: TOKENS.spacing.md,
+      height: isCompact ? '200px' : '280px',
+    },
+    stackedMain: {
+      flex: 1,
+      position: 'relative',
+      borderRadius: TOKENS.radius.lg,
+      overflow: 'hidden',
+    },
+    mainImage: {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
+      transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+      transform: isHovered && !isTouchDevice ? 'scale(1.03)' : 'scale(1)',
     },
-    statusBadge: {
+    mainOverlay: {
       position: 'absolute',
-      top: '10px',
-      left: '10px',
-      padding: '4px 8px',
-      borderRadius: '4px',
-      fontSize: '10px',
-      fontWeight: 700,
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      background: '#8B5CF6',
+      inset: 0,
+      background: 'linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.35) 100%)',
+      pointerEvents: 'none',
+    },
+    stackedPreviews: {
+      width: isCompact ? '80px' : '140px',
+      display: isCompact ? 'none' : 'flex',
+      flexDirection: 'column',
+      gap: TOKENS.spacing.sm,
+    },
+    stackedPreview: {
+      flex: 1,
+      borderRadius: TOKENS.radius.md,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    previewImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      transition: 'transform 0.15s ease',
+    },
+    photoCount: {
+      position: 'absolute',
+      bottom: TOKENS.spacing.sm,
+      right: TOKENS.spacing.sm,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      padding: '6px 10px',
+      background: 'rgba(0, 0, 0, 0.65)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      borderRadius: TOKENS.radius.pill,
+      fontSize: '11px',
+      fontWeight: 500,
       color: 'white',
-      zIndex: 5,
+      letterSpacing: '0.05em',
+    },
+    favoriteOverlay: {
+      position: 'absolute',
+      top: TOKENS.spacing.md,
+      right: TOKENS.spacing.md,
+      zIndex: 10,
+    },
+    favoriteBtn: {
+      all: 'unset',
+      width: '44px',
+      height: '44px',
+      borderRadius: '50%',
+      background: 'rgba(255, 255, 255, 0.9)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255, 255, 255, 0.5)',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
+      transition: 'all 0.15s ease',
+      boxSizing: 'border-box',
     },
 
-    // DETAILS SECTION (Center)
-    detailsSection: {
-      flex: 1,
-      padding: isSmallMobile ? '12px' : isMobile ? '14px' : isTablet ? '14px 16px' : '16px 20px',
+    // CONTENT SECTION
+    contentSection: {
+      padding: TOKENS.spacing.xl,
+    },
+    locationRow: {
       display: 'flex',
-      flexDirection: 'column',
+      alignItems: 'center',
       justifyContent: 'space-between',
-      gap: isMobile ? '8px' : '6px',
-      minWidth: 0, // Allow text truncation
+      marginBottom: TOKENS.spacing.md,
     },
     location: {
       display: 'flex',
       alignItems: 'center',
+      gap: '6px',
+      fontSize: '12px',
+      fontWeight: 600,
+      color: TOKENS.colors.primaryAccent,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+    },
+    verifiedBadge: {
+      display: hasProposal ? 'flex' : 'none',
+      alignItems: 'center',
       gap: '4px',
+      padding: '4px 10px',
+      background: '#EEF2FF',
+      color: TOKENS.colors.primaryAccent,
       fontSize: '11px',
       fontWeight: 600,
-      color: '#6366F1',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      lineHeight: 1.2,
+      borderRadius: TOKENS.radius.pill,
+      letterSpacing: '0.05em',
     },
     title: {
-      fontSize: isMobile ? '14px' : '15px',
+      fontSize: isCompact ? '18px' : '20px',
       fontWeight: 700,
-      color: '#0F172A',
-      lineHeight: 1.3,
-      margin: 0,
+      color: TOKENS.colors.text,
+      lineHeight: 1.25,
+      letterSpacing: '-0.02em',
+      marginBottom: TOKENS.spacing.md,
       display: '-webkit-box',
       WebkitLineClamp: 2,
       WebkitBoxOrient: 'vertical',
       overflow: 'hidden',
     },
-    amenities: {
+    metaRow: {
       display: 'flex',
       alignItems: 'center',
-      gap: '8px',
-      fontSize: '12px',
-      fontWeight: 500,
-      color: '#64748B',
+      gap: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing.lg,
+      flexWrap: 'wrap',
     },
-    amenityDot: {
+    rating: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+      fontSize: '14px',
+      fontWeight: 600,
+      color: TOKENS.colors.text,
+    },
+    ratingCount: {
+      color: TOKENS.colors.textMuted,
+      fontWeight: 400,
+    },
+    stats: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: TOKENS.spacing.sm,
+      fontSize: '14px',
+      color: TOKENS.colors.textMuted,
+    },
+    statDivider: {
       width: '3px',
       height: '3px',
       borderRadius: '50%',
-      background: '#CBD5E1',
+      background: TOKENS.colors.textLight,
     },
-    priceRow: {
+
+    // BOTTOM BAR
+    bottomBar: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginTop: 'auto',
-      gap: '12px',
+      gap: TOKENS.spacing.lg,
+      padding: `${TOKENS.spacing.lg} ${TOKENS.spacing.xl}`,
+      background: 'linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%)',
+      borderTop: `1px solid ${TOKENS.colors.border}`,
+      flexWrap: isCompact ? 'wrap' : 'nowrap',
     },
-    price: {
-      fontSize: isMobile ? '16px' : '18px',
-      fontWeight: 800,
-      color: '#0F172A',
-    },
-    pricePeriod: {
-      fontSize: '12px',
-      fontWeight: 400,
-      color: '#64748B',
-    },
-    ctaButton: {
-      padding: isSmallMobile ? '8px 14px' : '10px 16px',
-      minHeight: '44px',
-      borderRadius: '10px',
-      fontSize: '13px',
-      fontWeight: 700,
-      cursor: 'pointer',
-      border: 'none',
-      transition: isTouchDevice ? 'none' : 'all 0.2s ease',
+    priceHost: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      whiteSpace: 'nowrap',
+      gap: TOKENS.spacing.xl,
+      flex: isCompact ? '1 1 100%' : 'none',
+      justifyContent: isCompact ? 'space-between' : 'flex-start',
+      marginBottom: isCompact ? TOKENS.spacing.md : 0,
     },
-    ctaPrimary: {
-      background: '#6366F1',
-      color: 'white',
-      boxShadow: '0 2px 8px rgba(99,102,241,0.2)',
-    },
-    ctaSecondary: {
-      background: '#EEF2FF',
-      color: '#6366F1',
-    },
-
-    // MAP SECTION (Right)
-    mapSection: {
-      display: showMap ? 'block' : 'none',
-      width: isTablet ? '120px' : '140px',
-      minWidth: isTablet ? '120px' : '140px',
-      height: '100%',
-      position: 'relative',
-      overflow: 'hidden',
-      cursor: 'pointer',
-      flexShrink: 0,
-    },
-    mapImage: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-    },
-    mapPlaceholder: {
-      width: '100%',
-      height: '100%',
-      background: '#F1F5F9',
+    priceBlock: {
       display: 'flex',
       flexDirection: 'column',
+    },
+    priceValue: {
+      fontSize: isCompact ? '22px' : '26px',
+      fontWeight: 800,
+      color: TOKENS.colors.text,
+      letterSpacing: '-0.02em',
+    },
+    pricePeriod: {
+      fontSize: '14px',
+      fontWeight: 400,
+      color: TOKENS.colors.textMuted,
+    },
+    priceContext: {
+      fontSize: '12px',
+      color: TOKENS.colors.primaryAccent,
+      fontWeight: 600,
+      letterSpacing: '0.05em',
+    },
+    hostMini: {
+      display: isCompact ? 'none' : 'flex',
+      alignItems: 'center',
+      gap: TOKENS.spacing.sm,
+    },
+    hostAvatar: {
+      width: '44px',
+      height: '44px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '2px solid white',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    },
+    hostInfo: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    hostName: {
+      fontSize: '14px',
+      fontWeight: 600,
+      color: TOKENS.colors.text,
+    },
+    hostMeta: {
+      fontSize: '12px',
+      color: TOKENS.colors.textMuted,
+    },
+    actionButtons: {
+      display: 'flex',
+      gap: TOKENS.spacing.sm,
+      flex: isCompact ? '1 1 100%' : 'none',
+    },
+    btn: {
+      minHeight: '44px',
+      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.xl}`,
+      borderRadius: TOKENS.radius.pill,
+      fontSize: '14px',
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: 'all 0.15s ease',
+      display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: '4px',
+      gap: '6px',
+      border: 'none',
+      letterSpacing: '-0.01em',
+      boxSizing: 'border-box',
     },
-    mapPlaceholderText: {
-      fontSize: '10px',
-      color: '#94A3B8',
+    btnGhost: {
+      background: 'transparent',
+      color: TOKENS.colors.textSecondary,
+    },
+    btnPrimary: {
+      background: `linear-gradient(135deg, ${TOKENS.colors.primaryRich} 0%, ${TOKENS.colors.primary} 100%)`,
+      color: 'white',
+      boxShadow: '0 4px 16px rgba(30, 10, 60, 0.25)',
+      flex: isCompact ? 1 : 'none',
     },
   };
 
   return (
-    <div
+    <article
       style={styles.card}
       onClick={handleCardClick}
       onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
       onMouseLeave={() => !isTouchDevice && setIsHovered(false)}
-      role="article"
-      aria-label={`Listing card for ${listing.title}`}
+      aria-label={`Favorite listing: ${listing.title}`}
     >
-      {/* IMAGE SECTION */}
-      <div style={styles.imageSection}>
-        <img
-          src={imageError ? 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400' : currentPhotoUrl}
-          alt={listing.title}
-          style={styles.image}
-          onError={() => setImageError(true)}
-        />
+      {/* HERO SECTION - Featured + Stack */}
+      <div style={styles.heroSection}>
+        <div style={styles.stackedContainer}>
+          {/* Main Image */}
+          <div style={styles.stackedMain}>
+            <img
+              src={imageError ? 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&h=600&fit=crop&q=90' : mainPhoto}
+              alt={listing.title}
+              style={styles.mainImage}
+              onError={() => setImageError(true)}
+            />
+            <div style={styles.mainOverlay} />
 
-        {hasProposal && <div style={styles.statusBadge}>Proposal Sent</div>}
+            {/* Favorite button on main image */}
+            <div style={styles.favoriteOverlay}>
+              <button
+                style={styles.favoriteBtn}
+                onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(listing.id, listing.title, false); }}
+                aria-label="Remove from favorites"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={TOKENS.colors.danger} stroke={TOKENS.colors.danger} strokeWidth="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+              </button>
+            </div>
 
-        <FavoriteButton
-          onConfirmRemove={() => onToggleFavorite?.(listing.id, listing.title, false)}
-        />
+            {/* Photo count on mobile (since thumbnails hidden) */}
+            {isCompact && (
+              <div style={styles.photoCount}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                {photoCount} PHOTOS
+              </div>
+            )}
+          </div>
+
+          {/* Stacked Thumbnails (hidden on mobile) */}
+          <div style={styles.stackedPreviews}>
+            <div style={styles.stackedPreview}>
+              <img src={thumbPhoto1} alt="Room view" style={styles.previewImage} />
+            </div>
+            <div style={styles.stackedPreview}>
+              <img src={thumbPhoto2} alt="Room view" style={styles.previewImage} />
+              <div style={styles.photoCount}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                {photoCount} PHOTOS
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* DETAILS SECTION */}
-      <div style={styles.detailsSection}>
-        <div>
+      {/* CONTENT SECTION */}
+      <div style={styles.contentSection}>
+        <div style={styles.locationRow}>
           <div style={styles.location}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
-            {listing.location || 'New York, NY'}
+            {listing.location || listing.neighborhood || 'New York, NY'}
           </div>
+          <div style={styles.verifiedBadge}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            PROPOSAL SENT
+          </div>
+        </div>
 
-          <h3 style={styles.title}>{listing.title}</h3>
+        <h2 style={styles.title}>{listing.title}</h2>
 
-          <div style={styles.amenities}>
-            <span>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed`}</span>
-            <span style={styles.amenityDot}></span>
-            <span>{listing.bathrooms} bath</span>
-            <span style={styles.amenityDot}></span>
+        <div style={styles.metaRow}>
+          <div style={styles.rating}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={TOKENS.colors.primaryRich} stroke={TOKENS.colors.primaryRich} strokeWidth="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            {listing.rating || '4.8'} <span style={styles.ratingCount}>({listing.reviewCount || 0} reviews)</span>
+          </div>
+          <div style={styles.stats}>
+            <span>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`}</span>
+            <span style={styles.statDivider} />
+            <span>{listing.bathrooms} BA</span>
+            <span style={styles.statDivider} />
             <span>{listing.maxGuests} guests</span>
           </div>
         </div>
-
-        <div style={styles.priceRow}>
-          <div>
-            <span style={styles.price}>
-              ${listing.price?.starting || listing['Starting nightly price'] || 0}
-            </span>
-            <span style={styles.pricePeriod}> /night</span>
-          </div>
-
-          <button
-            style={{
-              ...styles.ctaButton,
-              ...(hasProposal ? styles.ctaSecondary : styles.ctaPrimary)
-            }}
-            onClick={hasProposal ? handleViewProposal : handleCreateProposal}
-          >
-            {hasProposal ? 'View Proposal' : 'Create Proposal'}
-          </button>
-        </div>
       </div>
 
-      {/* MAP SECTION */}
-      {showMap && (
-        <div style={styles.mapSection} onClick={handleMapClick}>
-          {mapUrl ? (
-            <img
-              src={mapUrl}
-              alt={`Map showing location of ${listing.title}`}
-              style={styles.mapImage}
-              loading="lazy"
-            />
-          ) : (
-            <div style={styles.mapPlaceholder}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span style={styles.mapPlaceholderText}>Map unavailable</span>
+      {/* BOTTOM BAR */}
+      <div style={styles.bottomBar}>
+        <div style={styles.priceHost}>
+          <div style={styles.priceBlock}>
+            <div style={styles.priceValue}>
+              ${listing.price?.starting || listing['Starting nightly price'] || 0}
+              <span style={styles.pricePeriod}>/night</span>
             </div>
-          )}
+            {listing.priceContext && <div style={styles.priceContext}>{listing.priceContext}</div>}
+          </div>
+
+          <div style={styles.hostMini}>
+            <img
+              style={styles.hostAvatar}
+              src={listing.hostAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'}
+              alt={listing.hostName || 'Host'}
+            />
+            <div style={styles.hostInfo}>
+              <span style={styles.hostName}>{listing.hostName || 'Host'}</span>
+              <span style={styles.hostMeta}>{listing.hostStatus || 'Verified'}</span>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+
+        <div style={styles.actionButtons}>
+          <button style={{ ...styles.btn, ...styles.btnGhost }} onClick={handleMessage}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+            {!isCompact && 'Message'}
+          </button>
+
+          <button
+            style={{ ...styles.btn, ...styles.btnPrimary }}
+            onClick={hasProposal ? handleViewProposal : handleCreateProposal}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="12" y1="18" x2="12" y2="12" />
+              <line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+            {hasProposal ? 'View Proposal' : 'Create Proposal'}
+          </button>
+
+          <FavoriteButton
+            onConfirmRemove={() => onToggleFavorite?.(listing.id, listing.title, false)}
+          />
+        </div>
+      </div>
+    </article>
   );
 };
 
