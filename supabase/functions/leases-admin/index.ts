@@ -262,7 +262,7 @@ async function handleList(
   if (guestIds.length > 0) {
     const { data: guests, error: guestsError } = await supabase
       .from('user')
-      .select('_id, email, "Name - Full", "First Name", "Last Name", "Phone Number", "Profile Photo"')
+      .select('*')
       .in('_id', guestIds);
 
     if (guestsError) {
@@ -280,7 +280,7 @@ async function handleList(
   if (hostIds.length > 0) {
     const { data: hosts, error: hostsError } = await supabase
       .from('user')
-      .select('_id, email, "Name - Full", "First Name", "Last Name"')
+      .select('*')
       .in('_id', hostIds);
 
     if (hostsError) {
@@ -298,7 +298,7 @@ async function handleList(
   if (listingIds.length > 0) {
     const { data: listings, error: listingsError } = await supabase
       .from('Listing')
-      .select('_id, "Listing Title", Address, Neighborhood, City, State, "Zip Code"')
+      .select('*')
       .in('_id', listingIds);
 
     if (listingsError) {
