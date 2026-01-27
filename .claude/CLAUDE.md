@@ -238,7 +238,7 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 ### DO
 - Use Edge Functions for all API calls (never call external APIs from frontend)
 - Run `bun run generate-routes` after any route changes in `routes.config.js`
-- Commit after each meaningful change (do not push unless asked)
+- Commit after each meaningful change (do not push unless asked) and use the `/git-commits` skill to structure the commit message
 - Use 0-indexed days (0=Sunday through 6=Saturday) everywhere
 - Use the four-layer logic architecture for business logic
 - Use `mcp-tool-specialist` subagent for all MCP tool invocations
