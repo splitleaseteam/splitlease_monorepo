@@ -121,11 +121,15 @@
   border-radius: 0 0 5px 5px;
   box-shadow: 0 16px 8px var(--admin-dropdown-shadow);
   top: 100%;
-  margin-top: 13px;
   margin-left: -90px;
   z-index: 1000;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
+}
+
+.admin-header__nav-item {
+  position: relative;
+  padding-bottom: 13px;
 }
 
 .admin-header__nav-item:hover .admin-header__dropdown {
