@@ -59,11 +59,6 @@ interface AdminGetAllThreadsPayload {
   includeMessages?: boolean;
 }
 
-interface AdminGetAllThreadsResult {
-  data: AdminThread[];
-  total: number;
-}
-
 /**
  * Verify that the current user is an admin
  */
@@ -99,7 +94,7 @@ export async function handleAdminGetAllThreads(
   supabaseAdmin: SupabaseClient,
   payload: AdminGetAllThreadsPayload,
   user: { id: string; email: string } | null
-): Promise<AdminGetAllThreadsResult> {
+): Promise<AdminThread[]> {
   console.log('[adminGetAllThreads] ========== ADMIN GET ALL THREADS ==========');
   console.log('[adminGetAllThreads] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminGetAllThreads] Payload:', JSON.stringify(payload));
@@ -237,5 +232,6 @@ export async function handleAdminGetAllThreads(
   console.log('[adminGetAllThreads] Returning', result.length, 'threads');
   console.log('[adminGetAllThreads] ========== ADMIN GET ALL THREADS COMPLETE ==========');
 
-  return { data: result, total: count || 0 };
+  // Return array directly - formatSuccessResponse will wrap as { success: true, data: result }
+  return result;
 }
