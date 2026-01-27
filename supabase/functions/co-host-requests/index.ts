@@ -136,6 +136,12 @@ Deno.serve(async (req: Request) => {
     // If auth header is present, extract user info for audit purposes
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
 
+    if (user) {
+      console.log(`[co-host-requests] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[co-host-requests] No auth header - proceeding as internal page request');
+    }
+
     // NOTE: Admin role check removed to allow any authenticated user access for testing
     // const isAdmin = await checkAdminStatus(supabase, user.email);
     // if (!isAdmin) {
@@ -274,11 +280,11 @@ function toJsRequest(
     createdDate: dbRow['Created Date'],
     modifiedDate: dbRow['Modified Date'],
     // Joined data
-    hostName: hostData ? `${hostData['Name - First'] || ''} ${hostData['Name - Last'] || ''}`.trim() || hostData['Name - Full'] || 'Unknown' : 'Unknown',
+    hostName: hostData ? `${hostData['Name - First'] || ''} ${hostData['Name - Last'] || ''}`.trim() || 'Unknown' : 'Unknown',
     hostEmail: hostData?.email || null,
     hostPhone: hostData?.['Phone Number (as text)'] || null,
     hostPhoto: hostData?.['Profile Photo'] || null,
-    cohostName: cohostData ? `${cohostData['Name - First'] || ''} ${cohostData['Name - Last'] || ''}`.trim() || cohostData['Name - Full'] || null : null,
+    cohostName: cohostData ? `${cohostData['Name - First'] || ''} ${cohostData['Name - Last'] || ''}`.trim() || null : null,
     cohostEmail: cohostData?.email || null,
     cohostPhoto: cohostData?.['Profile Photo'] || null,
     listingName: listingData?.['Name'] || null,
@@ -308,11 +314,11 @@ async function enrichRequestsWithRelations(
   const [hostsResult, cohostsResult, listingsResult] = await Promise.all([
     hostIds.size > 0 ? supabase
       .from('user')
-      .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Phone Number (as text)", "Profile Photo"')
+      .select('_id, email, "Name - First", "Name - Last", "Phone Number (as text)", "Profile Photo"')
       .in('_id', Array.from(hostIds)) : { data: [] },
     cohostIds.size > 0 ? supabase
       .from('user')
-      .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Profile Photo"')
+      .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
       .in('_id', Array.from(cohostIds)) : { data: [] },
     listingIds.size > 0 ? supabase
       .from('listing')
@@ -524,7 +530,7 @@ async function handleAssignCoHost(
   // Verify the co-host user exists
   const { data: cohostUser, error: cohostError } = await supabase
     .from('user')
-    .select('_id, "Name - Full"')
+    .select('_id, "Name - First", "Name - Last"')
     .eq('_id', cohostUserId)
     .single();
 
@@ -532,11 +538,14 @@ async function handleAssignCoHost(
     throw new Error('Co-host user not found');
   }
 
+  // Construct full name from first and last
+  const fullName = `${cohostUser['Name - First'] || ''} ${cohostUser['Name - Last'] || ''}`.trim() || 'Assigned';
+
   const now = new Date().toISOString();
 
   const updateData: Record<string, unknown> = {
     'Co-Host User': cohostUserId,
-    'Co-Host selected (OS)': cohostUser['Name - Full'] || 'Assigned',
+    'Co-Host selected (OS)': fullName,
     'Status - Co-Host Request': 'Co-Host Selected',
     'Modified Date': now,
     'updated_at': now,
@@ -557,7 +566,7 @@ async function handleAssignCoHost(
   console.log('[co-host-requests] Co-host assigned:', {
     requestId,
     cohostUserId,
-    cohostName: cohostUser['Name - Full'],
+    cohostName: fullName,
     adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
   });
@@ -673,8 +682,8 @@ async function handleGetAvailableCoHosts(
 
   let query = supabase
     .from('user')
-    .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Profile Photo"')
-    .order('"Name - Full"', { ascending: true })
+    .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
+    .order('"Name - First"', { ascending: true })
     .limit(limit);
 
   const { data, error } = await query;
@@ -690,16 +699,16 @@ async function handleGetAvailableCoHosts(
     const searchLower = searchText.toLowerCase();
     users = users.filter(user =>
       (user.email || '').toLowerCase().includes(searchLower) ||
-      ((user['Name - Full'] || '')).toLowerCase().includes(searchLower) ||
       ((user['Name - First'] || '')).toLowerCase().includes(searchLower) ||
-      ((user['Name - Last'] || '')).toLowerCase().includes(searchLower)
+      ((user['Name - Last'] || '')).toLowerCase().includes(searchLower) ||
+      ((`${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim())).toLowerCase().includes(searchLower)
     );
   }
 
   const cohosts = users.map(user => ({
     id: user._id,
     email: user.email,
-    name: `${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim() || user['Name - Full'] || user.email,
+    name: `${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim() || user.email,
     photo: user['Profile Photo'],
   }));
 

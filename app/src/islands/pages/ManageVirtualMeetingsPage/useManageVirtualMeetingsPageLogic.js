@@ -17,7 +17,6 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 import {
   canConfirmMeeting,
@@ -181,7 +180,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Fetch blocked slots for selected host
   const fetchBlockedSlots = useCallback(async (hostId) => {
-    if (!accessToken || !hostId) return;
+    if (!hostId) return;
 
     setIsLoadingBlockedSlots(true);
 
@@ -198,10 +197,8 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Initial data load
   useEffect(() => {
-    if (accessToken) {
-      fetchAllMeetings();
-    }
-  }, [accessToken, fetchAllMeetings]);
+    fetchAllMeetings();
+  }, [fetchAllMeetings]);
 
   // Load blocked slots when host changes
   useEffect(() => {
