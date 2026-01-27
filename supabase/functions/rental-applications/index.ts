@@ -10,7 +10,7 @@
  * - add_occupant: Add an occupant to application
  * - delete_occupant: Remove an occupant
  *
- * Note: This function queries the existing rental_application table
+ * Note: This function queries the existing rentalapplication table
  * which stores applications created by guests. The table uses a
  * unique_id field for human-readable IDs.
  */
@@ -245,9 +245,9 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   const pageSize = pagination?.pageSize || 20;
   const offset = (page - 1) * pageSize;
 
-  // Build query - using rental_application table
+  // Build query - using rentalapplication table
   let query = supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('*', { count: 'exact' });
 
   // Apply filters
@@ -324,7 +324,7 @@ async function handleGet(
 
   // Fetch the main application
   const { data, error } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('*')
     .eq('_id', id)
     .single();
@@ -404,7 +404,7 @@ async function handleUpdate(
   dbUpdates['Modified Date'] = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update(dbUpdates)
     .eq('_id', id)
     .select()
@@ -441,7 +441,7 @@ async function handleUpdateStatus(
   }
 
   const { data, error } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Status': status,
       'Modified Date': new Date().toISOString()
@@ -474,7 +474,7 @@ async function handleAddOccupant(
 
   // Fetch current occupants
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"Occupants"')
     .eq('_id', applicationId)
     .single();
@@ -493,7 +493,7 @@ async function handleAddOccupant(
   const updatedOccupants = [...currentOccupants, newOccupant];
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Occupants': updatedOccupants,
       'Modified Date': new Date().toISOString()
@@ -522,7 +522,7 @@ async function handleDeleteOccupant(
 
   // Fetch current occupants
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"Occupants"')
     .eq('_id', applicationId)
     .single();
@@ -537,7 +537,7 @@ async function handleDeleteOccupant(
   );
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Occupants': updatedOccupants,
       'Modified Date': new Date().toISOString()
@@ -565,7 +565,7 @@ async function handleAddReference(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"References"')
     .eq('_id', applicationId)
     .single();
@@ -584,7 +584,7 @@ async function handleAddReference(
   const updatedRefs = [...currentRefs, newRef];
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'References': updatedRefs,
       'Modified Date': new Date().toISOString()
@@ -612,7 +612,7 @@ async function handleDeleteReference(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"References"')
     .eq('_id', applicationId)
     .single();
@@ -627,7 +627,7 @@ async function handleDeleteReference(
   );
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'References': updatedRefs,
       'Modified Date': new Date().toISOString()
@@ -655,7 +655,7 @@ async function handleAddEmployment(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"Employment History"')
     .eq('_id', applicationId)
     .single();
@@ -674,7 +674,7 @@ async function handleAddEmployment(
   const updatedEmployment = [...currentEmployment, newEmployment];
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Employment History': updatedEmployment,
       'Modified Date': new Date().toISOString()
@@ -702,7 +702,7 @@ async function handleDeleteEmployment(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"Employment History"')
     .eq('_id', applicationId)
     .single();
@@ -717,7 +717,7 @@ async function handleDeleteEmployment(
   );
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Employment History': updatedEmployment,
       'Modified Date': new Date().toISOString()
