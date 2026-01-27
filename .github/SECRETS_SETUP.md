@@ -24,6 +24,14 @@ This guide walks you through setting up the required secrets for the CI/CD pipel
 | `CLOUDFLARE_API_TOKEN` | Frontend workflows | Cloudflare Dashboard → My Profile → API Tokens |
 | `CLOUDFLARE_ACCOUNT_ID` | Frontend workflows | Cloudflare Dashboard → Workers & Pages → Account ID |
 
+### PythonAnywhere Secrets (3 total)
+
+| Secret Name | Used By | How to Obtain |
+|-------------|---------|---------------|
+| `PA_SSH_PRIVATE_KEY` | PythonAnywhere workflow | Generate SSH key pair (see Step 6 below) |
+| `PA_USERNAME` | PythonAnywhere workflow | Your PythonAnywhere username |
+| `PA_HOST` | PythonAnywhere workflow | `ssh.pythonanywhere.com` (fixed value) |
+
 ---
 
 ## Step-by-Step Setup
@@ -101,7 +109,47 @@ This guide walks you through setting up the required secrets for the CI/CD pipel
 
 ---
 
-### Step 6: Add Secrets to GitHub
+### Step 6: Setup PythonAnywhere SSH Keys
+
+**Note:** If you already have SSH keys set up for PythonAnywhere (check `pythonAnywhere/pa_deploy_key`), skip to Step 7.
+
+#### Generate SSH Key Pair (if not already done)
+
+```bash
+# Generate SSH key pair
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f pa_deploy_key
+
+# This creates two files:
+# - pa_deploy_key (private key - DO NOT commit)
+# - pa_deploy_key.pub (public key - safe to commit)
+```
+
+#### Add Public Key to PythonAnywhere
+
+1. Copy the contents of `pa_deploy_key.pub`
+2. Log in to [PythonAnywhere](https://www.pythonanywhere.com/)
+3. Open a **Bash console**
+4. Run:
+   ```bash
+   echo "YOUR_PUBLIC_KEY_CONTENT" >> ~/.ssh/authorized_keys
+   chmod 600 ~/.ssh/authorized_keys
+   ```
+
+#### Copy Private Key for GitHub Secret
+
+```bash
+# Display private key (you'll copy this to GitHub)
+cat pa_deploy_key
+```
+
+**Important:**
+- The private key should start with `-----BEGIN OPENSSH PRIVATE KEY-----`
+- Copy the entire key including the BEGIN and END lines
+- This will be saved as `PA_SSH_PRIVATE_KEY` in GitHub Secrets
+
+---
+
+### Step 7: Add Secrets to GitHub
 
 1. Go to your GitHub repository
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
@@ -118,10 +166,13 @@ This guide walks you through setting up the required secrets for the CI/CD pipel
 | `SUPABASE_ANON_KEY_PROD` | Anon key from Step 3 |
 | `CLOUDFLARE_API_TOKEN` | Token from Step 4 |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID from Step 5 |
+| `PA_SSH_PRIVATE_KEY` | Private key from Step 6 |
+| `PA_USERNAME` | Your PythonAnywhere username (e.g., `SplitLease`) |
+| `PA_HOST` | `ssh.pythonanywhere.com` |
 
 ---
 
-## Step 7: Configure GitHub Environments (Optional but Recommended)
+## Step 8: Configure GitHub Environments (Optional but Recommended)
 
 1. Go to your GitHub repository
 2. Navigate to **Settings** → **Environments**
@@ -150,9 +201,12 @@ After adding all secrets, verify they're configured correctly:
 # List all secrets (doesn't show values, just names)
 gh secret list
 
-# Expected output:
+# Expected output (11 total):
 # CLOUDFLARE_ACCOUNT_ID
 # CLOUDFLARE_API_TOKEN
+# PA_HOST
+# PA_SSH_PRIVATE_KEY
+# PA_USERNAME
 # SUPABASE_ACCESS_TOKEN_DEV
 # SUPABASE_ACCESS_TOKEN_PROD
 # SUPABASE_ANON_KEY_PROD
