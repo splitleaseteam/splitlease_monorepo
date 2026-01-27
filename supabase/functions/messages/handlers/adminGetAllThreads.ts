@@ -98,19 +98,21 @@ async function verifyAdminRole(
 export async function handleAdminGetAllThreads(
   supabaseAdmin: SupabaseClient,
   payload: AdminGetAllThreadsPayload,
-  user: { id: string; email: string }
+  user: { id: string; email: string } | null
 ): Promise<AdminGetAllThreadsResult> {
   console.log('[adminGetAllThreads] ========== ADMIN GET ALL THREADS ==========');
-  console.log('[adminGetAllThreads] User:', user.email);
+  console.log('[adminGetAllThreads] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminGetAllThreads] Payload:', JSON.stringify(payload));
 
-  // Step 1: Verify admin role
-  // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // const isAdmin = await verifyAdminRole(supabaseAdmin, user);
-  // if (!isAdmin) {
-  //   console.error('[adminGetAllThreads] User is not an admin');
-  //   throw new AuthenticationError('You do not have permission to access this resource.');
-  // }
+  // Step 1: Skip admin role check for internal access (user is null)
+  // When user is provided, verify admin role
+  if (user) {
+    const isAdmin = await verifyAdminRole(supabaseAdmin, user);
+    if (!isAdmin) {
+      console.error('[adminGetAllThreads] User is not an admin');
+      throw new AuthenticationError('You do not have permission to access this resource.');
+    }
+  }
 
   const limit = Math.min(payload.limit || 100, 500);
   const offset = payload.offset || 0;
