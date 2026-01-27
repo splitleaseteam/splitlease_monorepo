@@ -214,17 +214,31 @@ export function useAdminThreadsPageLogic() {
 
     if (filters.guestEmail) {
       const search = filters.guestEmail.toLowerCase();
-      result = result.filter(t =>
-        t.guest?.email?.toLowerCase().includes(search) ||
-        t.maskedEmail?.toLowerCase().includes(search)
-      );
+      result = result.filter(t => {
+        const guest = t.guest;
+        if (!guest) return false;
+        // Search across name, email, and phone
+        return (
+          guest.name?.toLowerCase().includes(search) ||
+          guest.email?.toLowerCase().includes(search) ||
+          guest.phone?.includes(search) ||
+          t.maskedEmail?.toLowerCase().includes(search)
+        );
+      });
     }
 
     if (filters.hostEmail) {
       const search = filters.hostEmail.toLowerCase();
-      result = result.filter(t =>
-        t.host?.email?.toLowerCase().includes(search)
-      );
+      result = result.filter(t => {
+        const host = t.host;
+        if (!host) return false;
+        // Search across name, email, and phone
+        return (
+          host.name?.toLowerCase().includes(search) ||
+          host.email?.toLowerCase().includes(search) ||
+          host.phone?.includes(search)
+        );
+      });
     }
 
     if (filters.threadId) {

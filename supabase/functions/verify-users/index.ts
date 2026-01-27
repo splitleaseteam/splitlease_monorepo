@@ -110,10 +110,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user and verify admin status
+    // Authenticate user and verify admin status (OPTIONAL for internal pages)
+    // NOTE: Authentication is now optional - internal pages can access without auth
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+
+    if (user) {
+      console.log(`[verify-users] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[verify-users] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -336,7 +340,7 @@ async function handleGetUser(
 async function handleToggleVerification(
   payload: { userId: string; isVerified: boolean; notes?: string },
   supabase: SupabaseClient,
-  adminUser: { id: string; email: string }
+  adminUser: { id: string; email: string } | null
 ) {
   const { userId, isVerified, notes } = payload;
 
@@ -416,7 +420,7 @@ async function handleToggleVerification(
     userName: currentUser['Name - Full'],
     isVerified,
     previousVerified: currentUser['user verified?'],
-    adminEmail: adminUser.email,
+    adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
     notes,
   });

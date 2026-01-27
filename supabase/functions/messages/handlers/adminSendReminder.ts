@@ -198,10 +198,10 @@ async function sendReminderSms(
 export async function handleAdminSendReminder(
   supabaseAdmin: SupabaseClient,
   payload: AdminSendReminderPayload,
-  user: { id: string; email: string }
+  user: { id: string; email: string } | null
 ): Promise<AdminSendReminderResult> {
   console.log('[adminSendReminder] ========== ADMIN SEND REMINDER ==========');
-  console.log('[adminSendReminder] User:', user.email);
+  console.log('[adminSendReminder] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminSendReminder] Payload:', JSON.stringify(payload));
 
   // Step 1: Validate payload
@@ -215,12 +215,14 @@ export async function handleAdminSendReminder(
     throw new ValidationError('Invalid notification method');
   }
 
-  // Step 2: Verify admin role
-  // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // const isAdmin = await verifyAdminRole(supabaseAdmin, user);
-  // if (!isAdmin) {
-  //   throw new AuthenticationError('You do not have permission to send reminders.');
-  // }
+  // Step 2: Skip admin role check for internal access (user is null)
+  // When user is provided, verify admin role
+  if (user) {
+    const isAdmin = await verifyAdminRole(supabaseAdmin, user);
+    if (!isAdmin) {
+      throw new AuthenticationError('You do not have permission to send reminders.');
+    }
+  }
 
   // Step 3: Fetch thread with user data
   const { data: thread, error: threadError } = await supabaseAdmin
