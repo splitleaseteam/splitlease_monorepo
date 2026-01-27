@@ -153,32 +153,13 @@ Deno.serve(async (req) => {
     const { supabaseUrl, supabaseServiceKey } = configResult.value;
 
     // ─────────────────────────────────────────────────────────
-    // Step 2: Validate admin access (OPTIONAL for internal pages)
+    // Step 2: Skip authentication (internal admin page - no auth required)
     // ─────────────────────────────────────────────────────────
 
-    // Check if Authorization header is present
-    const authHeader = req.headers.get('Authorization');
-    let adminUserId: string | undefined = undefined;
-
-    // If no auth header, proceed without admin validation (internal page access)
-    if (!authHeader) {
-      console.log('[magic-login-links] No auth header - proceeding as internal page request');
-    } else {
-      // Auth header present - validate admin access
-      const adminResult = await validateAdminAccess(req, supabaseUrl, supabaseServiceKey);
-      if (!adminResult.ok) {
-        console.error('[magic-login-links] Admin validation failed:', adminResult.error.message);
-        return new Response(
-          JSON.stringify({ error: adminResult.error.message }),
-          {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-      adminUserId = adminResult.value;
-      console.log(`[magic-login-links] Admin user validated: ${adminUserId}`);
-    }
+    // Authentication completely disabled for internal admin pages
+    // All requests proceed without validation
+    const adminUserId: string | undefined = undefined;
+    console.log('[magic-login-links] Internal page request - proceeding without authentication');
 
     // ─────────────────────────────────────────────────────────
     // Step 3: Parse request (side effect boundary for req.json())
