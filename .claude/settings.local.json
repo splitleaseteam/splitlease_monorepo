@@ -34,6 +34,10 @@
       "Bash(bun run lint)",
       "Bash(start:*)",
       "Bash(echo:*)",
+      "Bash(bun --version:*)",
+      "Bash(where:*)",
+      "Bash(bun run lint:*)",
+      "Read(//c/Users/Split Lease/My Drive \\(splitleaseteam@gmail.com\\)/_Agent Context and Tools/SL22/Design/2026/Ongoing Projects/image grid/**)",
       "Bash(bun run test:*)",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_resize"
