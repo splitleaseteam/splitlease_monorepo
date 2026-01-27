@@ -116,7 +116,10 @@ export default function useCoHostRequestsPageLogic() {
     const { data: { session } } = await supabase.auth.getSession();
 
     // Build headers with optional auth (soft headers pattern)
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+    };
     if (session?.access_token) {
       headers.Authorization = `Bearer ${session.access_token}`;
     }
