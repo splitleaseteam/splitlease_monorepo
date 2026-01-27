@@ -58,19 +58,20 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
-    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
-    }
-
-    // TODO: Add admin role check here
-    // For now, any authenticated user can access (should be behind /_internal route)
-
     // Create service client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // Optional authentication - soft headers pattern for internal admin page
+    // If auth header is present, extract user info for audit purposes
+    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+
+    if (user) {
+      console.log(`[leases-admin] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[leases-admin] No auth header - proceeding as internal page request');
+    }
 
     let result: unknown;
 
