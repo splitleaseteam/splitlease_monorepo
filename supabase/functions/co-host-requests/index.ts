@@ -663,6 +663,7 @@ async function handleGetStatistics(supabase: SupabaseClient) {
 
 /**
  * Get list of available co-hosts (users who can be assigned)
+ * Returns all users without authentication filtering for internal admin page
  */
 async function handleGetAvailableCoHosts(
   payload: { searchText?: string; limit?: number },
@@ -673,7 +674,6 @@ async function handleGetAvailableCoHosts(
   let query = supabase
     .from('user')
     .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Profile Photo"')
-    .eq('Toggle - Is Admin', true) // Only admins can be co-hosts for now
     .order('Name - Full', { ascending: true })
     .limit(limit);
 
