@@ -402,6 +402,44 @@ const FavoritesCardV3 = ({
       background: TOKENS.colors.textLight,
     },
 
+    // AI INSIGHT CARD
+    aiCard: {
+      background: `linear-gradient(135deg, ${TOKENS.colors.primaryLight} 0%, #F8F5FF 100%)`,
+      borderRadius: TOKENS.radius.md,
+      padding: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing.lg,
+      border: '1px solid rgba(109, 49, 194, 0.08)',
+    },
+    aiHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginBottom: TOKENS.spacing.sm,
+    },
+    aiIcon: {
+      width: '24px',
+      height: '24px',
+      background: `linear-gradient(135deg, ${TOKENS.colors.primaryRich} 0%, ${TOKENS.colors.primaryAccent} 100%)`,
+      borderRadius: '6px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 2px 8px rgba(109, 49, 194, 0.25)',
+    },
+    aiLabel: {
+      fontSize: '12px',
+      fontWeight: 600,
+      color: TOKENS.colors.primaryAccent,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+    },
+    aiText: {
+      fontSize: '14px',
+      lineHeight: 1.7,
+      color: TOKENS.colors.textSecondary,
+      margin: 0,
+    },
+
     // BOTTOM BAR
     bottomBar: {
       display: 'flex',
@@ -604,6 +642,21 @@ const FavoritesCardV3 = ({
             <span>{listing.maxGuests} guests</span>
           </div>
         </div>
+
+        {/* AI INSIGHT */}
+        {listing.aiInsight && (
+          <div style={styles.aiCard}>
+            <div style={styles.aiHeader}>
+              <div style={styles.aiIcon}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <span style={styles.aiLabel}>AI Insight</span>
+            </div>
+            <p style={styles.aiText}>{listing.aiInsight}</p>
+          </div>
+        )}
       </div>
 
       {/* BOTTOM BAR */}
