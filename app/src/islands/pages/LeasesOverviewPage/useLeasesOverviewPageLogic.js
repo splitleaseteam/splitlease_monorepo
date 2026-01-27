@@ -16,14 +16,17 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
 import { adaptLeaseFromSupabase } from '../../../logic/processors/leases/adaptLeaseFromSupabase';
 import { filterLeases } from '../../../logic/processors/leases/filterLeases';
 import { sortLeases } from '../../../logic/processors/leases/sortLeases';
 import { canDeleteLease } from '../../../logic/rules/leases/canDeleteLease';
 import { canHardDeleteLease } from '../../../logic/rules/leases/canHardDeleteLease';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Get dev project credentials from .env or hardcode for reliability
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+
 const PAGE_SIZE = 20;
 
 /**
@@ -48,7 +51,6 @@ export function useLeasesOverviewPageLogic({ showToast }) {
   const [leases, setLeases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,40 +90,37 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     { value: 'cancelled', label: 'Mark Cancelled' },
   ], []);
 
-  // ===== AUTH CHECK =====
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { user, session } = await checkAuthStatus();
-        if (!user || !session) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-        setAccessToken(session.access_token);
-      } catch (err) {
-        console.error('[LeasesOverview] Auth check failed:', err);
-        showToast({ title: 'Authentication failed', type: 'error' });
-        window.location.href = '/';
-      }
+  // Build headers with optional auth (soft headers pattern)
+  // For unauthenticated requests, use anon key in Authorization header
+  // Note: We use anon key for both apikey and Authorization when not authenticated
+  const buildHeaders = useCallback(async () => {
+    let accessToken = '';
+
+    // Try to get session token if available (for audit purposes)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      accessToken = session?.access_token || '';
+    } catch {
+      // Silently ignore auth errors - we'll use anon key
+    }
+
+    return {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${accessToken || SUPABASE_ANON_KEY}`
     };
-    checkAuth();
-  }, [showToast]);
+  }, []);
 
   // ===== FETCH LEASES =====
   const fetchLeases = useCallback(async () => {
-    if (!accessToken) return;
-
     setIsLoading(true);
     setError(null);
 
     try {
+      const headers = await buildHeaders();
       const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers,
         body: JSON.stringify({
           action: 'list',
           payload: {
@@ -147,13 +146,11 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, showToast]);
+  }, [buildHeaders, showToast]);
 
   useEffect(() => {
-    if (accessToken) {
-      fetchLeases();
-    }
-  }, [accessToken, fetchLeases]);
+    fetchLeases();
+  }, [fetchLeases]);
 
   // ===== FILTERED & SORTED LEASES =====
   const filteredLeases = useMemo(() => {
@@ -215,12 +212,10 @@ export function useLeasesOverviewPageLogic({ showToast }) {
 
   // ===== ACTION HANDLERS =====
   const callEdgeFunction = useCallback(async (action, payload) => {
+    const headers = await buildHeaders();
     const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 
@@ -231,7 +226,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     }
 
     return result.data;
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   const handleStatusChange = useCallback(async (leaseId, newStatus) => {
     try {

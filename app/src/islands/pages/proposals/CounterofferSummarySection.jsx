@@ -21,7 +21,7 @@ function parseBBCode(text) {
   if (!text) return text;
 
   const elements = [];
-  let remaining = text;
+  const remaining = text;
   let keyIndex = 0;
 
   // Regex to match [b]...[/b] and [color=#XXXXXX]...[/color]

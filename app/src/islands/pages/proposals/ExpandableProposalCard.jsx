@@ -132,7 +132,7 @@ function getCheckInOutRange(proposal) {
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
-    } catch (e) {
+    } catch (_e) {
       daysSelected = [];
     }
   }
@@ -211,7 +211,7 @@ function getOriginalCheckInOutRange(proposal) {
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
-    } catch (e) {
+    } catch (_e) {
       daysSelected = [];
     }
   }
@@ -270,7 +270,7 @@ function parseDaysSelectedForContext(proposal) {
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }
@@ -523,10 +523,31 @@ export default function ExpandableProposalCard({
   const [isConfirming, setIsConfirming] = useState(false);
 
   // Calculate content height for animation
+  // Use ResizeObserver to handle nested accordion expansions (e.g., "Why This Proposal?")
   useEffect(() => {
-    if (contentRef.current) {
-      setContentHeight(isExpanded ? contentRef.current.scrollHeight : 0);
+    if (!contentRef.current) return;
+
+    if (!isExpanded) {
+      setContentHeight(0);
+      return;
     }
+
+    // Set initial height
+    setContentHeight(contentRef.current.scrollHeight);
+
+    // Observe content size changes for nested accordions
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // Use scrollHeight to get full content height including overflow
+        setContentHeight(entry.target.scrollHeight);
+      }
+    });
+
+    resizeObserver.observe(contentRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [isExpanded, proposal]);
 
   // Extract data
@@ -549,7 +570,7 @@ export default function ExpandableProposalCard({
   // Original values (guest's proposal)
   let originalDaysSelected = proposal?.['Days Selected'] || [];
   if (typeof originalDaysSelected === 'string') {
-    try { originalDaysSelected = JSON.parse(originalDaysSelected); } catch (e) { originalDaysSelected = []; }
+    try { originalDaysSelected = JSON.parse(originalDaysSelected); } catch (_e) { originalDaysSelected = []; }
   }
   const originalNightsPerWeek = proposal?.['nights per week (num)'] || originalDaysSelected.length;
   const originalReservationWeeks = proposal?.['Reservation Span (Weeks)'] || 4;
@@ -560,7 +581,7 @@ export default function ExpandableProposalCard({
   // HC values (host counteroffer) - only if counteroffer happened
   let hcDaysSelected = proposal?.['hc days selected'] || [];
   if (typeof hcDaysSelected === 'string') {
-    try { hcDaysSelected = JSON.parse(hcDaysSelected); } catch (e) { hcDaysSelected = []; }
+    try { hcDaysSelected = JSON.parse(hcDaysSelected); } catch (_e) { hcDaysSelected = []; }
   }
   const hcNightsPerWeek = proposal?.['hc nights per week'] || hcDaysSelected.length;
   const hcReservationWeeks = proposal?.['hc reservation span (weeks)'];

@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ campaign_title }} - Split Lease URL Shortener</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container-fluid {
+            max-width: 1400px;
+            padding: 1.5rem;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+        .card-header {
+            background-color: #212529;
+            color: white;
+            border-radius: 8px 8px 0 0 !important;
+            font-weight: 600;
+            padding: 0.8rem 1.25rem;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .url-info {
+            word-break: break-all;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+        .small-chart {
+            height: 200px;
+        }
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        .detail-badge {
+            font-size: 90%;
+            padding: 0.3em 0.6em;
+            margin-right: 0.5em;
+            margin-bottom: 0.5em;
+            display: inline-block;
+        }
+        .resolution-badge {
+            background-color: #e9ecef;
+            color: #495057;
+            font-family: monospace;
+        }
+        .browser-icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+        .device-group {
+            margin-bottom: 1.5rem;
+        }
+        .device-group-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .log-entry {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s;
+        }
+        .log-entry:hover {
+            background-color: #f8f9fa;
+        }
+        .log-time {
+            font-family: monospace;
+            color: #6c757d;
+        }
+        .grid-chart {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .campaign-header {
+            background-color: #0d6efd;
+            padding: 2rem 0;
+            color: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+        .url-card {
+            transition: transform 0.2s;
+        }
+        .url-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .trend-indicator {
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+        }
+        .trend-up {
+            color: #198754;
+        }
+        .trend-down {
+            color: #dc3545;
+        }
+        .trend-neutral {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Campaign Header -->
+        <div class="campaign-header text-center py-4 mb-4">
+            <h1 class="display-4">{{ campaign_title }}</h1>
+            <div class="badge bg-light text-dark fs-6 mb-2">
+                <i class="bi bi-link-45deg"></i> {{ stats.urls|length }} URLs
+                <span class="mx-2">•</span>
+                <i class="bi bi-eye"></i> {{ stats.total_visits }} Total Visits
+            </div>
+            <div class="d-flex justify-content-center">
+                <a href="/" class="btn btn-outline-secondary mx-2">
+                    <i class="bi bi-house-door"></i> Home
+                </a>
+            </div>
+        </div>
+        
+        <!-- Campaign Overview Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number">{{ stats.total_visits }}</div>
+                    <div class="stat-label">Total Visits</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number">{{ stats.unique_visitors }}</div>
+                    <div class="stat-label">Unique Visitors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number">{{ stats.devices|length }}</div>
+                    <div class="stat-label">Device Types</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="stat-number">{{ stats.locations|length }}</div>
+                    <div class="stat-label">Locations</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs for Detailed Analytics -->
+        <ul class="nav nav-tabs mb-3" id="analytics-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                    <i class="bi bi-graph-up"></i> Overview
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="urls-tab" data-bs-toggle="tab" data-bs-target="#urls" type="button" role="tab" aria-controls="urls" aria-selected="false">
+                    <i class="bi bi-link"></i> Campaign URLs
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily" type="button" role="tab" aria-controls="daily" aria-selected="false">
+                    <i class="bi bi-calendar-date"></i> Daily Breakdown
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="devices-tab" data-bs-toggle="tab" data-bs-target="#devices" type="button" role="tab" aria-controls="devices" aria-selected="false">
+                    <i class="bi bi-phone"></i> Device Details
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab" aria-controls="logs" aria-selected="false">
+                    <i class="bi bi-list-ul"></i> Access Logs
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="analytics-content">
+            <!-- Overview Tab -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                <div class="row">
+                    <!-- Device Types Chart -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">Device Breakdown</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="deviceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time of Day Chart -->
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">Visits by Hour of Day</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="timeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Campaign Performance Summary -->
+                <div class="card mb-4">
+                    <div class="card-header">Campaign Performance Summary</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h3>{{ stats.avg_duration|round(2) if stats.avg_duration else 'N/A' }} sec</h3>
+                                        <p class="text-muted mb-0">Average Visit Duration</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h3>{{ (stats.total_visits / stats.urls|length)|round(1) if stats.urls|length > 0 else 0 }}</h3>
+                                        <p class="text-muted mb-0">Average Visits Per Link</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h3>{{ ((stats.unique_visitors / stats.total_visits) * 100)|round(1) if stats.total_visits > 0 else 0 }}%</h3>
+                                        <p class="text-muted mb-0">Unique Visitor Rate</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Locations Table -->
+                <div class="card">
+                    <div class="card-header">Geographic Distribution</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Country</th>
+                                        <th>Region</th>
+                                        <th>Visits</th>
+                                        <th>% of Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for location in stats.locations %}
+                                    <tr>
+                                        <td>{{ location[0] or 'Unknown' }}</td>
+                                        <td>{{ location[1] or 'Unknown' }}</td>
+                                        <td>{{ location[2] }}</td>
+                                        <td>{{ ((location[2] / stats.total_visits) * 100)|round(1) if stats.total_visits > 0 else 0 }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not stats.locations %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No location data available</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- URLs Tab -->
+            <div class="tab-pane fade" id="urls" role="tabpanel" aria-labelledby="urls-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Campaign URLs</h5>
+                            <a href="/" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-house-door"></i> Home
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Short URL</th>
+                                        <th>Long URL</th>
+                                        <th>Created</th>
+                                        <th>Total Visits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for url in stats.urls %}
+                                    <tr>
+                                        <td>{{ url.short_url }}</td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 300px;">
+                                                <a href="{{ url.long_url }}" target="_blank">{{ url.long_url }}</a>
+                                            </div>
+                                        </td>
+                                        <td>{{ url.created_at }}</td>
+                                        <td>{{ url.access_count }}</td>
+                                        <td>
+                                            <a href="/dashboard/{{ url.short_url.split('/')[-1] if '/' in url.short_url else url.short_url }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-graph-up"></i> View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Daily Breakdown Tab -->
+            <div class="tab-pane fade" id="daily" role="tabpanel" aria-labelledby="daily-tab">
+                <div class="card mb-4">
+                    <div class="card-header">Visits Per Day</div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Daily Stats</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Visits</th>
+                                        <th>Unique Visitors</th>
+                                        <th>Avg. Duration</th>
+                                        <th>Most Active Hour</th>
+                                        <th>Device Ratio (Desktop:Mobile)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for day in stats.daily_stats %}
+                                    <tr>
+                                        <td>{{ day.date }}</td>
+                                        <td>{{ day.visits }}</td>
+                                        <td>{{ day.unique_visitors }}</td>
+                                        <td>{{ day.avg_duration|round(1) if day.avg_duration else 'N/A' }} sec</td>
+                                        <td>{{ day.peak_hour }}:00</td>
+                                        <td>{{ day.desktop_ratio }}:{{ day.mobile_ratio }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not stats.daily_stats %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">No daily data available</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Devices Tab -->
+            <div class="tab-pane fade" id="devices" role="tabpanel" aria-labelledby="devices-tab">
+                <div class="row mb-4">
+                    <!-- Detailed Devices -->
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header">Device Breakdown</div>
+                            <div class="card-body">
+                                <div class="device-group">
+                                    <h5 class="device-group-title">Operating Systems</h5>
+                                    <div class="row">
+                                        {% set os_counts = {} %}
+                                        {% for device in stats.detailed_devices %}
+                                            {% if device.os not in os_counts %}
+                                                {% set _ = os_counts.update({device.os: 0}) %}
+                                            {% endif %}
+                                            {% set _ = os_counts.update({device.os: os_counts[device.os] + device.visits}) %}
+                                        {% endfor %}
+                                        
+                                        {% for os, count in os_counts.items() %}
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5>{{ os }}</h5>
+                                                    <p class="mb-0">{{ count }} visits</p>
+                                                    <small class="text-muted">{{ ((count / stats.total_visits) * 100)|round(1) if stats.total_visits > 0 else 0 }}% of total</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        
+                                        {% if not os_counts %}
+                                        <div class="col-12 text-center text-muted">
+                                            No operating system data available
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="device-group">
+                                    <h5 class="device-group-title">Browsers</h5>
+                                    <div class="row">
+                                        {% set browser_counts = {} %}
+                                        {% for device in stats.detailed_devices %}
+                                            {% if device.browser not in browser_counts %}
+                                                {% set _ = browser_counts.update({device.browser: 0}) %}
+                                            {% endif %}
+                                            {% set _ = browser_counts.update({device.browser: browser_counts[device.browser] + device.visits}) %}
+                                        {% endfor %}
+                                        
+                                        {% for browser, count in browser_counts.items() %}
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5>{{ browser }}</h5>
+                                                    <p class="mb-0">{{ count }} visits</p>
+                                                    <small class="text-muted">{{ ((count / stats.total_visits) * 100)|round(1) if stats.total_visits > 0 else 0 }}% of total</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        
+                                        {% if not browser_counts %}
+                                        <div class="col-12 text-center text-muted">
+                                            No browser data available
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screen Resolutions -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">Screen Resolutions</div>
+                            <div class="card-body">
+                                {% if stats.resolutions %}
+                                <div class="chart-container small-chart mb-3">
+                                    <canvas id="resolutionChart"></canvas>
+                                </div>
+                                <div class="d-flex flex-wrap">
+                                    {% for resolution, count in stats.resolutions %}
+                                    <span class="detail-badge resolution-badge">
+                                        {{ resolution }} ({{ count }})
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center text-muted">
+                                    No resolution data available
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Device Table -->
+                <div class="card">
+                    <div class="card-header">Detailed Device Breakdown</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Device Type</th>
+                                        <th>Operating System</th>
+                                        <th>Browser</th>
+                                        <th>Screen Size</th>
+                                        <th>Visits</th>
+                                        <th>% of Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for device in stats.detailed_devices %}
+                                    <tr>
+                                        <td>{{ device.device_type }}</td>
+                                        <td>{{ device.os }}</td>
+                                        <td>{{ device.browser }}</td>
+                                        <td>{{ device.screen_size }}</td>
+                                        <td>{{ device.visits }}</td>
+                                        <td>{{ ((device.visits / stats.total_visits) * 100)|round(1) if stats.total_visits > 0 else 0 }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not stats.detailed_devices %}
+                                    <tr>
+                                        <td colspan="6" class="text-center">No detailed device data available</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logs Tab -->
+            <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Access Logs</span>
+                            <span class="badge bg-secondary">{{ stats.logs|length }} entries</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>URL</th>
+                                        <th>IP</th>
+                                        <th>Location</th>
+                                        <th>Device</th>
+                                        <th>Duration</th>
+                                        <th>Referrer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in stats.logs|sort(attribute='accessed_at', reverse=true) %}
+                                    <tr class="log-entry">
+                                        <td class="log-time">{{ log.accessed_at.strftime('%Y-%m-%d %H:%M:%S') if log.accessed_at else 'Unknown' }}</td>
+                                        <td>{{ log.short_url.short_url }}</td>
+                                        <td>{{ log.ip or 'Unknown' }}</td>
+                                        <td>{{ log.country or 'Unknown' }}, {{ log.region or 'Unknown' }}</td>
+                                        <td>{{ log.device_type or 'Unknown' }}</td>
+                                        <td>{{ log.duration or 'N/A' }}</td>
+                                        <td>{{ log.referrer or 'Direct' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not stats.logs %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No access logs available</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden elements to store template data for JavaScript -->
+    <div id="template-data" style="display: none;" 
+        data-url-labels="{{ stats.urls|map(attribute='short_url')|map('regex_replace', '.*/', '')|list|tojson }}"
+        data-url-data="{{ stats.urls|map(attribute='access_count')|list|tojson }}"
+        data-url-short-urls="{{ stats.urls|map(attribute='short_url')|list|tojson }}"
+        data-url-long-urls="{{ stats.urls|map(attribute='long_url')|list|tojson }}"
+        data-device-labels="{{ stats.devices|map('first')|list|tojson }}"
+        data-device-data="{{ stats.devices|map('last')|list|tojson }}"
+        data-time-labels="{{ stats.referral_times|map('first')|map('string') + ':00'|list|tojson }}"
+        data-time-data="{{ stats.referral_times|map('last')|list|tojson }}"
+        data-browser-labels="{{ stats.browsers|map('first')|list|tojson }}"
+        data-browser-data="{{ stats.browsers|map('last')|list|tojson }}"
+        data-country-labels="{{ stats.countries|map('first')|list|tojson }}"
+        data-country-data="{{ stats.countries|map('last')|list|tojson }}"
+        data-referrer-labels="{{ stats.referrers|map('first')|list|tojson }}"
+        data-referrer-data="{{ stats.referrers|map('last')|list|tojson }}">
+    </div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    
+    <!-- Chart Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get template data from hidden div
+            const templateData = document.getElementById('template-data');
+            
+            // Parse JSON data from data attributes
+            const urlLabels = JSON.parse(templateData.dataset.urlLabels || '[]');
+            const urlData = JSON.parse(templateData.dataset.urlData || '[]');
+            const urlShortUrls = JSON.parse(templateData.dataset.urlShortUrls || '[]');
+            const urlLongUrls = JSON.parse(templateData.dataset.urlLongUrls || '[]');
+            
+            const deviceLabels = JSON.parse(templateData.dataset.deviceLabels || '[]');
+            const deviceData = JSON.parse(templateData.dataset.deviceData || '[]');
+            
+            const timeLabels = JSON.parse(templateData.dataset.timeLabels || '[]');
+            const timeData = JSON.parse(templateData.dataset.timeData || '[]');
+            
+            const browserLabels = JSON.parse(templateData.dataset.browserLabels || '[]');
+            const browserData = JSON.parse(templateData.dataset.browserData || '[]');
+            
+            const countryLabels = JSON.parse(templateData.dataset.countryLabels || '[]');
+            const countryData = JSON.parse(templateData.dataset.countryData || '[]');
+            
+            const referrerLabels = JSON.parse(templateData.dataset.referrerLabels || '[]');
+            const referrerData = JSON.parse(templateData.dataset.referrerData || '[]');
+            
+            // URL Comparison Chart
+            const urlComparisonCtx = document.getElementById('urlComparisonChart')?.getContext('2d');
+            if (urlComparisonCtx) {
+                new Chart(urlComparisonCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: urlLabels,
+                        datasets: [{
+                            label: 'Total Visits',
+                            data: urlData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    afterLabel: function(context) {
+                                        const index = context.dataIndex;
+                                        return [
+                                            'Short URL: ' + urlShortUrls[index],
+                                            'Long URL: ' + urlLongUrls[index]
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Device Chart
+            const deviceChartCtx = document.getElementById('deviceChart')?.getContext('2d');
+            if (deviceChartCtx) {
+                new Chart(deviceChartCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: deviceLabels,
+                        datasets: [{
+                            data: deviceData,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(153, 102, 255, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Time Chart
+            const timeChartCtx = document.getElementById('timeChart')?.getContext('2d');
+            if (timeChartCtx) {
+                new Chart(timeChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: timeLabels,
+                        datasets: [{
+                            label: 'Visits by Hour',
+                            data: timeData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize other charts similarly...
+        });
+    </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

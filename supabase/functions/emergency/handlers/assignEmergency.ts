@@ -6,7 +6,25 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendToSlack } from "../../_shared/slack.ts";
+
+// Inline Slack helper (fire-and-forget, no external dependency)
+function sendToSlack(channel: string, message: { text: string }): void {
+  const webhookEnvMap: Record<string, string> = {
+    database: 'SLACK_WEBHOOK_DATABASE_WEBHOOK',
+    acquisition: 'SLACK_WEBHOOK_ACQUISITION',
+    general: 'SLACK_WEBHOOK_DB_GENERAL',
+  };
+  const webhookUrl = Deno.env.get(webhookEnvMap[channel] || '');
+  if (!webhookUrl) {
+    console.warn(`[slack] Webhook not configured for ${channel}, skipping`);
+    return;
+  }
+  fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(message),
+  }).catch((e) => console.error('[slack] Failed:', e.message));
+}
 
 interface AssignPayload {
   emergencyId: string;

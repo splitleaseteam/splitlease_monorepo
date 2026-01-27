@@ -112,7 +112,7 @@ function getCheckInOutRange(proposal) {
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
-    } catch (e) {
+    } catch (_e) {
       daysSelected = [];
     }
   }
@@ -218,7 +218,7 @@ function parseDaysSelectedForContext(proposal) {
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
-    } catch (e) {
+    } catch (_e) {
       return [];
     }
   }
@@ -898,8 +898,8 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     if (typeof locationData === 'string') {
       try {
         locationData = JSON.parse(locationData);
-      } catch (e) {
-        console.warn('ProposalCard: Failed to parse location data:', e);
+      } catch (_e) {
+        console.warn('ProposalCard: Failed to parse location data:', _e);
         return null;
       }
     }
@@ -929,8 +929,8 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
-    } catch (e) {
-      console.warn('ProposalCard: Failed to parse Days Selected:', e);
+    } catch (_e) {
+      console.warn('ProposalCard: Failed to parse Days Selected:', _e);
       daysSelected = [];
     }
   }

@@ -15,10 +15,11 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus, getSupabaseSession } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Get dev project credentials from .env or hardcode for reliability
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
 
 // ===== CONSTANTS =====
 const DEFAULT_FILTERS = {
@@ -57,11 +58,8 @@ const STATUS_OPTIONS = [
  * Main logic hook for the Manage Rental Applications page
  */
 export function useManageRentalApplicationsPageLogic({ showToast }) {
-  // ===== AUTH STATE =====
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [accessToken, setAccessToken] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  // ===== AUTH TOKEN (OPTIONAL) =====
+  const [accessToken, setAccessToken] = useState('');
 
   // ===== DATA STATE =====
   const [applications, setApplications] = useState([]);
@@ -88,63 +86,37 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
     return urlParams.get('id');
   }, []);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
   useEffect(() => {
-    const verifyAccess = async () => {
+    const loadToken = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-
-        if (!user || !session) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        setAccessToken(session.access_token);
-        setCurrentUser(user);
-
-        // Check if user is admin by querying the user table
-        const { data: userData, error: userError } = await supabase
-          .from('user')
-          .select('"Toggle - Is Admin"')
-          .eq('_id', user.user_metadata?.bubble_user_id)
-          .single();
-
-        if (userError) {
-          console.error('[ManageRentalApps] Failed to check admin status:', userError);
-          // Fall back to checking user_metadata for admin flag
-          const isAdmin = user.user_metadata?.is_admin === true;
-          setIsAuthorized(isAdmin);
-          if (!isAdmin) {
-            showToast({ title: 'Admin access required', type: 'error' });
-          }
-        } else {
-          const isAdmin = userData?.['Toggle - Is Admin'] === true;
-          setIsAuthorized(isAdmin);
-          if (!isAdmin) {
-            showToast({ title: 'Admin access required', type: 'error' });
-          }
-        }
+        const { data: { session } } = await supabase.auth.getSession();
+        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+        setAccessToken(session?.access_token || legacyToken || '');
       } catch (err) {
-        console.error('[ManageRentalApps] Auth check failed:', err);
-        setIsAuthorized(false);
-        showToast({ title: 'Authentication failed', type: 'error' });
-      } finally {
-        setIsInitializing(false);
+        console.error('[ManageRentalApps] Token lookup failed:', err);
+        setAccessToken('');
       }
     };
 
-    verifyAccess();
-  }, [showToast]);
+    loadToken();
+  }, []);
+
+  const buildHeaders = useCallback(() => {
+    // Build headers with optional auth (soft headers pattern)
+    // For unauthenticated requests, use anon key in Authorization header
+    return {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${accessToken || SUPABASE_ANON_KEY}`
+    };
+  }, [accessToken]);
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload = {}) => {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/rental-applications`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      },
+      headers: buildHeaders(),
       body: JSON.stringify({ action, payload })
     });
 
@@ -155,12 +127,10 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
     }
 
     return result;
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   // ===== FETCH APPLICATIONS =====
   const fetchApplications = useCallback(async () => {
-    if (!accessToken || !isAuthorized) return;
-
     setIsLoading(true);
     setError(null);
 
@@ -194,24 +164,45 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, isAuthorized, filters, sort, pagination.page, pagination.pageSize, callEdgeFunction, showToast]);
+  }, [filters, sort, pagination.page, pagination.pageSize, callEdgeFunction, showToast]);
+
+  // Selection handlers (defined before use in effects)
+  const handleSelectApplication = useCallback(async (id) => {
+    setIsLoadingDetail(true);
+    setError(null);
+
+    try {
+      const result = await callEdgeFunction('get', { id });
+
+      setSelectedApplication(result.data);
+      setViewMode('detail');
+
+      // Update URL without full reload
+      const url = new URL(window.location);
+      url.searchParams.set('id', id);
+      window.history.pushState({}, '', url);
+    } catch (err) {
+      console.error('[ManageRentalApps] Failed to fetch application:', err);
+      showToast({ title: 'Failed to load application details', content: err.message, type: 'error' });
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  }, [callEdgeFunction, showToast]);
 
   // Fetch applications when ready
   useEffect(() => {
-    if (accessToken && isAuthorized) {
-      fetchApplications();
-    }
-  }, [accessToken, isAuthorized, fetchApplications]);
+    fetchApplications();
+  }, [fetchApplications]);
 
   // Handle URL deep linking
   useEffect(() => {
-    if (accessToken && isAuthorized && !isLoading) {
+    if (!isLoading) {
       const urlId = getIdFromUrl();
       if (urlId) {
         handleSelectApplication(urlId);
       }
     }
-  }, [accessToken, isAuthorized, isLoading, getIdFromUrl]);
+  }, [isLoading, getIdFromUrl, handleSelectApplication]);
 
   // ===== STATS =====
   const stats = useMemo(() => {
@@ -255,29 +246,6 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
   const handleChangePageSize = useCallback((pageSize) => {
     setPagination(prev => ({ ...prev, pageSize, page: 1 }));
   }, []);
-
-  // Selection handlers
-  const handleSelectApplication = useCallback(async (id) => {
-    setIsLoadingDetail(true);
-    setError(null);
-
-    try {
-      const result = await callEdgeFunction('get', { id });
-
-      setSelectedApplication(result.data);
-      setViewMode('detail');
-
-      // Update URL without full reload
-      const url = new URL(window.location);
-      url.searchParams.set('id', id);
-      window.history.pushState({}, '', url);
-    } catch (err) {
-      console.error('[ManageRentalApps] Failed to fetch application:', err);
-      showToast({ title: 'Failed to load application details', content: err.message, type: 'error' });
-    } finally {
-      setIsLoadingDetail(false);
-    }
-  }, [callEdgeFunction, showToast]);
 
   const handleBackToList = useCallback(() => {
     setViewMode('list');
@@ -357,11 +325,6 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
 
   // ===== RETURN =====
   return {
-    // Auth
-    isInitializing,
-    isAuthorized,
-    currentUser,
-
     // Data
     applications,
     selectedApplication,

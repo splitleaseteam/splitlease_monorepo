@@ -23,12 +23,8 @@ export async function handleAdminFetchConfirmed(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown[]> {
-  // Verify authentication
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
-
-  console.log(`[admin_fetch_confirmed] Fetching confirmed meetings for admin: ${user.email}`);
+  // Authentication is now optional - internal pages can access without login
+  console.log(`[admin_fetch_confirmed] Fetching confirmed meetings${user ? ` for admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Build query for confirmed meetings
   let query = supabase

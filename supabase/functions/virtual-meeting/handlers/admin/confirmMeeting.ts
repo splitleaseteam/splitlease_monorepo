@@ -23,10 +23,7 @@ export async function handleAdminConfirmMeeting(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown> {
-  // Verify authentication
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   // Validate input
   if (!payload.meetingId) {
@@ -37,7 +34,7 @@ export async function handleAdminConfirmMeeting(
     throw new ValidationError("Booked date is required");
   }
 
-  console.log(`[admin_confirm_meeting] Confirming meeting ${payload.meetingId} by admin: ${user.email}`);
+  console.log(`[admin_confirm_meeting] Confirming meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Generate meeting link if not provided
   const meetingLink = payload.meetingLink || generateDefaultMeetingLink();

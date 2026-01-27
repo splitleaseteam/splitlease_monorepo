@@ -6,8 +6,7 @@ import { normalizeUserType, NORMALIZED_USER_TYPES } from './LoggedInAvatar/useLo
 import CreateDuplicateListingModal from './CreateDuplicateListingModal/CreateDuplicateListingModal.jsx';
 import ImportListingModal from './ImportListingModal/ImportListingModal.jsx';
 import ReferralModal from '../pages/AccountProfilePage/components/ReferralModal.jsx';
-import { useToast } from './Toast.jsx';
-import Toast from './Toast.jsx';
+import Toast, { useToast } from './Toast.jsx';
 
 export default function Footer() {
   const [importUrl, setImportUrl] = useState('');

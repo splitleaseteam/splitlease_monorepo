@@ -93,6 +93,7 @@ export interface UpdateProposalInput {
   hc_four_week_rent?: number;
   hc_check_in?: number;
   hc_check_out?: number;
+  hc_house_rules?: string[];
 
   // Cancellation
   reason_for_cancellation?: string;

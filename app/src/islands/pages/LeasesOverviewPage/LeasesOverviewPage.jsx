@@ -24,6 +24,9 @@ import LoadingState from './components/LoadingState';
 import EmptyState from './components/EmptyState';
 import ErrorState from './components/ErrorState';
 import ConfirmDialog from './components/ConfirmDialog';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import '../../../styles/pages/leases-overview.css';
+
 
 export default function LeasesOverviewPage() {
   const { showToast } = useToast();
@@ -33,6 +36,7 @@ export default function LeasesOverviewPage() {
   if (logic.isLoading && !logic.leases.length) {
     return (
       <div className="leases-overview">
+        <AdminHeader />
         <LoadingState message="Loading leases..." />
       </div>
     );
@@ -42,6 +46,7 @@ export default function LeasesOverviewPage() {
   if (logic.error && !logic.leases.length) {
     return (
       <div className="leases-overview">
+        <AdminHeader />
         <ErrorState
           message={logic.error}
           onRetry={logic.handleRetry}
@@ -52,6 +57,7 @@ export default function LeasesOverviewPage() {
 
   return (
     <div className="leases-overview">
+      <AdminHeader />
       {/* Header */}
       <header className="leases-overview__header">
         <div className="leases-overview__header-content">

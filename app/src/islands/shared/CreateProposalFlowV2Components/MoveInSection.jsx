@@ -173,7 +173,7 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
         return null;
       })()}
 
-      {listing?.['Dates - Blocked'] && listing['Dates - Blocked'].length > 0 && (
+      {listing?.['Dates - Blocked'] && Array.isArray(listing['Dates - Blocked']) && listing['Dates - Blocked'].length > 0 && (
         <div className="blocked-dates-notice">
           <h4>Desired Nights Restricted by Host</h4>
           <ul>

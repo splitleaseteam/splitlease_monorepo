@@ -80,6 +80,30 @@ export async function handleCreate(
   console.log(`[proposal:create] Validated input for listing: ${input.listingId}`);
 
   // ================================================
+  // SECURITY: Validate guestId matches authenticated user
+  // ================================================
+
+  if (!user) {
+    throw new ValidationError('Authentication required for proposal creation');
+  }
+
+  // CRITICAL: Verify payload guestId matches authenticated user
+  if (input.guestId !== user.id) {
+    console.error(`[SECURITY] ALERT: guestId mismatch detected`, {
+      authenticatedUserId: user.id?.substring(0, 8) + '...',
+      payloadGuestId: input.guestId?.substring(0, 8) + '...',
+      timestamp: new Date().toISOString(),
+      listingId: input.listingId
+    });
+
+    throw new ValidationError(
+      'Authentication mismatch detected. This incident has been logged.'
+    );
+  }
+
+  console.log(`[proposal:create] Validated guestId matches authenticated user`);
+
+  // ================================================
   // DUPLICATE CHECK - Prevent multiple proposals for same guest+listing
   // ================================================
 

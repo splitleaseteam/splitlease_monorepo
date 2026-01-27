@@ -46,13 +46,20 @@ import {
 
 /**
  * Handle update proposal request
+ *
+ * @param payload - The update request payload
+ * @param user - The authenticated user context (nullable for internal admin pages)
+ * @param supabase - The Supabase client
  */
 export async function handleUpdate(
   payload: Record<string, unknown>,
-  user: UserContext,
+  user: UserContext | null,
   supabase: SupabaseClient
 ): Promise<UpdateProposalResponse> {
-  console.log(`[proposal:update] Starting update for user: ${user.email}`);
+  console.log(`[proposal:update] Starting update for user: ${user?.email || 'anonymous (internal admin)'}`);
+
+  // If no user, this is an internal admin page request - skip authorization
+  const isInternalRequest = !user;
 
   // ================================================
   // VALIDATION
@@ -89,28 +96,41 @@ export async function handleUpdate(
   // AUTHORIZATION CHECK
   // ================================================
 
-  console.log('[proposal:update] ═══════════════════════════════════');
-  console.log('[proposal:update] Checking authorization...');
-  console.log('[proposal:update] User ID from auth:', user.id);
-  console.log('[proposal:update] Proposal Guest ID:', proposalData.Guest);
-  console.log('[proposal:update] Proposal Host User ID:', proposalData["Host User"]);
+  // Variables for role determination (used in status history)
+  let isGuest = false;
+  let isHost = false;
+  let isAdmin = false;
 
-  const isGuest = proposalData.Guest === user.id;
-  const isHost = await checkIsHost(supabase, proposalData["Host User"], user.id);
-  const isAdmin = await checkIsAdmin(supabase, user.id);
+  if (isInternalRequest) {
+    // Internal admin page request - bypass authorization check
+    console.log('[proposal:update] ═══════════════════════════════════');
+    console.log('[proposal:update] Internal admin page request - bypassing authorization');
+    console.log('[proposal:update] ═══════════════════════════════════');
+    isAdmin = true; // Treat as admin for status history purposes
+  } else {
+    console.log('[proposal:update] ═══════════════════════════════════');
+    console.log('[proposal:update] Checking authorization...');
+    console.log('[proposal:update] User ID from auth:', user!.id);
+    console.log('[proposal:update] Proposal Guest ID:', proposalData.Guest);
+    console.log('[proposal:update] Proposal Host User ID:', proposalData["Host User"]);
 
-  console.log('[proposal:update] Is guest?', isGuest);
-  console.log('[proposal:update] Is host?', isHost);
-  console.log('[proposal:update] Is admin?', isAdmin);
-  console.log('[proposal:update] ═══════════════════════════════════');
+    isGuest = proposalData.Guest === user!.id;
+    isHost = await checkIsHost(supabase, proposalData["Host User"], user!.id);
+    isAdmin = await checkIsAdmin(supabase, user!.id);
 
-  if (!isGuest && !isHost && !isAdmin) {
-    console.log('[proposal:update] ❌ Authorization failed - user is neither guest nor host nor admin');
-    console.error(`[proposal:update] Unauthorized: user ${user.id} is not guest, host, or admin`);
-    throw new AuthenticationError("You do not have permission to update this proposal");
+    console.log('[proposal:update] Is guest?', isGuest);
+    console.log('[proposal:update] Is host?', isHost);
+    console.log('[proposal:update] Is admin?', isAdmin);
+    console.log('[proposal:update] ═══════════════════════════════════');
+
+    if (!isGuest && !isHost && !isAdmin) {
+      console.log('[proposal:update] ❌ Authorization failed - user is neither guest nor host nor admin');
+      console.error(`[proposal:update] Unauthorized: user ${user!.id} is not guest, host, or admin`);
+      throw new AuthenticationError("You do not have permission to update this proposal");
+    }
+
+    console.log(`[proposal:update] ✅ Authorized as: ${isAdmin ? "admin" : isHost ? "host" : "guest"}`);
   }
-
-  console.log(`[proposal:update] ✅ Authorized as: ${isAdmin ? "admin" : isHost ? "host" : "guest"}`);
 
   // ================================================
   // CHECK TERMINAL STATUS
@@ -261,6 +281,10 @@ export async function handleUpdate(
   if (input.hc_check_out !== undefined) {
     updates["hc check out day"] = input.hc_check_out;
     updatedFields.push("hc_check_out");
+  }
+  if (input.hc_house_rules !== undefined) {
+    updates["hc house rules"] = input.hc_house_rules;
+    updatedFields.push("hc_house_rules");
   }
 
   // Cancellation reason

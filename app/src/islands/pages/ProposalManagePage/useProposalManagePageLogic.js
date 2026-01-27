@@ -21,6 +21,46 @@ import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js
 import { supabase } from '../../../lib/supabase.js';
 
 // ============================================================================
+// SUPABASE CONFIGURATION (for Edge Function calls with soft headers pattern)
+// ============================================================================
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+
+/**
+ * Call the proposal Edge Function with soft headers pattern.
+ * Works for both authenticated and unauthenticated requests.
+ *
+ * @param {string} action - The action to perform
+ * @param {Object} payload - The payload for the action
+ * @returns {Promise<Object>} - The response data
+ */
+async function callProposalEdgeFunction(action, payload = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // Build headers with optional auth (soft headers pattern)
+  // For unauthenticated requests, use anon key in Authorization header
+  const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`
+  };
+
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/proposal`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ action, payload }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.error || 'Request failed');
+  }
+
+  return result.data;
+}
+
+// ============================================================================
 // CONSTANTS
 // ============================================================================
 
@@ -221,100 +261,17 @@ export function useProposalManagePageLogic() {
   const [isCreationFormOpen, setIsCreationFormOpen] = useState(false);
 
   // ============================================================================
-  // AUTH CHECK
+  // AUTH CHECK (Optional - no redirect for internal pages)
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isAdmin: false,
-            shouldRedirect: true
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        // Gold Standard Auth Pattern - Step 2: Deep validation
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (!userData) {
-          // Fallback to session metadata
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (!session?.user) {
-            console.log('[ProposalManage] No valid session, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              isAdmin: false,
-              shouldRedirect: true
-            });
-            window.location.href = '/';
-            return;
-          }
-        }
-
-        // Check admin status via user table
-        const userId = userData?.userId || userData?._id;
-        if (!userId) {
-          console.log('[ProposalManage] No user ID, redirecting');
-          window.location.href = '/';
-          return;
-        }
-
-        // Query user table for admin status
-        const { data: userRecord, error: userError } = await supabase
-          .from('user')
-          .select('_id, "Admin?"')
-          .eq('_id', userId)
-          .single();
-
-        if (userError) {
-          console.error('[ProposalManage] Error checking admin status:', userError);
-        }
-
-        const isAdmin = userRecord?.['Admin?'] === true;
-
-        if (!isAdmin) {
-          console.warn('[ProposalManage] User is not admin, redirecting...');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isAdmin: false,
-            shouldRedirect: true
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          isAdmin: true,
-          shouldRedirect: false
-        });
-
-        // Load proposals
-        await loadProposals();
-
-      } catch (err) {
-        console.error('[ProposalManage] Auth check failed:', err);
-        setError('Authentication failed. Please log in again.');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isAdmin: false,
-          shouldRedirect: true
-        });
-      }
-    }
-
-    checkAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState({
+      isChecking: false,
+      isAuthenticated: true,
+      isAdmin: true,
+      shouldRedirect: false
+    });
   }, []);
 
   // ============================================================================
@@ -555,18 +512,11 @@ export function useProposalManagePageLogic() {
         )
       );
 
-      // Call Edge Function to update status
-      const { error } = await supabase.functions.invoke('proposal', {
-        body: {
-          action: 'update',
-          payload: {
-            proposal_id: proposalId,
-            status: newStatus
-          }
-        }
+      // Call Edge Function to update status using soft headers pattern
+      await callProposalEdgeFunction('update', {
+        proposal_id: proposalId,
+        status: newStatus
       });
-
-      if (error) throw error;
 
       console.log('[ProposalManage] Status updated:', proposalId, newStatus);
 
@@ -649,34 +599,28 @@ export function useProposalManagePageLogic() {
    */
   const handleCreateProposal = useCallback(async (proposalData) => {
     try {
-      const { data, error } = await supabase.functions.invoke('proposal', {
-        body: {
-          action: 'create_suggested',
-          payload: {
-            guestId: proposalData.selectedGuest._id,
-            listingId: proposalData.selectedListing._id,
-            moveInStartRange: proposalData.moveInDate,
-            daysSelected: proposalData.weeklySchedule
-              .map((active, i) => active ? i : null)
-              .filter(i => i !== null),
-            reservationSpanWeeks: proposalData.reservationSpanWeeks,
-            aboutMe: proposalData.guestAbout,
-            needForSpace: proposalData.guestNeedForSpace,
-            specialNeeds: proposalData.guestSpecialNeeds,
-            status: proposalData.proposalStatus
-          }
-        }
+      // Call Edge Function to create proposal using soft headers pattern
+      const result = await callProposalEdgeFunction('create_suggested', {
+        guestId: proposalData.selectedGuest._id,
+        listingId: proposalData.selectedListing._id,
+        moveInStartRange: proposalData.moveInDate,
+        daysSelected: proposalData.weeklySchedule
+          .map((active, i) => active ? i : null)
+          .filter(i => i !== null),
+        reservationSpanWeeks: proposalData.reservationSpanWeeks,
+        aboutMe: proposalData.guestAbout,
+        needForSpace: proposalData.guestNeedForSpace,
+        specialNeeds: proposalData.guestSpecialNeeds,
+        status: proposalData.proposalStatus
       });
-
-      if (error) throw error;
 
       // Reload proposals to show the new one
       await loadProposals();
 
       return {
         success: true,
-        proposalId: data?.data?.proposalId,
-        threadId: data?.data?.threadId
+        proposalId: result?.proposalId,
+        threadId: result?.threadId
       };
 
     } catch (err) {

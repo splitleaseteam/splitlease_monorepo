@@ -30,6 +30,7 @@ export default [
     },
     rules: {
       // React rules - start with warnings for existing code
+      'react/jsx-uses-vars': 'error', // Mark JSX component usage to avoid false unused-vars warnings
       'react/jsx-uses-react': 'off', // Not needed with React 17+ JSX transform
       'react/react-in-jsx-scope': 'off', // Not needed with React 17+ JSX transform
       'react/prop-types': 'off', // Not using PropTypes (using TypeScript for types)
@@ -51,6 +52,7 @@ export default [
       'no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_', // Allow underscore-prefixed catch clause variables
       }],
       'no-console': 'off', // Allow console for now
       'no-debugger': 'warn',

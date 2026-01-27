@@ -15,7 +15,8 @@ export function calculateActualWeeks(reservationSpan, weeksOffered) {
   }
 
   // One week on, one week off - 2 week cycle, guest gets 1 week per cycle
-  if (pattern.includes('one week on') && pattern.includes('one week off')) {
+  if (pattern.includes('1 on 1 off') || pattern.includes('1on1off') ||
+      (pattern.includes('one week on') && pattern.includes('one week off'))) {
     const cycles = reservationSpan / 2;
     const actualWeeks = Math.floor(cycles); // 1 week per 2-week cycle
     return {
@@ -28,7 +29,8 @@ export function calculateActualWeeks(reservationSpan, weeksOffered) {
   }
 
   // Two weeks on, two weeks off - 4 week cycle, guest gets 2 weeks per cycle
-  if (pattern.includes('two weeks on') && pattern.includes('two weeks off')) {
+  if (pattern.includes('2 on 2 off') || pattern.includes('2on2off') ||
+      (pattern.includes('two weeks on') && pattern.includes('two weeks off'))) {
     const cycles = reservationSpan / 4;
     const actualWeeks = Math.floor(cycles * 2); // 2 weeks per 4-week cycle
     return {
@@ -41,7 +43,8 @@ export function calculateActualWeeks(reservationSpan, weeksOffered) {
   }
 
   // One week on, three weeks off - 4 week cycle, guest gets 1 week per cycle
-  if (pattern.includes('one week on') && pattern.includes('three weeks off')) {
+  if (pattern.includes('1 on 3 off') || pattern.includes('1on3off') ||
+      (pattern.includes('one week on') && pattern.includes('three weeks off'))) {
     const cycles = reservationSpan / 4;
     const actualWeeks = Math.floor(cycles); // 1 week per 4-week cycle
     return {
@@ -63,9 +66,13 @@ export function calculateActualWeeks(reservationSpan, weeksOffered) {
 
 /**
  * Component to display schedule pattern info when applicable
+ * @param {Object} props
+ * @param {Object} [props.pattern] - Pre-computed pattern info (optional)
+ * @param {number} props.reservationSpan - The reservation span in weeks
+ * @param {string} [props.weeksOffered] - The weeks offered pattern string (e.g., "One week on, one week off")
  */
-export function SchedulePatternHighlight({ pattern, reservationSpan }) {
-  const patternInfo = pattern || calculateActualWeeks(reservationSpan, '');
+export function SchedulePatternHighlight({ pattern, reservationSpan, weeksOffered }) {
+  const patternInfo = pattern || calculateActualWeeks(reservationSpan, weeksOffered || '');
 
   if (!patternInfo.showHighlight) {
     return null;

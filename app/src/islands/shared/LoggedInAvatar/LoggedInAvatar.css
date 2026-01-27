@@ -294,6 +294,38 @@
   padding: 0;
 }
 
+/* Mobile: Compact messaging icon */
+@media (max-width: 768px) {
+  .logged-in-avatar .header-messages-wrapper {
+    margin-right: 4px;
+  }
+
+  .logged-in-avatar .header-messages-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logged-in-avatar .header-messages-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .logged-in-avatar .messages-badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+    top: 0;
+    right: 0;
+  }
+
+  /* Compact avatar on mobile */
+  .logged-in-avatar .avatar-image,
+  .logged-in-avatar .avatar-placeholder {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 .logged-in-avatar .header-messages-icon:hover {
   background: rgba(255, 255, 255, 0.1);
 }

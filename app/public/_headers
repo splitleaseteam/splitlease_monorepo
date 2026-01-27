@@ -129,6 +129,11 @@
 /host-guarantee
   Content-Type: text/html; charset=utf-8
 
+# Underscore-prefixed internal pages - serve as HTML
+# These are admin/internal tools accessed via /_page-name URLs
+/_*
+  Content-Type: text/html; charset=utf-8
+
 # Internal files (no extension) - serve as HTML
 /_internal/*
   Content-Type: text/html; charset=utf-8

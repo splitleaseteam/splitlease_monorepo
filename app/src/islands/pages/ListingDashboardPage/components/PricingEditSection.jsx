@@ -1,29 +1,30 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import HostScheduleSelector from '../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import InformationalText from '../../../shared/InformationalText';
-import { ConfirmModal } from '../../HostOverviewPage/components/HostOverviewModals.jsx';
+import { logger } from '../../../../lib/logger';
+import LeaseStyleSelector from './PricingEditSection/LeaseStyleSelector';
+import NightlyPricingForm from './PricingEditSection/NightlyPricingForm';
+import WeeklyPricingForm from './PricingEditSection/WeeklyPricingForm';
+import MonthlyPricingForm from './PricingEditSection/MonthlyPricingForm';
 
-// Rental type options with descriptions
+// Rental type options based on LeaseStyleSelector
 const RENTAL_TYPES = [
   {
     id: 'Nightly',
-    title: "Nightly's Display",
-    description:
-      'Rent out the same nights each week (e.g., every Thu-Sun from August to December). Ideal for hosts regularly away on certain nights, like weekends or work trips.',
-    benefits: ['Keep your home on off-nights', 'Set your nightly rate'],
+    title: 'Nightly',
+    description: 'Rent your space by the night. Best for hosts who want flexibility and higher potential income through short-term stays.',
+    benefits: ['Maximized nightly rates', 'Flexible calendar management'],
   },
   {
     id: 'Weekly',
-    title: "Weekly's Display",
-    description:
-      'Lease specific weeks each month (e.g., two weeks on, two weeks off from August to December). Perfect for hosts who split their time between locations or travel part of each month.',
-    benefits: ['Keep or lease unused weeks', 'Set your weekly rate'],
+    title: 'Weekly (Split Lease)',
+    description: 'Rent your space for specific weeks (e.g., Week 1 & 3 of every month). Best for hosts who use their space regularly but want to monetize it when away.',
+    benefits: ['Consistent schedule', 'Predictable income from recurring guests'],
   },
   {
     id: 'Monthly',
-    title: "Monthly's Display",
-    description:
-      'Standard month-to-month lease (e.g., continuous stay from August to December). Best for hosts who want steady occupancy with minimal management.',
+    title: 'Monthly (Sublet)',
+    description: 'Standard month-to-month lease (e.g., continuous stay from August to December). Best for hosts who want steady occupancy with minimal management.',
     benefits: ['Continuous occupancy with stable income', 'Set your monthly rate'],
   },
 ];
@@ -47,25 +48,15 @@ export default function PricingEditSection({
   onSave,
   isOwner = true,
 }) {
-  // State for rental type selection
-  const [selectedRentalType, setSelectedRentalType] = useState(
-    listing?.leaseStyle || 'Nightly'
-  );
+  // State for form fields
+  const [selectedRentalType, setSelectedRentalType] = useState(listing?.leaseStyle || 'Nightly');
+  const [damageDeposit, setDamageDeposit] = useState(listing?.damageDeposit || 500);
+  const [maintenanceFee, setMaintenanceFee] = useState(listing?.maintenanceFee || 125);
 
-  // State for selected nights (for Nightly rental type)
-  const [selectedNights, setSelectedNights] = useState(
-    listing?.nightsAvailable || []
-  );
-
-  // State for pricing inputs
-  const [damageDeposit, setDamageDeposit] = useState(
-    listing?.damageDeposit || 500
-  );
-  const [maintenanceFee, setMaintenanceFee] = useState(
-    listing?.maintenanceFee || 125
-  );
-
-  // Nightly pricing (weekly compensation for 2-7 nights)
+  // Nightly specific state
+  const [selectedNights, setSelectedNights] = useState(listing?.nightsAvailable || []);
+  const [minNights, setMinNights] = useState(listing?.nightsPerWeekMin || 2);
+  const [maxNights, setMaxNights] = useState(listing?.nightsPerWeekMax || 7);
   const [nightlyPricing, setNightlyPricing] = useState({
     2: listing?.weeklyCompensation?.[2] || 0,
     3: listing?.weeklyCompensation?.[3] || 0,
@@ -73,30 +64,21 @@ export default function PricingEditSection({
     5: listing?.weeklyCompensation?.[5] || 0,
   });
 
-  // Weekly pricing
+  // Weekly specific state
   const [weeksOffered, setWeeksOffered] = useState(listing?.weeksOffered || '');
   const [weeklyRate, setWeeklyRate] = useState(listing?.weeklyHostRate || 0);
 
-  // Monthly pricing
+  // Monthly specific state
   const [monthlyRate, setMonthlyRate] = useState(listing?.monthlyHostRate || 0);
-  const [monthlyAgreement, setMonthlyAgreement] = useState('agree');
+  const [monthlyAgreement, setMonthlyAgreement] = useState('');
 
-  // Min/max nights per week
-  const [minNights, setMinNights] = useState(listing?.nightsPerWeekMin || 2);
-  const [maxNights, setMaxNights] = useState(listing?.nightsPerWeekMax || 7);
-
-  // Saving state
+  // UI state
   const [isSaving, setIsSaving] = useState(false);
-
-  // Informational text state
   const [activeInfoTooltip, setActiveInfoTooltip] = useState(null);
-
-  // Confirmation modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // Detect if any changes have been made compared to original listing
+  // Track if any changes were made
   const hasChanges = useMemo(() => {
-    // Check rental type change
     if (selectedRentalType !== (listing?.leaseStyle || 'Nightly')) return true;
 
     // Check common fields
@@ -120,7 +102,8 @@ export default function PricingEditSection({
 
     // Check weekly-specific fields
     if (selectedRentalType === 'Weekly') {
-      if (weeklyRate !== (listing?.weeklyRate || 0)) return true;
+      if (weeklyRate !== (listing?.weeklyHostRate || 0)) return true;
+      if (weeksOffered !== (listing?.weeksOffered || '')) return true;
     }
 
     // Check monthly-specific fields
@@ -138,24 +121,27 @@ export default function PricingEditSection({
     maxNights,
     nightlyPricing,
     weeklyRate,
+    weeksOffered,
     monthlyRate,
     listing,
   ]);
 
   // Refs for informational text tooltips
-  const pricingControlsInfoRef = useRef(null);
-  const damageDepositInfoRef = useRef(null);
-  const maintenanceFeeInfoRef = useRef(null);
-  const nightsPerWeekInfoRef = useRef(null);
-  const weeklyCompInfoRefs = {
-    2: useRef(null),
-    3: useRef(null),
-    4: useRef(null),
-    5: useRef(null),
+  const infoRefs = {
+    pricingControls: useRef(null),
+    damageDeposit: useRef(null),
+    maintenanceFee: useRef(null),
+    nightsPerWeek: useRef(null),
+    weeklyComp: {
+      2: useRef(null),
+      3: useRef(null),
+      4: useRef(null),
+      5: useRef(null),
+    },
+    weeklyPricing: useRef(null),
+    monthlyComp: useRef(null),
+    monthlyAgreement: useRef(null),
   };
-  const weeklyPricingInfoRef = useRef(null);
-  const monthlyCompInfoRef = useRef(null);
-  const monthlyAgreementInfoRef = useRef(null);
 
   // Informational text content
   const infoContent = {
@@ -177,11 +163,26 @@ export default function PricingEditSection({
       title: 'Nights Per Week',
       content: 'Set the minimum and maximum number of nights guests can book per week. This gives you control over your schedule while maximizing occupancy.',
     },
-    weeklyComp: (nights) => ({
-      title: `${nights}-Night Occupancy`,
-      content: `Set the weekly rate you want to receive when guests book ${nights} nights per week.`,
-      expandedContent: `Your nightly rate at ${nights} nights/week will be calculated by dividing your weekly compensation by ${nights}. Higher occupancy typically means lower per-night rates but more total earnings.`,
-    }),
+    weeklyComp2: {
+      title: '2-Night Occupancy',
+      content: 'Set the weekly rate you want to receive when guests book 2 nights per week.',
+      expandedContent: 'Your nightly rate at 2 nights/week will be calculated by dividing your weekly compensation by 2.',
+    },
+    weeklyComp3: {
+      title: '3-Night Occupancy',
+      content: 'Set the weekly rate you want to receive when guests book 3 nights per week.',
+      expandedContent: 'Your nightly rate at 3 nights/week will be calculated by dividing your weekly compensation by 3.',
+    },
+    weeklyComp4: {
+      title: '4-Night Occupancy',
+      content: 'Set the weekly rate you want to receive when guests book 4 nights per week.',
+      expandedContent: 'Your nightly rate at 4 nights/week will be calculated by dividing your weekly compensation by 4.',
+    },
+    weeklyComp5: {
+      title: '5-Night Occupancy',
+      content: 'Set the weekly rate you want to receive when guests book 5 nights per week.',
+      expandedContent: 'Your nightly rate at 5 nights/week will be calculated by dividing your weekly compensation by 5.',
+    },
     weeklyPricing: {
       title: 'Weekly Rate',
       content: 'Set the weekly rate for your listing. This is the total amount you\'ll receive for each week a guest stays.',
@@ -199,44 +200,26 @@ export default function PricingEditSection({
   };
 
   // Handle info tooltip toggle
-  const handleInfoClick = (tooltipId, ref) => (e) => {
+  const handleInfoClick = (tooltipId) => (e) => {
     e.stopPropagation();
     setActiveInfoTooltip(activeInfoTooltip === tooltipId ? null : tooltipId);
   };
 
   // Handle back button click - show confirmation if changes exist
   const handleBackClick = useCallback(() => {
-    console.log('🔙 Back button clicked, hasChanges:', hasChanges);
+    console.log('🔙 Go Back clicked:', { hasChanges, onCloseExists: typeof onClose === 'function' });
     if (hasChanges) {
       console.log('📋 Showing confirmation modal');
       setShowConfirmModal(true);
     } else {
-      console.log('✅ No changes, closing directly');
-      onClose();
+      console.log('✅ No changes, calling onClose()');
+      if (typeof onClose === 'function') {
+        onClose();
+      } else {
+        console.error('❌ onClose is not a function:', onClose);
+      }
     }
   }, [hasChanges, onClose]);
-
-  // Handle confirmation modal confirm (discard changes)
-  const handleConfirmDiscard = useCallback(() => {
-    setShowConfirmModal(false);
-    onClose();
-  }, [onClose]);
-
-  // Update selected nights when rental type changes
-  useEffect(() => {
-    if (selectedRentalType !== 'Nightly') {
-      // Reset to all nights for non-nightly types
-      setSelectedNights([
-        'sunday',
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-      ]);
-    }
-  }, [selectedRentalType]);
 
   // Handle night selection change
   const handleNightSelectionChange = useCallback((nights) => {
@@ -246,13 +229,7 @@ export default function PricingEditSection({
   // Handle select all nights
   const handleSelectAllNights = useCallback(() => {
     setSelectedNights([
-      'sunday',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
+      'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
     ]);
   }, []);
 
@@ -264,69 +241,42 @@ export default function PricingEditSection({
 
   // Validate form based on rental type
   const isFormValid = useCallback(() => {
-    // Check owner permission
     if (!isOwner) return false;
-
-    // Damage deposit must be at least $500
     if (damageDeposit < 500) return false;
 
-    // Validate based on rental type
     switch (selectedRentalType) {
       case 'Nightly':
-        // Must have at least 2 nights selected
         if (selectedNights.length < 2) return false;
-        // Must have pricing for all visible night counts
         if (selectedNights.length >= 2 && !nightlyPricing[2]) return false;
         if (selectedNights.length >= 3 && !nightlyPricing[3]) return false;
         if (selectedNights.length >= 4 && !nightlyPricing[4]) return false;
         if (selectedNights.length >= 5 && !nightlyPricing[5]) return false;
         return true;
-
       case 'Weekly':
         return weeksOffered !== '' && weeklyRate > 0;
-
       case 'Monthly':
         return (
           monthlyAgreement === 'agree' &&
           monthlyRate >= 1000 &&
           monthlyRate <= 10000
         );
-
       default:
         return false;
     }
   }, [
-    isOwner,
-    damageDeposit,
-    selectedRentalType,
-    selectedNights,
-    nightlyPricing,
-    weeksOffered,
-    weeklyRate,
-    monthlyAgreement,
-    monthlyRate,
+    isOwner, damageDeposit, selectedRentalType, selectedNights,
+    nightlyPricing, weeksOffered, weeklyRate, monthlyAgreement, monthlyRate,
   ]);
-
-  // Get save button text based on validation
-  const getSaveButtonText = () => {
-    if (!isOwner) return 'View Only';
-    if (selectedRentalType === 'Nightly' && selectedNights.length < 2) {
-      return 'Choose more Nights';
-    }
-    return 'Save';
-  };
 
   // Build a human-readable list of what changed
   const getChangeSummary = () => {
     const changes = [];
     const originalLeaseStyle = listing?.leaseStyle || 'Nightly';
 
-    // Check lease style change
     if (selectedRentalType !== originalLeaseStyle) {
       changes.push(`Lease style: ${originalLeaseStyle} → ${selectedRentalType}`);
     }
 
-    // Check common fields
     if (damageDeposit !== (listing?.damageDeposit || 500)) {
       changes.push(`Damage deposit: $${listing?.damageDeposit || 500} → $${damageDeposit}`);
     }
@@ -334,18 +284,12 @@ export default function PricingEditSection({
       changes.push(`Maintenance fee: $${listing?.maintenanceFee || 125} → $${maintenanceFee}`);
     }
 
-    // Rental-type specific changes
     if (selectedRentalType === 'Nightly') {
       const originalNights = listing?.nightsAvailable || [];
       if (selectedNights.length !== originalNights.length ||
-          !selectedNights.every((n) => originalNights.includes(n))) {
+        !selectedNights.every((n) => originalNights.includes(n))) {
         changes.push(`Available nights updated (${selectedNights.length} nights)`);
       }
-      if (minNights !== (listing?.nightsPerWeekMin || 2) ||
-          maxNights !== (listing?.nightsPerWeekMax || 7)) {
-        changes.push(`Nights range: ${minNights}-${maxNights}`);
-      }
-      // Check if any pricing changed
       const originalComp = listing?.weeklyCompensation || {};
       const pricingChanged = [2, 3, 4, 5].some(
         (n) => nightlyPricing[n] !== (originalComp[n] || 0)
@@ -358,13 +302,7 @@ export default function PricingEditSection({
         changes.push(`Weekly rate: $${weeklyRate}/week`);
       }
       if (weeksOffered !== (listing?.weeksOffered || '')) {
-        const patternLabels = {
-          '1': '1 week on/off',
-          '2': '2 weeks on/off',
-          '3': '1 on, 3 off',
-          'custom': 'Custom',
-        };
-        changes.push(`Weekly pattern: ${patternLabels[weeksOffered] || weeksOffered}`);
+        changes.push(`Weekly pattern updated`);
       }
     } else if (selectedRentalType === 'Monthly') {
       if (monthlyRate !== (listing?.monthlyHostRate || 0)) {
@@ -381,9 +319,7 @@ export default function PricingEditSection({
 
     setIsSaving(true);
     try {
-      // Get change summary before saving
       const changeSummary = getChangeSummary();
-
       const updates = {
         'rental type': selectedRentalType,
         '💰Damage Deposit': damageDeposit,
@@ -392,53 +328,17 @@ export default function PricingEditSection({
         'Maximum Nights': maxNights,
       };
 
-      // Add rental-type specific fields
       if (selectedRentalType === 'Nightly') {
-        // Convert night IDs to JS 0-indexed format (0=Sunday...6=Saturday)
-        // Database now uses JS standard format natively
-        const nightMap = {
-          sunday: 0,
-          monday: 1,
-          tuesday: 2,
-          wednesday: 3,
-          thursday: 4,
-          friday: 5,
-          saturday: 6,
-        };
+        const nightMap = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
         const dayIndices = selectedNights.map((n) => nightMap[n]).sort((a, b) => a - b);
         updates['Days Available (List of Days)'] = JSON.stringify(dayIndices);
 
-        // Preserve 1-night rate if available (primarily set during listing creation)
-        // Note: Dashboard currently doesn't have UI to edit 1-night rate directly
-        if (listing?.pricing?.[1]) {
-          updates['💰Nightly Host Rate for 1 night'] = listing.pricing[1];
-        }
-
-        // Calculate nightly rates from weekly compensation
-        updates['💰Nightly Host Rate for 2 nights'] = calculateNightlyRate(
-          nightlyPricing[2],
-          2
-        );
-        updates['💰Nightly Host Rate for 3 nights'] = calculateNightlyRate(
-          nightlyPricing[3],
-          3
-        );
-        updates['💰Nightly Host Rate for 4 nights'] = calculateNightlyRate(
-          nightlyPricing[4],
-          4
-        );
-        updates['💰Nightly Host Rate for 5 nights'] = calculateNightlyRate(
-          nightlyPricing[5],
-          5
-        );
-        updates['💰Nightly Host Rate for 6 nights'] = calculateNightlyRate(
-          nightlyPricing[5],
-          6
-        ); // Use 5-night rate for 6
-        updates['💰Nightly Host Rate for 7 nights'] = calculateNightlyRate(
-          nightlyPricing[5],
-          7
-        ); // Use 5-night rate for 7
+        updates['💰Nightly Host Rate for 2 nights'] = calculateNightlyRate(nightlyPricing[2], 2);
+        updates['💰Nightly Host Rate for 3 nights'] = calculateNightlyRate(nightlyPricing[3], 3);
+        updates['💰Nightly Host Rate for 4 nights'] = calculateNightlyRate(nightlyPricing[4], 4);
+        updates['💰Nightly Host Rate for 5 nights'] = calculateNightlyRate(nightlyPricing[5], 5);
+        updates['💰Nightly Host Rate for 6 nights'] = calculateNightlyRate(nightlyPricing[5], 6);
+        updates['💰Nightly Host Rate for 7 nights'] = calculateNightlyRate(nightlyPricing[5], 7);
       } else if (selectedRentalType === 'Weekly') {
         updates['Weeks offered'] = weeksOffered;
         updates['💰Weekly Host Rate'] = weeklyRate;
@@ -448,20 +348,15 @@ export default function PricingEditSection({
 
       await onSave(updates);
 
-      // Show success toast with change summary
-      const toastContent = changeSummary.length > 0
-        ? changeSummary.slice(0, 3).join(' • ') + (changeSummary.length > 3 ? ` (+${changeSummary.length - 3} more)` : '')
-        : 'Pricing settings saved';
-
       window.showToast?.({
         title: 'Pricing Updated!',
-        content: toastContent,
+        content: changeSummary.length > 0 ? changeSummary.join(' • ') : 'Pricing settings saved',
         type: 'success'
       });
 
       onClose();
     } catch (error) {
-      console.error('Error saving pricing:', error);
+      logger.error('Error saving pricing:', error);
       window.showToast?.({
         title: 'Save Failed',
         content: 'Failed to save pricing. Please try again.',
@@ -472,13 +367,9 @@ export default function PricingEditSection({
     }
   };
 
-  // Format currency for display
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -488,14 +379,7 @@ export default function PricingEditSection({
         {/* Header with back button */}
         <div className="pricing-edit-header">
           <button className="pricing-edit-back" onClick={handleBackClick}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             <span>Go Back</span>
@@ -504,24 +388,15 @@ export default function PricingEditSection({
 
         {/* Main content */}
         <div className="pricing-edit-content">
-          {/* Title and Save */}
           <div className="pricing-edit-title-row">
             <div className="pricing-edit-title">
               <h2>Pricing Controls</h2>
               <button
-                ref={pricingControlsInfoRef}
+                ref={infoRefs.pricingControls}
                 className="pricing-edit-help"
                 onClick={handleInfoClick('pricingControls')}
-                aria-label="Learn more about pricing controls"
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                   <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -533,79 +408,24 @@ export default function PricingEditSection({
               onClick={handleSave}
               disabled={!isFormValid() || isSaving}
             >
-              {isSaving ? 'Saving...' : getSaveButtonText()}
+              {isSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
 
-          {/* Rental Type Selection */}
-          <div className="pricing-edit-rental-types">
-            {RENTAL_TYPES.map((type) => (
-              <div
-                key={type.id}
-                className={`pricing-edit-rental-card ${
-                  selectedRentalType === type.id
-                    ? 'pricing-edit-rental-card--selected'
-                    : ''
-                } ${!isOwner ? 'pricing-edit-rental-card--disabled' : ''}`}
-                onClick={() => isOwner && setSelectedRentalType(type.id)}
-              >
-                <div className="pricing-edit-rental-card__header">
-                  <span className="pricing-edit-rental-card__title">
-                    {type.title}
-                  </span>
-                  <svg
-                    className="pricing-edit-rental-card__star"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </div>
-                <p className="pricing-edit-rental-card__description">
-                  {type.description}
-                </p>
-                <ul className="pricing-edit-rental-card__benefits">
-                  {type.benefits.map((benefit, idx) => (
-                    <li key={idx}>
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#22c55e"
-                        strokeWidth="3"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <LeaseStyleSelector
+            activeStyle={selectedRentalType.toLowerCase()}
+            onSelect={(id) => {
+              const formattedId = id.charAt(0).toUpperCase() + id.slice(1);
+              setSelectedRentalType(formattedId);
+            }}
+          />
 
-          {/* Common Fields: Damage Deposit & Maintenance Fee */}
           <div className="pricing-edit-common-fields">
             <div className="pricing-edit-field">
               <label>
                 Damage Deposit*
-                <button
-                  ref={damageDepositInfoRef}
-                  className="pricing-edit-field__help"
-                  onClick={handleInfoClick('damageDeposit')}
-                  aria-label="Learn more about damage deposit"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
+                <button ref={infoRefs.damageDeposit} className="pricing-edit-field__help" onClick={handleInfoClick('damageDeposit')}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -616,30 +436,16 @@ export default function PricingEditSection({
                 type="number"
                 value={damageDeposit}
                 onChange={(e) => setDamageDeposit(Number(e.target.value))}
-                placeholder="$500 (min)"
                 min={500}
                 disabled={!isOwner}
               />
-              <span className="pricing-edit-field__hint">Minimum: $500</span>
             </div>
 
             <div className="pricing-edit-field">
               <label>
                 Monthly Maintenance Fee
-                <button
-                  ref={maintenanceFeeInfoRef}
-                  className="pricing-edit-field__help"
-                  onClick={handleInfoClick('maintenanceFee')}
-                  aria-label="Learn more about maintenance fee"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
+                <button ref={infoRefs.maintenanceFee} className="pricing-edit-field__help" onClick={handleInfoClick('maintenanceFee')}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -650,406 +456,120 @@ export default function PricingEditSection({
                 type="number"
                 value={maintenanceFee}
                 onChange={(e) => setMaintenanceFee(Number(e.target.value))}
-                placeholder="$125"
                 disabled={!isOwner}
               />
             </div>
           </div>
 
-          {/* Nightly-specific fields */}
           {selectedRentalType === 'Nightly' && (
-            <div className="pricing-edit-nightly">
-              {/* Schedule Selector */}
-              <div className="pricing-edit-schedule">
-                <div className="pricing-edit-schedule__header">
-                  <label>Select Available Nights</label>
-                  <button
-                    className="pricing-edit-schedule__select-all"
-                    onClick={handleSelectAllNights}
-                    disabled={!isOwner}
-                  >
-                    Select All Nights
-                  </button>
-                </div>
-                <HostScheduleSelector
-                  selectedNights={selectedNights}
-                  onSelectionChange={handleNightSelectionChange}
-                  isClickable={isOwner}
-                  mode="normal"
-                />
-                <div className="pricing-edit-schedule__legend">
-                  <div className="pricing-edit-schedule__legend-item">
-                    <span className="pricing-edit-schedule__legend-dot pricing-edit-schedule__legend-dot--selected" />
-                    <span>{selectedNights.length} Nights Available</span>
-                  </div>
-                  <div className="pricing-edit-schedule__legend-item">
-                    <span className="pricing-edit-schedule__legend-dot pricing-edit-schedule__legend-dot--unselected" />
-                    <span>
-                      {7 - selectedNights.length} Nights Not Available
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Min/Max nights */}
-              <div className="pricing-edit-nights-range">
-                <label>
-                  Ideal # of Nights Per Week
-                  <button
-                    ref={nightsPerWeekInfoRef}
-                    className="pricing-edit-field__help"
-                    onClick={handleInfoClick('nightsPerWeek')}
-                    aria-label="Learn more about nights per week"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                  </button>
-                </label>
-                <div className="pricing-edit-nights-range__inputs">
-                  <input
-                    type="number"
-                    value={minNights}
-                    onChange={(e) => setMinNights(Number(e.target.value))}
-                    min={2}
-                    max={6}
-                    disabled={!isOwner}
-                  />
-                  <span>to</span>
-                  <input
-                    type="number"
-                    value={maxNights}
-                    onChange={(e) => setMaxNights(Number(e.target.value))}
-                    min={minNights}
-                    max={7}
-                    disabled={!isOwner}
-                  />
-                </div>
-              </div>
-
-              {/* Compensation Calculator */}
-              <div className="pricing-edit-compensation">
-                <h3>Weekly Compensation Rates</h3>
-                <div className="pricing-edit-compensation__grid">
-                  {[2, 3, 4, 5].map((nights) => {
-                    if (selectedNights.length < nights) return null;
-                    return (
-                      <div
-                        key={nights}
-                        className="pricing-edit-compensation__item"
-                      >
-                        <label>
-                          Your Compensation / Week @ {nights} nights / week
-                          occupancy
-                          <button
-                            ref={weeklyCompInfoRefs[nights]}
-                            className="pricing-edit-field__help"
-                            onClick={handleInfoClick(`weeklyComp${nights}`)}
-                            aria-label={`Learn more about ${nights}-night pricing`}
-                          >
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                              <line x1="12" y1="17" x2="12.01" y2="17" />
-                            </svg>
-                          </button>
-                        </label>
-                        <input
-                          type="number"
-                          value={nightlyPricing[nights]}
-                          onChange={(e) =>
-                            setNightlyPricing((prev) => ({
-                              ...prev,
-                              [nights]: Number(e.target.value),
-                            }))
-                          }
-                          placeholder={`$${nights * 100} (weekly)`}
-                          disabled={!isOwner}
-                        />
-                        <span className="pricing-edit-compensation__rate">
-                          {formatCurrency(
-                            calculateNightlyRate(nightlyPricing[nights], nights)
-                          )}
-                          /night
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <NightlyPricingForm
+              selectedNights={selectedNights}
+              onNightSelectionChange={handleNightSelectionChange}
+              onSelectAllNights={handleSelectAllNights}
+              minNights={minNights}
+              setMinNights={setMinNights}
+              maxNights={maxNights}
+              setMaxNights={setMaxNights}
+              nightlyPricing={nightlyPricing}
+              setNightlyPricing={setNightlyPricing}
+              calculateNightlyRate={calculateNightlyRate}
+              formatCurrency={formatCurrency}
+              isOwner={isOwner}
+              infoRefs={infoRefs}
+              onInfoClick={handleInfoClick}
+            />
           )}
 
-          {/* Weekly-specific fields */}
           {selectedRentalType === 'Weekly' && (
-            <div className="pricing-edit-weekly">
-              <div className="pricing-edit-field">
-                <label>Weeks Offered*</label>
-                <select
-                  value={weeksOffered}
-                  onChange={(e) => setWeeksOffered(e.target.value)}
-                  disabled={!isOwner}
-                >
-                  {WEEKLY_PATTERNS.map((pattern) => (
-                    <option key={pattern.value} value={pattern.value}>
-                      {pattern.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="pricing-edit-field">
-                <label>
-                  Weekly Pricing*
-                  <button
-                    ref={weeklyPricingInfoRef}
-                    className="pricing-edit-field__help"
-                    onClick={handleInfoClick('weeklyPricing')}
-                    aria-label="Learn more about weekly pricing"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                  </button>
-                </label>
-                <input
-                  type="number"
-                  value={weeklyRate}
-                  onChange={(e) => setWeeklyRate(Number(e.target.value))}
-                  placeholder="Define Weekly Rent"
-                  disabled={!isOwner}
-                />
-              </div>
-            </div>
+            <WeeklyPricingForm
+              weeksOffered={weeksOffered}
+              setWeeksOffered={setWeeksOffered}
+              weeklyRate={weeklyRate}
+              setWeeklyRate={setWeeklyRate}
+              isOwner={isOwner}
+              infoRefs={infoRefs}
+              onInfoClick={handleInfoClick}
+            />
           )}
 
-          {/* Monthly-specific fields */}
           {selectedRentalType === 'Monthly' && (
-            <div className="pricing-edit-monthly">
-              <div className="pricing-edit-field">
-                <label>
-                  Monthly Host Compensation*
-                  <button
-                    ref={monthlyCompInfoRef}
-                    className="pricing-edit-field__help"
-                    onClick={handleInfoClick('monthlyComp')}
-                    aria-label="Learn more about monthly compensation"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                  </button>
-                </label>
-                <input
-                  type="number"
-                  value={monthlyRate}
-                  onChange={(e) => setMonthlyRate(Number(e.target.value))}
-                  placeholder="Define Monthly Rent"
-                  min={1000}
-                  max={10000}
-                  disabled={!isOwner}
-                />
-                <span className="pricing-edit-field__hint">
-                  Please set an amount between $1,000 and $10,000 for your
-                  listing
-                </span>
-              </div>
-
-              {/* Agreement Section */}
-              <div className="pricing-edit-agreement">
-                <div className="pricing-edit-agreement__info">
-                  <p>
-                    Our Split Lease 'Monthly' model helps guests meet rent
-                    obligations through a subsidy. For financial stability, we
-                    may need to sublease unused nights. If this isn't ideal, our
-                    other models might be more fitting for you, as they don't
-                    require this provision.
-                  </p>
-                  <button
-                    ref={monthlyAgreementInfoRef}
-                    className="pricing-edit-field__help"
-                    onClick={handleInfoClick('monthlyAgreement')}
-                    aria-label="Learn more about monthly model agreement"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="pricing-edit-agreement__options">
-                  <label>
-                    <input
-                      type="radio"
-                      name="monthlyAgreement"
-                      value="agree"
-                      checked={monthlyAgreement === 'agree'}
-                      onChange={(e) => setMonthlyAgreement(e.target.value)}
-                      disabled={!isOwner}
-                    />
-                    I agree
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="monthlyAgreement"
-                      value="disagree"
-                      checked={monthlyAgreement === 'disagree'}
-                      onChange={(e) => setMonthlyAgreement(e.target.value)}
-                      disabled={!isOwner}
-                    />
-                    No, I will select different style
-                  </label>
-                </div>
-              </div>
-            </div>
+            <MonthlyPricingForm
+              monthlyRate={monthlyRate}
+              setMonthlyRate={setMonthlyRate}
+              monthlyAgreement={monthlyAgreement}
+              setMonthlyAgreement={setMonthlyAgreement}
+              isOwner={isOwner}
+              infoRefs={infoRefs}
+              onInfoClick={handleInfoClick}
+            />
           )}
-
-          {/* Bottom Save Button - More intuitive placement */}
-          <div className="pricing-edit-footer">
-            <button
-              className={`pricing-edit-save-bottom ${!isFormValid() ? 'pricing-edit-save-bottom--disabled' : ''}`}
-              onClick={handleSave}
-              disabled={!isFormValid() || isSaving}
-            >
-              {isSaving ? 'Saving...' : getSaveButtonText()}
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Informational Text Tooltips */}
-      <InformationalText
-        isOpen={activeInfoTooltip === 'pricingControls'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={pricingControlsInfoRef}
-        title={infoContent.pricingControls.title}
-        content={infoContent.pricingControls.content}
-      />
-
-      <InformationalText
-        isOpen={activeInfoTooltip === 'damageDeposit'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={damageDepositInfoRef}
-        title={infoContent.damageDeposit.title}
-        content={infoContent.damageDeposit.content}
-        expandedContent={infoContent.damageDeposit.expandedContent}
-        showMoreAvailable={true}
-      />
-
-      <InformationalText
-        isOpen={activeInfoTooltip === 'maintenanceFee'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={maintenanceFeeInfoRef}
-        title={infoContent.maintenanceFee.title}
-        content={infoContent.maintenanceFee.content}
-        expandedContent={infoContent.maintenanceFee.expandedContent}
-        showMoreAvailable={true}
-      />
-
-      <InformationalText
-        isOpen={activeInfoTooltip === 'nightsPerWeek'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={nightsPerWeekInfoRef}
-        title={infoContent.nightsPerWeek.title}
-        content={infoContent.nightsPerWeek.content}
-      />
-
-      {/* Weekly Compensation Info Tooltips */}
-      {[2, 3, 4, 5].map((nights) => (
+      {activeInfoTooltip && (
         <InformationalText
-          key={`weeklyComp${nights}`}
-          isOpen={activeInfoTooltip === `weeklyComp${nights}`}
+          isOpen={true}
+          title={
+            typeof infoContent[activeInfoTooltip] === 'function'
+              ? infoContent[activeInfoTooltip](activeInfoTooltip.slice(-1))
+                .title
+              : infoContent[activeInfoTooltip].title
+          }
+          content={
+            typeof infoContent[activeInfoTooltip] === 'function'
+              ? infoContent[activeInfoTooltip](activeInfoTooltip.slice(-1))
+                .content
+              : infoContent[activeInfoTooltip].content
+          }
+          expandedContent={
+            typeof infoContent[activeInfoTooltip] === 'function'
+              ? infoContent[activeInfoTooltip](activeInfoTooltip.slice(-1))
+                .expandedContent
+              : infoContent[activeInfoTooltip].expandedContent
+          }
+          showMoreAvailable={!!infoContent[activeInfoTooltip]?.expandedContent}
           onClose={() => setActiveInfoTooltip(null)}
-          triggerRef={weeklyCompInfoRefs[nights]}
-          title={infoContent.weeklyComp(nights).title}
-          content={infoContent.weeklyComp(nights).content}
-          expandedContent={infoContent.weeklyComp(nights).expandedContent}
-          showMoreAvailable={true}
+          triggerRef={
+            activeInfoTooltip === 'pricingControls' ? infoRefs.pricingControls :
+              activeInfoTooltip === 'damageDeposit' ? infoRefs.damageDeposit :
+                activeInfoTooltip === 'maintenanceFee' ? infoRefs.maintenanceFee :
+                  activeInfoTooltip === 'nightsPerWeek' ? infoRefs.nightsPerWeek :
+                    activeInfoTooltip.startsWith('weeklyComp') ? infoRefs.weeklyComp[activeInfoTooltip.slice(-1)] :
+                      activeInfoTooltip === 'weeklyPricing' ? infoRefs.weeklyPricing :
+                        activeInfoTooltip === 'monthlyComp' ? infoRefs.monthlyComp :
+                          activeInfoTooltip === 'monthlyAgreement' ? infoRefs.monthlyAgreement :
+                            null
+          }
         />
-      ))}
+      )}
 
-      <InformationalText
-        isOpen={activeInfoTooltip === 'weeklyPricing'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={weeklyPricingInfoRef}
-        title={infoContent.weeklyPricing.title}
-        content={infoContent.weeklyPricing.content}
-      />
-
-      <InformationalText
-        isOpen={activeInfoTooltip === 'monthlyComp'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={monthlyCompInfoRef}
-        title={infoContent.monthlyComp.title}
-        content={infoContent.monthlyComp.content}
-        expandedContent={infoContent.monthlyComp.expandedContent}
-        showMoreAvailable={true}
-      />
-
-      <InformationalText
-        isOpen={activeInfoTooltip === 'monthlyAgreement'}
-        onClose={() => setActiveInfoTooltip(null)}
-        triggerRef={monthlyAgreementInfoRef}
-        title={infoContent.monthlyAgreement.title}
-        content={infoContent.monthlyAgreement.content}
-        expandedContent={infoContent.monthlyAgreement.expandedContent}
-        showMoreAvailable={true}
-      />
-
-      {/* Unsaved changes confirmation modal */}
-      <ConfirmModal
-        isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
-        onConfirm={handleConfirmDiscard}
-        title="Discard Changes?"
-        message="Are you sure you want to go back? Any unsaved changes will be lost."
-        confirmText="Yes, Discard"
-        cancelText="No, Keep Editing"
-        variant="danger"
-      />
+      {showConfirmModal && (
+        <div className="host-modal-backdrop" onClick={() => setShowConfirmModal(false)}>
+          <div className="host-modal host-modal--small" onClick={(e) => e.stopPropagation()}>
+            <div className="host-modal__header">
+              <h3 className="host-modal__title">Discard Changes?</h3>
+              <button className="host-modal__close" onClick={() => setShowConfirmModal(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="host-modal__content">
+              <p className="host-confirm-modal__message">
+                You have unsaved changes. Are you sure you want to leave without saving?
+              </p>
+              <div className="host-confirm-modal__actions">
+                <button className="btn btn--secondary" onClick={() => setShowConfirmModal(false)}>
+                  Keep Editing
+                </button>
+                <button className="btn btn--danger" onClick={onClose}>
+                  Discard Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

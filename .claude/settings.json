@@ -1,4 +1,4 @@
-{
+ {
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
@@ -21,6 +21,10 @@
     ]
   },
   "hooks": {},
+  "statusLine": {
+    "type": "command",
+    "command": "hostname=$(hostname); ip=$(hostname -I | awk '{print $1}'); printf '%s@%s' \"$hostname\" \"$ip\""
+  },
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,

@@ -18,13 +18,12 @@
  */
 
 import { useState } from 'react';
-import Header from '../../shared/Header.jsx';
-import Footer from '../../shared/Footer.jsx';
 import { useProposalManagePageLogic } from './useProposalManagePageLogic.js';
 import FilterSection from './FilterSection.jsx';
 import ProposalItem from './ProposalItem.jsx';
 import QuickProposalCreation from './QuickProposalCreation.jsx';
 import './ProposalManagePage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -106,21 +105,19 @@ export default function ProposalManagePage() {
   if (authState.shouldRedirect) {
     return (
       <>
-        <Header />
+        <AdminHeader />
         <main className="pm-main-content">
           <div className="pm-page">
             <LoadingState />
           </div>
         </main>
-        <Footer />
       </>
     );
   }
 
   return (
     <>
-      <Header />
-
+      <AdminHeader />
       <main className="pm-main-content">
         <div className="pm-page">
           {/* Page Header */}
@@ -197,7 +194,6 @@ export default function ProposalManagePage() {
         </div>
       </main>
 
-      <Footer />
-    </>
+          </>
   );
 }

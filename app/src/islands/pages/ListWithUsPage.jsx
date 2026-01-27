@@ -3,8 +3,7 @@ import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import CreateDuplicateListingModal from '../shared/CreateDuplicateListingModal/CreateDuplicateListingModal.jsx';
 import ImportListingModal from '../shared/ImportListingModal/ImportListingModal.jsx';
-import { useToast } from '../shared/Toast.jsx';
-import Toast from '../shared/Toast.jsx';
+import Toast, { useToast } from '../shared/Toast.jsx';
 import { SIGNUP_LOGIN_URL } from '../../lib/constants.js';
 
 export default function ListWithUsPage() {

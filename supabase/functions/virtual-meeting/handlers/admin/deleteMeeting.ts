@@ -21,17 +21,14 @@ export async function handleAdminDeleteMeeting(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<{ deleted: boolean; meetingId: string }> {
-  // Verify authentication
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   // Validate input
   if (!payload.meetingId) {
     throw new ValidationError("Meeting ID is required");
   }
 
-  console.log(`[admin_delete_meeting] Deleting meeting ${payload.meetingId} by admin: ${user.email}`);
+  console.log(`[admin_delete_meeting] Deleting meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Verify meeting exists and can be deleted
   const { data: existing, error: checkError } = await supabase

@@ -15,6 +15,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { getSessionId, checkAuthStatus, validateTokenAndFetchUser, checkUrlForAuthError, clearAuthErrorFromUrl } from '../../../lib/auth.js';
 import { isHost } from '../../../logic/rules/users/isHost.js';
+import { submitIdentityVerification } from '../../../lib/api/identityVerificationService.js';
 
 // ============================================================================
 // CONSTANTS
@@ -287,6 +288,7 @@ export function useAccountProfilePageLogic() {
   // UI state
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showPhoneEditModal, setShowPhoneEditModal] = useState(false);
+  const [showIdentityVerificationModal, setShowIdentityVerificationModal] = useState(false);
 
   // Host listings state
   const [hostListings, setHostListings] = useState([]);
@@ -1347,8 +1349,44 @@ export function useAccountProfilePageLogic() {
   }, []);
 
   const handleVerifyGovId = useCallback(() => {
-    // Trigger government ID verification flow
-    console.log('Verify government ID clicked');
+    // Open identity verification modal
+    setShowIdentityVerificationModal(true);
+  }, []);
+
+  /**
+   * Handle identity verification submission
+   * Called when user submits documents in the IdentityVerification modal
+   */
+  const handleIdentityVerificationSubmit = useCallback(async (verificationData) => {
+    try {
+      // Submit verification using the service
+      await submitIdentityVerification({
+        userId: profileUserId,
+        documentType: verificationData.documentType,
+        selfieFile: verificationData.selfieFile,
+        frontIdFile: verificationData.frontIdFile,
+        backIdFile: verificationData.backIdFile,
+        onProgress: (message) => {
+          console.log('[Identity Verification]', message);
+        },
+      });
+
+      // Refresh profile data to reflect new verification status
+      await fetchProfileData(profileUserId);
+
+      // The success toast is shown by the modal's logic hook
+    } catch (error) {
+      console.error('[Identity Verification] Error:', error);
+      // Re-throw so the modal can show the error toast
+      throw error;
+    }
+  }, [profileUserId, fetchProfileData]);
+
+  /**
+   * Handle closing the identity verification modal
+   */
+  const handleCloseIdentityVerificationModal = useCallback(() => {
+    setShowIdentityVerificationModal(false);
   }, []);
 
   const handleConnectLinkedIn = useCallback(() => {
@@ -1605,6 +1643,9 @@ export function useAccountProfilePageLogic() {
     handleCloseNotificationModal,
     showPhoneEditModal,
     handleClosePhoneEditModal,
+    showIdentityVerificationModal,
+    handleIdentityVerificationSubmit,
+    handleCloseIdentityVerificationModal,
 
     // Host profile
     isHostUser,

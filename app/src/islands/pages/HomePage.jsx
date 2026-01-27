@@ -769,14 +769,16 @@ export default function HomePage() {
   }
 
   const handleExploreRentals = () => {
-    // Navigate to search page with current day selection
-    if (selectedDays.length > 0) {
-      // Use 0-based indices directly (0=Sunday, 1=Monday, ..., 6=Saturday)
-      // This matches the SearchScheduleSelector's native format
-      const daysParam = selectedDays.join(',');
+    // Read the days-selected parameter directly from the current URL
+    // The SearchScheduleSelector updates the URL in real-time as user selects days
+    const urlParams = new URLSearchParams(window.location.search);
+    const daysParam = urlParams.get('days-selected');
+
+    if (daysParam) {
+      // Pass through the URL parameter directly to the search page
       window.location.href = `/search.html?days-selected=${daysParam}`;
     } else {
-      // No selection, navigate without parameter
+      // No selection in URL, navigate without parameter
       window.location.href = '/search.html';
     }
   };
