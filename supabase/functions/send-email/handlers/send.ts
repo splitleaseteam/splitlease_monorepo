@@ -19,6 +19,102 @@ const DEFAULT_FROM_EMAIL = 'noreply@splitlease.com';
 const DEFAULT_FROM_NAME = 'Split Lease';
 
 /**
+ * Mapping from code variable names (underscore) to template placeholder names (space)
+ * The database templates use space-delimited placeholders like $$from email$$
+ * but the code uses underscore-delimited names like from_email
+ */
+const VARIABLE_NAME_MAPPING: Record<string, string> = {
+  'from_email': 'from email',
+  'from_name': 'from name',
+  'to_email': 'to',
+  'to_name': 'to name',
+  'body_intro': 'body text',
+  'body_text': 'body text',
+  'logo_url': 'logo url',
+  'button_text': 'buttontext',
+  'button_url': 'buttonurl',
+  'reply_to': 'reply_to',
+  'first_name': 'first_name',
+};
+
+/**
+ * Generate a styled HTML button for email templates
+ * The BASIC_EMAIL template expects a complete HTML table row with button
+ */
+function generateButtonHtml(buttonText: string, buttonUrl: string): string {
+  if (!buttonText || !buttonUrl) {
+    return '';
+  }
+
+  return `<tr>
+  <td align="center" style="padding:24px 32px;">
+    <a href="${buttonUrl}" style="display:inline-block; background:#7c3aed; color:#ffffff; padding:14px 28px; border-radius:8px; font-weight:600; font-size:16px; text-decoration:none;">
+      ${buttonText}
+    </a>
+  </td>
+</tr>`;
+}
+
+/**
+ * Normalize variable names to match template placeholders
+ * Adds both underscore and space versions of each variable
+ * This ensures compatibility with templates using either format
+ */
+function normalizeVariableNames(variables: Record<string, string>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(variables)) {
+    // Keep the original key
+    normalized[key] = value;
+
+    // If there's a mapping, add the mapped version too
+    if (VARIABLE_NAME_MAPPING[key]) {
+      normalized[VARIABLE_NAME_MAPPING[key]] = value;
+    }
+
+    // Also add space-to-underscore conversion for any key with underscores
+    if (key.includes('_')) {
+      normalized[key.replace(/_/g, ' ')] = value;
+    }
+  }
+
+  // Generate combined button HTML if button_text and button_url are provided
+  // Template expects $$button$$ to be a complete HTML table row
+  const buttonText = variables.button_text || variables.buttontext;
+  const buttonUrl = variables.button_url || variables.buttonurl;
+  if (buttonText && buttonUrl) {
+    normalized['button'] = generateButtonHtml(buttonText, buttonUrl);
+  } else if (!normalized['button']) {
+    // If no button provided, set empty string to remove placeholder cleanly
+    normalized['button'] = '';
+  }
+
+  // Set defaults for optional placeholders to prevent JSON breakage
+  // These are marked as "optional" in the BASIC_EMAIL template
+  if (!normalized['header']) {
+    normalized['header'] = '';
+  }
+  if (!normalized['logo url'] && !normalized['logo_url']) {
+    normalized['logo url'] = '';
+    normalized['logo_url'] = '';
+  }
+  if (!normalized['attachment']) {
+    normalized['attachment'] = '';
+  }
+  if (!normalized['cc']) {
+    normalized['cc'] = '';
+  }
+  if (!normalized['bcc']) {
+    normalized['bcc'] = '';
+  }
+  if (!normalized['reply_to']) {
+    normalized['reply_to'] = '';
+  }
+
+  return normalized;
+}
+
+/**
  * Handle send email action
  */
 export async function handleSend(
@@ -109,20 +205,26 @@ export async function handleSend(
   // The template is a SendGrid JSON payload with $$placeholder$$ variables
   console.log('[send-email:send] Step 2/3: Processing template placeholders...');
 
-  // Build the complete variables object, merging payload values with provided overrides
-  const allVariables: Record<string, string> = {
+  // Build the base variables object with explicit payload values
+  const baseVariables: Record<string, string> = {
     ...variables,
     // Override with explicit payload values if provided
     to_email: to_email,
     from_email: from_email || DEFAULT_FROM_EMAIL,
     from_name: from_name || DEFAULT_FROM_NAME,
     subject: providedSubject || variables.subject || 'Message from Split Lease',
+    // Add current year for footer
+    year: new Date().getFullYear().toString(),
   };
 
   // Add to_name if provided
   if (to_name) {
-    allVariables.to_name = to_name;
+    baseVariables.to_name = to_name;
   }
+
+  // Normalize variable names to support both underscore and space formats
+  // Template uses $$from email$$ but code passes from_email
+  const allVariables = normalizeVariableNames(baseVariables);
 
   // Log placeholder replacements for debugging
   console.log('[send-email:send] Placeholder replacements:', JSON.stringify(allVariables, null, 2));

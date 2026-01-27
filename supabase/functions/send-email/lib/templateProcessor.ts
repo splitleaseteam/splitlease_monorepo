@@ -54,8 +54,8 @@ function processTemplateInternal(
   let processedTemplate = template;
 
   // First pass: Replace $$variable$$ placeholders (Bubble template style - double dollar signs)
-  // Supports: $$var$$, $$var_name$$, $$var-name$$
-  const dollarRegex = /\$\$([a-zA-Z0-9_\-]+)\$\$/g;
+  // Supports: $$var$$, $$var_name$$, $$var-name$$, $$var name$$ (with spaces)
+  const dollarRegex = /\$\$([a-zA-Z0-9_\-\s]+)\$\$/g;
 
   processedTemplate = processedTemplate.replace(dollarRegex, (match, variableName) => {
     const value = variables[variableName];
@@ -121,7 +121,8 @@ export function extractPlaceholders(template: string): string[] {
   const placeholders: string[] = [];
 
   // Extract $$variable$$ placeholders (Bubble style - double dollar signs)
-  const dollarRegex = /\$\$([a-zA-Z0-9_\-]+)\$\$/g;
+  // Supports spaces to match templates using $$from email$$ format
+  const dollarRegex = /\$\$([a-zA-Z0-9_\-\s]+)\$\$/g;
   let match;
 
   while ((match = dollarRegex.exec(template)) !== null) {
