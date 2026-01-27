@@ -39,7 +39,7 @@ function deriveSenderType(message, hostUserId, guestUserId) {
     return 'bot-to-both';
   }
 
-  const originatorId = message['-Originator User'];
+  const originatorId = message.originator_user_id;
   if (originatorId === hostUserId) return 'host';
   if (originatorId === guestUserId) return 'guest';
   return 'unknown';
@@ -94,8 +94,8 @@ function adaptThread(rawThread) {
  * @returns {Object} Adapted message object
  */
 function adaptMessage(rawMessage, rawThread) {
-  const hostUserId = rawThread['-Host User'];
-  const guestUserId = rawThread['-Guest User'];
+  const hostUserId = rawThread.host_user_id;
+  const guestUserId = rawThread.guest_user_id;
 
   return {
     id: rawMessage._id,
