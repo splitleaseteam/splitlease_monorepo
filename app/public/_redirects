@@ -170,6 +170,11 @@
 /_manage-rental-applications/  /_internal/manage-rental-applications-view  200
 /_manage-rental-applications/*  /_internal/manage-rental-applications-view  200
 
+# /_manage-leases-payment-records → manage-leases-payment-records.html
+/_manage-leases-payment-records  /_internal/manage-leases-payment-records-view  200
+/_manage-leases-payment-records/  /_internal/manage-leases-payment-records-view  200
+/_manage-leases-payment-records/*  /_internal/manage-leases-payment-records-view  200
+
 # ===== STATIC PAGES =====
 
 # Homepage
@@ -293,6 +298,10 @@
 /visit-manual  /_internal/visit-manual-view  200
 /visit-manual/  /_internal/visit-manual-view  200
 
+# /qr-code-landing → qr-code-landing.html
+/qr-code-landing  /_internal/qr-code-landing-view  200
+/qr-code-landing/  /_internal/qr-code-landing-view  200
+
 # /simulation-guest-mobile → simulation-guest-mobile.html
 /simulation-guest-mobile  /_internal/simulation-guest-mobile-view  200
 /simulation-guest-mobile/  /_internal/simulation-guest-mobile-view  200
@@ -348,6 +357,18 @@
 # Alias: /host-feedback → host-experience-review.html
 /host-feedback  /_internal/host-experience-review-view  200
 /host-feedback/  /_internal/host-experience-review-view  200
+
+# /reviews-overview → reviews-overview.html
+/reviews-overview  /_internal/reviews-overview-view  200
+/reviews-overview/  /_internal/reviews-overview-view  200
+
+# Alias: /reviews → reviews-overview.html
+/reviews  /_internal/reviews-overview-view  200
+/reviews/  /_internal/reviews-overview-view  200
+
+# Alias: /my-reviews → reviews-overview.html
+/my-reviews  /_internal/reviews-overview-view  200
+/my-reviews/  /_internal/reviews-overview-view  200
 
 # /report-emergency → report-emergency.html
 /report-emergency  /_internal/report-emergency-view  200

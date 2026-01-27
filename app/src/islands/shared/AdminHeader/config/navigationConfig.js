@@ -97,6 +97,14 @@ export const corporatePages = [
     bubbleUrl: 'https://app.split.lease/version-test/_listings-overview'
   },
   {
+    id: 'manage-leases-payment-records',
+    name: 'Manage Leases & Payments',
+    path: '/_manage-leases-payment-records',
+    icon: DollarSign,
+    description: 'Manage lease details, payment records, stays, and documents',
+    bubbleUrl: 'https://app.split.lease/version-test/_quick-lease-and-payment-records-manage'
+  },
+  {
     id: 'manage-informational-texts',
     name: 'Manage Informational Texts',
     path: '/_manage-informational-texts',
