@@ -218,6 +218,11 @@ Deno.serve(async (req) => {
 
     // Execute handler - the only remaining side effect
     const handler = handlerResult.value;
+
+    console.log(`[magic-login-links] Executing handler...`);
+    console.log(`[magic-login-links] Payload:`, JSON.stringify(payload, null, 2));
+    console.log(`[magic-login-links] Admin user ID:`, adminUserId || '(none - internal page request)');
+
     const result = await executeHandler(
       handler,
       action as Action,
@@ -226,6 +231,8 @@ Deno.serve(async (req) => {
       supabaseServiceKey,
       adminUserId
     );
+
+    console.log(`[magic-login-links] Handler result:`, JSON.stringify(result, null, 2));
 
     console.log(`[magic-login-links] Handler completed successfully`);
     console.log(`[magic-login-links] ========== REQUEST COMPLETE ==========`);
