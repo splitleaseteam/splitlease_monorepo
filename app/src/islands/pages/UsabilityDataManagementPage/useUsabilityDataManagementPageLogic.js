@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { checkAuthStatus } from '../../../lib/auth.js';
 import {
   listHosts,
   listGuests,
@@ -88,6 +89,12 @@ export function useUsabilityDataManagementPageLogic() {
   // Alert State
   // ============================================================================
   const [alert, setAlert] = useState(null);
+
+  // ============================================================================
+  // Auth State
+  // ============================================================================
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // ============================================================================
   // Calculated Values
@@ -205,9 +212,24 @@ Also deleted ${result.deletedCounts.proposals} associated proposals.`);
   // Load Initial Data
   // ============================================================================
   useEffect(() => {
-    loadHosts();
-    loadGuests();
-    setDefaultMoveInDate();
+    const initializePage = async () => {
+      // Check authentication first
+      const isAuthed = await checkAuthStatus();
+      setAuthChecked(true);
+      setIsAuthenticated(isAuthed);
+
+      if (!isAuthed) {
+        showAlertMessage('Authentication Required', 'Please log in to access the Usability Data Management tool.');
+        return;
+      }
+
+      // User is authenticated, load data
+      loadHosts();
+      loadGuests();
+      setDefaultMoveInDate();
+    };
+
+    initializePage();
   }, [loadHosts, loadGuests, setDefaultMoveInDate]);
 
   useEffect(() => {
@@ -459,5 +481,9 @@ Thread ID: ${result.threadId}`);
     // Alert
     alert,
     closeAlert,
+
+    // Auth
+    isAuthenticated,
+    authChecked,
   };
 }

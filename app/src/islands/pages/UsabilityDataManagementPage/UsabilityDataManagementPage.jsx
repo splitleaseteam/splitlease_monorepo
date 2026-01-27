@@ -18,6 +18,35 @@ import '../../../styles/usability-data-management.css';
 export default function UsabilityDataManagementPage() {
   const logic = useUsabilityDataManagementPageLogic();
 
+  // Don't render content until auth is checked
+  if (!logic.authChecked) {
+    return (
+      <div className="usability-page-container">
+        <AdminHeader />
+        <p className="loading-text">Checking authentication...</p>
+      </div>
+    );
+  }
+
+  // Don't render content if user is not authenticated
+  if (!logic.isAuthenticated) {
+    return (
+      <div className="usability-page-container">
+        <AdminHeader />
+        <p className="auth-message">Authentication required. Please log in to access this tool.</p>
+
+        {/* Alert Overlay */}
+        {logic.alert && (
+          <AlertOverlay
+            title={logic.alert.title}
+            content={logic.alert.content}
+            onClose={logic.closeAlert}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="usability-page-container">
       <AdminHeader />
