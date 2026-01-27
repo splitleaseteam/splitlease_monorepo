@@ -133,12 +133,15 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload) => {
+    // Build headers with optional auth (soft headers pattern)
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/virtual-meeting`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 
@@ -153,7 +156,6 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // ===== DATA FETCHING =====
   const fetchAllMeetings = useCallback(async () => {
-    if (!accessToken) return;
 
     setIsLoading(true);
     setError(null);
