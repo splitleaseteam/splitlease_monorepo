@@ -338,7 +338,6 @@ const getSeverityEmoji = (functionName: string, action: string): string => {
  * → Likely cause: {inferred_cause}
  *
  * User: {name} ({email}, ID: {short_id})
- * When: {relative_time}
  *
  * 🔍 What to check:
  * • {actionable_item_1}
@@ -389,9 +388,6 @@ export const formatForSlack = (log: ErrorLog): string => {
   } else {
     lines.push('User: Not logged in');
   }
-
-  // 5. WHEN: Relative time
-  lines.push(`When: ${getRelativeTime(log.startTime)}`);
   lines.push('');
 
   // 6. ACTIONABLE SUGGESTIONS: What to check

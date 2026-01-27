@@ -32,7 +32,6 @@ Could not find the function public.get_user_threads(user_id) in the schema cache
 → Likely cause: Missing migration or function was dropped
 
 User: John Doe (john@example.com, ID: f41c8513)
-When: Just now (12:47 AM UTC)
 
 🔍 What to check:
 • Run pending migrations in Supabase
@@ -41,6 +40,8 @@ When: Just now (12:47 AM UTC)
 
 Function: messages/get_threads (req: ed5a1b70)
 ```
+
+**Note:** Timestamps are not included since Slack automatically shows when the message was received.
 
 ---
 
@@ -94,12 +95,13 @@ The new format uses several pure helper functions to transform error data:
 
 | Function | Purpose | Example Output |
 |----------|---------|----------------|
-| `getRelativeTime()` | Human-readable timestamps | "Just now", "2 min ago", "Today at 3:15 PM" |
 | `inferLikelyCause()` | Pattern-match error messages | "Missing migration or function was dropped" |
 | `getActionableSuggestions()` | Debugging steps | ["Run migrations", "Check schema"] |
 | `getUserImpact()` | User-facing impact | "Can't view message threads" |
 | `getActionDescription()` | Plain English actions | "check their messages" (from `get_threads`) |
 | `getSeverityEmoji()` | Visual severity indicator | 🚨 (critical) or 💥 (normal) |
+
+**Note:** The `getRelativeTime()` function exists but is no longer used in Slack notifications since Slack provides timestamps automatically.
 
 ---
 
@@ -227,20 +229,6 @@ The `inferLikelyCause()` function matches common error patterns:
 | `permission`, `forbidden` | Permission issue or RLS policy blocking access |
 | `duplicate`, `unique constraint` | Duplicate record or unique constraint violation |
 | `foreign key` | Foreign key constraint violation |
-
----
-
-## Relative Time Examples
-
-| Time Difference | Display |
-|-----------------|---------|
-| < 1 minute | "Just now" |
-| 2-59 minutes | "2 min ago", "45 min ago" |
-| 1-23 hours | "1 hour ago", "5 hours ago" |
-| Yesterday | "Yesterday at 3:15 PM UTC" |
-| Older | "Jan 26 at 8:00 AM UTC" |
-
-All times are in **UTC** (Deno Edge Functions don't have timezone database access).
 
 ---
 
