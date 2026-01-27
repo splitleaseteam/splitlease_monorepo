@@ -302,6 +302,16 @@ export function reportErrorLog(log: ErrorLog): void {
     return;
   }
 
-  const message = { text: formatForSlack(log) };
-  sendToSlack('database', message);
+  try {
+    const message = { text: formatForSlack(log) };
+    console.log('[slack] Formatted message:', message.text.substring(0, 200) + '...');
+    sendToSlack('database', message);
+  } catch (error) {
+    console.error('[slack] CRITICAL: formatForSlack failed:', error);
+    // Fallback to basic error message
+    const fallbackMessage = {
+      text: `⚠️ Error logging failed\n\nFunction: ${log.functionName}/${log.action}\nRequest: ${log.correlationId}\n\nOriginal error: ${log.errors[0]?.error?.message || 'Unknown'}`
+    };
+    sendToSlack('database', fallbackMessage);
+  }
 }

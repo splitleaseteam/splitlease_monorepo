@@ -166,8 +166,9 @@ const getRelativeTime = (isoTimestamp: string): string => {
   // Yesterday
   if (diffMins < 2880) return `Yesterday at ${timeStr}`;
 
-  // Today or earlier
-  const month = then.toLocaleString('en-US', { month: 'short' }).split(' ')[0];
+  // Today or earlier (simple month names)
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = monthNames[then.getUTCMonth()];
   const day = then.getUTCDate();
   const dateStr = `${month} ${day}`;
   return `${dateStr} at ${timeStr}`;
