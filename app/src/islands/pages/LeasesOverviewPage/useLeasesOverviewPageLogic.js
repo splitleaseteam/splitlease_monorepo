@@ -51,7 +51,6 @@ export function useLeasesOverviewPageLogic({ showToast }) {
   const [leases, setLeases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState('');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,29 +90,24 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     { value: 'cancelled', label: 'Mark Cancelled' },
   ], []);
 
-  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
-  useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-        setAccessToken(session?.access_token || legacyToken || '');
-      } catch (err) {
-        console.error('[LeasesOverview] Token lookup failed:', err);
-        setAccessToken('');
-      }
-    };
-    loadToken();
-  }, []);
-
   // Build headers with optional auth (soft headers pattern)
   // For unauthenticated requests, use anon key in Authorization header
-  const buildHeaders = useCallback(() => {
-    const { data: { session } } = supabase.auth.getSession();
+  // Note: We use anon key for both apikey and Authorization when not authenticated
+  const buildHeaders = useCallback(async () => {
+    let accessToken = '';
+
+    // Try to get session token if available (for audit purposes)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      accessToken = session?.access_token || '';
+    } catch {
+      // Silently ignore auth errors - we'll use anon key
+    }
+
     return {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`
+      'Authorization': `Bearer ${accessToken || SUPABASE_ANON_KEY}`
     };
   }, []);
 
@@ -123,9 +117,10 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     setError(null);
 
     try {
+      const headers = await buildHeaders();
       const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
         method: 'POST',
-        headers: buildHeaders(),
+        headers,
         body: JSON.stringify({
           action: 'list',
           payload: {
@@ -217,9 +212,10 @@ export function useLeasesOverviewPageLogic({ showToast }) {
 
   // ===== ACTION HANDLERS =====
   const callEdgeFunction = useCallback(async (action, payload) => {
+    const headers = await buildHeaders();
     const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
       method: 'POST',
-      headers: buildHeaders(),
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 

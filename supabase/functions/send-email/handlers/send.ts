@@ -282,8 +282,13 @@ export async function handleSend(
   try {
     sendGridBody = JSON.parse(processedJsonString);
   } catch (parseError) {
-    console.error('[send-email:send] Failed to parse processed template as JSON:', parseError);
-    throw new Error(`Template ${template_id} produced invalid JSON after placeholder processing`);
+    const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+    console.error('[send-email:send] ========== JSON PARSE ERROR ==========');
+    console.error('[send-email:send] Error:', errorMessage);
+    console.error('[send-email:send] JSON length:', processedJsonString.length);
+    console.error('[send-email:send] JSON preview (first 2000 chars):', processedJsonString.substring(0, 2000));
+    console.error('[send-email:send] JSON preview (last 500 chars):', processedJsonString.substring(processedJsonString.length - 500));
+    throw new Error(`Template ${template_id} produced invalid JSON: ${errorMessage}`);
   }
 
   // Inject CC and BCC recipients into personalizations if provided
