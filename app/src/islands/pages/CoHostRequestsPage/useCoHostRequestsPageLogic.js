@@ -23,6 +23,7 @@ import { useToast } from '../../shared/Toast';
  */
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Items per page for pagination
 const PAGE_SIZE = 25;
@@ -118,7 +119,7 @@ export default function useCoHostRequestsPageLogic() {
     // Build headers with optional auth (soft headers pattern)
     const headers = {
       'Content-Type': 'application/json',
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+      'apikey': SUPABASE_ANON_KEY
     };
     if (session?.access_token) {
       headers.Authorization = `Bearer ${session.access_token}`;
