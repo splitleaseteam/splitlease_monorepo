@@ -2,6 +2,7 @@ import { useState } from 'react';
 import EmailPreviewSidebar from '../shared/EmailPreviewSidebar.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { renderGeneralEmailTemplate } from '../../lib/emailTemplateRenderer.js';
+import AdminHeader from '../shared/AdminHeader/AdminHeader';
 
 /**
  * InternalTestPage - Development/QA testing page
@@ -262,6 +263,7 @@ export default function InternalTestPage() {
 
   return (
     <>
+      <AdminHeader />
       
       <main style={{
         maxWidth: '1200px',

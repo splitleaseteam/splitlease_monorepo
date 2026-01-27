@@ -58,3 +58,14 @@ This document maps the pages in the codebase to their corresponding Bubble proto
 | | `/_internal/create-suggested-proposal` | N/A | No Bubble existence |
 | | `/_internal/emergency` | [Link](https://app.split.lease/version-test/_internal-emergency) | |
 | | `/_internal/admin-threads` | [Link](https://app.split.lease/version-test/_quick-threads-manage) | |
+
+| **Unit Testing** | `/_internal/z-emails-unit` | [Link](https://app.split.lease/version-test/z-emails-unit) | |
+| | `/_internal/z-pricing-unit-test` | [Link](https://app.split.lease/version-test/z-pricing-unit-test) | |
+| | `/_internal/z-search-unit-test` | [Link](https://app.split.lease/version-test/z-search-unit-test) | |
+| | `/_internal/z-unit-chatgpt-models` | [Link](https://app.split.lease/version-test/z-unit-chatgpt-models) | |
+| | `/_internal/z-unit-payment-records-js` | [Link](https://app.split.lease/version-test/z-unit-payment-records-js) | |
+| | `/_internal/z-alerts-test` | [Link](https://app.split.lease/version-test/z-alerts-test) | |
+| | `/_internal/z-icons-test-ide` | [Link](https://app.split.lease/version-test/z-icons-test-ide) | |
+| | `/_internal/z-input-plugin-test-2` | [Link](https://app.split.lease/version-test/z-input-plugin-test-2) | |
+| | `/_internal/z-schedule-test` | [Link](https://app.split.lease/version-test/z-schedule-test) | |
+| | `/_internal/z-sharath-test` | [Link](https://app.split.lease/version-test/z-sharath-test) | |

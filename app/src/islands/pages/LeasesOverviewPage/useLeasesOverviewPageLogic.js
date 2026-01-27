@@ -16,7 +16,6 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 import { adaptLeaseFromSupabase } from '../../../logic/processors/leases/adaptLeaseFromSupabase';
 import { filterLeases } from '../../../logic/processors/leases/filterLeases';
@@ -49,7 +48,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
   const [leases, setLeases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+  const [accessToken, setAccessToken] = useState('');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,44 +88,38 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     { value: 'cancelled', label: 'Mark Cancelled' },
   ], []);
 
-  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
+  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadToken = async () => {
       try {
-        // Try to get authentication token if user is logged in
-        // No redirect if not authenticated - this is an internal page accessible without login
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          setAccessToken(session.access_token);
-        } else {
-          // Legacy token auth user - get token from secure storage
-          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-          if (legacyToken) {
-            setAccessToken(legacyToken);
-          }
-        }
+        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+        setAccessToken(session?.access_token || legacyToken || '');
       } catch (err) {
-        console.error('[LeasesOverview] Auth check failed:', err);
-        // No redirect - just log the error
+        console.error('[LeasesOverview] Token lookup failed:', err);
+        setAccessToken('');
       }
     };
-    checkAuth();
+    loadToken();
   }, []);
+
+  const buildHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+  }, [accessToken]);
 
   // ===== FETCH LEASES =====
   const fetchLeases = useCallback(async () => {
-    if (!accessToken) return;
-
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({
           action: 'list',
           payload: {
@@ -152,13 +145,11 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, showToast]);
+  }, [buildHeaders, showToast]);
 
   useEffect(() => {
-    if (accessToken) {
-      fetchLeases();
-    }
-  }, [accessToken, fetchLeases]);
+    fetchLeases();
+  }, [fetchLeases]);
 
   // ===== FILTERED & SORTED LEASES =====
   const filteredLeases = useMemo(() => {
@@ -222,10 +213,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
   const callEdgeFunction = useCallback(async (action, payload) => {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: buildHeaders(),
       body: JSON.stringify({ action, payload }),
     });
 
@@ -236,7 +224,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     }
 
     return result.data;
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   const handleStatusChange = useCallback(async (leaseId, newStatus) => {
     try {

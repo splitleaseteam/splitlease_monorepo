@@ -23,6 +23,7 @@ import AssignCoHostModal from './components/AssignCoHostModal.jsx';
 import NotesModal from './components/NotesModal.jsx';
 import Pagination from './components/Pagination.jsx';
 import './CoHostRequestsPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function CoHostRequestsPage() {
   const {
@@ -92,6 +93,7 @@ export default function CoHostRequestsPage() {
 
   return (
     <div className="cohost-requests-page">
+      <AdminHeader />
       {/* Header */}
       <header className="cohost-requests-header">
         <div className="header-content">

@@ -14,7 +14,6 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 import { useToast } from '../../shared/Toast';
 
@@ -117,10 +116,8 @@ export function useAdminThreadsPageLogic() {
   // ===== TOAST =====
   const { showToast } = useToast();
 
-  // ===== AUTH STATE =====
-  const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
-  const [accessToken, setAccessToken] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  // ===== AUTH TOKEN (OPTIONAL) =====
+  const [accessToken, setAccessToken] = useState('');
 
   // ===== DATA STATE =====
   const [threads, setThreads] = useState([]);
@@ -144,51 +141,39 @@ export function useAdminThreadsPageLogic() {
   const [reminderModal, setReminderModal] = useState(null);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
 
-  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
+  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadToken = async () => {
       try {
-        // Try to get authentication token if user is logged in
-        // No redirect if not authenticated - this is an internal page accessible without login
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          setAccessToken(session.access_token);
-          setCurrentUser(session.user);
-        } else {
-          // Legacy token auth user - get token from secure storage
-          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-          if (legacyToken) {
-            setAccessToken(legacyToken);
-            setCurrentUser({ authenticated: true, legacy: true });
-          }
-        }
-
-        // Always set authorized for internal pages
-        setAuthState('authorized');
+        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+        setAccessToken(session?.access_token || legacyToken || '');
       } catch (err) {
-        console.error('[AdminThreads] Auth check failed:', err);
-        // No redirect - just log the error and continue
-        setAuthState('authorized');
+        console.error('[AdminThreads] Token lookup failed:', err);
+        setAccessToken('');
       }
     };
 
-    checkAuth();
+    loadToken();
   }, []);
+
+  const buildHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+  }, [accessToken]);
 
   // ===== FETCH THREADS =====
   const fetchThreads = useCallback(async () => {
-    if (!accessToken) return;
-
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({
           action: 'admin_get_all_threads',
           payload: {
@@ -213,13 +198,11 @@ export function useAdminThreadsPageLogic() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   useEffect(() => {
-    if (accessToken && authState === 'authorized') {
-      fetchThreads();
-    }
-  }, [accessToken, authState, fetchThreads]);
+    fetchThreads();
+  }, [fetchThreads]);
 
   // ===== FILTERING =====
   const hasActiveFilters = useMemo(() => {
@@ -335,10 +318,7 @@ export function useAdminThreadsPageLogic() {
 
           const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`,
-            },
+            headers: buildHeaders(),
             body: JSON.stringify({
               action: 'admin_delete_thread',
               payload: { threadId: thread.id },
@@ -363,7 +343,7 @@ export function useAdminThreadsPageLogic() {
         }
       },
     });
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   const handleCloseConfirmDialog = useCallback(() => {
     setConfirmDialog(null);
@@ -388,10 +368,7 @@ export function useAdminThreadsPageLogic() {
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({
           action: 'admin_send_reminder',
           payload: { threadId, recipientType, method },
@@ -412,7 +389,7 @@ export function useAdminThreadsPageLogic() {
     } finally {
       setIsSendingReminder(false);
     }
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   const handleRetry = useCallback(() => {
     fetchThreads();
@@ -420,10 +397,6 @@ export function useAdminThreadsPageLogic() {
 
   // ===== RETURN =====
   return {
-    // Auth
-    authState,
-    currentUser,
-
     // Data
     threads,
     filteredThreads: paginatedThreads,

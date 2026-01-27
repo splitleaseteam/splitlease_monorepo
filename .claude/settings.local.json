@@ -33,7 +33,10 @@
       "Bash(ping:*)",
       "Bash(bun run lint)",
       "Bash(start:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(bun run test:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_resize"
     ],
     "deny": [],
     "ask": []

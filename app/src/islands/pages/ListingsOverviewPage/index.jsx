@@ -25,6 +25,7 @@ import ListingsFilterPanel from './components/ListingsFilterPanel.jsx';
 import ListingsTable from './components/ListingsTable.jsx';
 import { PRESET_ERROR_CODES, PRICE_MULTIPLIERS } from './constants.js';
 import './ListingsOverviewPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -307,12 +308,13 @@ export default function ListingsOverviewPage() {
   if (authState.shouldRedirect) {
     return (
       <>
-                <main className="lo-main-content">
+        <AdminHeader />
+        <main className="lo-main-content">
           <div className="lo-page">
             <LoadingState />
           </div>
         </main>
-              </>
+      </>
     );
   }
 
@@ -342,7 +344,7 @@ export default function ListingsOverviewPage() {
 
   return (
     <>
-      
+      <AdminHeader />
       <main className="lo-main-content">
         <div className="lo-page">
           {/* Page Header */}

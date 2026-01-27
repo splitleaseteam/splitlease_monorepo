@@ -5,7 +5,6 @@
  * Internal admin tool for managing usability test data.
  */
 
-import React from 'react';
 import { useUsabilityDataManagementPageLogic } from './useUsabilityDataManagementPageLogic';
 import HostDataSection from './components/HostDataSection';
 import GuestDataSection from './components/GuestDataSection';
@@ -13,36 +12,15 @@ import ProposalCreationSection from './components/ProposalCreationSection';
 import ProposalDeletionSection from './components/ProposalDeletionSection';
 import ProposalConfirmationModal from './components/ProposalConfirmationModal';
 import AlertOverlay from './components/AlertOverlay';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import '../../../styles/usability-data-management.css';
 
 export default function UsabilityDataManagementPage() {
   const logic = useUsabilityDataManagementPageLogic();
 
-  // Loading state
-  if (logic.authLoading) {
-    return (
-      <div className="usability-page-container">
-        <div className="loading-container">
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Auth error state
-  if (logic.authError || !logic.isAuthenticated || !logic.isAuthorized) {
-    return (
-      <div className="usability-page-container">
-        <div className="auth-error-container">
-          <h1>Access Denied</h1>
-          <p>{logic.authError || 'Admin or corporate access required.'}</p>
-          <a href="/" className="btn btn-purple">Return to Home</a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="usability-page-container">
+      <AdminHeader />
       <h1 className="page-title">Usability Test Data Deletion &amp; Creation</h1>
 
       {/* Section 1: Delete Host Account Data */}

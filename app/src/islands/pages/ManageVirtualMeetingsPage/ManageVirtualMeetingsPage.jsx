@@ -32,6 +32,7 @@ import StatsHeader from './components/StatsHeader';
 import ConfirmMeetingModal from './modals/ConfirmMeetingModal';
 import EditDatesModal from './modals/EditDatesModal';
 import DeleteConfirmationModal from './modals/DeleteConfirmationModal';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function ManageVirtualMeetingsPage() {
   const { showToast } = useToast();
@@ -41,6 +42,7 @@ export default function ManageVirtualMeetingsPage() {
   if (logic.isLoading && logic.newRequests.length === 0 && logic.confirmedMeetings.length === 0) {
     return (
       <div className="manage-vm">
+        <AdminHeader />
         <LoadingState message="Loading virtual meetings..." />
       </div>
     );
@@ -50,6 +52,7 @@ export default function ManageVirtualMeetingsPage() {
   if (logic.error && logic.newRequests.length === 0 && logic.confirmedMeetings.length === 0) {
     return (
       <div className="manage-vm">
+        <AdminHeader />
         <ErrorState
           message={logic.error}
           onRetry={logic.handleRetry}
@@ -60,6 +63,7 @@ export default function ManageVirtualMeetingsPage() {
 
   return (
     <div className="manage-vm">
+      <AdminHeader />
       {/* Header with Stats */}
       <header className="manage-vm__header">
         <div className="manage-vm__header-content">

@@ -43,14 +43,6 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
 
 export function useUsabilityDataManagementPageLogic() {
   // ============================================================================
-  // Authentication State
-  // ============================================================================
-  const [isAuthenticated] = useState(true);
-  const [isAuthorized] = useState(true);
-  const [authLoading] = useState(false);
-  const [authError] = useState(null);
-
-  // ============================================================================
   // Data State
   // ============================================================================
   const [hosts, setHosts] = useState([]);
@@ -116,6 +108,12 @@ export function useUsabilityDataManagementPageLogic() {
     loadGuests();
     setDefaultMoveInDate();
   }, [loadHosts, loadGuests, setDefaultMoveInDate]);
+
+  useEffect(() => {
+    if (window.$crisp?.push) {
+      window.$crisp.push(["do", "chat:hide"]);
+    }
+  }, []);
 
   const setDefaultMoveInDate = useCallback(() => {
     const today = new Date();
@@ -397,12 +395,6 @@ Thread ID: ${result.threadId}`);
   // Return API
   // ============================================================================
   return {
-    // Auth
-    isAuthenticated,
-    isAuthorized,
-    authLoading,
-    authError,
-
     // Constants
     reservationSpans: RESERVATION_SPANS,
     dayLabels: DAY_LABELS,

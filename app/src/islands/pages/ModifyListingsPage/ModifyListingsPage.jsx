@@ -21,6 +21,9 @@ import {
   SpaceSnapshot,
   ListingPreview
 } from './sidebar';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import './ModifyListingsPage.css';
+
 
 export default function ModifyListingsPage() {
   const logic = useModifyListingsPageLogic();
@@ -28,11 +31,12 @@ export default function ModifyListingsPage() {
   // Show loading state
   if (logic.isLoading) {
     return (
-      <div style={styles.container}>
+      <div className="modify-listings-page">
+        <AdminHeader />
         <Header />
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner} />
-          <p style={styles.loadingText}>Loading listing...</p>
+        <div className="modify-listings-page__loading-container">
+          <div className="modify-listings-page__spinner" />
+          <p className="modify-listings-page__loading-text">Loading listing...</p>
         </div>
       </div>
     );
@@ -41,17 +45,18 @@ export default function ModifyListingsPage() {
   // Show search/select state when no listing loaded
   if (!logic.listing) {
     return (
-      <div style={styles.container}>
+      <div className="modify-listings-page">
+        <AdminHeader />
         <Header />
-        <div style={styles.searchContainer}>
-          <h2 style={styles.searchTitle}>Modify Listings</h2>
-          <p style={styles.searchSubtitle}>
+        <div className="modify-listings-page__search-container">
+          <h2 className="modify-listings-page__search-title">Modify Listings</h2>
+          <p className="modify-listings-page__search-subtitle">
             Search for a listing by name or ID to begin editing.
           </p>
 
           {/* Search Input */}
-          <div style={styles.searchInputWrapper}>
-            <SearchIcon style={styles.searchIcon} />
+          <div className="modify-listings-page__search-input-wrapper">
+            <SearchIcon className="modify-listings-page__search-icon" />
             <input
               type="text"
               value={logic.searchQuery}
@@ -60,29 +65,29 @@ export default function ModifyListingsPage() {
                 logic.searchListings(e.target.value);
               }}
               placeholder="Search listings by name or ID..."
-              style={styles.searchInput}
+              className="modify-listings-page__search-input"
             />
-            {logic.isSearching && <div style={styles.miniSpinner} />}
+            {logic.isSearching && <div className="modify-listings-page__mini-spinner" />}
           </div>
 
           {/* Search Results */}
           {logic.searchResults.length > 0 && (
-            <div style={styles.searchResults}>
+            <div className="modify-listings-page__search-results">
               {logic.searchResults.map(result => (
                 <button
                   key={result._id}
                   onClick={() => logic.selectSearchResult(result)}
-                  style={styles.searchResultItem}
+                  className="modify-listings-page__search-result-item"
                 >
-                  <div style={styles.searchResultMain}>
-                    <span style={styles.searchResultName}>
+                  <div className="modify-listings-page__search-result-main">
+                    <span className="modify-listings-page__search-result-name">
                       {result.Name || 'Unnamed Listing'}
                     </span>
-                    <span style={styles.searchResultAddress}>
+                    <span className="modify-listings-page__search-result-address">
                       {result['Address - Full Street Address'] || 'No address'}
                     </span>
                   </div>
-                  <div style={styles.searchResultStatus}>
+                  <div className="modify-listings-page__search-result-status">
                     <StatusBadge
                       label={result.Approved ? 'Approved' : 'Pending'}
                       type={result.Approved ? 'success' : 'warning'}
@@ -99,7 +104,7 @@ export default function ModifyListingsPage() {
 
           {/* Error State */}
           {logic.error && (
-            <div style={styles.errorBox}>
+            <div className="modify-listings-page__error-box">
               <p>{logic.error}</p>
             </div>
           )}
@@ -160,7 +165,8 @@ export default function ModifyListingsPage() {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="modify-listings-page">
+      <AdminHeader />
       <Header
         listingName={logic.listing?.Name}
         hasChanges={logic.hasUnsavedChanges}
@@ -179,9 +185,9 @@ export default function ModifyListingsPage() {
       )}
 
       {/* Main Layout */}
-      <div style={styles.layout}>
+      <div className="modify-listings-page__layout">
         {/* Left Sidebar - Navigation */}
-        <div style={styles.leftSidebar}>
+        <div className="modify-listings-page__left-sidebar">
           <NavigationTabs
             sections={logic.sections}
             activeSection={logic.activeSection}
@@ -191,12 +197,12 @@ export default function ModifyListingsPage() {
         </div>
 
         {/* Main Content */}
-        <div style={styles.mainContent}>
+        <div className="modify-listings-page__main-content">
           {renderSection()}
         </div>
 
         {/* Right Sidebar */}
-        <div style={styles.rightSidebar}>
+        <div className="modify-listings-page__right-sidebar">
           <ListingPreview listing={logic.listing} />
           <StatusSection
             listing={logic.listing}
@@ -217,39 +223,36 @@ export default function ModifyListingsPage() {
 
 function Header({ listingName, hasChanges, onSave, onClear, isSaving }) {
   return (
-    <header style={styles.header}>
-      <div style={styles.headerLeft}>
-        <a href="/" style={styles.logo}>
+    <header className="modify-listings-page__header">
+      <div className="modify-listings-page__header-left">
+        <a href="/" className="modify-listings-page__logo">
           Split Lease
         </a>
-        <span style={styles.headerDivider}>/</span>
-        <span style={styles.headerTitle}>Modify Listings</span>
+        <span className="modify-listings-page__header-divider">/</span>
+        <span className="modify-listings-page__header-title">Modify Listings</span>
         {listingName && (
           <>
-            <span style={styles.headerDivider}>/</span>
-            <span style={styles.listingName}>{listingName}</span>
+            <span className="modify-listings-page__header-divider">/</span>
+            <span className="modify-listings-page__listing-name">{listingName}</span>
           </>
         )}
         {hasChanges && (
-          <span style={styles.unsavedBadge}>Unsaved changes</span>
+          <span className="modify-listings-page__unsaved-badge">Unsaved changes</span>
         )}
       </div>
-      <div style={styles.headerRight}>
+      <div className="modify-listings-page__header-right">
         {listingName && (
           <>
             <button
               onClick={onClear}
-              style={styles.headerButtonSecondary}
+              className="modify-listings-page__header-btn modify-listings-page__header-btn--secondary"
             >
               Close Listing
             </button>
             <button
               onClick={onSave}
               disabled={isSaving || !hasChanges}
-              style={{
-                ...styles.headerButtonPrimary,
-                ...((isSaving || !hasChanges) ? styles.headerButtonDisabled : {})
-              }}
+              className="modify-listings-page__header-btn modify-listings-page__header-btn--primary"
             >
               {isSaving ? 'Saving...' : 'Save All'}
             </button>
@@ -261,19 +264,9 @@ function Header({ listingName, hasChanges, onSave, onClear, isSaving }) {
 }
 
 function StatusBadge({ label, type }) {
-  const colors = {
-    success: { bg: '#dcfce7', text: '#166534' },
-    warning: { bg: '#fef3c7', text: '#92400e' },
-    neutral: { bg: '#f3f4f6', text: '#4b5563' }
-  };
-  const color = colors[type] || colors.neutral;
-
+  const typeClass = `modify-listings-page__status-badge--${type}`;
   return (
-    <span style={{
-      ...styles.statusBadge,
-      backgroundColor: color.bg,
-      color: color.text
-    }}>
+    <span className={`modify-listings-page__status-badge ${typeClass}`}>
       {label}
     </span>
   );
@@ -286,245 +279,3 @@ function SearchIcon(props) {
     </svg>
   );
 }
-
-// ============================================================================
-// STYLES
-// ============================================================================
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#f9fafb',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-  },
-
-  // Header
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e5e7eb',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem'
-  },
-  logo: {
-    fontSize: '1.125rem',
-    fontWeight: '700',
-    color: '#52ABEC',
-    textDecoration: 'none'
-  },
-  headerDivider: {
-    color: '#d1d5db'
-  },
-  headerTitle: {
-    fontSize: '0.9375rem',
-    fontWeight: '500',
-    color: '#374151'
-  },
-  listingName: {
-    fontSize: '0.9375rem',
-    color: '#6b7280',
-    maxWidth: '300px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  unsavedBadge: {
-    marginLeft: '0.75rem',
-    padding: '0.25rem 0.5rem',
-    fontSize: '0.75rem',
-    fontWeight: '500',
-    color: '#b45309',
-    backgroundColor: '#fef3c7',
-    borderRadius: '9999px'
-  },
-  headerRight: {
-    display: 'flex',
-    gap: '0.5rem'
-  },
-  headerButtonSecondary: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#374151',
-    backgroundColor: '#ffffff',
-    border: '1px solid #d1d5db',
-    borderRadius: '0.375rem',
-    cursor: 'pointer'
-  },
-  headerButtonPrimary: {
-    padding: '0.5rem 1rem',
-    fontSize: '0.875rem',
-    fontWeight: '500',
-    color: '#ffffff',
-    backgroundColor: '#52ABEC',
-    border: 'none',
-    borderRadius: '0.375rem',
-    cursor: 'pointer'
-  },
-  headerButtonDisabled: {
-    opacity: 0.5,
-    cursor: 'not-allowed'
-  },
-
-  // Loading
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '60vh',
-    gap: '1rem'
-  },
-  spinner: {
-    width: '2.5rem',
-    height: '2.5rem',
-    border: '3px solid #e5e7eb',
-    borderTopColor: '#52ABEC',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  miniSpinner: {
-    width: '1.25rem',
-    height: '1.25rem',
-    border: '2px solid #e5e7eb',
-    borderTopColor: '#52ABEC',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  loadingText: {
-    fontSize: '0.9375rem',
-    color: '#6b7280'
-  },
-
-  // Search
-  searchContainer: {
-    maxWidth: '600px',
-    margin: '4rem auto',
-    padding: '0 1.5rem'
-  },
-  searchTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: '0.5rem'
-  },
-  searchSubtitle: {
-    fontSize: '0.9375rem',
-    color: '#6b7280',
-    marginBottom: '1.5rem'
-  },
-  searchInputWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center'
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '0.875rem',
-    width: '1.25rem',
-    height: '1.25rem',
-    color: '#9ca3af'
-  },
-  searchInput: {
-    width: '100%',
-    padding: '0.875rem 1rem 0.875rem 2.75rem',
-    fontSize: '0.9375rem',
-    border: '1px solid #d1d5db',
-    borderRadius: '0.5rem',
-    outline: 'none'
-  },
-  searchResults: {
-    marginTop: '0.75rem',
-    border: '1px solid #e5e7eb',
-    borderRadius: '0.5rem',
-    backgroundColor: '#ffffff',
-    overflow: 'hidden',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-  },
-  searchResultItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    padding: '0.875rem 1rem',
-    backgroundColor: '#ffffff',
-    border: 'none',
-    borderBottom: '1px solid #e5e7eb',
-    cursor: 'pointer',
-    textAlign: 'left'
-  },
-  searchResultMain: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.125rem'
-  },
-  searchResultName: {
-    fontSize: '0.9375rem',
-    fontWeight: '500',
-    color: '#111827'
-  },
-  searchResultAddress: {
-    fontSize: '0.8125rem',
-    color: '#6b7280'
-  },
-  searchResultStatus: {
-    display: 'flex',
-    gap: '0.375rem'
-  },
-  statusBadge: {
-    padding: '0.125rem 0.5rem',
-    fontSize: '0.6875rem',
-    fontWeight: '500',
-    borderRadius: '9999px'
-  },
-  errorBox: {
-    marginTop: '1rem',
-    padding: '1rem',
-    backgroundColor: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: '0.5rem',
-    color: '#991b1b',
-    fontSize: '0.875rem'
-  },
-
-  // Layout
-  layout: {
-    display: 'grid',
-    gridTemplateColumns: '200px 1fr 280px',
-    gap: '1.5rem',
-    padding: '1.5rem',
-    maxWidth: '1400px',
-    margin: '0 auto'
-  },
-  leftSidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem'
-  },
-  mainContent: {
-    minHeight: '70vh'
-  },
-  rightSidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem'
-  }
-};
-
-// Add keyframes for spinner animation
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(styleSheet);

@@ -16,7 +16,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--sl-background, #f5f5f5);
+  background-color: #ffffff;
 }
 
 .ai-tools-main {
@@ -25,7 +25,8 @@
 }
 
 .ai-tools-container {
-  max-width: 1400px;
+  width: 1400px;
+  min-height: 3000px;
   margin: 0 auto;
 }
 

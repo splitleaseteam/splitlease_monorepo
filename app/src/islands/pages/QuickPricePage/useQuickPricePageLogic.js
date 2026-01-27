@@ -17,7 +17,6 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants';
 
@@ -85,7 +84,7 @@ export function useQuickPricePageLogic({ showToast }) {
   const [listings, setListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+  const [accessToken, setAccessToken] = useState('');
   const [totalCount, setTotalCount] = useState(0);
 
   // Filters
@@ -129,38 +128,34 @@ export function useQuickPricePageLogic({ showToast }) {
     { value: 'weeklyHostRate', label: 'Weekly Rate' },
   ], []);
 
-  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
+  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadToken = async () => {
       try {
-        // Try to get authentication token if user is logged in
-        // No redirect if not authenticated - this is an internal page accessible without login
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          setAccessToken(session.access_token);
-        } else {
-          // Legacy token auth user - get token from secure storage
-          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-          if (legacyToken) {
-            setAccessToken(legacyToken);
-          }
-        }
+        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+        setAccessToken(session?.access_token || legacyToken || '');
       } catch (err) {
-        console.error('[QuickPrice] Auth check failed:', err);
-        // No redirect - just log the error
+        console.error('[QuickPrice] Token lookup failed:', err);
+        setAccessToken('');
       }
     };
-    checkAuth();
+    loadToken();
   }, []);
+
+  const buildHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+  }, [accessToken]);
 
   // ===== API CALL HELPER =====
   const callEdgeFunction = useCallback(async (action, payload = {}) => {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/pricing-admin`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: buildHeaders(),
       body: JSON.stringify({ action, payload }),
     });
 
@@ -171,12 +166,10 @@ export function useQuickPricePageLogic({ showToast }) {
     }
 
     return result.data;
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   // ===== FETCH LISTINGS =====
   const fetchListings = useCallback(async () => {
-    if (!accessToken) return;
-
     setIsLoading(true);
     setError(null);
 
@@ -214,12 +207,10 @@ export function useQuickPricePageLogic({ showToast }) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, page, rentalTypeFilter, boroughFilter, neighborhoodFilter, searchQuery, activeOnlyFilter, sortField, sortOrder, callEdgeFunction, showToast]);
+  }, [page, rentalTypeFilter, boroughFilter, neighborhoodFilter, searchQuery, activeOnlyFilter, sortField, sortOrder, callEdgeFunction, showToast]);
 
   // ===== FETCH PRICING CONFIG =====
   const fetchPricingConfig = useCallback(async () => {
-    if (!accessToken) return;
-
     try {
       const data = await callEdgeFunction('getConfig');
       setPricingConfig(data);
@@ -236,14 +227,12 @@ export function useQuickPricePageLogic({ showToast }) {
         isReadOnly: true,
       });
     }
-  }, [accessToken, callEdgeFunction]);
+  }, [callEdgeFunction]);
 
   useEffect(() => {
-    if (accessToken) {
-      fetchListings();
-      fetchPricingConfig();
-    }
-  }, [accessToken, fetchListings, fetchPricingConfig]);
+    fetchListings();
+    fetchPricingConfig();
+  }, [fetchListings, fetchPricingConfig]);
 
   // Reset page when filters change
   useEffect(() => {

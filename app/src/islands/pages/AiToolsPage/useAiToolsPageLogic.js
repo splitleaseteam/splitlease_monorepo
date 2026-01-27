@@ -24,11 +24,8 @@ export function useAiToolsPageLogic() {
   // STATE
   // ============================================================================
 
-  // Auth state
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Data selection state
   const [houseManuals, setHouseManuals] = useState([]);
@@ -75,12 +72,11 @@ export function useAiToolsPageLogic() {
   // DATA FETCHING
   // ============================================================================
 
-  const fetchHouseManuals = useCallback(async (hostId) => {
+  const fetchHouseManuals = useCallback(async () => {
     try {
       const { data, error: fetchError } = await supabase
         .from('housemanual')
-        .select('_id, "House manual Name", Host, Audience')
-        .eq('Host', hostId)
+        .select('_id, Display, Host, Listing')
         .order('Created Date', { ascending: false });
 
       if (fetchError) throw fetchError;
@@ -166,18 +162,21 @@ export function useAiToolsPageLogic() {
   }, []);
 
   const fetchNarrators = useCallback(async () => {
-    // Static list of ElevenLabs narrators - these could be fetched from an API
     return [
-      { id: 'rachel', name: 'Rachel', description: 'Warm, conversational American female voice' },
-      { id: 'drew', name: 'Drew', description: 'Well-rounded American male voice' },
-      { id: 'clyde', name: 'Clyde', description: 'Deep, authoritative American male voice' },
-      { id: 'paul', name: 'Paul', description: 'Clear, neutral American male voice' },
-      { id: 'domi', name: 'Domi', description: 'Expressive American female voice' },
-      { id: 'dave', name: 'Dave', description: 'British conversational male voice' },
-      { id: 'fin', name: 'Fin', description: 'Irish male voice with warm tone' },
-      { id: 'sarah', name: 'Sarah', description: 'Soft American female voice' },
-      { id: 'antoni', name: 'Antoni', description: 'Well-rounded American male voice' },
-      { id: 'thomas', name: 'Thomas', description: 'British narrator voice' },
+      { id: 'david-attenborough', name: 'David Attenborough', description: 'English' },
+      { id: 'ricardo-darin', name: 'Ricardo Darin', description: 'Spanish' },
+      { id: 'serhiy-prytula', name: 'Serhiy Prytula', description: 'Ukrainian' },
+      { id: 'olena', name: 'Olena', description: 'Ukrainian' },
+      { id: 'eric-braa', name: 'Eric Braa', description: 'English' },
+      { id: 'snoop-dogg', name: 'Snoop Dogg', description: 'English' },
+      { id: 'larry-david', name: 'Larry David', description: 'English' },
+      { id: 'jerry-seinfeld', name: 'Jerry Seinfeld', description: 'English' },
+      { id: 'barack-obama', name: 'Barack Obama', description: 'English' },
+      { id: 'meryl-streep', name: 'Meryl Streep', description: 'English' },
+      { id: 'morgan-freeman', name: 'Morgan Freeman', description: 'English' },
+      { id: 'martha-stewart', name: 'Martha Stewart', description: 'English' },
+      { id: 'mary-poppins', name: 'Mary Poppins', description: 'English' },
+      { id: 'steve-irwin', name: 'Steve Irwin', description: 'English' },
     ];
   }, []);
 
@@ -190,14 +189,12 @@ export function useAiToolsPageLogic() {
     setError(null);
 
     try {
-      setUser({
-        authenticated: false,
-        email: null,
-        isAdmin: false,
-      });
-      setIsAdmin(true);
+      const [manuals, narratorsList] = await Promise.all([
+        fetchHouseManuals(),
+        fetchNarrators(),
+      ]);
 
-      const narratorsList = await fetchNarrators();
+      setHouseManuals(manuals);
       setNarrators(narratorsList);
       if (narratorsList.length > 0) {
         setSelectedNarrator(narratorsList[0].id);
@@ -532,11 +529,9 @@ export function useAiToolsPageLogic() {
   // ============================================================================
 
   return {
-    // Auth & Loading
-    user,
+    // Loading
     loading,
     error,
-    isAdmin,
 
     // Data
     houseManuals,

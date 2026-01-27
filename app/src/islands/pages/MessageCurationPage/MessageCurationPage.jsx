@@ -21,6 +21,7 @@ import ModerationActions from './components/ModerationActions.jsx';
 import SplitBotMessaging from './components/SplitBotMessaging.jsx';
 import ConfirmationModal from './components/ConfirmationModal.jsx';
 import './MessageCurationPage.css';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
 
 export default function MessageCurationPage() {
   const {
@@ -84,6 +85,7 @@ export default function MessageCurationPage() {
 
   return (
     <div className="message-curation-page">
+      <AdminHeader />
       {/* Header */}
       <header className="message-curation-header">
         <div className="header-content">
