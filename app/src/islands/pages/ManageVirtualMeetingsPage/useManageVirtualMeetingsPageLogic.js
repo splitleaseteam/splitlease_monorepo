@@ -132,8 +132,11 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload) => {
-    // Build headers with optional auth (soft headers pattern)
-    const headers = { 'Content-Type': 'application/json' };
+    // Build headers with Supabase anon key (required for Edge Functions) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+    };
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
