@@ -455,7 +455,7 @@ async function handleGetById(
 async function handleUpdateStatus(
   payload: { requestId: string; newStatus: string; adminNotes?: string },
   supabase: SupabaseClient,
-  adminUser: { id: string; email: string }
+  adminUser: { id: string; email: string } | null
 ) {
   const { requestId, newStatus, adminNotes } = payload;
 
@@ -494,7 +494,7 @@ async function handleUpdateStatus(
   console.log('[co-host-requests] Status updated:', {
     requestId,
     newStatus,
-    adminEmail: adminUser.email,
+    adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
   });
 
@@ -509,7 +509,7 @@ async function handleUpdateStatus(
 async function handleAssignCoHost(
   payload: { requestId: string; cohostUserId: string },
   supabase: SupabaseClient,
-  adminUser: { id: string; email: string }
+  adminUser: { id: string; email: string } | null
 ) {
   const { requestId, cohostUserId } = payload;
 
@@ -558,7 +558,7 @@ async function handleAssignCoHost(
     requestId,
     cohostUserId,
     cohostName: cohostUser['Name - Full'],
-    adminEmail: adminUser.email,
+    adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
   });
 
@@ -573,7 +573,7 @@ async function handleAssignCoHost(
 async function handleAddNotes(
   payload: { requestId: string; adminNotes?: string; requestNotes?: string },
   supabase: SupabaseClient,
-  adminUser: { id: string; email: string }
+  adminUser: { id: string; email: string } | null
 ) {
   const { requestId, adminNotes, requestNotes } = payload;
 
@@ -614,7 +614,7 @@ async function handleAddNotes(
 
   console.log('[co-host-requests] Notes updated:', {
     requestId,
-    adminEmail: adminUser.email,
+    adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
   });
 
