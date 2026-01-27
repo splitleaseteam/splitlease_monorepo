@@ -286,7 +286,10 @@ export function createErrorCollector(functionName: string, action: string): Erro
 // for pure functional error handling. The ErrorCollector class above is
 // maintained for backward compatibility only.
 
-import { ErrorLog, formatForSlack, hasErrors } from './functional/errorLog.ts';
+import { ErrorLog, formatForSlack, hasErrors, setUserContext } from './functional/errorLog.ts';
+
+// Re-export setUserContext for convenience
+export { setUserContext };
 
 /**
  * Report an immutable ErrorLog to Slack
