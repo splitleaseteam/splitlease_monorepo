@@ -23,7 +23,10 @@ import { sortLeases } from '../../../logic/processors/leases/sortLeases';
 import { canDeleteLease } from '../../../logic/rules/leases/canDeleteLease';
 import { canHardDeleteLease } from '../../../logic/rules/leases/canHardDeleteLease';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Get dev project credentials from .env or hardcode for reliability
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+
 const PAGE_SIZE = 20;
 
 /**
@@ -103,13 +106,16 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     loadToken();
   }, []);
 
+  // Build headers with optional auth (soft headers pattern)
+  // For unauthenticated requests, use anon key in Authorization header
   const buildHeaders = useCallback(() => {
-    const headers = { 'Content-Type': 'application/json' };
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return headers;
-  }, [accessToken]);
+    const { data: { session } } = supabase.auth.getSession();
+    return {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`
+    };
+  }, []);
 
   // ===== FETCH LEASES =====
   const fetchLeases = useCallback(async () => {
