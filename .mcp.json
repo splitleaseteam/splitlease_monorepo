@@ -11,10 +11,6 @@
             "transport": "sse",
             "url": "https://mcp.supabase.com/mcp"
         },
-        "supabase-live": {
-            "transport": "sse",
-            "url": "https://mcp.supabase.com/mcp"
-        },
         "playwright": {
             "command": "npx",
             "args": [
