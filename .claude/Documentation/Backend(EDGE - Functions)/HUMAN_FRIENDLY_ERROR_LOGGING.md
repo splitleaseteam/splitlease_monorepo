@@ -1,7 +1,7 @@
 # Human-Friendly Error Logging for Edge Functions
 
-**UPDATED**: 2026-01-27 (Error Classification & payloadEmail)
-**PURPOSE**: Guide for using the new compressed, human-friendly Slack error notifications with error classification
+**UPDATED**: 2026-01-27 (Environment Badges, Error Classification & payloadEmail)
+**PURPOSE**: Guide for using the new compressed, human-friendly Slack error notifications with environment detection, error classification, and user context
 
 ---
 
@@ -27,6 +27,7 @@ Context: Fatal error in main handler
 ### After (New Format)
 ```
 💥 Can't view message threads
+Environment: 🟡 DEVELOPMENT
 Classification: System Error
 
 Could not find the function public.get_user_threads(user_id) in the schema cache
@@ -42,9 +43,10 @@ User: John Doe (john@example.com, ID: f41c8513)
 Function: messages/get_threads (req: ed5a1b70)
 ```
 
-**Expected Behavior Example:**
+**Expected Behavior Example (Production):**
 ```
 ⚠️ Can't log in
+Environment: 🔴 PRODUCTION
 Classification: Expected Behavior
 
 Invalid login credentials
@@ -57,6 +59,13 @@ Function: auth-user/login (req: a3f71c42)
 **Note:**
 - Timestamps are not included since Slack automatically shows when the message was received
 - "What to check" suggestions only appear for System Errors, not Expected Behavior
+- Environment badge clearly distinguishes development vs production errors
+
+**Environment Badges:**
+- 🔴 PRODUCTION - Live production errors (high priority)
+- 🟡 DEVELOPMENT - Development environment errors
+- 🟢 LOCAL - Local development errors
+- ⚪ UNKNOWN - Environment could not be detected
 
 ---
 
@@ -165,6 +174,7 @@ export interface ErrorLog {
   readonly action: string;
   readonly correlationId: string;
   readonly startTime: string;
+  readonly environment: 'development' | 'production' | 'local' | 'unknown';
   readonly userId?: string;
   readonly userName?: string;      // User's full name from public.user
   readonly userEmail?: string;     // User's email from public.user
@@ -172,6 +182,10 @@ export interface ErrorLog {
   readonly errors: ReadonlyArray<CollectedError>;
 }
 ```
+
+**Environment Detection:**
+- Auto-detected in `createErrorLog()` from `ENVIRONMENT` env var or `SUPABASE_URL`
+- Displayed with color-coded badges: 🔴 PRODUCTION, 🟡 DEVELOPMENT, 🟢 LOCAL, ⚪ UNKNOWN
 
 ---
 
@@ -281,4 +295,4 @@ The `inferLikelyCause()` function matches common error patterns:
 
 ---
 
-**LAST_UPDATED**: 2026-01-27 (Added error classification and payloadEmail support)
+**LAST_UPDATED**: 2026-01-27 (Added environment badges, error classification, and payloadEmail support)

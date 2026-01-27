@@ -29,6 +29,7 @@ export interface ErrorLog {
   readonly action: string;
   readonly correlationId: string;
   readonly startTime: string;
+  readonly environment: 'development' | 'production' | 'local' | 'unknown';
   readonly userId?: string;
   readonly userName?: string;
   readonly userEmail?: string;
@@ -39,6 +40,28 @@ export interface ErrorLog {
 // ─────────────────────────────────────────────────────────────
 // Constructors (Pure)
 // ─────────────────────────────────────────────────────────────
+
+/**
+ * Detect the current environment from Deno environment variables
+ * Checks ENVIRONMENT var, falls back to detecting from SUPABASE_URL
+ */
+const detectEnvironment = (): 'development' | 'production' | 'local' | 'unknown' => {
+  // Check explicit ENVIRONMENT variable
+  const envVar = Deno.env.get('ENVIRONMENT')?.toLowerCase();
+  if (envVar === 'development' || envVar === 'dev') return 'development';
+  if (envVar === 'production' || envVar === 'prod') return 'production';
+  if (envVar === 'local') return 'local';
+
+  // Fallback: detect from SUPABASE_URL (contains project ref)
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  if (supabaseUrl.includes('qzsmhgyojmwvtjmnrdea')) return 'development';
+  if (supabaseUrl.includes('127.0.0.1') || supabaseUrl.includes('localhost')) return 'local';
+
+  // If SUPABASE_URL exists but doesn't match dev, assume production
+  if (supabaseUrl) return 'production';
+
+  return 'unknown';
+};
 
 /**
  * Create a new error log for a request
@@ -53,6 +76,7 @@ export const createErrorLog = (
   action,
   correlationId,
   startTime: new Date().toISOString(),
+  environment: detectEnvironment(),
   errors: [],
 });
 
@@ -351,6 +375,20 @@ const getSeverityEmoji = (error: Error): string => {
   return classifyError(error) === 'expected' ? '⚠️' : '💥';
 };
 
+/**
+ * Format environment as a badge for Slack notifications
+ * Uses color-coded emojis to make environment immediately visible
+ */
+const getEnvironmentBadge = (environment: string): string => {
+  const badges: Record<string, string> = {
+    production: '🔴 PRODUCTION',
+    development: '🟡 DEVELOPMENT',
+    local: '🟢 LOCAL',
+    unknown: '⚪ UNKNOWN',
+  };
+  return badges[environment] || '⚪ UNKNOWN';
+};
+
 // ─────────────────────────────────────────────────────────────
 // Formatters (Pure)
 // ─────────────────────────────────────────────────────────────
@@ -361,6 +399,8 @@ const getSeverityEmoji = (error: Error): string => {
  *
  * Template:
  * {emoji} {plain_english_impact}
+ * Environment: {environment_badge}
+ * Classification: {expected_behavior|system_error}
  *
  * {technical_error_detail}
  * → Likely cause: {inferred_cause}
@@ -388,9 +428,11 @@ export const formatForSlack = (log: ErrorLog): string => {
   const classification = classifyError(primaryError) === 'expected'
     ? 'Expected Behavior'
     : 'System Error';
+  const envBadge = getEnvironmentBadge(log.environment);
 
   // 1. HEADLINE: Emoji + plain English impact
   lines.push(`${emoji} ${impact}`);
+  lines.push(`Environment: ${envBadge}`);
   lines.push(`Classification: ${classification}`);
   lines.push('');
 
