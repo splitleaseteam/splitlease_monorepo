@@ -16,15 +16,23 @@ import { PAGE_SIZE } from './constants.js';
 // ============================================================================
 
 /**
- * NYC Boroughs - Static data (no database query needed).
- * These are fixed geographic regions that never change.
+ * NYC Boroughs - Static data mapped to Bubble.io IDs from the database.
+ * These IDs match the values stored in listing."Location - Borough".
+ *
+ * Mapping derived from actual database records:
+ * - Manhattan: 149 listings
+ * - Brooklyn: 31 listings
+ * - Queens: 9 listings
+ * - Bronx: 3 listings
+ * - Jersey City/Newark: included for completeness (NJ properties in system)
  */
 const NYC_BOROUGHS = [
-  { id: 'bronx', name: 'Bronx' },
-  { id: 'brooklyn', name: 'Brooklyn' },
-  { id: 'manhattan', name: 'Manhattan' },
-  { id: 'queens', name: 'Queens' },
-  { id: 'staten-island', name: 'Staten Island' },
+  { id: '1607041299715x741251947580746200', name: 'Bronx' },
+  { id: '1607041299637x913970439175620100', name: 'Brooklyn' },
+  { id: '1686599616073x348655546878883200', name: 'Jersey City, NJ' },
+  { id: '1607041299687x679479834266385900', name: 'Manhattan' },
+  { id: '1686674905048x436838997624262400', name: 'Newark, NJ' },
+  { id: '1607041299828x406969561802059650', name: 'Queens' },
 ];
 
 /**
