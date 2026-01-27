@@ -109,6 +109,12 @@ export function useUsabilityDataManagementPageLogic() {
     setDefaultMoveInDate();
   }, [loadHosts, loadGuests, setDefaultMoveInDate]);
 
+  useEffect(() => {
+    if (window.$crisp?.push) {
+      window.$crisp.push(["do", "chat:hide"]);
+    }
+  }, []);
+
   const setDefaultMoveInDate = useCallback(() => {
     const today = new Date();
     today.setDate(today.getDate() + 7); // Default to 1 week from now

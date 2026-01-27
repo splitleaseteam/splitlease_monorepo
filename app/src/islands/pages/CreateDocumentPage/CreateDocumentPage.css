@@ -2,6 +2,7 @@
   min-height: 100vh;
   background-color: #f9fafb;
   padding: 2rem;
+  font-family: "DM Sans", sans-serif;
 }
 
 .create-document-page__loading {

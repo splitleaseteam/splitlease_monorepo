@@ -88,6 +88,12 @@ export function useCreateDocumentPageLogic({ showToast }) {
     initializePage();
   }, []);
 
+  useEffect(() => {
+    if (window.$crisp?.push) {
+      window.$crisp.push(["do", "chat:hide"]);
+    }
+  }, []);
+
   // ─────────────────────────────────────────────────────────
   // Data Loading
   // ─────────────────────────────────────────────────────────
@@ -171,12 +177,15 @@ export function useCreateDocumentPageLogic({ showToast }) {
       }
 
       // Create the document
+      const baseHostName = selectedHost.Name || selectedHost['Name - Full'] || selectedHost.name || '';
+      const hostName = baseHostName ? `${baseHostName} Full` : '';
+
       const result = await callDocumentApi('create', {
         document_on_policies: formState.selectedPolicyId,
         document_sent_title: formState.documentTitle.trim(),
         host_user: formState.selectedHostId,
         host_email: selectedHost.email || '',
-        host_name: selectedHost.Name || ''
+        host_name: hostName,
       });
 
       // Success!

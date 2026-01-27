@@ -146,7 +146,7 @@ export default function AiToolsPage() {
           {/* Page Header */}
           <section className="page-header">
             <div className="page-header__content">
-              <h1 className="page-title">AI Tools Dashboard</h1>
+              <h1 className="page-title">AI Tools</h1>
               <p className="page-subtitle">
                 Generate deepfake videos, narrations, and jingles for house manuals
               </p>
@@ -178,7 +178,9 @@ export default function AiToolsPage() {
                   <option value="">Select a house manual...</option>
                   {houseManuals.map((manual) => (
                     <option key={manual._id} value={manual._id}>
-                      {manual.Display || manual._id}
+                      {[manual.Display || manual._id, manual.Listing, manual.Host]
+                        .filter(Boolean)
+                        .join(' - ')}
                     </option>
                   ))}
                 </select>

@@ -59,8 +59,7 @@ export default function DocumentForm({
       {/* Policy Document Selector */}
       <div className="create-document-form__field">
         <label htmlFor="selectedPolicyId" className="create-document-form__label">
-          Policy Document
-          <span className="create-document-form__required">*</span>
+          Choose document to send
         </label>
         <div className="create-document-form__select-wrapper">
           <select
@@ -72,7 +71,7 @@ export default function DocumentForm({
             className={`create-document-form__select${formErrors.selectedPolicyId ? ' is-error' : ''}${formState.selectedPolicyId === '' ? ' is-placeholder' : ''}`}
           >
             <option value="" disabled>
-              Select a policy document...
+              Choose document to send
             </option>
             {policyOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -85,16 +84,12 @@ export default function DocumentForm({
         {formErrors.selectedPolicyId && (
           <p className="create-document-form__error">{formErrors.selectedPolicyId}</p>
         )}
-        <p className="create-document-form__help">
-          Select the policy document template to use
-        </p>
       </div>
 
       {/* Document Title Input */}
       <div className="create-document-form__field">
         <label htmlFor="documentTitle" className="create-document-form__label">
-          Document Title
-          <span className="create-document-form__required">*</span>
+          Enter Document name
         </label>
         <input
           id="documentTitle"
@@ -102,29 +97,20 @@ export default function DocumentForm({
           type="text"
           value={formState.documentTitle}
           onChange={handleTitleChange}
-          placeholder="Enter document title..."
+          placeholder="Title"
           disabled={isSubmitting}
           maxLength={255}
           className={`create-document-form__input${formErrors.documentTitle ? ' is-error' : ''}`}
         />
-        <div className="create-document-form__input-meta">
-          <span className="create-document-form__char-count">
-            {formState.documentTitle.length}/255
-          </span>
-        </div>
         {formErrors.documentTitle && (
           <p className="create-document-form__error">{formErrors.documentTitle}</p>
         )}
-        <p className="create-document-form__help">
-          This title will be shown to the host. Auto-fills from selected policy.
-        </p>
       </div>
 
       {/* Host User Selector */}
       <div className="create-document-form__field">
         <label htmlFor="selectedHostId" className="create-document-form__label">
-          Assign to Host
-          <span className="create-document-form__required">*</span>
+          Choose Host
         </label>
         <div className="create-document-form__select-wrapper">
           <select
@@ -136,7 +122,7 @@ export default function DocumentForm({
             className={`create-document-form__select${formErrors.selectedHostId ? ' is-error' : ''}${formState.selectedHostId === '' ? ' is-placeholder' : ''}`}
           >
             <option value="" disabled>
-              Select a host...
+              Choose Host
             </option>
             {hostOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -149,9 +135,6 @@ export default function DocumentForm({
         {formErrors.selectedHostId && (
           <p className="create-document-form__error">{formErrors.selectedHostId}</p>
         )}
-        <p className="create-document-form__help">
-          The host who will receive this document
-        </p>
       </div>
 
       {/* Submit Button */}
