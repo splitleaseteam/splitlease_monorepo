@@ -6,6 +6,21 @@
                 "-y",
                 "@knip/mcp"
             ]
+        },
+        "supabase-dev": {
+            "transport": "sse",
+            "url": "https://mcp.supabase.com/mcp"
+        },
+        "supabase-live": {
+            "transport": "sse",
+            "url": "https://mcp.supabase.com/mcp"
+        },
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@playwright/mcp"
+            ]
         }
     }
 }
