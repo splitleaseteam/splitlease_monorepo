@@ -1,7 +1,7 @@
 # Human-Friendly Error Logging for Edge Functions
 
-**UPDATED**: 2026-01-27
-**PURPOSE**: Guide for using the new compressed, human-friendly Slack error notifications
+**UPDATED**: 2026-01-27 (Error Classification & payloadEmail)
+**PURPOSE**: Guide for using the new compressed, human-friendly Slack error notifications with error classification
 
 ---
 
@@ -27,6 +27,7 @@ Context: Fatal error in main handler
 ### After (New Format)
 ```
 💥 Can't view message threads
+Classification: System Error
 
 Could not find the function public.get_user_threads(user_id) in the schema cache
 → Likely cause: Missing migration or function was dropped
@@ -41,13 +42,31 @@ User: John Doe (john@example.com, ID: f41c8513)
 Function: messages/get_threads (req: ed5a1b70)
 ```
 
-**Note:** Timestamps are not included since Slack automatically shows when the message was received.
+**Expected Behavior Example:**
+```
+⚠️ Can't log in
+Classification: Expected Behavior
+
+Invalid login credentials
+
+User: john@example.com (attempted login/signup)
+
+Function: auth-user/login (req: a3f71c42)
+```
+
+**Note:**
+- Timestamps are not included since Slack automatically shows when the message was received
+- "What to check" suggestions only appear for System Errors, not Expected Behavior
 
 ---
 
 ## Using setUserContext()
 
 To show **user names and emails** instead of just IDs, edge functions should query the `public.user` table and set user context on the error log.
+
+**For authenticated requests**: Query `public.user` table with the authenticated user ID
+
+**For unauthenticated requests** (login/signup failures): Use `payloadEmail` to show the email from the request payload
 
 ### Basic Pattern
 
@@ -95,13 +114,16 @@ The new format uses several pure helper functions to transform error data:
 
 | Function | Purpose | Example Output |
 |----------|---------|----------------|
+| `classifyError()` | Classify as expected vs system error | "expected" or "system-error" |
 | `inferLikelyCause()` | Pattern-match error messages | "Missing migration or function was dropped" |
-| `getActionableSuggestions()` | Debugging steps | ["Run migrations", "Check schema"] |
+| `getActionableSuggestions()` | Debugging steps (system errors only) | ["Run migrations", "Check schema"] or [] |
 | `getUserImpact()` | User-facing impact | "Can't view message threads" |
 | `getActionDescription()` | Plain English actions | "check their messages" (from `get_threads`) |
-| `getSeverityEmoji()` | Visual severity indicator | 🚨 (critical) or 💥 (normal) |
+| `getSeverityEmoji()` | Visual severity indicator | ⚠️ (expected) or 💥 (system error) |
 
-**Note:** The `getRelativeTime()` function exists but is no longer used in Slack notifications since Slack provides timestamps automatically.
+**Note:**
+- The `getRelativeTime()` function exists but is no longer used in Slack notifications since Slack provides timestamps automatically
+- `getActionableSuggestions()` returns empty array for expected user errors (no developer action needed)
 
 ---
 
@@ -144,8 +166,9 @@ export interface ErrorLog {
   readonly correlationId: string;
   readonly startTime: string;
   readonly userId?: string;
-  readonly userName?: string;    // NEW
-  readonly userEmail?: string;   // NEW
+  readonly userName?: string;      // User's full name from public.user
+  readonly userEmail?: string;     // User's email from public.user
+  readonly payloadEmail?: string;  // Email from request payload (for login/signup)
   readonly errors: ReadonlyArray<CollectedError>;
 }
 ```
@@ -158,15 +181,26 @@ export interface ErrorLog {
 export const setUserContext = (
   log: ErrorLog,
   context: {
-    userId: string;
+    userId?: string;
     userName?: string;
     userEmail?: string;
+    payloadEmail?: string;  // For unauthenticated requests (login/signup failures)
   }
 ): ErrorLog => ({
   ...log,
   userId: context.userId,
   userName: context.userName,
   userEmail: context.userEmail,
+  payloadEmail: context.payloadEmail,
+});
+```
+
+**Usage with payloadEmail** (for auth errors before user is authenticated):
+
+```typescript
+// On login/signup failure, capture email from payload
+errorLog = setUserContext(errorLog, {
+  payloadEmail: payload.email, // Show this in notification instead of "Not logged in"
 });
 ```
 
@@ -216,6 +250,21 @@ Deno.serve(async (req) => {
 
 ---
 
+## Error Classification
+
+The `classifyError()` function distinguishes between expected user errors and unexpected system errors:
+
+| Classification | Description | Patterns Matched |
+|----------------|-------------|------------------|
+| **Expected Behavior** | Normal user errors that don't require developer action | `invalid`, `expired`, `incorrect`, `wrong`, `not found`, `already exists`, `required`, `missing`, `forbidden`, `unauthorized`, `denied`, `password`, `email`, `credentials`, `validation`, `duplicate`, `unique constraint` |
+| **System Error** | Unexpected failures requiring developer attention | All other errors (database failures, network issues, function errors, etc.) |
+
+**Impact on Slack notifications:**
+- Expected Behavior: Shows ⚠️ emoji, **no "What to check" section**
+- System Error: Shows 💥 emoji, includes actionable debugging suggestions
+
+---
+
 ## Pattern Matching
 
 The `inferLikelyCause()` function matches common error patterns:
@@ -232,4 +281,4 @@ The `inferLikelyCause()` function matches common error patterns:
 
 ---
 
-**LAST_UPDATED**: 2026-01-27
+**LAST_UPDATED**: 2026-01-27 (Added error classification and payloadEmail support)

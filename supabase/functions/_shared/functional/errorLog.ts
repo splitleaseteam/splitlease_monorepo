@@ -32,6 +32,7 @@ export interface ErrorLog {
   readonly userId?: string;
   readonly userName?: string;
   readonly userEmail?: string;
+  readonly payloadEmail?: string; // Email from request payload (for login/signup)
   readonly errors: ReadonlyArray<CollectedError>;
 }
 
@@ -95,16 +96,25 @@ export const setAction = (log: ErrorLog, action: string): ErrorLog => ({
 });
 
 /**
- * Set user context (ID, name, email) on the log (returns new log)
+ * Set user context (ID, name, email, payloadEmail) on the log (returns new log)
+ *
+ * @param log - The error log to update
+ * @param context - User context with optional payloadEmail for unauthenticated requests
  */
 export const setUserContext = (
   log: ErrorLog,
-  context: { userId: string; userName?: string; userEmail?: string }
+  context: {
+    userId?: string;
+    userName?: string;
+    userEmail?: string;
+    payloadEmail?: string;
+  }
 ): ErrorLog => ({
   ...log,
   userId: context.userId,
   userName: context.userName,
   userEmail: context.userEmail,
+  payloadEmail: context.payloadEmail,
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -208,39 +218,38 @@ const inferLikelyCause = (error: Error): string | null => {
 
 /**
  * Generate actionable suggestions based on error
- * Returns array of suggestions to check
+ * Returns array of suggestions - empty if error is expected user behavior
  */
 const getActionableSuggestions = (error: Error, functionName: string): string[] => {
   const msg = error.message.toLowerCase();
   const suggestions: string[] = [];
 
+  // Don't show suggestions for expected user errors (invalid input, auth failures)
+  if (classifyError(error) === 'expected') {
+    return []; // User error - no action needed by developers
+  }
+
+  // Only show suggestions for actual system errors
   if (msg.includes('could not find the function') || msg.includes('function') && msg.includes('not found')) {
     suggestions.push('Run pending migrations in Supabase');
     suggestions.push(`Verify the database function exists`);
     suggestions.push('Check recent schema changes in migrations/');
-  } else if (msg.includes('authentication') || msg.includes('unauthorized')) {
-    suggestions.push('Check if user token is expired');
-    suggestions.push('Verify auth flow is working');
-    suggestions.push('Check Supabase Auth logs');
-  } else if (msg.includes('network') || msg.includes('timeout')) {
+  } else if (msg.includes('network') || msg.includes('timeout') || msg.includes('econnrefused')) {
     suggestions.push('Check external API status');
     suggestions.push('Verify network connectivity');
     suggestions.push('Review timeout configurations');
-  } else if (msg.includes('permission') || msg.includes('forbidden')) {
+  } else if (msg.includes('permission') && !msg.includes('denied')) {
     suggestions.push('Review RLS policies on affected table');
-    suggestions.push('Check user permissions');
     suggestions.push('Verify service role key usage');
   } else if (msg.includes('foreign key')) {
     suggestions.push('Check if referenced record exists');
     suggestions.push('Review FK constraints on table');
-    suggestions.push('Verify data integrity');
-  } else {
-    // Generic suggestions
-    suggestions.push(`Check Supabase logs for ${functionName}`);
-    suggestions.push('Review recent deployments');
-    suggestions.push('Verify environment variables are set');
+  } else if (msg.includes('connection') || msg.includes('database')) {
+    suggestions.push('Check database connection pool');
+    suggestions.push('Verify Supabase project is running');
   }
 
+  // If no specific suggestions, return empty (don't show generic ones)
   return suggestions;
 };
 
@@ -311,17 +320,35 @@ const getUserImpact = (functionName: string, action: string): string => {
 };
 
 /**
- * Get emoji based on function/action severity
- * Critical errors (auth, payment) get 🚨, others get 💥
+ * Classify error as expected behavior vs system error
+ * Returns: 'expected' | 'system-error'
  */
-const getSeverityEmoji = (functionName: string, action: string): string => {
-  const critical = ['auth-user', 'payment', 'stripe'];
+const classifyError = (error: Error): 'expected' | 'system-error' => {
+  const msg = error.message.toLowerCase();
 
-  if (critical.some(name => functionName.includes(name))) {
-    return '🚨';
+  // Expected user errors (validation, auth failures, not found)
+  const expectedPatterns = [
+    'invalid', 'expired', 'incorrect', 'wrong',
+    'not found', 'does not exist', 'already exists',
+    'required', 'missing', 'forbidden', 'unauthorized',
+    'denied', 'password', 'email', 'credentials',
+    'validation', 'duplicate', 'unique constraint'
+  ];
+
+  if (expectedPatterns.some(pattern => msg.includes(pattern))) {
+    return 'expected';
   }
 
-  return '💥';
+  // System errors (database, network, function failures)
+  return 'system-error';
+};
+
+/**
+ * Get emoji based on error classification
+ * Expected behavior gets ⚠️, system errors get 💥
+ */
+const getSeverityEmoji = (error: Error): string => {
+  return classifyError(error) === 'expected' ? '⚠️' : '💥';
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -356,11 +383,15 @@ export const formatForSlack = (log: ErrorLog): string => {
   }
 
   const primaryError = log.errors[0].error;
-  const emoji = getSeverityEmoji(log.functionName, log.action);
+  const emoji = getSeverityEmoji(primaryError);
   const impact = getUserImpact(log.functionName, log.action);
+  const classification = classifyError(primaryError) === 'expected'
+    ? 'Expected Behavior'
+    : 'System Error';
 
   // 1. HEADLINE: Emoji + plain English impact
   lines.push(`${emoji} ${impact}`);
+  lines.push(`Classification: ${classification}`);
   lines.push('');
 
   // 2. TECHNICAL ERROR: Show actual error message
@@ -386,12 +417,15 @@ export const formatForSlack = (log: ErrorLog): string => {
     } else {
       lines.push(`User: ID ${shortId}`);
     }
+  } else if (log.payloadEmail) {
+    // Show email from payload for unauthenticated requests (login/signup failures)
+    lines.push(`User: ${log.payloadEmail} (attempted login/signup)`);
   } else {
     lines.push('User: Not logged in');
   }
   lines.push('');
 
-  // 6. ACTIONABLE SUGGESTIONS: What to check
+  // 5. ACTIONABLE SUGGESTIONS: What to check (only for system errors)
   const suggestions = getActionableSuggestions(primaryError, log.functionName);
   if (suggestions.length > 0) {
     lines.push('🔍 What to check:');
@@ -401,10 +435,10 @@ export const formatForSlack = (log: ErrorLog): string => {
     lines.push('');
   }
 
-  // 7. TECHNICAL DETAILS: Function, action, request ID (at bottom)
+  // 6. TECHNICAL DETAILS: Function, action, request ID (at bottom)
   lines.push(`Function: ${log.functionName}/${log.action} (req: ${log.correlationId})`);
 
-  // 8. MULTIPLE ERRORS: If more than one error, note it
+  // 7. MULTIPLE ERRORS: If more than one error, note it
   if (log.errors.length > 1) {
     lines.push(`Note: ${log.errors.length - 1} additional error${log.errors.length > 2 ? 's' : ''} occurred (check Supabase logs)`);
   }
