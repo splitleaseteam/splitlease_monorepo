@@ -63,7 +63,7 @@ jobs:
       - name: Notify Slack on success
         if: success()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "✅ Deployed ALL Edge Functions to production (\_shared/ changed)" \
             --type success
         continue-on-error: true
@@ -71,7 +71,7 @@ jobs:
       - name: Notify Slack on failure
         if: failure()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "❌ Failed to deploy Edge Functions to production" \
             --type error
         continue-on-error: true
@@ -117,7 +117,7 @@ jobs:
       - name: Notify Slack on success
         if: success()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "✅ Deployed ${{ matrix.function }} to production" \
             --type success
         continue-on-error: true
@@ -125,7 +125,7 @@ jobs:
       - name: Notify Slack on failure
         if: failure()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "❌ Failed to deploy ${{ matrix.function }} to production" \
             --type error
         continue-on-error: true

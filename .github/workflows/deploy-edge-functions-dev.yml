@@ -63,7 +63,7 @@ jobs:
       - name: Notify Slack
         if: success()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "🔧 Deployed ALL Edge Functions to dev (branch: ${{ github.ref_name }})" \
             --type info
         continue-on-error: true
@@ -100,7 +100,7 @@ jobs:
       - name: Notify Slack
         if: success()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "🔧 Deployed ${{ matrix.function }} to dev (branch: ${{ github.ref_name }})" \
             --type info
         continue-on-error: true

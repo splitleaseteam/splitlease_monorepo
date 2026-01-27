@@ -72,7 +72,7 @@ jobs:
       - name: Notify Slack on success
         if: success()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "✅ PythonAnywhere deployment successful (3 Flask apps: mysite, mysite2, mysite3)" \
             --type success
         continue-on-error: true
@@ -80,7 +80,7 @@ jobs:
       - name: Notify Slack on failure
         if: failure()
         run: |
-          python "C:/Users/Split Lease/Documents/Split Lease/.claude/skills/slack-webhook/scripts/send_slack.py" \
+          python .github/scripts/send_slack.py \
             "❌ PythonAnywhere deployment failed - check GitHub Actions logs" \
             --type error
         continue-on-error: true
