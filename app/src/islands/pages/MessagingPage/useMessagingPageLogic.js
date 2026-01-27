@@ -232,7 +232,7 @@ export function useMessagingPageLogic() {
         if (!newRow) return;
 
         // Client-side filter: only process messages for this thread
-        if (newRow['Associated Thread/Conversation'] !== selectedThread._id) {
+        if (newRow.thread_id !== selectedThread._id) {
           console.log('[Realtime] Message is for different thread, ignoring');
           return;
         }
@@ -240,7 +240,7 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Message is for this thread, processing...');
 
         // Skip if this is our own message (already added optimistically)
-        const isOwnMessage = newRow['-Originator User'] === user?.bubbleId;
+        const isOwnMessage = newRow.originator_user_id === user?.bubbleId;
 
         // Add message to state (avoid duplicates)
         setMessages(prev => {
@@ -253,7 +253,7 @@ export function useMessagingPageLogic() {
             sender_name: newRow['is Split Bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
             sender_avatar: isOwnMessage ? user?.profilePhoto : undefined,
             sender_type: newRow['is Split Bot'] ? 'splitbot' :
-              (newRow['-Originator User'] === newRow['-Host User'] ? 'host' : 'guest'),
+              (newRow.originator_user_id === newRow.host_user_id ? 'host' : 'guest'),
             is_outgoing: isOwnMessage,
             timestamp: new Date(newRow['Created Date']).toLocaleString('en-US', {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'

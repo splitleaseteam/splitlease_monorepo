@@ -687,6 +687,28 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== GUEST EXPERIENCE REVIEW (PUBLIC-FACING SURVEY) =====
+  {
+    path: '/guest-experience-review',
+    file: 'guest-experience-review.html',
+    aliases: ['/guest-experience-review.html', '/guest-experience', '/experience-review'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'guest-experience-review-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== HOST EXPERIENCE REVIEW (HOST FEEDBACK SURVEY) =====
+  {
+    path: '/host-experience-review',
+    file: 'host-experience-review.html',
+    aliases: ['/host-experience-review.html', '/host-experience', '/host-feedback'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'host-experience-review-view',
+    hasDynamicSegment: false
+  },
+
   // ===== Z-SEARCH UNIT TEST (INTERNAL) =====
   {
     path: '/_internal/z-search-unit-test',

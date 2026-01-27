@@ -325,6 +325,30 @@
 /host-simulation  /_internal/simulation-host-mobile-view  200
 /host-simulation/  /_internal/simulation-host-mobile-view  200
 
+# /guest-experience-review → guest-experience-review.html
+/guest-experience-review  /_internal/guest-experience-review-view  200
+/guest-experience-review/  /_internal/guest-experience-review-view  200
+
+# Alias: /guest-experience → guest-experience-review.html
+/guest-experience  /_internal/guest-experience-review-view  200
+/guest-experience/  /_internal/guest-experience-review-view  200
+
+# Alias: /experience-review → guest-experience-review.html
+/experience-review  /_internal/guest-experience-review-view  200
+/experience-review/  /_internal/guest-experience-review-view  200
+
+# /host-experience-review → host-experience-review.html
+/host-experience-review  /_internal/host-experience-review-view  200
+/host-experience-review/  /_internal/host-experience-review-view  200
+
+# Alias: /host-experience → host-experience-review.html
+/host-experience  /_internal/host-experience-review-view  200
+/host-experience/  /_internal/host-experience-review-view  200
+
+# Alias: /host-feedback → host-experience-review.html
+/host-feedback  /_internal/host-experience-review-view  200
+/host-feedback/  /_internal/host-experience-review-view  200
+
 # /report-emergency → report-emergency.html
 /report-emergency  /_internal/report-emergency-view  200
 /report-emergency/  /_internal/report-emergency-view  200
