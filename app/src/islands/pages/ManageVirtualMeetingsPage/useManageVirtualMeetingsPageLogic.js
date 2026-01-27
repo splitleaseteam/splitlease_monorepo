@@ -17,7 +17,6 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 import {
   canConfirmMeeting,
@@ -133,12 +132,18 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload) => {
+    // Build headers with Supabase anon key (required for Edge Functions) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+    };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/virtual-meeting`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 
@@ -153,7 +158,6 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // ===== DATA FETCHING =====
   const fetchAllMeetings = useCallback(async () => {
-    if (!accessToken) return;
 
     setIsLoading(true);
     setError(null);
@@ -179,7 +183,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Fetch blocked slots for selected host
   const fetchBlockedSlots = useCallback(async (hostId) => {
-    if (!accessToken || !hostId) return;
+    if (!hostId) return;
 
     setIsLoadingBlockedSlots(true);
 
@@ -196,10 +200,8 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Initial data load
   useEffect(() => {
-    if (accessToken) {
-      fetchAllMeetings();
-    }
-  }, [accessToken, fetchAllMeetings]);
+    fetchAllMeetings();
+  }, [fetchAllMeetings]);
 
   // Load blocked slots when host changes
   useEffect(() => {

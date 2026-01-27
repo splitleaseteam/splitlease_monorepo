@@ -66,6 +66,7 @@ export function useSendMagicLoginLinksPageLogic() {
   /**
    * Call Edge Function action
    * Supports both Supabase Auth and legacy token auth
+   * Soft headers: token is optional for internal pages
    */
   const callEdgeFunction = async (action, payload) => {
     // Try Supabase Auth session first
@@ -76,16 +77,15 @@ export function useSendMagicLoginLinksPageLogic() {
       || localStorage.getItem('sl_auth_token')
       || sessionStorage.getItem('sl_auth_token');
 
-    if (!authToken) {
-      throw new Error('Not authenticated');
+    // Build headers with optional auth (soft headers pattern)
+    const headers = { 'Content-Type': 'application/json' };
+    if (authToken) {
+      headers.Authorization = `Bearer ${authToken}`;
     }
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/magic-login-links`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 
