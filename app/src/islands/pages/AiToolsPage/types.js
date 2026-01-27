@@ -70,11 +70,15 @@
  * @type {Object.<string, string>}
  */
 export const MELODY_PREFERENCES = {
-  'morning-melody': 'Morning Melody - Bright and uplifting',
-  'gentle-nighttime': 'Gentle Nighttime - Calm and soothing',
-  'optimistic-commercial': 'Optimistic Commercial - Energetic and positive',
-  'cozy-acoustic': 'Cozy Acoustic - Warm and intimate',
-  'modern-electronic': 'Modern Electronic - Contemporary and fresh',
+  'morning-melody': 'Morning Melody',
+  'gentle-nighttime': 'Gentle Nighttime',
+  'optimistic-commercial': 'Optimistic Commercial',
+  'hip-hop': 'Hip Hop',
+  'country': 'Country',
+  'edm': 'EDM',
+  'jazz': 'Jazz',
+  'opera': 'Opera',
+  'religious': 'Religious',
 };
 
 /**
@@ -83,12 +87,9 @@ export const MELODY_PREFERENCES = {
  */
 export const CONTENT_PREFERENCES = {
   'host-name': 'Host Name',
-  'property-name': 'Property Name',
-  'neighborhood': 'Neighborhood',
+  'guest-nickname': 'Guest NickName',
+  'arrival-instructions': 'Arrival Instructions',
   'house-rules': 'House Rules',
-  'amenities': 'Key Amenities',
-  'welcome-message': 'Welcome Message',
-  'check-in-info': 'Check-in Information',
 };
 
 /**

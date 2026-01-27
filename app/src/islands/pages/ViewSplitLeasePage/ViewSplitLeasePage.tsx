@@ -2120,8 +2120,8 @@ export default function ViewSplitLeasePage() {
             </div>
             {/* Schedule Pattern Highlight - shows actual weeks for alternating patterns */}
             <SchedulePatternHighlight
-              pattern={null}
               reservationSpan={reservationSpan}
+              weeksOffered={listing?.['Weeks offered']}
             />
           </div>
 

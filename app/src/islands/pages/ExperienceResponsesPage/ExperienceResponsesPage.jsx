@@ -14,13 +14,14 @@
  * @see useExperienceResponsesPageLogic.js for all business logic
  */
 
-import { Toaster } from 'react-hot-toast';
 import { useExperienceResponsesPageLogic } from './useExperienceResponsesPageLogic';
 import FilterBar from './components/FilterBar';
 import ResponseList from './components/ResponseList';
 import ResponseDetail from './components/ResponseDetail';
 import LoadingState from './components/LoadingState';
 import EmptyState from './components/EmptyState';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import './ExperienceResponsesPage.css';
 
 export default function ExperienceResponsesPage() {
   const logic = useExperienceResponsesPageLogic();
@@ -29,6 +30,7 @@ export default function ExperienceResponsesPage() {
   if (logic.authState === 'checking') {
     return (
       <div className="er-page">
+        <AdminHeader />
         <LoadingState message="Checking authentication..." />
       </div>
     );
@@ -38,6 +40,7 @@ export default function ExperienceResponsesPage() {
   if (logic.authState === 'unauthorized') {
     return (
       <div className="er-page">
+        <AdminHeader />
         <div className="er-error-state">
           <h2>Access Denied</h2>
           <p>You do not have permission to access this page.</p>
@@ -50,11 +53,12 @@ export default function ExperienceResponsesPage() {
   if (logic.isLoading && logic.responses.length === 0) {
     return (
       <div className="er-page">
+        <AdminHeader />
         <header className="er-header">
           <h1 className="er-title">Experience Responses</h1>
         </header>
         <LoadingState message="Loading responses..." />
-        <Toaster position="top-right" />
+        {/* Toast notifications provided by ToastProvider in entry file */}
       </div>
     );
   }
@@ -63,6 +67,7 @@ export default function ExperienceResponsesPage() {
   if (logic.error && logic.responses.length === 0) {
     return (
       <div className="er-page">
+        <AdminHeader />
         <header className="er-header">
           <h1 className="er-title">Experience Responses</h1>
         </header>
@@ -73,7 +78,7 @@ export default function ExperienceResponsesPage() {
             Try Again
           </button>
         </div>
-        <Toaster position="top-right" />
+        {/* Toast notifications provided by ToastProvider in entry file */}
       </div>
     );
   }
@@ -85,6 +90,7 @@ export default function ExperienceResponsesPage() {
 
   return (
     <div className="er-page">
+      <AdminHeader />
       {/* Header */}
       <header className="er-header">
         <h1 className="er-title">Experience Responses</h1>
@@ -136,7 +142,7 @@ export default function ExperienceResponsesPage() {
         </div>
       )}
 
-      <Toaster position="top-right" />
+      {/* Toast notifications provided by ToastProvider in entry file */}
     </div>
   );
 }

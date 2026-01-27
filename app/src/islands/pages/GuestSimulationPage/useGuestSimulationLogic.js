@@ -22,8 +22,8 @@
  * @module islands/pages/GuestSimulationPage/useGuestSimulationLogic
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, loginUser, getSessionId } from '../../../lib/auth.js';
+import { useState, useCallback } from 'react';
+import { loginUser, getSessionId } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 import { showToast } from '../../shared/Toast.jsx';
 
@@ -49,7 +49,7 @@ export function useGuestSimulationLogic() {
   // ============================================================================
 
   const [authState, setAuthState] = useState({
-    isLoading: true,
+    isLoading: false,
     isAuthenticated: false,
     user: null
   });
@@ -84,85 +84,6 @@ export function useGuestSimulationLogic() {
   const [error, setError] = useState(null);
 
   // ============================================================================
-  // AUTH CHECK ON MOUNT
-  // ============================================================================
-
-  useEffect(() => {
-    async function checkAuth() {
-      console.log('🔐 Guest Simulation: Checking authentication...');
-
-      try {
-        // Step 1: Lightweight auth check
-        const hasAuth = await checkAuthStatus();
-
-        if (!hasAuth) {
-          console.log('ℹ️ User not authenticated - showing login form');
-          setAuthState({
-            isLoading: false,
-            isAuthenticated: false,
-            user: null
-          });
-          return;
-        }
-
-        // Step 2: Validate token and fetch user data
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (userData) {
-          console.log('✅ User authenticated:', userData.email);
-          setAuthState({
-            isLoading: false,
-            isAuthenticated: true,
-            user: userData
-          });
-          setSimulationData(prev => ({
-            ...prev,
-            userId: userData.userId
-          }));
-        } else {
-          // Fallback: Check Supabase session
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            const userId = session.user.user_metadata?.user_id || session.user.id;
-            console.log('⚠️ Using fallback session data');
-
-            setAuthState({
-              isLoading: false,
-              isAuthenticated: true,
-              user: {
-                userId,
-                email: session.user.email,
-                firstName: session.user.user_metadata?.first_name || 'User'
-              }
-            });
-            setSimulationData(prev => ({
-              ...prev,
-              userId
-            }));
-          } else {
-            console.log('ℹ️ No valid session - showing login form');
-            setAuthState({
-              isLoading: false,
-              isAuthenticated: false,
-              user: null
-            });
-          }
-        }
-      } catch (err) {
-        console.error('Auth check failed:', err);
-        setAuthState({
-          isLoading: false,
-          isAuthenticated: false,
-          user: null
-        });
-      }
-    }
-
-    checkAuth();
-  }, []);
-
-  // ============================================================================
   // AUTH HANDLERS
   // ============================================================================
 
@@ -185,13 +106,10 @@ export function useGuestSimulationLogic() {
       const result = await loginUser(loginEmail, loginPassword);
 
       if (result.success) {
-        // Fetch user data after login
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
         setAuthState({
           isLoading: false,
           isAuthenticated: true,
-          user: userData || {
+          user: {
             userId: result.user_id,
             email: loginEmail,
             firstName: 'User'

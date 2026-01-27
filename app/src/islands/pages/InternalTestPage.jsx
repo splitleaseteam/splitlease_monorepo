@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import Header from '../shared/Header.jsx';
-import Footer from '../shared/Footer.jsx';
 import EmailPreviewSidebar from '../shared/EmailPreviewSidebar.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { renderGeneralEmailTemplate } from '../../lib/emailTemplateRenderer.js';
+import AdminHeader from '../shared/AdminHeader/AdminHeader';
 
 /**
  * InternalTestPage - Development/QA testing page
@@ -264,8 +263,8 @@ export default function InternalTestPage() {
 
   return (
     <>
-      <Header />
-
+      <AdminHeader />
+      
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -361,8 +360,6 @@ export default function InternalTestPage() {
           </ul>
         </div>
       </main>
-
-      <Footer />
 
       {/* Email Preview Sidebar */}
       <EmailPreviewSidebar

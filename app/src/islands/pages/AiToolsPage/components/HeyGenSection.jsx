@@ -11,10 +11,10 @@
 import PropTypes from 'prop-types';
 
 export default function HeyGenSection({
-  selectedHouseManual,
-  deepfakes,
-  deepfakeForm,
-  deepfakeStatus,
+  selectedHouseManual = '',
+  deepfakes = [],
+  deepfakeForm = { videoId: '', voiceId: '', script: '' },
+  deepfakeStatus = { loading: false, error: null, message: null },
   onFormChange,
   onGenerateScript,
   onGenerateVideo,
@@ -213,9 +213,3 @@ HeyGenSection.propTypes = {
   onAttach: PropTypes.func.isRequired,
 };
 
-HeyGenSection.defaultProps = {
-  selectedHouseManual: '',
-  deepfakes: [],
-  deepfakeForm: { videoId: '', voiceId: '', script: '' },
-  deepfakeStatus: { loading: false, error: null, message: null },
-};

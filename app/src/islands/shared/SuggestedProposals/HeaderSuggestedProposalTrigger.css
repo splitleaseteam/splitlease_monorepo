@@ -103,16 +103,22 @@
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .header-sp-trigger {
-    width: 72px;
+    width: 48px;
     height: 36px;
-    margin-right: 4px;
+    margin-right: 2px;
   }
 
   .header-sp-trigger__badge {
-    min-width: 20px;
-    height: 20px;
-    font-size: 11px;
-    top: -12px;
-    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    font-size: 10px;
+    top: -8px;
+    right: 0;
+    padding: 0 4px;
+  }
+
+  /* Scale down the Lottie icon on mobile */
+  .header-sp-trigger__icon {
+    transform: scale(0.7);
   }
 }

@@ -81,9 +81,9 @@ export default function CommunicationPanel({
 
   const handleSelectPresetEmail = (preset) => {
     // Replace placeholders with actual values
-    let subject = preset.subject;
-    let bodyHtml = preset.body_html;
-    let bodyText = preset.body_text;
+    const subject = preset.subject;
+    const bodyHtml = preset.body_html;
+    const bodyText = preset.body_text;
 
     const guestName = (emergency.guest || emergency.reportedBy)?.firstName || 'Guest';
     const staffName = emergency.assignedTo?.firstName || 'Team Member';

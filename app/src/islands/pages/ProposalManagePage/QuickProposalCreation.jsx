@@ -151,7 +151,7 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
 
       // Fetch host info for each listing
       const hostIds = [...new Set(data?.map(l => l['Host User']).filter(Boolean))];
-      let hostMap = {};
+      const hostMap = {};
 
       if (hostIds.length > 0) {
         const { data: hosts } = await supabase

@@ -530,7 +530,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           "hc move in date",
           "hc check in day",
           "hc check out day",
-          "hc nights per week"
+          "hc nights per week",
+          "hc house rules"
         `)
         .eq('Listing', listingId)
         .neq('Deleted', true)
@@ -855,6 +856,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         checkOut,
         nightsSelected,
         daysSelected,
+        newHouseRules,
         moveInDate
       } = counterofferData;
 
@@ -893,24 +895,41 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Build the payload with ALL hc_ fields (new value or original)
       // This enables UI strikethrough comparison
+      const hcReservationSpanWeeks = numberOfWeeks ?? originalWeeks;
+      const hcNightsSelected = convertedNights ?? originalNights;
+      const hcNightsPerWeek = Array.isArray(hcNightsSelected) ? hcNightsSelected.length : (originalNights?.length || 0);
+      const hcNightlyPrice = parseFloat(originalNightlyPrice) || 0;
+
+      // Calculate derived financial fields based on counteroffer terms
+      // Total price = nightly rate × nights per week × total weeks
+      const hcTotalPrice = hcNightlyPrice * hcNightsPerWeek * hcReservationSpanWeeks;
+      // Four week rent = nightly rate × nights per week × 4
+      const hcFourWeekRent = hcNightlyPrice * hcNightsPerWeek * 4;
+
       const payload = {
         proposal_id: originalProposal._id || originalProposal.id,
         status: 'Host Counteroffer Submitted / Awaiting Guest Review',
 
         // Schedule fields - use new value if provided, otherwise copy original
-        hc_reservation_span_weeks: numberOfWeeks ?? originalWeeks,
+        hc_reservation_span_weeks: hcReservationSpanWeeks,
         hc_check_in: convertedCheckIn ?? (typeof originalCheckIn === 'number' ? originalCheckIn : parseInt(originalCheckIn, 10) || 0),
         hc_check_out: convertedCheckOut ?? (typeof originalCheckOut === 'number' ? originalCheckOut : parseInt(originalCheckOut, 10) || 0),
-        hc_nights_selected: convertedNights ?? originalNights,
+        hc_nights_selected: hcNightsSelected,
         hc_days_selected: convertedDays ?? originalDays,
         hc_move_in_date: convertedMoveIn ?? originalMoveIn,
+        hc_nights_per_week: hcNightsPerWeek,
 
-        // Financial fields - copy from original (host can't change these in current UI)
-        hc_nightly_price: parseFloat(originalNightlyPrice) || 0,
+        // Financial fields - recalculate based on counteroffer terms
+        hc_nightly_price: hcNightlyPrice,
         hc_cleaning_fee: parseFloat(originalCleaningFee) || 0,
         hc_damage_deposit: parseFloat(originalDamageDeposit) || 0,
-        hc_total_price: parseFloat(originalTotalPrice) || 0,
-        hc_four_week_rent: parseFloat(originalFourWeekRent) || 0
+        hc_total_price: hcTotalPrice,
+        hc_four_week_rent: hcFourWeekRent,
+
+        // House rules - convert to array of IDs
+        hc_house_rules: Array.isArray(newHouseRules)
+          ? newHouseRules.map(rule => rule.id || rule._id || rule).filter(Boolean)
+          : []
       };
 
       console.log('[useHostProposalsPageLogic] Converted payload with ALL hc_ fields:', payload);

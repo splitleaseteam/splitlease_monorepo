@@ -1,0 +1,306 @@
+/**
+ * CheckInCheckOutFlow Component Styles
+ */
+
+/* Overlay */
+.check-flow-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+/* Modal */
+.check-flow-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Header */
+.check-flow__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.check-flow__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4D4D4D;
+  margin: 0;
+}
+
+.check-flow__close {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6B6B6B;
+  transition: color 0.2s ease;
+}
+
+.check-flow__close:hover {
+  color: #4D4D4D;
+}
+
+/* Stay Info */
+.check-flow__stay-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #F7F8F9;
+}
+
+.check-flow__stay-week {
+  font-weight: 600;
+  color: #7C3AED;
+}
+
+.check-flow__stay-dates {
+  color: #6B6B6B;
+  font-size: 14px;
+}
+
+/* Content */
+.check-flow__content {
+  padding: 24px;
+}
+
+/* Check-in Flow */
+.check-flow__checkin {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.check-flow__quick-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.check-flow__action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  border: 2px solid #E5E5E5;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4D4D4D;
+  transition: all 0.2s ease;
+}
+
+.check-flow__action-btn:hover {
+  border-color: #7C3AED;
+  background: #F5F3FF;
+}
+
+.check-flow__action-btn--on-way:hover {
+  border-color: #F59E0B;
+  background: #FFFBEB;
+}
+
+.check-flow__action-btn--on-way:hover svg {
+  color: #F59E0B;
+}
+
+.check-flow__action-btn--here:hover {
+  border-color: #10B981;
+  background: #ECFDF5;
+}
+
+.check-flow__action-btn--here:hover svg {
+  color: #10B981;
+}
+
+.check-flow__message-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check-flow__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4D4D4D;
+}
+
+.check-flow__textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.check-flow__textarea:focus {
+  outline: none;
+  border-color: #7C3AED;
+}
+
+/* Check-out Flow */
+.check-flow__checkout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.check-flow__photo-section,
+.check-flow__review-section,
+.check-flow__leave-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check-flow__section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4D4D4D;
+  margin: 0;
+}
+
+.check-flow__section-title svg {
+  color: #7C3AED;
+}
+
+/* Photo Type Toggle */
+.check-flow__photo-type-toggle {
+  display: flex;
+  background: #F7F8F9;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.check-flow__toggle-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B6B6B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.check-flow__toggle-btn.active {
+  background: white;
+  color: #7C3AED;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Photo Upload */
+.check-flow__photo-upload {
+  position: relative;
+}
+
+.check-flow__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.check-flow__file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  border: 2px dashed #E5E5E5;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #6B6B6B;
+  transition: all 0.2s ease;
+}
+
+.check-flow__file-label:hover {
+  border-color: #7C3AED;
+  color: #7C3AED;
+  background: #F5F3FF;
+}
+
+/* Photo Preview */
+.check-flow__photo-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.check-flow__photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.check-flow__photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.check-flow__photo-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+}
+
+/* Leave Section */
+.check-flow__leave-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.check-flow__leave-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #6B6B6B;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .check-flow-modal {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .check-flow__quick-actions {
+    flex-direction: column;
+  }
+}
