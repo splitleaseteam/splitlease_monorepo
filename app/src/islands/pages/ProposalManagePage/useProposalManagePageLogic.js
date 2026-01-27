@@ -60,6 +60,45 @@ async function callProposalEdgeFunction(action, payload = {}) {
   return result.data;
 }
 
+/**
+ * Fetch records in batches to avoid PostgREST URL length limits.
+ * Large .in() filters with 30+ IDs can cause 400 errors.
+ *
+ * @param {string} table - The table name
+ * @param {string} selectColumns - The columns to select
+ * @param {string[]} ids - Array of IDs to fetch
+ * @param {number} batchSize - Number of IDs per batch (default 10)
+ * @returns {Promise<Object[]>} - Combined results from all batches
+ */
+async function fetchInBatches(table, selectColumns, ids, batchSize = 10) {
+  if (!ids || ids.length === 0) return [];
+
+  const results = [];
+  const batches = [];
+
+  // Split IDs into batches
+  for (let i = 0; i < ids.length; i += batchSize) {
+    batches.push(ids.slice(i, i + batchSize));
+  }
+
+  // Fetch each batch in parallel
+  const batchPromises = batches.map(async (batchIds) => {
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectColumns)
+      .in('_id', batchIds);
+
+    if (error) {
+      console.warn(`[ProposalManage] Batch fetch error for ${table}:`, error);
+      return [];
+    }
+    return data || [];
+  });
+
+  const batchResults = await Promise.all(batchPromises);
+  return batchResults.flat();
+}
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -99,7 +138,7 @@ function normalizeGuest(guest) {
     lastName: guest['Name - Last'] || guest.lastName || '',
     fullName: guest['Name - Full'] || guest.fullName || '',
     email: guest.email || '',
-    phoneNumber: guest['Phone Number'] || guest.phoneNumber || '',
+    phoneNumber: guest['Phone Number (as text)'] || guest['Phone Number'] || guest.phoneNumber || '',
     profilePhoto: guest['Profile Photo'] || guest.profilePhoto || null,
     aboutMe: guest['About Me / Bio'] || guest.aboutMe || '',
     isUsabilityTester: guest['is usability tester'] || guest.isUsabilityTester || false,
@@ -121,10 +160,49 @@ function normalizeHost(host) {
     lastName: host['Name - Last'] || host.lastName || '',
     fullName: host['Name - Full'] || host.fullName || '',
     email: host.email || '',
-    phoneNumber: host['Phone Number'] || host.phoneNumber || '',
+    phoneNumber: host['Phone Number (as text)'] || host['Phone Number'] || host.phoneNumber || '',
     profilePhoto: host['Profile Photo'] || host.profilePhoto || null,
     isUsabilityTester: host['is usability tester'] || host.isUsabilityTester || false
   };
+}
+
+/**
+ * Extract address string from Location - Address field
+ * The field can be a string or a JSONB object with an 'address' property
+ * @param {string|Object} locationAddress - Location address field value
+ * @returns {string} Address string or empty string
+ */
+function extractAddressString(locationAddress) {
+  if (!locationAddress) return '';
+
+  // If it's already a string, return it
+  if (typeof locationAddress === 'string') return locationAddress;
+
+  // If it's an object with an 'address' property, extract it
+  if (typeof locationAddress === 'object' && locationAddress.address) {
+    return locationAddress.address;
+  }
+
+  return '';
+}
+
+/**
+ * Extract cover photo URL from Features - Photos array
+ * @param {Array} photos - Array of photo objects from listing
+ * @returns {string|null} Cover photo URL or null
+ */
+function extractCoverPhotoUrl(photos) {
+  if (!photos || !Array.isArray(photos) || photos.length === 0) return null;
+
+  // First try to find the main/cover photo (toggleMainPhoto: true)
+  const mainPhoto = photos.find(p => p.toggleMainPhoto === true);
+  if (mainPhoto) {
+    return mainPhoto.url || mainPhoto.Photo || null;
+  }
+
+  // Otherwise return the first photo's URL
+  const firstPhoto = photos[0];
+  return firstPhoto?.url || firstPhoto?.Photo || null;
 }
 
 /**
@@ -138,11 +216,11 @@ function normalizeListing(listing) {
   return {
     _id: listing._id,
     name: listing.Name || listing.name || 'Unnamed Listing',
-    address: listing['Full Address'] || listing.address || '',
+    address: extractAddressString(listing['Location - Address']) || listing['Full Address'] || listing.address || '',
     rentalType: listing['rental type'] || listing.rentalType || '',
-    coverPhoto: listing['Cover Photo'] || listing.coverPhoto || null,
-    damageDeposit: listing['Damage Deposit'] || listing.damageDeposit || 0,
-    cleaningCost: listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
+    coverPhoto: extractCoverPhotoUrl(listing['Features - Photos']) || listing['Cover Photo'] || listing.coverPhoto || null,
+    damageDeposit: listing['💰Damage Deposit'] || listing['Damage Deposit'] || listing.damageDeposit || 0,
+    cleaningCost: listing['💰Cleaning Cost / Maintenance Fee'] || listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
     houseRules: listing['House Rules'] || listing.houseRules || []
   };
 }
@@ -378,42 +456,43 @@ export function useProposalManagePageLogic() {
       }
 
       // Fetch related data (guests, hosts, listings)
+      // Use batched fetching to avoid PostgREST URL length limits with large .in() filters
       const guestIds = [...new Set(proposalsData?.map(p => p.Guest).filter(Boolean))];
       const hostIds = [...new Set(proposalsData?.map(p => p['Host User']).filter(Boolean))];
       const listingIds = [...new Set(proposalsData?.map(p => p.Listing).filter(Boolean))];
 
-      // Fetch guests
+      console.log(`[ProposalManage] Fetching related data: ${guestIds.length} guests, ${hostIds.length} hosts, ${listingIds.length} listings`);
+
+      // Fetch all related data in parallel using batched queries
+      const [guests, hosts, listings] = await Promise.all([
+        fetchInBatches(
+          'user',
+          '_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo", "About Me / Bio", "user verified?", "is usability tester"',
+          guestIds
+        ),
+        fetchInBatches(
+          'user',
+          '_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo", "is usability tester"',
+          hostIds
+        ),
+        fetchInBatches(
+          'listing',
+          '_id, Name, "Location - Address", "rental type", "Features - Photos", "💰Damage Deposit", "💰Cleaning Cost / Maintenance Fee"',
+          listingIds
+        )
+      ]);
+
+      // Build lookup maps
       const guestMap = {};
-      if (guestIds.length > 0) {
-        const { data: guests } = await supabase
-          .from('user')
-          .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number", "Profile Photo", "About Me / Bio", "user verified?", "is usability tester"')
-          .in('_id', guestIds);
+      guests.forEach(g => { guestMap[g._id] = normalizeGuest(g); });
 
-        guests?.forEach(g => { guestMap[g._id] = normalizeGuest(g); });
-      }
-
-      // Fetch hosts (also from user table)
       const hostMap = {};
-      if (hostIds.length > 0) {
-        const { data: hosts } = await supabase
-          .from('user')
-          .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number", "Profile Photo", "is usability tester"')
-          .in('_id', hostIds);
+      hosts.forEach(h => { hostMap[h._id] = normalizeHost(h); });
 
-        hosts?.forEach(h => { hostMap[h._id] = normalizeHost(h); });
-      }
-
-      // Fetch listings
       const listingMap = {};
-      if (listingIds.length > 0) {
-        const { data: listings } = await supabase
-          .from('listing')
-          .select('_id, Name, "Full Address", "rental type", "Cover Photo", "Damage Deposit", "Cleaning Cost / Maintenance Fee"')
-          .in('_id', listingIds);
+      listings.forEach(l => { listingMap[l._id] = normalizeListing(l); });
 
-        listings?.forEach(l => { listingMap[l._id] = normalizeListing(l); });
-      }
+      console.log(`[ProposalManage] Loaded: ${guests.length} guests, ${hosts.length} hosts, ${listings.length} listings`);
 
       // Normalize and combine data
       const normalizedProposals = proposalsData?.map(p => {
