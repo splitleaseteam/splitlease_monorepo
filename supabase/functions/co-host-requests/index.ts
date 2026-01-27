@@ -674,7 +674,7 @@ async function handleGetAvailableCoHosts(
   let query = supabase
     .from('user')
     .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Profile Photo"')
-    .order('Name - Full', { ascending: true })
+    .order('"Name - Full"', { ascending: true })
     .limit(limit);
 
   const { data, error } = await query;
