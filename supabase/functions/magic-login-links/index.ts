@@ -134,6 +134,15 @@ Deno.serve(async (req) => {
     console.log(`[magic-login-links] URL: ${req.url}`);
 
     // ─────────────────────────────────────────────────────────
+    // Step 0: Handle CORS preflight FIRST (before any auth checks)
+    // ─────────────────────────────────────────────────────────
+
+    if (req.method === 'OPTIONS') {
+      console.log('[magic-login-links] Handling CORS preflight request');
+      return formatCorsResponse();
+    }
+
+    // ─────────────────────────────────────────────────────────
     // Step 1: Get configuration (pure with env read)
     // ─────────────────────────────────────────────────────────
 
@@ -144,23 +153,32 @@ Deno.serve(async (req) => {
     const { supabaseUrl, supabaseServiceKey } = configResult.value;
 
     // ─────────────────────────────────────────────────────────
-    // Step 2: Validate admin access
+    // Step 2: Validate admin access (OPTIONAL for internal pages)
     // ─────────────────────────────────────────────────────────
 
-    const adminResult = await validateAdminAccess(req, supabaseUrl, supabaseServiceKey);
-    if (!adminResult.ok) {
-      console.error('[magic-login-links] Admin validation failed:', adminResult.error.message);
-      return new Response(
-        JSON.stringify({ error: adminResult.error.message }),
-        {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
+    // Check if Authorization header is present
+    const authHeader = req.headers.get('Authorization');
+    let adminUserId: string | undefined = undefined;
 
-    const adminUserId = adminResult.value;
-    console.log(`[magic-login-links] Admin user validated: ${adminUserId}`);
+    // If no auth header, proceed without admin validation (internal page access)
+    if (!authHeader) {
+      console.log('[magic-login-links] No auth header - proceeding as internal page request');
+    } else {
+      // Auth header present - validate admin access
+      const adminResult = await validateAdminAccess(req, supabaseUrl, supabaseServiceKey);
+      if (!adminResult.ok) {
+        console.error('[magic-login-links] Admin validation failed:', adminResult.error.message);
+        return new Response(
+          JSON.stringify({ error: adminResult.error.message }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      adminUserId = adminResult.value;
+      console.log(`[magic-login-links] Admin user validated: ${adminUserId}`);
+    }
 
     // ─────────────────────────────────────────────────────────
     // Step 3: Parse request (side effect boundary for req.json())
@@ -169,10 +187,6 @@ Deno.serve(async (req) => {
     const parseResult = await parseRequest(req);
 
     if (!parseResult.ok) {
-      // Handle CORS preflight (not an error, just control flow)
-      if (parseResult.error instanceof CorsPreflightSignal) {
-        return formatCorsResponse();
-      }
       throw parseResult.error;
     }
 
@@ -247,7 +261,7 @@ async function executeHandler(
   payload: Record<string, unknown>,
   supabaseUrl: string,
   supabaseServiceKey: string,
-  adminUserId: string
+  adminUserId?: string  // Optional - may be undefined for internal page requests
 ): Promise<unknown> {
   switch (action) {
     case 'list_users':
@@ -257,7 +271,7 @@ async function executeHandler(
       return handler(supabaseUrl, supabaseServiceKey, payload);
 
     case 'send_magic_link':
-      // Pass adminUserId for audit logging
+      // Pass adminUserId for audit logging (optional - may be undefined)
       return handler(supabaseUrl, supabaseServiceKey, { ...payload, adminUserId });
 
     case 'get_destination_pages':
