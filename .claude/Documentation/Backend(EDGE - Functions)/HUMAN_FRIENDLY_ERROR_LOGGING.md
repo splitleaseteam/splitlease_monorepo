@@ -32,7 +32,7 @@ Could not find the function public.get_user_threads(user_id) in the schema cache
 → Likely cause: Missing migration or function was dropped
 
 User: John Doe (john@example.com, ID: f41c8513)
-When: Just now (12:47 AM EST)
+When: Just now (12:47 AM UTC)
 
 🔍 What to check:
 • Run pending migrations in Supabase
@@ -237,10 +237,10 @@ The `inferLikelyCause()` function matches common error patterns:
 | < 1 minute | "Just now" |
 | 2-59 minutes | "2 min ago", "45 min ago" |
 | 1-23 hours | "1 hour ago", "5 hours ago" |
-| Yesterday | "Yesterday at 3:15 PM" |
-| Older | "Jan 26 at 8:00 AM" |
+| Yesterday | "Yesterday at 3:15 PM UTC" |
+| Older | "Jan 26 at 8:00 AM UTC" |
 
-All times are in **EST** (America/New_York timezone).
+All times are in **UTC** (Deno Edge Functions don't have timezone database access).
 
 ---
 
