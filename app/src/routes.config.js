@@ -389,6 +389,17 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== QR CODE LANDING (GUEST-FACING) =====
+  {
+    path: '/qr-code-landing',
+    file: 'qr-code-landing.html',
+    aliases: ['/qr-code-landing.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'qr-code-landing-view',
+    hasDynamicSegment: false
+  },
+
   // ===== TRIAL HOST SIGNUP =====
   {
     path: '/signup-trial-host',
@@ -709,6 +720,17 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== REVIEWS OVERVIEW =====
+  {
+    path: '/reviews-overview',
+    file: 'reviews-overview.html',
+    aliases: ['/reviews-overview.html', '/reviews', '/my-reviews'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'reviews-overview-view',
+    hasDynamicSegment: false
+  },
+
   // ===== Z-SEARCH UNIT TEST (INTERNAL) =====
   {
     path: '/_internal/z-search-unit-test',
@@ -795,6 +817,18 @@ export const routes = [
     cloudflareInternal: true,
     internalName: 'z-unit-payment-records-js-view',
     hasDynamicSegment: false
+  },
+
+  // ===== MANAGE LEASES & PAYMENT RECORDS (INTERNAL ADMIN) =====
+  {
+    path: '/_manage-leases-payment-records',
+    file: 'manage-leases-payment-records.html',
+    aliases: ['/_manage-leases-payment-records.html', '/_mlpr'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'manage-leases-payment-records-view',
+    hasDynamicSegment: true,
+    dynamicPattern: '/_manage-leases-payment-records/:leaseId'
   }
 ];
 
