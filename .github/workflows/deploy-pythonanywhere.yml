@@ -1,21 +1,30 @@
-name: Deploy to PythonAnywhere
+name: Deploy to PythonAnywhere (Production)
 
 on:
   push:
     branches:
-      - main      # Trigger on push to main branch
-      - master    # Also support master branch name
+      - main
+    paths:
+      - 'pythonAnywhere/**'
+      - '.github/workflows/deploy-pythonanywhere.yml'
   workflow_dispatch:  # Allow manual triggering from GitHub UI
+
+# Prevent concurrent PythonAnywhere deployments
+concurrency:
+  group: pythonanywhere-prod
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    name: Deploy Flask Apps to PythonAnywhere
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to PythonAnywhere
+      - name: Deploy to PythonAnywhere via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PA_HOST }}
@@ -40,31 +49,54 @@ jobs:
             echo "📥 Pulling latest code from GitHub..."
             git pull origin main
 
-            echo "📦 Installing dependencies for mysite..."
-            cd pythonanywhere/mysite
+            echo "📦 Installing dependencies for mysite (contracts/Slack)..."
+            cd pythonAnywhere/mysite
             pip3 install --user -r requirements.txt
 
-            echo "📦 Installing dependencies for mysite2..."
+            echo "📦 Installing dependencies for mysite2 (URL shortener/QR)..."
             cd ../mysite2
             pip3 install --user -r requirements.txt
 
-            echo "📦 Installing dependencies for mysite3..."
+            echo "📦 Installing dependencies for mysite3 (ML/matching)..."
             cd ../mysite3
             pip3 install --user -r requirements.txt
 
             echo "🔄 Reloading web app..."
-            # Touch WSGI file to trigger reload
+            # Touch WSGI file to trigger automatic reload
             touch /var/www/${{ secrets.PA_USERNAME }}_pythonanywhere_com_wsgi.py
 
             echo "======================================"
             echo "✅ Deployment completed successfully!"
             echo "======================================"
 
-      - name: Notify deployment status
+      - name: Notify Slack on success
+        if: success()
+        run: |
+          python .github/scripts/send_slack.py \
+            "✅ PythonAnywhere deployment successful (3 Flask apps: mysite, mysite2, mysite3)" \
+            --type success
+        continue-on-error: true
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          python .github/scripts/send_slack.py \
+            "❌ PythonAnywhere deployment failed - check GitHub Actions logs" \
+            --type error
+        continue-on-error: true
+
+      - name: Generate deployment summary
         if: always()
         run: |
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Deployment succeeded"
-          else
-            echo "❌ Deployment failed"
-          fi
+          echo "## 🐍 PythonAnywhere Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Production (PythonAnywhere)" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://splitlease.pythonanywhere.com" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed Applications:**" >> $GITHUB_STEP_SUMMARY
+          echo "- **mysite**: Contracts, Slack Events, PDF generation, Google Drive" >> $GITHUB_STEP_SUMMARY
+          echo "- **mysite2**: URL shortener, QR generator, campaign analytics" >> $GITHUB_STEP_SUMMARY
+          echo "- **mysite3**: TensorFlow matching engine, ML recommendations" >> $GITHUB_STEP_SUMMARY
