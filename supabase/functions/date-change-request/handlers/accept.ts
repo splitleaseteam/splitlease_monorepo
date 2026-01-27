@@ -17,6 +17,7 @@ import {
   DateChangeRequestData,
 } from "../lib/types.ts";
 import { validateAcceptInput } from "../lib/validators.ts";
+import { sendDateChangeRequestNotifications } from "./notifications.ts";
 
 /**
  * Handle accept date change request
@@ -106,6 +107,28 @@ export async function handleAccept(
   }
 
   console.log(`[date-change-request:accept] Request status updated to Approved`);
+
+  // ================================================
+  // SEND NOTIFICATIONS (non-blocking)
+  // ================================================
+
+  try {
+    await sendDateChangeRequestNotifications(supabase, {
+      event: 'ACCEPTED',
+      requestId: input.requestId,
+      requestType: requestData['type of request'],
+      leaseId: requestData['Lease'] || '',
+      dateAdded: requestData['date added'],
+      dateRemoved: requestData['date removed'],
+      priceRate: requestData['Price/Rate of the night'],
+      requestedById: requestData['Requested by'] || '',
+      receiverId: requestData['Request receiver'] || '',
+      message: requestData['Message from Requested by'],
+      answerMessage: input.message || null,
+    });
+  } catch (notificationError) {
+    console.error(`[date-change-request:accept] Notification error (non-blocking):`, notificationError);
+  }
 
   // ================================================
   // UPDATE LEASE BOOKED DATES

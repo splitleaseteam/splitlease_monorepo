@@ -102,6 +102,12 @@ function copyDirectory(src, dest) {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // Fix motion-utils broken ESM exports by using CJS version (absolute path)
+      'motion-utils': resolve(__dirname, 'node_modules/motion-utils/dist/cjs/index.js'),
+    },
+  },
   plugins: [
     react(),
     {
@@ -253,6 +259,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    // Force cache invalidation with build timestamp
+    assetsInlineLimit: 0,
     rollupOptions: {
       // Use Route Registry to generate inputs automatically
       // This ensures ALL routes are included in the build

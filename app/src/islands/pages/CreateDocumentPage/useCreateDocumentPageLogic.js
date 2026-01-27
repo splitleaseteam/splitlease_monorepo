@@ -13,7 +13,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { checkAuthStatus } from '../../../lib/auth.js';
 import { validateDocumentForm } from '../../../logic/rules/documents/validateDocumentForm.js';
 
 // Edge Function URL for document operations
@@ -77,38 +76,23 @@ export function useCreateDocumentPageLogic({ showToast }) {
   const [lastCreatedDocument, setLastCreatedDocument] = useState(null);
 
   // ─────────────────────────────────────────────────────────
-  // Authentication Check
-  // NOTE: Admin check removed to allow any authenticated user access for testing
-  // Uses checkAuthStatus() which supports both Supabase Auth and legacy token auth
+  // Initialization (Auth removed for modernization)
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
-    async function verifyAuth() {
+    const initializePage = async () => {
       try {
-        // checkAuthStatus handles both Supabase Auth and legacy token auth
-        const isAuthenticated = await checkAuthStatus();
-
-        if (!isAuthenticated) {
-          console.log('[CreateDocumentPage] Not authenticated');
-          setIsAuthorized(false);
-          setIsInitializing(false);
-          return;
-        }
-
-        // Allow any authenticated user for testing
-        setCurrentUser({ authenticated: true });
+        setCurrentUser({ authenticated: false });
         setIsAuthorized(true);
         setIsInitializing(false);
-
-        // Load initial data after authorization
-        loadInitialData();
+        await loadInitialData();
       } catch (err) {
-        console.error('[CreateDocumentPage] Auth check error:', err);
-        setIsAuthorized(false);
+        console.error('[CreateDocumentPage] Init failed:', err);
+        setError(err.message);
         setIsInitializing(false);
       }
-    }
+    };
 
-    verifyAuth();
+    initializePage();
   }, []);
 
   // ─────────────────────────────────────────────────────────

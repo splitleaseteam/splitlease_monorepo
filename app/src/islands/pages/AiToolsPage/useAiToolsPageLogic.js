@@ -12,7 +12,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 import { aiToolsService } from '../../../lib/aiToolsService.js';
 import { MELODY_PREFERENCES, CONTENT_PREFERENCES } from './types.js';
@@ -191,45 +190,13 @@ export function useAiToolsPageLogic() {
     setError(null);
 
     try {
-      // Step 1: Check auth status
-      const isAuthenticated = await checkAuthStatus();
-
-      if (!isAuthenticated) {
-        setError('Please log in to access AI Tools');
-        setLoading(false);
-        setTimeout(() => {
-          window.location.href = '/?login=true';
-        }, 2000);
-        return;
-      }
-
-      // Step 2: Validate user and check admin status
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-      if (!userData) {
-        setError('Unable to verify user. Please log in again.');
-        setLoading(false);
-        return;
-      }
-
-      // NOTE: Admin check removed - any authenticated user can access for testing
-      // Original check: ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail)
-      const isUserAdmin = true;
-
       setUser({
-        id: userData.userId || userData._id,
-        email: userData.email,
-        firstName: userData['Name - First'] || userData.firstName || 'User',
-        accountHostId: userData.accountHostId || userData.userId,
+        authenticated: false,
+        email: null,
+        isAdmin: false,
       });
-      setIsAdmin(isUserAdmin);
+      setIsAdmin(true);
 
-      // Step 3: Fetch house manuals for this host
-      const hostId = userData.accountHostId || userData.userId || userData._id;
-      const manuals = await fetchHouseManuals(hostId);
-      setHouseManuals(manuals);
-
-      // Step 4: Fetch narrators list
       const narratorsList = await fetchNarrators();
       setNarrators(narratorsList);
       if (narratorsList.length > 0) {

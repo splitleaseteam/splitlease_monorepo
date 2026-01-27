@@ -687,6 +687,72 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== Z-SEARCH UNIT TEST (INTERNAL) =====
+  {
+    path: '/_internal/z-search-unit-test',
+    file: 'z-search-unit-test.html',
+    aliases: ['/_internal/z-search-unit-test.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-search-unit-test-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-EMAILS UNIT (INTERNAL) =====
+  {
+    path: '/_internal/z-emails-unit',
+    file: 'z-emails-unit.html',
+    aliases: ['/_internal/z-emails-unit.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-emails-unit-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-PRICING UNIT TEST (INTERNAL) =====
+  {
+    path: '/_internal/z-pricing-unit-test',
+    file: 'z-pricing-unit-test.html',
+    aliases: ['/_internal/z-pricing-unit-test.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-pricing-unit-test-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-SCHEDULE TEST (INTERNAL) =====
+  {
+    path: '/_internal/z-schedule-test',
+    file: 'z-schedule-test.html',
+    aliases: ['/_internal/z-schedule-test.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-schedule-test-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-SHARATH TEST (INTERNAL) =====
+  {
+    path: '/_internal/z-sharath-test',
+    file: 'z-sharath-test.html',
+    aliases: ['/_internal/z-sharath-test.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-sharath-test-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-UNIT CHATGPT MODELS (INTERNAL) =====
+  {
+    path: '/_internal/z-unit-chatgpt-models',
+    file: 'z-unit-chatgpt-models.html',
+    aliases: ['/_internal/z-unit-chatgpt-models.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-unit-chatgpt-models-view',
+    hasDynamicSegment: false
+  },
+
   // ===== GUEST EMERGENCY SUBMISSION (PUBLIC) =====
   {
     path: '/report-emergency',
@@ -695,6 +761,17 @@ export const routes = [
     protected: false,
     cloudflareInternal: true,
     internalName: 'report-emergency-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== Z-UNIT PAYMENT RECORDS JS (INTERNAL) =====
+  {
+    path: '/_internal/z-unit-payment-records-js',
+    file: 'z-unit-payment-records-js.html',
+    aliases: ['/_internal/z-unit-payment-records-js.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'z-unit-payment-records-js-view',
     hasDynamicSegment: false
   }
 ];

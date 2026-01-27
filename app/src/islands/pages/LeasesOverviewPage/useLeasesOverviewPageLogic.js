@@ -89,18 +89,12 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     { value: 'cancelled', label: 'Mark Cancelled' },
   ], []);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // checkAuthStatus() returns a boolean (true if authenticated, false otherwise)
-        const isAuthenticated = await checkAuthStatus();
-        if (!isAuthenticated) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-        // Get the Supabase session for the access token
+        // Try to get authentication token if user is logged in
+        // No redirect if not authenticated - this is an internal page accessible without login
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
           setAccessToken(session.access_token);
@@ -113,12 +107,11 @@ export function useLeasesOverviewPageLogic({ showToast }) {
         }
       } catch (err) {
         console.error('[LeasesOverview] Auth check failed:', err);
-        showToast({ title: 'Authentication failed', type: 'error' });
-        window.location.href = '/';
+        // No redirect - just log the error
       }
     };
     checkAuth();
-  }, [showToast]);
+  }, []);
 
   // ===== FETCH LEASES =====
   const fetchLeases = useCallback(async () => {
