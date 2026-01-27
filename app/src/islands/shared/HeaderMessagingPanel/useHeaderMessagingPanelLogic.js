@@ -124,11 +124,11 @@ export function useHeaderMessagingPanelLogic({
         if (!newRow) return;
 
         // Client-side filter for this thread
-        if (newRow['Associated Thread/Conversation'] !== selectedThread._id) {
+        if (newRow['thread_id'] !== selectedThread._id) {
           return;
         }
 
-        const isOwnMessage = newRow['-Originator User'] === userBubbleId;
+        const isOwnMessage = newRow['originator_user_id'] === userBubbleId;
 
         // Add message to state (avoid duplicates)
         setMessages((prev) => {
@@ -145,7 +145,7 @@ export function useHeaderMessagingPanelLogic({
             sender_avatar: isOwnMessage ? userAvatar : undefined,
             sender_type: newRow['is Split Bot']
               ? 'splitbot'
-              : newRow['-Originator User'] === newRow['-Host User']
+              : newRow['originator_user_id'] === newRow['host_user_id']
                 ? 'host'
                 : 'guest',
             is_outgoing: isOwnMessage,
@@ -248,7 +248,7 @@ export function useHeaderMessagingPanelLogic({
 
       // Query threads where user is host or guest
       // Uses RPC function because PostgREST .or() doesn't handle column names
-      // with leading hyphens ("-Host User", "-Guest User") correctly
+      // with leading hyphens ("host_user_id", "guest_user_id") correctly
       const { data: threadsData, error: threadsError } = await supabase
         .rpc('get_user_threads', { user_id: bubbleId });
 
@@ -267,8 +267,8 @@ export function useHeaderMessagingPanelLogic({
       const listingIds = new Set();
 
       threadsData.forEach((thread) => {
-        const hostId = thread['-Host User'];
-        const guestId = thread['-Guest User'];
+        const hostId = thread['host_user_id'];
+        const guestId = thread['guest_user_id'];
         const contactId = hostId === bubbleId ? guestId : hostId;
         if (contactId) contactIds.add(contactId);
         if (thread['Listing']) listingIds.add(thread['Listing']);
@@ -322,14 +322,14 @@ export function useHeaderMessagingPanelLogic({
       if (threadIds.length > 0) {
         const { data: unreadData } = await supabase
           .from('_message')
-          .select('"Associated Thread/Conversation"')
-          .in('"Associated Thread/Conversation"', threadIds)
+          .select('"thread_id"')
+          .in('"thread_id"', threadIds)
           .filter('"Unread Users"', 'cs', JSON.stringify([bubbleId]));
 
         if (unreadData) {
           // Count occurrences of each thread ID
           unreadCountMap = unreadData.reduce((acc, msg) => {
-            const threadId = msg['Associated Thread/Conversation'];
+            const threadId = msg['thread_id'];
             acc[threadId] = (acc[threadId] || 0) + 1;
             return acc;
           }, {});
@@ -338,8 +338,8 @@ export function useHeaderMessagingPanelLogic({
 
       // Transform threads to UI format
       const transformedThreads = threadsData.map((thread) => {
-        const hostId = thread['-Host User'];
-        const guestId = thread['-Guest User'];
+        const hostId = thread['host_user_id'];
+        const guestId = thread['guest_user_id'];
         const contactId = hostId === bubbleId ? guestId : hostId;
         const contact = contactId ? contactMap[contactId] : null;
 
@@ -370,8 +370,8 @@ export function useHeaderMessagingPanelLogic({
 
         return {
           _id: thread._id,
-          '-Host User': hostId,
-          '-Guest User': guestId,
+          'host_user_id': hostId,
+          'guest_user_id': guestId,
           contact_name: contact?.name || 'Split Lease',
           contact_avatar: contact?.avatar,
           property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
