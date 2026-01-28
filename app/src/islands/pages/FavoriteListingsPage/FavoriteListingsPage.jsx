@@ -308,6 +308,17 @@ const FavoriteListingsPage = () => {
   // Refs
   const mapRef = useRef(null);
 
+  // Scroll to top on page load - prevents browser scroll restoration
+  // from causing misalignment between cards and map
+  useEffect(() => {
+    // Disable browser scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    // Scroll to top immediately
+    window.scrollTo(0, 0);
+  }, []);
+
   // Transform raw listing data to match SearchPage format
   const transformListing = useCallback((dbListing, images, hostData) => {
     const neighborhoodName = getNeighborhoodName(dbListing['Location - Hood']);
