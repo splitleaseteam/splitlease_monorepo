@@ -1,10 +1,10 @@
 /**
- * Z-Pricing Unit Test Page Entry Point
+ * Pricing Unit Test Page Entry Point
  *
  * Internal test page for pricing engine validation.
  * Tests pricing calculations across different configurations.
  *
- * Route: /_internal/z-pricing-unit-test
+ * Route: /_pricing-unit-test
  * Auth: None (internal test page)
  */
 

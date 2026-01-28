@@ -753,14 +753,14 @@ export const routes = [
     hasDynamicSegment: false
   },
 
-  // ===== Z-PRICING UNIT TEST (INTERNAL) =====
+  // ===== PRICING UNIT TEST (INTERNAL) =====
   {
-    path: '/_internal/z-pricing-unit-test',
-    file: 'z-pricing-unit-test.html',
-    aliases: ['/_internal/z-pricing-unit-test.html'],
+    path: '/_pricing-unit-test',
+    file: '_pricing-unit-test.html',
+    aliases: ['/_pricing-unit-test.html'],
     protected: false,
     cloudflareInternal: true,
-    internalName: 'z-pricing-unit-test-view',
+    internalName: '_pricing-unit-test-view',
     hasDynamicSegment: false
   },
 
