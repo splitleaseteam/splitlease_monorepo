@@ -195,6 +195,10 @@ export async function handleCreate(
   );
 
   // Build lease record
+  // SCHEMA-VERIFIED COLUMNS (2026-01-28):
+  // - 'Reservation Period : Start' (NOT 'Move In Date')
+  // - 'Reservation Period : End' (NOT 'Move-out')
+  // - 'rental type' column does NOT exist in bookings_leases
   const leaseRecord: Partial<LeaseData> = {
     _id: leaseId,
     'Agreement Number': agreementNumber,
@@ -205,11 +209,10 @@ export async function handleCreate(
     Participants: [proposalData.Guest, proposalData['Host User']],
     'Cancellation Policy': listingData?.['cancellation policy'] || 'Standard',
     'First Payment Date': firstPaymentDate,
-    'Move In Date': activeTerms.moveInDate,
-    'Move-out': moveOutDate,
+    'Reservation Period : Start': activeTerms.moveInDate,
+    'Reservation Period : End': moveOutDate,
     'Total Compensation': totalCompensation,
     'Total Rent': totalRent,
-    'rental type': proposalData['rental type'],
     'Lease Status': 'Drafting',
     'Lease signed?': false,
     'were documents generated?': false,
@@ -387,24 +390,27 @@ export async function handleCreate(
     });
 
     // Update proposal with generated dates
+    // SCHEMA-VERIFIED (2026-01-28): proposal table columns
+    // - 'list of dates (actual dates)' exists (NOT 'List of Booked Dates')
+    // - 'Check-In Dates', 'Check-Out Dates', 'total nights' do NOT exist
     const proposalDateUpdate = {
-      'List of Booked Dates': dateResult.allBookedDates,
-      'Check-In Dates': dateResult.checkInDates,
-      'Check-Out Dates': dateResult.checkOutDates,
-      'total nights': dateResult.totalNights,
+      'list of dates (actual dates)': dateResult.allBookedDates,
       'Modified Date': now,
     };
 
     await supabase.from('proposal').update(proposalDateUpdate).eq('_id', input.proposalId);
 
     // Update lease with generated dates (Step 10 from Bubble workflow)
+    // SCHEMA-VERIFIED (2026-01-28): bookings_leases table columns
+    // - 'List of Booked Dates' exists ✅
+    // - 'Reservation Period : Start/End' have space BEFORE colon
+    // - 'Check-In Dates', 'Check-Out Dates', 'total nights' do NOT exist
+    // - 'total week count' exists (use this instead of total nights)
     const leaseDateUpdate = {
       'List of Booked Dates': dateResult.allBookedDates,
-      'Check-In Dates': dateResult.checkInDates,
-      'Check-Out Dates': dateResult.checkOutDates,
-      'total nights': dateResult.totalNights,
-      'Reservation Period: Start': dateResult.firstCheckIn,
-      'Reservation Period: End': dateResult.lastCheckOut,
+      'Reservation Period : Start': dateResult.firstCheckIn,
+      'Reservation Period : End': dateResult.lastCheckOut,
+      'total week count': dateResult.checkInDates.length,
     };
 
     await supabase.from('bookings_leases').update(leaseDateUpdate).eq('_id', leaseId);
@@ -473,12 +479,12 @@ export async function handleCreate(
     .update({ 'List of Stays': stayIds })
     .eq('_id', leaseId);
 
-  // 7b: Link house manual if applicable
+  // 7b: House manual linking
+  // SCHEMA-VERIFIED (2026-01-28): 'House Manual' column does NOT exist in bookings_leases
+  // House manual is accessed via listing.['House manual'] when needed at runtime
+  // No lease-level storage required
   if (listingData?.['House manual']) {
-    await supabase
-      .from('bookings_leases')
-      .update({ 'House Manual': listingData['House manual'] })
-      .eq('_id', leaseId);
+    console.log('[lease:create] Listing has house manual:', listingData['House manual']);
   }
 
   // 7c: TODO - Schedule checkout reminders (would need a scheduled task system)
@@ -537,10 +543,13 @@ export async function handleCreate(
 /**
  * Add lease to user's lease list
  *
+ * SCHEMA-VERIFIED (2026-01-28): user table has single 'Leases' column (jsonb)
+ * NOT separate 'Leases as Guest' / 'Leases as Host' columns
+ *
  * @param supabase - Supabase client
  * @param userId - User ID
  * @param leaseId - Lease ID
- * @param role - User role ('guest' or 'host')
+ * @param role - User role ('guest' or 'host') - logged for debugging only
  */
 async function addLeaseToUser(
   supabase: SupabaseClient,
@@ -548,7 +557,10 @@ async function addLeaseToUser(
   leaseId: string,
   role: 'guest' | 'host'
 ): Promise<void> {
-  const columnName = role === 'guest' ? 'Leases as Guest' : 'Leases as Host';
+  // SCHEMA-VERIFIED: Only 'Leases' column exists (not separate guest/host columns)
+  const columnName = 'Leases';
+
+  console.log(`[lease:create] Adding lease ${leaseId} to user ${userId} (role: ${role})`);
 
   // Fetch current leases
   const { data: user, error: fetchError } = await supabase
@@ -563,6 +575,13 @@ async function addLeaseToUser(
   }
 
   const currentLeases: string[] = user?.[columnName] || [];
+
+  // Avoid duplicates
+  if (currentLeases.includes(leaseId)) {
+    console.log(`[lease:create] Lease ${leaseId} already in user's Leases array`);
+    return;
+  }
+
   const updatedLeases = [...currentLeases, leaseId];
 
   const { error: updateError } = await supabase
