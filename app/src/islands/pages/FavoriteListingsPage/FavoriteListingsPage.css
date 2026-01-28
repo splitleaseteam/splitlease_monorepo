@@ -157,27 +157,88 @@
 .favorites-page .listings-column {
   overflow-y: visible;
   background: transparent;
-  padding-top: 50px; /* Top gap for cards below sub-header */
+  padding-top: 0;
 }
 
-/* V6 Design: Sticky map column with premium styling */
+/* V6 Design: Sticky map column with premium styling
+   Matches V6 WCAG mockup: 2px border, 20px radius, proper shadow */
 .favorites-page .map-column {
-  width: 380px; /* V6 spec: --map-width: 380px */
+  width: 380px;
   flex-shrink: 0;
   position: sticky;
-  top: calc(80px + 72px + 24px); /* Header + subheader + gap */
-  margin-top: 50px;
-  height: calc(100vh - 80px - 72px - 48px); /* Full height minus header/subheader/padding */
+  top: 160px; /* Below subheader (80px top + 72px height + 8px gap) */
+  height: calc(100vh - 180px);
   background: white;
-  border-radius: 20px; /* V6 spec: --radius-xl */
+  border-radius: 20px; /* V6: --radius-xl */
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05); /* V6 spec: --shadow-lg */
-  border: 2px solid rgba(0, 0, 0, 0.12); /* V6 spec: --color-border */
-  transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05); /* V6: --shadow-lg */
+  border: 2px solid rgba(0, 0, 0, 0.12); /* V6: thicker border */
+  display: flex;
+  flex-direction: column;
 }
 
 .favorites-page .map-column:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05), 0 0 30px rgba(109, 49, 194, 0.15); /* V6 glow effect */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 0 20px rgba(109, 49, 194, 0.1);
+}
+
+/* V6 Map Header - Simple "Map" label with zoom controls
+   Matches V6 WCAG mockup: 16px padding, semi-transparent bg */
+.favorites-page .v6-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px; /* V6: --spacing-lg */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.98);
+  flex-shrink: 0;
+}
+
+.favorites-page .v6-map-header .map-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px; /* V6: --font-size-base (WCAG minimum) */
+  font-weight: 600;
+  color: #1E0A3C; /* V6: --color-text */
+}
+
+.favorites-page .v6-map-header .map-title svg {
+  color: #5B28A6;
+}
+
+.favorites-page .v6-map-header .zoom-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.favorites-page .v6-map-header .zoom-btn {
+  /* WCAG 2.1 AA: 44x44px minimum touch target */
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 500;
+  color: #4A4A4A;
+  transition: all 0.15s ease;
+}
+
+.favorites-page .v6-map-header .zoom-btn:hover {
+  background: #F5F0FA;
+  border-color: #5B28A6;
+  color: #5B28A6;
+}
+
+/* Map container fills remaining space */
+.favorites-page .map-column .google-map-container,
+.favorites-page .map-column > div:last-child {
+  flex: 1;
+  min-height: 0;
 }
 
 /* ============================================
