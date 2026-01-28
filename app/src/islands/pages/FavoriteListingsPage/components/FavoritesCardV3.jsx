@@ -20,6 +20,7 @@
  */
 
 import { useState, useRef, useEffect, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useDeviceDetection } from '../../../../hooks/useDeviceDetection.js';
 
 // Premium Design Tokens - V6 WCAG AA Compliant Colors
@@ -81,11 +82,24 @@ function abbreviateName(fullName) {
 
 /**
  * FavoriteButton - Filled red heart (matches V6 goal design)
+ * Uses Portal to render popup outside card hierarchy to avoid overflow clipping
  */
 const FavoriteButton = ({ onConfirmRemove, style }) => {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
+
+  // Calculate popup position when showing
+  useEffect(() => {
+    if (showConfirm && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPopupPosition({
+        top: rect.top - 10, // Position above the button
+        left: rect.right - 180, // Align right edge with button
+      });
+    }
+  }, [showConfirm]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -111,7 +125,6 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
   const styles = {
     container: {
       position: 'relative',
-      zIndex: showConfirm ? 9999 : 'auto', // Lift above sibling cards when popup shown
       ...style,
     },
     button: {
@@ -128,15 +141,16 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
       padding: 0,
     },
     popup: {
-      position: 'absolute',
-      bottom: '48px',
-      right: '0',
+      position: 'fixed',
+      top: popupPosition.top,
+      left: popupPosition.left,
+      transform: 'translateY(-100%)',
       background: 'white',
       borderRadius: TOKENS.radius.md,
-      boxShadow: TOKENS.shadows.lg,
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
       padding: TOKENS.spacing.lg,
       minWidth: '180px',
-      zIndex: 9999,
+      zIndex: 99999,
     },
     popupText: {
       fontSize: TOKENS.fontSize.base,
@@ -175,6 +189,22 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
     },
   };
 
+  // Portal popup - renders directly to document.body
+  const popupContent = showConfirm ? createPortal(
+    <div ref={popupRef} style={styles.popup} role="dialog" aria-label="Confirm removal">
+      <div style={styles.popupText}>Remove from favorites?</div>
+      <div style={styles.popupButtons}>
+        <button style={styles.cancelBtn} onClick={(e) => { e.stopPropagation(); setShowConfirm(false); }}>
+          Cancel
+        </button>
+        <button style={styles.removeBtn} onClick={(e) => { e.stopPropagation(); setShowConfirm(false); onConfirmRemove?.(); }}>
+          Remove
+        </button>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
   return (
     <div style={styles.container}>
       <button
@@ -190,20 +220,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </button>
-
-      {showConfirm && (
-        <div ref={popupRef} style={styles.popup} role="dialog" aria-label="Confirm removal">
-          <div style={styles.popupText}>Remove from favorites?</div>
-          <div style={styles.popupButtons}>
-            <button style={styles.cancelBtn} onClick={(e) => { e.stopPropagation(); setShowConfirm(false); }}>
-              Cancel
-            </button>
-            <button style={styles.removeBtn} onClick={(e) => { e.stopPropagation(); setShowConfirm(false); onConfirmRemove?.(); }}>
-              Remove
-            </button>
-          </div>
-        </div>
-      )}
+      {popupContent}
     </div>
   );
 };
