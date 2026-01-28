@@ -25,11 +25,11 @@ def load_env_file():
 
     return env_vars
 
-def extract_info_from_transcript(transcript_path):
-    """Extract prompt, summary, and git commit info from transcript"""
+def extract_summary_from_transcript(transcript_path):
+    """Extract a conversational summary from transcript"""
     try:
         if not os.path.exists(transcript_path):
-            return None, "Completed task", None
+            return "completed the task"
 
         with open(transcript_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -43,47 +43,39 @@ def extract_info_from_transcript(transcript_path):
             except:
                 continue
 
-        # Extract user prompt (first user message)
-        user_prompt = None
-        for entry in entries:
-            if entry.get('role') == 'user' and entry.get('content'):
+        # Look for assistant's final response text
+        last_response = None
+        for entry in reversed(entries):
+            if entry.get('role') == 'assistant' and entry.get('content'):
                 content = entry['content']
                 if isinstance(content, list):
                     for block in content:
                         if isinstance(block, dict) and block.get('type') == 'text':
-                            user_prompt = block.get('text', '').strip()
-                            break
-                elif isinstance(content, str):
-                    user_prompt = content.strip()
-                if user_prompt:
+                            text = block.get('text', '').strip()
+                            if text and len(text) > 20:
+                                last_response = text
+                                break
+                elif isinstance(content, str) and len(content) > 20:
+                    last_response = content.strip()
+                if last_response:
                     break
 
-        # Look for git commit in tool uses
-        git_commit_hash = None
-        for entry in reversed(entries):
-            if entry.get('type') == 'tool_use' and entry.get('name') == 'Bash':
-                tool_input = entry.get('input', {})
-                command = tool_input.get('command', '')
-                if 'git commit' in command:
-                    # Try to find the commit hash from the result
-                    # We'll get it from git log instead
-                    git_commit_hash = "commit_made"
-                    break
+        # Extract first meaningful sentence or paragraph
+        if last_response:
+            # Get first sentence or first 200 chars
+            sentences = last_response.split('\n')
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if sentence and len(sentence) > 15:
+                    # Limit to 200 chars
+                    if len(sentence) > 200:
+                        sentence = sentence[:197] + "..."
+                    return sentence
 
-        # Extract summary from recent tool uses
-        tools_used = []
-        for entry in reversed(entries[-20:]):
-            if entry.get('type') == 'tool_use':
-                tool_name = entry.get('name', 'Unknown')
-                if tool_name not in tools_used:
-                    tools_used.append(tool_name)
-
-        summary = f"Used: {', '.join(tools_used[:5])}" if tools_used else "Completed"
-
-        return user_prompt, summary, git_commit_hash
+        return "completed the task"
 
     except Exception as e:
-        return None, f"Error: {str(e)}", None
+        return f"encountered an error: {str(e)}"
 
 def get_latest_commit_hash(cwd):
     """Get the latest git commit hash"""
@@ -141,34 +133,17 @@ def main():
 
         # Extract information from hook input
         transcript_path = input_data.get('transcript_path', '')
-        session_id = input_data.get('session_id', 'unknown')
-        cwd = input_data.get('cwd', '')
 
-        # Get hostname
+        # Get hostname and format device name
         hostname = os.environ.get('COMPUTERNAME', os.environ.get('HOSTNAME', 'unknown'))
+        # Convert SPLIT-LEASE-8 to Splitlease 8
+        device_name = hostname.replace('SPLIT-LEASE-', 'Splitlease ').replace('-', ' ')
 
-        # Extract info from transcript
-        user_prompt, summary, commit_detected = extract_info_from_transcript(transcript_path)
+        # Extract summary from transcript
+        summary = extract_summary_from_transcript(transcript_path)
 
-        # Get commit hash if commit was made
-        commit_hash = None
-        if commit_detected and cwd:
-            commit_hash = get_latest_commit_hash(cwd)
-
-        # Format the message (simple, no emojis)
-        message_parts = [
-            f"Host: {hostname}",
-            f"Session: {session_id}",
-            f"Prompt: {user_prompt if user_prompt else 'N/A'}",
-            f"Outcome: {summary}",
-        ]
-
-        if commit_hash:
-            message_parts.append(f"Commit: Yes ({commit_hash})")
-        else:
-            message_parts.append("Commit: No")
-
-        message = "\n".join(message_parts)
+        # Format the message
+        message = f"{device_name} says: {summary}"
 
         # Send to Slack
         success = send_to_slack(webhook_url, message)
