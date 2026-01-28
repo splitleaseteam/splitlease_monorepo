@@ -5,3 +5,10 @@ dist/
 *.log
 .DS_Store
 ../input
+
+# Test results and coverage
+.vitest-results.json
+coverage/
+*.test-results.json
+test-results/
+.vitest-ui/
