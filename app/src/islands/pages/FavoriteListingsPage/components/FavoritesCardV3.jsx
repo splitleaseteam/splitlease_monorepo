@@ -385,8 +385,23 @@ const FavoritesCardV3 = ({
       display: 'flex',
       alignItems: 'center',
       gap: TOKENS.spacing.lg,
+      marginBottom: TOKENS.spacing.sm,
+      flexWrap: 'wrap',
+    },
+    amenitiesRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: TOKENS.spacing.sm,
       marginBottom: TOKENS.spacing.md,
       flexWrap: 'wrap',
+    },
+    amenityTag: {
+      padding: '4px 10px',
+      background: TOKENS.colors.primaryLight,
+      color: TOKENS.colors.primaryAccent,
+      fontSize: TOKENS.fontSize.xs,
+      fontWeight: 500,
+      borderRadius: TOKENS.radius.pill,
     },
     rating: {
       display: 'flex',
@@ -564,13 +579,20 @@ const FavoritesCardV3 = ({
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
             <span>{listing.rating || '4.8'}</span>
-            <span style={styles.ratingCount}>({listing.reviewCount || 0} reviews)</span>
           </div>
           <div style={styles.stats}>
             <span>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`}</span>
             <span style={styles.statDivider} aria-hidden="true" />
             <span>{listing.maxGuests} guests</span>
           </div>
+        </div>
+
+        {/* Amenities Row */}
+        <div style={styles.amenitiesRow}>
+          <span style={styles.amenityTag}>WiFi</span>
+          <span style={styles.amenityTag}>Kitchen</span>
+          <span style={styles.amenityTag}>A/C</span>
+          {listing.amenities?.includes('Washer') && <span style={styles.amenityTag}>Washer</span>}
         </div>
 
         {/* AI SUMMARY - Hidden for now */}
