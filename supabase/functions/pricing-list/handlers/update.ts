@@ -1,0 +1,167 @@
+/**
+ * Update Pricing List Handler
+ *
+ * Updates pricing inputs (unit markup) and recalculates pricing.
+ *
+ * NO FALLBACK PRINCIPLE: Fails fast if listing not found
+ */
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { validateRequiredFields } from '../../_shared/validation.ts';
+import {
+  enqueueBubbleSync,
+  triggerQueueProcessing,
+  filterBubbleIncompatibleFields,
+} from '../../_shared/queueSync.ts';
+import { calculatePricingList } from '../utils/pricingCalculator.ts';
+
+interface UpdatePayload {
+  listing_id: string;
+  unit_markup?: number;
+  user_id?: string;
+}
+
+interface UpdateResult {
+  pricing_list_id: string;
+  listing_id: string;
+  starting_nightly_price: number | null;
+  message: string;
+}
+
+/**
+ * Handle update pricing list action
+ */
+export async function handleUpdate(
+  payload: Record<string, unknown>
+): Promise<UpdateResult> {
+  console.log('[pricing-list:update] ========== UPDATE PRICING LIST ==========');
+
+  // Validate required fields
+  validateRequiredFields(payload, ['listing_id']);
+
+  const { listing_id, unit_markup = 0, user_id } = payload as UpdatePayload;
+
+  // Get environment variables
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing required environment variables');
+  }
+
+  // Initialize Supabase admin client
+  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+
+  console.log('[pricing-list:update] Listing ID:', listing_id);
+  console.log('[pricing-list:update] Unit Markup:', unit_markup);
+
+  try {
+    // Step 1: Fetch listing
+    console.log('[pricing-list:update] Step 1/4: Fetching listing...');
+    const { data: listing, error: fetchError } = await supabase
+      .from('listing')
+      .select(`
+        _id,
+        "💰Nightly Host Rate for 1 night",
+        "💰Nightly Host Rate for 2 nights",
+        "💰Nightly Host Rate for 3 nights",
+        "💰Nightly Host Rate for 4 nights",
+        "💰Nightly Host Rate for 5 nights",
+        "💰Nightly Host Rate for 6 nights",
+        "💰Nightly Host Rate for 7 nights",
+        "rental type",
+        "Host User"
+      `)
+      .eq('_id', listing_id)
+      .single();
+
+    if (fetchError || !listing) {
+      console.error('[pricing-list:update] Listing not found:', listing_id);
+      throw new Error(`Listing not found: ${listing_id}`);
+    }
+
+    console.log('[pricing-list:update] ✅ Step 1 complete - Listing found');
+
+    // Step 2: Calculate pricing with new inputs
+    console.log('[pricing-list:update] Step 2/4: Calculating pricing...');
+    const pricingData = calculatePricingList({
+      listing,
+      unitMarkup: unit_markup,
+    });
+
+    console.log('[pricing-list:update] ✅ Step 2 complete - Pricing calculated');
+
+    // Step 3: Update pricing_list
+    console.log('[pricing-list:update] Step 3/4: Updating pricing_list...');
+
+    const pricingListId = `pricing_${listing_id}`;
+    const now = new Date().toISOString();
+
+    const updateData = {
+      // Arrays
+      'Host Compensation': pricingData.hostCompensation,
+      'Markup and Discount Multiplier': pricingData.markupAndDiscountMultiplier,
+      'Nightly Price': pricingData.nightlyPrice,
+      'Unused Nights Discount': pricingData.unusedNightsDiscount,
+
+      // Scalar markups
+      'Unit Markup': pricingData.unitMarkup,
+      'Combined Markup': pricingData.combinedMarkup,
+
+      // Derived scalars
+      'Starting Nightly Price': pricingData.startingNightlyPrice,
+      'Slope': pricingData.slope,
+
+      // Metadata
+      'Modified Date': now,
+    };
+
+    const { error: updateError } = await supabase
+      .from('pricing_list')
+      .update(updateData)
+      .eq('listing', listing_id);
+
+    if (updateError) {
+      console.error('[pricing-list:update] Update failed:', updateError);
+      throw new Error(`Failed to update pricing_list: ${updateError.message}`);
+    }
+
+    console.log('[pricing-list:update] ✅ Step 3 complete - Pricing list updated');
+
+    // Step 4: Enqueue Bubble sync
+    console.log('[pricing-list:update] Step 4/4: Enqueueing Bubble sync...');
+
+    await enqueueBubbleSync(supabase, {
+      correlationId: `pricing_list:${pricingListId}`,
+      items: [{
+        sequence: 1,
+        table: 'pricing_list',
+        recordId: pricingListId,
+        operation: 'UPDATE',
+        bubbleId: pricingListId,
+        payload: filterBubbleIncompatibleFields(updateData),
+      }],
+    });
+
+    triggerQueueProcessing();
+
+    console.log('[pricing-list:update] ✅ Step 4 complete - Sync queued');
+    console.log('[pricing-list:update] ========== SUCCESS ==========');
+
+    return {
+      pricing_list_id: pricingListId,
+      listing_id: listing_id,
+      starting_nightly_price: pricingData.startingNightlyPrice,
+      message: 'Pricing list updated successfully',
+    };
+  } catch (error) {
+    console.error('[pricing-list:update] ========== ERROR ==========');
+    console.error('[pricing-list:update] Failed:', error);
+    throw error;
+  }
+}

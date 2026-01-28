@@ -17,5 +17,24 @@ export const PRICING_CONSTANTS = {
   MAX_NIGHTS: 7,
 
   /** Standard billing cycle in weeks */
-  BILLING_CYCLE_WEEKS: 4
+  BILLING_CYCLE_WEEKS: 4,
+
+  // ─────────────────────────────────────────────────────────────
+  // Pricing List Constants (for pre-calculated pricing arrays)
+  // ─────────────────────────────────────────────────────────────
+
+  /** Length of pricing arrays (index 0-6 for nights 1-7) */
+  PRICING_LIST_ARRAY_LENGTH: 7,
+
+  /** Default unit-level markup (individual listing) */
+  DEFAULT_UNIT_MARKUP: 0,
+
+  /** Default discount multiplier for unused nights */
+  UNUSED_NIGHTS_DISCOUNT_MULTIPLIER: 0.03,
+
+  /** Minimum index for pricing array (0 = 1 night) */
+  PRICING_ARRAY_MIN_INDEX: 0,
+
+  /** Maximum index for pricing array (6 = 7 nights) */
+  PRICING_ARRAY_MAX_INDEX: 6
 };

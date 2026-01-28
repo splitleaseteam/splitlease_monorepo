@@ -198,10 +198,10 @@ async function sendReminderSms(
 export async function handleAdminSendReminder(
   supabaseAdmin: SupabaseClient,
   payload: AdminSendReminderPayload,
-  user: { id: string; email: string }
+  user: { id: string; email: string } | null
 ): Promise<AdminSendReminderResult> {
   console.log('[adminSendReminder] ========== ADMIN SEND REMINDER ==========');
-  console.log('[adminSendReminder] User:', user.email);
+  console.log('[adminSendReminder] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminSendReminder] Payload:', JSON.stringify(payload));
 
   // Step 1: Validate payload
@@ -215,10 +215,13 @@ export async function handleAdminSendReminder(
     throw new ValidationError('Invalid notification method');
   }
 
-  // Step 2: Verify admin role
-  const isAdmin = await verifyAdminRole(supabaseAdmin, user);
-  if (!isAdmin) {
-    throw new AuthenticationError('You do not have permission to send reminders.');
+  // Step 2: Skip admin role check for internal access (user is null)
+  // When user is provided, verify admin role
+  if (user) {
+    const isAdmin = await verifyAdminRole(supabaseAdmin, user);
+    if (!isAdmin) {
+      throw new AuthenticationError('You do not have permission to send reminders.');
+    }
   }
 
   // Step 3: Fetch thread with user data
@@ -228,8 +231,8 @@ export async function handleAdminSendReminder(
       _id,
       "Thread Subject",
       "~Last Message",
-      "-Host User",
-      "-Guest User"
+      host_user_id,
+      guest_user_id
     `)
     .eq('_id', payload.threadId)
     .maybeSingle();
@@ -239,7 +242,7 @@ export async function handleAdminSendReminder(
   }
 
   // Step 4: Fetch host and guest user data
-  const userIds = [thread['-Host User'], thread['-Guest User']].filter(Boolean);
+  const userIds = [thread.host_user_id, thread.guest_user_id].filter(Boolean);
 
   const { data: users, error: usersError } = await supabaseAdmin
     .from('user')
@@ -255,8 +258,8 @@ export async function handleAdminSendReminder(
     return acc;
   }, {} as Record<string, typeof users[0]>);
 
-  const hostUser = thread['-Host User'] ? userMap[thread['-Host User']] : null;
-  const guestUser = thread['-Guest User'] ? userMap[thread['-Guest User']] : null;
+  const hostUser = thread.host_user_id ? userMap[thread.host_user_id] : null;
+  const guestUser = thread.guest_user_id ? userMap[thread.guest_user_id] : null;
 
   // Step 5: Send notifications
   const sentTo: AdminSendReminderResult['sentTo'] = [];

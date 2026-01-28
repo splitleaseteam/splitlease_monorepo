@@ -1,0 +1,51 @@
+# --- Platform-Specific ---
+# Ignore the .gitignore file provided by PythonAnywhere by default
+.pythonanywhere
+
+# --- Python Virtual Environments & Cache ---
+env/
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.ipynb
+
+# --- Configuration & Secret Files ---
+# Never commit secrets!
+.env
+config.py
+
+# --- Log Files ---
+# Logs are generated at runtime and should not be versioned.
+*.log
+
+# --- Data & Document Formats ---
+# These are typically generated artifacts or data, not source code.
+*.json
+*.pdf
+*.csv
+*.docx
+*.mp4
+
+# --- Important Project Files (DO NOT IGNORE) ---
+# Override the above patterns for critical project files
+!requirements.txt
+!.env.example
+!DEPLOYMENT_GUIDE.md
+!CHANGELOG.md
+!README.md
+
+# --- Other Text and Markdown Files (still ignored) ---
+# Generated docs and data files
+data/*.txt
+output/*.txt
+logs/*.txt
+docs/*.md
+
+# --- Common System Files ---
+.DS_Store
+
+# --- Databases ---
+*.sqlite3
+*.db
+credentials/

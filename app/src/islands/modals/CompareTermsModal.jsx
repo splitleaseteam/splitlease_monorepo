@@ -305,7 +305,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
               <div className="compare-terms-row">
                 <span className="compare-terms-label">Days/Nights</span>
                 <span className="compare-terms-value">
-                  {originalTerms.daysSelected.length + 1} days, {originalTerms.daysSelected.length} nights
+                  {originalTerms.daysSelected.length} days, {Math.max(0, originalTerms.daysSelected.length - 1)} nights
                 </span>
               </div>
 
@@ -339,7 +339,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
               <div className="compare-terms-row">
                 <span className="compare-terms-label">Days/Nights</span>
                 <span className={`compare-terms-value ${counterofferTerms.daysSelected.length !== originalTerms.daysSelected.length ? 'compare-terms-value--highlight' : ''}`}>
-                  {counterofferTerms.daysSelected.length + 1} days, {counterofferTerms.daysSelected.length} nights
+                  {counterofferTerms.daysSelected.length} days, {Math.max(0, counterofferTerms.daysSelected.length - 1)} nights
                 </span>
               </div>
 

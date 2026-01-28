@@ -14,8 +14,8 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import toast from 'react-hot-toast';
-import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
+import { useToast } from '../../shared/Toast';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const PAGE_SIZE = 20;
@@ -39,7 +39,7 @@ function deriveSenderType(message, hostUserId, guestUserId) {
     return 'bot-to-both';
   }
 
-  const originatorId = message['-Originator User'];
+  const originatorId = message.originator_user_id;
   if (originatorId === hostUserId) return 'host';
   if (originatorId === guestUserId) return 'guest';
   return 'unknown';
@@ -94,8 +94,8 @@ function adaptThread(rawThread) {
  * @returns {Object} Adapted message object
  */
 function adaptMessage(rawMessage, rawThread) {
-  const hostUserId = rawThread['-Host User'];
-  const guestUserId = rawThread['-Guest User'];
+  const hostUserId = rawThread.host_user_id;
+  const guestUserId = rawThread.guest_user_id;
 
   return {
     id: rawMessage._id,
@@ -113,10 +113,11 @@ function adaptMessage(rawMessage, rawThread) {
 }
 
 export function useAdminThreadsPageLogic() {
-  // ===== AUTH STATE =====
-  const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
-  const [accessToken, setAccessToken] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  // ===== TOAST =====
+  const { showToast } = useToast();
+
+  // ===== AUTH TOKEN (OPTIONAL) =====
+  const [accessToken, setAccessToken] = useState('');
 
   // ===== DATA STATE =====
   const [threads, setThreads] = useState([]);
@@ -140,49 +141,39 @@ export function useAdminThreadsPageLogic() {
   const [reminderModal, setReminderModal] = useState(null);
   const [isSendingReminder, setIsSendingReminder] = useState(false);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadToken = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-
-        if (!user || !session) {
-          setAuthState('unauthorized');
-          toast.error('Authentication required');
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        setAccessToken(session.access_token);
-        setCurrentUser(user);
-
-        // Admin check will be done server-side
-        // For now, assume authorized if authenticated
-        setAuthState('authorized');
+        const { data: { session } } = await supabase.auth.getSession();
+        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+        setAccessToken(session?.access_token || legacyToken || '');
       } catch (err) {
-        console.error('[AdminThreads] Auth check failed:', err);
-        setAuthState('unauthorized');
-        toast.error('Authentication failed');
+        console.error('[AdminThreads] Token lookup failed:', err);
+        setAccessToken('');
       }
     };
 
-    checkAuth();
+    loadToken();
   }, []);
+
+  const buildHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+  }, [accessToken]);
 
   // ===== FETCH THREADS =====
   const fetchThreads = useCallback(async () => {
-    if (!accessToken) return;
-
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({
           action: 'admin_get_all_threads',
           payload: {
@@ -203,17 +194,15 @@ export function useAdminThreadsPageLogic() {
     } catch (err) {
       console.error('[AdminThreads] Fetch error:', err);
       setError(err.message);
-      toast.error('Failed to load threads');
+      showToast({ title: 'Failed to load threads', type: 'error' });
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   useEffect(() => {
-    if (accessToken && authState === 'authorized') {
-      fetchThreads();
-    }
-  }, [accessToken, authState, fetchThreads]);
+    fetchThreads();
+  }, [fetchThreads]);
 
   // ===== FILTERING =====
   const hasActiveFilters = useMemo(() => {
@@ -225,17 +214,31 @@ export function useAdminThreadsPageLogic() {
 
     if (filters.guestEmail) {
       const search = filters.guestEmail.toLowerCase();
-      result = result.filter(t =>
-        t.guest?.email?.toLowerCase().includes(search) ||
-        t.maskedEmail?.toLowerCase().includes(search)
-      );
+      result = result.filter(t => {
+        const guest = t.guest;
+        if (!guest) return false;
+        // Search across name, email, and phone
+        return (
+          guest.name?.toLowerCase().includes(search) ||
+          guest.email?.toLowerCase().includes(search) ||
+          guest.phone?.includes(search) ||
+          t.maskedEmail?.toLowerCase().includes(search)
+        );
+      });
     }
 
     if (filters.hostEmail) {
       const search = filters.hostEmail.toLowerCase();
-      result = result.filter(t =>
-        t.host?.email?.toLowerCase().includes(search)
-      );
+      result = result.filter(t => {
+        const host = t.host;
+        if (!host) return false;
+        // Search across name, email, and phone
+        return (
+          host.name?.toLowerCase().includes(search) ||
+          host.email?.toLowerCase().includes(search) ||
+          host.phone?.includes(search)
+        );
+      });
     }
 
     if (filters.threadId) {
@@ -329,10 +332,7 @@ export function useAdminThreadsPageLogic() {
 
           const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`,
-            },
+            headers: buildHeaders(),
             body: JSON.stringify({
               action: 'admin_delete_thread',
               payload: { threadId: thread.id },
@@ -347,17 +347,17 @@ export function useAdminThreadsPageLogic() {
 
           // Remove from local state
           setThreads(prev => prev.filter(t => t.id !== thread.id));
-          toast.success('Thread deleted');
+          showToast({ title: 'Thread deleted', type: 'success' });
           setConfirmDialog(null);
         } catch (err) {
           console.error('[AdminThreads] Delete error:', err);
-          toast.error(err.message || 'Failed to delete thread');
+          showToast({ title: err.message || 'Failed to delete thread', type: 'error' });
         } finally {
           setIsLoading(false);
         }
       },
     });
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   const handleCloseConfirmDialog = useCallback(() => {
     setConfirmDialog(null);
@@ -382,10 +382,7 @@ export function useAdminThreadsPageLogic() {
     try {
       const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({
           action: 'admin_send_reminder',
           payload: { threadId, recipientType, method },
@@ -398,15 +395,15 @@ export function useAdminThreadsPageLogic() {
         throw new Error(result.error || 'Failed to send reminder');
       }
 
-      toast.success(`Reminder sent to ${recipientType}`);
+      showToast({ title: `Reminder sent to ${recipientType}`, type: 'success' });
       setReminderModal(null);
     } catch (err) {
       console.error('[AdminThreads] Reminder error:', err);
-      toast.error(err.message || 'Failed to send reminder');
+      showToast({ title: err.message || 'Failed to send reminder', type: 'error' });
     } finally {
       setIsSendingReminder(false);
     }
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   const handleRetry = useCallback(() => {
     fetchThreads();
@@ -414,10 +411,6 @@ export function useAdminThreadsPageLogic() {
 
   // ===== RETURN =====
   return {
-    // Auth
-    authState,
-    currentUser,
-
     // Data
     threads,
     filteredThreads: paginatedThreads,

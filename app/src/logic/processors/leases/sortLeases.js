@@ -13,8 +13,8 @@ export function sortLeases(leases, { field = 'createdAt', order = 'desc' }) {
   const sortedLeases = [...leases];
 
   sortedLeases.sort((a, b) => {
-    let valueA = getFieldValue(a, field);
-    let valueB = getFieldValue(b, field);
+    const valueA = getFieldValue(a, field);
+    const valueB = getFieldValue(b, field);
 
     // Handle null/undefined values - push them to the end
     if (valueA == null && valueB == null) return 0;

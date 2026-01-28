@@ -29,32 +29,29 @@ export function PricingRow({ proposal, isDeclined = false }) {
   const originalNightlyRate = proposal?.['proposal nightly price'] || proposal?.proposal_nightly_price || 0;
   const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
   const originalTotalPrice = proposal?.['Total Price for Reservation (guest)'] || proposal?.total_price_guest || 0;
-  let originalDays = proposal?.['Days Selected'] || [];
-  if (typeof originalDays === 'string') {
-    try { originalDays = JSON.parse(originalDays); } catch { originalDays = []; }
+  let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
+  if (typeof originalNights === 'string') {
+    try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
   }
-  const originalNightsPerWeek = Math.max(0, (Array.isArray(originalDays) ? originalDays.length : 0) - 1);
+  const originalNightsPerWeek = originalNights.length;
 
   // HC values (host counteroffer)
   const hcNightlyRate = proposal?.['hc nightly price'];
   const hcWeeks = proposal?.['hc reservation span (weeks)'];
   const hcTotalPrice = proposal?.['hc total price'];
-  let hcDays = proposal?.['hc days selected'] || [];
-  if (typeof hcDays === 'string') {
-    try { hcDays = JSON.parse(hcDays); } catch { hcDays = []; }
+  let hcNights = proposal?.['hc nights selected'] || [];
+  if (typeof hcNights === 'string') {
+    try { hcNights = JSON.parse(hcNights); } catch { hcNights = []; }
   }
-  const hcNightsPerWeek = hcDays.length > 0 ? Math.max(0, hcDays.length - 1) : null;
+  const hcNightsPerWeek = hcNights.length > 0 ? hcNights.length : null;
 
-  // Current values (use HC if counteroffer, otherwise original/normalized)
-  const nightlyRate = proposal?.nightly_rate || proposal?.price_per_night ||
-    (isCounteroffer && hcNightlyRate != null ? hcNightlyRate : originalNightlyRate);
-  const daysSelected = proposal?.days_selected || proposal?.Days_Selected ||
-    (isCounteroffer && hcDays.length > 0 ? hcDays : originalDays);
-  const nightsPerWeek = Math.max(0, (Array.isArray(daysSelected) ? daysSelected.length : 0) - 1);
-  const weeks = proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks ||
-    (isCounteroffer && hcWeeks != null ? hcWeeks : originalWeeks);
-  const totalEarnings = proposal?.total_price || proposal?.host_earnings || proposal?.total_amount ||
-    (isCounteroffer && hcTotalPrice != null ? hcTotalPrice : originalTotalPrice);
+  // Display values: prioritize HC values when counteroffer happened
+  // When counteroffer exists, show HC values as current; otherwise use normalized or original
+  const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || originalNightlyRate);
+  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
+  const nightsPerWeek = nightsSelected.length;
+  const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
+  const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || originalTotalPrice);
 
   // Comparison flags - detect which values changed
   const nightlyRateChanged = isCounteroffer && hcNightlyRate != null && hcNightlyRate !== originalNightlyRate;

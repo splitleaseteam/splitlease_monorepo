@@ -66,10 +66,10 @@ function getStatusBannerConfig(proposal) {
     };
   }
 
-  // Check for "Awaiting Rental Application" states (full Bubble status strings)
-  // These are proposals where the guest has submitted but hasn't completed their rental application yet
-  if (status === 'Proposal Submitted by guest - Awaiting Rental Application' ||
-      status === 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application') {
+  // Check for "Awaiting Rental Application" states (normalized snake_case format)
+  // Original Bubble: "Proposal Submitted by guest - Awaiting Rental Application"
+  if (status === 'proposal_submitted_by_guest_-_awaiting_rental_application' ||
+      status === 'proposal_submitted_for_guest_by_split_lease_-_awaiting_rental_application') {
     return {
       variant: 'action-needed',
       icon: Clock,
@@ -78,14 +78,36 @@ function getStatusBannerConfig(proposal) {
     };
   }
 
-  // Check for pending confirmation state
-  if (status === 'Proposal Submitted for guest by Split Lease - Pending Confirmation' ||
-      status === 'Pending Confirmation') {
+  // Check for pending confirmation state (normalized snake_case format)
+  // Original Bubble: "Proposal Submitted for guest by Split Lease - Pending Confirmation"
+  if (status === 'proposal_submitted_for_guest_by_split_lease_-_pending_confirmation' ||
+      status === 'pending_confirmation') {
     return {
       variant: 'default',
       icon: Clock,
       title: 'Pending Confirmation',
       message: `Waiting for ${guestName} to confirm proposal`
+    };
+  }
+
+  // Check for host counteroffer awaiting guest review (normalized snake_case format)
+  // Original Bubble: "Host Counteroffer Submitted / Awaiting Guest Review"
+  if (status === 'host_counteroffer_submitted_/_awaiting_guest_review') {
+    return {
+      variant: 'default',
+      icon: Clock,
+      title: 'Awaiting Guest Review',
+      message: `${guestName} is reviewing your counteroffer`
+    };
+  }
+
+  // Legacy 'pending' status - typically means awaiting rental application
+  if (status === 'pending') {
+    return {
+      variant: 'default',
+      icon: Clock,
+      title: 'Awaiting Rental Application',
+      message: `Waiting for ${guestName} to submit rental application`
     };
   }
 

@@ -15,9 +15,8 @@ import {
   clearLinkedInOAuthLoginFlow,
   clearLinkedInOAuthUserType,
 } from '../secureStorage.js';
-import { setIsUserLoggedIn } from './tokenValidation.js';
+import { setIsUserLoggedIn, getSessionId } from './tokenValidation.js';
 import { setUserType } from './session.js';
-import { getSessionId } from './tokenValidation.js';
 
 // ============================================================================
 // Bubble Authentication API - Edge Function Proxy

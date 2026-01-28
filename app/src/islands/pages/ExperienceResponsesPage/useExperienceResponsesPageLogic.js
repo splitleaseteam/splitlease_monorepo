@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from '../../shared/Toast';
 import { checkAuthStatus } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 
@@ -49,6 +49,9 @@ function adaptResponse(rawResponse) {
 }
 
 export function useExperienceResponsesPageLogic() {
+  // ===== TOAST =====
+  const { showToast } = useToast();
+
   // ===== AUTH STATE =====
   const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
 
@@ -66,31 +69,11 @@ export function useExperienceResponsesPageLogic() {
   // ===== SELECTION STATE =====
   const [selectedId, setSelectedId] = useState(null);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { user, session } = await checkAuthStatus();
-
-        if (!user || !session) {
-          setAuthState('unauthorized');
-          toast.error('Authentication required');
-          window.location.href =
-            '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-
-        // Admin check will be done server-side via RLS policies
-        // For now, assume authorized if authenticated
-        setAuthState('authorized');
-      } catch (err) {
-        console.error('[ExperienceResponses] Auth check failed:', err);
-        setAuthState('unauthorized');
-        toast.error('Authentication failed');
-      }
-    };
-
-    checkAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState('authorized');
   }, []);
 
   // ===== FETCH RESPONSES =====
@@ -136,7 +119,7 @@ export function useExperienceResponsesPageLogic() {
     } catch (err) {
       console.error('[ExperienceResponses] Fetch error:', err);
       setError(err.message || 'Failed to load responses');
-      toast.error('Failed to load responses');
+      showToast({ title: 'Failed to load responses', type: 'error' });
     } finally {
       setIsLoading(false);
     }

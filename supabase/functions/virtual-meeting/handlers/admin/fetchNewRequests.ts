@@ -22,12 +22,8 @@ export async function handleAdminFetchNewRequests(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown[]> {
-  // Verify authentication (admin check can be added once roles are implemented)
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
-
-  console.log(`[admin_fetch_new_requests] Fetching new requests for admin: ${user.email}`);
+  // Authentication is now optional - internal pages can access without login
+  console.log(`[admin_fetch_new_requests] Fetching new requests${user ? ` for admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Build query for pending requests
   let query = supabase

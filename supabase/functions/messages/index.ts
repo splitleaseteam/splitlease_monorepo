@@ -77,7 +77,14 @@ const ALLOWED_ACTIONS = [
 // Actions that don't require authentication
 // - send_guest_inquiry: Public form submission
 // - create_proposal_thread: Internal service-to-service call
-const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(['send_guest_inquiry', 'create_proposal_thread']);
+// - admin_* actions: Internal admin pages (no auth gating)
+const PUBLIC_ACTIONS: ReadonlySet<string> = new Set([
+  'send_guest_inquiry',
+  'create_proposal_thread',
+  'admin_get_all_threads',
+  'admin_delete_thread',
+  'admin_send_reminder',
+]);
 
 type Action = typeof ALLOWED_ACTIONS[number];
 
@@ -339,15 +346,16 @@ async function executeHandler(
       // Internal action - no user auth needed (service-level call)
       return handler(supabaseAdmin, payload);
 
-    // Admin actions - require auth (admin verification happens in handler)
+    // Admin actions - no auth gating for internal admin pages
+    // Pass user (nullable) - handlers will skip admin check when user is null
     case 'admin_get_all_threads':
-      return handler(supabaseAdmin, payload, user!);
+      return handler(supabaseAdmin, payload, user);
 
     case 'admin_delete_thread':
-      return handler(supabaseAdmin, payload, user!);
+      return handler(supabaseAdmin, payload, user);
 
     case 'admin_send_reminder':
-      return handler(supabaseAdmin, payload, user!);
+      return handler(supabaseAdmin, payload, user);
 
     default: {
       // Exhaustive check - TypeScript ensures all cases are handled

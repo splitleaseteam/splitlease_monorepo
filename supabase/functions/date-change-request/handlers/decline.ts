@@ -17,6 +17,7 @@ import {
   DateChangeRequestData,
 } from "../lib/types.ts";
 import { validateDeclineInput } from "../lib/validators.ts";
+import { sendDateChangeRequestNotifications } from "./notifications.ts";
 
 /**
  * Handle decline date change request
@@ -96,6 +97,28 @@ export async function handleDecline(
   }
 
   console.log(`[date-change-request:decline] Request status updated to Rejected`);
+
+  // ================================================
+  // SEND NOTIFICATIONS (non-blocking)
+  // ================================================
+
+  try {
+    await sendDateChangeRequestNotifications(supabase, {
+      event: 'REJECTED',
+      requestId: input.requestId,
+      requestType: requestData['type of request'],
+      leaseId: requestData['Lease'] || '',
+      dateAdded: requestData['date added'],
+      dateRemoved: requestData['date removed'],
+      priceRate: requestData['Price/Rate of the night'],
+      requestedById: requestData['Requested by'] || '',
+      receiverId: requestData['Request receiver'] || '',
+      message: requestData['Message from Requested by'],
+      answerMessage: input.reason || null,
+    });
+  } catch (notificationError) {
+    console.error(`[date-change-request:decline] Notification error (non-blocking):`, notificationError);
+  }
 
   // ================================================
   // ENQUEUE BUBBLE SYNC

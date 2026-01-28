@@ -26,6 +26,9 @@ import BulkActionsBar from './components/BulkActionsBar';
 import LoadingState from './components/LoadingState';
 import EmptyState from './components/EmptyState';
 import ErrorState from './components/ErrorState';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import '../../../styles/pages/quick-price.css';
+
 
 export default function QuickPricePage() {
   const { showToast } = useToast();
@@ -35,6 +38,7 @@ export default function QuickPricePage() {
   if (logic.isLoading && !logic.listings.length) {
     return (
       <div className="quick-price">
+        <AdminHeader />
         <LoadingState message="Loading listings..." />
       </div>
     );
@@ -44,6 +48,7 @@ export default function QuickPricePage() {
   if (logic.error && !logic.listings.length) {
     return (
       <div className="quick-price">
+        <AdminHeader />
         <ErrorState
           message={logic.error}
           onRetry={logic.handleRetry}
@@ -54,6 +59,7 @@ export default function QuickPricePage() {
 
   return (
     <div className="quick-price">
+      <AdminHeader />
       {/* Header */}
       <header className="quick-price__header">
         <div className="quick-price__header-content">

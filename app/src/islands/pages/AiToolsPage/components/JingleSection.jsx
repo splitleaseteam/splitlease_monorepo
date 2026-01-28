@@ -13,13 +13,13 @@ import PropTypes from 'prop-types';
 import { MELODY_PREFERENCES, CONTENT_PREFERENCES } from '../types.js';
 
 export default function JingleSection({
-  selectedHouseManual,
-  selectedVisit,
-  jingles,
-  melodyPreference,
-  contentPreferences,
-  jingleLyrics,
-  jingleStatus,
+  selectedHouseManual = '',
+  selectedVisit = '',
+  jingles = [],
+  melodyPreference = 'optimistic-commercial',
+  contentPreferences = ['host-name', 'house-rules'],
+  jingleLyrics = '',
+  jingleStatus = { loading: false, error: null, message: null },
   onMelodyPreferenceChange,
   onContentPreferenceToggle,
   onLyricsChange,
@@ -221,12 +221,3 @@ JingleSection.propTypes = {
   onAttach: PropTypes.func.isRequired,
 };
 
-JingleSection.defaultProps = {
-  selectedHouseManual: '',
-  selectedVisit: '',
-  jingles: [],
-  melodyPreference: 'optimistic-commercial',
-  contentPreferences: ['host-name', 'house-rules'],
-  jingleLyrics: '',
-  jingleStatus: { loading: false, error: null, message: null },
-};

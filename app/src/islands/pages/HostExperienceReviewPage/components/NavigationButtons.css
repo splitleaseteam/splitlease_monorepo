@@ -1,0 +1,72 @@
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.navigation-buttons__back,
+.navigation-buttons__next,
+.navigation-buttons__submit {
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navigation-buttons__back {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  color: #64748b;
+}
+
+.navigation-buttons__back:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.navigation-buttons__back:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navigation-buttons__next {
+  background: #8b5cf6;
+  border: 2px solid #8b5cf6;
+  color: white;
+  margin-left: auto;
+}
+
+.navigation-buttons__next:hover:not(:disabled) {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.navigation-buttons__submit {
+  background: #22c55e;
+  border: 2px solid #22c55e;
+  color: white;
+  margin-left: auto;
+}
+
+.navigation-buttons__submit:hover:not(:disabled) {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.navigation-buttons__submit:disabled,
+.navigation-buttons__next:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .navigation-buttons__back,
+  .navigation-buttons__next,
+  .navigation-buttons__submit {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}

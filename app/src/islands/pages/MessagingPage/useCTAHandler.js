@@ -17,7 +17,7 @@ import { fetchCTAConfig, buildCTADestination } from '../../../lib/ctaConfig.js';
 /**
  * @param {object} options
  * @param {object} options.user - Current user object with bubbleId
- * @param {object} options.selectedThread - Currently selected thread with -Host User, -Guest User
+ * @param {object} options.selectedThread - Currently selected thread with host_user_id, guest_user_id
  * @param {object} options.threadInfo - Thread info from getMessages (has proposal_id, listing_id)
  * @param {function} options.onOpenModal - Callback to open a modal (modalName, context) => void
  */
@@ -45,7 +45,7 @@ export function useCTAHandler({ user, selectedThread, threadInfo, onOpenModal })
    */
   const isUserHost = useCallback(() => {
     if (!selectedThread || !user?.bubbleId) return false;
-    return selectedThread['-Host User'] === user.bubbleId;
+    return selectedThread.host_user_id === user.bubbleId;
   }, [selectedThread, user?.bubbleId]);
 
   /**

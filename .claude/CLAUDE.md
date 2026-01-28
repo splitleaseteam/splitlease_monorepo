@@ -18,37 +18,34 @@ A flexible rental marketplace for NYC properties enabling split scheduling, repe
 
 ## MCP Servers
 
-Two Supabase MCP servers are configured for database operations:
+One Supabase MCP server is configured, connecting to two separate Supabase projects:
 
-| Server | Purpose | When to Use |
-|--------|---------|-------------|
-| **supabase-dev** | Development database | **DEFAULT** - Use for all development, testing, and most operations |
-| **supabase-live** | Production database | **RARE** - Only when explicitly specified or for production-critical operations |
+| Project | Project ID | Purpose | When to Use |
+|---------|-----------|---------|-------------|
+| **splitlease-backend-dev** | (dev project ID) | Development database | **DEFAULT** - Use for all local development, branches, previews, and testing |
+| **splitlease-backend-live** | (live project ID) | Production database | **RARE** - Only for split.lease production deployment, when explicitly requested |
 
-### MCP Usage Rules
+### MCP Usage Rules (MANDATORY)
 
-1. **Default to `supabase-dev`**: Unless explicitly told otherwise, always use the dev MCP server
-2. **Rare live access**: Only invoke `supabase-live` when:
-   - User explicitly requests production database access
-   - Deploying verified changes to production
+1. **Default to dev project**: Unless explicitly told otherwise, always target `splitlease-backend-dev`
+2. **Rare live access**: Only target `splitlease-backend-live` when:
+   - User explicitly requests production database operations
+   - Deploying verified changes to live site (split.lease)
    - Debugging production-specific issues (with extreme caution)
-3. **Always use `mcp-tool-specialist` subagent**: All MCP tool invocations (Supabase, Playwright, etc.) MUST go through the `mcp-tool-specialist` subagent - never invoke MCP tools directly
+3. **ALL MCP invocations MUST use `mcp-tool-specialist` subagent**: Never invoke MCP tools directly
 
 ### Example Usage
 
 ```javascript
-// ✅ CORRECT - Default to dev, through mcp-tool-specialist subagent
-Task tool → mcp-tool-specialist → supabase-dev (list_tables)
+// ✅ CORRECT - Default to dev project, through mcp-tool-specialist
+Task tool → mcp-tool-specialist → mcp__supabase__ (targets splitlease-backend-dev by default)
 
 // ✅ CORRECT - Explicit production request
-User: "Check production database tables"
-Task tool → mcp-tool-specialist → supabase-live (list_tables)
+User: "Check production database tables on split.lease"
+Task tool → mcp-tool-specialist → mcp__supabase__ (switch to splitlease-backend-live)
 
-// ❌ WRONG - Direct MCP invocation
-mcp__supabase-dev__list_tables() // Never call directly!
-
-// ❌ WRONG - Assuming production without explicit request
-Task tool → mcp-tool-specialist → supabase-live (apply_migration)
+// ❌ WRONG - Direct MCP invocation (bypassing subagent)
+mcp__supabase__list_tables({ project_id: "..." })
 ```
 
 ---
@@ -61,6 +58,7 @@ bun run dev              # Start dev server at http://localhost:8000
 bun run build            # Production build (runs generate-routes first)
 bun run preview          # Preview production build locally
 bun run generate-routes  # Regenerate _redirects and _routes.json
+bun run test             # Run test suite
 
 # From app/ directory (alternative)
 cd app && bun run dev    # Same as above
@@ -100,47 +98,26 @@ deno fmt --check supabase/functions/ # Check formatting
 ### Tech Stack Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (app/)                          │
-│  React 18 + Vite | Islands Architecture | Cloudflare Pages     │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  public/*.html    ──→  src/*.jsx (entry)  ──→  islands/pages/  │
-│  (27 HTML files)       (mount React)           (page components)│
-│                                                                 │
-│  src/logic/  ────────────────────────────────────────────────  │
-│  ├── calculators/   (pure math: calculate*, get*)              │
-│  ├── rules/         (boolean predicates: is*, can*, should*)   │
-│  ├── processors/    (data transform: adapt*, format*, process*)│
-│  └── workflows/     (orchestration: *Workflow)                 │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   BACKEND (supabase/functions/)                  │
-│           Supabase Edge Functions (Deno/TypeScript)             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  auth-user/      Login, signup, password reset (Supabase Auth) │
-│  bubble-proxy/   Proxy to Bubble.io API (legacy backend)       │
-│  proposal/       Proposal CRUD with queue-based Bubble sync    │
-│  listing/        Listing CRUD with atomic Bubble sync          │
-│  ai-gateway/     OpenAI proxy with prompt templating           │
-│  bubble_sync/    Queue processor for Supabase→Bubble sync      │
-│  messages/       Real-time messaging threads                    │
-│                                                                 │
-│  _shared/        CORS, errors, validation, Slack, sync utils   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        DATA LAYER                               │
-├─────────────────────────────────────────────────────────────────┤
-│  Supabase PostgreSQL  ←──→  Bubble.io (legacy, source of truth)│
-│  (replica + native)        (migrating away)                    │
-└─────────────────────────────────────────────────────────────────┘
+FRONTEND (app/)
+React 18 + Vite | Islands Architecture | Cloudflare Pages
+├─ public/*.html → src/*.jsx (entry points) → islands/pages/
+├─ src/logic/ (four-layer business logic)
+│  ├─ calculators/  (pure functions)
+│  ├─ rules/        (boolean predicates)
+│  ├─ processors/   (data transforms)
+│  └─ workflows/    (orchestration)
+
+BACKEND (supabase/functions/)
+Supabase Edge Functions (Deno/TypeScript)
+├─ auth-user/     (Supabase Auth)
+├─ proposal/      (CRUD + Bubble sync queue)
+├─ listing/       (CRUD + Bubble sync)
+├─ ai-gateway/    (OpenAI proxy)
+├─ messages/      (real-time messaging)
+└─ _shared/       (CORS, errors, validation, Slack)
+
+DATA LAYER
+Supabase PostgreSQL ←→ Bubble.io (legacy, migrating away)
 ```
 
 ### Core Patterns
@@ -168,32 +145,14 @@ The database stores days natively in this format. No conversion needed.
 
 ## Key Files
 
-| What you need | Where to find it |
-|---------------|------------------|
+| Component | Path |
+|-----------|------|
 | Route Registry | `app/src/routes.config.js` |
-| Vite Config | `app/vite.config.js` |
-| ESLint Config | `app/eslint.config.js` |
-| Deno Lint Config | `supabase/functions/deno.json` |
-| Authentication | `app/src/lib/auth.js` |
-| Supabase client | `app/src/lib/supabase.js` |
-| Day utilities | `app/src/lib/dayUtils.js` |
-| Business rules | `app/src/logic/rules/` |
-| Pricing calculations | `app/src/logic/calculators/pricing/` |
+| Config | `app/vite.config.js` • `app/eslint.config.js` • `supabase/functions/deno.json` |
+| Auth & Client | `app/src/lib/auth.js` • `app/src/lib/supabase.js` |
+| Business Logic | `app/src/logic/` |
 | Edge Functions | `supabase/functions/` |
-| Shared Edge utilities | `supabase/functions/_shared/` |
-| Page components | `app/src/islands/pages/` |
-| Shared components | `app/src/islands/shared/` |
-
----
-
-## Documentation Hierarchy
-
-| File | Use For |
-|------|---------|
-| [miniCLAUDE.md](./Documentation/miniCLAUDE.md) | Quick reference, simple tasks |
-| [largeCLAUDE.md](./Documentation/largeCLAUDE.md) | Full context, complex tasks |
-| [app/CLAUDE.md](../app/CLAUDE.md) | Frontend architecture details |
-| [supabase/CLAUDE.md](../supabase/CLAUDE.md) | Edge Functions reference |
+| Components | `app/src/islands/` |
 
 ---
 
@@ -206,21 +165,6 @@ You're not here to be a yes-machine. Here's what I expect:
 - **Trust your instincts**: If a request feels off—architecturally unsound, likely to cause regressions, or fighting against established patterns—say so. Back it up with what you've observed in the codebase or past outcomes.
 - **Surface conflicts early**: If a request contradicts previous instructions, existing code patterns, or documented decisions, call it out before proceeding. "You asked for X, but Y is already in place—which should win?" is a perfectly valid question.
 - **Ask clarifying questions**: When a request is ambiguous, has multiple valid interpretations, or depends on context I haven't given you—ask. Don't guess and apologize later.
-
-### What This Looks Like in Practice
-
-```
-❌ BAD: "Sure, I'll add that fallback logic."
-   (when fallback logic violates the "Building for Truth" principle)
-
-✅ GOOD: "I can add that fallback, but it conflicts with the codebase
-   philosophy of surfacing real errors. The underlying issue seems to be X—
-   should we fix that instead?"
-
-❌ BAD: Silently implementing option A when options A, B, and C are all valid
-✅ GOOD: "There are a few ways to approach this: [A], [B], [C].
-   Given [observation about the codebase], I'd lean toward [B]. Thoughts?"
-```
 
 ### When to Proceed Without Asking
 
@@ -236,9 +180,12 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 ## Rules
 
 ### DO
+- **ALWAYS invoke `/slack-webhook` skill after completing each task or prompt** - Send a 1-line summary to Slack including the device hostname (e.g., "[DESKTOP-ABC123] Implemented user auth flow" or "[LAPTOP-XYZ] Fixed proposal sync bug"). Use `--type success` for completions, `--type error` for failures. This is MANDATORY for all task completions.
+- **ALWAYS invoke `/fp-rater` skill after creating or updating code files** - Output the FP rating table at the bottom of your response (table only, no explanations)
 - Use Edge Functions for all API calls (never call external APIs from frontend)
 - Run `bun run generate-routes` after any route changes in `routes.config.js`
-- Commit after each meaningful change (do not push unless asked)
+- Commit after each meaningful change (do not push unless asked) and always use the `/git-commits` skill to structure the commit message
+- **Provide a changelog of modified files** - After any file updates or creations, include a bulleted list of all files that were changed (e.g., "**Files Changed:** • `app/src/lib/auth.js` • `app/src/islands/pages/LoginPage.jsx`")
 - Use 0-indexed days (0=Sunday through 6=Saturday) everywhere
 - Use the four-layer logic architecture for business logic
 - Use `mcp-tool-specialist` subagent for all MCP tool invocations
@@ -246,8 +193,7 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - **Log full error details** on database errors: `code`, `message`, `details`, `hint`
 - Test edit flows with listings that have null FK values (legacy data)
 - **Informational text triggers**: When adding a `?` icon to open informational text modals, make the accompanying text label clickable too (not just the `?`). Wrap both the text and `?` in a single clickable container.
-- **ALWAYS invoke `/fp-rater` skill after creating or updating code files** - Output the FP rating table at the bottom of your response (table only, no explanations)
-- **ALWAYS invoke `/slack-webhook` skill after completing each task or prompt** - Send a 1-line summary to Slack (e.g., "Implemented user auth flow" or "Fixed proposal sync bug"). Use `--type success` for completions, `--type error` for failures. This is MANDATORY for all task completions.
+- **Never recommend cache clearing unless stale code execution is proven**
 
 ### DON'T
 - Expose API keys in frontend code
@@ -258,7 +204,6 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - Manually edit `_redirects` or `_routes.json` (auto-generated)
 - **Send entire formData to updateListing** - always filter to changed fields only
 - **Use project-specific abbreviations** - Always use full, descriptive names for directories, files, variables, and functions. For example, use `functional/` not `fp/`, use `configuration/` not `cfg/`, use `utilities/` not `util/`, use `manager` not `mgr`. Industry-standard terms (API, URL, JSON, HTTP, HTML, CSS, DOM, SQL) are acceptable.
-- **Recommend cache clearing unless stale code execution is proven** - When code changes don't appear in the browser, first verify the correct file is being loaded (check import paths, duplicate files, build output). Cache is rarely the real culprit; stale files or wrong imports are far more common.
 
 ### Database Update Pattern (CRITICAL)
 

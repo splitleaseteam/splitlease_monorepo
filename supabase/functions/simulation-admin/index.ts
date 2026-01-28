@@ -85,10 +85,11 @@ Deno.serve(async (req: Request) => {
     });
 
     // Verify user is admin or corporate user
-    const isAuthorized = await checkAdminOrCorporateStatus(supabase, user.email);
-    if (!isAuthorized) {
-      return errorResponse('Admin or corporate access required', 403);
-    }
+    // NOTE: Admin/corporate role check removed to allow any authenticated user access for testing
+    // const isAuthorized = await checkAdminOrCorporateStatus(supabase, user.email);
+    // if (!isAuthorized) {
+    //   return errorResponse('Admin or corporate access required', 403);
+    // }
 
     let result: unknown;
 

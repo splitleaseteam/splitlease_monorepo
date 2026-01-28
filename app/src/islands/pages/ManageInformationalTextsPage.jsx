@@ -6,6 +6,7 @@
  */
 
 import useManageInformationalTextsPageLogic from './useManageInformationalTextsPageLogic.js';
+import AdminHeader from '../shared/AdminHeader/AdminHeader';
 
 export default function ManageInformationalTextsPage() {
   const {
@@ -43,6 +44,7 @@ export default function ManageInformationalTextsPage() {
 
   return (
     <div style={styles.container}>
+      <AdminHeader />
       {/* Header */}
       <header style={styles.header}>
         <h1 style={styles.title}>Manage Informational Texts</h1>

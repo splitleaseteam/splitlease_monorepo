@@ -40,13 +40,40 @@ import {
 // ============================================================================
 
 /**
+ * Safely ensure a value is an array.
+ * Handles: null, undefined, arrays, JSON strings, and other types.
+ */
+function ensureArray(value) {
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  // Try parsing if it's a JSON string
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+/**
  * Transform Supabase listing row to UI-friendly format.
+ * Note: Column names from Bubble migration include emoji prefixes for pricing.
+ * Host phone is not on listing table - stored on user table instead.
+ *
  * @param {Object} row - Raw listing from Supabase
  * @param {string} boroughName - Resolved borough display name
  * @param {string} neighborhoodName - Resolved neighborhood display name
  * @returns {Object} Normalized listing object
  */
 function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
+  // Ensure photos and features are always arrays (Bubble data may vary)
+  const photos = ensureArray(row['Features - Photos']);
+  const features = ensureArray(row['Features - Amenities In-Unit']);
+  const errors = ensureArray(row.Errors);
+
   return {
     id: row._id,
     uniqueId: row['Listing Code OP'] || row._id?.slice(-8) || 'N/A',
@@ -56,7 +83,7 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
       id: row['Host User'],
       email: row['Host email'] || '',
       name: row['host name'] || '',
-      phone: row['Host phone'] || '',
+      phone: '', // Phone is on user table, not listing table
     },
     location: {
       borough: row['Location - Borough'],
@@ -65,19 +92,20 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
       displayNeighborhood: neighborhoodName || 'Unknown',
     },
     pricing: {
-      nightly: row['Nightly Host Rate for 1 night'] || 0,
-      override: row['Price Override'],
-      calculated3Night: row['Nightly Host Rate for 3 nights'] || 0,
+      // Note: Bubble columns have emoji prefixes
+      nightly: row['💰Nightly Host Rate for 1 night'] || 0,
+      override: row['💰Price Override'],
+      calculated3Night: row['💰Nightly Host Rate for 3 nights'] || 0,
     },
     status: computeListingStatus(row),
     availability: computeAvailability(row),
     usability: row.isForUsability || false,
     active: row.Active || false,
     showcase: row.Showcase || false,
-    photos: row['Features - Photos'] || [],
-    photoCount: (row['Features - Photos'] || []).length,
-    features: row['Features - Amenities In-Unit'] || [],
-    errors: row.Errors || [],
+    photos,
+    photoCount: photos.length,
+    features,
+    errors,
     modifiedAt: row['Modified Date'] ? new Date(row['Modified Date']) : null,
     createdAt: row['Created Date'] ? new Date(row['Created Date']) : null,
     // Keep raw data for updates
@@ -133,100 +161,17 @@ export function useListingsOverviewPageLogic() {
   const searchTimeoutRef = useRef(null);
 
   // ============================================================================
-  // AUTH CHECK (Gold Standard Pattern)
+  // AUTH CHECK (Optional - no redirect for internal pages)
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isAdmin: false,
-            shouldRedirect: true,
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        // Gold Standard Auth Pattern - Step 2: Deep validation
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (!userData) {
-          // Fallback to session metadata
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (!session?.user) {
-            console.log('[ListingsOverview] No valid session, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              isAdmin: false,
-              shouldRedirect: true,
-            });
-            window.location.href = '/';
-            return;
-          }
-
-          // Use session metadata as fallback
-          const isAdmin = session.user.user_metadata?.admin === true;
-          if (!isAdmin) {
-            console.log('[ListingsOverview] User is not admin, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              isAdmin: false,
-              shouldRedirect: true,
-            });
-            window.location.href = '/';
-            return;
-          }
-
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isAdmin: true,
-            shouldRedirect: false,
-          });
-          return;
-        }
-
-        // Check admin status from user record
-        const isAdmin = userData['Admin?'] === true || userData.admin === true;
-
-        if (!isAdmin) {
-          console.log('[ListingsOverview] User is not admin, redirecting');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isAdmin: false,
-            shouldRedirect: true,
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          isAdmin: true,
-          shouldRedirect: false,
-        });
-      } catch (err) {
-        console.error('[ListingsOverview] Auth check failed:', err);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isAdmin: false,
-          shouldRedirect: true,
-        });
-        window.location.href = '/';
-      }
-    }
-
-    checkAuth();
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState({
+      isChecking: false,
+      isAuthenticated: true,
+      isAdmin: true,
+      shouldRedirect: false,
+    });
   }, []);
 
   // ============================================================================
@@ -298,10 +243,12 @@ export function useListingsOverviewPageLogic() {
     }
   }, [filters, page, boroughs, neighborhoods, authState.isAuthenticated, authState.isAdmin]);
 
+  // Track if initial load has happened
+  const hasLoadedRef = useRef(false);
+
   // Load listings when filters change (debounced for search)
   useEffect(() => {
     if (!authState.isAuthenticated || !authState.isAdmin || authState.isChecking) return;
-    if (boroughs.length === 0) return; // Wait for reference data
 
     // Clear existing timeout
     if (searchTimeoutRef.current) {
@@ -310,6 +257,7 @@ export function useListingsOverviewPageLogic() {
 
     // Debounce search queries
     searchTimeoutRef.current = setTimeout(() => {
+      hasLoadedRef.current = true;
       loadListings(true);
     }, 300);
 
@@ -318,7 +266,7 @@ export function useListingsOverviewPageLogic() {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [filters, boroughs.length, authState.isAuthenticated, authState.isAdmin, authState.isChecking]);
+  }, [filters, authState.isAuthenticated, authState.isAdmin, authState.isChecking]);
 
   // ============================================================================
   // FILTER HANDLERS

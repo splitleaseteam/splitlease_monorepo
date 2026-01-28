@@ -124,8 +124,8 @@ export async function handleGetMessages(
     .from('thread')
     .select(`
       _id,
-      "-Host User",
-      "-Guest User",
+      host_user_id,
+      guest_user_id,
       "Listing",
       "Proposal"
     `)
@@ -137,8 +137,8 @@ export async function handleGetMessages(
     throw new ValidationError('Thread not found');
   }
 
-  const threadHost = thread['-Host User'];
-  const threadGuest = thread['-Guest User'];
+  const threadHost = thread.host_user_id;
+  const threadGuest = thread.guest_user_id;
 
   // Check user is participant in thread
   if (threadHost !== userBubbleId && threadGuest !== userBubbleId) {
@@ -158,14 +158,14 @@ export async function handleGetMessages(
       _id,
       "Message Body",
       "Created Date",
-      "-Originator User",
+      originator_user_id,
       "is Visible to Guest",
       "is Visible to Host",
       "is Split Bot",
       "Split Bot Warning",
       "Call to Action"
     `)
-    .eq('"Associated Thread/Conversation"', thread_id)
+    .eq('thread_id', thread_id)
     .order('"Created Date"', { ascending: true });
 
   // Apply visibility filter
@@ -190,7 +190,7 @@ export async function handleGetMessages(
   // Collect all sender IDs for batch lookup
   const senderIds = new Set<string>();
   messages?.forEach(msg => {
-    if (msg['-Originator User']) senderIds.add(msg['-Originator User']);
+    if (msg.originator_user_id) senderIds.add(msg.originator_user_id);
   });
 
   // Batch fetch sender user data
@@ -268,7 +268,7 @@ export async function handleGetMessages(
 
   // Transform messages to response format
   const transformedMessages: Message[] = (messages || []).map(msg => {
-    const senderId = msg['-Originator User'];
+    const senderId = msg.originator_user_id;
     const sender = senderId ? senderMap[senderId] : null;
     const isOutgoing = senderId === userBubbleId;
     const isSplitBot = msg['is Split Bot'] === true;
@@ -344,7 +344,7 @@ export async function handleGetMessages(
   const { count: totalCount } = await supabaseAdmin
     .from('_message')
     .select('*', { count: 'exact', head: true })
-    .eq('"Associated Thread/Conversation"', thread_id);
+    .eq('thread_id', thread_id);
 
   const hasMore = totalCount ? (offset + limit) < totalCount : false;
 

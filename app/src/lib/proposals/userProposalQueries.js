@@ -495,7 +495,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Link: proposal._id -> thread."Proposal" -> _message."Associated Thread/Conversation"
   console.log(`fetchProposalsByIds: Fetching counteroffer summaries for ${proposalIdsForSummaries.length} proposals`);
 
-  let counterofferSummaryMap = new Map();
+  const counterofferSummaryMap = new Map();
 
   if (proposalIdsForSummaries.length > 0) {
     // First, fetch threads for all proposals
@@ -588,7 +588,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       if (typeof houseRulesRaw === 'string') {
         try {
           proposalHouseRuleIds = JSON.parse(houseRulesRaw);
-        } catch (e) {
+        } catch (_e) {
           proposalHouseRuleIds = [];
         }
       } else if (Array.isArray(houseRulesRaw)) {

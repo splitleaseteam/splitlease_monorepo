@@ -18,15 +18,19 @@ import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationDetailView from './components/ApplicationDetailView.jsx';
 import EditApplicationModal from './modals/EditApplicationModal.jsx';
 import { useToast } from '../../shared/Toast.jsx';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import '../../../styles/pages/manage-rental-applications.css';
+
 
 export default function ManageRentalApplicationsPage() {
   const { showToast } = useToast();
   const logic = useManageRentalApplicationsPageLogic({ showToast });
 
   // Loading state
-  if (logic.isInitializing) {
+  if (logic.isLoading && !logic.applications.length && logic.viewMode === 'list') {
     return (
       <div className="manage-rental-apps">
+        <AdminHeader />
         <div className="manage-rental-apps__loading">
           <div className="spinner" />
           <p>Loading...</p>
@@ -35,21 +39,9 @@ export default function ManageRentalApplicationsPage() {
     );
   }
 
-  // Unauthorized
-  if (!logic.isAuthorized) {
-    return (
-      <div className="manage-rental-apps">
-        <div className="manage-rental-apps__unauthorized">
-          <h2>Access Denied</h2>
-          <p>You are not authorized to view this page. Admin access required.</p>
-          <a href="/" className="btn btn--primary">Return to Home</a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="manage-rental-apps">
+      <AdminHeader />
       {/* Header */}
       <header className="manage-rental-apps__header">
         <div className="manage-rental-apps__header-content">
@@ -61,21 +53,13 @@ export default function ManageRentalApplicationsPage() {
 
         {/* Stats Summary */}
         <div className="manage-rental-apps__stats">
+          <div className="stat-card stat-card--draft">
+            <span className="stat-card__value">{logic.stats.draft}</span>
+            <span className="stat-card__label">Draft</span>
+          </div>
           <div className="stat-card stat-card--submitted">
             <span className="stat-card__value">{logic.stats.submitted}</span>
             <span className="stat-card__label">Submitted</span>
-          </div>
-          <div className="stat-card stat-card--under-review">
-            <span className="stat-card__value">{logic.stats.underReview}</span>
-            <span className="stat-card__label">Under Review</span>
-          </div>
-          <div className="stat-card stat-card--approved">
-            <span className="stat-card__value">{logic.stats.approved}</span>
-            <span className="stat-card__label">Approved</span>
-          </div>
-          <div className="stat-card stat-card--denied">
-            <span className="stat-card__value">{logic.stats.denied}</span>
-            <span className="stat-card__label">Denied</span>
           </div>
         </div>
       </header>

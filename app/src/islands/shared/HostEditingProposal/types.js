@@ -221,15 +221,26 @@ export function getCheckOutDay(selectedNights) {
 }
 
 /**
- * Get days from selected nights
+ * Get days from selected nights (includes checkout day)
  * @param {number[]} selectedNights - Array of 0-based night indices
- * @returns {number[]} Array of 0-based day indices
+ * @returns {number[]} Array of 0-based day indices (check-in days + final checkout day)
  */
 export function nightsToDays(selectedNights) {
-  return selectedNights.map(nightIndex => {
+  if (!selectedNights || selectedNights.length === 0) return []
+
+  // Get all check-in days (each night's check-in day)
+  const checkInDays = selectedNights.map(nightIndex => {
     const night = NIGHTS_CONFIG.find(n => n.id === nightIndex)
     return night?.checkInDay
   }).filter(day => day !== undefined)
+
+  // Add the checkout day (the day after the last night)
+  const checkOutDay = getCheckOutDay(selectedNights)
+  if (checkOutDay !== null && !checkInDays.includes(checkOutDay)) {
+    checkInDays.push(checkOutDay)
+  }
+
+  return checkInDays
 }
 
 /**

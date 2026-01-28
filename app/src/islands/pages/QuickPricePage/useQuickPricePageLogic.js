@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
 import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -84,7 +84,7 @@ export function useQuickPricePageLogic({ showToast }) {
   const [listings, setListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+  const [accessToken, setAccessToken] = useState('');
   const [totalCount, setTotalCount] = useState(0);
 
   // Filters
@@ -128,34 +128,34 @@ export function useQuickPricePageLogic({ showToast }) {
     { value: 'weeklyHostRate', label: 'Weekly Rate' },
   ], []);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadToken = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-        if (!user || !session) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
-        }
-        setAccessToken(session.access_token);
+        const { data: { session } } = await supabase.auth.getSession();
+        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+        setAccessToken(session?.access_token || legacyToken || '');
       } catch (err) {
-        console.error('[QuickPrice] Auth check failed:', err);
-        showToast({ title: 'Authentication failed', type: 'error' });
-        window.location.href = '/';
+        console.error('[QuickPrice] Token lookup failed:', err);
+        setAccessToken('');
       }
     };
-    checkAuth();
-  }, [showToast]);
+    loadToken();
+  }, []);
+
+  const buildHeaders = useCallback(() => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return headers;
+  }, [accessToken]);
 
   // ===== API CALL HELPER =====
   const callEdgeFunction = useCallback(async (action, payload = {}) => {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/pricing-admin`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: buildHeaders(),
       body: JSON.stringify({ action, payload }),
     });
 
@@ -166,12 +166,10 @@ export function useQuickPricePageLogic({ showToast }) {
     }
 
     return result.data;
-  }, [accessToken]);
+  }, [buildHeaders]);
 
   // ===== FETCH LISTINGS =====
   const fetchListings = useCallback(async () => {
-    if (!accessToken) return;
-
     setIsLoading(true);
     setError(null);
 
@@ -209,12 +207,10 @@ export function useQuickPricePageLogic({ showToast }) {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, page, rentalTypeFilter, boroughFilter, neighborhoodFilter, searchQuery, activeOnlyFilter, sortField, sortOrder, callEdgeFunction, showToast]);
+  }, [page, rentalTypeFilter, boroughFilter, neighborhoodFilter, searchQuery, activeOnlyFilter, sortField, sortOrder, callEdgeFunction, showToast]);
 
   // ===== FETCH PRICING CONFIG =====
   const fetchPricingConfig = useCallback(async () => {
-    if (!accessToken) return;
-
     try {
       const data = await callEdgeFunction('getConfig');
       setPricingConfig(data);
@@ -231,14 +227,12 @@ export function useQuickPricePageLogic({ showToast }) {
         isReadOnly: true,
       });
     }
-  }, [accessToken, callEdgeFunction]);
+  }, [callEdgeFunction]);
 
   useEffect(() => {
-    if (accessToken) {
-      fetchListings();
-      fetchPricingConfig();
-    }
-  }, [accessToken, fetchListings, fetchPricingConfig]);
+    fetchListings();
+    fetchPricingConfig();
+  }, [fetchListings, fetchPricingConfig]);
 
   // Reset page when filters change
   useEffect(() => {

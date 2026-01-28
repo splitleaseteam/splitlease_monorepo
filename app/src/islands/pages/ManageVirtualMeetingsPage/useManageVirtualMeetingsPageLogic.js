@@ -17,7 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus } from '../../../lib/auth';
+import { supabase } from '../../../lib/supabase';
 import {
   canConfirmMeeting,
   canDeleteMeeting,
@@ -106,35 +106,44 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
     completedMeetings: confirmedMeetings.filter(m => m.status === 'completed').length
   }), [newRequests, confirmedMeetings]);
 
-  // ===== AUTH CHECK =====
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { user, session } = await checkAuthStatus();
-        if (!user || !session) {
-          showToast({ title: 'Authentication required', type: 'error' });
-          window.location.href = '/?auth=login&redirect=' + encodeURIComponent(window.location.pathname);
-          return;
+        // Try to get authentication token if user is logged in
+        // No redirect if not authenticated - this is an internal page accessible without login
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAccessToken(session.access_token);
+        } else {
+          // Legacy token auth user - get token from secure storage
+          const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
+          if (legacyToken) {
+            setAccessToken(legacyToken);
+          }
         }
-        // TODO: Add admin role check when auth supports roles
-        setAccessToken(session.access_token);
       } catch (err) {
         console.error('[ManageVirtualMeetings] Auth check failed:', err);
-        showToast({ title: 'Authentication failed', type: 'error' });
-        window.location.href = '/';
+        // No redirect - just log the error
       }
     };
     checkAuth();
-  }, [showToast]);
+  }, []);
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload) => {
+    // Build headers with Supabase anon key (required for Edge Functions) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+    };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/virtual-meeting`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 
@@ -149,7 +158,6 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // ===== DATA FETCHING =====
   const fetchAllMeetings = useCallback(async () => {
-    if (!accessToken) return;
 
     setIsLoading(true);
     setError(null);
@@ -175,7 +183,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Fetch blocked slots for selected host
   const fetchBlockedSlots = useCallback(async (hostId) => {
-    if (!accessToken || !hostId) return;
+    if (!hostId) return;
 
     setIsLoadingBlockedSlots(true);
 
@@ -192,10 +200,8 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Initial data load
   useEffect(() => {
-    if (accessToken) {
-      fetchAllMeetings();
-    }
-  }, [accessToken, fetchAllMeetings]);
+    fetchAllMeetings();
+  }, [fetchAllMeetings]);
 
   // Load blocked slots when host changes
   useEffect(() => {
