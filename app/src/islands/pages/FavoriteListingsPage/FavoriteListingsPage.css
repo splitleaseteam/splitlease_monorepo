@@ -324,21 +324,13 @@ body::-webkit-scrollbar,
   background: transparent;
 }
 
-/* V6 Cards - Ensure edge-to-edge images (no inherited padding) */
+/* V6 Cards - Basic resets (no !important to allow inline styles) */
 .v6-listings-grid article {
-  padding: 0 !important;
   margin: 0;
-}
-
-.v6-listings-grid article > div:first-child {
-  padding: 0 !important;
-  margin: 0 !important;
 }
 
 .v6-listings-grid article img {
   display: block;
-  margin: 0;
-  padding: 0;
 }
 
 /* ============================================

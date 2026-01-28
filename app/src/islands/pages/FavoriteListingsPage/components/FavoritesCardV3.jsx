@@ -263,12 +263,17 @@ const FavoritesCardV3 = ({
       background: TOKENS.colors.card,
       borderRadius: TOKENS.radius.lg,
       overflow: 'hidden',
-      boxShadow: isHovered && !isTouchDevice ? `${TOKENS.shadows.lg}, ${TOKENS.shadows.glow}` : TOKENS.shadows.md,
-      transition: isTouchDevice ? 'none' : 'all 0.2s ease',
-      transform: isHovered && !isTouchDevice ? 'translateY(-2px)' : 'none',
+      // Enhanced hover effects - more dramatic lift and glow
+      boxShadow: isHovered && !isTouchDevice
+        ? '0 12px 28px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(91, 40, 166, 0.2)'
+        : TOKENS.shadows.md,
+      transition: isTouchDevice ? 'none' : 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: isHovered && !isTouchDevice ? 'translateY(-6px) scale(1.01)' : 'none',
       cursor: 'pointer',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      border: `2px solid ${TOKENS.colors.border}`, // V5 spec: stronger 2px border
+      border: isHovered && !isTouchDevice
+        ? '2px solid rgba(91, 40, 166, 0.3)' // Purple tint on hover
+        : `2px solid ${TOKENS.colors.border}`,
       boxSizing: 'border-box',
       margin: 0,
       padding: 0,
