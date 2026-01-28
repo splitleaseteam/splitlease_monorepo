@@ -11,15 +11,23 @@
    HIDE SCROLLBARS (page-wide)
    Keep content scrollable but hide visual scrollbars
    ============================================ */
-html:has(.favorites-page),
-body:has(.favorites-page) {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+html,
+body {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
 }
 
-html:has(.favorites-page)::-webkit-scrollbar,
-body:has(.favorites-page)::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* ============================================
