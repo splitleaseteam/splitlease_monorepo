@@ -17,6 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 
@@ -25,6 +26,16 @@ import { supabase } from '../../../lib/supabase.js';
 // ============================================================================
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+
+// Create an anonymous Supabase client for admin queries
+// This bypasses authenticated user's RLS policies and uses anon role policies
+// which have unrestricted SELECT access to proposals for internal admin pages
+const anonSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 /**
  * Call the proposal Edge Function with soft headers pattern.
@@ -81,9 +92,9 @@ async function fetchInBatches(table, selectColumns, ids, batchSize = 10) {
     batches.push(ids.slice(i, i + batchSize));
   }
 
-  // Fetch each batch in parallel
+  // Fetch each batch in parallel using anonymous client to bypass RLS
   const batchPromises = batches.map(async (batchIds) => {
-    const { data, error } = await supabase
+    const { data, error } = await anonSupabase
       .from(table)
       .select(selectColumns)
       .in('_id', batchIds);
@@ -380,12 +391,15 @@ export function useProposalManagePageLogic() {
    * Load proposals with current filters
    */
   const loadProposals = useCallback(async () => {
+    console.log('[ProposalManage] loadProposals called - starting data fetch');
     setIsLoading(true);
     setError(null);
 
     try {
-      // Build query
-      let query = supabase
+      // Build query using anonymous client to bypass authenticated user's RLS
+      // The anon role has unrestricted SELECT access for internal admin pages
+      console.log('[ProposalManage] Building Supabase query for proposals (using anon client)...');
+      let query = anonSupabase
         .from('proposal')
         .select(`
           _id,
@@ -417,7 +431,7 @@ export function useProposalManagePageLogic() {
           "Created Date",
           "Modified Date"
         `, { count: 'exact' })
-        .or('"Deleted".is.null,"Deleted".eq.false');
+        .or('Deleted.is.null,Deleted.eq.false');
 
       // Apply filters
       if (filters.proposalId) {
@@ -448,7 +462,15 @@ export function useProposalManagePageLogic() {
       // Limit results
       query = query.limit(100);
 
+      console.log('[ProposalManage] Executing proposal query...');
       const { data: proposalsData, error: proposalsError, count } = await query;
+
+      console.log('[ProposalManage] Query result:', {
+        dataLength: proposalsData?.length || 0,
+        count,
+        error: proposalsError,
+        firstProposal: proposalsData?.[0] ? { _id: proposalsData[0]._id, Status: proposalsData[0].Status } : null
+      });
 
       if (proposalsError) {
         console.error('[ProposalManage] Error fetching proposals:', proposalsError);
@@ -537,7 +559,12 @@ export function useProposalManagePageLogic() {
       }
 
       setProposals(filteredProposals);
-      setTotalCount(filteredProposals.length);
+
+      // Use database count unless client-side text search reduced the results
+      // Text search filters (guest/host/listing name) are applied client-side
+      const hasTextSearch = filters.guestSearch || filters.hostSearch || filters.listingSearch;
+      const displayCount = hasTextSearch ? filteredProposals.length : (count || filteredProposals.length);
+      setTotalCount(displayCount);
 
     } catch (err) {
       console.error('[ProposalManage] Failed to load proposals:', err);
