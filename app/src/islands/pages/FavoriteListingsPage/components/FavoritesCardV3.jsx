@@ -572,27 +572,13 @@ const FavoritesCardV3 = ({
           {listing.title}
         </h2>
 
-        {/* Meta Row */}
-        <div style={styles.metaRow}>
-          <div style={styles.rating}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill={TOKENS.colors.primary} stroke={TOKENS.colors.primary} strokeWidth="1" aria-hidden="true">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            <span>{listing.rating || '4.8'}</span>
-          </div>
-          <div style={styles.stats}>
-            <span>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`}</span>
-            <span style={styles.statDivider} aria-hidden="true" />
-            <span>{listing.maxGuests} guests</span>
-          </div>
-        </div>
-
-        {/* Amenities Row */}
+        {/* Details & Amenities as Pills */}
         <div style={styles.amenitiesRow}>
+          <span style={styles.amenityTag}>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`}</span>
+          <span style={styles.amenityTag}>{listing.maxGuests} guests</span>
           <span style={styles.amenityTag}>WiFi</span>
           <span style={styles.amenityTag}>Kitchen</span>
           <span style={styles.amenityTag}>A/C</span>
-          {listing.amenities?.includes('Washer') && <span style={styles.amenityTag}>Washer</span>}
         </div>
 
         {/* AI SUMMARY - Hidden for now */}
