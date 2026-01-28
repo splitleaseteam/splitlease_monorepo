@@ -34,14 +34,25 @@ export async function acceptCounteroffer(proposalId) {
   console.log('[counterofferWorkflow] Accepting counteroffer for proposal:', proposalId);
 
   // First, fetch the proposal to validate it has a counteroffer
+  // Use .maybeSingle() instead of .single() to avoid 406 error when proposal not found
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
     .select('*')
     .eq('_id', proposalId)
-    .single();
+    .maybeSingle();
 
   if (fetchError) {
+    console.error('[counterofferWorkflow] Error fetching proposal:', {
+      code: fetchError.code,
+      message: fetchError.message,
+      details: fetchError.details,
+      hint: fetchError.hint
+    });
     throw new Error(`Failed to fetch proposal: ${fetchError.message}`);
+  }
+
+  if (!proposal) {
+    throw new Error(`Proposal not found with ID: ${proposalId}. It may not be synced to Supabase yet.`);
   }
 
   if (!proposal['counter offer happened']) {
@@ -56,17 +67,28 @@ export async function acceptCounteroffer(proposalId) {
     'Is Finalized': true
   };
 
+  // Remove .single() to avoid 406 error - handle array response instead
   const { data, error } = await supabase
     .from('proposal')
     .update(updateData)
     .eq('_id', proposalId)
-    .select()
-    .single();
+    .select();
 
   if (error) {
-    console.error('[counterofferWorkflow] Error accepting counteroffer:', error);
+    console.error('[counterofferWorkflow] Error accepting counteroffer:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
     throw new Error(`Failed to accept counteroffer: ${error.message}`);
   }
+
+  if (!data || data.length === 0) {
+    throw new Error(`No proposal updated - proposal may not exist with ID: ${proposalId}`);
+  }
+
+  const updatedProposal = data[0];
 
   console.log('[counterofferWorkflow] Counteroffer accepted successfully:', proposalId);
 
@@ -97,7 +119,7 @@ export async function acceptCounteroffer(proposalId) {
     });
   }
 
-  return data;
+  return updatedProposal;
 }
 
 /**
@@ -122,20 +144,30 @@ export async function declineCounteroffer(proposalId, reason = 'Counteroffer dec
     'reason for cancellation': reason
   };
 
+  // Remove .single() to avoid 406 error - handle array response instead
   const { data, error } = await supabase
     .from('proposal')
     .update(updateData)
     .eq('_id', proposalId)
-    .select()
-    .single();
+    .select();
 
   if (error) {
-    console.error('[counterofferWorkflow] Error declining counteroffer:', error);
+    console.error('[counterofferWorkflow] Error declining counteroffer:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
     throw new Error(`Failed to decline counteroffer: ${error.message}`);
   }
 
+  if (!data || data.length === 0) {
+    throw new Error(`No proposal updated - proposal may not exist with ID: ${proposalId}`);
+  }
+
+  const updatedProposal = data[0];
   console.log('[counterofferWorkflow] Counteroffer declined successfully:', proposalId);
-  return data;
+  return updatedProposal;
 }
 
 /**

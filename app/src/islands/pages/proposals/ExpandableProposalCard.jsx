@@ -1067,6 +1067,8 @@ export default function ExpandableProposalCard({
                       handleDeleteProposal();
                     } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
                       handleConfirmProposal();
+                    } else if (buttonConfig.guestAction1.action === 'accept_counteroffer') {
+                      setShowCompareTermsModal(true);
                     }
                   }}
                 >
