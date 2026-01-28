@@ -87,19 +87,11 @@ export async function handleCreate(
 
   console.log('[lease:create] Phase 1: Updating proposal status...');
 
-  // Fetch proposal with all needed fields
+  // Fetch proposal (without embedded joins - no FK constraints exist)
+  // SCHEMA NOTE (2026-01-28): proposal.Listing has no FK to listing table
   const { data: proposal, error: proposalError } = await supabase
     .from('proposal')
-    .select(`
-      *,
-      listing:Listing (
-        _id,
-        Name,
-        "House manual",
-        "users with permission",
-        "cancellation policy"
-      )
-    `)
+    .select('*')
     .eq('_id', input.proposalId)
     .single();
 
@@ -108,6 +100,29 @@ export async function handleCreate(
   }
 
   const proposalData = proposal as ProposalData;
+
+  // Fetch listing separately using proposal.Listing ID
+  let listingData: {
+    _id: string;
+    Name?: string;
+    'House manual'?: string;
+    'users with permission'?: string[];
+    'cancellation policy'?: string;
+  } | null = null;
+
+  if (proposalData.Listing) {
+    const { data: listing, error: listingError } = await supabase
+      .from('listing')
+      .select('_id, Name, "House manual", "users with permission", "cancellation policy"')
+      .eq('_id', proposalData.Listing)
+      .single();
+
+    if (listingError) {
+      console.warn('[lease:create] Could not fetch listing:', listingError.message);
+    } else {
+      listingData = listing;
+    }
+  }
   const now = new Date().toISOString();
 
   // Get active terms (HC if counteroffer, original if not)
@@ -188,7 +203,7 @@ export async function handleCreate(
     Host: proposalData['Host User'],
     Listing: proposalData.Listing,
     Participants: [proposalData.Guest, proposalData['Host User']],
-    'Cancellation Policy': proposal.listing?.['cancellation policy'] || 'Standard',
+    'Cancellation Policy': listingData?.['cancellation policy'] || 'Standard',
     'First Payment Date': firstPaymentDate,
     'Move In Date': activeTerms.moveInDate,
     'Move-out': moveOutDate,
@@ -459,10 +474,10 @@ export async function handleCreate(
     .eq('_id', leaseId);
 
   // 7b: Link house manual if applicable
-  if (proposal.listing?.['House manual']) {
+  if (listingData?.['House manual']) {
     await supabase
       .from('bookings_leases')
-      .update({ 'House Manual': proposal.listing['House manual'] })
+      .update({ 'House Manual': listingData['House manual'] })
       .eq('_id', leaseId);
   }
 

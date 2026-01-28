@@ -34,40 +34,11 @@ export async function handleGet(
 
   const leaseId = payload.leaseId as string;
 
-  // Fetch lease with related data
+  // Fetch lease (without embedded joins - no FK constraints exist)
+  // SCHEMA NOTE (2026-01-28): bookings_leases has no FK to proposal, user, or listing tables
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
-    .select(`
-      *,
-      proposal:Proposal (
-        _id,
-        Status,
-        "rental type",
-        "hc move in date",
-        "hc reservation span (weeks)",
-        "hc nights per week",
-        "hc nightly price"
-      ),
-      guest:Guest (
-        _id,
-        email,
-        "First Name",
-        "Last Name"
-      ),
-      host:Host (
-        _id,
-        email,
-        "First Name",
-        "Last Name"
-      ),
-      listing:Listing (
-        _id,
-        Name,
-        "listing full address (text)",
-        "List of Photos",
-        "cancellation policy"
-      )
-    `)
+    .select('*')
     .eq('_id', leaseId)
     .single();
 
@@ -80,8 +51,67 @@ export async function handleGet(
     throw new ValidationError('Lease not found');
   }
 
+  // Fetch related data separately (parallel fetches for performance)
+  const [proposalResult, guestResult, hostResult, listingResult] = await Promise.all([
+    // Fetch proposal
+    lease.Proposal
+      ? supabase
+          .from('proposal')
+          .select('_id, Status, "rental type", "hc move in date", "hc reservation span (weeks)", "hc nights per week", "hc nightly price"')
+          .eq('_id', lease.Proposal)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    // Fetch guest
+    lease.Guest
+      ? supabase
+          .from('user')
+          .select('_id, email, "First Name", "Last Name"')
+          .eq('_id', lease.Guest)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    // Fetch host
+    lease.Host
+      ? supabase
+          .from('user')
+          .select('_id, email, "First Name", "Last Name"')
+          .eq('_id', lease.Host)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+    // Fetch listing
+    lease.Listing
+      ? supabase
+          .from('listing')
+          .select('_id, Name, "listing full address (text)", "List of Photos", "cancellation policy"')
+          .eq('_id', lease.Listing)
+          .single()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  // Log any fetch errors (non-fatal)
+  if (proposalResult.error) {
+    console.warn('[lease:get] Could not fetch proposal:', proposalResult.error.message);
+  }
+  if (guestResult.error) {
+    console.warn('[lease:get] Could not fetch guest:', guestResult.error.message);
+  }
+  if (hostResult.error) {
+    console.warn('[lease:get] Could not fetch host:', hostResult.error.message);
+  }
+  if (listingResult.error) {
+    console.warn('[lease:get] Could not fetch listing:', listingResult.error.message);
+  }
+
+  // Combine lease with related data
+  const enrichedLease = {
+    ...lease,
+    proposal: proposalResult.data || null,
+    guest: guestResult.data || null,
+    host: hostResult.data || null,
+    listing: listingResult.data || null,
+  };
+
   // Check if user is a participant
-  const participants: string[] = lease.Participants || [];
+  const participants: string[] = enrichedLease.Participants || [];
   const isParticipant = user ? participants.includes(user.id) : false;
 
   if (user && !isParticipant) {
@@ -92,7 +122,7 @@ export async function handleGet(
   console.log('[lease:get] Lease fetched successfully:', leaseId);
 
   return {
-    ...lease,
+    ...enrichedLease,
     canAccess: isParticipant,
   };
 }
