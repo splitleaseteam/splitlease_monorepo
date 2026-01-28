@@ -278,8 +278,10 @@ const FavoritesCardV3 = ({
     heroSection: {
       position: 'relative',
       margin: 0,
-      padding: TOKENS.spacing.md, // 12px padding around the image
-      paddingBottom: 0, // No bottom padding - content section handles that
+      paddingTop: '12px',
+      paddingLeft: '12px',
+      paddingRight: '12px',
+      paddingBottom: 0,
     },
     heroWrapper: {
       position: 'relative',
