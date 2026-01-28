@@ -142,13 +142,14 @@
    TWO-COLUMN LAYOUT
    Map aligns with cards (both start below sub-header)
    ============================================ */
+/* V6 Design: Main grid layout with listings + sticky map sidebar */
 .favorites-page .two-column-layout {
   display: grid;
-  grid-template-columns: 1fr 400px; /* Map width from mockup */
-  gap: 24px;
-  max-width: 1400px;
+  grid-template-columns: 1fr 380px; /* V6 spec: --map-width: 380px */
+  gap: 24px; /* V6 spec: --gap-sections */
+  max-width: 1500px; /* V6 spec: max-width for content */
   margin: 0 auto;
-  padding: 24px 24px 300px; /* Top gap + generous bottom padding for footer */
+  padding: 24px 24px 300px;
   min-height: auto;
   align-items: start;
 }
@@ -159,23 +160,24 @@
   padding-top: 50px; /* Top gap for cards below sub-header */
 }
 
+/* V6 Design: Sticky map column with premium styling */
 .favorites-page .map-column {
-  width: 400px;
+  width: 380px; /* V6 spec: --map-width: 380px */
   flex-shrink: 0;
   position: sticky;
-  top: 100px; /* Closer to top - aligned with card top */
-  margin-top: 50px; /* Match listings-column padding-top */
-  height: calc(100vh - 150px); /* Taller map */
+  top: calc(80px + 72px + 24px); /* Header + subheader + gap */
+  margin-top: 50px;
+  height: calc(100vh - 80px - 72px - 48px); /* Full height minus header/subheader/padding */
   background: white;
-  border-radius: 24px; /* Match card border-radius */
+  border-radius: 20px; /* V6 spec: --radius-xl */
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04); /* Match card shadow */
-  border: 2px solid rgba(0, 0, 0, 0.06); /* Match card border */
-  transition: box-shadow 0.25s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05); /* V6 spec: --shadow-lg */
+  border: 2px solid rgba(0, 0, 0, 0.12); /* V6 spec: --color-border */
+  transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .favorites-page .map-column:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 40px rgba(109, 49, 194, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05), 0 0 30px rgba(109, 49, 194, 0.15); /* V6 glow effect */
 }
 
 /* ============================================
@@ -197,6 +199,24 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
   padding: 0;
+}
+
+/* ============================================
+   V6 LISTINGS GRID - Two-column card layout
+   Matches V6 WCAG mockup design
+   ============================================ */
+.v6-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 0;
+}
+
+@media (max-width: 700px) {
+  .v6-listings-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 /* ============================================
@@ -445,9 +465,19 @@
 }
 
 /* ============================================
-   RESPONSIVE - TABLET (1024px)
-   Map hides, single column layout (mockup spec)
+   RESPONSIVE - TABLET (1100px) - V6 spec
+   Map hides at 1100px, cards remain 2-column until 700px
    ============================================ */
+@media (max-width: 1100px) {
+  .favorites-page .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .favorites-page .map-column {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) {
   .favorites-subheader {
     top: 60px; /* Smaller header on tablet */
@@ -459,14 +489,6 @@
 
   .favorites-subheader__title {
     font-size: 22px;
-  }
-
-  .favorites-page .two-column-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .favorites-page .map-column {
-    display: none;
   }
 
   .favorites-grid {

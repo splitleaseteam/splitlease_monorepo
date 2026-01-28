@@ -73,33 +73,45 @@ async function fetchInformationalTexts() {
 }
 
 /**
- * ListingsGridV2 - Grid using pure inline styles (no CSS conflicts)
+ * ListingsGridV2 - V6 Design: Two-column card grid layout
+ * WCAG compliant with proper spacing and responsive behavior
  */
 function ListingsGridV2({ listings, onOpenContactModal, isLoggedIn, onToggleFavorite, userId, proposalsByListingId, onCreateProposal, onPhotoClick, onMapClick, viewMode }) {
-  const isGrid = viewMode === 'grid';
+  // Use device detection for responsive layout
+  const [isMobileView, setIsMobileView] = useState(false);
 
-  // V3 uses a single-column layout (horizontal cards stack vertically)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileView(window.innerWidth < 700);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // V6 Design: Two-column card grid (matches V6 WCAG mockup)
+  // Responsive: Single column on mobile (< 700px)
   const gridStyles = USE_CARD_V3
     ? {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
+        display: 'grid',
+        gridTemplateColumns: isMobileView ? '1fr' : 'repeat(2, 1fr)',
+        gap: '24px',
         padding: '0',
       }
     : {
-        display: isGrid ? 'grid' : 'flex',
-        flexDirection: isGrid ? 'initial' : 'column',
-        gridTemplateColumns: isGrid ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
+        display: viewMode === 'grid' ? 'grid' : 'flex',
+        flexDirection: viewMode === 'grid' ? 'initial' : 'column',
+        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
         gap: '20px',
         padding: '0',
       };
 
   return (
-    <div style={gridStyles}>
+    <div style={gridStyles} className="v6-listings-grid">
       {listings.map((listing) => {
         const proposalForListing = proposalsByListingId?.get(listing.id) || null;
 
-        // Use V3 (horizontal with map) or V2 (vertical) based on toggle
+        // Use V3 (V6 design vertical cards) or V2 (legacy) based on toggle
         if (USE_CARD_V3) {
           return (
             <FavoritesCardV3

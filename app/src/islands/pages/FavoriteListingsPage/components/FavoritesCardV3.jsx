@@ -1,22 +1,22 @@
 /**
- * FavoritesCardV3 Component - WCAG 2.1 AA Compliant
+ * FavoritesCardV3 Component - V6 WCAG 2.1 AA Compliant Design
  *
- * Premium "Featured + Stack" design for favorites.
- * Layout: Large hero image + 2 stacked slots (photo + embedded mini-map)
+ * Vertical card layout matching the V6 mockup design.
+ * Used in a two-column grid layout on the FavoriteListingsPage.
  *
  * WCAG Compliance:
  * - Color contrast: 4.5:1 for normal text, 3:1 for large text
  * - Touch targets: Minimum 44x44px
  * - Font sizes: Minimum 16px for body text
  * - ARIA labels: Descriptive labels for all interactive elements
+ * - Focus states: Visible focus indicators
  *
  * Design Features:
- * - Premium purple color scheme (#1E0A3C primary)
- * - Gold accents for verified badges
- * - Glassmorphism effects
- * - Photo count badge on photo thumbnail
- * - EMBEDDED MINI-MAP: Second slot shows listing location
- * - Heart button in action bar
+ * - Hero image with 16:9 aspect ratio
+ * - Favorite button, price badge, photo count overlaid on hero
+ * - Content section: location, title, meta row (rating + stats)
+ * - AI Summary section with gradient background
+ * - Host row with avatar and action button
  *
  * To switch back to V2, change USE_CARD_V3 to false in FavoriteListingsPage.jsx
  */
@@ -24,30 +24,35 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import { useDeviceDetection } from '../../../../hooks/useDeviceDetection.js';
 
-// Premium Design Tokens - WCAG AA Compliant Colors
+// Premium Design Tokens - V6 WCAG AA Compliant Colors
 const TOKENS = {
   colors: {
     // Primary palette
     primary: '#1E0A3C',
     primaryRich: '#31135D',
-    primaryAccent: '#5B28A6',      // Darkened from #6D31C2 for 5.5:1 contrast
+    primaryAccent: '#5B28A6',      // WCAG 5.5:1 contrast on white
     primaryLight: '#F5F0FA',
+    primaryGlow: 'rgba(109, 49, 194, 0.15)',
 
     // Text colors - All meet WCAG AA 4.5:1 on white
     text: '#1A1A1A',              // 16.1:1 contrast
     textSecondary: '#4A4A4A',     // 7.7:1 contrast
-    textMuted: '#595959',         // 5.9:1 contrast - WCAG AA
-    textLight: '#6B6B6B',         // 5.0:1 contrast - WCAG AA minimum
+    textMuted: '#595959',         // 5.9:1 contrast
+    textLight: '#6B6B6B',         // 5.0:1 contrast
 
     // Accent colors
-    gold: '#8B6914',              // Darkened for contrast
+    gold: '#8B6914',
     goldLight: '#F5EFE0',
-    danger: '#B91C1C',            // Darkened from #C53030 for better contrast
+    danger: '#B91C1C',
 
     // UI colors
     border: 'rgba(0, 0, 0, 0.12)',
     borderSubtle: 'rgba(0, 0, 0, 0.06)',
     card: '#FFFFFF',
+    bg: '#FAFAFA',
+
+    // Focus state
+    focus: '#1E0A3C',
   },
   spacing: {
     xs: '6px',
@@ -60,20 +65,31 @@ const TOKENS = {
     sm: '8px',
     md: '12px',
     lg: '16px',
-    xl: '24px',
+    xl: '20px',
     pill: '100px',
   },
   shadows: {
     sm: '0 1px 2px rgba(0, 0, 0, 0.05)',
     md: '0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
-    lg: '0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05)',
-    xl: '0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06)',
-    glow: '0 0 40px rgba(109, 49, 194, 0.15)',
+    lg: '0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05)',
+    glow: '0 0 30px rgba(109, 49, 194, 0.15)',
   },
-  // WCAG minimum touch target
+  // Typography
+  fontSize: {
+    xs: '14px',     // WCAG smallest for readable content
+    sm: '15px',
+    base: '16px',   // WCAG minimum for body text
+    md: '18px',
+    lg: '20px',
+    xl: '26px',
+  },
+  lineHeight: {
+    tight: 1.3,
+    normal: 1.5,
+    relaxed: 1.6,
+  },
+  // WCAG minimums
   touchTarget: '44px',
-  // WCAG minimum body font size
-  minFontSize: '16px',
 };
 
 /**
@@ -113,23 +129,24 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
       ...style,
     },
     button: {
-      all: 'unset',
-      minHeight: TOKENS.touchTarget,
-      minWidth: TOKENS.touchTarget,
-      padding: TOKENS.spacing.md,
-      borderRadius: TOKENS.radius.pill,
-      background: 'rgba(185, 28, 28, 0.1)',
-      border: '2px solid rgba(185, 28, 28, 0.3)',
+      width: TOKENS.touchTarget,
+      height: TOKENS.touchTarget,
+      borderRadius: '50%',
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      border: '2px solid transparent',
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
       transition: 'all 0.15s ease',
       boxSizing: 'border-box',
     },
     popup: {
       position: 'absolute',
-      bottom: '56px',
+      bottom: '52px',
       right: '0',
       background: 'white',
       borderRadius: TOKENS.radius.md,
@@ -139,7 +156,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
       zIndex: 100,
     },
     popupText: {
-      fontSize: TOKENS.minFontSize,
+      fontSize: TOKENS.fontSize.base,
       fontWeight: 600,
       color: TOKENS.colors.text,
       marginBottom: TOKENS.spacing.md,
@@ -157,7 +174,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
       border: `2px solid ${TOKENS.colors.border}`,
       background: 'white',
       color: TOKENS.colors.textSecondary,
-      fontSize: '14px',
+      fontSize: TOKENS.fontSize.xs,
       fontWeight: 600,
       cursor: 'pointer',
     },
@@ -169,7 +186,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
       border: 'none',
       background: TOKENS.colors.danger,
       color: 'white',
-      fontSize: '14px',
+      fontSize: TOKENS.fontSize.xs,
       fontWeight: 600,
       cursor: 'pointer',
     },
@@ -185,7 +202,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
         aria-expanded={showConfirm}
         aria-haspopup="dialog"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={TOKENS.colors.danger} stroke={TOKENS.colors.danger} strokeWidth="2" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill={TOKENS.colors.danger} stroke={TOKENS.colors.danger} strokeWidth="2" aria-hidden="true">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </button>
@@ -219,7 +236,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
 };
 
 /**
- * FavoritesCardV3 - Premium "Featured + Stack" design
+ * FavoritesCardV3 - V6 Vertical Card Design
  * WCAG 2.1 AA Compliant
  */
 const FavoritesCardV3 = ({
@@ -233,15 +250,20 @@ const FavoritesCardV3 = ({
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const { isMobile, isSmallMobile, isTouchDevice, isTablet } = useDeviceDetection();
+  const { isMobile, isSmallMobile, isTouchDevice } = useDeviceDetection();
 
   const photos = listing.images || [];
   const hasProposal = !!proposalForListing;
   const photoCount = photos.length || 1;
 
-  // Get first 3 photos for the grid
   const mainPhoto = photos[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&h=600&fit=crop&q=90';
-  const thumbPhoto1 = photos[1] || photos[0] || mainPhoto;
+
+  // Get host info from listing
+  const hostName = listing.host?.name || listing.hostName || 'Host';
+  const hostAvatar = listing.host?.image || listing.hostAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face';
+
+  // Generate AI insight (placeholder - would come from backend)
+  const aiInsight = listing.aiInsight || generateAIInsight(listing);
 
   const handleCardClick = () => {
     window.location.href = `/listing?id=${listing.id}`;
@@ -259,99 +281,77 @@ const FavoritesCardV3 = ({
     }
   };
 
-  const handleMessage = (e) => {
-    e.stopPropagation();
-    window.location.href = `/messages?listing=${listing.id}`;
-  };
-
-  const handleMapClick = (e) => {
-    e.stopPropagation();
-    onMapClick?.(listing);
-  };
-
-  // Handle keyboard navigation for map click
-  const handleMapKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleMapClick(e);
-    }
-  };
-
-  // Responsive layout: stack images vertically on mobile
   const isCompact = isMobile || isSmallMobile;
-
-  // Generate Google Static Maps URL for mini-map preview
-  const lat = listing.latitude || listing.lat || 40.7128;
-  const lng = listing.longitude || listing.lng || -74.006;
-  const mapZoom = 14;
-  const mapSize = '300x200';
-  const mapStyle = 'feature:all|element:geometry|color:0xf5f0fa|saturation:-50&style=feature:road|element:geometry|color:0xe8e0f0&style=feature:water|element:geometry|color:0xd4c8e8';
-  const miniMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${mapZoom}&size=${mapSize}&scale=2&markers=color:0x5B28A6|${lat},${lng}&style=${mapStyle}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}`;
 
   const styles = {
     card: {
-      all: 'unset',
       display: 'flex',
       flexDirection: 'column',
       background: TOKENS.colors.card,
       borderRadius: TOKENS.radius.xl,
       overflow: 'hidden',
-      boxShadow: isHovered && !isTouchDevice ? `${TOKENS.shadows.xl}, ${TOKENS.shadows.glow}` : TOKENS.shadows.md,
+      boxShadow: isHovered && !isTouchDevice ? `${TOKENS.shadows.lg}, ${TOKENS.shadows.glow}` : TOKENS.shadows.md,
       transition: isTouchDevice ? 'none' : 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-      transform: isHovered && !isTouchDevice ? 'translateY(-6px)' : 'none',
+      transform: isHovered && !isTouchDevice ? 'translateY(-4px)' : 'none',
       cursor: 'pointer',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       border: `2px solid ${TOKENS.colors.border}`,
       boxSizing: 'border-box',
     },
 
-    // HERO SECTION - Featured + Stack layout
+    // HERO SECTION - 16:9 aspect ratio
     heroSection: {
       position: 'relative',
       padding: TOKENS.spacing.lg,
       paddingBottom: 0,
     },
-    stackedContainer: {
-      display: 'flex',
-      gap: TOKENS.spacing.md,
-      height: isCompact ? '200px' : '280px',
-    },
-    stackedMain: {
-      flex: 1,
+    heroWrapper: {
       position: 'relative',
       borderRadius: TOKENS.radius.lg,
       overflow: 'hidden',
+      aspectRatio: '16 / 9',
     },
-    mainImage: {
+    heroImage: {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
-      transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
       transform: isHovered && !isTouchDevice ? 'scale(1.03)' : 'scale(1)',
     },
-    mainOverlay: {
+    heroOverlay: {
       position: 'absolute',
       inset: 0,
-      background: 'linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
+      background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.4) 100%)',
       pointerEvents: 'none',
     },
-    stackedPreviews: {
-      width: isCompact ? '80px' : '140px',
-      display: isCompact ? 'none' : 'flex',
-      flexDirection: 'column',
-      gap: TOKENS.spacing.sm,
+
+    // Overlays on hero image
+    favoriteBtn: {
+      position: 'absolute',
+      top: TOKENS.spacing.sm,
+      right: TOKENS.spacing.sm,
+      zIndex: 10,
     },
-    stackedPreview: {
-      flex: 1,
-      borderRadius: TOKENS.radius.md,
-      overflow: 'hidden',
-      position: 'relative',
+    priceBadge: {
+      position: 'absolute',
+      bottom: TOKENS.spacing.sm,
+      left: TOKENS.spacing.sm,
+      padding: '8px 14px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      borderRadius: TOKENS.radius.sm,
+      zIndex: 10,
     },
-    previewImage: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      transition: 'transform 0.15s ease',
+    priceValue: {
+      fontSize: TOKENS.fontSize.md,
+      fontWeight: 800,
+      color: TOKENS.colors.text,
+    },
+    pricePeriod: {
+      fontSize: TOKENS.fontSize.xs,
+      fontWeight: 500,
+      color: TOKENS.colors.textMuted,
     },
     photoCount: {
       position: 'absolute',
@@ -362,123 +362,33 @@ const FavoritesCardV3 = ({
       gap: '6px',
       padding: '6px 12px',
       background: 'rgba(0, 0, 0, 0.75)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
       borderRadius: TOKENS.radius.pill,
-      fontSize: '14px',  // WCAG: Increased from 11px
+      fontSize: TOKENS.fontSize.xs,
       fontWeight: 600,
       color: 'white',
-      letterSpacing: '0.03em',
-    },
-
-    // MINI-MAP THUMBNAIL
-    miniMapContainer: {
-      flex: 1,
-      borderRadius: TOKENS.radius.md,
-      overflow: 'hidden',
-      position: 'relative',
-      cursor: 'pointer',
-      border: `2px solid ${TOKENS.colors.primaryLight}`,
-      transition: 'all 0.2s ease',
-    },
-    miniMapImage: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      filter: 'saturate(0.9)',
-    },
-    miniMapOverlay: {
-      position: 'absolute',
-      inset: 0,
-      background: 'linear-gradient(180deg, rgba(91, 40, 166, 0) 50%, rgba(91, 40, 166, 0.15) 100%)',
-      pointerEvents: 'none',
-    },
-    miniMapBadge: {
-      position: 'absolute',
-      bottom: TOKENS.spacing.sm,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px',
-      padding: '8px 14px',
-      background: 'rgba(255, 255, 255, 0.98)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      borderRadius: TOKENS.radius.pill,
-      fontSize: '12px',  // WCAG: Increased from 10px
-      fontWeight: 700,
-      color: TOKENS.colors.primary,  // Higher contrast
-      textTransform: 'uppercase',
-      letterSpacing: '0.06em',
-      boxShadow: '0 2px 8px rgba(91, 40, 166, 0.2)',
-      whiteSpace: 'nowrap',
-    },
-
-    favoriteOverlay: {
-      position: 'absolute',
-      top: TOKENS.spacing.md,
-      right: TOKENS.spacing.md,
       zIndex: 10,
-    },
-    favoriteBtn: {
-      all: 'unset',
-      width: TOKENS.touchTarget,
-      height: TOKENS.touchTarget,
-      borderRadius: '50%',
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      border: '2px solid rgba(255, 255, 255, 0.6)',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
-      transition: 'all 0.15s ease',
-      boxSizing: 'border-box',
     },
 
     // CONTENT SECTION
     contentSection: {
       padding: TOKENS.spacing.xl,
     },
-    locationRow: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: TOKENS.spacing.md,
-      flexWrap: 'wrap',
-      gap: TOKENS.spacing.sm,
-    },
     location: {
       display: 'flex',
       alignItems: 'center',
       gap: '6px',
-      fontSize: '14px',  // WCAG: Increased from 12px
+      fontSize: TOKENS.fontSize.xs,
       fontWeight: 700,
-      color: TOKENS.colors.primary,  // Higher contrast than accent
+      color: TOKENS.colors.primary,
       textTransform: 'uppercase',
       letterSpacing: '0.04em',
-    },
-    verifiedBadge: {
-      display: hasProposal ? 'flex' : 'none',
-      alignItems: 'center',
-      gap: '4px',
-      padding: '6px 12px',
-      background: '#EEF2FF',
-      color: TOKENS.colors.primary,  // Higher contrast
-      fontSize: '12px',  // WCAG: Increased from 11px
-      fontWeight: 700,
-      borderRadius: TOKENS.radius.pill,
-      letterSpacing: '0.04em',
+      marginBottom: TOKENS.spacing.sm,
     },
     title: {
-      fontSize: isCompact ? '18px' : '20px',
+      fontSize: TOKENS.fontSize.md,
       fontWeight: 700,
       color: TOKENS.colors.text,
-      lineHeight: 1.3,
-      letterSpacing: '-0.02em',
+      lineHeight: TOKENS.lineHeight.tight,
       marginBottom: TOKENS.spacing.md,
       display: '-webkit-box',
       WebkitLineClamp: 2,
@@ -496,7 +406,7 @@ const FavoritesCardV3 = ({
       display: 'flex',
       alignItems: 'center',
       gap: '5px',
-      fontSize: TOKENS.minFontSize,  // WCAG: 16px minimum
+      fontSize: TOKENS.fontSize.base,
       fontWeight: 600,
       color: TOKENS.colors.text,
     },
@@ -508,7 +418,7 @@ const FavoritesCardV3 = ({
       display: 'flex',
       alignItems: 'center',
       gap: TOKENS.spacing.sm,
-      fontSize: TOKENS.minFontSize,  // WCAG: 16px minimum
+      fontSize: TOKENS.fontSize.base,
       color: TOKENS.colors.textSecondary,
     },
     statDivider: {
@@ -518,13 +428,13 @@ const FavoritesCardV3 = ({
       background: TOKENS.colors.textLight,
     },
 
-    // AI INSIGHT CARD
-    aiCard: {
+    // AI SUMMARY SECTION
+    aiSummary: {
       background: `linear-gradient(135deg, ${TOKENS.colors.primaryLight} 0%, #F8F5FF 100%)`,
       borderRadius: TOKENS.radius.md,
       padding: TOKENS.spacing.lg,
       marginBottom: TOKENS.spacing.lg,
-      border: '2px solid rgba(91, 40, 166, 0.15)',
+      border: '2px solid rgba(30, 10, 60, 0.15)',
     },
     aiHeader: {
       display: 'flex',
@@ -540,120 +450,70 @@ const FavoritesCardV3 = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(91, 40, 166, 0.25)',
     },
     aiLabel: {
-      fontSize: '14px',  // WCAG: Increased from 12px
+      fontSize: TOKENS.fontSize.xs,
       fontWeight: 700,
-      color: TOKENS.colors.primary,  // Higher contrast
+      color: TOKENS.colors.primary,
       textTransform: 'uppercase',
-      letterSpacing: '0.04em',
+      letterSpacing: '0.05em',
     },
     aiText: {
-      fontSize: TOKENS.minFontSize,  // WCAG: 16px minimum
-      lineHeight: 1.6,
+      fontSize: TOKENS.fontSize.base,
+      lineHeight: TOKENS.lineHeight.relaxed,
       color: TOKENS.colors.textSecondary,
       margin: 0,
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
+      overflow: 'hidden',
     },
 
-    // BOTTOM BAR
-    bottomBar: {
+    // HOST ROW
+    hostRow: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: TOKENS.spacing.lg,
-      padding: `${TOKENS.spacing.lg} ${TOKENS.spacing.xl}`,
-      background: 'linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%)',
+      paddingTop: TOKENS.spacing.lg,
       borderTop: `2px solid ${TOKENS.colors.border}`,
-      flexWrap: isCompact ? 'wrap' : 'nowrap',
-    },
-    priceHost: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: TOKENS.spacing.xl,
-      flex: isCompact ? '1 1 100%' : 'none',
-      justifyContent: isCompact ? 'space-between' : 'flex-start',
-      marginBottom: isCompact ? TOKENS.spacing.md : 0,
-    },
-    priceBlock: {
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    priceValue: {
-      fontSize: isCompact ? '22px' : '26px',
-      fontWeight: 800,
-      color: TOKENS.colors.text,
-      letterSpacing: '-0.02em',
-    },
-    pricePeriod: {
-      fontSize: TOKENS.minFontSize,  // WCAG: 16px minimum
-      fontWeight: 500,
-      color: TOKENS.colors.textMuted,
-    },
-    priceContext: {
-      fontSize: '14px',
-      color: TOKENS.colors.primaryAccent,
-      fontWeight: 600,
-      letterSpacing: '0.04em',
+      gap: TOKENS.spacing.md,
     },
     hostMini: {
-      display: isCompact ? 'none' : 'flex',
+      display: 'flex',
       alignItems: 'center',
       gap: TOKENS.spacing.sm,
     },
     hostAvatar: {
-      width: TOKENS.touchTarget,
-      height: TOKENS.touchTarget,
+      width: '36px',
+      height: '36px',
       borderRadius: '50%',
       objectFit: 'cover',
       border: '2px solid white',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
-    },
-    hostInfo: {
-      display: 'flex',
-      flexDirection: 'column',
+      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)',
     },
     hostName: {
-      fontSize: TOKENS.minFontSize,  // WCAG: 16px minimum
+      fontSize: TOKENS.fontSize.base,
       fontWeight: 600,
       color: TOKENS.colors.text,
     },
-    hostMeta: {
-      fontSize: '14px',
-      color: TOKENS.colors.textMuted,
-    },
-    actionButtons: {
-      display: 'flex',
-      gap: TOKENS.spacing.sm,
-      flex: isCompact ? '1 1 100%' : 'none',
-    },
-    btn: {
-      minHeight: TOKENS.touchTarget,  // WCAG: 44px minimum
-      minWidth: TOKENS.touchTarget,   // WCAG: 44px minimum
-      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.xl}`,
-      borderRadius: TOKENS.radius.pill,
-      fontSize: TOKENS.minFontSize,  // WCAG: 16px minimum
-      fontWeight: 600,
-      cursor: 'pointer',
-      transition: 'all 0.15s ease',
+    actionBtn: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: '6px',
+      padding: `${TOKENS.spacing.md} ${TOKENS.spacing.xl}`,
+      borderRadius: TOKENS.radius.pill,
+      fontSize: TOKENS.fontSize.base,
+      fontWeight: 600,
+      cursor: 'pointer',
       border: 'none',
-      letterSpacing: '-0.01em',
-      boxSizing: 'border-box',
-    },
-    btnGhost: {
-      background: 'transparent',
-      border: `2px solid ${TOKENS.colors.border}`,
-      color: TOKENS.colors.textSecondary,
-    },
-    btnPrimary: {
       background: `linear-gradient(135deg, ${TOKENS.colors.primaryRich} 0%, ${TOKENS.colors.primary} 100%)`,
       color: 'white',
-      boxShadow: '0 4px 16px rgba(30, 10, 60, 0.25)',
-      flex: isCompact ? 1 : 'none',
+      boxShadow: '0 2px 8px rgba(30, 10, 60, 0.25)',
+      transition: 'all 0.15s ease',
+      minHeight: TOKENS.touchTarget,
+      minWidth: TOKENS.touchTarget,
+      boxSizing: 'border-box',
     },
   };
 
@@ -665,117 +525,62 @@ const FavoritesCardV3 = ({
       onMouseLeave={() => !isTouchDevice && setIsHovered(false)}
       aria-labelledby={`listing-title-${listing.id}`}
     >
-      {/* HERO SECTION - Featured + Stack */}
+      {/* HERO SECTION */}
       <div style={styles.heroSection}>
-        <div style={styles.stackedContainer}>
-          {/* Main Image */}
-          <div style={styles.stackedMain}>
-            <img
-              src={imageError ? 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&h=600&fit=crop&q=90' : mainPhoto}
-              alt={`Interior view of ${listing.title}`}
-              style={styles.mainImage}
-              onError={() => setImageError(true)}
+        <div style={styles.heroWrapper}>
+          <img
+            src={imageError ? 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&h=600&fit=crop&q=90' : mainPhoto}
+            alt={`Interior view of ${listing.title}`}
+            style={styles.heroImage}
+            onError={() => setImageError(true)}
+          />
+          <div style={styles.heroOverlay} aria-hidden="true" />
+
+          {/* Favorite Button */}
+          <div style={styles.favoriteBtn}>
+            <FavoriteButton
+              onConfirmRemove={() => onToggleFavorite?.(listing.id, listing.title, false)}
             />
-            <div style={styles.mainOverlay} aria-hidden="true" />
-
-            {/* Favorite button on main image */}
-            <div style={styles.favoriteOverlay}>
-              <button
-                style={styles.favoriteBtn}
-                onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(listing.id, listing.title, false); }}
-                aria-label={`Remove ${listing.title} from favorites`}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill={TOKENS.colors.danger} stroke={TOKENS.colors.danger} strokeWidth="2" aria-hidden="true">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Photo count on mobile (since thumbnails hidden) */}
-            {isCompact && (
-              <div style={styles.photoCount} aria-label={`${photoCount} photos available`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
-                {photoCount}
-              </div>
-            )}
           </div>
 
-          {/* Stacked Thumbnails: Photo + Mini-Map (hidden on mobile) */}
-          <div style={styles.stackedPreviews}>
-            {/* Photo thumbnail with count */}
-            <div style={styles.stackedPreview}>
-              <img src={thumbPhoto1} alt="Additional room view" style={styles.previewImage} />
-              <div style={styles.photoCount} aria-label={`${photoCount} photos available`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
-                {photoCount}
-              </div>
-            </div>
+          {/* Price Badge */}
+          <div style={styles.priceBadge}>
+            <span style={styles.priceValue}>
+              ${listing.price?.starting || listing['Starting nightly price'] || 0}
+            </span>
+            <span style={styles.pricePeriod}>/night</span>
+          </div>
 
-            {/* Mini-Map thumbnail */}
-            <div
-              style={styles.miniMapContainer}
-              onClick={handleMapClick}
-              onKeyDown={handleMapKeyDown}
-              role="button"
-              tabIndex={0}
-              aria-label={`View ${listing.title} on map`}
-            >
-              <img
-                src={miniMapUrl}
-                alt={`Map showing location of ${listing.location || listing.neighborhood || 'listing'}`}
-                style={styles.miniMapImage}
-                onError={(e) => {
-                  e.target.style.background = `linear-gradient(135deg, ${TOKENS.colors.primaryLight} 0%, #E8E0F0 100%)`;
-                  e.target.style.opacity = '0.5';
-                }}
-              />
-              <div style={styles.miniMapOverlay} aria-hidden="true" />
-              <div style={styles.miniMapBadge}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                VIEW MAP
-              </div>
-            </div>
+          {/* Photo Count */}
+          <div style={styles.photoCount} aria-label={`${photoCount} photos available`}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+            </svg>
+            {photoCount}
           </div>
         </div>
       </div>
 
       {/* CONTENT SECTION */}
       <div style={styles.contentSection}>
-        <div style={styles.locationRow}>
-          <div style={styles.location}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            {listing.location || listing.neighborhood || 'New York, NY'}
-          </div>
-          {hasProposal && (
-            <div style={styles.verifiedBadge} aria-label="Proposal has been sent">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-              PROPOSAL SENT
-            </div>
-          )}
+        {/* Location */}
+        <div style={styles.location}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          {listing.location || listing.neighborhood || 'New York, NY'}
         </div>
 
-        <h2 style={styles.title} id={`listing-title-${listing.id}`}>{listing.title}</h2>
+        {/* Title */}
+        <h2 style={styles.title} id={`listing-title-${listing.id}`}>
+          {listing.title}
+        </h2>
 
+        {/* Meta Row */}
         <div style={styles.metaRow}>
           <div style={styles.rating}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={TOKENS.colors.primaryRich} stroke={TOKENS.colors.primaryRich} strokeWidth="2" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={TOKENS.colors.primary} stroke={TOKENS.colors.primary} strokeWidth="2" aria-hidden="true">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
             <span aria-label={`${listing.rating || '4.8'} out of 5 stars`}>{listing.rating || '4.8'}</span>
@@ -784,86 +589,70 @@ const FavoritesCardV3 = ({
           <div style={styles.stats}>
             <span>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`}</span>
             <span style={styles.statDivider} aria-hidden="true" />
-            <span>{listing.bathrooms} BA</span>
-            <span style={styles.statDivider} aria-hidden="true" />
             <span>{listing.maxGuests} guests</span>
           </div>
         </div>
 
-        {/* AI INSIGHT */}
-        {listing.aiInsight && (
-          <div style={styles.aiCard} role="complementary" aria-label="AI-generated insight about this listing">
-            <div style={styles.aiHeader}>
-              <div style={styles.aiIcon} aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-              </div>
-              <span style={styles.aiLabel}>AI Insight</span>
+        {/* AI SUMMARY */}
+        <div style={styles.aiSummary} role="complementary" aria-label="AI generated insight">
+          <div style={styles.aiHeader}>
+            <div style={styles.aiIcon} aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
             </div>
-            <p style={styles.aiText}>{listing.aiInsight}</p>
+            <span style={styles.aiLabel}>AI Insight</span>
           </div>
-        )}
-      </div>
+          <p style={styles.aiText}>{aiInsight}</p>
+        </div>
 
-      {/* BOTTOM BAR */}
-      <div style={styles.bottomBar}>
-        <div style={styles.priceHost}>
-          <div style={styles.priceBlock}>
-            <div style={styles.priceValue}>
-              ${listing.price?.starting || listing['Starting nightly price'] || 0}
-              <span style={styles.pricePeriod}>/night</span>
-            </div>
-            {listing.priceContext && <div style={styles.priceContext}>{listing.priceContext}</div>}
-          </div>
-
+        {/* HOST ROW */}
+        <div style={styles.hostRow}>
           <div style={styles.hostMini}>
             <img
               style={styles.hostAvatar}
-              src={listing.hostAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'}
-              alt={`Host ${listing.hostName || 'profile'}`}
+              src={hostAvatar}
+              alt={`Host ${hostName}`}
             />
-            <div style={styles.hostInfo}>
-              <span style={styles.hostName}>{listing.hostName || 'Host'}</span>
-              <span style={styles.hostMeta}>{listing.hostStatus || 'Verified'}</span>
-            </div>
+            <span style={styles.hostName}>{hostName}</span>
           </div>
-        </div>
-
-        <div style={styles.actionButtons}>
           <button
-            style={{ ...styles.btn, ...styles.btnGhost }}
-            onClick={handleMessage}
-            aria-label={`Message host about ${listing.title}`}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
-            {!isCompact && 'Message'}
-          </button>
-
-          <button
-            style={{ ...styles.btn, ...styles.btnPrimary }}
+            style={styles.actionBtn}
             onClick={hasProposal ? handleViewProposal : handleCreateProposal}
             aria-label={hasProposal ? `View proposal for ${listing.title}` : `Create proposal for ${listing.title}`}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
-              <line x1="12" y1="18" x2="12" y2="12" />
-              <line x1="9" y1="15" x2="15" y2="15" />
             </svg>
-            {hasProposal ? 'View Proposal' : 'Create Proposal'}
+            {hasProposal ? 'View' : 'Propose'}
           </button>
-
-          <FavoriteButton
-            onConfirmRemove={() => onToggleFavorite?.(listing.id, listing.title, false)}
-          />
         </div>
       </div>
     </article>
   );
 };
+
+/**
+ * Generate AI insight based on listing data
+ * This is a placeholder - would be replaced with actual AI-generated content from backend
+ */
+function generateAIInsight(listing) {
+  const neighborhood = listing.neighborhood || listing.location || '';
+  const bedrooms = listing.bedrooms || 0;
+  const type = bedrooms === 0 ? 'Studio' : `${bedrooms}-bedroom`;
+
+  const insights = [
+    `${type} gem in ${neighborhood || 'this vibrant area'}. Great for professionals who value convenience and style.`,
+    `Perfect ${type} in ${neighborhood || 'a prime location'}. Walking distance to local cafes and transit.`,
+    `Charming ${type} with excellent natural light. ${neighborhood ? `${neighborhood} offers` : 'The area offers'} great dining options nearby.`,
+    `Cozy ${type} ideal for urban living. ${neighborhood ? `${neighborhood} is` : 'This location is'} known for its walkability.`,
+  ];
+
+  // Use listing id to consistently pick the same insight
+  const index = listing.id ? (listing.id.charCodeAt(0) % insights.length) : 0;
+  return insights[index];
+}
 
 export default memo(FavoritesCardV3, (prevProps, nextProps) => {
   return (
