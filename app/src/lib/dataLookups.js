@@ -209,6 +209,7 @@ async function initializeAmenityLookups() {
 async function initializeSafetyLookups() {
   try {
     const { data, error } = await supabase
+      .schema('reference_table')
       .from(DATABASE.TABLES.SAFETY)
       .select('_id, Name, Icon');
 

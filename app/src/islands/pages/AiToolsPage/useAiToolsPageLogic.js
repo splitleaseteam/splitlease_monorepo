@@ -76,8 +76,8 @@ export function useAiToolsPageLogic() {
     try {
       const { data, error: fetchError } = await supabase
         .from('housemanual')
-        .select('_id, Display, Host, Listing')
-        .order('Created Date', { ascending: false });
+        .select('_id, "House manual Name", Host, Listing')
+        .order('"Created Date"', { ascending: false });
 
       if (fetchError) throw fetchError;
       return data || [];
@@ -93,9 +93,9 @@ export function useAiToolsPageLogic() {
     try {
       const { data, error: fetchError } = await supabase
         .from('visit')
-        .select('_id, Display, Guest, "House Manual"')
-        .eq('House Manual', houseManualId)
-        .order('Created Date', { ascending: false });
+        .select('_id, Guest, "house manual", audience')
+        .eq('house manual', houseManualId)
+        .order('"Created Date"', { ascending: false });
 
       if (fetchError) throw fetchError;
       return data || [];

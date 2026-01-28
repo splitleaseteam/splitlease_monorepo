@@ -73,33 +73,45 @@ async function fetchInformationalTexts() {
 }
 
 /**
- * ListingsGridV2 - Grid using pure inline styles (no CSS conflicts)
+ * ListingsGridV2 - V6 Design: Two-column card grid layout
+ * WCAG compliant with proper spacing and responsive behavior
  */
 function ListingsGridV2({ listings, onOpenContactModal, isLoggedIn, onToggleFavorite, userId, proposalsByListingId, onCreateProposal, onPhotoClick, onMapClick, viewMode }) {
-  const isGrid = viewMode === 'grid';
+  // Use device detection for responsive layout
+  const [isMobileView, setIsMobileView] = useState(false);
 
-  // V3 uses a single-column layout (horizontal cards stack vertically)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileView(window.innerWidth < 700);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // V6 Design: Two-column card grid (matches V6 WCAG mockup)
+  // Responsive: Single column on mobile (< 700px)
   const gridStyles = USE_CARD_V3
     ? {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
+        display: 'grid',
+        gridTemplateColumns: isMobileView ? '1fr' : 'repeat(2, 1fr)',
+        gap: '24px',
         padding: '0',
       }
     : {
-        display: isGrid ? 'grid' : 'flex',
-        flexDirection: isGrid ? 'initial' : 'column',
-        gridTemplateColumns: isGrid ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
+        display: viewMode === 'grid' ? 'grid' : 'flex',
+        flexDirection: viewMode === 'grid' ? 'initial' : 'column',
+        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
         gap: '20px',
         padding: '0',
       };
 
   return (
-    <div style={gridStyles}>
+    <div style={gridStyles} className="v6-listings-grid">
       {listings.map((listing) => {
         const proposalForListing = proposalsByListingId?.get(listing.id) || null;
 
-        // Use V3 (horizontal with map) or V2 (vertical) based on toggle
+        // Use V3 (V6 design vertical cards) or V2 (legacy) based on toggle
         if (USE_CARD_V3) {
           return (
             <FavoritesCardV3
@@ -295,6 +307,17 @@ const FavoriteListingsPage = () => {
 
   // Refs
   const mapRef = useRef(null);
+
+  // Scroll to top on page load - prevents browser scroll restoration
+  // from causing misalignment between cards and map
+  useEffect(() => {
+    // Disable browser scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    // Scroll to top immediately
+    window.scrollTo(0, 0);
+  }, []);
 
   // Transform raw listing data to match SearchPage format
   const transformListing = useCallback((dbListing, images, hostData) => {
@@ -529,7 +552,9 @@ const FavoriteListingsPage = () => {
           } else if (typeof photosField === 'string') {
             try {
               photos = JSON.parse(photosField);
-            } catch { /* ignore */ }
+            } catch {
+              void 0; // Intentional: malformed JSON falls back to empty array
+            }
           }
 
           // Only collect string IDs (legacy format), not objects (new format)
@@ -1152,66 +1177,33 @@ const FavoriteListingsPage = () => {
             </div>
           </section>
 
-          {/* RIGHT COLUMN: Map with integrated header */}
+          {/* RIGHT COLUMN: Map with V6 header */}
           <section className="map-column">
-            {/* Integrated Logo and Menu */}
-            <div className="map-header">
-              <a href="/" className="map-logo">
-                <img
-                  src="/assets/images/split-lease-purple-circle.png"
-                  alt="Split Lease Logo"
-                  className="logo-icon"
-                  width="36"
-                  height="36"
-                />
-                <span className="logo-text">Split Lease</span>
-              </a>
-
-              {/* Right side: Auth state */}
-              <div className="map-header-actions">
-                {isLoggedIn && currentUser ? (
-                  <>
-                    {/* Favorites Heart with Count */}
-                    <a href="/favorite-listings" className="favorites-link active" aria-label="My Favorite Listings">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="#FF6B35"
-                        stroke="#FF6B35"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                      {listings.length > 0 && (
-                        <span className="favorites-badge">{listings.length}</span>
-                      )}
-                    </a>
-
-                    {/* Logged In Avatar */}
-                    <LoggedInAvatar
-                      user={currentUser}
-                      currentPath="/favorite-listings"
-                      onNavigate={handleNavigate}
-                      onLogout={handleLogout}
-                    />
-                  </>
-                ) : (
-                  <button
-                    className="hamburger-menu"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    aria-label="Toggle menu"
-                  >
-                    <span>Menu</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="3" y1="12" x2="21" y2="12" />
-                      <line x1="3" y1="6" x2="21" y2="6" />
-                      <line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                  </button>
-                )}
+            {/* V6 Map Header - Simple label with zoom controls */}
+            <div className="v6-map-header">
+              <div className="map-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                  <line x1="8" y1="2" x2="8" y2="18" />
+                  <line x1="16" y1="6" x2="16" y2="22" />
+                </svg>
+                <span>Map</span>
+              </div>
+              <div className="zoom-controls">
+                <button
+                  className="zoom-btn"
+                  onClick={() => mapRef.current?.zoomIn?.()}
+                  aria-label="Zoom in"
+                >
+                  +
+                </button>
+                <button
+                  className="zoom-btn"
+                  onClick={() => mapRef.current?.zoomOut?.()}
+                  aria-label="Zoom out"
+                >
+                  −
+                </button>
               </div>
             </div>
 

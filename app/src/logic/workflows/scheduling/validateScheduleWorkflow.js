@@ -51,8 +51,12 @@ export function validateScheduleWorkflow({ selectedDayIndices, listing = {} }) {
     }
   }
 
-  // Calculate nights (in split lease, nights = days selected)
-  const nightsCount = selectedDayIndices.length
+  // Calculate nights count with full week special case
+  // Business Rule: 7 days = 7 nights (full week), partial week = days - 1
+  // Note: 6-night bookings DO NOT EXIST in Split Lease model
+  const nightsCount = selectedDayIndices.length === 7
+    ? 7
+    : Math.max(0, selectedDayIndices.length - 1)
 
   // Check contiguous requirement (CRITICAL business rule)
   const isContiguous = isScheduleContiguous({ selectedDayIndices })

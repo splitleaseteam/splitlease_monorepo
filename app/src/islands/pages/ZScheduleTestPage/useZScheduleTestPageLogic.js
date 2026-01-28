@@ -4,6 +4,7 @@ import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { checkContiguity } from '../../shared/HostScheduleSelector/utils.js';
 import { ALL_NIGHTS } from '../../shared/HostScheduleSelector/constants.js';
 import { calculateCheckInCheckOut } from '../../../lib/scheduleSelector/nightCalculations.js';
+import { createAllDays } from '../../../lib/scheduleSelector/dayHelpers.js';
 
 const DEFAULT_RESERVATION_SPAN = 13;
 
@@ -21,6 +22,44 @@ const NIGHT_LABELS = ALL_NIGHTS.reduce((acc, night) => {
   acc[night.id] = night.display;
   return acc;
 }, {});
+
+const EDGE_CASE_SCENARIOS = [
+  {
+    id: 'normal-5-night',
+    name: 'Normal 5-Night Stay (Mon-Sat)',
+    dayIndices: [1, 2, 3, 4, 5, 6],
+    expectedValid: true,
+    expectedNights: 5
+  },
+  {
+    id: 'wrap-around',
+    name: 'Wrap-Around Weekend (Fri-Mon)',
+    dayIndices: [5, 6, 0, 1],
+    expectedValid: true,
+    expectedNights: 3
+  },
+  {
+    id: 'gap-selection',
+    name: 'Gap Selection (Mon, Wed, Fri)',
+    dayIndices: [1, 3, 5],
+    expectedValid: false,
+    expectedError: 'CONTIGUITY'
+  },
+  {
+    id: 'below-min',
+    name: 'Below Minimum (1 night)',
+    dayIndices: [1, 2],
+    expectedValid: false,
+    expectedError: 'ABSOLUTE_MINIMUM'
+  },
+  {
+    id: 'full-week',
+    name: 'Full Week (7 days = 7 nights)',
+    dayIndices: [0, 1, 2, 3, 4, 5, 6],
+    expectedValid: true,
+    expectedNights: 7  // NOT 6!
+  }
+];
 
 export function useZScheduleTestPageLogic() {
   const [listings, setListings] = useState([]);
@@ -45,6 +84,7 @@ export function useZScheduleTestPageLogic() {
   const [listingSelectedDays, setListingSelectedDays] = useState([]);
   const [listingPriceBreakdown, setListingPriceBreakdown] = useState(null);
   const [listingScheduleState, setListingScheduleState] = useState(null);
+  const [selectedScenario, setSelectedScenario] = useState(null);
 
   useEffect(() => {
     document.title = 'Schedule Test | Admin';
@@ -186,6 +226,21 @@ export function useZScheduleTestPageLogic() {
     setListingScheduleState(state);
   }, []);
 
+  const handleLoadScenario = useCallback((scenarioId) => {
+    const scenario = EDGE_CASE_SCENARIOS.find(s => s.id === scenarioId);
+    if (!scenario || !scheduleListing) return;
+
+    setSelectedScenario(scenario);
+
+    // Convert day indices to day objects
+    const allDaysArray = createAllDays(scheduleListing.daysAvailable || [0,1,2,3,4,5,6]);
+    const dayObjects = scenario.dayIndices
+      .map(idx => allDaysArray.find(d => d.dayOfWeek === idx))
+      .filter(Boolean);
+
+    setListingSelectedDays(dayObjects);
+  }, [scheduleListing]);
+
   return {
     listings,
     listingsLoading,
@@ -216,7 +271,10 @@ export function useZScheduleTestPageLogic() {
     handleListingSelectionChange,
     handleListingPriceChange,
     handleListingScheduleChange,
-    toggleOptionSets
+    toggleOptionSets,
+    edgeCaseScenarios: EDGE_CASE_SCENARIOS,
+    selectedScenario,
+    handleLoadScenario
   };
 }
 

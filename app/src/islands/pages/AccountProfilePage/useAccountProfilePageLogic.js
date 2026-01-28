@@ -1419,6 +1419,50 @@ export function useAccountProfilePageLogic() {
     window.location.href = '/reset-password';
   }, []);
 
+  /**
+   * Handle next action card clicks in the sidebar
+   * Routes to the appropriate handler based on action ID
+   */
+  const handleNextActionClick = useCallback((actionId) => {
+    switch (actionId) {
+      case 'govId':
+        // Open identity verification modal
+        setShowIdentityVerificationModal(true);
+        break;
+      case 'phone':
+        // Open phone verification modal
+        setShowPhoneEditModal(true);
+        break;
+      case 'email':
+        // Trigger email verification
+        handleVerifyEmail();
+        break;
+      case 'linkedin':
+        // LinkedIn OAuth flow (TODO: implement)
+        console.log('Connect LinkedIn clicked');
+        break;
+      case 'rentalApp':
+        // Open rental application wizard (guest-only)
+        setShowRentalWizardModal(true);
+        break;
+      case 'firstListing':
+        // Navigate to create listing page (host-only)
+        window.location.href = '/self-listing-v2';
+        break;
+      case 'photo':
+        // Scroll to avatar and trigger file upload dialog
+        // The avatar input is in the sidebar, so we just need to click it
+        document.querySelector('.avatar-edit-overlay')?.click();
+        break;
+      case 'bio':
+        // Scroll to bio section
+        document.querySelector('.profile-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        break;
+      default:
+        console.warn('Unknown action ID:', actionId);
+    }
+  }, [handleVerifyEmail]);
+
   // ============================================================================
   // RENTAL APPLICATION WIZARD HANDLERS (Guest-only)
   // ============================================================================
@@ -1633,6 +1677,7 @@ export function useAccountProfilePageLogic() {
     // Settings handlers
     handleOpenNotificationSettings,
     handleChangePassword,
+    handleNextActionClick,
 
     // Photo handlers
     handleCoverPhotoChange,
