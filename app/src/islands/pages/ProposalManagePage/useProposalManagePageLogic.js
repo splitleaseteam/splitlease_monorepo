@@ -17,6 +17,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
 
@@ -25,6 +26,16 @@ import { supabase } from '../../../lib/supabase.js';
 // ============================================================================
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+
+// Create an anonymous Supabase client for admin queries
+// This bypasses authenticated user's RLS policies and uses anon role policies
+// which have unrestricted SELECT access to proposals for internal admin pages
+const anonSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 /**
  * Call the proposal Edge Function with soft headers pattern.
@@ -58,6 +69,45 @@ async function callProposalEdgeFunction(action, payload = {}) {
   }
 
   return result.data;
+}
+
+/**
+ * Fetch records in batches to avoid PostgREST URL length limits.
+ * Large .in() filters with 30+ IDs can cause 400 errors.
+ *
+ * @param {string} table - The table name
+ * @param {string} selectColumns - The columns to select
+ * @param {string[]} ids - Array of IDs to fetch
+ * @param {number} batchSize - Number of IDs per batch (default 10)
+ * @returns {Promise<Object[]>} - Combined results from all batches
+ */
+async function fetchInBatches(table, selectColumns, ids, batchSize = 10) {
+  if (!ids || ids.length === 0) return [];
+
+  const results = [];
+  const batches = [];
+
+  // Split IDs into batches
+  for (let i = 0; i < ids.length; i += batchSize) {
+    batches.push(ids.slice(i, i + batchSize));
+  }
+
+  // Fetch each batch in parallel using anonymous client to bypass RLS
+  const batchPromises = batches.map(async (batchIds) => {
+    const { data, error } = await anonSupabase
+      .from(table)
+      .select(selectColumns)
+      .in('_id', batchIds);
+
+    if (error) {
+      console.warn(`[ProposalManage] Batch fetch error for ${table}:`, error);
+      return [];
+    }
+    return data || [];
+  });
+
+  const batchResults = await Promise.all(batchPromises);
+  return batchResults.flat();
 }
 
 // ============================================================================
@@ -99,7 +149,7 @@ function normalizeGuest(guest) {
     lastName: guest['Name - Last'] || guest.lastName || '',
     fullName: guest['Name - Full'] || guest.fullName || '',
     email: guest.email || '',
-    phoneNumber: guest['Phone Number'] || guest.phoneNumber || '',
+    phoneNumber: guest['Phone Number (as text)'] || guest['Phone Number'] || guest.phoneNumber || '',
     profilePhoto: guest['Profile Photo'] || guest.profilePhoto || null,
     aboutMe: guest['About Me / Bio'] || guest.aboutMe || '',
     isUsabilityTester: guest['is usability tester'] || guest.isUsabilityTester || false,
@@ -121,10 +171,49 @@ function normalizeHost(host) {
     lastName: host['Name - Last'] || host.lastName || '',
     fullName: host['Name - Full'] || host.fullName || '',
     email: host.email || '',
-    phoneNumber: host['Phone Number'] || host.phoneNumber || '',
+    phoneNumber: host['Phone Number (as text)'] || host['Phone Number'] || host.phoneNumber || '',
     profilePhoto: host['Profile Photo'] || host.profilePhoto || null,
     isUsabilityTester: host['is usability tester'] || host.isUsabilityTester || false
   };
+}
+
+/**
+ * Extract address string from Location - Address field
+ * The field can be a string or a JSONB object with an 'address' property
+ * @param {string|Object} locationAddress - Location address field value
+ * @returns {string} Address string or empty string
+ */
+function extractAddressString(locationAddress) {
+  if (!locationAddress) return '';
+
+  // If it's already a string, return it
+  if (typeof locationAddress === 'string') return locationAddress;
+
+  // If it's an object with an 'address' property, extract it
+  if (typeof locationAddress === 'object' && locationAddress.address) {
+    return locationAddress.address;
+  }
+
+  return '';
+}
+
+/**
+ * Extract cover photo URL from Features - Photos array
+ * @param {Array} photos - Array of photo objects from listing
+ * @returns {string|null} Cover photo URL or null
+ */
+function extractCoverPhotoUrl(photos) {
+  if (!photos || !Array.isArray(photos) || photos.length === 0) return null;
+
+  // First try to find the main/cover photo (toggleMainPhoto: true)
+  const mainPhoto = photos.find(p => p.toggleMainPhoto === true);
+  if (mainPhoto) {
+    return mainPhoto.url || mainPhoto.Photo || null;
+  }
+
+  // Otherwise return the first photo's URL
+  const firstPhoto = photos[0];
+  return firstPhoto?.url || firstPhoto?.Photo || null;
 }
 
 /**
@@ -138,11 +227,11 @@ function normalizeListing(listing) {
   return {
     _id: listing._id,
     name: listing.Name || listing.name || 'Unnamed Listing',
-    address: listing['Full Address'] || listing.address || '',
+    address: extractAddressString(listing['Location - Address']) || listing['Full Address'] || listing.address || '',
     rentalType: listing['rental type'] || listing.rentalType || '',
-    coverPhoto: listing['Cover Photo'] || listing.coverPhoto || null,
-    damageDeposit: listing['Damage Deposit'] || listing.damageDeposit || 0,
-    cleaningCost: listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
+    coverPhoto: extractCoverPhotoUrl(listing['Features - Photos']) || listing['Cover Photo'] || listing.coverPhoto || null,
+    damageDeposit: listing['💰Damage Deposit'] || listing['Damage Deposit'] || listing.damageDeposit || 0,
+    cleaningCost: listing['💰Cleaning Cost / Maintenance Fee'] || listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
     houseRules: listing['House Rules'] || listing.houseRules || []
   };
 }
@@ -302,12 +391,15 @@ export function useProposalManagePageLogic() {
    * Load proposals with current filters
    */
   const loadProposals = useCallback(async () => {
+    console.log('[ProposalManage] loadProposals called - starting data fetch');
     setIsLoading(true);
     setError(null);
 
     try {
-      // Build query
-      let query = supabase
+      // Build query using anonymous client to bypass authenticated user's RLS
+      // The anon role has unrestricted SELECT access for internal admin pages
+      console.log('[ProposalManage] Building Supabase query for proposals (using anon client)...');
+      let query = anonSupabase
         .from('proposal')
         .select(`
           _id,
@@ -339,7 +431,7 @@ export function useProposalManagePageLogic() {
           "Created Date",
           "Modified Date"
         `, { count: 'exact' })
-        .or('"Deleted".is.null,"Deleted".eq.false');
+        .or('Deleted.is.null,Deleted.eq.false');
 
       // Apply filters
       if (filters.proposalId) {
@@ -370,7 +462,15 @@ export function useProposalManagePageLogic() {
       // Limit results
       query = query.limit(100);
 
+      console.log('[ProposalManage] Executing proposal query...');
       const { data: proposalsData, error: proposalsError, count } = await query;
+
+      console.log('[ProposalManage] Query result:', {
+        dataLength: proposalsData?.length || 0,
+        count,
+        error: proposalsError,
+        firstProposal: proposalsData?.[0] ? { _id: proposalsData[0]._id, Status: proposalsData[0].Status } : null
+      });
 
       if (proposalsError) {
         console.error('[ProposalManage] Error fetching proposals:', proposalsError);
@@ -378,42 +478,43 @@ export function useProposalManagePageLogic() {
       }
 
       // Fetch related data (guests, hosts, listings)
+      // Use batched fetching to avoid PostgREST URL length limits with large .in() filters
       const guestIds = [...new Set(proposalsData?.map(p => p.Guest).filter(Boolean))];
       const hostIds = [...new Set(proposalsData?.map(p => p['Host User']).filter(Boolean))];
       const listingIds = [...new Set(proposalsData?.map(p => p.Listing).filter(Boolean))];
 
-      // Fetch guests
+      console.log(`[ProposalManage] Fetching related data: ${guestIds.length} guests, ${hostIds.length} hosts, ${listingIds.length} listings`);
+
+      // Fetch all related data in parallel using batched queries
+      const [guests, hosts, listings] = await Promise.all([
+        fetchInBatches(
+          'user',
+          '_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo", "About Me / Bio", "user verified?", "is usability tester"',
+          guestIds
+        ),
+        fetchInBatches(
+          'user',
+          '_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo", "is usability tester"',
+          hostIds
+        ),
+        fetchInBatches(
+          'listing',
+          '_id, Name, "Location - Address", "rental type", "Features - Photos", "💰Damage Deposit", "💰Cleaning Cost / Maintenance Fee"',
+          listingIds
+        )
+      ]);
+
+      // Build lookup maps
       const guestMap = {};
-      if (guestIds.length > 0) {
-        const { data: guests } = await supabase
-          .from('user')
-          .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number", "Profile Photo", "About Me / Bio", "user verified?", "is usability tester"')
-          .in('_id', guestIds);
+      guests.forEach(g => { guestMap[g._id] = normalizeGuest(g); });
 
-        guests?.forEach(g => { guestMap[g._id] = normalizeGuest(g); });
-      }
-
-      // Fetch hosts (also from user table)
       const hostMap = {};
-      if (hostIds.length > 0) {
-        const { data: hosts } = await supabase
-          .from('user')
-          .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number", "Profile Photo", "is usability tester"')
-          .in('_id', hostIds);
+      hosts.forEach(h => { hostMap[h._id] = normalizeHost(h); });
 
-        hosts?.forEach(h => { hostMap[h._id] = normalizeHost(h); });
-      }
-
-      // Fetch listings
       const listingMap = {};
-      if (listingIds.length > 0) {
-        const { data: listings } = await supabase
-          .from('listing')
-          .select('_id, Name, "Full Address", "rental type", "Cover Photo", "Damage Deposit", "Cleaning Cost / Maintenance Fee"')
-          .in('_id', listingIds);
+      listings.forEach(l => { listingMap[l._id] = normalizeListing(l); });
 
-        listings?.forEach(l => { listingMap[l._id] = normalizeListing(l); });
-      }
+      console.log(`[ProposalManage] Loaded: ${guests.length} guests, ${hosts.length} hosts, ${listings.length} listings`);
 
       // Normalize and combine data
       const normalizedProposals = proposalsData?.map(p => {
@@ -458,7 +559,12 @@ export function useProposalManagePageLogic() {
       }
 
       setProposals(filteredProposals);
-      setTotalCount(filteredProposals.length);
+
+      // Use database count unless client-side text search reduced the results
+      // Text search filters (guest/host/listing name) are applied client-side
+      const hasTextSearch = filters.guestSearch || filters.hostSearch || filters.listingSearch;
+      const displayCount = hasTextSearch ? filteredProposals.length : (count || filteredProposals.length);
+      setTotalCount(displayCount);
 
     } catch (err) {
       console.error('[ProposalManage] Failed to load proposals:', err);

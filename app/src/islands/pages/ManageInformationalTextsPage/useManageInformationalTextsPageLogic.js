@@ -81,8 +81,11 @@ export default function useManageInformationalTextsPageLogic() {
   async function callEdgeFunction(action, payload = {}) {
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Build headers with optional auth (soft headers pattern)
-    const headers = { 'Content-Type': 'application/json' };
+    // Build headers with apikey (required) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+    };
     if (session?.access_token) {
       headers.Authorization = `Bearer ${session.access_token}`;
     }

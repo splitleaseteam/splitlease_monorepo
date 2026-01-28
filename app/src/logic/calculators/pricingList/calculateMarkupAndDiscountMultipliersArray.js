@@ -7,10 +7,10 @@
  *
  * @intent Pre-calculate multipliers for fast price lookups.
  * @rule Array length must be exactly 7 elements.
- * @rule Multiplier = (1 + combinedMarkup) × (1 - discount).
+ * @rule Multiplier = 1 + combinedMarkup - discount.
  * @rule Full-time discount (13%) only applies at index 6 (7 nights).
  *
- * Formula: multiplier[n] = (1 + combinedMarkup) × (1 - unusedNightsDiscount[n] - fullTimeDiscount)
+ * Formula: multiplier[n] = 1 + combinedMarkup - unusedNightsDiscount[n] - fullTimeDiscount
  * Where fullTimeDiscount = 0.13 only when n = 6
  *
  * @param {object} params - Named parameters.
@@ -73,9 +73,9 @@ export function calculateMarkupAndDiscountMultipliersArray({
     // Full-time discount only applies to 7-night stays
     const applicableFullTimeDiscount = nightIndex === fullTimeNightIndex ? fullTimeDiscount : 0;
 
-    // Multiplier = (1 + markup) × (1 - total discount)
+    // Multiplier = 1 + markup - total discount
     const totalDiscount = unusedDiscount + applicableFullTimeDiscount;
-    const multiplier = (1 + combinedMarkup) * (1 - totalDiscount);
+    const multiplier = 1 + combinedMarkup - totalDiscount;
 
     multipliersArray.push(roundToFourDecimals(multiplier));
   }
