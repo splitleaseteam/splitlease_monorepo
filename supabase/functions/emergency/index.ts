@@ -307,17 +307,17 @@ async function handleGetAll(
 ): Promise<unknown[]> {
   console.log('[emergency:getAll] Fetching emergencies');
 
-  const { status, assignedTo, includeHidden = false, limit = 100, offset = 0 } = payload;
+  const { assignedTo, includeHidden = false, limit = 100, offset = 0 } = payload;
 
+  // Query from Bubble export table 'emergencyreports'
   let query = supabase
-    .from('emergency_report')
+    .from('emergencyreports')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('"Created Date"', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (status) query = query.eq('status', status);
-  if (assignedTo) query = query.eq('assigned_to_user_id', assignedTo);
-  if (!includeHidden) query = query.eq('is_hidden', false);
+  if (assignedTo) query = query.eq('"Team Member Assigned"', assignedTo);
+  if (!includeHidden) query = query.eq('pending', false);
 
   const { data, error } = await query;
 
@@ -327,7 +327,24 @@ async function handleGetAll(
   }
 
   console.log('[emergency:getAll] Found', data?.length || 0, 'emergencies');
-  return data || [];
+
+  // Transform Bubble column names to normalized format
+  return (data || []).map(row => ({
+    id: row._id,
+    proposal_id: row['Reservation'],
+    reported_by_user_id: row['reported by'],
+    emergency_type: row['Type of emergency reported'],
+    description: row['Description of emergency'],
+    photo1_url: row['Photo 1 of emergency'],
+    photo2_url: row['Photo 2 of emergency'],
+    status: row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED',
+    is_hidden: row.pending || false,
+    assigned_to_user_id: row['Team Member Assigned'],
+    guidance_instructions: row['Guidance / Instructions '],
+    summary: row['Our summary of the emergency'],
+    created_at: row['Created Date'],
+    updated_at: row['Modified Date'],
+  }));
 }
 
 // ============================================================================
@@ -342,15 +359,31 @@ async function handleGetById(
 
   if (!id) throw new Error('Emergency ID is required');
 
-  const { data, error } = await supabase
-    .from('emergency_report')
+  const { data: row, error } = await supabase
+    .from('emergencyreports')
     .select('*')
-    .eq('id', id)
+    .eq('_id', id)
     .single();
 
   if (error) throw new Error(`Failed to fetch emergency: ${error.message}`);
 
-  return data;
+  // Transform Bubble column names to normalized format
+  return {
+    id: row._id,
+    proposal_id: row['Reservation'],
+    reported_by_user_id: row['reported by'],
+    emergency_type: row['Type of emergency reported'],
+    description: row['Description of emergency'],
+    photo1_url: row['Photo 1 of emergency'],
+    photo2_url: row['Photo 2 of emergency'],
+    status: row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED',
+    is_hidden: row.pending || false,
+    assigned_to_user_id: row['Team Member Assigned'],
+    guidance_instructions: row['Guidance / Instructions '],
+    summary: row['Our summary of the emergency'],
+    created_at: row['Created Date'],
+    updated_at: row['Modified Date'],
+  };
 }
 
 // ============================================================================
@@ -368,25 +401,42 @@ async function handleCreate(
   if (!emergency_type) throw new Error('Emergency type is required');
   if (!description) throw new Error('Description is required');
 
-  const { data, error } = await supabase
-    .from('emergency_report')
+  // Generate Bubble-style ID
+  const bubbleId = `${Date.now()}x${Math.floor(Math.random() * 1000000000000000000)}`;
+
+  const { data: row, error } = await supabase
+    .from('emergencyreports')
     .insert({
-      proposal_id, reported_by_user_id, emergency_type, description,
-      photo1_url, photo2_url, status: 'REPORTED', is_hidden: false,
+      _id: bubbleId,
+      bubble_id: bubbleId,
+      'Reservation': proposal_id || null,
+      'reported by': reported_by_user_id || 'no_user',
+      'Type of emergency reported': emergency_type,
+      'Description of emergency': description,
+      'Photo 1 of emergency': photo1_url || null,
+      'Photo 2 of emergency': photo2_url || null,
+      'Created Date': new Date().toISOString(),
+      'Modified Date': new Date().toISOString(),
+      pending: false,
     })
     .select()
     .single();
 
   if (error) throw new Error(`Failed to create emergency report: ${error.message}`);
 
-  console.log('[emergency:create] Emergency created:', data.id);
+  console.log('[emergency:create] Emergency created:', row._id);
 
   // Slack notification (fire-and-forget)
   sendToSlack('database', {
-    text: `🚨 *NEW EMERGENCY REPORTED*\n\n*Type:* ${emergency_type}\n*Description:* ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}\n\n*Emergency ID:* ${data.id}`,
+    text: `🚨 *NEW EMERGENCY REPORTED*\n\n*Type:* ${emergency_type}\n*Description:* ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}\n\n*Emergency ID:* ${row._id}`,
   });
 
-  return data;
+  return {
+    id: row._id,
+    emergency_type: row['Type of emergency reported'],
+    description: row['Description of emergency'],
+    status: 'REPORTED',
+  };
 }
 
 // ============================================================================
@@ -398,27 +448,34 @@ async function handleUpdate(
   _user: AdminUser,
   supabase: SupabaseClient
 ): Promise<unknown> {
-  const { id, ...updateFields } = payload;
+  const { id, emergency_type, description, photo1_url, photo2_url, guidance_instructions } = payload;
 
   if (!id) throw new Error('Emergency ID is required');
 
+  // Map normalized field names to Bubble column names
   const fieldsToUpdate: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(updateFields)) {
-    if (value !== undefined) fieldsToUpdate[key] = value;
-  }
+  if (emergency_type !== undefined) fieldsToUpdate['Type of emergency reported'] = emergency_type;
+  if (description !== undefined) fieldsToUpdate['Description of emergency'] = description;
+  if (photo1_url !== undefined) fieldsToUpdate['Photo 1 of emergency'] = photo1_url;
+  if (photo2_url !== undefined) fieldsToUpdate['Photo 2 of emergency'] = photo2_url;
+  if (guidance_instructions !== undefined) fieldsToUpdate['Guidance / Instructions '] = guidance_instructions;
 
   if (Object.keys(fieldsToUpdate).length === 0) throw new Error('No fields to update');
 
-  const { data, error } = await supabase
-    .from('emergency_report')
+  const { data: row, error } = await supabase
+    .from('emergencyreports')
     .update(fieldsToUpdate)
-    .eq('id', id)
+    .eq('_id', id)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to update emergency: ${error.message}`);
 
-  return data;
+  return {
+    id: row._id,
+    emergency_type: row['Type of emergency reported'],
+    description: row['Description of emergency'],
+  };
 }
 
 // ============================================================================
@@ -444,18 +501,17 @@ async function handleAssignEmergency(
   if (userError || !assignedUser) throw new Error(`Assigned user not found: ${assignedToUserId}`);
   if (!assignedUser['Toggle - Is Admin']) throw new Error('Assigned user must be an admin');
 
+  // Map to Bubble column names
   const updateData: Record<string, unknown> = {
-    assigned_to_user_id: assignedToUserId,
-    assigned_at: new Date().toISOString(),
-    status: 'ASSIGNED',
+    'Team Member Assigned': assignedToUserId,
   };
 
-  if (guidanceInstructions !== undefined) updateData.guidance_instructions = guidanceInstructions;
+  if (guidanceInstructions !== undefined) updateData['Guidance / Instructions '] = guidanceInstructions;
 
-  const { data, error } = await supabase
-    .from('emergency_report')
+  const { data: row, error } = await supabase
+    .from('emergencyreports')
     .update(updateData)
-    .eq('id', emergencyId)
+    .eq('_id', emergencyId)
     .select()
     .single();
 
@@ -464,10 +520,14 @@ async function handleAssignEmergency(
   const assignedToName = `${assignedUser['Name - First'] || ''} ${assignedUser['Name - Last'] || ''}`.trim() || assignedUser.email;
 
   sendToSlack('database', {
-    text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${data.emergency_type}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${data.id}`,
+    text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${row['Type of emergency reported']}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${row._id}`,
   });
 
-  return data;
+  return {
+    id: row._id,
+    emergency_type: row['Type of emergency reported'],
+    assigned_to_user_id: row['Team Member Assigned'],
+  };
 }
 
 // ============================================================================
@@ -486,21 +546,25 @@ async function handleUpdateStatus(
     throw new Error(`Invalid status: ${status}. Valid statuses: ${VALID_STATUSES.join(', ')}`);
   }
 
-  const updateData: Record<string, unknown> = { status };
+  // Bubble table doesn't have a status column - use pending to mark resolved/closed
+  const updateData: Record<string, unknown> = {};
   if (status === 'RESOLVED' || status === 'CLOSED') {
-    updateData.resolved_at = new Date().toISOString();
+    updateData.pending = true; // Mark as resolved/hidden
   }
 
-  const { data, error } = await supabase
-    .from('emergency_report')
+  const { data: row, error } = await supabase
+    .from('emergencyreports')
     .update(updateData)
-    .eq('id', emergencyId)
+    .eq('_id', emergencyId)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to update status: ${error.message}`);
 
-  return data;
+  return {
+    id: row._id,
+    status: row.pending ? 'RESOLVED' : (row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED'),
+  };
 }
 
 // ============================================================================
@@ -516,16 +580,19 @@ async function handleUpdateVisibility(
   if (!emergencyId) throw new Error('Emergency ID is required');
   if (typeof isHidden !== 'boolean') throw new Error('isHidden must be a boolean');
 
-  const { data, error } = await supabase
-    .from('emergency_report')
-    .update({ is_hidden: isHidden })
-    .eq('id', emergencyId)
+  const { data: row, error } = await supabase
+    .from('emergencyreports')
+    .update({ pending: isHidden })
+    .eq('_id', emergencyId)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to update visibility: ${error.message}`);
 
-  return data;
+  return {
+    id: row._id,
+    is_hidden: row.pending,
+  };
 }
 
 // ============================================================================
