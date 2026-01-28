@@ -573,8 +573,8 @@ const FavoritesCardV3 = ({
           </div>
         </div>
 
-        {/* AI SUMMARY */}
-        <div style={styles.aiSummary} role="complementary" aria-label="AI insight">
+        {/* AI SUMMARY - Hidden for now */}
+        {/* <div style={styles.aiSummary} role="complementary" aria-label="AI insight">
           <div style={styles.aiHeader}>
             <div style={styles.aiIcon} aria-hidden="true">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
@@ -584,7 +584,7 @@ const FavoritesCardV3 = ({
             <span style={styles.aiLabel}>AI Insight</span>
           </div>
           <p style={styles.aiText}>{aiInsight}</p>
-        </div>
+        </div> */}
 
         {/* HOST ROW */}
         <div style={styles.hostRow}>
