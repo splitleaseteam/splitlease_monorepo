@@ -212,6 +212,14 @@ export const unitTestPages = [
     bubbleUrl: null
   },
   {
+    id: 'pricing-unit-test',
+    name: 'Pricing Unit Test',
+    path: '/_pricing-unit-test',
+    icon: DollarSign,
+    description: 'Test pricing engine calculations and validation',
+    bubbleUrl: 'https://app.split.lease/version-test/z-pricing-unit-test'
+  },
+  {
     id: 'simulation-admin',
     name: 'Simulation Admin',
     path: '/_simulation-admin',

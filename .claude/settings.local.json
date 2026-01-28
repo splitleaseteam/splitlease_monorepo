@@ -47,16 +47,12 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "supabase-dev",
-    "supabase-live",
-    "shadcn",
-    "playwright-host-live",
-    "playwright-host-dev",
-    "playwright-guest-live",
-    "playwright-guest-dev"
+    "knip",
+    "supabase",
+    "playwright"
   ],
   "enabledPlugins": {
     "supabase@claude-plugins-official": true
   },
-  "outputStyle": "Explanatory"
+  "outputStyle": "Completion Summary"
 }

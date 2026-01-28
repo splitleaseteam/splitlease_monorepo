@@ -49,6 +49,7 @@ export default function ProfileSidebar({
   nextActions = [],
   onCoverPhotoChange,
   onAvatarChange,
+  onActionClick,
   // Public view specific
   responseTime,
   responseRate,
@@ -111,6 +112,7 @@ export default function ProfileSidebar({
                 text={action.text}
                 points={action.points}
                 icon={action.icon}
+                onClick={() => onActionClick?.(action.id)}
               />
             ))}
           </div>

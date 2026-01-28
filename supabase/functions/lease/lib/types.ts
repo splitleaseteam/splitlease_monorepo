@@ -47,11 +47,12 @@ export interface LeaseData {
   Participants: string[];
   'Cancellation Policy': string;
   'First Payment Date': string;
-  'Move In Date': string;
-  'Move-out': string;
+  // SCHEMA-VERIFIED (2026-01-28): Actual column names have space before colon
+  'Reservation Period : Start': string;
+  'Reservation Period : End': string;
   'Total Compensation': number;
   'Total Rent': number;
-  'rental type': string;
+  // Note: 'rental type' does NOT exist in bookings_leases table
   'List of Stays': string[];
   'Payment Records Guest-SL': string[];
   'Payment Records SL-Hosts': string[];
@@ -59,16 +60,13 @@ export interface LeaseData {
   'Lease signed?': boolean;
   'were documents generated?': boolean;
   Thread: string | null;
-  'House Manual': string | null;
+  // SCHEMA-VERIFIED (2026-01-28): 'House Manual' column does NOT exist in bookings_leases
   'Created Date': string;
   'Modified Date': string;
   // Date fields (populated by date generation)
   'List of Booked Dates'?: string[];
-  'Check-In Dates'?: string[];
-  'Check-Out Dates'?: string[];
-  'total nights'?: number;
-  'Reservation Period: Start'?: string;
-  'Reservation Period: End'?: string;
+  'total week count'?: number;
+  'current week number'?: number;
 }
 
 export interface ProposalData {

@@ -85,10 +85,12 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (optional for internal pages)
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+    if (user) {
+      console.log(`[usability-data-admin] Authenticated user: ${user.email}`);
+    } else {
+      console.log('[usability-data-admin] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations

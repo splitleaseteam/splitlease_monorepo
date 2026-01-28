@@ -629,6 +629,12 @@
     display: none;
 }
 
+/* Desktop suggested proposal trigger - shown on desktop, hidden on mobile */
+.desktop-sp-trigger {
+    display: flex;
+    margin-right: 8px;
+}
+
 /* Desktop/mobile visibility utilities */
 .desktop-only {
     display: flex;
@@ -650,6 +656,11 @@
     .mobile-sp-trigger {
         display: flex !important;
         margin-left: auto;
+    }
+
+    /* Desktop suggested proposal trigger - hide on mobile */
+    .desktop-sp-trigger {
+        display: none !important;
     }
 
     /* Visibility utilities on mobile */

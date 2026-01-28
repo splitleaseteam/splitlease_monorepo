@@ -22,6 +22,7 @@ import { useToast } from '../../shared/Toast';
  */
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Items per page for tester list
 const PAGE_SIZE = 50;
@@ -114,7 +115,12 @@ export default function useSimulationAdminPageLogic() {
     const { data: { session } } = await supabase.auth.getSession();
     const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
     const accessToken = session?.access_token || legacyToken;
-    const headers = { 'Content-Type': 'application/json' };
+
+    // Soft headers: apikey is required, Authorization is optional
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+    };
 
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;

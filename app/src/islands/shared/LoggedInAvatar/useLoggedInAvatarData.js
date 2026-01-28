@@ -337,13 +337,15 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
       // DEBUG: Log threads result to diagnose messaging icon visibility
       // Note: RPC returns { data: <integer>, error } not { count, error }
-      console.log('[useLoggedInAvatarData] Threads result:', {
-        count: threadsResult.data,
+      console.log('🧵 [useLoggedInAvatarData] Threads RPC result:', {
+        rawData: threadsResult.data,
+        dataType: typeof threadsResult.data,
         error: threadsResult.error,
+        errorMessage: threadsResult.error?.message,
         userId: userId
       });
       if (threadsResult.error) {
-        console.error('[useLoggedInAvatarData] Error fetching threads:', threadsResult.error);
+        console.error('❌ [useLoggedInAvatarData] Error fetching threads:', threadsResult.error);
       }
 
       // Process suggested proposals - extract count and most recent ID

@@ -1,6 +1,7 @@
 {
   "name": "split-lease-monorepo",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "build": "cd app && bun install --frozen-lockfile && bun run build",
@@ -13,10 +14,15 @@
     "lint:fix": "cd app && bun run lint:fix",
     "lint:check": "cd app && bun run lint:check",
     "test": "cd app && bun run test",
-    "knip": "knip"
+    "knip": "knip",
+    "sync:edge-functions": "node supabase/scripts/sync-edge-functions.js",
+    "sync:edge-functions:fix": "node supabase/scripts/sync-edge-functions.js --fix",
+    "docs:generate": "node scripts/generate-docs.js",
+    "regression:create": "node scripts/generate-regression-test.js"
   },
   "description": "Split Lease application monorepo - Cloudflare Pages deployment - Root directory: app",
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@types/node": "^25.0.10",
     "knip": "^5.82.1",
     "playwright": "^1.58.0",
