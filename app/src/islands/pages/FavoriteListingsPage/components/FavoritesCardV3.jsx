@@ -268,7 +268,7 @@ const FavoritesCardV3 = ({
       transform: isHovered && !isTouchDevice ? 'translateY(-2px)' : 'none',
       cursor: 'pointer',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      border: `1px solid ${TOKENS.colors.border}`,
+      border: `2px solid ${TOKENS.colors.border}`, // V5 spec: stronger 2px border
       boxSizing: 'border-box',
       margin: 0,
       padding: 0,
@@ -289,7 +289,7 @@ const FavoritesCardV3 = ({
       aspectRatio: '16 / 10',
       margin: 0,
       padding: 0,
-      borderRadius: TOKENS.radius.md, // 12px rounded corners on the image container
+      // No border-radius - card's overflow:hidden handles clipping at card edges
     },
     heroImage: {
       width: '100%',
