@@ -63,18 +63,43 @@ def extract_summary_from_transcript(transcript_path):
         if not last_text:
             return None
 
-        # Extract first meaningful sentence/line
+        # Extract multiple sentences/paragraphs for more detail
         lines = last_text.split('\n')
+        summary_parts = []
+        char_count = 0
+        max_chars = 600  # More verbose limit
+
         for line in lines:
             line = line.strip()
-            # Skip markdown headers, skip very short lines
-            if line and len(line) > 20 and not line.startswith('#'):
-                # Remove markdown formatting
-                line = line.replace('**', '').replace('*', '').replace('`', '')
-                # Limit length
-                if len(line) > 200:
-                    line = line[:197] + "..."
-                return line
+
+            # Skip markdown headers and very short lines
+            if not line or line.startswith('#') or len(line) < 10:
+                continue
+
+            # Skip code blocks and special formatting
+            if line.startswith('```') or line.startswith('~~~'):
+                continue
+
+            # Remove markdown formatting but keep the content
+            clean_line = line.replace('**', '').replace('*', '').replace('`', '')
+
+            # Add this line to summary
+            if char_count + len(clean_line) <= max_chars:
+                summary_parts.append(clean_line)
+                char_count += len(clean_line)
+            else:
+                # Add partial line if we have room
+                remaining = max_chars - char_count
+                if remaining > 50:  # Only add if we have meaningful space left
+                    summary_parts.append(clean_line[:remaining-3] + "...")
+                break
+
+            # Stop if we have a good amount of content
+            if len(summary_parts) >= 5 and char_count > 300:
+                break
+
+        if summary_parts:
+            return ' '.join(summary_parts)
 
         return None
 
