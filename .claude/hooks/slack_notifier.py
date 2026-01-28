@@ -26,7 +26,7 @@ def load_env_file():
     return env_vars
 
 def extract_info_from_transcript(transcript_path):
-    """Extract user prompt and assistant response from transcript"""
+    """Extract user prompt and what was actually done (tools/files)"""
     try:
         if not os.path.exists(transcript_path):
             return None, None
@@ -36,7 +36,8 @@ def extract_info_from_transcript(transcript_path):
 
         # Parse JSONL entries
         user_prompt = None
-        last_text = None
+        tools_used = set()
+        files_changed = []
 
         # Extract user prompt (first user message)
         for line in lines:
@@ -47,55 +48,45 @@ def extract_info_from_transcript(transcript_path):
                     content = message.get('content')
                     if isinstance(content, str):
                         user_prompt = content.strip()
+                        if len(user_prompt) > 80:
+                            user_prompt = user_prompt[:77] + "..."
                         break
             except:
                 continue
 
-        # Extract last assistant message
-        for line in reversed(lines):
+        # Extract tools used and files changed
+        for line in reversed(lines[-30:]):
             try:
                 entry = json.loads(line.strip())
-                if entry.get('type') == 'assistant':
-                    message = entry.get('message', {})
-                    content = message.get('content', [])
+                if entry.get('type') == 'tool_use':
+                    tool_name = entry.get('name', '')
+                    tool_input = entry.get('input', {})
 
-                    if isinstance(content, list):
-                        for block in content:
-                            if isinstance(block, dict) and block.get('type') == 'text':
-                                text = block.get('text', '').strip()
-                                if text and len(text) > 20:
-                                    last_text = text
-                                    break
-
-                    if last_text:
-                        break
-
+                    if tool_name == 'Edit':
+                        tools_used.add('edited')
+                        file_path = tool_input.get('file_path', '')
+                        if file_path:
+                            file_name = file_path.split('/')[-1].split('\\')[-1]
+                            if file_name not in files_changed:
+                                files_changed.append(file_name)
+                    elif tool_name == 'Write':
+                        tools_used.add('created')
+                    elif tool_name == 'Bash':
+                        cmd = tool_input.get('command', '')
+                        if 'git commit' in cmd:
+                            tools_used.add('committed')
             except:
                 continue
 
-        if not last_text:
-            return user_prompt, None
+        # Build simple summary
+        if tools_used:
+            summary = ', '.join(sorted(tools_used))
+            if files_changed and len(files_changed) <= 2:
+                summary += f" {', '.join(files_changed)}"
+        else:
+            summary = None
 
-        # Extract just the first 1-2 meaningful sentences (max 200 chars for conciseness)
-        lines = last_text.split('\n')
-
-        for line in lines:
-            line = line.strip()
-
-            # Skip headers, bullets, code blocks, very short lines
-            if not line or line.startswith('#') or line.startswith('-') or line.startswith('*') or line.startswith('```') or len(line) < 15:
-                continue
-
-            # Clean markdown
-            clean_line = line.replace('**', '').replace('`', '').strip()
-
-            # Take first substantial line, limit to 200 chars
-            if len(clean_line) > 200:
-                clean_line = clean_line[:197] + "..."
-
-            return user_prompt, clean_line
-
-        return user_prompt, None
+        return user_prompt, summary
 
     except Exception as e:
         return None, None
