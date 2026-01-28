@@ -76,7 +76,7 @@ export function calculateMatchHeuristics({ candidateListing, proposal, hostData 
     }
   // eslint-disable-next-line no-restricted-syntax -- Intentional: calculation may fail with missing data
   } catch {
-    // Price proximity calculation failed, leave as null
+    void 0; // Price proximity calculation failed, leave as null
   }
 
   // Calculate schedule compatibility

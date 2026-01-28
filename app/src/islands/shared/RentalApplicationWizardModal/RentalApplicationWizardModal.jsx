@@ -51,19 +51,19 @@ export default function RentalApplicationWizardModal({
     if (!isOpen) return;
 
     const handleEsc = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !logic.isSubmitting) {
         onClose?.();
       }
     };
 
     document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, logic.isSubmitting]);
 
   if (!isOpen) return null;
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !logic.isSubmitting) {
       onClose?.();
     }
   };

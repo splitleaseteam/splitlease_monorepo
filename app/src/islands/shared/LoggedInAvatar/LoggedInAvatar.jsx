@@ -383,6 +383,15 @@ export default function LoggedInAvatar({
   // Hide messaging icon on the messages page (redundant since user is already there)
   const isMessagesPage = currentPath.includes('/messages');
 
+  // DEBUG: Log messaging icon visibility conditions
+  console.log('📧 Messaging icon visibility check:', {
+    effectiveThreadsCount,
+    isMessagesPage,
+    shouldShowMessagingIcon: effectiveThreadsCount > 0 && !isMessagesPage,
+    supabaseThreadsCount: supabaseData.threadsCount,
+    dataLoading
+  });
+
   return (
     <div className={`logged-in-avatar ${isSearchPage ? 'on-search-page' : ''} ${isLightHeaderPage ? 'on-light-header' : ''}`} ref={dropdownRef}>
       {/* Messaging icon - only shows when user has message threads AND not on messages page */}

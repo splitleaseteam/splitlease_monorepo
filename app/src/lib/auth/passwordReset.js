@@ -137,7 +137,7 @@ export async function updatePassword(newPassword) {
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -150,7 +150,7 @@ export async function updatePassword(newPassword) {
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       }
 

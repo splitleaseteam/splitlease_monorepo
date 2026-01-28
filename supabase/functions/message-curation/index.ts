@@ -365,11 +365,11 @@ async function handleGetThreadMessages(
       "Modified Date",
       originator_user_id,
       thread_id,
-      "Toggle - Is Forwarded",
-      deleted_at
+      "is Forwarded",
+      "is deleted (is hidden)"
     `)
     .eq('thread_id', threadId)
-    .is('deleted_at', null)
+    .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
     .order('"Created Date"', { ascending: true });
 
   if (messagesError) {
@@ -459,8 +459,8 @@ async function handleGetMessage(
       "Modified Date",
       originator_user_id,
       thread_id,
-      "Toggle - Is Forwarded",
-      deleted_at
+      "is Forwarded",
+      "is deleted (is hidden)"
     `)
     .eq('_id', messageId)
     .single();
@@ -559,7 +559,7 @@ async function handleDeleteMessage(
   const { data, error } = await supabase
     .from('_message')
     .update({
-      deleted_at: now,
+      'is deleted (is hidden)': true,
       'Modified Date': now,
     })
     .eq('_id', messageId)
@@ -576,7 +576,6 @@ async function handleDeleteMessage(
   return {
     deleted: true,
     messageId: data._id,
-    deletedAt: now,
   };
 }
 
@@ -595,15 +594,15 @@ async function handleDeleteThread(
 
   const now = new Date().toISOString();
 
-  // Soft delete all messages in the thread
+  // Soft delete all messages in the thread (only non-deleted ones)
   const { data, error } = await supabase
     .from('_message')
     .update({
-      deleted_at: now,
+      'is deleted (is hidden)': true,
       'Modified Date': now,
     })
-    .eq('"thread_id"', threadId)
-    .is('deleted_at', null)
+    .eq('thread_id', threadId)
+    .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
     .select('_id');
 
   if (error) {
@@ -618,7 +617,6 @@ async function handleDeleteThread(
     deleted: true,
     threadId,
     deletedCount,
-    deletedAt: now,
   };
 }
 
@@ -672,7 +670,7 @@ async function handleForwardMessage(
   const { error: updateError } = await supabase
     .from('_message')
     .update({
-      'Toggle - Is Forwarded': true,
+      'is Forwarded': true,
       'Modified Date': now,
     })
     .eq('_id', messageId);
@@ -854,9 +852,8 @@ function formatMessage(message: Record<string, unknown>, thread: Record<string, 
     originatorUserId: originatorId,
     threadId: message['thread_id'],
     isSplitBotWarning: !!isSplitBotWarning,
-    isForwarded: !!message['Toggle - Is Forwarded'],
-    isDeleted: !!message.deleted_at,
-    deletedAt: message.deleted_at,
+    isForwarded: !!message['is Forwarded'],
+    isDeleted: !!message['is deleted (is hidden)'],
     senderType,
     originator: originator ? {
       id: originator._id,

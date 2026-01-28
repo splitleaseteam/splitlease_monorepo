@@ -946,7 +946,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: error parsing is for logging only
         } catch (_parseErr) {
-          // Silent - just for logging
+          void 0; // Silent - just for logging
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -959,7 +959,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: error parsing is for logging only
         } catch (_parseErr) {
-          // Silent - just for logging
+          void 0; // Silent - just for logging
         }
       }
 
@@ -1326,7 +1326,7 @@ export async function updatePassword(newPassword) {
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -1339,7 +1339,7 @@ export async function updatePassword(newPassword) {
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       }
 

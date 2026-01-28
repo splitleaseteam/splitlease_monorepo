@@ -130,7 +130,7 @@ export function useInternalEmergencyPageLogic() {
         setSelectedEmergency(updated);
       // eslint-disable-next-line no-restricted-syntax -- Intentional: emergency may have been deleted
       } catch {
-        // Ignore error, selected emergency might have been deleted
+        void 0; // Ignore error, selected emergency might have been deleted
       }
     }
   }, [loadEmergencies, selectedEmergency]);

@@ -50,6 +50,38 @@ mcp__supabase__list_tables({ project_id: "..." })
 
 ---
 
+## Hooks
+
+**IMPORTANT: All hooks must be configured at project scope only** (`.claude/settings.json` in the project directory).
+
+### Hook Configuration Rules
+
+1. **Project-scoped only**: All hooks are defined in `.claude/settings.json` within the project directory
+2. **No global hooks**: Global hooks in `~/.claude/hooks/` are disabled to prevent conflicts
+3. **Current hooks**:
+   - **Stop hook**: `.claude/hooks/slack_notifier.py` - Sends completion notifications to Slack via TINYTASKAGENT webhook
+
+### Stop Hook Format
+
+The Stop hook sends notifications in the format:
+```
+Splitlease 8 says: [summary of what was accomplished]
+```
+
+- Extracts actual assistant response text from transcript (up to 600 characters)
+- Returns `None` if no meaningful summary found (no generic fallback messages)
+- Sends to TINYTASKAGENT webhook configured in `.env`
+
+### Adding New Hooks
+
+When adding new hooks:
+1. Create the hook script in `.claude/hooks/` (project directory)
+2. Configure in `.claude/settings.json` under `hooks` section
+3. Test that it doesn't conflict with existing hooks
+4. Never add hooks to global `~/.claude/` directory
+
+---
+
 ## Commands
 
 ```bash

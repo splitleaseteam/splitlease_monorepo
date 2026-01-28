@@ -61,11 +61,11 @@ export async function handleAdminFetchNewRequests(
     }
   }
 
-  // Fetch users in parallel
+  // Fetch users in parallel (table is "user" singular, columns have legacy Bubble naming)
   const usersPromise = userIds.size > 0
     ? supabase
-        .from("users")
-        .select("id, _id, name_first, name_last, email, phone_number, profile_photo_url, timezone")
+        .from("user")
+        .select('_id, "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo"')
         .in("_id", Array.from(userIds))
     : Promise.resolve({ data: [], error: null });
 
@@ -79,11 +79,19 @@ export async function handleAdminFetchNewRequests(
 
   const [usersResult, listingsResult] = await Promise.all([usersPromise, listingsPromise]);
 
-  // Build lookup maps
+  // Build lookup maps with normalized field names for frontend compatibility
   const usersMap = new Map<string, unknown>();
   if (usersResult.data) {
     for (const user of usersResult.data) {
-      usersMap.set(user._id, user);
+      // Normalize legacy Bubble column names to frontend-expected property names
+      usersMap.set(user._id, {
+        _id: user._id,
+        name_first: user["Name - First"] || "",
+        name_last: user["Name - Last"] || "",
+        email: user.email || "",
+        phone_number: user["Phone Number (as text)"] || "",
+        profile_photo_url: user["Profile Photo"] || "",
+      });
     }
   }
 

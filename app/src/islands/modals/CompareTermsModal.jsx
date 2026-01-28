@@ -192,6 +192,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
     isCancelling,
     isLoading,
     error,
+    acceptanceSuccess,
     originalTerms,
     counterofferTerms,
     negotiationSummaries,
@@ -204,7 +205,8 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
     handleCancelConfirm,
     handleClose,
     handleCloseCancelModal,
-    handleToggleExpanded
+    handleToggleExpanded,
+    handleSuccessAcknowledge
   } = useCompareTermsModalLogic({
     proposal,
     onClose,
@@ -233,6 +235,60 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
   // Don't render if terms are not loaded
   if (!originalTerms || !counterofferTerms) {
     return null;
+  }
+
+  // Success view content
+  if (acceptanceSuccess) {
+    const successContent = (
+      <div
+        className="compare-terms-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compare-terms-success-title"
+      >
+        <div className="compare-terms-modal compare-terms-modal--success">
+          {/* Mobile Grab Handle */}
+          <div className="compare-terms-grab-handle" />
+
+          {/* Success Header */}
+          <div className="compare-terms-header">
+            <h2 id="compare-terms-success-title" className="compare-terms-title">
+              🎉 Counteroffer Accepted!
+            </h2>
+          </div>
+
+          {/* Success Body */}
+          <div className="compare-terms-body compare-terms-body--success">
+            <div className="compare-terms-success-message">
+              <p className="compare-terms-success-text">
+                <strong>Great news!</strong> You have accepted the host&apos;s counteroffer.
+              </p>
+              <p className="compare-terms-success-text">
+                Split Lease will now draft the lease documents based on the agreed terms.
+                Please allow up to <strong>48 hours</strong> for completion.
+              </p>
+              <p className="compare-terms-success-text compare-terms-success-text--light">
+                You&apos;ll receive a notification when your lease is ready for review.
+              </p>
+            </div>
+          </div>
+
+          {/* Success Footer */}
+          <div className="compare-terms-footer">
+            <div className="compare-terms-actions compare-terms-actions--centered">
+              <button
+                className="compare-terms-btn compare-terms-btn--accept"
+                onClick={handleSuccessAcknowledge}
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    return createPortal(successContent, document.body);
   }
 
   const modalContent = (

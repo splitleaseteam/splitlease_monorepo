@@ -41,12 +41,21 @@ export async function handleAcceptCounteroffer(
 
   // Accept the counteroffer - move to drafting lease status
   // Copy counteroffer terms to active terms
+  // Status must match exactly: 'Proposal or Counteroffer Accepted / Drafting Lease Documents'
+  // from proposalStatuses.js PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key
+  //
+  // SCHEMA-VERIFIED COLUMNS ONLY (2026-01-28):
+  // - Status: text ✅
+  // - Modified Date: timestamp ✅
+  // - Is Finalized: boolean ✅
+  // - counter offer happened: boolean ✅ (NOT counteroffer_accepted)
+  // - proposal nightly price, nights per week (num), check in day, check out day: ✅
   const updateData: Record<string, unknown> = {
-    Status: 'Accepted - Drafting Lease',
+    Status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
     'Modified Date': new Date().toISOString(),
-    'last_modified_by': 'guest',
-    'counteroffer_accepted': true,
-    'counteroffer_accepted_date': new Date().toISOString()
+    'Is Finalized': true
+    // Note: 'counter offer happened' is already true if there was a counteroffer
+    // No need to set it again during acceptance
   };
 
   // Apply counteroffer values as the final agreed terms

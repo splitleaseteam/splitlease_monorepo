@@ -4,6 +4,7 @@ import {
   validateDayRemoval,
   isContiguous
 } from '../../lib/scheduleSelector/validators.js';
+import { runScheduleMultiCheck } from '../../lib/scheduleSelector/multiCheckScheduleValidator.js';
 import {
   calculateNightsFromDays,
   calculateCheckInCheckOut,
@@ -210,6 +211,30 @@ export const useScheduleSelector = ({
 
     // Add and sort
     const newSelection = sortDays([...selectedDays, day]);
+
+    // TRIPLE-CHECK: Run multi-validator (dev mode only)
+    if (import.meta.env.DEV) {
+      const multiCheckResult = runScheduleMultiCheck({
+        selectedDayIndices: newSelection.map(d => d.dayOfWeek),
+        listing: {
+          minimumNights: listing.minimumNights,
+          maximumNights: limitToFiveNights ? Math.min(5, listing.maximumNights) : listing.maximumNights,
+          daysAvailable: listing.daysAvailable
+        }
+      });
+
+      if (multiCheckResult.hasDiscrepancy) {
+        console.warn('SCHEDULE VALIDATION DISCREPANCY DETECTED');
+        console.warn('Multi-Check Result:', multiCheckResult);
+        console.table(multiCheckResult.checks.map(c => ({
+          Source: c.source,
+          Valid: c.valid ? 'Pass' : 'Fail',
+          Errors: c.errors.map(e => e.rule).join(', '),
+          Nights: c.metadata?.nightsCount ?? '-'
+        })));
+      }
+    }
+
     setSelectedDays(newSelection);
     setErrorState({ hasError: false, errorType: null, errorMessage: '' });
     setRecalculateState(true);

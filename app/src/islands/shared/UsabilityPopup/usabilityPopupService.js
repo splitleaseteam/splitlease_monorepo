@@ -59,7 +59,7 @@ export async function sendMagicLinkViaSms({ email, phoneNumber, redirectTo }) {
           }
         // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
-          // Use default message
+          void 0; // Use default message
         }
       }
 

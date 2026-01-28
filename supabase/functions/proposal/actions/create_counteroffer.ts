@@ -17,11 +17,11 @@ interface CreateCounterofferPayload {
     'hc nights per week'?: number;
     'hc check in day'?: number;
     'hc check out day'?: number;
-    'hc move in start'?: string;
-    'hc move out'?: string;
+    'hc move in start'?: string; // Maps to 'hc move in date' column
+    // Note: 'hc move out' column does not exist in schema
   };
   isUsabilityTest?: boolean;
-  hostPersona?: string;
+  // Note: hostPersona removed - 'counteroffer_by_persona' column does not exist
 }
 
 export async function handleCreateCounteroffer(
@@ -53,15 +53,20 @@ export async function handleCreateCounteroffer(
   }
 
   // Update proposal with counteroffer data
+  // SCHEMA-VERIFIED COLUMNS ONLY (2026-01-28):
+  // - Status: text ✅
+  // - Modified Date: timestamp ✅
+  // - counter offer happened: boolean ✅ (NOT has_host_counteroffer)
+  // - hc nightly price, hc nights per week, hc check in day, hc check out day: ✅
+  // - hc move in date: timestamp ✅ (NOT hc move in start)
+  // REMOVED non-existent: last_modified_by, has_host_counteroffer, counteroffer_by_persona, hc move out
   const updateData: Record<string, unknown> = {
-    Status: 'Host Counteroffer',
+    Status: 'Host Counteroffer Submitted / Awaiting Guest Review',
     'Modified Date': new Date().toISOString(),
-    'last_modified_by': 'host',
-    'has_host_counteroffer': true,
-    ...(hostPersona && { 'counteroffer_by_persona': hostPersona })
+    'counter offer happened': true
   };
 
-  // Apply counteroffer fields
+  // Apply counteroffer fields (all verified to exist)
   if (counterofferData['hc nightly price'] !== undefined) {
     updateData['hc nightly price'] = counterofferData['hc nightly price'];
   }
@@ -75,10 +80,8 @@ export async function handleCreateCounteroffer(
     updateData['hc check out day'] = counterofferData['hc check out day'];
   }
   if (counterofferData['hc move in start']) {
-    updateData['hc move in start'] = counterofferData['hc move in start'];
-  }
-  if (counterofferData['hc move out']) {
-    updateData['hc move out'] = counterofferData['hc move out'];
+    // Map to actual column name
+    updateData['hc move in date'] = counterofferData['hc move in start'];
   }
 
   const { error: updateError } = await supabase

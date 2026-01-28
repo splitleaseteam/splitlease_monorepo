@@ -102,7 +102,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
       accessToken = session?.access_token || '';
     // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to anon key when auth unavailable
     } catch {
-      // Silently ignore auth errors - we'll use anon key
+      void 0; // Silently ignore auth errors - we'll use anon key
     }
 
     return {
