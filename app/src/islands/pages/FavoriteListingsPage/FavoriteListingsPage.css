@@ -180,8 +180,8 @@ body::-webkit-scrollbar,
   gap: 24px; /* V6 spec: --gap-sections */
   max-width: 1500px; /* V6 spec: max-width for content */
   margin: 0 auto;
-  padding: 24px 24px 300px; /* Side and bottom padding */
-  margin-top: 0; /* No extra margin - subheader is NOT sticky initially */
+  padding: 8px 24px 300px; /* Reduced top padding - content closer to subheader */
+  margin-top: 0;
   min-height: auto;
   align-items: start;
 }
