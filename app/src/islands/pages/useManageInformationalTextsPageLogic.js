@@ -76,19 +76,23 @@ export default function useManageInformationalTextsPageLogic() {
 
   /**
    * Call the Edge Function with an action
+   * Soft headers: token is optional for internal pages
    */
   async function callEdgeFunction(action, payload = {}) {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('You must be logged in to perform this action');
+
+    // Build headers with apikey (required) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+    };
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
     }
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/informational-texts`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 
