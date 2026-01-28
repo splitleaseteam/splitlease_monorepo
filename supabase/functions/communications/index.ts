@@ -165,7 +165,7 @@ Deno.serve(async (req: Request) => {
   let action = 'unknown';
 
   try {
-    console.log(`[communications] ========== NEW REQUEST ==========`);
+    console.log(`[communications] ========== NEW REQUEST (v2) ==========`);
     console.log(`[communications] Method: ${req.method}`);
     console.log(`[communications] URL: ${req.url}`);
 
