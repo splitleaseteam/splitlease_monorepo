@@ -16,6 +16,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import MatchReasonCard from './MatchReasonCard.jsx';
 import NegotiationSummarySection from './NegotiationSummarySection.jsx';
 import CounterofferSummarySection from './CounterofferSummarySection.jsx';
+import NarrativeGuestProposalBody from './NarrativeGuestProposalBody.jsx';
 import {
   DAY_ABBREVS,
   DAY_NAMES,
@@ -759,24 +760,84 @@ export default function ExpandableProposalCard({
         hidden={!isExpanded && contentHeight === 0}
       >
         <div ref={contentRef} className="epc-content">
-          {/* Match Reason Card for SL-suggested proposals */}
-          {isSuggested && <MatchReasonCard proposal={proposal} />}
+          {/* Mobile Narrative View - CSS shows only on ≤640px */}
+          <NarrativeGuestProposalBody
+            proposal={proposal}
+            onViewListing={() => window.open(getListingUrlWithProposalContext(listing?._id, {
+              daysSelected: parseDaysSelectedForContext(proposal),
+              reservationSpan: getEffectiveReservationSpan(proposal),
+              moveInDate: proposal['Move in range start']
+            }), '_blank')}
+          >
+            {/* Action buttons for narrative view */}
+            <div className="epc-actions-row">
+              {buttonConfig?.guestAction1?.visible && (
+                buttonConfig.guestAction1.action === 'go_to_leases' ? (
+                  <a href="/my-leases" className="epc-btn epc-btn--primary">
+                    {buttonConfig.guestAction1.label}
+                  </a>
+                ) : (
+                  <button
+                    className={`epc-btn ${buttonConfig.guestAction1.action === 'delete_proposal' ? 'epc-btn--danger' : 'epc-btn--primary'}`}
+                    disabled={buttonConfig.guestAction1.action === 'confirm_proposal' && isConfirming}
+                    onClick={() => {
+                      if (buttonConfig.guestAction1.action === 'modify_proposal') {
+                        setProposalDetailsModalInitialView('pristine');
+                        setShowProposalDetailsModal(true);
+                      } else if (buttonConfig.guestAction1.action === 'submit_rental_app') {
+                        goToRentalApplication(proposal._id);
+                      } else if (buttonConfig.guestAction1.action === 'delete_proposal') {
+                        handleDeleteProposal();
+                      } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
+                        handleConfirmProposal();
+                      }
+                    }}
+                  >
+                    {buttonConfig.guestAction1.label}
+                  </button>
+                )
+              )}
+              {buttonConfig?.cancelButton?.visible && (
+                <button
+                  className={`epc-btn ${
+                    buttonConfig.cancelButton.action === 'delete_proposal' ? 'epc-btn--danger' :
+                    'epc-btn--ghost'
+                  }`}
+                  disabled={buttonConfig.cancelButton.disabled}
+                  onClick={() => {
+                    if (buttonConfig.cancelButton.action === 'delete_proposal') {
+                      handleDeleteProposal();
+                    } else if (['cancel_proposal', 'reject_counteroffer', 'reject_proposal'].includes(buttonConfig.cancelButton.action)) {
+                      setShowCancelModal(true);
+                    }
+                  }}
+                >
+                  {buttonConfig.cancelButton.label}
+                </button>
+              )}
+            </div>
+          </NarrativeGuestProposalBody>
 
-          {/* Negotiation Summary Section - for all proposals with summaries */}
-          {negotiationSummaries.length > 0 && (
-            <NegotiationSummarySection summaries={negotiationSummaries} />
-          )}
+          {/* Desktop/Tablet Structured View - CSS shows only on >640px */}
+          <div className="epc-structured-body">
+            {/* Match Reason Card for SL-suggested proposals */}
+            {isSuggested && <MatchReasonCard proposal={proposal} />}
 
-          {/* Counteroffer Summary Section - for proposals with host counteroffer */}
-          {isCounteroffer && counterofferSummary && (
-            <CounterofferSummarySection summary={counterofferSummary} />
-          )}
+            {/* Negotiation Summary Section - for all proposals with summaries */}
+            {negotiationSummaries.length > 0 && (
+              <NegotiationSummarySection summaries={negotiationSummaries} />
+            )}
 
-          {/* Status Banner */}
-          <StatusBanner status={status} cancelReason={cancelReason} isCounteroffer={isCounteroffer} />
+            {/* Counteroffer Summary Section - for proposals with host counteroffer */}
+            {isCounteroffer && counterofferSummary && (
+              <CounterofferSummarySection summary={counterofferSummary} />
+            )}
 
-          {/* Detail Header */}
-          <div className="epc-detail-header">
+            {/* Status Banner */}
+            <StatusBanner status={status} cancelReason={cancelReason} isCounteroffer={isCounteroffer} />
+
+            {/* Detail Header */}
+            <div className="epc-detail-header">
             <div className="epc-detail-title-area">
               <div className="epc-detail-title">{listingName}</div>
               <div className="epc-detail-location">{location}</div>
@@ -1059,6 +1120,7 @@ export default function ExpandableProposalCard({
               </button>
             )}
           </div>
+          </div>{/* End .epc-structured-body */}
         </div>
       </div>
 

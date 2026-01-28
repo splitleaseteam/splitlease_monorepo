@@ -62,7 +62,7 @@ export function NarrativeProposalBody({ proposal, handlers = {}, onViewProfile }
         </p>
       </div>
 
-      {/* Guest context - compact */}
+      {/* Guest context - simplified: just name + profile link */}
       <div className="hp7-narrative-guest">
         {guestContext.avatar ? (
           <img
@@ -76,7 +76,8 @@ export function NarrativeProposalBody({ proposal, handlers = {}, onViewProfile }
           </div>
         )}
         <p className="hp7-narrative-guest-text">
-          {guestContext.text}{' '}
+          <strong>{guestContext.firstName}</strong>
+          {' · '}
           <button
             type="button"
             className="hp7-narrative-link"
