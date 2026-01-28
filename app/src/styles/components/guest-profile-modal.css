@@ -1,0 +1,141 @@
+/**
+ * Guest Profile Modal Styles - v1.0 PROTOCOL REDESIGN
+ *
+ * Design: POPUP_REPLICATION_PROTOCOL - Monochromatic purple
+ * Uses protocol base classes from protocol-modal.css
+ * This file only contains component-specific overrides
+ * Based on host-profile-modal.css pattern
+ */
+
+/* ============================================================================
+   MODAL SIZE OVERRIDE
+   ============================================================================ */
+
+.guest-profile-modal {
+  max-width: 480px;
+}
+
+/* ============================================================================
+   GUEST SECTION - Photo & Info
+   ============================================================================ */
+
+.gpm-guest-section {
+  display: flex;
+  gap: var(--protocol-space-lg);
+  padding-bottom: var(--protocol-space-lg);
+  border-bottom: 1px solid var(--protocol-surface);
+  margin-bottom: var(--protocol-space-lg);
+}
+
+/* Guest Photo */
+.gpm-guest-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--protocol-border);
+}
+
+/* Guest Info */
+.gpm-guest-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.gpm-guest-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--protocol-primary);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.gpm-review-count {
+  font-size: 13px;
+  color: var(--protocol-text-muted);
+  margin-bottom: 12px;
+}
+
+/* ============================================================================
+   VERIFICATION BADGES (Simplified - Only show verified items)
+   ============================================================================ */
+
+.gpm-verification-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gpm-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--protocol-surface);
+  border: 1px solid var(--protocol-action);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--protocol-action);
+}
+
+.gpm-verified-badge svg {
+  color: var(--protocol-action);
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   GUEST INFO SECTIONS (Bio, Need for Space, Special Requests)
+   ============================================================================ */
+
+.gpm-section {
+  padding-bottom: var(--protocol-space-lg);
+  border-bottom: 1px solid var(--protocol-surface);
+  margin-bottom: var(--protocol-space-lg);
+}
+
+.gpm-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.gpm-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--protocol-primary);
+  margin-bottom: 10px;
+}
+
+.gpm-section-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--protocol-text-secondary);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN - Mobile Bottom Sheet adjustments
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  .gpm-guest-section {
+    gap: var(--protocol-space-md);
+  }
+
+  .gpm-guest-photo {
+    width: 68px;
+    height: 68px;
+  }
+
+  .gpm-guest-name {
+    font-size: 16px;
+  }
+
+  .gpm-section-content {
+    font-size: 13px;
+  }
+}

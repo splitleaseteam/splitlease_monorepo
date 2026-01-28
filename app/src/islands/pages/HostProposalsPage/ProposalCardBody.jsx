@@ -9,7 +9,7 @@
  * - InfoGrid (always)
  * - DayPillsRow (always, hidden on mobile)
  * - PricingRow (always)
- * - ProgressTrackerV7 (only for accepted proposals)
+ * - ProgressTrackerV7 (always - matches guest proposals behavior)
  * - ActionButtonsRow (always)
  *
  * On mobile (≤640px), renders NarrativeProposalBody instead of structured layout.
@@ -144,7 +144,7 @@ export function ProposalCardBody({ proposal, handlers = {} }) {
         {/* Pricing - Always shown */}
         <PricingRow proposal={proposal} isDeclined={declined} />
 
-        {/* Progress Tracker - Only for accepted proposals */}
+        {/* Progress Tracker - Always shown (matches guest proposals) */}
         <ProgressTrackerV7 proposal={proposal} />
 
         {/* Action Buttons - Always shown */}
