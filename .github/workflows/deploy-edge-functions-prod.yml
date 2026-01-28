@@ -29,6 +29,14 @@ jobs:
         with:
           fetch-depth: 2  # Need previous commit for diff
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: SYSTEM CHECK - Edge Function Registry Sync
+        run: node supabase/scripts/sync-edge-functions.js
+
       - name: Make scripts executable
         run: chmod +x .github/scripts/*.sh
 

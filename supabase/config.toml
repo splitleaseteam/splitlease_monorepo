@@ -497,3 +497,140 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/identity-verification/deno.json"
 entrypoint = "./functions/identity-verification/index.ts"
+
+[functions.ai-room-redesign]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/ai-room-redesign/deno.json"
+entrypoint = "./functions/ai-room-redesign/index.ts"
+
+[functions.ai-tools]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/ai-tools/deno.json"
+entrypoint = "./functions/ai-tools/index.ts"
+
+[functions.backfill-negotiation-summaries]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/backfill-negotiation-summaries/index.ts"
+
+[functions.co-host-requests]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/co-host-requests/deno.json"
+entrypoint = "./functions/co-host-requests/index.ts"
+
+[functions.document]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/document/deno.json"
+entrypoint = "./functions/document/index.ts"
+
+[functions.emergency]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/emergency/index.ts"
+
+[functions.experience-survey]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/experience-survey/index.ts"
+
+[functions.guest-management]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/guest-management/index.ts"
+
+[functions.informational-texts]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/informational-texts/deno.json"
+entrypoint = "./functions/informational-texts/index.ts"
+
+[functions.lease]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/lease/deno.json"
+entrypoint = "./functions/lease/index.ts"
+
+[functions.leases-admin]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/leases-admin/deno.json"
+entrypoint = "./functions/leases-admin/index.ts"
+
+[functions.magic-login-links]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/magic-login-links/deno.json"
+entrypoint = "./functions/magic-login-links/index.ts"
+
+[functions.pricing-admin]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/pricing-admin/index.ts"
+
+[functions.pricing-list]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/pricing-list/index.ts"
+
+[functions.qr-codes]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/qr-codes/index.ts"
+
+[functions.query-leo]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/query-leo/index.ts"
+
+[functions.quick-match]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/quick-match/deno.json"
+entrypoint = "./functions/quick-match/index.ts"
+
+[functions.reminder-scheduler]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/reminder-scheduler/index.ts"
+
+[functions.rental-applications]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/rental-applications/deno.json"
+entrypoint = "./functions/rental-applications/index.ts"
+
+[functions.reviews-overview]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/reviews-overview/index.ts"
+
+[functions.simulation-admin]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/simulation-admin/index.ts"
+
+[functions.simulation-guest]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/simulation-guest/index.ts"
+
+[functions.simulation-host]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/simulation-host/deno.json"
+entrypoint = "./functions/simulation-host/index.ts"
+
+[functions.usability-data-admin]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+entrypoint = "./functions/usability-data-admin/index.ts"
+
+[functions.verify-users]
+enabled = true
+verify_jwt = false  # Review: Should this require authentication?
+import_map = "./functions/verify-users/deno.json"
+entrypoint = "./functions/verify-users/index.ts"
