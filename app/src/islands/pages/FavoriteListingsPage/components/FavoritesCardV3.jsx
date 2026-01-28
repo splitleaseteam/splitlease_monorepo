@@ -135,7 +135,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
       boxShadow: TOKENS.shadows.lg,
       padding: TOKENS.spacing.lg,
       minWidth: '180px',
-      zIndex: 100,
+      zIndex: 9999,
     },
     popupText: {
       fontSize: TOKENS.fontSize.base,
