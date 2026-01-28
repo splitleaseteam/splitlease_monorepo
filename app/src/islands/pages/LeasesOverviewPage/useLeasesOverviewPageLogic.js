@@ -101,7 +101,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
       const { data: { session } } = await supabase.auth.getSession();
       accessToken = session?.access_token || '';
     } catch {
-      // Silently ignore auth errors - we'll use anon key
+      void 0; // Silently ignore auth errors - we'll use anon key
     }
 
     return {

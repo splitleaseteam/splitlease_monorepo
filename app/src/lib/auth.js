@@ -945,7 +945,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
             logger.error('   Detailed error from response:', errorBody.error);
           }
         } catch (_parseErr) {
-          // Silent - just for logging
+          void 0; // Silent - just for logging
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -957,7 +957,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
             logger.error('   Detailed error from response:', errorBody.error);
           }
         } catch (_parseErr) {
-          // Silent - just for logging
+          void 0; // Silent - just for logging
         }
       }
 
@@ -1323,7 +1323,7 @@ export async function updatePassword(newPassword) {
             errorMessage = errorBody.error;
           }
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -1335,7 +1335,7 @@ export async function updatePassword(newPassword) {
             errorMessage = errorBody.error;
           }
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       }
 

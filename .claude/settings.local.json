@@ -54,5 +54,5 @@
   "enabledPlugins": {
     "supabase@claude-plugins-official": true
   },
-  "outputStyle": "Explanatory"
+  "outputStyle": "Completion Summary"
 }

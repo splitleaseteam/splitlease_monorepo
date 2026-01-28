@@ -62,7 +62,7 @@ export default function EmergencyDetails({
     try {
       await onUpdateVisibility(emergency.id, !emergency.is_hidden);
     } catch {
-      // Error handled in hook
+      void 0; // Error handled in hook
     }
   };
 
