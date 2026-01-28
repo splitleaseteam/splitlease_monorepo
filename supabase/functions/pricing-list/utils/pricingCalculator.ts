@@ -18,7 +18,7 @@ const PRICING_CONSTANTS = {
   FULL_TIME_NIGHTS_THRESHOLD: 7,
   PRICING_LIST_ARRAY_LENGTH: 7,
   DEFAULT_UNIT_MARKUP: 0,
-  DEFAULT_UNUSED_NIGHTS_DISCOUNT: 0.05,
+  UNUSED_NIGHTS_DISCOUNT_MULTIPLIER: 0.03,
 } as const;
 
 // ─────────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@ function calculateHostCompensationArray(listing: Listing): (number | null)[] {
 }
 
 function calculateUnusedNightsDiscountArray(
-  baseDiscount: number = PRICING_CONSTANTS.DEFAULT_UNUSED_NIGHTS_DISCOUNT
+  discountMultiplier: number = PRICING_CONSTANTS.UNUSED_NIGHTS_DISCOUNT_MULTIPLIER
 ): number[] {
   const maxNights = PRICING_CONSTANTS.PRICING_LIST_ARRAY_LENGTH;
   const discountArray: number[] = [];
@@ -105,9 +105,8 @@ function calculateUnusedNightsDiscountArray(
     const nightsBooked = nightIndex + 1;
     const unusedNights = maxNights - nightsBooked;
 
-    const discount = unusedNights > 0
-      ? baseDiscount * (unusedNights / (maxNights - 1))
-      : 0;
+    // LINEAR formula: unusedNights * multiplier
+    const discount = unusedNights * discountMultiplier;
 
     discountArray.push(roundToFourDecimals(discount));
   }
@@ -135,7 +134,9 @@ function calculateMarkupAndDiscountMultipliersArray(
     const unusedDiscount = unusedNightsDiscounts[nightIndex] || 0;
     const applicableFullTimeDiscount = nightIndex === fullTimeNightIndex ? fullTimeDiscount : 0;
     const totalDiscount = unusedDiscount + applicableFullTimeDiscount;
-    const multiplier = (1 + combinedMarkup) * (1 - totalDiscount);
+
+    // Additive formula: 1 + markup - discount
+    const multiplier = 1 + combinedMarkup - totalDiscount;
 
     multipliersArray.push(roundToFourDecimals(multiplier));
   }
