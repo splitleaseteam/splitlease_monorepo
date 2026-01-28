@@ -186,15 +186,16 @@ export default function useModifyListingsPageLogic() {
 
   async function loadAmenities() {
     try {
+      // Column names with spaces need quotes in both select and filter
       const { data: inUnit } = await supabase
         .from('zat_features_amenity')
         .select('_id, Name, "Type - Amenity Categories"')
-        .eq('Type - Amenity Categories', 'In Unit');
+        .eq('"Type - Amenity Categories"', 'In Unit');
 
       const { data: inBuilding } = await supabase
         .from('zat_features_amenity')
         .select('_id, Name, "Type - Amenity Categories"')
-        .eq('Type - Amenity Categories', 'In Building');
+        .eq('"Type - Amenity Categories"', 'In Building');
 
       setAmenitiesInUnit(inUnit || []);
       setAmenitiesInBuilding(inBuilding || []);
