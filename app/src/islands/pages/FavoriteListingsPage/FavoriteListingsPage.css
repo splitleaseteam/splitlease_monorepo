@@ -212,7 +212,7 @@ body::-webkit-scrollbar,
   /* Force content to top - no internal spacing */
   padding: 0 !important;
   margin: 0;
-  margin-top: 12px !important; /* Slight offset from subheader for visual alignment */
+  margin-top: 14px !important; /* Slight offset from subheader for visual alignment */
   justify-content: flex-start;
   align-items: stretch;
   /* Align to top of grid cell */
