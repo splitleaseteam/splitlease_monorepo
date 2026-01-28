@@ -29,8 +29,8 @@ export const PRICING_CONSTANTS = {
   /** Default unit-level markup (individual listing) */
   DEFAULT_UNIT_MARKUP: 0,
 
-  /** Default discount for unused nights */
-  DEFAULT_UNUSED_NIGHTS_DISCOUNT: 0.05,
+  /** Default discount multiplier for unused nights */
+  UNUSED_NIGHTS_DISCOUNT_MULTIPLIER: 0.03,
 
   /** Minimum index for pricing array (0 = 1 night) */
   PRICING_ARRAY_MIN_INDEX: 0,
