@@ -191,6 +191,23 @@
   background: transparent;
 }
 
+/* V6 Cards - Ensure edge-to-edge images (no inherited padding) */
+.v6-listings-grid article {
+  padding: 0 !important;
+  margin: 0;
+}
+
+.v6-listings-grid article > div:first-child {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.v6-listings-grid article img {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
 /* ============================================
    LISTINGS GRID (NEW)
    ============================================ */

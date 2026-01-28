@@ -270,16 +270,23 @@ const FavoritesCardV3 = ({
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       border: `1px solid ${TOKENS.colors.border}`,
       boxSizing: 'border-box',
+      margin: 0,
+      padding: 0,
     },
 
-    // HERO SECTION - Edge-to-edge image (no padding)
+    // HERO SECTION - Edge-to-edge image (absolutely no padding/margin)
     heroSection: {
       position: 'relative',
+      margin: 0,
+      padding: 0,
     },
     heroWrapper: {
       position: 'relative',
       overflow: 'hidden',
       aspectRatio: '16 / 10',
+      margin: 0,
+      padding: 0,
+      // No border-radius here - let card's overflow:hidden handle clipping
     },
     heroImage: {
       width: '100%',
@@ -287,6 +294,9 @@ const FavoritesCardV3 = ({
       objectFit: 'cover',
       transition: 'transform 0.3s ease',
       transform: isHovered && !isTouchDevice ? 'scale(1.02)' : 'scale(1)',
+      display: 'block',
+      margin: 0,
+      padding: 0,
     },
     heroOverlay: {
       position: 'absolute',
