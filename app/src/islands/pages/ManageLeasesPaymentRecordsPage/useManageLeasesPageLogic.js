@@ -17,7 +17,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { adaptLeaseFromSupabase } from '../../../logic/processors/leases/adaptLeaseFromSupabase.js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Get dev project credentials from .env or hardcode for reliability
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
 
 export function useManageLeasesPageLogic({ showToast }) {
   // ============================================================================
@@ -54,7 +56,7 @@ export function useManageLeasesPageLogic({ showToast }) {
   const [error, setError] = useState(null);
 
   // ============================================================================
-  // AUTH SETUP
+  // AUTH SETUP (OPTIONAL - internal page uses soft headers pattern)
   // ============================================================================
   useEffect(() => {
     const loadAuth = async () => {
@@ -63,20 +65,16 @@ export function useManageLeasesPageLogic({ showToast }) {
         const token = session?.access_token || localStorage.getItem('sl_auth_token') || '';
         setAccessToken(token);
 
-        // Any authenticated user on this internal page is treated as admin
-        // Real admin check would verify user metadata or admin table
-        setIsAdmin(!!token);
+        // Internal admin page - always treat as admin (soft headers pattern)
+        // Authentication is optional; backend uses service role
+        setIsAdmin(true);
 
-        if (token) {
-          await fetchLeases(token);
-        } else {
-          setError('Authentication required');
-          setIsLoading(false);
-        }
+        // Always fetch leases - authentication is optional
+        await fetchLeases();
       } catch (err) {
-        console.error('[ManageLeases] Auth failed:', err);
-        setError('Authentication failed');
-        setIsLoading(false);
+        console.error('[ManageLeases] Auth check failed:', err);
+        // Still try to fetch leases without auth
+        await fetchLeases();
       }
     };
 
@@ -84,17 +82,23 @@ export function useManageLeasesPageLogic({ showToast }) {
   }, []);
 
   // ============================================================================
-  // API HELPERS
+  // API HELPERS (Soft Headers Pattern - always include apikey + Authorization)
   // ============================================================================
-  const buildHeaders = useCallback(() => ({
-    'Content-Type': 'application/json',
-    ...(accessToken && { Authorization: `Bearer ${accessToken}` })
-  }), [accessToken]);
-
   const callEdgeFunction = useCallback(async (action, payload = {}) => {
+    // Get fresh session for each call
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // Build headers with soft headers pattern
+    // For unauthenticated requests, use anon key in Authorization header
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`
+    };
+
     const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
       method: 'POST',
-      headers: buildHeaders(),
+      headers,
       body: JSON.stringify({ action, payload })
     });
 
@@ -106,12 +110,12 @@ export function useManageLeasesPageLogic({ showToast }) {
     }
 
     return result.data;
-  }, [buildHeaders]);
+  }, []);
 
   // ============================================================================
   // DATA FETCHING
   // ============================================================================
-  const fetchLeases = useCallback(async (token) => {
+  const fetchLeases = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -474,8 +478,8 @@ export function useManageLeasesPageLogic({ showToast }) {
 
   const handleRetry = useCallback(() => {
     setError(null);
-    fetchLeases(accessToken);
-  }, [accessToken, fetchLeases]);
+    fetchLeases();
+  }, [fetchLeases]);
 
   // ============================================================================
   // RETURN API

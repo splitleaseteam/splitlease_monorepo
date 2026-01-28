@@ -21,6 +21,7 @@ import { supabase } from '../../../lib/supabase';
 import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const PAGE_SIZE = 25;
 
 // NYC Boroughs for filter dropdown
@@ -41,19 +42,20 @@ const RENTAL_TYPES = [
 
 /**
  * Adapt listing from Supabase format to frontend-friendly format
+ * Column names match actual database schema
  */
 function adaptListingFromSupabase(raw) {
   const host = raw.host || {};
 
   return {
     id: raw._id,
-    name: raw['🏷Name'] || 'Untitled Listing',
-    active: raw['✅Active'] ?? false,
-    rentalType: raw['🏠Rental Type'] || '',
-    borough: raw['📍Borough'] || '',
-    neighborhood: raw['📍Neighborhood'] || '',
+    name: raw['Name'] || 'Untitled Listing',
+    active: raw['Active'] ?? false,
+    rentalType: raw['rental type'] || '',
+    borough: raw['Location - Borough'] || '',
+    neighborhood: raw['Location - Hood'] || '',
 
-    // Pricing fields
+    // Pricing fields (these columns have emoji prefixes in the database)
     unitMarkup: raw['💰Unit Markup'],
     weeklyHostRate: raw['💰Weekly Host Rate'],
     monthlyHostRate: raw['💰Monthly Host Rate'],
@@ -68,10 +70,10 @@ function adaptListingFromSupabase(raw) {
     priceOverride: raw['💰Price Override'],
     extraCharges: raw['💰Extra Charges'],
 
-    // Host info
+    // Host info (host is fetched separately and enriched by edge function)
     hostId: host._id || null,
     hostEmail: host.email || '',
-    hostName: `${host['First Name'] || ''} ${host['Last Name'] || ''}`.trim() || 'Unknown Host',
+    hostName: `${host.name_first || ''} ${host.name_last || ''}`.trim() || 'Unknown Host',
 
     // Dates
     createdAt: raw['Created Date'] ? new Date(raw['Created Date']) : null,
@@ -144,7 +146,11 @@ export function useQuickPricePageLogic({ showToast }) {
   }, []);
 
   const buildHeaders = useCallback(() => {
-    const headers = { 'Content-Type': 'application/json' };
+    // Build headers with apikey (required) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+    };
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -178,7 +184,7 @@ export function useQuickPricePageLogic({ showToast }) {
       const sortFieldMap = {
         createdAt: 'Created Date',
         modifiedAt: 'Modified Date',
-        name: '🏷Name',
+        name: 'Name',
         priceOverride: '💰Price Override',
         weeklyHostRate: '💰Weekly Host Rate',
       };
