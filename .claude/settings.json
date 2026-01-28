@@ -1,4 +1,4 @@
- {
+{
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
@@ -30,7 +30,7 @@
     "feature-dev@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": false,
     "ralph-loop@claude-plugins-official": true,
-    "hookify@claude-plugins-official": false,
+    "hookify@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true
   }
