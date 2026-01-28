@@ -2,7 +2,7 @@
  * ProgressTrackerV7 Component (V7 Design)
  *
  * Horizontal progress steps for ALL proposals (matches guest proposals page):
- * - Steps: Submitted → Application → Review → Accepted → Signing → Active
+ * - Steps: Proposal submitted → Rental App Submitted → Edit/Review Proposal → Review Documents → Lease documents → Initial Payment
  * - Completed steps: purple dot + line
  * - Current step: green dot
  * - Future steps: gray dot + line
@@ -16,7 +16,7 @@ import { getStatusConfig, isCompletedStatus } from '../../../logic/constants/pro
 /**
  * Progress stages matching guest proposals page
  */
-const PROGRESS_STAGES = ['Submitted', 'Application', 'Review', 'Accepted', 'Signing', 'Active'];
+const PROGRESS_STAGES = ['Proposal submitted', 'Rental App Submitted', 'Edit/Review Proposal', 'Review Documents', 'Lease documents', 'Initial Payment'];
 
 /**
  * Progress bar colors matching guest proposals
