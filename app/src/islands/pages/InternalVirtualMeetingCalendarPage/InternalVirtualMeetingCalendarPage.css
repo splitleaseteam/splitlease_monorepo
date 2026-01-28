@@ -1,0 +1,445 @@
+/**
+ * Internal Virtual Meeting Calendar Page Styles
+ * Split Lease - Calendar Automation Dashboard
+ */
+
+/* ================================================
+   PAGE LAYOUT
+   ================================================ */
+
+.internal-virtual-meeting-calendar-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.calendar-automation-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.calendar-automation-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ================================================
+   HEADER
+   ================================================ */
+
+.calendar-automation-header {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-automation-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  color: #1a1a1a;
+}
+
+.calendar-automation-header .subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* ================================================
+   ALERT
+   ================================================ */
+
+.alert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.alert--success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert--error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-message {
+  flex: 1;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1rem;
+}
+
+/* ================================================
+   STATUS DISPLAY
+   ================================================ */
+
+.status-display {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.status-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.stat-item--pending .stat-value {
+  color: #ffc107;
+}
+
+.stat-item--in-progress .stat-value {
+  color: #17a2b8;
+}
+
+.stat-item--complete .stat-value {
+  color: #28a745;
+}
+
+.stat-item--error .stat-value {
+  color: #dc3545;
+}
+
+.status-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-filters label {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.status-filter-select {
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* ================================================
+   MEETING LIST
+   ================================================ */
+
+.meeting-list {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.meeting-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.meeting-list-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1a1a1a;
+}
+
+.meeting-list-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #666;
+}
+
+/* ================================================
+   MEETING CARD
+   ================================================ */
+
+.meeting-card {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.meeting-card:last-child {
+  border-bottom: none;
+}
+
+.meeting-card:hover {
+  background-color: #f9f9f9;
+}
+
+.meeting-card--selected {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.meeting-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.meeting-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.meeting-card-title h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge--pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge--in-progress {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-badge--complete {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge--error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.meeting-link {
+  padding: 0.5rem 1rem;
+  background-color: #2196f3;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.meeting-link:hover {
+  background-color: #1976d2;
+}
+
+.meeting-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.meeting-card-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.meeting-card-label {
+  font-weight: 500;
+  color: #666;
+  min-width: 80px;
+}
+
+.meeting-card-value {
+  color: #1a1a1a;
+}
+
+.meeting-card-error {
+  padding: 0.75rem;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.meeting-card-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ================================================
+   BUTTONS
+   ================================================ */
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
+.btn--secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.btn--link {
+  background: none;
+  color: #2196f3;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* ================================================
+   LOADING & ERROR STATES
+   ================================================ */
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-state h2 {
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+}
+
+.error-message {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+
+@media (max-width: 768px) {
+  .calendar-automation-main {
+    padding: 1rem;
+  }
+
+  .status-display {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-stats {
+    gap: 1rem;
+  }
+
+  .meeting-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .meeting-card-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

@@ -631,6 +631,17 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== VIRTUAL MEETING CALENDAR AUTOMATION (INTERNAL) =====
+  {
+    path: '/_internal/virtual-meeting-calendar',
+    file: 'internal-virtual-meeting-calendar.html',
+    aliases: ['/_internal/virtual-meeting-calendar.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'virtual-meeting-calendar-view',
+    hasDynamicSegment: false
+  },
+
   // ===== ADMIN THREADS MANAGEMENT =====
   {
     path: '/_admin-threads',
