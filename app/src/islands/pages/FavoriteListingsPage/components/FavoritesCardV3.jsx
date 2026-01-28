@@ -274,11 +274,12 @@ const FavoritesCardV3 = ({
       padding: 0,
     },
 
-    // HERO SECTION - Edge-to-edge image (absolutely no padding/margin)
+    // HERO SECTION - With padding around image
     heroSection: {
       position: 'relative',
       margin: 0,
-      padding: 0,
+      padding: TOKENS.spacing.md, // 12px padding around the image
+      paddingBottom: 0, // No bottom padding - content section handles that
     },
     heroWrapper: {
       position: 'relative',
@@ -286,7 +287,7 @@ const FavoritesCardV3 = ({
       aspectRatio: '16 / 10',
       margin: 0,
       padding: 0,
-      // No border-radius here - let card's overflow:hidden handle clipping
+      borderRadius: TOKENS.radius.md, // 12px rounded corners on the image container
     },
     heroImage: {
       width: '100%',
