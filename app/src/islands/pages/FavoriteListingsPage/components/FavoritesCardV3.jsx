@@ -111,6 +111,7 @@ const FavoriteButton = ({ onConfirmRemove, style }) => {
   const styles = {
     container: {
       position: 'relative',
+      zIndex: showConfirm ? 9999 : 'auto', // Lift above sibling cards when popup shown
       ...style,
     },
     button: {
