@@ -76,37 +76,26 @@ def extract_info_from_transcript(transcript_path):
         if not last_text:
             return user_prompt, None
 
-        # Extract multiple sentences/paragraphs for more detail
+        # Extract just the first 1-2 meaningful sentences (max 200 chars for conciseness)
         lines = last_text.split('\n')
-        summary_parts = []
-        char_count = 0
-        max_chars = 600
 
         for line in lines:
             line = line.strip()
 
-            if not line or line.startswith('#') or len(line) < 10:
+            # Skip headers, bullets, code blocks, very short lines
+            if not line or line.startswith('#') or line.startswith('-') or line.startswith('*') or line.startswith('```') or len(line) < 15:
                 continue
 
-            if line.startswith('```') or line.startswith('~~~'):
-                continue
+            # Clean markdown
+            clean_line = line.replace('**', '').replace('`', '').strip()
 
-            clean_line = line.replace('**', '').replace('*', '').replace('`', '')
+            # Take first substantial line, limit to 200 chars
+            if len(clean_line) > 200:
+                clean_line = clean_line[:197] + "..."
 
-            if char_count + len(clean_line) <= max_chars:
-                summary_parts.append(clean_line)
-                char_count += len(clean_line)
-            else:
-                remaining = max_chars - char_count
-                if remaining > 50:
-                    summary_parts.append(clean_line[:remaining-3] + "...")
-                break
+            return user_prompt, clean_line
 
-            if len(summary_parts) >= 5 and char_count > 300:
-                break
-
-        summary = ' '.join(summary_parts) if summary_parts else None
-        return user_prompt, summary
+        return user_prompt, None
 
     except Exception as e:
         return None, None
