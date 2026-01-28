@@ -160,14 +160,16 @@
   padding-top: 0;
 }
 
-/* V6 Design: Sticky map column with premium styling
-   Matches V6 WCAG mockup: 2px border, 20px radius, proper shadow */
+/* V6 Design: Map column with premium styling
+   Matches V6 WCAG mockup: 2px border, 20px radius, proper shadow
+   NOTE: Sticky disabled temporarily for debugging alignment */
 .favorites-page .map-column {
   width: 380px;
   flex-shrink: 0;
-  position: sticky;
-  top: 160px; /* Below subheader (80px top + 72px height + 8px gap) */
-  height: calc(100vh - 180px);
+  /* Sticky disabled for debugging - uncomment when alignment is fixed */
+  /* position: sticky; */
+  /* top: 152px; */
+  height: calc(100vh - 200px);
   background: white;
   border-radius: 20px; /* V6: --radius-xl */
   overflow: hidden;
@@ -178,6 +180,7 @@
   /* Force content to top - no internal spacing */
   padding: 0 !important;
   margin: 0;
+  margin-top: 0 !important;
   justify-content: flex-start;
   align-items: stretch;
   /* Align to top of grid cell */
@@ -185,15 +188,24 @@
   box-sizing: border-box;
 }
 
-/* Ensure all children have no top spacing */
+/* Ensure all children have no top margin */
 .favorites-page .map-column > * {
   margin-top: 0 !important;
-  padding-top: 0;
 }
 
-/* Ensure first child (v6-map-header) is flush to top */
-.favorites-page .map-column > *:first-child {
-  margin-top: 0 !important;
+/* Remove any pseudo-elements that might add space */
+.favorites-page .map-column::before,
+.favorites-page .map-column::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* GoogleMap container - no padding, fills remaining space */
+.favorites-page .map-column > .google-map-container {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .favorites-page .map-column:hover {
