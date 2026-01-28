@@ -13,11 +13,12 @@
    ============================================ */
 .favorites-subheader {
   position: sticky;
-  top: 80px; /* Below main header */
+  top: 80px; /* Below main header when sticky */
   z-index: 50;
   background: white;
   border-bottom: 1px solid #E8ECF0;
   padding: 0 24px;
+  margin-top: 80px; /* Push below fixed header - header is 80px tall */
 }
 
 .favorites-subheader__inner {
@@ -149,7 +150,8 @@
   gap: 24px; /* V6 spec: --gap-sections */
   max-width: 1500px; /* V6 spec: max-width for content */
   margin: 0 auto;
-  padding: 24px 24px 300px;
+  padding: 24px 24px 300px; /* Side and bottom padding */
+  margin-top: 0; /* No extra margin - subheader is NOT sticky initially */
   min-height: auto;
   align-items: start;
 }
@@ -599,6 +601,7 @@
 @media (max-width: 1024px) {
   .favorites-subheader {
     top: 60px; /* Smaller header on tablet */
+    margin-top: 60px; /* Match smaller header height */
   }
 
   .favorites-subheader__inner {
@@ -622,6 +625,7 @@
 @media (max-width: 768px) {
   .favorites-subheader {
     top: 60px;
+    margin-top: 60px; /* Match smaller header height */
     padding: 0 16px;
   }
 
