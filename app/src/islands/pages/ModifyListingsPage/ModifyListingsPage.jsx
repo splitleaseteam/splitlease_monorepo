@@ -92,7 +92,7 @@ export default function ModifyListingsPage() {
                       {result.Name || 'Unnamed Listing'}
                     </span>
                     <span className="modify-listings-page__search-result-address">
-                      {result['Address - Full Street Address'] || 'No address'}
+                      {result['Location - Address']?.address || 'No address'}
                     </span>
                   </div>
                   <div className="modify-listings-page__search-result-status">

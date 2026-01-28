@@ -63,7 +63,7 @@ const SEARCH_DEBOUNCE_MS = 300; // 300ms debounce for search
 const LISTING_SELECT_FIELDS = `
   _id,
   Name,
-  "Address - Full Street Address",
+  "Location - Address",
   Active,
   Approved,
   "Host email",
@@ -188,13 +188,13 @@ export default function useModifyListingsPageLogic() {
     try {
       const { data: inUnit } = await supabase
         .from('zat_features_amenity')
-        .select('_id, Name, "In unit?"')
-        .eq('In unit?', true);
+        .select('_id, Name, "Type - Amenity Categories"')
+        .eq('Type - Amenity Categories', 'In Unit');
 
       const { data: inBuilding } = await supabase
         .from('zat_features_amenity')
-        .select('_id, Name, "In unit?"')
-        .eq('In unit?', false);
+        .select('_id, Name, "Type - Amenity Categories"')
+        .eq('Type - Amenity Categories', 'In Building');
 
       setAmenitiesInUnit(inUnit || []);
       setAmenitiesInBuilding(inBuilding || []);
@@ -555,7 +555,7 @@ export default function useModifyListingsPageLogic() {
 
     return {
       address: {
-        isComplete: Boolean(listing.Name && listing['Address - Full Street Address']),
+        isComplete: Boolean(listing.Name && (listing['Location - Address']?.address || listing['street_address'])),
         hasChanges: false
       },
       features: {
