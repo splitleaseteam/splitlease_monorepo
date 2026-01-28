@@ -796,21 +796,21 @@
 .hp7-progress-row {
   display: flex;
   align-items: center;
-  padding: 14px 16px;
-  gap: 2px;
+  padding: 18px 18px;
+  gap: 4px;
   border-bottom: 1px solid var(--hp7-border-light);
 }
 
 .hp7-progress-step {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex: 1;
 }
 
 .hp7-progress-dot {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--hp7-border);
   flex-shrink: 0;
@@ -822,14 +822,14 @@
 
 .hp7-progress-step.current .hp7-progress-dot {
   background: var(--hp7-purple-primary);
-  width: 8px;
-  height: 8px;
-  box-shadow: 0 0 0 2px rgba(109, 49, 194, 0.2);
+  width: 14px;
+  height: 14px;
+  box-shadow: 0 0 0 3px rgba(109, 49, 194, 0.25);
 }
 
 .hp7-progress-line {
   flex: 1;
-  height: 1px;
+  height: 2px;
   background: var(--hp7-border);
 }
 
@@ -838,7 +838,7 @@
 }
 
 .hp7-progress-label {
-  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
+  font-size: var(--hp7-font-size-sm); /* 15px - improved readability */
   font-weight: 500;
   color: var(--hp7-text-muted);
   white-space: nowrap;
