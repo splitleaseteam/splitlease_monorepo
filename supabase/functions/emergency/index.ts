@@ -278,7 +278,7 @@ async function authenticateAdmin(
 
   const { data: userData, error: userError } = await serviceClient
     .from('user')
-    .select('_id, admin, email, "First name", "Last name"')
+    .select('_id, "Toggle - Is Admin", email, "Name - First", "Name - Last"')
     .eq('supabase_user_id', user.id)
     .single();
 
@@ -287,7 +287,7 @@ async function authenticateAdmin(
     return null;
   }
 
-  if (!userData.admin) {
+  if (!userData['Toggle - Is Admin']) {
     console.log('[emergency] User is not admin');
     return null;
   }
@@ -437,12 +437,12 @@ async function handleAssignEmergency(
 
   const { data: assignedUser, error: userError } = await supabase
     .from('user')
-    .select('_id, "First name", "Last name", email, admin')
+    .select('_id, "Name - First", "Name - Last", email, "Toggle - Is Admin"')
     .eq('_id', assignedToUserId)
     .single();
 
   if (userError || !assignedUser) throw new Error(`Assigned user not found: ${assignedToUserId}`);
-  if (!assignedUser.admin) throw new Error('Assigned user must be an admin');
+  if (!assignedUser['Toggle - Is Admin']) throw new Error('Assigned user must be an admin');
 
   const updateData: Record<string, unknown> = {
     assigned_to_user_id: assignedToUserId,
@@ -461,7 +461,7 @@ async function handleAssignEmergency(
 
   if (error) throw new Error(`Failed to assign emergency: ${error.message}`);
 
-  const assignedToName = `${assignedUser['First name'] || ''} ${assignedUser['Last name'] || ''}`.trim() || assignedUser.email;
+  const assignedToName = `${assignedUser['Name - First'] || ''} ${assignedUser['Name - Last'] || ''}`.trim() || assignedUser.email;
 
   sendToSlack('database', {
     text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${data.emergency_type}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${data.id}`,
@@ -779,9 +779,9 @@ async function handleGetTeamMembers(supabase: SupabaseClient): Promise<unknown[]
 
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, "First name", "Last name", "Phone number", admin')
-    .eq('admin', true)
-    .order('"First name"', { ascending: true });
+    .select('_id, email, "Name - First", "Name - Last", "Phone Number (as text)", "Toggle - Is Admin"')
+    .eq('"Toggle - Is Admin"', true)
+    .order('"Name - First"', { ascending: true });
 
   if (error) throw new Error(`Failed to fetch team members: ${error.message}`);
 
@@ -790,10 +790,10 @@ async function handleGetTeamMembers(supabase: SupabaseClient): Promise<unknown[]
   return (data || []).map(user => ({
     _id: user._id,
     email: user.email,
-    firstName: user['First name'],
-    lastName: user['Last name'],
-    phone: user['Phone number'],
-    fullName: `${user['First name'] || ''} ${user['Last name'] || ''}`.trim() || user.email,
+    firstName: user['Name - First'],
+    lastName: user['Name - Last'],
+    phone: user['Phone Number (as text)'],
+    fullName: `${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim() || user.email,
   }));
 }
 
