@@ -199,6 +199,11 @@ export async function handleCreate(
   // - 'Reservation Period : Start' (NOT 'Move In Date')
   // - 'Reservation Period : End' (NOT 'Move-out')
   // - 'rental type' column does NOT exist in bookings_leases
+  // FK CONSTRAINTS (2026-01-28):
+  // - 'Cancellation Policy' → zat_features_cancellationpolicy._id (use null if no valid FK, NOT text!)
+  // - 'Listing' → listing._id
+  // - 'Proposal' → proposal._id
+  // - 'Created By' → user._id
   const leaseRecord: Partial<LeaseData> = {
     _id: leaseId,
     'Agreement Number': agreementNumber,
@@ -207,7 +212,8 @@ export async function handleCreate(
     Host: proposalData['Host User'],
     Listing: proposalData.Listing,
     Participants: [proposalData.Guest, proposalData['Host User']],
-    'Cancellation Policy': listingData?.['cancellation policy'] || 'Standard',
+    // FK CONSTRAINT: Must be valid _id from zat_features_cancellationpolicy or null
+    'Cancellation Policy': listingData?.['cancellation policy'] || null,
     'First Payment Date': firstPaymentDate,
     'Reservation Period : Start': activeTerms.moveInDate,
     'Reservation Period : End': moveOutDate,
