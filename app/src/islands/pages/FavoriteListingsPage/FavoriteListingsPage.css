@@ -175,6 +175,25 @@
   border: 2px solid rgba(0, 0, 0, 0.12); /* V6: thicker border */
   display: flex;
   flex-direction: column;
+  /* Force content to top - no internal spacing */
+  padding: 0 !important;
+  margin: 0;
+  justify-content: flex-start;
+  align-items: stretch;
+  /* Align to top of grid cell */
+  align-self: start;
+  box-sizing: border-box;
+}
+
+/* Ensure all children have no top spacing */
+.favorites-page .map-column > * {
+  margin-top: 0 !important;
+  padding-top: 0;
+}
+
+/* Ensure first child (v6-map-header) is flush to top */
+.favorites-page .map-column > *:first-child {
+  margin-top: 0 !important;
 }
 
 .favorites-page .map-column:hover {
@@ -191,6 +210,15 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.98);
   flex-shrink: 0;
+  /* Force flush to top of parent - override any inherited styles */
+  margin: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 16px !important;
+  position: relative;
+  top: 0;
+  /* Explicit height for consistency */
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .favorites-page .v6-map-header .map-title {
