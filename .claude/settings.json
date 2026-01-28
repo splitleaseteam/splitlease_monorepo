@@ -42,7 +42,7 @@
     "commit-commands@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": false,
-    "ralph-loop@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": false,
     "hookify@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true
