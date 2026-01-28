@@ -351,7 +351,7 @@ const FavoritesCardV3 = ({
 
     // CONTENT SECTION
     contentSection: {
-      padding: TOKENS.spacing.lg,
+      padding: TOKENS.spacing.xl, // 20px padding for better breathing room
     },
     location: {
       display: 'flex',
