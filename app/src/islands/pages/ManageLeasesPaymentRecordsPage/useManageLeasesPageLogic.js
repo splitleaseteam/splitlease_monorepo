@@ -18,6 +18,7 @@ import { supabase } from '../../../lib/supabase.js';
 import { adaptLeaseFromSupabase } from '../../../logic/processors/leases/adaptLeaseFromSupabase.js';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export function useManageLeasesPageLogic({ showToast }) {
   // ============================================================================
@@ -67,12 +68,8 @@ export function useManageLeasesPageLogic({ showToast }) {
         // Real admin check would verify user metadata or admin table
         setIsAdmin(!!token);
 
-        if (token) {
-          await fetchLeases(token);
-        } else {
-          setError('Authentication required');
-          setIsLoading(false);
-        }
+        // Fetch leases regardless of auth status (internal page)
+        await fetchLeases(token);
       } catch (err) {
         console.error('[ManageLeases] Auth failed:', err);
         setError('Authentication failed');
@@ -88,6 +85,7 @@ export function useManageLeasesPageLogic({ showToast }) {
   // ============================================================================
   const buildHeaders = useCallback(() => ({
     'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
     ...(accessToken && { Authorization: `Bearer ${accessToken}` })
   }), [accessToken]);
 

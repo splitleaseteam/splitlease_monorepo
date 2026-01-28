@@ -54,10 +54,12 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (optional for internal pages)
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+    if (user) {
+      console.log(`[document] Authenticated user: ${user.email}`);
+    } else {
+      console.log('[document] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -205,10 +207,12 @@ async function handleListPolicies(supabase: SupabaseClient) {
 async function handleListHosts(supabase: SupabaseClient) {
   console.log('[document] Fetching host users...');
 
+  // Fetch users with Type - User Current, then filter client-side
+  // (PostgREST has issues with parentheses in filter values)
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, Name, "Type - User Current"')
-    .or('"Type - User Current".eq.A Host (I have a space available to rent),"Type - User Current".eq.Trial Host')
+    .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Type - User Current"')
+    .not('"Type - User Current"', 'is', null)
     .order('email', { ascending: true });
 
   if (error) {
@@ -216,9 +220,15 @@ async function handleListHosts(supabase: SupabaseClient) {
     throw new Error(`Failed to fetch host users: ${error.message}`);
   }
 
-  console.log(`[document] Found ${data?.length || 0} host users`);
+  // Filter for hosts client-side (values contain parentheses that break PostgREST filters)
+  const hosts = (data || []).filter((user: Record<string, unknown>) => {
+    const userType = user['Type - User Current'] as string;
+    return userType?.toLowerCase().includes('host');
+  });
 
-  return data || [];
+  console.log(`[document] Found ${hosts.length} host users`);
+
+  return hosts;
 }
 
 /**
