@@ -136,7 +136,7 @@ export async function updatePassword(newPassword) {
             errorMessage = errorBody.error;
           }
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -148,7 +148,7 @@ export async function updatePassword(newPassword) {
             errorMessage = errorBody.error;
           }
         } catch (_parseErr) {
-          // Silent - use default message
+          void 0; // Silent - use default message
         }
       }
 
