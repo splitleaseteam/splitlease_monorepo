@@ -26,79 +26,60 @@ def load_env_file():
     return env_vars
 
 def extract_summary_from_transcript(transcript_path):
-    """Extract a conversational summary from transcript"""
+    """Extract the last assistant response from transcript"""
     try:
         if not os.path.exists(transcript_path):
-            return "completed the task"
+            return None
 
         with open(transcript_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        # Parse JSONL entries
-        entries = []
-        for line in lines:
+        # Parse JSONL entries and find last assistant message
+        last_text = None
+        for line in reversed(lines):
             try:
                 entry = json.loads(line.strip())
-                entries.append(entry)
+
+                # Check if this is an assistant message
+                if entry.get('type') == 'assistant':
+                    message = entry.get('message', {})
+                    content = message.get('content', [])
+
+                    # Look through content blocks for text
+                    if isinstance(content, list):
+                        for block in content:
+                            if isinstance(block, dict) and block.get('type') == 'text':
+                                text = block.get('text', '').strip()
+                                if text and len(text) > 20:
+                                    last_text = text
+                                    break
+
+                    if last_text:
+                        break
+
             except:
                 continue
 
-        # Strategy 1: Look for assistant messages with actual content (non-tool text)
-        assistant_messages = []
-        for entry in reversed(entries[-50:]):  # Check last 50 entries
-            if entry.get('role') == 'assistant':
-                content = entry.get('content', [])
-                if isinstance(content, list):
-                    for block in content:
-                        if isinstance(block, dict) and block.get('type') == 'text':
-                            text = block.get('text', '').strip()
-                            # Skip empty, very short, or technical messages
-                            if text and len(text) > 30 and not text.startswith('<'):
-                                assistant_messages.append(text)
+        if not last_text:
+            return None
 
-        # Find the first substantive message
-        for msg in assistant_messages:
-            # Get first meaningful line/sentence
-            lines = msg.split('\n')
-            for line in lines:
-                line = line.strip()
-                # Skip markdown headers, bullets, code blocks
-                if line and len(line) > 20 and not line.startswith('#') and not line.startswith('*') and not line.startswith('`'):
-                    # Clean up and limit length
-                    if len(line) > 150:
-                        line = line[:147] + "..."
-                    return line
+        # Extract first meaningful sentence/line
+        lines = last_text.split('\n')
+        for line in lines:
+            line = line.strip()
+            # Skip markdown headers, skip very short lines
+            if line and len(line) > 20 and not line.startswith('#'):
+                # Remove markdown formatting
+                line = line.replace('**', '').replace('*', '').replace('`', '')
+                # Limit length
+                if len(line) > 200:
+                    line = line[:197] + "..."
+                return line
 
-        # Strategy 2: Fallback to describing what tools were used
-        tools_used = []
-        files_modified = []
-        for entry in reversed(entries[-30:]):
-            if entry.get('type') == 'tool_use':
-                tool_name = entry.get('name', '')
-                tool_input = entry.get('input', {})
-
-                if tool_name == 'Edit' and tool_name not in [t[0] for t in tools_used]:
-                    file_path = tool_input.get('file_path', '')
-                    if file_path:
-                        files_modified.append(file_path.split('/')[-1])
-                    tools_used.append((tool_name, 'edited files'))
-                elif tool_name == 'Write' and tool_name not in [t[0] for t in tools_used]:
-                    tools_used.append((tool_name, 'created files'))
-                elif tool_name == 'Bash' and tool_name not in [t[0] for t in tools_used]:
-                    cmd = tool_input.get('command', '')
-                    if 'git commit' in cmd:
-                        tools_used.append(('Commit', 'committed changes'))
-                    elif not any(t[0] == 'Bash' for t in tools_used):
-                        tools_used.append((tool_name, 'ran commands'))
-
-        if tools_used:
-            actions = ', '.join([t[1] for t in tools_used[:3]])
-            return actions
-
-        return "completed the task"
+        return None
 
     except Exception as e:
-        return f"encountered an error: {str(e)}"
+        return None
 
 def get_latest_commit_hash(cwd):
     """Get the latest git commit hash"""
@@ -164,6 +145,11 @@ def main():
 
         # Extract summary from transcript
         summary = extract_summary_from_transcript(transcript_path)
+
+        # Only send if we got a real summary
+        if not summary:
+            print("No summary extracted from transcript", file=sys.stderr)
+            sys.exit(0)  # Exit successfully even if no message sent
 
         # Format the message
         message = f"{device_name} says: {summary}"
