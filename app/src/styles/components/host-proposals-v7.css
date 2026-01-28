@@ -151,13 +151,13 @@
 }
 
 .hp7-listing-pill-count {
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum */
   font-weight: 600;
   color: var(--hp7-white);
   background: var(--hp7-text-muted);
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 10px;
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 .hp7-listing-pill.active .hp7-listing-pill-count {
@@ -192,7 +192,7 @@
   background: var(--hp7-border-light);
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum */
   font-weight: 500;
 }
 
@@ -339,11 +339,11 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum */
   font-weight: 600;
   color: var(--hp7-purple-primary);
   background: white;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
   border: 1px solid var(--hp7-purple-border);
 }
@@ -352,11 +352,11 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum */
   font-weight: 500;
   color: var(--hp7-green-text);
   background: var(--hp7-green-bg);
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
 }
 
@@ -417,7 +417,7 @@
   gap: 10px;
   padding: 10px 16px;
   background: var(--hp7-bg);
-  font-size: 13px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   border-bottom: 1px solid var(--hp7-border-light);
 }
 
@@ -469,7 +469,7 @@
 
 .hp7-status-text {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   color: var(--hp7-text-secondary);
 }
 
@@ -513,7 +513,7 @@
 
 .hp7-ai-summary-title {
   font-weight: 600;
-  font-size: 11px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   color: var(--hp7-purple-dark);
   margin-bottom: 2px;
   text-transform: uppercase;
@@ -521,9 +521,9 @@
 }
 
 .hp7-ai-summary-text {
-  font-size: 12px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   color: var(--hp7-text-secondary);
-  line-height: 1.4;
+  line-height: var(--hp7-line-height-normal); /* 1.6 for better readability */
 }
 
 /* ========================================
@@ -557,9 +557,9 @@
 }
 
 .hp7-guest-bio {
-  font-size: 12px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   color: var(--hp7-text-secondary);
-  line-height: 1.4;
+  line-height: var(--hp7-line-height-normal); /* 1.6 for better readability */
   margin-bottom: 8px;
 }
 
@@ -573,11 +573,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   font-weight: 500;
   color: var(--hp7-text-secondary);
   background: var(--hp7-bg);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
   border: 1px solid var(--hp7-border);
 }
@@ -605,7 +605,7 @@
 }
 
 .hp7-link-item {
-  font-size: 12px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   font-weight: 500;
   color: var(--hp7-purple-primary);
   text-decoration: none;
@@ -648,7 +648,7 @@
 }
 
 .hp7-info-label {
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   font-weight: 500;
   color: var(--hp7-text-muted);
   text-transform: uppercase;
@@ -657,7 +657,7 @@
 }
 
 .hp7-info-value {
-  font-size: 13px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   font-weight: 600;
   color: var(--hp7-text);
 }
@@ -674,7 +674,7 @@
 }
 
 .hp7-days-label {
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   font-weight: 500;
   color: var(--hp7-text-muted);
   text-transform: uppercase;
@@ -687,13 +687,13 @@
 }
 
 .hp7-day-pill {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   font-weight: 600;
   background: var(--hp7-bg);
   color: var(--hp7-text-muted);
@@ -712,13 +712,13 @@
 }
 
 .hp7-days-count {
-  font-size: 12px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   font-weight: 600;
   color: var(--hp7-text);
 }
 
 .hp7-days-range {
-  font-size: 11px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   color: var(--hp7-text-muted);
 }
 
@@ -738,7 +738,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   color: var(--hp7-text-muted);
 }
 
@@ -747,7 +747,7 @@
 }
 
 .hp7-pricing-total-label {
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   color: var(--hp7-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -838,7 +838,7 @@
 }
 
 .hp7-progress-label {
-  font-size: 10px;
+  font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   font-weight: 500;
   color: var(--hp7-text-muted);
   white-space: nowrap;
@@ -985,7 +985,7 @@
   }
 
   .hp7-listing-pill-name {
-    font-size: 11px;
+    font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   }
 
   .hp7-listing-pill-thumb {
