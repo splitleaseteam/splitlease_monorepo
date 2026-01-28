@@ -262,7 +262,7 @@ const FavoritesCardV3 = ({
       flexDirection: 'column',
       background: TOKENS.colors.card,
       borderRadius: TOKENS.radius.lg,
-      overflow: 'hidden',
+      overflow: 'visible', // Allow popup to extend outside card
       // Subtle hover effect - just a gentle scale
       boxShadow: isHovered
         ? '0 8px 20px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06)'
