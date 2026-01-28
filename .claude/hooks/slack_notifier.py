@@ -7,7 +7,7 @@ import json
 import sys
 import os
 import requests
-from datetime import datetime
+import subprocess
 from pathlib import Path
 
 def load_env_file():
@@ -25,53 +25,87 @@ def load_env_file():
 
     return env_vars
 
-def extract_summary_from_transcript(transcript_path):
-    """Extract a summary of what Claude did from the transcript"""
+def extract_info_from_transcript(transcript_path):
+    """Extract prompt, summary, and git commit info from transcript"""
     try:
         if not os.path.exists(transcript_path):
-            return "Completed task"
+            return None, "Completed task", None
 
-        # Read the last few lines of the transcript to get recent activity
         with open(transcript_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        # Parse the last few JSONL entries
-        recent_entries = []
-        for line in reversed(lines[-10:]):  # Last 10 entries
+        # Parse all JSONL entries
+        entries = []
+        for line in lines:
             try:
                 entry = json.loads(line.strip())
-                recent_entries.append(entry)
+                entries.append(entry)
             except:
                 continue
 
-        # Look for tool uses or assistant messages
+        # Extract user prompt (first user message)
+        user_prompt = None
+        for entry in entries:
+            if entry.get('role') == 'user' and entry.get('content'):
+                content = entry['content']
+                if isinstance(content, list):
+                    for block in content:
+                        if isinstance(block, dict) and block.get('type') == 'text':
+                            user_prompt = block.get('text', '').strip()
+                            break
+                elif isinstance(content, str):
+                    user_prompt = content.strip()
+                if user_prompt:
+                    break
+
+        # Look for git commit in tool uses
+        git_commit_hash = None
+        for entry in reversed(entries):
+            if entry.get('type') == 'tool_use' and entry.get('name') == 'Bash':
+                tool_input = entry.get('input', {})
+                command = tool_input.get('command', '')
+                if 'git commit' in command:
+                    # Try to find the commit hash from the result
+                    # We'll get it from git log instead
+                    git_commit_hash = "commit_made"
+                    break
+
+        # Extract summary from recent tool uses
         tools_used = []
-        for entry in recent_entries:
+        for entry in reversed(entries[-20:]):
             if entry.get('type') == 'tool_use':
                 tool_name = entry.get('name', 'Unknown')
-                tools_used.append(tool_name)
+                if tool_name not in tools_used:
+                    tools_used.append(tool_name)
 
-        if tools_used:
-            # Get unique tools (preserve order)
-            unique_tools = []
-            for tool in tools_used:
-                if tool not in unique_tools:
-                    unique_tools.append(tool)
-            return f"Used tools: {', '.join(unique_tools[:3])}"
+        summary = f"Used: {', '.join(tools_used[:5])}" if tools_used else "Completed"
 
-        return "Completed response"
+        return user_prompt, summary, git_commit_hash
 
     except Exception as e:
-        return f"Completed task (error reading transcript: {str(e)})"
+        return None, f"Error: {str(e)}", None
+
+def get_latest_commit_hash(cwd):
+    """Get the latest git commit hash"""
+    try:
+        result = subprocess.run(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except:
+        pass
+    return None
 
 def send_to_slack(webhook_url, message):
     """Send message to Slack webhook"""
     try:
-        # Get hostname for the message prefix
-        hostname = os.environ.get('COMPUTERNAME', os.environ.get('HOSTNAME', 'unknown'))
-
         payload = {
-            "text": f"[{hostname}] {message}",
+            "text": message,
             "unfurl_links": False,
             "unfurl_media": False
         }
@@ -83,7 +117,7 @@ def send_to_slack(webhook_url, message):
         )
 
         if response.status_code != 200:
-            print(f"Failed to send to Slack: {response.status_code} - {response.text}", file=sys.stderr)
+            print(f"Failed to send to Slack: {response.status_code}", file=sys.stderr)
             return False
 
         return True
@@ -99,10 +133,10 @@ def main():
 
         # Get environment variables
         env_vars = load_env_file()
-        webhook_url = env_vars.get('NOISYAGENTLOG')
+        webhook_url = env_vars.get('TINYTASKAGENT')
 
         if not webhook_url:
-            print("NOISYAGENTLOG environment variable not set", file=sys.stderr)
+            print("TINYTASKAGENT environment variable not set", file=sys.stderr)
             sys.exit(1)
 
         # Extract information from hook input
@@ -110,25 +144,39 @@ def main():
         session_id = input_data.get('session_id', 'unknown')
         cwd = input_data.get('cwd', '')
 
-        # Create a summary message
-        summary = extract_summary_from_transcript(transcript_path)
+        # Get hostname
+        hostname = os.environ.get('COMPUTERNAME', os.environ.get('HOSTNAME', 'unknown'))
 
-        # Get current timestamp
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # Extract info from transcript
+        user_prompt, summary, commit_detected = extract_info_from_transcript(transcript_path)
 
-        # Format the message
-        message = f"🤖 Claude Code Stop Event | {timestamp}\n"
-        message += f"📝 Summary: {summary}\n"
-        message += f"📂 Directory: {os.path.basename(cwd) if cwd else 'unknown'}\n"
-        message += f"🆔 Session: {session_id[:8]}..."
+        # Get commit hash if commit was made
+        commit_hash = None
+        if commit_detected and cwd:
+            commit_hash = get_latest_commit_hash(cwd)
+
+        # Format the message (simple, no emojis)
+        message_parts = [
+            f"Host: {hostname}",
+            f"Session: {session_id}",
+            f"Prompt: {user_prompt if user_prompt else 'N/A'}",
+            f"Outcome: {summary}",
+        ]
+
+        if commit_hash:
+            message_parts.append(f"Commit: Yes ({commit_hash})")
+        else:
+            message_parts.append("Commit: No")
+
+        message = "\n".join(message_parts)
 
         # Send to Slack
         success = send_to_slack(webhook_url, message)
 
         if success:
-            print(f"✓ Sent notification to Slack: {summary}")
+            print("Sent notification to Slack")
         else:
-            print(f"✗ Failed to send notification to Slack", file=sys.stderr)
+            print("Failed to send notification to Slack", file=sys.stderr)
             sys.exit(1)
 
     except json.JSONDecodeError as e:
