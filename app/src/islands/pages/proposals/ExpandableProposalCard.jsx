@@ -1212,7 +1212,8 @@ export default function ExpandableProposalCard({
       />
 
       {/* Compare Terms Modal - for proposals with counteroffer */}
-      {showCompareTermsModal && isCounteroffer && (
+      {/* Note: Once modal is opened, keep it mounted regardless of proposal state changes during async operations */}
+      {showCompareTermsModal && (
         <CompareTermsModal
           proposal={proposal}
           onClose={() => setShowCompareTermsModal(false)}

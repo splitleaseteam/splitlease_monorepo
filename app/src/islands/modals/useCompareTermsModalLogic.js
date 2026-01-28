@@ -86,6 +86,7 @@ export function useCompareTermsModalLogic({
   const [error, setError] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [acceptanceSuccess, setAcceptanceSuccess] = useState(false);
 
   // Get terms comparison using workflow function
   const termsComparison = useMemo(() => {
@@ -286,43 +287,102 @@ export function useCompareTermsModalLogic({
         fourWeekCompensation
       });
 
-      const leaseResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lease`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'create',
-            payload: {
-              proposalId: proposal._id,
-              isCounteroffer: 'yes',
-              fourWeekRent,
-              fourWeekCompensation,
-              numberOfZeros,
+      let leaseResponse;
+      try {
+        leaseResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lease`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-          }),
-        }
-      );
+            body: JSON.stringify({
+              action: 'create',
+              payload: {
+                proposalId: proposal._id,
+                isCounteroffer: 'yes',
+                fourWeekRent,
+                fourWeekCompensation,
+                numberOfZeros,
+              },
+            }),
+          }
+        );
+      } catch (fetchErr) {
+        console.error('[useCompareTermsModalLogic] Network error calling lease Edge Function:', fetchErr);
+        throw new Error('Network error: Could not connect to lease service. Please try again.');
+      }
 
-      const leaseResult = await leaseResponse.json();
+      // Log response status for debugging
+      console.log('[useCompareTermsModalLogic] Lease response status:', leaseResponse.status);
+
+      let leaseResult;
+      try {
+        leaseResult = await leaseResponse.json();
+      } catch (parseErr) {
+        console.error('[useCompareTermsModalLogic] Failed to parse lease response:', parseErr);
+        throw new Error('Invalid response from lease service. Please contact support.');
+      }
+
+      console.log('[useCompareTermsModalLogic] Lease response:', leaseResult);
+
       if (!leaseResult.success) {
+        console.error('[useCompareTermsModalLogic] Lease creation failed:', leaseResult.error);
         throw new Error(leaseResult.error || 'Failed to create lease');
       }
 
-      console.log('[useCompareTermsModalLogic] Lease created:', leaseResult.data);
+      console.log('[useCompareTermsModalLogic] Lease created successfully:', leaseResult.data);
 
-      // Step 1 (at end): Show success message
-      alert('We will work on drafting a lease for you. Please give us 48 hours to finalize your lease with the terms proposed by your host.');
+      // Step 8: Send notification messages to guest and host
+      try {
+        // Find the thread associated with this proposal
+        const { data: thread, error: threadError } = await supabase
+          .from('thread')
+          .select('_id')
+          .eq('Proposal', proposal._id)
+          .maybeSingle();
 
-      // Trigger callback
-      if (onAcceptCounteroffer) {
-        onAcceptCounteroffer();
+        if (threadError) {
+          console.warn('[useCompareTermsModalLogic] Could not find thread for proposal:', threadError);
+        } else if (thread) {
+          console.log('[useCompareTermsModalLogic] Found thread:', thread._id);
+
+          // Send SplitBot messages to both guest and host
+          const messageResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/messages`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                action: 'send_splitbot_message',
+                payload: {
+                  threadId: thread._id,
+                  ctaName: 'counteroffer_accepted',
+                  recipientRole: 'both',
+                  customMessageBody: 'Great news! The counteroffer has been accepted. Split Lease will now draft the lease documents. Please allow up to 48 hours for completion.',
+                },
+              }),
+            }
+          );
+
+          const messageResult = await messageResponse.json();
+          if (messageResult.success) {
+            console.log('[useCompareTermsModalLogic] Notification messages sent:', messageResult.data);
+          } else {
+            console.warn('[useCompareTermsModalLogic] Could not send notification messages:', messageResult.error);
+          }
+        } else {
+          console.log('[useCompareTermsModalLogic] No thread found for proposal - skipping messages');
+        }
+      } catch (msgErr) {
+        // Non-fatal: log but don't fail the acceptance
+        console.warn('[useCompareTermsModalLogic] Error sending notification messages:', msgErr);
       }
 
-      // Close modal
-      onClose();
+      // Show success state (will display success message in modal)
+      setAcceptanceSuccess(true);
 
     } catch (err) {
       console.error('[useCompareTermsModalLogic] Error accepting counteroffer:', err);
@@ -375,6 +435,20 @@ export function useCompareTermsModalLogic({
   }, [isAccepting, isCancelling, onClose]);
 
   /**
+   * Handle Success Acknowledgment
+   * Called when user clicks "Got it" on success view
+   */
+  const handleSuccessAcknowledge = useCallback(() => {
+    // Trigger callback
+    if (onAcceptCounteroffer) {
+      onAcceptCounteroffer();
+    }
+    // Close modal and reload
+    onClose();
+    window.location.reload();
+  }, [onAcceptCounteroffer, onClose]);
+
+  /**
    * Handle Close Cancel Modal
    */
   const handleCloseCancelModal = useCallback(() => {
@@ -397,6 +471,9 @@ export function useCompareTermsModalLogic({
     isLoading: isAccepting || isCancelling,
     error,
 
+    // Success state
+    acceptanceSuccess,
+
     // Data
     originalTerms,
     counterofferTerms,
@@ -417,7 +494,8 @@ export function useCompareTermsModalLogic({
     handleCancelConfirm,
     handleClose,
     handleCloseCancelModal,
-    handleToggleExpanded
+    handleToggleExpanded,
+    handleSuccessAcknowledge
   };
 }
 
