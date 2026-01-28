@@ -262,9 +262,11 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
 
   if (filters.isCompleted !== undefined) {
     // Filter by percentage % done >= 100 for completed
-    query = query.gte('percentage % done', filters.isCompleted ? 100 : 0);
+    // Use quoted identifier for column name with special characters
+    const percentageColumn = '"percentage % done"';
+    query = query.gte(percentageColumn, filters.isCompleted ? 100 : 0);
     if (!filters.isCompleted) {
-      query = query.lt('percentage % done', 100);
+      query = query.lt(percentageColumn, 100);
     }
   }
 
@@ -283,11 +285,12 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   const sortDirection = sort?.direction === 'asc' ? { ascending: true } : { ascending: false };
 
   // Map frontend field names to actual rentalapplication table columns
+  // Column names with special characters must use quoted identifier syntax
   const fieldMapping: Record<string, string> = {
     'created_at': 'Created Date',
     'unique_id': '_id',
     'status': 'submitted',  // maps to boolean submitted field
-    'completion_percentage': 'percentage % done',
+    'completion_percentage': '"percentage % done"',  // quoted for special characters
     'total_monthly_income': 'Monthly Income'
   };
 

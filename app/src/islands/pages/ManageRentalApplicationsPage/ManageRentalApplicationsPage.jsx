@@ -53,21 +53,13 @@ export default function ManageRentalApplicationsPage() {
 
         {/* Stats Summary */}
         <div className="manage-rental-apps__stats">
+          <div className="stat-card stat-card--draft">
+            <span className="stat-card__value">{logic.stats.draft}</span>
+            <span className="stat-card__label">Draft</span>
+          </div>
           <div className="stat-card stat-card--submitted">
             <span className="stat-card__value">{logic.stats.submitted}</span>
             <span className="stat-card__label">Submitted</span>
-          </div>
-          <div className="stat-card stat-card--under-review">
-            <span className="stat-card__value">{logic.stats.underReview}</span>
-            <span className="stat-card__label">Under Review</span>
-          </div>
-          <div className="stat-card stat-card--approved">
-            <span className="stat-card__value">{logic.stats.approved}</span>
-            <span className="stat-card__label">Approved</span>
-          </div>
-          <div className="stat-card stat-card--denied">
-            <span className="stat-card__value">{logic.stats.denied}</span>
-            <span className="stat-card__label">Denied</span>
           </div>
         </div>
       </header>
