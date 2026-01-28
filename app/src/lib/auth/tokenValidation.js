@@ -281,6 +281,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             console.error('   Detailed error from response:', errorBody.error);
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: error parsing is for logging only
         } catch (_parseErr) {
           // Silent - just for logging
         }
@@ -293,6 +294,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             console.error('   Detailed error from response:', errorBody.error);
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: error parsing is for logging only
         } catch (_parseErr) {
           // Silent - just for logging
         }

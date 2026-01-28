@@ -513,7 +513,8 @@ export function useSearchPageLogic() {
         } else if (typeof photosField === 'string') {
           try {
             photos = JSON.parse(photosField)
-          } catch (e) {
+          // eslint-disable-next-line no-restricted-syntax -- Intentional: JSON parse may fail for legacy data
+          } catch (_e) {
             // Ignore parse errors
           }
         }

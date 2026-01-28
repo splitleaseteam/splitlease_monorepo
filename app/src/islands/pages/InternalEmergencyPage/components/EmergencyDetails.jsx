@@ -61,6 +61,7 @@ export default function EmergencyDetails({
   const handleToggleVisibility = async () => {
     try {
       await onUpdateVisibility(emergency.id, !emergency.is_hidden);
+    // eslint-disable-next-line no-restricted-syntax -- Intentional: error handled in parent hook
     } catch {
       // Error handled in hook
     }

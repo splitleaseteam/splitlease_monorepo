@@ -29,7 +29,9 @@
     "test:unit:run": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
     "test:regression": "vitest run src/__tests__/regression",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build -o storybook-static"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -45,6 +47,7 @@
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.553.0",
     "node-releases": "^2.0.27",
+    "pg": "^8.17.2",
     "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-datepicker": "^8.9.0",
@@ -61,6 +64,16 @@
     "lightningcss-linux-x64-gnu": "^1.29.3"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^8.4.7",
+    "@storybook/addon-essentials": "^8.4.7",
+    "@storybook/addon-interactions": "^8.4.7",
+    "@storybook/addon-onboarding": "^8.4.7",
+    "@storybook/addon-viewport": "^8.4.7",
+    "@storybook/blocks": "^8.4.7",
+    "@storybook/react": "^8.4.7",
+    "@storybook/react-vite": "^8.4.7",
+    "@storybook/test": "^8.4.7",
+    "storybook": "^8.4.7",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

@@ -57,6 +57,7 @@ export async function sendMagicLinkViaSms({ email, phoneNumber, redirectTo }) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
           // Use default message
         }

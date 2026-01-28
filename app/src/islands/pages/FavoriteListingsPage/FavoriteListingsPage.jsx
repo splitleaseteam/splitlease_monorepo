@@ -552,6 +552,7 @@ const FavoriteListingsPage = () => {
           } else if (typeof photosField === 'string') {
             try {
               photos = JSON.parse(photosField);
+            // eslint-disable-next-line no-restricted-syntax -- Intentional: JSON parse may fail for legacy data
             } catch { /* ignore */ }
           }
 

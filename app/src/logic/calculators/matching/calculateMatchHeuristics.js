@@ -74,6 +74,7 @@ export function calculateMatchHeuristics({ candidateListing, proposal, hostData 
         proposalNightlyRate
       });
     }
+  // eslint-disable-next-line no-restricted-syntax -- Intentional: calculation may fail with missing data
   } catch {
     // Price proximity calculation failed, leave as null
   }
