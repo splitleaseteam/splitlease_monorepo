@@ -43,6 +43,7 @@ import ProposalSuccessModal from '../modals/ProposalSuccessModal.jsx';
 import CompactScheduleIndicator from './SearchPage/components/CompactScheduleIndicator.jsx';
 import MobileFilterBar from './SearchPage/components/MobileFilterBar.jsx';
 import { NeighborhoodSearchFilter } from './SearchPage/components/NeighborhoodFilters.jsx';
+import { BoroughSearchFilter } from './SearchPage/components/BoroughFilters.jsx';
 import PropertyCard from '../shared/ListingCard/PropertyCard.jsx';
 import UsabilityPopup from '../shared/UsabilityPopup/UsabilityPopup.jsx';
 
@@ -233,7 +234,7 @@ export default function SearchPage() {
     boroughs,
     neighborhoods,
     // Filters
-    selectedBorough,
+    selectedBoroughs,
     selectedNeighborhoods,
     weekPattern,
     priceTier,
@@ -253,7 +254,7 @@ export default function SearchPage() {
     // Refs
     mapRef,
     // Handlers
-    setSelectedBorough,
+    setSelectedBoroughs,
     setSelectedNeighborhoods,
     setWeekPattern,
     setPriceTier,
@@ -375,16 +376,20 @@ export default function SearchPage() {
   const activeFilterTags = useMemo(() => {
     const tags = [];
 
-    if (selectedBorough && selectedBorough !== 'all' && selectedBorough !== '') {
-      const boroughName = boroughs.find(b => b.value === selectedBorough)?.name;
-      if (boroughName && boroughName !== 'All Boroughs') {
-        tags.push({
-          id: 'borough',
-          icon: 'map-pin',
-          label: boroughName,
-          onRemove: () => setSelectedBorough('all')
-        });
-      }
+    // Borough tag(s) - show when specific boroughs are selected
+    if (selectedBoroughs.length > 0) {
+      const boroughNames = selectedBoroughs
+        .map(value => boroughs.find(b => b.value === value)?.name)
+        .filter(Boolean);
+      const label = boroughNames.length > 2
+        ? `${boroughNames.slice(0, 2).join(', ')} +${boroughNames.length - 2}`
+        : boroughNames.join(', ');
+      tags.push({
+        id: 'boroughs',
+        icon: 'map-pin',
+        label: label || `${selectedBoroughs.length} boroughs`,
+        onRemove: () => setSelectedBoroughs([])
+      });
     }
 
     if (selectedNeighborhoods.length > 0) {
@@ -433,7 +438,7 @@ export default function SearchPage() {
     }
 
     return tags;
-  }, [selectedBorough, selectedNeighborhoods, priceTier, weekPattern, boroughs, neighborhoods]);
+  }, [selectedBoroughs, selectedNeighborhoods, priceTier, weekPattern, boroughs, neighborhoods]);
 
   // Determine if "Create Proposal" button should be visible
   const showCreateProposalButton = useMemo(() => {
@@ -581,7 +586,7 @@ export default function SearchPage() {
   }, []);
 
   const clearAllFilters = useCallback(() => {
-    setSelectedBorough('all');
+    setSelectedBoroughs([]);
     setSelectedNeighborhoods([]);
     setPriceTier('all');
     setWeekPattern('every-week');
@@ -814,8 +819,6 @@ export default function SearchPage() {
           {/* Mobile Filter Bar */}
           <MobileFilterBar
             onFilterClick={() => setFilterPanelActive(!filterPanelActive)}
-            onMapClick={() => setMobileMapVisible(true)}
-            isMapVisible={mobileMapVisible}
             isLoggedIn={isLoggedIn}
             currentUser={currentUser}
             favoritesCount={favoritesCount}
@@ -827,6 +830,20 @@ export default function SearchPage() {
             }}
             isHidden={mobileHeaderHidden}
           />
+
+          {/* Floating Map Button - Mobile only */}
+          <button
+            className="mobile-map-fab"
+            onClick={() => setMobileMapVisible(true)}
+            aria-label="Open map view"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+            <span>Map</span>
+          </button>
 
           {/* Mobile Schedule Selector */}
           <div className={`mobile-schedule-selector ${mobileHeaderHidden ? 'mobile-schedule-selector--hidden' : ''}`}>
@@ -931,27 +948,15 @@ export default function SearchPage() {
 
             <div className="filter-popup-body">
               {/* Row 1: Borough, Week Pattern, Price Range - 3 column grid */}
-              {/* Borough Select */}
+              {/* Borough Multi-Select */}
               <div className="filter-popup-group">
                 <label className="filter-popup-label">BOROUGH</label>
-                <select
-                  className="filter-popup-select"
-                  value={selectedBorough}
-                  onChange={(e) => setSelectedBorough(e.target.value)}
-                >
-                  {boroughs.length === 0 ? (
-                    <option value="">Loading...</option>
-                  ) : (
-                    <>
-                      <option value="all">All Boroughs</option>
-                      {boroughs.map(borough => (
-                        <option key={borough.id} value={borough.value}>
-                          {borough.name}
-                        </option>
-                      ))}
-                    </>
-                  )}
-                </select>
+                <BoroughSearchFilter
+                  boroughs={boroughs}
+                  selectedBoroughs={selectedBoroughs}
+                  onBoroughsChange={setSelectedBoroughs}
+                  searchInputId="boroughSearchPopup"
+                />
               </div>
 
               {/* Week Pattern */}
@@ -1014,10 +1019,115 @@ export default function SearchPage() {
             <div className="filter-backdrop open" onClick={closeFilterPopup}></div>
           )}
 
+          {/* Mobile Filter Bottom Sheet */}
+          {filterPanelActive && (
+            <>
+              <div className="mobile-filter-backdrop" onClick={() => setFilterPanelActive(false)}></div>
+              <div className="mobile-filter-sheet">
+                {/* Grab Handle */}
+                <div className="mobile-filter-handle"></div>
+
+                {/* Header */}
+                <div className="mobile-filter-header">
+                  <div className="mobile-filter-header-content">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#31135D" strokeWidth="2">
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <h2 className="mobile-filter-title">Filters</h2>
+                  </div>
+                  <button
+                    className="mobile-filter-close"
+                    onClick={() => setFilterPanelActive(false)}
+                    aria-label="Close filters"
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round"/>
+                      <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Body - Scrollable */}
+                <div className="mobile-filter-body">
+                  {/* Borough Multi-Select */}
+                  <div className="mobile-filter-group">
+                    <label className="mobile-filter-label">BOROUGH</label>
+                    <BoroughSearchFilter
+                      boroughs={boroughs}
+                      selectedBoroughs={selectedBoroughs}
+                      onBoroughsChange={setSelectedBoroughs}
+                      searchInputId="boroughSearchMobile"
+                    />
+                  </div>
+
+                  {/* Week Pattern */}
+                  <div className="mobile-filter-group">
+                    <label className="mobile-filter-label">WEEK PATTERN</label>
+                    <select
+                      className="mobile-filter-select"
+                      value={weekPattern}
+                      onChange={(e) => setWeekPattern(e.target.value)}
+                    >
+                      <option value="every-week">Every week</option>
+                      <option value="one-on-off">One on, one off</option>
+                      <option value="two-on-off">Two on, two off</option>
+                      <option value="one-three-off">One on, three off</option>
+                    </select>
+                  </div>
+
+                  {/* Price Range */}
+                  <div className="mobile-filter-group">
+                    <label className="mobile-filter-label">PRICE RANGE</label>
+                    <select
+                      className="mobile-filter-select"
+                      value={priceTier}
+                      onChange={(e) => setPriceTier(e.target.value)}
+                    >
+                      <option value="all">All Prices</option>
+                      <option value="under-200">&lt; $200/night</option>
+                      <option value="200-350">$200-$350/night</option>
+                      <option value="350-500">$350-$500/night</option>
+                      <option value="500-plus">$500+/night</option>
+                    </select>
+                  </div>
+
+                  {/* Neighborhoods */}
+                  <div className="mobile-filter-group">
+                    <label className="mobile-filter-label">NEIGHBORHOODS</label>
+                    <NeighborhoodSearchFilter
+                      neighborhoods={neighborhoods}
+                      selectedNeighborhoods={selectedNeighborhoods}
+                      onNeighborhoodsChange={setSelectedNeighborhoods}
+                      neighborhoodSearch={neighborhoodSearch}
+                      onNeighborhoodSearchChange={setNeighborhoodSearch}
+                      searchInputId="neighborhoodSearchMobile"
+                    />
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mobile-filter-footer">
+                  <button
+                    className="mobile-filter-btn-secondary"
+                    onClick={clearAllFilters}
+                  >
+                    Clear All
+                  </button>
+                  <button
+                    className="mobile-filter-btn-primary"
+                    onClick={() => setFilterPanelActive(false)}
+                  >
+                    Show {allListings.length} Results
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Results header */}
           <div className={`results-header ${mobileHeaderHidden ? 'results-header--hidden' : ''} ${desktopHeaderCollapsed ? 'results-header--desktop-hidden' : ''}`}>
             <span className="results-count">
-              <strong>{allListings.length} listings</strong> in {selectedBorough === 'all' ? 'NYC' : (boroughs.find(b => b.value === selectedBorough)?.name || 'NYC')}
+              <strong>{allListings.length} listings</strong> in {selectedBoroughs.length === 0 ? 'NYC' : selectedBoroughs.length === 1 ? (boroughs.find(b => b.value === selectedBoroughs[0])?.name || 'NYC') : `${selectedBoroughs.length} boroughs`}
             </span>
             <select
               className="sort-select"
@@ -1179,7 +1289,7 @@ export default function SearchPage() {
             listings={allActiveListings}
             filteredListings={allListings}
             selectedListing={null}
-            selectedBorough={selectedBorough}
+            selectedBorough={selectedBoroughs.length > 0 ? selectedBoroughs[0] : null}
             selectedNightsCount={selectedNightsCount}
             onMarkerClick={scrollToListingCard}
             onMessageClick={handleOpenContactModal}
@@ -1303,7 +1413,7 @@ export default function SearchPage() {
               listings={allActiveListings}
               filteredListings={allListings}
               selectedListing={null}
-              selectedBorough={selectedBorough}
+              selectedBorough={selectedBoroughs.length > 0 ? selectedBoroughs[0] : null}
               selectedNightsCount={selectedNightsCount}
               onMarkerClick={() => {}}
               onMessageClick={handleOpenContactModal}

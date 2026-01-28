@@ -1,15 +1,13 @@
 /**
  * FavoriteListingsPage Component
  * Displays user's favorited listings with same layout/style as SearchPage
- * Includes Google Map with pins and AuthAwareSearchScheduleSelector
+ * Includes Google Map with pins
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { createRoot } from 'react-dom/client';
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import GoogleMap from '../../shared/GoogleMap.jsx';
-import AuthAwareSearchScheduleSelector from '../../shared/AuthAwareSearchScheduleSelector.jsx';
 import ContactHostMessaging from '../../shared/ContactHostMessaging.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
 import LoggedInAvatar from '../../shared/LoggedInAvatar/LoggedInAvatar.jsx';
@@ -19,7 +17,15 @@ import ProposalSuccessModal from '../../modals/ProposalSuccessModal.jsx';
 import SignUpLoginModal from '../../shared/SignUpLoginModal.jsx';
 import EmptyState from './components/EmptyState';
 import FavoritesCardV2 from './components/FavoritesCardV2.jsx';
+import FavoritesCardV3 from './components/FavoritesCardV3.jsx';
 import { getFavoritedListingIds, removeFromFavorites } from './favoritesApi';
+
+/**
+ * CARD VERSION TOGGLE
+ * Set to true to use the new horizontal card with mini-map (V3)
+ * Set to false to revert to the original vertical card (V2)
+ */
+const USE_CARD_V3 = true;
 import { checkAuthStatus, validateTokenAndFetchUser, getSessionId } from '../../../lib/auth/tokenValidation.js';
 import { logoutUser } from '../../../lib/auth/logout.js';
 import { fetchProposalsByGuest, fetchLastProposalDefaults } from '../../../lib/proposalDataFetcher.js';
@@ -69,19 +75,45 @@ async function fetchInformationalTexts() {
 /**
  * ListingsGridV2 - Grid using pure inline styles (no CSS conflicts)
  */
-function ListingsGridV2({ listings, onOpenContactModal, isLoggedIn, onToggleFavorite, userId, proposalsByListingId, onCreateProposal, onPhotoClick, viewMode }) {
+function ListingsGridV2({ listings, onOpenContactModal, isLoggedIn, onToggleFavorite, userId, proposalsByListingId, onCreateProposal, onPhotoClick, onMapClick, viewMode }) {
   const isGrid = viewMode === 'grid';
-  
+
+  // V3 uses a single-column layout (horizontal cards stack vertically)
+  const gridStyles = USE_CARD_V3
+    ? {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        padding: '0',
+      }
+    : {
+        display: isGrid ? 'grid' : 'flex',
+        flexDirection: isGrid ? 'initial' : 'column',
+        gridTemplateColumns: isGrid ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
+        gap: '20px',
+        padding: '0',
+      };
+
   return (
-    <div style={{
-      display: isGrid ? 'grid' : 'flex',
-      flexDirection: isGrid ? 'initial' : 'column',
-      gridTemplateColumns: isGrid ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
-      gap: '20px',
-      padding: '0',
-    }}>
+    <div style={gridStyles}>
       {listings.map((listing) => {
         const proposalForListing = proposalsByListingId?.get(listing.id) || null;
+
+        // Use V3 (horizontal with map) or V2 (vertical) based on toggle
+        if (USE_CARD_V3) {
+          return (
+            <FavoritesCardV3
+              key={listing.id}
+              listing={listing}
+              onToggleFavorite={onToggleFavorite}
+              userId={userId}
+              proposalForListing={proposalForListing}
+              onOpenCreateProposalModal={onCreateProposal}
+              onMapClick={onMapClick}
+            />
+          );
+        }
+
         return (
           <FavoritesCardV2
             key={listing.id}
@@ -925,36 +957,6 @@ const FavoriteListingsPage = () => {
     }
   };
 
-  // Mount AuthAwareSearchScheduleSelector in mount points
-  useEffect(() => {
-    const mountPointDesktop = document.getElementById('schedule-selector-mount-point');
-    const mountPointMobile = document.getElementById('schedule-selector-mount-point-mobile');
-    const roots = [];
-
-    const selectorProps = {
-      onSelectionChange: (days) => {
-        console.log('Schedule selector changed:', days);
-      },
-      onError: (error) => console.error('AuthAwareSearchScheduleSelector error:', error)
-    };
-
-    if (mountPointDesktop) {
-      const rootDesktop = createRoot(mountPointDesktop);
-      rootDesktop.render(<AuthAwareSearchScheduleSelector {...selectorProps} />);
-      roots.push(rootDesktop);
-    }
-
-    if (mountPointMobile) {
-      const rootMobile = createRoot(mountPointMobile);
-      rootMobile.render(<AuthAwareSearchScheduleSelector {...selectorProps} />);
-      roots.push(rootMobile);
-    }
-
-    return () => {
-      roots.forEach(root => root.unmount());
-    };
-  }, []);
-
   // Determine if "Message" button should be visible on listing cards
   // Hidden for logged-in host users (hosts shouldn't message other hosts)
   const showMessageButton = useMemo(() => {
@@ -1118,20 +1120,6 @@ const FavoriteListingsPage = () => {
               </button>
             </div>
 
-            {/* ROW 3: Mobile Schedule Selector with Check-in/Check-out */}
-            <div className="mobile-schedule-selector">
-              <div className="filter-group schedule-selector-group" id="schedule-selector-mount-point-mobile">
-                {/* AuthAwareSearchScheduleSelector will be mounted here on mobile */}
-              </div>
-            </div>
-
-            {/* Desktop Schedule Selector */}
-            <div className="inline-filters">
-              <div className="filter-group schedule-selector-group" id="schedule-selector-mount-point">
-                {/* AuthAwareSearchScheduleSelector will be mounted here on desktop */}
-              </div>
-            </div>
-
             {/* Listings content */}
             <div className="listings-content">
               {isLoading && <LoadingState />}
@@ -1157,6 +1145,7 @@ const FavoriteListingsPage = () => {
                   proposalsByListingId={proposalsByListingId}
                   onCreateProposal={handleOpenProposalModal}
                   onPhotoClick={handlePhotoGalleryOpen}
+                  onMapClick={() => setMobileMapVisible(true)}
                   viewMode={viewMode}
                 />
               )}

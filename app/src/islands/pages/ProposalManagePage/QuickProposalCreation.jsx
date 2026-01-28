@@ -201,13 +201,13 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
           "Name - First",
           "Name - Last",
           email,
-          "Phone Number",
+          "Phone Number (as text)",
           "Profile Photo",
           "About Me / Bio",
           "need for space",
-          "Special needs"
+          "special needs"
         `)
-        .or(`"Name - Full".ilike.%${query}%,email.ilike.%${query}%,"Phone Number".ilike.%${query}%`)
+        .or(`"Name - Full".ilike.%${query}%,email.ilike.%${query}%,"Phone Number (as text)".ilike.%${query}%`)
         .limit(20);
 
       if (error) throw error;
@@ -218,11 +218,11 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
         firstName: g['Name - First'] || '',
         lastName: g['Name - Last'] || '',
         email: g.email || '',
-        phoneNumber: g['Phone Number'] || '',
+        phoneNumber: g['Phone Number (as text)'] || '',
         profilePhoto: g['Profile Photo'] || null,
         aboutMe: g['About Me / Bio'] || '',
         needForSpace: g['need for space'] || '',
-        specialNeeds: g['Special needs'] || ''
+        specialNeeds: g['special needs'] || ''
       })) || [];
 
       setGuestResults(normalizedResults);

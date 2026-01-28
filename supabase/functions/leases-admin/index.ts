@@ -231,9 +231,7 @@ async function handleList(
 ) {
   const { limit = 500, offset = 0 } = payload;
 
-  // Note: Simplified query without FK relationships due to schema limitations
-  // The guest, host, and listing data will need to be fetched separately or
-  // the relationships need to be properly defined in the database
+  // Fetch leases
   const { data, error, count } = await supabase
     .from('bookings_leases')
     .select('*', { count: 'exact' })
@@ -245,19 +243,83 @@ async function handleList(
     throw new Error(`Failed to fetch leases: ${error.message}`);
   }
 
-  // Fetch stays separately (since JSONB join is complex)
-  const leaseIds = (data || []).map((l: { _id: string }) => l._id);
+  const leases = data || [];
+  const leaseIds = leases.map((l: { _id: string }) => l._id);
 
+  // Fetch related data separately
+  const [guestIds, hostIds, listingIds] = leases.reduce(
+    (acc: [string[], string[], string[]], lease: Record<string, unknown>) => {
+      if (lease.Guest) acc[0].push(lease.Guest as string);
+      if (lease.Host) acc[1].push(lease.Host as string);
+      if (lease.Listing) acc[2].push(lease.Listing as string);
+      return acc;
+    },
+    [[], [], []]
+  );
+
+  // Fetch guests
+  const guestsMap: Record<string, unknown> = {};
+  if (guestIds.length > 0) {
+    const { data: guests, error: guestsError } = await supabase
+      .from('user')
+      .select('*')
+      .in('_id', guestIds);
+
+    if (guestsError) {
+      console.error('[leases-admin] Fetch guests error:', guestsError);
+    } else {
+      console.log(`[leases-admin] Fetched ${guests?.length || 0} guests for ${guestIds.length} IDs`);
+      (guests || []).forEach((guest: Record<string, unknown>) => {
+        guestsMap[guest._id as string] = guest;
+      });
+    }
+  }
+
+  // Fetch hosts
+  const hostsMap: Record<string, unknown> = {};
+  if (hostIds.length > 0) {
+    const { data: hosts, error: hostsError } = await supabase
+      .from('user')
+      .select('*')
+      .in('_id', hostIds);
+
+    if (hostsError) {
+      console.error('[leases-admin] Fetch hosts error:', hostsError);
+    } else {
+      console.log(`[leases-admin] Fetched ${hosts?.length || 0} hosts for ${hostIds.length} IDs`);
+      (hosts || []).forEach((host: Record<string, unknown>) => {
+        hostsMap[host._id as string] = host;
+      });
+    }
+  }
+
+  // Fetch listings
+  const listingsMap: Record<string, unknown> = {};
+  if (listingIds.length > 0) {
+    const { data: listings, error: listingsError } = await supabase
+      .from('Listing')
+      .select('*')
+      .in('_id', listingIds);
+
+    if (listingsError) {
+      console.error('[leases-admin] Fetch listings error:', listingsError);
+    } else {
+      console.log(`[leases-admin] Fetched ${listings?.length || 0} listings for ${listingIds.length} IDs`);
+      (listings || []).forEach((listing: Record<string, unknown>) => {
+        listingsMap[listing._id as string] = listing;
+      });
+    }
+  }
+
+  // Fetch stays
   let staysMap: Record<string, unknown[]> = {};
-
   if (leaseIds.length > 0) {
-    const { data: stays, error: staysError } = await supabase
+    const { data: stays } = await supabase
       .from('bookings_stays')
       .select('*')
       .in('Lease', leaseIds);
 
-    if (!staysError && stays) {
-      // Group stays by lease ID
+    if (stays) {
       staysMap = stays.reduce((acc: Record<string, unknown[]>, stay: { Lease: string }) => {
         const leaseId = stay.Lease;
         if (!acc[leaseId]) acc[leaseId] = [];
@@ -267,13 +329,16 @@ async function handleList(
     }
   }
 
-  // Attach stays to leases
-  const leasesWithStays = (data || []).map((lease: { _id: string }) => ({
+  // Attach all related data to leases
+  const leasesWithData = leases.map((lease: Record<string, unknown>) => ({
     ...lease,
-    stays: staysMap[lease._id] || [],
+    guest: lease.Guest ? guestsMap[lease.Guest as string] : null,
+    host: lease.Host ? hostsMap[lease.Host as string] : null,
+    listing: lease.Listing ? listingsMap[lease.Listing as string] : null,
+    stays: staysMap[lease._id as string] || [],
   }));
 
-  return leasesWithStays;
+  return leasesWithData;
 }
 
 /**

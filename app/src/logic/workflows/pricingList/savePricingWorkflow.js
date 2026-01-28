@@ -78,7 +78,7 @@ export async function savePricingWorkflow({
 
   // Step 5: Calculate unused nights discount array
   const unusedNightsDiscount = calculateUnusedNightsDiscountArray({
-    baseDiscount: PRICING_CONSTANTS.DEFAULT_UNUSED_NIGHTS_DISCOUNT
+    baseDiscount: PRICING_CONSTANTS.UNUSED_NIGHTS_DISCOUNT_MULTIPLIER
   });
 
   // Step 6: Calculate multipliers array

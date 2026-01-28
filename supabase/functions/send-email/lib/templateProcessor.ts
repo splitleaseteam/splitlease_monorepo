@@ -69,7 +69,25 @@ function processTemplateInternal(
       return jsonSafe ? '' : match;
     }
 
-    return escapeValue(String(value));
+    const stringValue = String(value);
+
+    // For JSON templates: Don't escape structural JSON fragments
+    // Structural fragments are: empty strings, or values starting with comma/brace/bracket
+    // These are pre-built JSON structures that should be inserted raw
+    if (jsonSafe) {
+      const isStructuralFragment =
+        stringValue === '' ||
+        stringValue.startsWith(',') ||
+        stringValue.startsWith('{') ||
+        stringValue.startsWith('[') ||
+        stringValue.startsWith('<');  // HTML content like buttons
+
+      if (isStructuralFragment) {
+        return stringValue;
+      }
+    }
+
+    return escapeValue(stringValue);
   });
 
   // Second pass: Replace {{ variable }} placeholders (Jinja-style fallback)
