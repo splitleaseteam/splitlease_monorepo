@@ -25,27 +25,40 @@ def load_env_file():
 
     return env_vars
 
-def extract_summary_from_transcript(transcript_path):
-    """Extract the last assistant response from transcript"""
+def extract_info_from_transcript(transcript_path):
+    """Extract user prompt and assistant response from transcript"""
     try:
         if not os.path.exists(transcript_path):
-            return None
+            return None, None
 
         with open(transcript_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        # Parse JSONL entries and find last assistant message
+        # Parse JSONL entries
+        user_prompt = None
         last_text = None
+
+        # Extract user prompt (first user message)
+        for line in lines:
+            try:
+                entry = json.loads(line.strip())
+                if entry.get('type') == 'user':
+                    message = entry.get('message', {})
+                    content = message.get('content')
+                    if isinstance(content, str):
+                        user_prompt = content.strip()
+                        break
+            except:
+                continue
+
+        # Extract last assistant message
         for line in reversed(lines):
             try:
                 entry = json.loads(line.strip())
-
-                # Check if this is an assistant message
                 if entry.get('type') == 'assistant':
                     message = entry.get('message', {})
                     content = message.get('content', [])
 
-                    # Look through content blocks for text
                     if isinstance(content, list):
                         for block in content:
                             if isinstance(block, dict) and block.get('type') == 'text':
@@ -61,50 +74,42 @@ def extract_summary_from_transcript(transcript_path):
                 continue
 
         if not last_text:
-            return None
+            return user_prompt, None
 
         # Extract multiple sentences/paragraphs for more detail
         lines = last_text.split('\n')
         summary_parts = []
         char_count = 0
-        max_chars = 600  # More verbose limit
+        max_chars = 600
 
         for line in lines:
             line = line.strip()
 
-            # Skip markdown headers and very short lines
             if not line or line.startswith('#') or len(line) < 10:
                 continue
 
-            # Skip code blocks and special formatting
             if line.startswith('```') or line.startswith('~~~'):
                 continue
 
-            # Remove markdown formatting but keep the content
             clean_line = line.replace('**', '').replace('*', '').replace('`', '')
 
-            # Add this line to summary
             if char_count + len(clean_line) <= max_chars:
                 summary_parts.append(clean_line)
                 char_count += len(clean_line)
             else:
-                # Add partial line if we have room
                 remaining = max_chars - char_count
-                if remaining > 50:  # Only add if we have meaningful space left
+                if remaining > 50:
                     summary_parts.append(clean_line[:remaining-3] + "...")
                 break
 
-            # Stop if we have a good amount of content
             if len(summary_parts) >= 5 and char_count > 300:
                 break
 
-        if summary_parts:
-            return ' '.join(summary_parts)
-
-        return None
+        summary = ' '.join(summary_parts) if summary_parts else None
+        return user_prompt, summary
 
     except Exception as e:
-        return None
+        return None, None
 
 def get_latest_commit_hash(cwd):
     """Get the latest git commit hash"""
@@ -162,22 +167,34 @@ def main():
 
         # Extract information from hook input
         transcript_path = input_data.get('transcript_path', '')
+        cwd = input_data.get('cwd', '')
 
-        # Get hostname and format device name
+        # Get hostname
         hostname = os.environ.get('COMPUTERNAME', os.environ.get('HOSTNAME', 'unknown'))
-        # Convert SPLIT-LEASE-8 to Splitlease 8
-        device_name = hostname.replace('SPLIT-LEASE-', 'Splitlease ').replace('-', ' ')
 
-        # Extract summary from transcript
-        summary = extract_summary_from_transcript(transcript_path)
+        # Extract prompt and summary from transcript
+        user_prompt, summary = extract_info_from_transcript(transcript_path)
 
         # Only send if we got a real summary
         if not summary:
             print("No summary extracted from transcript", file=sys.stderr)
-            sys.exit(0)  # Exit successfully even if no message sent
+            sys.exit(0)
+
+        # Check for git commit
+        commit_hash = get_latest_commit_hash(cwd) if cwd else None
 
         # Format the message
-        message = f"{device_name} says: {summary}"
+        message_parts = [summary]
+
+        if user_prompt:
+            message_parts.append(f"Prompt: {user_prompt}")
+
+        if commit_hash:
+            message_parts.append(f"Commit: {commit_hash}")
+
+        message_parts.append(f"-{hostname}")
+
+        message = "\n".join(message_parts)
 
         # Send to Slack
         success = send_to_slack(webhook_url, message)
