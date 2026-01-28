@@ -1,6 +1,7 @@
 {
   "name": "split-lease-monorepo",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "build": "cd app && bun install --frozen-lockfile && bun run build",
@@ -13,10 +14,19 @@
     "lint:fix": "cd app && bun run lint:fix",
     "lint:check": "cd app && bun run lint:check",
     "test": "cd app && bun run test",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:debug": "npx playwright test --debug",
+    "test:e2e:headed": "npx playwright test --headed",
+    "test:schedule": "npx playwright test tests/schedule-selector-comparison.spec.ts",
+    "test:schedule:localhost": "npx playwright test tests/schedule-selector-comparison.spec.ts --grep 'Localhost'",
+    "test:schedule:compare": "npx playwright test tests/schedule-selector-comparison.spec.ts --grep 'Compare'",
+    "playwright:install": "npx playwright install chromium",
     "knip": "knip"
   },
   "description": "Split Lease application monorepo - Cloudflare Pages deployment - Root directory: app",
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@types/node": "^25.0.10",
     "knip": "^5.82.1",
     "playwright": "^1.58.0",
