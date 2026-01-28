@@ -263,16 +263,16 @@ const FavoritesCardV3 = ({
       background: TOKENS.colors.card,
       borderRadius: TOKENS.radius.lg,
       overflow: 'hidden',
-      // Enhanced hover effects - more dramatic lift and glow
-      boxShadow: isHovered && !isTouchDevice
+      // Enhanced hover effects - always apply when hovered (touch devices won't trigger mouseenter anyway)
+      boxShadow: isHovered
         ? '0 12px 28px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(91, 40, 166, 0.2)'
         : TOKENS.shadows.md,
-      transition: isTouchDevice ? 'none' : 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-      transform: isHovered && !isTouchDevice ? 'translateY(-6px) scale(1.01)' : 'none',
+      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: isHovered ? 'translateY(-6px) scale(1.02)' : 'none',
       cursor: 'pointer',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      border: isHovered && !isTouchDevice
-        ? '2px solid rgba(91, 40, 166, 0.3)' // Purple tint on hover
+      border: isHovered
+        ? '2px solid rgba(91, 40, 166, 0.4)' // Purple tint on hover
         : `2px solid ${TOKENS.colors.border}`,
       boxSizing: 'border-box',
       margin: 0,
@@ -301,7 +301,7 @@ const FavoritesCardV3 = ({
       height: '100%',
       objectFit: 'cover',
       transition: 'transform 0.3s ease',
-      transform: isHovered && !isTouchDevice ? 'scale(1.02)' : 'scale(1)',
+      transform: isHovered ? 'scale(1.05)' : 'scale(1)', // Zoom in on hover
       display: 'block',
       margin: 0,
       padding: 0,
@@ -507,8 +507,8 @@ const FavoritesCardV3 = ({
     <article
       style={styles.card}
       onClick={handleCardClick}
-      onMouseEnter={() => !isTouchDevice && setIsHovered(true)}
-      onMouseLeave={() => !isTouchDevice && setIsHovered(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       aria-labelledby={`listing-title-${listing.id}`}
     >
       {/* HERO SECTION - Edge-to-edge */}
