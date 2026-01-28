@@ -81,6 +81,10 @@
 /_emergency  /_internal/internal-emergency-view  200
 /_emergency/  /_internal/internal-emergency-view  200
 
+# /_internal/virtual-meeting-calendar → internal-virtual-meeting-calendar.html
+/_internal/virtual-meeting-calendar  /_internal/virtual-meeting-calendar-view  200
+/_internal/virtual-meeting-calendar/  /_internal/virtual-meeting-calendar-view  200
+
 # /_admin-threads → admin-threads.html
 /_admin-threads  /_internal/admin-threads-view  200
 /_admin-threads/  /_internal/admin-threads-view  200
