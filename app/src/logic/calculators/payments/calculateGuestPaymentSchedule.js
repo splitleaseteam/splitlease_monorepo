@@ -139,7 +139,7 @@ function generatePaymentDates(moveInDate, numberOfPaymentCycles, rentalType) {
   const firstPaymentDate = new Date(moveInDate);
   firstPaymentDate.setDate(moveInDate.getDate() - 3);
 
-  let currentDate = new Date(firstPaymentDate);
+  const currentDate = new Date(firstPaymentDate);
 
   for (let i = 0; i < numberOfPaymentCycles; i++) {
     paymentDates.push(formatDate(currentDate));

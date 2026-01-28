@@ -552,7 +552,9 @@ const FavoriteListingsPage = () => {
           } else if (typeof photosField === 'string') {
             try {
               photos = JSON.parse(photosField);
-            } catch { /* ignore */ }
+            } catch {
+              void 0; // Intentional: malformed JSON falls back to empty array
+            }
           }
 
           // Only collect string IDs (legacy format), not objects (new format)
