@@ -724,37 +724,55 @@ function runValidationChecks(listing, pricingList, hostRates) {
 }
 
 function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
-  const _rentalType = listing['rental type'] || 'Nightly'; // Reserved for future rental-type-specific logic
+  const _rentalType = listing['rental type'] || 'Nightly';
   const effectiveNights = nightsCount > 0 ? nightsCount : 3;
 
-  // Combined markup
-  const combinedMarkup = calculateCombinedMarkup({
-    unitMarkup: hostRates.unitMarkup || 0,
-    siteMarkup: zatConfig.overallSiteMarkup || 0.17
-  });
+  // 1. Setup Base Scalars
+  const siteMarkup = zatConfig.overallSiteMarkup || 0.17;
+  const unitMarkup = hostRates.unitMarkup || 0;
+  const weeklyMarkup = zatConfig.weeklyMarkup || 0;
 
-  // Monthly calculations
+  // 2. Calculate Unused Nights Discount (Linear)
+  const unusedNightsCount = 7 - effectiveNights;
+  const unusedNightsDiscount = unusedNightsCount * (zatConfig.unusedNightsDiscountMultiplier || 0.03);
+
+  // 3. Calculate Full Time Discount (Nightly only)
+  const fullTimeDiscount = effectiveNights === 7 ? (zatConfig.fullTimeDiscount || 0.13) : 0;
+
+  // 4. Combined Markup for display (Unit + Site)
+  // Note: used for display stats
+  const combinedMarkup = siteMarkup + unitMarkup;
+
+  // --- Monthly Calculations ---
   let monthlyAvgNightly = 0;
   let monthlyAvgWeekly = 0;
-  let monthlyProrated = 0;
+  let monthlyProratedResult = 0;
   if (hostRates.monthlyRate > 0) {
     monthlyAvgNightly = calculateMonthlyAvgNightly({
       monthlyHostRate: hostRates.monthlyRate,
       avgDaysPerMonth: zatConfig.avgDaysPerMonth || 30.4
     });
     monthlyAvgWeekly = calculateAverageWeeklyPrice({ monthlyAvgNightly });
-    monthlyProrated = monthlyAvgWeekly / effectiveNights;
+
+    // Formula: (Monthly Avg Nightly * 7) / Nights
+    const monthlyBase = monthlyAvgWeekly / effectiveNights;
+
+    // Monthly Multiplier: 1 + Site + Unit - Unused
+    const mMultiplier = 1 + siteMarkup + unitMarkup - unusedNightsDiscount;
+    monthlyProratedResult = monthlyBase * mMultiplier;
   }
 
-  // Weekly calculations
-  let weeklyProrated = 0;
-  const unusedNightsCount = 7 - effectiveNights;
-  const unusedNightsDiscount = unusedNightsCount * (zatConfig.unusedNightsDiscountMultiplier || 0.03);
+  // --- Weekly Calculations ---
+  let weeklyProratedResult = 0;
   if (hostRates.weeklyRate > 0) {
-    weeklyProrated = hostRates.weeklyRate / effectiveNights;
+    const weeklyBase = hostRates.weeklyRate / effectiveNights;
+
+    // Weekly Multiplier: 1 + Site + Unit + Weekly - Unused
+    const wMultiplier = 1 + siteMarkup + unitMarkup + weeklyMarkup - unusedNightsDiscount;
+    weeklyProratedResult = weeklyBase * wMultiplier;
   }
 
-  // Nightly calculations
+  // --- Nightly Calculations ---
   const nightlyRateMap = {
     2: hostRates.rate2Night,
     3: hostRates.rate3Night,
@@ -762,18 +780,20 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
     5: hostRates.rate5Night
   };
   const baseNightlyRate = nightlyRateMap[effectiveNights] || hostRates.rate4Night || 0;
-  const fullTimeDiscount = effectiveNights === 7 ? (zatConfig.fullTimeDiscount || 0.13) : 0;
-  const nightlyWithMarkup = baseNightlyRate * (1 + combinedMarkup) * (1 - fullTimeDiscount);
+
+  // Nightly Multiplier: 1 + Site + Unit - Unused - FullTime
+  const nMultiplier = 1 + siteMarkup + unitMarkup - unusedNightsDiscount - fullTimeDiscount;
+  const nightlyWithMarkup = baseNightlyRate * nMultiplier;
 
   return {
     monthly: {
-      proratedNightlyRate: monthlyProrated * (1 + combinedMarkup),
+      proratedNightlyRate: monthlyProratedResult,
       avgNightly: monthlyAvgNightly,
       avgWeeklyPrice: monthlyAvgWeekly,
       markup: combinedMarkup
     },
     weekly: {
-      proratedNightlyRate: weeklyProrated * (1 + combinedMarkup) * (1 - unusedNightsDiscount),
+      proratedNightlyRate: weeklyProratedResult,
       markup: combinedMarkup,
       unusedNightsDiscount
     },
