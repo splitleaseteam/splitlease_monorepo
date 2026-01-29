@@ -1,0 +1,310 @@
+# Design Tokens & UI Patterns
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Documentation/Design Tokens" />
+
+## Split Lease Design System
+
+This document outlines the design tokens and shared UI patterns used throughout the Split Lease application.
+
+---
+
+## Color Palette
+
+### Primary Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--primary-purple` | `#31135D` | Brand color, headings, important UI |
+| `--primary-purple-hover` | `#251047` | Hover state for primary elements |
+| `--secondary-purple` | `#6D31C2` | Interactive buttons, links, CTAs |
+| `--accent-purple` | `#8C68EE` | Hover state for secondary, highlights |
+| `--chat-purple` | `#4B47CE` | Day badges, chat elements |
+
+### Status Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--success-green` | `#22C55E` | Confirmations, completed actions |
+| `--success-teal` | `#10B981` | Alternative success color |
+| `--error-red` | `#EF4444` | Errors, failures (Toast system) |
+| `--warning-amber` | `#F59E0B` | Warnings, cautions (Toast system) |
+| `--info-blue` | `#3B82F6` | Info messages, tips |
+
+### Text Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--text-dark` | `#1a1a1a` | Primary text |
+| `--text-gray` | `#6b7280` | Secondary text |
+| `--text-light-gray` | `#9ca3af` | Tertiary/muted text |
+| `--text-description` | `#374151` | Description text |
+
+### Background Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--bg-white` | `#ffffff` | Card backgrounds |
+| `--bg-light` | `#f9fafb` | Page backgrounds |
+| `--bg-light-gray` | `#f3f4f6` | Section backgrounds |
+| `--bg-off-white` | `rgb(252, 250, 255)` | Subtle purple tint |
+
+---
+
+## Typography
+
+### Font Families
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--font-inter` | `'Inter', sans-serif` | Primary UI font |
+| `--font-dm` | `'DM Sans', sans-serif` | Alternative sans-serif |
+| `--font-heading` | `'Inter', sans-serif` | Headings |
+
+### Font Sizes
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--text-xs` | `11px` | Fine print |
+| `--text-sm` | `12px` | Captions, labels |
+| `--text-base` | `14px` | Body text |
+| `--text-md` | `16px` | Large body |
+| `--text-lg` | `18px` | Subheadings |
+| `--text-xl` | `20px` | Section headings |
+| `--text-2xl` | `28px` | Page headings |
+| `--text-3xl` | `32px` | Hero headings |
+| `--text-4xl` | `36px` | Display headings |
+
+### Font Weights
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--font-weight-normal` | `400` | Body text |
+| `--font-weight-medium` | `500` | Emphasis |
+| `--font-weight-semibold` | `600` | Subheadings |
+| `--font-weight-bold` | `700` | Headings |
+
+---
+
+## Spacing
+
+### Scale
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--spacing-xs` | `4px` | Tight spacing |
+| `--spacing-sm` | `8px` | Small gaps |
+| `--spacing-md` | `12px` | Medium gaps |
+| `--spacing-lg` | `16px` | Default spacing |
+| `--spacing-xl` | `20px` | Large spacing |
+| `--spacing-2xl` | `24px` | Section spacing |
+| `--spacing-3xl` | `28px` | Large sections |
+| `--spacing-4xl` | `32px` | Major sections |
+
+### Gaps (Flexbox/Grid)
+
+| Token | Value |
+|-------|-------|
+| `--gap-sm` | `0.5rem` (8px) |
+| `--gap-md` | `0.75rem` (12px) |
+| `--gap-lg` | `1rem` (16px) |
+| `--gap-xl` | `1.5rem` (24px) |
+| `--gap-2xl` | `2rem` (32px) |
+
+---
+
+## Border Radius
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--rounded-sm` | `4px` | Buttons, inputs |
+| `--rounded-md` | `6px` | Small cards |
+| `--rounded-lg` | `8px` | Cards |
+| `--rounded-xl` | `12px` | Modals |
+| `--rounded-2xl` | `16px` | Large cards |
+| `--rounded-full` | `50%` | Avatars, circles |
+| `--rounded-pill` | `20px` | Pill buttons |
+
+---
+
+## Shadows
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--shadow-sm` | `0 1px 3px rgba(0,0,0,0.05)` | Subtle depth |
+| `--shadow-md` | `0 2px 8px rgba(0,0,0,0.08)` | Cards |
+| `--shadow-lg` | `0 4px 12px rgba(0,0,0,0.15)` | Dropdowns |
+| `--shadow-xl` | `0 4px 16px rgba(49,19,93,0.35)` | Modals |
+| `--shadow-purple-lg` | `0 6px 20px rgba(109,49,194,0.35)` | CTAs |
+
+---
+
+## Breakpoints
+
+| Token | Value | Description |
+|-------|-------|-------------|
+| `--breakpoint-sm` | `600px` | Mobile landscape |
+| `--breakpoint-md` | `768px` | Tablet |
+| `--breakpoint-lg` | `1024px` | Desktop |
+| `--breakpoint-xl` | `1080px` | Wide desktop |
+| `--breakpoint-2xl` | `1200px` | Large desktop |
+| `--breakpoint-max` | `1440px` | Maximum width |
+
+---
+
+## Transitions
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--transition-fast` | `0.1s` | Immediate feedback |
+| `--transition-base` | `0.2s` | Default |
+| `--transition-slow` | `0.3s` | Smooth animations |
+
+---
+
+## Common UI Patterns
+
+### Button Variants
+
+```css
+.btn-primary {
+  background: var(--gradient-purple-button);
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: var(--bg-light-gray);
+  color: var(--secondary-purple);
+  border: none;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--secondary-purple);
+  border: 1px solid var(--border-color);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--secondary-purple);
+  border: none;
+}
+```
+
+### Card Pattern
+
+```css
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--rounded-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+```
+
+### Modal Pattern
+
+```css
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+}
+
+.modal-content {
+  background: var(--bg-white);
+  border-radius: var(--rounded-xl);
+  max-width: var(--max-width-modal);
+  box-shadow: var(--shadow-xl);
+}
+```
+
+### Day Selection Pattern
+
+The app uses JavaScript's 0-based day indexing:
+
+| Index | Day |
+|-------|-----|
+| 0 | Sunday |
+| 1 | Monday |
+| 2 | Tuesday |
+| 3 | Wednesday |
+| 4 | Thursday |
+| 5 | Friday |
+| 6 | Saturday |
+
+### Toast Notification Pattern
+
+| Type | Color | Icon |
+|------|-------|------|
+| success | `#22C55E` | Checkmark circle |
+| error | `#EF4444` | X circle |
+| warning | `#F59E0B` | Triangle alert |
+| info | `#3B82F6` | Info circle |
+
+---
+
+## Z-Index Scale
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--z-dropdown` | `100` | Dropdowns, menus |
+| `--z-sticky` | `500` | Sticky headers |
+| `--z-floating` | `999` | Floating actions |
+| `--z-modal` | `10000` | Modals, overlays |
+
+---
+
+## Protocol Design System
+
+For specific UI components, the app uses a stricter "Protocol" design system:
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--protocol-primary` | `#31135D` | Primary brand |
+| `--protocol-action` | `#5B5FCF` | Action buttons |
+| `--protocol-danger` | `#DC3545` | Destructive actions |
+| `--protocol-space-sm/md/lg` | `8/16/24px` | Strict spacing (8px grid) |
+| `--protocol-radius-button` | `100px` | Pill buttons |
+| `--protocol-radius-modal` | `16px` | Modal corners |
+
+**Important:** Protocol colors exclude green and yellow - using monochromatic purple only.
+
+---
+
+## Usage in Components
+
+### CSS Variables
+
+```css
+.my-component {
+  color: var(--text-dark);
+  background: var(--bg-white);
+  padding: var(--spacing-lg);
+  border-radius: var(--rounded-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base) ease;
+}
+
+.my-component:hover {
+  box-shadow: var(--shadow-md);
+}
+```
+
+### Responsive Design
+
+```css
+.my-component {
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .my-component {
+    padding: var(--spacing-xl);
+  }
+}
+```

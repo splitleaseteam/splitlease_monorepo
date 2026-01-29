@@ -249,6 +249,13 @@ export default function ProposalItem({ proposal, onStatusChange, onAction }) {
           View listing
         </button>
         <button
+          className="pm-btn pm-btn-link"
+          onClick={() => onAction('viewLease', proposal)}
+          title="View lease and payment records for this proposal"
+        >
+          View Lease
+        </button>
+        <button
           className="pm-btn pm-btn-primary"
           onClick={() => onAction('modifyAsHost', proposal)}
         >

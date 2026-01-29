@@ -17,14 +17,14 @@ export default function NavigationTabs({
     <nav style={styles.container}>
       <ul style={styles.list}>
         {sections.map((section, index) => {
-          const isActive = activeSection === section.key;
-          const isCompleted = completedSections[section.key];
+          const isActive = activeSection === section.id;
+          const isCompleted = completedSections[section.id];
 
           return (
-            <li key={section.key} style={styles.listItem}>
+            <li key={section.id} style={styles.listItem}>
               <button
                 type="button"
-                onClick={() => onSectionChange(section.key)}
+                onClick={() => onSectionChange(section.id)}
                 style={{
                   ...styles.button,
                   ...(isActive ? styles.buttonActive : {})

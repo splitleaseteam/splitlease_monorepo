@@ -100,6 +100,7 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       accessToken = session?.access_token || '';
+    // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to anon key when auth unavailable
     } catch {
       void 0; // Silently ignore auth errors - we'll use anon key
     }

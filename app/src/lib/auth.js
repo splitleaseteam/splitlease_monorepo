@@ -944,6 +944,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             logger.error('   Detailed error from response:', errorBody.error);
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: error parsing is for logging only
         } catch (_parseErr) {
           void 0; // Silent - just for logging
         }
@@ -956,6 +957,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             logger.error('   Detailed error from response:', errorBody.error);
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: error parsing is for logging only
         } catch (_parseErr) {
           void 0; // Silent - just for logging
         }
@@ -1322,6 +1324,7 @@ export async function updatePassword(newPassword) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
           void 0; // Silent - use default message
         }
@@ -1334,6 +1337,7 @@ export async function updatePassword(newPassword) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
+        // eslint-disable-next-line no-restricted-syntax -- Intentional: fallback to default error message
         } catch (_parseErr) {
           void 0; // Silent - use default message
         }

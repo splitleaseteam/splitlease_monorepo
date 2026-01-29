@@ -643,6 +643,11 @@ export function useProposalManagePageLogic() {
         window.open(`/view-split-lease?id=${proposal.listing?._id}`, '_blank');
         break;
 
+      case 'viewLease':
+        // Navigate to lease management page with proposal ID pre-filled in search
+        window.open(`/_manage-leases-payment-records?search=${proposal._id}`, '_blank');
+        break;
+
       case 'modifyAsHost':
         // TODO: Open host editing modal
         alert('Host modification feature coming soon');

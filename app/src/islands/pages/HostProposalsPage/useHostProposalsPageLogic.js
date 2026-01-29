@@ -19,6 +19,7 @@ import { getAllHouseRules } from '../../shared/EditListingDetails/services/house
 import { getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
 import { DAYS_OF_WEEK, nightNamesToIndices } from '../../shared/HostEditingProposal/types.js';
 import { showToast } from '../../shared/Toast.jsx';
+import { findThreadByProposal } from '../../../lib/messagingUtils.js';
 
 // ============================================================================
 // DATA NORMALIZERS
@@ -1050,11 +1051,33 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   /**
    * Handle send message
    */
-  const handleSendMessage = useCallback((proposal) => {
+  const handleSendMessage = useCallback(async (proposal) => {
     const guest = proposal.guest || proposal.Guest || proposal['Created By'] || {};
     const guestName = guest.firstName || guest['First Name'] || 'Guest';
-    showToast({ title: 'Opening Messages', content: `Opening message thread with ${guestName}`, type: 'info' });
-    // TODO: Navigate to messaging or open message modal
+
+    // Get proposal ID
+    const proposalId = proposal._id || proposal.id;
+    if (!proposalId) {
+      showToast({ title: 'Error', content: 'Unable to find proposal ID', type: 'error' });
+      return;
+    }
+
+    // Look up thread for this proposal
+    const threadId = await findThreadByProposal(proposalId);
+
+    if (threadId) {
+      // Navigate to messages page with thread pre-selected
+      console.log('[useHostProposalsPageLogic] Navigating to thread:', threadId);
+      window.location.href = `/messages?thread=${threadId}`;
+    } else {
+      // Thread not found - this is unusual, show error
+      console.warn('[useHostProposalsPageLogic] No thread found for proposal:', proposalId);
+      showToast({
+        title: 'Thread Not Found',
+        content: `Unable to find message thread for this proposal. Please try again.`,
+        type: 'warning'
+      });
+    }
   }, []);
 
   /**

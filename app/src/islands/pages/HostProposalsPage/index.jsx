@@ -109,6 +109,7 @@ const MOCK_PROPOSALS = [
 import ProposalDetailsModal from './ProposalDetailsModal.jsx';
 import { HostEditingProposal } from '../../shared/HostEditingProposal/HostEditingProposal.jsx';
 import VirtualMeetingManager from '../../shared/VirtualMeetingManager/VirtualMeetingManager.jsx';
+import GuestProfileModal from '../../modals/GuestProfileModal.jsx';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -171,6 +172,10 @@ export default function HostProposalsPage() {
 
   // Demo mode state
   const [demoSelectedListingId, setDemoSelectedListingId] = useState(MOCK_LISTINGS[0]?._id);
+
+  // Guest profile modal state
+  const [isGuestProfileModalOpen, setIsGuestProfileModalOpen] = useState(false);
+  const [selectedGuest, setSelectedGuest] = useState(null);
 
   const {
     // Auth state
@@ -265,11 +270,23 @@ export default function HostProposalsPage() {
     setExpandedProposalId(prev => prev === proposalId ? null : proposalId);
   }, []);
 
+  // Handler for guest profile modal
+  const handleViewGuestProfile = useCallback((proposal) => {
+    const guest = proposal?.guest || proposal?.Guest || proposal?.['Created By'] || {};
+    setSelectedGuest(guest);
+    setIsGuestProfileModalOpen(true);
+  }, []);
+
+  const handleCloseGuestProfile = useCallback(() => {
+    setIsGuestProfileModalOpen(false);
+    setSelectedGuest(null);
+  }, []);
+
   // Create handlers object for cards
   const cardHandlers = useMemo(() => ({
-    // View profile - opens details modal
+    // View profile - opens guest profile modal
     onViewProfile: (proposal) => {
-      handleProposalClick(proposal);
+      handleViewGuestProfile(proposal);
     },
     // Message guest
     onMessage: (proposal) => {
@@ -317,7 +334,7 @@ export default function HostProposalsPage() {
       handleRequestRentalApp(proposal);
     }
   }), [
-    handleProposalClick,
+    handleViewGuestProfile,
     handleSendMessage,
     handleChooseVirtualMeeting,
     handleAcceptProposal,
@@ -492,6 +509,14 @@ export default function HostProposalsPage() {
             </div>
           </div>
         )
+      )}
+
+      {/* Guest Profile Modal */}
+      {isGuestProfileModalOpen && selectedGuest && (
+        <GuestProfileModal
+          guest={selectedGuest}
+          onClose={handleCloseGuestProfile}
+        />
       )}
     </>
   );

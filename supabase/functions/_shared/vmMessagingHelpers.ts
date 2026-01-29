@@ -16,6 +16,11 @@ import {
   getCTAByName,
   getVisibilityForRole,
 } from './ctaHelpers.ts';
+import {
+  getNotificationPreferences,
+  shouldSendEmail as checkEmailPreference,
+  shouldSendSms as checkSmsPreference,
+} from './notificationHelpers.ts';
 
 // ============================================
 // TYPES
@@ -325,77 +330,105 @@ export async function sendVMRequestMessages(
 
   // ─────────────────────────────────────────────────────────
   // EMAIL NOTIFICATIONS
+  // Now checks notification_preferences table
   // ─────────────────────────────────────────────────────────
 
   const proposalUrl = `https://splitlease.com/guest-proposals?proposalId=${context.proposalId}&section=virtual-meeting`;
   const hostProposalUrl = `https://splitlease.com/host-proposals?proposalId=${context.proposalId}&section=virtual-meeting`;
 
+  // Fetch notification preferences for both users
+  const [guestPrefs, hostPrefs] = await Promise.all([
+    getNotificationPreferences(supabase, context.guestUserId),
+    getNotificationPreferences(supabase, context.hostUserId),
+  ]);
+
   // Email to GUEST
   if (context.notifyGuestEmail && context.guestEmail) {
-    const guestEmailMessage = requesterIsHost
-      ? `A virtual meeting request from ${hostName} has been sent for the times: ${datesDisplay}. Please respond as soon as you can.`
-      : `Your virtual meeting request has been sent for the times: ${datesDisplay}. ${hostName} will respond when they are able.`;
+    // Check preference table for virtual_meetings category
+    if (!checkEmailPreference(guestPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Guest email SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      const guestEmailMessage = requesterIsHost
+        ? `A virtual meeting request from ${hostName} has been sent for the times: ${datesDisplay}. Please respond as soon as you can.`
+        : `Your virtual meeting request has been sent for the times: ${datesDisplay}. ${hostName} will respond when they are able.`;
 
-    result.guestEmailSent = await sendEmail({
-      toEmail: context.guestEmail,
-      toName: guestName,
-      subject: 'Virtual Meeting Request - Split Lease',
-      title: 'Virtual Meeting Request',
-      bodytext1: guestEmailMessage,
-      bodytext2: 'The meeting will be hosted via Google Meet and we will share the link as soon as the meeting is confirmed.',
-      buttonUrl: proposalUrl,
-      buttonText: 'View Virtual Meeting',
-      preheaderText: 'A virtual meeting has been requested',
-      warningMessage: splitBotWarning,
-    });
+      result.guestEmailSent = await sendEmail({
+        toEmail: context.guestEmail,
+        toName: guestName,
+        subject: 'Virtual Meeting Request - Split Lease',
+        title: 'Virtual Meeting Request',
+        bodytext1: guestEmailMessage,
+        bodytext2: 'The meeting will be hosted via Google Meet and we will share the link as soon as the meeting is confirmed.',
+        buttonUrl: proposalUrl,
+        buttonText: 'View Virtual Meeting',
+        preheaderText: 'A virtual meeting has been requested',
+        warningMessage: splitBotWarning,
+      });
+    }
   }
 
   // Email to HOST
   if (context.notifyHostEmail && context.hostEmail) {
-    const hostEmailMessage = requesterIsHost
-      ? `Your virtual meeting request has been sent for the times: ${datesDisplay}. ${guestName} will respond as soon as possible.`
-      : `A virtual meeting request from ${guestName} has been sent for the times: ${datesDisplay}. Please respond as soon as you can.`;
+    // Check preference table for virtual_meetings category
+    if (!checkEmailPreference(hostPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Host email SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      const hostEmailMessage = requesterIsHost
+        ? `Your virtual meeting request has been sent for the times: ${datesDisplay}. ${guestName} will respond as soon as possible.`
+        : `A virtual meeting request from ${guestName} has been sent for the times: ${datesDisplay}. Please respond as soon as you can.`;
 
-    result.hostEmailSent = await sendEmail({
-      toEmail: context.hostEmail,
-      toName: hostName,
-      subject: 'Virtual Meeting Request - Split Lease',
-      title: 'Virtual Meeting Request',
-      bodytext1: hostEmailMessage,
-      bodytext2: 'The meeting will be hosted via Google Meet and we will share the link as soon as the meeting is confirmed.',
-      buttonUrl: hostProposalUrl,
-      buttonText: 'See Virtual Meeting',
-      preheaderText: 'A virtual meeting has been requested',
-      warningMessage: splitBotWarning,
-    });
+      result.hostEmailSent = await sendEmail({
+        toEmail: context.hostEmail,
+        toName: hostName,
+        subject: 'Virtual Meeting Request - Split Lease',
+        title: 'Virtual Meeting Request',
+        bodytext1: hostEmailMessage,
+        bodytext2: 'The meeting will be hosted via Google Meet and we will share the link as soon as the meeting is confirmed.',
+        buttonUrl: hostProposalUrl,
+        buttonText: 'See Virtual Meeting',
+        preheaderText: 'A virtual meeting has been requested',
+        warningMessage: splitBotWarning,
+      });
+    }
   }
 
   // ─────────────────────────────────────────────────────────
   // SMS NOTIFICATIONS
+  // Now checks notification_preferences table
   // ─────────────────────────────────────────────────────────
 
   // SMS to GUEST
   if (context.notifyGuestSms && context.guestPhone) {
-    const guestSmsMessage = requesterIsHost
-      ? `Split Lease: ${hostName} has requested a virtual meeting. Log in to respond.`
-      : `Split Lease: Your virtual meeting request has been sent. ${hostName} will respond soon.`;
+    // Check preference table for virtual_meetings category
+    if (!checkSmsPreference(guestPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Guest SMS SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      const guestSmsMessage = requesterIsHost
+        ? `Split Lease: ${hostName} has requested a virtual meeting. Log in to respond.`
+        : `Split Lease: Your virtual meeting request has been sent. ${hostName} will respond soon.`;
 
-    result.guestSmsSent = await sendSms({
-      toPhone: context.guestPhone,
-      messageBody: guestSmsMessage,
-    });
+      result.guestSmsSent = await sendSms({
+        toPhone: context.guestPhone,
+        messageBody: guestSmsMessage,
+      });
+    }
   }
 
   // SMS to HOST
   if (context.notifyHostSms && context.hostPhone) {
-    const hostSmsMessage = requesterIsHost
-      ? `Split Lease: Your virtual meeting request has been sent. ${guestName} will respond soon.`
-      : `Split Lease: ${guestName} has requested a virtual meeting. Log in to respond.`;
+    // Check preference table for virtual_meetings category
+    if (!checkSmsPreference(hostPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Host SMS SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      const hostSmsMessage = requesterIsHost
+        ? `Split Lease: Your virtual meeting request has been sent. ${guestName} will respond soon.`
+        : `Split Lease: ${guestName} has requested a virtual meeting. Log in to respond.`;
 
-    result.hostSmsSent = await sendSms({
-      toPhone: context.hostPhone,
-      messageBody: hostSmsMessage,
-    });
+      result.hostSmsSent = await sendSms({
+        toPhone: context.hostPhone,
+        messageBody: hostSmsMessage,
+      });
+    }
   }
 
   console.log('[vmMessaging] VM request messages complete:', result);
@@ -490,6 +523,7 @@ export async function sendVMAcceptMessages(
 
   // ─────────────────────────────────────────────────────────
   // EMAIL NOTIFICATIONS
+  // Now checks notification_preferences table
   // ─────────────────────────────────────────────────────────
 
   const proposalUrl = `https://splitlease.com/guest-proposals?proposalId=${context.proposalId}&section=virtual-meeting`;
@@ -503,40 +537,57 @@ export async function sendVMAcceptMessages(
     ? 'Virtual Meeting Confirmed'
     : 'Virtual Meeting Accepted';
 
+  // Fetch notification preferences for both users
+  const [guestPrefs, hostPrefs] = await Promise.all([
+    getNotificationPreferences(supabase, context.guestUserId),
+    getNotificationPreferences(supabase, context.hostUserId),
+  ]);
+
   // Email to GUEST
   if (context.notifyGuestEmail && context.guestEmail) {
-    result.guestEmailSent = await sendEmail({
-      toEmail: context.guestEmail,
-      toName: guestName,
-      subject: emailSubject,
-      title: emailTitle,
-      bodytext1: messageBody,
-      bodytext2: '',
-      buttonUrl: proposalUrl,
-      buttonText: 'View Virtual Meeting',
-      preheaderText: emailTitle,
-      warningMessage: splitBotWarning || '',
-    });
+    // Check preference table for virtual_meetings category
+    if (!checkEmailPreference(guestPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Guest accept email SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      result.guestEmailSent = await sendEmail({
+        toEmail: context.guestEmail,
+        toName: guestName,
+        subject: emailSubject,
+        title: emailTitle,
+        bodytext1: messageBody,
+        bodytext2: '',
+        buttonUrl: proposalUrl,
+        buttonText: 'View Virtual Meeting',
+        preheaderText: emailTitle,
+        warningMessage: splitBotWarning || '',
+      });
+    }
   }
 
   // Email to HOST
   if (context.notifyHostEmail && context.hostEmail) {
-    result.hostEmailSent = await sendEmail({
-      toEmail: context.hostEmail,
-      toName: hostName,
-      subject: emailSubject,
-      title: emailTitle,
-      bodytext1: messageBody,
-      bodytext2: '',
-      buttonUrl: hostProposalUrl,
-      buttonText: 'See Virtual Meeting',
-      preheaderText: emailTitle,
-      warningMessage: splitBotWarning || '',
-    });
+    // Check preference table for virtual_meetings category
+    if (!checkEmailPreference(hostPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Host accept email SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      result.hostEmailSent = await sendEmail({
+        toEmail: context.hostEmail,
+        toName: hostName,
+        subject: emailSubject,
+        title: emailTitle,
+        bodytext1: messageBody,
+        bodytext2: '',
+        buttonUrl: hostProposalUrl,
+        buttonText: 'See Virtual Meeting',
+        preheaderText: emailTitle,
+        warningMessage: splitBotWarning || '',
+      });
+    }
   }
 
   // ─────────────────────────────────────────────────────────
   // SMS NOTIFICATIONS
+  // Now checks notification_preferences table
   // ─────────────────────────────────────────────────────────
 
   const smsMessage = isConfirmedBySL
@@ -545,18 +596,28 @@ export async function sendVMAcceptMessages(
 
   // SMS to GUEST
   if (context.notifyGuestSms && context.guestPhone) {
-    result.guestSmsSent = await sendSms({
-      toPhone: context.guestPhone,
-      messageBody: smsMessage,
-    });
+    // Check preference table for virtual_meetings category
+    if (!checkSmsPreference(guestPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Guest accept SMS SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      result.guestSmsSent = await sendSms({
+        toPhone: context.guestPhone,
+        messageBody: smsMessage,
+      });
+    }
   }
 
   // SMS to HOST
   if (context.notifyHostSms && context.hostPhone) {
-    result.hostSmsSent = await sendSms({
-      toPhone: context.hostPhone,
-      messageBody: smsMessage,
-    });
+    // Check preference table for virtual_meetings category
+    if (!checkSmsPreference(hostPrefs, 'virtual_meetings')) {
+      console.log('[vmMessaging] Host accept SMS SKIPPED (preference: virtual_meetings disabled)');
+    } else {
+      result.hostSmsSent = await sendSms({
+        toPhone: context.hostPhone,
+        messageBody: smsMessage,
+      });
+    }
   }
 
   console.log('[vmMessaging] VM accept messages complete:', result);

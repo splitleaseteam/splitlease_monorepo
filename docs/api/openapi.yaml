@@ -1,0 +1,2267 @@
+openapi: 3.0.3
+info:
+  title: Split Lease Edge Functions API
+  version: 2.0.0
+  description: |
+    Complete API documentation for all Split Lease Supabase Edge Functions.
+
+    ## Architecture Pattern
+    All endpoints follow the action-based routing pattern:
+    ```json
+    {
+      "action": "action_name",
+      "payload": { /* action-specific data */ }
+    }
+    ```
+
+    ## Authentication
+    Most endpoints require Bearer token authentication via Supabase Auth.
+    Include the header: `Authorization: Bearer <access_token>`
+
+    ## Response Format
+    All responses follow this structure:
+    ```json
+    {
+      "success": true|false,
+      "data": { /* response data */ },
+      "error": "Error message if success is false"
+    }
+    ```
+
+    ## Day Indexing
+    All day indices use JavaScript's 0-based standard (matching Date.getDay()):
+    | Day   | Sun | Mon | Tue | Wed | Thu | Fri | Sat |
+    |-------|-----|-----|-----|-----|-----|-----|-----|
+    | Index |  0  |  1  |  2  |  3  |  4  |  5  |  6  |
+
+  contact:
+    name: Split Lease Team
+    email: splitleaseteam@gmail.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://splitlease-backend-dev.supabase.co/functions/v1
+    description: Development
+  - url: https://splitlease-backend-live.supabase.co/functions/v1
+    description: Production
+  - url: http://localhost:54321/functions/v1
+    description: Local development
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization operations
+  - name: Proposals
+    description: Proposal CRUD and matching operations
+  - name: Listings
+    description: Listing management, pricing, and house manuals
+  - name: Leases
+    description: Lease agreements and payment management
+  - name: Messaging
+    description: Real-time messaging and communications
+  - name: Communications
+    description: Email, SMS, and Slack integrations
+  - name: Meetings
+    description: Virtual meeting scheduling
+  - name: Reviews
+    description: Reviews and experience surveys
+  - name: AI
+    description: AI-powered features and OpenAI gateway
+  - name: Sync
+    description: Bubble database sync and workflow orchestration
+  - name: Admin - Users
+    description: User verification and management
+  - name: Admin - Leases
+    description: Admin lease management
+  - name: Admin - Messages
+    description: Admin message curation
+  - name: Admin - Pricing
+    description: Admin pricing management
+  - name: Admin - Emergency
+    description: Emergency reporting and management
+  - name: Admin - Content
+    description: Informational texts and content management
+  - name: Admin - Simulation
+    description: Usability testing simulation management
+  - name: Utilities
+    description: QR codes, reminders, and other utilities
+
+paths:
+  # ============================================================================
+  # AUTHENTICATION
+  # ============================================================================
+  /auth-user:
+    post:
+      summary: User authentication operations
+      description: |
+        Routes authentication requests to appropriate handlers.
+        NO AUTHENTICATION REQUIRED - These ARE the auth endpoints.
+
+        **Actions:**
+        - `login` - User login with email/password
+        - `signup` - New user registration
+        - `logout` - User logout (client-side)
+        - `validate` - Validate token and fetch user data
+        - `request_password_reset` - Send password reset email
+        - `update_password` - Update password after reset
+      tags:
+        - Authentication
+      operationId: authUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AuthLoginRequest'
+                - $ref: '#/components/schemas/AuthSignupRequest'
+                - $ref: '#/components/schemas/AuthValidateRequest'
+                - $ref: '#/components/schemas/AuthPasswordResetRequest'
+            examples:
+              login:
+                summary: User login
+                value:
+                  action: login
+                  payload:
+                    email: user@example.com
+                    password: securepassword123
+              signup:
+                summary: New user registration
+                value:
+                  action: signup
+                  payload:
+                    email: newuser@example.com
+                    password: securepassword123
+                    first_name: John
+                    last_name: Doe
+                    phone: "+15551234567"
+              validate:
+                summary: Validate token
+                value:
+                  action: validate
+                  payload:
+                    access_token: eyJhbGciOiJIUzI1...
+              request_password_reset:
+                summary: Request password reset
+                value:
+                  action: request_password_reset
+                  payload:
+                    email: user@example.com
+              update_password:
+                summary: Update password
+                value:
+                  action: update_password
+                  payload:
+                    access_token: reset-link-token
+                    new_password: newpassword123
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /magic-login-links:
+    post:
+      summary: Admin magic login link generation
+      description: |
+        Admin tool for generating and sending magic login links to users.
+
+        **Actions:**
+        - `list_users` - Search and list users for magic link generation
+        - `get_user_data` - Get user context data (listings, proposals, leases, threads)
+        - `send_magic_link` - Generate and send magic login link
+        - `get_destination_pages` - Get available destination pages
+      tags:
+        - Admin - Users
+      operationId: magicLoginLinks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              list_users:
+                summary: Search users
+                value:
+                  action: list_users
+                  payload:
+                    search: "john@example.com"
+                    limit: 20
+                    offset: 0
+              get_user_data:
+                summary: Get user context
+                value:
+                  action: get_user_data
+                  payload:
+                    userId: "user_123..."
+              send_magic_link:
+                summary: Send magic link
+                value:
+                  action: send_magic_link
+                  payload:
+                    userId: "user_123..."
+                    destinationPage: "/dashboard"
+                    customMessage: "Click here to access your account"
+              get_destination_pages:
+                summary: Get available pages
+                value:
+                  action: get_destination_pages
+                  payload: {}
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /verify-users:
+    post:
+      summary: Admin user verification tool
+      description: |
+        Admin interface for managing user verification status.
+
+        **Actions:**
+        - `list_users` - Get recent users (paginated)
+        - `search_users` - Search users by email or name
+        - `get_user` - Get single user with verification documents
+        - `toggle_verification` - Update user verification status
+      tags:
+        - Admin - Users
+      operationId: verifyUsers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              list:
+                summary: List users
+                value:
+                  action: list_users
+                  payload:
+                    limit: 20
+                    offset: 0
+              search:
+                summary: Search users
+                value:
+                  action: search_users
+                  payload:
+                    query: "john@example.com"
+              get:
+                summary: Get user details
+                value:
+                  action: get_user
+                  payload:
+                    userId: "user_123..."
+              toggle:
+                summary: Toggle verification
+                value:
+                  action: toggle_verification
+                  payload:
+                    userId: "user_123..."
+                    isVerified: true
+                    notes: "Documents verified by admin"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /identity-verification:
+    post:
+      summary: Identity verification operations
+      description: |
+        Handles user identity verification including document submission
+        and verification status management.
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      operationId: identityVerification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+                - payload
+              properties:
+                action:
+                  type: string
+                  enum:
+                    - submit_documents
+                    - get_status
+                    - verify_user
+                    - reject_user
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # PROPOSALS
+  # ============================================================================
+  /proposal:
+    post:
+      summary: Proposal CRUD operations
+      description: |
+        Create, read, update, and suggest proposals.
+        Handles booking requests between guests and hosts.
+
+        **Actions:**
+        - `create` - Create new proposal
+        - `update` - Update existing proposal
+        - `get` - Get proposal by ID
+        - `suggest` - Find and create suggestion proposals
+      tags:
+        - Proposals
+      security:
+        - bearerAuth: []
+      operationId: proposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              create:
+                summary: Create new proposal
+                value:
+                  action: create
+                  payload:
+                    listing_id: "list_123..."
+                    guest_account_id: "guest_456..."
+                    start_date: "2025-03-01"
+                    end_date: "2025-06-30"
+                    nights_selected: [1, 2, 3, 4, 5]
+                    price_per_night: 150
+              update:
+                summary: Update proposal
+                value:
+                  action: update
+                  payload:
+                    proposal_id: "prop_789..."
+                    status: accepted
+              get:
+                summary: Get proposal
+                value:
+                  action: get
+                  payload:
+                    proposal_id: "prop_789..."
+              suggest:
+                summary: Get suggestions
+                value:
+                  action: suggest
+                  payload:
+                    type: weekly_match
+                    listing_id: "list_123..."
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalResponse'
+
+  /quick-match:
+    post:
+      summary: Quick Match tool operations
+      description: |
+        Proposal-to-listing matching for the Quick Match admin tool.
+
+        **Actions:**
+        - `get_proposal` - Get proposal with match details
+        - `search_candidates` - Search candidate listings
+        - `save_choice` - Save match selection
+      tags:
+        - Proposals
+      operationId: quickMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              get_proposal:
+                summary: Get proposal details
+                value:
+                  action: get_proposal
+                  payload:
+                    proposal_id: "prop_123..."
+              search_candidates:
+                summary: Search candidates
+                value:
+                  action: search_candidates
+                  payload:
+                    proposal_id: "prop_123..."
+              save_choice:
+                summary: Save selection
+                value:
+                  action: save_choice
+                  payload:
+                    proposal_id: "prop_123..."
+                    listing_id: "list_456..."
+      responses:
+        '200':
+          description: Successful operation
+
+  /rental-application:
+    post:
+      summary: Rental application operations
+      description: |
+        Submit and manage rental applications.
+
+        **Actions:**
+        - `submit` - Submit rental application
+        - `get` - Get application details
+        - `upload` - Upload supporting document
+      tags:
+        - Proposals
+      operationId: rentalApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              submit:
+                summary: Submit application
+                value:
+                  action: submit
+                  payload:
+                    user_id: "user_123..."
+                    proposal_id: "prop_456..."
+                    employment_status: employed
+                    annual_income: 85000
+              get:
+                summary: Get application
+                value:
+                  action: get
+                  payload:
+                    application_id: "app_789..."
+      responses:
+        '200':
+          description: Successful operation
+
+  /co-host-requests:
+    post:
+      summary: Co-host request management
+      description: |
+        Manages co-hosting arrangements between hosts.
+
+        **Actions:**
+        - `create` - Create co-host request
+        - `accept` - Accept co-host request
+        - `decline` - Decline co-host request
+        - `list` - List co-host requests
+        - `get` - Get request details
+      tags:
+        - Proposals
+      security:
+        - bearerAuth: []
+      operationId: coHostRequests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+                - payload
+              properties:
+                action:
+                  type: string
+                  enum: [create, accept, decline, list, get]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /date-change-request:
+    post:
+      summary: Date change request management
+      description: |
+        Handles requests to change booking dates after confirmation.
+        Includes throttling and warning systems to prevent abuse.
+
+        **Actions:**
+        - `create` - Create date change request
+        - `get` - Get requests for a lease
+        - `accept` - Accept request
+        - `decline` - Decline request
+        - `cancel` - Cancel own request
+        - `get_throttle_status` - Check if user is throttled
+        - `apply_hard_block` - Apply hard block on user
+        - `update_warning_preference` - Update warning settings
+      tags:
+        - Proposals
+      operationId: dateChangeRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              create:
+                summary: Create request
+                value:
+                  action: create
+                  payload:
+                    lease_id: "lease_123..."
+                    new_start_date: "2025-04-01"
+                    new_end_date: "2025-04-15"
+                    reason: "Work schedule changed"
+              get_throttle_status:
+                summary: Check throttle status
+                value:
+                  action: get_throttle_status
+                  payload:
+                    user_id: "user_456..."
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # LISTINGS
+  # ============================================================================
+  /listing:
+    post:
+      summary: Listing CRUD operations
+      description: |
+        Create, get, submit, and manage listings.
+
+        **Actions:**
+        - `create` - Create new listing
+        - `get` - Get listing by ID
+        - `submit` - Submit listing for review
+      tags:
+        - Listings
+      operationId: listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              create:
+                summary: Create listing
+                value:
+                  action: create
+                  payload:
+                    host_account_id: "host_123..."
+                    title: "Spacious Brooklyn Apartment"
+              get:
+                summary: Get listing
+                value:
+                  action: get
+                  payload:
+                    listing_id: "list_456..."
+              submit:
+                summary: Submit for review
+                value:
+                  action: submit
+                  payload:
+                    listing_id: "list_456..."
+                    email: "host@example.com"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingResponse'
+
+  /pricing:
+    post:
+      summary: Pricing calculations
+      description: |
+        Calculate pricing for listings.
+
+        **Actions:**
+        - `health` - Health check
+      tags:
+        - Listings
+      operationId: pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              health:
+                summary: Health check
+                value:
+                  action: health
+                  payload: {}
+      responses:
+        '200':
+          description: Successful operation
+
+  /pricing-admin:
+    post:
+      summary: Admin pricing management
+      description: |
+        Manage listing pricing, overrides, and bulk operations.
+
+        **Actions:**
+        - `list` - List pricing data
+        - `get` - Get listing pricing
+        - `updatePrice` - Update price
+        - `bulkUpdate` - Bulk update prices
+        - `setOverride` - Set price override
+        - `toggleActive` - Toggle active status
+        - `getConfig` - Get pricing config
+        - `export` - Export pricing data
+      tags:
+        - Admin - Pricing
+      operationId: pricingAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              list:
+                summary: List pricing
+                value:
+                  action: list
+                  payload:
+                    page: 1
+                    per_page: 25
+              updatePrice:
+                summary: Update price
+                value:
+                  action: updatePrice
+                  payload:
+                    listing_id: "list_123..."
+                    monthly_rent: 3000
+      responses:
+        '200':
+          description: Successful operation
+
+  /pricing-list:
+    post:
+      summary: Pricing list management
+      description: Manage pricing lists and tiers.
+      tags:
+        - Admin - Pricing
+      operationId: pricingList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [list, get, create, update]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /house-manual:
+    post:
+      summary: AI-powered house manual management
+      description: |
+        House manual creation and management with AI assistance.
+
+        **Content Extraction Actions:**
+        - `parse_text` - Parse freeform text to structured format
+        - `transcribe_audio` - Transcribe audio via Whisper API
+        - `extract_wifi` - Extract WiFi credentials from image
+        - `parse_document` - Parse PDF files
+        - `parse_google_doc` - Parse Google Doc URLs
+        - `initiate_call` - Start AI phone call (Twilio)
+
+        **AI Suggestions Actions:**
+        - `get_suggestions` - Fetch pending AI suggestions
+        - `accept_suggestion` - Accept a single suggestion
+        - `ignore_suggestion` - Mark suggestion as ignored
+        - `combine_suggestion` - Accept with user-edited content
+        - `accept_all_suggestions` - Batch accept all
+        - `reuse_previous` - Copy from previous manual
+
+        **Guest Viewer Actions:**
+        - `get_visit_manual` - Fetch manual for guest viewing
+        - `validate_access_token` - Validate magic link token
+        - `track_engagement` - Track guest engagement
+        - `submit_review` - Submit guest review
+      tags:
+        - Listings
+      security:
+        - bearerAuth: []
+      operationId: houseManual
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              parse_text:
+                summary: Parse text
+                value:
+                  action: parse_text
+                  payload:
+                    house_manual_id: "hm_123..."
+                    text: "WiFi password is 12345. Trash day is Tuesday."
+              get_suggestions:
+                summary: Get AI suggestions
+                value:
+                  action: get_suggestions
+                  payload:
+                    house_manual_id: "hm_123..."
+              get_visit_manual:
+                summary: Get guest manual
+                value:
+                  action: get_visit_manual
+                  payload:
+                    visit_id: "visit_456..."
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # LEASES
+  # ============================================================================
+  /lease:
+    post:
+      summary: Lease operations
+      description: |
+        Create and manage lease agreements.
+
+        **Actions:**
+        - `create` - Create lease from proposal
+        - `get` - Get lease details
+        - `generate_dates` - Generate lease dates
+        - `get_host_leases` - Get host's leases
+        - `get_guest_leases` - Get guest's leases
+      tags:
+        - Leases
+      security:
+        - bearerAuth: []
+      operationId: lease
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              create:
+                summary: Create lease
+                value:
+                  action: create
+                  payload:
+                    proposal_id: "prop_123..."
+              get:
+                summary: Get lease
+                value:
+                  action: get
+                  payload:
+                    lease_id: "lease_456..."
+              get_host_leases:
+                summary: Get host leases
+                value:
+                  action: get_host_leases
+                  payload: {}
+      responses:
+        '200':
+          description: Successful operation
+
+  /leases-admin:
+    post:
+      summary: Admin lease management
+      description: |
+        Admin dashboard for lease management.
+
+        **Actions:**
+        - `list` - List leases with filters
+        - `get` - Get lease details
+        - `updateStatus` - Update lease status
+        - `softDelete` / `hardDelete` - Delete lease
+        - `bulkUpdateStatus` - Bulk status update
+        - `uploadDocument` - Upload document
+        - `createPaymentRecord` - Create payment record
+        - `createStays` - Create stays
+        - `cancelLease` - Cancel lease
+      tags:
+        - Admin - Leases
+      operationId: leasesAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              list:
+                summary: List leases
+                value:
+                  action: list
+                  payload:
+                    page: 1
+                    per_page: 25
+                    status: active
+              updateStatus:
+                summary: Update status
+                value:
+                  action: updateStatus
+                  payload:
+                    lease_id: "lease_123..."
+                    status: active
+      responses:
+        '200':
+          description: Successful operation
+
+  /guest-payment-records:
+    post:
+      summary: Guest payment records
+      description: Manage payment records for guest payments.
+      tags:
+        - Leases
+      security:
+        - bearerAuth: []
+      operationId: guestPaymentRecords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [list, get, create, update]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /host-payment-records:
+    post:
+      summary: Host payment records
+      description: Manage payout records for host earnings.
+      tags:
+        - Leases
+      security:
+        - bearerAuth: []
+      operationId: hostPaymentRecords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [list, get, create, update]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # MESSAGING
+  # ============================================================================
+  /messages:
+    post:
+      summary: Real-time messaging operations
+      description: |
+        Send messages, get threads, and manage conversations.
+
+        **Actions:**
+        - `send_message` - Send message
+        - `get_messages` - Get messages in thread
+        - `get_threads` - Get user's threads
+        - `send_guest_inquiry` - Send guest inquiry
+        - `create_proposal_thread` - Create proposal thread
+        - `admin_get_all_threads` - Admin: get all threads
+        - `admin_delete_thread` - Admin: delete thread
+        - `admin_send_reminder` - Admin: send reminder
+      tags:
+        - Messaging
+      security:
+        - bearerAuth: []
+      operationId: messages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              send_message:
+                summary: Send message
+                value:
+                  action: send_message
+                  payload:
+                    thread_id: "thread_123..."
+                    content: "Hello, I'm interested in your listing."
+              get_threads:
+                summary: Get threads
+                value:
+                  action: get_threads
+                  payload: {}
+      responses:
+        '200':
+          description: Successful operation
+
+  /message-curation:
+    post:
+      summary: Admin message curation
+      description: |
+        Admin message thread management and Split Bot operations.
+
+        **Actions:**
+        - `getThreads` - Get threads with pagination
+        - `getThreadMessages` - Get messages in thread
+        - `getMessage` - Get single message
+        - `deleteMessage` - Delete message
+        - `deleteThread` - Delete thread
+        - `forwardMessage` - Forward message
+        - `sendSplitBotMessage` - Send automated message
+      tags:
+        - Admin - Messages
+      operationId: messageCuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              getThreads:
+                summary: Get threads
+                value:
+                  action: getThreads
+                  payload:
+                    page: 1
+                    limit: 25
+              sendSplitBotMessage:
+                summary: Send bot message
+                value:
+                  action: sendSplitBotMessage
+                  payload:
+                    thread_id: "thread_123..."
+                    content: "Automated reminder message"
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # COMMUNICATIONS
+  # ============================================================================
+  /communications:
+    post:
+      summary: Communications hub
+      description: Placeholder for future communications functionality.
+      tags:
+        - Communications
+      operationId: communications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              health:
+                summary: Health check
+                value:
+                  action: health
+                  payload: {}
+      responses:
+        '200':
+          description: Healthy
+
+  /send-email:
+    post:
+      summary: Send email via SendGrid
+      description: |
+        Send templated emails via SendGrid.
+
+        **Actions:**
+        - `send` - Send templated email
+        - `health` - Health check
+      tags:
+        - Communications
+      security:
+        - bearerAuth: []
+      operationId: sendEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+            examples:
+              send:
+                summary: Send email
+                value:
+                  action: send
+                  payload:
+                    template_id: "d-template-id"
+                    to_email: "recipient@example.com"
+                    dynamic_template_data:
+                      name: John
+                      link: "https://split.lease/verify"
+      responses:
+        '200':
+          description: Email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /send-sms:
+    post:
+      summary: Send SMS via Twilio
+      description: |
+        Send SMS messages via Twilio.
+        Phone numbers must be in E.164 format.
+
+        **Actions:**
+        - `send` - Send SMS
+        - `health` - Health check
+      tags:
+        - Communications
+      security:
+        - bearerAuth: []
+      operationId: sendSms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+            examples:
+              send:
+                summary: Send SMS
+                value:
+                  action: send
+                  payload:
+                    to: "+15551234567"
+                    body: "Your verification code is 123456"
+      responses:
+        '200':
+          description: SMS queued
+
+  /slack:
+    post:
+      summary: Slack integration
+      description: |
+        Send messages to Slack channels.
+
+        **Actions:**
+        - `faq_inquiry` - Submit FAQ inquiry
+        - `diagnose` - Diagnose environment
+      tags:
+        - Communications
+      operationId: slack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              faq_inquiry:
+                summary: Submit inquiry
+                value:
+                  action: faq_inquiry
+                  payload:
+                    name: "John Doe"
+                    email: "john@example.com"
+                    inquiry: "How do I list my apartment?"
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # MEETINGS
+  # ============================================================================
+  /virtual-meeting:
+    post:
+      summary: Virtual meeting operations
+      description: |
+        Create and manage virtual meeting requests.
+
+        **Actions:**
+        - `create` - Create meeting request
+        - `accept` - Accept meeting
+        - `decline` - Decline meeting
+        - `delete` - Delete meeting
+        - `send_calendar_invite` - Send calendar invite
+        - `notify_participants` - Notify participants
+        - `admin_fetch_new_requests` - Admin: fetch new requests
+        - `admin_confirm_meeting` - Admin: confirm meeting
+        - `admin_block_time_slot` - Admin: block time slot
+      tags:
+        - Meetings
+      operationId: virtualMeeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              create:
+                summary: Create meeting
+                value:
+                  action: create
+                  payload:
+                    listing_id: "list_123..."
+                    guest_id: "guest_456..."
+                    preferred_dates: ["2025-02-01", "2025-02-02"]
+              accept:
+                summary: Accept meeting
+                value:
+                  action: accept
+                  payload:
+                    meeting_id: "meeting_789..."
+                    booked_date: "2025-02-01T10:00:00Z"
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # REVIEWS
+  # ============================================================================
+  /reviews-overview:
+    post:
+      summary: Reviews overview and management
+      description: |
+        Get review overviews and manage reviews.
+
+        **Actions:**
+        - `get_overview` - Get reviews overview
+        - `get_reviews` - Get reviews for listing
+        - `submit_review` - Submit a review
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      operationId: reviewsOverview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [get_overview, get_reviews, submit_review]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /experience-survey:
+    post:
+      summary: Experience survey management
+      description: |
+        Handle post-stay experience surveys.
+
+        **Actions:**
+        - `get_survey` - Get survey for lease
+        - `submit_response` - Submit survey response
+        - `get_results` - Get survey results
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      operationId: experienceSurvey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [get_survey, submit_response, get_results]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # AI
+  # ============================================================================
+  /ai-gateway:
+    post:
+      summary: AI Gateway operations
+      description: |
+        OpenAI proxy with prompt templating and data loaders.
+        Supports both streaming and non-streaming completions.
+
+        **Actions:**
+        - `complete` - Non-streaming completion
+        - `stream` - SSE streaming completion
+
+        **Public Prompts (no auth required):**
+        - `listing-description`
+        - `listing-title`
+        - `echo-test`
+      tags:
+        - AI
+      security:
+        - bearerAuth: []
+      operationId: aiGateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIGatewayRequest'
+            examples:
+              complete:
+                summary: Non-streaming completion
+                value:
+                  action: complete
+                  payload:
+                    prompt: listing-description
+                    variables:
+                      neighborhood: "Brooklyn"
+                      beds: 2
+                      bathrooms: 1
+              stream:
+                summary: Streaming completion
+                value:
+                  action: stream
+                  payload:
+                    prompt: listing-title
+                    variables:
+                      neighborhood: "Manhattan"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIGatewayResponse'
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream
+
+  /ai-tools:
+    post:
+      summary: AI-powered tools
+      description: Collection of AI-powered utility tools.
+      tags:
+        - AI
+      security:
+        - bearerAuth: []
+      operationId: aiTools
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [analyze, summarize, extract]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /ai-room-redesign:
+    post:
+      summary: AI room redesign
+      description: AI-powered room visualization and redesign.
+      tags:
+        - AI
+      security:
+        - bearerAuth: []
+      operationId: aiRoomRedesign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [generate, get_styles]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /ai-parse-profile:
+    post:
+      summary: AI profile parsing
+      description: Parse and extract structured data from user profiles.
+      tags:
+        - AI
+      operationId: aiParseProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [parse]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /ai-signup-guest:
+    post:
+      summary: AI-powered guest signup
+      description: |
+        AI-assisted guest registration and onboarding flow.
+        NO AUTHENTICATION REQUIRED - Public signup endpoint.
+      tags:
+        - AI
+      operationId: aiSignupGuest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # SYNC
+  # ============================================================================
+  /bubble_sync:
+    post:
+      summary: Bubble database sync
+      description: |
+        Process sync_queue and push data FROM Supabase TO Bubble.
+        Internal service - typically called by cron job.
+
+        **Actions:**
+        - `process_queue` - Process via Workflow API
+        - `process_queue_data_api` - Process via Data API (recommended)
+        - `sync_single` - Sync single record
+        - `retry_failed` - Retry failed items
+        - `get_status` - Get queue statistics
+        - `cleanup` - Cleanup old items
+        - `build_request` - Preview request
+        - `sync_signup_atomic` - Atomic signup sync
+      tags:
+        - Sync
+      operationId: bubbleSync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              process_queue:
+                summary: Process queue
+                value:
+                  action: process_queue
+                  payload:
+                    batch_size: 10
+              get_status:
+                summary: Get status
+                value:
+                  action: get_status
+                  payload: {}
+              sync_single:
+                summary: Sync single record
+                value:
+                  action: sync_single
+                  payload:
+                    table: listing
+                    record_id: "rec_123..."
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BubbleSyncResponse'
+
+  /bubble-proxy:
+    post:
+      summary: Bubble API proxy
+      description: |
+        Proxy for Bubble API operations with atomic sync.
+
+        **Actions:**
+        - `send_message` - Send message to host
+        - `ai_inquiry` - AI market research inquiry
+        - `upload_photos` - Upload listing photos
+        - `submit_referral` - Submit referral
+        - `toggle_favorite` - Toggle favorite listing
+        - `get_favorites` - Get user favorites
+        - `parse_profile` - Parse user profile
+      tags:
+        - Sync
+      operationId: bubbleProxy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [send_message, ai_inquiry, upload_photos, submit_referral, toggle_favorite, get_favorites, parse_profile]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /workflow-orchestrator:
+    post:
+      summary: Workflow orchestration
+      description: |
+        Internal workflow orchestration system.
+        Processes workflow steps from pgmq messages.
+      tags:
+        - Sync
+      operationId: workflowOrchestrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              process:
+                summary: Process workflow
+                value:
+                  payload:
+                    triggered_by: pg_cron
+      responses:
+        '200':
+          description: Processed
+
+  /workflow-enqueue:
+    post:
+      summary: Workflow queue management
+      description: Enqueue workflows for async processing.
+      tags:
+        - Sync
+      security:
+        - bearerAuth: []
+      operationId: workflowEnqueue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [enqueue, get_status, cancel]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # ADMIN TOOLS
+  # ============================================================================
+  /emergency:
+    post:
+      summary: Emergency reporting and management
+      description: |
+        Handles emergency reports from guests and hosts.
+        Admin functions require authentication.
+
+        **Public Actions:**
+        - `getAll` - Get all emergencies
+        - `getById` - Get single emergency
+        - `create` - Create emergency report
+        - `getMessages` - Get SMS history
+        - `getEmails` - Get email history
+        - `getPresetMessages` - Get SMS templates
+        - `getPresetEmails` - Get email templates
+        - `getTeamMembers` - Get admin team
+        - `health` - Health check
+
+        **Admin Actions (auth required):**
+        - `update` - Update emergency
+        - `assignEmergency` - Assign to team member
+        - `updateStatus` - Update status
+        - `updateVisibility` - Hide/show emergency
+        - `sendSMS` - Send SMS via Twilio
+        - `sendEmail` - Send email via SendGrid
+      tags:
+        - Admin - Emergency
+      operationId: emergency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              getAll:
+                summary: Get all emergencies
+                value:
+                  action: getAll
+                  payload:
+                    includeHidden: false
+                    limit: 100
+                    offset: 0
+              create:
+                summary: Create emergency
+                value:
+                  action: create
+                  payload:
+                    emergency_type: "Maintenance"
+                    description: "Water leak in bathroom"
+                    proposal_id: "prop_123..."
+              assignEmergency:
+                summary: Assign to team member
+                value:
+                  action: assignEmergency
+                  payload:
+                    emergencyId: "emerg_456..."
+                    assignedToUserId: "user_789..."
+                    guidanceInstructions: "Contact plumber ASAP"
+              sendSMS:
+                summary: Send SMS
+                value:
+                  action: sendSMS
+                  payload:
+                    emergencyId: "emerg_456..."
+                    recipientPhone: "+15551234567"
+                    messageBody: "We are addressing your emergency..."
+      responses:
+        '200':
+          description: Successful operation
+
+  /informational-texts:
+    post:
+      summary: Informational text management
+      description: |
+        CRUD operations for managing informational text content.
+        Used for tooltips, help text, and UI copy.
+
+        **Actions:**
+        - `list` - Get all entries (paginated)
+        - `get` - Get single entry by ID
+        - `create` - Create new entry
+        - `update` - Update existing entry
+        - `delete` - Hard delete entry
+      tags:
+        - Admin - Content
+      operationId: informationalTexts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              list:
+                summary: List entries
+                value:
+                  action: list
+                  payload:
+                    limit: 100
+                    offset: 0
+                    search: "booking"
+              create:
+                summary: Create entry
+                value:
+                  action: create
+                  payload:
+                    tagTitle: "booking-help-text"
+                    desktop: "Click here to start your booking process"
+                    mobile: "Tap to book"
+              update:
+                summary: Update entry
+                value:
+                  action: update
+                  payload:
+                    id: "text_123..."
+                    desktop: "Updated help text"
+      responses:
+        '200':
+          description: Successful operation
+
+  /guest-management:
+    post:
+      summary: Guest relationship management
+      description: |
+        Corporate tool for managing guest relationships.
+
+        **Actions:**
+        - `search_guests` - Search guests
+        - `get_guest` - Get guest details
+        - `create_guest` - Create guest account
+        - `get_guest_history` - Get activity history
+        - `assign_article` - Assign knowledge article
+        - `remove_article` - Remove article assignment
+        - `list_articles` - List all articles
+      tags:
+        - Admin - Users
+      security:
+        - bearerAuth: []
+      operationId: guestManagement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [search_guests, get_guest, create_guest, get_guest_history, assign_article, remove_article, list_articles]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /simulation-admin:
+    post:
+      summary: Usability testing simulation admin
+      description: |
+        Admin tool for managing usability testing simulation testers.
+
+        **Actions:**
+        - `listTesters` - List testers with pagination
+        - `getTester` - Get single tester
+        - `resetToDay1` - Reset tester to step 0
+        - `advanceToDay2` - Advance to step 4
+        - `getStatistics` - Get tester distribution
+      tags:
+        - Admin - Simulation
+      operationId: simulationAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              listTesters:
+                summary: List testers
+                value:
+                  action: listTesters
+                  payload:
+                    limit: 50
+                    offset: 0
+                    search: ""
+              resetToDay1:
+                summary: Reset to Day 1
+                value:
+                  action: resetToDay1
+                  payload:
+                    testerId: "user_123..."
+              getStatistics:
+                summary: Get statistics
+                value:
+                  action: getStatistics
+                  payload: {}
+      responses:
+        '200':
+          description: Successful operation
+
+  /usability-data-admin:
+    post:
+      summary: Usability data administration
+      description: Admin interface for viewing usability test data.
+      tags:
+        - Admin - Simulation
+      security:
+        - bearerAuth: []
+      operationId: usabilityDataAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  # ============================================================================
+  # UTILITIES
+  # ============================================================================
+  /qr-generator:
+    post:
+      summary: QR code generation
+      description: |
+        Generates branded QR codes with the Split Lease logo.
+        NO AUTHENTICATION REQUIRED.
+
+        **Actions:**
+        - `generate` - Generate QR code (returns PNG binary)
+        - `health` - Health check
+      tags:
+        - Utilities
+      operationId: qrGenerator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              generate:
+                summary: Generate QR code
+                value:
+                  action: generate
+                  payload:
+                    url: "https://split.lease/listing/123"
+                    size: 300
+              health:
+                summary: Health check
+                value:
+                  action: health
+                  payload: {}
+      responses:
+        '200':
+          description: Success (PNG binary for generate, JSON for health)
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /qr-codes:
+    post:
+      summary: QR codes management
+      description: Manage QR codes for various purposes.
+      tags:
+        - Utilities
+      security:
+        - bearerAuth: []
+      operationId: qrCodes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /reminder-scheduler:
+    post:
+      summary: Reminder scheduling
+      description: |
+        Creates and manages reminders for house manual features.
+
+        **Protected Actions (auth required):**
+        - `create` - Create reminder
+        - `update` - Update reminder
+        - `get` - Get reminders by house manual
+        - `delete` - Cancel reminder
+
+        **Public Actions:**
+        - `get-by-visit` - Get reminders for visit (guest view)
+        - `process-pending` - Process due reminders (cron job)
+        - `webhook-sendgrid` - Handle SendGrid webhooks
+        - `webhook-twilio` - Handle Twilio webhooks
+        - `health` - Health check
+      tags:
+        - Utilities
+      operationId: reminderScheduler
+      requestBody:
+        required: true
+        content:
+          application/json:
+            examples:
+              create:
+                summary: Create reminder
+                value:
+                  action: create
+                  payload:
+                    house_manual_id: "hm_123..."
+                    reminder_type: "checkin"
+                    scheduled_for: "2025-03-01T14:00:00Z"
+                    channels: ["email", "sms"]
+              get_by_visit:
+                summary: Get reminders for visit
+                value:
+                  action: get-by-visit
+                  payload:
+                    visit_id: "visit_456..."
+              process_pending:
+                summary: Process pending
+                value:
+                  action: process-pending
+                  payload:
+                    batchSize: 50
+      responses:
+        '200':
+          description: Successful operation
+
+  /document:
+    post:
+      summary: Document management
+      description: Handle document uploads and management.
+      tags:
+        - Utilities
+      security:
+        - bearerAuth: []
+      operationId: document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+
+  /query-leo:
+    post:
+      summary: Leo AI assistant queries
+      description: Query the Leo AI assistant for various tasks.
+      tags:
+        - AI
+      security:
+        - bearerAuth: []
+      operationId: queryLeo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                payload:
+                  type: object
+                  properties:
+                    query:
+                      type: string
+                    context:
+                      type: object
+      responses:
+        '200':
+          description: Successful operation
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase Auth JWT token
+
+  schemas:
+    # ============================================================================
+    # COMMON SCHEMAS
+    # ============================================================================
+    SuccessResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          description: Response data (varies by endpoint)
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+          enum: [VALIDATION_ERROR, AUTH_ERROR, FORBIDDEN, INTERNAL_ERROR]
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        actions:
+          type: array
+          items:
+            type: string
+
+    # ============================================================================
+    # AUTH SCHEMAS
+    # ============================================================================
+    AuthLoginRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [login]
+        payload:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              minLength: 8
+
+    AuthSignupRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [signup]
+        payload:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              minLength: 8
+            first_name:
+              type: string
+            last_name:
+              type: string
+            phone:
+              type: string
+              pattern: '^\+[1-9]\d{1,14}$'
+
+    AuthValidateRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [validate]
+        payload:
+          type: object
+          required:
+            - access_token
+          properties:
+            access_token:
+              type: string
+
+    AuthPasswordResetRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [request_password_reset, update_password]
+        payload:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+            access_token:
+              type: string
+            new_password:
+              type: string
+              minLength: 8
+
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+            user_id:
+              type: string
+            supabase_user_id:
+              type: string
+            user_type:
+              type: string
+              enum: [guest, host]
+            host_account_id:
+              type: string
+            guest_account_id:
+              type: string
+            email:
+              type: string
+
+    # ============================================================================
+    # PROPOSAL SCHEMAS
+    # ============================================================================
+    ProposalResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            proposal:
+              type: object
+              properties:
+                _id:
+                  type: string
+                listing_id:
+                  type: string
+                guest_account_id:
+                  type: string
+                status:
+                  type: string
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+                nights_selected:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 0
+                    maximum: 6
+                total_price:
+                  type: number
+                service_fee:
+                  type: number
+
+    # ============================================================================
+    # LISTING SCHEMAS
+    # ============================================================================
+    ListingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            listing:
+              type: object
+              properties:
+                _id:
+                  type: string
+                title:
+                  type: string
+                address:
+                  type: string
+                status:
+                  type: string
+                price_per_night:
+                  type: number
+
+    # ============================================================================
+    # COMMUNICATION SCHEMAS
+    # ============================================================================
+    SendEmailRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [send, health]
+        payload:
+          type: object
+          properties:
+            template_id:
+              type: string
+            to_email:
+              type: string
+              format: email
+            dynamic_template_data:
+              type: object
+
+    SendSmsRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [send, health]
+        payload:
+          type: object
+          properties:
+            to:
+              type: string
+              pattern: '^\+[1-9]\d{1,14}$'
+              description: Phone number in E.164 format
+            body:
+              type: string
+              maxLength: 1600
+
+    # ============================================================================
+    # AI GATEWAY SCHEMAS
+    # ============================================================================
+    AIGatewayRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [complete, stream]
+        payload:
+          type: object
+          required:
+            - prompt
+          properties:
+            prompt:
+              type: string
+              description: Prompt key from registry
+            variables:
+              type: object
+              description: Variables to interpolate
+            options:
+              type: object
+              properties:
+                model:
+                  type: string
+                  default: gpt-4
+                max_tokens:
+                  type: integer
+                temperature:
+                  type: number
+                  minimum: 0
+                  maximum: 2
+
+    AIGatewayResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            response:
+              type: string
+            usage:
+              type: object
+              properties:
+                prompt_tokens:
+                  type: integer
+                completion_tokens:
+                  type: integer
+                total_tokens:
+                  type: integer
+
+    # ============================================================================
+    # BUBBLE SYNC SCHEMAS
+    # ============================================================================
+    BubbleSyncResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            processed:
+              type: integer
+            failed:
+              type: integer
+            status:
+              type: object
+              properties:
+                pending:
+                  type: integer
+                processing:
+                  type: integer
+                completed:
+                  type: integer
+                failed:
+                  type: integer
+
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "Invalid action: unknown_action"
+            code: VALIDATION_ERROR
+
+    AuthenticationError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "Missing or invalid Authorization header"
+            code: AUTH_ERROR
+
+    ForbiddenError:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "Admin access required"
+            code: FORBIDDEN
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "An unexpected error occurred"
+            code: INTERNAL_ERROR
