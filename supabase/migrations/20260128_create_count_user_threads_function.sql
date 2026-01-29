@@ -1,9 +1,6 @@
 -- Migration: Create count_user_threads function
 -- Purpose: Count message threads where a user is either the host or guest
 -- Used by: LoggedInAvatar component to show/hide the message icon in the header
---
--- Note: The thread table columns were renamed from "-Host User"/"-Guest User"
--- to "host_user_id"/"guest_user_id" to avoid PostgreSQL issues with hyphenated names
 
 CREATE OR REPLACE FUNCTION public.count_user_threads(user_id text)
 RETURNS integer

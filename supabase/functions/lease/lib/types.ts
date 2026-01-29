@@ -40,12 +40,15 @@ export interface GetLeasePayload {
 export interface LeaseData {
   _id: string;
   'Agreement Number': string;
+  // FK CONSTRAINT: proposal._id
   Proposal: string;
   Guest: string;
   Host: string;
+  // FK CONSTRAINT: listing._id
   Listing: string;
   Participants: string[];
-  'Cancellation Policy': string;
+  // FK CONSTRAINT: zat_features_cancellationpolicy._id (nullable - use null if no valid FK!)
+  'Cancellation Policy': string | null;
   'First Payment Date': string;
   // SCHEMA-VERIFIED (2026-01-28): Actual column names have space before colon
   'Reservation Period : Start': string;

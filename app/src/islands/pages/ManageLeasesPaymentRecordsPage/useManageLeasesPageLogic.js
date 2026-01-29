@@ -123,9 +123,15 @@ export function useManageLeasesPageLogic({ showToast }) {
       const adapted = (data || []).map(adaptLeaseFromSupabase);
       setLeases(adapted);
 
-      // Check URL for pre-selected lease
+      // Check URL for pre-selected lease or search query
       const urlParams = new URLSearchParams(window.location.search);
       const leaseId = urlParams.get('leaseId') || extractLeaseIdFromPath();
+      const searchParam = urlParams.get('search');
+
+      // If search param is provided (e.g., from ProposalManagePage), pre-populate search
+      if (searchParam) {
+        setSearchQuery(searchParam);
+      }
 
       if (leaseId) {
         const lease = adapted.find(l => l.id === leaseId);
@@ -199,6 +205,7 @@ export function useManageLeasesPageLogic({ showToast }) {
     return leases.filter(lease => {
       return (
         lease.id?.toLowerCase().includes(query) ||
+        lease.proposalId?.toLowerCase().includes(query) ||
         lease.agreementNumber?.toLowerCase().includes(query) ||
         lease.guest?.email?.toLowerCase().includes(query) ||
         lease.guest?.fullName?.toLowerCase().includes(query) ||
