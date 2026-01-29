@@ -25,15 +25,15 @@ ORIGINAL PROPOSAL:
 - Duration: {{originalWeeks}} weeks
 - Move-in: {{originalMoveIn}}
 - Days: {{originalDays}}
-- Price/night: ${{originalNightlyPrice}}
-- Total: ${{originalTotalPrice}}
+- Price/night: {{originalNightlyPrice}}
+- Total: {{originalTotalPrice}}
 
 HOST COUNTEROFFER:
 - Duration: {{counterWeeks}} weeks
 - Move-in: {{counterMoveIn}}
 - Days: {{counterDays}}
-- Price/night: ${{counterNightlyPrice}}
-- Total: ${{counterTotalPrice}}
+- Price/night: {{counterNightlyPrice}}
+- Total: {{counterTotalPrice}}
 
 Summarize ONLY what changed. Keep it brief - bullet points with the changes.
 Output ONLY the summary text, no introductions.`,

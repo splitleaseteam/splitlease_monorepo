@@ -21,6 +21,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { BubbleApiError, SupabaseSyncError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 import { sendLoginNotificationEmail } from '../../_shared/emailUtils.ts';
+import {
+  getNotificationPreferences,
+  shouldSendEmail as checkEmailPreference,
+} from '../../_shared/notificationHelpers.ts';
 
 export async function handleLogin(
   supabaseUrl: string,
@@ -107,19 +111,30 @@ export async function handleLogin(
     // ========== SEND LOGIN NOTIFICATION EMAIL ==========
     // Use EdgeRuntime.waitUntil() to send async (non-blocking)
     // User gets immediate login response while email is sent in background
+    // Respects notification preferences (account_assistance category)
     const loginTimestamp = new Date().toISOString();
     const firstName = userProfile?.['Name - First'] || '';
 
     EdgeRuntime.waitUntil(
-      sendLoginNotificationEmail(authUser.email!, firstName, loginTimestamp)
-        .then(result => {
+      (async () => {
+        try {
+          // Check notification preferences before sending
+          const prefs = await getNotificationPreferences(supabaseAdmin, userId);
+          if (!checkEmailPreference(prefs, 'account_assistance')) {
+            console.log('[login] Login notification email SKIPPED (preference: account_assistance disabled)');
+            return;
+          }
+
+          const result = await sendLoginNotificationEmail(authUser.email!, firstName, loginTimestamp);
           if (!result.success) {
             console.error('[login] Login notification email failed:', result.error);
           } else {
             console.log('[login] ✅ Login notification email sent');
           }
-        })
-        .catch(err => console.error('[login] Login notification email error:', err))
+        } catch (err) {
+          console.error('[login] Login notification email error:', err);
+        }
+      })()
     );
 
     console.log(`[login] ========== LOGIN COMPLETE ==========`);
