@@ -121,7 +121,8 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
     unreadMessagesCount: 0,
     suggestedProposalsCount: 0,
     lastSuggestedProposalId: null, // ID of most recent suggested proposal for deep linking
-    threadsCount: 0 // Count of message threads user is part of
+    threadsCount: 0, // Count of message threads user is part of
+    pendingProposalThreadsCount: 0 // Count of threads with pending proposals (host notification)
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -150,7 +151,8 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         junctionCountsResult,
         guestProposalsResult,
         hostProposalsResult,
-        threadsResult
+        threadsResult,
+        pendingProposalsResult
       ] = await Promise.all([
         // 1. Fetch user data (type, favorites)
         supabase
@@ -231,7 +233,23 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         // 11. Count message threads where user is a participant (host or guest)
         //     Uses RPC function because PostgREST .or() doesn't handle column names
         //     with leading hyphens ("-Host User", "-Guest User") correctly
-        supabase.rpc('count_user_threads', { user_id: userId })
+        supabase.rpc('count_user_threads', { user_id: userId }),
+
+        // 12. Count pending proposals where user is the HOST (proposals needing attention)
+        //     This powers the host notification badge in the messaging icon
+        //     Pending statuses that require host review:
+        supabase
+          .from('proposal')
+          .select('_id', { count: 'exact', head: true })
+          .eq('Host User', userId)
+          .or('"Deleted".is.null,"Deleted".eq.false')
+          .in('Status', [
+            'Proposal Pending',
+            'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
+            'Proposal Submitted for guest by Split Lease - Pending Confirmation',
+            'Counter Proposal Sent',
+            'Counter Proposal Pending'
+          ])
       ]);
 
       // Process user data
@@ -357,6 +375,13 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         console.warn('[useLoggedInAvatarData] Suggested proposals query failed:', suggestedProposalsResult.error);
       }
 
+      // Log pending proposals result for hosts
+      if (pendingProposalsResult.error) {
+        console.warn('[useLoggedInAvatarData] Pending proposals count failed:', pendingProposalsResult.error);
+      } else {
+        console.log('[useLoggedInAvatarData] Pending proposals count:', pendingProposalsResult.count);
+      }
+
       const newData = {
         userType: normalizedType,
         proposalsCount,
@@ -370,7 +395,8 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         unreadMessagesCount: messagesResult.count || 0,
         suggestedProposalsCount,
         lastSuggestedProposalId,
-        threadsCount: threadsResult.data || 0  // RPC returns data directly, not count
+        threadsCount: threadsResult.data || 0,  // RPC returns data directly, not count
+        pendingProposalThreadsCount: pendingProposalsResult.count || 0  // Count of pending proposals for host notification
       };
 
       console.log('[useLoggedInAvatarData] Data fetched:', newData);
