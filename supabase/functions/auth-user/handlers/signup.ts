@@ -373,58 +373,60 @@ export async function handleSignup(
       console.error('[signup] Failed to generate verification link (non-blocking):', linkError);
     }
 
-    // Send welcome email with verification link (async, non-blocking)
+    // Send welcome email with verification link
     // IMPORTANT: Welcome email is ALWAYS sent for new signups, regardless of preferences
     // This is critical for email verification and account confirmation
-    (async () => {
-      try {
-        console.log('[signup] 📧 Sending welcome email to:', email.toLowerCase());
-        const result = await sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink);
-        if (!result.success) {
-          console.error('[signup] Welcome email failed:', result.error);
-        } else {
-          console.log('[signup] ✅ Welcome email sent');
-        }
-      } catch (err) {
-        console.error('[signup] Welcome email error:', err);
+    // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget IIFEs are cancelled when handler returns
+    try {
+      console.log('[signup] 📧 Sending welcome email to:', email.toLowerCase());
+      const result = await sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink);
+      if (!result.success) {
+        console.error('[signup] Welcome email failed:', result.error);
+        // Non-blocking: Continue with signup even if email fails
+      } else {
+        console.log('[signup] ✅ Welcome email sent');
       }
-    })();
+    } catch (err) {
+      console.error('[signup] Welcome email error:', err);
+      // Non-blocking: Continue with signup even if email fails
+    }
 
-    // Send internal notification (async, non-blocking)
+    // Send internal notification (non-blocking, but awaited to prevent Deno Edge Function cancellation)
     // Note: Internal notifications to team are always sent (not preference-gated)
-    sendInternalSignupNotification(generatedUserId, email.toLowerCase(), firstName, lastName, userType as 'Host' | 'Guest')
-      .then(result => {
-        if (!result.success) {
-          console.error('[signup] Internal notification failed:', result.error);
-        } else {
-          console.log('[signup] ✅ Internal notification sent');
-        }
-      })
-      .catch(err => console.error('[signup] Internal notification error:', err));
+    // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget promises are cancelled when handler returns
+    try {
+      const result = await sendInternalSignupNotification(generatedUserId, email.toLowerCase(), firstName, lastName, userType as 'Host' | 'Guest');
+      if (!result.success) {
+        console.error('[signup] Internal notification failed:', result.error);
+      } else {
+        console.log('[signup] ✅ Internal notification sent');
+      }
+    } catch (err) {
+      console.error('[signup] Internal notification error:', err);
+    }
 
-    // Send welcome SMS to Guests with phone numbers (async, non-blocking)
+    // Send welcome SMS to Guests with phone numbers
     // Checks notification_preferences table
+    // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget IIFEs are cancelled when handler returns
     if (userType === 'Guest' && phoneNumber) {
-      (async () => {
-        try {
-          const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
-          if (!checkSmsPreference(prefs, 'account_assistance')) {
-            console.log('[signup] Welcome SMS SKIPPED (preference: account_assistance disabled)');
-            return;
-          }
+      try {
+        const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
+        if (!checkSmsPreference(prefs, 'account_assistance')) {
+          console.log('[signup] Welcome SMS SKIPPED (preference: account_assistance disabled)');
+        } else {
           const result = await sendWelcomeSms(phoneNumber, firstName);
           if (!result.success) {
             console.error('[signup] Welcome SMS failed:', result.error);
           } else {
             console.log('[signup] ✅ Welcome SMS sent');
           }
-        } catch (err) {
-          console.error('[signup] Welcome SMS error:', err);
         }
-      })();
+      } catch (err) {
+        console.error('[signup] Welcome SMS error:', err);
+      }
     }
 
-    console.log('[signup] Email/SMS triggers dispatched');
+    console.log('[signup] Email/SMS/notification processing complete');
 
     // Return session and user data
     return {

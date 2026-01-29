@@ -24,6 +24,7 @@ import ThreadSidebar from './components/ThreadSidebar.jsx';
 import MessageThread from './components/MessageThread.jsx';
 import MessageInput from './components/MessageInput.jsx';
 import RightPanel from './components/RightPanel.jsx';
+import VirtualMeetingManager from '../../shared/VirtualMeetingManager/VirtualMeetingManager.jsx';
 
 // Mobile breakpoint (matches CSS)
 const MOBILE_BREAKPOINT = 900;
@@ -221,6 +222,10 @@ export default function MessagingPage() {
     activeModal,
     modalContext,
 
+    // VM modal state
+    showVMModal,
+    vmInitialView,
+
     // Handlers
     handleThreadSelect,
     handleMessageInputChange,
@@ -233,6 +238,10 @@ export default function MessagingPage() {
     handleCTAClick,
     getCTAButtonConfig,
     handleCloseModal,
+
+    // VM modal handlers
+    handleCloseVMModal,
+    handleVMSuccess,
   } = useMessagingPageLogic();
 
   // Mobile view state: 'list' or 'conversation'
@@ -337,6 +346,8 @@ export default function MessagingPage() {
                     <MessageThread
                       messages={messages}
                       threadInfo={threadInfo}
+                      proposalData={proposalData}
+                      user={user}
                       isLoading={isLoadingMessages}
                       onBack={handleBackToList}
                       isMobile={isMobile}
@@ -381,6 +392,17 @@ export default function MessagingPage() {
           )}
         </div>
       </main>
+
+      {/* Virtual Meeting Manager Modal */}
+      {showVMModal && proposalData && (
+        <VirtualMeetingManager
+          proposal={proposalData}
+          initialView={vmInitialView}
+          currentUser={user}
+          onClose={handleCloseVMModal}
+          onSuccess={handleVMSuccess}
+        />
+      )}
     </>
   );
 }
