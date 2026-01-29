@@ -10,6 +10,29 @@ You are investigating a payment display bug on the Host Proposals page.
 - HOST fields: `host compensation`, `Total Compensation (proposal - host)`, `4 week compensation`
 - GUEST fields: `proposal nightly price`, `Total Price for Reservation (guest)`, `4 week rent`
 
+## Pricing Style Context (CRITICAL)
+
+Hosts set pricing using **3 lease styles**:
+
+| Style | Host Sets | Should Display As | DB Field |
+|-------|-----------|-------------------|----------|
+| **Nightly** | Per-night rates for 2-7 nights | `$X/night × Y × Z wks` | `host compensation` |
+| **Weekly** | Single weekly rate | `$X/week × Z wks` | `weeklyHostRate` |
+| **Monthly** | Single monthly rate | `$X/month × Z mo` | `monthlyHostRate` |
+
+**KEY INSIGHT**:
+- `proposal nightly price` = GUEST price (includes 17% markup)
+- `host compensation` = HOST compensation (what host actually earns)
+- These are DIFFERENT values! Host should NEVER see guest prices.
+
+**Formula**: `guestPrice = hostCompensation × 1.17` (approx)
+
+**Listing fields for host rates**:
+```
+'💰Nightly Host Rate for 1 night' through '💰Nightly Host Rate for 7 nights'
+'rental type' → "Nightly" | "Weekly" | "Monthly"
+```
+
 ## Your Task
 
 ### Step 1: Query Database for Sample Data

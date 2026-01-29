@@ -27,6 +27,63 @@ const totalEarnings = (isCounteroffer && hcTotalPrice != null)
 
 ---
 
+## Pricing Style Context (CRITICAL)
+
+Hosts set their pricing using one of **3 lease styles**:
+
+| Lease Style | How Host Sets Rates | What Host Sees | Stored In |
+|-------------|---------------------|----------------|-----------|
+| **Nightly** | Per-night rates for 2-7 nights | `$X/night × Y nights × Z weeks` | `💰Nightly Host Rate for N nights` (7 fields) |
+| **Weekly** | Single weekly rate | `$X/week × Z weeks` | `weeklyHostRate` |
+| **Monthly** | Single monthly rate | `$X/month × Z months` | `monthlyHostRate` |
+
+### Host Compensation Fields (Database)
+
+```
+listing table:
+├── 'rental type'                        → "Nightly" | "Weekly" | "Monthly"
+├── '💰Nightly Host Rate for 1 night'    → Host's per-night rate for 1 night
+├── '💰Nightly Host Rate for 2 nights'   → Host's per-night rate for 2 nights
+├── ... (through 7 nights)
+├── 'weeklyHostRate'                     → For weekly style
+└── 'monthlyHostRate'                    → For monthly style
+
+proposal table:
+├── 'host compensation'                  → Per-night HOST rate (from listing tiers)
+├── 'Total Compensation (proposal - host)' → Total earnings = rate × frequency × weeks
+├── '4 week compensation'                → 4-week baseline for host
+├── 'hc nightly price'                   → Counteroffer host rate
+└── 'hc total price'                     → Counteroffer total
+
+pricing_list table:
+├── hostCompensation[7]                  → Array of 7 host rates by night count
+├── nightlyPrice[7]                      → Array of 7 GUEST prices (host × multipliers)
+└── markupAndDiscountMultiplier[7]       → Array of multipliers
+```
+
+### Price Formula
+
+```
+guestPrice = hostCompensation × (1 + siteMarkup + unitMarkup - unusedNightsDiscount)
+           ≈ hostCompensation × 1.17 (typical)
+```
+
+**IMPORTANT**: Host sees `hostCompensation`, Guest sees `nightlyPrice`. These are DIFFERENT values!
+
+### Display Rules by Lease Style
+
+| Lease Style | PricingRow Should Show | ProposalCard Should Show |
+|-------------|------------------------|--------------------------|
+| **Nightly** | `$X/night × Y nights × Z weeks = $TOTAL` | "Your Compensation: $TOTAL" |
+| **Weekly** | `$X/week × Z weeks = $TOTAL` | "Your Compensation: $TOTAL" |
+| **Monthly** | `$X/month × Z months = $TOTAL` | "Your Compensation: $TOTAL" |
+
+Where:
+- `$X` = `host compensation` (from proposal, NOT `proposal nightly price`)
+- `$TOTAL` = `Total Compensation (proposal - host)` (from proposal, NOT `Total Price for Reservation (guest)`)
+
+---
+
 ## Orchestration Architecture
 
 ```
