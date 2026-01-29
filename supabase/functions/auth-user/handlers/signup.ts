@@ -349,7 +349,7 @@ export async function handleSignup(
     }
 
     // ========== SEND WELCOME EMAILS & SMS ==========
-    // Use EdgeRuntime.waitUntil() to send async (non-blocking)
+    // Fire-and-forget pattern: promises run without awaiting
     // This matches Bubble's "Schedule API Workflow" pattern
     // Emails/SMS are sent after response returns, but before function terminates
     // Respects notification preferences (account_assistance category)
@@ -375,62 +375,56 @@ export async function handleSignup(
 
     // Send welcome email with verification link (async, non-blocking)
     // Checks notification_preferences table
-    EdgeRuntime.waitUntil(
-      (async () => {
-        try {
-          const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
-          if (!checkEmailPreference(prefs, 'account_assistance')) {
-            console.log('[signup] Welcome email SKIPPED (preference: account_assistance disabled)');
-            return;
-          }
-          const result = await sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink);
-          if (!result.success) {
-            console.error('[signup] Welcome email failed:', result.error);
-          } else {
-            console.log('[signup] ✅ Welcome email sent');
-          }
-        } catch (err) {
-          console.error('[signup] Welcome email error:', err);
+    (async () => {
+      try {
+        const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
+        if (!checkEmailPreference(prefs, 'account_assistance')) {
+          console.log('[signup] Welcome email SKIPPED (preference: account_assistance disabled)');
+          return;
         }
-      })()
-    );
+        const result = await sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink);
+        if (!result.success) {
+          console.error('[signup] Welcome email failed:', result.error);
+        } else {
+          console.log('[signup] ✅ Welcome email sent');
+        }
+      } catch (err) {
+        console.error('[signup] Welcome email error:', err);
+      }
+    })();
 
     // Send internal notification (async, non-blocking)
     // Note: Internal notifications to team are always sent (not preference-gated)
-    EdgeRuntime.waitUntil(
-      sendInternalSignupNotification(generatedUserId, email.toLowerCase(), firstName, lastName, userType as 'Host' | 'Guest')
-        .then(result => {
-          if (!result.success) {
-            console.error('[signup] Internal notification failed:', result.error);
-          } else {
-            console.log('[signup] ✅ Internal notification sent');
-          }
-        })
-        .catch(err => console.error('[signup] Internal notification error:', err))
-    );
+    sendInternalSignupNotification(generatedUserId, email.toLowerCase(), firstName, lastName, userType as 'Host' | 'Guest')
+      .then(result => {
+        if (!result.success) {
+          console.error('[signup] Internal notification failed:', result.error);
+        } else {
+          console.log('[signup] ✅ Internal notification sent');
+        }
+      })
+      .catch(err => console.error('[signup] Internal notification error:', err));
 
     // Send welcome SMS to Guests with phone numbers (async, non-blocking)
     // Checks notification_preferences table
     if (userType === 'Guest' && phoneNumber) {
-      EdgeRuntime.waitUntil(
-        (async () => {
-          try {
-            const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
-            if (!checkSmsPreference(prefs, 'account_assistance')) {
-              console.log('[signup] Welcome SMS SKIPPED (preference: account_assistance disabled)');
-              return;
-            }
-            const result = await sendWelcomeSms(phoneNumber, firstName);
-            if (!result.success) {
-              console.error('[signup] Welcome SMS failed:', result.error);
-            } else {
-              console.log('[signup] ✅ Welcome SMS sent');
-            }
-          } catch (err) {
-            console.error('[signup] Welcome SMS error:', err);
+      (async () => {
+        try {
+          const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
+          if (!checkSmsPreference(prefs, 'account_assistance')) {
+            console.log('[signup] Welcome SMS SKIPPED (preference: account_assistance disabled)');
+            return;
           }
-        })()
-      );
+          const result = await sendWelcomeSms(phoneNumber, firstName);
+          if (!result.success) {
+            console.error('[signup] Welcome SMS failed:', result.error);
+          } else {
+            console.log('[signup] ✅ Welcome SMS sent');
+          }
+        } catch (err) {
+          console.error('[signup] Welcome SMS error:', err);
+        }
+      })();
     }
 
     console.log('[signup] Email/SMS triggers dispatched');

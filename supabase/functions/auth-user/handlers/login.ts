@@ -109,33 +109,31 @@ export async function handleLogin(
     const { access_token, refresh_token, expires_in } = session;
 
     // ========== SEND LOGIN NOTIFICATION EMAIL ==========
-    // Use EdgeRuntime.waitUntil() to send async (non-blocking)
+    // Fire-and-forget pattern: promise runs without awaiting
     // User gets immediate login response while email is sent in background
     // Respects notification preferences (account_assistance category)
     const loginTimestamp = new Date().toISOString();
     const firstName = userProfile?.['Name - First'] || '';
 
-    EdgeRuntime.waitUntil(
-      (async () => {
-        try {
-          // Check notification preferences before sending
-          const prefs = await getNotificationPreferences(supabaseAdmin, userId);
-          if (!checkEmailPreference(prefs, 'account_assistance')) {
-            console.log('[login] Login notification email SKIPPED (preference: account_assistance disabled)');
-            return;
-          }
-
-          const result = await sendLoginNotificationEmail(authUser.email!, firstName, loginTimestamp);
-          if (!result.success) {
-            console.error('[login] Login notification email failed:', result.error);
-          } else {
-            console.log('[login] ✅ Login notification email sent');
-          }
-        } catch (err) {
-          console.error('[login] Login notification email error:', err);
+    (async () => {
+      try {
+        // Check notification preferences before sending
+        const prefs = await getNotificationPreferences(supabaseAdmin, userId);
+        if (!checkEmailPreference(prefs, 'account_assistance')) {
+          console.log('[login] Login notification email SKIPPED (preference: account_assistance disabled)');
+          return;
         }
-      })()
-    );
+
+        const result = await sendLoginNotificationEmail(authUser.email!, firstName, loginTimestamp);
+        if (!result.success) {
+          console.error('[login] Login notification email failed:', result.error);
+        } else {
+          console.log('[login] ✅ Login notification email sent');
+        }
+      } catch (err) {
+        console.error('[login] Login notification email error:', err);
+      }
+    })();
 
     console.log(`[login] ========== LOGIN COMPLETE ==========`);
 
