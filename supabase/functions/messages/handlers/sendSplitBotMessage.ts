@@ -122,7 +122,7 @@ export async function handleSendSplitBotMessage(
     const { data: threadLookup, error: lookupError } = await supabase
       .from('thread')
       .select('_id')
-      .eq('Proposal', input.proposalId)
+      .eq('"Proposal"', input.proposalId)
       .maybeSingle();
 
     if (lookupError) {
