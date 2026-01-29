@@ -25,8 +25,8 @@
 -- ============================================================================
 
 -- Function 1: Count user's threads (for messaging icon badge in Header)
--- The thread table has columns "-Host User" and "-Guest User" with leading hyphens
--- which cause PostgREST filter parsing issues
+-- The thread table columns were renamed from "-Host User"/"-Guest User"
+-- to host_user_id/guest_user_id to fix PostgREST parsing issues
 CREATE OR REPLACE FUNCTION count_user_threads(user_id TEXT)
 RETURNS integer
 LANGUAGE sql
@@ -35,7 +35,7 @@ SECURITY DEFINER
 AS $$
   SELECT COALESCE(COUNT(*)::integer, 0)
   FROM thread
-  WHERE "-Host User" = user_id OR "-Guest User" = user_id;
+  WHERE host_user_id = user_id OR guest_user_id = user_id;
 $$;
 
 COMMENT ON FUNCTION count_user_threads(TEXT) IS
@@ -52,7 +52,7 @@ SECURITY DEFINER
 AS $$
   SELECT *
   FROM thread
-  WHERE "-Host User" = user_id OR "-Guest User" = user_id
+  WHERE host_user_id = user_id OR guest_user_id = user_id
   ORDER BY "Modified Date" DESC NULLS LAST
   LIMIT 20;
 $$;
