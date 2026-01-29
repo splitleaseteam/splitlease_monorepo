@@ -24,6 +24,7 @@ import ThreadSidebar from './components/ThreadSidebar.jsx';
 import MessageThread from './components/MessageThread.jsx';
 import MessageInput from './components/MessageInput.jsx';
 import RightPanel from './components/RightPanel.jsx';
+import CreateProposalFlowV2 from '../../shared/CreateProposalFlowV2.jsx';
 
 // Mobile breakpoint (matches CSS)
 const MOBILE_BREAKPOINT = 900;
@@ -233,6 +234,12 @@ export default function MessagingPage() {
     handleCTAClick,
     getCTAButtonConfig,
     handleCloseModal,
+
+    // Proposal modal state
+    proposalModalData,
+    zatConfig,
+    isSubmittingProposal,
+    handleProposalSubmit,
   } = useMessagingPageLogic();
 
   // Mobile view state: 'list' or 'conversation'
@@ -381,6 +388,24 @@ export default function MessagingPage() {
           )}
         </div>
       </main>
+
+      {/* Create Proposal Modal */}
+      {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
+        <CreateProposalFlowV2
+          listing={proposalModalData.listing}
+          moveInDate={proposalModalData.moveInDate}
+          daysSelected={proposalModalData.daysSelected}
+          nightsSelected={proposalModalData.nightsSelected}
+          reservationSpan={proposalModalData.reservationSpan}
+          pricingBreakdown={proposalModalData.priceBreakdown}
+          zatConfig={zatConfig}
+          isFirstProposal={true}
+          useFullFlow={true}
+          onClose={handleCloseModal}
+          onSubmit={handleProposalSubmit}
+          isSubmitting={isSubmittingProposal}
+        />
+      )}
     </>
   );
 }
