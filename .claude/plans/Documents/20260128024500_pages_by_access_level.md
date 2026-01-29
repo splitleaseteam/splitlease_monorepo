@@ -1,25 +1,26 @@
 # Split Lease Pages Categorized by Access Level
 
 **Generated:** 2026-01-28 02:45:00
+**Updated:** 2026-01-29 (corrected counts to match routes.config.js)
 **Source:** `app/src/routes.config.js`
 
-This document categorizes all 83 pages in the Split Lease application by authentication requirements and user roles.
+This document categorizes all 80 pages in the Split Lease application by authentication requirements and user roles.
 
 ---
 
 ## Table of Contents
 
-1. [All Pages (83 Total)](#all-pages-83-total)
-2. [Protected Pages (22 Total)](#protected-pages-22-total)
-3. [Public Pages (61 Total)](#public-pages-61-total)
-4. [Admin/Internal Pages (35 Total)](#admininternal-pages-35-total)
+1. [All Pages (80 Total)](#all-pages-80-total)
+2. [Protected Pages (21 Total)](#protected-pages-21-total)
+3. [Public Pages (59 Total)](#public-pages-59-total)
+4. [Admin/Internal Pages (32 Total)](#admininternal-pages-32-total)
 5. [Host-Only Pages (11 Total)](#host-only-pages-11-total)
-6. [Guest-Only Pages (6 Total)](#guest-only-pages-6-total)
+6. [Guest-Only Pages (9 Total)](#guest-only-pages-9-total)
 7. [Dual-Role Pages (5 Total)](#dual-role-pages-5-total)
 
 ---
 
-## All Pages (83 Total)
+## All Pages (80 Total)
 
 ### Public Pages (No Auth Required)
 1. `/` - Homepage
@@ -100,21 +101,16 @@ This document categorizes all 83 pages in the Split Lease application by authent
 72. `/_experience-responses` - Survey responses admin
 73. `/_internal/z-search-unit-test` - Search testing
 74. `/_internal/z-emails-unit` - Email testing
-75. `/_internal/z-pricing-unit-test` - Pricing testing
+75. `/_pricing-unit-test` - Pricing testing
 76. `/_internal/z-schedule-test` - Schedule testing
 77. `/_internal/z-sharath-test` - Dev testing page
 78. `/_internal/z-unit-chatgpt-models` - AI model testing
 79. `/_internal/z-unit-payment-records-js` - Payment testing
 80. `/_manage-leases-payment-records/:leaseId` - Lease payment admin
 
-### Development/Demo Pages
-81. `/referral-demo` - Referral demo (devOnly)
-82. `/index-dev` - Development index (devOnly)
-83. `/signup-trial-host` - Trial signup (devOnly, broken import)
-
 ---
 
-## Protected Pages (22 Total)
+## Protected Pages (21 Total)
 
 Pages requiring user authentication (Supabase Auth session):
 
@@ -146,7 +142,7 @@ Pages requiring user authentication (Supabase Auth session):
 
 ---
 
-## Public Pages (61 Total)
+## Public Pages (59 Total)
 
 Pages accessible without authentication:
 
@@ -189,27 +185,26 @@ Pages accessible without authentication:
 ### Error Pages (1)
 - `/404` - Not found
 
-### Admin/Internal (35)
-All `/_*` paths are technically public but access-controlled by path obscurity and internal policies. See [Admin/Internal Pages](#admininternal-pages-35-total) section.
+### Admin/Internal (32)
+All `/_*` paths are technically public but access-controlled by path obscurity and internal policies. See [Admin/Internal Pages](#admininternal-pages-32-total) section.
 
 ---
 
-## Admin/Internal Pages (35 Total)
+## Admin/Internal Pages (32 Total)
 
 Pages with `/_` prefix (path-based access control, no auth enforcement):
 
-### Testing & Development (9)
+### Testing & Development (8)
 - `/_internal-test` - Internal testing page
 - `/_email-sms-unit` - Email/SMS testing
 - `/_internal/z-search-unit-test` - Search unit tests
 - `/_internal/z-emails-unit` - Email unit tests
-- `/_internal/z-pricing-unit-test` - Pricing unit tests
+- `/_pricing-unit-test` - Pricing unit tests
 - `/_internal/z-schedule-test` - Schedule unit tests
 - `/_internal/z-sharath-test` - Developer testing page
 - `/_internal/z-unit-chatgpt-models` - AI model testing
-- `/_internal/z-unit-payment-records-js` - Payment records testing
 
-### Operations & Management (14)
+### Operations & Management (13)
 - `/_leases-overview` - Leases admin overview
 - `/_manage-virtual-meetings` - Virtual meeting scheduler
 - `/_manage-informational-texts` - Content management system
@@ -223,7 +218,6 @@ Pages with `/_` prefix (path-based access control, no auth enforcement):
 - `/_proposal-manage` - Proposal admin tool
 - `/_listings-overview` - Listings admin dashboard
 - `/_experience-responses` - Survey response viewer
-- `/_manage-leases-payment-records/:leaseId` - Lease payment admin
 
 ### Customer Relationship (2)
 - `/_guest-relationships` - Guest CRM
@@ -235,6 +229,10 @@ Pages with `/_` prefix (path-based access control, no auth enforcement):
 - `/_ai-tools` - AI tooling dashboard
 - `/_emergency` - Emergency incident management
 - `/_usability-data-management` - Usability data admin
+
+### Financial (2)
+- `/_internal/z-unit-payment-records-js` - Payment records testing
+- `/_manage-leases-payment-records/:leaseId` - Lease payment admin
 
 ### Simulations & Demos (2)
 - `/_guest-simulation` - Guest simulation (day 1, public)
@@ -276,7 +274,7 @@ Pages with `protected: true` check auth, but **may not enforce host role** at ro
 
 ---
 
-## Guest-Only Pages (6 Total)
+## Guest-Only Pages (9 Total)
 
 Pages designed for guests (renters/tenants):
 
@@ -326,16 +324,16 @@ These pages serve both user types with conditional UI based on role:
 
 | Category | Count | Protected | Public |
 |----------|-------|-----------|--------|
-| All Pages | 83 | 22 | 61 |
+| All Pages | 80 | 21 | 59 |
 | Host Pages | 11 | 8 | 3 |
 | Guest Pages | 9 | 8 | 1 |
-| Admin/Internal | 35 | 0 | 35 |
+| Admin/Internal | 32 | 0 | 32 |
 | Dual-Role | 5 | 3 | 2 |
 
 ### Security Gaps
 
 1. **`/self-listing-v2`** - Currently public, should be `protected: true`
-2. **Admin pages** - All 35 admin pages have `protected: false`, relying on path obscurity
+2. **Admin pages** - All 32 admin pages have `protected: false`, relying on path obscurity
 3. **Role enforcement** - No route-level role checks; relies on component-level validation
 4. **Dynamic routes** - Pages like `/guest-proposals/:userId` trust userId param without validation
 
@@ -368,6 +366,6 @@ All routes defined in: `app/src/routes.config.js`
 
 ---
 
-**Last Updated:** 2026-01-28 02:45:00
+**Last Updated:** 2026-01-29
 **Source File:** `app/src/routes.config.js`
-**Total Pages:** 83 (22 protected, 61 public)
+**Total Pages:** 80 (21 protected, 59 public)
