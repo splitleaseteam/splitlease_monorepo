@@ -4,6 +4,8 @@
  */
 
 import { formatDate } from './dateUtils.js';
+import PriceTierSelector from '../PriceAnchoring/PriceTierSelector.jsx';
+import '../PriceAnchoring/PriceAnchoring.css';
 
 /**
  * @param {Object} props
@@ -27,6 +29,8 @@ export default function RequestDetails({
   onMessageChange,
   pricePercentage,
   onPriceChange,
+  selectedTier,
+  onTierChange,
   baseNightlyPrice,
   onBack,
   onSubmit,
@@ -103,44 +107,16 @@ export default function RequestDetails({
       {/* Price Negotiation (only for adding dates) */}
       {(requestType === 'adding' || requestType === 'swapping') && (
         <div className="dcr-price-section">
-          <h3 className="dcr-section-title">Propose a Rate</h3>
-          <p className="dcr-section-description">
-            Suggest a nightly rate for the new date. The receiver can accept or negotiate.
-          </p>
-
-          <div className="dcr-price-slider-container">
-            <input
-              type="range"
-              min="50"
-              max="150"
-              value={pricePercentage}
-              onChange={(e) => onPriceChange(parseInt(e.target.value))}
-              className="dcr-price-slider"
-              aria-label="Price percentage"
-            />
-            <div className="dcr-price-labels">
-              <span>50%</span>
-              <span>100%</span>
-              <span>150%</span>
-            </div>
-          </div>
-
-          <div className="dcr-price-display">
-            <div className="dcr-price-proposed">
-              <span className="dcr-price-label">Proposed Rate:</span>
-              <span className="dcr-price-value">${proposedPrice.toFixed(2)}/night</span>
-            </div>
-            <div className="dcr-price-comparison">
-              <span className="dcr-price-label">Regular Rate:</span>
-              <span className="dcr-price-value">${baseNightlyPrice.toFixed(2)}/night</span>
-            </div>
-            <div className={`dcr-price-difference ${priceDifference >= 0 ? 'dcr-price-positive' : 'dcr-price-negative'}`}>
-              <span className="dcr-price-label">Difference:</span>
-              <span className="dcr-price-value">
-                {priceDifference >= 0 ? '+' : ''}${priceDifference.toFixed(2)} ({pricePercentage}%)
-              </span>
-            </div>
-          </div>
+          <PriceTierSelector
+            basePrice={baseNightlyPrice}
+            currentPrice={proposedPrice}
+            defaultTier={selectedTier}
+            onPriceChange={(price, tier) => {
+              const newPercentage = Math.round((price / baseNightlyPrice) * 100);
+              onPriceChange(newPercentage);
+              if (onTierChange) onTierChange(tier);
+            }}
+          />
         </div>
       )}
 

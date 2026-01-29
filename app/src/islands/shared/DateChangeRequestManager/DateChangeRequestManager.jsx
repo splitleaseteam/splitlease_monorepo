@@ -18,6 +18,9 @@ import ThrottlingWarningPopup from './ThrottlingWarningPopup.jsx';
 import ThrottlingBlockPopup from './ThrottlingBlockPopup.jsx';
 import SuccessMessage from './SuccessMessage.jsx';
 import './DateChangeRequestManager.css';
+import UrgencyCountdown from '../UrgencyCountdown/components/UrgencyCountdown';
+import '../UrgencyCountdown/styles/UrgencyCountdown.css';
+import analyticsService from '../../../../integration/04_analyticsService';
 
 /**
  * ViewState type: 'create' | 'details' | 'manage' | 'success' | ''
@@ -52,6 +55,8 @@ export default function DateChangeRequestManager({
   const [dateToRemove, setDateToRemove] = useState(null);
   const [message, setMessage] = useState('');
   const [pricePercentage, setPricePercentage] = useState(100); // 50-150%
+  const [selectedTier, setSelectedTier] = useState('recommended');
+  const [selectedTier, setSelectedTier] = useState('recommended');
 
   // Throttling state
   const [throttleStatus, setThrottleStatus] = useState(null);
@@ -261,9 +266,17 @@ export default function DateChangeRequestManager({
       if (result.status === 'success') {
         setSuccess('Request submitted successfully!');
         setView('success');
+
+        // Track final submission
+        analyticsService.trackRequestSubmitted({
+          id: result.data?.id || result.data?._id,
+          selectedTier: selectedTier,
+          feeBreakdown: { totalPrice: calculateProposedPrice() },
+          transactionType: requestType,
+          isBSBS: false
+        });
+
         if (onSuccess) onSuccess(result.data);
-      } else {
-        throw new Error(result.message || 'Failed to submit request');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit request');
@@ -371,6 +384,16 @@ export default function DateChangeRequestManager({
     onClose();
   };
 
+  /**
+   * Handle price updates from the urgency countdown component
+   */
+  const handleUrgencyPriceUpdate = (newPrice) => {
+    if (baseNightlyPrice > 0) {
+      const newPercentage = Math.round((newPrice / baseNightlyPrice) * 100);
+      setPricePercentage(newPercentage);
+    }
+  };
+
   // Get booked dates from lease
   const bookedDates = lease?.bookedDates || lease?.['List of Booked Dates'] || [];
   const reservationStart = lease?.reservationStart || lease?.['Reservation Period : Start'];
@@ -416,6 +439,21 @@ export default function DateChangeRequestManager({
               disabled={isLoading}
             />
 
+            {dateToAdd && (
+              <UrgencyCountdown
+                targetDate={dateToAdd}
+                basePrice={baseNightlyPrice}
+                urgencySteepness={2.0}
+                variant="prominent"
+                onUrgencyChange={() => {
+                {
+                  /* A/B testing hook */
+                }
+              }}
+onPriceUpdate={handleUrgencyPriceUpdate}
+              />
+            )}
+
             <DateChangeRequestCalendar
               bookedDates={bookedDates}
               reservationStart={reservationStart}
@@ -450,6 +488,8 @@ export default function DateChangeRequestManager({
             onMessageChange={setMessage}
             pricePercentage={pricePercentage}
             onPriceChange={setPricePercentage}
+            selectedTier={selectedTier}
+            onTierChange={setSelectedTier}
             baseNightlyPrice={baseNightlyPrice}
             onBack={handleBack}
             onSubmit={handleSubmitRequest}
