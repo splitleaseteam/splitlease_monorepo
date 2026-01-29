@@ -175,3 +175,37 @@ node .claude/scripts/orchestrator-runner.js
 3. E2E tests pass with 100% accuracy
 4. No regression in counteroffer scenarios
 5. Build succeeds without errors
+
+---
+
+## Post-Run Analysis Report
+
+After the orchestrator completes (success or failure), a comprehensive session report is automatically generated at:
+
+```
+.claude/plans/Documents/YYYYMMDDHHMMSS-orchestrator-session-report.md
+```
+
+### Report Contents
+
+| Section | Description |
+|---------|-------------|
+| **Executive Summary** | Start/end times, duration, final status, iterations |
+| **Pass Execution Summary** | Which passes started/completed |
+| **Bugs Identified** | Table from bug-catalog.json |
+| **Fixes Planned** | Table from fix-plan.json |
+| **Implementation Results** | Raw JSON of fix attempts |
+| **Verification Results** | E2E test results, screenshots |
+| **Recommendations** | Next steps based on outcome |
+| **Raw Log Excerpt** | Last 50 lines of execution log |
+
+### State Files (for manual debugging)
+
+| File | Contents |
+|------|----------|
+| `.claude/state/orchestrator-state.json` | Resumable session state |
+| `.claude/state/bug-catalog.json` | Identified bugs with severity |
+| `.claude/state/fix-plan.json` | Planned code changes |
+| `.claude/state/implementation-results.json` | Fix attempt outcomes |
+| `.claude/state/verification-report.json` | Final E2E test results |
+| `.claude/logs/orchestrator-run.log` | Full timestamped log |
