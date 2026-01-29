@@ -41,14 +41,14 @@ Use this skill when you need to:
 ## Quick Start
 
 ```bash
-# Navigate to adws directory
-cd "c:\Users\Split Lease\Documents\Split Lease - Dev\adws"
+# Navigate to project root
+cd "c:\Users\Split Lease\Documents\Split Lease - Team"
 
 # Run analysis
 python -c "
 import sys
-sys.path.insert(0, '.')
-from adw_modules.ast_dependency_analyzer import analyze_dependencies
+sys.path.insert(0, '.claude/skills/ast-dependency-analyzer')
+from ast_dependency_analyzer import analyze_dependencies
 
 # Analyze directory (returns DependencyContext)
 context = analyze_dependencies('app/src', force_refresh=True)
@@ -56,6 +56,15 @@ context = analyze_dependencies('app/src', force_refresh=True)
 # Get markdown output for prompts
 print(context.to_prompt_context())
 "
+```
+
+**Alternative (as package):**
+```python
+# If added to PYTHONPATH or installed
+from ast_dependency_analyzer import analyze_dependencies, validate_file_after_write
+
+context = analyze_dependencies("app/src")
+print(context.to_prompt_context())
 ```
 
 **Caching:** The analyzer caches results by date. Use `force_refresh=True` to re-analyze.
@@ -281,8 +290,8 @@ context.to_json_dict() -> dict
 
 ```python
 import sys
-sys.path.insert(0, 'c:\\Users\\Split Lease\\Documents\\Split Lease - Dev\\adws')
-from adw_modules.ast_dependency_analyzer import analyze_dependencies
+sys.path.insert(0, '.claude/skills/ast-dependency-analyzer')
+from ast_dependency_analyzer import analyze_dependencies
 
 # Analyze
 context = analyze_dependencies('app/src', force_refresh=True)
@@ -326,4 +335,4 @@ for barrel in sorted(barrels, key=lambda x: x['consumer_count'], reverse=True):
 - **Parse errors**: Check `context.parse_error_count` - files with syntax errors are skipped
 - **Node modules**: External packages (not starting with `.` or `@/`) have `resolved_path = None`
 - **Type imports**: Included in analysis but may not affect runtime behavior
-- **Cache location**: Defaults to `adws/ast_cache/` relative to the analyzer module
+- **Cache location**: Defaults to `ast_cache/` relative to the analyzer module (`.claude/skills/ast-dependency-analyzer/ast_cache/`)
