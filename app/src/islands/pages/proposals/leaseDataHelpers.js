@@ -8,15 +8,38 @@
 import { supabase } from '../../../lib/supabase.js';
 
 /**
- * Check if a proposal status indicates an activated lease
+ * Check if a proposal status indicates the lease calendar should be shown
+ *
+ * Shows for all statuses from "Drafting Lease Documents" onwards:
+ * - usualOrder 3: Proposal or Counteroffer Accepted / Drafting Lease Documents
+ * - usualOrder 4: Lease Documents Sent for Review
+ * - usualOrder 5: Lease Documents Sent for Signatures
+ * - usualOrder 6: Lease Documents Signed / Awaiting Initial payment
+ * - usualOrder 7: Initial Payment Submitted / Lease activated
+ *
  * @param {string} status - The proposal status
  * @returns {boolean}
  */
 export function isLeaseActivatedStatus(status) {
   if (!status) return false;
   const normalizedStatus = status.trim().toLowerCase();
-  return normalizedStatus.includes('lease activated') ||
-         normalizedStatus.includes('payment submitted');
+
+  // Check for any lease-related status (usualOrder 3+)
+  return (
+    // usualOrder 3: Drafting
+    normalizedStatus.includes('drafting') ||
+    normalizedStatus.includes('accepted') ||
+    // usualOrder 4: Documents sent for review
+    normalizedStatus.includes('sent for review') ||
+    // usualOrder 5: Documents sent for signatures
+    normalizedStatus.includes('sent for signatures') ||
+    // usualOrder 6: Awaiting payment
+    normalizedStatus.includes('awaiting initial payment') ||
+    normalizedStatus.includes('awaiting payment') ||
+    // usualOrder 7: Activated
+    normalizedStatus.includes('lease activated') ||
+    normalizedStatus.includes('payment submitted')
+  );
 }
 
 /**

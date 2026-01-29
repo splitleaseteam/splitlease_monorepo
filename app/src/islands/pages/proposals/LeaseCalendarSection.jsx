@@ -301,13 +301,39 @@ export default function LeaseCalendarSection({ proposal }) {
     );
   }
 
-  // If no lease data found, show minimal message
+  // If no lease data found, show contextual message based on status
   if (!leaseData) {
+    const status = proposal?.Status?.toLowerCase() || '';
+    const isDrafting = status.includes('drafting') || status.includes('accepted');
+    const isReview = status.includes('review');
+    const isSignatures = status.includes('signatures');
+
+    let message = 'Lease schedule is being prepared. Check back soon.';
+    if (isDrafting) {
+      message = 'Your lease documents are being drafted. The schedule will appear here once finalized.';
+    } else if (isReview) {
+      message = 'Your lease documents are ready for review. The schedule will appear here soon.';
+    } else if (isSignatures) {
+      message = 'Awaiting signatures. Your schedule will appear once the lease is signed.';
+    }
+
     return (
-      <div className="lcs-no-data">
-        <Calendar size={24} />
-        <p>Lease schedule is being prepared. Check back soon.</p>
-      </div>
+      <section className="lcs-section lcs-section--pending" aria-labelledby="lcs-heading-pending">
+        <h3 id="lcs-heading-pending" className="lcs-heading">
+          <Calendar size={20} aria-hidden="true" />
+          Your Lease Schedule
+        </h3>
+        <div className="lcs-pending-message">
+          <div className="lcs-pending-icon">
+            <Calendar size={32} />
+          </div>
+          <p>{message}</p>
+          <p className="lcs-pending-subtext">
+            This schedule is an estimate. During your reservation, you'll be able to
+            request date changes or adjust your schedule with host approval.
+          </p>
+        </div>
+      </section>
     );
   }
 
