@@ -235,48 +235,50 @@ export const LastRow = {
 };
 
 // Multiple Rows
+const MultipleRowsWrapper = () => {
+  const categories = [
+    messageForwardingCategory,
+    paymentRemindersCategory,
+    reservationUpdatesCategory,
+    promotionalCategory,
+  ];
+
+  const [preferences, setPreferences] = useState({
+    message_forwarding: { sms: true, email: true },
+    payment_reminders: { sms: true, email: false },
+    reservation_updates: { sms: false, email: true },
+    promotional: { sms: false, email: false },
+  });
+
+  const handleToggle = (categoryId, type) => (checked) => {
+    setPreferences((prev) => ({
+      ...prev,
+      [categoryId]: {
+        ...prev[categoryId],
+        [type]: checked,
+      },
+    }));
+  };
+
+  return (
+    <>
+      {categories.map((category, index) => (
+        <NotificationCategoryRow
+          key={category.id}
+          category={category}
+          smsEnabled={preferences[category.id].sms}
+          emailEnabled={preferences[category.id].email}
+          onToggleSms={handleToggle(category.id, 'sms')}
+          onToggleEmail={handleToggle(category.id, 'email')}
+          isLast={index === categories.length - 1}
+        />
+      ))}
+    </>
+  );
+};
+
 export const MultipleRows = {
-  render: () => {
-    const categories = [
-      messageForwardingCategory,
-      paymentRemindersCategory,
-      reservationUpdatesCategory,
-      promotionalCategory,
-    ];
-
-    const [preferences, setPreferences] = useState({
-      message_forwarding: { sms: true, email: true },
-      payment_reminders: { sms: true, email: false },
-      reservation_updates: { sms: false, email: true },
-      promotional: { sms: false, email: false },
-    });
-
-    const handleToggle = (categoryId, type) => (checked) => {
-      setPreferences((prev) => ({
-        ...prev,
-        [categoryId]: {
-          ...prev[categoryId],
-          [type]: checked,
-        },
-      }));
-    };
-
-    return (
-      <>
-        {categories.map((category, index) => (
-          <NotificationCategoryRow
-            key={category.id}
-            category={category}
-            smsEnabled={preferences[category.id].sms}
-            emailEnabled={preferences[category.id].email}
-            onToggleSms={handleToggle(category.id, 'sms')}
-            onToggleEmail={handleToggle(category.id, 'email')}
-            isLast={index === categories.length - 1}
-          />
-        ))}
-      </>
-    );
-  },
+  render: () => <MultipleRowsWrapper />,
   parameters: {
     docs: {
       description: {
@@ -287,68 +289,70 @@ export const MultipleRows = {
 };
 
 // Full Settings Panel
-export const FullSettingsPanel = {
-  render: () => {
-    const categories = [
-      { id: 'message_forwarding', label: 'Message Forwarding', description: 'Receive forwarded messages via your preferred channel' },
-      { id: 'payment_reminders', label: 'Payment Reminders', description: 'Billing and payment notifications' },
-      { id: 'promotional', label: 'Promotional', description: 'Marketing and promotional content' },
-      { id: 'reservation_updates', label: 'Reservation Updates', description: 'Changes to your bookings' },
-      { id: 'lease_requests', label: 'Lease Requests', description: 'Lease-related inquiries' },
-      { id: 'checkin_checkout', label: 'Check-in/Check-out', description: 'Guest arrival and departure alerts' },
-    ];
+const FullSettingsPanelWrapper = () => {
+  const categories = [
+    { id: 'message_forwarding', label: 'Message Forwarding', description: 'Receive forwarded messages via your preferred channel' },
+    { id: 'payment_reminders', label: 'Payment Reminders', description: 'Billing and payment notifications' },
+    { id: 'promotional', label: 'Promotional', description: 'Marketing and promotional content' },
+    { id: 'reservation_updates', label: 'Reservation Updates', description: 'Changes to your bookings' },
+    { id: 'lease_requests', label: 'Lease Requests', description: 'Lease-related inquiries' },
+    { id: 'checkin_checkout', label: 'Check-in/Check-out', description: 'Guest arrival and departure alerts' },
+  ];
 
-    const [preferences, setPreferences] = useState(
-      categories.reduce((acc, cat) => ({
-        ...acc,
-        [cat.id]: { sms: false, email: true },
-      }), {})
-    );
+  const [preferences, setPreferences] = useState(
+    categories.reduce((acc, cat) => ({
+      ...acc,
+      [cat.id]: { sms: false, email: true },
+    }), {})
+  );
 
-    const handleToggle = (categoryId, type) => (checked) => {
-      setPreferences((prev) => ({
-        ...prev,
-        [categoryId]: {
-          ...prev[categoryId],
-          [type]: checked,
-        },
-      }));
-    };
+  const handleToggle = (categoryId, type) => (checked) => {
+    setPreferences((prev) => ({
+      ...prev,
+      [categoryId]: {
+        ...prev[categoryId],
+        [type]: checked,
+      },
+    }));
+  };
 
-    const smsCount = Object.values(preferences).filter((p) => p.sms).length;
-    const emailCount = Object.values(preferences).filter((p) => p.email).length;
+  const smsCount = Object.values(preferences).filter((p) => p.sms).length;
+  const emailCount = Object.values(preferences).filter((p) => p.email).length;
 
-    return (
-      <div>
-        <h3 style={{ margin: '0 0 16px', color: '#1f2937', fontSize: '16px' }}>
-          Notification Preferences
-        </h3>
+  return (
+    <div>
+      <h3 style={{ margin: '0 0 16px', color: '#1f2937', fontSize: '16px' }}>
+        Notification Preferences
+      </h3>
 
-        {categories.map((category, index) => (
-          <NotificationCategoryRow
-            key={category.id}
-            category={category}
-            smsEnabled={preferences[category.id].sms}
-            emailEnabled={preferences[category.id].email}
-            onToggleSms={handleToggle(category.id, 'sms')}
-            onToggleEmail={handleToggle(category.id, 'email')}
-            isLast={index === categories.length - 1}
-          />
-        ))}
+      {categories.map((category, index) => (
+        <NotificationCategoryRow
+          key={category.id}
+          category={category}
+          smsEnabled={preferences[category.id].sms}
+          emailEnabled={preferences[category.id].email}
+          onToggleSms={handleToggle(category.id, 'sms')}
+          onToggleEmail={handleToggle(category.id, 'email')}
+          isLast={index === categories.length - 1}
+        />
+      ))}
 
-        <div style={{
-          marginTop: '20px',
-          padding: '12px',
-          backgroundColor: '#f9fafb',
-          borderRadius: '8px',
-          fontSize: '13px',
-          color: '#6b7280',
-        }}>
-          Summary: {smsCount} SMS enabled, {emailCount} Email enabled
-        </div>
+      <div style={{
+        marginTop: '20px',
+        padding: '12px',
+        backgroundColor: '#f9fafb',
+        borderRadius: '8px',
+        fontSize: '13px',
+        color: '#6b7280',
+      }}>
+        Summary: {smsCount} SMS enabled, {emailCount} Email enabled
       </div>
-    );
-  },
+    </div>
+  );
+};
+
+export const FullSettingsPanel = {
+  render: () => <FullSettingsPanelWrapper />,
   parameters: {
     docs: {
       description: {
