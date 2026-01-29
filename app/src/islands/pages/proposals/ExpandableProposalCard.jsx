@@ -1109,19 +1109,6 @@ export default function ExpandableProposalCard({
               </button>
             )}
 
-            {/* Edit button */}
-            {!isTerminal && !isCompleted && (
-              <button
-                className="epc-btn epc-btn--ghost"
-                onClick={() => {
-                  setProposalDetailsModalInitialView('pristine');
-                  setShowProposalDetailsModal(true);
-                }}
-              >
-                Edit
-              </button>
-            )}
-
             {/* Cancel/Delete button */}
             {buttonConfig?.cancelButton?.visible && (
               <button
