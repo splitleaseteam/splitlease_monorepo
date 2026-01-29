@@ -56,7 +56,6 @@ export default function DateChangeRequestManager({
   const [message, setMessage] = useState('');
   const [pricePercentage, setPricePercentage] = useState(100); // 50-150%
   const [selectedTier, setSelectedTier] = useState('recommended');
-  const [selectedTier, setSelectedTier] = useState('recommended');
 
   // Throttling state
   const [throttleStatus, setThrottleStatus] = useState(null);

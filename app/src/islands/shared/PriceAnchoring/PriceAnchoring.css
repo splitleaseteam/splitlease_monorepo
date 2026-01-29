@@ -45,55 +45,55 @@
 
 /* Visual Hierarchy Colors */
 
-/* Premium -> Gold */
+/* Premium -> Purple/Blue */
 .price-tier-card--premium.selected {
-  border-color: var(--anchor-gold);
-  background: var(--anchor-gold-light);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  border-color: #6D31C2;
+  background: #f5f0ff;
+  box-shadow: 0 4px 12px rgba(109, 49, 194, 0.2);
 }
 
 .price-tier-card--premium .price-tier-card__badge {
-  background: var(--anchor-gold);
-  color: var(--anchor-gold-dark);
+  background: #6D31C2;
+  color: white;
 }
 
 .price-tier-card--premium .price-tier-card__icon,
 .price-tier-card--premium .price-tier-card__name {
-  color: var(--anchor-gold-dark);
+  color: #5C20B6;
 }
 
-/* Recommended -> Teal */
+/* Recommended -> Blue (Default Selection) */
 .price-tier-card--recommended.selected {
-  border-color: var(--crash-teal);
-  background: var(--crash-teal-light);
-  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.2);
+  border-color: #3b82f6;
+  background: #dbeafe;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .price-tier-card--recommended .price-tier-card__badge {
-  background: var(--crash-teal);
+  background: #3b82f6;
   color: white;
 }
 
 .price-tier-card--recommended .price-tier-card__icon,
 .price-tier-card--recommended .price-tier-card__name {
-  color: var(--crash-teal-dark);
+  color: #1e40af;
 }
 
-/* Budget -> Green */
+/* Budget -> Gray/Teal */
 .price-tier-card--budget.selected {
-  border-color: var(--swap-green);
-  background: var(--swap-green-light);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+  border-color: #4ECDC4;
+  background: #F9FAFB;
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.1);
 }
 
 .price-tier-card--budget .price-tier-card__badge {
-  background: var(--swap-green);
+  background: #6b7280;
   color: white;
 }
 
 .price-tier-card--budget .price-tier-card__icon,
 .price-tier-card--budget .price-tier-card__name {
-  color: var(--swap-green-dark);
+  color: #00897B;
 }
 
 /* Highlighted Scale */

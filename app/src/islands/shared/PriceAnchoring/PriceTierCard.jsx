@@ -44,13 +44,22 @@ export default function PriceTierCard({
     .filter(Boolean)
     .join(' ');
 
+  const handleKeyDown = (e) => {
+    if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
     <div
       className={cardClasses}
       onClick={() => !disabled && onSelect()}
+      onKeyDown={handleKeyDown}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-pressed={isSelected}
+      aria-label={`Select ${tier.name} tier: ${formatCurrency(price)}`}
     >
       {/* Savings Badge */}
       {savings && savings.amount > 0 && (

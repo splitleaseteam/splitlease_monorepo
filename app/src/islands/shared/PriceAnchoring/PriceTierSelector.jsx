@@ -54,7 +54,7 @@ const PRICE_TIERS = {
       'Same-day response typical',
       'VIP processing',
     ],
-    color: 'gold', // Gold for premium/buyout
+    color: 'purple', // Purple for premium
     icon: BoltIcon,
   },
 };
@@ -174,6 +174,7 @@ export default function PriceTierSelector({
             placeholder="Enter amount"
             className="dcr-message-input" // Reuse existing input styling
             style={{ paddingLeft: '24px' }}
+            aria-label="Custom offer amount"
           />
         </div>
       </details>
