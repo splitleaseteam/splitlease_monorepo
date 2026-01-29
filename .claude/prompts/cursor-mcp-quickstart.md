@@ -11,7 +11,7 @@ This guide helps you set up Cursor IDE with Claude AI and Playwright MCP to orch
 - [ ] Cursor IDE installed (https://cursor.sh/)
 - [ ] Claude AI access (Anthropic API key or Claude account)
 - [ ] Node.js 18+ installed
-- [ ] Gmail account for testing (splitleasefrederick@gmail.com)
+- [ ] Gmail account for testing (splitleasefrederick@gmail.com) - you'll log into it via Playwright
 - [ ] Split Lease codebase accessible
 
 ---
@@ -22,49 +22,15 @@ This guide helps you set up Cursor IDE with Claude AI and Playwright MCP to orch
 # Install Playwright MCP Server
 npm install -g @executeautomation/playwright-mcp-server
 
-# Install Gmail MCP Server
-npm install -g @modelcontextprotocol/server-gmail
-
 # Install Supabase MCP Server (if not already)
 npm install -g @supabase/mcp-server
 ```
 
----
-
-## Step 2: Configure Gmail API Access
-
-### 2.1 Create Google Cloud Project
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create new project: `splitlease-testing`
-3. Enable Gmail API:
-   - Navigate to "APIs & Services" → "Library"
-   - Search "Gmail API" and enable it
-
-### 2.2 Create OAuth Credentials
-
-1. Navigate to "APIs & Services" → "Credentials"
-2. Click "Create Credentials" → "OAuth client ID"
-3. Application type: "Desktop app"
-4. Name: `Split Lease Testing`
-5. Download JSON credentials
-
-### 2.3 Authorize Gmail MCP
-
-```bash
-# Set credentials path (Windows)
-set GMAIL_CREDENTIALS_PATH=C:\path\to\credentials.json
-set GMAIL_TOKEN_PATH=C:\path\\token.json
-
-# Run Gmail MCP once to authorize
-npx @modelcontextprotocol/server-gmail
-
-# Follow the browser prompt to authorize access
-```
+**No Gmail API needed!** We'll open Gmail directly in the Playwright browser session.
 
 ---
 
-## Step 3: Configure Cursor MCP
+## Step 2: Configure Cursor MCP
 
 Create/edit `.claude/mcp_config.json` in your project:
 
@@ -75,15 +41,6 @@ Create/edit `.claude/mcp_config.json` in your project:
       "command": "npx",
       "args": ["@executeautomation/playwright-mcp-server"],
       "disabled": false
-    },
-    "gmail": {
-      "command": "npx",
-      "args": ["@modelcontextprotocol/server-gmail"],
-      "disabled": false,
-      "env": {
-        "GMAIL_CREDENTIALS_PATH": "C:\\Users\\Split Lease\\credentials\\gmail.json",
-        "GMAIL_TOKEN_PATH": "C:\\Users\\Split Lease\\credentials\\gmail-token.json"
-      }
     },
     "supabase": {
       "command": "npx",
@@ -122,14 +79,6 @@ Create/edit `.claude/mcp_config.json` in your project:
     "playwright": {
       "command": "npx",
       "args": ["@executeautomation/playwright-mcp-server"]
-    },
-    "gmail": {
-      "command": "npx",
-      "args": ["@modelcontextprotocol/server-gmail"],
-      "env": {
-        "GMAIL_CREDENTIALS_PATH": "C:\\Users\\Split Lease\\credentials\\gmail.json",
-        "GMAIL_TOKEN_PATH": "C:\\Users\\Split Lease\\credentials\\gmail-token.json"
-      }
     },
     "supabase": {
       "command": "npx",
@@ -196,13 +145,26 @@ Use the mcp-tool-specialist subagent for all MCP operations.
 | `mcp__playwright__browser_run_code` | Run Playwright code | `{ code: "async (page) => { ... }" }` |
 | `mcp__playwright__browser_close` | Close browser | `{}` |
 
-### Gmail MCP Tools
+### Checking Gmail via Playwright
 
-| Tool | Purpose | Usage |
-|------|---------|-------|
-| `search` | Search emails | `{ query: "to:test@gmail.com subject:Login" }` |
-| `get_message` | Get email details | `{ id: "message-id" }` |
-| `list_messages` | List recent emails | `{ userId: "me", maxResults: 10 }` |
+Instead of Gmail API, use Playwright to check emails:
+
+```javascript
+// Navigate to Gmail
+await browser.navigateTo('https://mail.google.com');
+
+// Search for test alias emails
+await browser.fillField('Search mail', `to:splitleasefrederick+test123@gmail.com`);
+await browser.pressKey('Enter');
+
+// Click the email and extract content
+await browser.waitForElement('[role="main"] div[role="link"]');
+await browser.clickSelector('[role="main"] div[role="link"]', 'first email');
+
+// Extract magic link or verification code
+const emailBody = await browser.getText('[role="main"]');
+const magicLink = extractLink(emailBody);
+```
 
 ### Supabase MCP Tools
 
@@ -238,12 +200,13 @@ User: "Test magic link login"
 Claude: "I'll orchestrate a magic link login test using MCP tools."
 
 [Invokes mcp-tool-specialist subagent]
-→ Playwright: Navigate to /login
+→ Playwright: Navigate to localhost:8000/login
 → Playwright: Fill email field with splitleasefrederick+test123@gmail.com
 → Playwright: Click submit button
 → Wait 10 seconds
-→ Gmail: Search for emails to test123 address
-→ Gmail: Get email body, extract magic link
+→ Playwright: Open new tab → https://mail.google.com
+→ Playwright: Search for "to:test123@gmail.com"
+→ Playwright: Click email, extract magic link from body
 → Playwright: Navigate to magic link
 → Verify: Check for user avatar element
 → Supabase: Query session table for user record

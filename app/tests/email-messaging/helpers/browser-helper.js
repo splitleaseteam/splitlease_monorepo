@@ -326,6 +326,163 @@ class BrowserHelper {
     console.log(`🔚 Browser closed`);
   }
 
+  // ========== GMAIL-SPECIFIC METHODS ==========
+
+  /**
+   * Open Gmail in a new tab
+   *
+   * @returns {Promise<void>}
+   */
+  async openGmail() {
+    await this.playwright.call('mcp__playwright__browser_tabs', {
+      action: 'new'
+    });
+    await this.navigateTo('https://mail.google.com');
+    console.log(`📧 Gmail opened`);
+  }
+
+  /**
+   * Search Gmail for emails to a specific address
+   *
+   * @param {string} testEmail - Test email address (the full alias)
+   * @returns {Promise<void>}
+   */
+  async searchGmail(testEmail) {
+    // Wait for Gmail to load
+    await this.waitForElement('[aria-label="Search mail"]', 10000);
+
+    // Fill search box
+    await this.fillField('[aria-label="Search mail"]', `to:${testEmail}`);
+
+    // Press Enter to search
+    await this.playwright.call('mcp__playwright__browser_press_key', {
+      key: 'Enter'
+    });
+
+    // Wait for search results
+    await this._sleep(2000);
+    console.log(`🔍 Searched Gmail for: ${testEmail}`);
+  }
+
+  /**
+   * Click the first email in search results
+   *
+   * @returns {Promise<string>} Email body text
+   */
+  async openFirstEmail() {
+    // Wait for email results
+    await this.waitForElement('[role="link"]', 10000);
+
+    // Click first email (Gmail uses role="link" for emails)
+    await this.clickSelector('[role="link"]', 'first email');
+
+    // Wait for email body to load
+    await this._sleep(2000);
+
+    // Extract email body
+    const body = await this.getText('[role="main"]');
+    console.log(`📨 Opened first email`);
+    return body;
+  }
+
+  /**
+   * Extract magic login link from email body
+   *
+   * @param {string} emailBody - Email body text
+   * @returns {string|null} Magic link URL
+   */
+  extractMagicLink(emailBody) {
+    const patterns = [
+      /https?:\/\/[^\s<>"]+magic[^\s<>"]+/i,
+      /https?:\/\/[^\s<>"]+login[^\s<>"]+/i,
+      /https?:\/\/[^\s<>"]+verify[^\s<>"]+/i,
+      /https?:\/\/localhost[^\s<>"]+/i,
+      /https?:\/\/splitlease\.app[^\s<>"]+/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = emailBody.match(pattern);
+      if (match) {
+        // Clean up any trailing punctuation or quotes
+        return match[0].replace(/[.,;)"'\s]/g, '');
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Extract verification code from email body
+   *
+   * @param {string} emailBody - Email body text
+   * @returns {string|null} 6-digit code
+   */
+  extractVerificationCode(emailBody) {
+    const match = emailBody.match(/\b\d{4,8}\b/);
+    return match ? match[0] : null;
+  }
+
+  /**
+   * Extract proposal ID from email body
+   *
+   * @param {string} emailBody - Email body text
+   * @returns {string|null} Proposal ID
+   */
+  extractProposalId(emailBody) {
+    const patterns = [
+      /proposal[_\s-]?id[:\s]+([a-z0-9_-]+)/i,
+      /proposal\/([a-z0-9_-]+)/i,
+      /proposal[_\s-]([a-z0-9_-]{10,})/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = emailBody.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Close current tab and switch to previous
+   *
+   * @returns {Promise<void>}
+   */
+  async closeTab() {
+    await this.playwright.call('mcp__playwright__browser_tabs', {
+      action: 'close'
+    });
+    console.log(`🔗 Tab closed`);
+  }
+
+  /**
+   * Open a new tab
+   *
+   * @returns {Promise<void>}
+   */
+  async openNewTab() {
+    await this.playwright.call('mcp__playwright__browser_tabs', {
+      action: 'new'
+    });
+    console.log(`🔗 New tab opened`);
+  }
+
+  /**
+   * Switch to tab by index
+   *
+   * @param {number} index - Tab index (0-based)
+   * @returns {Promise<void>}
+   */
+  async switchToTab(index) {
+    await this.playwright.call('mcp__playwright__browser_tabs', {
+      action: 'select',
+      index
+    });
+    console.log(`🔗 Switched to tab ${index}`);
+  }
+
   /**
    * Find field reference in snapshot
    *

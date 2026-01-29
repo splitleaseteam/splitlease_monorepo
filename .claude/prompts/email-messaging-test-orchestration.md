@@ -68,10 +68,9 @@ You are an autonomous testing orchestrator for the Split Lease email/messaging s
 ## Your Capabilities
 
 You have access to:
-1. **Playwright MCP** - Browser automation for navigating the app
-2. **Gmail MCP** - Access to splitleasefrederick@gmail.com for email verification
-3. **Supabase MCP** - Direct database access for data verification
-4. **File System** - Read/write test files and configuration
+1. **Playwright MCP** - Browser automation for navigating the app AND checking Gmail directly
+2. **Supabase MCP** - Direct database access for data verification
+3. **File System** - Read/write test files and configuration
 
 ## Test Account Pattern
 
@@ -120,11 +119,12 @@ For each test scenario:
 2. Perform the action that triggers email/messaging
 3. Capture any confirmation messages, IDs, or references
 
-### Phase 3: Email Verification (Gmail MCP)
-1. Query Gmail for emails sent to the test alias
-2. Filter by subject, sender, or time range
-3. Extract email content, links, and verification codes
-4. Verify email contents match expected template
+### Phase 3: Email Verification (Playwright → Gmail)
+1. Open new browser tab to https://mail.google.com
+2. Search for emails to the test alias (e.g., `to:test123@gmail.com`)
+3. Click the email and extract content from body
+4. Extract magic links, verification codes, proposal IDs
+5. Verify email contents match expected template
 
 ### Phase 4: Database Verification (Supabase MCP)
 1. Query relevant tables for expected records
@@ -201,22 +201,24 @@ await browser.navigate('http://localhost:8000/login');
 await browser.fill('[name="email"]', testEmail);
 await browser.click('[type="submit"]');
 
-// 3. Gmail: Wait for and verify email
-const email = await gmail.waitForEmail({
-  to: testEmail,
-  subject: 'Login to Split Lease',
-  timeout: 30000
-});
+// 3. Browser: Open Gmail, find email
+await browser.openNewTab();
+await browser.navigate('https://mail.google.com');
+await browser.fill('[aria-label="Search mail"]', `to:${testEmail}`);
+await browser.pressKey('Enter');
 
-assert(email.subject.includes('Login'));
-assert(email.body.includes('magic link'));
+// 4. Browser: Click email, extract link
+await browser.clickSelector('[role="link"]', 'first email');
+const emailBody = await browser.getText('[role="main"]');
+assert(emailBody.includes('magic link'));
 
-// 4. Browser: Extract link, click, verify login
-const magicLink = extractLink(email.body);
+// 5. Browser: Extract link, click, verify login
+const magicLink = extractLink(emailBody);
+await browser.closeTab(); // Close Gmail tab
 await browser.navigate(magicLink);
 assert(await browser.isVisible('[data-testid="user-avatar"]'));
 
-// 5. Database: Verify session created
+// 6. Database: Verify session created
 const session = await supabase.query('session', {
   filter: `user_id.eq.${userId}`
 });
@@ -231,11 +233,24 @@ assert(session.length > 0);
 - `mcp__playwright__browser_type` - Type text
 - `mcp__playwright__browser_snapshot` - Get page state
 - `mcp__playwright__browser_wait_for` - Wait for conditions
+- `mcp__playwright__browser_tabs` - Manage tabs (open new, close, switch)
+- `mcp__playwright__browser_run_code` - Run custom Playwright code
 
-### Gmail MCP
-- `mcp__gmail__search` - Search for emails
-- `mcp__gmail__get_message` - Get email content
-- `mcp__gmail__wait_for_message` - Wait for new email (custom implementation)
+### Checking Gmail via Playwright
+```javascript
+// Open Gmail in new tab
+await browser.navigate('https://mail.google.com');
+
+// Search for test alias
+await browser.fill('[aria-label="Search mail"]', 'to:test@gmail.com');
+await browser.pressKey('Enter');
+
+// Click email
+await browser.clickSelector('[role="link"]', 'email subject');
+
+// Extract email body
+const body = await browser.getText('[role="main"]');
+```
 
 ### Supabase MCP
 - `mcp__supabase__execute` - Execute SQL query
