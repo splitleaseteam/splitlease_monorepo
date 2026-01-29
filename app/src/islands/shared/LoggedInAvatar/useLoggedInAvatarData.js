@@ -169,16 +169,36 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
           .rpc('get_host_listings', { host_user_id: userId }),
 
         // 3. Count visits for this user (as guest)
+        // NOTE: visit table may not exist in Supabase yet (legacy Bubble table)
+        // Gracefully handle 400 errors by defaulting to count = 0
         supabase
           .from('visit')
           .select('_id', { count: 'exact', head: true })
-          .eq('Guest', userId),
+          .eq('Guest', userId)
+          .then(result => {
+            // If table doesn't exist or query fails, return count = 0
+            if (result.error) {
+              console.warn('[useLoggedInAvatarData] visit table query failed (table may not exist):', result.error.message);
+              return { count: 0, error: null }; // Override error with safe default
+            }
+            return result;
+          }),
 
         // 4. Count virtual meetings for this user
+        // NOTE: virtualmeetingschedulesandlinks table may not exist in Supabase yet (legacy Bubble table)
+        // Gracefully handle 400 errors by defaulting to count = 0
         supabase
           .from('virtualmeetingschedulesandlinks')
           .select('_id', { count: 'exact', head: true })
-          .or(`Guest.eq.${userId},Host.eq.${userId}`),
+          .or(`Guest.eq.${userId},Host.eq.${userId}`)
+          .then(result => {
+            // If table doesn't exist or query fails, return count = 0
+            if (result.error) {
+              console.warn('[useLoggedInAvatarData] virtualmeetingschedulesandlinks table query failed (table may not exist):', result.error.message);
+              return { count: 0, error: null }; // Override error with safe default
+            }
+            return result;
+          }),
 
         // 5. Count leases for this user (as guest or host)
         supabase
