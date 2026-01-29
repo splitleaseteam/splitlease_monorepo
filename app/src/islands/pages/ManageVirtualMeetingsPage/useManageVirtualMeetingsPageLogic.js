@@ -156,6 +156,31 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
     return result.data;
   }, [accessToken]);
 
+  // ===== CALENDAR AUTOMATION EDGE FUNCTION CALLER =====
+  const callCalendarAutomation = useCallback(async (action, payload) => {
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+    };
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/calendar-automation`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action, payload }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || `Calendar automation ${action} failed`);
+    }
+
+    return result.data;
+  }, [accessToken]);
+
   // ===== DATA FETCHING =====
   const fetchAllMeetings = useCallback(async () => {
 
@@ -304,6 +329,62 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
       setIsSubmitting(false);
     }
   }, [newRequests, confirmedMeetings, callEdgeFunction, showToast]);
+
+  // Process calendar automation - create Google Meet link and send invites
+  const handleProcessCalendarInvites = useCallback(async (meetingId) => {
+    const meeting = confirmedMeetings.find(m => m._id === meetingId);
+    if (!meeting) {
+      showToast({ title: 'Meeting not found', type: 'error' });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await callCalendarAutomation('process_virtual_meeting', {
+        virtualMeetingId: meetingId
+      });
+
+      // Update the meeting with new data
+      setConfirmedMeetings(prev => prev.map(m =>
+        m._id === meetingId
+          ? {
+              ...m,
+              meeting_link: result.meetLink,
+              team_calendar_event_id: result.teamEventId,
+              guest_calendar_event_id: result.guestEventId,
+              host_calendar_event_id: result.hostEventId,
+              calendar_status: 'invites_sent',
+              guest_invite_sent_at: new Date().toISOString(),
+              host_invite_sent_at: new Date().toISOString()
+            }
+          : m
+      ));
+
+      showToast({
+        title: 'Calendar invites sent',
+        content: `Google Meet link created and invitations sent to ${meeting.guest_name} and ${meeting.host_name}`,
+        type: 'success'
+      });
+
+    } catch (err) {
+      console.error('[ManageVirtualMeetings] Calendar automation error:', err);
+      showToast({
+        title: 'Failed to process calendar invites',
+        content: err.message,
+        type: 'error'
+      });
+
+      // Update status to failed
+      setConfirmedMeetings(prev => prev.map(m =>
+        m._id === meetingId
+          ? { ...m, calendar_status: 'failed', calendar_error_message: err.message }
+          : m
+      ));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [confirmedMeetings, callCalendarAutomation, showToast]);
 
   // ===== AVAILABILITY ACTIONS =====
 
@@ -516,6 +597,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
     handleConfirmMeeting,
     handleUpdateMeetingDates,
     handleDeleteMeeting,
+    handleProcessCalendarInvites,
 
     // Availability Actions
     handleBlockSlot,

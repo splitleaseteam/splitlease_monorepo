@@ -1,0 +1,1 @@
+const c=new Set,n={SUCCESS:"success",ERROR:"error",WARNING:"warning",INFO:"info"};function t(s,o=n.INFO,r=4e3){c.forEach(e=>e({message:s,type:o,duration:r}))}const R={success:(s,o)=>t(s,n.SUCCESS,o),error:(s,o)=>t(s,n.ERROR,o),warning:(s,o)=>t(s,n.WARNING,o),info:(s,o)=>t(s,n.INFO,o)};export{R as t};

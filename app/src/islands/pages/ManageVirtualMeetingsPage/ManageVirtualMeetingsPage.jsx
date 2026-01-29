@@ -114,6 +114,7 @@ export default function ManageVirtualMeetingsPage() {
             meetings={logic.filteredConfirmedMeetings}
             onEdit={logic.handleOpenEditModal}
             onReschedule={logic.handleOpenRescheduleModal}
+            onProcessCalendarInvites={logic.handleProcessCalendarInvites}
             isLoading={logic.isLoading}
           />
         </div>

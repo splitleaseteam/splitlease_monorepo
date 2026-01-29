@@ -1,0 +1,1 @@
+const r=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];function t(n){return typeof n!="number"||n<0||n>6?"Unknown":r[n]}function e(n,a){return(a-n+7)%7}export{r as D,e as d,t as g};

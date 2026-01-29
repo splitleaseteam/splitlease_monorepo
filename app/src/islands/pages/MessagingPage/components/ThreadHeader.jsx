@@ -2,12 +2,18 @@
  * ThreadHeader Component
  *
  * Header above messages with contact info, status, and action icons.
- * Shows avatar, name, online status, and action buttons (video, phone, schedule, panel toggle, more).
+ * Shows avatar, name, online status, and action buttons.
+ * - Virtual Meeting button with state-aware display
+ * - Right panel toggle
  * On mobile, shows a back button to return to the thread list.
  */
 
+import { getVirtualMeetingState, getVMButtonText, getVMStateInfo, VM_STATES } from '../../../../logic/rules/proposals/virtualMeetingRules.js';
+
 export default function ThreadHeader({
   info,
+  proposalData,
+  user,
   onBack,
   isMobile,
   showRightPanel,
@@ -16,6 +22,37 @@ export default function ThreadHeader({
   onAction
 }) {
   if (!info) return null;
+
+  // Get virtual meeting state if proposal data exists
+  const vmStateInfo = proposalData?.virtualMeeting && user?.bubbleId
+    ? getVMStateInfo(proposalData.virtualMeeting, user.bubbleId)
+    : null;
+
+  const vmState = vmStateInfo?.state;
+  const hasVirtualMeeting = vmState !== VM_STATES.NO_MEETING && vmState !== undefined;
+
+  // Determine button class based on VM state
+  const getVMButtonClass = () => {
+    if (!vmStateInfo) return 'thread-header__vm-btn';
+
+    switch (vmStateInfo.buttonStyle) {
+      case 'success':
+        return 'thread-header__vm-btn thread-header__vm-btn--confirmed';
+      case 'disabled':
+        return 'thread-header__vm-btn thread-header__vm-btn--disabled';
+      case 'warning':
+      case 'expired':
+        return 'thread-header__vm-btn thread-header__vm-btn--warning';
+      default:
+        return 'thread-header__vm-btn';
+    }
+  };
+
+  const handleVMClick = () => {
+    if (onAction) {
+      onAction('virtual_meeting', { vmState, proposalData });
+    }
+  };
 
   return (
     <div className="thread-header">
@@ -61,19 +98,20 @@ export default function ThreadHeader({
 
       {/* Action Icons */}
       <div className="thread-header__actions">
-        {/* Schedule Meeting */}
+        {/* Virtual Meeting Button - State aware */}
         <button
-          className="thread-header__action-btn"
-          onClick={() => onAction?.('schedule')}
-          aria-label="Schedule meeting"
-          title="Schedule meeting"
+          className={getVMButtonClass()}
+          onClick={handleVMClick}
+          disabled={vmStateInfo?.buttonDisabled}
+          aria-label={vmStateInfo?.buttonText || 'Request Virtual Meeting'}
+          title={vmStateInfo?.buttonText || 'Request Virtual Meeting'}
         >
+          {/* Video Icon */}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
+            <rect x="2" y="5" width="14" height="14" rx="2" />
+            <path d="M16 9.5l4-2.5v10l-4-2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
+          <span>{vmStateInfo?.buttonText || 'Request Meeting'}</span>
         </button>
 
         {/* Toggle Right Panel - Only on desktop */}
