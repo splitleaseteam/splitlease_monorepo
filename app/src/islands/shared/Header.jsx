@@ -900,6 +900,16 @@ export default function Header({ autoShowLogin = false }) {
             </a>
           )}
 
+          {/* Desktop Suggested Proposal Trigger - visible only on desktop for guests with pending proposals */}
+          {currentUser && isGuest() && pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
+            <HeaderSuggestedProposalTrigger
+              onClick={handleSuggestedTriggerClick}
+              isActive={showSuggestedPopup}
+              proposalCount={pendingProposalCount}
+              className="desktop-sp-trigger"
+            />
+          )}
+
           {currentUser && currentUser.firstName ? (
             /* User is logged in - show LoggedInAvatar component with full menu */
             /* Note: currentUser.userId comes from validateTokenAndFetchUser() in auth.js */

@@ -125,9 +125,10 @@ export default function useModifyListingsPageLogic() {
   const [safetyFeatures, setSafetyFeatures] = useState([]);
   const [cancellationPolicyOptions, setCancellationPolicyOptions] = useState([]);
 
-  // Refs for auto-save
+  // Refs for auto-save and state tracking
   const autoSaveTimerRef = useRef(null);
   const hasChangesRef = useRef(false);
+  const currentListingIdRef = useRef(null); // Track current listing to prevent redundant loads
 
   // ---------------------------------------------------------------------------
   // INITIALIZATION
@@ -186,15 +187,16 @@ export default function useModifyListingsPageLogic() {
 
   async function loadAmenities() {
     try {
+      // Column names with spaces need quotes in both select and filter
       const { data: inUnit } = await supabase
         .from('zat_features_amenity')
         .select('_id, Name, "Type - Amenity Categories"')
-        .eq('Type - Amenity Categories', 'In Unit');
+        .eq('"Type - Amenity Categories"', 'In Unit');
 
       const { data: inBuilding } = await supabase
         .from('zat_features_amenity')
         .select('_id, Name, "Type - Amenity Categories"')
-        .eq('Type - Amenity Categories', 'In Building');
+        .eq('"Type - Amenity Categories"', 'In Building');
 
       setAmenitiesInUnit(inUnit || []);
       setAmenitiesInBuilding(inBuilding || []);
@@ -240,9 +242,25 @@ export default function useModifyListingsPageLogic() {
 
   /**
    * Load a listing by ID
+   * IMPORTANT: Skips loading if there are unsaved changes (prevents auth refresh from wiping edits)
    * @param {string} id - Listing ID
+   * @param {boolean} force - Force reload even if there are unsaved changes
    */
-  async function loadListing(id) {
+  async function loadListing(id, force = false) {
+    // CRITICAL: Don't overwrite unsaved changes unless forced
+    // This prevents auth token refresh from wiping user edits
+    if (hasChangesRef.current && !force) {
+      console.log('[ModifyListings] Skipping reload - unsaved changes present');
+      return;
+    }
+
+    // Also skip if we already have this listing loaded (prevents redundant fetches)
+    // Use ref to avoid stale closure issues with listing state
+    if (currentListingIdRef.current === id && !force) {
+      console.log('[ModifyListings] Skipping reload - listing already loaded');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -253,12 +271,14 @@ export default function useModifyListingsPageLogic() {
         setError('Listing not found');
         setListing(null);
         setOriginalListing(null);
+        currentListingIdRef.current = null;
         return;
       }
 
       setListing(data);
       setOriginalListing(structuredClone(data));
       hasChangesRef.current = false;
+      currentListingIdRef.current = data._id; // Track current listing ID
       setLastSaved(data['Modified Date'] ? new Date(data['Modified Date']) : null);
 
       // Update URL
@@ -604,6 +624,7 @@ export default function useModifyListingsPageLogic() {
     setOriginalListing(null);
     setListingId(null);
     hasChangesRef.current = false;
+    currentListingIdRef.current = null; // Clear listing ID ref
 
     // Update URL
     const params = new URLSearchParams(window.location.search);

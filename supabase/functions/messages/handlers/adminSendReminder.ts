@@ -10,11 +10,18 @@
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AuthenticationError, ValidationError } from '../../_shared/errors.ts';
+import {
+  getNotificationPreferences,
+  shouldSendEmail as checkEmailPreference,
+  shouldSendSms as checkSmsPreference,
+} from '../../_shared/notificationHelpers.ts';
 
 interface AdminSendReminderPayload {
   threadId: string;
   recipientType: 'host' | 'guest' | 'both';
   method: 'email' | 'sms' | 'both';
+  /** When true, bypass user preferences (logged for compliance) */
+  forceOverride?: boolean;
 }
 
 interface AdminSendReminderResult {
@@ -278,36 +285,61 @@ export async function handleAdminSendReminder(
   for (const recipient of recipientsToNotify) {
     const recipientName = recipient.user['Name - Full'] || 'Valued User';
 
+    // Fetch user's notification preferences
+    const prefs = await getNotificationPreferences(supabaseAdmin, recipient.user._id);
+
     // Send email
     if ((payload.method === 'email' || payload.method === 'both') && recipient.user.email) {
-      const emailSent = await sendReminderEmail(
-        recipient.user.email,
-        recipientName,
-        threadSubject,
-        messagePreview
-      );
-      if (emailSent) {
-        sentTo.push({
-          type: recipient.type,
-          method: 'email',
-          recipient: recipient.user.email,
-        });
+      const emailAllowed = checkEmailPreference(prefs, 'message_forwarding');
+
+      if (!emailAllowed && !payload.forceOverride) {
+        console.log(`[adminSendReminder] Skipping ${recipient.type} email (preference: message_forwarding disabled)`);
+      } else {
+        // Log if this is an admin override
+        if (!emailAllowed && payload.forceOverride) {
+          console.log(`[adminSendReminder] Sending ${recipient.type} email with ADMIN OVERRIDE (user had opted out)`);
+        }
+
+        const emailSent = await sendReminderEmail(
+          recipient.user.email,
+          recipientName,
+          threadSubject,
+          messagePreview
+        );
+        if (emailSent) {
+          sentTo.push({
+            type: recipient.type,
+            method: 'email',
+            recipient: recipient.user.email,
+          });
+        }
       }
     }
 
     // Send SMS
     if ((payload.method === 'sms' || payload.method === 'both') && recipient.user['Phone Number (as text)']) {
-      const smsSent = await sendReminderSms(
-        recipient.user['Phone Number (as text)'],
-        recipientName,
-        threadSubject
-      );
-      if (smsSent) {
-        sentTo.push({
-          type: recipient.type,
-          method: 'sms',
-          recipient: recipient.user['Phone Number (as text)'],
-        });
+      const smsAllowed = checkSmsPreference(prefs, 'message_forwarding');
+
+      if (!smsAllowed && !payload.forceOverride) {
+        console.log(`[adminSendReminder] Skipping ${recipient.type} SMS (preference: message_forwarding disabled)`);
+      } else {
+        // Log if this is an admin override
+        if (!smsAllowed && payload.forceOverride) {
+          console.log(`[adminSendReminder] Sending ${recipient.type} SMS with ADMIN OVERRIDE (user had opted out)`);
+        }
+
+        const smsSent = await sendReminderSms(
+          recipient.user['Phone Number (as text)'],
+          recipientName,
+          threadSubject
+        );
+        if (smsSent) {
+          sentTo.push({
+            type: recipient.type,
+            method: 'sms',
+            recipient: recipient.user['Phone Number (as text)'],
+          });
+        }
       }
     }
   }

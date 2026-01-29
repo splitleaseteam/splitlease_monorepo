@@ -1,7 +1,7 @@
 # Split Lease Pages Categorized by Access Level
 
 **Generated:** 2026-01-28 02:45:00
-**Updated:** 2026-01-29 (corrected counts to match routes.config.js)
+**Updated:** 2026-01-29 (host/guest pages now only include protected pages)
 **Source:** `app/src/routes.config.js`
 
 This document categorizes all 80 pages in the Split Lease application by authentication requirements and user roles.
@@ -14,8 +14,8 @@ This document categorizes all 80 pages in the Split Lease application by authent
 2. [Protected Pages (21 Total)](#protected-pages-21-total)
 3. [Public Pages (59 Total)](#public-pages-59-total)
 4. [Admin/Internal Pages (32 Total)](#admininternal-pages-32-total)
-5. [Host-Only Pages (11 Total)](#host-only-pages-11-total)
-6. [Guest-Only Pages (9 Total)](#guest-only-pages-9-total)
+5. [Host-Only Pages (9 Total)](#host-only-pages-9-total) *(protected only)*
+6. [Guest-Only Pages (8 Total)](#guest-only-pages-8-total) *(protected only)*
 7. [Dual-Role Pages (5 Total)](#dual-role-pages-5-total)
 
 ---
@@ -247,36 +247,32 @@ Pages with `/_` prefix (path-based access control, no auth enforcement):
 
 ---
 
-## Host-Only Pages (11 Total)
+## Host-Only Pages (9 Total)
 
-Pages designed for hosts (property owners/managers):
+Protected pages designed for hosts (property owners/managers):
 
 | Path | Protected | Purpose |
 |------|-----------|---------|
 | `/host-proposals/:userId` | ✓ | View incoming guest proposals |
 | `/host-leases` | ✓ | Manage active/past leases |
 | `/self-listing` | ✓ | Create and edit property listings |
-| `/self-listing-v2` | ✗ | Create/edit listings v2 (public, anomaly) |
 | `/listing-dashboard` | ✓ | Listing management hub |
 | `/host-overview` | ✓ | Host dashboard overview |
 | `/house-manual` | ✓ | Create house manuals for guests |
-| `/host-success` | ✗ | Host signup success page |
 | `/host-experience-review` | ✓ | Host feedback survey |
 | `/simulation-hostside-demo` | ✓ | Host usability testing |
 | `/simulation-host-mobile` | ✓ | Host mobile simulation |
 
-**Auth Enforcement:**
-- 8/11 pages have `protected: true`
-- 3 public pages (`/host-success`, `/self-listing-v2`) may need protection
+**Note:** All 9 pages have `protected: true`. Public host-targeted pages (`/host-success`, `/self-listing-v2`) are categorized under Public Pages.
 
 **Role Validation:**
-Pages with `protected: true` check auth, but **may not enforce host role** at route level. Additional role checks likely exist in page components via `useAuth()` or similar hooks.
+Pages check auth but **may not enforce host role** at route level. Additional role checks likely exist in page components via `useAuth()` or similar hooks.
 
 ---
 
-## Guest-Only Pages (9 Total)
+## Guest-Only Pages (8 Total)
 
-Pages designed for guests (renters/tenants):
+Protected pages designed for guests (renters/tenants):
 
 | Path | Protected | Purpose |
 |------|-----------|---------|
@@ -285,17 +281,14 @@ Pages designed for guests (renters/tenants):
 | `/favorite-listings` | ✓ | Saved/favorited listings |
 | `/favorite-listings-v2` | ✓ | Saved listings v2 (devOnly) |
 | `/rental-application` | ✓ | Submit rental application |
-| `/guest-success` | ✗ | Guest signup success page |
 | `/guest-experience-review` | ✓ | Guest feedback survey |
 | `/simulation-guest-mobile` | ✓ | Guest mobile simulation (day 2) |
 | `/simulation-guestside-demo` | ✓ | Guest usability testing |
 
-**Auth Enforcement:**
-- 8/9 pages have `protected: true`
-- 1 public page (`/guest-success`) is intentionally public (post-signup landing)
+**Note:** All 8 pages have `protected: true`. The public guest-targeted page (`/guest-success`) is categorized under Public Pages.
 
 **Role Validation:**
-Pages with `protected: true` check auth, but **may not enforce guest role** at route level. Additional role checks likely exist in page components.
+Pages check auth but **may not enforce guest role** at route level. Additional role checks likely exist in page components.
 
 ---
 
@@ -325,10 +318,12 @@ These pages serve both user types with conditional UI based on role:
 | Category | Count | Protected | Public |
 |----------|-------|-----------|--------|
 | All Pages | 80 | 21 | 59 |
-| Host Pages | 11 | 8 | 3 |
-| Guest Pages | 9 | 8 | 1 |
+| Host Pages (protected only) | 9 | 9 | 0 |
+| Guest Pages (protected only) | 8 | 8 | 0 |
 | Admin/Internal | 32 | 0 | 32 |
 | Dual-Role | 5 | 3 | 2 |
+
+**Note:** Host/Guest page counts now only include protected pages. Public host-targeted pages (`/host-success`, `/self-listing-v2`) and guest-targeted pages (`/guest-success`) are counted under Public Pages.
 
 ### Security Gaps
 
@@ -369,3 +364,4 @@ All routes defined in: `app/src/routes.config.js`
 **Last Updated:** 2026-01-29
 **Source File:** `app/src/routes.config.js`
 **Total Pages:** 80 (21 protected, 59 public)
+**Host Pages:** 9 protected | **Guest Pages:** 8 protected

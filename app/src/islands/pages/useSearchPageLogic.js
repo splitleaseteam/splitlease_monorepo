@@ -513,8 +513,8 @@ export function useSearchPageLogic() {
         } else if (typeof photosField === 'string') {
           try {
             photos = JSON.parse(photosField)
-          } catch {
-            void 0; // Intentional: malformed JSON falls back to empty array
+          } catch (e) {
+            // Ignore parse errors
           }
         }
 

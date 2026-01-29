@@ -1,0 +1,1389 @@
+{
+  "info": {
+    "_postman_id": "split-lease-edge-functions",
+    "name": "Split Lease Edge Functions",
+    "description": "Complete API collection for Split Lease Supabase Edge Functions.\n\nAll endpoints use the action-based routing pattern with { action, payload } request format.\n\n## Setup\n1. Set the `base_url` variable to your Supabase project URL\n2. Set the `anon_key` variable to your Supabase anon key\n3. For authenticated requests, set `access_token` after logging in",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://your-project-id.supabase.co/functions/v1",
+      "type": "string"
+    },
+    {
+      "key": "anon_key",
+      "value": "your-supabase-anon-key",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "service_role_key",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User authentication endpoints",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data.access_token) {",
+                  "        pm.collectionVariables.set('access_token', response.data.access_token);",
+                  "        console.log('Access token saved to collection variable');",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.test('Login successful', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data).to.have.property('access_token');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"login\",\n    \"payload\": {\n        \"email\": \"user@example.com\",\n        \"password\": \"your-password\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Login with email and password. Returns access_token and refresh_token."
+          }
+        },
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"signup\",\n    \"payload\": {\n        \"email\": \"newuser@example.com\",\n        \"password\": \"securepassword123\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\",\n        \"phone\": \"+15551234567\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Register a new user account."
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"validate\",\n    \"payload\": {\n        \"access_token\": \"{{access_token}}\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Validate an access token and get user data."
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"request_password_reset\",\n    \"payload\": {\n        \"email\": \"user@example.com\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Request a password reset email. Always returns success to prevent email enumeration."
+          }
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"update_password\",\n    \"payload\": {\n        \"access_token\": \"token-from-reset-link\",\n        \"new_password\": \"newpassword123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Update password after clicking reset link."
+          }
+        },
+        {
+          "name": "Generate Magic Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"generate_magic_link\",\n    \"payload\": {\n        \"email\": \"user@example.com\",\n        \"redirect_to\": \"/dashboard\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Generate a magic login link without sending email."
+          }
+        },
+        {
+          "name": "Send Magic Link SMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"send_magic_link_sms\",\n    \"payload\": {\n        \"phone\": \"+15551234567\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Generate magic link and send via SMS."
+          }
+        },
+        {
+          "name": "OAuth Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"oauth_signup\",\n    \"payload\": {\n        \"provider\": \"google\",\n        \"provider_id\": \"google-user-id\",\n        \"email\": \"user@gmail.com\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Create user record from OAuth provider data."
+          }
+        },
+        {
+          "name": "OAuth Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"oauth_login\",\n    \"payload\": {\n        \"provider\": \"google\",\n        \"provider_id\": \"google-user-id\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Verify OAuth user exists and return session data."
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "apikey",
+                "value": "{{anon_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"verify_email\",\n    \"payload\": {\n        \"token\": \"email-verification-token\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth-user",
+              "host": ["{{base_url}}"],
+              "path": ["auth-user"]
+            },
+            "description": "Verify email via magic link token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Proposals",
+      "description": "Proposal management endpoints",
+      "item": [
+        {
+          "name": "Create Proposal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\",\n        \"start_date\": \"2025-01-01\",\n        \"end_date\": \"2025-06-30\",\n        \"selected_days\": [1, 2, 3, 4, 5],\n        \"monthly_rate\": 2500\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proposal",
+              "host": ["{{base_url}}"],
+              "path": ["proposal"]
+            },
+            "description": "Create a new proposal for a listing."
+          }
+        },
+        {
+          "name": "Update Proposal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"update\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\",\n        \"status\": \"accepted\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proposal",
+              "host": ["{{base_url}}"],
+              "path": ["proposal"]
+            },
+            "description": "Update an existing proposal."
+          }
+        },
+        {
+          "name": "Get Proposal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proposal",
+              "host": ["{{base_url}}"],
+              "path": ["proposal"]
+            },
+            "description": "Get proposal details. Public action - no auth required."
+          }
+        },
+        {
+          "name": "Get Suggestions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"suggest\",\n    \"payload\": {\n        \"guest_id\": \"guest-123\",\n        \"type\": \"weekly_match\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proposal",
+              "host": ["{{base_url}}"],
+              "path": ["proposal"]
+            },
+            "description": "Get proposal suggestions for a guest."
+          }
+        },
+        {
+          "name": "Create Suggested Proposal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create_suggested\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\",\n        \"guest_id\": \"guest-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proposal",
+              "host": ["{{base_url}}"],
+              "path": ["proposal"]
+            },
+            "description": "Create a suggested proposal (internal tool)."
+          }
+        },
+        {
+          "name": "Get Prefill Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_prefill_data\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/proposal",
+              "host": ["{{base_url}}"],
+              "path": ["proposal"]
+            },
+            "description": "Get prefill data for editing a proposal."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listings",
+      "description": "Listing management endpoints",
+      "item": [
+        {
+          "name": "Create Listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create\",\n    \"payload\": {\n        \"user_id\": \"user-123\",\n        \"title\": \"Spacious Brooklyn Apartment\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/listing",
+              "host": ["{{base_url}}"],
+              "path": ["listing"]
+            },
+            "description": "Create a new listing (minimal data)."
+          }
+        },
+        {
+          "name": "Get Listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/listing",
+              "host": ["{{base_url}}"],
+              "path": ["listing"]
+            },
+            "description": "Get listing details."
+          }
+        },
+        {
+          "name": "Submit Listing",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"submit\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\",\n        \"user_email\": \"host@example.com\",\n        \"title\": \"Updated Title\",\n        \"description\": \"Full description here...\",\n        \"address\": \"123 Main St, Brooklyn, NY\",\n        \"neighborhood\": \"Williamsburg\",\n        \"beds\": 2,\n        \"bathrooms\": 1,\n        \"monthly_rent\": 3000\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/listing",
+              "host": ["{{base_url}}"],
+              "path": ["listing"]
+            },
+            "description": "Submit full listing with all form data."
+          }
+        },
+        {
+          "name": "Delete Listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/listing",
+              "host": ["{{base_url}}"],
+              "path": ["listing"]
+            },
+            "description": "Delete a listing."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leases",
+      "description": "Lease management endpoints",
+      "item": [
+        {
+          "name": "Create Lease",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lease",
+              "host": ["{{base_url}}"],
+              "path": ["lease"]
+            },
+            "description": "Create a lease from an accepted proposal."
+          }
+        },
+        {
+          "name": "Get Lease",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get\",\n    \"payload\": {\n        \"lease_id\": \"lease-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lease",
+              "host": ["{{base_url}}"],
+              "path": ["lease"]
+            },
+            "description": "Get lease details."
+          }
+        },
+        {
+          "name": "Get Host Leases",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_host_leases\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lease",
+              "host": ["{{base_url}}"],
+              "path": ["lease"]
+            },
+            "description": "Get all leases for the authenticated host."
+          }
+        },
+        {
+          "name": "Get Guest Leases",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_guest_leases\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lease",
+              "host": ["{{base_url}}"],
+              "path": ["lease"]
+            },
+            "description": "Get all leases for the authenticated guest."
+          }
+        },
+        {
+          "name": "Generate Lease Dates",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"generate_dates\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/lease",
+              "host": ["{{base_url}}"],
+              "path": ["lease"]
+            },
+            "description": "Generate lease dates from proposal."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "description": "Messaging endpoints",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"send_message\",\n    \"payload\": {\n        \"thread_id\": \"thread-123\",\n        \"content\": \"Hello, I'm interested in your listing.\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "description": "Send a message in a thread."
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_messages\",\n    \"payload\": {\n        \"thread_id\": \"thread-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "description": "Get messages in a thread."
+          }
+        },
+        {
+          "name": "Get Threads",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_threads\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "description": "Get all message threads for the user."
+          }
+        },
+        {
+          "name": "Send Guest Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"send_guest_inquiry\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\",\n        \"message\": \"Is this available for February?\",\n        \"guest_email\": \"guest@example.com\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "description": "Send an inquiry about a listing."
+          }
+        },
+        {
+          "name": "Create Proposal Thread",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create_proposal_thread\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "description": "Create a message thread for a proposal."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Gateway",
+      "description": "AI-powered completion endpoints",
+      "item": [
+        {
+          "name": "Complete (Non-streaming)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"complete\",\n    \"payload\": {\n        \"prompt_key\": \"listing-description\",\n        \"variables\": {\n            \"neighborhood\": \"Brooklyn\",\n            \"beds\": 2,\n            \"bathrooms\": 1,\n            \"amenities\": [\"laundry\", \"dishwasher\"]\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ai-gateway",
+              "host": ["{{base_url}}"],
+              "path": ["ai-gateway"]
+            },
+            "description": "Non-streaming AI completion. Public prompts: listing-description, listing-title, neighborhood-description, echo-test."
+          }
+        },
+        {
+          "name": "Stream (SSE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"stream\",\n    \"payload\": {\n        \"prompt_key\": \"listing-title\",\n        \"variables\": {\n            \"neighborhood\": \"Manhattan\"\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/ai-gateway",
+              "host": ["{{base_url}}"],
+              "path": ["ai-gateway"]
+            },
+            "description": "SSE streaming AI completion."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Communications",
+      "description": "Email and SMS endpoints",
+      "item": [
+        {
+          "name": "Send Email",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"send\",\n    \"payload\": {\n        \"template_id\": \"d-template-id\",\n        \"to_email\": \"recipient@example.com\",\n        \"dynamic_template_data\": {\n            \"name\": \"John\",\n            \"link\": \"https://split.lease/verify\"\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/send-email",
+              "host": ["{{base_url}}"],
+              "path": ["send-email"]
+            },
+            "description": "Send templated email via SendGrid."
+          }
+        },
+        {
+          "name": "Send Email - Health Check",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"health\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/send-email",
+              "host": ["{{base_url}}"],
+              "path": ["send-email"]
+            },
+            "description": "Check email function health and secrets configuration."
+          }
+        },
+        {
+          "name": "Send SMS",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{access_token}}" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"send\",\n    \"payload\": {\n        \"to\": \"+15551234567\",\n        \"from\": \"+15559876543\",\n        \"body\": \"Your verification code is 123456\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/send-sms",
+              "host": ["{{base_url}}"],
+              "path": ["send-sms"]
+            },
+            "description": "Send SMS via Twilio. Phone numbers must be E.164 format."
+          }
+        },
+        {
+          "name": "Send SMS - Health Check",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"health\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/send-sms",
+              "host": ["{{base_url}}"],
+              "path": ["send-sms"]
+            },
+            "description": "Check SMS function health and secrets configuration."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Slack",
+      "description": "Slack integration endpoints",
+      "item": [
+        {
+          "name": "FAQ Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"faq_inquiry\",\n    \"payload\": {\n        \"name\": \"John Doe\",\n        \"email\": \"john@example.com\",\n        \"inquiry\": \"How do I list my apartment?\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/slack",
+              "host": ["{{base_url}}"],
+              "path": ["slack"]
+            },
+            "description": "Submit an FAQ inquiry to Slack channels."
+          }
+        },
+        {
+          "name": "Diagnose",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"diagnose\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/slack",
+              "host": ["{{base_url}}"],
+              "path": ["slack"]
+            },
+            "description": "Diagnose Slack environment configuration."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Leases",
+      "description": "Admin lease management endpoints",
+      "item": [
+        {
+          "name": "List Leases",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"list\",\n    \"payload\": {\n        \"page\": 1,\n        \"per_page\": 25,\n        \"status\": \"active\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leases-admin",
+              "host": ["{{base_url}}"],
+              "path": ["leases-admin"]
+            },
+            "description": "List leases with pagination and filters."
+          }
+        },
+        {
+          "name": "Get Lease",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get\",\n    \"payload\": {\n        \"lease_id\": \"lease-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leases-admin",
+              "host": ["{{base_url}}"],
+              "path": ["leases-admin"]
+            },
+            "description": "Get lease details with related data."
+          }
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"updateStatus\",\n    \"payload\": {\n        \"lease_id\": \"lease-123\",\n        \"status\": \"active\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leases-admin",
+              "host": ["{{base_url}}"],
+              "path": ["leases-admin"]
+            },
+            "description": "Update lease status."
+          }
+        },
+        {
+          "name": "Create Payment Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"createPaymentRecord\",\n    \"payload\": {\n        \"lease_id\": \"lease-123\",\n        \"amount\": 2500,\n        \"due_date\": \"2025-02-01\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leases-admin",
+              "host": ["{{base_url}}"],
+              "path": ["leases-admin"]
+            },
+            "description": "Create a payment record for a lease."
+          }
+        },
+        {
+          "name": "Cancel Lease",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"cancelLease\",\n    \"payload\": {\n        \"lease_id\": \"lease-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/leases-admin",
+              "host": ["{{base_url}}"],
+              "path": ["leases-admin"]
+            },
+            "description": "Cancel a lease."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Pricing",
+      "description": "Admin pricing management endpoints",
+      "item": [
+        {
+          "name": "List Pricing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"list\",\n    \"payload\": {\n        \"page\": 1,\n        \"per_page\": 25\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pricing-admin",
+              "host": ["{{base_url}}"],
+              "path": ["pricing-admin"]
+            },
+            "description": "List pricing with pagination."
+          }
+        },
+        {
+          "name": "Update Price",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"updatePrice\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\",\n        \"monthly_rent\": 3000\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pricing-admin",
+              "host": ["{{base_url}}"],
+              "path": ["pricing-admin"]
+            },
+            "description": "Update listing price."
+          }
+        },
+        {
+          "name": "Export Pricing",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"export\",\n    \"payload\": {\n        \"format\": \"csv\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pricing-admin",
+              "host": ["{{base_url}}"],
+              "path": ["pricing-admin"]
+            },
+            "description": "Export pricing data to CSV or JSON."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Virtual Meetings",
+      "description": "Virtual meeting management endpoints",
+      "item": [
+        {
+          "name": "Create Meeting Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create\",\n    \"payload\": {\n        \"listing_id\": \"listing-123\",\n        \"guest_id\": \"guest-123\",\n        \"preferred_dates\": [\"2025-02-01\", \"2025-02-02\"]\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/virtual-meeting",
+              "host": ["{{base_url}}"],
+              "path": ["virtual-meeting"]
+            },
+            "description": "Create a virtual meeting request."
+          }
+        },
+        {
+          "name": "Accept Meeting",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"accept\",\n    \"payload\": {\n        \"meeting_id\": \"meeting-123\",\n        \"booked_date\": \"2025-02-01T10:00:00Z\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/virtual-meeting",
+              "host": ["{{base_url}}"],
+              "path": ["virtual-meeting"]
+            },
+            "description": "Accept a virtual meeting request."
+          }
+        },
+        {
+          "name": "Decline Meeting",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"decline\",\n    \"payload\": {\n        \"meeting_id\": \"meeting-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/virtual-meeting",
+              "host": ["{{base_url}}"],
+              "path": ["virtual-meeting"]
+            },
+            "description": "Decline a virtual meeting request."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quick Match",
+      "description": "Quick Match admin tool endpoints",
+      "item": [
+        {
+          "name": "Get Proposal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_proposal\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quick-match",
+              "host": ["{{base_url}}"],
+              "path": ["quick-match"]
+            },
+            "description": "Get proposal with guest and listing details."
+          }
+        },
+        {
+          "name": "Search Candidates",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"search_candidates\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quick-match",
+              "host": ["{{base_url}}"],
+              "path": ["quick-match"]
+            },
+            "description": "Find and score candidate listings for a proposal."
+          }
+        },
+        {
+          "name": "Save Choice",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"save_choice\",\n    \"payload\": {\n        \"proposal_id\": \"proposal-123\",\n        \"listing_id\": \"listing-456\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/quick-match",
+              "host": ["{{base_url}}"],
+              "path": ["quick-match"]
+            },
+            "description": "Save operator's match selection."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Internal",
+      "description": "Internal service endpoints",
+      "item": [
+        {
+          "name": "Bubble Sync - Get Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"get_status\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bubble_sync",
+              "host": ["{{base_url}}"],
+              "path": ["bubble_sync"]
+            },
+            "description": "Get sync queue status."
+          }
+        },
+        {
+          "name": "Communications - Health",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"health\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/communications",
+              "host": ["{{base_url}}"],
+              "path": ["communications"]
+            },
+            "description": "Communications health check."
+          }
+        },
+        {
+          "name": "Pricing - Health",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "apikey", "value": "{{anon_key}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"health\",\n    \"payload\": {}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pricing",
+              "host": ["{{base_url}}"],
+              "path": ["pricing"]
+            },
+            "description": "Pricing health check."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script runs before every request",
+          "// Ensure apikey header is always set",
+          "if (!pm.request.headers.has('apikey') && pm.collectionVariables.get('anon_key')) {",
+          "    pm.request.headers.add({",
+          "        key: 'apikey',",
+          "        value: pm.collectionVariables.get('anon_key')",
+          "    });",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is reasonable', function() {",
+          "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+          "});",
+          "",
+          "pm.test('Response has correct content type', function() {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});",
+          "",
+          "pm.test('Response has success property', function() {",
+          "    const response = pm.response.json();",
+          "    pm.expect(response).to.have.property('success');",
+          "});"
+        ]
+      }
+    }
+  ]
+}

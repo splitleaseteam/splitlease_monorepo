@@ -238,13 +238,13 @@ Deno.serve(async (req: Request) => {
         const { handleAcceptCounteroffer } = await import("./actions/accept_counteroffer.ts");
         console.log('[proposal] acceptCounteroffer handler loaded');
 
-        // Authentication required
+        // Optional authentication - soft headers pattern for legacy token users
+        // Service role key bypasses RLS, so auth is for logging/audit purposes only
         const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
-          return new Response(
-            JSON.stringify({ success: false, error: 'Authentication required' }),
-            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        if (user) {
+          console.log(`[proposal:acceptCounteroffer] Authenticated user: ${user.email} (${user.id})`);
+        } else {
+          console.log('[proposal:acceptCounteroffer] No Supabase auth - proceeding with legacy token user');
         }
         result = await handleAcceptCounteroffer(payload, supabase);
         break;

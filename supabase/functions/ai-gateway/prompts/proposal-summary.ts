@@ -44,8 +44,8 @@ Move-in Date Range: {{moveInStart}} to {{moveInEnd}}
 Duration: {{durationWeeks}} weeks
 Nights per Week: {{nightsPerWeek}}
 Days Selected: {{daysSelected}}
-Nightly Price: ${{nightlyPrice}}
-Total Price: ${{totalPrice}}
+Nightly Price: {{nightlyPrice}}
+Total Price: {{totalPrice}}
 Guest Message: {{guestComment}}
 
 Generate a brief summary suitable for a notification email to the host. Start with "You have a new proposal from..." and end with an encouragement to review and respond.`,
