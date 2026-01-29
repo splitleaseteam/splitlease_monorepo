@@ -5,7 +5,7 @@
  * Priority: "Location - slightly different address" (privacy) → "Location - Address" (main).
  * Coordinates must fall within NYC metro area bounds.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { extractListingCoordinates } from '../extractListingCoordinates.js';
 
 // NYC bounds for reference (from constants.js):

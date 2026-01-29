@@ -64,11 +64,14 @@ export function HostEditingProposal({
   availableHouseRules = [],
   isInternalUsage = false,
   initialShowReject = false,
+  mode = 'edit', // 'edit' (default) or 'accept' for acceptance confirmation flow
+  isAccepting = false, // Loading state for acceptance confirmation
   onAcceptAsIs,
   onCounteroffer,
   onReject,
   onCancel,
-  onAlert
+  onAlert,
+  onConfirmAcceptance // Callback for accept mode confirmation
 }) {
   // 3-state view machine: 'pristine' | 'editing' | 'general'
   const [view, setView] = useState('pristine')

@@ -302,7 +302,7 @@ export const AllScoreLevels = {
         <ScoreBreakdown
           breakdown={{ ...fullBreakdown, price: { ...fullBreakdown.price, score: 10 } }}
           totalScore={65}
-          maxPossibleScore: 95,
+          maxPossibleScore={95}
           compact={true}
         />
       </div>
