@@ -107,13 +107,13 @@ export async function handleCreate(
     Name?: string;
     'House manual'?: string;
     'users with permission'?: string[];
-    'cancellation policy'?: string;
+    'Cancellation Policy'?: string;
   } | null = null;
 
   if (proposalData.Listing) {
     const { data: listing, error: listingError } = await supabase
       .from('listing')
-      .select('_id, Name, "House manual", "users with permission", "cancellation policy"')
+      .select('_id, Name, "House manual", "users with permission", "Cancellation Policy"')
       .eq('_id', proposalData.Listing)
       .single();
 
@@ -213,7 +213,7 @@ export async function handleCreate(
     Listing: proposalData.Listing,
     Participants: [proposalData.Guest, proposalData['Host User']],
     // FK CONSTRAINT: Must be valid _id from zat_features_cancellationpolicy or null
-    'Cancellation Policy': listingData?.['cancellation policy'] || null,
+    'Cancellation Policy': listingData?.['Cancellation Policy'] || null,
     'First Payment Date': firstPaymentDate,
     'Reservation Period : Start': activeTerms.moveInDate,
     'Reservation Period : End': moveOutDate,
