@@ -20,6 +20,7 @@ import { getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtua
 import { DAYS_OF_WEEK, nightNamesToIndices } from '../../shared/HostEditingProposal/types.js';
 import { showToast } from '../../shared/Toast.jsx';
 import { findThreadByProposal } from '../../../lib/messagingUtils.js';
+import { hostAcceptProposalWorkflow } from '../../../logic/workflows/proposals/hostAcceptProposalWorkflow.js';
 
 // ============================================================================
 // DATA NORMALIZERS
@@ -168,6 +169,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditingProposal, setIsEditingProposal] = useState(false);
   const [showRejectOnOpen, setShowRejectOnOpen] = useState(false);
+  const [acceptMode, setAcceptMode] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
 
   // ============================================================================
   // VIRTUAL MEETING STATE
@@ -748,23 +751,33 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   }, []);
 
   /**
-   * Handle accept proposal
+   * Handle accept proposal - opens HostEditingProposal in accept mode for confirmation
    */
-  const handleAcceptProposal = useCallback(async (proposal) => {
+  const handleAcceptProposal = useCallback((proposal) => {
+    setSelectedProposal(proposal);
+    setIsModalOpen(false); // Close the details modal
+    setShowRejectOnOpen(false);
+    setAcceptMode(true); // Signal to open in accept mode
+    setIsEditingProposal(true); // Open the editing view
+    console.log('[useHostProposalsPageLogic] Opening accept mode for proposal:', proposal._id);
+  }, []);
+
+  /**
+   * Handle confirm acceptance - executes the full acceptance workflow
+   * Creates lease, sends notifications, shows success
+   */
+  const handleConfirmAcceptance = useCallback(async (proposal) => {
+    setIsAccepting(true);
     try {
-      // Use proposal Edge Function to update status
-      // Status must use full Bubble display format for status transition validation
-      const { data, error } = await supabase.functions.invoke('proposal', {
-        body: {
-          action: 'update',
-          payload: {
-            proposal_id: proposal._id || proposal.id,
-            status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents'
-          }
-        }
+      console.log('[useHostProposalsPageLogic] Confirming acceptance for proposal:', proposal._id);
+
+      // Execute the acceptance workflow
+      const result = await hostAcceptProposalWorkflow({
+        proposalId: proposal._id || proposal.id,
+        proposal
       });
 
-      if (error) throw error;
+      console.log('[useHostProposalsPageLogic] Acceptance workflow completed:', result);
 
       // Refresh proposals
       if (selectedListing) {
@@ -772,15 +785,29 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         setProposals(proposalsResult);
       }
 
-      handleCloseModal();
-      showToast({ title: 'Success!', content: 'Proposal accepted successfully!', type: 'success' });
-      console.log('[useHostProposalsPageLogic] Proposal accepted:', proposal._id);
+      // Close editing view and reset state
+      setIsEditingProposal(false);
+      setAcceptMode(false);
+      setSelectedProposal(null);
+
+      // Show success toast with 48-hour message
+      showToast({
+        title: 'Proposal Accepted!',
+        content: 'Lease documents will be ready within 48 hours. Both parties have been notified.',
+        type: 'success'
+      });
 
     } catch (err) {
-      console.error('Failed to accept proposal:', err);
-      showToast({ title: 'Error', content: 'Failed to accept proposal. Please try again.', type: 'error' });
+      console.error('[useHostProposalsPageLogic] Failed to accept proposal:', err);
+      showToast({
+        title: 'Error',
+        content: err.message || 'Failed to accept proposal. Please try again.',
+        type: 'error'
+      });
+    } finally {
+      setIsAccepting(false);
     }
-  }, [selectedListing, handleCloseModal]);
+  }, [selectedListing]);
 
   /**
    * Handle reject proposal - opens HostEditingProposal with reject section visible
@@ -809,6 +836,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     setIsEditingProposal(false);
     setSelectedProposal(null);
     setShowRejectOnOpen(false); // Reset reject section state
+    setAcceptMode(false); // Reset accept mode state
   }, []);
 
   /**
@@ -1205,6 +1233,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     isModalOpen,
     isEditingProposal,
     showRejectOnOpen,
+    acceptMode,
+    isAccepting,
 
     // Virtual meeting state
     isVirtualMeetingModalOpen,
@@ -1245,6 +1275,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     handleAcceptAsIs,
     handleCounteroffer,
     handleRejectFromEditing,
-    handleEditingAlert
+    handleEditingAlert,
+    handleConfirmAcceptance
   };
 }
