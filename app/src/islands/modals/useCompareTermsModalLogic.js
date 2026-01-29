@@ -382,15 +382,18 @@ export function useCompareTermsModalLogic({
       }
 
       // Show success state (will display success message in modal)
+      console.log('[useCompareTermsModalLogic] ✅ Acceptance complete, showing success modal');
       setAcceptanceSuccess(true);
+      // NOTE: Do NOT reload here - user must click "Got it!" to acknowledge
 
     } catch (err) {
-      console.error('[useCompareTermsModalLogic] Error accepting counteroffer:', err);
+      console.error('[useCompareTermsModalLogic] ❌ Error accepting counteroffer:', err);
       setError(err.message || 'Failed to accept counteroffer. Please try again.');
     } finally {
       setIsAccepting(false);
+      console.log('[useCompareTermsModalLogic] Acceptance flow finished, isAccepting=false');
     }
-  }, [proposal, onAcceptCounteroffer, onClose]);
+  }, [proposal]);
 
   /**
    * Handle Cancel/Decline Counteroffer
