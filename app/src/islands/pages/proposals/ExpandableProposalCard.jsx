@@ -49,6 +49,7 @@ import { showToast } from '../../shared/Toast.jsx';
 import { supabase } from '../../../lib/supabase.js';
 import { canConfirmSuggestedProposal, getNextStatusAfterConfirmation } from '../../../logic/rules/proposals/proposalRules.js';
 import { dismissProposal } from '../../shared/SuggestedProposals/suggestedProposalService.js';
+import LeaseCalendarSection from './LeaseCalendarSection.jsx';
 
 /**
  * Chevron icon for expand/collapse
@@ -1037,6 +1038,9 @@ export default function ExpandableProposalCard({
             isTerminal={isTerminal}
             proposal={proposal}
           />
+
+          {/* Lease Calendar Section - shows for activated leases */}
+          <LeaseCalendarSection proposal={proposal} />
 
           {/* Actions Row */}
           <div className="epc-actions-row">

@@ -4104,3 +4104,376 @@ a:focus:not(:focus-visible) {
     font-size: 24px;
   }
 }
+
+/* ============================================================================
+   LEASE CALENDAR SECTION (LCS)
+   Displays calendar view of lease dates for activated proposals
+   ============================================================================ */
+
+.lcs-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--gp-white);
+  border-radius: var(--gp-border-radius-md);
+  border: 1px solid var(--gp-border);
+}
+
+.lcs-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--gp-font-size-lg);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  margin: 0 0 16px 0;
+}
+
+/* Info Banner */
+.lcs-info-banner {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--gp-purple-bg);
+  border-left: 4px solid var(--gp-purple-primary);
+  border-radius: var(--gp-border-radius-sm);
+  margin-bottom: 20px;
+}
+
+.lcs-info-icon {
+  flex-shrink: 0;
+  color: var(--gp-purple-primary);
+  margin-top: 2px;
+}
+
+.lcs-info-text {
+  font-size: var(--gp-font-size-sm);
+  line-height: var(--gp-line-height-normal);
+  color: var(--gp-text-secondary);
+}
+
+.lcs-info-text strong {
+  color: var(--gp-purple-dark);
+}
+
+.lcs-info-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--gp-purple-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.lcs-info-link:hover {
+  text-decoration: underline;
+}
+
+/* Calendar Wrapper */
+.lcs-calendar-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Calendar Controls */
+.lcs-calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.lcs-calendar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.lcs-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-border-radius-sm);
+  background: var(--gp-white);
+  color: var(--gp-text-secondary);
+  cursor: pointer;
+  transition: all var(--gp-transition-fast);
+}
+
+.lcs-btn-icon:hover {
+  background: var(--gp-purple-bg);
+  border-color: var(--gp-purple-primary);
+  color: var(--gp-purple-primary);
+}
+
+.lcs-btn-text {
+  padding: 8px 16px;
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-border-radius-sm);
+  background: var(--gp-white);
+  color: var(--gp-text-secondary);
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--gp-transition-fast);
+}
+
+.lcs-btn-text:hover {
+  background: var(--gp-purple-bg);
+  border-color: var(--gp-purple-primary);
+  color: var(--gp-purple-primary);
+}
+
+.lcs-calendar-month {
+  font-size: var(--gp-font-size-md);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+}
+
+/* Calendar Grid */
+.lcs-calendar {
+  width: 100%;
+}
+
+.lcs-calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.lcs-calendar-weekday {
+  text-align: center;
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  padding: 8px 0;
+}
+
+.lcs-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.lcs-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text);
+  border-radius: var(--gp-border-radius-sm);
+  transition: background var(--gp-transition-fast);
+}
+
+.lcs-day--other-month {
+  color: var(--gp-text-muted);
+  opacity: 0.4;
+}
+
+.lcs-day--today {
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--gp-purple-primary);
+}
+
+.lcs-day--booked {
+  background: var(--gp-purple-primary);
+  color: var(--gp-white);
+  font-weight: 600;
+}
+
+.lcs-day--booked.lcs-day--today {
+  box-shadow: inset 0 0 0 2px var(--gp-purple-dark);
+}
+
+.lcs-day--past:not(.lcs-day--booked) {
+  color: var(--gp-text-muted);
+  opacity: 0.5;
+}
+
+/* Legend */
+.lcs-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gp-border-light);
+}
+
+.lcs-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-muted);
+}
+
+.lcs-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.lcs-legend-dot--booked {
+  background: var(--gp-purple-primary);
+}
+
+.lcs-legend-dot--today {
+  background: var(--gp-white);
+  box-shadow: inset 0 0 0 2px var(--gp-purple-primary);
+}
+
+/* Stats Row */
+.lcs-stats-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.lcs-stat {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 16px;
+  background: var(--gp-bg);
+  border-radius: var(--gp-border-radius-sm);
+  text-align: center;
+}
+
+.lcs-stat--highlight {
+  background: var(--gp-purple-bg);
+}
+
+.lcs-stat-value {
+  display: block;
+  font-size: var(--gp-font-size-xl);
+  font-weight: 700;
+  color: var(--gp-purple-dark);
+  line-height: 1.2;
+}
+
+.lcs-stat-label {
+  display: block;
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-muted);
+  margin-top: 4px;
+}
+
+/* Actions */
+.lcs-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.lcs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  border-radius: var(--gp-border-radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--gp-transition-normal);
+  min-height: var(--gp-min-touch-target);
+}
+
+.lcs-btn--primary {
+  background: var(--gp-purple-action);
+  color: var(--gp-white);
+  border: none;
+}
+
+.lcs-btn--primary:hover {
+  background: var(--gp-purple-dark);
+}
+
+/* Loading State */
+.lcs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--gp-text-muted);
+  font-size: var(--gp-font-size-sm);
+}
+
+.lcs-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--gp-border);
+  border-top-color: var(--gp-purple-action);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* No Data State */
+.lcs-no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--gp-text-muted);
+  text-align: center;
+}
+
+.lcs-no-data svg {
+  color: var(--gp-border);
+}
+
+.lcs-no-data p {
+  margin: 0;
+  font-size: var(--gp-font-size-sm);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .lcs-section {
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .lcs-heading {
+    font-size: var(--gp-font-size-md);
+  }
+
+  .lcs-info-banner {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .lcs-calendar-month {
+    font-size: var(--gp-font-size-sm);
+  }
+
+  .lcs-calendar-day {
+    font-size: 13px;
+  }
+
+  .lcs-stats-row {
+    gap: 8px;
+  }
+
+  .lcs-stat {
+    min-width: 60px;
+    padding: 10px 12px;
+  }
+
+  .lcs-stat-value {
+    font-size: var(--gp-font-size-lg);
+  }
+
+  .lcs-stat-label {
+    font-size: 12px;
+  }
+
+  .lcs-legend {
+    gap: 12px;
+  }
+}
