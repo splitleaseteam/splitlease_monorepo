@@ -374,18 +374,10 @@ export async function handleSignup(
     }
 
     // Send welcome email with verification link (async, non-blocking)
-    // Checks notification_preferences table
+    // IMPORTANT: Welcome email is ALWAYS sent for new signups, regardless of preferences
+    // This is critical for email verification and account confirmation
     (async () => {
       try {
-        console.log('[signup] 📧 Fetching notification preferences for welcome email...');
-        const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
-        console.log('[signup] 📧 Preferences result:', prefs ? 'found' : 'null');
-        console.log('[signup] 📧 checkEmailPreference result:', checkEmailPreference(prefs, 'account_assistance'));
-
-        if (!checkEmailPreference(prefs, 'account_assistance')) {
-          console.log('[signup] Welcome email SKIPPED (preference: account_assistance disabled)');
-          return;
-        }
         console.log('[signup] 📧 Sending welcome email to:', email.toLowerCase());
         const result = await sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink);
         if (!result.success) {
