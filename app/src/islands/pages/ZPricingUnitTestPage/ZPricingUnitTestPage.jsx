@@ -17,7 +17,7 @@ import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
 import Section10PricingListGrid from './components/Section10PricingListGrid.jsx';
 import Section11WorkflowCheck from './components/Section11WorkflowCheck.jsx';
 import Section12DataValidation from './components/Section12DataValidation.jsx';
-import Header from '../../shared/Header.jsx';
+import AdminHeader from '../../shared/AdminHeader/AdminHeader.jsx';
 import './ZPricingUnitTestPage.css';
 
 // ─────────────────────────────────────────────────────────────
@@ -85,8 +85,8 @@ export default function ZPricingUnitTestPage() {
 
   return (
     <>
-      {/* Corporate Header */}
-      <Header />
+      {/* Admin Header */}
+      <AdminHeader />
 
       <div className="zput-page">
         {/* Alert Banner */}
