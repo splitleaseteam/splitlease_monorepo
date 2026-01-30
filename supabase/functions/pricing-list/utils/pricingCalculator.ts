@@ -87,27 +87,53 @@ function roundToTwoDecimals(value: number): number {
 
 const AVG_DAYS_PER_MONTH = 30.4;
 
+/**
+ * Calculate Host Compensation array based on rental type.
+ *
+ * FORMULA BY RENTAL TYPE:
+ * - Weekly: weeklyRate / numberOfNights (e.g., $2000/2 = $1000 for 2 nights)
+ * - Monthly: (monthlyRate / avgDaysPerMonth) * 7 / numberOfNights
+ * - Nightly: Direct from individual nightly rate columns
+ *
+ * Array index 0 = 1 night, index 6 = 7 nights
+ */
 function calculateHostCompensationArray(listing: Listing): (number | null)[] {
   const rentalType = listing['rental type'] || 'Nightly';
 
-  // For Weekly rental type: derive from weekly rate / 7
+  // For Weekly rental type: weeklyRate / numberOfNights
+  // E.g., $2000 weekly rate: [2000/1, 2000/2, 2000/3, 2000/4, 2000/5, 2000/6, 2000/7]
   if (rentalType === 'Weekly') {
     const weeklyRate = normalizeRate(listing['💰Weekly Host Rate']);
     if (weeklyRate !== null) {
-      const nightlyFromWeekly = roundToTwoDecimals(weeklyRate / 7);
-      // All 7 nights get the same derived rate
-      return Array(7).fill(nightlyFromWeekly);
+      return [
+        roundToTwoDecimals(weeklyRate / 1), // 1 night: full weekly rate per night
+        roundToTwoDecimals(weeklyRate / 2), // 2 nights: weekly rate spread over 2
+        roundToTwoDecimals(weeklyRate / 3), // 3 nights
+        roundToTwoDecimals(weeklyRate / 4), // 4 nights
+        roundToTwoDecimals(weeklyRate / 5), // 5 nights
+        roundToTwoDecimals(weeklyRate / 6), // 6 nights
+        roundToTwoDecimals(weeklyRate / 7), // 7 nights: lowest per-night rate
+      ];
     }
     // Fall through to return nulls if no weekly rate
   }
 
-  // For Monthly rental type: derive from monthly rate / avg days per month
+  // For Monthly rental type: Convert monthly to weekly equivalent, then divide by nights
+  // Formula: (monthlyRate / avgDaysPerMonth) * 7 / numberOfNights
   if (rentalType === 'Monthly') {
     const monthlyRate = normalizeRate(listing['💰Monthly Host Rate']);
     if (monthlyRate !== null) {
-      const nightlyFromMonthly = roundToTwoDecimals(monthlyRate / AVG_DAYS_PER_MONTH);
-      // All 7 nights get the same derived rate
-      return Array(7).fill(nightlyFromMonthly);
+      // Weekly equivalent = (monthlyRate / 30.4) * 7
+      const weeklyEquivalent = (monthlyRate / AVG_DAYS_PER_MONTH) * 7;
+      return [
+        roundToTwoDecimals(weeklyEquivalent / 1), // 1 night
+        roundToTwoDecimals(weeklyEquivalent / 2), // 2 nights
+        roundToTwoDecimals(weeklyEquivalent / 3), // 3 nights
+        roundToTwoDecimals(weeklyEquivalent / 4), // 4 nights
+        roundToTwoDecimals(weeklyEquivalent / 5), // 5 nights
+        roundToTwoDecimals(weeklyEquivalent / 6), // 6 nights
+        roundToTwoDecimals(weeklyEquivalent / 7), // 7 nights
+      ];
     }
     // Fall through to return nulls if no monthly rate
   }
