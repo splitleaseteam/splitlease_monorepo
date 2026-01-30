@@ -530,8 +530,19 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
 
         if (error) {
           console.error('[ContactHostMessaging] Edge Function error:', error);
+          console.error('[ContactHostMessaging] Full error details:', JSON.stringify(error, null, 2));
+
+          // Try to extract the actual error message from the Edge Function response
+          let errorMessage = 'Failed to send message. Please try again.';
+          if (error.context) {
+            const contextData = typeof error.context === 'string'
+              ? JSON.parse(error.context)
+              : error.context;
+            errorMessage = contextData.error || contextData.message || errorMessage;
+          }
+
           setErrors({
-            submit: error.message || 'Failed to send message. Please try again.'
+            submit: errorMessage
           });
           return;
         }
@@ -575,8 +586,19 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
 
         if (error) {
           console.error('[ContactHostMessaging] Edge Function error:', error);
+          console.error('[ContactHostMessaging] Full error details:', JSON.stringify(error, null, 2));
+
+          // Try to extract the actual error message from the Edge Function response
+          let errorMessage = 'Failed to send message. Please try again.';
+          if (error.context) {
+            const contextData = typeof error.context === 'string'
+              ? JSON.parse(error.context)
+              : error.context;
+            errorMessage = contextData.error || contextData.message || errorMessage;
+          }
+
           setErrors({
-            submit: error.message || 'Failed to send message. Please try again.'
+            submit: errorMessage
           });
           return;
         }
