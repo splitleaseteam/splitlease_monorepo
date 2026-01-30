@@ -119,10 +119,10 @@ async function sendInquiryWelcomeMessages(
 export async function handleSendMessage(
   supabaseAdmin: SupabaseClient,
   payload: Record<string, unknown>,
-  user: { id: string; email: string }
+  user: { id: string; email: string; bubbleId?: string }
 ): Promise<SendMessageResult> {
   console.log('[sendMessage] ========== SEND MESSAGE (NATIVE) ===========');
-  console.log('[sendMessage] User ID:', user.id, 'Email:', user.email);
+  console.log('[sendMessage] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
 
   const typedPayload = payload as unknown as SendMessagePayload;
   validateRequiredFields(typedPayload, ['message_body']);
@@ -131,20 +131,24 @@ export async function handleSendMessage(
     throw new ValidationError('Message body cannot be empty');
   }
 
-  // Determine user's Bubble ID:
-  // - For legacy auth: user.id IS the Bubble ID (passed directly)
-  // - For JWT auth: user.id is Supabase UUID, need to look up by email
+  // Determine user's Bubble ID (priority order):
+  // 1. user.bubbleId from JWT user_metadata (set during signup)
+  // 2. user.id if it looks like a Bubble ID (legacy auth)
+  // 3. Lookup from public.user by email (fallback for migrated users)
   let senderBubbleId: string | null = null;
 
-  // Check if user.id looks like a Bubble ID (they typically start with numbers and contain 'x')
-  const isBubbleId = /^\d+x\d+$/.test(user.id);
-
-  if (isBubbleId) {
-    // Legacy auth - user.id is already the Bubble ID
+  // Priority 1: Use bubbleId from JWT user_metadata if available
+  if (user.bubbleId) {
+    senderBubbleId = user.bubbleId;
+    console.log('[sendMessage] Using Bubble ID from JWT user_metadata:', senderBubbleId);
+  }
+  // Priority 2: Check if user.id looks like a Bubble ID (legacy auth)
+  else if (/^\d+x\d+$/.test(user.id)) {
     senderBubbleId = user.id;
     console.log('[sendMessage] Using direct Bubble ID from legacy auth:', senderBubbleId);
-  } else {
-    // JWT auth - need to look up Bubble ID by email
+  }
+  // Priority 3: JWT auth without metadata - look up by email in public.user
+  else {
     if (!user.email) {
       throw new ValidationError('Could not find user profile. Please try logging in again.');
     }

@@ -115,6 +115,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'public/**/*.js', // Static assets
+      '.storybook/**', // Storybook config (has its own build process)
+      'tests/**', // Test files (separate test runner)
     ],
   },
 ];

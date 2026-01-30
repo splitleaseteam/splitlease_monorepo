@@ -326,8 +326,6 @@ class BrowserHelper {
     console.log(`🔚 Browser closed`);
   }
 
-<<<<<<< HEAD
-=======
   // ========== GMAIL-SPECIFIC METHODS ==========
 
   /**
@@ -485,7 +483,6 @@ class BrowserHelper {
     console.log(`🔗 Switched to tab ${index}`);
   }
 
->>>>>>> 8ed2f505dc01a4f6f0cc3f7c64309ebda97c283e
   /**
    * Find field reference in snapshot
    *

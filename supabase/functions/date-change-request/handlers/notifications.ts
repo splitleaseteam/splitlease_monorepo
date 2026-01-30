@@ -24,7 +24,10 @@ import {
   NotificationEvent,
 } from '../lib/types.ts';
 import { generateNotificationContent } from '../lib/notificationContent.ts';
+import { generateEmailTemplateVariables, getTemplateIdForScenario } from '../lib/emailTemplateGenerator.ts';
 import { sendEmail, EMAIL_TEMPLATES } from '../../_shared/emailUtils.ts';
+import { fetchListingFromLease, buildPropertyDisplay } from '../lib/propertyDisplay.ts';
+import type { EmailNotificationContext, ListingData } from '../lib/types.ts';
 import {
   getNotificationPreferences,
   shouldSendEmail as checkEmailPreference,
@@ -391,6 +394,7 @@ async function auditMagicLink(
 /**
  * Send email notification to a recipient
  * Uses new notification_preferences table for preference checking
+ * Uses new email template generator with 16+ scenarios
  *
  * @param supabase - Supabase client for preference lookup
  * @param context - Full notification context
@@ -420,23 +424,50 @@ async function sendEmailNotification(
   // CRITICAL: Determine if this recipient is the one who initiated the request
   const isRequester = recipientType === 'requester';
 
-  const content = generateNotificationContent(context, recipient.role, isRequester);
-  const templateId = context.event === 'ACCEPTED'
-    ? DATE_CHANGE_EMAIL_TEMPLATES.CELEBRATION
-    : DATE_CHANGE_EMAIL_TEMPLATES.GENERAL;
-
   try {
+    // Fetch additional data needed for new email templates
+    const listingData = await fetchListingFromLease(supabase, context.leaseId);
+
+    // Fetch lease data with check-in/check-out dates
+    const { data: leaseData } = await supabase
+      .from('bookings_leases')
+      .select('check_in, check_out')
+      .eq('_id', context.leaseId)
+      .maybeSingle();
+
+    // Build full email notification context
+    const emailContext: EmailNotificationContext = {
+      ...context,
+      leaseData: {
+        checkIn: leaseData?.check_in || null,
+        checkOut: leaseData?.check_out || null,
+        agreementNumber: context.agreementNumber,
+      },
+      listingData: listingData,
+      percentageOfRegular: null, // Would need to fetch from request data if needed
+    };
+
+    // Generate email template variables using new generator
+    const templateVars = generateEmailTemplateVariables(
+      emailContext,
+      recipient.role,
+      isRequester
+    );
+
+    // Determine template ID based on scenario (use BASIC_EMAIL as default for now)
+    // TODO: Replace with scenario-based template IDs once templates are created in Bubble
+    const templateId = EMAIL_TEMPLATES.BASIC_EMAIL;
+
+    // Override button URL with magic link
+    templateVars.buttonurl = magicLink;
+
+    // Send email with all template variables
     await sendEmail({
       templateId,
       toEmail: recipient.email,
       toName: recipient.firstName || undefined,
-      subject: content.subject,
-      variables: {
-        first_name: recipient.firstName || 'there',
-        body_intro: content.emailBody,
-        button_text: content.ctaButtonText,
-        button_url: magicLink || content.ctaUrl,
-      },
+      subject: templateVars.subject || 'Split Lease - Date Change Request',
+      variables: templateVars,
       bccEmails: DATE_CHANGE_BCC_EMAILS,
     });
 
