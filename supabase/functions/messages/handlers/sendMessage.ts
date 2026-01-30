@@ -174,6 +174,18 @@ export async function handleSendMessage(
     recipientId = typedPayload.recipient_user_id;
     console.log('[sendMessage] Looking for existing thread with recipient:', recipientId);
 
+    // Validate recipient exists in user table before creating thread
+    const { data: recipient, error: recipientError } = await supabaseAdmin
+      .from('user')
+      .select('_id')
+      .eq('_id', recipientId)
+      .maybeSingle();
+
+    if (recipientError || !recipient) {
+      console.error('[sendMessage] Recipient user not found:', recipientId, 'error:', recipientError?.message);
+      throw new ValidationError('Recipient user not found. The listing host may no longer be active.');
+    }
+
     threadId = await findExistingThread(
       supabaseAdmin,
       recipientId,
