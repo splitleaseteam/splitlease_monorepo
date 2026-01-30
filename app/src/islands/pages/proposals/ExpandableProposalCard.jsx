@@ -628,6 +628,9 @@ export default function ExpandableProposalCard({
   // Counteroffer summary (SplitBot message explaining what changed)
   const counterofferSummary = proposal?.counterofferSummary || null;
 
+  // DEBUG: Log counteroffer data for this proposal
+  console.log(`[EPC DEBUG] Proposal ${proposal?._id}: isCounteroffer=${isCounteroffer}, hasCounteroffeSummary=${!!counterofferSummary}, summary=${counterofferSummary?.substring(0, 50) || 'null'}`);
+
   // Status flags
   const isSuggested = isSLSuggested(status);
   const isPending = isPendingConfirmation(status);
