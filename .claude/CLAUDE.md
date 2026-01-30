@@ -407,15 +407,17 @@ These aren't suggestions—they're the workflow. If you're unsure whether a task
 
 ## Parallel Subagent Execution (Complex Tasks)
 
-> **⚡ THROUGHPUT OPTIMIZATION**: For complex tasks with multiple independent subtasks, spawn parallel subagents to maximize throughput.
+> **⚡ THROUGHPUT OPTIMIZATION**: For complex tasks, invoke **2-8 subagents** to segregate parallelizable subtasks that would otherwise execute sequentially. This maximizes throughput by running independent work concurrently.
 
 ### When to Parallelize
 
 Use parallel subagent execution when:
-- The task can be decomposed into **2-8 independent subtasks**
+- The task can be decomposed into **2-8 independent subtasks** (minimum 2, maximum 8)
 - Subtasks do NOT have sequential dependencies on each other
 - Each subtask modifies different files or components
 - The overall task would take significantly longer if executed sequentially
+
+> **⚠️ MANDATORY PARALLELIZATION**: When a task has 2+ independent subtasks, you MUST spawn parallel subagents rather than executing them one-by-one. Sequential execution of parallelizable work is inefficient and prohibited.
 
 ### Execution Pattern
 
@@ -478,4 +480,4 @@ Final: input-reviewer verifies all forms updated correctly
 
 ---
 
-**VERSION**: 11.6 | **UPDATED**: 2026-01-30
+**VERSION**: 11.7 | **UPDATED**: 2026-01-30
