@@ -1,5 +1,5 @@
 /**
- * Section 6: Pricing List Grid
+ * Section 5: Pricing List Grid
  *
  * Displays a 7-row table showing all pricing arrays from the pricing_list database.
  * Each row represents 1-7 nights with columns for host compensation, unused nights,
@@ -8,7 +8,7 @@
 
 import PropTypes from 'prop-types';
 
-export default function Section6PricingListGrid({
+export default function Section5PricingListGrid({
   pricingList,
   listing,
   onUpdatePricingList,
@@ -42,9 +42,9 @@ export default function Section6PricingListGrid({
   }
 
   return (
-    <div className="zput-card zput-section-6">
+    <div className="zput-card zput-section-5">
       <div className="zput-card-header">
-        <span className="zput-card-title">Section 6: Pricing List Grid</span>
+        <span className="zput-card-title">Section 5: Pricing List Grid</span>
         <div className="zput-card-actions">
           <button
             type="button"
@@ -122,7 +122,7 @@ export default function Section6PricingListGrid({
   );
 }
 
-Section6PricingListGrid.propTypes = {
+Section5PricingListGrid.propTypes = {
   pricingList: PropTypes.shape({
     hostCompensation: PropTypes.array,
     unusedNightsDiscount: PropTypes.array,
@@ -140,7 +140,7 @@ Section6PricingListGrid.propTypes = {
   isUpdating: PropTypes.bool
 };
 
-Section6PricingListGrid.defaultProps = {
+Section5PricingListGrid.defaultProps = {
   pricingList: null,
   listing: null,
   isUpdating: false

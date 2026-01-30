@@ -14,9 +14,9 @@
 
 import { useZPricingUnitTestPageLogic } from './useZPricingUnitTestPageLogic.js';
 import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
-import Section6PricingListGrid from './components/Section6PricingListGrid.jsx';
-import Section7WorkflowCheck from './components/Section7WorkflowCheck.jsx';
-import Section8DataValidation from './components/Section8DataValidation.jsx';
+import Section5PricingListGrid from './components/Section5PricingListGrid.jsx';
+import Section6WorkflowCheck from './components/Section6WorkflowCheck.jsx';
+import Section7DataValidation from './components/Section7DataValidation.jsx';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader.jsx';
 import './ZPricingUnitTestPage.css';
 
@@ -213,9 +213,9 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 2: Sections 3, 4, 5 (Core pricing info) */}
+        {/* ROW 2: Sections 3 & 4 (Core pricing info) */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <div className="zput-row zput-row--three">
+        <div className="zput-row">
           {/* Section 3: Host Prices */}
           <div className="zput-card">
             <span className="zput-card-title">Section 3: Host Prices</span>
@@ -274,71 +274,68 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 4: Prorated Rates */}
+          {/* Section 4: Prorated Rates & Reservation Span */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 4: Prorated Rates</span>
+            <span className="zput-card-title">Section 4: Prorated & Reservation</span>
 
-            <div className="zput-prorated-grid zput-prorated-grid--vertical">
-              <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Monthly')}>
-                <h4>Monthly</h4>
-                <div className="prorated-value">{formatCurrency(logic.pricingOutput.monthly.proratedNightlyRate)}</div>
-                <div className="prorated-details">
-                  <span>Avg Nightly: {formatCurrency(logic.pricingOutput.monthly.avgNightly)}</span>
-                  <span>Avg Weekly: {formatCurrency(logic.pricingOutput.monthly.avgWeeklyPrice)}</span>
+            <div className="zput-combined-section">
+              {/* Reservation Span Info */}
+              <div className="zput-span-info zput-span-info--inline">
+                <div className="span-item">
+                  <span className="span-label">Span:</span>
+                  <span className="span-value">{logic.reservationSpan} wks ({logic.monthsInSpan} mo)</span>
+                </div>
+                <div className="span-item">
+                  <span className="span-label">Nights:</span>
+                  <span className="span-value">{logic.nightsCount}/week</span>
+                </div>
+                <div className="span-item">
+                  <span className="span-label">Pattern:</span>
+                  <span className="span-value">
+                    {logic.GUEST_PATTERN_OPTIONS.find(o => o.value === logic.guestPattern)?.label}
+                  </span>
                 </div>
               </div>
 
-              <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Weekly')}>
-                <h4>Weekly</h4>
-                <div className="prorated-value">{formatCurrency(logic.pricingOutput.weekly.proratedNightlyRate)}</div>
-                <div className="prorated-details">
-                  <span>Unused Disc: {formatPercentage(logic.pricingOutput.weekly.unusedNightsDiscount)}</span>
+              <div className="zput-divider"></div>
+
+              {/* Prorated Rates */}
+              <div className="zput-prorated-grid zput-prorated-grid--vertical">
+                <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Monthly')}>
+                  <h4>Monthly</h4>
+                  <div className="prorated-value">{formatCurrency(logic.pricingOutput.monthly.proratedNightlyRate)}</div>
+                  <div className="prorated-details">
+                    <span>Avg Nightly: {formatCurrency(logic.pricingOutput.monthly.avgNightly)}</span>
+                    <span>Avg Weekly: {formatCurrency(logic.pricingOutput.monthly.avgWeeklyPrice)}</span>
+                  </div>
                 </div>
-              </div>
 
-              <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Nightly')}>
-                <h4>Nightly</h4>
-                <div className="prorated-value">{formatCurrency(logic.pricingOutput.nightly.withMarkup)}</div>
-                <div className="prorated-details">
-                  <span>Base: {formatCurrency(logic.pricingOutput.nightly.baseRate)}</span>
-                  <span>Full-Time Disc: {formatPercentage(logic.pricingOutput.nightly.fullTimeDiscount)}</span>
+                <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Weekly')}>
+                  <h4>Weekly</h4>
+                  <div className="prorated-value">{formatCurrency(logic.pricingOutput.weekly.proratedNightlyRate)}</div>
+                  <div className="prorated-details">
+                    <span>Unused Disc: {formatPercentage(logic.pricingOutput.weekly.unusedNightsDiscount)}</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Section 5: Reservation Span Info */}
-          <div className="zput-card">
-            <span className="zput-card-title">Section 5: Reservation Span</span>
-
-            <div className="zput-span-info">
-              <div className="span-item">
-                <span className="span-label">Reservation Span:</span>
-                <span className="span-value">{logic.reservationSpan} weeks</span>
-              </div>
-              <div className="span-item">
-                <span className="span-label">Months in Span:</span>
-                <span className="span-value">{logic.monthsInSpan}</span>
-              </div>
-              <div className="span-item">
-                <span className="span-label">Selected Nights:</span>
-                <span className="span-value">{logic.nightsCount} per week</span>
-              </div>
-              <div className="span-item">
-                <span className="span-label">Guest Pattern:</span>
-                <span className="span-value">
-                  {logic.GUEST_PATTERN_OPTIONS.find(o => o.value === logic.guestPattern)?.label}
-                </span>
+                <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Nightly')}>
+                  <h4>Nightly</h4>
+                  <div className="prorated-value">{formatCurrency(logic.pricingOutput.nightly.withMarkup)}</div>
+                  <div className="prorated-details">
+                    <span>Base: {formatCurrency(logic.pricingOutput.nightly.baseRate)}</span>
+                    <span>Full-Time Disc: {formatPercentage(logic.pricingOutput.nightly.fullTimeDiscount)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 3: Section 6 (Pricing List Grid - full width) */}
+        {/* ROW 3: Section 5 (Pricing List Grid - full width) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row zput-row--full">
-          <Section6PricingListGrid
+          <Section5PricingListGrid
             pricingList={logic.pricingList}
             listing={logic.selectedListing}
             onUpdatePricingList={logic.handleUpdatePricingList}
@@ -348,27 +345,27 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 4: Sections 7 & 8 (Workflow Check & Validation) */}
+        {/* ROW 4: Sections 6 & 7 (Workflow Check & Validation) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row">
-          <Section7WorkflowCheck
+          <Section6WorkflowCheck
             comparisonResults={logic.comparisonResults}
             onRunChecks={logic.handleRunChecks}
             isUpdating={logic.isUpdating}
           />
 
-          <Section8DataValidation
+          <Section7DataValidation
             validationFlags={logic.validationFlags}
           />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 5: Sections 9 & 10 (Reference info - bottom) */}
+        {/* ROW 5: Sections 8 & 9 (Reference info - bottom) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row">
-          {/* Section 9: Host Guidelines */}
+          {/* Section 8: Host Guidelines */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 9: Host Guidelines</span>
+            <span className="zput-card-title">Section 8: Host Guidelines</span>
 
             <div className="zput-guidelines-grid">
               <div className="zput-guideline-item">
@@ -390,9 +387,9 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 10: ZAT Price Configuration */}
+          {/* Section 9: ZAT Price Configuration */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 10: ZAT Config</span>
+            <span className="zput-card-title">Section 9: ZAT Config</span>
 
             {logic.zatConfig ? (
               <div className="zput-config-list">

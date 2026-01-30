@@ -542,6 +542,35 @@
   gap: 12px;
 }
 
+.zput-span-info--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.zput-span-info--inline .span-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.zput-span-info--inline .span-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.zput-span-info--inline .span-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.zput-combined-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .span-item {
   display: flex;
   justify-content: space-between;
