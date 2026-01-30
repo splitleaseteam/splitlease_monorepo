@@ -83,6 +83,8 @@ export async function handleCreate(
         "💰Nightly Host Rate for 5 nights",
         "💰Nightly Host Rate for 6 nights",
         "💰Nightly Host Rate for 7 nights",
+        "💰Weekly Host Rate",
+        "💰Monthly Host Rate",
         "rental type",
         "Host User"
       `)

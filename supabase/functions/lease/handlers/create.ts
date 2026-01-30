@@ -175,16 +175,8 @@ export async function handleCreate(
     throw new SupabaseSyncError('Failed to generate lease ID');
   }
 
-  // Count existing leases for agreement number
-  const { count: leaseCount, error: countError } = await supabase
-    .from('bookings_leases')
-    .select('*', { count: 'exact', head: true });
-
-  if (countError) {
-    console.warn('[lease:create] Could not count leases:', countError.message);
-  }
-
-  const agreementNumber = generateAgreementNumber(leaseCount || 0, input.numberOfZeros);
+  // Generate agreement number using daily counter (format: YYYYMMDD-XXXX)
+  const agreementNumber = await generateAgreementNumber(supabase);
   const firstPaymentDate = calculateFirstPaymentDate(activeTerms.moveInDate);
 
   // Calculate totals

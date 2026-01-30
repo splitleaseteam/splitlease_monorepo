@@ -34,6 +34,8 @@ interface Listing {
   '💰Nightly Host Rate for 5 nights'?: number | null;
   '💰Nightly Host Rate for 6 nights'?: number | null;
   '💰Nightly Host Rate for 7 nights'?: number | null;
+  '💰Weekly Host Rate'?: number | null;
+  '💰Monthly Host Rate'?: number | null;
   'rental type'?: string;
   [key: string]: unknown;
 }
@@ -83,7 +85,34 @@ function roundToTwoDecimals(value: number): number {
 // Calculator Functions
 // ─────────────────────────────────────────────────────────────
 
+const AVG_DAYS_PER_MONTH = 30.4;
+
 function calculateHostCompensationArray(listing: Listing): (number | null)[] {
+  const rentalType = listing['rental type'] || 'Nightly';
+
+  // For Weekly rental type: derive from weekly rate / 7
+  if (rentalType === 'Weekly') {
+    const weeklyRate = normalizeRate(listing['💰Weekly Host Rate']);
+    if (weeklyRate !== null) {
+      const nightlyFromWeekly = roundToTwoDecimals(weeklyRate / 7);
+      // All 7 nights get the same derived rate
+      return Array(7).fill(nightlyFromWeekly);
+    }
+    // Fall through to return nulls if no weekly rate
+  }
+
+  // For Monthly rental type: derive from monthly rate / avg days per month
+  if (rentalType === 'Monthly') {
+    const monthlyRate = normalizeRate(listing['💰Monthly Host Rate']);
+    if (monthlyRate !== null) {
+      const nightlyFromMonthly = roundToTwoDecimals(monthlyRate / AVG_DAYS_PER_MONTH);
+      // All 7 nights get the same derived rate
+      return Array(7).fill(nightlyFromMonthly);
+    }
+    // Fall through to return nulls if no monthly rate
+  }
+
+  // For Nightly rental type (or fallback): use individual nightly rates
   return [
     normalizeRate(listing['💰Nightly Host Rate for 1 night']),
     normalizeRate(listing['💰Nightly Host Rate for 2 nights']),
