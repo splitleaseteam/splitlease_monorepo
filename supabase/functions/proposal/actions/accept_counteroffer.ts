@@ -9,7 +9,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createSplitBotMessage, findThreadByProposal } from "../../_shared/messagingHelpers.ts";
+import { createSplitBotMessage } from "../../_shared/messagingHelpers.ts";
 
 interface AcceptCounterofferPayload {
   proposalId: string;
@@ -28,10 +28,10 @@ export async function handleAcceptCounteroffer(
     throw new Error('proposalId is required');
   }
 
-  // Fetch proposal to get counteroffer terms and user IDs
+  // Fetch proposal to get counteroffer terms, user IDs, and thread_id
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('*, "hc nightly price", "hc nights per week", "hc check in day", "hc check out day", Guest, "Host User"')
+    .select('*, "hc nightly price", "hc nights per week", "hc check in day", "hc check out day", Guest, "Host User", thread_id')
     .eq('_id', proposalId)
     .single();
 
@@ -86,10 +86,11 @@ export async function handleAcceptCounteroffer(
   console.log('[accept_counteroffer] Counteroffer accepted for proposal:', proposalId);
 
   // Create notification messages for guest and host
-  try {
-    const threadId = await findThreadByProposal(supabase, proposalId);
+  // Use proposal.thread_id directly instead of searching by Proposal FK
+  const threadId = proposal.thread_id;
 
-    if (threadId) {
+  if (threadId) {
+    try {
       // Message to guest
       await createSplitBotMessage(supabase, {
         threadId,
@@ -99,6 +100,7 @@ export async function handleAcceptCounteroffer(
         visibleToGuest: true,
         recipientUserId: proposal.Guest
       });
+      console.log('[accept_counteroffer] Guest message created');
 
       // Message to host
       await createSplitBotMessage(supabase, {
@@ -109,14 +111,15 @@ export async function handleAcceptCounteroffer(
         visibleToGuest: false,
         recipientUserId: proposal['Host User'] || proposal.Host
       });
+      console.log('[accept_counteroffer] Host message created');
 
-      console.log('[accept_counteroffer] Notification messages created');
-    } else {
-      console.warn('[accept_counteroffer] No thread found for proposal - messages not sent');
+      console.log('[accept_counteroffer] Notification messages created successfully');
+    } catch (messageError) {
+      console.error('[accept_counteroffer] Failed to create messages:', messageError);
+      // Non-blocking - counteroffer was still accepted
     }
-  } catch (messageError) {
-    console.error('[accept_counteroffer] Failed to create messages:', messageError);
-    // Non-blocking - counteroffer was still accepted
+  } else {
+    console.warn('[accept_counteroffer] No thread_id on proposal - messages not sent');
   }
 
   return {
