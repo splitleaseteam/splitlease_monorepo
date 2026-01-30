@@ -173,10 +173,7 @@ export default function ViewSplitLeasePage() {
 
     return (
         <div className={styles.pageContainer}>
-            <Header
-                isAuthenticated={isAuthenticated}
-                userId={authUserId}
-            />
+            <Header />
 
             {/* Photo Gallery */}
             <PhotoGallery
@@ -251,9 +248,6 @@ export default function ViewSplitLeasePage() {
                         onMoveInDateChange={handleMoveInDateChange}
                         onReservationSpanChange={handleReservationSpanChange}
                         onSubmit={handleOpenProposalModal}
-                        informationalTexts={informationalTexts}
-                        activeInfoTooltip={activeInfoTooltip}
-                        setActiveInfoTooltip={setActiveInfoTooltip}
                     />
                 </aside>
             </div>
