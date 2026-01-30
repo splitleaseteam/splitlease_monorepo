@@ -98,14 +98,12 @@ export default function ZPricingUnitTestPage() {
           <p>Compare pricing calculations from workflows, database, and direct formulas.</p>
         </header>
 
-      <div className="zput-layout">
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* LEFT SIDEBAR: Sections 1, 3, 4, 9 */}
+        {/* ROW 1: Sections 1 & 2 */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <aside className="zput-sidebar">
-
+        <div className="zput-row">
           {/* Section 1: Listing Search and Selection */}
-          <div className="zput-card">
+          <div className="zput-card zput-card--narrow">
             <span className="zput-card-title">Section 1: Listing Search</span>
 
             <div className="zput-form-group">
@@ -164,7 +162,61 @@ export default function ZPricingUnitTestPage() {
             </button>
           </div>
 
-          {/* Section 3: Host Prices Input */}
+          {/* Section 2: Schedule Selector (Compact) */}
+          <div className="zput-card zput-card--wide">
+            <span className="zput-card-title">Section 2: Schedule Selector</span>
+
+            <div className="zput-config-row">
+              <div className="zput-config-field">
+                <label className="zput-label">Reservation Span (Weeks)</label>
+                <input
+                  type="number"
+                  className="zput-input zput-input-sm"
+                  min="1"
+                  max="52"
+                  value={logic.reservationSpan}
+                  onChange={(e) => logic.handleSetReservationSpan(e.target.value)}
+                />
+                <span className="zput-hint">≈ {logic.monthsInSpan} months</span>
+              </div>
+              <div className="zput-config-field">
+                <label className="zput-label">Guest Pattern</label>
+                <select
+                  className="zput-select"
+                  value={logic.guestPattern}
+                  onChange={(e) => logic.handleSetPattern(e.target.value)}
+                >
+                  {logic.GUEST_PATTERN_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {logic.scheduleListing ? (
+              <div className="zput-schedule-wrapper zput-schedule-wrapper--compact">
+                <ListingScheduleSelector
+                  listing={logic.scheduleListing}
+                  reservationSpan={logic.reservationSpan}
+                  zatConfig={logic.zatConfig}
+                  onSelectionChange={logic.handleSelectionChange}
+                  onPriceChange={logic.handlePriceChange}
+                  showPricing={true}
+                />
+              </div>
+            ) : (
+              <div className="zput-empty-state">
+                Select a listing to use the schedule selector
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 2: Sections 3, 4, 5 */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row zput-row--three">
+          {/* Section 3: Host Prices */}
           <div className="zput-card">
             <span className="zput-card-title">Section 3: Host Prices</span>
 
@@ -246,94 +298,11 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 9: ZAT Price Configuration */}
-          <div className="zput-card">
-            <span className="zput-card-title">Section 9: ZAT Config</span>
-
-            {logic.zatConfig ? (
-              <div className="zput-config-list">
-                <div className="zput-info-row">
-                  <span className="zput-info-label">Site Markup:</span>
-                  <span className="zput-info-value">{formatPercentage(logic.zatConfig.overallSiteMarkup)}</span>
-                </div>
-                <div className="zput-info-row">
-                  <span className="zput-info-label">Full-Time Discount:</span>
-                  <span className="zput-info-value">{formatPercentage(logic.zatConfig.fullTimeDiscount)}</span>
-                </div>
-                <div className="zput-info-row">
-                  <span className="zput-info-label">Unused Nights Mult:</span>
-                  <span className="zput-info-value">{formatPercentage(logic.zatConfig.unusedNightsDiscountMultiplier)}</span>
-                </div>
-                <div className="zput-info-row">
-                  <span className="zput-info-label">Avg Days/Month:</span>
-                  <span className="zput-info-value">{logic.zatConfig.avgDaysPerMonth}</span>
-                </div>
-              </div>
-            ) : (
-              <p className="zput-empty-text">Loading config...</p>
-            )}
-          </div>
-        </aside>
-
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* MAIN CONTENT: Sections 2, 5, 6, 7, 8 */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <main className="zput-main">
-
-          {/* Section 2: Listing Schedule Selector */}
-          <div className="zput-card">
-            <span className="zput-card-title">Section 2: Schedule Selector</span>
-
-            <div className="zput-config-row">
-              <div className="zput-config-field">
-                <label className="zput-label">Reservation Span (Weeks)</label>
-                <input
-                  type="number"
-                  className="zput-input zput-input-sm"
-                  min="1"
-                  max="52"
-                  value={logic.reservationSpan}
-                  onChange={(e) => logic.handleSetReservationSpan(e.target.value)}
-                />
-                <span className="zput-hint">≈ {logic.monthsInSpan} months</span>
-              </div>
-              <div className="zput-config-field">
-                <label className="zput-label">Guest Pattern</label>
-                <select
-                  className="zput-select"
-                  value={logic.guestPattern}
-                  onChange={(e) => logic.handleSetPattern(e.target.value)}
-                >
-                  {logic.GUEST_PATTERN_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {logic.scheduleListing ? (
-              <div className="zput-schedule-wrapper">
-                <ListingScheduleSelector
-                  listing={logic.scheduleListing}
-                  reservationSpan={logic.reservationSpan}
-                  zatConfig={logic.zatConfig}
-                  onSelectionChange={logic.handleSelectionChange}
-                  onPriceChange={logic.handlePriceChange}
-                  showPricing={true}
-                />
-              </div>
-            ) : (
-              <div className="zput-empty-state">
-                Select a listing to use the schedule selector
-              </div>
-            )}
-          </div>
-
           {/* Section 5: Prorated Rates */}
           <div className="zput-card">
             <span className="zput-card-title">Section 5: Prorated Rates</span>
 
-            <div className="zput-prorated-grid">
+            <div className="zput-prorated-grid zput-prorated-grid--vertical">
               <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Monthly')}>
                 <h4>Monthly</h4>
                 <div className="prorated-value">{formatCurrency(logic.pricingOutput.monthly.proratedNightlyRate)}</div>
@@ -361,7 +330,12 @@ export default function ZPricingUnitTestPage() {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 3: Sections 8 & 9 */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row">
           {/* Section 8: Reservation Span Info */}
           <div className="zput-card">
             <span className="zput-card-title">Section 8: Reservation Span</span>
@@ -387,22 +361,53 @@ export default function ZPricingUnitTestPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
 
-      {/* ═══════════════════════════════════════════════════════════ */}
-      {/* BOTTOM SECTION: Sections 10, 11, 12 */}
-      {/* ═══════════════════════════════════════════════════════════ */}
-      <section className="zput-bottom">
-        <Section10PricingListGrid
-          pricingList={logic.pricingList}
-          listing={logic.selectedListing}
-          onUpdatePricingList={logic.handleUpdatePricingList}
-          onUpdateStartingNightly={logic.handleUpdateStartingNightly}
-          isUpdating={logic.isUpdating}
-        />
+          {/* Section 9: ZAT Price Configuration */}
+          <div className="zput-card">
+            <span className="zput-card-title">Section 9: ZAT Config</span>
 
-        <div className="zput-bottom-row">
+            {logic.zatConfig ? (
+              <div className="zput-config-list">
+                <div className="zput-info-row">
+                  <span className="zput-info-label">Site Markup:</span>
+                  <span className="zput-info-value">{formatPercentage(logic.zatConfig.overallSiteMarkup)}</span>
+                </div>
+                <div className="zput-info-row">
+                  <span className="zput-info-label">Full-Time Discount:</span>
+                  <span className="zput-info-value">{formatPercentage(logic.zatConfig.fullTimeDiscount)}</span>
+                </div>
+                <div className="zput-info-row">
+                  <span className="zput-info-label">Unused Nights Mult:</span>
+                  <span className="zput-info-value">{formatPercentage(logic.zatConfig.unusedNightsDiscountMultiplier)}</span>
+                </div>
+                <div className="zput-info-row">
+                  <span className="zput-info-label">Avg Days/Month:</span>
+                  <span className="zput-info-value">{logic.zatConfig.avgDaysPerMonth}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="zput-empty-text">Loading config...</p>
+            )}
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 4: Section 10 */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row">
+          <Section10PricingListGrid
+            pricingList={logic.pricingList}
+            listing={logic.selectedListing}
+            onUpdatePricingList={logic.handleUpdatePricingList}
+            onUpdateStartingNightly={logic.handleUpdateStartingNightly}
+            isUpdating={logic.isUpdating}
+          />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 5: Sections 11 & 12 */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row">
           <Section11WorkflowCheck
             comparisonResults={logic.comparisonResults}
             onRunChecks={logic.handleRunChecks}
@@ -413,7 +418,6 @@ export default function ZPricingUnitTestPage() {
             validationFlags={logic.validationFlags}
           />
         </div>
-      </section>
       </div>
     </>
   );
