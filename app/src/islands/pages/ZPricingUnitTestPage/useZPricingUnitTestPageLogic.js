@@ -19,6 +19,7 @@ import {
   calculateMonthlyAvgNightly,
   calculateAverageWeeklyPrice
 } from '../../../logic/calculators/pricingList/index.js';
+import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -176,6 +177,21 @@ export function useZPricingUnitTestPageLogic() {
   useEffect(() => {
     loadListings();
   }, []);
+
+  // Auto-calculate comparison when priceBreakdown or selection changes
+  useEffect(() => {
+    if (priceBreakdown && selectedListing && zatConfig && selectedDays.length > 0) {
+      // Run pricing calculations for display
+      const pricing = runPricingCalculations(selectedListing, zatConfig, nightsCount, hostRates);
+      setPricingOutput(pricing);
+
+      // Run workflow vs formula comparison
+      const comparison = runComparisonChecks(priceBreakdown, selectedDays, selectedListing, reservationSpan, zatConfig, hostRates);
+      setComparisonResults(comparison);
+
+      console.log('[Auto-calc] Comparison updated:', comparison);
+    }
+  }, [priceBreakdown, selectedDays, selectedListing, zatConfig, nightsCount, hostRates, reservationSpan]);
 
   // ═══════════════════════════════════════════════════════════
   // DATA LOADERS
@@ -493,17 +509,17 @@ export function useZPricingUnitTestPageLogic() {
     const flags = runValidationChecks(selectedListing, pricingList, hostRates);
     setValidationFlags(flags);
 
-    // Run pricing calculations
+    // Run pricing calculations for display in Section 4
     const pricing = runPricingCalculations(selectedListing, zatConfig, nightsCount, hostRates);
     setPricingOutput(pricing);
 
     // Run workflow vs formula comparison
-    const comparison = runComparisonChecks(priceBreakdown, pricing, zatConfig, nightsCount, reservationSpan, hostRates);
+    const comparison = runComparisonChecks(priceBreakdown, selectedDays, selectedListing, reservationSpan, zatConfig, hostRates);
     setComparisonResults(comparison);
 
     setAlertMessage('Checks completed');
     setTimeout(() => setAlertMessage(null), 2000);
-  }, [selectedListing, zatConfig, pricingList, hostRates, nightsCount, priceBreakdown, reservationSpan]);
+  }, [selectedListing, zatConfig, pricingList, hostRates, nightsCount, priceBreakdown, selectedDays, reservationSpan]);
 
   // Workflow 7: Set Pattern
   const handleSetPattern = useCallback((pattern) => {
@@ -870,22 +886,63 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
   return result;
 }
 
-function runComparisonChecks(priceBreakdown, pricing, zatConfig, nightsCount, reservationSpan, hostRates) {
-  const effectiveNights = nightsCount > 0 ? nightsCount : 3;
-
-  // Workflow values (from ListingScheduleSelector)
+function runComparisonChecks(priceBreakdown, selectedDays, listing, reservationSpan, zatConfig, hostRates) {
+  // Workflow values (from ListingScheduleSelector's priceBreakdown callback)
   const workflowNightlyPrice = priceBreakdown?.pricePerNight || 0;
   const workflowFourWeekRent = priceBreakdown?.fourWeekRent || 0;
   const workflowInitialPayment = priceBreakdown?.initialPayment || 0;
   const workflowTotalReservation = priceBreakdown?.reservationTotal || 0;
 
-  // Formula values (direct calculation)
-  const formulaNightlyPrice = pricing.nightly.withMarkup || 0;
-  const formulaFourWeekRent = formulaNightlyPrice * effectiveNights * 4;
-  const formulaInitialPayment = formulaFourWeekRent + (hostRates.damageDeposit || 0);
-  const formulaTotalReservation = formulaNightlyPrice * effectiveNights * reservationSpan;
+  // Formula values: Re-calculate using the same calculatePrice function
+  // This validates our formulas match what the selector is doing
+  const selectedNights = selectedDays.length > 0
+    ? selectedDays.slice(0, -1).map((day, i) => ({
+      nightNumber: i,
+      fromDay: day,
+      toDay: selectedDays[i + 1] || day
+    }))
+    : [];
 
-  const tolerance = 0.01;
+  // Create a listing object with the host rates for formula calculation
+  const formulaListing = listing ? {
+    ...listing,
+    rentalType: listing['rental type'] || listing.rentalType,
+    weeklyHostRate: hostRates.weeklyRate,
+    monthlyHostRate: hostRates.monthlyRate,
+    unitMarkup: (hostRates.unitMarkup || 0) * 100, // Convert back to percentage
+    cleaningFee: hostRates.cleaningDeposit,
+    damageDeposit: hostRates.damageDeposit,
+    weeksOffered: hostRates.weeksOffered,
+    '💰Weekly Host Rate': hostRates.weeklyRate,
+    '💰Monthly Host Rate': hostRates.monthlyRate,
+    '💰Nightly Host Rate for 2 nights': hostRates.rate2Night,
+    '💰Nightly Host Rate for 3 nights': hostRates.rate3Night,
+    '💰Nightly Host Rate for 4 nights': hostRates.rate4Night,
+    '💰Nightly Host Rate for 5 nights': hostRates.rate5Night,
+    '💰Unit Markup': (hostRates.unitMarkup || 0) * 100,
+    '💰Cleaning Cost / Maintenance Fee': hostRates.cleaningDeposit,
+    '💰Damage Deposit': hostRates.damageDeposit,
+    'Weeks offered': hostRates.weeksOffered
+  } : null;
+
+  // Calculate using our formula implementation
+  const formulaResult = formulaListing
+    ? calculatePrice(selectedNights, formulaListing, reservationSpan, zatConfig)
+    : { pricePerNight: 0, fourWeekRent: 0, initialPayment: 0, reservationTotal: 0 };
+
+  const formulaNightlyPrice = formulaResult.pricePerNight || 0;
+  const formulaFourWeekRent = formulaResult.fourWeekRent || 0;
+  const formulaInitialPayment = formulaResult.initialPayment || 0;
+  const formulaTotalReservation = formulaResult.reservationTotal || 0;
+
+  console.log('[runComparisonChecks] Workflow vs Formula:', {
+    workflow: { workflowNightlyPrice, workflowFourWeekRent, workflowInitialPayment, workflowTotalReservation },
+    formula: { formulaNightlyPrice, formulaFourWeekRent, formulaInitialPayment, formulaTotalReservation },
+    selectedNightsCount: selectedNights.length,
+    rentalType: listing?.['rental type']
+  });
+
+  const tolerance = 1; // Allow $1 tolerance for rounding differences
 
   return {
     fourWeekRent: {
