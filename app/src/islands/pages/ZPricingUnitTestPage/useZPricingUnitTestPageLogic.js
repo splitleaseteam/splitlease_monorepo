@@ -741,6 +741,20 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
   const _rentalType = listing['rental type'] || 'Nightly';
   const effectiveNights = nightsCount > 0 ? nightsCount : 3;
 
+  console.log('[runPricingCalculations] Input values:', {
+    nightsCount,
+    effectiveNights,
+    hostRates: {
+      weeklyRate: hostRates.weeklyRate,
+      monthlyRate: hostRates.monthlyRate,
+      rate2Night: hostRates.rate2Night,
+      rate3Night: hostRates.rate3Night,
+      rate4Night: hostRates.rate4Night,
+      rate5Night: hostRates.rate5Night,
+      unitMarkup: hostRates.unitMarkup
+    }
+  });
+
   // 1. Setup Base Scalars
   const siteMarkup = zatConfig.overallSiteMarkup || 0.17;
   const unitMarkup = hostRates.unitMarkup || 0;
@@ -784,6 +798,16 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
     // Weekly Multiplier: 1 + Site + Unit + Weekly - Unused
     const wMultiplier = 1 + siteMarkup + unitMarkup + weeklyMarkup - unusedNightsDiscount;
     weeklyProratedResult = weeklyBase * wMultiplier;
+
+    console.log('[runPricingCalculations] Weekly calc:', {
+      weeklyRate: hostRates.weeklyRate,
+      effectiveNights,
+      weeklyBase,
+      wMultiplier,
+      weeklyProratedResult
+    });
+  } else {
+    console.log('[runPricingCalculations] Weekly rate is 0, skipping weekly calc');
   }
 
   // --- Nightly Calculations ---
@@ -799,7 +823,7 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
   const nMultiplier = 1 + siteMarkup + unitMarkup - unusedNightsDiscount - fullTimeDiscount;
   const nightlyWithMarkup = baseNightlyRate * nMultiplier;
 
-  return {
+  const result = {
     monthly: {
       proratedNightlyRate: monthlyProratedResult,
       avgNightly: monthlyAvgNightly,
@@ -817,6 +841,10 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
       fullTimeDiscount
     }
   };
+
+  console.log('[runPricingCalculations] Final result:', result);
+
+  return result;
 }
 
 function runComparisonChecks(priceBreakdown, pricing, zatConfig, nightsCount, reservationSpan, hostRates) {
