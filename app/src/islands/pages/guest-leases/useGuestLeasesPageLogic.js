@@ -28,6 +28,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { checkAuthStatus, validateTokenAndFetchUser, getUserType } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
+import { SIGNUP_LOGIN_URL } from '../../../lib/constants.js';
 import {
   fetchGuestLeases,
   sendCheckinMessage,
@@ -85,109 +86,92 @@ export function useGuestLeasesPageLogic() {
    * Check authentication status and user type
    * Redirects if not authenticated or not a Guest
    *
-   * Uses two-step auth pattern (same as GuestProposalsPage):
-   * 1. checkAuthStatus() - lightweight check for tokens/cookies
-   * 2. validateTokenAndFetchUser() - validates token AND fetches user data
+   * Uses optimistic pattern matching Header component:
+   * 1. Trust cached auth/session if it exists
+   * 2. Validate in background (non-blocking)
+   * 3. Only redirect if truly unauthenticated
    */
   useEffect(() => {
     async function checkAuth() {
       console.log('🔐 Guest Leases: Checking authentication...');
 
-      // Step 1: Lightweight auth check
-      const isAuthenticated = await checkAuthStatus();
+      try {
+        // Check for Supabase session (primary auth method)
+        let { data: { session } } = await supabase.auth.getSession();
 
-      if (!isAuthenticated) {
-        console.log('❌ Guest Leases: User not authenticated, redirecting to home');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isGuest: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_AUTHENTICATED'
-        });
-        window.location.href = '/';
-        return;
-      }
+        // If no session on first try, wait briefly for initialization
+        if (!session) {
+          console.log('🔄 Guest Leases: Waiting for Supabase session initialization...');
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const retryResult = await supabase.auth.getSession();
+          session = retryResult.data?.session;
+        }
 
-      // Step 2: Deep validation with clearOnFailure: false
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
+        // Background validation to get user data (non-blocking)
+        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
 
-      let userType = null;
-      let isGuest = false;
+        let userType = null;
+        let isGuest = false;
 
-      if (userData) {
-        // Success path: Use validated user data
-        userType = userData.userType;
-        isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-        console.log('✅ Guest Leases: User data loaded, userType:', userType);
-        setUser(userData);
-      } else {
-        // Fallback to Supabase session metadata
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          userType = session.user.user_metadata?.user_type || getUserType() || null;
+        if (userData) {
+          // Success: Use validated user data
+          userType = userData.userType;
           isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-          console.log('⚠️ Guest Leases: Using fallback session data, userType:', userType);
+          console.log('✅ Guest Leases: User data loaded, userType:', userType);
+          setUser(userData);
+        } else if (session?.user) {
+          // Fallback: Use session metadata
+          userType = session.user.user_metadata?.user_type || getUserType();
+          isGuest = userType === 'Guest' || userType?.includes?.('Guest');
+          console.log('⚠️ Guest Leases: Using session metadata, userType:', userType);
 
-          if (!userType) {
-            console.log('❌ Guest Leases: Cannot determine user type, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              isGuest: false,
-              shouldRedirect: true,
-              redirectReason: 'USER_TYPE_UNKNOWN'
-            });
-            window.location.href = '/';
-            return;
-          }
-
-          // Set minimal user data from session
           setUser({
-            _id: session.user.id,
+            _id: session.user.user_metadata?.user_id || session.user.id,
             email: session.user.email,
             firstName: session.user.user_metadata?.first_name || 'Guest',
             lastName: session.user.user_metadata?.last_name || '',
             userType
           });
         } else {
-          console.log('❌ Guest Leases: No valid session, redirecting to home');
+          // No session or user data - redirect to home
+          console.log('❌ Guest Leases: Not authenticated, redirecting');
           setAuthState({
             isChecking: false,
             isAuthenticated: false,
             isGuest: false,
             shouldRedirect: true,
-            redirectReason: 'TOKEN_INVALID'
+            redirectReason: 'NOT_AUTHENTICATED'
           });
           window.location.href = '/';
           return;
         }
-      }
 
-      // Check if user is a Guest
-      if (!isGuest) {
-        console.log('❌ Guest Leases: User is not a Guest, redirecting');
+        // Check if user is a Guest
+        if (!isGuest) {
+          console.log('❌ Guest Leases: User is not a Guest, redirecting to host-leases');
+          setAuthState({
+            isChecking: false,
+            isAuthenticated: true,
+            isGuest: false,
+            shouldRedirect: true,
+            redirectReason: 'NOT_GUEST'
+          });
+          window.location.href = '/host-leases';
+          return;
+        }
+
+        // Auth successful
         setAuthState({
           isChecking: false,
           isAuthenticated: true,
-          isGuest: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_GUEST'
+          isGuest: true,
+          shouldRedirect: false,
+          redirectReason: null
         });
-        // Redirect Hosts to host-leases page
-        window.location.href = '/host-leases';
-        return;
+      } catch (err) {
+        console.error('❌ Guest Leases: Auth check error:', err);
+        window.location.href = '/';
       }
-
-      // Auth successful
-      setAuthState({
-        isChecking: false,
-        isAuthenticated: true,
-        isGuest: true,
-        shouldRedirect: false,
-        redirectReason: null
-      });
     }
 
     checkAuth();
@@ -226,7 +210,14 @@ export function useGuestLeasesPageLogic() {
         }
       } catch (err) {
         console.error('❌ Guest Leases: Error fetching leases:', err);
-        setError(err.message || 'Failed to load leases. Please try again.');
+
+        // Handle session expiration - show error instead of redirecting
+        if (err.message === 'SESSION_EXPIRED') {
+          console.log('⚠️ Guest Leases: Session expired');
+          setError('Your session has expired. Please refresh the page to log in again.');
+        } else {
+          setError(err.message || 'Failed to load leases. Please try again.');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -262,7 +253,13 @@ export function useGuestLeasesPageLogic() {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to load leases. Please try again.');
+      // Handle session expiration - show error instead of redirecting
+      if (err.message === 'SESSION_EXPIRED') {
+        console.log('⚠️ Guest Leases: Session expired');
+        setError('Your session has expired. Please refresh the page to log in again.');
+      } else {
+        setError(err.message || 'Failed to load leases. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

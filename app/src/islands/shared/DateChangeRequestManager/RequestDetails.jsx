@@ -1,11 +1,16 @@
 /**
  * Request Details Component
  * Form for setting price negotiation and message before submitting
+ *
+ * Pattern 5: Fee Transparency Integration
+ * - Displays fee breakdown using FeePriceDisplay component
+ * - Shows 1.5% split model transparently before payment
  */
 
 import { formatDate } from './dateUtils.js';
 import PriceTierSelector from '../PriceAnchoring/PriceTierSelector.jsx';
 import '../PriceAnchoring/PriceAnchoring.css';
+import FeePriceDisplay from '../FeePriceDisplay';
 
 /**
  * @param {Object} props
@@ -20,6 +25,8 @@ import '../PriceAnchoring/PriceAnchoring.css';
  * @param {Function} props.onBack - Handler for back button
  * @param {Function} props.onSubmit - Handler for submit
  * @param {boolean} props.isLoading - Loading state
+ * @param {Object} props.feeBreakdown - Pattern 5: Fee breakdown from useFeeCalculation
+ * @param {boolean} props.isFeeCalculating - Pattern 5: Fee calculation loading state
  */
 export default function RequestDetails({
   requestType,
@@ -35,6 +42,8 @@ export default function RequestDetails({
   onBack,
   onSubmit,
   isLoading,
+  feeBreakdown,
+  isFeeCalculating,
 }) {
   const proposedPrice = (baseNightlyPrice * pricePercentage) / 100;
   const priceDifference = proposedPrice - baseNightlyPrice;
@@ -142,6 +151,21 @@ export default function RequestDetails({
         </p>
       </div>
 
+      {/* Pattern 5: Fee Transparency Display */}
+      {(requestType === 'adding' || requestType === 'swapping') && (
+        <div className="dcr-fee-section">
+          <h3 className="dcr-section-title">Fee Summary</h3>
+          {isFeeCalculating ? (
+            <div className="dcr-fee-loading">Calculating fees...</div>
+          ) : (
+            <FeePriceDisplay
+              basePrice={baseNightlyPrice * 30} // Monthly calculation
+              transactionType="date_change"
+            />
+          )}
+        </div>
+      )}
+
       {/* Submit Button */}
       <div className="dcr-button-group">
         <button
@@ -154,9 +178,9 @@ export default function RequestDetails({
         <button
           className="dcr-button-primary"
           onClick={onSubmit}
-          disabled={isLoading}
+          disabled={isLoading || isFeeCalculating}
         >
-          {isLoading ? 'Submitting...' : 'Submit Request'}
+          {isLoading ? 'Processing...' : 'Continue to Payment'}
         </button>
       </div>
     </div>

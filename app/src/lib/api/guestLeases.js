@@ -19,18 +19,54 @@ import { adaptLeaseFromSupabase } from '../../logic/processors/leases/adaptLease
 
 /**
  * Get authentication token from current session
+ * Waits for Supabase session initialization and attempts refresh if needed
  * @returns {Promise<string>} Auth token
- * @throws {Error} If no session available
+ * @throws {Error} If no session available after refresh attempt
  */
 async function getAuthToken() {
-  const { data: { session } } = await supabase.auth.getSession();
-  const authToken = session?.access_token;
+  // Try to get current session
+  let { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-  if (!authToken) {
-    throw new Error('Authentication required. Please log in.');
+  console.log('[guestLeases] Initial session check:', {
+    hasSession: !!session,
+    hasAccessToken: !!session?.access_token,
+    error: sessionError?.message
+  });
+
+  // If no session on first try, wait briefly for Supabase to initialize
+  // This matches the Header's pattern to handle race conditions
+  if (!session) {
+    console.log('[guestLeases] No immediate session, waiting for Supabase initialization...');
+    await new Promise(resolve => setTimeout(resolve, 200));
+    const retryResult = await supabase.auth.getSession();
+    session = retryResult.data?.session;
+    console.log('[guestLeases] After retry:', { hasSession: !!session });
   }
 
-  return authToken;
+  if (session?.access_token) {
+    console.log('[guestLeases] ✅ Found valid session token');
+    return session.access_token;
+  }
+
+  // No session - attempt to refresh
+  console.log('[guestLeases] No active session, attempting refresh...');
+  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+
+  console.log('[guestLeases] Refresh result:', {
+    hasSession: !!refreshData?.session,
+    hasAccessToken: !!refreshData?.session?.access_token,
+    error: refreshError?.message
+  });
+
+  if (refreshData?.session?.access_token && !refreshError) {
+    console.log('[guestLeases] ✅ Session refreshed successfully');
+    return refreshData.session.access_token;
+  }
+
+  // Session refresh failed - user needs to re-authenticate
+  console.error('[guestLeases] ❌ Session refresh failed - no valid Supabase session found');
+  console.error('[guestLeases] This usually means the user logged in via legacy auth without a Supabase session');
+  throw new Error('SESSION_EXPIRED');
 }
 
 /**

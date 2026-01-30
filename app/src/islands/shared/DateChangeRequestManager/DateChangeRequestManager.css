@@ -1122,3 +1122,68 @@
     width: 100%;
   }
 }
+
+/* ============================================
+   PATTERN 5: FEE TRANSPARENCY & PAYMENT
+   ============================================ */
+
+/* Payment View Container */
+.dcr-payment-container {
+  padding: 0;
+}
+
+.dcr-payment-container .dcr-details-header {
+  margin-bottom: 24px;
+}
+
+.dcr-payment-container .fee-price-display {
+  margin-bottom: 24px;
+}
+
+/* Fee Section in Details View */
+.dcr-fee-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--dcr-gray-light);
+  border-radius: 12px;
+}
+
+.dcr-fee-section .dcr-section-title {
+  margin-bottom: 12px;
+}
+
+.dcr-fee-loading {
+  padding: 20px;
+  text-align: center;
+  color: var(--dcr-gray-text);
+  font-size: 14px;
+}
+
+/* Override FeePriceDisplay styles for DCR context */
+.dcr-fee-section .fee-price-display {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.dcr-payment-container .payment-step-container {
+  margin-top: 0;
+}
+
+.dcr-payment-container .payment-step-card {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+/* Mobile adjustments for payment view */
+@media (max-width: 520px) {
+  .dcr-fee-section {
+    padding: 12px;
+  }
+
+  .dcr-payment-container .payment-step-card {
+    padding: 0;
+  }
+}
