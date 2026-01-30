@@ -1,25 +1,16 @@
 /**
- * PhotoGallery Component
- * 
+ * Photo Gallery Component
+ *
  * Adaptive photo gallery that adjusts layout based on number of photos.
  * - 1 photo: Single large image
  * - 2 photos: Two equal side-by-side
  * - 3 photos: Large left + 2 stacked right
  * - 4 photos: Large left + 3 smaller right
  * - 5+ photos: Classic Pinterest layout (large left + 4 smaller right with "Show all" overlay)
- * 
+ *
  * Mobile: Always shows single image with "Show all X photos" button
- * 
+ *
  * @component
- * @param {object} props
- * @param {Array} props.photos - Array of photo objects with Photo and Photo (thumbnail) URLs
- * @param {string} props.listingName - Listing name for alt text
- * @param {Function} props.onPhotoClick - Photo click handler (opens lightbox)
- * @param {number} props.currentIndex - Current photo index in lightbox
- * @param {boolean} props.isModalOpen - Whether lightbox modal is open
- * @param {Function} props.onCloseModal - Lightbox close handler
- * @param {boolean} [props.isMobile=false] - Whether in mobile viewport
- * 
  * @architecture Presentational Component
  * @performance Memoized to prevent unnecessary re-renders
  * @accessibility Includes keyboard navigation and ARIA labels
@@ -27,6 +18,49 @@
 
 import { memo } from 'react';
 import styles from './PhotoGallery.module.css';
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface Photo {
+  _id: string;
+  Photo: string;
+  'Photo (thumbnail)'?: string;
+}
+
+interface PhotoGalleryProps {
+  photos: Photo[];
+  listingName: string;
+  onPhotoClick: (index: number) => void;
+  currentIndex: number;
+  isModalOpen: boolean;
+  onCloseModal: () => void;
+  isMobile?: boolean;
+}
+
+interface PhotoTileProps {
+  photo: Photo;
+  index: number;
+  onClick: (index: number) => void;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+  useThumbnail?: boolean;
+  showAllOverlay?: boolean;
+  totalPhotos?: number;
+}
+
+interface PhotoLightboxProps {
+  photos: Photo[];
+  currentIndex: number;
+  onClose: () => void;
+  listingName: string;
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 
 const PhotoGallery = memo(function PhotoGallery({
     photos,
@@ -36,7 +70,7 @@ const PhotoGallery = memo(function PhotoGallery({
     isModalOpen,
     onCloseModal,
     isMobile = false
-}) {
+}: PhotoGalleryProps) {
     const photoCount = photos.length;
 
     // Handle empty photo array
@@ -296,6 +330,10 @@ PhotoGallery.displayName = 'PhotoGallery';
 // SUB-COMPONENTS
 // ============================================================================
 
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
 /**
  * Individual photo tile
  */
@@ -309,7 +347,7 @@ const PhotoTile = memo(function PhotoTile({
     useThumbnail = false,
     showAllOverlay = false,
     totalPhotos = 0
-}) {
+}: PhotoTileProps) {
     const photoUrl = useThumbnail && photo['Photo (thumbnail)']
         ? photo['Photo (thumbnail)']
         : photo.Photo;
@@ -368,7 +406,7 @@ const PhotoLightbox = memo(function PhotoLightbox({
     currentIndex,
     onClose,
     listingName
-}) {
+}: PhotoLightboxProps) {
     const handlePrevious = () => {
         const newIndex = currentIndex === 0 ? photos.length - 1 : currentIndex - 1;
         // Note: Parent component should handle index updates
