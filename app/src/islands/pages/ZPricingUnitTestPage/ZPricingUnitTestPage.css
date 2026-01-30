@@ -89,6 +89,10 @@
   grid-template-columns: repeat(3, 1fr);
 }
 
+.zput-row--full {
+  grid-template-columns: 1fr;
+}
+
 .zput-card--narrow {
   max-width: 350px;
 }

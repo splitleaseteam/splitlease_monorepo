@@ -213,7 +213,7 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 2: Sections 3, 4, 5 */}
+        {/* ROW 2: Sections 3, 5, 8 (Core pricing info) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row zput-row--three">
           {/* Section 3: Host Prices */}
@@ -274,30 +274,6 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 4: Host Guidelines */}
-          <div className="zput-card">
-            <span className="zput-card-title">Section 4: Host Guidelines</span>
-
-            <div className="zput-guidelines-grid">
-              <div className="zput-guideline-item">
-                <span className="guideline-label">Min Nights</span>
-                <span className="guideline-value">{logic.hostRates.minNights ?? '-'}</span>
-              </div>
-              <div className="zput-guideline-item">
-                <span className="guideline-label">Max Nights</span>
-                <span className="guideline-value">{logic.hostRates.maxNights ?? '-'}</span>
-              </div>
-              <div className="zput-guideline-item">
-                <span className="guideline-label">Min Weeks</span>
-                <span className="guideline-value">{logic.hostRates.minWeeks ?? '-'}</span>
-              </div>
-              <div className="zput-guideline-item">
-                <span className="guideline-label">Max Weeks</span>
-                <span className="guideline-value">{logic.hostRates.maxWeeks ?? '-'}</span>
-              </div>
-            </div>
-          </div>
-
           {/* Section 5: Prorated Rates */}
           <div className="zput-card">
             <span className="zput-card-title">Section 5: Prorated Rates</span>
@@ -330,12 +306,7 @@ export default function ZPricingUnitTestPage() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 3: Sections 8 & 9 */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <div className="zput-row">
           {/* Section 8: Reservation Span Info */}
           <div className="zput-card">
             <span className="zput-card-title">Section 8: Reservation Span</span>
@@ -358,6 +329,63 @@ export default function ZPricingUnitTestPage() {
                 <span className="span-value">
                   {logic.GUEST_PATTERN_OPTIONS.find(o => o.value === logic.guestPattern)?.label}
                 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 3: Section 10 (Pricing List Grid - full width) */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row zput-row--full">
+          <Section10PricingListGrid
+            pricingList={logic.pricingList}
+            listing={logic.selectedListing}
+            onUpdatePricingList={logic.handleUpdatePricingList}
+            onUpdateStartingNightly={logic.handleUpdateStartingNightly}
+            isUpdating={logic.isUpdating}
+          />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 4: Sections 11 & 12 (Workflow Check & Validation) */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row">
+          <Section11WorkflowCheck
+            comparisonResults={logic.comparisonResults}
+            onRunChecks={logic.handleRunChecks}
+            isUpdating={logic.isUpdating}
+          />
+
+          <Section12DataValidation
+            validationFlags={logic.validationFlags}
+          />
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ROW 5: Sections 4 & 9 (Reference info - bottom) */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <div className="zput-row">
+          {/* Section 4: Host Guidelines */}
+          <div className="zput-card">
+            <span className="zput-card-title">Section 4: Host Guidelines</span>
+
+            <div className="zput-guidelines-grid">
+              <div className="zput-guideline-item">
+                <span className="guideline-label">Min Nights</span>
+                <span className="guideline-value">{logic.hostRates.minNights ?? '-'}</span>
+              </div>
+              <div className="zput-guideline-item">
+                <span className="guideline-label">Max Nights</span>
+                <span className="guideline-value">{logic.hostRates.maxNights ?? '-'}</span>
+              </div>
+              <div className="zput-guideline-item">
+                <span className="guideline-label">Min Weeks</span>
+                <span className="guideline-value">{logic.hostRates.minWeeks ?? '-'}</span>
+              </div>
+              <div className="zput-guideline-item">
+                <span className="guideline-label">Max Weeks</span>
+                <span className="guideline-value">{logic.hostRates.maxWeeks ?? '-'}</span>
               </div>
             </div>
           </div>
@@ -389,34 +417,6 @@ export default function ZPricingUnitTestPage() {
               <p className="zput-empty-text">Loading config...</p>
             )}
           </div>
-        </div>
-
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 4: Section 10 */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <div className="zput-row">
-          <Section10PricingListGrid
-            pricingList={logic.pricingList}
-            listing={logic.selectedListing}
-            onUpdatePricingList={logic.handleUpdatePricingList}
-            onUpdateStartingNightly={logic.handleUpdateStartingNightly}
-            isUpdating={logic.isUpdating}
-          />
-        </div>
-
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 5: Sections 11 & 12 */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <div className="zput-row">
-          <Section11WorkflowCheck
-            comparisonResults={logic.comparisonResults}
-            onRunChecks={logic.handleRunChecks}
-            isUpdating={logic.isUpdating}
-          />
-
-          <Section12DataValidation
-            validationFlags={logic.validationFlags}
-          />
         </div>
       </div>
     </>
