@@ -9,6 +9,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createSplitBotMessage, findThreadByProposal } from "../../_shared/messagingHelpers.ts";
 
 interface AcceptCounterofferPayload {
   proposalId: string;
@@ -27,10 +28,10 @@ export async function handleAcceptCounteroffer(
     throw new Error('proposalId is required');
   }
 
-  // Fetch proposal to get counteroffer terms
+  // Fetch proposal to get counteroffer terms and user IDs
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('*, "hc nightly price", "hc nights per week", "hc check in day", "hc check out day"')
+    .select('*, "hc nightly price", "hc nights per week", "hc check in day", "hc check out day", Guest, "Host User"')
     .eq('_id', proposalId)
     .single();
 
@@ -83,6 +84,40 @@ export async function handleAcceptCounteroffer(
   }
 
   console.log('[accept_counteroffer] Counteroffer accepted for proposal:', proposalId);
+
+  // Create notification messages for guest and host
+  try {
+    const threadId = await findThreadByProposal(supabase, proposalId);
+
+    if (threadId) {
+      // Message to guest
+      await createSplitBotMessage(supabase, {
+        threadId,
+        messageBody: "You have successfully accepted the host's counteroffer. The lease documents are now being prepared. You'll be notified once they're ready for your review.",
+        callToAction: 'View Lease',
+        visibleToHost: false,
+        visibleToGuest: true,
+        recipientUserId: proposal.Guest
+      });
+
+      // Message to host
+      await createSplitBotMessage(supabase, {
+        threadId,
+        messageBody: "Great news! The guest has accepted your counteroffer. The lease documents are now being prepared.",
+        callToAction: 'View Lease',
+        visibleToHost: true,
+        visibleToGuest: false,
+        recipientUserId: proposal['Host User'] || proposal.Host
+      });
+
+      console.log('[accept_counteroffer] Notification messages created');
+    } else {
+      console.warn('[accept_counteroffer] No thread found for proposal - messages not sent');
+    }
+  } catch (messageError) {
+    console.error('[accept_counteroffer] Failed to create messages:', messageError);
+    // Non-blocking - counteroffer was still accepted
+  }
 
   return {
     success: true,
