@@ -14,26 +14,16 @@
     "lint:fix": "cd app && bun run lint:fix",
     "lint:check": "cd app && bun run lint:check",
     "test": "cd app && bun run test",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report e2e/playwright-report",
-    "test:e2e:chromium": "playwright test --project=chromium",
-    "test:e2e:headed": "playwright test --headed",
     "knip": "knip",
     "sync:edge-functions": "node supabase/scripts/sync-edge-functions.js",
     "sync:edge-functions:fix": "node supabase/scripts/sync-edge-functions.js --fix",
     "docs:generate": "node scripts/generate-docs.js",
-    "regression:create": "node scripts/generate-regression-test.js",
-    "test:e2e:setup": "npx ts-node e2e/global-setup.ts",
-    "test:e2e:cleanup": "npx ts-node e2e/global-teardown.ts"
+    "regression:create": "node scripts/generate-regression-test.js"
   },
   "description": "Split Lease application monorepo - Cloudflare Pages deployment - Root directory: app",
   "devDependencies": {
-    "@faker-js/faker": "^10.2.0",
     "@playwright/test": "^1.52.0",
     "@types/node": "^25.0.10",
-    "dotenv": "^17.2.3",
     "knip": "^5.82.1",
     "playwright": "^1.58.0",
     "typescript": "^5.9.3"
