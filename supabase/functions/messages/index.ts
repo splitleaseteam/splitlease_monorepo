@@ -145,7 +145,10 @@ const authenticateUser = async (
 
     if (!authError && authUser) {
       console.log('[messages] ✅ Authenticated via Supabase JWT');
-      return ok({ id: authUser.id, email: authUser.email ?? "" });
+      // Extract bubbleId from user_metadata (set during signup)
+      const bubbleId = authUser.user_metadata?.user_id as string | undefined;
+      console.log('[messages] DEBUG: user_metadata.user_id (bubbleId):', bubbleId);
+      return ok({ id: authUser.id, email: authUser.email ?? "", bubbleId });
     }
 
     console.log('[messages] DEBUG: JWT auth failed:', authError?.message);
