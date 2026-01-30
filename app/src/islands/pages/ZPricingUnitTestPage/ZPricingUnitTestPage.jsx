@@ -17,6 +17,7 @@ import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
 import Section10PricingListGrid from './components/Section10PricingListGrid.jsx';
 import Section11WorkflowCheck from './components/Section11WorkflowCheck.jsx';
 import Section12DataValidation from './components/Section12DataValidation.jsx';
+import Header from '../../shared/Header.jsx';
 import './ZPricingUnitTestPage.css';
 
 // ─────────────────────────────────────────────────────────────
@@ -83,15 +84,19 @@ export default function ZPricingUnitTestPage() {
   }
 
   return (
-    <div className="zput-page">
-      {/* Alert Banner */}
-      <AlertBanner message={logic.alertMessage} />
+    <>
+      {/* Corporate Header */}
+      <Header />
 
-      {/* Header */}
-      <header className="zput-header">
-        <h1>Unit.Schedule.Selector | Pricing Unit Test</h1>
-        <p>Compare pricing calculations from workflows, database, and direct formulas.</p>
-      </header>
+      <div className="zput-page">
+        {/* Alert Banner */}
+        <AlertBanner message={logic.alertMessage} />
+
+        {/* Page Header */}
+        <header className="zput-header">
+          <h1>Unit.Schedule.Selector | Pricing Unit Test</h1>
+          <p>Compare pricing calculations from workflows, database, and direct formulas.</p>
+        </header>
 
       <div className="zput-layout">
         {/* ═══════════════════════════════════════════════════════════ */}
@@ -409,6 +414,7 @@ export default function ZPricingUnitTestPage() {
           />
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
