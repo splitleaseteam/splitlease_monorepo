@@ -829,6 +829,44 @@ export const routes = [
     internalName: 'manage-leases-payment-records-view',
     hasDynamicSegment: true,
     dynamicPattern: '/_manage-leases-payment-records/:leaseId'
+  },
+
+  // ===== CONTRACT GENERATOR PAGES =====
+  {
+    path: '/contracts/credit-card-auth',
+    file: 'contracts/credit-card-auth.html',
+    aliases: ['/contracts/credit-card-auth.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'credit-card-auth-view',
+    hasDynamicSegment: false
+  },
+  {
+    path: '/contracts/host-payout',
+    file: 'contracts/host-payout.html',
+    aliases: ['/contracts/host-payout.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'host-payout-view',
+    hasDynamicSegment: false
+  },
+  {
+    path: '/contracts/periodic-tenancy',
+    file: 'contracts/periodic-tenancy.html',
+    aliases: ['/contracts/periodic-tenancy.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'periodic-tenancy-view',
+    hasDynamicSegment: false
+  },
+  {
+    path: '/contracts/supplemental',
+    file: 'contracts/supplemental.html',
+    aliases: ['/contracts/supplemental.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'supplemental-view',
+    hasDynamicSegment: false
   }
 ];
 

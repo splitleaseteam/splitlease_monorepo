@@ -242,57 +242,59 @@ export const AllRatingLevels = {
 };
 
 // In Form Context
-export const InFormContext = {
-  render: () => {
-    const [ratings, setRatings] = useState({
-      cleanliness: 0,
-      communication: 0,
-      location: 0,
-      value: 0,
-    });
+const InFormContextWrapper = () => {
+  const [ratings, setRatings] = useState({
+    cleanliness: 0,
+    communication: 0,
+    location: 0,
+    value: 0,
+  });
 
-    return (
-      <div style={{
-        backgroundColor: 'white',
-        padding: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        maxWidth: '400px',
-      }}>
-        <h3 style={{ margin: '0 0 20px', color: '#1f2937', fontSize: '18px' }}>
-          Rate Your Experience
-        </h3>
+  return (
+    <div style={{
+      backgroundColor: 'white',
+      padding: '24px',
+      borderRadius: '12px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      maxWidth: '400px',
+    }}>
+      <h3 style={{ margin: '0 0 20px', color: '#1f2937', fontSize: '18px' }}>
+        Rate Your Experience
+      </h3>
 
-        {[
-          { key: 'cleanliness', label: 'Cleanliness' },
-          { key: 'communication', label: 'Communication' },
-          { key: 'location', label: 'Location' },
-          { key: 'value', label: 'Value' },
-        ].map(({ key, label }) => (
-          <div key={key} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            borderBottom: '1px solid #e5e7eb',
-          }}>
-            <span style={{ fontSize: '14px', color: '#374151' }}>{label}</span>
-            <StarRating
-              value={ratings[key]}
-              onChange={(value) => setRatings({ ...ratings, [key]: value })}
-              size="small"
-            />
-          </div>
-        ))}
-
-        <div style={{ marginTop: '20px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-            Average: {(Object.values(ratings).reduce((a, b) => a + b, 0) / 4).toFixed(1)} / 5
-          </p>
+      {[
+        { key: 'cleanliness', label: 'Cleanliness' },
+        { key: 'communication', label: 'Communication' },
+        { key: 'location', label: 'Location' },
+        { key: 'value', label: 'Value' },
+      ].map(({ key, label }) => (
+        <div key={key} style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 0',
+          borderBottom: '1px solid #e5e7eb',
+        }}>
+          <span style={{ fontSize: '14px', color: '#374151' }}>{label}</span>
+          <StarRating
+            value={ratings[key]}
+            onChange={(value) => setRatings({ ...ratings, [key]: value })}
+            size="small"
+          />
         </div>
+      ))}
+
+      <div style={{ marginTop: '20px', padding: '12px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
+          Average: {(Object.values(ratings).reduce((a, b) => a + b, 0) / 4).toFixed(1)} / 5
+        </p>
       </div>
-    );
-  },
+    </div>
+  );
+};
+
+export const InFormContext = {
+  render: () => <InFormContextWrapper />,
   parameters: {
     docs: {
       description: {

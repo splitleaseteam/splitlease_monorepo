@@ -49,6 +49,7 @@ import { showToast } from '../../shared/Toast.jsx';
 import { supabase } from '../../../lib/supabase.js';
 import { canConfirmSuggestedProposal, getNextStatusAfterConfirmation } from '../../../logic/rules/proposals/proposalRules.js';
 import { dismissProposal } from '../../shared/SuggestedProposals/suggestedProposalService.js';
+import LeaseCalendarSection from './LeaseCalendarSection.jsx';
 
 /**
  * Chevron icon for expand/collapse
@@ -1038,6 +1039,9 @@ export default function ExpandableProposalCard({
             proposal={proposal}
           />
 
+          {/* Lease Calendar Section - shows for activated leases */}
+          <LeaseCalendarSection proposal={proposal} />
+
           {/* Actions Row */}
           <div className="epc-actions-row">
             {/* VM status text (for disabled states) */}
@@ -1106,19 +1110,6 @@ export default function ExpandableProposalCard({
                 }}
               >
                 {buttonConfig.guestAction2.label}
-              </button>
-            )}
-
-            {/* Edit button */}
-            {!isTerminal && !isCompleted && (
-              <button
-                className="epc-btn epc-btn--ghost"
-                onClick={() => {
-                  setProposalDetailsModalInitialView('pristine');
-                  setShowProposalDetailsModal(true);
-                }}
-              >
-                Edit
               </button>
             )}
 

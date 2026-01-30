@@ -107,13 +107,13 @@ export async function handleCreate(
     Name?: string;
     'House manual'?: string;
     'users with permission'?: string[];
-    'cancellation policy'?: string;
+    'Cancellation Policy'?: string;
   } | null = null;
 
   if (proposalData.Listing) {
     const { data: listing, error: listingError } = await supabase
       .from('listing')
-      .select('_id, Name, "House manual", "users with permission", "cancellation policy"')
+      .select('_id, Name, "House manual", "users with permission", "Cancellation Policy"')
       .eq('_id', proposalData.Listing)
       .single();
 
@@ -199,6 +199,11 @@ export async function handleCreate(
   // - 'Reservation Period : Start' (NOT 'Move In Date')
   // - 'Reservation Period : End' (NOT 'Move-out')
   // - 'rental type' column does NOT exist in bookings_leases
+  // FK CONSTRAINTS (2026-01-28):
+  // - 'Cancellation Policy' → zat_features_cancellationpolicy._id (use null if no valid FK, NOT text!)
+  // - 'Listing' → listing._id
+  // - 'Proposal' → proposal._id
+  // - 'Created By' → user._id
   const leaseRecord: Partial<LeaseData> = {
     _id: leaseId,
     'Agreement Number': agreementNumber,
@@ -207,7 +212,8 @@ export async function handleCreate(
     Host: proposalData['Host User'],
     Listing: proposalData.Listing,
     Participants: [proposalData.Guest, proposalData['Host User']],
-    'Cancellation Policy': listingData?.['cancellation policy'] || 'Standard',
+    // FK CONSTRAINT: Must be valid _id from zat_features_cancellationpolicy or null
+    'Cancellation Policy': listingData?.['Cancellation Policy'] || null,
     'First Payment Date': firstPaymentDate,
     'Reservation Period : Start': activeTerms.moveInDate,
     'Reservation Period : End': moveOutDate,

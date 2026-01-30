@@ -159,16 +159,24 @@ export async function sendWelcomeEmail(
   const bodyText = `${greeting}<br><br>${bodyContent}`;
 
   return sendEmail({
-    templateId: EMAIL_TEMPLATES.BASIC_EMAIL,
+    templateId: EMAIL_TEMPLATES.MAGIC_LOGIN_LINK, // Using working template (BASIC_EMAIL has corrupted JSON)
     toEmail: email,
     toName: firstName,
     subject,
     variables: {
-      // Note: Template uses space-delimited placeholders like $$body text$$
-      // The send.ts normalizeVariableNames() converts these automatically
-      body_intro: bodyText,
-      button_text: 'Verify Email',
-      button_url: verificationLink,
+      // MAGIC_LOGIN_LINK template uses different variable names
+      toemail: email,
+      fromemail: 'no-reply@split.lease',
+      fromname: 'Split Lease',
+      subject: subject,
+      preheadertext: userType === 'Guest'
+        ? 'Welcome! Verify your email to start finding flexible rentals.'
+        : 'Welcome! Verify your email to start hosting your space.',
+      title: userType === 'Guest' ? 'Welcome to Split Lease!' : 'Welcome to Split Lease!',
+      bodytext: bodyText.replace(/<br>/g, ' '), // Convert <br> to spaces for plain text
+      buttontext: 'Verify Email',
+      buttonurl: verificationLink,
+      footermessage: 'Thank you for joining Split Lease!',
     },
   });
 }

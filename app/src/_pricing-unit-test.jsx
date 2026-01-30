@@ -8,7 +8,6 @@
  * Auth: None (internal test page)
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ZPricingUnitTestPage from './islands/pages/ZPricingUnitTestPage/ZPricingUnitTestPage.jsx';
 

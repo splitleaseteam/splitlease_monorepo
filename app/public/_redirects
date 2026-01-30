@@ -378,5 +378,21 @@
 /emergency-form  /_internal/report-emergency-view  200
 /emergency-form/  /_internal/report-emergency-view  200
 
+# /contracts/credit-card-auth → contracts/credit-card-auth.html
+/contracts/credit-card-auth  /_internal/credit-card-auth-view  200
+/contracts/credit-card-auth/  /_internal/credit-card-auth-view  200
+
+# /contracts/host-payout → contracts/host-payout.html
+/contracts/host-payout  /_internal/host-payout-view  200
+/contracts/host-payout/  /_internal/host-payout-view  200
+
+# /contracts/periodic-tenancy → contracts/periodic-tenancy.html
+/contracts/periodic-tenancy  /_internal/periodic-tenancy-view  200
+/contracts/periodic-tenancy/  /_internal/periodic-tenancy-view  200
+
+# /contracts/supplemental → contracts/supplemental.html
+/contracts/supplemental  /_internal/supplemental-view  200
+/contracts/supplemental/  /_internal/supplemental-view  200
+
 # Note: Cloudflare Pages automatically serves /404.html for not found routes
 # No explicit catch-all rule needed - native 404.html support handles this

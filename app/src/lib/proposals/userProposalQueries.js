@@ -501,10 +501,11 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (proposalIdsForSummaries.length > 0) {
     // First, fetch threads for all proposals
+    // Note: Use unquoted column name for .in() filter - Supabase JS client handles quoting
     const { data: threadsData, error: threadsError } = await supabase
       .from('thread')
       .select('_id, "Proposal"')
-      .in('"Proposal"', proposalIdsForSummaries);
+      .in('Proposal', proposalIdsForSummaries);
 
     if (threadsError) {
       console.error('fetchProposalsByIds: Error fetching threads:', threadsError);
