@@ -9,7 +9,7 @@
 
 import PropTypes from 'prop-types';
 
-export default function Section11WorkflowCheck({
+export default function Section7WorkflowCheck({
   comparisonResults,
   onRunChecks,
   isUpdating
@@ -89,7 +89,7 @@ export default function Section11WorkflowCheck({
   );
 }
 
-Section11WorkflowCheck.propTypes = {
+Section7WorkflowCheck.propTypes = {
   comparisonResults: PropTypes.shape({
     fourWeekRent: PropTypes.shape({
       workflow: PropTypes.number,
@@ -116,6 +116,6 @@ Section11WorkflowCheck.propTypes = {
   isUpdating: PropTypes.bool
 };
 
-Section11WorkflowCheck.defaultProps = {
+Section7WorkflowCheck.defaultProps = {
   isUpdating: false
 };

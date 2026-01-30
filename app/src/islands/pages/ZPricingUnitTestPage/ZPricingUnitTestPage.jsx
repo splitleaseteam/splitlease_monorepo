@@ -14,9 +14,9 @@
 
 import { useZPricingUnitTestPageLogic } from './useZPricingUnitTestPageLogic.js';
 import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
-import Section10PricingListGrid from './components/Section10PricingListGrid.jsx';
-import Section11WorkflowCheck from './components/Section11WorkflowCheck.jsx';
-import Section12DataValidation from './components/Section12DataValidation.jsx';
+import Section6PricingListGrid from './components/Section6PricingListGrid.jsx';
+import Section7WorkflowCheck from './components/Section7WorkflowCheck.jsx';
+import Section8DataValidation from './components/Section8DataValidation.jsx';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader.jsx';
 import './ZPricingUnitTestPage.css';
 
@@ -213,7 +213,7 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 2: Sections 3, 5, 8 (Core pricing info) */}
+        {/* ROW 2: Sections 3, 4, 5 (Core pricing info) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row zput-row--three">
           {/* Section 3: Host Prices */}
@@ -274,9 +274,9 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 5: Prorated Rates */}
+          {/* Section 4: Prorated Rates */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 5: Prorated Rates</span>
+            <span className="zput-card-title">Section 4: Prorated Rates</span>
 
             <div className="zput-prorated-grid zput-prorated-grid--vertical">
               <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Monthly')}>
@@ -307,9 +307,9 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 8: Reservation Span Info */}
+          {/* Section 5: Reservation Span Info */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 8: Reservation Span</span>
+            <span className="zput-card-title">Section 5: Reservation Span</span>
 
             <div className="zput-span-info">
               <div className="span-item">
@@ -335,10 +335,10 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 3: Section 10 (Pricing List Grid - full width) */}
+        {/* ROW 3: Section 6 (Pricing List Grid - full width) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row zput-row--full">
-          <Section10PricingListGrid
+          <Section6PricingListGrid
             pricingList={logic.pricingList}
             listing={logic.selectedListing}
             onUpdatePricingList={logic.handleUpdatePricingList}
@@ -348,27 +348,27 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 4: Sections 11 & 12 (Workflow Check & Validation) */}
+        {/* ROW 4: Sections 7 & 8 (Workflow Check & Validation) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row">
-          <Section11WorkflowCheck
+          <Section7WorkflowCheck
             comparisonResults={logic.comparisonResults}
             onRunChecks={logic.handleRunChecks}
             isUpdating={logic.isUpdating}
           />
 
-          <Section12DataValidation
+          <Section8DataValidation
             validationFlags={logic.validationFlags}
           />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 5: Sections 4 & 9 (Reference info - bottom) */}
+        {/* ROW 5: Sections 9 & 10 (Reference info - bottom) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row">
-          {/* Section 4: Host Guidelines */}
+          {/* Section 9: Host Guidelines */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 4: Host Guidelines</span>
+            <span className="zput-card-title">Section 9: Host Guidelines</span>
 
             <div className="zput-guidelines-grid">
               <div className="zput-guideline-item">
@@ -390,9 +390,9 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 9: ZAT Price Configuration */}
+          {/* Section 10: ZAT Price Configuration */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 9: ZAT Config</span>
+            <span className="zput-card-title">Section 10: ZAT Config</span>
 
             {logic.zatConfig ? (
               <div className="zput-config-list">

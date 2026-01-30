@@ -13,7 +13,7 @@
 
 import PropTypes from 'prop-types';
 
-export default function Section12DataValidation({ validationFlags }) {
+export default function Section8DataValidation({ validationFlags }) {
   const checks = [
     { key: 'priceExists', label: 'Price Exists', description: 'Pricing list has valid prices' },
     { key: 'rentalTypeSelected', label: 'Rental Type Selected', description: 'Listing has a rental type' },
@@ -62,7 +62,7 @@ export default function Section12DataValidation({ validationFlags }) {
   );
 }
 
-Section12DataValidation.propTypes = {
+Section8DataValidation.propTypes = {
   validationFlags: PropTypes.shape({
     priceExists: PropTypes.bool,
     rentalTypeSelected: PropTypes.bool,
