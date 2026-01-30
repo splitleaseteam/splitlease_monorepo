@@ -150,7 +150,7 @@ export function useZPricingUnitTestPageLogic() {
     return listings.filter(listing =>
       listing._id?.toLowerCase().includes(query) ||
       listing.Name?.toLowerCase().includes(query) ||
-      listing.hostEmail?.toLowerCase().includes(query)
+      listing['Host email']?.toLowerCase().includes(query)
     );
   }, [listings, searchQuery]);
 
@@ -210,10 +210,9 @@ export function useZPricingUnitTestPageLogic() {
         .from('listing')
         .select(`
           _id,
-          Name,
+          "Name",
           "rental type",
           "Weeks offered",
-          "Host Comp Style",
           "💰Nightly Host Rate for 2 nights",
           "💰Nightly Host Rate for 3 nights",
           "💰Nightly Host Rate for 4 nights",
@@ -228,16 +227,16 @@ export function useZPricingUnitTestPageLogic() {
           "Minimum Weeks",
           "Maximum Weeks",
           "# of nights available",
-          "Nights_Available",
+          "Nights Available (List of Nights) ",
           "Days Available (List of Days)",
           pricing_list,
-          Active,
-          Complete,
-          Approved,
-          hostEmail
+          "Active",
+          "Complete",
+          "Approved",
+          "Host email"
         `)
-        .eq('Deleted', false)
-        .order('Modified Date', { ascending: false })
+        .eq('"Deleted"', false)
+        .order('"Modified Date"', { ascending: false })
         .limit(500);
 
       if (error) throw error;
@@ -310,10 +309,9 @@ export function useZPricingUnitTestPageLogic() {
         .from('listing')
         .select(`
           _id,
-          Name,
+          "Name",
           "rental type",
           "Weeks offered",
-          "Host Comp Style",
           "💰Nightly Host Rate for 2 nights",
           "💰Nightly Host Rate for 3 nights",
           "💰Nightly Host Rate for 4 nights",
@@ -328,12 +326,12 @@ export function useZPricingUnitTestPageLogic() {
           "Minimum Weeks",
           "Maximum Weeks",
           "# of nights available",
-          "Nights_Available",
+          "Nights Available (List of Nights) ",
           "Days Available (List of Days)",
           pricing_list,
-          Active,
-          Complete,
-          Approved
+          "Active",
+          "Complete",
+          "Approved"
         `)
         .eq('_id', listingId)
         .single();
@@ -358,7 +356,7 @@ export function useZPricingUnitTestPageLogic() {
     }
 
     setHostRates({
-      hostCompStyle: listing['Host Comp Style'] || listing['rental type'] || '',
+      hostCompStyle: listing['rental type'] || '',
       weeksOffered: listing['Weeks offered'] || 'Every week',
       rate2Night: parseFloat(listing['💰Nightly Host Rate for 2 nights']) || 0,
       rate3Night: parseFloat(listing['💰Nightly Host Rate for 3 nights']) || 0,
@@ -374,7 +372,7 @@ export function useZPricingUnitTestPageLogic() {
       minWeeks: listing['Minimum Weeks'],
       maxWeeks: listing['Maximum Weeks'],
       nightsPerWeek: listing['# of nights available'] || 7,
-      nightsAvailable: parseArrayField(listing['Nights_Available'])
+      nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) '])
     });
   }
 
@@ -677,7 +675,7 @@ function buildScheduleListing(listing) {
     maximumWeeks: listing['Maximum Weeks'] || 52,
     nightsPerWeek: listing['# of nights available'] || 7,
     daysAvailable: parseArrayField(listing['Days Available (List of Days)']) || [0, 1, 2, 3, 4, 5, 6],
-    nightsAvailable: parseArrayField(listing['Nights_Available']) || []
+    nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) ']) || []
   };
 }
 

@@ -29,10 +29,12 @@ Open PowerShell as Administrator and run:
 ```powershell
 $Action = New-ScheduledTaskAction -Execute 'C:\Users\Split Lease\bulk-pricing-fix.bat'
 $Trigger = New-ScheduledTaskTrigger -Once -At '2026-01-30 04:00:00'
-$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -WakeToRun
 $Principal = New-ScheduledTaskPrincipal -UserId "$env:USERNAME" -LogonType Interactive -RunLevel Highest
 Register-ScheduledTask -TaskName 'SplitLease-BulkPricingListFix' -Action $Action -Trigger $Trigger -Settings $Settings -Principal $Principal -Force
 ```
+
+**IMPORTANT:** The `-WakeToRun` flag ensures the computer wakes from sleep to run the task.
 
 ---
 

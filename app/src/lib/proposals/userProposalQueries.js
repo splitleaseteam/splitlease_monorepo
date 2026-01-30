@@ -15,10 +15,10 @@ import { supabase } from '../supabase.js';
 import { getUserIdFromSession, getProposalIdFromQuery } from './urlParser.js';
 
 /**
- * STEP 1: Fetch user data with Proposals List
+ * STEP 1: Fetch user data
  *
  * @param {string} userId - User ID from URL path
- * @returns {Promise<Object>} User object with Proposals List
+ * @returns {Promise<Object>} User object
  */
 export async function fetchUserWithProposalList(userId) {
   // Use .maybeSingle() instead of .single() to avoid 406 error when no rows found
@@ -30,8 +30,7 @@ export async function fetchUserWithProposalList(userId) {
       "Name - Last",
       "Name - Full",
       "Profile Photo",
-      "email as text",
-      "Proposals List"
+      "email as text"
     `)
     .eq('_id', userId)
     .maybeSingle();
@@ -51,24 +50,29 @@ export async function fetchUserWithProposalList(userId) {
 }
 
 /**
- * STEP 2: Extract proposal IDs from user's Proposals List
+ * STEP 2: Fetch proposal IDs for a guest user by querying the proposal table directly
+ * This ensures data integrity and avoids missing proposals due to Proposals List sync issues
  *
- * After migration, Proposals List is a native text[] array.
- * Supabase client returns text[] as JavaScript array directly.
- *
- * @param {Object} user - User object with Proposals List
- * @returns {Array<string>} Array of proposal IDs
+ * @param {string} userId - User ID
+ * @returns {Promise<Array<string>>} Array of proposal IDs
  */
-export function extractProposalIds(user) {
-  const proposalsList = user['Proposals List'];
+export async function extractProposalIds(userId) {
+  // Query proposals directly by Guest field
+  const { data, error } = await supabase
+    .from('proposal')
+    .select('_id')
+    .eq('Guest', userId)
+    .or('"Deleted".is.null,"Deleted".eq.false')
+    .neq('Status', 'Proposal Cancelled by Guest');
 
-  if (!proposalsList || !Array.isArray(proposalsList)) {
-    console.warn('extractProposalIds: User has no Proposals List or invalid format');
+  if (error) {
+    console.error('extractProposalIds: Error fetching proposal IDs:', error);
     return [];
   }
 
-  console.log(`extractProposalIds: Extracted ${proposalsList.length} proposal IDs from user's Proposals List`);
-  return proposalsList;
+  const proposalIds = (data || []).map(p => p._id);
+  console.log(`extractProposalIds: Found ${proposalIds.length} proposal IDs for guest ${userId}`);
+  return proposalIds;
 }
 
 /**
@@ -654,15 +658,15 @@ export async function fetchUserProposalsFromUrl() {
     throw new Error('NOT_AUTHENTICATED');
   }
 
-  // Step 2: Fetch user data with Proposals List
+  // Step 2: Fetch user data
   const user = await fetchUserWithProposalList(userId);
 
-  // Step 3: Extract proposal IDs from user's Proposals List
-  const proposalIds = extractProposalIds(user);
+  // Step 3: Fetch proposal IDs by querying proposal table directly
+  const proposalIds = await extractProposalIds(userId);
 
   // Handle case where user has no proposals
   if (proposalIds.length === 0) {
-    console.log('fetchUserProposalsFromUrl: User has no proposal IDs in their Proposals List');
+    console.log('fetchUserProposalsFromUrl: User has no proposals');
     return {
       user,
       proposals: [],
@@ -674,7 +678,7 @@ export async function fetchUserProposalsFromUrl() {
   const proposals = await fetchProposalsByIds(proposalIds, userId);
 
   if (proposals.length === 0) {
-    console.log('fetchUserProposalsFromUrl: No valid proposals found (all IDs may be orphaned)');
+    console.log('fetchUserProposalsFromUrl: No valid proposals found (all IDs may be filtered out)');
     return {
       user,
       proposals: [],
