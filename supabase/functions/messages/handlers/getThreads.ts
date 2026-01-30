@@ -23,6 +23,9 @@ interface Thread {
   is_with_splitbot: boolean;
   host_user_id: string;
   guest_user_id: string;
+  proposal_id?: string;
+  proposal_status?: string;
+  has_pending_proposal: boolean;
 }
 
 interface GetThreadsResult {
@@ -172,6 +175,31 @@ export async function handleGetThreads(
     }
   }
 
+  // Step 5b: Fetch proposal data for threads with proposals
+  // This enables hosts to see which threads have pending proposals
+  const proposalIds = new Set<string>();
+  threads.forEach(thread => {
+    if (thread['Proposal']) proposalIds.add(thread['Proposal']);
+  });
+
+  let proposalMap: Record<string, { status: string }> = {};
+  if (proposalIds.size > 0) {
+    const { data: proposals, error: proposalsError } = await supabaseAdmin
+      .from('proposal')
+      .select('_id, "Status"')
+      .in('_id', Array.from(proposalIds));
+
+    if (!proposalsError && proposals) {
+      proposalMap = proposals.reduce((acc, proposal) => {
+        acc[proposal._id] = {
+          status: proposal['Status'] || 'unknown',
+        };
+        return acc;
+      }, {} as Record<string, { status: string }>);
+    }
+    console.log('[getThreads] Fetched proposal data for', Object.keys(proposalMap).length, 'proposals');
+  }
+
   // Step 6: Transform threads to UI format
   const transformedThreads: Thread[] = threads.map(thread => {
     const hostId = thread.host_user_id;
@@ -196,6 +224,22 @@ export async function handleGetThreads(
       lastMessageTime = modifiedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
+    // Get proposal data if thread has a proposal
+    const proposalId = thread['Proposal'];
+    const proposalData = proposalId ? proposalMap[proposalId] : null;
+    const proposalStatus = proposalData?.status;
+
+    // Determine if this is a pending proposal that needs host attention
+    // Pending statuses that require host review:
+    const pendingStatuses = [
+      'Proposal Pending',
+      'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
+      'Proposal Submitted for guest by Split Lease - Pending Confirmation',
+      'Counter Proposal Sent',
+      'Counter Proposal Pending'
+    ];
+    const hasPendingProposal = proposalStatus ? pendingStatuses.includes(proposalStatus) : false;
+
     return {
       _id: thread._id,
       host_user_id: hostId,
@@ -207,6 +251,9 @@ export async function handleGetThreads(
       last_message_time: lastMessageTime,
       unread_count: unreadCountMap[thread._id] || 0,
       is_with_splitbot: false,
+      proposal_id: proposalId,
+      proposal_status: proposalStatus,
+      has_pending_proposal: hasPendingProposal,
     };
   });
 

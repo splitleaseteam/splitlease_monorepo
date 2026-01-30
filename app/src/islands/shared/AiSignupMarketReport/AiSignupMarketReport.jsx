@@ -725,20 +725,10 @@ async function submitSignup(data) {
       console.warn('[AiSignupMarketReport] ⚠️ No user ID for queuing profile parsing');
     }
 
-    // ========== STEP 4: Send Welcome Communications (SYNCHRONOUS - Fire Immediately) ==========
-    // CRITICAL: This MUST be synchronous - page reloads at 4 seconds
-    // fetch({ keepalive: true }) only survives if the fetch is INITIATED before reload
-    console.log('[AiSignupMarketReport] Step 4: Sending welcome communications (synchronous)...');
-
-    // Fire immediately - all fetch calls use keepalive:true to survive page reload
-    sendWelcomeCommunications({
-      email: data.email,
-      phone: data.phone,
-      name: extractedName,
-      password: generatedPassword,
-      freeformText: data.marketResearchText,
-    });
-    console.log('[AiSignupMarketReport] ✅ Welcome communications fired (fetch requests initiated)');
+    // ========== STEP 4: Welcome emails now sent from backend ==========
+    // The ai-signup-guest Edge Function now handles welcome emails
+    // This ensures emails are awaited properly and not cancelled by Deno Edge Function termination
+    console.log('[AiSignupMarketReport] Step 4: Welcome emails handled by backend Edge Function');
 
     return {
       success: true,

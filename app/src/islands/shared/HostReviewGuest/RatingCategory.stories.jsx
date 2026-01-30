@@ -191,61 +191,63 @@ export const AllScaleLabels = {
 };
 
 // Full Review Form
-export const FullReviewForm = {
-  render: () => {
-    const [ratings, setRatings] = useState({
-      cleanliness: 0,
-      communication: 0,
-      houseRules: 0,
-      overall: 0,
-    });
+const FullReviewFormWrapper = () => {
+  const [ratings, setRatings] = useState({
+    cleanliness: 0,
+    communication: 0,
+    houseRules: 0,
+    overall: 0,
+  });
 
-    const categories = [
-      { key: 'cleanliness', ...cleanlinessCategory },
-      { key: 'communication', ...communicationCategory },
-      { key: 'houseRules', ...houseRulesCategory },
-      { key: 'overall', ...overallCategory },
-    ];
+  const categories = [
+    { key: 'cleanliness', ...cleanlinessCategory },
+    { key: 'communication', ...communicationCategory },
+    { key: 'houseRules', ...houseRulesCategory },
+    { key: 'overall', ...overallCategory },
+  ];
 
-    const handleRatingChange = (key) => (value) => {
-      setRatings((prev) => ({ ...prev, [key]: value }));
-    };
+  const handleRatingChange = (key) => (value) => {
+    setRatings((prev) => ({ ...prev, [key]: value }));
+  };
 
-    const filledCount = Object.values(ratings).filter((v) => v > 0).length;
-    const averageRating = filledCount > 0
-      ? (Object.values(ratings).reduce((a, b) => a + b, 0) / filledCount).toFixed(1)
-      : '0.0';
+  const filledCount = Object.values(ratings).filter((v) => v > 0).length;
+  const averageRating = filledCount > 0
+    ? (Object.values(ratings).reduce((a, b) => a + b, 0) / filledCount).toFixed(1)
+    : '0.0';
 
-    return (
-      <div>
-        <h3 style={{ margin: '0 0 24px', color: '#1f2937', fontSize: '18px' }}>
-          Review Your Guest
-        </h3>
+  return (
+    <div>
+      <h3 style={{ margin: '0 0 24px', color: '#1f2937', fontSize: '18px' }}>
+        Review Your Guest
+      </h3>
 
-        {categories.map((category) => (
-          <div key={category.key} style={{ marginBottom: '24px' }}>
-            <RatingCategory
-              category={{ title: category.title, question: category.question }}
-              value={ratings[category.key]}
-              onChange={handleRatingChange(category.key)}
-            />
-          </div>
-        ))}
-
-        <div style={{
-          marginTop: '24px',
-          padding: '16px',
-          backgroundColor: '#f5f3ff',
-          borderRadius: '8px',
-        }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#5b21b6' }}>
-            <strong>Summary:</strong> {filledCount}/4 categories rated
-            {filledCount > 0 && ` | Average: ${averageRating} stars`}
-          </p>
+      {categories.map((category) => (
+        <div key={category.key} style={{ marginBottom: '24px' }}>
+          <RatingCategory
+            category={{ title: category.title, question: category.question }}
+            value={ratings[category.key]}
+            onChange={handleRatingChange(category.key)}
+          />
         </div>
+      ))}
+
+      <div style={{
+        marginTop: '24px',
+        padding: '16px',
+        backgroundColor: '#f5f3ff',
+        borderRadius: '8px',
+      }}>
+        <p style={{ margin: 0, fontSize: '14px', color: '#5b21b6' }}>
+          <strong>Summary:</strong> {filledCount}/4 categories rated
+          {filledCount > 0 && ` | Average: ${averageRating} stars`}
+        </p>
       </div>
-    );
-  },
+    </div>
+  );
+};
+
+export const FullReviewForm = {
+  render: () => <FullReviewFormWrapper />,
   parameters: {
     docs: {
       description: {

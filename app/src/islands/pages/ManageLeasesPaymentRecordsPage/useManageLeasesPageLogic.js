@@ -129,8 +129,38 @@ export function useManageLeasesPageLogic({ showToast }) {
       const searchParam = urlParams.get('search');
 
       // If search param is provided (e.g., from ProposalManagePage), pre-populate search
+      // and auto-select if exactly 1 lease matches
       if (searchParam) {
         setSearchQuery(searchParam);
+
+        // Filter leases by search param to check for auto-selection
+        const query = searchParam.toLowerCase();
+        const matchingLeases = adapted.filter(lease => {
+          return (
+            lease.id?.toLowerCase().includes(query) ||
+            lease.proposalId?.toLowerCase().includes(query) ||
+            lease.agreementNumber?.toLowerCase().includes(query) ||
+            lease.guest?.email?.toLowerCase().includes(query) ||
+            lease.guest?.fullName?.toLowerCase().includes(query) ||
+            lease.guest?.firstName?.toLowerCase().includes(query) ||
+            lease.guest?.lastName?.toLowerCase().includes(query) ||
+            lease.guest?.phone?.includes(query) ||
+            lease.host?.email?.toLowerCase().includes(query) ||
+            lease.host?.fullName?.toLowerCase().includes(query) ||
+            lease.listing?.name?.toLowerCase().includes(query) ||
+            lease.listing?.address?.toLowerCase().includes(query)
+          );
+        });
+
+        // Auto-select if exactly 1 lease matches the search
+        if (matchingLeases.length === 1) {
+          const matchedLease = matchingLeases[0];
+          setSelectedLease(matchedLease);
+          await fetchLeaseDetails(matchedLease.id);
+          // Update URL to include lease ID
+          window.history.pushState({}, '', `/_manage-leases-payment-records/${matchedLease.id}`);
+          return; // Skip leaseId check since we already selected
+        }
       }
 
       if (leaseId) {
