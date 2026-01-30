@@ -101,6 +101,12 @@ test-results/
 playwright-report/
 .playwright/
 
+# E2E test auth storage states (contains session tokens)
+e2e/.auth/
+
+# E2E test environment (contains service role key)
+.env.test
+
 # Note: bun.lock files are tracked for reproducible builds
 
 # Agent Context and Tools directories

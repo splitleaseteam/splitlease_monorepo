@@ -3,11 +3,24 @@
  *
  * Split Lease E2E Testing Framework
  * Covers all page components with comprehensive test scenarios
+ *
+ * Features:
+ * - Global setup/teardown for user creation and data seeding
+ * - Pre-authenticated storage states for different user types
+ * - Cross-browser testing (Chrome, Firefox, Safari, Mobile)
  */
 
 import { defineConfig, devices } from '@playwright/test';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-const baseURL = process.env.BASE_URL || 'http://localhost:8000';
+// Load environment variables from .env.test
+dotenv.config({ path: path.resolve(__dirname, '..', '.env.test') });
+
+// Fallback to .env if .env.test doesn't exist
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+
+const baseURL = process.env.E2E_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
 
 export default defineConfig({
   testDir: './tests',
@@ -23,6 +36,10 @@ export default defineConfig({
 
   // Limit workers on CI
   workers: process.env.CI ? 1 : undefined,
+
+  // Global setup and teardown
+  globalSetup: require.resolve('./global-setup'),
+  globalTeardown: require.resolve('./global-teardown'),
 
   // Reporter configuration
   reporter: [
@@ -70,7 +87,7 @@ export default defineConfig({
 
   // Projects for different browsers and viewports
   projects: [
-    // Desktop Chrome
+    // Desktop Chrome (primary)
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
