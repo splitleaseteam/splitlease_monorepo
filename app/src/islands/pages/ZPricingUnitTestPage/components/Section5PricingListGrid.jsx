@@ -114,7 +114,7 @@ export default function Section5PricingListGrid({
           </div>
           <div className="summary-item">
             <span className="summary-label">Rental Type:</span>
-            <span className="summary-value">{pricingList.rentalType || listing?.['rental type'] || '-'}</span>
+            <span className="summary-value">{listing?.['rental type'] || pricingList.rentalType || '-'}</span>
           </div>
         </div>
       )}
