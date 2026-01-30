@@ -496,7 +496,9 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
     setErrors({});
 
     // Validate we have the host user ID
-    if (!listing.host?.userId) {
+    // The listing table has "Host / Landlord" field directly, not nested under host object
+    const hostUserId = listing['Host / Landlord'] || listing.host?.userId;
+    if (!hostUserId) {
       setErrors({
         submit: 'Host information unavailable. Please try again later.'
       });
@@ -511,7 +513,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
       if (session) {
         // Authenticated user: send via native messaging
         console.log('[ContactHostMessaging] Sending authenticated message', {
-          recipient_user_id: listing.host?.userId,
+          recipient_user_id: hostUserId,
           listing_id: listing.id,
           message_body_length: formData.message.length
         });
@@ -520,7 +522,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
           body: {
             action: 'send_message',
             payload: {
-              recipient_user_id: listing.host.userId,
+              recipient_user_id: hostUserId,
               listing_id: listing.id,
               message_body: formData.message.trim(),
               send_welcome_messages: true
@@ -566,7 +568,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
         console.log('[ContactHostMessaging] Sending guest inquiry', {
           sender_name: formData.userName,
           sender_email: formData.email,
-          recipient_user_id: listing.host?.userId,
+          recipient_user_id: hostUserId,
           listing_id: listing.id,
           message_body_length: formData.message.length
         });
@@ -577,7 +579,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
             payload: {
               sender_name: formData.userName.trim(),
               sender_email: formData.email.trim(),
-              recipient_user_id: listing.host.userId,
+              recipient_user_id: hostUserId,
               listing_id: listing.id,
               message_body: formData.message.trim()
             }
