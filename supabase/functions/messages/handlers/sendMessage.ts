@@ -186,6 +186,20 @@ export async function handleSendMessage(
       throw new ValidationError('Recipient user not found. The listing host may no longer be active.');
     }
 
+    // Validate listing exists if listing_id is provided
+    if (typedPayload.listing_id) {
+      const { data: listing, error: listingError } = await supabaseAdmin
+        .from('listing')
+        .select('_id')
+        .eq('_id', typedPayload.listing_id)
+        .maybeSingle();
+
+      if (listingError || !listing) {
+        console.error('[sendMessage] Listing not found:', typedPayload.listing_id, 'error:', listingError?.message);
+        throw new ValidationError('Listing not found. It may have been removed.');
+      }
+    }
+
     threadId = await findExistingThread(
       supabaseAdmin,
       recipientId,
@@ -204,30 +218,53 @@ export async function handleSendMessage(
 
     if (!threadId) {
       console.log('[sendMessage] Creating new thread...');
-      threadId = await createThread(supabaseAdmin, {
-        hostUserId: recipientId,
-        guestUserId: senderBubbleId,
-        listingId: typedPayload.listing_id,
-        createdBy: senderBubbleId,
-      });
-      isNewThread = true;
-      console.log('[sendMessage] Created new thread:', threadId);
+      try {
+        threadId = await createThread(supabaseAdmin, {
+          hostUserId: recipientId,
+          guestUserId: senderBubbleId,
+          listingId: typedPayload.listing_id,
+          createdBy: senderBubbleId,
+        });
+        isNewThread = true;
+        console.log('[sendMessage] Created new thread:', threadId);
+      } catch (threadError) {
+        // Log the full error for debugging
+        console.error('[sendMessage] Thread creation failed:', threadError);
+
+        // Check for FK constraint violations
+        const errorMsg = threadError instanceof Error ? threadError.message : String(threadError);
+        if (errorMsg.includes('foreign key') || errorMsg.includes('23503')) {
+          throw new ValidationError('Unable to create conversation. There may be an issue with the listing or host account. Please contact support.');
+        }
+
+        // Re-throw with a more user-friendly message
+        throw new ValidationError('Failed to create conversation. Please try again or contact support.');
+      }
     } else {
       console.log('[sendMessage] Found existing thread:', threadId);
     }
   }
 
   console.log('[sendMessage] Creating message in thread:', threadId);
-  const messageId = await createMessage(supabaseAdmin, {
-    threadId,
-    messageBody: typedPayload.message_body.trim(),
-    senderUserId: senderBubbleId,
-    isSplitBot: typedPayload.splitbot || false,
-    callToAction: typedPayload.call_to_action,
-    splitBotWarning: typedPayload.split_bot_warning,
-  });
+  try {
+    const messageId = await createMessage(supabaseAdmin, {
+      threadId,
+      messageBody: typedPayload.message_body.trim(),
+      senderUserId: senderBubbleId,
+      isSplitBot: typedPayload.splitbot || false,
+      callToAction: typedPayload.call_to_action,
+      splitBotWarning: typedPayload.split_bot_warning,
+    });
 
-  console.log('[sendMessage] Message created:', messageId);
+    console.log('[sendMessage] Message created:', messageId);
+  } catch (messageError) {
+    console.error('[sendMessage] Message creation failed:', messageError);
+    const errorMsg = messageError instanceof Error ? messageError.message : String(messageError);
+    if (errorMsg.includes('foreign key') || errorMsg.includes('23503')) {
+      throw new ValidationError('Unable to send message. The conversation may have been deleted.');
+    }
+    throw new ValidationError('Failed to send message. Please try again.');
+  }
 
   let welcomeMessagesSent = false;
   if (isNewThread && typedPayload.send_welcome_messages && recipientId) {
