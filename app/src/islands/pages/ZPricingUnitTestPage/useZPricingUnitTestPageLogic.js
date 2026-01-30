@@ -402,19 +402,29 @@ export function useZPricingUnitTestPageLogic() {
 
     try {
       setIsUpdating(true);
-      const response = await fetch('/api/pricing-list', {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      // Call the pricing-list Edge Function to create/recalculate pricing
+      const response = await fetch(`${supabaseUrl}/functions/v1/pricing-list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'recalculate',
-          payload: { listing_id: selectedListing._id }
+          action: 'create',
+          payload: {
+            listing_id: selectedListing._id,
+            user_id: 'admin-test',
+            unit_markup: selectedListing['💰Unit Markup'] || 0
+          }
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update pricing list');
+        const errorText = await response.text();
+        throw new Error(`Failed to update pricing list (${response.status}): ${errorText}`);
       }
+
+      const result = await response.json();
+      console.log('[Workflow 3] Pricing list response:', result);
 
       // Reload pricing list
       await loadPricingList(selectedListing._id);
@@ -435,16 +445,29 @@ export function useZPricingUnitTestPageLogic() {
 
     try {
       setIsUpdating(true);
-      const response = await fetch('/api/pricing-list', {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      // Call the pricing-list Edge Function with recalculate action
+      const response = await fetch(`${supabaseUrl}/functions/v1/pricing-list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'recalculate',
-          payload: { listing_id: selectedListing._id }
+          payload: {
+            listing_id: selectedListing._id,
+            user_id: 'admin-test',
+            unit_markup: selectedListing['💰Unit Markup'] || 0
+          }
         })
       });
 
-      if (!response.ok) throw new Error('Failed to update starting nightly');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update starting nightly (${response.status}): ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('[Workflow 4/5] Starting nightly response:', result);
 
       await loadPricingList(selectedListing._id);
       setAlertMessage('Starting nightly price updated');
