@@ -24,6 +24,7 @@ import ThreadSidebar from './components/ThreadSidebar.jsx';
 import MessageThread from './components/MessageThread.jsx';
 import MessageInput from './components/MessageInput.jsx';
 import RightPanel from './components/RightPanel.jsx';
+import CreateProposalFlowV2 from '../../shared/CreateProposalFlowV2.jsx';
 import VirtualMeetingManager from '../../shared/VirtualMeetingManager/VirtualMeetingManager.jsx';
 
 // Mobile breakpoint (matches CSS)
@@ -239,6 +240,12 @@ export default function MessagingPage() {
     getCTAButtonConfig,
     handleCloseModal,
 
+    // Proposal modal state
+    proposalModalData,
+    zatConfig,
+    isSubmittingProposal,
+    handleProposalSubmit,
+
     // VM modal handlers
     handleCloseVMModal,
     handleVMSuccess,
@@ -392,6 +399,24 @@ export default function MessagingPage() {
           )}
         </div>
       </main>
+
+      {/* Create Proposal Modal */}
+      {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
+        <CreateProposalFlowV2
+          listing={proposalModalData.listing}
+          moveInDate={proposalModalData.moveInDate}
+          daysSelected={proposalModalData.daysSelected}
+          nightsSelected={proposalModalData.nightsSelected}
+          reservationSpan={proposalModalData.reservationSpan}
+          pricingBreakdown={proposalModalData.priceBreakdown}
+          zatConfig={zatConfig}
+          isFirstProposal={true}
+          useFullFlow={true}
+          onClose={handleCloseModal}
+          onSubmit={handleProposalSubmit}
+          isSubmitting={isSubmittingProposal}
+        />
+      )}
 
       {/* Virtual Meeting Manager Modal */}
       {showVMModal && proposalData && (
