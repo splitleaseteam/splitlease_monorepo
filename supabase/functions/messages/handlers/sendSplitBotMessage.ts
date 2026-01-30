@@ -36,7 +36,8 @@ import {
 // ============================================
 
 export interface SendSplitBotMessagePayload {
-  threadId: string;
+  threadId?: string; // Either threadId OR proposalId required
+  proposalId?: string; // Alternative: look up thread by proposal ID
   ctaName: string; // CTA name from os_messaging_cta.name
   recipientRole: 'guest' | 'host' | 'both';
   // Optional: override the CTA template message
@@ -59,10 +60,11 @@ export interface SendSplitBotMessageResponse {
 // ============================================
 
 function validatePayload(payload: Record<string, unknown>): SendSplitBotMessagePayload {
-  const { threadId, ctaName, recipientRole } = payload;
+  const { threadId, proposalId, ctaName, recipientRole } = payload;
 
-  if (!threadId || typeof threadId !== 'string') {
-    throw new ValidationError('threadId is required');
+  // Either threadId OR proposalId is required
+  if ((!threadId || typeof threadId !== 'string') && (!proposalId || typeof proposalId !== 'string')) {
+    throw new ValidationError('Either threadId or proposalId is required');
   }
   if (!ctaName || typeof ctaName !== 'string') {
     throw new ValidationError('ctaName is required');
@@ -72,7 +74,8 @@ function validatePayload(payload: Record<string, unknown>): SendSplitBotMessageP
   }
 
   return {
-    threadId,
+    threadId: threadId as string | undefined,
+    proposalId: proposalId as string | undefined,
     ctaName,
     recipientRole: recipientRole as 'guest' | 'host' | 'both',
     customMessageBody: payload.customMessageBody as string | undefined,
@@ -102,17 +105,47 @@ export async function handleSendSplitBotMessage(
   const input = validatePayload(payload);
   console.log('[sendSplitBotMessage] Validated input:', {
     threadId: input.threadId,
+    proposalId: input.proposalId,
     ctaName: input.ctaName,
     recipientRole: input.recipientRole,
   });
 
   // ─────────────────────────────────────────────────────────
-  // Step 1: Get thread info
+  // Step 1: Resolve thread ID (from threadId or proposalId)
   // ─────────────────────────────────────────────────────────
 
-  const thread = await getThread(supabase, input.threadId);
+  let resolvedThreadId = input.threadId;
+
+  // If no threadId provided, look up by proposalId
+  if (!resolvedThreadId && input.proposalId) {
+    console.log('[sendSplitBotMessage] Looking up thread by proposalId:', input.proposalId);
+    const { data: threadLookup, error: lookupError } = await supabase
+      .from('thread')
+      .select('_id')
+      .eq('"Proposal"', input.proposalId)
+      .maybeSingle();
+
+    if (lookupError) {
+      console.error('[sendSplitBotMessage] Thread lookup error:', lookupError);
+      throw new ValidationError(`Failed to look up thread for proposal: ${input.proposalId}`);
+    }
+
+    if (!threadLookup) {
+      console.warn('[sendSplitBotMessage] No thread found for proposal:', input.proposalId);
+      throw new ValidationError(`No thread found for proposal: ${input.proposalId}`);
+    }
+
+    resolvedThreadId = threadLookup._id;
+    console.log('[sendSplitBotMessage] Found thread by proposal:', resolvedThreadId);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Step 2: Get thread info
+  // ─────────────────────────────────────────────────────────
+
+  const thread = await getThread(supabase, resolvedThreadId!);
   if (!thread) {
-    throw new ValidationError(`Thread not found: ${input.threadId}`);
+    throw new ValidationError(`Thread not found: ${resolvedThreadId}`);
   }
 
   console.log('[sendSplitBotMessage] Thread found:', {
@@ -122,7 +155,7 @@ export async function handleSendSplitBotMessage(
   });
 
   // ─────────────────────────────────────────────────────────
-  // Step 2: Get CTA from reference table
+  // Step 3: Get CTA from reference table
   // ─────────────────────────────────────────────────────────
 
   const cta = await getCTAByName(supabase, input.ctaName);
@@ -133,7 +166,7 @@ export async function handleSendSplitBotMessage(
   console.log('[sendSplitBotMessage] CTA found:', cta.display);
 
   // ─────────────────────────────────────────────────────────
-  // Step 3: Build template context
+  // Step 4: Build template context
   // ─────────────────────────────────────────────────────────
 
   let templateContext: TemplateContext;
@@ -157,7 +190,7 @@ export async function handleSendSplitBotMessage(
   }
 
   // ─────────────────────────────────────────────────────────
-  // Step 4: Render message body
+  // Step 5: Render message body
   // ─────────────────────────────────────────────────────────
 
   const messageBody = input.customMessageBody ||
@@ -167,7 +200,7 @@ export async function handleSendSplitBotMessage(
   console.log('[sendSplitBotMessage] Message body:', messageBody.substring(0, 50) + '...');
 
   // ─────────────────────────────────────────────────────────
-  // Step 5: Create message(s) based on recipientRole
+  // Step 6: Create message(s) based on recipientRole
   // ─────────────────────────────────────────────────────────
 
   const messageIds: string[] = [];
@@ -176,7 +209,7 @@ export async function handleSendSplitBotMessage(
     const guestVisibility = getVisibilityForRole('guest');
 
     const guestMessageId = await createSplitBotMessage(supabase, {
-      threadId: input.threadId,
+      threadId: resolvedThreadId!,
       messageBody,
       callToAction: cta.display,
       visibleToHost: guestVisibility.visibleToHost,
@@ -193,7 +226,7 @@ export async function handleSendSplitBotMessage(
     const hostVisibility = getVisibilityForRole('host');
 
     const hostMessageId = await createSplitBotMessage(supabase, {
-      threadId: input.threadId,
+      threadId: resolvedThreadId!,
       messageBody,
       callToAction: cta.display,
       visibleToHost: hostVisibility.visibleToHost,
@@ -207,10 +240,10 @@ export async function handleSendSplitBotMessage(
   }
 
   // ─────────────────────────────────────────────────────────
-  // Step 6: Update thread's last message (non-blocking)
+  // Step 7: Update thread's last message (non-blocking)
   // ─────────────────────────────────────────────────────────
 
-  await updateThreadLastMessage(supabase, input.threadId, messageBody);
+  await updateThreadLastMessage(supabase, resolvedThreadId!, messageBody);
 
   // ─────────────────────────────────────────────────────────
   // Return response
@@ -220,6 +253,6 @@ export async function handleSendSplitBotMessage(
 
   return {
     messageIds,
-    threadId: input.threadId,
+    threadId: resolvedThreadId!,
   };
 }

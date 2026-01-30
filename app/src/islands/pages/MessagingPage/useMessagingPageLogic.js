@@ -69,6 +69,12 @@ export function useMessagingPageLogic() {
   const [activeModal, setActiveModal] = useState(null);
   const [modalContext, setModalContext] = useState(null);
 
+  // ============================================================================
+  // VIRTUAL MEETING MODAL STATE
+  // ============================================================================
+  const [showVMModal, setShowVMModal] = useState(false);
+  const [vmInitialView, setVMInitialView] = useState('');
+
   // Ref to track if initial load is complete
   const initialLoadDone = useRef(false);
 
@@ -83,6 +89,24 @@ export function useMessagingPageLogic() {
   const handleCloseModal = useCallback(() => {
     setActiveModal(null);
     setModalContext(null);
+  }, []);
+
+  // ============================================================================
+  // VM MODAL HANDLERS
+  // ============================================================================
+  const handleOpenVMModal = useCallback((view = 'request') => {
+    setVMInitialView(view);
+    setShowVMModal(true);
+  }, []);
+
+  const handleCloseVMModal = useCallback(() => {
+    setShowVMModal(false);
+    setVMInitialView('');
+  }, []);
+
+  const handleVMSuccess = useCallback(() => {
+    // Reload page to get fresh data after VM action
+    window.location.reload();
   }, []);
 
   const { handleCTAClick, getCTAButtonConfig } = useCTAHandler({
@@ -731,9 +755,11 @@ export function useMessagingPageLogic() {
 
   /**
    * Handle action button clicks from sidebar, header, and right panel
+   * @param {string} actionType - The action type
+   * @param {object} context - Optional context object (for VM state, etc.)
    */
-  const handlePanelAction = useCallback((actionType) => {
-    console.log('[MessagingPage] Action clicked:', actionType);
+  const handlePanelAction = useCallback((actionType, context = {}) => {
+    console.log('[MessagingPage] Action clicked:', actionType, context);
 
     switch (actionType) {
       // === Proposal Actions (Right Panel) ===
@@ -783,6 +809,25 @@ export function useMessagingPageLogic() {
         });
         break;
 
+      case 'virtual_meeting':
+        // Open Virtual Meeting Manager modal
+        // Determine initial view based on VM state
+        const { vmState } = context;
+        let initialView = 'request';
+
+        if (vmState === 'requested_by_other') {
+          initialView = 'respond';
+        } else if (vmState === 'requested_by_me') {
+          initialView = 'cancel';
+        } else if (vmState === 'booked_awaiting_confirmation' || vmState === 'confirmed') {
+          initialView = 'details';
+        } else if (vmState === 'expired') {
+          initialView = 'request';
+        }
+
+        handleOpenVMModal(initialView);
+        break;
+
       // === Navigation Actions ===
       case 'view_profile':
         // Navigate to contact's profile (if we have the ID)
@@ -811,7 +856,7 @@ export function useMessagingPageLogic() {
       default:
         console.warn('[MessagingPage] Unknown action:', actionType);
     }
-  }, [threadInfo, proposalData, listingData, selectedThread, handleOpenModal]);
+  }, [threadInfo, proposalData, listingData, selectedThread, handleOpenModal, handleOpenVMModal]);
 
   // ============================================================================
   // HANDLERS
@@ -950,6 +995,10 @@ export function useMessagingPageLogic() {
     activeModal,
     modalContext,
 
+    // VM modal state
+    showVMModal,
+    vmInitialView,
+
     // Handlers
     handleThreadSelect,
     handleMessageInputChange,
@@ -962,5 +1011,9 @@ export function useMessagingPageLogic() {
     handleCTAClick,
     getCTAButtonConfig,
     handleCloseModal,
+
+    // VM modal handlers
+    handleCloseVMModal,
+    handleVMSuccess,
   };
 }

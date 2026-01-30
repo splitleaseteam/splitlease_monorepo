@@ -230,7 +230,7 @@ export function useZPricingUnitTestPageLogic() {
           "# of nights available",
           "Nights_Available",
           "Days Available (List of Days)",
-          pricing_list_id,
+          pricing_list,
           Active,
           Complete,
           Approved,
@@ -259,10 +259,26 @@ export function useZPricingUnitTestPageLogic() {
     try {
       setPricingListLoading(true);
 
+      // First get the listing's pricing_list FK
+      const { data: listing, error: listingError } = await supabase
+        .from('listing')
+        .select('pricing_list')
+        .eq('_id', listingId)
+        .single();
+
+      if (listingError) throw listingError;
+
+      if (!listing?.pricing_list) {
+        console.log('[ZPricingUnitTest] No pricing_list FK on listing:', listingId);
+        setPricingList(null);
+        return;
+      }
+
+      // Then fetch the pricing_list by its _id
       const { data, error } = await supabase
         .from('pricing_list')
         .select('*')
-        .eq('listing', listingId)
+        .eq('_id', listing.pricing_list)
         .maybeSingle();
 
       if (error) throw error;
@@ -314,7 +330,7 @@ export function useZPricingUnitTestPageLogic() {
           "# of nights available",
           "Nights_Available",
           "Days Available (List of Days)",
-          pricing_list_id,
+          pricing_list,
           Active,
           Complete,
           Approved

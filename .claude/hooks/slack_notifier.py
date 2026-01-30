@@ -9,6 +9,13 @@ import os
 import requests
 import subprocess
 from pathlib import Path
+from datetime import datetime
+
+def log_debug(message):
+    """Log debug messages to file for troubleshooting"""
+    log_path = Path(__file__).parent / 'slack_notifier.log'
+    with open(log_path, 'a', encoding='utf-8') as f:
+        f.write(f"{datetime.now().isoformat()} - {message}\n")
 
 def load_env_file():
     """Load environment variables from .env file"""
@@ -134,14 +141,18 @@ def send_to_slack(webhook_url, message):
 
 def main():
     try:
+        log_debug("Hook started")
+
         # Read hook input from stdin
         input_data = json.load(sys.stdin)
+        log_debug(f"Input received: {list(input_data.keys())}")
 
         # Get environment variables
         env_vars = load_env_file()
         webhook_url = env_vars.get('TINYTASKAGENT')
 
         if not webhook_url:
+            log_debug("ERROR: TINYTASKAGENT not set")
             print("TINYTASKAGENT environment variable not set", file=sys.stderr)
             sys.exit(1)
 
@@ -155,10 +166,9 @@ def main():
         # Extract prompt and summary from transcript
         user_prompt, summary = extract_info_from_transcript(transcript_path)
 
-        # Only send if we got a real summary
+        # Use fallback if no tool summary extracted
         if not summary:
-            print("No summary extracted from transcript", file=sys.stderr)
-            sys.exit(0)
+            summary = "conversation completed"
 
         # Check for git commit
         commit_hash = get_latest_commit_hash(cwd) if cwd else None
@@ -177,18 +187,23 @@ def main():
         message = "\n".join(message_parts)
 
         # Send to Slack
+        log_debug(f"Sending: {message[:100]}...")
         success = send_to_slack(webhook_url, message)
 
         if success:
+            log_debug("SUCCESS: Notification sent")
             print("Sent notification to Slack")
         else:
+            log_debug("FAILED: Could not send notification")
             print("Failed to send notification to Slack", file=sys.stderr)
             sys.exit(1)
 
     except json.JSONDecodeError as e:
+        log_debug(f"JSON ERROR: {e}")
         print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
+        log_debug(f"EXCEPTION: {str(e)}")
         print(f"Error in Slack notifier: {str(e)}", file=sys.stderr)
         sys.exit(1)
 

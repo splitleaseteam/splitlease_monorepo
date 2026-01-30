@@ -405,4 +405,77 @@ These aren't suggestions—they're the workflow. If you're unsure whether a task
 
 ---
 
-**VERSION**: 11.5 | **UPDATED**: 2026-01-16
+## Parallel Subagent Execution (Complex Tasks)
+
+> **⚡ THROUGHPUT OPTIMIZATION**: For complex tasks with multiple independent subtasks, spawn parallel subagents to maximize throughput.
+
+### When to Parallelize
+
+Use parallel subagent execution when:
+- The task can be decomposed into **2-8 independent subtasks**
+- Subtasks do NOT have sequential dependencies on each other
+- Each subtask modifies different files or components
+- The overall task would take significantly longer if executed sequentially
+
+### Execution Pattern
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      PARALLEL SUBAGENT EXECUTION                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Step 1: DECOMPOSE                                                          │
+│     Analyze the task and split into 2-8 independent subtasks                │
+│     Each subtask should be self-contained and not depend on others          │
+│                                                                             │
+│  Step 2: DISPATCH (PARALLEL)                                                │
+│     Spawn multiple Task tool calls in a SINGLE message                      │
+│     Each subagent works on its assigned subtask concurrently                │
+│                                                                             │
+│  Step 3: COLLECT                                                            │
+│     Wait for all subagents to complete                                      │
+│     Gather changelogs and results from each                                 │
+│                                                                             │
+│  Step 4: REVIEW                                                             │
+│     Invoke `input-reviewer` subagent to verify:                             │
+│     - All subtasks completed successfully                                   │
+│     - Changes align with original request                                   │
+│     - No conflicts or integration issues between subtasks                   │
+│     Output: PASS | NEEDS ATTENTION | FAIL                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Rules for Parallel Execution
+
+1. **Independence is mandatory**: Only parallelize subtasks that don't depend on each other's output
+2. **Single message dispatch**: All parallel subagents MUST be spawned in ONE message with multiple Task tool calls
+3. **Clear scope per agent**: Each subagent gets a specific, well-defined subtask with explicit file boundaries
+4. **Always review**: After all parallel agents complete, ALWAYS invoke `input-reviewer` to validate the combined result
+5. **Conflict detection**: If subtasks might touch overlapping files, run them sequentially instead
+
+### Example Decomposition
+
+```
+User Request: "Add validation to all form components and update their tests"
+
+Decomposition (4 parallel subtasks):
+├─ Subagent 1: LoginForm validation + tests
+├─ Subagent 2: SearchForm validation + tests
+├─ Subagent 3: BookingForm validation + tests
+└─ Subagent 4: ProfileForm validation + tests
+
+Final: input-reviewer verifies all forms updated correctly
+```
+
+### Anti-Patterns (DON'T)
+
+- ❌ Spawning agents that will modify the same file
+- ❌ Creating dependencies between parallel subtasks
+- ❌ Skipping the review step after parallel execution
+- ❌ Spawning more than 8 subagents (diminishing returns, context overhead)
+- ❌ Using parallel execution for sequential workflows
+
+---
+
+**VERSION**: 11.6 | **UPDATED**: 2026-01-30

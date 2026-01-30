@@ -10,6 +10,7 @@
  * - get_threads: Get all threads for authenticated user (requires auth)
  * - send_guest_inquiry: Contact host without auth (name/email required)
  * - create_proposal_thread: Create thread for proposal (internal service call)
+ * - send_splitbot_message: Send SplitBot automated message (internal service call)
  *
  * Admin Actions (require auth + admin role):
  * - admin_get_all_threads: Fetch ALL threads across platform
@@ -52,6 +53,7 @@ import { handleGetMessages } from './handlers/getMessages.ts';
 import { handleGetThreads } from './handlers/getThreads.ts';
 import { handleSendGuestInquiry } from './handlers/sendGuestInquiry.ts';
 import { handleCreateProposalThread } from './handlers/createProposalThread.ts';
+import { handleSendSplitBotMessage } from './handlers/sendSplitBotMessage.ts';
 
 // Admin handlers
 import { handleAdminGetAllThreads } from './handlers/adminGetAllThreads.ts';
@@ -68,6 +70,7 @@ const ALLOWED_ACTIONS = [
   'get_threads',
   'send_guest_inquiry',
   'create_proposal_thread',
+  'send_splitbot_message',
   // Admin actions
   'admin_get_all_threads',
   'admin_delete_thread',
@@ -77,10 +80,12 @@ const ALLOWED_ACTIONS = [
 // Actions that don't require authentication
 // - send_guest_inquiry: Public form submission
 // - create_proposal_thread: Internal service-to-service call
+// - send_splitbot_message: Internal service call (SplitBot automation)
 // - admin_* actions: Internal admin pages (no auth gating)
 const PUBLIC_ACTIONS: ReadonlySet<string> = new Set([
   'send_guest_inquiry',
   'create_proposal_thread',
+  'send_splitbot_message',
   'admin_get_all_threads',
   'admin_delete_thread',
   'admin_send_reminder',
@@ -95,6 +100,7 @@ const handlers: Readonly<Record<Action, Function>> = {
   get_threads: handleGetThreads,
   send_guest_inquiry: handleSendGuestInquiry,
   create_proposal_thread: handleCreateProposalThread,
+  send_splitbot_message: handleSendSplitBotMessage,
   // Admin handlers
   admin_get_all_threads: handleAdminGetAllThreads,
   admin_delete_thread: handleAdminDeleteThread,
@@ -344,6 +350,10 @@ async function executeHandler(
 
     case 'create_proposal_thread':
       // Internal action - no user auth needed (service-level call)
+      return handler(supabaseAdmin, payload);
+
+    case 'send_splitbot_message':
+      // Internal action - SplitBot automation (service-level call)
       return handler(supabaseAdmin, payload);
 
     // Admin actions - no auth gating for internal admin pages

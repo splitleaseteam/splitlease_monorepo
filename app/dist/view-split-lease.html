@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Details - Split Lease</title>
+  <meta name="description" content="View property details for split lease listings">
+  <link rel="icon" type="image/png" href="/assets/images/split-lease-purple-circle.png">
+  <!-- CSS is imported in JSX entry files and bundled by Vite -->
+
+  <!-- Hotjar Tracking Code for split.lease -->
+  <script>
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:6581463,hjsv:6};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+  </script>
+
+  <!-- config.js is imported in JSX entry files and bundled by Vite -->
+
+  <!-- Google Maps API -->
+  <script>
+    // Initialize callback function before loading API
+    window.initMap = function() {
+      console.log('Google Maps API loaded successfully');
+      window.dispatchEvent(new Event('google-maps-loaded'));
+    };
+
+    // Load Google Maps API dynamically
+    function loadGoogleMaps() {
+      const apiKey = window.ENV?.GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        console.error('❌ Google Maps API key not configured in window.ENV');
+        console.error('Available ENV keys:', Object.keys(window.ENV || {}));
+        return;
+      }
+
+      console.log('🗺️ Loading Google Maps API...');
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap&loading=async`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = function() {
+        console.error('❌ Failed to load Google Maps API');
+      };
+      document.head.appendChild(script);
+    }
+
+    // Wait for config.js to load and set window.ENV
+    if (window.ENV) {
+      loadGoogleMaps();
+    } else {
+      // Wait for the env-config-loaded event from config.js
+      window.addEventListener('env-config-loaded', loadGoogleMaps, { once: true });
+
+      // Fallback timeout in case event doesn't fire
+      setTimeout(() => {
+        if (!window.ENV) {
+          console.error('❌ window.ENV not available after 2 seconds - config.js may have failed to load');
+        } else if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
+          console.warn('⚠️ Fallback: Attempting to load Google Maps after timeout');
+          loadGoogleMaps();
+        }
+      }, 2000);
+    }
+  </script>
+  <script type="module" crossorigin src="/assets/view-split-lease-CovFMBiD.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/client-BJVKzfAi.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-BoCLEw6R.js">
+  <link rel="modulepreload" crossorigin href="/assets/auth-QZ4BJadW.js">
+  <link rel="modulepreload" crossorigin href="/assets/constants-CPVJY5eo.js">
+  <link rel="modulepreload" crossorigin href="/assets/Toast-BQk6Nzgd.js">
+  <link rel="modulepreload" crossorigin href="/assets/proposalDataFetcher-CipdyWU2.js">
+  <link rel="modulepreload" crossorigin href="/assets/proposalStatuses-1Bj0NYR4.js">
+  <link rel="modulepreload" crossorigin href="/assets/Header-BJKWma2V.js">
+  <link rel="modulepreload" crossorigin href="/assets/Footer-Bzf1rLKh.js">
+  <link rel="modulepreload" crossorigin href="/assets/createLucideIcon-CgZZH2OU.js">
+  <link rel="modulepreload" crossorigin href="/assets/x-CrJVeoCh.js">
+  <link rel="modulepreload" crossorigin href="/assets/calendar-CDI4qHEX.js">
+  <link rel="modulepreload" crossorigin href="/assets/clock-BT0kKcUb.js">
+  <link rel="modulepreload" crossorigin href="/assets/send-C4mziT0-.js">
+  <link rel="modulepreload" crossorigin href="/assets/nightCalculations-BvAtd4RD.js">
+  <link rel="modulepreload" crossorigin href="/assets/ListingScheduleSelector-B9O1H-bT.js">
+  <link rel="modulepreload" crossorigin href="/assets/dayUtils-C3_GW2W5.js">
+  <link rel="modulepreload" crossorigin href="/assets/ProposalSuccessModal-buYBZjpQ.js">
+  <link rel="modulepreload" crossorigin href="/assets/chevron-right-DMpFmStq.js">
+  <link rel="modulepreload" crossorigin href="/assets/map-pin-Be7EkBk1.js">
+  <link rel="modulepreload" crossorigin href="/assets/square-BGeZC4Cm.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabaseUtils-B40jh603.js">
+  <link rel="modulepreload" crossorigin href="/assets/GoogleMap-ICEUXkNW.js">
+  <link rel="modulepreload" crossorigin href="/assets/InformationalText-C-nhvRBy.js">
+  <link rel="modulepreload" crossorigin href="/assets/dataLookups-zG18yzis.js">
+  <link rel="modulepreload" crossorigin href="/assets/listingDataFetcher-DGGxiGnp.js">
+  <link rel="modulepreload" crossorigin href="/assets/availabilityValidation-CSGrEd4b.js">
+  <link rel="modulepreload" crossorigin href="/assets/informationalTextsFetcher-BGizEeKX.js">
+  <link rel="modulepreload" crossorigin href="/assets/ErrorBoundary-9_HbXv1y.js">
+  <link rel="modulepreload" crossorigin href="/assets/config-QPKPRtag.js">
+  <link rel="stylesheet" crossorigin href="/assets/Header-BUDbMVJq.css">
+  <link rel="stylesheet" crossorigin href="/assets/Footer-CjhCx5VE.css">
+  <link rel="stylesheet" crossorigin href="/assets/ProposalSuccessModal-C8O6_Ch7.css">
+  <link rel="stylesheet" crossorigin href="/assets/ListingScheduleSelector-BlcSQxYt.css">
+  <link rel="stylesheet" crossorigin href="/assets/GoogleMap-DGllduYa.css">
+  <link rel="stylesheet" crossorigin href="/assets/proposalDataFetcher-B4VSPsn8.css">
+  <link rel="stylesheet" crossorigin href="/assets/Toast-CLI5v25F.css">
+  <link rel="stylesheet" crossorigin href="/assets/view-split-lease-DGkkJDck.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-BSiqi3n7.css">
+</head>
+<body>
+  <div id="root"></div>
+
+</body>
+</html>
