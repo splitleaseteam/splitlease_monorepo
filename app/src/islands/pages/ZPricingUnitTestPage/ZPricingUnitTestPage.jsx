@@ -201,7 +201,7 @@ export default function ZPricingUnitTestPage() {
                   zatConfig={logic.zatConfig}
                   onSelectionChange={logic.handleSelectionChange}
                   onPriceChange={logic.handlePriceChange}
-                  showPricing={true}
+                  showPricing={false}
                 />
               </div>
             ) : (
