@@ -524,10 +524,10 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
           _id,
           "Message Body",
           "Call to Action",
-          "Associated Thread/Conversation",
+          thread_id,
           "Created Date"
         `)
-        .in('"Associated Thread/Conversation"', threadIds)
+        .in('thread_id', threadIds)
         .eq('"is Split Bot"', true)
         .eq('"Call to Action"', 'Respond to Counter Offer')
         .order('"Created Date"', { ascending: false });
@@ -541,7 +541,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
         // Map messages to their proposals (take only the most recent per proposal)
         counterofferMsgs.forEach(msg => {
-          const threadId = msg['Associated Thread/Conversation'];
+          const threadId = msg.thread_id;
           const proposalId = threadToProposalMap.get(threadId);
           console.log(`[DEBUG] Mapping: threadId=${threadId} -> proposalId=${proposalId}`);
           if (proposalId && !counterofferSummaryMap.has(proposalId)) {
