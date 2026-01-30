@@ -223,7 +223,7 @@ export type ThrottleLevel = 'none' | 'soft_warning' | 'hard_block';
 // Notification Types
 // ─────────────────────────────────────────────────────────────
 
-export type NotificationEvent = 'SUBMITTED' | 'ACCEPTED' | 'REJECTED';
+export type NotificationEvent = 'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRING_SOON';
 
 export interface NotificationRecipient {
   userId: string;
@@ -273,4 +273,93 @@ export interface DateChangeNotificationParams {
   receiverId: string;
   message: string | null;
   answerMessage: string | null;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Email Template Types
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Email template variables matching SendGrid template format
+ * These variables will be substituted into the SendGrid JSON template
+ */
+export interface EmailTemplateVariables {
+  // Recipient info
+  first_name?: string;
+  to_email?: string;
+  to_name?: string;
+
+  // Email structure
+  subject?: string;
+  from_email?: string;
+  from_name?: string;
+
+  // Email content sections
+  preheadertext?: string;  // Warning label for expiry/decline notices
+  title?: string;
+  bodytext?: string;  // Main body content (can include HTML <br> for paragraphs)
+
+  // Banner text (up to 5 banner fields)
+  bannertext1?: string;
+  bannertext2?: string;
+  bannertext3?: string;
+  bannertext4?: string;
+  bannertext5?: string;
+
+  // Call-to-action
+  buttontext?: string;
+  buttonurl?: string;
+
+  // Footer
+  footermessage?: string;
+
+  // Date change specific variables
+  guest_name?: string;
+  host_name?: string;
+  property_display?: string;
+  original_dates?: string;
+  proposed_dates?: string;
+  dates_to_add?: string;
+  dates_to_remove?: string;
+  date_to_add?: string;
+  date_to_remove?: string;
+  price_adjustment?: string;
+  additional_cost?: string;
+  refund_amount?: string;
+  booking_reduction?: string;
+  final_cost?: string;
+  you_saved?: string;
+  time_to_expiry?: string;
+
+  // Optional message from host/guest
+  host_message?: string;
+  guest_message?: string;
+}
+
+/**
+ * Listing data for email template generation
+ */
+export interface ListingData {
+  _id: string;
+  Title?: string | null;
+  'Display Name'?: string | null;
+  'Display Address'?: string | null;
+  Address?: string | null;
+  'Address Line 1'?: string | null;
+  City?: string | null;
+  State?: string | null;
+  'Zip Code'?: string | null;
+}
+
+/**
+ * Full email context with all data needed for template generation
+ */
+export interface EmailNotificationContext extends NotificationContext {
+  leaseData: {
+    checkIn: string | null;
+    checkOut: string | null;
+    agreementNumber: string | null;
+  };
+  listingData: ListingData | null;
+  percentageOfRegular: number | null;
 }
