@@ -20,7 +20,7 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env.test') });
 // Fallback to .env if .env.test doesn't exist
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
-const baseURL = process.env.E2E_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
+const baseURL = process.env.E2E_BASE_URL || process.env.BASE_URL || 'http://localhost:8000';
 
 export default defineConfig({
   testDir: './tests',
@@ -136,7 +136,7 @@ export default defineConfig({
   // Local dev server configuration
   webServer: {
     command: 'cd ../app && bun run dev',
-    url: baseURL,
+    url: 'http://localhost:8000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000
   },

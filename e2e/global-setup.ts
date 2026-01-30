@@ -73,15 +73,15 @@ async function generateStorageState(
       await page.waitForTimeout(500);
     }
 
-    // Click sign in link
-    const signInLink = page.locator('text=Sign In, a:has-text("Sign In"), button:has-text("Sign In")').first();
+    // Click sign in link - use more flexible selectors
+    const signInLink = page.locator('text=Sign In').first();
     if (await signInLink.isVisible({ timeout: 5000 }).catch(() => false)) {
       await signInLink.click();
     }
 
-    // Wait for auth modal
+    // Wait for auth modal - include inline styled modals
     await page.waitForSelector(
-      '[data-testid="auth-modal"], .auth-modal, .signup-login-modal, [class*="SignUpLogin"]',
+      '[role="dialog"], .modal, [style*="position: fixed"], [data-testid="auth-modal"], .auth-modal, .signup-login-modal, [class*="SignUpLogin"]',
       { timeout: 10000 }
     );
 
@@ -155,11 +155,11 @@ async function globalSetup(config: FullConfig): Promise<void> {
       'Please create a .env.test file with:\n' +
       '  SUPABASE_URL=https://your-project.supabase.co\n' +
       '  SUPABASE_SERVICE_ROLE_KEY=your-service-role-key\n' +
-      '  E2E_BASE_URL=http://localhost:3000'
+      '  E2E_BASE_URL=http://localhost:8000'
     );
   }
 
-  const baseURL = process.env.E2E_BASE_URL || config.projects[0]?.use?.baseURL || 'http://localhost:3000';
+  const baseURL = process.env.E2E_BASE_URL || config.projects[0]?.use?.baseURL || 'http://localhost:8000';
   console.log(`Base URL: ${baseURL}`);
 
   // 1. Create test users in Supabase Auth

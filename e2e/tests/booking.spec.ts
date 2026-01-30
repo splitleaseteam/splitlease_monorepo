@@ -5,7 +5,7 @@
  * Covers happy paths, error handling, edge cases, and accessibility.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth';
 import { ListingDetailPage, SearchPage, GuestProposalsPage } from '../pages';
 import { createBookingScenario, SEED_USERS, SEED_LISTINGS } from '../fixtures/test-data-factory';
 
@@ -15,8 +15,8 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Listing Detail Page', () => {
-    test('should display listing details', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should display listing details', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -25,7 +25,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.assertPageLoaded();
 
         // Verify key elements
@@ -34,8 +34,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should display photo gallery', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should display photo gallery', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -44,15 +44,15 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.photoGallery).toBeVisible();
       }
     });
 
-    test('should open photo gallery modal on click', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should open photo gallery modal on click', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -61,19 +61,19 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await listingPage.openPhotoGallery();
 
         // Should open full gallery modal
-        const galleryModal = page.locator('.gallery-modal, [data-testid="gallery-modal"], .lightbox');
+        const galleryModal = anonymousPage.locator('.gallery-modal, [data-testid="gallery-modal"], .lightbox');
         await expect(galleryModal).toBeVisible();
       }
     });
 
-    test('should display amenities', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should display amenities', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -82,15 +82,15 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.amenitiesSection).toBeVisible();
       }
     });
 
-    test('should display host information', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should display host information', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -99,15 +99,15 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.hostSection).toBeVisible();
       }
     });
 
-    test('should display map with location', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should display map with location', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -116,7 +116,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.mapSection).toBeVisible();
@@ -129,8 +129,8 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Booking Widget', () => {
-    test('should display price per night', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should display price per night', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -139,7 +139,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.priceDisplay).toBeVisible();
@@ -148,8 +148,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should show schedule selector with available days', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should show schedule selector with available days', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -158,7 +158,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.scheduleSelector).toBeVisible();
@@ -169,8 +169,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should update price when days are selected', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should update price when days are selected', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -179,7 +179,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Get initial price
@@ -189,10 +189,10 @@ test.describe('Booking Flow', () => {
         await listingPage.selectDay(1); // Monday
         await listingPage.selectDay(2); // Tuesday
 
-        await page.waitForTimeout(500);
+        await anonymousPage.waitForTimeout(500);
 
         // Price should update (or total should change)
-        const totalDisplay = page.locator('.total-price, [data-testid="total-price"], .price-total');
+        const totalDisplay = anonymousPage.locator('.total-price, [data-testid="total-price"], .price-total');
         if (await totalDisplay.isVisible()) {
           const totalPrice = await totalDisplay.textContent();
           expect(totalPrice).toContain('$');
@@ -200,8 +200,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should show move-in date picker', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should show move-in date picker', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -210,15 +210,15 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await expect(listingPage.moveInDatePicker).toBeVisible();
       }
     });
 
-    test('should show duration selector', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should show duration selector', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -227,10 +227,10 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
-        const durationSelector = page.locator('[data-testid="duration-selector"], .duration-selector, select[name="duration"]');
+        const durationSelector = anonymousPage.locator('[data-testid="duration-selector"], .duration-selector, select[name="duration"]');
         if (await durationSelector.isVisible()) {
           // Should have duration options
           await expect(durationSelector).toBeVisible();
@@ -244,8 +244,8 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Proposal Submission - Happy Path', () => {
-    test('should require login to submit proposal', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should require login to submit proposal', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -254,35 +254,35 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Try to submit proposal without login
         await listingPage.proposalButton.click();
 
         // Should prompt for login
-        const loginPrompt = page.locator('.login-modal, [data-testid="login-modal"], .auth-modal, .login-required');
+        const loginPrompt = anonymousPage.locator('.login-modal, [data-testid="login-modal"], .auth-modal, .login-required');
         await expect(loginPrompt).toBeVisible({ timeout: 5000 });
       }
     });
 
-    test('should open proposal modal when logged in', async ({ page }) => {
+    test('should open proposal modal when logged in', async ({ anonymousPage }) => {
       // First login
-      await page.goto('/');
-      const loginButton = page.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
+      await anonymousPage.goto('/');
+      const loginButton = anonymousPage.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
       await loginButton.click();
 
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.locator('input[type="email"]').fill(SEED_USERS.guest.email);
-      await page.locator('input[type="password"]').fill('testpassword123');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill(SEED_USERS.guest.email);
+      await anonymousPage.locator('input[type="password"]').fill('testpassword123');
+      await anonymousPage.locator('button[type="submit"]').click();
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       // Navigate to listing
-      const searchPage = new SearchPage(page);
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -290,7 +290,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Select some days
@@ -301,8 +301,8 @@ test.describe('Booking Flow', () => {
         await listingPage.proposalButton.click();
 
         // Should open proposal modal or navigate to proposal form
-        const proposalModal = page.locator('.proposal-modal, [data-testid="proposal-modal"], .booking-modal');
-        const proposalForm = page.locator('.proposal-form, [data-testid="proposal-form"]');
+        const proposalModal = anonymousPage.locator('.proposal-modal, [data-testid="proposal-modal"], .booking-modal');
+        const proposalForm = anonymousPage.locator('.proposal-form, [data-testid="proposal-form"]');
 
         const modalVisible = await proposalModal.isVisible().catch(() => false);
         const formVisible = await proposalForm.isVisible().catch(() => false);
@@ -311,23 +311,23 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should show price breakdown in proposal', async ({ page }) => {
+    test('should show price breakdown in proposal', async ({ anonymousPage }) => {
       // Login first
-      await page.goto('/');
-      const loginButton = page.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
+      await anonymousPage.goto('/');
+      const loginButton = anonymousPage.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
       await loginButton.click();
 
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.locator('input[type="email"]').fill(SEED_USERS.guest.email);
-      await page.locator('input[type="password"]').fill('testpassword123');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill(SEED_USERS.guest.email);
+      await anonymousPage.locator('input[type="password"]').fill('testpassword123');
+      await anonymousPage.locator('button[type="submit"]').click();
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       // Navigate to listing
-      const searchPage = new SearchPage(page);
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -335,7 +335,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Select days
@@ -346,10 +346,10 @@ test.describe('Booking Flow', () => {
         // Open proposal
         await listingPage.proposalButton.click();
 
-        await page.waitForTimeout(1000);
+        await anonymousPage.waitForTimeout(1000);
 
         // Check for price breakdown
-        const priceBreakdown = page.locator('.price-breakdown, [data-testid="price-breakdown"]');
+        const priceBreakdown = anonymousPage.locator('.price-breakdown, [data-testid="price-breakdown"]');
         if (await priceBreakdown.isVisible()) {
           const breakdownText = await priceBreakdown.textContent();
           expect(breakdownText).toContain('$');
@@ -363,23 +363,23 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Proposal Validation', () => {
-    test('should require at least one day selected', async ({ page }) => {
+    test('should require at least one day selected', async ({ anonymousPage }) => {
       // Login first
-      await page.goto('/');
-      const loginButton = page.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
+      await anonymousPage.goto('/');
+      const loginButton = anonymousPage.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
       await loginButton.click();
 
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.locator('input[type="email"]').fill(SEED_USERS.guest.email);
-      await page.locator('input[type="password"]').fill('testpassword123');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill(SEED_USERS.guest.email);
+      await anonymousPage.locator('input[type="password"]').fill('testpassword123');
+      await anonymousPage.locator('button[type="submit"]').click();
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       // Navigate to listing
-      const searchPage = new SearchPage(page);
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -387,15 +387,15 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Don't select any days, try to submit
         await listingPage.proposalButton.click();
 
         // Should show validation error
-        const errorMessage = page.locator('.error-message, [data-testid="error-message"], [role="alert"]');
-        await page.waitForTimeout(1000);
+        const errorMessage = anonymousPage.locator('.error-message, [data-testid="error-message"], [role="alert"]');
+        await anonymousPage.waitForTimeout(1000);
 
         // Either shows error or button is disabled
         const hasError = await errorMessage.isVisible().catch(() => false);
@@ -405,9 +405,9 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should validate move-in date is in future', async ({ page }) => {
+    test('should validate move-in date is in future', async ({ anonymousPage }) => {
       // This test checks that past dates cannot be selected
-      const searchPage = new SearchPage(page);
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -415,7 +415,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Try to select a past date
@@ -439,8 +439,8 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Contact Host', () => {
-    test('should open contact modal', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should open contact modal', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -448,16 +448,16 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         await listingPage.contactHostButton.click();
 
         // Should open contact modal or require login
-        const contactModal = page.locator('.contact-modal, [data-testid="contact-modal"], .message-modal');
-        const loginModal = page.locator('.login-modal, [data-testid="login-modal"]');
+        const contactModal = anonymousPage.locator('.contact-modal, [data-testid="contact-modal"], .message-modal');
+        const loginModal = anonymousPage.locator('.login-modal, [data-testid="login-modal"]');
 
-        await page.waitForTimeout(1000);
+        await anonymousPage.waitForTimeout(1000);
 
         const contactVisible = await contactModal.isVisible().catch(() => false);
         const loginVisible = await loginModal.isVisible().catch(() => false);
@@ -466,8 +466,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should show host profile on click', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should show host profile on click', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -475,7 +475,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Click on host name/avatar
@@ -484,10 +484,10 @@ test.describe('Booking Flow', () => {
           await hostLink.click();
 
           // Should navigate to profile or open profile modal
-          await page.waitForTimeout(1000);
+          await anonymousPage.waitForTimeout(1000);
 
           const profilePage = page.url().includes('account-profile');
-          const profileModal = await page.locator('.profile-modal, [data-testid="profile-modal"]').isVisible().catch(() => false);
+          const profileModal = await anonymousPage.locator('.profile-modal, [data-testid="profile-modal"]').isVisible().catch(() => false);
 
           expect(profilePage || profileModal).toBeTruthy();
         }
@@ -500,48 +500,48 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Proposal Status Tracking', () => {
-    test('should navigate to guest proposals after submission', async ({ page }) => {
+    test('should navigate to guest proposals after submission', async ({ anonymousPage }) => {
       // This test would require a full proposal submission
       // For now, we'll verify the guest proposals page loads correctly
 
       // Login first
-      await page.goto('/');
-      const loginButton = page.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
+      await anonymousPage.goto('/');
+      const loginButton = anonymousPage.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
       await loginButton.click();
 
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.locator('input[type="email"]').fill(SEED_USERS.guest.email);
-      await page.locator('input[type="password"]').fill('testpassword123');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill(SEED_USERS.guest.email);
+      await anonymousPage.locator('input[type="password"]').fill('testpassword123');
+      await anonymousPage.locator('button[type="submit"]').click();
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       // Navigate to guest proposals
-      const guestProposalsPage = new GuestProposalsPage(page);
+      const guestProposalsPage = new GuestProposalsPage(anonymousPage);
       await guestProposalsPage.goto();
 
       await guestProposalsPage.assertPageLoaded();
     });
 
-    test('should show proposal status badges', async ({ page }) => {
+    test('should show proposal status badges', async ({ anonymousPage }) => {
       // Login first
-      await page.goto('/');
-      const loginButton = page.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
+      await anonymousPage.goto('/');
+      const loginButton = anonymousPage.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
       await loginButton.click();
 
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.locator('input[type="email"]').fill(SEED_USERS.guest.email);
-      await page.locator('input[type="password"]').fill('testpassword123');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill(SEED_USERS.guest.email);
+      await anonymousPage.locator('input[type="password"]').fill('testpassword123');
+      await anonymousPage.locator('button[type="submit"]').click();
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       // Navigate to guest proposals
-      const guestProposalsPage = new GuestProposalsPage(page);
+      const guestProposalsPage = new GuestProposalsPage(anonymousPage);
       await guestProposalsPage.goto();
 
       await guestProposalsPage.waitForLoadingComplete();
@@ -560,15 +560,15 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Error Handling', () => {
-    test('should handle listing not found gracefully', async ({ page }) => {
-      await page.goto('/view-split-lease/nonexistent-listing-id');
-      await page.waitForLoadState('networkidle');
+    test('should handle listing not found gracefully', async ({ anonymousPage }) => {
+      await anonymousPage.goto('/view-split-lease/nonexistent-listing-id');
+      await anonymousPage.waitForLoadState('networkidle');
 
       // Should show 404 or error state
-      const notFound = page.locator('.not-found, [data-testid="not-found"], .error-404');
-      const errorState = page.locator('.error-state, [data-testid="error-state"]');
+      const notFound = anonymousPage.locator('.not-found, [data-testid="not-found"], .error-404');
+      const errorState = anonymousPage.locator('.error-state, [data-testid="error-state"]');
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       const notFoundVisible = await notFound.isVisible().catch(() => false);
       const errorVisible = await errorState.isVisible().catch(() => false);
@@ -577,22 +577,22 @@ test.describe('Booking Flow', () => {
       expect(notFoundVisible || errorVisible || is404).toBeTruthy();
     });
 
-    test('should handle network error during proposal submission', async ({ page }) => {
+    test('should handle network error during proposal submission', async ({ anonymousPage }) => {
       // Login first
-      await page.goto('/');
-      const loginButton = page.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
+      await anonymousPage.goto('/');
+      const loginButton = anonymousPage.locator('[data-testid="login-button"], .login-button, button:has-text("Log in")');
       await loginButton.click();
 
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.locator('input[type="email"]').fill(SEED_USERS.guest.email);
-      await page.locator('input[type="password"]').fill('testpassword123');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill(SEED_USERS.guest.email);
+      await anonymousPage.locator('input[type="password"]').fill('testpassword123');
+      await anonymousPage.locator('button[type="submit"]').click();
 
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
-      const searchPage = new SearchPage(page);
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -600,22 +600,22 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Simulate network failure
-        await page.route('**/proposal**', route => route.abort('failed'));
-        await page.route('**/functions/proposal**', route => route.abort('failed'));
+        await anonymousPage.route('**/proposal**', route => route.abort('failed'));
+        await anonymousPage.route('**/functions/proposal**', route => route.abort('failed'));
 
         // Select days and try to submit
         await listingPage.selectDay(1);
         await listingPage.selectDay(2);
         await listingPage.proposalButton.click();
 
-        await page.waitForTimeout(2000);
+        await anonymousPage.waitForTimeout(2000);
 
         // Should show error message
-        const errorMessage = page.locator('.error-message, [data-testid="error-message"], [role="alert"], .toast-error');
+        const errorMessage = anonymousPage.locator('.error-message, [data-testid="error-message"], [role="alert"], .toast-error');
         // Error handling should be present
       }
     });
@@ -626,8 +626,8 @@ test.describe('Booking Flow', () => {
   // ============================================================================
 
   test.describe('Accessibility', () => {
-    test('should have accessible booking widget', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should have accessible booking widget', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -635,7 +635,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Booking widget should have proper structure
@@ -657,8 +657,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should be keyboard navigable', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should be keyboard navigable', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -666,22 +666,22 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Tab through booking widget
-        await page.keyboard.press('Tab');
-        await page.keyboard.press('Tab');
-        await page.keyboard.press('Tab');
+        await anonymousPage.keyboard.press('Tab');
+        await anonymousPage.keyboard.press('Tab');
+        await anonymousPage.keyboard.press('Tab');
 
         // Should be able to focus on interactive elements
-        const focused = page.locator(':focus');
+        const focused = anonymousPage.locator(':focus');
         await expect(focused).toBeVisible();
       }
     });
 
-    test('should have proper heading structure', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should have proper heading structure', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -689,15 +689,15 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Should have h1 for listing title
-        const h1 = page.locator('h1');
+        const h1 = anonymousPage.locator('h1');
         await expect(h1).toHaveCount(1);
 
         // Should have logical heading hierarchy
-        const headings = page.locator('h1, h2, h3, h4');
+        const headings = anonymousPage.locator('h1, h2, h3, h4');
         const headingCount = await headings.count();
         expect(headingCount).toBeGreaterThan(1);
       }
@@ -711,8 +711,8 @@ test.describe('Booking Flow', () => {
   test.describe('Mobile Responsiveness', () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
-    test('should show sticky booking bar on mobile', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should show sticky booking bar on mobile', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -720,19 +720,19 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // On mobile, booking widget might be a sticky bar
-        const stickyBar = page.locator('.sticky-booking-bar, .mobile-booking-bar, .booking-cta-bar');
+        const stickyBar = anonymousPage.locator('.sticky-booking-bar, .mobile-booking-bar, .booking-cta-bar');
         if (await stickyBar.isVisible()) {
           await expect(stickyBar).toBeVisible();
         }
       }
     });
 
-    test('should have touch-friendly photo gallery', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should have touch-friendly photo gallery', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -740,7 +740,7 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Gallery should be swipeable
@@ -753,8 +753,8 @@ test.describe('Booking Flow', () => {
       }
     });
 
-    test('should stack layout vertically on mobile', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should stack layout vertically on mobile', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
       await searchPage.waitForLoadingComplete();
 
@@ -762,11 +762,11 @@ test.describe('Booking Flow', () => {
       if (listingCount > 0) {
         await searchPage.clickListing(0);
 
-        const listingPage = new ListingDetailPage(page);
+        const listingPage = new ListingDetailPage(anonymousPage);
         await listingPage.waitForPageLoad();
 
         // Content should be stacked, not side-by-side
-        const mainContent = page.locator('.listing-main, .listing-content');
+        const mainContent = anonymousPage.locator('.listing-main, .listing-content');
         const bookingWidget = listingPage.bookingWidget;
 
         const mainBox = await mainContent.boundingBox().catch(() => null);

@@ -24,7 +24,9 @@
     "sync:edge-functions": "node supabase/scripts/sync-edge-functions.js",
     "sync:edge-functions:fix": "node supabase/scripts/sync-edge-functions.js --fix",
     "docs:generate": "node scripts/generate-docs.js",
-    "regression:create": "node scripts/generate-regression-test.js"
+    "regression:create": "node scripts/generate-regression-test.js",
+    "test:e2e:setup": "npx ts-node e2e/global-setup.ts",
+    "test:e2e:cleanup": "npx ts-node e2e/global-teardown.ts"
   },
   "description": "Split Lease application monorepo - Cloudflare Pages deployment - Root directory: app",
   "devDependencies": {

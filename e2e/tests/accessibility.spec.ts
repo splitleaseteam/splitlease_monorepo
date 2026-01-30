@@ -5,7 +5,7 @@
  * Tests WCAG 2.1 compliance, keyboard navigation, screen reader compatibility.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth';
 import { HomePage, SearchPage, ListingDetailPage, AccountProfilePage } from '../pages';
 import { SEED_USERS } from '../fixtures/test-data-factory';
 
@@ -15,16 +15,16 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Keyboard Navigation', () => {
-    test('should navigate home page with keyboard only', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should navigate home page with keyboard only', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       // Should be able to tab through interactive elements
       const interactiveElements: string[] = [];
 
       for (let i = 0; i < 20; i++) {
-        await page.keyboard.press('Tab');
-        const focused = page.locator(':focus');
+        await anonymousPage.keyboard.press('Tab');
+        const focused = anonymousPage.locator(':focus');
 
         if (await focused.isVisible()) {
           const tagName = await focused.evaluate(el => el.tagName.toLowerCase());
@@ -37,72 +37,72 @@ test.describe('Accessibility', () => {
       expect(interactiveElements.length).toBeGreaterThan(5);
     });
 
-    test('should navigate search page filters with keyboard', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should navigate search page filters with keyboard', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.openFilterPanel();
 
       // Tab through filter elements
       for (let i = 0; i < 10; i++) {
-        await page.keyboard.press('Tab');
+        await anonymousPage.keyboard.press('Tab');
       }
 
       // Should reach filter inputs
-      const focused = page.locator(':focus');
+      const focused = anonymousPage.locator(':focus');
       await expect(focused).toBeVisible();
     });
 
-    test('should activate buttons with Enter key', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should activate buttons with Enter key', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       // Tab to login button
       let found = false;
       for (let i = 0; i < 15; i++) {
-        await page.keyboard.press('Tab');
-        const focused = page.locator(':focus');
+        await anonymousPage.keyboard.press('Tab');
+        const focused = anonymousPage.locator(':focus');
         const text = await focused.textContent().catch(() => '');
 
         if (text?.toLowerCase().includes('log in') || text?.toLowerCase().includes('sign in')) {
           found = true;
-          await page.keyboard.press('Enter');
+          await anonymousPage.keyboard.press('Enter');
           break;
         }
       }
 
       if (found) {
         // Login modal should open
-        const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+        const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
         await expect(loginModal).toBeVisible({ timeout: 3000 });
       }
     });
 
-    test('should close modals with Escape key', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should close modals with Escape key', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      await page.keyboard.press('Escape');
+      await anonymousPage.keyboard.press('Escape');
       await expect(loginModal).toBeHidden({ timeout: 3000 });
     });
 
-    test('should trap focus in modal dialogs', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should trap focus in modal dialogs', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       // Tab through modal elements multiple times
       const focusedElements: string[] = [];
       for (let i = 0; i < 15; i++) {
-        await page.keyboard.press('Tab');
-        const focused = page.locator(':focus');
+        await anonymousPage.keyboard.press('Tab');
+        const focused = anonymousPage.locator(':focus');
 
         if (await focused.isVisible()) {
           const isInModal = await focused.evaluate(el => {
@@ -122,8 +122,8 @@ test.describe('Accessibility', () => {
       expect(inModalCount).toBeGreaterThan(focusedElements.length * 0.8);
     });
 
-    test('should support arrow key navigation in day selector', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should support arrow key navigation in day selector', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       // Focus on first day button
@@ -131,10 +131,10 @@ test.describe('Accessibility', () => {
       await firstDay.focus();
 
       // Press right arrow
-      await page.keyboard.press('ArrowRight');
+      await anonymousPage.keyboard.press('ArrowRight');
 
       // Second day should be focused
-      const focused = page.locator(':focus');
+      const focused = anonymousPage.locator(':focus');
       await expect(focused).toBeVisible();
     });
   });
@@ -144,11 +144,11 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Screen Reader Compatibility', () => {
-    test('all images should have alt text', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('all images should have alt text', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const images = page.locator('img');
+      const images = anonymousPage.locator('img');
       const imageCount = await images.count();
 
       for (let i = 0; i < imageCount; i++) {
@@ -161,12 +161,12 @@ test.describe('Accessibility', () => {
       }
     });
 
-    test('form inputs should have labels', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('form inputs should have labels', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       const inputs = loginModal.locator('input:not([type="hidden"])');
@@ -180,17 +180,17 @@ test.describe('Accessibility', () => {
         const placeholder = await input.getAttribute('placeholder');
 
         // Input should have a label via one of these methods
-        const hasLabel = id ? await page.locator(`label[for="${id}"]`).count() > 0 : false;
+        const hasLabel = id ? await anonymousPage.locator(`label[for="${id}"]`).count() > 0 : false;
 
         expect(hasLabel || ariaLabel || ariaLabelledby || placeholder).toBeTruthy();
       }
     });
 
-    test('buttons should have accessible names', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('buttons should have accessible names', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const buttons = page.locator('button');
+      const buttons = anonymousPage.locator('button');
       const buttonCount = await buttons.count();
 
       for (let i = 0; i < Math.min(buttonCount, 20); i++) {
@@ -207,11 +207,11 @@ test.describe('Accessibility', () => {
       }
     });
 
-    test('links should have descriptive text', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('links should have descriptive text', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const links = page.locator('a');
+      const links = anonymousPage.locator('a');
       const linkCount = await links.count();
 
       for (let i = 0; i < Math.min(linkCount, 20); i++) {
@@ -235,41 +235,41 @@ test.describe('Accessibility', () => {
       }
     });
 
-    test('error messages should use aria-live', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('error messages should use aria-live', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       // Submit invalid form
-      await page.locator('input[type="email"]').fill('invalid@test.com');
-      await page.locator('input[type="password"]').fill('wrongpassword');
-      await page.locator('button[type="submit"]').click();
+      await anonymousPage.locator('input[type="email"]').fill('invalid@test.com');
+      await anonymousPage.locator('input[type="password"]').fill('wrongpassword');
+      await anonymousPage.locator('button[type="submit"]').click();
 
       // Wait for error
-      await page.waitForTimeout(2000);
+      await anonymousPage.waitForTimeout(2000);
 
       // Check for aria-live on error region
-      const errorRegion = page.locator('[aria-live], [role="alert"], [role="status"]');
+      const errorRegion = anonymousPage.locator('[aria-live], [role="alert"], [role="status"]');
       const errorCount = await errorRegion.count();
       expect(errorCount).toBeGreaterThanOrEqual(0); // May or may not show error
     });
 
-    test('page should have main landmark', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('page should have main landmark', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const main = page.locator('main, [role="main"]');
+      const main = anonymousPage.locator('main, [role="main"]');
       await expect(main).toHaveCount(1);
     });
 
-    test('page should have navigation landmark', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('page should have navigation landmark', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const nav = page.locator('nav, [role="navigation"]');
+      const nav = anonymousPage.locator('nav, [role="navigation"]');
       const navCount = await nav.count();
       expect(navCount).toBeGreaterThanOrEqual(1);
     });
@@ -280,12 +280,12 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Color and Contrast', () => {
-    test('focus indicators should be visible', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('focus indicators should be visible', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      await page.keyboard.press('Tab');
-      const focused = page.locator(':focus');
+      await anonymousPage.keyboard.press('Tab');
+      const focused = anonymousPage.locator(':focus');
 
       // Focused element should be visible
       await expect(focused).toBeVisible();
@@ -309,8 +309,8 @@ test.describe('Accessibility', () => {
       expect(hasFocusIndicator).toBeTruthy();
     });
 
-    test('text should not rely solely on color', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('text should not rely solely on color', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       await searchPage.waitForLoadingComplete();
@@ -339,23 +339,23 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Heading Structure', () => {
-    test('pages should have exactly one h1', async ({ page }) => {
+    test('pages should have exactly one h1', async ({ anonymousPage }) => {
       const pagesToTest = ['/', '/search'];
 
       for (const pageUrl of pagesToTest) {
-        await page.goto(pageUrl);
-        await page.waitForLoadState('networkidle');
+        await anonymousPage.goto(pageUrl);
+        await anonymousPage.waitForLoadState('networkidle');
 
-        const h1Count = await page.locator('h1').count();
+        const h1Count = await anonymousPage.locator('h1').count();
         expect(h1Count).toBe(1);
       }
     });
 
-    test('headings should be in logical order', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('headings should be in logical order', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const headings = page.locator('h1, h2, h3, h4, h5, h6');
+      const headings = anonymousPage.locator('h1, h2, h3, h4, h5, h6');
       const headingCount = await headings.count();
 
       const headingLevels: number[] = [];
@@ -375,11 +375,11 @@ test.describe('Accessibility', () => {
       }
     });
 
-    test('section headings should describe content', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('section headings should describe content', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
-      const headings = page.locator('h2, h3');
+      const headings = anonymousPage.locator('h2, h3');
       const headingCount = await headings.count();
 
       for (let i = 0; i < headingCount; i++) {
@@ -397,24 +397,24 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('ARIA Attributes', () => {
-    test('modals should have proper role', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('modals should have proper role', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       const role = await loginModal.getAttribute('role');
       expect(role === 'dialog' || role === 'alertdialog').toBeTruthy();
     });
 
-    test('modals should have aria-label or aria-labelledby', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('modals should have aria-label or aria-labelledby', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       const ariaLabel = await loginModal.getAttribute('aria-label');
@@ -423,12 +423,12 @@ test.describe('Accessibility', () => {
       expect(ariaLabel || ariaLabelledby).toBeTruthy();
     });
 
-    test('expandable sections should have aria-expanded', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('expandable sections should have aria-expanded', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       // Find expandable filter panel
-      const filterButton = page.locator('[data-testid="filter-button"], .filter-toggle');
+      const filterButton = anonymousPage.locator('[data-testid="filter-button"], .filter-toggle');
       if (await filterButton.isVisible()) {
         const ariaExpanded = await filterButton.getAttribute('aria-expanded');
         expect(ariaExpanded === 'true' || ariaExpanded === 'false').toBeTruthy();
@@ -440,32 +440,32 @@ test.describe('Accessibility', () => {
       }
     });
 
-    test('loading states should use aria-busy', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('loading states should use aria-busy', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
 
       // Slow down network to catch loading state
-      await page.route('**/*', async route => {
+      await anonymousPage.route('**/*', async route => {
         await new Promise(resolve => setTimeout(resolve, 500));
         await route.continue();
       });
 
-      await page.goto('/search');
+      await anonymousPage.goto('/search');
 
       // Check for aria-busy during load
-      const busyElement = page.locator('[aria-busy="true"]');
+      const busyElement = anonymousPage.locator('[aria-busy="true"]');
       // May or may not catch loading state depending on timing
     });
 
-    test('required form fields should be marked', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('required form fields should be marked', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
-      const emailInput = page.locator('input[type="email"]');
-      const passwordInput = page.locator('input[type="password"]');
+      const emailInput = anonymousPage.locator('input[type="email"]');
+      const passwordInput = anonymousPage.locator('input[type="password"]');
 
       // Required inputs should be marked
       const emailRequired =
@@ -489,11 +489,11 @@ test.describe('Accessibility', () => {
     test.describe('Mobile', () => {
       test.use({ viewport: { width: 375, height: 667 } });
 
-      test('touch targets should be at least 44px', async ({ page }) => {
-        const homePage = new HomePage(page);
+      test('touch targets should be at least 44px', async ({ anonymousPage }) => {
+        const homePage = new HomePage(anonymousPage);
         await homePage.goto();
 
-        const buttons = page.locator('button, a');
+        const buttons = anonymousPage.locator('button, a');
         const buttonCount = await buttons.count();
 
         let smallTargets = 0;
@@ -513,12 +513,12 @@ test.describe('Accessibility', () => {
         expect(smallTargets).toBeLessThan(buttonCount * 0.3);
       });
 
-      test('mobile navigation should be accessible', async ({ page }) => {
-        const homePage = new HomePage(page);
+      test('mobile navigation should be accessible', async ({ anonymousPage }) => {
+        const homePage = new HomePage(anonymousPage);
         await homePage.goto();
 
         // Find mobile menu button
-        const mobileMenuButton = page.locator('.mobile-menu-button, [data-testid="mobile-menu"], .hamburger-menu');
+        const mobileMenuButton = anonymousPage.locator('.mobile-menu-button, [data-testid="mobile-menu"], .hamburger-menu');
         if (await mobileMenuButton.isVisible()) {
           // Should have accessible name
           const ariaLabel = await mobileMenuButton.getAttribute('aria-label');
@@ -531,11 +531,11 @@ test.describe('Accessibility', () => {
         }
       });
 
-      test('content should be readable without horizontal scroll', async ({ page }) => {
-        const homePage = new HomePage(page);
+      test('content should be readable without horizontal scroll', async ({ anonymousPage }) => {
+        const homePage = new HomePage(anonymousPage);
         await homePage.goto();
 
-        const body = page.locator('body');
+        const body = anonymousPage.locator('body');
         const scrollWidth = await body.evaluate(el => el.scrollWidth);
         const clientWidth = await body.evaluate(el => el.clientWidth);
 
@@ -547,8 +547,8 @@ test.describe('Accessibility', () => {
     test.describe('Tablet', () => {
       test.use({ viewport: { width: 768, height: 1024 } });
 
-      test('layout should be accessible at tablet size', async ({ page }) => {
-        const searchPage = new SearchPage(page);
+      test('layout should be accessible at tablet size', async ({ anonymousPage }) => {
+        const searchPage = new SearchPage(anonymousPage);
         await searchPage.goto();
 
         // Page should be visible and functional
@@ -562,20 +562,20 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Skip Links', () => {
-    test('should have skip to main content link', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should have skip to main content link', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       // First focus should be skip link
-      await page.keyboard.press('Tab');
-      const skipLink = page.locator('a[href="#main"], a:has-text("Skip to"), .skip-link');
+      await anonymousPage.keyboard.press('Tab');
+      const skipLink = anonymousPage.locator('a[href="#main"], a:has-text("Skip to"), .skip-link');
 
       if (await skipLink.isVisible()) {
         await expect(skipLink).toBeVisible();
 
         // Click skip link should scroll to main
         await skipLink.click();
-        const main = page.locator('#main, main');
+        const main = anonymousPage.locator('#main, main');
         await expect(main).toBeFocused();
       }
     });
@@ -586,11 +586,11 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Reduced Motion', () => {
-    test('should respect reduced motion preference', async ({ page }) => {
+    test('should respect reduced motion preference', async ({ anonymousPage }) => {
       // Set reduced motion preference
-      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await anonymousPage.emulateMedia({ reducedMotion: 'reduce' });
 
-      const homePage = new HomePage(page);
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       // Animations should be disabled or minimal
@@ -604,16 +604,16 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Focus Management', () => {
-    test('should move focus to modal when opened', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should move focus to modal when opened', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       // Focus should be within modal
-      const focused = page.locator(':focus');
+      const focused = anonymousPage.locator(':focus');
       const isInModal = await focused.evaluate(el => {
         return el.closest('.login-modal, .auth-modal, [role="dialog"]') !== null;
       });
@@ -621,8 +621,8 @@ test.describe('Accessibility', () => {
       expect(isInModal).toBeTruthy();
     });
 
-    test('should return focus when modal closes', async ({ page }) => {
-      const homePage = new HomePage(page);
+    test('should return focus when modal closes', async ({ anonymousPage }) => {
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       // Focus on login button
@@ -630,23 +630,23 @@ test.describe('Accessibility', () => {
 
       // Open modal
       await homePage.loginButton.click();
-      const loginModal = page.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
+      const loginModal = anonymousPage.locator('[data-testid="login-modal"], .login-modal, .auth-modal');
       await loginModal.waitFor({ state: 'visible' });
 
       // Close modal
-      await page.keyboard.press('Escape');
+      await anonymousPage.keyboard.press('Escape');
       await loginModal.waitFor({ state: 'hidden' });
 
       // Focus should return to trigger
       await expect(homePage.loginButton).toBeFocused();
     });
 
-    test('should not lose focus on page interactions', async ({ page }) => {
-      const searchPage = new SearchPage(page);
+    test('should not lose focus on page interactions', async ({ anonymousPage }) => {
+      const searchPage = new SearchPage(anonymousPage);
       await searchPage.goto();
 
       // Focus on a filter
-      const filterInput = page.locator('input').first();
+      const filterInput = anonymousPage.locator('input').first();
       if (await filterInput.isVisible()) {
         await filterInput.focus();
         await filterInput.fill('test');
@@ -662,20 +662,20 @@ test.describe('Accessibility', () => {
   // ============================================================================
 
   test.describe('Timed Interactions', () => {
-    test('toast notifications should persist long enough to read', async ({ page }) => {
+    test('toast notifications should persist long enough to read', async ({ anonymousPage }) => {
       // This test would verify toasts don't disappear too quickly
       // Implementation depends on how toasts work in the app
 
-      const homePage = new HomePage(page);
+      const homePage = new HomePage(anonymousPage);
       await homePage.goto();
 
       // Trigger an action that shows a toast
       // (varies by implementation)
 
       // If toast appears, check it stays visible for adequate time
-      const toast = page.locator('.toast, [role="alert"], [role="status"]');
+      const toast = anonymousPage.locator('.toast, [role="alert"], [role="status"]');
       if (await toast.isVisible()) {
-        await page.waitForTimeout(3000);
+        await anonymousPage.waitForTimeout(3000);
         // Toast should still be visible after 3 seconds (or have close button)
       }
     });
