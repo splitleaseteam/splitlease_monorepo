@@ -79,6 +79,7 @@ export async function handleLogin(
     console.log(`[login] ✅ Supabase Auth successful`);
     console.log(`[login]    Auth User ID: ${authUser.id}`);
     console.log(`[login]    Email: ${authUser.email}`);
+    console.log(`[login]    Existing user_metadata.user_id:`, authUser.user_metadata?.user_id);
 
     // ========== FETCH USER PROFILE ==========
     console.log('[login] Fetching user profile from public.user table...');
@@ -100,6 +101,36 @@ export async function handleLogin(
     const userType = authUser.user_metadata?.user_type || 'Guest';
     // hostAccountId is now the same as userId (user._id is used directly as host reference)
     const hostAccountId = userId;
+
+    // ========== MIGRATION: UPDATE USER METADATA IF NEEDED ==========
+    // For users created before the signup flow was updated, their user_metadata.user_id
+    // might not be set. We update it here to ensure subsequent Edge Function calls work correctly.
+    if (userProfile?._id && !authUser.user_metadata?.user_id) {
+      console.log('[login] 🔄 MIGRATION: Updating user_metadata.user_id for legacy user:', userProfile._id);
+
+      try {
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+          authUser.id,
+          {
+            user_metadata: {
+              ...authUser.user_metadata,
+              user_id: userProfile._id,
+              host_account_id: userProfile._id, // Same as user_id now
+            }
+          }
+        );
+
+        if (updateError) {
+          console.error('[login] ⚠️ Failed to update user_metadata (non-blocking):', updateError.message);
+        } else {
+          console.log('[login] ✅ user_metadata.user_id updated successfully');
+        }
+      } catch (metadataError) {
+        console.error('[login] ⚠️ Failed to update user_metadata (non-blocking):', metadataError);
+      }
+    } else if (authUser.user_metadata?.user_id) {
+      console.log('[login] ✅ user_metadata.user_id already set:', authUser.user_metadata.user_id);
+    }
 
     console.log(`[login] ✅ User profile loaded`);
     console.log(`[login]    User ID (_id): ${userId}`);
