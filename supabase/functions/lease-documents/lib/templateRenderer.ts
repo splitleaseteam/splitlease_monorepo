@@ -9,7 +9,7 @@
 import Docxtemplater from 'npm:docxtemplater@3.47.4';
 import PizZip from 'npm:pizzip@3.1.7';
 import ImageModule from 'npm:docxtemplater-image-module-free@1.1.1';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ================================================
 // CONSTANTS
