@@ -33,7 +33,7 @@ import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { corsHeaders as _corsHeaders } from '../_shared/cors.ts';
 
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
+import { Result, ok, err as _err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -86,7 +86,7 @@ type Action = typeof ALLOWED_ACTIONS[number];
 const BUBBLE_REQUIRED_ACTIONS: ReadonlySet<string> = new Set([]);
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   login: handleLogin,
   signup: handleSignup,
   logout: handleLogout,
@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
  * This function handles the different signatures of each handler
  */
 function executeHandler(
-  handler: Function,
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   config: AuthConfig

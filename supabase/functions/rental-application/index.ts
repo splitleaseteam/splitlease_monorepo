@@ -57,7 +57,7 @@ const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(["submit", "get", "upload"])
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   submit: handleSubmit,
   get: handleGet,
   upload: handleUpload,

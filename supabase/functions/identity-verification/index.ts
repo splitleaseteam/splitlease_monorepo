@@ -41,7 +41,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   submit_verification: handleSubmitVerification,
   get_status: handleGetStatus,
 };

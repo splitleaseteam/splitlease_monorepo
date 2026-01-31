@@ -94,7 +94,7 @@ const PUBLIC_ACTIONS: ReadonlySet<string> = new Set([
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   send_message: handleSendMessage,
   get_messages: handleGetMessages,
   get_threads: handleGetThreads,
@@ -329,7 +329,7 @@ Deno.serve(async (req) => {
  * This function handles the different signatures of each handler
  */
 function executeHandler(
-  handler: Function,
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   user: AuthenticatedUser | null,

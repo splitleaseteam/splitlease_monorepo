@@ -36,7 +36,7 @@ import {
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,
-  CorsPreflightSignal,
+  CorsPreflightSignal as _CorsPreflightSignal,
 } from "../_shared/functional/orchestration.ts";
 import { createErrorLog, addError, setAction, ErrorLog } from "../_shared/functional/errorLog.ts";
 import { reportErrorLog } from "../_shared/slack.ts";
@@ -61,7 +61,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   list_users: handleListUsers,
   get_user_data: handleGetUserData,
   send_magic_link: handleSendMagicLink,
@@ -244,7 +244,7 @@ Deno.serve(async (req) => {
  * This function handles the different signatures of each handler
  */
 function executeHandler(
-  handler: Function,
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   supabaseUrl: string,

@@ -52,7 +52,7 @@ const _PUBLIC_ACTIONS: ReadonlySet<string> = new Set(ALLOWED_ACTIONS);
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   get_proposal: handleGetProposal,
   search_candidates: handleSearchCandidates,
   save_choice: handleSaveChoice,

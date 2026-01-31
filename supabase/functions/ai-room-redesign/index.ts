@@ -35,7 +35,7 @@ const ALLOWED_ACTIONS = ["generate"] as const;
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   generate: handleGenerate,
 };
 

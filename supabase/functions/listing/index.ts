@@ -27,7 +27,7 @@ import {
 } from "../_shared/errors.ts";
 
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
+import { Result, ok, err as _err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -62,7 +62,7 @@ const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(["create", "get", "delete"])
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   create: handleCreate,
   get: handleGet,
   submit: handleSubmit,
@@ -239,7 +239,7 @@ Deno.serve(async (req: Request) => {
  * This function handles the different signatures of each handler
  */
 function executeHandler(
-  handler: Function,
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   _config: FullListingConfig | SupabaseOnlyConfig

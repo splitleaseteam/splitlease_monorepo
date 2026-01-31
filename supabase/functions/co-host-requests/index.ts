@@ -361,7 +361,7 @@ async function handleList(
 ) {
   const { limit = 25, offset = 0, filters = {}, sortField = 'Created Date', sortOrder = 'desc' } = payload;
 
-  const query = supabase
+  let query = supabase
     .from('co_hostrequest')
     .select(REQUEST_SELECT_COLUMNS, { count: 'exact' });
 

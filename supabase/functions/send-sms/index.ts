@@ -147,7 +147,7 @@ const handleSend = async (payload: SendSmsPayload): Promise<SendSmsResult> => {
 };
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   send: handleSend,
   health: handleHealth,
 };

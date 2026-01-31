@@ -244,7 +244,7 @@ const inferLikelyCause = (error: Error): string | null => {
  * Generate actionable suggestions based on error
  * Returns array of suggestions - empty if error is expected user behavior
  */
-const _getActionableSuggestions = (error: Error, functionName: string): string[] => {
+const _getActionableSuggestions = (error: Error, _functionName: string): string[] => {
   const msg = error.message.toLowerCase();
   const suggestions: string[] = [];
 

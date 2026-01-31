@@ -35,7 +35,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../_shared/errors.ts';
 
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
+import { Result, ok, err as _err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -77,7 +77,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   process_queue: handleProcessQueue,
   process_queue_data_api: handleProcessQueueDataApi,
   sync_single: handleSyncSingle,
@@ -249,7 +249,7 @@ interface DataApiConfigParam {
  * This function handles the different signatures of each handler
  */
 function executeHandler(
-  handler: Function,
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   supabase: ReturnType<typeof createClient>,

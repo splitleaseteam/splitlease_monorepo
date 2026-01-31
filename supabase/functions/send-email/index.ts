@@ -78,7 +78,7 @@ const handleHealth = (): { status: string; timestamp: string; actions: readonly 
 };
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   send: handleSend,
   health: handleHealth,
 };

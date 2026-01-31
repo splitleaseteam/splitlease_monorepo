@@ -94,7 +94,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   // Content extraction handlers
   parse_text: handleParseText,
   transcribe_audio: handleTranscribeAudio,

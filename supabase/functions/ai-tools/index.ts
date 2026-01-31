@@ -99,7 +99,7 @@ const ADMIN_EMAILS = [
 ];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   // Data fetching
   get_house_manuals: handleGetHouseManuals,
   get_deepfakes: handleGetDeepfakes,
