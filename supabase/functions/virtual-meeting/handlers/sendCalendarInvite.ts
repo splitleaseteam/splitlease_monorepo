@@ -18,7 +18,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { ValidationError, BubbleApiError } from "../../_shared/errors.ts";
+import { ValidationError as _ValidationError, BubbleApiError } from "../../_shared/errors.ts";
 import {
   SendCalendarInviteInput,
   SendCalendarInviteResponse,
@@ -32,7 +32,7 @@ import { validateSendCalendarInviteInput } from "../lib/validators.ts";
 export async function handleSendCalendarInvite(
   payload: Record<string, unknown>,
   user: UserContext | null,
-  supabase: SupabaseClient
+  _supabase: SupabaseClient
 ): Promise<SendCalendarInviteResponse> {
   console.log(`[virtual-meeting:send_calendar_invite] Starting for user: ${user?.email || 'public'}`);
 

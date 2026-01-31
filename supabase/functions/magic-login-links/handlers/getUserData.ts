@@ -85,7 +85,7 @@ export async function handleGetUserData(
       if (!error) {
         leasesData = data || [];
       }
-    } catch (e) {
+    } catch (_e) {
       console.log('[get-user-data] Lease table query skipped (table may not exist)');
     }
 

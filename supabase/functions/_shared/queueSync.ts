@@ -152,7 +152,7 @@ export async function enqueueBubbleSync(
       } else {
         console.log(`[QueueSync] Enqueued: ${item.table}/${item.recordId} (${item.operation}, seq: ${item.sequence})`);
       }
-    } catch (err) {
+    } catch (_err) {
       // Log but continue - don't fail the main operation
       console.error(`[QueueSync] Error enqueuing item:`, err);
     }
@@ -190,7 +190,7 @@ export async function enqueueSingleItem(
  * @param options - Optional configuration
  * @param options.batchSize - Number of items to process (default: 10)
  */
-export async function triggerQueueProcessing(
+export function triggerQueueProcessing(
   options: { batchSize?: number } = {}
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -220,7 +220,7 @@ export async function triggerQueueProcessing(
     });
 
     console.log('[QueueSync] Queue processing triggered');
-  } catch (err) {
+  } catch (_err) {
     // Non-blocking - log and continue
     console.warn('[QueueSync] Failed to trigger queue (non-blocking):', err);
   }
@@ -240,7 +240,7 @@ export interface TriggerProposalMessagingParams {
   proposalStatus: string;
 }
 
-export async function triggerProposalMessaging(
+export function triggerProposalMessaging(
   params: TriggerProposalMessagingParams
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -276,7 +276,7 @@ export async function triggerProposalMessaging(
     }).catch((err) => {
       console.warn('[QueueSync] Messaging trigger failed (non-blocking):', err.message);
     });
-  } catch (err) {
+  } catch (_err) {
     // Non-blocking - log and continue
     console.warn('[QueueSync] Failed to trigger messaging (non-blocking):', err);
   }
