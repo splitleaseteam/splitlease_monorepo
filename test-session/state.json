@@ -1,0 +1,39 @@
+﻿{
+    "bugs":  {
+                 "pending":  [
+
+                             ],
+                 "found":  [
+
+                           ],
+                 "fixed":  [
+
+                           ],
+                 "wontFix":  [
+
+                             ]
+             },
+    "metrics":  {
+                    "dataResets":  0,
+                    "testsPassed":  0,
+                    "elapsedMinutes":  0,
+                    "testsRun":  0,
+                    "fixAttempts":  0,
+                    "testsFailed":  0
+                },
+    "progress":  {
+                     "lastScreenshot":  null,
+                     "completedSteps":  [
+
+                                        ],
+                     "currentStep":  "environment_verification",
+                     "currentIteration":  0,
+                     "currentPhase":  "initialization"
+                 },
+    "session":  {
+                    "endedAt":  null,
+                    "status":  "initialized",
+                    "startedAt":  "2026-01-31T12:39:17.3678451-06:00",
+                    "id":  "e2e-20260131-123916"
+                }
+}

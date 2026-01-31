@@ -61,7 +61,7 @@ param(
 $ProjectRoot = Get-Location
 $TestSessionDir = Join-Path $ProjectRoot "test-session"
 $SessionId = "e2e-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
-$ScreenshotDir = Join-Path $TestSessionDir "screenshots" $SessionId
+$ScreenshotDir = Join-Path (Join-Path $TestSessionDir "screenshots") $SessionId
 
 # ============================================================================
 # Functions
