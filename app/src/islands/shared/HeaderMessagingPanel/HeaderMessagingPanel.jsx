@@ -26,6 +26,7 @@ import ThreadCard from '../../pages/MessagingPage/components/ThreadCard.jsx';
 import MessageBubble from '../../pages/MessagingPage/components/MessageBubble.jsx';
 import MessageInput from '../../pages/MessagingPage/components/MessageInput.jsx';
 import TypingIndicator from '../../pages/MessagingPage/components/TypingIndicator.jsx';
+import CreateProposalFlowV2 from '../CreateProposalFlowV2.jsx';
 import './HeaderMessagingPanel.css';
 
 /**
@@ -60,6 +61,12 @@ export default function HeaderMessagingPanel({
     isSending,
     isOtherUserTyping,
     typingUserName,
+    // Modal state
+    activeModal,
+    proposalModalData,
+    zatConfig,
+    isSubmittingProposal,
+    // Handlers
     handleThreadSelect,
     handleBackToList,
     handleMessageInputChange,
@@ -67,6 +74,9 @@ export default function HeaderMessagingPanel({
     handleRetry,
     handleCTAClick,
     getCTAButtonConfig,
+    // Modal handlers
+    handleCloseModal,
+    handleProposalSubmit,
   } = useHeaderMessagingPanelLogic({
     isOpen,
     userBubbleId,
@@ -298,6 +308,24 @@ export default function HeaderMessagingPanel({
           </svg>
         </a>
       </div>
+
+      {/* Create Proposal Modal */}
+      {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
+        <CreateProposalFlowV2
+          listing={proposalModalData.listing}
+          moveInDate={proposalModalData.moveInDate}
+          daysSelected={proposalModalData.daysSelected}
+          nightsSelected={proposalModalData.nightsSelected}
+          reservationSpan={proposalModalData.reservationSpan}
+          pricingBreakdown={proposalModalData.priceBreakdown}
+          zatConfig={zatConfig}
+          isFirstProposal={true}
+          useFullFlow={true}
+          onClose={handleCloseModal}
+          onSubmit={handleProposalSubmit}
+          isSubmitting={isSubmittingProposal}
+        />
+      )}
     </div>
   );
 }
