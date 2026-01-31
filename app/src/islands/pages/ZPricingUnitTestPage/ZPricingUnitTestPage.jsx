@@ -141,11 +141,10 @@ export default function ZPricingUnitTestPage() {
                   const name = listing.Name || listing._id;
                   const rentalType = listing['rental type'] || listing.rentalType || '?';
                   const pattern = listing['Weeks offered'] || listing.weeksOffered || 'Every week';
-                  const email = listing['Host email'] || listing.hostEmail || '';
-                  const shortEmail = email ? email.split('@')[0] : '';
+                  const email = listing['Host email'] || listing.hostEmail || '-';
                   return (
                     <option key={listing._id} value={listing._id}>
-                      {name} | {rentalType} | {pattern} | {shortEmail}
+                      {name} | {rentalType} | {pattern} | {email}
                     </option>
                   );
                 })}
