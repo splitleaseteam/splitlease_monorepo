@@ -15,7 +15,7 @@
  * - House_rules_items, image1, image2, image3
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { PeriodicTenancyPayload, DocumentResult, UserContext } from '../lib/types.ts';
 import { validatePeriodicTenancyPayload } from '../lib/validators.ts';
 import { formatDate, formatHouseRules } from '../lib/formatters.ts';

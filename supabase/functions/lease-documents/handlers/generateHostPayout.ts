@@ -11,7 +11,7 @@
  * - date1-13, rent1-13, total1-13, maintenance_fee1-13 (payment entries)
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { HostPayoutPayload, DocumentResult, UserContext } from '../lib/types.ts';
 import { validateHostPayoutPayload } from '../lib/validators.ts';
 import { formatDate, formatCurrency } from '../lib/formatters.ts';

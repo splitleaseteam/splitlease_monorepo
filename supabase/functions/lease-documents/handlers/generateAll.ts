@@ -13,7 +13,7 @@
  * Partial failures are handled gracefully - each document result is returned individually.
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { GenerateAllPayload, GenerateAllResult, UserContext } from '../lib/types.ts';
 import { validateGenerateAllPayload } from '../lib/validators.ts';
 import { handleGenerateHostPayout } from './generateHostPayout.ts';

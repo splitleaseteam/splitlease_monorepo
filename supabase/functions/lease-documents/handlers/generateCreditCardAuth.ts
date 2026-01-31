@@ -15,7 +15,7 @@
  * - numberofpayments, lastpaymentweeks, lastpaymentrent
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { CreditCardAuthPayload, DocumentResult, UserContext } from '../lib/types.ts';
 import { validateCreditCardAuthPayload } from '../lib/validators.ts';
 import { formatCurrencyRaw } from '../lib/formatters.ts';

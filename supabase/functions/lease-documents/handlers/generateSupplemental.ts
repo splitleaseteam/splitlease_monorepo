@@ -12,7 +12,7 @@
  * - supplement_number, image1, image2, image3
  */
 
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { SupplementalPayload, DocumentResult, UserContext } from '../lib/types.ts';
 import { validateSupplementalPayload } from '../lib/validators.ts';
 import { formatDate } from '../lib/formatters.ts';
