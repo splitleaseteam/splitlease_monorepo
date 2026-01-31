@@ -52,6 +52,7 @@ import type {
   UserContext,
   PaymentPayload,
 } from '../lib/types.ts';
+import { buildDocumentPayload } from '../lib/documentPayloadBuilder.ts';
 
 /**
  * Handle lease creation - main orchestrator
@@ -490,6 +491,83 @@ export async function handleCreate(
   console.log('[lease:create] Phase 7 complete');
 
   // ═══════════════════════════════════════════════════════════════
+  // PHASE 8: DOCUMENT GENERATION
+  // ═══════════════════════════════════════════════════════════════
+
+  console.log('[lease:create] Phase 8: Generating lease documents...');
+
+  let documentsGenerated = false;
+
+  try {
+    // Build document payload from lease data
+    const documentPayload = await buildDocumentPayload(supabase, {
+      leaseId,
+      agreementNumber,
+      proposal: proposalData,
+      activeTerms,
+      moveOutDate,
+      hostPaymentRecords: [],
+    });
+
+    console.log('[lease:create] Document payload built, calling lease-documents function...');
+
+    // Call lease-documents edge function
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (supabaseUrl && supabaseServiceKey) {
+      const documentResponse = await fetch(`${supabaseUrl}/functions/v1/lease-documents`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generate_all',
+          payload: documentPayload,
+        }),
+      });
+
+      if (documentResponse.ok) {
+        const documentResult = await documentResponse.json();
+        console.log('[lease:create] Document generation result:', JSON.stringify(documentResult, null, 2));
+
+        // Check if all documents were generated successfully
+        const allSuccess =
+          documentResult.hostPayout?.success &&
+          documentResult.supplemental?.success &&
+          documentResult.periodicTenancy?.success &&
+          documentResult.creditCardAuth?.success;
+
+        if (allSuccess) {
+          documentsGenerated = true;
+          console.log('[lease:create] All 4 documents generated successfully');
+        } else {
+          console.warn('[lease:create] Some documents failed to generate');
+        }
+      } else {
+        const errorText = await documentResponse.text();
+        console.error('[lease:create] Document generation failed:', documentResponse.status, errorText);
+      }
+    } else {
+      console.warn('[lease:create] Missing Supabase credentials for document generation');
+    }
+  } catch (docError) {
+    console.error('[lease:create] Document generation error:', docError);
+    // Document generation is not critical enough to fail the entire lease creation
+  }
+
+  // Update lease with document generation status
+  if (documentsGenerated) {
+    await supabase
+      .from('bookings_leases')
+      .update({ 'were documents generated?': true })
+      .eq('_id', leaseId);
+  }
+
+  console.log(`[lease:create] Phase 8 complete: Documents generated = ${documentsGenerated}`);
+
+  // ═══════════════════════════════════════════════════════════════
   // BUBBLE SYNC (Non-blocking)
   // ═══════════════════════════════════════════════════════════════
 
@@ -535,6 +613,7 @@ export async function handleCreate(
     guestPaymentRecordsCreated: guestPaymentResult.recordCount,
     hostPaymentRecordsCreated: hostPaymentResult.recordCount,
     magicLinks,
+    documentsGenerated,
   };
 }
 
