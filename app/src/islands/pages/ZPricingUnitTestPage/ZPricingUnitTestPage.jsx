@@ -137,11 +137,18 @@ export default function ZPricingUnitTestPage() {
                 onChange={(e) => logic.handleListingChange(e.target.value)}
               >
                 <option value="">-- Select a listing --</option>
-                {logic.filteredListings.map(listing => (
-                  <option key={listing._id} value={listing._id}>
-                    {listing.Name || listing._id}
-                  </option>
-                ))}
+                {logic.filteredListings.map(listing => {
+                  const name = listing.Name || listing._id;
+                  const rentalType = listing['rental type'] || listing.rentalType || '?';
+                  const pattern = listing['Weeks offered'] || listing.weeksOffered || 'Every week';
+                  const email = listing['Host email'] || listing.hostEmail || '';
+                  const shortEmail = email ? email.split('@')[0] : '';
+                  return (
+                    <option key={listing._id} value={listing._id}>
+                      {name} | {rentalType} | {pattern} | {shortEmail}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
