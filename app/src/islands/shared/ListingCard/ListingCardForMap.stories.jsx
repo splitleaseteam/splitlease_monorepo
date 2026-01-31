@@ -267,54 +267,56 @@ export const NotLoggedIn = {
 };
 
 // Interactive Demo
-export const InteractiveDemo = {
-  render: () => {
-    const [isVisible, setIsVisible] = useState(true);
-    const [isFavorited, setIsFavorited] = useState(false);
+const InteractiveDemoComponent = () => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
 
-    return (
-      <>
-        {!isVisible && (
-          <button
-            onClick={() => setIsVisible(true)}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              padding: '12px 24px',
-              backgroundColor: '#5B21B6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-            }}
-          >
-            Show Card
-          </button>
-        )}
-        <ListingCardForMap
-          listing={mockListing}
-          isVisible={isVisible}
-          position={{ x: 300, y: 50 }}
-          onClose={() => setIsVisible(false)}
-          onMessageClick={(listing) => {
-            console.log('Message clicked for:', listing.title);
-            alert(`Message clicked for: ${listing.title}`);
+  return (
+    <>
+      {!isVisible && (
+        <button
+          onClick={() => setIsVisible(true)}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '12px 24px',
+            backgroundColor: '#5B21B6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
           }}
-          isLoggedIn={true}
-          isFavorited={isFavorited}
-          onToggleFavorite={(listingId, title, newState) => {
-            setIsFavorited(newState);
-            console.log(`${newState ? 'Added' : 'Removed'} favorite:`, title);
-          }}
-          userId="user-123"
-          showMessageButton={true}
-        />
-      </>
-    );
-  },
+        >
+          Show Card
+        </button>
+      )}
+      <ListingCardForMap
+        listing={mockListing}
+        isVisible={isVisible}
+        position={{ x: 300, y: 50 }}
+        onClose={() => setIsVisible(false)}
+        onMessageClick={(listing) => {
+          console.log('Message clicked for:', listing.title);
+          alert(`Message clicked for: ${listing.title}`);
+        }}
+        isLoggedIn={true}
+        isFavorited={isFavorited}
+        onToggleFavorite={(listingId, title, newState) => {
+          setIsFavorited(newState);
+          console.log(`${newState ? 'Added' : 'Removed'} favorite:`, title);
+        }}
+        userId="user-123"
+        showMessageButton={true}
+      />
+    </>
+  );
+};
+
+export const InteractiveDemo = {
+  render: () => <InteractiveDemoComponent />,
   parameters: {
     docs: {
       description: {

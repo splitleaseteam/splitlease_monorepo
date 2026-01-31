@@ -18,11 +18,17 @@
 import { memo, useMemo } from 'react';
 import styles from './DescriptionSection.module.css';
 
+interface DescriptionSectionProps {
+    description: string;
+    isExpanded: boolean;
+    onToggle: () => void;
+}
+
 const DescriptionSection = memo(function DescriptionSection({
     description,
     isExpanded,
     onToggle
-}) {
+}: DescriptionSectionProps) {
 
     const CHARACTER_LIMIT = 300;
 

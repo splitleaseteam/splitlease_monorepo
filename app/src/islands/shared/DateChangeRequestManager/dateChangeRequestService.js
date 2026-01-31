@@ -478,6 +478,45 @@ export async function getLeaseWithDates(leaseId) {
 }
 
 // Export all API functions as a service object
+/**
+ * Get booked dates from other leases on the same listing (Roommate's dates)
+ * @param {string} listingId - Listing ID
+ * @param {string} currentLeaseId - Current Lease ID to exclude
+ * @returns {Promise<{status: string, data?: string[], message?: string}>}
+ */
+export async function getRoommateBookedDates(listingId, currentLeaseId) {
+  try {
+    const { data, error } = await supabase
+      .from('bookings_leases')
+      .select('"List of Booked Dates"')
+      .eq('Listing', listingId)
+      .eq('Lease Status', 'Active')
+      .neq('_id', currentLeaseId);
+
+    if (error) throw error;
+
+    // Combine dates from all other active leases (usually just one roommate)
+    const roommateDates = data.reduce((acc, lease) => {
+      const dates = lease['List of Booked Dates'] || [];
+      return [...acc, ...dates];
+    }, []);
+
+    // Remove duplicates if any
+    const uniqueDates = [...new Set(roommateDates)];
+
+    return {
+      status: 'success',
+      data: uniqueDates,
+    };
+  } catch (error) {
+    console.error('API Error (get-roommate-booked-dates):', error);
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Failed to fetch roommate dates',
+    };
+  }
+}
+
 export const dateChangeRequestService = {
   create: createDateChangeRequest,
   getAll: getDateChangeRequests,
@@ -489,6 +528,7 @@ export const dateChangeRequestService = {
   updateWarningPreference,
   applyHardBlock,
   getLeaseWithDates,
+  getRoommateBookedDates,
   transformFromDb,
   transformToDb,
 };

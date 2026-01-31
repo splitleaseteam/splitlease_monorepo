@@ -24,6 +24,37 @@ import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './ListingHeader.module.css';
 
+interface Listing {
+    _id: string;
+    Name: string;
+    resolvedNeighborhood?: string;
+    resolvedBorough?: string;
+    resolvedTypeOfSpace?: string;
+    neighborhoodName?: string;
+    boroughName?: string;
+    host?: {
+        name?: string;
+        'First Name'?: string;
+        'Last Name'?: string;
+    };
+    hostData?: {
+        name?: string;
+        profilePhotoUrl?: string;
+        verified?: boolean;
+        image?: string;
+    };
+}
+
+interface ListingHeaderProps {
+    listing: Listing;
+    isFavorited: boolean;
+    onToggleFavorite: () => void | Promise<void>;
+    onLocationClick: () => void;
+    isAuthenticated: boolean;
+    userId?: string | null;
+    onRequireAuth?: () => void;
+}
+
 const ListingHeader = memo(function ListingHeader({
     listing,
     isFavorited,
@@ -32,7 +63,7 @@ const ListingHeader = memo(function ListingHeader({
     isAuthenticated,
     userId,
     onRequireAuth
-}) {
+}: ListingHeaderProps) {
 
     const handleShare = async () => {
         const url = window.location.href;

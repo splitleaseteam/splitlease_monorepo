@@ -34,11 +34,13 @@ export function formatDate(
   date: Date,
   format: 'short' | 'medium' | 'long' = 'medium'
 ): string {
-  const options: Intl.DateTimeFormatOptions = {
+  const optionsMap: Record<'short' | 'medium' | 'long', Intl.DateTimeFormatOptions> = {
     short: { month: 'numeric', day: 'numeric', year: '2-digit' },
     medium: { month: 'short', day: 'numeric', year: 'numeric' },
     long: { month: 'long', day: 'numeric', year: 'numeric', weekday: 'long' },
-  }[format];
+  };
+
+  const options = optionsMap[format];
 
   return date.toLocaleDateString('en-US', options);
 }

@@ -28,6 +28,22 @@
 import { memo } from 'react';
 import styles from './PhotoGallery.module.css';
 
+interface Photo {
+    _id: string;
+    Photo: string;
+    'Photo (thumbnail)'?: string;
+}
+
+interface PhotoGalleryProps {
+    photos: Photo[];
+    listingName: string;
+    onPhotoClick: (index: number) => void;
+    currentIndex?: number;
+    isModalOpen?: boolean;
+    onCloseModal?: () => void;
+    isMobile?: boolean;
+}
+
 const PhotoGallery = memo(function PhotoGallery({
     photos,
     listingName,
@@ -36,7 +52,7 @@ const PhotoGallery = memo(function PhotoGallery({
     isModalOpen,
     onCloseModal,
     isMobile = false
-}) {
+}: PhotoGalleryProps) {
     const photoCount = photos.length;
 
     // Handle empty photo array
@@ -299,6 +315,18 @@ PhotoGallery.displayName = 'PhotoGallery';
 /**
  * Individual photo tile
  */
+interface PhotoTileProps {
+    photo: Photo;
+    index: number;
+    onClick: (index: number) => void;
+    alt: string;
+    className?: string;
+    priority?: boolean;
+    useThumbnail?: boolean;
+    showAllOverlay?: boolean;
+    totalPhotos?: number;
+}
+
 const PhotoTile = memo(function PhotoTile({
     photo,
     index,
@@ -309,7 +337,7 @@ const PhotoTile = memo(function PhotoTile({
     useThumbnail = false,
     showAllOverlay = false,
     totalPhotos = 0
-}) {
+}: PhotoTileProps) {
     const photoUrl = useThumbnail && photo['Photo (thumbnail)']
         ? photo['Photo (thumbnail)']
         : photo.Photo;
@@ -363,12 +391,19 @@ PhotoTile.displayName = 'PhotoTile';
 /**
  * Photo lightbox modal
  */
+interface PhotoLightboxProps {
+    photos: Photo[];
+    currentIndex: number;
+    onClose: () => void;
+    listingName: string;
+}
+
 const PhotoLightbox = memo(function PhotoLightbox({
     photos,
     currentIndex,
     onClose,
     listingName
-}) {
+}: PhotoLightboxProps) {
     const handlePrevious = () => {
         const newIndex = currentIndex === 0 ? photos.length - 1 : currentIndex - 1;
         // Note: Parent component should handle index updates

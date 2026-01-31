@@ -20,11 +20,27 @@ import { memo } from 'react';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './HostInfoCard.module.css';
 
+interface Host {
+    name?: string;
+    'First Name'?: string;
+    'Last Name'?: string;
+    profilePhotoUrl?: string;
+    responseTime?: string;
+    rating?: number;
+    bio?: string;
+}
+
+interface HostInfoCardProps {
+    host: Host;
+    onContactClick: () => void;
+    isAuthenticated: boolean;
+}
+
 const HostInfoCard = memo(function HostInfoCard({
     host,
     onContactClick,
     isAuthenticated
-}) {
+}: HostInfoCardProps) {
 
     if (!host) {
         return null;

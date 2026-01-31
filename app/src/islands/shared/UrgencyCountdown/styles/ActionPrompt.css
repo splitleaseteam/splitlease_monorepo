@@ -1,0 +1,473 @@
+/**
+ * Pattern 2: Urgency Countdown - ActionPrompt Styles
+ */
+
+/* ========================================
+   ACTION PROMPT CONTAINER
+   ======================================== */
+
+.action-prompt {
+  position: relative;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.action-prompt.prompt-critical {
+  background: rgba(255, 235, 238, 0.6);
+  border-color: rgba(244, 67, 54, 0.3);
+}
+
+/* ========================================
+   SAVINGS MESSAGE
+   ======================================== */
+
+.prompt-savings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2E7D32;
+}
+
+.savings-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.savings-text {
+  flex: 1;
+}
+
+/* ========================================
+   CTA BUTTON
+   ======================================== */
+
+.prompt-button {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.prompt-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.prompt-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.prompt-button:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Button Urgency Variants */
+.button-low {
+  background: linear-gradient(135deg, #4A90E2, #357ABD);
+  color: white;
+}
+
+.button-low:not(:disabled):hover {
+  background: linear-gradient(135deg, #357ABD, #2868A8);
+}
+
+.button-medium {
+  background: linear-gradient(135deg, #FFA726, #F57C00);
+  color: white;
+}
+
+.button-medium:not(:disabled):hover {
+  background: linear-gradient(135deg, #F57C00, #E65100);
+}
+
+.button-high {
+  background: linear-gradient(135deg, #FF5722, #D32F2F);
+  color: white;
+}
+
+.button-high:not(:disabled):hover {
+  background: linear-gradient(135deg, #D32F2F, #B71C1C);
+}
+
+.button-critical {
+  background: linear-gradient(135deg, #F44336, #D32F2F);
+  color: white;
+  animation: pulse-cta 2s infinite;
+}
+
+.button-critical:not(:disabled):hover {
+  background: linear-gradient(135deg, #D32F2F, #B71C1C);
+}
+
+/* ========================================
+   BUTTON CONTENT
+   ======================================== */
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.button-text {
+  flex: 1;
+  text-align: center;
+}
+
+.button-arrow {
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.prompt-button:not(:disabled):hover .button-arrow {
+  transform: translateX(4px);
+}
+
+/* ========================================
+   LOADING STATE
+   ======================================== */
+
+.button-loading {
+  pointer-events: none;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ========================================
+   PRICE DISPLAY
+   ======================================== */
+
+.prompt-price {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.price-label {
+  font-weight: 400;
+}
+
+.price-value {
+  font-weight: 700;
+  font-size: 16px;
+  color: #333;
+}
+
+/* ========================================
+   PULSE EFFECT (Critical)
+   ======================================== */
+
+.prompt-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(244, 67, 54, 0.5);
+  border-radius: 8px;
+  animation: pulse-ring-rect 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.pulse-delay-1 {
+  animation-delay: 1s;
+}
+
+/* ========================================
+   COMPACT VARIANT
+   ======================================== */
+
+.action-prompt-compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-prompt-compact:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-prompt-compact:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-prompt-compact.prompt-critical {
+  background: linear-gradient(135deg, #F44336, #D32F2F);
+  color: white;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.action-prompt-compact.prompt-high {
+  background: linear-gradient(135deg, #FF5722, #D32F2F);
+  color: white;
+}
+
+.action-prompt-compact.prompt-medium {
+  background: linear-gradient(135deg, #FFA726, #F57C00);
+  color: white;
+}
+
+.action-prompt-compact.prompt-low {
+  background: linear-gradient(135deg, #4A90E2, #357ABD);
+  color: white;
+}
+
+.compact-price {
+  font-weight: 700;
+}
+
+/* ========================================
+   SPLIT VARIANT
+   ======================================== */
+
+.action-prompt-split {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+}
+
+.prompt-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.prompt-primary {
+  flex: 2;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.prompt-primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.prompt-secondary {
+  flex: 1;
+  padding: 14px 20px;
+  border: 2px solid #4A90E2;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4A90E2;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.prompt-secondary:not(:disabled):hover {
+  background: rgba(74, 144, 226, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   TIMER VARIANT
+   ======================================== */
+
+.action-prompt-timer {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+}
+
+.prompt-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 6px;
+  font-size: 13px;
+  color: #E65100;
+}
+
+.timer-icon {
+  font-size: 18px;
+  animation: tick 1s ease-in-out infinite;
+}
+
+.timer-text {
+  flex: 1;
+}
+
+.timer-text strong {
+  font-weight: 700;
+  color: #D84315;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes pulse-cta {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pulse-ring-rect {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes tick {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .prompt-button {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  .button-icon {
+    font-size: 18px;
+  }
+
+  .price-value {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-prompt {
+    padding: 12px;
+  }
+
+  .prompt-button {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .prompt-buttons {
+    flex-direction: column;
+  }
+
+  .prompt-primary,
+  .prompt-secondary {
+    flex: 1;
+  }
+
+  .button-text {
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.prompt-button:focus,
+.action-prompt-compact:focus,
+.prompt-primary:focus,
+.prompt-secondary:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-button,
+  .button-arrow,
+  .action-prompt-compact,
+  .pulse-ring,
+  .timer-icon,
+  .loading-spinner {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .prompt-button:not(:disabled):hover,
+  .action-prompt-compact:not(:disabled):hover {
+    transform: none !important;
+  }
+}

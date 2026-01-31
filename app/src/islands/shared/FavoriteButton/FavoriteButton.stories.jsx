@@ -309,49 +309,51 @@ export const AllSizes = {
 };
 
 // On Listing Card
-export const OnListingCard = {
-  render: () => {
-    const [favorited, setFavorited] = useState(false);
+const OnListingCardComponent = () => {
+  const [favorited, setFavorited] = useState(false);
 
-    return (
+  return (
+    <div style={{
+      width: '320px',
+      backgroundColor: 'white',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    }}>
       <div style={{
-        width: '320px',
-        backgroundColor: 'white',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        position: 'relative',
+        height: '200px',
+        backgroundColor: '#d1d5db',
+        backgroundImage: 'url(https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}>
-        <div style={{
-          position: 'relative',
-          height: '200px',
-          backgroundColor: '#d1d5db',
-          backgroundImage: 'url(https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}>
-          <FavoriteButton
-            listingId="listing-card"
-            userId="user-123"
-            initialFavorited={favorited}
-            onToggle={(newState) => setFavorited(newState)}
-            size="medium"
-            variant="overlay"
-          />
-        </div>
-        <div style={{ padding: '16px' }}>
-          <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: '#1f2937' }}>
-            Cozy Chelsea Studio
-          </h3>
-          <p style={{ margin: '0 0 8px', fontSize: '14px', color: '#6b7280' }}>
-            Chelsea, Manhattan
-          </p>
-          <p style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#7c3aed' }}>
-            $125 / night
-          </p>
-        </div>
+        <FavoriteButton
+          listingId="listing-card"
+          userId="user-123"
+          initialFavorited={favorited}
+          onToggle={(newState) => setFavorited(newState)}
+          size="medium"
+          variant="overlay"
+        />
       </div>
-    );
-  },
+      <div style={{ padding: '16px' }}>
+        <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: '#1f2937' }}>
+          Cozy Chelsea Studio
+        </h3>
+        <p style={{ margin: '0 0 8px', fontSize: '14px', color: '#6b7280' }}>
+          Chelsea, Manhattan
+        </p>
+        <p style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#7c3aed' }}>
+          $125 / night
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export const OnListingCard = {
+  render: () => <OnListingCardComponent />,
   parameters: {
     docs: {
       description: {

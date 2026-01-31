@@ -22,6 +22,20 @@ import { memo, useEffect, useRef } from 'react';
 import GoogleMap from '../../../shared/GoogleMap.jsx';
 import styles from './MapSection.module.css';
 
+interface Coordinates {
+    lat: number;
+    lng: number;
+}
+
+interface MapSectionProps {
+    coordinates: Coordinates;
+    listingName: string;
+    neighborhood: string;
+    shouldLoad: boolean;
+    onLoadMap: () => void;
+    mapRef: React.RefObject<any>;
+}
+
 const MapSection = memo(function MapSection({
     coordinates,
     listingName,
@@ -29,7 +43,7 @@ const MapSection = memo(function MapSection({
     shouldLoad,
     onLoadMap,
     mapRef
-}) {
+}: MapSectionProps) {
 
     const containerRef = useRef(null);
     const hasAutoZoomedRef = useRef(false);
@@ -93,6 +107,7 @@ const MapSection = memo(function MapSection({
 
             <div className={styles.mapWrapper}>
                 {shouldLoad ? (
+                    // @ts-ignore - GoogleMap is a .jsx component without type definitions
                     <GoogleMap
                         ref={mapRef}
                         listings={[{

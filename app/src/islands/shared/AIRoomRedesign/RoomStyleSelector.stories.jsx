@@ -223,21 +223,23 @@ export const Disabled = {
 };
 
 // Few Styles
-export const FewStyles = {
-  render: () => {
-    const [selected, setSelected] = useState(null);
-    const fewStyles = sampleStyles.slice(0, 4);
+const FewStylesComponent = () => {
+  const [selected, setSelected] = useState(null);
+  const fewStyles = sampleStyles.slice(0, 4);
 
-    return (
-      <div style={{ maxWidth: '600px', padding: '16px', backgroundColor: 'white', borderRadius: '12px' }}>
-        <RoomStyleSelector
-          styles={fewStyles}
-          selectedStyle={selected}
-          onSelectStyle={setSelected}
-        />
-      </div>
-    );
-  },
+  return (
+    <div style={{ maxWidth: '600px', padding: '16px', backgroundColor: 'white', borderRadius: '12px' }}>
+      <RoomStyleSelector
+        styles={fewStyles}
+        selectedStyle={selected}
+        onSelectStyle={setSelected}
+      />
+    </div>
+  );
+};
+
+export const FewStyles = {
+  render: () => <FewStylesComponent />,
   parameters: {
     docs: {
       description: {

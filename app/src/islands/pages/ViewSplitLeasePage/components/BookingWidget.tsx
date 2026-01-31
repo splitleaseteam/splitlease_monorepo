@@ -27,9 +27,61 @@
  * @performance Memoized to prevent unnecessary re-renders
  */
 
-import { memo } from 'react';
+import { memo, Dispatch, SetStateAction } from 'react';
 import ListingScheduleSelector from '../../../shared/ListingScheduleSelector';
 import styles from './BookingWidget.module.css';
+
+interface Day {
+    day: number;
+    dayName: string;
+    selected: boolean;
+}
+
+interface PriceBreakdown {
+    weekly: number;
+    monthly: number;
+    fourWeek: number;
+    total: number;
+    nights: number;
+}
+
+interface ValidationErrors {
+    schedule?: string;
+    moveInDate?: string;
+    reservationSpan?: string;
+    hasErrors?: boolean;
+}
+
+interface ExistingProposal {
+    _id: string;
+    status: string;
+}
+
+interface Listing {
+    _id: string;
+    Name: string;
+    [key: string]: any;
+}
+
+interface BookingWidgetProps {
+    listing: Listing;
+    selectedDays: Day[];
+    moveInDate: string;
+    reservationSpan: number;
+    priceBreakdown: PriceBreakdown | null;
+    minMoveInDate: string;
+    validationErrors: ValidationErrors;
+    isValid: boolean;
+    formattedPrice: string;
+    formattedStartingPrice: string;
+    existingProposal: ExistingProposal | null;
+    onScheduleChange: (days: Day[]) => void;
+    onMoveInDateChange: (date: string) => void;
+    onReservationSpanChange: (span: number) => void;
+    onSubmit: () => void;
+    activeInfoTooltip?: string | null;
+    setActiveInfoTooltip?: Dispatch<SetStateAction<string | null>>;
+}
 
 const BookingWidget = memo(function BookingWidget({
     listing,
@@ -47,7 +99,7 @@ const BookingWidget = memo(function BookingWidget({
     onMoveInDateChange,
     onReservationSpanChange,
     onSubmit
-}) {
+}: BookingWidgetProps) {
 
 
     // Reservation span options

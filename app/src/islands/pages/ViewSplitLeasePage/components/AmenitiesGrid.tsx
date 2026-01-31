@@ -18,12 +18,24 @@
 import { memo } from 'react';
 import styles from './AmenitiesGrid.module.css';
 
+interface Amenity {
+    name: string;
+    icon?: string;
+}
+
+interface AmenitiesGridProps {
+    amenities?: Amenity[];
+    safetyFeatures?: Amenity[];
+    isExpanded?: boolean;
+    onToggle: () => void;
+}
+
 const AmenitiesGrid = memo(function AmenitiesGrid({
     amenities = [],
     safetyFeatures = [],
     isExpanded = false,
     onToggle
-}) {
+}: AmenitiesGridProps) {
 
     const INITIAL_DISPLAY_COUNT = 6;
 
