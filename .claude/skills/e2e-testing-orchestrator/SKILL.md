@@ -206,6 +206,172 @@ ELSE:
 
 ---
 
+---
+
+## Session Management (NEW)
+
+### Session Initialization
+
+Before running the orchestrator, initialize a session using the startup script:
+
+```powershell
+# From project root
+.\scripts\Start-E2ESession.ps1 -TestFlow "guest-proposal" -MaxTimeMinutes 30
+```
+
+This creates:
+- `test-session/config.json` - Budget and scope settings
+- `test-session/state.json` - Progress tracking
+- `test-session/screenshots/{session-id}/` - Evidence storage
+
+### Budget Enforcement
+
+At the **start of each iteration**, check budget limits:
+
+1. **Read** `test-session/state.json` to get current metrics
+2. **Read** `test-session/config.json` to get limits
+3. **Calculate** elapsed time: `(now - session.startedAt) / 60000`
+4. **Check** limits:
+   - `elapsedMinutes >= config.budget.maxTimeMinutes` -> STOP
+   - `currentIteration >= config.budget.maxIterations` -> STOP
+   - `bugs.fixed.length >= config.budget.maxBugsToFix` -> STOP
+
+**Budget Check Output Format:**
+```
+BUDGET CHECK [Iteration X]:
+- Time: {elapsed}/{max} minutes ({percent}%)
+- Iterations: {current}/{max}
+- Bugs Fixed: {fixed}/{maxBugsToFix}
+- Status: CONTINUE | WARN | STOP
+```
+
+### State Updates
+
+**Update state.json at these checkpoints:**
+- After each test step completion
+- After each bug found
+- After each fix applied
+- After each data reset
+- At session end
+
+**Example state update:**
+```javascript
+// After finding a bug
+state.bugs.found.push({
+  id: "BUG-001",
+  category: "validation",
+  description: "Submit button disabled when form valid",
+  step: "2.5",
+  timestamp: new Date().toISOString()
+});
+state.progress.currentStep = "2.5-bug-detected";
+// Write to test-session/state.json
+```
+
+### Data Reset Phase
+
+After fixing bugs and before retesting, reset test data:
+
+1. **Check** if `config.dataReset.enabled` is true
+2. **Read** `test-session/data-reset.sql` for the reset queries
+3. **Execute** via mcp-tool-specialist -> Supabase MCP:
+   - `mcp__supabase__execute_sql` with SELECT queries first (preview)
+   - `mcp__supabase__execute_sql` with DELETE queries (cleanup)
+4. **Update** `state.metrics.dataResets++`
+
+**Data Reset Rules:**
+- ALWAYS target `splitlease-backend-dev` (NEVER production)
+- ALWAYS preview with SELECT before DELETE
+- ALWAYS preserve test accounts unless explicitly configured otherwise
+- DELETE in correct order: rental_applications -> proposals -> messages
+
+---
+
+## Orchestration Loop (Enhanced)
+
+The enhanced loop incorporates budget checking and state management:
+
+```
++-------------------------------------------------------------+
+|                 E2E ORCHESTRATION LOOP                       |
++-------------------------------------------------------------+
+|                                                              |
+|  +--------------------------------------------------------+  |
+|  | 0. BUDGET CHECK                                         |  |
+|  |    - Read config.json and state.json                    |  |
+|  |    - Calculate elapsed time and progress                |  |
+|  |    - If exceeded -> Jump to REPORT phase                |  |
+|  |    - Output budget status                               |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 1. ENVIRONMENT VERIFICATION (Phase 1)                   |  |
+|  |    - Check dev server at localhost:8000                 |  |
+|  |    - Verify Playwright MCP via mcp-tool-specialist      |  |
+|  |    - Update state.progress.currentPhase                 |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 2. EXECUTE TEST FLOW (Phase 2)                          |  |
+|  |    - Run test steps via mcp-tool-specialist             |  |
+|  |    - Update state.progress after each step              |  |
+|  |    - Save screenshots to session directory              |  |
+|  |    - Log bugs to state.bugs.found                       |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 3. BUG ANALYSIS (Phase 3.1)                             |  |
+|  |    - If no bugs -> Skip to VERIFY                       |  |
+|  |    - Analyze bugs using bug-analysis-patterns.md        |  |
+|  |    - Create bug reports in .claude/plans/New/           |  |
+|  |    - Move to state.bugs.pending                         |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 4. FIX BUGS (Phase 3.2-3.3)                             |  |
+|  |    - Budget check before each fix                       |  |
+|  |    - Apply fixes using existing fix patterns            |  |
+|  |    - Commit with /git-commits skill                     |  |
+|  |    - Move to state.bugs.fixed                           |  |
+|  |    - Increment state.metrics.fixAttempts                |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 5. RESET DATA                                           |  |
+|  |    - Execute data-reset.sql via Supabase MCP            |  |
+|  |    - Preview with SELECT, then DELETE                   |  |
+|  |    - Increment state.metrics.dataResets                 |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 6. VERIFY (Phase 3.4)                                   |  |
+|  |    - Budget check                                       |  |
+|  |    - Re-run affected test steps                         |  |
+|  |    - If bugs remain -> Loop to BUG ANALYSIS             |  |
+|  |    - If clean -> Continue                               |  |
+|  |    - Increment state.progress.currentIteration          |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 7. EXIT CONDITION CHECK                                 |  |
+|  |    - Clean run achieved? -> REPORT                      |  |
+|  |    - Consecutive failures > max? -> REPORT              |  |
+|  |    - More bugs to fix? -> Loop to BUDGET CHECK          |  |
+|  +--------------------------------------------------------+  |
+|                           |                                   |
+|  +--------------------------------------------------------+  |
+|  | 8. REPORT (Phase 4)                                     |  |
+|  |    - Finalize state.json with end time and status       |  |
+|  |    - Generate report in .claude/plans/Documents/        |  |
+|  |    - Output summary to user                             |  |
+|  |    - Invoke /slack-webhook with results                 |  |
+|  +--------------------------------------------------------+  |
+|                                                              |
++-------------------------------------------------------------+
+```
+
+---
+
 ## Critical Rules
 
 ### MCP Invocation Rule (MANDATORY)
