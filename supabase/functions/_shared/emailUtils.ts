@@ -141,7 +141,7 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResult> {
  * Send welcome email to new user with verification link
  * Matches Bubble's l2-signup-user-emails-sending Step 5 (Guest) / Step 7 (Host)
  */
-export async function sendWelcomeEmail(
+export function sendWelcomeEmail(
   userType: 'Host' | 'Guest',
   email: string,
   firstName: string,
@@ -190,7 +190,7 @@ export async function sendWelcomeEmail(
  * Matches Bubble's l2-signup-user-emails-sending Step 1
  * BCCs all Slack channels + team emails for visibility
  */
-export async function sendInternalSignupNotification(
+export function sendInternalSignupNotification(
   userId: string,
   email: string,
   firstName: string,

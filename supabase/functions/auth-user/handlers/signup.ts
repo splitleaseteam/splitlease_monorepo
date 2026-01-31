@@ -40,7 +40,7 @@ import {
 import { createDefaultNotificationPreferences } from '../../_shared/notificationSender.ts';
 import {
   getNotificationPreferences,
-  shouldSendEmail as checkEmailPreference,
+  shouldSendEmail as _checkEmailPreference,
   shouldSendSms as checkSmsPreference,
 } from '../../_shared/notificationHelpers.ts';
 
@@ -56,7 +56,7 @@ interface SignupAdditionalData {
  * Map simple user type values to reference_table.os_user_type.display values
  * The foreign key constraint fk_user_type_current requires exact match to display column
  */
-function mapUserTypeToDisplay(userType: string): string {
+function _mapUserTypeToDisplay(userType: string): string {
   const mapping: Record<string, string> = {
     'Host': 'A Host (I have a space available to rent)',
     'Guest': 'A Guest (I would like to rent a space)',
@@ -256,7 +256,7 @@ export async function handleSignup(
     if (birthDate) {
       try {
         dateOfBirth = new Date(birthDate).toISOString();
-      } catch (e) {
+      } catch (_e) {
         console.log('[signup] Could not parse birthDate:', birthDate);
       }
     }
@@ -386,7 +386,7 @@ export async function handleSignup(
       } else {
         console.log('[signup] ✅ Welcome email sent');
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('[signup] Welcome email error:', err);
       // Non-blocking: Continue with signup even if email fails
     }
@@ -401,7 +401,7 @@ export async function handleSignup(
       } else {
         console.log('[signup] ✅ Internal notification sent');
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('[signup] Internal notification error:', err);
     }
 
@@ -421,7 +421,7 @@ export async function handleSignup(
             console.log('[signup] ✅ Welcome SMS sent');
           }
         }
-      } catch (err) {
+      } catch (_err) {
         console.error('[signup] Welcome SMS error:', err);
       }
     }

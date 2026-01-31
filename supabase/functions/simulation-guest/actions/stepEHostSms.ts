@@ -21,8 +21,8 @@ interface StepEResult {
   };
 }
 
-export async function handleStepE(
-  supabase: SupabaseClient,
+export function handleStepE(
+  _supabase: SupabaseClient,
   payload: StepEPayload
 ): Promise<StepEResult> {
   const { simulationId } = payload;

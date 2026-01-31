@@ -18,7 +18,7 @@
  * - `Tasks Completed` - JSON array of completed tasks
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -197,7 +197,7 @@ async function authenticateFromHeaders(
 /**
  * Check if user has admin privileges
  */
-async function checkAdminStatus(
+async function _checkAdminStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {
@@ -249,7 +249,7 @@ async function handleListUsers(
 ) {
   const { limit = 20, offset = 0 } = payload;
 
-  const { data, error, count } = await supabase
+  const { data, error, _count } = await supabase
     .from('user')
     .select(USER_SELECT_COLUMNS, { count: 'exact' })
     .order('Created Date', { ascending: false })

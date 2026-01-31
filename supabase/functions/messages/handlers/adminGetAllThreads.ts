@@ -9,7 +9,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { AuthenticationError, ValidationError } from '../../_shared/errors.ts';
+import { AuthenticationError, ValidationError as _ValidationError } from '../../_shared/errors.ts';
 
 interface AdminThread {
   _id: string;
@@ -124,7 +124,7 @@ export async function handleAdminGetAllThreads(
   }
 
   // Step 3: Query all threads with user data
-  let query = supabaseAdmin
+  const query = supabaseAdmin
     .from('thread')
     .select(`
       _id,

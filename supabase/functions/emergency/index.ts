@@ -22,7 +22,7 @@
  * - health: Health check
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // ============================================================================
@@ -654,7 +654,7 @@ async function handleSendSMS(
       .eq('id', messageLog.id);
 
     return { ...messageLog, twilio_sid: result.sid, status: 'SENT' };
-  } catch (err) {
+  } catch (_err) {
     await supabase
       .from('emergency_message')
       .update({ status: 'FAILED', error_message: (err as Error).message })
@@ -722,7 +722,7 @@ async function handleSendEmail(
       .eq('id', emailLog.id);
 
     return { ...emailLog, status: 'SENT' };
-  } catch (err) {
+  } catch (_err) {
     await supabase
       .from('emergency_email_log')
       .update({ status: 'FAILED', error_message: (err as Error).message })

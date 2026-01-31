@@ -14,7 +14,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { User } from 'https://esm.sh/@supabase/supabase-js@2';
+import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 import {

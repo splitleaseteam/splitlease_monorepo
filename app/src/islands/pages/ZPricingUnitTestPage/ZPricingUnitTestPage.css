@@ -75,26 +75,30 @@
 }
 
 /* ═══════════════════════════════════════════════════════════ */
-/* MAIN LAYOUT (Sidebar + Main) */
+/* ROW LAYOUT (Sequential sections) */
 /* ═══════════════════════════════════════════════════════════ */
 
-.zput-layout {
+.zput-row {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.zput-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.zput-row--three {
+  grid-template-columns: repeat(3, 1fr);
 }
 
-.zput-main {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.zput-row--full {
+  grid-template-columns: 1fr;
+}
+
+.zput-card--narrow {
+  max-width: 350px;
+}
+
+.zput-card--wide {
+  min-width: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -382,6 +386,74 @@
   background: #FAFAFA;
 }
 
+/* Compact variant - matches ViewSplitLeasePage booking widget style */
+.zput-schedule-wrapper--compact {
+  padding: 12px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+}
+
+.zput-schedule-wrapper--compact .listing-schedule-selector {
+  max-width: 320px;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.zput-schedule-wrapper--compact .selector-header {
+  display: none;
+}
+
+.zput-schedule-wrapper--compact .day-grid {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.zput-schedule-wrapper--compact .day-button {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  aspect-ratio: unset;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zput-schedule-wrapper--compact .day-button.selected {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(49, 19, 93, 0.4);
+}
+
+.zput-schedule-wrapper--compact .day-button:hover:not(.disabled):not(.not-clickable) {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.zput-schedule-wrapper--compact .selection-info {
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.zput-schedule-wrapper--compact .info-row {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.zput-schedule-wrapper--compact .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.zput-schedule-wrapper--compact .price-display {
+  display: none;
+}
+
 /* ═══════════════════════════════════════════════════════════ */
 /* PRORATED GRID */
 /* ═══════════════════════════════════════════════════════════ */
@@ -390,6 +462,37 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+}
+
+.zput-prorated-grid--vertical {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.zput-prorated-grid--vertical .zput-prorated-panel {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.zput-prorated-grid--vertical .zput-prorated-panel h4 {
+  margin: 0;
+  min-width: 70px;
+}
+
+.zput-prorated-grid--vertical .prorated-value {
+  font-size: 18px;
+  margin: 0;
+  min-width: 80px;
+}
+
+.zput-prorated-grid--vertical .prorated-details {
+  flex: 1;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .zput-prorated-panel {
@@ -437,6 +540,35 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.zput-span-info--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.zput-span-info--inline .span-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.zput-span-info--inline .span-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.zput-span-info--inline .span-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.zput-combined-section {
+  display: flex;
+  flex-direction: column;
 }
 
 .span-item {
@@ -815,12 +947,16 @@
 /* ═══════════════════════════════════════════════════════════ */
 
 @media (max-width: 1200px) {
-  .zput-layout {
-    grid-template-columns: 280px 1fr;
+  .zput-row {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .zput-bottom-row {
-    grid-template-columns: 1fr;
+  .zput-row--three {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .zput-card--narrow {
+    max-width: none;
   }
 
   .zput-prorated-grid {
@@ -829,7 +965,8 @@
 }
 
 @media (max-width: 900px) {
-  .zput-layout {
+  .zput-row,
+  .zput-row--three {
     grid-template-columns: 1fr;
   }
 

@@ -22,7 +22,7 @@ export async function handleAcceptProposal(
 ): Promise<{ success: boolean; message: string }> {
   console.log('[accept_proposal] Starting with proposalId:', payload.proposalId);
 
-  const { proposalId, isUsabilityTest = false, hostPersona } = payload;
+  const { proposalId, isUsabilityTest: _isUsabilityTest = false, hostPersona } = payload;
 
   if (!proposalId) {
     throw new Error('proposalId is required');

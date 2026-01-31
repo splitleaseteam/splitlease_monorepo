@@ -61,7 +61,7 @@ function sanitizeTemplateJson(template: string): string {
     try {
       // Use a temporary string to unescape
       rawContent = JSON.parse('"' + content + '"');
-    } catch (e) {
+    } catch (_e) {
       // If unescaping fails, process character by character
       rawContent = '';
       let i = 0;
@@ -99,7 +99,7 @@ function sanitizeTemplateJson(template: string): string {
     // Step 2: Re-escape properly using JSON.stringify
     try {
       return JSON.stringify(rawContent);
-    } catch (e) {
+    } catch (_e) {
       // If JSON.stringify fails, manual escape
       let escaped = '';
       for (let i = 0; i < rawContent.length; i++) {

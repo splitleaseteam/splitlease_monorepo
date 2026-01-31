@@ -217,6 +217,7 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - Use Edge Functions for all API calls (never call external APIs from frontend)
 - Run `bun run generate-routes` after any route changes in `routes.config.js`
 - Commit after each meaningful change (do not push unless asked) and always use the `/git-commits` skill to structure the commit message
+- **Run `bun run build` after complex changes** - Verify the build passes after multi-file changes, component updates, or any changes touching imports/exports. Fix any build errors before proceeding.
 - **Provide a changelog of modified files** - After any file updates or creations, include a bulleted list of all files that were changed (e.g., "**Files Changed:** • `app/src/lib/auth.js` • `app/src/islands/pages/LoginPage.jsx`")
 - Use 0-indexed days (0=Sunday through 6=Saturday) everywhere
 - Use the four-layer logic architecture for business logic
@@ -407,15 +408,17 @@ These aren't suggestions—they're the workflow. If you're unsure whether a task
 
 ## Parallel Subagent Execution (Complex Tasks)
 
-> **⚡ THROUGHPUT OPTIMIZATION**: For complex tasks with multiple independent subtasks, spawn parallel subagents to maximize throughput.
+> **⚡ THROUGHPUT OPTIMIZATION**: For complex tasks, invoke **2-8 subagents** to segregate parallelizable subtasks that would otherwise execute sequentially. This maximizes throughput by running independent work concurrently.
 
 ### When to Parallelize
 
 Use parallel subagent execution when:
-- The task can be decomposed into **2-8 independent subtasks**
+- The task can be decomposed into **2-8 independent subtasks** (minimum 2, maximum 8)
 - Subtasks do NOT have sequential dependencies on each other
 - Each subtask modifies different files or components
 - The overall task would take significantly longer if executed sequentially
+
+> **⚠️ MANDATORY PARALLELIZATION**: When a task has 2+ independent subtasks, you MUST spawn parallel subagents rather than executing them one-by-one. Sequential execution of parallelizable work is inefficient and prohibited.
 
 ### Execution Pattern
 
@@ -478,4 +481,4 @@ Final: input-reviewer verifies all forms updated correctly
 
 ---
 
-**VERSION**: 11.6 | **UPDATED**: 2026-01-30
+**VERSION**: 11.8 | **UPDATED**: 2026-01-30

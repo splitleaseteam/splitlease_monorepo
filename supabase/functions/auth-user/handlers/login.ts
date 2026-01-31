@@ -97,10 +97,10 @@ export async function handleLogin(
     }
 
     // Get user_id from profile or user_metadata
-    let userId = userProfile?._id || authUser.user_metadata?.user_id || authUser.id;
-    let userType = authUser.user_metadata?.user_type || 'Guest';
+    const userId = userProfile?._id || authUser.user_metadata?.user_id || authUser.id;
+    const userType = authUser.user_metadata?.user_type || 'Guest';
     // hostAccountId is now the same as userId (user._id is used directly as host reference)
-    let hostAccountId = userId;
+    const hostAccountId = userId;
 
     // ========== MIGRATION: UPDATE USER METADATA IF NEEDED ==========
     // For users created before the signup flow was updated, their user_metadata.user_id
@@ -158,7 +158,7 @@ export async function handleLogin(
           console.log('[login] ✅ Login notification email sent');
         }
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('[login] Login notification email error:', err);
       // Non-blocking: Continue with login even if email fails
     }

@@ -304,7 +304,7 @@ export async function handleSend(
   let sendGridBody: Record<string, unknown>;
   try {
     sendGridBody = JSON.parse(processedJsonString);
-  } catch (parseError) {
+  } catch (_parseError) {
     const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
     console.error('[send-email:send] ========== JSON PARSE ERROR ==========');
     console.error('[send-email:send] Error:', errorMessage);
