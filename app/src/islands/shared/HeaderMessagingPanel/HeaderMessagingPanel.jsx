@@ -21,6 +21,7 @@
  */
 
 import { useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useHeaderMessagingPanelLogic } from './useHeaderMessagingPanelLogic.js';
 import ThreadCard from '../../pages/MessagingPage/components/ThreadCard.jsx';
 import MessageBubble from '../../pages/MessagingPage/components/MessageBubble.jsx';
@@ -327,9 +328,11 @@ export default function HeaderMessagingPanel({
 
     </div>
 
-    {/* Create Proposal Modal - Rendered OUTSIDE the panel div to avoid overflow:hidden clipping
-        The modal uses position:fixed and needs to cover the full viewport */}
-    {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
+    {/* Create Proposal Modal - Rendered via Portal at document.body level
+        This completely removes it from the header DOM hierarchy to prevent:
+        1. Overflow issues from parent containers
+        2. Click event propagation conflicts with panel's outside-click handler */}
+    {activeModal === 'CreateProposalFlowV2' && proposalModalData && createPortal(
       <CreateProposalFlowV2
         listing={proposalModalData.listing}
         moveInDate={proposalModalData.moveInDate}
@@ -343,7 +346,8 @@ export default function HeaderMessagingPanel({
         onClose={handleCloseModal}
         onSubmit={handleProposalSubmit}
         isSubmitting={isSubmittingProposal}
-      />
+      />,
+      document.body
     )}
     </>
   );

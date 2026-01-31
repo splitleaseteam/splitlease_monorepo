@@ -693,13 +693,11 @@
 }
 
 /* ============================================================================
-   ENSURE PROPOSAL MODAL RENDERS ABOVE PANEL
-   When CreateProposalFlowV2 is opened from the messaging panel,
-   ensure it appears above the panel by targeting the sibling selector
+   Z-INDEX NOTE: CreateProposalFlowV2 Modal
+   The modal is now rendered via React Portal directly to document.body,
+   so it's completely outside the header DOM hierarchy and uses its own z-index.
+   No special z-index overrides needed here.
    ============================================================================ */
-.header-messaging-panel + .create-proposal-popup {
-  z-index: 10002; /* Above header-messaging-panel (10001) */
-}
 
 /* ============================================================================
    RESPONSIVE - HIDE ON MOBILE (should navigate to /messages instead)
