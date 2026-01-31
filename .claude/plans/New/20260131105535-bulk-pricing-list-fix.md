@@ -20,12 +20,32 @@ Recalculate all pricing lists across both Supabase projects to apply the correct
 
 ## Scope Analysis
 
-| Project | Environment | Total Listings | Missing pricing_list | Weekly/Monthly |
-|---------|-------------|----------------|---------------------|----------------|
-| `qzsmhgyojmwvtjmnrdea` | DEV | 326 | 0 | 111 |
-| `qcfifybkaddcoimjroca` | LIVE | 318 | 32 | 103 |
+### Issue Categories
+
+The bulk fix addresses THREE categories of pricing issues:
+
+| Category | Description | DEV | LIVE |
+|----------|-------------|-----|------|
+| **A. Missing pricing_list** | Listings with no pricing_list FK | 0 | 32 |
+| **B. Empty Host Compensation** | pricing_list exists but array is null/empty | 91 | 6 |
+| **C. Empty Nightly Price** | pricing_list exists but array is null/empty | 96 | 11 |
+| **D. Wrong formula** | Weekly/Monthly using old incorrect formula | 111 | 103 |
+
+### Summary by Project
+
+| Project | Environment | Total Listings | Missing pricing_list | Empty Arrays | Weekly/Monthly |
+|---------|-------------|----------------|---------------------|--------------|----------------|
+| `qzsmhgyojmwvtjmnrdea` | DEV | 326 | 0 | ~96 | 111 |
+| `qcfifybkaddcoimjroca` | LIVE | 318 | 32 | ~11 | 103 |
 
 **Total listings to process:** 644 (both projects)
+
+### Why Recalculate ALL Listings
+
+Even if a listing already has a pricing_list with populated arrays, we recalculate to:
+1. Apply the CORRECTED formula for Weekly/Monthly rental types
+2. Fix any pricing_list records that have null/empty arrays
+3. Ensure consistency across all listings
 
 ---
 
@@ -337,5 +357,29 @@ If issues occur:
 
 | Project | Before | After |
 |---------|--------|-------|
-| DEV | 326 listings with pricing_list (old formula) | 326 listings with pricing_list (NEW formula) |
-| LIVE | 286 with, 32 missing | 318 listings with pricing_list (NEW formula) |
+| DEV | 326 listings (91-96 with empty arrays, 111 with old formula) | 326 listings with populated arrays + NEW formula |
+| LIVE | 286 with (6-11 empty arrays), 32 missing | 318 listings with populated arrays + NEW formula |
+
+### Post-Fix Verification Queries
+
+```sql
+-- Verify NO pricing_lists have empty Host Compensation
+SELECT COUNT(*) as still_empty
+FROM pricing_list
+WHERE "Host Compensation" IS NULL
+   OR jsonb_array_length("Host Compensation") = 0;
+-- Expected: 0
+
+-- Verify NO pricing_lists have empty Nightly Price
+SELECT COUNT(*) as still_empty
+FROM pricing_list
+WHERE "Nightly Price" IS NULL
+   OR jsonb_array_length("Nightly Price") = 0;
+-- Expected: 0
+
+-- Verify ALL listings have a pricing_list FK
+SELECT COUNT(*) as missing
+FROM listing
+WHERE pricing_list IS NULL;
+-- Expected: 0
+```
