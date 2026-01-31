@@ -141,5 +141,50 @@ BEGIN
 END
 $$;
 
+-- ============================================
+-- FIX 3: populate_thread_message_junction trigger function
+-- Issue: msg_type variable declared as text but assigned enum values
+-- ============================================
+CREATE OR REPLACE FUNCTION public.populate_thread_message_junction()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $function$
+DECLARE
+  msg_type junctions.thread_message_type;  -- FIXED: was text, now proper enum type
+BEGIN
+  -- Determine message type based on sender role
+  IF NEW."is Split Bot" = true THEN
+    msg_type := 'splitbot'::junctions.thread_message_type;
+  ELSIF NEW.originator_user_id = NEW.host_user_id THEN
+    msg_type := 'host_sent'::junctions.thread_message_type;
+  ELSIF NEW.originator_user_id = NEW.guest_user_id THEN
+    msg_type := 'guest_sent'::junctions.thread_message_type;
+  ELSE
+    msg_type := 'guest_sent'::junctions.thread_message_type; -- Default fallback
+  END IF;
+
+  -- Insert into junction table
+  INSERT INTO junctions.thread_message (
+    thread_id,
+    message_id,
+    message_type,
+    created_at
+  ) VALUES (
+    NEW.thread_id,
+    NEW._id,
+    msg_type,
+    COALESCE(NEW."Created Date", NOW())
+  )
+  ON CONFLICT (thread_id, message_id) DO NOTHING;
+
+  RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE WARNING 'populate_thread_message_junction failed: %', SQLERRM;
+    RETURN NEW;
+END;
+$function$;
+
 -- Log completion
-DO $$ BEGIN RAISE NOTICE 'Migration complete: Fixed message trigger column names'; END $$;
+DO $$ BEGIN RAISE NOTICE 'Migration complete: Fixed all three message trigger functions'; END $$;
