@@ -39,7 +39,7 @@
  * Templates are stored in Supabase Storage bucket 'document-templates'.
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 import {
   formatErrorResponse,
@@ -51,7 +51,14 @@ import { handleGenerateSupplemental } from './handlers/generateSupplemental.ts';
 import { handleGeneratePeriodicTenancy } from './handlers/generatePeriodicTenancy.ts';
 import { handleGenerateCreditCardAuth } from './handlers/generateCreditCardAuth.ts';
 import { handleGenerateAll } from './handlers/generateAll.ts';
-import type { UserContext } from './lib/types.ts';
+import type { UserContext, DocumentResult, GenerateAllResult } from './lib/types.ts';
+
+// Handler function type - matches the signature of all document generation handlers
+type HandlerFn = (
+  payload: unknown,
+  user: UserContext | null,
+  supabase: SupabaseClient
+) => Promise<DocumentResult | GenerateAllResult>;
 
 // ================================================
 // CONFIGURATION
@@ -77,7 +84,7 @@ const PUBLIC_ACTIONS = new Set<Action>([
 ]);
 
 // Handler registry
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, HandlerFn>> = {
   generate_host_payout: handleGenerateHostPayout,
   generate_supplemental: handleGenerateSupplemental,
   generate_periodic_tenancy: handleGeneratePeriodicTenancy,

@@ -13,7 +13,7 @@
  * - Should be removed after debugging complete
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 console.log('[admin-query-auth] Edge Function started');
@@ -43,8 +43,8 @@ Deno.serve(async (req) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Create Supabase client with service role key
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    // Create Supabase client with service role key (unused but kept for potential future use)
+    const _supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false

@@ -14,7 +14,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import type { GenerateAllPayload, GenerateAllResult, UserContext } from '../lib/types.ts';
+import type { GenerateAllPayload as _GenerateAllPayload, GenerateAllResult, UserContext } from '../lib/types.ts';
 import { validateGenerateAllPayload } from '../lib/validators.ts';
 import { handleGenerateHostPayout } from './generateHostPayout.ts';
 import { handleGenerateSupplemental } from './generateSupplemental.ts';
