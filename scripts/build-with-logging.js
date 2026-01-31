@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Build wrapper that logs all output to timestamped files
- * Logs saved to: z_build_logs/<HOSTNAME>_<YYYYMMDD_HHMMSS>.log
+ * Logs saved to: z_build_logs/<YYYYMMDD_HHMMSS>_<HOSTNAME>.log
  */
 
 import { spawn } from 'child_process';
@@ -28,7 +28,7 @@ const timestamp = now.toISOString()
 const host = hostname().replace(/[^a-zA-Z0-9-_]/g, '_');
 
 // Log filename
-const logFilename = `${host}_${timestamp}.log`;
+const logFilename = `${timestamp}_${host}.log`;
 const logPath = join(logsDir, logFilename);
 
 // Create write stream
