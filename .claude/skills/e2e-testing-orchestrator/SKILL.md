@@ -1,834 +1,359 @@
 ---
 name: e2e-testing-orchestrator
-description: Orchestrates end-to-end testing of the Split Lease rental application flow using Playwright MCP. Use when: (1) Testing the full guest journey from signup to proposal submission, (2) Validating rental application completion flow, (3) Running bug analysis and fix cycles with automated retesting, (4) Performing iterative test-fix-verify workflows. This skill handles user creation, application flow testing, and automated bug resolution with continuous iteration until all bugs are resolved.
+description: Autonomous E2E testing orchestrator with multi-agent loop. Use when: (1) Running autonomous test-fix-verify cycles, (2) Testing full user journeys with budget constraints, (3) Performing iterative bug detection and resolution until all tests pass or budget exhausted. This skill ASKS for required inputs then orchestrates Test Planner, Playwright Runner, Debug Analyst, Fix Engineer, and Data Validator agents in a continuous loop.
 ---
 
 # E2E Testing Orchestrator
 
-Orchestrates complete end-to-end testing of Split Lease guest journey with automated bug detection, analysis, fixing, and verification in a continuous loop until bug-free.
+Autonomous multi-agent E2E testing system that loops continuously until all tests pass or budget limits are reached.
 
-## Overview
+## Phase 0: Input Collection (MANDATORY FIRST STEP)
 
-This skill automates the entire E2E testing and bug fixing lifecycle:
-1. **Test Execution**: Run complete guest journey from signup to proposal submission
-2. **Bug Detection**: Capture errors, failures, and unexpected behavior
-3. **Bug Analysis**: Analyze root causes and patterns
-4. **Fix Planning**: Generate implementation plans for identified issues
-5. **Fix Implementation**: Apply fixes to codebase
-6. **Verification Loop**: Re-test until all bugs are resolved
+**Before any testing begins, ALWAYS use AskUserQuestion to gather required inputs.**
 
-## Prerequisites
+### Required Questions
 
-### Environment Setup
-- Application running on **localhost:8000** (Split Lease dev server)
-- Playwright MCP available and configured in `.mcp.json`
-- Test credentials set in environment variables (see Test Credentials section)
+Ask these questions using AskUserQuestion tool:
 
-### Required Environment Variables
-
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `TESTGUESTEMAILADDRESS` | Guest test account email | `guest.test@splitlease.com` |
-| `TESTPASSWORD` | Shared test account password | `TestPass123!` |
-| `TESTHOSTEMAILADDRESS` | Host test account email (if needed) | `host.test@splitlease.com` |
-
-**Set in PowerShell**:
-```powershell
-setx TESTGUESTEMAILADDRESS "guest.test@splitlease.com"
-setx TESTPASSWORD "TestPass123!"
 ```
+Question 1: What test scope do you want to run?
+Header: "Test Scope"
+Options:
+  - "Guest Journey (signup → proposal → rental app)" - Full guest flow from landing to submission
+  - "Host Journey (login → listing management)" - Host dashboard and listing operations
+  - "Authentication Only" - Login, signup, password reset flows
+  - "Custom" - I'll specify the exact flows to test
+```
+
+```
+Question 2: What's your budget for this test run?
+Header: "Budget"
+Options:
+  - "Quick (30 min, 1M tokens)" - Fast iteration, limited scope
+  - "Standard (2 hours, 5M tokens)" - Recommended for most tests
+  - "Extended (5 hours, 15M tokens)" - Comprehensive, overnight runs
+  - "Unlimited" - Run until all tests pass (no budget limit)
+```
+
+```
+Question 3: What's the target URL?
+Header: "Target URL"
+Options:
+  - "localhost:8000 (Recommended)" - Local dev server
+  - "split.lease" - Production (read-only validation)
+  - "Custom URL" - I'll specify the URL
+```
+
+```
+Question 4: How should test failures be handled?
+Header: "Fix Mode"
+Options:
+  - "Auto-fix and verify (Recommended)" - Automatically implement fixes and re-test
+  - "Report only" - Document bugs without implementing fixes
+  - "Pause on failure" - Stop and ask before each fix attempt
+```
+
+### Store Collected Inputs
+
+After collecting inputs, store in session variables:
+- `TEST_SCOPE`: Selected test scope
+- `TOKEN_BUDGET`: Max tokens (e.g., 15000000)
+- `TIME_BUDGET_HOURS`: Max hours (e.g., 5)
+- `TARGET_URL`: URL to test against
+- `FIX_MODE`: auto | report | pause
+
+---
+
+## Budget Constraints
+
+| Budget Level | Token Limit | Time Limit | Use Case |
+|--------------|-------------|------------|----------|
+| Quick | 1,000,000 | 30 min | Fast iteration, smoke tests |
+| Standard | 5,000,000 | 2 hours | Normal development testing |
+| Extended | 15,000,000 | 5 hours | Comprehensive overnight runs |
+| Unlimited | None | None | Critical releases, full coverage |
+
+**Stop Conditions**: All tests pass OR token budget exhausted OR time limit reached.
+
+---
+
+## Agent Roles
+
+### 1. Test Planner Agent
+**Role**: Generate test scenarios based on scope
+**Invoke via**: Task tool → general-purpose agent
+**Output**: Ordered list of test steps with expected outcomes
+
+### 2. Playwright Runner Agent
+**Role**: Execute tests via Playwright MCP
+**Invoke via**: Task tool → mcp-tool-specialist (MANDATORY)
+**Output**: Test results with failures, console logs, network logs, screenshots
+
+### 3. Debug Analyst Agent
+**Role**: Analyze failures and identify root causes
+**Invoke via**: Task tool → debug-analyst (from existing agents)
+**Output**: Bug reports with root cause, affected files, reproduction steps
+
+### 4. Fix Engineer Agent
+**Role**: Implement code fixes
+**Invoke via**: Task tool → plan-executor (from existing agents)
+**Output**: Applied code changes with changelog
+
+### 5. Data Validator Agent
+**Role**: Verify database state via Supabase MCP
+**Invoke via**: Task tool → mcp-tool-specialist (MANDATORY)
+**Output**: Data validation report, orphaned records check
+
+---
+
+## Autonomous Loop Workflow
+
+```
+iteration = 0
+tests_passing = false
+tokens_used = 0
+start_time = now()
+
+WHILE (tests_passing == false AND
+       tokens_used < TOKEN_BUDGET AND
+       elapsed_time < TIME_BUDGET_HOURS):
+
+    iteration++
+    PRINT "=== ITERATION {iteration} ==="
+
+    1. PLAN PHASE
+       IF iteration == 1:
+           Test Planner Agent → Generate initial test plan from TEST_SCOPE
+       ELSE:
+           Test Planner Agent → Refine plan based on previous failures
+
+    2. RESET PHASE (if using dev database)
+       Data Validator Agent → Reset test data to clean state
+       - Query for stale test records
+       - Delete orphaned proposals/applications from previous runs
+
+    3. EXECUTION PHASE
+       Playwright Runner Agent → Execute tests via mcp-tool-specialist
+       - Navigate to TARGET_URL
+       - Run each test step from plan
+       - Capture ALL console logs (browser_console_messages)
+       - Record network activity (browser_network_requests)
+       - Screenshot on failures (browser_take_screenshot)
+       - Save accessibility snapshots (browser_snapshot)
+
+    4. VALIDATION PHASE
+       Data Validator Agent → Verify expected data state
+       - Check records created during test
+       - Validate relationships and foreign keys
+       - Query for anomalies
+
+    5. ANALYSIS PHASE
+       Debug Analyst Agent → Analyze any failures
+       - Parse Playwright logs
+       - Correlate console errors with test failures
+       - Cross-reference with database state
+       - Identify root causes
+
+       IF no_failures_found:
+           tests_passing = true
+           BREAK
+
+    6. FIX PHASE (if FIX_MODE == "auto" or "pause")
+       IF FIX_MODE == "pause":
+           AskUserQuestion → "Proceed with fix for {bug}?"
+
+       Fix Engineer Agent → Implement fixes
+       - Apply code changes
+       - Update tests if needed
+       - Commit with /git-commits skill
+
+    7. BUDGET CHECK
+       tokens_used = estimate_tokens_from_conversation()
+       elapsed_time = now() - start_time
+
+       PRINT iteration status (see Output Format below)
+
+END WHILE
+
+IF tests_passing:
+    PRINT "✅ ALL TESTS PASSING - SUCCESS"
+ELSE:
+    PRINT "⚠️ STOPPED - Budget limit reached"
+    PRINT "Remaining failures: {count}"
+```
+
+---
+
+## Output Format Per Iteration
+
+```
+=== ITERATION {N} ===
+
+[PLAN] Test scenarios: {count}
+[RESET] Database reset: ✓ | ✗
+[EXEC] Tests run: {total} | Passed: {pass} | Failed: {fail}
+[VALID] Data check: {status}
+[DEBUG] Bugs identified: {count}
+[FIX] Files modified: {count}
+[BUDGET] Tokens: {used:,}/{max:,} ({pct}%) | Time: {elapsed}/{limit} ({pct}%)
+
+--- Failures ---
+{List of failed test steps with error messages}
+
+--- Fixes Applied ---
+{List of files modified with change summary}
+```
+
+---
 
 ## Critical Rules
 
 ### MCP Invocation Rule (MANDATORY)
-**ALL Playwright MCP calls MUST go through `mcp-tool-specialist` subagent.**
 
-❌ **NEVER DO THIS**:
+**ALL Playwright and Supabase MCP calls MUST go through `mcp-tool-specialist` subagent.**
+
+❌ **NEVER**:
 ```
 Direct call to mcp__playwright__browser_navigate(...)
+Direct call to mcp__supabase__...
 ```
 
-✅ **ALWAYS DO THIS**:
+✅ **ALWAYS**:
 ```
-Task tool → mcp-tool-specialist → Playwright MCP tools
-```
-
-### Test Account Creation
-
-When creating a new test account:
-1. **First check** if test credentials exist in environment variables
-2. **If credentials exist**: Use existing account (login instead of signup)
-3. **If no credentials**: Create new account with these defaults:
-   - Email: `guest.test.{timestamp}@splitlease.com`
-   - Password: `TestPass123!`
-   - Save credentials to environment for future use
-
-## Workflow Phases
-
-### Phase 1: Environment Verification
-
-**Objective**: Verify application and Playwright MCP readiness
-
-**Steps**:
-1. Check if dev server is running at `http://localhost:8000`
-2. Verify Playwright MCP connectivity
-3. Load test credentials from environment variables
-4. Create screenshot directory for test evidence: `C:\Users\SPLITL~1\AppData\Local\Temp\claude\...\scratchpad\e2e-test-{timestamp}\`
-
-**Invoke via mcp-tool-specialist**:
-- `mcp__playwright__browser_navigate` → `http://localhost:8000`
-- `mcp__playwright__browser_snapshot` → Verify page loads
-
-**Error Handling**:
-- If server not responding → **STOP** with message: "Dev server not running. Run `bun run dev` first."
-- If MCP not available → **STOP** with message: "Playwright MCP not configured. Check `.mcp.json`."
-
----
-
-### Phase 2: Guest Journey Test Flow
-
-**Objective**: Complete the full guest journey from landing page to proposal submission
-
-#### Step 2.1: Landing Page → Search
-
-**Actions** (via mcp-tool-specialist):
-1. Navigate to `http://localhost:8000`
-2. Take snapshot to verify page structure
-3. Wait for listings to populate (check for listing cards)
-4. Take screenshot: `01-landing-page.png`
-
-**Expected Elements**:
-- Header with "Sign In" and "Sign Up" buttons (if logged out)
-- Search bar or listing cards
-- Filter/search controls
-
-**Bug Detection**:
-- Page fails to load → **LOG**: "Landing page load failure"
-- No listings visible → **LOG**: "Listings failed to populate"
-
----
-
-#### Step 2.2: Guest Signup/Login
-
-**Decision Tree**:
-```
-Are test credentials available?
-├─ YES → Skip to login (Step 2.2.1)
-└─ NO  → Create new account (Step 2.2.2)
+Task tool → mcp-tool-specialist → Playwright/Supabase MCP tools
 ```
 
-##### Step 2.2.1: Login with Existing Account
+### Other Rules
 
-**Prerequisites**: `TESTGUESTEMAILADDRESS` and `TESTPASSWORD` exist
-
-**Actions** (via mcp-tool-specialist):
-1. Check login state (see Login State Detection below)
-2. If already logged in as guest → Skip to Step 2.3
-3. If logged out:
-   - Click "Sign In" button in header
-   - Wait for login form
-   - Fill email: `process.env.TESTGUESTEMAILADDRESS`
-   - Fill password: `process.env.TESTPASSWORD`
-   - Submit form
-   - Wait for redirect to authenticated state (username appears in header)
-4. Take screenshot: `02-logged-in.png`
-
-**Login State Detection** (from playwrightTestGuideLoginInstructions):
-- **Logged Out**: "Sign In" and "Sign Up" buttons visible in header
-- **Logged In**: Username + profile picture visible, no Sign In/Sign Up buttons
-- **Guest Account**: "Stay with Us" visible in navigation
-
-**Bug Detection**:
-- Login form doesn't appear → **LOG**: "Login page navigation failure"
-- Credentials rejected → **LOG**: "Authentication failure"
-- No redirect after login → **LOG**: "Post-login redirect failure"
-
-##### Step 2.2.2: Create New Guest Account
-
-**Prerequisites**: No test credentials available
-
-**Actions** (via mcp-tool-specialist):
-1. Click "Sign Up" button in header
-2. Wait for signup form to appear
-3. Generate test credentials:
-   - Email: `guest.test.{timestamp}@splitlease.com` (e.g., `guest.test.20260128143022@splitlease.com`)
-   - Password: `TestPass123!`
-4. Fill signup form:
-   - Email field
-   - Password field
-   - First name: "Test"
-   - Last name: "Guest"
-   - Phone: "555-0100"
-5. Submit form
-6. Handle email verification if required (check for verification message/redirect)
-7. Save credentials to environment variables:
-   - `TESTGUESTEMAILADDRESS` = generated email
-   - `TESTPASSWORD` = `TestPass123!`
-8. Take screenshot: `02-signup-complete.png`
-
-**Bug Detection**:
-- Signup form doesn't appear → **LOG**: "Signup page navigation failure"
-- Form validation errors → **LOG**: "Signup validation failure: {error message}"
-- Email verification fails → **LOG**: "Email verification failure"
-- No redirect after signup → **LOG**: "Post-signup redirect failure"
+1. **Ask inputs first** - Never start testing without Phase 0 input collection
+2. **Comprehensive logging** - Capture everything; don't skip logs
+3. **Data reset every iteration** - Clean database state before re-running
+4. **Track budget** - Estimate and report tokens after each iteration
+5. **Never skip steps** - Complete all 7 phases each iteration
+6. **Commit after fixes** - Use `/git-commits` skill for structured commits
 
 ---
 
-#### Step 2.3: Browse and Select Listing
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of search page
-2. Identify first available listing card
-3. Extract listing ID and name for reference
-4. Click on listing card
-5. Wait for navigation to `/view-split-lease/{id}`
-6. Verify listing detail page loaded (check for "Book" or "Create Proposal" button)
-7. Take screenshot: `03-listing-detail.png`
-
-**Bug Detection**:
-- No listings visible → **LOG**: "No listings available for testing"
-- Click doesn't navigate → **LOG**: "Listing card click failure"
-- Detail page fails to load → **LOG**: "Listing detail page load failure"
-- Missing booking controls → **LOG**: "Booking UI elements missing"
-
----
-
-#### Step 2.4: Initiate Proposal Flow
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot to identify booking controls
-2. Look for one of:
-   - "Book" button
-   - "Create Proposal" button
-   - "Contact Host" button
-3. Click the booking action button
-4. Wait for `CreateProposalFlowV2` modal to appear
-5. Verify modal opened (check for "Create Proposal" title)
-6. Take screenshot: `04-proposal-modal-opened.png`
-
-**Expected State**:
-- Modal overlay visible
-- Title: "Create Proposal"
-- Subtitle: "Start the conversation! After submitting a proposal..."
-- Current section: User Details (Step 1 of flow)
-
-**Bug Detection**:
-- Button doesn't exist → **LOG**: "Booking button missing"
-- Click doesn't open modal → **LOG**: "Proposal modal failed to open"
-- Modal appears but is empty → **LOG**: "Proposal modal rendering failure"
-
----
-
-#### Step 2.5: Complete Proposal User Details
-
-**Objective**: Fill out User Details section of proposal flow
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot to identify form fields
-2. Fill "Need for Space" textarea (minimum 10 words):
-   - Example: "Looking for a comfortable and affordable place to stay during my work rotation in the city."
-3. Fill "About Yourself" textarea (minimum 10 words):
-   - Example: "I am a quiet and responsible professional who values clean and peaceful living spaces."
-4. Check if "Unique Requirements" checkbox should be tested:
-   - For this test: Leave unchecked
-5. Take screenshot: `05-user-details-filled.png`
-6. Click "Next" button
-7. Wait for navigation to next section
-
-**Field Requirements** (from CreateProposalFlowV2.jsx:571-587):
-- `needForSpace`: Required, minimum 10 words
-- `aboutYourself`: Required, minimum 10 words
-- `uniqueRequirements`: Optional, required only if `hasUniqueRequirements` is checked
-
-**Bug Detection**:
-- Form fields missing → **LOG**: "User details form fields missing"
-- Validation fails despite meeting requirements → **LOG**: "User details validation error: {error}"
-- Next button disabled when fields valid → **LOG**: "Next button incorrectly disabled"
-- Click doesn't navigate to next section → **LOG**: "User details navigation failure"
-
----
-
-#### Step 2.6: Review and Adjust Proposal Details
-
-**Objective**: Navigate through the proposal flow based on the active flow type
-
-**Flow Types** (from CreateProposalFlowV2.jsx:29-35):
-- **Short Flow** (ViewSplitLeasePage): User Details → Review
-- **Full Flow** (FavoriteListingsPage): User Details → Move-in → Days → Review
-
-**For ViewSplitLeasePage (Short Flow)**:
-After Step 2.5, the next section should be **Review** (since days/move-in are pre-selected on the listing page).
-
-**Actions** (via mcp-tool-specialist):
-1. Verify current section is "Confirm Proposal" (Review section)
-2. Take snapshot to verify all proposal details are populated:
-   - User details (Need for Space, About Yourself)
-   - Move-in date (pre-filled from listing page selection)
-   - Days selected (pre-filled from listing page selection)
-   - Pricing breakdown (pre-calculated)
-3. Take screenshot: `06-proposal-review.png`
-4. Verify "Submit Proposal" button is enabled
-5. Click "Submit Proposal"
-6. Wait for submission to complete
-
-**Expected Review Section Data** (from CreateProposalFlowV2.jsx:618-626):
-- `moveInDate`: Should be populated from listing page
-- `daysSelected`: Array of selected day names
-- `checkInDay`, `checkOutDay`: Calculated from selected days
-- `pricePerNight`, `totalPrice`, `pricePerFourWeeks`: Calculated pricing
-- `listingId`, `listingAddress`: Listing metadata
-
-**Bug Detection**:
-- Review section doesn't appear → **LOG**: "Review section navigation failure"
-- Missing proposal data in review → **LOG**: "Proposal data missing in review: {field}"
-- Pricing calculations incorrect → **LOG**: "Pricing calculation error: {details}"
-- Submit button disabled when data is valid → **LOG**: "Submit button incorrectly disabled"
-- Submission fails → **LOG**: "Proposal submission failure: {error}"
-
----
-
-#### Step 2.7: Rental Application Wizard
-
-**Objective**: Complete the 7-step rental application wizard after proposal submission
-
-**Trigger**: After successful proposal submission, the rental application wizard should appear automatically or be accessible via a prompt/button.
-
-**If Not Automatically Triggered**:
-- Look for "Complete Rental Application" button or link
-- Navigate to rental application from guest proposals page
-
-**7-Step Flow** (from RentalApplicationWizardModal.jsx:82-131):
-
-##### Step 1: Personal Info
-**Fields**:
-- First Name (may be pre-filled from user profile)
-- Last Name (may be pre-filled)
-- Email (may be pre-filled)
-- Phone (may be pre-filled)
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Personal Info step
-2. Fill any empty required fields:
-   - First Name: "Test"
-   - Last Name: "Guest"
-   - Email: Use `TESTGUESTEMAILADDRESS`
-   - Phone: "555-0100"
-3. Take screenshot: `07-rental-app-step1-personal.png`
-4. Click "Continue" button
-5. Wait for Step 2 to appear
-
-**Bug Detection**:
-- Required fields not marked → **LOG**: "Personal info validation unclear"
-- Pre-filled data incorrect → **LOG**: "Personal info prefill error"
-- Navigation fails → **LOG**: "Personal info step navigation failure"
-
-##### Step 2: Address
-**Fields**:
-- Current address (with autocomplete/Google Places API)
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Address step
-2. Type into address field: "123 Test Street, New York, NY 10001"
-3. Wait for autocomplete suggestions (if applicable)
-4. Select address or complete manual entry
-5. Take screenshot: `08-rental-app-step2-address.png`
-6. Click "Continue"
-
-**Bug Detection**:
-- Address autocomplete not working → **LOG**: "Address autocomplete failure"
-- Valid address rejected → **LOG**: "Address validation error"
-
-##### Step 3: Occupants
-**Fields**:
-- List of additional occupants (optional, can skip)
-- Add/Remove occupant controls
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Occupants step
-2. For this test: Skip without adding occupants (click "Skip" or "Continue")
-3. Take screenshot: `09-rental-app-step3-occupants.png`
-
-**Bug Detection**:
-- Cannot skip optional step → **LOG**: "Occupants step incorrectly required"
-
-##### Step 4: Employment
-**Fields**:
-- Employment status (dropdown)
-- Employer name (if employed)
-- Income information
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Employment step
-2. Select employment status: "Employed"
-3. Fill employer name: "Test Company Inc."
-4. Fill income field (if required): "75000"
-5. Take screenshot: `10-rental-app-step4-employment.png`
-6. Click "Continue"
-
-**Bug Detection**:
-- Employment status options missing → **LOG**: "Employment status dropdown error"
-- Conditional fields don't appear → **LOG**: "Employment conditional logic failure"
-
-##### Step 5: Requirements
-**Fields**:
-- Special requirements or preferences (optional)
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Requirements step
-2. Fill requirements field (optional): "Non-smoking, quiet environment preferred"
-3. Take screenshot: `11-rental-app-step5-requirements.png`
-4. Click "Continue" or "Skip"
-
-##### Step 6: Documents
-**Fields**:
-- File upload controls for supporting documents
-- Document types (ID, proof of income, etc.)
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Documents step
-2. For this test: Skip document uploads (optional)
-3. Take screenshot: `12-rental-app-step6-documents.png`
-4. Click "Review Application"
-
-**Bug Detection**:
-- File upload UI broken → **LOG**: "Document upload UI failure"
-- Cannot skip optional uploads → **LOG**: "Document uploads incorrectly required"
-
-##### Step 7: Review & Submit
-**Objective**: Review all entered data and submit application
-
-**Actions** (via mcp-tool-specialist):
-1. Take snapshot of Review step
-2. Verify all entered data is displayed correctly
-3. Check for any validation errors highlighted
-4. Take screenshot: `13-rental-app-step7-review.png`
-5. Click "Submit Application" button
-6. Wait for submission to complete
-7. Verify success message or redirect
-
-**Expected Behavior** (from RentalApplicationWizardModal.jsx:226-234):
-- Submit button enabled only when `canSubmit` is true
-- Button shows "Submitting..." during submission
-- On success: `onSuccess` callback fires (may close modal or redirect)
-
-**Bug Detection**:
-- Review data doesn't match entered data → **LOG**: "Review data mismatch: {field}"
-- Submit button disabled when data is valid → **LOG**: "Submit button incorrectly disabled in review"
-- Submission fails → **LOG**: "Rental application submission failure: {error}"
-- No success confirmation → **LOG**: "Success state not displayed after submission"
-
----
-
-#### Step 2.8: Verify Success State
-
-**Objective**: Confirm proposal and rental application were successfully submitted
-
-**Actions** (via mcp-tool-specialist):
-1. Check for success modal/message/toast
-2. Verify redirect to `/guest-proposals` page (or similar)
-3. Take snapshot of proposals list page
-4. Verify new proposal appears in list
-5. Take screenshot: `14-success-proposals-list.png`
-
-**Expected Success Indicators**:
-- Success toast/modal with confirmation message
-- Redirect to guest proposals dashboard
-- New proposal visible in proposals list
-- Proposal status: "Pending" or "Submitted"
-
-**Bug Detection**:
-- No success confirmation → **LOG**: "Success confirmation missing"
-- Redirect doesn't happen → **LOG**: "Post-submission redirect failure"
-- Proposal not in list → **LOG**: "Proposal not saved to database"
-- Proposal has incorrect data → **LOG**: "Proposal data integrity issue: {details}"
-
----
-
-### Phase 3: Bug Analysis and Fix Loop
-
-**Objective**: Iterate on bug fixes until all issues are resolved
-
-**Trigger**: Any bugs logged during Phase 2
-
-#### Step 3.1: Bug Analysis
-
-**For each logged bug**:
-
-1. **Categorize Bug Type**:
-   - Authentication/Authorization (401, 403 errors)
-   - Validation Errors (form validation, data validation)
-   - UI/Rendering Issues (elements missing, modal not appearing)
-   - Navigation Failures (redirects, page transitions)
-   - Data Integrity Issues (missing data, incorrect calculations)
-   - Network/API Errors (edge function failures, timeouts)
-
-2. **Extract Error Details**:
-   - Error message (from console, network logs, UI)
-   - Stack trace (if available via `browser_console_messages`)
-   - Network request failures (via `browser_network_requests`)
-   - Component/file likely involved (based on error context)
-
-3. **Cross-Reference Known Patterns** (see Common Bug Patterns below)
-
-4. **Generate Bug Report**:
-   Create markdown file: `.claude/plans/New/{timestamp}-e2e-bug-report.md`
-
-   **Bug Report Template**:
-   ```markdown
-   # E2E Test Bug Report - {timestamp}
-
-   ## Bug Summary
-   {One-line description}
-
-   ## Bug Category
-   {Authentication | Validation | UI | Navigation | Data | Network}
-
-   ## Steps to Reproduce
-   1. {Step 1}
-   2. {Step 2}
-   ...
-
-   ## Expected Behavior
-   {What should happen}
-
-   ## Actual Behavior
-   {What actually happened}
-
-   ## Error Details
-   - **Error Message**: {message}
-   - **Error Code**: {code if applicable}
-   - **Console Logs**: {relevant console output}
-   - **Network Logs**: {relevant network failures}
-
-   ## Likely Affected Files
-   - {file path 1}
-   - {file path 2}
-
-   ## Suggested Fix
-   {Initial hypothesis for fix}
-
-   ## Screenshots
-   - {screenshot filename 1}
-   - {screenshot filename 2}
-   ```
-
-#### Step 3.2: Fix Planning
-
-**For each bug report**:
-
-1. **Use existing planning agents**:
-   - For bugs in React components → Use `debug-analyst` agent (when available)
-   - For architectural issues → Use `implementation-planner` agent (when available)
-
-2. **Generate Fix Plan**:
-   Create plan file: `.claude/plans/New/{timestamp}-e2e-fix-{bug-id}.md`
-
-   **Plan should include**:
-   - Root cause analysis
-   - Files to modify
-   - Step-by-step fix instructions
-   - Test verification steps
-
-#### Step 3.3: Implement Fixes
-
-**For each fix plan**:
-
-1. **Execute via plan-executor** (when available) or manually implement changes
-2. **Commit changes** after each fix:
-   - Use `/git-commits` skill for structured commit messages
-   - Format: `fix(e2e): {description of fix}`
-   - Example: `fix(e2e): correct proposal modal click handler event propagation`
-
-3. **Log fix application**:
-   ```
-   ✅ Applied fix: {bug-id} - {one-line description}
-   ```
-
-#### Step 3.4: Re-Test (Verification Loop)
-
-**After applying fixes**:
-
-1. **Re-run affected test flow**:
-   - If fix affects signup → Re-run from Step 2.2
-   - If fix affects proposal → Re-run from Step 2.4
-   - If fix affects rental app → Re-run from Step 2.7
-
-2. **Invoke mcp-tool-specialist for re-testing**:
-   - Use same Playwright MCP commands as initial test
-   - Take new screenshots: `{original-screenshot}-retest-{attempt}.png`
-
-3. **Compare Results**:
-   - Bug still present → Return to Step 3.2 (refine fix plan)
-   - Bug resolved → Mark as fixed, continue to next bug
-
-4. **Iterate until all bugs resolved**:
-   ```
-   While bugs exist:
-     - Analyze bug
-     - Plan fix
-     - Implement fix
-     - Re-test
-     - If bug persists → refine approach
-     - If bug resolved → next bug
-   ```
-
-5. **Final Verification**:
-   When all bugs marked as resolved:
-   - Run complete E2E test from Phase 2 start to finish
-   - No bugs → **SUCCESS**
-   - New bugs found → Return to Step 3.1
-
----
-
-### Phase 4: Reporting
-
-**Objective**: Generate comprehensive test report
-
-**Actions**:
-
-1. **Create Test Report**:
-   File: `.claude/plans/Documents/{timestamp}-e2e-test-report.md`
-
-   **Template**:
-   ```markdown
-   # E2E Test Report - {timestamp}
-
-   ## Test Summary
-   - **Test Date**: {date}
-   - **Test Duration**: {duration}
-   - **Test Flow**: Guest Journey (Signup → Proposal → Rental Application)
-   - **Test Status**: {PASS | FAIL | PARTIAL}
-
-   ## Test Results
-
-   ### Phase 1: Environment Verification
-   - ✅ Dev server running
-   - ✅ Playwright MCP connected
-   - ✅ Test credentials loaded
-
-   ### Phase 2: Guest Journey
-
-   #### 2.1 Landing Page
-   - ✅ Page loaded successfully
-   - ✅ Listings visible
-   - Screenshot: `01-landing-page.png`
-
-   #### 2.2 Guest Signup/Login
-   - ✅ Signup form appeared
-   - ✅ Account created successfully
-   - ✅ Logged in as guest
-   - Screenshot: `02-logged-in.png`
-
-   #### 2.3 Browse Listing
-   - ✅ Listing detail page loaded
-   - Listing ID: {id}
-   - Screenshot: `03-listing-detail.png`
-
-   #### 2.4 Initiate Proposal
-   - ✅ Proposal modal opened
-   - Screenshot: `04-proposal-modal-opened.png`
-
-   #### 2.5 User Details
-   - ✅ Form fields filled
-   - ✅ Validation passed
-   - Screenshot: `05-user-details-filled.png`
-
-   #### 2.6 Review Proposal
-   - ✅ Review section displayed
-   - ✅ Data correct
-   - Screenshot: `06-proposal-review.png`
-
-   #### 2.7 Rental Application
-   - ✅ Step 1: Personal Info
-   - ✅ Step 2: Address
-   - ✅ Step 3: Occupants (skipped)
-   - ✅ Step 4: Employment
-   - ✅ Step 5: Requirements
-   - ✅ Step 6: Documents (skipped)
-   - ✅ Step 7: Review & Submit
-   - Screenshots: `07-rental-app-step1-personal.png` through `13-rental-app-step7-review.png`
-
-   #### 2.8 Success Verification
-   - ✅ Success message displayed
-   - ✅ Redirected to proposals list
-   - ✅ Proposal appears in list
-   - Screenshot: `14-success-proposals-list.png`
-
-   ### Phase 3: Bug Analysis & Fixes
-
-   **Bugs Found**: {count}
-
-   #### Bug #1: {title}
-   - **Category**: {category}
-   - **Status**: {FIXED | IN_PROGRESS | BLOCKED}
-   - **Fix Iterations**: {count}
-   - **Files Modified**: {file list}
-   - **Bug Report**: {link to bug report file}
-
-   #### Bug #2: {title}
-   ...
-
-   ## Summary
-
-   - **Total Test Steps**: {count}
-   - **Passed**: {count}
-   - **Failed**: {count}
-   - **Bugs Found**: {count}
-   - **Bugs Fixed**: {count}
-   - **Bugs Remaining**: {count}
-
-   ## Recommendations
-   {Any suggestions for code improvements, test coverage, etc.}
-
-   ## Screenshots
-   All screenshots saved to: `{scratchpad path}`
-   ```
-
-2. **Output to user**:
-   - Print summary to console
-   - Provide path to full report
-   - List all screenshots with paths
-
-3. **Cleanup**:
-   - Move completed bug reports to `.claude/plans/Done/`
-   - Keep test report in `.claude/plans/Documents/`
-
----
-
-## Common Bug Patterns
-
-| Pattern | Symptoms | Likely Cause | Typical Fix Location |
-|---------|----------|--------------|---------------------|
-| **Modal Close on Click** | Modal closes unexpectedly when clicking inside | Event propagation issue - click event bubbling to overlay | Modal container: add `onClick` handler with `e.stopPropagation()` |
-| **401 Unauthorized** | API calls fail with 401 error | Auth token expired or missing | `app/src/lib/auth.js` - check token refresh logic |
-| **Form Validation Stuck** | Submit button disabled despite valid fields | Field validation state not updating | Component validation logic - check `fieldValid` state updates |
-| **Pricing Calculation Wrong** | Prices don't match expected values | Incorrect price calculation parameters | `app/src/lib/scheduleSelector/priceCalculations.js` |
-| **Element Not Found** | Playwright can't find element | Selector incorrect or element not rendered | Component JSX - verify element exists and selector is correct |
-| **Network Timeout** | Edge function call times out | Function execution time exceeds limit | `supabase/functions/{name}/index.ts` - optimize or increase timeout |
-| **FK Constraint Violation** | Database update fails with code 23503 | Sending unchanged FK fields with null/invalid values | Update logic - only send changed fields, not entire formData |
-| **Data Not Persisting** | Form data disappears after navigation | localStorage or state management issue | Check localStorage save/load logic or state persistence |
-
----
-
-## Login State Detection Reference
-
-**From**: `.claude/skills/playwrightTestGuideLoginInstructions/SKILL.md`
-
-### Logged Out State
-- "Sign In" button visible in header
-- "Sign Up" button visible in header
-
-### Logged In State
-- Username displayed in header (clickable)
-- User profile picture/avatar visible
-- "Sign In" and "Sign Up" buttons **NOT visible**
-
-### Guest Account Type
-- "Stay with Us" visible in navigation
-
-### Host Account Type
-- "Host with Us" visible in navigation
+## Test Scope Definitions
+
+### Guest Journey (Full)
+1. Landing page load
+2. Guest signup OR login (check env vars)
+3. Browse listings
+4. Select listing → view detail page
+5. Initiate proposal flow
+6. Complete User Details section
+7. Review and submit proposal
+8. Complete Rental Application wizard (7 steps)
+9. Verify success state
+
+### Host Journey
+1. Host login
+2. Navigate to listing dashboard
+3. View existing listings
+4. Edit listing details
+5. Check proposal inbox
+6. Respond to proposal
+
+### Authentication Only
+1. Login with valid credentials
+2. Login with invalid credentials (expect error)
+3. Signup new account
+4. Password reset flow
+5. Logout
 
 ---
 
 ## Playwright MCP Tools Reference
 
-**All tools invoked via Task → mcp-tool-specialist**
+**All invoked via Task → mcp-tool-specialist**
 
-### Navigation
-- `mcp__playwright__browser_navigate` - Navigate to URL
-- `mcp__playwright__browser_navigate_back` - Go back
-
-### Page Inspection
-- `mcp__playwright__browser_snapshot` - Accessibility snapshot (better than screenshot for actions)
-- `mcp__playwright__browser_take_screenshot` - Visual screenshot (for evidence/reporting)
-- `mcp__playwright__browser_console_messages` - Get console logs
-- `mcp__playwright__browser_network_requests` - Get network activity
-
-### Interactions
-- `mcp__playwright__browser_click` - Click element (requires `ref` from snapshot)
-- `mcp__playwright__browser_type` - Type text into editable element
-- `mcp__playwright__browser_fill_form` - Fill multiple form fields at once
-- `mcp__playwright__browser_press_key` - Press keyboard key
-- `mcp__playwright__browser_select_option` - Select dropdown option
-
-### Waiting
-- `mcp__playwright__browser_wait_for` - Wait for text to appear/disappear or time to pass
-
-### Advanced
-- `mcp__playwright__browser_evaluate` - Execute JavaScript in page context
-- `mcp__playwright__browser_run_code` - Run Playwright code snippet
+| Tool | Purpose |
+|------|---------|
+| `browser_navigate` | Go to URL |
+| `browser_snapshot` | Accessibility tree (use for finding element refs) |
+| `browser_take_screenshot` | Visual evidence |
+| `browser_click` | Click element (needs `ref` from snapshot) |
+| `browser_type` | Type into input |
+| `browser_fill_form` | Fill multiple fields |
+| `browser_console_messages` | Get console logs |
+| `browser_network_requests` | Get network activity |
+| `browser_wait_for` | Wait for text/element |
 
 ---
 
-## Example Usage
+## Common Bug Patterns
 
-**User invokes skill**:
+| Pattern | Symptoms | Typical Fix |
+|---------|----------|-------------|
+| Modal closes on click | Click inside modal closes it | Add `e.stopPropagation()` to container |
+| 401 Unauthorized | API calls fail | Check token refresh in `auth.js` |
+| Element not found | Playwright can't find element | Verify selector matches snapshot ref |
+| FK Constraint (23503) | Database update fails | Only send changed fields, not full form |
+| Form validation stuck | Submit disabled despite valid fields | Check field validation state updates |
+
+---
+
+## Example Invocation
+
+**User**:
 ```
-User: "Run the E2E orchestrator to test the guest journey"
+Run the E2E orchestrator
 ```
 
-**Assistant workflow**:
-1. Verify environment (Phase 1)
-2. Run guest journey test (Phase 2)
-   - At each step: invoke mcp-tool-specialist with Playwright MCP tools
-   - Capture screenshots
-   - Log any errors/failures
-3. If bugs found:
-   - Generate bug reports (Phase 3.1)
-   - Plan fixes (Phase 3.2)
-   - Implement fixes (Phase 3.3)
-   - Re-test (Phase 3.4)
-   - Iterate until all bugs resolved
-4. Generate final report (Phase 4)
-5. Output summary to user
+**Assistant**:
+1. Use AskUserQuestion to collect: scope, budget, URL, fix mode
+2. Store inputs in session variables
+3. Begin autonomous loop at Iteration 1
+4. Continue until success or budget exhausted
+5. Output final report
 
-**Output**:
+**Example collected inputs**:
+- Scope: Guest Journey
+- Budget: Standard (2 hours, 5M tokens)
+- URL: localhost:8000
+- Fix Mode: Auto-fix and verify
+
+**Example final output**:
 ```
 ✅ E2E Test Complete
 
 Test Summary:
+- Iterations: 3
 - Total Steps: 14
-- Passed: 12
-- Failed: 2
+- Final Status: ALL PASSING
 
-Bugs Found: 2
-- Bug #1: Proposal modal click handler (FIXED in 1 iteration)
-- Bug #2: Rental application Step 4 validation (FIXED in 2 iterations)
+Bugs Found & Fixed: 2
+- Bug #1: Proposal modal event propagation (FIXED iter 2)
+- Bug #2: Rental app Step 4 validation (FIXED iter 3)
 
-Final Re-Test: ✅ All bugs resolved
+Budget Used:
+- Tokens: 2,341,000 / 5,000,000 (47%)
+- Time: 1.2 / 2.0 hours (60%)
 
-Full Report: .claude/plans/Documents/20260128143022-e2e-test-report.md
-Screenshots: C:\Users\SPLITL~1\AppData\Local\Temp\claude\...\scratchpad\e2e-test-20260128143022\
+Full Report: .claude/plans/Documents/{timestamp}-e2e-test-report.md
+Screenshots: {scratchpad}/e2e-test-{timestamp}/
 ```
+
+---
+
+## Environment Requirements
+
+- Dev server running at target URL (`bun run dev` for localhost:8000)
+- Playwright MCP configured in `.mcp.json`
+- Supabase MCP configured (for data validation)
+- Test credentials in env vars (optional):
+  - `TESTGUESTEMAILADDRESS`
+  - `TESTPASSWORD`
+  - `TESTHOSTEMAILADDRESS`
 
 ---
 
 ## Best Practices
 
-1. **Always use mcp-tool-specialist** - Never invoke Playwright MCP tools directly
-2. **Take snapshots before actions** - Use `browser_snapshot` to identify elements and get `ref` values
-3. **Take screenshots for evidence** - Capture visual proof at each major step
-4. **Log errors immediately** - Don't skip error logging even for "minor" issues
-5. **Iterate until resolved** - Don't accept "partial fixes" - keep iterating until bug-free
-6. **Commit after each fix** - Use structured commit messages with `/git-commits` skill
-7. **Verify end-to-end** - After all fixes, run complete flow start-to-finish as final verification
-8. **Use scratchpad for artifacts** - Save all screenshots and reports to session scratchpad directory
-
----
-
-## Limitations
-
-- **Email verification**: If the app requires email verification for signup, you may need to use a test email service or mock the verification step
-- **Payment flows**: This orchestrator does not test payment processing (Stripe, etc.) - add separate test flows if needed
-- **External dependencies**: If the app relies on external services (SMS, third-party APIs), those may need mocking or test endpoints
-
----
-
-## Future Enhancements
-
-- **Parallel test execution**: Run multiple test scenarios concurrently
-- **Performance metrics**: Capture page load times, API response times
-- **Visual regression testing**: Compare screenshots across test runs to detect UI regressions
-- **Test data cleanup**: Automatically delete test accounts and proposals after testing
-- **Integration with CI/CD**: Export test results in JUnit/TAP format for pipeline integration
+1. **Start with Quick budget** for new test flows, scale up once stable
+2. **Use localhost** for fix iterations, production for read-only validation
+3. **Take snapshots before actions** to get element refs
+4. **Screenshot failures** for debugging and documentation
+5. **Reset database** between iterations to avoid stale data
+6. **Commit incrementally** after each successful fix
