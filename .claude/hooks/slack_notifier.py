@@ -65,8 +65,7 @@ def extract_info_from_transcript(transcript_path):
                     # Skip if it starts with system tags
                     if raw_prompt and not raw_prompt.startswith('<'):
                         user_prompt = raw_prompt
-                        if len(user_prompt) > 100:
-                            user_prompt = user_prompt[:97] + "..."
+                        # No truncation - include full prompt
 
                 # Extract assistant text responses and tool uses
                 if entry_type == 'assistant' and isinstance(content, list):
@@ -88,29 +87,32 @@ def extract_info_from_transcript(transcript_path):
             except:
                 continue
 
-        # Build summary from last assistant text
+        # Build summary from last assistant text - include complete message
         summary = None
         if last_assistant_text:
-            # Get non-empty lines, skip code blocks and bullets
+            # Get non-empty lines, skip code blocks
             lines = []
+            in_code_block = False
             for line in last_assistant_text.split('\n'):
-                line = line.strip()
-                if line and not line.startswith('```') and not line.startswith('•') and not line.startswith('-'):
-                    lines.append(line)
+                stripped = line.strip()
+                # Track code block state
+                if stripped.startswith('```'):
+                    in_code_block = not in_code_block
+                    continue
+                # Skip lines inside code blocks
+                if in_code_block:
+                    continue
+                # Include non-empty lines (keep bullets and dashes for context)
+                if stripped:
+                    lines.append(stripped)
 
-            # Join lines until we have enough content (target ~150 chars min)
-            summary = ""
-            for line in lines:
-                if len(summary) >= 150:
-                    break
-                if summary:
-                    summary += " | " + line
-                else:
-                    summary = line
+            # Join all lines with newlines for complete message
+            summary = '\n'.join(lines)
 
-            # Truncate to 240 max
-            if len(summary) > 240:
-                summary = summary[:237] + "..."
+            # Slack has a 40,000 char limit, but keep reasonable for readability
+            # Only truncate if extremely long (over 4000 chars)
+            if len(summary) > 4000:
+                summary = summary[:3997] + "..."
 
         # Append files if we have them
         if files_changed and len(files_changed) <= 3:
