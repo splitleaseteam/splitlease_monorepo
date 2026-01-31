@@ -141,7 +141,7 @@ export default function ZPricingUnitTestPage() {
                   const name = listing.Name || listing._id;
                   const rentalType = listing['rental type'] || listing.rentalType || '?';
                   const pattern = listing['Weeks offered'] || listing.weeksOffered || 'Every week';
-                  const email = listing['Host email'] || listing.hostEmail || '-';
+                  const email = listing['Host email'] || listing.created_by_user?.email || '-';
                   return (
                     <option key={listing._id} value={listing._id}>
                       {name} | {rentalType} | {pattern} | {email}
