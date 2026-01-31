@@ -95,6 +95,11 @@ export default function HeaderMessagingPanel({
       if (panelRef.current && !panelRef.current.contains(e.target)) {
         // Check if click is on the trigger button (messaging icon)
         if (e.target.closest('.header-messages-icon')) return;
+
+        // CRITICAL: Check if click is inside the CreateProposalFlowV2 modal
+        // The modal is rendered outside the panel div but is logically part of this component
+        if (e.target.closest('.create-proposal-popup')) return;
+
         onClose?.();
       }
     };

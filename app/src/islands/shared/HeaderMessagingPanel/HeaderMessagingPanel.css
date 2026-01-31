@@ -13,10 +13,11 @@
    PANEL CONTAINER
    ============================================================================ */
 .header-messaging-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  top: 70px; /* Below header */
+  right: 20px; /* Fixed distance from viewport edge prevents overflow */
   width: 425px;
+  max-width: calc(100vw - 40px); /* Prevent overflow on smaller screens */
   max-height: calc(100vh - 100px);
   background: #ffffff;
   border: 1px solid #e5e5e5;
@@ -704,6 +705,6 @@
 @media (max-width: 1024px) and (min-width: 900px) {
   .header-messaging-panel {
     width: 380px;
-    right: -20px;
+    right: 15px; /* Keep fixed distance from viewport edge */
   }
 }
