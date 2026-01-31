@@ -32,6 +32,7 @@ import {
   renderTemplate,
   getVisibilityForRole,
   buildTemplateContext,
+  getDefaultMessage,
 } from '../../_shared/ctaHelpers.ts';
 
 interface SendMessagePayload {
@@ -82,12 +83,15 @@ async function sendInquiryWelcomeMessages(
     getCTAByName(supabase, 'new_inquiry_host_view'),
   ]);
 
-  if (guestCTA?.message) {
+  // Send guest welcome message (with fallback for null CTA messages)
+  if (guestCTA) {
     const guestVisibility = getVisibilityForRole('guest');
-    const renderedMessage = renderTemplate(guestCTA.message, templateContext);
+    const guestMessageBody = guestCTA.message
+      ? renderTemplate(guestCTA.message, templateContext)
+      : getDefaultMessage('inquiry', 'guest', templateContext);
     await createSplitBotMessage(supabase, {
       threadId,
-      messageBody: renderedMessage,
+      messageBody: guestMessageBody,
       callToAction: guestCTA.display,
       visibleToHost: guestVisibility.visibleToHost,
       visibleToGuest: guestVisibility.visibleToGuest,
@@ -96,12 +100,15 @@ async function sendInquiryWelcomeMessages(
     console.log('[sendMessage] Sent guest welcome message');
   }
 
-  if (hostCTA?.message) {
+  // Send host welcome message (with fallback for null CTA messages)
+  if (hostCTA) {
     const hostVisibility = getVisibilityForRole('host');
-    const renderedMessage = renderTemplate(hostCTA.message, templateContext);
+    const hostMessageBody = hostCTA.message
+      ? renderTemplate(hostCTA.message, templateContext)
+      : getDefaultMessage('inquiry', 'host', templateContext);
     await createSplitBotMessage(supabase, {
       threadId,
-      messageBody: renderedMessage,
+      messageBody: hostMessageBody,
       callToAction: hostCTA.display,
       visibleToHost: hostVisibility.visibleToHost,
       visibleToGuest: hostVisibility.visibleToGuest,
@@ -110,9 +117,10 @@ async function sendInquiryWelcomeMessages(
     console.log('[sendMessage] Sent host welcome message');
   }
 
+  // Update thread last message preview (use guest message or default)
   const lastMessagePreview = guestCTA?.message
     ? renderTemplate(guestCTA.message, templateContext)
-    : 'New conversation started';
+    : getDefaultMessage('inquiry', 'guest', templateContext);
   await updateThreadLastMessage(supabase, threadId, lastMessagePreview);
 }
 
