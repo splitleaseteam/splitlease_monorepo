@@ -15,13 +15,15 @@ You are executing a BULK PRICING LIST FIX operation. This is a critical database
 
 ## CRITICAL RULES
 
-1. **DO NOT STOP** until all listings are processed or you hit token limits
+1. **DO NOT STOP** until all listings are processed or you hit token/time limits
 2. **TRACK PROGRESS** - Output status every 10 listings
 3. **LOG ALL ERRORS** - Never silently skip failures
 4. **USE MCP TOOLS** via mcp-tool-specialist subagent for ALL database operations
 5. **VALIDATE RESULTS** after processing completes
+6. **HARD STOP** after 2 hours maximum runtime - save progress and generate partial report
 
 ## TOKEN BUDGET: 15,000,000
+## MAX RUNTIME: 2 HOURS
 
 Pace yourself. This is a long operation.
 

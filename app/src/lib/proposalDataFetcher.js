@@ -79,41 +79,20 @@ export async function fetchUserById(userId) {
 }
 
 /**
- * Fetch all proposals from the user's "Proposals List" field
- * This field contains an array of proposal IDs associated with the user
- * Following the principle: "fetch the user's proposal's list" from user table
+ * Fetch all proposals for a guest user
+ * Queries directly by Guest field instead of relying on "Proposals List" array
+ * to ensure data integrity and avoid missing proposals due to sync issues
  *
  * @param {string} userId - The user's _id
  * @returns {Promise<Array>} Array of proposal objects
  */
 export async function fetchProposalsByGuest(userId) {
   try {
-    // Step 1: Fetch the user to get their Proposals List
-    const { data: userData, error: userError } = await supabase
-      .from('user')
-      .select('"Proposals List"')
-      .eq('_id', userId)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user:', userError);
-      return [];
-    }
-
-    const proposalIds = userData?.['Proposals List'];
-
-    if (!proposalIds || !Array.isArray(proposalIds) || proposalIds.length === 0) {
-      console.log('No proposals found in user\'s Proposals List');
-      return [];
-    }
-
-    console.log(`📋 Found ${proposalIds.length} proposal IDs in user's Proposals List`);
-
-    // Step 2: Fetch all proposals by their IDs
+    // Query proposals directly by Guest field
     const { data: proposalsData, error: proposalsError } = await supabase
       .from('proposal')
       .select('*')
-      .in('_id', proposalIds)
+      .eq('Guest', userId)
       .or('Deleted.is.null,Deleted.eq.false')
       .order('Created Date', { ascending: false });
 
@@ -122,7 +101,7 @@ export async function fetchProposalsByGuest(userId) {
       return [];
     }
 
-    console.log(`✅ Successfully fetched ${proposalsData?.length || 0} proposals from ${proposalIds.length} IDs`);
+    console.log(`✅ Successfully fetched ${proposalsData?.length || 0} proposals for guest ${userId}`);
 
     return proposalsData || [];
   } catch (err) {
