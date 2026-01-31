@@ -220,9 +220,6 @@ def generate_commit_message(changed_files, transcript_summary=None):
             file_names.append(f'+{len(changed_files) - 3} more')
         msg = f"{primary}: update {', '.join(file_names)}"
 
-    # Add co-author
-    msg += "\n\nCo-Authored-By: Claude <noreply@anthropic.com>"
-
     return msg
 
 def main():
