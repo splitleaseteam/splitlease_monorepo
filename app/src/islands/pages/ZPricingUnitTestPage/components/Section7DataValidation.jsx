@@ -1,5 +1,5 @@
 /**
- * Section 7: Data Validation Checks
+ * Section 6: Data Validation Checks (renumbered from Section 7)
  *
  * Displays the 7 validation checks from Bubble's z-pricing-unit-test page:
  * 1. Price exists
@@ -27,9 +27,9 @@ export default function Section7DataValidation({ validationFlags }) {
   const allGood = validationFlags.allGood;
 
   return (
-    <div className="zput-card zput-section-7">
+    <div className="zput-card zput-section-6">
       <div className="zput-card-header">
-        <span className="zput-card-title">Section 7: Data Validation Checks</span>
+        <span className="zput-card-title">Section 6: Data Validation Checks</span>
         <span className={`zput-check-counter ${allGood ? 'all-pass' : 'some-fail'}`}>
           {passedCount}/{checks.length} Passed
         </span>

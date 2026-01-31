@@ -1,5 +1,5 @@
 /**
- * Section 6: Workflow vs Formula Check
+ * Section 4: Workflow vs Formula Check (renumbered from Section 6)
  *
  * Compares pricing calculations from the workflow (ListingScheduleSelector)
  * against direct formula calculations to verify consistency.
@@ -29,9 +29,9 @@ export default function Section6WorkflowCheck({
   const allMatch = metrics.every(m => comparisonResults[m.key]?.match);
 
   return (
-    <div className="zput-card zput-section-6">
+    <div className="zput-card zput-section-4">
       <div className="zput-card-header">
-        <span className="zput-card-title">Section 6: Workflow vs Formula Check</span>
+        <span className="zput-card-title">Section 4: Workflow vs Formula Check</span>
         <button
           type="button"
           className="zput-btn zput-btn-primary"

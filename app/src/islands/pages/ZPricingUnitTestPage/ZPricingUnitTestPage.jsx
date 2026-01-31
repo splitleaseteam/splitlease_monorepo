@@ -213,122 +213,96 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 2: Sections 3 & 4 (Core pricing info) */}
+        {/* ROW 2: Section 3 (Combined Host + Prorated) | Section 4 (Workflow Check) */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <div className="zput-row">
-          {/* Section 3: Host Prices */}
-          <div className="zput-card">
-            <span className="zput-card-title">Section 3: Host Prices</span>
+          {/* Section 3: Host Prices + Prorated (Combined) */}
+          <div className="zput-card zput-card--wide">
+            <span className="zput-card-title">Section 3: Host Prices & Prorated Rates</span>
 
-            <div className="zput-info-row">
-              <span className="zput-info-label">Host Comp Style:</span>
-              <span className="zput-info-value">{logic.hostRates.hostCompStyle || '-'}</span>
-            </div>
-            <div className="zput-info-row">
-              <span className="zput-info-label">Weeks Offered:</span>
-              <span className="zput-info-value">{logic.hostRates.weeksOffered}</span>
-            </div>
-
-            <div className="zput-divider"></div>
-
-            <div className="zput-rates-grid">
-              <div className="zput-rate-item">
-                <span>2-Night Rate</span>
-                <span>{formatCurrency(logic.hostRates.rate2Night)}</span>
-              </div>
-              <div className="zput-rate-item">
-                <span>3-Night Rate</span>
-                <span>{formatCurrency(logic.hostRates.rate3Night)}</span>
-              </div>
-              <div className="zput-rate-item">
-                <span>4-Night Rate</span>
-                <span>{formatCurrency(logic.hostRates.rate4Night)}</span>
-              </div>
-              <div className="zput-rate-item">
-                <span>5-Night Rate</span>
-                <span>{formatCurrency(logic.hostRates.rate5Night)}</span>
-              </div>
-              <div className="zput-rate-item">
-                <span>Weekly Rate</span>
-                <span>{formatCurrency(logic.hostRates.weeklyRate)}</span>
-              </div>
-              <div className="zput-rate-item">
-                <span>Monthly Rate</span>
-                <span>{formatCurrency(logic.hostRates.monthlyRate)}</span>
-              </div>
-            </div>
-
-            <div className="zput-divider"></div>
-
-            <div className="zput-info-row">
-              <span className="zput-info-label">Damage Deposit:</span>
-              <span className="zput-info-value">{formatCurrency(logic.hostRates.damageDeposit)}</span>
-            </div>
-            <div className="zput-info-row">
-              <span className="zput-info-label">Cleaning Fee:</span>
-              <span className="zput-info-value">{formatCurrency(logic.hostRates.cleaningDeposit)}</span>
-            </div>
-            <div className="zput-info-row">
-              <span className="zput-info-label">Unit Markup:</span>
-              <span className="zput-info-value">{formatPercentage(logic.hostRates.unitMarkup)}</span>
-            </div>
-          </div>
-
-          {/* Section 4: Prorated Rates & Reservation Span */}
-          <div className="zput-card">
-            <span className="zput-card-title">Section 4: Prorated & Reservation</span>
-
-            <div className="zput-combined-section">
-              {/* Reservation Span Info */}
-              <div className="zput-span-info zput-span-info--inline">
-                <div className="span-item">
-                  <span className="span-label">Span:</span>
-                  <span className="span-value">{logic.reservationSpan} wks ({logic.monthsInSpan} mo)</span>
+            <div className="zput-host-prorated-combined">
+              {/* Left: Host Prices */}
+              <div className="zput-host-prices-compact">
+                <div className="zput-info-row-inline">
+                  <span className="zput-info-label">Style:</span>
+                  <span className="zput-info-value">{logic.hostRates.hostCompStyle || '-'}</span>
+                  <span className="zput-info-label">Weeks:</span>
+                  <span className="zput-info-value">{logic.hostRates.weeksOffered}</span>
                 </div>
-                <div className="span-item">
-                  <span className="span-label">Nights:</span>
-                  <span className="span-value">{logic.nightsCount}/week</span>
-                </div>
-                <div className="span-item">
-                  <span className="span-label">Pattern:</span>
-                  <span className="span-value">
-                    {logic.GUEST_PATTERN_OPTIONS.find(o => o.value === logic.guestPattern)?.label}
-                  </span>
-                </div>
-              </div>
 
-              <div className="zput-divider"></div>
-
-              {/* Prorated Rates */}
-              <div className="zput-prorated-grid zput-prorated-grid--vertical">
-                <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Monthly')}>
-                  <h4>Monthly</h4>
-                  <div className="prorated-value">{formatCurrency(logic.pricingOutput.monthly.proratedNightlyRate)}</div>
-                  <div className="prorated-details">
-                    <span>Avg Nightly: {formatCurrency(logic.pricingOutput.monthly.avgNightly)}</span>
-                    <span>Avg Weekly: {formatCurrency(logic.pricingOutput.monthly.avgWeeklyPrice)}</span>
+                <div className="zput-rates-grid zput-rates-grid--compact">
+                  <div className="zput-rate-item">
+                    <span>2-Night</span>
+                    <span>{formatCurrency(logic.hostRates.rate2Night)}</span>
+                  </div>
+                  <div className="zput-rate-item">
+                    <span>3-Night</span>
+                    <span>{formatCurrency(logic.hostRates.rate3Night)}</span>
+                  </div>
+                  <div className="zput-rate-item">
+                    <span>4-Night</span>
+                    <span>{formatCurrency(logic.hostRates.rate4Night)}</span>
+                  </div>
+                  <div className="zput-rate-item">
+                    <span>5-Night</span>
+                    <span>{formatCurrency(logic.hostRates.rate5Night)}</span>
+                  </div>
+                  <div className="zput-rate-item">
+                    <span>Weekly</span>
+                    <span>{formatCurrency(logic.hostRates.weeklyRate)}</span>
+                  </div>
+                  <div className="zput-rate-item">
+                    <span>Monthly</span>
+                    <span>{formatCurrency(logic.hostRates.monthlyRate)}</span>
                   </div>
                 </div>
 
-                <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Weekly')}>
-                  <h4>Weekly</h4>
-                  <div className="prorated-value">{formatCurrency(logic.pricingOutput.weekly.proratedNightlyRate)}</div>
-                  <div className="prorated-details">
-                    <span>Unused Disc: {formatPercentage(logic.pricingOutput.weekly.unusedNightsDiscount)}</span>
+                <div className="zput-fees-inline">
+                  <span>Deposit: {formatCurrency(logic.hostRates.damageDeposit)}</span>
+                  <span>Cleaning: {formatCurrency(logic.hostRates.cleaningDeposit)}</span>
+                  <span>Markup: {formatPercentage(logic.hostRates.unitMarkup)}</span>
+                </div>
+              </div>
+
+              <div className="zput-vertical-divider"></div>
+
+              {/* Right: Prorated Rates */}
+              <div className="zput-prorated-compact">
+                <div className="zput-span-info zput-span-info--inline">
+                  <div className="span-item">
+                    <span className="span-label">Span:</span>
+                    <span className="span-value">{logic.reservationSpan}wks</span>
+                  </div>
+                  <div className="span-item">
+                    <span className="span-label">Nights:</span>
+                    <span className="span-value">{logic.nightsCount}/wk</span>
                   </div>
                 </div>
 
-                <div className="zput-prorated-panel" onClick={() => logic.handleProratedClick('Nightly')}>
-                  <h4>Nightly</h4>
-                  <div className="prorated-value">{formatCurrency(logic.pricingOutput.nightly.withMarkup)}</div>
-                  <div className="prorated-details">
-                    <span>Base: {formatCurrency(logic.pricingOutput.nightly.baseRate)}</span>
-                    <span>Full-Time Disc: {formatPercentage(logic.pricingOutput.nightly.fullTimeDiscount)}</span>
+                <div className="zput-prorated-grid zput-prorated-grid--horizontal">
+                  <div className="zput-prorated-panel zput-prorated-panel--small" onClick={() => logic.handleProratedClick('Monthly')}>
+                    <h4>Monthly</h4>
+                    <div className="prorated-value">{formatCurrency(logic.pricingOutput.monthly.proratedNightlyRate)}</div>
+                  </div>
+                  <div className="zput-prorated-panel zput-prorated-panel--small" onClick={() => logic.handleProratedClick('Weekly')}>
+                    <h4>Weekly</h4>
+                    <div className="prorated-value">{formatCurrency(logic.pricingOutput.weekly.proratedNightlyRate)}</div>
+                  </div>
+                  <div className="zput-prorated-panel zput-prorated-panel--small" onClick={() => logic.handleProratedClick('Nightly')}>
+                    <h4>Nightly</h4>
+                    <div className="prorated-value">{formatCurrency(logic.pricingOutput.nightly.withMarkup)}</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Section 4: Workflow vs Formula Check (moved up) */}
+          <Section6WorkflowCheck
+            comparisonResults={logic.comparisonResults}
+            onRunChecks={logic.handleRunChecks}
+            isUpdating={logic.isUpdating}
+          />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
@@ -345,27 +319,16 @@ export default function ZPricingUnitTestPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 4: Sections 6 & 7 (Workflow Check & Validation) */}
+        {/* ROW 4: Section 6 (Validation) | Section 7 (Guidelines) | Section 8 (ZAT Config) */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <div className="zput-row">
-          <Section6WorkflowCheck
-            comparisonResults={logic.comparisonResults}
-            onRunChecks={logic.handleRunChecks}
-            isUpdating={logic.isUpdating}
-          />
-
+        <div className="zput-row zput-row--three-col">
           <Section7DataValidation
             validationFlags={logic.validationFlags}
           />
-        </div>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/* ROW 5: Sections 8 & 9 (Reference info - bottom) */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <div className="zput-row">
-          {/* Section 8: Host Guidelines */}
+          {/* Section 7: Host Guidelines */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 8: Host Guidelines</span>
+            <span className="zput-card-title">Section 7: Host Guidelines</span>
 
             <div className="zput-guidelines-grid">
               <div className="zput-guideline-item">
@@ -387,9 +350,9 @@ export default function ZPricingUnitTestPage() {
             </div>
           </div>
 
-          {/* Section 9: ZAT Price Configuration */}
+          {/* Section 8: ZAT Price Configuration */}
           <div className="zput-card">
-            <span className="zput-card-title">Section 9: ZAT Config</span>
+            <span className="zput-card-title">Section 8: ZAT Config</span>
 
             {logic.zatConfig ? (
               <div className="zput-config-list">
