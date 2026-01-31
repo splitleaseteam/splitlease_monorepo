@@ -238,12 +238,100 @@ Ensure the user's Bubble ID is correctly stored in JWT user_metadata during sign
 
 ---
 
+## Extended Investigation Results (2026-01-31)
+
+### Database Verification - ALL CORRECT
+
+| Check | Result | Status |
+|-------|--------|--------|
+| User "fred" exists | `1769557609595x49864288621866896` | ✅ |
+| User has email | `splitleasefrederick+guest55jes@gmail.com` | ✅ |
+| Thread columns | `host_user_id`, `guest_user_id` (correct format) | ✅ |
+| User has threads | 2 threads as guest | ✅ |
+| `count_user_threads` RPC | Returns `2` for this user | ✅ |
+
+**Conclusion**: Database is correctly configured. The issue is **NOT** in the backend.
+
+### Frontend Issue Identified
+
+**Symptom**: Console logs show `dataLoading: true` persisting indefinitely, with `supabaseThreadsCount: 0`.
+
+**Evidence**:
+```
+📧 Messaging icon visibility check: {
+  effectiveThreadsCount: 0,
+  isMessagesPage: false,
+  shouldShowMessagingIcon: false,
+  supabaseThreadsCount: 0,
+  dataLoading: true  // <-- STUCK AT TRUE
+}
+```
+
+**Root Cause**: The `Promise.all` in `useLoggedInAvatarData.js` (lines 143-273) is not completing. One of the 12 parallel queries is hanging.
+
+**Likely Culprit**: One of these queries may be hanging or timing out:
+1. `get_host_listings` RPC (line 171) - Query for host's listings
+2. `get_user_junction_counts` RPC (line 232) - Junction table counts
+3. `bookings_leases` query (line 206-209) - May have RLS issues
+
+**Why This Breaks Messaging**: When `dataLoading` stays `true`, the `effectiveThreadsCount` falls back to prop value (0), so the messaging icon is hidden.
+
+---
+
+## Proposed Fix
+
+### Immediate Fix: Add Timeout Wrapper
+
+Wrap the `Promise.all` with a timeout to prevent indefinite hanging:
+
+```javascript
+// Add timeout wrapper function
+const withTimeout = (promise, timeoutMs, fallback) => {
+  return Promise.race([
+    promise,
+    new Promise(resolve => setTimeout(() => resolve(fallback), timeoutMs))
+  ]);
+};
+
+// In fetchData function, wrap each query with timeout
+const [
+  userResult,
+  listingsResult,
+  // ... etc
+] = await Promise.all([
+  withTimeout(supabase.from('user').select(...), 5000, { data: null, error: { message: 'Timeout' } }),
+  withTimeout(supabase.rpc('get_host_listings', ...), 5000, { data: [], error: { message: 'Timeout' } }),
+  // ... etc
+]);
+```
+
+### Diagnostic Fix: Add Individual Query Timing
+
+Add timing logs to identify which query is slow:
+
+```javascript
+const startTime = Date.now();
+
+// After each query completes in Promise.all
+console.log('[useLoggedInAvatarData] Query 1 (user) completed in', Date.now() - startTime, 'ms');
+// ... etc
+```
+
+### Recommended Action
+
+1. Add timeout wrapper to prevent indefinite hanging (5-10 second timeout)
+2. Add individual query timing to identify the slow query
+3. Once identified, optimize or fix the problematic query
+
+---
+
 ## Next Steps
 
-1. **Check Supabase Logs** - Use MCP to verify edge function behavior
-2. **Query Thread Table** - Verify thread data exists with correct column values
-3. **Test with Known User** - Use a user with known thread data to isolate the issue
-4. **Check Realtime Configuration** - Verify `_message` table has Realtime enabled in Supabase dashboard
+1. ~~Check Supabase Logs~~ ✅ - Edge function is working (some 400s but expected)
+2. ~~Query Thread Table~~ ✅ - Verified user has 2 threads with correct columns
+3. **Add timeout handling** to `useLoggedInAvatarData.js` to prevent UI blocking
+4. **Identify hanging query** by adding timing logs
+5. **Fix the underlying query** once identified
 
 ---
 
