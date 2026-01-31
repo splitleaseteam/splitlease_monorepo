@@ -4,11 +4,11 @@ Respond with three short sections. No markdown formatting. Plain text only.
 
 Format:
 
-ASKED: [One sentence describing the user's request]
+Intention: [What was the intention of the user]
 
-DONE: [One sentence describing what was accomplished]
+Implementation: [What was done to fulfill user's request]
 
-NEXT: [One sentence describing immediate next step, or "None" if complete]
+Next Steps: [What are the next steps to follow, if any]
 
 Rules:
 - Each section is ONE sentence maximum
