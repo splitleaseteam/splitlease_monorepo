@@ -289,7 +289,7 @@
   display: flex;
   justify-content: space-between;
   padding: 6px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .zput-info-label {
@@ -323,7 +323,7 @@
   padding: 8px;
   background: #F9FAFB;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .zput-rate-item span:first-child {
@@ -354,13 +354,13 @@
 
 .guideline-label {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: #6B7280;
   margin-bottom: 4px;
 }
 
 .guideline-value {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
   color: #111827;
 }
@@ -495,7 +495,7 @@
 }
 
 .zput-prorated-grid--vertical .prorated-value {
-  font-size: 18px;
+  font-size: 19px;
   margin: 0;
   min-width: 80px;
 }
@@ -524,13 +524,13 @@
 
 .zput-prorated-panel h4 {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #374151;
 }
 
 .prorated-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #4B47CE;
   margin-bottom: 8px;
@@ -540,7 +540,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: #6B7280;
 }
 
@@ -568,12 +568,12 @@
 }
 
 .zput-span-info--inline .span-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #6B7280;
 }
 
 .zput-span-info--inline .span-value {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #111827;
 }
@@ -592,12 +592,12 @@
 }
 
 .span-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #6B7280;
 }
 
 .span-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #111827;
 }
@@ -635,7 +635,7 @@
 .zput-pricing-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .zput-pricing-table th,
@@ -686,12 +686,12 @@
 }
 
 .summary-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #6B7280;
 }
 
 .summary-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #111827;
 }
@@ -700,7 +700,7 @@
   padding: 24px;
   text-align: center;
   color: #6B7280;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -720,7 +720,7 @@
 .zput-comparison-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .zput-comparison-table th,
@@ -752,7 +752,7 @@
   display: inline-block;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -773,7 +773,7 @@
   padding: 12px;
   margin-top: 12px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -804,7 +804,7 @@
 .zput-check-counter {
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -851,7 +851,7 @@
 .validation-badge {
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -866,14 +866,14 @@
 }
 
 .validation-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #111827;
 }
 
 .validation-description {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: #6B7280;
 }
 
@@ -884,7 +884,7 @@
   gap: 8px;
   padding: 16px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -899,7 +899,7 @@
 }
 
 .allgood-icon {
-  font-size: 20px;
+  font-size: 21px;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -949,7 +949,7 @@
 
 .zput-empty-text {
   color: #9CA3AF;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
   padding: 12px;
 }
@@ -1018,7 +1018,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px 16px;
-  font-size: 12px;
+  font-size: 13px;
   margin-bottom: 8px;
 }
 
@@ -1039,14 +1039,14 @@
 
 .zput-rates-grid--compact .zput-rate-item {
   padding: 6px 8px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .zput-fees-inline {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  font-size: 11px;
+  font-size: 12px;
   color: #6B7280;
   margin-top: 8px;
   padding-top: 8px;
@@ -1081,12 +1081,12 @@
 
 .zput-prorated-panel--small h4 {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   min-width: 55px;
 }
 
 .zput-prorated-panel--small .prorated-value {
-  font-size: 16px;
+  font-size: 17px;
   margin: 0;
 }
 
@@ -1101,7 +1101,7 @@
 
 /* Three-column comparison table */
 .zput-comparison-table--three-col {
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .zput-comparison-table--three-col th,
@@ -1110,12 +1110,12 @@
 }
 
 .zput-comparison-table--three-col .metric-label {
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .zput-comparison-table--three-col .metric-value {
-  font-size: 11px;
+  font-size: 12px;
   text-align: right;
 }
 
@@ -1134,11 +1134,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
