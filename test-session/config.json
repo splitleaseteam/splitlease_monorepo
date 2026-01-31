@@ -1,24 +1,20 @@
-﻿{
-    "scope":  {
-                  "startFromStep":  null,
-                  "skipSteps":  [
-
-                                ],
-                  "testFlow":  "guest-proposal"
-              },
-    "budget":  {
-                   "maxTimeMinutes":  45,
-                   "maxBugsToFix":  5,
-                   "maxIterations":  15
-               },
-    "dataReset":  {
-                      "cleanupProposals":  true,
-                      "preserveTestAccounts":  true,
-                      "enabled":  true
-                  },
-    "exitConditions":  {
-                           "requireCleanRun":  true,
-                           "maxConsecutiveFailures":  3,
-                           "stopOnFirstBug":  false
-                       }
+{
+  "sessionId": "e2e-guest-proposal-vm-20260131",
+  "testFlow": "signup-guest-proposal-virtual-meeting",
+  "createdAt": "2026-01-31T00:00:00.000Z",
+  "budget": {
+    "maxTokens": 15000000,
+    "maxTimeMinutes": 300,
+    "maxIterations": 20,
+    "maxBugsToFix": 15
+  },
+  "targetUrl": "http://localhost:3000/",
+  "fixMode": "auto",
+  "testAccount": "fresh",
+  "focusArea": "messaging",
+  "customRequirements": "Extra validation of messages being created, check if confirmation messages are created after virtual meeting request sent",
+  "dataReset": {
+    "enabled": true,
+    "targetProject": "splitlease-backend-dev"
+  }
 }

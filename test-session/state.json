@@ -1,39 +1,23 @@
-﻿{
-    "bugs":  {
-                 "pending":  [
-
-                             ],
-                 "found":  [
-
-                           ],
-                 "fixed":  [
-
-                           ],
-                 "wontFix":  [
-
-                             ]
-             },
-    "metrics":  {
-                    "dataResets":  0,
-                    "testsPassed":  0,
-                    "elapsedMinutes":  0,
-                    "testsRun":  0,
-                    "fixAttempts":  0,
-                    "testsFailed":  0
-                },
-    "progress":  {
-                     "lastScreenshot":  null,
-                     "completedSteps":  [
-
-                                        ],
-                     "currentStep":  "environment_verification",
-                     "currentIteration":  0,
-                     "currentPhase":  "initialization"
-                 },
-    "session":  {
-                    "endedAt":  null,
-                    "status":  "initialized",
-                    "startedAt":  "2026-01-31T12:39:17.3678451-06:00",
-                    "id":  "e2e-20260131-123916"
-                }
+{
+  "sessionId": "e2e-guest-proposal-vm-20260131",
+  "startedAt": "2026-01-31T00:00:00.000Z",
+  "status": "running",
+  "progress": {
+    "currentIteration": 1,
+    "currentPhase": "initialization",
+    "currentStep": "0.0-session-init"
+  },
+  "metrics": {
+    "stepsCompleted": 0,
+    "stepsFailed": 0,
+    "fixAttempts": 0,
+    "dataResets": 0,
+    "screenshotsTaken": 0
+  },
+  "bugs": {
+    "found": [],
+    "pending": [],
+    "fixed": []
+  },
+  "testCredentials": null
 }
