@@ -148,6 +148,7 @@ export default function HeaderMessagingPanel({
   // RENDER
   // ============================================================================
   return (
+    <>
     <div
       className="header-messaging-panel"
       ref={panelRef}
@@ -309,23 +310,26 @@ export default function HeaderMessagingPanel({
         </a>
       </div>
 
-      {/* Create Proposal Modal */}
-      {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
-        <CreateProposalFlowV2
-          listing={proposalModalData.listing}
-          moveInDate={proposalModalData.moveInDate}
-          daysSelected={proposalModalData.daysSelected}
-          nightsSelected={proposalModalData.nightsSelected}
-          reservationSpan={proposalModalData.reservationSpan}
-          pricingBreakdown={proposalModalData.priceBreakdown}
-          zatConfig={zatConfig}
-          isFirstProposal={true}
-          useFullFlow={true}
-          onClose={handleCloseModal}
-          onSubmit={handleProposalSubmit}
-          isSubmitting={isSubmittingProposal}
-        />
-      )}
     </div>
+
+    {/* Create Proposal Modal - Rendered OUTSIDE the panel div to avoid overflow:hidden clipping
+        The modal uses position:fixed and needs to cover the full viewport */}
+    {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
+      <CreateProposalFlowV2
+        listing={proposalModalData.listing}
+        moveInDate={proposalModalData.moveInDate}
+        daysSelected={proposalModalData.daysSelected}
+        nightsSelected={proposalModalData.nightsSelected}
+        reservationSpan={proposalModalData.reservationSpan}
+        pricingBreakdown={proposalModalData.priceBreakdown}
+        zatConfig={zatConfig}
+        isFirstProposal={true}
+        useFullFlow={true}
+        onClose={handleCloseModal}
+        onSubmit={handleProposalSubmit}
+        isSubmitting={isSubmittingProposal}
+      />
+    )}
+    </>
   );
 }
