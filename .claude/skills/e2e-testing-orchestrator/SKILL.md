@@ -53,6 +53,34 @@ Options:
   - "Pause on failure" - Stop and ask before each fix attempt
 ```
 
+```
+Question 5: Which test account should be used?
+Header: "Test Account"
+Options:
+  - "Default test accounts (Recommended)" - Use TESTGUESTEMAILADDRESS/TESTHOSTEMAILADDRESS from env
+  - "Create fresh account" - Sign up a new test user during the test
+  - "Custom credentials" - I'll provide specific email/password to use
+```
+
+```
+Question 6: Any specific focus areas or requirements?
+Header: "Focus"
+Options:
+  - "Standard flow" - Test the complete flow as defined
+  - "Messaging focus" - Extra validation on message creation and threads
+  - "Payment focus" - Extra validation on pricing calculations and payments
+  - "Custom requirements" - I'll describe specific things to test or verify
+```
+
+### Optional Follow-up Questions
+
+If user selects "Custom" for any option, ask a follow-up:
+
+- **Custom Test Scope**: "Please describe the specific user journey or flows you want to test."
+- **Custom URL**: "What URL should I test against? (e.g., https://staging.split.lease)"
+- **Custom Credentials**: "Please provide the test account email and password to use."
+- **Custom Requirements**: "Please describe any specific areas, bugs, or behaviors you want me to focus on."
+
 ### Store Collected Inputs
 
 After collecting inputs, store in session variables:
@@ -61,6 +89,10 @@ After collecting inputs, store in session variables:
 - `TIME_BUDGET_HOURS`: Max hours (e.g., 5)
 - `TARGET_URL`: URL to test against
 - `FIX_MODE`: auto | report | pause
+- `TEST_ACCOUNT`: default | fresh | custom
+- `TEST_CREDENTIALS`: Email/password if custom
+- `FOCUS_AREA`: standard | messaging | payment | custom
+- `CUSTOM_REQUIREMENTS`: Free-text description if provided
 
 ---
 
