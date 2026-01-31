@@ -2,7 +2,10 @@
  * Type definitions for Lease Documents Edge Function
  * Split Lease - Supabase Edge Functions
  *
- * Defines payload interfaces for all 5 document types:
+ * 1:1 compatible with PythonAnywhere API payload format.
+ * Uses space-separated keys to match Python's expected input.
+ *
+ * Document types:
  * - Host Payout Schedule
  * - Supplemental Agreement
  * - Periodic Tenancy Agreement
@@ -20,115 +23,163 @@ export interface UserContext {
 }
 
 // ================================================
-// PAYMENT ENTRY (Host Payout Schedule)
+// HOST PAYOUT PAYLOAD (Python-compatible)
 // ================================================
 
-export interface PaymentEntry {
-  date: string; // Input format: "MM/DD/YY" or "YYYY-MM-DD"
-  rent: string; // Currency string e.g., "1028.58"
-  total: string; // Currency string
-}
-
-// ================================================
-// HOST PAYOUT PAYLOAD
-// ================================================
-
+/**
+ * Host Payout Schedule payload matching Python API format.
+ * Keys use spaces exactly as Python expects.
+ */
 export interface HostPayoutPayload {
-  agreementNumber: string;
-  hostName: string;
-  hostEmail: string;
-  hostPhone: string;
-  address: string;
-  payoutNumber: string;
-  maintenanceFee: string;
-  payments: PaymentEntry[]; // Up to 13 payment entries
+  'Agreement Number': string;
+  'Host Name': string;
+  'Host Email': string;
+  'Host Phone': string;
+  'Address': string;
+  'Payout Number': string;
+  'Maintenance Fee': string;
+  // Payment entries: Date1-13, Rent1-13, Total1-13
+  'Date1'?: string;
+  'Rent1'?: string;
+  'Total1'?: string;
+  'Date2'?: string;
+  'Rent2'?: string;
+  'Total2'?: string;
+  'Date3'?: string;
+  'Rent3'?: string;
+  'Total3'?: string;
+  'Date4'?: string;
+  'Rent4'?: string;
+  'Total4'?: string;
+  'Date5'?: string;
+  'Rent5'?: string;
+  'Total5'?: string;
+  'Date6'?: string;
+  'Rent6'?: string;
+  'Total6'?: string;
+  'Date7'?: string;
+  'Rent7'?: string;
+  'Total7'?: string;
+  'Date8'?: string;
+  'Rent8'?: string;
+  'Total8'?: string;
+  'Date9'?: string;
+  'Rent9'?: string;
+  'Total9'?: string;
+  'Date10'?: string;
+  'Rent10'?: string;
+  'Total10'?: string;
+  'Date11'?: string;
+  'Rent11'?: string;
+  'Total11'?: string;
+  'Date12'?: string;
+  'Rent12'?: string;
+  'Total12'?: string;
+  'Date13'?: string;
+  'Rent13'?: string;
+  'Total13'?: string;
+  [key: string]: string | undefined;
 }
 
 // ================================================
-// SUPPLEMENTAL AGREEMENT PAYLOAD
+// SUPPLEMENTAL AGREEMENT PAYLOAD (Python-compatible)
 // ================================================
 
+/**
+ * Supplemental Agreement payload matching Python API format.
+ */
 export interface SupplementalPayload {
-  agreementNumber: string;
-  checkInDate: string;
-  checkOutDate: string;
-  numberOfWeeks: string;
-  guestsAllowed: string;
-  hostName: string;
-  listingTitle: string;
-  listingDescription: string;
-  location: string;
-  typeOfSpace: string;
-  spaceDetails: string;
-  supplementalNumber: string;
-  image1Url?: string;
-  image2Url?: string;
-  image3Url?: string;
+  'Agreement Number': string;
+  'Check in Date': string;
+  'Check Out Date': string;
+  'Number of weeks': string;
+  'Guests Allowed': string;
+  'Host Name': string;
+  'Listing Title': string;
+  'Listing Description': string;
+  'Location': string;
+  'Type of Space': string;
+  'Space Details': string;
+  'Supplemental Number': string;
+  'image1'?: string; // URL for image
+  'image2'?: string;
+  'image3'?: string;
+  [key: string]: string | undefined;
 }
 
 // ================================================
-// PERIODIC TENANCY AGREEMENT PAYLOAD
+// PERIODIC TENANCY AGREEMENT PAYLOAD (Python-compatible)
 // ================================================
 
+/**
+ * Periodic Tenancy Agreement payload matching Python API format.
+ */
 export interface PeriodicTenancyPayload {
-  agreementNumber: string;
-  checkInDate: string;
-  checkOutDate: string;
-  checkInDay: string;
-  checkOutDay: string;
-  numberOfWeeks: string;
-  guestsAllowed: string;
-  hostName: string;
-  guestName: string;
-  supplementalNumber: string;
-  authorizationCardNumber: string;
-  hostPayoutScheduleNumber: string;
-  extraRequestsOnCancellationPolicy?: string;
-  damageDeposit: string;
-  listingTitle: string;
-  listingDescription: string;
-  location: string;
-  typeOfSpace: string;
-  spaceDetails: string;
-  houseRules: string | string[];
-  image1Url?: string;
-  image2Url?: string;
-  image3Url?: string;
+  'Agreement Number': string;
+  'Check in Date': string;
+  'Check Out Date': string;
+  'Check In Day': string;
+  'Check Out Day': string;
+  'Number of weeks': string;
+  'Guests Allowed': string;
+  'Host name': string; // Note: lowercase 'name' to match Python
+  'Guest name': string; // Note: lowercase 'name' to match Python
+  'Supplemental Number': string;
+  'Authorization Card Number': string;
+  'Host Payout Schedule Number': string;
+  'Extra Requests on Cancellation Policy'?: string;
+  'Damage Deposit': string;
+  'Listing Title': string;
+  'Listing Description': string;
+  'Location': string;
+  'Type of Space': string;
+  'Space Details': string;
+  'House Rules'?: string | string[];
+  'image1'?: string; // Base64 encoded image or URL
+  'image2'?: string;
+  'image3'?: string;
+  [key: string]: string | string[] | undefined;
 }
 
 // ================================================
-// CREDIT CARD AUTHORIZATION PAYLOAD
+// CREDIT CARD AUTHORIZATION PAYLOAD (Python-compatible)
 // ================================================
 
+/**
+ * Credit Card Authorization payload matching Python API format.
+ * Used for both prorated and non-prorated forms.
+ */
 export interface CreditCardAuthPayload {
-  agreementNumber: string;
-  hostName: string;
-  guestName: string;
-  weeksNumber: string;
-  listingDescription: string;
-  numberOfPayments: string;
-  fourWeekRent: string;
-  damageDeposit: string;
-  maintenanceFee: string;
-  splitleaseCredit: string;
-  lastPaymentRent: string;
-  penultimateWeekNumber: string;
-  lastPaymentWeeks: string;
-  isProrated: boolean;
+  'Agreement Number': string;
+  'Host Name': string;
+  'Guest Name': string;
+  'Four Week Rent': string;
+  'Maintenance Fee': string;
+  'Damage Deposit': string;
+  'Splitlease Credit': string;
+  'Last Payment Rent': string;
+  'Weeks Number': string;
+  'Listing Description': string;
+  'Penultimate Week Number': string;
+  'Number of Payments': string;
+  'Last Payment Weeks': string;
+  // Flag to determine which template to use (not in original Python, added for unified endpoint)
+  'Is Prorated'?: boolean | string;
+  [key: string]: string | boolean | undefined;
 }
 
 // ================================================
 // GENERATE ALL PAYLOAD
 // ================================================
 
+/**
+ * Payload for generating all documents at once.
+ * Each sub-object uses Python-compatible format.
+ */
 export interface GenerateAllPayload {
-  // Host Payout data
   hostPayout: HostPayoutPayload;
-  // Supplemental data
   supplemental: SupplementalPayload;
-  // Periodic Tenancy data
   periodicTenancy: PeriodicTenancyPayload;
-  // Credit Card Auth data
   creditCardAuth: CreditCardAuthPayload;
 }
 
@@ -140,8 +191,12 @@ export interface DocumentResult {
   success: boolean;
   filename?: string;
   driveUrl?: string;
+  drive_url?: string; // Python compatibility alias
+  web_view_link?: string; // Python compatibility alias
   fileId?: string;
+  file_id?: string; // Python compatibility alias
   error?: string;
+  returned_error?: 'yes' | 'no';
 }
 
 // ================================================
@@ -156,7 +211,7 @@ export interface GenerateAllResult {
 }
 
 // ================================================
-// TEMPLATE DATA TYPES (Internal)
+// TEMPLATE DATA TYPES (Internal - matches Python template variables)
 // ================================================
 
 export interface HostPayoutTemplateData {
@@ -186,9 +241,9 @@ export interface SupplementalTemplateData {
   location: string;
   type_of_space: string;
   supplement_number: string;
-  image1?: unknown;
-  image2?: unknown;
-  image3?: unknown;
+  image1?: string;
+  image2?: string;
+  image3?: string;
 }
 
 export interface PeriodicTenancyTemplateData {
@@ -213,9 +268,9 @@ export interface PeriodicTenancyTemplateData {
   location: string;
   type_of_space: string;
   House_rules_items: string;
-  image1?: unknown;
-  image2?: unknown;
-  image3?: unknown;
+  image1?: string;
+  image2?: string;
+  image3?: string;
 }
 
 export interface CreditCardAuthTemplateData {

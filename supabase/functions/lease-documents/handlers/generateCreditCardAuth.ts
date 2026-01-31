@@ -2,12 +2,13 @@
  * Credit Card Authorization Generator Handler
  * Split Lease - Supabase Edge Functions
  *
+ * 1:1 compatible with PythonAnywhere API.
  * Generates the Recurring Credit Card Authorization Form document.
  * Templates:
  * - Prorated: recurringcreditcardauthorizationprorated.docx
  * - Non-Prorated: recurringcreditcardauthorization.docx
  *
- * Variables:
+ * Template Variables (matching Python implementation):
  * - agreement_number, host_name, guest_name, maintenancefee, weeks_number
  * - ListingDescription, fourweekrent, damagedeposit, totalfirstpayment
  * - penultimateweeknumber, totalsecondpayment, slcredit, lastpaymenttotal
@@ -33,24 +34,26 @@ export async function handleGenerateCreditCardAuth(
 ): Promise<DocumentResult> {
   console.log('[generateCreditCardAuth] Starting document generation...');
 
-  // Validate payload
+  // Validate payload (Python-compatible format)
   const validatedPayload = validateCreditCardAuthPayload(payload);
-  console.log(`[generateCreditCardAuth] Agreement: ${validatedPayload.agreementNumber}, Prorated: ${validatedPayload.isProrated}`);
+  const agreementNumber = validatedPayload['Agreement Number'];
+  const isProrated = validatedPayload['Is Prorated'] === true;
+  console.log(`[generateCreditCardAuth] Agreement: ${agreementNumber}, Prorated: ${isProrated}`);
 
   // Calculate payment totals
   const payments = calculatePayments({
-    fourWeekRent: validatedPayload.fourWeekRent,
-    maintenanceFee: validatedPayload.maintenanceFee,
-    damageDeposit: validatedPayload.damageDeposit,
-    splitleaseCredit: validatedPayload.splitleaseCredit,
-    lastPaymentRent: validatedPayload.lastPaymentRent,
+    fourWeekRent: validatedPayload['Four Week Rent'],
+    maintenanceFee: validatedPayload['Maintenance Fee'],
+    damageDeposit: validatedPayload['Damage Deposit'],
+    splitleaseCredit: validatedPayload['Splitlease Credit'],
+    lastPaymentRent: validatedPayload['Last Payment Rent'],
   });
 
-  // Prepare template data
+  // Prepare template data (mapping to Python template variables)
   const templateData = prepareTemplateData(validatedPayload, payments);
 
   // Select template based on prorated flag
-  const templatePath = validatedPayload.isProrated
+  const templatePath = isProrated
     ? TEMPLATE_PATHS.creditCardAuthProrated
     : TEMPLATE_PATHS.creditCardAuthNonProrated;
 
@@ -61,9 +64,9 @@ export async function handleGenerateCreditCardAuth(
     templateData
   );
 
-  // Generate filename
-  const proratedSuffix = validatedPayload.isProrated ? 'prorated' : 'nonprorated';
-  const filename = `recurring_credit_card_auth-${proratedSuffix}-${validatedPayload.agreementNumber}.docx`;
+  // Generate filename (matching Python output format)
+  const proratedSuffix = isProrated ? 'prorated' : 'nonprorated';
+  const filename = `recurring_credit_card_auth-${proratedSuffix}-${agreementNumber}.docx`;
 
   // Upload to Google Drive
   const uploadResult = await uploadToGoogleDrive(documentContent, filename);
@@ -74,6 +77,7 @@ export async function handleGenerateCreditCardAuth(
     return {
       success: false,
       error: errorMsg,
+      returned_error: 'yes',
     };
   }
 
@@ -84,7 +88,11 @@ export async function handleGenerateCreditCardAuth(
     success: true,
     filename,
     driveUrl: uploadResult.webViewLink,
+    drive_url: uploadResult.webViewLink, // Python compatibility alias
+    web_view_link: uploadResult.webViewLink, // Python compatibility alias
     fileId: uploadResult.fileId,
+    file_id: uploadResult.fileId, // Python compatibility alias
+    returned_error: 'no',
   };
 }
 
@@ -103,26 +111,30 @@ interface CalculatedPayments {
   totalLastPayment: number;
 }
 
+/**
+ * Maps Python-style payload to template variables.
+ * Template variables match the Python docxtpl template exactly.
+ */
 function prepareTemplateData(
   payload: CreditCardAuthPayload,
   payments: CalculatedPayments
 ): Record<string, string> {
   return {
-    agreement_number: payload.agreementNumber,
-    host_name: payload.hostName,
-    guest_name: payload.guestName,
+    agreement_number: payload['Agreement Number'],
+    host_name: payload['Host Name'] || '',
+    guest_name: payload['Guest Name'] || '',
     maintenancefee: formatCurrencyRaw(payments.maintenanceFee),
-    weeks_number: payload.weeksNumber,
-    ListingDescription: payload.listingDescription,
+    weeks_number: payload['Weeks Number'] || '',
+    ListingDescription: payload['Listing Description'] || '',
     fourweekrent: formatCurrencyRaw(payments.fourWeekRent),
     damagedeposit: formatCurrencyRaw(payments.damageDeposit),
     totalfirstpayment: formatCurrencyRaw(payments.totalFirstPayment),
-    penultimateweeknumber: payload.penultimateWeekNumber,
+    penultimateweeknumber: payload['Penultimate Week Number'] || '',
     totalsecondpayment: formatCurrencyRaw(payments.totalSecondPayment),
     slcredit: formatCurrencyRaw(payments.splitleaseCredit),
     lastpaymenttotal: formatCurrencyRaw(payments.totalLastPayment),
-    numberofpayments: payload.numberOfPayments,
-    lastpaymentweeks: payload.lastPaymentWeeks,
+    numberofpayments: payload['Number of Payments'] || '',
+    lastpaymentweeks: payload['Last Payment Weeks'] || '',
     lastpaymentrent: formatCurrencyRaw(payments.lastPaymentRent),
   };
 }

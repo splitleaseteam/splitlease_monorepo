@@ -2,7 +2,8 @@
  * Generate All Documents Handler
  * Split Lease - Supabase Edge Functions
  *
- * Orchestrates the generation of all 5 lease documents:
+ * 1:1 compatible with PythonAnywhere API.
+ * Orchestrates the generation of all 4 lease documents:
  * 1. Host Payout Schedule
  * 2. Supplemental Agreement
  * 3. Periodic Tenancy Agreement
@@ -13,7 +14,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
-import type { GenerateAllPayload, GenerateAllResult, DocumentResult, UserContext } from '../lib/types.ts';
+import type { GenerateAllPayload, GenerateAllResult, UserContext } from '../lib/types.ts';
 import { validateGenerateAllPayload } from '../lib/validators.ts';
 import { handleGenerateHostPayout } from './generateHostPayout.ts';
 import { handleGenerateSupplemental } from './generateSupplemental.ts';
@@ -32,9 +33,10 @@ export async function handleGenerateAll(
 ): Promise<GenerateAllResult> {
   console.log('[generateAll] Starting orchestrated document generation...');
 
-  // Validate payload
+  // Validate payload (Python-compatible format)
   const validatedPayload = validateGenerateAllPayload(payload);
-  console.log(`[generateAll] Agreement: ${validatedPayload.hostPayout.agreementNumber}`);
+  const agreementNumber = validatedPayload.hostPayout['Agreement Number'];
+  console.log(`[generateAll] Agreement: ${agreementNumber}`);
 
   const results: GenerateAllResult = {
     hostPayout: { success: false },
@@ -62,7 +64,7 @@ export async function handleGenerateAll(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('[generateAll] Host Payout error:', errorMessage);
-    results.hostPayout = { success: false, error: errorMessage };
+    results.hostPayout = { success: false, error: errorMessage, returned_error: 'yes' };
     failureCount++;
   }
 
@@ -82,7 +84,7 @@ export async function handleGenerateAll(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('[generateAll] Supplemental error:', errorMessage);
-    results.supplemental = { success: false, error: errorMessage };
+    results.supplemental = { success: false, error: errorMessage, returned_error: 'yes' };
     failureCount++;
   }
 
@@ -102,7 +104,7 @@ export async function handleGenerateAll(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('[generateAll] Periodic Tenancy error:', errorMessage);
-    results.periodicTenancy = { success: false, error: errorMessage };
+    results.periodicTenancy = { success: false, error: errorMessage, returned_error: 'yes' };
     failureCount++;
   }
 
@@ -122,12 +124,11 @@ export async function handleGenerateAll(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('[generateAll] Credit Card Auth error:', errorMessage);
-    results.creditCardAuth = { success: false, error: errorMessage };
+    results.creditCardAuth = { success: false, error: errorMessage, returned_error: 'yes' };
     failureCount++;
   }
 
   // Summary notification
-  const agreementNumber = validatedPayload.hostPayout.agreementNumber;
   if (failureCount === 0) {
     await notifySlack(`All 4 documents generated successfully for Agreement ${agreementNumber}`);
   } else if (successCount === 0) {

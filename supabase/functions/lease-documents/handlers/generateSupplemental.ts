@@ -2,10 +2,11 @@
  * Supplemental Agreement Generator Handler
  * Split Lease - Supabase Edge Functions
  *
+ * 1:1 compatible with PythonAnywhere API.
  * Generates the Supplemental Agreement document.
  * Template: supplementalagreement.docx
  *
- * Variables:
+ * Template Variables (matching Python implementation):
  * - agreement_number, start_date, end_date, weeks_number, guest_allowed, guests_allowed
  * - host_name, listing_description, listing_title, spacedetails, location, type_of_space
  * - supplement_number, image1, image2, image3
@@ -29,23 +30,24 @@ export async function handleGenerateSupplemental(
 ): Promise<DocumentResult> {
   console.log('[generateSupplemental] Starting document generation...');
 
-  // Validate payload
+  // Validate payload (Python-compatible format)
   const validatedPayload = validateSupplementalPayload(payload);
-  console.log(`[generateSupplemental] Agreement: ${validatedPayload.agreementNumber}`);
+  const agreementNumber = validatedPayload['Agreement Number'];
+  console.log(`[generateSupplemental] Agreement: ${agreementNumber}`);
 
-  // Prepare template data
+  // Prepare template data (mapping to Python template variables)
   const templateData = prepareTemplateData(validatedPayload);
 
   // Prepare image URLs for embedding
   const imageUrls: Record<string, string> = {};
-  if (validatedPayload.image1Url) {
-    imageUrls.image1 = validatedPayload.image1Url;
+  if (validatedPayload['image1']) {
+    imageUrls.image1 = validatedPayload['image1'];
   }
-  if (validatedPayload.image2Url) {
-    imageUrls.image2 = validatedPayload.image2Url;
+  if (validatedPayload['image2']) {
+    imageUrls.image2 = validatedPayload['image2'];
   }
-  if (validatedPayload.image3Url) {
-    imageUrls.image3 = validatedPayload.image3Url;
+  if (validatedPayload['image3']) {
+    imageUrls.image3 = validatedPayload['image3'];
   }
 
   // Render the template with images
@@ -59,8 +61,8 @@ export async function handleGenerateSupplemental(
     }
   );
 
-  // Generate filename
-  const filename = `supplement_agreement-${validatedPayload.agreementNumber}.docx`;
+  // Generate filename (matching Python output format)
+  const filename = `supplement_agreement-${agreementNumber}.docx`;
 
   // Upload to Google Drive
   const uploadResult = await uploadToGoogleDrive(documentContent, filename);
@@ -71,6 +73,7 @@ export async function handleGenerateSupplemental(
     return {
       success: false,
       error: errorMsg,
+      returned_error: 'yes',
     };
   }
 
@@ -81,7 +84,11 @@ export async function handleGenerateSupplemental(
     success: true,
     filename,
     driveUrl: uploadResult.webViewLink,
+    drive_url: uploadResult.webViewLink, // Python compatibility alias
+    web_view_link: uploadResult.webViewLink, // Python compatibility alias
     fileId: uploadResult.fileId,
+    file_id: uploadResult.fileId, // Python compatibility alias
+    returned_error: 'no',
   };
 }
 
@@ -89,20 +96,24 @@ export async function handleGenerateSupplemental(
 // TEMPLATE DATA PREPARATION
 // ================================================
 
+/**
+ * Maps Python-style payload to template variables.
+ * Template variables match the Python docxtpl template exactly.
+ */
 function prepareTemplateData(payload: SupplementalPayload): Record<string, string> {
   return {
-    agreement_number: payload.agreementNumber,
-    start_date: formatDate(payload.checkInDate),
-    end_date: formatDate(payload.checkOutDate),
-    weeks_number: payload.numberOfWeeks,
-    guest_allowed: payload.guestsAllowed,
-    guests_allowed: payload.guestsAllowed,
-    host_name: payload.hostName,
-    listing_description: payload.listingDescription,
-    listing_title: payload.listingTitle,
-    spacedetails: payload.spaceDetails,
-    location: payload.location,
-    type_of_space: payload.typeOfSpace,
-    supplement_number: payload.supplementalNumber,
+    agreement_number: payload['Agreement Number'],
+    start_date: formatDate(payload['Check in Date']),
+    end_date: formatDate(payload['Check Out Date']),
+    weeks_number: payload['Number of weeks'] || '',
+    guest_allowed: payload['Guests Allowed'] || '',
+    guests_allowed: payload['Guests Allowed'] || '', // Duplicate key for template compatibility
+    host_name: payload['Host Name'] || '',
+    listing_description: payload['Listing Description'] || '',
+    listing_title: payload['Listing Title'] || '',
+    spacedetails: payload['Space Details'] || '',
+    location: payload['Location'] || '',
+    type_of_space: payload['Type of Space'] || '',
+    supplement_number: payload['Supplemental Number'] || '',
   };
 }

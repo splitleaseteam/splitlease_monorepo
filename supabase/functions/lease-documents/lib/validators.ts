@@ -2,7 +2,9 @@
  * Input Validators for Lease Documents Edge Function
  * Split Lease - Supabase Edge Functions
  *
- * Provides validation for all document payload types.
+ * 1:1 compatible with PythonAnywhere API payload format.
+ * Validates payloads using space-separated keys matching Python's expected input.
+ *
  * NO FALLBACK: All validation errors fail fast with descriptive messages.
  */
 
@@ -20,13 +22,26 @@ import type {
 // ================================================
 
 function requireString(value: unknown, fieldName: string): string {
-  if (typeof value !== 'string' || value.trim() === '') {
-    throw new ValidationError(`${fieldName} is required and must be a non-empty string`);
+  if (value === null || value === undefined) {
+    throw new ValidationError(`${fieldName} is required`);
+  }
+  if (typeof value !== 'string') {
+    return String(value);
   }
   return value;
 }
 
-function optionalString(value: unknown): string | undefined {
+function optionalString(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  if (typeof value !== 'string') {
+    return String(value);
+  }
+  return value;
+}
+
+function optionalStringOrUndefined(value: unknown): string | undefined {
   if (value === null || value === undefined || value === '') {
     return undefined;
   }
@@ -36,24 +51,14 @@ function optionalString(value: unknown): string | undefined {
   return value;
 }
 
-function requireBoolean(value: unknown, fieldName: string): boolean {
-  if (typeof value !== 'boolean') {
-    throw new ValidationError(`${fieldName} is required and must be a boolean`);
-  }
-  return value;
-}
-
-function requireArray<T>(value: unknown, fieldName: string): T[] {
-  if (!Array.isArray(value)) {
-    throw new ValidationError(`${fieldName} is required and must be an array`);
-  }
-  return value as T[];
-}
-
 // ================================================
-// HOST PAYOUT VALIDATOR
+// HOST PAYOUT VALIDATOR (Python-compatible)
 // ================================================
 
+/**
+ * Validates Host Payout payload using Python API field names.
+ * Only "Agreement Number" is strictly required per Python implementation.
+ */
 export function validateHostPayoutPayload(payload: unknown): HostPayoutPayload {
   if (!payload || typeof payload !== 'object') {
     throw new ValidationError('Payload is required and must be an object');
@@ -61,46 +66,53 @@ export function validateHostPayoutPayload(payload: unknown): HostPayoutPayload {
 
   const p = payload as Record<string, unknown>;
 
-  return {
-    agreementNumber: requireString(p.agreementNumber, 'agreementNumber'),
-    hostName: requireString(p.hostName, 'hostName'),
-    hostEmail: requireString(p.hostEmail, 'hostEmail'),
-    hostPhone: requireString(p.hostPhone, 'hostPhone'),
-    address: requireString(p.address, 'address'),
-    payoutNumber: requireString(p.payoutNumber, 'payoutNumber'),
-    maintenanceFee: requireString(p.maintenanceFee, 'maintenanceFee'),
-    payments: validatePaymentEntries(p.payments),
-  };
-}
-
-function validatePaymentEntries(
-  payments: unknown
-): Array<{ date: string; rent: string; total: string }> {
-  if (!Array.isArray(payments)) {
-    throw new ValidationError('payments must be an array');
+  // Only Agreement Number is strictly required per Python routes.py
+  if (!p['Agreement Number']) {
+    throw new ValidationError('Agreement Number is required');
   }
 
-  if (payments.length > 13) {
-    throw new ValidationError('payments array cannot exceed 13 entries');
-  }
-
-  return payments.map((entry, index) => {
-    if (!entry || typeof entry !== 'object') {
-      throw new ValidationError(`payments[${index}] must be an object`);
+  // Check for at least one complete payment entry (Python validation)
+  let hasPayment = false;
+  for (let i = 1; i <= 13; i++) {
+    if (p[`Date${i}`] && p[`Rent${i}`] && p[`Total${i}`]) {
+      hasPayment = true;
+      break;
     }
-    const e = entry as Record<string, unknown>;
-    return {
-      date: optionalString(e.date) || '',
-      rent: optionalString(e.rent) || '',
-      total: optionalString(e.total) || '',
-    };
-  });
+  }
+  if (!hasPayment) {
+    throw new ValidationError(
+      'At least one complete payment entry (Date, Rent, Total) is required'
+    );
+  }
+
+  // Build the payload object
+  const result: HostPayoutPayload = {
+    'Agreement Number': requireString(p['Agreement Number'], 'Agreement Number'),
+    'Host Name': optionalString(p['Host Name']),
+    'Host Email': optionalString(p['Host Email']),
+    'Host Phone': optionalString(p['Host Phone']),
+    'Address': optionalString(p['Address']),
+    'Payout Number': optionalString(p['Payout Number']),
+    'Maintenance Fee': optionalString(p['Maintenance Fee']),
+  };
+
+  // Add payment entries
+  for (let i = 1; i <= 13; i++) {
+    result[`Date${i}`] = optionalStringOrUndefined(p[`Date${i}`]);
+    result[`Rent${i}`] = optionalStringOrUndefined(p[`Rent${i}`]);
+    result[`Total${i}`] = optionalStringOrUndefined(p[`Total${i}`]);
+  }
+
+  return result;
 }
 
 // ================================================
-// SUPPLEMENTAL AGREEMENT VALIDATOR
+// SUPPLEMENTAL AGREEMENT VALIDATOR (Python-compatible)
 // ================================================
 
+/**
+ * Validates Supplemental Agreement payload using Python API field names.
+ */
 export function validateSupplementalPayload(payload: unknown): SupplementalPayload {
   if (!payload || typeof payload !== 'object') {
     throw new ValidationError('Payload is required and must be an object');
@@ -108,29 +120,37 @@ export function validateSupplementalPayload(payload: unknown): SupplementalPaylo
 
   const p = payload as Record<string, unknown>;
 
+  // Only Agreement Number is strictly required per Python routes.py
+  if (!p['Agreement Number']) {
+    throw new ValidationError('Agreement Number is required');
+  }
+
   return {
-    agreementNumber: requireString(p.agreementNumber, 'agreementNumber'),
-    checkInDate: requireString(p.checkInDate, 'checkInDate'),
-    checkOutDate: requireString(p.checkOutDate, 'checkOutDate'),
-    numberOfWeeks: requireString(p.numberOfWeeks, 'numberOfWeeks'),
-    guestsAllowed: requireString(p.guestsAllowed, 'guestsAllowed'),
-    hostName: requireString(p.hostName, 'hostName'),
-    listingTitle: requireString(p.listingTitle, 'listingTitle'),
-    listingDescription: requireString(p.listingDescription, 'listingDescription'),
-    location: requireString(p.location, 'location'),
-    typeOfSpace: requireString(p.typeOfSpace, 'typeOfSpace'),
-    spaceDetails: requireString(p.spaceDetails, 'spaceDetails'),
-    supplementalNumber: requireString(p.supplementalNumber, 'supplementalNumber'),
-    image1Url: optionalString(p.image1Url),
-    image2Url: optionalString(p.image2Url),
-    image3Url: optionalString(p.image3Url),
+    'Agreement Number': requireString(p['Agreement Number'], 'Agreement Number'),
+    'Check in Date': optionalString(p['Check in Date']),
+    'Check Out Date': optionalString(p['Check Out Date']),
+    'Number of weeks': optionalString(p['Number of weeks']),
+    'Guests Allowed': optionalString(p['Guests Allowed']),
+    'Host Name': optionalString(p['Host Name']),
+    'Listing Title': optionalString(p['Listing Title']),
+    'Listing Description': optionalString(p['Listing Description']),
+    'Location': optionalString(p['Location']),
+    'Type of Space': optionalString(p['Type of Space']),
+    'Space Details': optionalString(p['Space Details']),
+    'Supplemental Number': optionalString(p['Supplemental Number']),
+    'image1': optionalStringOrUndefined(p['image1']),
+    'image2': optionalStringOrUndefined(p['image2']),
+    'image3': optionalStringOrUndefined(p['image3']),
   };
 }
 
 // ================================================
-// PERIODIC TENANCY AGREEMENT VALIDATOR
+// PERIODIC TENANCY AGREEMENT VALIDATOR (Python-compatible)
 // ================================================
 
+/**
+ * Validates Periodic Tenancy Agreement payload using Python API field names.
+ */
 export function validatePeriodicTenancyPayload(payload: unknown): PeriodicTenancyPayload {
   if (!payload || typeof payload !== 'object') {
     throw new ValidationError('Payload is required and must be an object');
@@ -138,47 +158,60 @@ export function validatePeriodicTenancyPayload(payload: unknown): PeriodicTenanc
 
   const p = payload as Record<string, unknown>;
 
+  // Only Agreement Number is strictly required per Python routes.py
+  if (!p['Agreement Number']) {
+    throw new ValidationError('Agreement Number is required');
+  }
+
   return {
-    agreementNumber: requireString(p.agreementNumber, 'agreementNumber'),
-    checkInDate: requireString(p.checkInDate, 'checkInDate'),
-    checkOutDate: requireString(p.checkOutDate, 'checkOutDate'),
-    checkInDay: requireString(p.checkInDay, 'checkInDay'),
-    checkOutDay: requireString(p.checkOutDay, 'checkOutDay'),
-    numberOfWeeks: requireString(p.numberOfWeeks, 'numberOfWeeks'),
-    guestsAllowed: requireString(p.guestsAllowed, 'guestsAllowed'),
-    hostName: requireString(p.hostName, 'hostName'),
-    guestName: requireString(p.guestName, 'guestName'),
-    supplementalNumber: requireString(p.supplementalNumber, 'supplementalNumber'),
-    authorizationCardNumber: requireString(p.authorizationCardNumber, 'authorizationCardNumber'),
-    hostPayoutScheduleNumber: requireString(p.hostPayoutScheduleNumber, 'hostPayoutScheduleNumber'),
-    extraRequestsOnCancellationPolicy: optionalString(p.extraRequestsOnCancellationPolicy),
-    damageDeposit: requireString(p.damageDeposit, 'damageDeposit'),
-    listingTitle: requireString(p.listingTitle, 'listingTitle'),
-    listingDescription: requireString(p.listingDescription, 'listingDescription'),
-    location: requireString(p.location, 'location'),
-    typeOfSpace: requireString(p.typeOfSpace, 'typeOfSpace'),
-    spaceDetails: requireString(p.spaceDetails, 'spaceDetails'),
-    houseRules: validateHouseRules(p.houseRules),
-    image1Url: optionalString(p.image1Url),
-    image2Url: optionalString(p.image2Url),
-    image3Url: optionalString(p.image3Url),
+    'Agreement Number': requireString(p['Agreement Number'], 'Agreement Number'),
+    'Check in Date': optionalString(p['Check in Date']),
+    'Check Out Date': optionalString(p['Check Out Date']),
+    'Check In Day': optionalString(p['Check In Day']),
+    'Check Out Day': optionalString(p['Check Out Day']),
+    'Number of weeks': optionalString(p['Number of weeks']),
+    'Guests Allowed': optionalString(p['Guests Allowed']),
+    'Host name': optionalString(p['Host name']), // lowercase 'name' per Python
+    'Guest name': optionalString(p['Guest name']), // lowercase 'name' per Python
+    'Supplemental Number': optionalString(p['Supplemental Number']),
+    'Authorization Card Number': optionalString(p['Authorization Card Number']),
+    'Host Payout Schedule Number': optionalString(p['Host Payout Schedule Number']),
+    'Extra Requests on Cancellation Policy': optionalStringOrUndefined(
+      p['Extra Requests on Cancellation Policy']
+    ),
+    'Damage Deposit': optionalString(p['Damage Deposit']),
+    'Listing Title': optionalString(p['Listing Title']),
+    'Listing Description': optionalString(p['Listing Description']),
+    'Location': optionalString(p['Location']),
+    'Type of Space': optionalString(p['Type of Space']),
+    'Space Details': optionalString(p['Space Details']),
+    'House Rules': validateHouseRules(p['House Rules']),
+    'image1': optionalStringOrUndefined(p['image1']),
+    'image2': optionalStringOrUndefined(p['image2']),
+    'image3': optionalStringOrUndefined(p['image3']),
   };
 }
 
-function validateHouseRules(value: unknown): string | string[] {
+function validateHouseRules(value: unknown): string | string[] | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
   if (Array.isArray(value)) {
-    return value.map(item => String(item));
+    return value.map((item) => String(item));
   }
   if (typeof value === 'string') {
     return value;
   }
-  return '';
+  return String(value);
 }
 
 // ================================================
-// CREDIT CARD AUTH VALIDATOR
+// CREDIT CARD AUTH VALIDATOR (Python-compatible)
 // ================================================
 
+/**
+ * Validates Credit Card Authorization payload using Python API field names.
+ */
 export function validateCreditCardAuthPayload(payload: unknown): CreditCardAuthPayload {
   if (!payload || typeof payload !== 'object') {
     throw new ValidationError('Payload is required and must be an object');
@@ -186,21 +219,52 @@ export function validateCreditCardAuthPayload(payload: unknown): CreditCardAuthP
 
   const p = payload as Record<string, unknown>;
 
+  // Only Agreement Number is strictly required per Python routes.py
+  if (!p['Agreement Number']) {
+    throw new ValidationError('Agreement Number is required');
+  }
+
+  // Validate currency field (Four Week Rent is validated in Python)
+  if (p['Four Week Rent']) {
+    try {
+      const cleanValue = String(p['Four Week Rent']).replace(',', '');
+      if (isNaN(parseFloat(cleanValue))) {
+        throw new ValidationError(
+          `Invalid currency value for Four Week Rent: ${p['Four Week Rent']}`
+        );
+      }
+    } catch {
+      throw new ValidationError(
+        `Invalid currency value for Four Week Rent: ${p['Four Week Rent']}`
+      );
+    }
+  }
+
+  // Parse Is Prorated (boolean or string)
+  let isProrated: boolean | undefined;
+  if (p['Is Prorated'] !== undefined) {
+    if (typeof p['Is Prorated'] === 'boolean') {
+      isProrated = p['Is Prorated'];
+    } else if (typeof p['Is Prorated'] === 'string') {
+      isProrated = p['Is Prorated'].toLowerCase() === 'true';
+    }
+  }
+
   return {
-    agreementNumber: requireString(p.agreementNumber, 'agreementNumber'),
-    hostName: requireString(p.hostName, 'hostName'),
-    guestName: requireString(p.guestName, 'guestName'),
-    weeksNumber: requireString(p.weeksNumber, 'weeksNumber'),
-    listingDescription: requireString(p.listingDescription, 'listingDescription'),
-    numberOfPayments: requireString(p.numberOfPayments, 'numberOfPayments'),
-    fourWeekRent: requireString(p.fourWeekRent, 'fourWeekRent'),
-    damageDeposit: requireString(p.damageDeposit, 'damageDeposit'),
-    maintenanceFee: requireString(p.maintenanceFee, 'maintenanceFee'),
-    splitleaseCredit: requireString(p.splitleaseCredit, 'splitleaseCredit'),
-    lastPaymentRent: requireString(p.lastPaymentRent, 'lastPaymentRent'),
-    penultimateWeekNumber: requireString(p.penultimateWeekNumber, 'penultimateWeekNumber'),
-    lastPaymentWeeks: requireString(p.lastPaymentWeeks, 'lastPaymentWeeks'),
-    isProrated: requireBoolean(p.isProrated, 'isProrated'),
+    'Agreement Number': requireString(p['Agreement Number'], 'Agreement Number'),
+    'Host Name': optionalString(p['Host Name']),
+    'Guest Name': optionalString(p['Guest Name']),
+    'Four Week Rent': optionalString(p['Four Week Rent']),
+    'Maintenance Fee': optionalString(p['Maintenance Fee']),
+    'Damage Deposit': optionalString(p['Damage Deposit']),
+    'Splitlease Credit': optionalString(p['Splitlease Credit']),
+    'Last Payment Rent': optionalString(p['Last Payment Rent']),
+    'Weeks Number': optionalString(p['Weeks Number']),
+    'Listing Description': optionalString(p['Listing Description']),
+    'Penultimate Week Number': optionalString(p['Penultimate Week Number']),
+    'Number of Payments': optionalString(p['Number of Payments']),
+    'Last Payment Weeks': optionalString(p['Last Payment Weeks']),
+    'Is Prorated': isProrated,
   };
 }
 
@@ -208,6 +272,9 @@ export function validateCreditCardAuthPayload(payload: unknown): CreditCardAuthP
 // GENERATE ALL VALIDATOR
 // ================================================
 
+/**
+ * Validates the combined payload for generating all documents.
+ */
 export function validateGenerateAllPayload(payload: unknown): GenerateAllPayload {
   if (!payload || typeof payload !== 'object') {
     throw new ValidationError('Payload is required and must be an object');
