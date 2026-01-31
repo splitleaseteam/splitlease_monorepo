@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/postinstall.cjs",
     "dev": "bun run lint && bun run knip:report && vite --port 3000",
     "dev:test": "bun run lint && vite --port 8010 --strictPort",
     "dev:test:restart": "bun run dev:test:stop && bun run dev:test",
