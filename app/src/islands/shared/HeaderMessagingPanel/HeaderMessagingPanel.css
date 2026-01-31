@@ -693,6 +693,15 @@
 }
 
 /* ============================================================================
+   ENSURE PROPOSAL MODAL RENDERS ABOVE PANEL
+   When CreateProposalFlowV2 is opened from the messaging panel,
+   ensure it appears above the panel by targeting the sibling selector
+   ============================================================================ */
+.header-messaging-panel + .create-proposal-popup {
+  z-index: 10002; /* Above header-messaging-panel (10001) */
+}
+
+/* ============================================================================
    RESPONSIVE - HIDE ON MOBILE (should navigate to /messages instead)
    ============================================================================ */
 @media (max-width: 899px) {

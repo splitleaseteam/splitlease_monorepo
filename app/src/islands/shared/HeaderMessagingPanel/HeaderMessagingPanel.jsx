@@ -92,13 +92,19 @@ export default function HeaderMessagingPanel({
     if (!isOpen) return;
 
     const handleClickOutside = (e) => {
+      // If a modal is active (like CreateProposalFlowV2), don't close the panel
+      // This prevents edit button clicks inside the modal from closing everything
+      if (activeModal) return;
+
       if (panelRef.current && !panelRef.current.contains(e.target)) {
         // Check if click is on the trigger button (messaging icon)
         if (e.target.closest('.header-messages-icon')) return;
 
         // CRITICAL: Check if click is inside the CreateProposalFlowV2 modal
         // The modal is rendered outside the panel div but is logically part of this component
+        // Use multiple selectors to catch all modal containers
         if (e.target.closest('.create-proposal-popup')) return;
+        if (e.target.closest('.proposal-container')) return;
 
         onClose?.();
       }
@@ -110,7 +116,7 @@ export default function HeaderMessagingPanel({
     });
 
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, activeModal]);
 
   // ============================================================================
   // ESCAPE KEY TO CLOSE
@@ -119,12 +125,16 @@ export default function HeaderMessagingPanel({
     if (!isOpen) return;
 
     const handleEscape = (e) => {
+      // If a modal is active, let the modal handle its own escape key
+      // Don't close the panel when user presses escape inside the modal
+      if (activeModal) return;
+
       if (e.key === 'Escape') onClose?.();
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, activeModal]);
 
   // ============================================================================
   // AUTO-SCROLL TO BOTTOM ON NEW MESSAGES
