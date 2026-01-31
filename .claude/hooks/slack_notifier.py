@@ -91,12 +91,26 @@ def extract_info_from_transcript(transcript_path):
         # Build summary from last assistant text
         summary = None
         if last_assistant_text:
-            # Take first line or first 240 chars
-            first_line = last_assistant_text.split('\n')[0].strip()
-            if len(first_line) > 240:
-                summary = first_line[:237] + "..."
-            else:
-                summary = first_line
+            # Get non-empty lines, skip code blocks and bullets
+            lines = []
+            for line in last_assistant_text.split('\n'):
+                line = line.strip()
+                if line and not line.startswith('```') and not line.startswith('•') and not line.startswith('-'):
+                    lines.append(line)
+
+            # Join lines until we have enough content (target ~150 chars min)
+            summary = ""
+            for line in lines:
+                if len(summary) >= 150:
+                    break
+                if summary:
+                    summary += " | " + line
+                else:
+                    summary = line
+
+            # Truncate to 240 max
+            if len(summary) > 240:
+                summary = summary[:237] + "..."
 
         # Append files if we have them
         if files_changed and len(files_changed) <= 3:
