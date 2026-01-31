@@ -63,7 +63,7 @@ export async function handleCleanup(
 
     deletedCounts.reviews = reviews?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.reviews, 'reviews');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete reviews:', err);
   }
 
@@ -77,7 +77,7 @@ export async function handleCleanup(
 
     deletedCounts.guestRequests = requests?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.guestRequests, 'guest requests');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete guest requests:', err);
   }
 
@@ -91,7 +91,7 @@ export async function handleCleanup(
 
     deletedCounts.leases = leases?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.leases, 'leases');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete leases:', err);
   }
 
@@ -105,7 +105,7 @@ export async function handleCleanup(
 
     deletedCounts.virtualMeetings = meetings?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.virtualMeetings, 'virtual meetings');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete virtual meetings:', err);
   }
 
@@ -119,7 +119,7 @@ export async function handleCleanup(
 
     deletedCounts.proposals = proposals?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.proposals, 'proposals');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete proposals:', err);
   }
 
@@ -133,7 +133,7 @@ export async function handleCleanup(
 
     deletedCounts.guestAccounts = guestAccounts?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.guestAccounts, 'guest accounts');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete guest accounts:', err);
   }
 
@@ -147,7 +147,7 @@ export async function handleCleanup(
 
     deletedCounts.users = users?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.users, 'test users');
-  } catch (err) {
+  } catch (_err) {
     console.warn('[cleanup] Could not delete test users:', err);
   }
 

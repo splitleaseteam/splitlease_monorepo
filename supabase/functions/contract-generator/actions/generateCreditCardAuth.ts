@@ -1,6 +1,6 @@
 // Credit Card Authorization (Prorated) Document Handler
 
-import { renderDocxTemplate, generateFilename, transformTemplateData } from '../lib/docx.ts';
+import { renderDocxTemplate, generateFilename, transformTemplateData as _transformTemplateData } from '../lib/docx.ts';
 import { loadTemplateFromStorage, getTemplateByAction } from '../lib/storage.ts';
 import { uploadToGoogleDrive } from '../lib/googleDrive.ts';
 import { convertCurrencyToFloat, roundDown, formatCurrency } from '../lib/currency.ts';
@@ -79,7 +79,7 @@ export async function handleGenerateCreditCardAuth(
     const filename = generateFilename('recurring_credit_card_auth-prorated', payload.agreementNumber);
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase
+    const { data: _uploadData, error: uploadError } = await supabase
       .storage
       .from('contract-templates')
       .upload(`generated/${filename}`, documentBytes, {

@@ -30,7 +30,7 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../_shared/errors.ts';
 
@@ -248,7 +248,7 @@ interface DataApiConfigParam {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
+function executeHandler(
   handler: Function,
   action: Action,
   payload: Record<string, unknown>,

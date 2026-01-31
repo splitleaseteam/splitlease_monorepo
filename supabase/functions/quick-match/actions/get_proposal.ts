@@ -6,7 +6,7 @@
  * for display in the Quick Match interface.
  */
 
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient as _createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 import type {
   GetProposalPayload,

@@ -17,9 +17,9 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import {
-  ValidationError,
+  ValidationError as _ValidationError,
 } from "../_shared/errors.ts";
 
 // FP Utilities
@@ -28,7 +28,7 @@ import {
   parseRequest,
   validateAction,
   routeToHandler,
-  isPublicAction,
+  isPublicAction as _isPublicAction,
   getSupabaseConfig,
   formatSuccessResponse,
   formatErrorResponseHttp,
@@ -51,7 +51,7 @@ import { handleRecalculate } from "./handlers/recalculate.ts";
 const ALLOWED_ACTIONS = ["create", "get", "update", "recalculate"] as const;
 
 // All pricing-list actions are public (called internally by listing submission)
-const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(["create", "get", "update", "recalculate"]);
+const _PUBLIC_ACTIONS: ReadonlySet<string> = new Set(["create", "get", "update", "recalculate"]);
 
 type Action = typeof ALLOWED_ACTIONS[number];
 

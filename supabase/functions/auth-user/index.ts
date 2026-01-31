@@ -29,8 +29,8 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders } from '../_shared/cors.ts';
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
+import { corsHeaders as _corsHeaders } from '../_shared/cors.ts';
 
 // FP Utilities
 import { Result, ok, err } from "../_shared/functional/result.ts";
@@ -242,13 +242,13 @@ Deno.serve(async (req) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
+function executeHandler(
   handler: Function,
   action: Action,
   payload: Record<string, unknown>,
   config: AuthConfig
 ): Promise<unknown> {
-  const { supabaseUrl, supabaseServiceKey, bubbleBaseUrl, bubbleApiKey } = config;
+  const { supabaseUrl, supabaseServiceKey, _bubbleBaseUrl, _bubbleApiKey } = config;
 
   switch (action) {
     case 'login':

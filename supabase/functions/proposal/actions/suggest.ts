@@ -11,7 +11,7 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError } from "../../_shared/errors.ts";
-import { UserContext, CreateProposalInput, ListingData } from "../lib/types.ts";
+import { UserContext, CreateProposalInput as _CreateProposalInput, ListingData } from "../lib/types.ts";
 
 // ─────────────────────────────────────────────────────────────
 // INPUT TYPE

@@ -11,11 +11,11 @@
  * This function bridges the gap between user creation and AI profile parsing.
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 import { ValidationError } from '../_shared/errors.ts';
-import { sendWelcomeEmail, sendInternalSignupNotification, sendWelcomeSms } from '../_shared/emailUtils.ts';
+import { sendWelcomeEmail, sendInternalSignupNotification, sendWelcomeSms as _sendWelcomeSms } from '../_shared/emailUtils.ts';
 
 console.log('[ai-signup-guest] Edge Function started');
 
@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
       } else {
         console.log('[ai-signup-guest] ✅ Welcome email sent');
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('[ai-signup-guest] Welcome email error:', err);
       // Non-blocking: Continue with signup even if email fails
     }
@@ -180,7 +180,7 @@ Deno.serve(async (req) => {
       } else {
         console.log('[ai-signup-guest] ✅ Internal notification sent');
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('[ai-signup-guest] Internal notification error:', err);
     }
 

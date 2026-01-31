@@ -61,7 +61,7 @@ export const sendEmailNotification = async (
       success: true,
       messageId: responseData?.data?.message_id,
     };
-  } catch (err) {
+  } catch (_err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error('[scheduler] Email send exception:', errorMessage);
     return { success: false, error: errorMessage };
@@ -99,7 +99,7 @@ export const sendSmsNotification = async (
       success: true,
       messageSid: responseData?.data?.message_sid,
     };
-  } catch (err) {
+  } catch (_err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error('[scheduler] SMS send exception:', errorMessage);
     return { success: false, error: errorMessage };

@@ -23,8 +23,8 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders } from '../_shared/cors.ts';
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
+import { corsHeaders as _corsHeaders } from '../_shared/cors.ts';
 
 // FP Utilities
 import { Result, ok, err } from "../_shared/functional/result.ts";
@@ -75,7 +75,7 @@ const handlers: Readonly<Record<Action, Function>> = {
 /**
  * Validate that the authenticated user is an admin
  */
-async function validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
+async function _validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return err(new Error('Missing or invalid authorization header'));
@@ -243,7 +243,7 @@ Deno.serve(async (req) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
+function executeHandler(
   handler: Function,
   action: Action,
   payload: Record<string, unknown>,

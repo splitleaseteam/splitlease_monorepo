@@ -20,10 +20,10 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import {
   ValidationError,
-  AuthenticationError,
+  AuthenticationError as _AuthenticationError,
 } from "../_shared/errors.ts";
 
 // FP Utilities
@@ -238,11 +238,11 @@ Deno.serve(async (req: Request) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
+function executeHandler(
   handler: Function,
   action: Action,
   payload: Record<string, unknown>,
-  config: FullListingConfig | SupabaseOnlyConfig
+  _config: FullListingConfig | SupabaseOnlyConfig
 ): Promise<unknown> {
   switch (action) {
     case "create":

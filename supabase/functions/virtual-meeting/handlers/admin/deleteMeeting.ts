@@ -5,7 +5,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
+import { AuthenticationError as _AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
 
 interface DeletePayload {
   meetingId: string;
@@ -31,7 +31,7 @@ export async function handleAdminDeleteMeeting(
   console.log(`[admin_delete_meeting] Deleting meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Verify meeting exists and can be deleted
-  const { data: existing, error: checkError } = await supabase
+  const { data: existing, error: _checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .select("_id, status, booked_date")
     .eq("_id", payload.meetingId)

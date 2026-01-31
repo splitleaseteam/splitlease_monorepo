@@ -20,7 +20,7 @@
  * - Side effects isolated to boundaries
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import { ValidationError, AuthenticationError } from '../_shared/errors.ts';
 import { createClient } from '@supabase/supabase-js';

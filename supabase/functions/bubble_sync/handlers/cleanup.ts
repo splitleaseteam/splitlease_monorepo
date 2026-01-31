@@ -5,7 +5,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { cleanupCompletedItems } from '../lib/queueManager.ts';
+import { cleanupCompletedItems as _cleanupCompletedItems } from '../lib/queueManager.ts';
 
 export interface CleanupPayload {
     completed_older_than_days?: number;  // Default: 7

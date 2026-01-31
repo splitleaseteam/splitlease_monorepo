@@ -12,8 +12,8 @@
  * NO AUTHENTICATION REQUIRED - Public endpoint (auth handled per action)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
+import { createClient as _createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createErrorCollector, ErrorCollector } from '../_shared/slack.ts';
 
 // ============ CORS Headers ============

@@ -13,7 +13,7 @@
  * - export: Export selected listings as CSV/JSON
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -209,7 +209,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminRole(supabase: SupabaseClient, authUserId: string): Promise<boolean> {
+async function _checkAdminRole(supabase: SupabaseClient, authUserId: string): Promise<boolean> {
   // Look up the user record by auth_user_id to check admin toggle
   const { data, error } = await supabase
     .from('user')
@@ -305,7 +305,7 @@ async function handleList(
   // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
-  const { data: listings, error, count } = await query;
+  const { data: listings, error, _count } = await query;
 
   if (error) {
     console.error('[pricing-admin] List error:', error);
@@ -323,7 +323,7 @@ async function handleList(
   }
 
   // Fetch hosts in parallel
-  let hostsMap = new Map<string, unknown>();
+  const hostsMap = new Map<string, unknown>();
   if (hostIds.size > 0) {
     const { data: hosts } = await supabase
       .from("users")
@@ -613,7 +613,7 @@ async function handleToggleActive(
  * Get global pricing configuration (read-only)
  * Returns hardcoded values from pricingConstants.js
  */
-async function handleGetConfig() {
+function handleGetConfig() {
   // These match the values in app/src/logic/constants/pricingConstants.js
   return {
     siteMarkupRate: 0.17,
