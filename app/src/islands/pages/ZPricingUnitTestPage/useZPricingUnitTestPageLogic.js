@@ -250,7 +250,7 @@ export function useZPricingUnitTestPageLogic() {
           "Complete",
           "Approved",
           "Host email",
-          created_by_user:user!Created By(email)
+          created_by_user:user!"Created By"(email)
         `)
         .eq('"Deleted"', false)
         .order('"Modified Date"', { ascending: false })
