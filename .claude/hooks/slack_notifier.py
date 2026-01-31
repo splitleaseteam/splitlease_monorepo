@@ -173,13 +173,7 @@ def main():
                 return
 
         # Format the message
-        message_parts = [summary]
-
-        # Only add prompt if different from summary
-        if user_prompt and not summary.startswith("Re:"):
-            message_parts.append(f"Prompt: {user_prompt}")
-
-        message_parts.append(f"-{hostname}")
+        message_parts = [summary, f"-{hostname}"]
 
         message = "\n".join(message_parts)
 
