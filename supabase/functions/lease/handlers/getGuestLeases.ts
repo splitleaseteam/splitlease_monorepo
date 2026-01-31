@@ -127,7 +127,7 @@ export async function handleGetGuestLeases(
   const leaseIds = leases.map((l: LeaseData) => l._id);
 
   // Step 3: Fetch hosts
-  let hostMap: Record<string, HostInfo> = {};
+  const hostMap: Record<string, HostInfo> = {};
   if (hostIds.length > 0) {
     const { data: hosts, error: hostsError } = await supabase
       .from('user')
@@ -152,7 +152,7 @@ export async function handleGetGuestLeases(
   }
 
   // Step 4: Fetch listing details
-  let listingMap: Record<string, ListingInfo> = {};
+  const listingMap: Record<string, ListingInfo> = {};
   if (listingIds.length > 0) {
     const { data: listings, error: listingsError } = await supabase
       .from('listing')
@@ -176,7 +176,7 @@ export async function handleGetGuestLeases(
   }
 
   // Step 5: Fetch stays for all leases
-  let staysByLease: Record<string, StayWithReview[]> = {};
+  const staysByLease: Record<string, StayWithReview[]> = {};
   if (leaseIds.length > 0) {
     const { data: stays, error: staysError } = await supabase
       .from('bookings_stays')
@@ -213,7 +213,7 @@ export async function handleGetGuestLeases(
   }
 
   // Step 6: Fetch payment records for all leases (guest payments)
-  let paymentsByLease: Record<string, PaymentRecord[]> = {};
+  const paymentsByLease: Record<string, PaymentRecord[]> = {};
   if (leaseIds.length > 0) {
     const { data: payments, error: paymentsError } = await supabase
       .from('paymentrecords')
@@ -249,7 +249,7 @@ export async function handleGetGuestLeases(
   }
 
   // Step 7: Fetch date change requests for all leases (visible to guest)
-  let dateChangesByLease: Record<string, DateChangeRequest[]> = {};
+  const dateChangesByLease: Record<string, DateChangeRequest[]> = {};
   if (leaseIds.length > 0) {
     const { data: dateChanges, error: dateChangesError } = await supabase
       .from('datechangerequest')
@@ -279,7 +279,7 @@ export async function handleGetGuestLeases(
       const requestedByIds = [...new Set(dateChanges.map((dc: DateChangeRequest) => dc['Requested by']).filter(Boolean))];
 
       // Fetch user info for requestedBy
-      let requestedByMap: Record<string, HostInfo> = {};
+      const requestedByMap: Record<string, HostInfo> = {};
       if (requestedByIds.length > 0) {
         const { data: requestedByUsers } = await supabase
           .from('user')

@@ -40,7 +40,7 @@ export async function handleUpdate(
   // Validate required fields
   validateRequiredFields(payload, ['listing_id']);
 
-  const { listing_id, unit_markup = 0, user_id } = payload as UpdatePayload;
+  const { listing_id, unit_markup = 0, user_id: _user_id } = payload as UpdatePayload;
 
   // Get environment variables
   const supabaseUrl = Deno.env.get('SUPABASE_URL');

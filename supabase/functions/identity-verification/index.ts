@@ -20,7 +20,7 @@
  * - Side effects isolated to boundaries
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import { ValidationError, AuthenticationError } from '../_shared/errors.ts';
 import { createClient } from '@supabase/supabase-js';
@@ -41,7 +41,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   submit_verification: handleSubmitVerification,
   get_status: handleGetStatus,
 };

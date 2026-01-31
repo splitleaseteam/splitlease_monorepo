@@ -24,15 +24,15 @@ import {
   NotificationEvent,
 } from '../lib/types.ts';
 import { generateNotificationContent } from '../lib/notificationContent.ts';
-import { generateEmailTemplateVariables, getTemplateIdForScenario } from '../lib/emailTemplateGenerator.ts';
+import { generateEmailTemplateVariables, getTemplateIdForScenario as _getTemplateIdForScenario } from '../lib/emailTemplateGenerator.ts';
 import { sendEmail, EMAIL_TEMPLATES } from '../../_shared/emailUtils.ts';
-import { fetchListingFromLease, buildPropertyDisplay } from '../lib/propertyDisplay.ts';
-import type { EmailNotificationContext, ListingData } from '../lib/types.ts';
+import { fetchListingFromLease, buildPropertyDisplay as _buildPropertyDisplay } from '../lib/propertyDisplay.ts';
+import type { EmailNotificationContext, ListingData as _ListingData } from '../lib/types.ts';
 import {
-  getNotificationPreferences,
+  getNotificationPreferences as _NotificationPreferences,
   shouldSendEmail as checkEmailPreference,
   shouldSendSms as checkSmsPreference,
-  NotificationPreferences,
+  NotificationPreferences as _NotificationPreferences,
 } from '../../_shared/notificationHelpers.ts';
 
 // ─────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ import {
  * GENERAL: Used for SUBMITTED and REJECTED events
  * CELEBRATION: Used for ACCEPTED events (approval)
  */
-const DATE_CHANGE_EMAIL_TEMPLATES = {
+const _DATE_CHANGE_EMAIL_TEMPLATES = {
   GENERAL: EMAIL_TEMPLATES.BASIC_EMAIL,
   CELEBRATION: EMAIL_TEMPLATES.BASIC_EMAIL, // TODO: Create celebration template if desired
 };
@@ -516,7 +516,7 @@ async function sendSmsNotification(
   const isRequester = recipientType === 'requester';
 
   // Get the other person's name for the SMS content
-  const otherPersonName = isRequester
+  const _otherPersonName = isRequester
     ? context.receiver.firstName || 'the other party'
     : context.requestedBy.firstName || 'the other party';
 

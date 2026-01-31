@@ -10,7 +10,7 @@
  * This function bridges data from Bubble (policy documents) and Supabase (users, documentssent)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -176,7 +176,7 @@ async function handleListPolicies(supabase: SupabaseClient) {
           createdDate: policy['Created Date']
         }));
       }
-    } catch (err) {
+    } catch (_err) {
       // Table doesn't exist, try next
       console.log(`[document] Table ${tableName} not found, trying next...`);
     }

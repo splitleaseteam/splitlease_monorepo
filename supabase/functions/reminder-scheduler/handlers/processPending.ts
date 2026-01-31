@@ -100,7 +100,7 @@ export const handleProcessPending = async (
         error: result.error,
       });
 
-    } catch (err) {
+    } catch (_err) {
       console.error('[process-pending] Error processing reminder:', reminder._id, err);
       failed++;
 

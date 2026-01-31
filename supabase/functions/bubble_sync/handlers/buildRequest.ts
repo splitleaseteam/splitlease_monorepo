@@ -45,7 +45,7 @@ export interface BuildRequestResult {
     notes: string[];
 }
 
-export async function handleBuildRequest(
+export function handleBuildRequest(
     config: BubbleDataApiConfig,
     payload: BuildRequestPayload
 ): Promise<BuildRequestResult> {

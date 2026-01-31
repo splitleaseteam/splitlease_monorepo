@@ -21,7 +21,7 @@ export async function handleAcceptCounteroffer(
 ): Promise<{ success: boolean; message: string }> {
   console.log('[accept_counteroffer] Starting with proposalId:', payload.proposalId);
 
-  const { proposalId, isUsabilityTest = false } = payload;
+  const { proposalId, isUsabilityTest: _isUsabilityTest = false } = payload;
 
   if (!proposalId) {
     throw new Error('proposalId is required');

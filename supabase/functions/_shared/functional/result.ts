@@ -71,7 +71,7 @@ export const chain = <T, U, E>(
 /**
  * Async version of chain for async functions returning Results
  */
-export const chainAsync = async <T, U, E>(
+export const chainAsync = <T, U, E>(
   result: Result<T, E>,
   fn: (value: T) => Promise<Result<U, E>>
 ): Promise<Result<U, E>> =>
@@ -119,7 +119,7 @@ export const fromPromise = async <T>(
   try {
     const value = await promise;
     return ok(value);
-  } catch (e) {
+  } catch (_e) {
     return err(e instanceof Error ? e : new Error(String(e)));
   }
 };
@@ -134,7 +134,7 @@ export const fromAsync = <Args extends unknown[], T>(
   async (...args) => {
     try {
       return ok(await fn(...args));
-    } catch (e) {
+    } catch (_e) {
       return err(e instanceof Error ? e : new Error(String(e)));
     }
   };
