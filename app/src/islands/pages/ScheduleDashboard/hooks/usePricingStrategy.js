@@ -43,8 +43,9 @@ export function usePricingStrategy() {
           };
         }
         return { ...DEFAULT_PRICING_STRATEGY, ...parsed };
-      } catch (e) {
-        // Invalid JSON, use defaults
+      } catch (_e) {
+        // Invalid JSON in localStorage, fall back to defaults
+        console.warn('Invalid pricingStrategy JSON in localStorage, using defaults');
       }
     }
     return DEFAULT_PRICING_STRATEGY;

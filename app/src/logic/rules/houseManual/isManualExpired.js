@@ -8,11 +8,6 @@
  */
 
 /**
- * Default token expiration in milliseconds (30 days)
- */
-const DEFAULT_EXPIRATION_MS = 30 * 24 * 60 * 60 * 1000;
-
-/**
  * Check if a magic link token has expired.
  *
  * @param {Object} params - Named parameters
