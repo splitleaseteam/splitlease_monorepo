@@ -366,6 +366,7 @@ export async function handleSubmit(
     if (userId) {
       updateData['Host User'] = userId;
       updateData['Created By'] = userId;
+      updateData['Host email'] = user_email.toLowerCase();
     }
 
     const { error: updateError } = await supabase
