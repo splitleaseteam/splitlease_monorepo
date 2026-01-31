@@ -1,5 +1,5 @@
 /**
- * Section 11: Workflow vs Formula Check
+ * Section 6: Workflow vs Formula Check
  *
  * Compares pricing calculations from the workflow (ListingScheduleSelector)
  * against direct formula calculations to verify consistency.
@@ -9,7 +9,7 @@
 
 import PropTypes from 'prop-types';
 
-export default function Section11WorkflowCheck({
+export default function Section6WorkflowCheck({
   comparisonResults,
   onRunChecks,
   isUpdating
@@ -29,9 +29,9 @@ export default function Section11WorkflowCheck({
   const allMatch = metrics.every(m => comparisonResults[m.key]?.match);
 
   return (
-    <div className="zput-card zput-section-11">
+    <div className="zput-card zput-section-6">
       <div className="zput-card-header">
-        <span className="zput-card-title">Section 11: Workflow vs Formula Check</span>
+        <span className="zput-card-title">Section 6: Workflow vs Formula Check</span>
         <button
           type="button"
           className="zput-btn zput-btn-primary"
@@ -89,7 +89,7 @@ export default function Section11WorkflowCheck({
   );
 }
 
-Section11WorkflowCheck.propTypes = {
+Section6WorkflowCheck.propTypes = {
   comparisonResults: PropTypes.shape({
     fourWeekRent: PropTypes.shape({
       workflow: PropTypes.number,
@@ -116,6 +116,6 @@ Section11WorkflowCheck.propTypes = {
   isUpdating: PropTypes.bool
 };
 
-Section11WorkflowCheck.defaultProps = {
+Section6WorkflowCheck.defaultProps = {
   isUpdating: false
 };
