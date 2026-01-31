@@ -5,7 +5,7 @@
  * DIAGNOSTIC VERSION 2: Minimal core + lazy imports
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers inlined
@@ -314,7 +314,7 @@ async function authenticateFromHeaders(
 
     return { id: appUser._id, email: user.email ?? '' };
 
-  } catch (err) {
+  } catch (_err) {
     console.error('[proposal:auth] Exception:', (err as Error).message);
     return null;
   }

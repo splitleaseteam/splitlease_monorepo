@@ -16,7 +16,7 @@ interface DestinationPage {
   description: string;
 }
 
-export async function handleGetDestinationPages(): Promise<{ pages: DestinationPage[] }> {
+export function handleGetDestinationPages(): Promise<{ pages: DestinationPage[] }> {
   console.log('[get-destination-pages] ========== GET DESTINATION PAGES ==========');
 
   // Curated list of sensible magic link destinations

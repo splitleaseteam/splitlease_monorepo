@@ -9,7 +9,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { User } from 'https://esm.sh/@supabase/supabase-js@2';
+import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 
 interface Thread {
@@ -38,7 +38,7 @@ interface GetThreadsResult {
  */
 export async function handleGetThreads(
   supabaseAdmin: SupabaseClient,
-  payload: Record<string, unknown>,
+  _payload: Record<string, unknown>,
   user: { id: string; email: string; bubbleId?: string }
 ): Promise<GetThreadsResult> {
   console.log('[getThreads] ========== GET THREADS ==========');

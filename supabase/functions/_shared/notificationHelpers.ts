@@ -147,7 +147,7 @@ export function shouldSendSms(
  * Send email via internal Edge Function call
  * Fire-and-forget - logs errors but doesn't throw
  */
-export async function sendProposalEmail(
+export function sendProposalEmail(
   params: SendEmailParams
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -206,7 +206,7 @@ const SPLIT_LEASE_SMS_NUMBER = '+14155692985';
  * Send SMS via internal Edge Function call
  * Fire-and-forget - logs errors but doesn't throw
  */
-export async function sendProposalSms(
+export function sendProposalSms(
   params: SendSmsParams
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');

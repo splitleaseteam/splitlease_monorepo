@@ -154,7 +154,7 @@ const fetchLogo = async (): Promise<ArrayBuffer> => {
 /**
  * Generate QR code as data URL
  */
-const generateQRDataUrl = async (
+const generateQRDataUrl = (
   data: string,
   colors: QRColors
 ): Promise<string> => {

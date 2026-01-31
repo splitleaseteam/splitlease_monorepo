@@ -7,7 +7,6 @@ import json
 import sys
 import os
 import requests
-import subprocess
 from pathlib import Path
 from datetime import datetime
 
@@ -33,7 +32,7 @@ def load_env_file():
     return env_vars
 
 def extract_info_from_transcript(transcript_path):
-    """Extract user prompt and what was actually done (tools/files)"""
+    """Extract user prompt and assistant's final response summary"""
     try:
         if not os.path.exists(transcript_path):
             return None, None
@@ -41,78 +40,92 @@ def extract_info_from_transcript(transcript_path):
         with open(transcript_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        # Parse JSONL entries
         user_prompt = None
-        tools_used = set()
+        last_assistant_text = None
         files_changed = []
 
-        # Extract user prompt (first user message)
         for line in lines:
             try:
                 entry = json.loads(line.strip())
-                if entry.get('type') == 'user':
-                    message = entry.get('message', {})
-                    content = message.get('content')
+                entry_type = entry.get('type')
+                message = entry.get('message', {})
+                content = message.get('content')
+
+                # Extract first user prompt (skip system tags)
+                if entry_type == 'user' and user_prompt is None:
+                    raw_prompt = None
                     if isinstance(content, str):
-                        user_prompt = content.strip()
-                        if len(user_prompt) > 80:
-                            user_prompt = user_prompt[:77] + "..."
-                        break
+                        raw_prompt = content.strip()
+                    elif isinstance(content, list):
+                        for item in content:
+                            if isinstance(item, dict) and item.get('type') == 'text':
+                                raw_prompt = item.get('text', '').strip()
+                                break
+
+                    # Skip if it starts with system tags
+                    if raw_prompt and not raw_prompt.startswith('<'):
+                        user_prompt = raw_prompt
+                        # No truncation - include full prompt
+
+                # Extract assistant text responses and tool uses
+                if entry_type == 'assistant' and isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, dict):
+                            if item.get('type') == 'text':
+                                text = item.get('text', '').strip()
+                                if text and len(text) > 10:
+                                    last_assistant_text = text
+                            elif item.get('type') == 'tool_use':
+                                tool_name = item.get('name', '')
+                                tool_input = item.get('input', {})
+                                if tool_name in ('Edit', 'Write'):
+                                    file_path = tool_input.get('file_path', '')
+                                    if file_path:
+                                        file_name = file_path.split('/')[-1].split('\\')[-1]
+                                        if file_name not in files_changed:
+                                            files_changed.append(file_name)
             except:
                 continue
 
-        # Extract tools used and files changed
-        for line in reversed(lines[-30:]):
-            try:
-                entry = json.loads(line.strip())
-                if entry.get('type') == 'tool_use':
-                    tool_name = entry.get('name', '')
-                    tool_input = entry.get('input', {})
+        # Build summary from last assistant text - include complete message
+        summary = None
+        if last_assistant_text:
+            # Get non-empty lines, skip code blocks
+            lines = []
+            in_code_block = False
+            for line in last_assistant_text.split('\n'):
+                stripped = line.strip()
+                # Track code block state
+                if stripped.startswith('```'):
+                    in_code_block = not in_code_block
+                    continue
+                # Skip lines inside code blocks
+                if in_code_block:
+                    continue
+                # Include non-empty lines (keep bullets and dashes for context)
+                if stripped:
+                    lines.append(stripped)
 
-                    if tool_name == 'Edit':
-                        tools_used.add('edited')
-                        file_path = tool_input.get('file_path', '')
-                        if file_path:
-                            file_name = file_path.split('/')[-1].split('\\')[-1]
-                            if file_name not in files_changed:
-                                files_changed.append(file_name)
-                    elif tool_name == 'Write':
-                        tools_used.add('created')
-                    elif tool_name == 'Bash':
-                        cmd = tool_input.get('command', '')
-                        if 'git commit' in cmd:
-                            tools_used.add('committed')
-            except:
-                continue
+            # Join all lines with newlines for complete message
+            summary = '\n'.join(lines)
 
-        # Build simple summary
-        if tools_used:
-            summary = ', '.join(sorted(tools_used))
-            if files_changed and len(files_changed) <= 2:
-                summary += f" {', '.join(files_changed)}"
-        else:
-            summary = None
+            # Slack has a 40,000 char limit, but keep reasonable for readability
+            # Only truncate if extremely long (over 4000 chars)
+            if len(summary) > 4000:
+                summary = summary[:3997] + "..."
+
+        # Append files if we have them
+        if files_changed and len(files_changed) <= 3:
+            file_list = ', '.join(files_changed[-3:])
+            if summary:
+                summary = f"{summary} [{file_list}]"
+            else:
+                summary = f"Modified: {file_list}"
 
         return user_prompt, summary
 
     except Exception as e:
         return None, None
-
-def get_latest_commit_hash(cwd):
-    """Get the latest git commit hash"""
-    try:
-        result = subprocess.run(
-            ['git', 'rev-parse', '--short', 'HEAD'],
-            cwd=cwd,
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0:
-            return result.stdout.strip()
-    except:
-        pass
-    return None
 
 def send_to_slack(webhook_url, message):
     """Send message to Slack webhook"""
@@ -158,7 +171,6 @@ def main():
 
         # Extract information from hook input
         transcript_path = input_data.get('transcript_path', '')
-        cwd = input_data.get('cwd', '')
 
         # Get hostname
         hostname = os.environ.get('COMPUTERNAME', os.environ.get('HOSTNAME', 'unknown'))
@@ -166,23 +178,18 @@ def main():
         # Extract prompt and summary from transcript
         user_prompt, summary = extract_info_from_transcript(transcript_path)
 
-        # Use fallback if no tool summary extracted
+        # If no summary, use user prompt as context
         if not summary:
-            summary = "conversation completed"
-
-        # Check for git commit
-        commit_hash = get_latest_commit_hash(cwd) if cwd else None
+            if user_prompt:
+                summary = f"Re: {user_prompt}"
+            else:
+                # Nothing meaningful to report
+                log_debug("No meaningful content to send, skipping")
+                print("No meaningful content to report")
+                return
 
         # Format the message
-        message_parts = [summary]
-
-        if user_prompt:
-            message_parts.append(f"Prompt: {user_prompt}")
-
-        if commit_hash:
-            message_parts.append(f"Commit: {commit_hash}")
-
-        message_parts.append(f"-{hostname}")
+        message_parts = [summary, f"-{hostname}"]
 
         message = "\n".join(message_parts)
 

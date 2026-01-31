@@ -6,7 +6,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
+import { AuthenticationError as _AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
 
 interface FetchFilters {
   proposalId?: string;

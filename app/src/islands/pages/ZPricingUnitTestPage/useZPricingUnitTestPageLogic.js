@@ -694,6 +694,10 @@ export function useZPricingUnitTestPageLogic() {
 // ─────────────────────────────────────────────────────────────
 
 function buildScheduleListing(listing) {
+  // For the unit test page, override day availability constraints
+  // to allow testing any scenario regardless of listing's actual settings
+  const ALL_DAYS_AVAILABLE = [0, 1, 2, 3, 4, 5, 6]; // Sun-Sat
+
   return {
     id: listing._id,
     name: listing.Name || 'Untitled',
@@ -708,12 +712,15 @@ function buildScheduleListing(listing) {
     rate3Night: listing['💰Nightly Host Rate for 3 nights'] || 0,
     rate4Night: listing['💰Nightly Host Rate for 4 nights'] || 0,
     rate5Night: listing['💰Nightly Host Rate for 5 nights'] || 0,
-    minimumNights: listing['Minimum Nights'] || 1,
-    maximumNights: listing['Maximum Nights'] || 7,
+    // Override: Allow selecting from 1 to 7 nights for testing
+    minimumNights: 1,
+    maximumNights: 7,
     minimumWeeks: listing['Minimum Weeks'] || 1,
     maximumWeeks: listing['Maximum Weeks'] || 52,
-    nightsPerWeek: listing['# of nights available'] || 7,
-    daysAvailable: parseArrayField(listing['Days Available (List of Days)']) || [0, 1, 2, 3, 4, 5, 6],
+    // Override: Full week available for testing
+    nightsPerWeek: 7,
+    // Override: All days selectable for testing any scenario
+    daysAvailable: ALL_DAYS_AVAILABLE,
     nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) ']) || []
   };
 }

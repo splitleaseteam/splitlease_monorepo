@@ -63,7 +63,7 @@ import type {
  */
 export async function handleCreate(
   payload: Record<string, unknown>,
-  user: UserContext | null,
+  _user: UserContext | null,
   supabase: SupabaseClient
 ): Promise<CreateLeaseResponse> {
   console.log('[lease:create] ========== CREATE LEASE ==========');

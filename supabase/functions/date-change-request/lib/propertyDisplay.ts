@@ -144,7 +144,7 @@ export async function fetchListingData(
     }
 
     return data as ListingData | null;
-  } catch (err) {
+  } catch (_err) {
     console.warn('[propertyDisplay] Listing fetch exception:', (err as Error).message);
     return null;
   }
@@ -176,7 +176,7 @@ export async function fetchListingFromLease(
 
     // Then fetch the listing data
     return await fetchListingData(supabase, lease.Listing);
-  } catch (err) {
+  } catch (_err) {
     console.warn('[propertyDisplay] Listing from lease fetch exception:', (err as Error).message);
     return null;
   }
@@ -222,7 +222,7 @@ export async function fetchLeaseAndListing(
       lease: data,
       listing,
     };
-  } catch (err) {
+  } catch (_err) {
     console.warn('[propertyDisplay] Lease/listing fetch exception:', (err as Error).message);
     return { lease: null, listing: null };
   }

@@ -16,7 +16,7 @@
  * - Result type for error propagation
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import {
   ValidationError,
 } from "../_shared/errors.ts";

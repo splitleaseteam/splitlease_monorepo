@@ -16,7 +16,7 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Types
@@ -80,7 +80,7 @@ const REMINDER_COOLDOWN_HOURS = 12;
 /**
  * Check if a request is within the reminder window
  */
-function isInReminderWindow(expirationDate: string): boolean {
+function _isInReminderWindow(expirationDate: string): boolean {
   const now = new Date();
   const expiry = new Date(expirationDate);
 
@@ -109,7 +109,7 @@ function wasReminderSentRecently(reminderSentAt: string | null): boolean {
 /**
  * Determine if requester is host or guest based on lease
  */
-function determineRequesterRole(requesterId: string, lease: LeaseData): 'host' | 'guest' {
+function _determineRequesterRole(requesterId: string, lease: LeaseData): 'host' | 'guest' {
   return requesterId === lease.Host ? 'host' : 'guest';
 }
 
@@ -159,7 +159,7 @@ function generateReminderVariables(
 
 console.log("[date-change-reminder-cron] Edge Function started");
 
-Deno.serve(async (req: Request) => {
+Deno.serve(async (_req: Request) => {
   console.log("[date-change-reminder-cron] ========== CRON EXECUTION STARTED ==========");
 
   try {
