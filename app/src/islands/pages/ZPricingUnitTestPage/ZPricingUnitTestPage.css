@@ -171,7 +171,7 @@
 .zput-select {
   width: 100%;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 15px;
   border: 1px solid #D1D5DB;
   border-radius: 6px;
   background: white;
@@ -200,7 +200,7 @@
 }
 
 .zput-hint {
-  font-size: 12px;
+  font-size: 13px;
   color: #9CA3AF;
   margin-left: 8px;
 }
@@ -211,7 +211,7 @@
 
 .zput-btn {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   border: none;
   border-radius: 6px;
@@ -277,7 +277,7 @@
 
 .zput-listing-info p {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: 14px;
   color: #374151;
 }
 
