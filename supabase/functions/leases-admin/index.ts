@@ -1185,17 +1185,9 @@ async function handleGetDocumentChangeRequests(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await _supabase
+  const { data: changeRequests, error } = await _supabase
     .from('datechangerequest')
-    .select(`
-      *,
-      requestedByUser:Requested by(
-        _id,
-        email,
-        "First Name",
-        "Last Name"
-      )
-    `)
+    .select('*')
     .eq('Lease', leaseId)
     .order('Created Date', { ascending: false });
 
@@ -1204,7 +1196,36 @@ async function handleGetDocumentChangeRequests(
     throw new Error(`Failed to get change requests: ${error.message}`);
   }
 
-  return data || [];
+  if (!changeRequests || changeRequests.length === 0) {
+    return [];
+  }
+
+  // Fetch user data for each unique "Requested by" ID
+  const requestedByIds = [...new Set(
+    changeRequests
+      .map((cr: Record<string, unknown>) => cr['Requested by'] as string)
+      .filter((id: string | undefined) => id)
+  )];
+
+  const usersMap: Record<string, unknown> = {};
+  if (requestedByIds.length > 0) {
+    const { data: users } = await _supabase
+      .from('user')
+      .select('_id, email, "First Name", "Last Name"')
+      .in('_id', requestedByIds);
+
+    if (users) {
+      users.forEach((user: Record<string, unknown>) => {
+        usersMap[user._id as string] = user;
+      });
+    }
+  }
+
+  // Attach user data to change requests
+  return changeRequests.map((cr: Record<string, unknown>) => ({
+    ...cr,
+    requestedByUser: cr['Requested by'] ? usersMap[cr['Requested by'] as string] : null
+  }));
 }
 
 console.log("[leases-admin] Edge Function ready");
