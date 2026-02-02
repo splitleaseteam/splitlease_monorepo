@@ -63,7 +63,7 @@ export function ReservationPriceBreakdown({
 
   const nightsCount = nightsSelected.length * weeksReservationSpan
   const originalNightsCount = originalValues?.nightsSelected
-    ? originalValues.nightsSelected.length * (originalValues.weeksReservationSpan || 0)
+    ? originalValues.nightsSelected.length * (originalValues.reservationSpanWeeks || 0)
     : 0
 
   // Helper to check if a value changed

@@ -201,19 +201,18 @@ export function HostEditingProposal({
     return dateChanged || weeksChanged || scheduleChanged || rulesChanged
   }, [proposal, listing, availableHouseRules, editedMoveInDate, editedWeeks, editedCheckInDay, editedCheckOutDay, editedHouseRules, houseRulesInitialized])
 
-  // Calculate host compensation using actual database values (not 85% estimate)
-  // Get original values first to derive the actual host nightly rate
+  // Calculate host compensation using '4 week compensation' as the source of truth
+  // The database "Total Compensation (proposal - host)" field can be incorrect
   const originalNightsPerWeek = extractNightsSelected(proposal).length
   const originalWeeksValue = extractReservationSpanWeeks(proposal)
   const originalTotalNights = originalNightsPerWeek * originalWeeksValue
 
-  // Use actual Total Compensation from database - this is the source of truth
-  const databaseTotalCompensation = getProposalValue(proposal, 'Total Compensation (proposal - host)', 0) ||
-                                    getProposalValue(proposal, 'total_compensation', 0)
+  // Use '4 week compensation' from proposal - this is calculated from the pricing_list
+  const host4WeekCompensation = getProposalValue(proposal, '4 week compensation', 0)
 
-  // Calculate actual host nightly rate from database total (not from guest price * 0.85)
-  const nightlyCompensation = originalTotalNights > 0
-    ? databaseTotalCompensation / originalTotalNights
+  // Derive nightly host rate from 4 week compensation
+  const nightlyCompensation = originalNightsPerWeek > 0
+    ? host4WeekCompensation / (4 * originalNightsPerWeek)
     : 0
 
   // Calculate compensation for edited values
@@ -222,11 +221,10 @@ export function HostEditingProposal({
   const totalCompensation = nightlyCompensation * totalNights
   const compensationPer4Weeks = editedWeeks > 0 ? (totalCompensation / editedWeeks) * 4 : 0
 
-  // Original compensation values for comparison (use database value directly)
-  const originalTotalCompensation = databaseTotalCompensation
-  const originalCompensationPer4Weeks = originalWeeksValue > 0
-    ? (originalTotalCompensation / originalWeeksValue) * 4
-    : 0
+  // Original compensation values for comparison
+  const originalFourWeekPeriods = originalWeeksValue / 4
+  const originalTotalCompensation = host4WeekCompensation * originalFourWeekPeriods
+  const originalCompensationPer4Weeks = host4WeekCompensation
 
   // Get original values for comparison display
   const originalValues = parseProposalData(proposal, listing, availableHouseRules)

@@ -91,17 +91,22 @@ function formatDuration(proposal) {
 }
 
 /**
- * Format total host compensation (NOT guest price)
+ * Format total host compensation (calculated from '4 week compensation')
+ * The database "Total Compensation (proposal - host)" field can be incorrect,
+ * so we calculate from '4 week compensation' which is derived from the pricing_list.
  * @param {Object} proposal - The proposal object
  * @returns {string} Formatted currency string
  */
 function formatTotalHostCompensation(proposal) {
-  // Use host compensation fields ONLY - never guest prices
-  const total = proposal?.['Total Compensation (proposal - host)'] ||
-    proposal?.total_compensation ||
-    proposal?.host_earnings ||
-    0;
-  return `$${Number(total).toLocaleString()}`;
+  // Use '4 week compensation' as the source of truth
+  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
+  const weeks = proposal?.duration_weeks || proposal?.['Reservation Span (Weeks)'] || proposal?.weeks || 0;
+
+  // Calculate total: 4 week compensation × (total weeks / 4)
+  const fourWeekPeriods = weeks / 4;
+  const hostTotal = Math.round(host4WeekCompensation * fourWeekPeriods);
+
+  return `$${Number(hostTotal).toLocaleString()}`;
 }
 
 /**
