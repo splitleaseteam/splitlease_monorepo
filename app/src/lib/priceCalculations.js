@@ -41,18 +41,18 @@ export function getNightlyPriceForNights(listing, nightsSelected) {
   if (!listing || !nightsSelected) return null;
 
   // Price override takes precedence
-  if (listing['💰Price Override']) {
-    return listing['💰Price Override'];
+  if (listing['price_override']) {
+    return listing['price_override'];
   }
 
   // Map nights to price fields
   const priceFieldMap = {
-    1: '💰Nightly Host Rate for 1 night',
-    2: '💰Nightly Host Rate for 2 nights',
-    3: '💰Nightly Host Rate for 3 nights',
-    4: '💰Nightly Host Rate for 4 nights',
-    5: '💰Nightly Host Rate for 5 nights',
-    7: '💰Nightly Host Rate for 7 nights'
+    1: 'nightly_rate_1_night',
+    2: 'nightly_rate_2_nights',
+    3: 'nightly_rate_3_nights',
+    4: 'nightly_rate_4_nights',
+    5: 'nightly_rate_5_nights',
+    7: 'nightly_rate_7_nights'
   };
 
   const fieldName = priceFieldMap[nightsSelected];
@@ -61,7 +61,7 @@ export function getNightlyPriceForNights(listing, nightsSelected) {
   }
 
   // Default to 4-night rate if available
-  return listing['💰Nightly Host Rate for 4 nights'] || null;
+  return listing['nightly_rate_4_nights'] || null;
 }
 
 /**
@@ -100,8 +100,8 @@ export function calculatePricingBreakdown(listing, nightsPerWeek, reservationWee
       nightlyPrice: null,
       fourWeekRent: null,
       reservationTotal: null,
-      cleaningFee: listing['💰Cleaning Cost / Maintenance Fee'] || 0,
-      damageDeposit: listing['💰Damage Deposit'] || 0,
+      cleaningFee: listing['cleaning_fee'] || 0,
+      damageDeposit: listing['damage_deposit'] || 0,
       valid: false
     };
   }
@@ -113,9 +113,9 @@ export function calculatePricingBreakdown(listing, nightsPerWeek, reservationWee
     nightlyPrice,
     fourWeekRent,
     reservationTotal,
-    cleaningFee: listing['💰Cleaning Cost / Maintenance Fee'] || 0,
-    damageDeposit: listing['💰Damage Deposit'] || 0,
-    grandTotal: reservationTotal + (listing['💰Cleaning Cost / Maintenance Fee'] || 0),
+    cleaningFee: listing['cleaning_fee'] || 0,
+    damageDeposit: listing['damage_deposit'] || 0,
+    grandTotal: reservationTotal + (listing['cleaning_fee'] || 0),
     valid: true
   };
 }

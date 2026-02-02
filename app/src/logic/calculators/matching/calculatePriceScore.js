@@ -15,7 +15,7 @@
  *
  * @example
  * calculatePriceScore({
- *   candidateListing: { '💰Nightly Host Rate for 4 nights': 105 },
+ *   candidateListing: { 'nightly_rate_4_nights': 105 },
  *   proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
  * })
  * // => 20 (5% difference, within 10%)

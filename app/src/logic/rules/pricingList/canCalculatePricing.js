@@ -17,8 +17,8 @@
  * @example
  * canCalculatePricing({
  *   listing: {
- *     '💰Nightly Host Rate for 2 nights': 100,
- *     '💰Nightly Host Rate for 3 nights': 95
+ *     'nightly_rate_2_nights': 100,
+ *     'nightly_rate_3_nights': 95
  *   }
  * })
  * // => true
@@ -36,12 +36,12 @@ export function canCalculatePricing({ listing }) {
 
   // Check for any valid host rate
   const rateFields = [
-    '💰Nightly Host Rate for 2 nights',
-    '💰Nightly Host Rate for 3 nights',
-    '💰Nightly Host Rate for 4 nights',
-    '💰Nightly Host Rate for 5 nights',
-    '💰Nightly Host Rate for 6 nights',
-    '💰Nightly Host Rate for 7 nights'
+    'nightly_rate_2_nights',
+    'nightly_rate_3_nights',
+    'nightly_rate_4_nights',
+    'nightly_rate_5_nights',
+    'nightly_rate_6_nights',
+    'nightly_rate_7_nights'
   ];
 
   for (const field of rateFields) {

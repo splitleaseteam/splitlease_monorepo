@@ -1,0 +1,498 @@
+openapi: 3.0.3
+info:
+  title: Split Lease Messages API
+  description: |
+    Messages Edge Function for Split Lease marketplace.
+    Handles real-time messaging between hosts and guests.
+
+    All requests use the action-based pattern: `{ action, payload }`.
+
+    ## Authentication
+    - Supports JWT token in Authorization header (modern auth)
+    - Supports user_id in payload (legacy auth fallback)
+    - Some actions are public (guest inquiry, internal service calls)
+  version: 1.0.0
+  contact:
+    name: Split Lease Engineering
+
+servers:
+  - url: https://{project-ref}.supabase.co/functions/v1
+    description: Supabase Edge Functions
+
+paths:
+  /messages:
+    post:
+      summary: Message Operations
+      description: All messaging operations via action-based routing
+      operationId: messagesAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/SendMessageRequest'
+                - $ref: '#/components/schemas/GetMessagesRequest'
+                - $ref: '#/components/schemas/GetThreadsRequest'
+                - $ref: '#/components/schemas/SendGuestInquiryRequest'
+                - $ref: '#/components/schemas/CreateProposalThreadRequest'
+                - $ref: '#/components/schemas/SendSplitBotMessageRequest'
+                - $ref: '#/components/schemas/AdminGetAllThreadsRequest'
+                - $ref: '#/components/schemas/AdminDeleteThreadRequest'
+                - $ref: '#/components/schemas/AdminSendReminderRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+        - {}  # Some actions are public
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token
+
+  schemas:
+    # =========================================================================
+    # REQUEST SCHEMAS
+    # =========================================================================
+
+    SendMessageRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [send_message]
+        payload:
+          $ref: '#/components/schemas/SendMessagePayload'
+      example:
+        action: send_message
+        payload:
+          thread_id: "1234567890123x0987654321"
+          message_body: "Hello, I'm interested in your listing!"
+
+    SendMessagePayload:
+      type: object
+      required:
+        - message_body
+      properties:
+        thread_id:
+          type: string
+          description: |
+            Existing thread ID. If not provided, a new thread is created
+            using recipient_user_id and listing_id.
+        message_body:
+          type: string
+          description: Message content (cannot be empty)
+        recipient_user_id:
+          type: string
+          description: Required if thread_id not provided
+        listing_id:
+          type: string
+          description: Optional listing context for new threads
+        splitbot:
+          type: boolean
+          default: false
+          description: Whether this is a SplitBot message
+        call_to_action:
+          type: string
+          description: CTA for SplitBot messages
+        split_bot_warning:
+          type: string
+          description: Warning text for SplitBot messages
+        send_welcome_messages:
+          type: boolean
+          default: false
+          description: Send welcome messages on new thread creation
+
+    GetMessagesRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get_messages]
+        payload:
+          type: object
+          required:
+            - thread_id
+          properties:
+            thread_id:
+              type: string
+              description: Thread ID to fetch messages from
+            limit:
+              type: integer
+              default: 50
+            offset:
+              type: integer
+              default: 0
+      example:
+        action: get_messages
+        payload:
+          thread_id: "1234567890123x0987654321"
+          limit: 50
+
+    GetThreadsRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get_threads]
+        payload:
+          type: object
+          properties:
+            limit:
+              type: integer
+              default: 20
+            offset:
+              type: integer
+              default: 0
+            user_id:
+              type: string
+              description: Legacy auth - user ID from Bubble
+      example:
+        action: get_threads
+        payload:
+          limit: 20
+
+    SendGuestInquiryRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [send_guest_inquiry]
+        payload:
+          $ref: '#/components/schemas/SendGuestInquiryPayload'
+      example:
+        action: send_guest_inquiry
+        payload:
+          guest_name: "John Doe"
+          guest_email: "john@example.com"
+          listing_id: "1234567890123x0987654321"
+          message: "I'd like to learn more about your listing"
+
+    SendGuestInquiryPayload:
+      type: object
+      required:
+        - guest_name
+        - guest_email
+        - listing_id
+        - message
+      properties:
+        guest_name:
+          type: string
+          description: Guest's name
+        guest_email:
+          type: string
+          format: email
+          description: Guest's email
+        listing_id:
+          type: string
+          description: Listing ID being inquired about
+        message:
+          type: string
+          description: Inquiry message
+
+    CreateProposalThreadRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [create_proposal_thread]
+        payload:
+          type: object
+          required:
+            - proposal_id
+            - host_user_id
+            - guest_user_id
+            - listing_id
+          properties:
+            proposal_id:
+              type: string
+            host_user_id:
+              type: string
+            guest_user_id:
+              type: string
+            listing_id:
+              type: string
+            listing_name:
+              type: string
+
+    SendSplitBotMessageRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [send_splitbot_message]
+        payload:
+          type: object
+          required:
+            - thread_id
+            - message_body
+          properties:
+            thread_id:
+              type: string
+            message_body:
+              type: string
+            call_to_action:
+              type: string
+            visible_to_host:
+              type: boolean
+            visible_to_guest:
+              type: boolean
+            recipient_user_id:
+              type: string
+
+    AdminGetAllThreadsRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [admin_get_all_threads]
+        payload:
+          type: object
+          properties:
+            limit:
+              type: integer
+              default: 100
+            offset:
+              type: integer
+              default: 0
+            include_deleted:
+              type: boolean
+              default: false
+
+    AdminDeleteThreadRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [admin_delete_thread]
+        payload:
+          type: object
+          required:
+            - thread_id
+          properties:
+            thread_id:
+              type: string
+              description: Thread ID to soft-delete
+
+    AdminSendReminderRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [admin_send_reminder]
+        payload:
+          type: object
+          required:
+            - thread_id
+            - channel
+          properties:
+            thread_id:
+              type: string
+            channel:
+              type: string
+              enum: [email, sms, both]
+            message:
+              type: string
+              description: Custom reminder message
+
+    # =========================================================================
+    # RESPONSE SCHEMAS
+    # =========================================================================
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/SendMessageResponse'
+            - $ref: '#/components/schemas/GetMessagesResponse'
+            - $ref: '#/components/schemas/GetThreadsResponse'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: string
+
+    SendMessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message_id:
+          type: string
+        thread_id:
+          type: string
+        is_new_thread:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        welcome_messages_sent:
+          type: boolean
+          description: Whether welcome messages were sent (new threads only)
+
+    GetMessagesResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        thread:
+          type: object
+          description: Thread metadata
+        total:
+          type: integer
+
+    Message:
+      type: object
+      properties:
+        _id:
+          type: string
+        thread_id:
+          type: string
+        sender_user_id:
+          type: string
+        message_body:
+          type: string
+        is_splitbot:
+          type: boolean
+        call_to_action:
+          type: string
+        visible_to_host:
+          type: boolean
+        visible_to_guest:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        sender:
+          type: object
+          properties:
+            _id:
+              type: string
+            "Name - Full":
+              type: string
+            "Profile Photo":
+              type: string
+
+    GetThreadsResponse:
+      type: object
+      properties:
+        threads:
+          type: array
+          items:
+            $ref: '#/components/schemas/Thread'
+        total:
+          type: integer
+
+    Thread:
+      type: object
+      properties:
+        _id:
+          type: string
+        host_user_id:
+          type: string
+        guest_user_id:
+          type: string
+        listing_id:
+          type: string
+        proposal_id:
+          type: string
+        subject:
+          type: string
+        last_message:
+          type: string
+        last_message_at:
+          type: string
+          format: date-time
+        unread_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        host:
+          type: object
+          description: Host user data
+        guest:
+          type: object
+          description: Guest user data
+        listing:
+          type: object
+          description: Listing data
+
+# =========================================================================
+# ACTION AUTHENTICATION MATRIX
+# =========================================================================
+# Action                  | Auth Required | Notes
+# ------------------------|---------------|----------------------------------
+# send_message            | Yes (JWT/legacy) | Auth or user_id in payload
+# get_messages            | Yes (JWT/legacy) | Must be thread participant
+# get_threads             | Yes (JWT/legacy) | Returns user's threads only
+# send_guest_inquiry      | No            | Public form submission
+# create_proposal_thread  | No            | Internal service call
+# send_splitbot_message   | No            | Internal service call
+# admin_get_all_threads   | No            | Internal admin page
+# admin_delete_thread     | No            | Internal admin page
+# admin_send_reminder     | No            | Internal admin page
