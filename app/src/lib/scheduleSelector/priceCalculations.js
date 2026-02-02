@@ -48,7 +48,7 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     weeklyMarkup: 0,
     fullTimeDiscount: 0.13,
     unusedNightsDiscountMultiplier: 0.03,
-    avgDaysPerMonth: 31
+    avgDaysPerMonth: 30.4  // Synchronized with Edge Function constant (pricing-list/utils/pricingCalculator.ts:88)
   };
 
   const rentalType = listing.rentalType || listing['rental type'] || 'Nightly';
