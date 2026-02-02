@@ -341,10 +341,11 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
 
   // Stage 3: Host Review
   if (stageIndex === 2) {
+    // Check completion first to avoid matching "Counteroffer Accepted" status
+    if (usualOrder >= 3) return PROGRESS_COLORS.purple;
     if (normalizedStatus === 'Host Review' || normalizedStatus?.includes('Counteroffer')) {
       return PROGRESS_COLORS.green;
     }
-    if (usualOrder >= 3) return PROGRESS_COLORS.purple;
     return PROGRESS_COLORS.gray;
   }
 
