@@ -1145,7 +1145,7 @@ async function handleGetDocumentChangeRequests(
   }
 
   const { data: _data, error } = await supabase
-    .from('bookings_date_change_requests')
+    .from('datechangerequest')
     .select(`
       *,
       requestedByUser:Requested by(
