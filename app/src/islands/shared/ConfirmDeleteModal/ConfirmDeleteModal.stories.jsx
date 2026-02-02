@@ -303,87 +303,89 @@ export const DeleteProposal = {
 };
 
 // All Variations
-export const AllVariations = {
-  render: () => {
-    const [openModal, setOpenModal] = useState(null);
+const AllVariationsComponent = () => {
+  const [openModal, setOpenModal] = useState(null);
 
-    const scenarios = [
-      {
-        id: 'listing',
-        button: 'Delete Listing',
-        props: {
-          title: 'Delete Listing',
-          itemName: 'Chelsea Studio',
-        },
+  const scenarios = [
+    {
+      id: 'listing',
+      button: 'Delete Listing',
+      props: {
+        title: 'Delete Listing',
+        itemName: 'Chelsea Studio',
       },
-      {
-        id: 'photo',
-        button: 'Remove Photo',
-        props: {
-          title: 'Remove Photo',
-          itemName: 'Bedroom Photo',
-          confirmText: 'Remove',
-        },
+    },
+    {
+      id: 'photo',
+      button: 'Remove Photo',
+      props: {
+        title: 'Remove Photo',
+        itemName: 'Bedroom Photo',
+        confirmText: 'Remove',
       },
-      {
-        id: 'proposal',
-        button: 'Cancel Proposal',
-        props: {
-          title: 'Cancel Proposal',
-          itemName: 'Proposal #12345',
-          confirmText: 'Cancel Proposal',
-        },
+    },
+    {
+      id: 'proposal',
+      button: 'Cancel Proposal',
+      props: {
+        title: 'Cancel Proposal',
+        itemName: 'Proposal #12345',
+        confirmText: 'Cancel Proposal',
       },
-      {
-        id: 'account',
-        button: 'Delete Account',
-        props: {
-          title: 'Delete Account',
-          itemName: 'user@email.com',
-          warning: 'This action cannot be undone.',
-          confirmText: 'Delete Account',
-        },
+    },
+    {
+      id: 'account',
+      button: 'Delete Account',
+      props: {
+        title: 'Delete Account',
+        itemName: 'user@email.com',
+        warning: 'This action cannot be undone.',
+        confirmText: 'Delete Account',
       },
-    ];
+    },
+  ];
 
-    return (
-      <div style={{ padding: '40px' }}>
-        <h3 style={{ margin: '0 0 20px', color: '#1f2937' }}>Delete Scenarios</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-          {scenarios.map((scenario) => (
-            <button
-              key={scenario.id}
-              onClick={() => setOpenModal(scenario.id)}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#dc2626',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              {scenario.button}
-            </button>
-          ))}
-        </div>
-
+  return (
+    <div style={{ padding: '40px' }}>
+      <h3 style={{ margin: '0 0 20px', color: '#1f2937' }}>Delete Scenarios</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
         {scenarios.map((scenario) => (
-          <ConfirmDeleteModal
+          <button
             key={scenario.id}
-            isOpen={openModal === scenario.id}
-            onClose={() => setOpenModal(null)}
-            onConfirm={() => {
-              console.log(`Confirmed: ${scenario.id}`);
-              setOpenModal(null);
+            onClick={() => setOpenModal(scenario.id)}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '13px',
+              cursor: 'pointer',
             }}
-            {...scenario.props}
-          />
+          >
+            {scenario.button}
+          </button>
         ))}
       </div>
-    );
-  },
+
+      {scenarios.map((scenario) => (
+        <ConfirmDeleteModal
+          key={scenario.id}
+          isOpen={openModal === scenario.id}
+          onClose={() => setOpenModal(null)}
+          onConfirm={() => {
+            console.log(`Confirmed: ${scenario.id}`);
+            setOpenModal(null);
+          }}
+          {...scenario.props}
+        />
+      ))}
+    </div>
+  );
+};
+
+export const AllVariations = {
+  render: () => <AllVariationsComponent />,
   parameters: {
     docs: {
       description: {

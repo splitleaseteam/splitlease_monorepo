@@ -209,67 +209,69 @@ export const MobileView = {
 };
 
 // Multiple Listings Demo
-export const MultipleListingsDemo = {
-  render: () => {
-    const [activeModal, setActiveModal] = useState(null);
+const MultipleListingsDemoComponent = () => {
+  const [activeModal, setActiveModal] = useState(null);
 
-    const listings = [mockListing, mockListingNoPhoto, mockListingSingleName];
+  const listings = [mockListing, mockListingNoPhoto, mockListingSingleName];
 
-    return (
-      <div style={{ padding: '40px' }}>
-        <h3 style={{ margin: '0 0 20px', color: '#1f2937' }}>Available Listings</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {listings.map((listing) => (
-            <div
-              key={listing.id}
+  return (
+    <div style={{ padding: '40px' }}>
+      <h3 style={{ margin: '0 0 20px', color: '#1f2937' }}>Available Listings</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {listings.map((listing) => (
+          <div
+            key={listing.id}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            }}
+          >
+            <div>
+              <p style={{ margin: '0 0 4px', fontWeight: '500', color: '#1f2937' }}>
+                {listing.title}
+              </p>
+              <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
+                Hosted by {listing.host.name}
+              </p>
+            </div>
+            <button
+              onClick={() => setActiveModal(listing.id)}
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '16px',
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                padding: '8px 16px',
+                backgroundColor: '#31135D',
+                color: 'white',
+                border: 'none',
+                borderRadius: '100px',
+                fontSize: '13px',
+                cursor: 'pointer',
               }}
             >
-              <div>
-                <p style={{ margin: '0 0 4px', fontWeight: '500', color: '#1f2937' }}>
-                  {listing.title}
-                </p>
-                <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-                  Hosted by {listing.host.name}
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveModal(listing.id)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#31135D',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '100px',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                }}
-              >
-                Message
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {listings.map((listing) => (
-          <ContactHostMessaging
-            key={listing.id}
-            isOpen={activeModal === listing.id}
-            onClose={() => setActiveModal(null)}
-            listing={listing}
-            onLoginRequired={() => alert('Login required')}
-          />
+              Message
+            </button>
+          </div>
         ))}
       </div>
-    );
-  },
+
+      {listings.map((listing) => (
+        <ContactHostMessaging
+          key={listing.id}
+          isOpen={activeModal === listing.id}
+          onClose={() => setActiveModal(null)}
+          listing={listing}
+          onLoginRequired={() => alert('Login required')}
+        />
+      ))}
+    </div>
+  );
+};
+
+export const MultipleListingsDemo = {
+  render: () => <MultipleListingsDemoComponent />,
   parameters: {
     docs: {
       description: {

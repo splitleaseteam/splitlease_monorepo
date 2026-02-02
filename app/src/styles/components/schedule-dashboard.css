@@ -1,0 +1,1497 @@
+/**
+ * Schedule Dashboard Styles
+ *
+ * Desktop-first layout with CSS Grid.
+ * Purple theme matching Split Lease design system.
+ */
+
+/* ============================================================================
+   VARIABLES
+   ============================================================================ */
+
+:root {
+  --schedule-primary: #31135D;
+  --schedule-primary-light: #6D31C2;
+  --schedule-accent: #5B5FCF;
+  --schedule-success: #10B981;
+  --schedule-warning: #F59E0B;
+  --schedule-danger: #EF4444;
+  --schedule-bg: #F7F2FA;
+  --schedule-bg-white: #FFFFFF;
+  --schedule-border: #E5E7EB;
+  --schedule-text: #1F2937;
+  --schedule-text-muted: #6B7280;
+  --schedule-radius: 12px;
+  --schedule-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   MAIN LAYOUT
+   ============================================================================ */
+
+.schedule-dashboard {
+  min-height: 100vh;
+  background: var(--schedule-bg);
+  padding: 0 0 2rem;
+}
+
+.schedule-dashboard__grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.schedule-dashboard__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.schedule-dashboard__row--full {
+  grid-template-columns: 1fr;
+}
+
+.schedule-dashboard__section {
+  background: var(--schedule-bg-white);
+  border-radius: var(--schedule-radius);
+  box-shadow: var(--schedule-shadow);
+  padding: 1.5rem;
+}
+
+/* ============================================================================
+   LOADING & ERROR STATES
+   ============================================================================ */
+
+.schedule-loading,
+.schedule-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.schedule-loading__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--schedule-border);
+  border-top-color: var(--schedule-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.schedule-error__icon {
+  width: 48px;
+  height: 48px;
+  background: var(--schedule-danger);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.schedule-error__retry {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ============================================================================
+   LEASE INFO BAR
+   ============================================================================ */
+
+.lease-info-bar {
+  background: var(--schedule-primary);
+  color: white;
+  padding: 1.5rem;
+}
+
+.lease-info-bar__content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.lease-info-bar__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.lease-info-bar__address {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.lease-info-bar__roommate,
+.lease-info-bar__period {
+  text-align: right;
+}
+
+.lease-info-bar__label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  margin-bottom: 0.25rem;
+}
+
+.lease-info-bar__name,
+.lease-info-bar__dates {
+  font-weight: 500;
+}
+
+/* ============================================================================
+   SCHEDULE CALENDAR
+   ============================================================================ */
+
+.schedule-calendar {
+  min-height: 350px;
+}
+
+.schedule-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.schedule-calendar__month {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--schedule-text);
+}
+
+.schedule-calendar__nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--schedule-border);
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-calendar__nav:hover {
+  background: var(--schedule-bg);
+}
+
+.schedule-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-calendar__weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  padding: 0.5rem 0;
+}
+
+.schedule-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.schedule-calendar__day {
+  aspect-ratio: 1;
+  border: none;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.schedule-calendar__day:disabled {
+  cursor: default;
+}
+
+.schedule-calendar__day--empty {
+  background: transparent;
+}
+
+.schedule-calendar__day--mine {
+  background: #10B981;
+  color: white;
+}
+
+.schedule-calendar__day--roommate {
+  background: white;
+  border: 2px solid var(--schedule-border);
+}
+
+.schedule-calendar__day--roommate:hover {
+  border-color: var(--schedule-primary);
+  background: var(--schedule-bg);
+}
+
+.schedule-calendar__day--pending {
+  background: #FEF3C7;
+  border: 2px solid #F59E0B;
+}
+
+.schedule-calendar__day--blocked {
+  background: #FEE2E2;
+  color: #991B1B;
+  text-decoration: line-through;
+}
+
+.schedule-calendar__day--outside {
+  background: #F3F4F6;
+  color: #9CA3AF;
+}
+
+.schedule-calendar__day--selected {
+  background: var(--schedule-primary) !important;
+  color: white !important;
+  border-color: var(--schedule-primary) !important;
+}
+
+/* Adjacent nights - recommended to extend stay */
+.schedule-calendar__day--adjacent {
+  background: white;
+  border: 2px dashed #3B82F6;
+  position: relative;
+}
+
+.schedule-calendar__day--adjacent:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
+}
+
+.schedule-calendar__day--adjacent::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background: #3B82F6;
+  border-radius: 50%;
+}
+
+/* ============================================================================
+   CALENDAR DAY WITH PRICE DISPLAY
+   ============================================================================ */
+
+/* Day cell layout for price display */
+.schedule-calendar__day--has-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px;
+}
+
+.schedule-calendar__day-number {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.schedule-calendar__day-price {
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.9;
+  color: var(--schedule-primary);
+}
+
+/* Price colors by status */
+.schedule-calendar__day--roommate .schedule-calendar__day-price {
+  color: var(--schedule-primary-light);
+}
+
+.schedule-calendar__day--adjacent .schedule-calendar__day-price {
+  color: #2563EB;
+}
+
+.schedule-calendar__day--selected .schedule-calendar__day-price {
+  color: white;
+  opacity: 1;
+}
+
+/* Adjust day cell height to accommodate price */
+.schedule-calendar__day--has-price {
+  aspect-ratio: 1 / 1.15;
+  min-height: 50px;
+}
+
+/* Clickable day cursor */
+.schedule-calendar__day--clickable {
+  cursor: pointer;
+}
+
+.schedule-calendar__legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--schedule-border);
+}
+
+.schedule-calendar__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+}
+
+.schedule-calendar__legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.schedule-calendar__legend-color--mine {
+  background: #10B981;
+}
+
+.schedule-calendar__legend-color--roommate {
+  background: white;
+  border: 2px solid var(--schedule-border);
+}
+
+.schedule-calendar__legend-color--pending {
+  background: #FEF3C7;
+  border: 2px solid #F59E0B;
+}
+
+.schedule-calendar__legend-color--adjacent {
+  background: white;
+  border: 2px dashed #3B82F6;
+}
+
+/* ============================================================================
+   ROOMMATE PROFILE CARD
+   ============================================================================ */
+
+.roommate-profile-card {
+  min-height: 350px;
+}
+
+.roommate-profile-card__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  margin: 0 0 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roommate-profile-card__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.roommate-profile-card__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--schedule-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.roommate-profile-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.roommate-profile-card__initials {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.roommate-profile-card__name {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.roommate-profile-card__role {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Flexibility Gauge */
+.flexibility-gauge {
+  margin-bottom: 1.5rem;
+}
+
+.flexibility-gauge__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.flexibility-gauge__label {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-gauge__score {
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+.flexibility-gauge__bar {
+  height: 8px;
+  background: var(--schedule-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.flexibility-gauge__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--schedule-primary-light), var(--schedule-success));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.flexibility-gauge__text {
+  font-size: 0.75rem;
+  color: var(--schedule-success);
+}
+
+/* Response Patterns */
+.roommate-profile-card__patterns {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.roommate-profile-card__pattern-icon {
+  font-size: 1.25rem;
+}
+
+.roommate-profile-card__pattern-text {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Net Flow Tracker */
+.net-flow-tracker {
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.net-flow-tracker--positive {
+  background: #ECFDF5;
+}
+
+.net-flow-tracker--negative {
+  background: #FEF2F2;
+}
+
+.net-flow-tracker--neutral {
+  background: var(--schedule-bg);
+}
+
+.net-flow-tracker__label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--schedule-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.net-flow-tracker__amount {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.net-flow-tracker--positive .net-flow-tracker__amount {
+  color: #059669;
+}
+
+.net-flow-tracker--negative .net-flow-tracker__amount {
+  color: #DC2626;
+}
+
+.net-flow-tracker__description {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ============================================================================
+   BUY OUT PANEL
+   ============================================================================ */
+
+.buyout-panel {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.buyout-panel--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.buyout-panel__empty-state {
+  text-align: center;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__empty-title {
+  margin: 0 0 0.5rem;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__empty-text {
+  margin: 0;
+  max-width: 250px;
+}
+
+.buyout-panel__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__selected {
+  padding: 1rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__date {
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--schedule-text);
+  margin-bottom: 0.25rem;
+}
+
+.buyout-panel__owner {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__pricing {
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__price-row--total {
+  border-top: 1px solid var(--schedule-border);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__message {
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__message-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.buyout-panel__message-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--schedule-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  resize: none;
+  font-family: inherit;
+}
+
+.buyout-panel__message-input:focus {
+  outline: none;
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buyout-panel__btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__btn--primary {
+  background: var(--schedule-primary);
+  color: white;
+}
+
+.buyout-panel__btn--primary:hover {
+  background: var(--schedule-primary-light);
+}
+
+.buyout-panel__btn--secondary {
+  background: transparent;
+  color: var(--schedule-primary);
+  border: 1px solid var(--schedule-primary);
+}
+
+.buyout-panel__btn--secondary:hover {
+  background: var(--schedule-bg);
+}
+
+.buyout-panel__btn--ghost {
+  background: transparent;
+  color: var(--schedule-text-muted);
+  border: none;
+  text-decoration: underline;
+}
+
+.buyout-panel__btn--ghost:hover {
+  color: var(--schedule-text);
+}
+
+.buyout-panel__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success State */
+.buyout-panel--success {
+  justify-content: center;
+  align-items: center;
+}
+
+.buyout-panel__success-state {
+  text-align: center;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: #ECFDF5;
+  color: #059669;
+  border-radius: 50%;
+  font-size: 2rem;
+  margin: 0 auto 1rem;
+}
+
+.buyout-panel__success-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #059669;
+}
+
+.buyout-panel__success-text {
+  margin: 0 0 1.5rem;
+  color: var(--schedule-text-muted);
+  max-width: 280px;
+}
+
+/* Loading Spinner */
+.buyout-panel__spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
+
+.buyout-panel__spinner-circle {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.buyout-panel__pricing--loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  color: var(--schedule-text-muted);
+  font-size: 0.9rem;
+}
+
+.buyout-panel__pricing--loading .buyout-panel__spinner-circle {
+  border-color: var(--schedule-border);
+  border-top-color: var(--schedule-primary);
+}
+
+/* Price Row Divider */
+.buyout-panel__price-row--divider {
+  height: 1px;
+  background: var(--schedule-border);
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+/* Message Counter */
+.buyout-panel__message-counter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__message-counter--low {
+  color: var(--schedule-warning);
+}
+
+/* Error State */
+.buyout-panel__error {
+  padding: 0.75rem;
+  background: #FEF2F2;
+  color: #DC2626;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================================
+   NOTICE CONTEXT (Buyout Panel)
+   ============================================================================ */
+
+.buyout-panel__notice-context {
+  padding: 1rem;
+  background: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #DDD6FE;
+}
+
+.buyout-panel__notice-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-panel__notice-icon {
+  font-size: 1.1rem;
+}
+
+.buyout-panel__notice-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--schedule-primary);
+}
+
+.buyout-panel__notice-description {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  line-height: 1.4;
+}
+
+.buyout-panel__suggested-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.buyout-panel__suggested-label {
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__suggested-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--schedule-primary);
+}
+
+/* ============================================================================
+   OFFER TIER SELECTOR (Buyout Panel)
+   ============================================================================ */
+
+.buyout-panel__offer-tiers {
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__offer-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin-bottom: 0.75rem;
+}
+
+.buyout-panel__tier-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.buyout-panel__tier-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  background: white;
+  border: 2px solid var(--schedule-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.buyout-panel__tier-option:hover {
+  border-color: var(--schedule-primary-light);
+  background: var(--schedule-bg);
+}
+
+.buyout-panel__tier-option--selected {
+  border-color: var(--schedule-primary);
+  background: #F5F3FF;
+  box-shadow: 0 0 0 3px rgba(109, 49, 194, 0.1);
+}
+
+.buyout-panel__tier-icon {
+  font-size: 1.1rem;
+}
+
+.buyout-panel__tier-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__tier-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--schedule-primary);
+}
+
+.buyout-panel__tier-option--selected .buyout-panel__tier-price {
+  color: var(--schedule-primary-light);
+}
+
+.buyout-panel__tier-desc {
+  font-size: 0.65rem;
+  color: var(--schedule-text-muted);
+  line-height: 1.3;
+  max-width: 100px;
+}
+
+/* Custom Amount Input */
+.buyout-panel__custom-input {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+}
+
+.buyout-panel__custom-input label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.buyout-panel__custom-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: white;
+  border: 2px solid var(--schedule-border);
+  border-radius: 8px;
+  padding: 0 0.75rem;
+  transition: border-color 0.15s ease;
+}
+
+.buyout-panel__custom-input-wrapper:focus-within {
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__currency-prefix {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__custom-amount-field {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.6rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  background: transparent;
+}
+
+.buyout-panel__custom-amount-field::placeholder {
+  color: var(--schedule-border);
+  font-weight: 400;
+}
+
+.buyout-panel__custom-hint {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+/* ============================================================================
+   CHAT THREAD
+   ============================================================================ */
+
+.chat-thread {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-thread__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: var(--schedule-text);
+}
+
+.chat-thread__messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 250px;
+  padding: 0.5rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.chat-thread__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--schedule-text-muted);
+  font-size: 0.9rem;
+}
+
+.chat-bubble {
+  margin-bottom: 0.75rem;
+  max-width: 80%;
+}
+
+.chat-bubble--sent {
+  margin-left: auto;
+}
+
+.chat-bubble--received {
+  margin-right: auto;
+}
+
+.chat-bubble__content {
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.chat-bubble--sent .chat-bubble__content {
+  background: var(--schedule-primary);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bubble--received .chat-bubble__content {
+  background: white;
+  color: var(--schedule-text);
+  border: 1px solid var(--schedule-border);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-bubble__meta {
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+.chat-bubble__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.chat-bubble__btn {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chat-bubble__btn--accept {
+  background: var(--schedule-success);
+  color: white;
+}
+
+.chat-bubble__btn--decline {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.chat-bubble__btn--counter {
+  background: var(--schedule-bg);
+  color: var(--schedule-text);
+  border: 1px solid var(--schedule-border);
+}
+
+.chat-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+}
+
+.chat-notice__divider {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--schedule-border);
+}
+
+.chat-notice__body {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chat-notice__icon {
+  color: var(--schedule-success);
+  font-weight: 700;
+}
+
+.chat-thread__quick-responses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.chat-thread__quick-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  background: white;
+  border: 1px solid var(--schedule-border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chat-thread__quick-btn:hover {
+  background: var(--schedule-bg);
+  border-color: var(--schedule-primary);
+}
+
+.chat-thread__quick-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-thread__input-area {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-thread__input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--schedule-border);
+  border-radius: 24px;
+  font-size: 0.9rem;
+}
+
+.chat-thread__input:focus {
+  outline: none;
+  border-color: var(--schedule-primary);
+}
+
+.chat-thread__send-btn {
+  padding: 0.75rem 1.25rem;
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chat-thread__send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   TRANSACTION HISTORY
+   ============================================================================ */
+
+.transaction-history {
+  min-height: 200px;
+}
+
+.transaction-history__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+  color: var(--schedule-text);
+}
+
+.transaction-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.transaction-history__filter {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+  font-size: 0.85rem;
+  background: white;
+}
+
+.transaction-history__empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--schedule-text-muted);
+}
+
+.transaction-history__table-wrapper {
+  overflow-x: auto;
+}
+
+.transaction-history__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-history__th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--schedule-bg);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.transaction-history__th--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.transaction-history__th--sortable:hover {
+  color: var(--schedule-primary);
+}
+
+.transaction-history__td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--schedule-border);
+  font-size: 0.9rem;
+}
+
+.transaction-history__row {
+  cursor: pointer;
+}
+
+.transaction-history__row--expanded {
+  background: var(--schedule-bg);
+}
+
+.transaction-history__detail-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--schedule-border);
+  background: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.transaction-history__td--details {
+  padding: 0;
+  border-bottom: none;
+}
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge--complete {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge--declined {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-badge--cancelled {
+  background: var(--schedule-bg);
+  color: var(--schedule-text-muted);
+}
+
+.transaction-history__amount--positive {
+  color: var(--schedule-success);
+  font-weight: 600;
+}
+
+.transaction-history__amount--negative {
+  color: var(--schedule-danger);
+  font-weight: 600;
+}
+
+.transaction-details {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--schedule-border);
+  background: white;
+}
+
+.transaction-details__section {
+  margin-bottom: 1rem;
+}
+
+.transaction-details__subheading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--schedule-text);
+}
+
+.transaction-details__thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.transaction-details__empty {
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+}
+
+.transaction-details__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.transaction-details__timeline-item {
+  display: flex;
+  gap: 1rem;
+  color: var(--schedule-text-muted);
+}
+
+.transaction-details__timeline-date {
+  min-width: 80px;
+}
+
+.transaction-details__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.transaction-details__btn--cancel {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--schedule-border);
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.transaction-history__td--incoming {
+  color: var(--schedule-success);
+  font-weight: 600;
+}
+
+.transaction-history__td--outgoing {
+  color: var(--schedule-danger);
+  font-weight: 600;
+}
+
+.transaction-history__row:hover {
+  background: var(--schedule-bg);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge--complete {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.status-badge--pending {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.status-badge--declined {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* Type Badges */
+.type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.type-badge--buyout {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.type-badge--swap {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+/* ============================================================================
+   RESPONSIVE (Tablet/Mobile - Phase 2)
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .schedule-dashboard__row {
+    grid-template-columns: 1fr;
+  }
+
+  .lease-info-bar__content {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .lease-info-bar__roommate,
+  .lease-info-bar__period {
+    text-align: left;
+  }
+}

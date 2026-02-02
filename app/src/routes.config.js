@@ -238,6 +238,18 @@ export const routes = [
     excludeFromFunctions: true
   },
 
+  // ===== SCHEDULE DASHBOARD =====
+  {
+    path: '/schedule',
+    file: 'schedule.html',
+    aliases: ['/schedule.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'schedule-view',
+    hasDynamicSegment: true,
+    dynamicPattern: '/schedule/:leaseId'
+  },
+
   // ===== HOST/LISTING MANAGEMENT =====
   {
     path: '/host-proposals',

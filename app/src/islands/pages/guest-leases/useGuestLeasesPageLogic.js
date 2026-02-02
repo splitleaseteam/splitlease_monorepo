@@ -74,6 +74,12 @@ export function useGuestLeasesPageLogic() {
     stay: null
   });
 
+  // UI state - Date change modal
+  const [dateChangeModal, setDateChangeModal] = useState({
+    isOpen: false,
+    lease: null
+  });
+
   // Loading and error state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -543,15 +549,24 @@ export function useGuestLeasesPageLogic() {
   /**
    * Open date change request modal
    */
-  const handleRequestDateChange = useCallback(() => {
-    console.log('📅 Guest Leases: Request date change');
-    // TODO: Open date change request modal
-    showToast({
-      title: 'Coming Soon',
-      message: 'Date change requests will be available soon.',
-      type: 'info'
+  const handleRequestDateChange = useCallback((lease) => {
+    console.log('📅 Guest Leases: Opening date change modal for lease:', lease?._id);
+    setDateChangeModal({
+      isOpen: true,
+      lease
     });
-  }, [showToast]);
+  }, []);
+
+  /**
+   * Close date change request modal
+   */
+  const handleCloseDateChangeModal = useCallback(() => {
+    console.log('📅 Guest Leases: Closing date change modal');
+    setDateChangeModal({
+      isOpen: false,
+      lease: null
+    });
+  }, []);
 
   // ============================================================================
   // HANDLERS - DOCUMENTS
@@ -638,9 +653,11 @@ export function useGuestLeasesPageLogic() {
     handleSeeReview,
 
     // Handlers - Date changes
+    dateChangeModal,
     handleDateChangeApprove,
     handleDateChangeReject,
     handleRequestDateChange,
+    handleCloseDateChangeModal,
 
     // Handlers - Documents
     handleDownloadDocument,
