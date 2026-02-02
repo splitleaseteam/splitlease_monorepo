@@ -239,6 +239,7 @@ export default function ScheduleDashboard() {
                           transactionsByDate={transactionsByDate}
                           onSelectTransaction={handleSelectTransaction}
                           roommatePriceOverlays={roommatePriceOverlays}
+                          roommateName={roommate?.firstName}
                         />
                       </section>
 
@@ -380,6 +381,8 @@ export default function ScheduleDashboard() {
                         onDeclineRequest={handleDeclineRequest}
                         onCounterRequest={handleCounterRequest}
                         isSending={isSending}
+                        activeTransactionId={activeTransactionId}
+                        onClearActiveTransaction={handleClearActiveTransaction}
                       />
                     </section>
                   )}

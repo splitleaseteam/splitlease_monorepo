@@ -1961,10 +1961,75 @@
 
 .chat-bubble__actions {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-top: 0.75rem;
 }
 
+/* Chat Bubble Context */
+.chat-bubble__context {
+  margin-bottom: 0;
+  padding: 0.625rem;
+  background: #FEF3C7;
+  border-left: 3px solid #F59E0B;
+  border-radius: 4px;
+}
+
+.chat-bubble__context-text {
+  font-size: 0.8125rem;
+  color: #92400E;
+  font-weight: 500;
+}
+
+/* Chat Bubble Action Buttons */
+.chat-bubble__action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-bubble__action-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.chat-bubble__action-btn--counter {
+  background: #3B82F6;
+  color: white;
+  border: 1px solid #3B82F6;
+  font-weight: 600;
+}
+
+.chat-bubble__action-btn--counter:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+}
+
+.chat-bubble__action-btn--accept {
+  background: white;
+  color: #059669;
+  border: 1px solid #059669;
+}
+
+.chat-bubble__action-btn--accept:hover {
+  background: #D1FAE5;
+}
+
+.chat-bubble__action-btn--decline {
+  background: white;
+  color: #DC2626;
+  border: 1px solid #DC2626;
+}
+
+.chat-bubble__action-btn--decline:hover {
+  background: #FEE2E2;
+}
+
+/* Legacy button styles (deprecated) */
 .chat-bubble__btn {
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
@@ -2344,6 +2409,69 @@
   color: #b91c1c;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+/* Transaction Details Pricing Section */
+.transaction-details__pricing {
+  background: #F9FAFB;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.transaction-details__pricing-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.transaction-details__pricing-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.transaction-details__pricing-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.transaction-details__pricing-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.transaction-details__pricing-deviation {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.transaction-details__deviation-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.transaction-details__deviation-badge--fair {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.transaction-details__deviation-badge--low {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.transaction-details__deviation-badge--very-low {
+  background: #FED7AA;
+  color: #9A3412;
+}
+
+.transaction-details__deviation-label {
+  font-size: 0.875rem;
+  color: #6B7280;
 }
 
 .transaction-history__td--incoming {
@@ -3053,6 +3181,16 @@
   border-radius: 3px;
   white-space: nowrap;
   margin-top: 1px;
+}
+
+/* Price overlay tooltip styling for adjacent roommate prices */
+.schedule-calendar__price-bar[title] {
+  cursor: help;
+  opacity: 0.85;
+}
+
+.schedule-calendar__price-bar[title]:hover {
+  opacity: 1;
 }
 
 /* Tier-based price bar colors */
