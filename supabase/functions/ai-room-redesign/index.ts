@@ -16,7 +16,7 @@
  * - Result type pattern for error propagation
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { ValidationError } from "../_shared/errors.ts";
 import {
   validateAction,
@@ -35,7 +35,7 @@ const ALLOWED_ACTIONS = ["generate"] as const;
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   generate: handleGenerate,
 };
 
@@ -76,7 +76,7 @@ const parseRequest = async (
     }
 
     return body as AIRoomRedesignRequest;
-  } catch (e) {
+  } catch (_e) {
     if (e instanceof ValidationError || e instanceof CorsPreflightSignal) {
       throw e;
     }

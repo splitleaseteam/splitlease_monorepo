@@ -16,7 +16,7 @@ export interface ListTemplatesResult {
 /**
  * List all available document templates
  */
-export async function handleListTemplates(): Promise<ListTemplatesResult> {
+export function handleListTemplates(): Promise<ListTemplatesResult> {
   return {
     success: true,
     templates: AVAILABLE_TEMPLATES.map(t => ({

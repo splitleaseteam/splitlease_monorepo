@@ -14,7 +14,7 @@ export function interpolate(
   template: string,
   context: Record<string, unknown>
 ): string {
-  return template.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
+  return template.replace(/\{\{([^}]+)\}\}/g, (_match, path) => {
     const value = getNestedValue(context, path.trim());
 
     if (value === undefined || value === null) {

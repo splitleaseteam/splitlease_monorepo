@@ -52,7 +52,7 @@ export default function LeaseSearchSection({
         <Search size={18} className="mlpr-search-icon" />
         <input
           type="text"
-          placeholder="Search Lease using phone number, email, IDs, names, agreement number, etc"
+          placeholder="Search by phone, email, lease ID, proposal ID, agreement number, names..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="mlpr-search-input"

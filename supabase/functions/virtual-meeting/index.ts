@@ -19,10 +19,10 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  ValidationError,
+  ValidationError as _ValidationError,
   AuthenticationError,
 } from "../_shared/errors.ts";
 
@@ -104,7 +104,7 @@ const PUBLIC_ACTIONS: ReadonlySet<string> = new Set([
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   // Existing handlers
   create: handleCreate,
   delete: handleDelete,

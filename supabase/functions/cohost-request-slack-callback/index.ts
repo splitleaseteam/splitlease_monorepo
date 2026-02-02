@@ -127,7 +127,7 @@ serve(async (req: Request) => {
  */
 async function handleButtonClick(
   payload: SlackPayload,
-  supabase: ReturnType<typeof createClient>
+  _supabase: ReturnType<typeof createClient>
 ): Promise<Response> {
   const action = payload.actions?.[0];
 
@@ -397,7 +397,7 @@ async function handleButtonClick(
  */
 async function handleModalSubmission(
   payload: SlackPayload,
-  supabase: ReturnType<typeof createClient>
+  _supabase: ReturnType<typeof createClient>
 ): Promise<Response> {
   const values = payload.view!.state.values;
   const metadata: RequestMetadata = JSON.parse(payload.view!.private_metadata);

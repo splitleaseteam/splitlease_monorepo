@@ -416,8 +416,8 @@ export async function handleUpdate(
  * Check if user is the host of the proposal's listing
  * Host User now directly contains user._id - simple equality check
  */
-async function checkIsHost(
-  supabase: SupabaseClient,
+function checkIsHost(
+  _supabase: SupabaseClient,
   hostUserId: string,
   userId: string
 ): Promise<boolean> {
@@ -431,7 +431,7 @@ async function checkIsHost(
  * Check if user is an admin
  */
 async function checkIsAdmin(
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
   const { data } = await supabase

@@ -7,7 +7,7 @@
 
 import type { HealthResponse } from '../lib/types.ts';
 
-export async function handleHealth(): Promise<HealthResponse> {
+export function handleHealth(): Promise<HealthResponse> {
   console.log('[calendar-automation:health] Health check requested');
 
   return {

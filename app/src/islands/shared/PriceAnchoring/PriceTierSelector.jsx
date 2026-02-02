@@ -5,8 +5,14 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import PriceTierCard from './PriceTierCard';
-import analyticsService from '../../../../integration/04_analyticsService';
 import './PriceAnchoring.css';
+
+// Stub analytics service (integration file is outside app directory)
+const analyticsService = {
+  trackEvent: () => {},
+  trackTierSelection: () => {},
+  trackPriceView: () => {}
+};
 
 // Default Icons
 const CheckIcon = () => <span>✓</span>;

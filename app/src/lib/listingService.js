@@ -256,6 +256,11 @@ export async function createListing(formData) {
   // NOTE: Bubble sync disabled - see /docs/tech-debt/BUBBLE_SYNC_DISABLED.md
   // The listing is now created directly in Supabase without Bubble synchronization
 
+  // Step 5.5: Trigger pricing list creation (non-blocking)
+  triggerPricingListCreation(userId, data._id).catch(err => {
+    logger.warn('[ListingService] ⚠️ Pricing list creation failed (non-blocking):', err.message);
+  });
+
   // Step 6: Trigger mockup proposal creation for first-time hosts (non-blocking)
   triggerMockupProposalIfFirstListing(userId, data._id).catch(err => {
     logger.warn('[ListingService] ⚠️ Mockup proposal creation failed (non-blocking):', err.message);
@@ -482,6 +487,45 @@ async function triggerMockupProposalIfFirstListing(userId, listingId) {
 
   const result = await response.json();
   logger.debug('[ListingService] ✅ Mockup proposal creation triggered:', result);
+}
+
+/**
+ * Trigger pricing list creation for a new listing.
+ * Non-blocking - failures logged but don't block listing creation.
+ *
+ * @param {string} userId - The host user ID
+ * @param {string} listingId - The newly created listing ID
+ * @param {number} unitMarkup - Optional unit markup (default: 0)
+ */
+async function triggerPricingListCreation(userId, listingId, unitMarkup = 0) {
+  logger.debug('[ListingService] Triggering pricing list creation for listing:', listingId);
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/pricing-list`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'create',
+      payload: {
+        listing_id: listingId,
+        user_id: userId,
+        unit_markup: unitMarkup,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Pricing list creation failed (${response.status}): ${errorText}`);
+  }
+
+  const result = await response.json();
+  logger.debug('[ListingService] Pricing list created:', result.data?.pricing_list_id);
+
+  return result;
 }
 
 /**

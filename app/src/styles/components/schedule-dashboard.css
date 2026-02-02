@@ -13,7 +13,7 @@
   --schedule-primary: #31135D;
   --schedule-primary-light: #6D31C2;
   --schedule-accent: #5B5FCF;
-  --schedule-success: #10B981;
+  --schedule-success: #3B82F6;
   --schedule-warning: #F59E0B;
   --schedule-danger: #EF4444;
   --schedule-bg: #F7F2FA;
@@ -43,7 +43,7 @@
 
 .schedule-dashboard__row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 380px;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -57,6 +57,134 @@
   border-radius: var(--schedule-radius);
   box-shadow: var(--schedule-shadow);
   padding: 1.5rem;
+}
+
+.schedule-dashboard__profile {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.schedule-dashboard__chat {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* ============================================================================
+   ASYMMETRIC TWO-COLUMN LAYOUT (2.5:1)
+   ============================================================================ */
+
+.schedule-dashboard__columns {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.schedule-dashboard__column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Left column - main content */
+.schedule-dashboard__column--left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Right column - sidebar (static) */
+.schedule-dashboard__column--right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Left column transaction history spacing */
+.schedule-dashboard__column--left .schedule-dashboard__history {
+  margin-top: 1.5rem;
+}
+
+/* Pricing Controls - Full Width Below Calendar */
+.schedule-dashboard__pricing-controls {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+/* Section with drawer open - remove bottom border radius for attached look */
+.schedule-dashboard__section--drawer-open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+
+/* ============================================================================
+   DRAWER HANDLE (Summary Bar)
+   ============================================================================ */
+
+.schedule-dashboard__drawer-handle {
+  cursor: pointer;
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+  border-top: none;
+  border-radius: 0 0 var(--schedule-radius) var(--schedule-radius);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.schedule-dashboard__drawer-handle:hover {
+  background: var(--schedule-border);
+}
+
+.schedule-dashboard__drawer-handle:focus-visible {
+  outline: 2px solid var(--schedule-primary);
+  outline-offset: -2px;
+}
+
+/* When drawer is open, handle becomes part of the drawer */
+.schedule-dashboard__drawer-handle--open {
+  background: var(--schedule-bg-white);
+  border-radius: 0;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.schedule-dashboard__drawer-handle-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.schedule-dashboard__drawer-chevron {
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+  transition: transform 0.2s ease;
+}
+
+/* ============================================================================
+   DRAWER CONTENT
+   ============================================================================ */
+
+.schedule-dashboard__drawer {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+.schedule-dashboard__drawer--open {
+  max-height: 800px;
+  opacity: 1;
+}
+
+/* Drawer section styling - attached to handle */
+.schedule-dashboard__drawer .schedule-dashboard__section {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: none;
+  margin-top: -1px;
 }
 
 /* ============================================================================
@@ -85,7 +213,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .schedule-error__icon {
@@ -168,8 +298,27 @@
    SCHEDULE CALENDAR
    ============================================================================ */
 
+/* 2-Month Calendar Container */
 .schedule-calendar {
   min-height: 350px;
+}
+
+.schedule-calendar__dual-container {
+  display: flex;
+  gap: 2rem;
+}
+
+.schedule-calendar__month-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-calendar__month-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: var(--schedule-text);
+  text-align: center;
 }
 
 .schedule-calendar__header {
@@ -177,6 +326,10 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1rem;
+}
+
+.schedule-calendar__month {
+  display: none;
 }
 
 .schedule-calendar__month {
@@ -219,15 +372,33 @@
 }
 
 .schedule-calendar__grid {
+  display: block;
+  gap: 0;
+}
+
+.schedule-calendar__week-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 0;
+  background: transparent;
+}
+
+.schedule-calendar__week-row--striped {
+  background: #F9FAFB;
+}
+
+.schedule-calendar__dual-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
 }
 
 .schedule-calendar__day {
   aspect-ratio: 1;
+  width: 100%;
+  min-width: 32px;
   border: none;
-  background: var(--schedule-bg);
+  background: transparent;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -244,7 +415,7 @@
 }
 
 .schedule-calendar__day--mine {
-  background: #10B981;
+  background: #3B82F6;
   color: white;
 }
 
@@ -303,72 +474,77 @@
   border-radius: 50%;
 }
 
-/* ============================================================================
-   CALENDAR DAY WITH PRICE DISPLAY
-   ============================================================================ */
-
-/* Day cell layout for price display */
-.schedule-calendar__day--has-price {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  padding: 2px;
-}
-
-.schedule-calendar__day-number {
-  font-size: 0.9rem;
-  font-weight: 500;
-  line-height: 1.1;
-}
-
-.schedule-calendar__day-price {
-  font-size: 0.6rem;
-  font-weight: 600;
-  line-height: 1;
-  opacity: 0.9;
-  color: var(--schedule-primary);
-}
-
-/* Price colors by status */
-.schedule-calendar__day--roommate .schedule-calendar__day-price {
-  color: var(--schedule-primary-light);
-}
-
-.schedule-calendar__day--adjacent .schedule-calendar__day-price {
-  color: #2563EB;
-}
-
-.schedule-calendar__day--selected .schedule-calendar__day-price {
-  color: white;
-  opacity: 1;
-}
-
-/* Adjust day cell height to accommodate price */
-.schedule-calendar__day--has-price {
-  aspect-ratio: 1 / 1.15;
-  min-height: 50px;
-}
-
 /* Clickable day cursor */
 .schedule-calendar__day--clickable {
   cursor: pointer;
 }
 
+/* Day number wrapper (for stacking with transaction amount) */
+.schedule-calendar__day-number {
+  display: block;
+  line-height: 1.2;
+}
+
+/* Days with historical transactions */
+.schedule-calendar__day--has-transaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.schedule-calendar__day--has-transaction:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Transaction amount display */
+.schedule-calendar__day-transaction {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 1px;
+  opacity: 0.7;
+}
+
+/* Incoming transaction (positive) - green */
+.schedule-calendar__day--transaction-incoming {
+  background: #EFF6FF;
+  border: 1px solid #3B82F6;
+}
+
+.schedule-calendar__day--transaction-incoming .schedule-calendar__day-transaction {
+  color: #2563EB;
+}
+
+/* Outgoing transaction (negative) - red */
+.schedule-calendar__day--transaction-outgoing {
+  background: #FEF2F2;
+  border: 1px solid #EF4444;
+}
+
+.schedule-calendar__day--transaction-outgoing .schedule-calendar__day-transaction {
+  color: #DC2626;
+}
+
 .schedule-calendar__legend {
   display: flex;
   gap: 1.5rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--schedule-border);
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 0.85rem;
 }
 
 .schedule-calendar__legend-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
+  gap: 0.35rem;
+  font-size: 0.85rem;
   color: var(--schedule-text-muted);
 }
 
@@ -379,7 +555,7 @@
 }
 
 .schedule-calendar__legend-color--mine {
-  background: #10B981;
+  background: #3B82F6;
 }
 
 .schedule-calendar__legend-color--roommate {
@@ -519,13 +695,15 @@
 
 /* Net Flow Tracker */
 .net-flow-tracker {
-  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
-  text-align: center;
 }
 
 .net-flow-tracker--positive {
-  background: #ECFDF5;
+  background: #EFF6FF;
 }
 
 .net-flow-tracker--negative {
@@ -537,22 +715,20 @@
 }
 
 .net-flow-tracker__label {
-  display: block;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--schedule-text-muted);
-  margin-bottom: 0.25rem;
+  white-space: nowrap;
 }
 
 .net-flow-tracker__amount {
-  display: block;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
 .net-flow-tracker--positive .net-flow-tracker__amount {
-  color: #059669;
+  color: #2563EB;
 }
 
 .net-flow-tracker--negative .net-flow-tracker__amount {
@@ -574,6 +750,52 @@
   min-height: 300px;
   display: flex;
   flex-direction: column;
+}
+
+/* Compact/Horizontal Layout Variant */
+.buyout-panel--compact {
+  min-height: auto;
+}
+
+.buyout-panel--compact .buyout-panel__content-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.buyout-panel--compact .buyout-panel__selected {
+  margin-bottom: 0;
+}
+
+.buyout-panel--compact .buyout-panel__pricing {
+  margin-bottom: 0;
+}
+
+.buyout-panel--compact .buyout-panel__message {
+  margin-bottom: 0.75rem;
+}
+
+.buyout-panel--compact .buyout-panel__message-input {
+  min-height: 60px;
+}
+
+.buyout-panel--compact .buyout-panel__actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0;
+}
+
+.buyout-panel--compact .buyout-panel__btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+.buyout-panel--compact .buyout-panel__btn--ghost {
+  flex: 0 0 auto;
 }
 
 .buyout-panel--empty {
@@ -745,8 +967,8 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: #ECFDF5;
-  color: #059669;
+  background: #EFF6FF;
+  color: #2563EB;
   border-radius: 50%;
   font-size: 2rem;
   margin: 0 auto 1rem;
@@ -755,7 +977,7 @@
 .buyout-panel__success-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  color: #059669;
+  color: #2563EB;
 }
 
 .buyout-panel__success-text {
@@ -829,189 +1051,826 @@
 }
 
 /* ============================================================================
-   NOTICE CONTEXT (Buyout Panel)
+   BUYOUT SETTINGS DRAWER
    ============================================================================ */
 
-.buyout-panel__notice-context {
-  padding: 1rem;
-  background: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%);
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  border: 1px solid #DDD6FE;
-}
-
-.buyout-panel__notice-header {
+.buyout-panel__settings-toggle {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  background: transparent;
+  border: 1px dashed var(--schedule-border);
+  border-radius: 8px;
+  color: var(--schedule-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.buyout-panel__notice-icon {
-  font-size: 1.1rem;
-}
-
-.buyout-panel__notice-label {
-  font-weight: 600;
-  font-size: 0.9rem;
+.buyout-panel__settings-toggle:hover {
+  background: var(--schedule-bg);
+  border-color: var(--schedule-primary);
   color: var(--schedule-primary);
 }
 
-.buyout-panel__notice-description {
-  margin: 0 0 0.75rem;
+.buyout-panel__settings-toggle--open {
+  background: var(--schedule-bg);
+  border-style: solid;
+  border-color: var(--schedule-primary);
+  color: var(--schedule-primary);
+}
+
+.buyout-panel__settings-icon {
+  font-size: 1rem;
+}
+
+.buyout-panel__settings-chevron {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+.buyout-panel__settings-drawer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.buyout-panel__settings-drawer--open {
+  max-height: 1000px;
+  margin-top: 1rem;
+}
+
+/* ============================================================================
+   SWAP MODE
+   ============================================================================ */
+
+.buyout-panel__swap-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Swap Visualization - Two cards with arrow */
+.buyout-panel__swap-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.buyout-panel__swap-card {
+  flex: 1;
+  max-width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--schedule-bg);
+  border: 2px solid var(--schedule-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.buyout-panel__swap-card--theirs {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-color: #81C784;
+}
+
+.buyout-panel__swap-card--yours {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  border-color: #64B5F6;
+}
+
+.buyout-panel__swap-card--yours.buyout-panel__swap-card--selected {
+  border-color: var(--schedule-primary);
+  box-shadow: 0 0 0 3px rgba(109, 49, 194, 0.15);
+}
+
+.buyout-panel__swap-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__swap-date {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  text-align: center;
+}
+
+.buyout-panel__swap-owner {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__swap-placeholder {
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  font-style: italic;
+}
+
+.buyout-panel__swap-arrow {
+  font-size: 1.75rem;
+  color: var(--schedule-primary);
+  flex-shrink: 0;
+}
+
+/* Night Selection Grid */
+.buyout-panel__swap-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buyout-panel__swap-selection-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__swap-nights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.buyout-panel__swap-night-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__swap-night-btn:hover {
+  background: var(--schedule-primary-bg);
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__swap-night-btn--selected {
+  background: var(--schedule-primary);
+  color: white;
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__swap-night-btn--selected:hover {
+  background: var(--schedule-primary-hover);
+}
+
+.buyout-panel__swap-night-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyout-panel__swap-no-nights {
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  font-style: italic;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+/* Swap Info Banner */
+.buyout-panel__swap-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+  border: 1px solid #A5D6A7;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #2E7D32;
+}
+
+.buyout-panel__swap-info-icon {
+  font-size: 1rem;
+}
+
+/* Swap Success State Variation */
+.buyout-panel__success-state--swap .buyout-panel__success-icon {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  color: #1976D2;
+}
+
+/* Share Success State Variation */
+.buyout-panel__success-state--share .buyout-panel__success-icon {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  color: #E65100;
+}
+
+/* ============================================================================
+   REQUEST TYPE TOGGLE TABS
+   ============================================================================ */
+
+.buyout-panel__type-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  background: var(--schedule-bg);
+  border-radius: 10px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-panel__type-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--schedule-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__type-tab:hover {
+  background: rgba(109, 49, 194, 0.08);
+  color: var(--schedule-text);
+}
+
+.buyout-panel__type-tab--active {
+  background: var(--schedule-primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(109, 49, 194, 0.2);
+}
+
+.buyout-panel__type-tab--active:hover {
+  background: var(--schedule-primary-hover);
+  color: white;
+}
+
+.buyout-panel__type-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyout-panel__type-tab-icon {
+  font-size: 0.9rem;
+}
+
+.buyout-panel__type-tab-label {
+  font-weight: 600;
+}
+
+/* Mode-specific description text */
+.buyout-panel__description {
+  margin: 0 0 1rem;
   font-size: 0.85rem;
   color: var(--schedule-text-muted);
   line-height: 1.4;
 }
 
-.buyout-panel__suggested-price {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
+/* ============================================================================
+   SHARED NIGHTS CALENDAR INDICATOR
+   ============================================================================ */
+
+.schedule-calendar__day--shared {
+  position: relative;
+  background: linear-gradient(135deg, #E8F5E9 50%, #BBDEFB 50%) !important;
+  border: 2px solid #9575CD !important;
 }
 
-.buyout-panel__suggested-label {
-  font-size: 0.8rem;
-  color: var(--schedule-text-muted);
-}
-
-.buyout-panel__suggested-amount {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--schedule-primary);
+.schedule-calendar__day--shared::after {
+  content: '👥';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.65rem;
 }
 
 /* ============================================================================
-   OFFER TIER SELECTOR (Buyout Panel)
+   BUYOUT FORMULA SETTINGS
    ============================================================================ */
 
-.buyout-panel__offer-tiers {
-  margin-bottom: 1rem;
+.buyout-settings {
+  background: var(--schedule-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
 }
 
-.buyout-panel__offer-label {
-  display: block;
-  font-size: 0.875rem;
+.buyout-settings__header {
+  margin-bottom: 1.5rem;
+}
+
+.buyout-settings__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__icon {
+  font-size: 1.25rem;
+}
+
+.buyout-settings__subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-settings__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.buyout-settings__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.buyout-settings__control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buyout-settings__control--readonly {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyout-settings__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+.buyout-settings__readonly-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__help-text {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Slider Styles */
+.buyout-settings__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--schedule-border);
+  border-radius: 3px;
+  outline: none;
+}
+
+.buyout-settings__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--schedule-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.buyout-settings__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.buyout-settings__slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--schedule-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.buyout-settings__slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Toggle Styles */
+.buyout-settings__control--toggle {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyout-settings__toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--schedule-border);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.buyout-settings__toggle--on {
+  background: var(--schedule-primary);
+}
+
+.buyout-settings__toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.buyout-settings__toggle--on .buyout-settings__toggle-knob {
+  transform: translateX(20px);
+}
+
+/* Price Range Inputs */
+.buyout-settings__price-range {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__range-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--schedule-text);
   margin-bottom: 0.75rem;
 }
 
-.buyout-panel__tier-options {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.buyout-settings__price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.buyout-settings__control--price {
+  flex: 1;
+}
+
+.buyout-settings__price-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--schedule-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.buyout-settings__currency {
+  padding: 0.5rem;
+  background: var(--schedule-bg);
+  color: var(--schedule-text-muted);
+  font-size: 0.875rem;
+}
+
+.buyout-settings__price-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  font-size: 0.9rem;
+  width: 80px;
+  outline: none;
+}
+
+.buyout-settings__price-input:focus {
+  background: #F0F9FF;
+}
+
+.buyout-settings__price-separator {
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+}
+
+/* Visualization Section */
+.buyout-settings__visualization {
+  min-height: 300px;
+}
+
+/* Actions */
+.buyout-settings__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyout-settings__btn--primary {
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+}
+
+.buyout-settings__btn--primary:hover {
+  background: var(--schedule-primary-dark, #1a1a2e);
+}
+
+.buyout-settings__btn--secondary {
+  background: transparent;
+  color: var(--schedule-text-muted);
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__btn--secondary:hover {
+  background: var(--schedule-bg);
+  color: var(--schedule-text);
+}
+
+.buyout-settings__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   BUYOUT PRICE VISUALIZATION
+   ============================================================================ */
+
+.buyout-viz {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+  padding: 1rem;
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.buyout-viz--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.buyout-viz__empty-state {
+  text-align: center;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-viz__empty-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.buyout-viz__header {
+  margin-bottom: 1rem;
+}
+
+.buyout-viz__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-viz__chart-container {
+  display: flex;
+  flex: 1;
   gap: 0.5rem;
 }
 
-.buyout-panel__tier-option {
+.buyout-viz__y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.buyout-viz__y-label {
+  font-size: 0.65rem;
+  color: var(--schedule-text-muted);
+  text-align: right;
+}
+
+.buyout-viz__y-label--ceiling,
+.buyout-viz__y-label--floor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.buyout-viz__y-indicator {
+  font-size: 0.6rem;
+  color: var(--schedule-text-muted);
+  opacity: 0.7;
+}
+
+.buyout-viz__chart {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(to bottom,
+      rgba(239, 68, 68, 0.05) 0%,
+      rgba(34, 197, 94, 0.05) 50%,
+      rgba(239, 68, 68, 0.05) 100%);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.buyout-viz__threshold-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 1;
+}
+
+.buyout-viz__threshold-line--ceiling {
+  background: rgba(239, 68, 68, 0.3);
+  border-top: 1px dashed #EF4444;
+}
+
+.buyout-viz__threshold-line--floor {
+  background: rgba(239, 68, 68, 0.3);
+  border-top: 1px dashed #EF4444;
+}
+
+.buyout-viz__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 100%;
+  padding: 0.5rem 0.25rem;
+  position: relative;
+  z-index: 2;
+}
+
+.buyout-viz__bar-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.75rem 0.5rem;
-  background: white;
-  border: 2px solid var(--schedule-border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-align: center;
+  flex: 1;
+  max-width: 40px;
+  height: 100%;
 }
 
-.buyout-panel__tier-option:hover {
-  border-color: var(--schedule-primary-light);
-  background: var(--schedule-bg);
+.buyout-viz__bar-container--weekend {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
 }
 
-.buyout-panel__tier-option--selected {
-  border-color: var(--schedule-primary);
-  background: #F5F3FF;
-  box-shadow: 0 0 0 3px rgba(109, 49, 194, 0.1);
-}
-
-.buyout-panel__tier-icon {
-  font-size: 1.1rem;
-}
-
-.buyout-panel__tier-name {
-  font-size: 0.8rem;
+.buyout-viz__price-label {
+  font-size: 0.6rem;
   font-weight: 600;
+  color: var(--schedule-text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.buyout-viz__bar-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding: 0 2px;
+}
+
+.buyout-viz__bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+
+.buyout-viz__bar--green {
+  background: linear-gradient(to top, #3B82F6, #60A5FA);
+}
+
+.buyout-viz__bar--yellow {
+  background: linear-gradient(to top, #F59E0B, #FBBF24);
+}
+
+.buyout-viz__bar--red {
+  background: linear-gradient(to top, #EF4444, #F87171);
+}
+
+.buyout-viz__date-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.buyout-viz__day {
+  font-size: 0.6rem;
+  font-weight: 500;
   color: var(--schedule-text);
 }
 
-.buyout-panel__tier-price {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--schedule-primary);
-}
-
-.buyout-panel__tier-option--selected .buyout-panel__tier-price {
-  color: var(--schedule-primary-light);
-}
-
-.buyout-panel__tier-desc {
-  font-size: 0.65rem;
+.buyout-viz__date {
+  font-size: 0.55rem;
   color: var(--schedule-text-muted);
-  line-height: 1.3;
-  max-width: 100px;
 }
 
-/* Custom Amount Input */
-.buyout-panel__custom-input {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
-  background: var(--schedule-bg);
-  border-radius: 8px;
+.buyout-viz__legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--schedule-border);
 }
 
-.buyout-panel__custom-input label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--schedule-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.buyout-panel__custom-input-wrapper {
+.buyout-viz__legend-item {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  background: white;
-  border: 2px solid var(--schedule-border);
-  border-radius: 8px;
-  padding: 0 0.75rem;
-  transition: border-color 0.15s ease;
-}
-
-.buyout-panel__custom-input-wrapper:focus-within {
-  border-color: var(--schedule-primary);
-}
-
-.buyout-panel__currency-prefix {
-  font-size: 1rem;
-  font-weight: 600;
+  gap: 0.35rem;
+  font-size: 0.7rem;
   color: var(--schedule-text-muted);
 }
 
-.buyout-panel__custom-amount-field {
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 0.6rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--schedule-text);
-  background: transparent;
+.buyout-viz__legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
 }
 
-.buyout-panel__custom-amount-field::placeholder {
-  color: var(--schedule-border);
-  font-weight: 400;
+.buyout-viz__legend-color--green {
+  background: #3B82F6;
 }
 
-.buyout-panel__custom-hint {
-  display: block;
-  margin-top: 0.4rem;
-  font-size: 0.75rem;
-  color: var(--schedule-text-muted);
+.buyout-viz__legend-color--yellow {
+  background: #F59E0B;
+}
+
+.buyout-viz__legend-color--red {
+  background: #EF4444;
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 900px) {
+  .buyout-settings__content {
+    grid-template-columns: 1fr;
+  }
+
+  .buyout-settings__visualization {
+    order: -1;
+    min-height: 200px;
+  }
 }
 
 /* ============================================================================
@@ -1019,9 +1878,14 @@
    ============================================================================ */
 
 .chat-thread {
-  min-height: 300px;
+  min-height: 500px;
   display: flex;
   flex-direction: column;
+}
+
+/* Sidebar variant - even taller */
+.schedule-dashboard__column--right .chat-thread {
+  min-height: 600px;
 }
 
 .chat-thread__heading {
@@ -1034,11 +1898,16 @@
 .chat-thread__messages {
   flex: 1;
   overflow-y: auto;
-  max-height: 250px;
+  max-height: 400px;
   padding: 0.5rem;
   background: var(--schedule-bg);
   border-radius: 8px;
   margin-bottom: 1rem;
+}
+
+/* Sidebar variant - taller messages area */
+.schedule-dashboard__column--right .chat-thread__messages {
+  max-height: 500px;
 }
 
 .chat-thread__empty {
@@ -1187,6 +2056,8 @@
   border: 1px solid var(--schedule-border);
   border-radius: 24px;
   font-size: 0.9rem;
+  min-height: 90px;
+  resize: vertical;
 }
 
 .chat-thread__input:focus {
@@ -1227,9 +2098,13 @@
 .transaction-history__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.transaction-history__net-flow {
+  margin-left: auto;
 }
 
 .transaction-history__filter {
@@ -1290,6 +2165,28 @@
   background: var(--schedule-bg);
 }
 
+/* Highlighted row animation when scrolled to from calendar click */
+.transaction-history__row--highlighted {
+  animation: highlightRow 2s ease-out;
+}
+
+@keyframes highlightRow {
+  0% {
+    background: #FEF3C7;
+    box-shadow: 0 0 0 2px #F59E0B;
+  }
+
+  50% {
+    background: #FEF9C3;
+    box-shadow: 0 0 0 2px #FBBF24;
+  }
+
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
 .transaction-history__detail-btn {
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
@@ -1327,7 +2224,7 @@
 }
 
 .status-badge--complete {
-  background: #d1fae5;
+  background: #DBEAFE;
   color: #065f46;
 }
 
@@ -1442,8 +2339,8 @@
 }
 
 .status-badge--complete {
-  background: #ECFDF5;
-  color: #059669;
+  background: #EFF6FF;
+  color: #2563EB;
 }
 
 .status-badge--pending {
@@ -1484,6 +2381,34 @@
     grid-template-columns: 1fr;
   }
 
+  .schedule-dashboard__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-dashboard__column--right {
+    position: static;
+  }
+
+  /* Stack calendar months on tablet */
+  .schedule-calendar__dual-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Revert to vertical buyout panel on mobile */
+  .buyout-panel--compact .buyout-panel__content-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .buyout-panel--compact .buyout-panel__actions {
+    flex-direction: column;
+  }
+
+  .buyout-panel--compact .buyout-panel__btn {
+    width: 100%;
+  }
+
   .lease-info-bar__content {
     flex-direction: column;
     align-items: flex-start;
@@ -1493,5 +2418,1966 @@
   .lease-info-bar__roommate,
   .lease-info-bar__period {
     text-align: left;
+  }
+
+  /* Drawer responsive */
+  .schedule-dashboard__drawer-handle {
+    padding: 10px 14px;
+  }
+
+  .schedule-dashboard__drawer-handle-text {
+    font-size: 0.85rem;
+  }
+
+  /* Chat thread normal height on mobile */
+  .schedule-dashboard__column--right .chat-thread {
+    min-height: 400px;
+  }
+
+  .schedule-dashboard__column--right .chat-thread__messages {
+    max-height: 300px;
+  }
+}
+
+/* ============================================================================
+   FLEXIBILITY GAUGE - ENHANCED STYLES
+   ============================================================================ */
+
+.flexibility-gauge__label-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.flexibility-gauge__label-wrapper:hover {
+  color: var(--schedule-primary);
+}
+
+.flexibility-gauge__label-wrapper:focus-visible {
+  outline: 2px solid var(--schedule-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.flexibility-gauge__info-icon {
+  font-size: 0.9rem;
+  color: var(--schedule-primary-light);
+  transition: color 0.15s ease;
+}
+
+.flexibility-gauge__label-wrapper:hover .flexibility-gauge__info-icon {
+  color: var(--schedule-primary);
+}
+
+/* My Score Row */
+.flexibility-gauge__my-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.flexibility-gauge__my-score-label {
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-gauge__my-score-value {
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+/* ============================================================================
+   FLEXIBILITY BREAKDOWN MODAL
+   ============================================================================ */
+
+.flexibility-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.flexibility-modal {
+  background: var(--schedule-bg-white);
+  border-radius: var(--schedule-radius);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal Header */
+.flexibility-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.flexibility-modal__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin: 0;
+}
+
+.flexibility-modal__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  color: var(--schedule-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.flexibility-modal__close:hover {
+  background: var(--schedule-bg);
+  color: var(--schedule-text);
+}
+
+/* Modal Body */
+.flexibility-modal__body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.flexibility-modal__section {
+  margin-bottom: 1.5rem;
+}
+
+.flexibility-modal__section:last-child {
+  margin-bottom: 0;
+}
+
+.flexibility-modal__section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 1rem;
+}
+
+/* Score Comparison */
+.flexibility-modal__scores {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.flexibility-modal__score-bar {
+  padding: 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+}
+
+.flexibility-modal__score-bar--user {
+  background: linear-gradient(135deg, rgba(109, 49, 194, 0.1) 0%, rgba(91, 95, 207, 0.1) 100%);
+  border: 1px solid rgba(109, 49, 194, 0.2);
+}
+
+.flexibility-modal__score-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.flexibility-modal__score-bar-label {
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.flexibility-modal__score-bar-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--schedule-primary);
+}
+
+.flexibility-modal__score-bar-track {
+  height: 8px;
+  background: var(--schedule-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.flexibility-modal__score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--schedule-primary-light), var(--schedule-success));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.flexibility-modal__score-bar-text {
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-modal__summary {
+  padding: 0.75rem 1rem;
+  background: #EFF6FF;
+  border-radius: 8px;
+  color: #2563EB;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+}
+
+/* Metrics Table */
+.flexibility-modal__metrics {
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.flexibility-modal__metrics-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--schedule-border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flexibility-modal__metrics-header-you {
+  text-align: center;
+}
+
+.flexibility-modal__metrics-header-roommate {
+  text-align: center;
+}
+
+.flexibility-modal__metric-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--schedule-border);
+  align-items: center;
+}
+
+.flexibility-modal__metric-row:last-child {
+  border-bottom: none;
+}
+
+.flexibility-modal__metric-label {
+  font-size: 0.875rem;
+  color: var(--schedule-text);
+}
+
+.flexibility-modal__metric-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.flexibility-modal__metric-value--better {
+  color: var(--schedule-success);
+}
+
+.flexibility-modal__metric-value--worse {
+  color: var(--schedule-danger);
+}
+
+.flexibility-modal__metric-value--equal {
+  color: var(--schedule-text);
+}
+
+.flexibility-modal__metric-value--roommate {
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-modal__metric-vs {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+  text-align: center;
+}
+
+.flexibility-modal__metric-icon {
+  font-size: 0.75rem;
+}
+
+.flexibility-modal__metric-icon--warn {
+  color: var(--schedule-warning);
+}
+
+/* Modal Footer */
+.flexibility-modal__footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--schedule-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.flexibility-modal__btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.flexibility-modal__btn:hover {
+  background: var(--schedule-primary-light);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .flexibility-modal {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .flexibility-modal__metrics-header,
+  .flexibility-modal__metric-row {
+    grid-template-columns: 1.2fr 0.8fr auto 0.8fr;
+    font-size: 0.8rem;
+  }
+
+  .flexibility-modal__metric-value {
+    font-size: 0.8rem;
+  }
+}
+
+/* ============================================================================
+   DASHBOARD MODE TOGGLE
+   ============================================================================ */
+
+.schedule-dashboard__mode-toggle {
+  padding: 0.75rem 1rem;
+  background: var(--schedule-bg-white);
+  border-top: 1px solid var(--schedule-border);
+  border-radius: 0;
+}
+
+.dashboard-mode-toggle {
+  display: flex;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.dashboard-mode-toggle__btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-mode-toggle__btn:hover {
+  color: var(--schedule-text);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.dashboard-mode-toggle__btn--active {
+  background: var(--schedule-bg-white);
+  color: var(--schedule-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.dashboard-mode-toggle__btn--active:hover {
+  background: var(--schedule-bg-white);
+  color: var(--schedule-primary);
+}
+
+.dashboard-mode-toggle__icon {
+  font-size: 1rem;
+}
+
+.dashboard-mode-toggle__label {
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   PRICING SETTINGS MODE - LEFT COLUMN
+   ============================================================================ */
+
+.schedule-dashboard__pricing-viz {
+  min-height: 400px;
+}
+
+.schedule-dashboard__pricing-viz-header {
+  margin-bottom: 1.5rem;
+}
+
+.schedule-dashboard__pricing-viz-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin: 0 0 0.5rem;
+}
+
+.schedule-dashboard__pricing-viz-subtitle {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+  margin: 0;
+}
+
+/* ============================================================================
+   PRICING SETTINGS MODE - RIGHT COLUMN
+   ============================================================================ */
+
+.schedule-dashboard__pricing-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make the formula settings fill the available space in sidebar mode */
+.schedule-dashboard__pricing-controls .buyout-settings {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-dashboard__pricing-controls .buyout-settings__content {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Hide visualization in sidebar since it's in left column */
+.schedule-dashboard__pricing-controls .buyout-settings__visualization {
+  display: none;
+}
+
+/* ============================================================================
+   MODE TOGGLE RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .dashboard-mode-toggle {
+    flex-direction: column;
+  }
+
+  .dashboard-mode-toggle__btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-mode-toggle__label {
+    font-size: 0.8rem;
+  }
+
+  .dashboard-mode-toggle__icon {
+    font-size: 0.9rem;
+  }
+}
+
+/* ============================================================================
+   CALENDAR PRICE OVERLAYS (Pricing Mode)
+   ============================================================================ */
+
+/* Day cells with price overlay */
+.schedule-calendar__day--has-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+  position: relative;
+}
+
+/* Price bar displayed on user's nights */
+.schedule-calendar__price-bar {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+/* Tier-based price bar colors */
+.schedule-calendar__price-bar[data-tier="within"] {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.schedule-calendar__price-bar[data-tier="near"] {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.schedule-calendar__price-bar[data-tier="limit"] {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* ==========================================================================
+   PRICING MODE CALENDAR - HIGH CONTRAST ACCESSIBILITY
+   WCAG AAA Target: 7:1 contrast ratio for normal text, 4.5:1 for large text
+   ========================================================================== */
+
+/* Pricing mode container */
+.schedule-dashboard__calendar--pricing {
+  border-color: var(--schedule-primary-light);
+}
+
+/* HIGH CONTRAST: User's Nights - Light background with dark text */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--mine {
+  position: relative;
+  background-color: #DBEAFE !important; /* Very light blue - high contrast base */
+  color: #1E3A5F !important;            /* Dark blue text - WCAG AAA compliant */
+  border: 2px solid #2563EB !important; /* Strong border definition */
+  font-weight: 700 !important;
+  font-size: 1.05rem;
+}
+
+/* Day number inside user's nights - extra emphasis */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--mine .schedule-calendar__day-number {
+  color: #1E3A5F;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* In pricing mode, hide borders/styling on non-user days */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--roommate,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--available,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--pending,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--recommended,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--adjacent {
+  border: none;
+  background: transparent;
+}
+
+/* Hide status dots/markers (pseudo-elements) in pricing mode */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day::after,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day::before {
+  display: none;
+}
+
+/* HIGH CONTRAST: Price Badge/Pill - Dark background, white text */
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar {
+  background-color: #1E3A5F !important; /* Dark blue background */
+  color: #FFFFFF !important;            /* White text for max contrast */
+  font-weight: 600;
+  font-size: 0.8rem;                    /* Larger for readability */
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Override tier-specific colors in pricing mode for consistency */
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar[data-tier="within"],
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar[data-tier="near"],
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar[data-tier="limit"] {
+  background-color: #1E3A5F !important;
+  color: #FFFFFF !important;
+}
+
+/* Month Headers - Larger and bolder */
+.schedule-dashboard__calendar--pricing .schedule-calendar__month-header,
+.schedule-dashboard__calendar--pricing h3 {
+  font-size: 1.25rem;
+  color: #111827;
+  font-weight: 700;
+}
+
+/* Weekday Labels - Higher contrast */
+.schedule-dashboard__calendar--pricing .schedule-calendar__weekday,
+.schedule-dashboard__calendar--pricing .schedule-calendar__header {
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Hide legend in pricing mode - reduces visual clutter */
+.schedule-dashboard__calendar--pricing .schedule-calendar__legend {
+  display: none;
+}
+
+/* Remove top gap in pricing mode calendar */
+.schedule-dashboard__calendar--pricing {
+  padding-top: 0.75rem;
+}
+
+/* ============================================================================
+   WIDE BUYOUT FORMULA SETTINGS (Below Calendar in Pricing Mode)
+   ============================================================================ */
+
+.schedule-dashboard__pricing-controls {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.pricing-settings__content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  /* 2:1 Ratio - Notice (Left) vs Stack (Right) */
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.pricing-settings__right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Ensure stacks take full width of their column */
+.pricing-settings__right-stack>* {
+  width: 100%;
+}
+
+.buyout-settings--wide .buyout-settings__column--actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.buyout-settings--wide .buyout-settings__actions {
+  margin-top: auto;
+  padding-top: 0;
+  border-top: none;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+/* Make controls more compact in wide layout */
+.buyout-settings--wide .buyout-settings__control--readonly {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__control--toggle {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__label {
+  font-size: 0.8rem;
+}
+
+.buyout-settings--wide .buyout-settings__help-text {
+  font-size: 0.7rem;
+}
+
+.buyout-settings--wide .buyout-settings__readonly-value {
+  font-size: 1rem;
+}
+
+.buyout-settings--wide .buyout-settings__value {
+  font-size: 0.85rem;
+}
+
+/* Price range in wide layout */
+.buyout-settings--wide .buyout-settings__price-range {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__range-label {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-inputs {
+  gap: 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-input {
+  width: 60px;
+  padding: 0.4rem;
+  font-size: 0.85rem;
+}
+
+/* Responsive: Stack columns on smaller screens */
+@media (max-width: 1200px) {
+  .buyout-settings--wide .buyout-settings__content {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .buyout-settings--wide .buyout-settings__column--actions {
+    grid-column: span 2;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .buyout-settings--wide .buyout-settings__actions {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .buyout-settings--wide .buyout-settings__content {
+    grid-template-columns: 1fr;
+  }
+
+  .buyout-settings--wide .buyout-settings__column--actions {
+    grid-column: span 1;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .buyout-settings--wide .buyout-settings__actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .buyout-settings--wide .buyout-settings__btn {
+    flex: 1;
+  }
+
+  /* Swap Mode Responsive */
+  .buyout-panel__swap-visual {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buyout-panel__swap-card {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .buyout-panel__swap-arrow {
+    transform: rotate(90deg);
+  }
+
+  .buyout-panel__swap-nights {
+    justify-content: center;
+  }
+}
+
+/* ============================================================================
+   DON NORMAN-INSPIRED ENHANCEMENTS
+   ============================================================================ */
+
+/* Slider Footer - replaces slider-labels with semantic label in center */
+.buyout-settings__slider-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+  margin-top: 0.25rem;
+}
+
+.buyout-settings__slider-min,
+.buyout-settings__slider-max {
+  flex-shrink: 0;
+}
+
+/* Semantic Labels - contextual feedback on slider values */
+.buyout-settings__semantic-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.buyout-settings__semantic-label--neutral {
+  background: var(--schedule-bg);
+  color: var(--schedule-text-muted);
+}
+
+.buyout-settings__semantic-label--moderate {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.buyout-settings__semantic-label--standard {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.buyout-settings__semantic-label--high {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.buyout-settings__semantic-label--aggressive {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.buyout-settings__semantic-label--minimal {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.buyout-settings__semantic-label--generous {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.buyout-settings__semantic-label--deep {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+/* Computed Hints - Live dollar amounts below controls */
+.buyout-settings__computed-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: linear-gradient(135deg, #FEF9C3 0%, #FEF3C7 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.buyout-settings__hint-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.buyout-settings__hint-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #92400E;
+}
+
+/* Price Range Visualization */
+.buyout-settings__price-viz {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__price-viz-header {
+  margin-bottom: 0.75rem;
+}
+
+.buyout-settings__price-viz-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__price-viz-scale {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-settings__price-viz-bound {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  min-width: 35px;
+}
+
+.buyout-settings__price-viz-bar {
+  flex: 1;
+  height: 12px;
+  background: linear-gradient(to right,
+      rgba(239, 68, 68, 0.15) 0%,
+      rgba(34, 197, 94, 0.15) 15%,
+      rgba(34, 197, 94, 0.15) 85%,
+      rgba(239, 68, 68, 0.15) 100%);
+  border-radius: 6px;
+  position: relative;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__price-viz-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.buyout-settings__price-viz-marker {
+  position: absolute;
+  top: -2px;
+  width: 4px;
+  height: 16px;
+  background: var(--schedule-primary);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.buyout-settings__price-viz-marker--min {
+  background: #2563EB;
+}
+
+.buyout-settings__price-viz-marker--max {
+  background: #2563EB;
+}
+
+.buyout-settings__price-viz-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.buyout-settings__price-viz-range {
+  font-size: 0.75rem;
+  color: var(--schedule-text);
+  font-weight: 500;
+}
+
+.buyout-settings__price-viz-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.buyout-settings__price-viz-status--ok {
+  color: #2563EB;
+}
+
+.buyout-settings__price-viz-status--warn {
+  color: #B45309;
+}
+
+/* Price Inputs Row (horizontal layout for floor/ceiling) */
+.buyout-settings__price-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.buyout-settings__price-inputs-row .buyout-settings__control--price {
+  flex: 1;
+}
+
+/* Quick Summary Box */
+.buyout-settings__quick-summary {
+  padding: 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__summary-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-settings__summary-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.buyout-settings__summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.4rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.buyout-settings__summary-label {
+  color: var(--schedule-text-muted);
+}
+
+.buyout-settings__summary-value {
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+/* Wide layout adjustments for Don Norman enhancements */
+.buyout-settings--wide .buyout-settings__computed-hint {
+  padding: 0.3rem 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__hint-text {
+  font-size: 0.7rem;
+}
+
+.buyout-settings--wide .buyout-settings__semantic-label {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-viz {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-viz-label {
+  font-size: 0.8rem;
+}
+
+.buyout-settings--wide .buyout-settings__quick-summary {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__summary-items {
+  gap: 0.25rem;
+}
+
+.buyout-settings--wide .buyout-settings__summary-item {
+  padding: 0.2rem 0.35rem;
+  font-size: 0.7rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .buyout-settings__quick-summary .buyout-settings__summary-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .buyout-settings__price-inputs-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buyout-settings__price-inputs-row .buyout-settings__price-separator {
+    display: none;
+  }
+
+  .buyout-settings__price-inputs-row .buyout-settings__control--price {
+    width: 100%;
+  }
+}
+
+/* ============================================================================
+   LIGHT THEME - User-Centric 3-Tier Pricing Model
+   ============================================================================ */
+
+/* Light Theme Variables */
+.pricing-settings {
+  --pricing-bg: #FFFFFF;
+  --pricing-surface: #F3F4F6;
+  --pricing-border: #E5E7EB;
+  --pricing-border-active: #5b21b6;
+  --pricing-text: #1F2937;
+  --pricing-text-muted: #6B7280;
+  --pricing-accent: #5b21b6;
+  --pricing-accent-light: rgba(91, 33, 182, 0.1);
+  --pricing-accent-hover: #4c1d95;
+  --pricing-success: #2563EB;
+  --pricing-success-light: rgba(5, 150, 105, 0.1);
+}
+
+/* Main Container - Full Width */
+.pricing-settings {
+  width: 100%;
+  background: var(--pricing-bg);
+  border-radius: 12px;
+  border: 1px solid var(--pricing-border);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  color: var(--pricing-text);
+}
+
+/* Header */
+.pricing-settings__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--pricing-border);
+}
+
+.pricing-settings__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pricing-text);
+  margin: 0;
+}
+
+.pricing-settings__subtitle {
+  font-size: 13px;
+  color: var(--pricing-text-muted);
+  margin: 4px 0 0 0;
+}
+
+/* Content Container - 2-Column Grid (Notice Period Wide | Stacked Cost + Edge) */
+.pricing-settings__content {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Right Stack: Substitute Cost + Edge Preference vertically stacked */
+.pricing-settings__right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Pricing Tier */
+.pricing-tier {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  background: var(--pricing-surface);
+  border-radius: 12px;
+  border: 1px solid var(--pricing-border);
+}
+
+/* Notice Period Tier - Primary Focus (01) - Direct child of content */
+.pricing-settings__content>.pricing-tier {
+  padding: 20px 24px;
+  background: var(--pricing-bg);
+  border: 2px solid var(--pricing-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pricing-settings__content>.pricing-tier .pricing-tier__title {
+  font-size: 16px;
+}
+
+.pricing-settings__content>.pricing-tier .pricing-tier__subtitle {
+  font-size: 13px;
+}
+
+/* Right Stack Tiers - Secondary (Substitute Cost + Edge) */
+.pricing-settings__right-stack .pricing-tier {
+  padding: 14px;
+}
+
+.pricing-tier__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pricing-tier__number {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+  padding: 2px 8px;
+  background: var(--pricing-accent-light);
+  border-radius: 4px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.pricing-tier__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pricing-text);
+  margin: 0;
+}
+
+.pricing-tier__subtitle {
+  font-size: 12px;
+  color: var(--pricing-text-muted);
+  font-style: italic;
+  margin: 4px 0 0 0;
+}
+
+.pricing-tier__hint {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+  margin: 12px 0 0 0;
+  line-height: 1.5;
+}
+
+/* Substitute Cost Cards - Horizontal Layout */
+.pricing-tier__cards {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cost-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+  border: 2px solid var(--pricing-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 60px;
+}
+
+.cost-card:hover {
+  border-color: var(--pricing-border-active);
+  background: linear-gradient(180deg, #F3F4F6 0%, #E5E7EB 100%);
+}
+
+.cost-card--selected {
+  border-color: var(--pricing-accent);
+  background: linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 100%);
+}
+
+.cost-card__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.cost-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.cost-card--selected .cost-card__label {
+  color: var(--pricing-accent);
+}
+
+.cost-card__desc {
+  font-size: 10px;
+  color: var(--pricing-text-muted);
+  line-height: 1.3;
+}
+
+.pricing-tier__effect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--pricing-surface);
+  border-radius: 6px;
+  border: 1px solid var(--pricing-border);
+}
+
+.effect-label {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.effect-values {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pricing-accent);
+}
+
+/* Cost Cards (Tier 1) */
+.pricing-tier__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cost-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--pricing-surface);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cost-card:hover {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+}
+
+.cost-card--selected {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+  box-shadow: 0 0 0 1px var(--pricing-accent-light);
+}
+
+.cost-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cost-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.cost-card--selected .cost-card__label {
+  color: var(--pricing-accent);
+}
+
+.cost-card__desc {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.cost-card__percentage {
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+  background: var(--pricing-accent-dim, rgba(0, 217, 255, 0.15));
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cost-card--selected .cost-card__percentage {
+  background: var(--pricing-accent);
+  color: var(--pricing-bg);
+}
+
+.cost-card__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pricing-text);
+}
+
+.cost-card--selected .cost-card__value {
+  color: var(--pricing-accent);
+}
+
+/* Custom Input */
+.pricing-tier__custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.custom-input__label {
+  font-size: 12px;
+  color: var(--pricing-text-muted);
+}
+
+.custom-input__wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--pricing-bg);
+  border: 1px solid var(--pricing-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.custom-input__currency {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pricing-text-muted);
+  margin-right: 2px;
+}
+
+.custom-input__field {
+  width: 70px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pricing-text);
+  outline: none;
+}
+
+.custom-input__field::placeholder {
+  color: var(--pricing-border);
+}
+
+.custom-input__field--active {
+  color: var(--pricing-accent);
+}
+
+/* Notice Stepper (Tier 2) */
+.notice-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notice-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--pricing-surface);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notice-step:hover {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+}
+
+.notice-step--selected {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+  box-shadow: 0 0 0 1px var(--pricing-accent-light);
+}
+
+.notice-step__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notice-step__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pricing-text);
+  min-width: 85px;
+}
+
+.notice-step--selected .notice-step__label {
+  color: var(--pricing-accent);
+}
+
+.notice-step__period {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.notice-step__multiplier {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pricing-text);
+}
+
+.notice-step--selected .notice-step__multiplier {
+  color: var(--pricing-accent);
+}
+
+/* Edge Segmented Control (Tier 3) */
+.edge-segmented {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edge-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  background: var(--pricing-surface);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edge-segment:hover {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+}
+
+.edge-segment--selected {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-accent);
+}
+
+.edge-segment__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.edge-segment__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.edge-segment__sub-label {
+  font-size: 10px;
+  color: var(--pricing-text-muted);
+  font-weight: 400;
+  max-width: 200px;
+  line-height: 1.3;
+}
+
+.edge-segment--selected .edge-segment__label {
+  color: #FFFFFF;
+}
+
+.edge-segment--selected .edge-segment__sub-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Live Preview - Summary Bar (Full Width Below Grid) */
+.pricing-preview {
+  margin-top: 24px;
+  padding: 16px 24px;
+  background: var(--pricing-surface);
+  border-radius: 8px;
+  border: 1px solid var(--pricing-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.pricing-preview__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pricing-preview__icon {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pricing-success);
+}
+
+.pricing-preview__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.pricing-preview__grid {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--pricing-bg);
+  border-radius: 6px;
+  border: 1px solid var(--pricing-border);
+}
+
+.preview-item__day {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pricing-text-muted);
+}
+
+.preview-item__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pricing-success);
+}
+
+.pricing-preview__formula {
+  display: none;
+}
+
+.pricing-preview__range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.range-label {
+  font-size: 12px;
+  color: var(--pricing-text-muted);
+}
+
+.range-values {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+}
+
+/* Notice Slider (Tier 2 - Horizontal Slider with Steps) */
+.notice-slider {
+  position: relative;
+  padding: 0 8px;
+}
+
+/* Notice Multipliers (Tier 2 - Individual Sliders) */
+.notice-multipliers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.notice-multipliers__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 1.5fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--pricing-surface);
+  border-radius: 8px;
+  border: 1px solid var(--pricing-border);
+  transition: border-color 0.15s ease;
+}
+
+.notice-multipliers__row:hover {
+  border-color: var(--pricing-border-active);
+}
+
+.notice-multipliers__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notice-multipliers__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.notice-multipliers__period {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.notice-multipliers__slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--pricing-surface);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.notice-multipliers__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--pricing-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--pricing-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.notice-multipliers__slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--pricing-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--pricing-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.notice-multipliers__slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(to right, var(--pricing-accent) 0%, var(--pricing-surface) 0%);
+  border-radius: 3px;
+}
+
+.notice-multipliers__slider:focus {
+  outline: none;
+}
+
+.notice-multipliers__slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--pricing-accent-light);
+}
+
+.notice-multipliers__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+  min-width: 42px;
+  text-align: right;
+}
+
+.notice-slider__track {
+  position: relative;
+  height: 8px;
+  background: var(--pricing-surface);
+  border-radius: 4px;
+  margin: 20px 0;
+}
+
+.notice-slider__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--pricing-accent);
+  border-radius: 4px;
+  transition: width 0.15s ease;
+}
+
+.notice-slider__input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.notice-slider__thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: var(--pricing-accent);
+  border: 3px solid var(--pricing-bg);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  transition: left 0.15s ease;
+}
+
+.notice-slider__steps {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.notice-slider__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.notice-slider__step:hover {
+  background: var(--pricing-surface);
+}
+
+.notice-slider__step--active .notice-slider__step-label,
+.notice-slider__step--active .notice-slider__step-multiplier {
+  color: var(--pricing-accent);
+}
+
+.notice-slider__step-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--pricing-border);
+  border-radius: 50%;
+}
+
+.notice-slider__step--active .notice-slider__step-dot {
+  background: var(--pricing-accent);
+}
+
+.notice-slider__step-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--pricing-text-muted);
+  text-align: center;
+  max-width: 60px;
+}
+
+.notice-slider__step-multiplier {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pricing-text);
+}
+
+.notice-slider__step-period {
+  font-size: 9px;
+  color: var(--pricing-text-muted);
+}
+
+/* Action Buttons */
+.pricing-settings__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 0;
+}
+
+.pricing-btn {
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pricing-btn--secondary {
+  background: var(--pricing-bg);
+  color: var(--pricing-text-muted);
+  border: 1px solid var(--pricing-border);
+}
+
+.pricing-btn--secondary:hover {
+  border-color: var(--pricing-text-muted);
+  color: var(--pricing-text);
+}
+
+.pricing-btn--primary {
+  background: var(--pricing-accent);
+  color: #FFFFFF;
+  border: none;
+}
+
+.pricing-btn--primary:hover {
+  background: var(--pricing-accent-hover);
+}
+
+.pricing-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Footer removed - actions now in header */
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .pricing-settings__content {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+  }
+
+  .notice-multipliers__row {
+    grid-template-columns: minmax(100px, 1fr) 1.2fr auto;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  .pricing-settings__content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .pricing-settings__right-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pricing-settings__content {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  /* Notice Period Tier - reduce padding on mobile */
+  .pricing-settings__content>.pricing-tier {
+    padding: 16px;
+  }
+
+  .pricing-settings__right-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-settings__right-stack .pricing-tier {
+    padding: 12px;
+  }
+
+  .notice-multipliers__row {
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .notice-multipliers__name {
+    font-size: 12px;
+  }
+
+  .notice-multipliers__period {
+    font-size: 10px;
+  }
+
+  .notice-multipliers__value {
+    font-size: 11px;
+    min-width: 36px;
+  }
+
+  .pricing-settings__actions {
+    flex-direction: column;
+  }
+
+  .pricing-btn {
+    width: 100%;
+  }
+
+
+  .pricing-tier__header {
+    margin-bottom: 10px;
+  }
+
+  .pricing-tier__title {
+    font-size: 13px;
+  }
+
+  .pricing-settings__content>.pricing-tier .pricing-tier__title {
+    font-size: 14px;
+  }
+
+  .pricing-settings__content>.pricing-tier .pricing-tier__subtitle {
+    font-size: 12px;
   }
 }

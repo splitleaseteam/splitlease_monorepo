@@ -14,7 +14,7 @@
  */
 
 import { format } from 'date-fns';
-import { PROPOSAL_STATUSES, DAYS_OF_WEEK } from './constants.js';
+import { PROPOSAL_STATUSES, DAYS_OF_WEEK, LEASE_CREATED_STATUSES } from './constants.js';
 
 /**
  * Format currency value
@@ -248,6 +248,15 @@ export default function ProposalItem({ proposal, onStatusChange, onAction }) {
         >
           View listing
         </button>
+{LEASE_CREATED_STATUSES.includes(proposal.status) && (
+          <button
+            className="pm-btn pm-btn-link"
+            onClick={() => onAction('viewLease', proposal)}
+            title="View lease and payment records for this proposal"
+          >
+            View Lease
+          </button>
+        )}
         <button
           className="pm-btn pm-btn-primary"
           onClick={() => onAction('modifyAsHost', proposal)}

@@ -1,19 +1,6 @@
 // Payment Totals Calculator for Credit Card Authorization
 
-/**
- * Convert currency string to float
- * Removes dollar signs, commas, and whitespace
- */
-function convertCurrencyToFloat(value: string): number {
-  return parseFloat(value.replace(/[$,]/g, '').trim());
-}
-
-/**
- * Round down to 2 decimal places (for currency)
- */
-function roundDown(value: number): number {
-  return Math.floor(value * 100) / 100;
-}
+import { convertCurrencyToFloat, roundDown } from '../../../lib/api/currency';
 
 export interface PaymentTotalsInput {
   fourWeekRent: string;

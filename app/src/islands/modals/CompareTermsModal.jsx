@@ -239,6 +239,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
 
   // Success view content
   if (acceptanceSuccess) {
+    console.log('[CompareTermsModal] 🎉 Rendering SUCCESS view - user should see celebration modal');
     const successContent = (
       <div
         className="compare-terms-overlay"

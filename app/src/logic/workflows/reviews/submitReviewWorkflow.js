@@ -101,7 +101,7 @@ export async function submitReviewWorkflow({
  * @param {string} params.reviewType - Review type
  * @returns {Object} Validation result with errors array
  */
-export function validateReviewForm({ ratings, reviewType }) {
+export function validateReviewForm({ ratings, reviewType: _reviewType }) {
   const errors = [];
 
   if (!ratings || ratings.length === 0) {

@@ -64,11 +64,11 @@ Deno.serve(async (req) => {
     // we need to use the postgres connection
 
     // Alternative: Use pg directly via Deno
-    const dbUrl = Deno.env.get('SUPABASE_DB_URL') ||
+    const _dbUrl = Deno.env.get('SUPABASE_DB_URL') ||
       `postgresql://postgres:${supabaseServiceKey}@db.${supabaseUrl.replace('https://', '').replace('.supabase.co', '')}.supabase.co:5432/postgres`;
 
     // For now, let's try a different approach - check if the trigger already exists correctly
-    const { data: triggerCheck, error: checkError } = await supabase
+    const { data: _triggerCheck, error: _checkError } = await supabase
       .from('thread')
       .select('*')
       .limit(0);

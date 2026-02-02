@@ -4,16 +4,19 @@
  * Desktop-first dashboard for managing lease schedules with roommates.
  * Follows Hollow Component Pattern: All logic in useScheduleDashboardLogic hook.
  *
- * Layout (5 sections):
+ * Layout (Asymmetric 2.5:1 Grid):
  * ┌─────────────────────────────────────────────────────────────────────────┐
  * │  HEADER: Lease Info Bar (Property, Roommate, Lease Period)             │
- * ├────────────────────────────────┬────────────────────────────────────────┤
- * │   Section 1: Calendar          │   Section 2: Roommate Profile         │
- * ├────────────────────────────────┼────────────────────────────────────────┤
- * │   Section 3: Buy Out Panel     │   Section 4: Chat Thread              │
- * ├────────────────────────────────┴────────────────────────────────────────┤
- * │   Section 5: Transaction History (Full Width)                          │
- * └─────────────────────────────────────────────────────────────────────────┘
+ * ├───────────────────────────────────────────────────┬─────────────────────┤
+ * │   Calendar (2-Month Side-by-Side View)            │  Roommate Profile   │
+ * │   [Jan 2025]  [Feb 2025]                          │  Splitting With     │
+ * ├───────────────────────────────────────────────────┤                     │
+ * │   Buy Out Panel (Collapsible Drawer)              │                     │
+ * │   [Compact Horizontal Layout]                     ├─────────────────────┤
+ * ├───────────────────────────────────────────────────┤  Chat Thread        │
+ * │   Transaction History                             │  (Always Visible)   │
+ * │   [Full Table with Filters]                       │  [Tall Sidebar]     │
+ * └───────────────────────────────────────────────────┴─────────────────────┘
  *
  * Route: /schedule/:leaseId
  */
@@ -28,6 +31,10 @@ import RoommateProfileCard from './components/RoommateProfileCard.jsx';
 import BuyOutPanel from './components/BuyOutPanel.jsx';
 import ChatThread from './components/ChatThread.jsx';
 import TransactionHistory from './components/TransactionHistory.jsx';
+import FlexibilityBreakdownModal from './components/FlexibilityBreakdownModal.jsx';
+import DashboardModeToggle from './components/DashboardModeToggle.jsx';
+import BuyoutFormulaSettings from './components/BuyoutFormulaSettings.jsx';
+import BuyoutPriceVisualization from './components/BuyoutPriceVisualization.jsx';
 
 // ============================================================================
 // LOADING STATE
@@ -83,11 +90,21 @@ export default function ScheduleDashboard() {
 
     // Selection
     selectedNight,
+    counterOriginalNight,
+    counterTargetNight,
     basePrice,
 
-    // Notice-Based Buyout Pricing
-    roommatePrices,
-    selectedNightPricing,
+    // Swap Mode
+    isSwapMode,
+    swapOfferNight,
+    isCounterMode,
+
+    // Request Type (Buyout vs Share vs Swap)
+    requestType,
+    defaultRequestType,
+
+    // Shared Nights (co-occupancy)
+    sharedNights,
 
     // Roommate Profile
     flexibilityScore,
@@ -101,11 +118,41 @@ export default function ScheduleDashboard() {
 
     // Transaction History
     transactions,
+    transactionsByDate,
+    activeTransactionId,
+
+    // Drawer States
+    isBuyOutOpen,
+    isChatOpen,
+
+    // Modal States
+    isFlexibilityModalOpen,
+
+    // Dashboard Mode
+    dashboardMode,
+
+    // Flexibility Data
+    userFlexibilityScore,
+    flexibilityMetrics,
+
+    // Pricing Strategy (3-Tier Model)
+    pricingStrategy,
+    isSavingPreferences,
+    priceOverlays,
+    computedExamples,
 
     // Handlers
     handleSelectNight,
     handleBuyOut,
+    handleShareRequest,
+    handleRequestTypeChange,
     handleSwapInstead,
+    handleSelectSwapOffer,
+    handleSubmitSwapRequest,
+    handleCancelSwapMode,
+    handleSelectCounterNight,
+    handleSubmitCounter,
+    handleCancelCounterMode,
     handleCancel,
     handleSendMessage,
     handleAcceptRequest,
@@ -113,8 +160,18 @@ export default function ScheduleDashboard() {
     handleCounterRequest,
     handleCancelRequest,
     handleViewTransactionDetails,
+    handleSelectTransaction,
+    handleClearActiveTransaction,
     handleMonthChange,
-    handleRefresh
+    handleRefresh,
+    handleToggleBuyOut,
+    handleToggleChat,
+    handleOpenFlexibilityModal,
+    handleCloseFlexibilityModal,
+    handlePricingStrategyChange,
+    handleSavePricingStrategy,
+    handleResetPricingStrategy,
+    handleSwitchMode
   } = useScheduleDashboardLogic();
 
   // -------------------------------------------------------------------------
@@ -142,79 +199,206 @@ export default function ScheduleDashboard() {
 
             {/* Main Grid */}
             <div className="schedule-dashboard__grid">
-              {/* Row 1 */}
-              <div className="schedule-dashboard__row">
-                {/* Section 1: Calendar */}
-                <section className="schedule-dashboard__section schedule-dashboard__calendar">
-                  <ScheduleCalendar
-                    userNights={userNights}
-                    roommateNights={roommateNights}
-                    pendingNights={pendingNights}
-                    blockedNights={blockedNights}
-                    currentMonth={currentMonth}
-                    selectedNight={selectedNight}
-                    onNightSelect={handleSelectNight}
-                    onMonthChange={handleMonthChange}
-                    roommatePrices={roommatePrices}
-                  />
-                </section>
+              {/* Asymmetric Two-Column Layout (2.5:1) */}
+              <div className="schedule-dashboard__columns">
+                {/* Left Column: Mode-Specific Content */}
+                <div className="schedule-dashboard__column schedule-dashboard__column--left">
+                  {/* Date Changes Mode: Calendar + Buy Out + Transaction History */}
+                  {dashboardMode === 'date_changes' && (
+                    <>
+                      {/* Calendar Card */}
+                      <section
+                        className={`schedule-dashboard__section schedule-dashboard__calendar ${isBuyOutOpen ? 'schedule-dashboard__section--drawer-open' : ''}`}
+                        id="dashboard-date-changes-panel"
+                        role="tabpanel"
+                        aria-labelledby="date-changes-tab"
+                      >
+                        <ScheduleCalendar
+                          userNights={userNights}
+                          roommateNights={roommateNights}
+                          pendingNights={pendingNights}
+                          blockedNights={blockedNights}
+                          sharedNights={sharedNights}
+                          currentMonth={currentMonth}
+                          selectedNight={selectedNight}
+                          onNightSelect={handleSelectNight}
+                          onMonthChange={handleMonthChange}
+                          transactionsByDate={transactionsByDate}
+                          onSelectTransaction={handleSelectTransaction}
+                        />
+                      </section>
 
-                {/* Section 2: Roommate Profile */}
-                <section className="schedule-dashboard__section schedule-dashboard__profile">
-                  <RoommateProfileCard
-                    roommate={roommate}
-                    flexibilityScore={flexibilityScore}
-                    responsePatterns={responsePatterns}
-                    netFlow={netFlow}
-                  />
-                </section>
+                      {/* Buy Out Drawer Handle (Summary Bar) */}
+                      <div
+                        className={`schedule-dashboard__drawer-handle ${isBuyOutOpen ? 'schedule-dashboard__drawer-handle--open' : ''}`}
+                        onClick={handleToggleBuyOut}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleToggleBuyOut();
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isBuyOutOpen}
+                        aria-controls="buyout-drawer"
+                      >
+                        <span className="schedule-dashboard__drawer-handle-text">
+                          {selectedNight
+                            ? `Buying Out ${selectedNight}`
+                            : 'Create a Buyout Request'}
+                        </span>
+                        <span className="schedule-dashboard__drawer-chevron">
+                          {isBuyOutOpen ? '\u25B2' : '\u25BC'}
+                        </span>
+                      </div>
+
+                      {/* Buy Out Drawer Content */}
+                      <div
+                        id="buyout-drawer"
+                        className={`schedule-dashboard__drawer ${isBuyOutOpen ? 'schedule-dashboard__drawer--open' : ''}`}
+                        aria-hidden={!isBuyOutOpen}
+                      >
+                        <section className="schedule-dashboard__section schedule-dashboard__buyout">
+                          <BuyOutPanel
+                            selectedDate={isCounterMode ? counterOriginalNight : selectedNight}
+                            roommateName={roommate?.firstName}
+                            basePrice={basePrice}
+                            onBuyOut={handleBuyOut}
+                            onShareRequest={handleShareRequest}
+                            onSwapInstead={handleSwapInstead}
+                            onCancel={handleCancel}
+                            isSubmitting={isSubmitting}
+                            compact
+                            // Request Type props
+                            requestType={requestType}
+                            onRequestTypeChange={handleRequestTypeChange}
+                            // Swap Mode props
+                            isSwapMode={isSwapMode}
+                            isCounterMode={isCounterMode}
+                            swapOfferNight={swapOfferNight}
+                            userNights={userNights}
+                            roommateNights={roommateNights}
+                            counterOriginalNight={counterOriginalNight}
+                            counterTargetNight={counterTargetNight}
+                            onSelectSwapOffer={handleSelectSwapOffer}
+                            onSubmitSwapRequest={handleSubmitSwapRequest}
+                            onCancelSwapMode={handleCancelSwapMode}
+                            onSelectCounterNight={handleSelectCounterNight}
+                            onSubmitCounterRequest={handleSubmitCounter}
+                            onCancelCounterMode={handleCancelCounterMode}
+                          />
+                        </section>
+                      </div>
+
+                      {/* Transaction History */}
+                      <section className="schedule-dashboard__section schedule-dashboard__history">
+                        <TransactionHistory
+                          transactions={transactions}
+                          netFlow={netFlow}
+                          onCancelRequest={handleCancelRequest}
+                          onViewDetails={handleViewTransactionDetails}
+                          activeTransactionId={activeTransactionId}
+                          onClearActiveTransaction={handleClearActiveTransaction}
+                        />
+                      </section>
+                    </>
+                  )}
+
+                  {/* Pricing Settings Mode: Calendar with Price Overlays */}
+                  {dashboardMode === 'pricing_settings' && (
+                    <>
+                      {/* Calendar with suggested price overlays on user's nights */}
+                      <section
+                        className="schedule-dashboard__section schedule-dashboard__calendar schedule-dashboard__calendar--pricing"
+                        id="dashboard-pricing-settings-panel"
+                        role="tabpanel"
+                        aria-labelledby="pricing-settings-tab"
+                      >
+                        <ScheduleCalendar
+                          userNights={userNights}
+                          roommateNights={roommateNights}
+                          pendingNights={pendingNights}
+                          blockedNights={blockedNights}
+                          sharedNights={sharedNights}
+                          currentMonth={currentMonth}
+                          selectedNight={null}
+                          onNightSelect={null}
+                          onMonthChange={handleMonthChange}
+                          priceOverlays={priceOverlays}
+                        />
+                      </section>
+                    </>
+                  )}
+                </div>
+
+                {/* Right Column: Profile + Mode Toggle + Mode-Specific Content */}
+                <div className="schedule-dashboard__column schedule-dashboard__column--right">
+                  {/* Profile Card - Always Visible */}
+                  <section className="schedule-dashboard__section schedule-dashboard__profile">
+                    <RoommateProfileCard
+                      roommate={roommate}
+                      flexibilityScore={flexibilityScore}
+                      userFlexibilityScore={userFlexibilityScore}
+                      responsePatterns={responsePatterns}
+                      netFlow={netFlow}
+                      onFlexibilityInfoClick={handleOpenFlexibilityModal}
+                    />
+                  </section>
+
+                  {/* Mode Toggle - Always Visible Under Profile */}
+                  <section className="schedule-dashboard__section schedule-dashboard__mode-toggle">
+                    <DashboardModeToggle
+                      currentMode={dashboardMode}
+                      onModeChange={handleSwitchMode}
+                    />
+                  </section>
+
+                  {/* Date Changes Mode: Chat Thread */}
+                  {dashboardMode === 'date_changes' && (
+                    <section className="schedule-dashboard__section schedule-dashboard__chat">
+                      <ChatThread
+                        messages={messages}
+                        currentUserId={currentUserId}
+                        roommateName={roommate?.firstName}
+                        onSendMessage={handleSendMessage}
+                        onAcceptRequest={handleAcceptRequest}
+                        onDeclineRequest={handleDeclineRequest}
+                        onCounterRequest={handleCounterRequest}
+                        isSending={isSending}
+                      />
+                    </section>
+                  )}
+
+                  {/* Pricing Settings Mode: Right column is empty (controls shown wide below calendar) */}
+                </div>
               </div>
 
-              {/* Row 2 */}
-              <div className="schedule-dashboard__row">
-                {/* Section 3: Buy Out Panel */}
-                <section className="schedule-dashboard__section schedule-dashboard__buyout">
-                  <BuyOutPanel
-                    selectedDate={selectedNight}
-                    roommateName={roommate?.firstName}
-                    basePrice={basePrice}
-                    noticePricing={selectedNightPricing}
-                    onBuyOut={handleBuyOut}
-                    onSwapInstead={handleSwapInstead}
-                    onCancel={handleCancel}
-                    isSubmitting={isSubmitting}
+              {/* Pricing Controls - Full Width (Outside Columns Grid) */}
+              {dashboardMode === 'pricing_settings' && (
+                <section className="schedule-dashboard__section schedule-dashboard__pricing-controls">
+                  <BuyoutFormulaSettings
+                    pricingStrategy={pricingStrategy}
+                    onStrategyChange={handlePricingStrategyChange}
+                    onSave={handleSavePricingStrategy}
+                    onReset={handleResetPricingStrategy}
+                    isSaving={isSavingPreferences}
                   />
                 </section>
-
-                {/* Section 4: Chat Thread */}
-                <section className="schedule-dashboard__section schedule-dashboard__chat">
-                  <ChatThread
-                    messages={messages}
-                    currentUserId={currentUserId}
-                    roommateName={roommate?.firstName}
-                    onSendMessage={handleSendMessage}
-                    onAcceptRequest={handleAcceptRequest}
-                    onDeclineRequest={handleDeclineRequest}
-                    onCounterRequest={handleCounterRequest}
-                    isSending={isSending}
-                  />
-                </section>
-              </div>
-
-              {/* Row 3: Full Width */}
-              <div className="schedule-dashboard__row schedule-dashboard__row--full">
-                {/* Section 5: Transaction History */}
-                <section className="schedule-dashboard__section schedule-dashboard__history">
-                  <TransactionHistory
-                    transactions={transactions}
-                    onCancelRequest={handleCancelRequest}
-                    onViewDetails={handleViewTransactionDetails}
-                  />
-                </section>
-              </div>
+              )}
             </div>
           </>
         )}
+
+        {/* Flexibility Breakdown Modal */}
+        <FlexibilityBreakdownModal
+          isOpen={isFlexibilityModalOpen}
+          onClose={handleCloseFlexibilityModal}
+          userScore={userFlexibilityScore}
+          roommateScore={flexibilityScore}
+          roommateName={roommate?.firstName}
+          flexibilityMetrics={flexibilityMetrics}
+        />
       </main>
 
       <Footer />

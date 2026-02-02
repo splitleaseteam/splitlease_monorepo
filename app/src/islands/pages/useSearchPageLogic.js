@@ -513,8 +513,9 @@ export function useSearchPageLogic() {
         } else if (typeof photosField === 'string') {
           try {
             photos = JSON.parse(photosField)
-          } catch (e) {
-            // Ignore parse errors
+          } catch (_e) {
+            // Legacy photo data may have invalid JSON - fall back to empty array
+            photos = [];
           }
         }
 

@@ -142,7 +142,7 @@ export default function ChatThread({
   return (
     <div className="chat-thread">
       <h3 className="chat-thread__heading">
-        Chat with {roommateName || 'Roommate'}
+        Chat with {roommateName || 'Split Partner'}
       </h3>
 
       {/* Messages Area */}
@@ -182,14 +182,22 @@ export default function ChatThread({
 
       {/* Input Area */}
       <form className="chat-thread__input-area" onSubmit={handleSubmit}>
-        <input
-          type="text"
+        <textarea
           className="chat-thread__input"
           placeholder="Type a message..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           maxLength={500}
           disabled={isSending}
+          rows={2}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (inputValue.trim()) {
+                handleSubmit(e);
+              }
+            }
+          }}
         />
         <button
           type="submit"

@@ -58,7 +58,7 @@ export async function handleVerifyEmail(
     // Use verifyOtp to validate the magic link token
     // Note: For magic links generated via admin.generateLink(),
     // we need to verify the token_hash
-    const { data: verifyData, error: verifyError } = await supabaseAdmin.auth.verifyOtp({
+    const { data: _verifyData, error: verifyError } = await supabaseAdmin.auth.verifyOtp({
       token_hash: token,
       type: type as 'magiclink' | 'email',
     });

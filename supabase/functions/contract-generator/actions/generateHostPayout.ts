@@ -6,7 +6,7 @@ import { uploadToGoogleDrive } from '../lib/googleDrive.ts';
 import { formatCurrencyDisplay } from '../lib/currency.ts';
 import { formatDateForTemplate } from '../lib/dates.ts';
 import { validateHostPayoutPayload } from '../lib/validation.ts';
-import type { HostPayoutPayload, PayoutPeriod } from '../types/contracts.ts';
+import type { HostPayoutPayload, PayoutPeriod as _PayoutPeriod } from '../types/contracts.ts';
 
 export interface GenerationResult {
   success: boolean;

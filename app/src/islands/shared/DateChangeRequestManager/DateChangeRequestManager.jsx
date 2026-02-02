@@ -61,12 +61,16 @@ export default function DateChangeRequestManager({
   const [isLoading, setIsLoading] = useState(false);
 
   // Request creation state
-  const [requestType, setRequestType] = useState(null); // 'adding' | 'removing' | 'swapping'
+  const [requestType, setRequestType] = useState('adding'); // Default to 'adding'
   const [dateToAdd, setDateToAdd] = useState(null);
   const [dateToRemove, setDateToRemove] = useState(null);
   const [message, setMessage] = useState('');
   const [pricePercentage, setPricePercentage] = useState(100); // 50-150%
   const [selectedTier, setSelectedTier] = useState('recommended');
+
+  // Roommate data
+  const [roommateDates, setRoommateDates] = useState([]);
+  const [isRequestTypeExpanded, setIsRequestTypeExpanded] = useState(false);
 
   // Throttling state
   const [throttleStatus, setThrottleStatus] = useState(null);
@@ -100,14 +104,31 @@ export default function DateChangeRequestManager({
     }
   }, [error, success]);
 
-  // Fetch throttle status and existing requests on mount
+  // Fetch throttle status, existing requests, and roommate dates on mount
   useEffect(() => {
     const userId = currentUser?._id || currentUser?.id;
-    if (userId && lease?._id) {
+    const leaseId = lease?._id || lease?.id;
+    const listingId = lease?.Listing || lease?.listingId;
+
+    if (userId && leaseId) {
       fetchThrottleStatus(userId);
-      fetchExistingRequests(lease._id);
+      fetchExistingRequests(leaseId);
+    }
+
+    if (listingId && leaseId) {
+      fetchRoommateDates(listingId, leaseId);
     }
   }, [currentUser, lease]);
+
+  /**
+   * Fetch roommate's booked dates
+   */
+  const fetchRoommateDates = async (listingId, currentLeaseId) => {
+    const result = await dateChangeRequestService.getRoommateBookedDates(listingId, currentLeaseId);
+    if (result.status === 'success') {
+      setRoommateDates(result.data || []);
+    }
+  };
 
   /**
    * Fetch enhanced throttle status for current user on this lease
@@ -547,34 +568,37 @@ export default function DateChangeRequestManager({
         {/* Create Request View */}
         {view === 'create' && (
           <div className="dcr-create-container">
-            <h2 className="dcr-title">Request Date Change</h2>
+            <h2 className="dcr-title">
+              {requestType === 'adding'
+                ? 'Request Extra Nights'
+                : requestType === 'removing'
+                ? 'Offer a Night'
+                : 'Swap Nights'}
+            </h2>
             <p className="dcr-description">
-              Select the type of change and choose the date(s) on the calendar.
+              {requestType === 'adding'
+                ? 'Select nights adjacent to your stay to request them from your roommate.'
+                : requestType === 'removing'
+                ? 'Select a night you want to offer back to your roommate.'
+                : 'Select a night to give up and a night to receive.'}
             </p>
 
-            <RequestTypeSelector
-              selectedType={requestType}
-              onTypeSelect={setRequestType}
-              disabled={isLoading}
-            />
-
-            {dateToAdd && (
+            {dateToAdd && requestType === 'adding' && (
               <UrgencyCountdown
                 targetDate={dateToAdd}
                 basePrice={baseNightlyPrice}
                 urgencySteepness={2.0}
                 variant="prominent"
                 onUrgencyChange={() => {
-                {
                   /* A/B testing hook */
-                }
-              }}
-onPriceUpdate={handleUrgencyPriceUpdate}
+                }}
+                onPriceUpdate={handleUrgencyPriceUpdate}
               />
             )}
 
             <DateChangeRequestCalendar
               bookedDates={bookedDates}
+              roommateDates={roommateDates}
               reservationStart={reservationStart}
               reservationEnd={reservationEnd}
               requestType={requestType}
@@ -582,14 +606,45 @@ onPriceUpdate={handleUrgencyPriceUpdate}
               dateToRemove={dateToRemove}
               onDateSelect={handleDateSelect}
               existingRequests={existingRequests}
-              disabled={!requestType || isLoading}
+              disabled={isLoading}
             />
+
+            {/* Collapsible Request Type Selector */}
+            <div className="dcr-secondary-actions">
+              <button
+                className="dcr-secondary-actions-toggle"
+                onClick={() => setIsRequestTypeExpanded(!isRequestTypeExpanded)}
+                aria-expanded={isRequestTypeExpanded}
+              >
+                {isRequestTypeExpanded ? '▲ Hide other options' : '▾ Offer or Swap a Night'}
+              </button>
+
+              {isRequestTypeExpanded && (
+                <div className="dcr-secondary-options">
+                  <RequestTypeSelector
+                    selectedType={requestType}
+                    onTypeSelect={(type) => {
+                      setRequestType(type);
+                      // Don't auto-collapse, let user explore
+                    }}
+                    disabled={isLoading}
+                    variant="compact"
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="dcr-button-group">
               <button
                 className="dcr-button-primary"
                 onClick={handleProceedToDetails}
-                disabled={!requestType || isLoading || throttleStatus?.isBlocked}
+                disabled={
+                  isLoading ||
+                  throttleStatus?.isBlocked ||
+                  (requestType === 'adding' && !dateToAdd) ||
+                  (requestType === 'removing' && !dateToRemove) ||
+                  (requestType === 'swapping' && (!dateToAdd || !dateToRemove))
+                }
               >
                 Continue
               </button>

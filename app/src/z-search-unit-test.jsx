@@ -8,7 +8,6 @@
  * Auth: None (internal test page)
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ZSearchUnitTestPage from './islands/pages/ZSearchUnitTestPage/ZSearchUnitTestPage.jsx';
 

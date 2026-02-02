@@ -469,6 +469,60 @@ main.main-content:has(.messaging-page) {
   color: #1565C0;
 }
 
+/* ==========================================================================
+   Proposal Indicator Badge - Shows when thread is related to a proposal
+   ========================================================================== */
+
+.thread-card__proposal-badge {
+  display: inline-flex;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  text-transform: none;
+  flex-shrink: 0;
+  background: #F3F4F6;
+  color: #6B7280;
+  margin-left: auto;
+}
+
+/* Pending proposal - requires host attention */
+.thread-card__proposal-badge--pending {
+  background: #FEF3CD;
+  color: #856404;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Thread card with pending proposal - subtle highlight */
+.thread-card--pending-proposal {
+  border-left: 3px solid #F59E0B;
+}
+
+.thread-card--pending-proposal:not(.thread-card--selected) {
+  background-color: rgba(254, 243, 205, 0.3);
+}
+
+/* Selected state for proposal badge */
+.thread-card--selected .thread-card__proposal-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.thread-card--selected .thread-card__proposal-badge--pending {
+  background: rgba(255, 255, 255, 0.35);
+  color: white;
+  animation: none;
+}
+
 .thread-card__property {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);

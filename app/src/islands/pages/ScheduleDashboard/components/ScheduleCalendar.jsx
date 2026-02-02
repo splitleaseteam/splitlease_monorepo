@@ -82,6 +82,36 @@ function addDays(date, days) {
 }
 
 /**
+ * Add months to a date
+ */
+function addMonths(date, months) {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+}
+
+/**
+ * Build calendar grid for a specific month
+ */
+function buildCalendarGrid(year, month) {
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDayOfMonth = getFirstDayOfMonth(year, month);
+  const days = [];
+
+  // Empty cells for days before first of month
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(null);
+  }
+
+  // Days of the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push(new Date(year, month, day));
+  }
+
+  return days;
+}
+
+/**
  * Find adjacent nights - nights immediately before or after user's stay blocks
  * A night is adjacent if it's immediately before/after a consecutive block of user's nights
  */
@@ -120,23 +150,21 @@ export default function ScheduleCalendar({
   roommateNights = [],
   pendingNights = [],
   blockedNights = [],
+  sharedNights = [],
   selectedNight,
   onNightSelect,
   onMonthChange,
   currentMonth: currentMonthProp,
-  roommatePrices = new Map(),  // Map of date string -> suggested buyout price
+  transactionsByDate = {},
+  onSelectTransaction,
+  priceOverlays = null // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
 }) {
   // Default to current date if no month provided
   const currentMonth = currentMonthProp || new Date();
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstDayOfMonth = getFirstDayOfMonth(year, month);
 
-  const monthName = currentMonth.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  });
+  // Calculate the two months to display
+  const month1 = currentMonth;
+  const month2 = addMonths(currentMonth, 1);
 
   // Calculate adjacent nights (memoized for performance)
   const adjacentNights = useMemo(
@@ -144,22 +172,57 @@ export default function ScheduleCalendar({
     [userNights, roommateNights]
   );
 
-  // Build calendar grid
-  const calendarDays = useMemo(() => {
-    const days = [];
+  // Today's date for comparison (normalized to start of day)
+  const today = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }, []);
 
-    // Empty cells for days before first of month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(null);
-    }
+  /**
+   * Check if a date is in the past
+   */
+  const isDateInPast = (date) => {
+    if (!date) return false;
+    return date < today;
+  };
 
-    // Days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(new Date(year, month, day));
-    }
+  /**
+   * Get transaction for a specific date
+   */
+  const getTransactionForDate = (date) => {
+    if (!date || !transactionsByDate) return null;
+    const dateStr = toDateString(date);
+    return transactionsByDate[dateStr] || null;
+  };
 
-    return days;
-  }, [year, month, daysInMonth, firstDayOfMonth]);
+  /**
+   * Get price overlay for a specific date (user's nights only in pricing mode)
+   */
+  const getPriceOverlay = (date) => {
+    if (!date || !priceOverlays) return null;
+    const dateStr = toDateString(date);
+    return priceOverlays[dateStr] || null;
+  };
+
+  /**
+   * Format transaction amount for display
+   */
+  const formatTransactionAmount = (transaction) => {
+    if (!transaction) return null;
+    const prefix = transaction.direction === 'incoming' ? '+' : '-';
+    return `${prefix}$${Number(transaction.amount).toFixed(2)}`;
+  };
+
+  // Build calendar grids for both months
+  const month1Days = useMemo(
+    () => buildCalendarGrid(month1.getFullYear(), month1.getMonth()),
+    [month1]
+  );
+
+  const month2Days = useMemo(
+    () => buildCalendarGrid(month2.getFullYear(), month2.getMonth()),
+    [month2]
+  );
 
   /**
    * Get the status of a day for styling
@@ -190,12 +253,18 @@ export default function ScheduleCalendar({
     if (!date) return;
 
     const status = getDayStatus(date);
+    const transaction = getTransactionForDate(date);
 
-    // Only allow selecting roommate's or adjacent nights
+    // If it's a past date with a transaction, trigger transaction click
+    if (isDateInPast(date) && transaction) {
+      onSelectTransaction?.(transaction.id);
+      return;
+    }
+
+    // Only allow selecting roommate's or adjacent nights for future dates
     if (status === 'roommate' || status === 'adjacent') {
       onNightSelect?.(toDateString(date));
     }
-    // Optional: Could show feedback for clicking own night
   };
 
   /**
@@ -203,6 +272,14 @@ export default function ScheduleCalendar({
    */
   const isDayClickable = (date, status) => {
     if (!date) return false;
+
+    // Past dates with transactions are clickable
+    const transaction = getTransactionForDate(date);
+    if (isDateInPast(date) && transaction) {
+      return true;
+    }
+
+    // Future roommate's or adjacent nights are clickable
     return status === 'roommate' || status === 'adjacent';
   };
 
@@ -218,6 +295,13 @@ export default function ScheduleCalendar({
       day: 'numeric'
     });
 
+    // Check for transaction on this date
+    const transaction = getTransactionForDate(date);
+    if (isDateInPast(date) && transaction) {
+      const amount = formatTransactionAmount(transaction);
+      return `${formattedDate}, Transaction: ${amount}. Click to view details.`;
+    }
+
     const statusLabels = {
       mine: 'Your night',
       roommate: 'Available to buy out',
@@ -231,19 +315,118 @@ export default function ScheduleCalendar({
   };
 
   /**
-   * Navigate to previous month
+   * Navigate to previous month (by 1 month)
    */
   const handlePrevMonth = () => {
-    const newMonth = new Date(year, month - 1, 1);
+    const newMonth = addMonths(currentMonth, -1);
     onMonthChange?.(newMonth);
   };
 
   /**
-   * Navigate to next month
+   * Navigate to next month (by 1 month)
    */
   const handleNextMonth = () => {
-    const newMonth = new Date(year, month + 1, 1);
+    const newMonth = addMonths(currentMonth, 1);
     onMonthChange?.(newMonth);
+  };
+
+  /**
+   * Render a single month panel
+   */
+  const renderMonthPanel = (monthDate, calendarDays, key) => {
+    const monthName = monthDate.toLocaleDateString('en-US', {
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const weeks = [];
+    for (let i = 0; i < calendarDays.length; i += 7) {
+      weeks.push(calendarDays.slice(i, i + 7));
+    }
+
+    return (
+      <div key={key} className="schedule-calendar__month-panel">
+        <h3 className="schedule-calendar__month-title">{monthName}</h3>
+
+        {/* Day of week headers */}
+        <div className="schedule-calendar__weekdays" role="row">
+          {DAYS_OF_WEEK.map(day => (
+            <div key={day} className="schedule-calendar__weekday" role="columnheader">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="schedule-calendar__grid" role="grid">
+          {weeks.map((week, weekIndex) => (
+            <div
+              key={`week-${weekIndex}`}
+              className={`schedule-calendar__week-row ${weekIndex % 2 === 1 ? 'schedule-calendar__week-row--striped' : ''}`}
+              role="row"
+            >
+              {week.map((date, index) => {
+                const status = getDayStatus(date);
+                const isSelected = date && isSameDay(date, selectedNight);
+                const clickable = isDayClickable(date, status);
+
+                // Check for transaction on past dates
+                const isPast = date && isDateInPast(date);
+                const transaction = date ? getTransactionForDate(date) : null;
+                const hasTransaction = isPast && transaction;
+                const transactionAmount = hasTransaction ? formatTransactionAmount(transaction) : null;
+
+                // Check for price overlay (shown on user's nights in pricing mode)
+                const priceOverlay = date && status === 'mine' ? getPriceOverlay(date) : null;
+
+                // Check for shared night (co-occupancy)
+                const isShared = date && isInDateArray(date, sharedNights);
+
+                return (
+                  <button
+                    key={`${weekIndex}-${index}`}
+                    type="button"
+                    className={`
+                      schedule-calendar__day
+                      schedule-calendar__day--${status}
+                      ${isSelected ? 'schedule-calendar__day--selected' : ''}
+                      ${clickable ? 'schedule-calendar__day--clickable' : ''}
+                      ${hasTransaction ? 'schedule-calendar__day--has-transaction' : ''}
+                      ${hasTransaction && transaction.direction === 'incoming' ? 'schedule-calendar__day--transaction-incoming' : ''}
+                      ${hasTransaction && transaction.direction === 'outgoing' ? 'schedule-calendar__day--transaction-outgoing' : ''}
+                      ${priceOverlay ? 'schedule-calendar__day--has-price' : ''}
+                      ${isShared ? 'schedule-calendar__day--shared' : ''}
+                    `.trim().replace(/\s+/g, ' ')}
+                    onClick={() => handleDayClick(date)}
+                    disabled={!clickable}
+                    aria-label={date ? getAccessibleLabel(date, status) : undefined}
+                    aria-pressed={isSelected || undefined}
+                    tabIndex={clickable ? 0 : -1}
+                  >
+                    <span className="schedule-calendar__day-number">
+                      {date ? date.getDate() : ''}
+                    </span>
+                    {hasTransaction && (
+                      <span className="schedule-calendar__day-transaction">
+                        {transactionAmount}
+                      </span>
+                    )}
+                    {priceOverlay && (
+                      <span
+                        className="schedule-calendar__price-bar"
+                        data-tier={priceOverlay.tier}
+                      >
+                        ${priceOverlay.price}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -258,7 +441,24 @@ export default function ScheduleCalendar({
         >
           &#8592;
         </button>
-        <h2 className="schedule-calendar__month">{monthName}</h2>
+        <div className="schedule-calendar__legend">
+          <div className="schedule-calendar__legend-item">
+            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--mine" />
+            <span>My Nights</span>
+          </div>
+          <div className="schedule-calendar__legend-item">
+            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--roommate" />
+            <span>Available</span>
+          </div>
+          <div className="schedule-calendar__legend-item">
+            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--adjacent" />
+            <span>Recommended</span>
+          </div>
+          <div className="schedule-calendar__legend-item">
+            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--pending" />
+            <span>Pending</span>
+          </div>
+        </div>
         <button
           type="button"
           className="schedule-calendar__nav"
@@ -269,80 +469,12 @@ export default function ScheduleCalendar({
         </button>
       </div>
 
-      {/* Day of week headers */}
-      <div className="schedule-calendar__weekdays" role="row">
-        {DAYS_OF_WEEK.map(day => (
-          <div key={day} className="schedule-calendar__weekday" role="columnheader">
-            {day}
-          </div>
-        ))}
+      {/* Dual Month Container */}
+      <div className="schedule-calendar__dual-container">
+        {renderMonthPanel(month1, month1Days, 'month1')}
+        {renderMonthPanel(month2, month2Days, 'month2')}
       </div>
 
-      {/* Calendar grid */}
-      <div className="schedule-calendar__grid" role="grid">
-        {calendarDays.map((date, index) => {
-          const status = getDayStatus(date);
-          const isSelected = date && isSameDay(date, selectedNight);
-          const clickable = isDayClickable(date, status);
-
-          // Get price for roommate nights
-          const dateStr = date ? toDateString(date) : null;
-          const showPrice = (status === 'roommate' || status === 'adjacent') && dateStr;
-          const price = showPrice ? roommatePrices.get(dateStr) : null;
-
-          return (
-            <button
-              key={index}
-              type="button"
-              className={`
-                schedule-calendar__day
-                schedule-calendar__day--${status}
-                ${isSelected ? 'schedule-calendar__day--selected' : ''}
-                ${clickable ? 'schedule-calendar__day--clickable' : ''}
-                ${showPrice ? 'schedule-calendar__day--has-price' : ''}
-              `.trim().replace(/\s+/g, ' ')}
-              onClick={() => handleDayClick(date)}
-              disabled={!clickable}
-              aria-label={date ? getAccessibleLabel(date, status) : undefined}
-              aria-pressed={isSelected || undefined}
-              tabIndex={clickable ? 0 : -1}
-            >
-              {date && (
-                <>
-                  <span className="schedule-calendar__day-number">
-                    {date.getDate()}
-                  </span>
-                  {showPrice && price && (
-                    <span className="schedule-calendar__day-price">
-                      ${price}
-                    </span>
-                  )}
-                </>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Legend */}
-      <div className="schedule-calendar__legend">
-        <div className="schedule-calendar__legend-item">
-          <span className="schedule-calendar__legend-color schedule-calendar__legend-color--mine" />
-          <span>My Nights</span>
-        </div>
-        <div className="schedule-calendar__legend-item">
-          <span className="schedule-calendar__legend-color schedule-calendar__legend-color--roommate" />
-          <span>Available</span>
-        </div>
-        <div className="schedule-calendar__legend-item">
-          <span className="schedule-calendar__legend-color schedule-calendar__legend-color--adjacent" />
-          <span>Recommended</span>
-        </div>
-        <div className="schedule-calendar__legend-item">
-          <span className="schedule-calendar__legend-color schedule-calendar__legend-color--pending" />
-          <span>Pending</span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -371,5 +503,16 @@ ScheduleCalendar.propTypes = {
   onNightSelect: PropTypes.func,
   onMonthChange: PropTypes.func,
   currentMonth: PropTypes.instanceOf(Date),
-  roommatePrices: PropTypes.instanceOf(Map),
+  transactionsByDate: PropTypes.objectOf(PropTypes.shape({
+    id: PropTypes.string,
+    amount: PropTypes.number,
+    direction: PropTypes.oneOf(['incoming', 'outgoing']),
+    type: PropTypes.oneOf(['buyout', 'swap', 'offer']),
+    status: PropTypes.oneOf(['complete', 'pending', 'declined', 'cancelled'])
+  })),
+  onSelectTransaction: PropTypes.func,
+  priceOverlays: PropTypes.objectOf(PropTypes.shape({
+    price: PropTypes.number.isRequired,
+    tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
+  }))
 };

@@ -23,6 +23,111 @@ export function processTemplate(
 }
 
 /**
+ * Sanitize template JSON to fix bad control characters in string literals
+ * Uses a comprehensive approach to handle all possible control character issues.
+ *
+ * Strategy:
+ * 1. Find all JSON string literals using a robust regex
+ * 2. For each string literal, properly escape all control characters
+ * 3. Reconstruct the JSON with properly escaped strings
+ */
+function sanitizeTemplateJson(template: string): string {
+  // This comprehensive regex matches JSON string literals, including:
+  // - Simple strings: "value"
+  // - Strings with escaped chars: "value\n"
+  // - Strings with escaped quotes: "value\"quote"
+  // - Empty strings: ""
+  const jsonStringRegex = /"(?:[^"\\]|\\[\s\S])*?"/g;
+
+  return template.replace(jsonStringRegex, (stringLiteral) => {
+    // Don't modify strings that are already correctly formatted
+    // Try to parse it first - if it works, leave it alone
+    try {
+      JSON.parse(stringLiteral);
+      return stringLiteral;
+    } catch {
+      // String is malformed, fix it
+    }
+
+    // Extract content between quotes
+    if (stringLiteral === '""') {
+      return '""';
+    }
+
+    const content = stringLiteral.slice(1, -1);
+
+    // Step 1: Unescape existing escape sequences to get raw content
+    let rawContent = content;
+    try {
+      // Use a temporary string to unescape
+      rawContent = JSON.parse('"' + content + '"');
+    } catch (_e) {
+      // If unescaping fails, process character by character
+      rawContent = '';
+      let i = 0;
+      while (i < content.length) {
+        if (content[i] === '\\' && i + 1 < content.length) {
+          const nextChar = content[i + 1];
+          switch (nextChar) {
+            case 'n': rawContent += '\n'; break;
+            case 'r': rawContent += '\r'; break;
+            case 't': rawContent += '\t'; break;
+            case 'b': rawContent += '\b'; break;
+            case 'f': rawContent += '\f'; break;
+            case '\\': rawContent += '\\'; break;
+            case '"': rawContent += '"'; break;
+            case 'u':
+              // Unicode escape \uXXXX
+              if (i + 5 < content.length) {
+                const hex = content.substring(i + 2, i + 6);
+                rawContent += String.fromCharCode(parseInt(hex, 16));
+                i += 4;
+              }
+              break;
+            default:
+              // Unknown escape, keep as-is
+              rawContent += nextChar;
+          }
+          i += 2;
+        } else {
+          rawContent += content[i];
+          i++;
+        }
+      }
+    }
+
+    // Step 2: Re-escape properly using JSON.stringify
+    try {
+      return JSON.stringify(rawContent);
+    } catch (_e) {
+      // If JSON.stringify fails, manual escape
+      let escaped = '';
+      for (let i = 0; i < rawContent.length; i++) {
+        const c = rawContent[i];
+        const code = c.charCodeAt(0);
+        switch (c) {
+          case '"': escaped += '\\"'; break;
+          case '\\': escaped += '\\\\'; break;
+          case '\n': escaped += '\\n'; break;
+          case '\r': escaped += '\\r'; break;
+          case '\t': escaped += '\\t'; break;
+          case '\b': escaped += '\\b'; break;
+          case '\f': escaped += '\\f'; break;
+          default:
+            if (code < 32) {
+              // Other control characters - use unicode escape
+              escaped += '\\u' + code.toString(16).padStart(4, '0');
+            } else {
+              escaped += c;
+            }
+        }
+      }
+      return '"' + escaped + '"';
+    }
+  });
+}
+
+/**
  * Replace placeholders in a JSON template string
  * Values are escaped to be JSON-safe (handles quotes, newlines, backslashes)
  * Also cleans up JSON syntax issues that result from empty placeholder replacement
@@ -35,7 +140,11 @@ export function processTemplateJson(
   template: string,
   variables: Record<string, string>
 ): string {
-  const processed = processTemplateInternal(template, variables, true);
+  // Pre-process template to fix bad control characters in JSON string literals
+  // This handles cases where the database template has raw newlines or other
+  // control characters that break JSON.parse()
+  const sanitized = sanitizeTemplateJson(template);
+  const processed = processTemplateInternal(sanitized, variables, true);
   // Clean up JSON syntax issues from Bubble-style templates
   return cleanupJsonSyntax(processed);
 }

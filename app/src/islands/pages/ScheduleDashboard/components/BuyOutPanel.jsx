@@ -1,11 +1,8 @@
 /**
  * Buy Out Panel Component
  *
- * Action panel for selected night with flexible offer system:
+ * Action panel for selected night:
  * - Selected night display with readable date format
- * - Notice period context explaining suggested pricing
- * - Offer tier selector (Casual / Fair / I Need This)
- * - Custom price input option
  * - Price breakdown using useFeeCalculation hook
  * - Buy Out button (primary CTA)
  * - Swap Instead link (secondary)
@@ -15,51 +12,16 @@
  * - Success confirmation state
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useFeeCalculation } from '../../../../logic/hooks/useFeeCalculation';
+import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
 const MAX_MESSAGE_LENGTH = 200;
-
-/**
- * Offer tiers for flexible buyout pricing
- * Suggested price is the "Fair" price (100%)
- */
-const OFFER_TIERS = {
-  CASUAL: {
-    id: 'casual',
-    label: 'Casual Check-in',
-    multiplier: 0.7,
-    description: "If they can't, no worries",
-    icon: '💭',
-  },
-  FAIR: {
-    id: 'fair',
-    label: 'Fair Offer',
-    multiplier: 1.0,
-    description: 'Suggested based on notice period',
-    icon: '✓',
-    isDefault: true,
-  },
-  NEED_THIS: {
-    id: 'need_this',
-    label: 'I Really Need This',
-    multiplier: 1.3,
-    description: 'Higher chance of acceptance',
-    icon: '⚡',
-  },
-  CUSTOM: {
-    id: 'custom',
-    label: 'Custom Amount',
-    multiplier: null,
-    description: 'Set your own price',
-    icon: '✏️',
-  },
-};
 
 // ============================================================================
 // HELPERS
@@ -88,51 +50,6 @@ function formatSelectedDate(date) {
 // ============================================================================
 
 /**
- * Empty state when no night is selected
- */
-function EmptyState() {
-  return (
-    <div className="buyout-panel buyout-panel--empty">
-      <div className="buyout-panel__empty-state">
-        <span className="buyout-panel__empty-icon" aria-hidden="true">
-          &#x1F4C5;
-        </span>
-        <h3 className="buyout-panel__empty-title">Select a Night</h3>
-        <p className="buyout-panel__empty-text">
-          Click on an available night in the calendar to request a buyout from your roommate.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Success state after request is sent
- */
-function SuccessState({ roommateName, onDismiss }) {
-  return (
-    <div className="buyout-panel buyout-panel--success">
-      <div className="buyout-panel__success-state">
-        <span className="buyout-panel__success-icon" aria-hidden="true">
-          &#x2713;
-        </span>
-        <h3 className="buyout-panel__success-title">Request Sent!</h3>
-        <p className="buyout-panel__success-text">
-          Waiting for {roommateName}'s response. You'll be notified when they respond.
-        </p>
-        <button
-          type="button"
-          className="buyout-panel__btn buyout-panel__btn--ghost"
-          onClick={onDismiss}
-        >
-          Select Another Night
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/**
  * Loading spinner
  */
 function LoadingSpinner() {
@@ -144,114 +61,9 @@ function LoadingSpinner() {
 }
 
 /**
- * Notice period context display
- * Explains why the suggested price is what it is
- */
-function NoticeContext({ noticePricing }) {
-  if (!noticePricing) return null;
-
-  const { tier, daysUntil, suggestedPrice } = noticePricing;
-
-  return (
-    <div className="buyout-panel__notice-context">
-      <div className="buyout-panel__notice-header">
-        <span className="buyout-panel__notice-icon" aria-hidden="true">📅</span>
-        <span className="buyout-panel__notice-label">{tier.label}</span>
-      </div>
-      <p className="buyout-panel__notice-description">
-        {daysUntil === 0
-          ? "Same-day request"
-          : daysUntil === 1
-          ? "1 day notice"
-          : `${daysUntil} days notice`}
-        {' — '}
-        {tier.description}
-      </p>
-      <div className="buyout-panel__suggested-price">
-        <span className="buyout-panel__suggested-label">Suggested price:</span>
-        <span className="buyout-panel__suggested-amount">${suggestedPrice}</span>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Offer tier selector
- */
-function OfferTierSelector({
-  selectedTier,
-  onTierSelect,
-  suggestedPrice,
-  customAmount,
-  onCustomAmountChange,
-}) {
-  const tiers = Object.values(OFFER_TIERS);
-
-  return (
-    <div className="buyout-panel__offer-tiers">
-      <label className="buyout-panel__offer-label">Your Offer</label>
-      <div className="buyout-panel__tier-options">
-        {tiers.map((tier) => {
-          const isSelected = selectedTier === tier.id;
-          const tierPrice = tier.multiplier
-            ? Math.round(suggestedPrice * tier.multiplier)
-            : customAmount || suggestedPrice;
-
-          return (
-            <button
-              key={tier.id}
-              type="button"
-              className={`buyout-panel__tier-option ${isSelected ? 'buyout-panel__tier-option--selected' : ''}`}
-              onClick={() => onTierSelect(tier.id)}
-              aria-pressed={isSelected}
-            >
-              <span className="buyout-panel__tier-icon" aria-hidden="true">
-                {tier.icon}
-              </span>
-              <span className="buyout-panel__tier-name">{tier.label}</span>
-              <span className="buyout-panel__tier-price">
-                {tier.id === 'custom' ? (
-                  isSelected ? '$...' : 'Custom'
-                ) : (
-                  `$${tierPrice}`
-                )}
-              </span>
-              <span className="buyout-panel__tier-desc">{tier.description}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Custom amount input */}
-      {selectedTier === 'custom' && (
-        <div className="buyout-panel__custom-input">
-          <label htmlFor="custom-amount">Enter your offer amount:</label>
-          <div className="buyout-panel__custom-input-wrapper">
-            <span className="buyout-panel__currency-prefix">$</span>
-            <input
-              id="custom-amount"
-              type="number"
-              min="1"
-              step="1"
-              value={customAmount || ''}
-              onChange={(e) => onCustomAmountChange(Number(e.target.value) || 0)}
-              placeholder={suggestedPrice.toString()}
-              className="buyout-panel__custom-amount-field"
-            />
-          </div>
-          <span className="buyout-panel__custom-hint">
-            Suggested: ${suggestedPrice}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
  * Price breakdown display
  */
-function PriceBreakdown({ feeBreakdown, isCalculating }) {
+function PriceBreakdown({ feeBreakdown, isCalculating, priceLabel = 'Base price' }) {
   if (isCalculating) {
     return (
       <div className="buyout-panel__pricing buyout-panel__pricing--loading">
@@ -268,7 +80,7 @@ function PriceBreakdown({ feeBreakdown, isCalculating }) {
   return (
     <div className="buyout-panel__pricing">
       <div className="buyout-panel__price-row">
-        <span>Base price</span>
+        <span>{priceLabel}</span>
         <span>${feeBreakdown.basePrice.toFixed(2)}</span>
       </div>
       <div className="buyout-panel__price-row">
@@ -284,89 +96,309 @@ function PriceBreakdown({ feeBreakdown, isCalculating }) {
   );
 }
 
+/**
+ * Swap Mode Content - Select a night to offer in exchange
+ */
+function SwapModeContent({
+  mode = 'swap',
+  requestedNight,
+  roommateName,
+  availableNights,
+  selectedOfferNight,
+  onSelectOffer,
+  onSubmit,
+  onBack,
+  onCancel,
+  isSubmitting
+}) {
+  const [message, setMessage] = useState('');
+  const isCounter = mode === 'counter';
+
+  const formattedRequestedDate = formatSelectedDate(requestedNight);
+
+  // Filter user nights to only show upcoming, non-pending nights
+  const selectableNights = (availableNights || [])
+    .filter(night => {
+      const nightDate = new Date(night + 'T12:00:00');
+      return nightDate >= new Date();
+    })
+    .slice(0, 8);
+
+  const handleSubmit = async () => {
+    if (!selectedOfferNight || isSubmitting) return;
+    try {
+      await onSubmit(message);
+    } catch (err) {
+      console.error('Swap request failed:', err);
+    }
+  };
+
+  const formatNightOption = (nightString) => {
+    const date = new Date(nightString + 'T12:00:00');
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  return (
+    <div className="buyout-panel__swap-mode">
+      <h3 className="buyout-panel__heading">
+        {isCounter ? 'Counter with a Swap' : 'Offer a Swap'}
+      </h3>
+
+      {/* Swap Visualization */}
+      <div className="buyout-panel__swap-visual">
+        {/* Their Night (Requesting) */}
+        <div className="buyout-panel__swap-card buyout-panel__swap-card--theirs">
+          <span className="buyout-panel__swap-label">
+            {isCounter ? 'You give' : 'Requesting'}
+          </span>
+          <span className="buyout-panel__swap-date">{formattedRequestedDate}</span>
+          <span className="buyout-panel__swap-owner">
+            {isCounter ? 'Your night' : `${roommateName}'s night`}
+          </span>
+        </div>
+
+        {/* Arrow */}
+        <div className="buyout-panel__swap-arrow" aria-hidden="true">
+          &#x21C4;
+        </div>
+
+        {/* Your Night (Offering) */}
+        <div className={`buyout-panel__swap-card buyout-panel__swap-card--yours ${selectedOfferNight ? 'buyout-panel__swap-card--selected' : ''}`}>
+          <span className="buyout-panel__swap-label">
+            {isCounter ? 'You receive' : 'Offering'}
+          </span>
+          {selectedOfferNight ? (
+            <>
+              <span className="buyout-panel__swap-date">{formatNightOption(selectedOfferNight)}</span>
+              <span className="buyout-panel__swap-owner">
+                {isCounter ? `${roommateName}'s night` : 'Your night'}
+              </span>
+            </>
+          ) : (
+            <span className="buyout-panel__swap-placeholder">Select below</span>
+          )}
+        </div>
+      </div>
+
+      {/* Select Night to Offer */}
+      <div className="buyout-panel__swap-selection">
+        <label className="buyout-panel__swap-selection-label">
+          {isCounter ? 'Select a night to receive:' : 'Select one of your nights to offer:'}
+        </label>
+        <div className="buyout-panel__swap-nights">
+          {selectableNights.length > 0 ? (
+            selectableNights.map(night => (
+              <button
+                key={night}
+                type="button"
+                className={`buyout-panel__swap-night-btn ${selectedOfferNight === night ? 'buyout-panel__swap-night-btn--selected' : ''}`}
+                onClick={() => onSelectOffer(night)}
+                disabled={isSubmitting}
+              >
+                {formatNightOption(night)}
+              </button>
+            ))
+          ) : (
+            <p className="buyout-panel__swap-no-nights">
+              {isCounter ? 'No nights available to swap.' : 'No upcoming nights available to offer.'}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Swap Info */}
+      <div className="buyout-panel__swap-info">
+        <span className="buyout-panel__swap-info-icon" aria-hidden="true">&#x1F4B0;</span>
+        <span>Swaps are free — no platform fee applies.</span>
+      </div>
+
+      {/* Message Input (optional) */}
+      <div className="buyout-panel__message">
+        <label htmlFor="swap-message" className="buyout-panel__message-label">
+          Add a note (optional)
+        </label>
+        <textarea
+          id="swap-message"
+          className="buyout-panel__message-input"
+          placeholder="e.g., Would this date work for you?"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={2}
+          maxLength={200}
+          disabled={isSubmitting}
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="buyout-panel__actions">
+        <button
+          type="button"
+          className="buyout-panel__btn buyout-panel__btn--primary"
+          onClick={handleSubmit}
+          disabled={isSubmitting || !selectedOfferNight}
+        >
+          {isSubmitting ? (
+            <>
+              <LoadingSpinner />
+              Sending Request...
+            </>
+          ) : (
+            isCounter ? 'Send Counter Offer' : 'Send Swap Request'
+          )}
+        </button>
+
+        <button
+          type="button"
+          className="buyout-panel__btn buyout-panel__btn--secondary"
+          onClick={onBack}
+          disabled={isSubmitting}
+        >
+          {isCounter ? 'Back to Request' : 'Back to Buyout'}
+        </button>
+
+        <button
+          type="button"
+          className="buyout-panel__btn buyout-panel__btn--ghost"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
+
+/**
+ * Request Type Toggle Tabs
+ */
+function RequestTypeTabs({ activeType, onTypeChange, disabled }) {
+  const types = [
+    { key: 'buyout', label: 'Buyout', icon: '💰' },
+    { key: 'share', label: 'Share', icon: '👥' },
+    { key: 'swap', label: 'Swap', icon: '🔄' }
+  ];
+
+  return (
+    <div className="buyout-panel__type-tabs" role="tablist">
+      {types.map(({ key, label, icon }) => (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={activeType === key}
+          className={`buyout-panel__type-tab ${activeType === key ? 'buyout-panel__type-tab--active' : ''}`}
+          onClick={() => onTypeChange(key)}
+          disabled={disabled}
+        >
+          <span className="buyout-panel__type-tab-icon">{icon}</span>
+          <span className="buyout-panel__type-tab-label">{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function BuyOutPanel({
   selectedDate,
   roommateName = 'Roommate',
   basePrice,
-  noticePricing, // { suggestedPrice, tier, daysUntil, multiplier }
   onBuyOut,
+  onShareRequest,
   onSwapInstead,
   onCancel,
-  isSubmitting = false
+  isSubmitting = false,
+  compact = false,
+  // Request Type props
+  requestType = 'buyout',
+  onRequestTypeChange,
+  // Swap Mode props
+  isSwapMode = false,
+  isCounterMode = false,
+  swapOfferNight = null,
+  userNights = [],
+  roommateNights = [],
+  counterOriginalNight = null,
+  counterTargetNight = null,
+  onSelectSwapOffer,
+  onSubmitSwapRequest,
+  onCancelSwapMode,
+  onSelectCounterNight,
+  onSubmitCounterRequest,
+  onCancelCounterMode,
+  // Buyout Settings props
+  buyoutPreferences,
+  isBuyoutSettingsOpen = false,
+  isSavingPreferences = false,
+  computedSuggestedPrices = [],
+  onToggleBuyoutSettings,
+  onBuyoutPreferenceChange,
+  onSaveBuyoutPreferences,
+  onResetBuyoutPreferences
 }) {
   const [message, setMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [selectedTier, setSelectedTier] = useState('fair');
-  const [customAmount, setCustomAmount] = useState(0);
+  const [showSwapSuccess, setShowSwapSuccess] = useState(false);
+  const [showShareSuccess, setShowShareSuccess] = useState(false);
 
-  // Calculate the actual offer price based on selected tier
-  const offerPrice = useMemo(() => {
-    const suggested = noticePricing?.suggestedPrice || basePrice || 0;
-
-    if (selectedTier === 'custom') {
-      return customAmount || suggested;
-    }
-
-    const tier = OFFER_TIERS[selectedTier.toUpperCase()];
-    if (!tier || !tier.multiplier) {
-      return suggested;
-    }
-
-    return Math.round(suggested * tier.multiplier);
-  }, [noticePricing, basePrice, selectedTier, customAmount]);
-
-  // Use the fee calculation hook with the offer price (not base price)
+  // Use the fee calculation hook - pass requestType for potential future different fee structures
   const { feeBreakdown, isCalculating, error: feeError } = useFeeCalculation(
-    offerPrice,
-    'date_change',
+    basePrice,
+    requestType === 'share' ? 'share' : 'date_change',
     { autoCalculate: true }
   );
-
-  // No night selected - show empty state
-  if (!selectedDate && !showSuccess) {
-    return <EmptyState />;
-  }
-
-  // Success state after submission
-  if (showSuccess) {
-    return (
-      <SuccessState
-        roommateName={roommateName}
-        onDismiss={() => setShowSuccess(false)}
-      />
-    );
-  }
 
   const formattedDate = formatSelectedDate(selectedDate);
   const remainingChars = MAX_MESSAGE_LENGTH - message.length;
 
+  // Determine which content state to show
+  const showEmpty = !selectedDate && !showSuccess && !showSwapSuccess && !showShareSuccess;
+  const showSuccessState = showSuccess;
+  const showSwapSuccessState = showSwapSuccess;
+  const showShareSuccessState = showShareSuccess;
+  const showActivePanel = !showEmpty && !showSuccessState && !showSwapSuccessState && !showShareSuccessState && !isSwapMode && !isCounterMode;
+  const showSwapPanel = (isSwapMode || isCounterMode) && !showSwapSuccessState;
+
   /**
    * Handle buy out submission
+   * Passes message and calculated totalPrice to parent handler
    */
   const handleBuyOut = async () => {
     if (isSubmitting) return;
 
     try {
-      // Pass offer details to parent
-      await onBuyOut?.({
-        message,
-        offerPrice,
-        offerTier: selectedTier,
-        suggestedPrice: noticePricing?.suggestedPrice || basePrice,
-        noticeDays: noticePricing?.daysUntil,
-      });
+      // Pass totalPrice from feeBreakdown to parent for transaction creation
+      const totalPrice = feeBreakdown?.totalPrice || basePrice || 0;
+      await onBuyOut?.(message, totalPrice);
       setMessage('');
       setShowSuccess(true);
-      // Reset tier selection for next request
-      setSelectedTier('fair');
-      setCustomAmount(0);
     } catch (err) {
       // Error handling is done in parent
       console.error('Buy out failed:', err);
+    }
+  };
+
+  /**
+   * Handle share request submission
+   */
+  const handleShare = async () => {
+    if (isSubmitting) return;
+
+    try {
+      const totalPrice = feeBreakdown?.totalPrice || basePrice || 0;
+      await onShareRequest?.(message, totalPrice);
+      setMessage('');
+      setShowShareSuccess(true);
+    } catch (err) {
+      console.error('Share request failed:', err);
     }
   };
 
@@ -375,6 +407,13 @@ export default function BuyOutPanel({
    */
   const handleSwapInstead = () => {
     onSwapInstead?.();
+  };
+
+  /**
+   * Handle request type tab change
+   */
+  const handleTypeChange = (newType) => {
+    onRequestTypeChange?.(newType);
   };
 
   /**
@@ -396,99 +435,239 @@ export default function BuyOutPanel({
   };
 
   return (
-    <div className="buyout-panel">
-      <h3 className="buyout-panel__heading">Buy Out Night</h3>
-
-      {/* Selected Night */}
-      <div className="buyout-panel__selected">
-        <span className="buyout-panel__date">{formattedDate}</span>
-        <span className="buyout-panel__owner">
-          Currently held by {roommateName}
-        </span>
-      </div>
-
-      {/* Notice Period Context */}
-      <NoticeContext noticePricing={noticePricing} />
-
-      {/* Offer Tier Selector */}
-      {noticePricing && (
-        <OfferTierSelector
-          selectedTier={selectedTier}
-          onTierSelect={setSelectedTier}
-          suggestedPrice={noticePricing.suggestedPrice}
-          customAmount={customAmount}
-          onCustomAmountChange={setCustomAmount}
-        />
-      )}
-
-      {/* Price Breakdown */}
-      <PriceBreakdown feeBreakdown={feeBreakdown} isCalculating={isCalculating} />
-
-      {/* Fee calculation error */}
-      {feeError && (
-        <div className="buyout-panel__error" role="alert">
-          Unable to calculate price. Please try again.
-        </div>
-      )}
-
-      {/* Message Input (optional) */}
-      <div className="buyout-panel__message">
-        <label htmlFor="buyout-message" className="buyout-panel__message-label">
-          Add a note to your request (optional)
-        </label>
-        <textarea
-          id="buyout-message"
-          className="buyout-panel__message-input"
-          placeholder="e.g., I have an early meeting that day..."
-          value={message}
-          onChange={handleMessageChange}
-          rows={2}
-          maxLength={MAX_MESSAGE_LENGTH}
-          disabled={isSubmitting}
-        />
-        <div className="buyout-panel__message-counter">
-          <span className={remainingChars < 20 ? 'buyout-panel__message-counter--low' : ''}>
-            {remainingChars} characters remaining
+    <div className={`buyout-panel ${compact ? 'buyout-panel--compact' : ''} ${showEmpty ? 'buyout-panel--empty' : ''}`}>
+      {/* Empty State Content */}
+      {showEmpty && (
+        <div className="buyout-panel__empty-state">
+          <span className="buyout-panel__empty-icon" aria-hidden="true">
+            &#x1F4C5;
           </span>
+          <h3 className="buyout-panel__empty-title">Select a Night</h3>
+          <p className="buyout-panel__empty-text">
+            Click on an available night in the calendar to request a buyout from your roommate.
+          </p>
         </div>
-      </div>
+      )}
 
-      {/* Actions */}
-      <div className="buyout-panel__actions">
-        <button
-          type="button"
-          className="buyout-panel__btn buyout-panel__btn--primary"
-          onClick={handleBuyOut}
-          disabled={isSubmitting || isCalculating || !feeBreakdown}
-        >
-          {isSubmitting ? (
-            <>
-              <LoadingSpinner />
-              Sending Request...
-            </>
-          ) : (
-            'Buy Out Night'
+      {/* Success State Content (Buyout) */}
+      {showSuccessState && (
+        <div className="buyout-panel__success-state">
+          <span className="buyout-panel__success-icon" aria-hidden="true">
+            &#x2713;
+          </span>
+          <h3 className="buyout-panel__success-title">Request Sent!</h3>
+          <p className="buyout-panel__success-text">
+            Waiting for {roommateName}'s response. You'll be notified when they respond.
+          </p>
+          <button
+            type="button"
+            className="buyout-panel__btn buyout-panel__btn--ghost"
+            onClick={() => setShowSuccess(false)}
+          >
+            Select Another Night
+          </button>
+        </div>
+      )}
+
+      {/* Success State Content (Swap) */}
+      {showSwapSuccessState && (
+        <div className="buyout-panel__success-state buyout-panel__success-state--swap">
+          <span className="buyout-panel__success-icon" aria-hidden="true">
+            &#x21C4;
+          </span>
+          <h3 className="buyout-panel__success-title">Swap Request Sent!</h3>
+          <p className="buyout-panel__success-text">
+            Waiting for {roommateName}'s response. You'll be notified when they respond.
+          </p>
+          <button
+            type="button"
+            className="buyout-panel__btn buyout-panel__btn--ghost"
+            onClick={() => setShowSwapSuccess(false)}
+          >
+            Select Another Night
+          </button>
+        </div>
+      )}
+
+      {/* Success State Content (Share) */}
+      {showShareSuccessState && (
+        <div className="buyout-panel__success-state buyout-panel__success-state--share">
+          <span className="buyout-panel__success-icon" aria-hidden="true">
+            &#x1F91D;
+          </span>
+          <h3 className="buyout-panel__success-title">Share Request Sent!</h3>
+          <p className="buyout-panel__success-text">
+            Waiting for {roommateName}'s response. If accepted, you'll both have access to this night.
+          </p>
+          <button
+            type="button"
+            className="buyout-panel__btn buyout-panel__btn--ghost"
+            onClick={() => setShowShareSuccess(false)}
+          >
+            Select Another Night
+          </button>
+        </div>
+      )}
+
+      {/* Swap Mode Panel */}
+      {showSwapPanel && (
+        <SwapModeContent
+          mode={isCounterMode ? 'counter' : 'swap'}
+          requestedNight={isCounterMode ? counterOriginalNight : selectedDate}
+          roommateName={roommateName}
+          availableNights={isCounterMode ? roommateNights : userNights}
+          selectedOfferNight={isCounterMode ? counterTargetNight : swapOfferNight}
+          onSelectOffer={isCounterMode ? onSelectCounterNight : onSelectSwapOffer}
+          onSubmit={async (msg) => {
+            const result = isCounterMode
+              ? await onSubmitCounterRequest?.(msg)
+              : await onSubmitSwapRequest?.(msg);
+            if (result) {
+              setShowSwapSuccess(true);
+            }
+          }}
+          onBack={isCounterMode ? onCancelCounterMode : onCancelSwapMode}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {/* Active Panel Content (Buyout/Share Mode) */}
+      {showActivePanel && (
+        <>
+          {/* Request Type Toggle Tabs */}
+          <RequestTypeTabs
+            activeType={requestType}
+            onTypeChange={handleTypeChange}
+            disabled={isSubmitting}
+          />
+
+          {/* Mode-specific heading */}
+          <h3 className="buyout-panel__heading">
+            {requestType === 'share' ? 'Share Night' : 'Buy Out Night'}
+          </h3>
+
+          {/* Mode-specific description */}
+          {requestType === 'share' && (
+            <p className="buyout-panel__description">
+              Request to share the space with {roommateName} on this night 👥
+            </p>
           )}
-        </button>
 
-        <button
-          type="button"
-          className="buyout-panel__btn buyout-panel__btn--secondary"
-          onClick={handleSwapInstead}
-          disabled={isSubmitting}
-        >
-          Offer a Swap Instead
-        </button>
+          {/* Content Row - Horizontal layout in compact mode */}
+          <div className={compact ? 'buyout-panel__content-row' : ''}>
+            {/* Selected Night */}
+            <div className="buyout-panel__selected">
+              <span className="buyout-panel__date">{formattedDate}</span>
+              <span className="buyout-panel__owner">
+                Currently held by {roommateName}
+              </span>
+            </div>
 
-        <button
-          type="button"
-          className="buyout-panel__btn buyout-panel__btn--ghost"
-          onClick={handleCancel}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </button>
-      </div>
+            {/* Price Breakdown */}
+            <PriceBreakdown
+              feeBreakdown={feeBreakdown}
+              isCalculating={isCalculating}
+              priceLabel={requestType === 'share' ? 'Share fee' : 'Base price'}
+            />
+          </div>
+
+          {/* Fee calculation error */}
+          {feeError && (
+            <div className="buyout-panel__error" role="alert">
+              Unable to calculate price. Please try again.
+            </div>
+          )}
+
+          {/* Message Input (optional) */}
+          <div className="buyout-panel__message">
+            <label htmlFor="buyout-message" className="buyout-panel__message-label">
+              Add a note to your request (optional)
+            </label>
+            <textarea
+              id="buyout-message"
+              className="buyout-panel__message-input"
+              placeholder={requestType === 'share'
+                ? "e.g., I just need the space for a few hours..."
+                : "e.g., I have an early meeting that day..."}
+              value={message}
+              onChange={handleMessageChange}
+              rows={2}
+              maxLength={MAX_MESSAGE_LENGTH}
+              disabled={isSubmitting}
+            />
+            <div className="buyout-panel__message-counter">
+              <span className={remainingChars < 20 ? 'buyout-panel__message-counter--low' : ''}>
+                {remainingChars} characters remaining
+              </span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="buyout-panel__actions">
+            <button
+              type="button"
+              className="buyout-panel__btn buyout-panel__btn--primary"
+              onClick={requestType === 'share' ? handleShare : handleBuyOut}
+              disabled={isSubmitting || isCalculating || !feeBreakdown}
+            >
+              {isSubmitting ? (
+                <>
+                  <LoadingSpinner />
+                  Sending Request...
+                </>
+              ) : (
+                requestType === 'share' ? 'Send Share Request' : 'Buy Out Night'
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="buyout-panel__btn buyout-panel__btn--ghost"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Settings Drawer Toggle - Always visible */}
+      {buyoutPreferences && (
+        <>
+          <button
+            type="button"
+            className={`buyout-panel__settings-toggle ${isBuyoutSettingsOpen ? 'buyout-panel__settings-toggle--open' : ''}`}
+            onClick={onToggleBuyoutSettings}
+            aria-expanded={isBuyoutSettingsOpen}
+            aria-controls="buyout-settings-drawer"
+          >
+            <span className="buyout-panel__settings-icon" aria-hidden="true">&#x2699;</span>
+            Customize Pricing Preferences
+            <span className="buyout-panel__settings-chevron" aria-hidden="true">
+              {isBuyoutSettingsOpen ? '\u25B2' : '\u25BC'}
+            </span>
+          </button>
+
+          {/* Settings Drawer Content */}
+          <div
+            id="buyout-settings-drawer"
+            className={`buyout-panel__settings-drawer ${isBuyoutSettingsOpen ? 'buyout-panel__settings-drawer--open' : ''}`}
+            aria-hidden={!isBuyoutSettingsOpen}
+          >
+            <BuyoutFormulaSettings
+              preferences={buyoutPreferences}
+              baseNightlyRate={basePrice}
+              onPreferenceChange={onBuyoutPreferenceChange}
+              onSave={onSaveBuyoutPreferences}
+              onReset={onResetBuyoutPreferences}
+              computedPrices={computedSuggestedPrices}
+              isSaving={isSavingPreferences}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -500,18 +679,53 @@ BuyOutPanel.propTypes = {
   ]),
   roommateName: PropTypes.string,
   basePrice: PropTypes.number,
-  noticePricing: PropTypes.shape({
-    suggestedPrice: PropTypes.number,
-    tier: PropTypes.shape({
-      label: PropTypes.string,
-      description: PropTypes.string,
-      multiplier: PropTypes.number,
-    }),
-    daysUntil: PropTypes.number,
-    multiplier: PropTypes.number,
-  }),
   onBuyOut: PropTypes.func,
+  onShareRequest: PropTypes.func,
   onSwapInstead: PropTypes.func,
   onCancel: PropTypes.func,
-  isSubmitting: PropTypes.bool
+  isSubmitting: PropTypes.bool,
+  compact: PropTypes.bool,
+  // Request Type props
+  requestType: PropTypes.oneOf(['buyout', 'share', 'swap']),
+  onRequestTypeChange: PropTypes.func,
+  // Swap Mode props
+  isSwapMode: PropTypes.bool,
+  isCounterMode: PropTypes.bool,
+  swapOfferNight: PropTypes.string,
+  userNights: PropTypes.arrayOf(PropTypes.string),
+  roommateNights: PropTypes.arrayOf(PropTypes.string),
+  counterOriginalNight: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.instanceOf(Date)
+  ]),
+  counterTargetNight: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.instanceOf(Date)
+  ]),
+  onSelectSwapOffer: PropTypes.func,
+  onSubmitSwapRequest: PropTypes.func,
+  onCancelSwapMode: PropTypes.func,
+  onSelectCounterNight: PropTypes.func,
+  onSubmitCounterRequest: PropTypes.func,
+  onCancelCounterMode: PropTypes.func,
+  // Buyout Settings props
+  buyoutPreferences: PropTypes.shape({
+    weekendPremium: PropTypes.number,
+    holidayPremium: PropTypes.number,
+    lastMinuteDiscount: PropTypes.number,
+    demandFactorEnabled: PropTypes.bool,
+    floorPrice: PropTypes.number,
+    ceilingPrice: PropTypes.number
+  }),
+  isBuyoutSettingsOpen: PropTypes.bool,
+  isSavingPreferences: PropTypes.bool,
+  computedSuggestedPrices: PropTypes.arrayOf(PropTypes.shape({
+    date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    suggestedPrice: PropTypes.number,
+    factors: PropTypes.arrayOf(PropTypes.string)
+  })),
+  onToggleBuyoutSettings: PropTypes.func,
+  onBuyoutPreferenceChange: PropTypes.func,
+  onSaveBuyoutPreferences: PropTypes.func,
+  onResetBuyoutPreferences: PropTypes.func
 };

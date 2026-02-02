@@ -637,6 +637,10 @@ export default function ViewSplitLeasePage() {
     setShowPhotoModal(true);
   };
 
+  const handleClosePhotoModal = () => {
+    setShowPhotoModal(false);
+  };
+
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -1018,7 +1022,15 @@ export default function ViewSplitLeasePage() {
           {/* Photo Gallery - Magazine Editorial Style */}
           <section style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
             {listing.photos && listing.photos.length > 0 ? (
-              <PhotoGallery photos={listing.photos} listingName={listing.Name} onPhotoClick={handlePhotoClick} isMobile={isMobile} />
+              <PhotoGallery
+                photos={listing.photos}
+                listingName={listing.Name}
+                onPhotoClick={handlePhotoClick}
+                currentIndex={currentPhotoIndex}
+                isModalOpen={showPhotoModal}
+                onCloseModal={handleClosePhotoModal}
+                isMobile={isMobile}
+              />
             ) : (
               <div style={{
                 width: '100%',
@@ -1063,8 +1075,8 @@ export default function ViewSplitLeasePage() {
                     textDecoration: 'underline',
                     transition: 'color 0.2s'
                   }}
-                  onMouseEnter={(e) => e.target.style.color = COLORS.PRIMARY}
-                  onMouseLeave={(e) => e.target.style.color = COLORS.TEXT_LIGHT}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.color = COLORS.PRIMARY}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.color = COLORS.TEXT_LIGHT}
                 >
                   Located in {listing.resolvedNeighborhood}, {listing.resolvedBorough}
                 </span>
@@ -1514,14 +1526,16 @@ export default function ViewSplitLeasePage() {
                       boxShadow: '0 2px 6px rgba(49, 19, 93, 0.2)'
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.background = COLORS.PRIMARY_HOVER;
-                      e.target.style.transform = 'translateY(-1px)';
-                      e.target.style.boxShadow = '0 3px 8px rgba(49, 19, 93, 0.25)';
+                      const target = e.target as HTMLElement;
+                      target.style.background = COLORS.PRIMARY_HOVER;
+                      target.style.transform = 'translateY(-1px)';
+                      target.style.boxShadow = '0 3px 8px rgba(49, 19, 93, 0.25)';
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.background = COLORS.PRIMARY;
-                      e.target.style.transform = '';
-                      e.target.style.boxShadow = '0 2px 6px rgba(49, 19, 93, 0.2)';
+                      const target = e.target as HTMLElement;
+                      target.style.background = COLORS.PRIMARY;
+                      target.style.transform = '';
+                      target.style.boxShadow = '0 2px 6px rgba(49, 19, 93, 0.2)';
                     }}
                   >
                     <svg
@@ -1676,8 +1690,8 @@ export default function ViewSplitLeasePage() {
                       alignItems: 'center',
                       gap: '0.25rem'
                     }}
-                    onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-                    onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
                   >
                     View full cancellation policy →
                   </a>
@@ -1974,11 +1988,12 @@ export default function ViewSplitLeasePage() {
                       boxSizing: 'border-box'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#7C3AED';
-                      e.target.style.outline = 'none';
+                      const target = e.target as HTMLElement;
+                      target.style.borderColor = '#7C3AED';
+                      target.style.outline = 'none';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = '#E5E7EB';
+                      (e.target as HTMLElement).style.borderColor = '#E5E7EB';
                     }}
                   />
                   <p style={{
@@ -2049,22 +2064,26 @@ export default function ViewSplitLeasePage() {
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.borderColor = '#31135d';
-                  e.target.style.boxShadow = '0 4px 6px rgba(49, 19, 93, 0.1)';
+                  const target = e.target as HTMLElement;
+                  target.style.borderColor = '#31135d';
+                  target.style.boxShadow = '0 4px 6px rgba(49, 19, 93, 0.1)';
                 }}
                 onMouseLeave={(e) => {
                   if (document.activeElement !== e.target) {
-                    e.target.style.borderColor = '#E5E7EB';
-                    e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                    const target = e.target as HTMLElement;
+                    target.style.borderColor = '#E5E7EB';
+                    target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
                   }
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#31135d';
-                  e.target.style.boxShadow = '0 0 0 4px rgba(49, 19, 93, 0.15)';
+                  const target = e.target as HTMLElement;
+                  target.style.borderColor = '#31135d';
+                  target.style.boxShadow = '0 0 0 4px rgba(49, 19, 93, 0.15)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#E5E7EB';
-                  e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                  const target = e.target as HTMLElement;
+                  target.style.borderColor = '#E5E7EB';
+                  target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
                 }}
               >
                 {[6, 7, 8, 9, 10, 12, 13, 16, 17, 20, 22, 26].map(weeks => (
@@ -2148,9 +2167,10 @@ export default function ViewSplitLeasePage() {
           <button
             onClick={(e) => {
               if (scheduleValidation?.valid && pricingBreakdown?.valid && !existingProposalForListing) {
-                e.target.style.transform = 'scale(0.98)';
+                const target = e.target as HTMLElement;
+                target.style.transform = 'scale(0.98)';
                 setTimeout(() => {
-                  e.target.style.transform = '';
+                  target.style.transform = '';
                 }, 150);
                 handleCreateProposal();
               }
@@ -2179,14 +2199,16 @@ export default function ViewSplitLeasePage() {
             }}
             onMouseEnter={(e) => {
               if (!existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid) {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 24px rgba(49, 19, 93, 0.5)';
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(-2px)';
+                target.style.boxShadow = '0 8px 24px rgba(49, 19, 93, 0.5)';
               }
             }}
             onMouseLeave={(e) => {
               if (!existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid) {
-                e.target.style.transform = '';
-                e.target.style.boxShadow = '0 4px 14px rgba(49, 19, 93, 0.4)';
+                const target = e.target as HTMLElement;
+                target.style.transform = '';
+                target.style.boxShadow = '0 4px 14px rgba(49, 19, 93, 0.4)';
               }
             }}
           >
@@ -2211,10 +2233,10 @@ export default function ViewSplitLeasePage() {
                 textDecoration: 'none'
               }}
               onMouseEnter={(e) => {
-                e.target.style.textDecoration = 'underline';
+                (e.target as HTMLElement).style.textDecoration = 'underline';
               }}
               onMouseLeave={(e) => {
-                e.target.style.textDecoration = 'none';
+                (e.target as HTMLElement).style.textDecoration = 'none';
               }}
             >
               View your proposal in Dashboard
@@ -2880,11 +2902,12 @@ export default function ViewSplitLeasePage() {
                             boxSizing: 'border-box'
                           }}
                           onFocus={(e) => {
-                            e.target.style.borderColor = '#7C3AED';
-                            e.target.style.outline = 'none';
+                            const target = e.target as HTMLElement;
+                            target.style.borderColor = '#7C3AED';
+                            target.style.outline = 'none';
                           }}
                           onBlur={(e) => {
-                            e.target.style.borderColor = '#E5E7EB';
+                            (e.target as HTMLElement).style.borderColor = '#E5E7EB';
                           }}
                         />
                         <p style={{

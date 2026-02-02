@@ -3,7 +3,7 @@
  * Extends Deno's built-in assertions with domain-specific helpers.
  */
 
-import { assertEquals } from 'jsr:@std/assert';
+import { assertEquals } from 'jsr:@std/assert@1';
 import type { Result } from '../../_shared/functional/result.ts';
 
 /**

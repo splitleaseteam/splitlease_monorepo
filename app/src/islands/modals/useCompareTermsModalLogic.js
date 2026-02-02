@@ -334,47 +334,34 @@ export function useCompareTermsModalLogic({
       console.log('[useCompareTermsModalLogic] Lease created successfully:', leaseResult.data);
 
       // Step 8: Send notification messages to guest and host
+      // NOTE: Thread lookup moved to Edge Function (uses service_role to bypass RLS)
       try {
-        // Find the thread associated with this proposal
-        const { data: thread, error: threadError } = await supabase
-          .from('thread')
-          .select('_id')
-          .eq('Proposal', proposal._id)
-          .maybeSingle();
+        console.log('[useCompareTermsModalLogic] Sending notification messages via Edge Function...');
 
-        if (threadError) {
-          console.warn('[useCompareTermsModalLogic] Could not find thread for proposal:', threadError);
-        } else if (thread) {
-          console.log('[useCompareTermsModalLogic] Found thread:', thread._id);
-
-          // Send SplitBot messages to both guest and host
-          const messageResponse = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/messages`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
+        const messageResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/messages`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              action: 'send_splitbot_message',
+              payload: {
+                proposalId: proposal._id, // Edge Function will look up thread by proposal
+                ctaName: 'counteroffer_accepted',
+                recipientRole: 'both',
+                customMessageBody: 'Great news! The counteroffer has been accepted. Split Lease will now draft the lease documents. Please allow up to 48 hours for completion.',
               },
-              body: JSON.stringify({
-                action: 'send_splitbot_message',
-                payload: {
-                  threadId: thread._id,
-                  ctaName: 'counteroffer_accepted',
-                  recipientRole: 'both',
-                  customMessageBody: 'Great news! The counteroffer has been accepted. Split Lease will now draft the lease documents. Please allow up to 48 hours for completion.',
-                },
-              }),
-            }
-          );
-
-          const messageResult = await messageResponse.json();
-          if (messageResult.success) {
-            console.log('[useCompareTermsModalLogic] Notification messages sent:', messageResult.data);
-          } else {
-            console.warn('[useCompareTermsModalLogic] Could not send notification messages:', messageResult.error);
+            }),
           }
+        );
+
+        const messageResult = await messageResponse.json();
+        if (messageResult.success) {
+          console.log('[useCompareTermsModalLogic] Notification messages sent:', messageResult.data);
         } else {
-          console.log('[useCompareTermsModalLogic] No thread found for proposal - skipping messages');
+          console.warn('[useCompareTermsModalLogic] Could not send notification messages:', messageResult.error);
         }
       } catch (msgErr) {
         // Non-fatal: log but don't fail the acceptance
@@ -382,15 +369,18 @@ export function useCompareTermsModalLogic({
       }
 
       // Show success state (will display success message in modal)
+      console.log('[useCompareTermsModalLogic] ✅ Acceptance complete, showing success modal');
       setAcceptanceSuccess(true);
+      // NOTE: Do NOT reload here - user must click "Got it!" to acknowledge
 
     } catch (err) {
-      console.error('[useCompareTermsModalLogic] Error accepting counteroffer:', err);
+      console.error('[useCompareTermsModalLogic] ❌ Error accepting counteroffer:', err);
       setError(err.message || 'Failed to accept counteroffer. Please try again.');
     } finally {
       setIsAccepting(false);
+      console.log('[useCompareTermsModalLogic] Acceptance flow finished, isAccepting=false');
     }
-  }, [proposal, onAcceptCounteroffer, onClose]);
+  }, [proposal]);
 
   /**
    * Handle Cancel/Decline Counteroffer

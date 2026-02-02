@@ -240,6 +240,29 @@ export async function handleSend(
   // The template is a SendGrid JSON payload with $$placeholder$$ variables
   console.log('[send-email:send] Step 2/3: Processing template placeholders...');
 
+  // Debug: Log template content around problematic positions
+  // The error mentions position ~3900, let's show content around that area
+  const debugStart = 3850;
+  const debugEnd = 3950;
+  if (templateJsonString.length > debugEnd) {
+    console.log('[send-email:send] === TEMPLATE DEBUG (chars ' + debugStart + '-' + debugEnd + ') ===');
+    const debugContent = templateJsonString.substring(debugStart, debugEnd);
+    console.log('[send-email:send] Debug content:', JSON.stringify(debugContent));
+    // Build character code array without template literal nesting issues
+    const charCodes: string[] = [];
+    for (let i = 0; i < debugContent.length; i++) {
+      const c = debugContent[i];
+      const code = c.charCodeAt(0);
+      const pos = debugStart + i;
+      if (code < 32 || code > 126) {
+        charCodes.push(pos + ':0x' + code.toString(16));
+      } else {
+        charCodes.push(pos + ":'" + c + "'");
+      }
+    }
+    console.log('[send-email:send] Char codes:', charCodes.join(', '));
+  }
+
   // Build the base variables object with explicit payload values
   const baseVariables: Record<string, string> = {
     ...variables,
@@ -281,7 +304,7 @@ export async function handleSend(
   let sendGridBody: Record<string, unknown>;
   try {
     sendGridBody = JSON.parse(processedJsonString);
-  } catch (parseError) {
+  } catch (_parseError) {
     const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
     console.error('[send-email:send] ========== JSON PARSE ERROR ==========');
     console.error('[send-email:send] Error:', errorMessage);

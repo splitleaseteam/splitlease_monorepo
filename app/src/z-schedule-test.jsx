@@ -6,7 +6,6 @@
  * Auth: None (internal test page)
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ZScheduleTestPage from './islands/pages/ZScheduleTestPage/ZScheduleTestPage.jsx';
 

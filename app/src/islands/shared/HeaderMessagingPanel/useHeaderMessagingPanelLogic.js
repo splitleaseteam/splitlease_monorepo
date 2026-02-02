@@ -15,8 +15,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getUserId } from '../../../lib/secureStorage.js';
+import { getUserId, getSessionId } from '../../../lib/secureStorage.js';
 import { useCTAHandler } from '../../pages/MessagingPage/useCTAHandler.js';
+import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
+import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
+import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
+import { clearProposalDraft } from '../CreateProposalFlowV2.jsx';
 
 /**
  * @param {object} options
@@ -63,6 +67,265 @@ export function useHeaderMessagingPanelLogic({
   const hasLoadedThreads = useRef(false);
 
   // ============================================================================
+  // MODAL STATE
+  // ============================================================================
+  const [activeModal, setActiveModal] = useState(null);
+  const [modalContext, setModalContext] = useState(null);
+  const [proposalModalData, setProposalModalData] = useState(null);
+  const [zatConfig, setZatConfig] = useState(null);
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
+  // ============================================================================
+  // MODAL HANDLERS
+  // ============================================================================
+  const handleOpenModal = useCallback(async (modalName, context) => {
+    console.log('[HeaderMessagingPanel] handleOpenModal called:', modalName, context);
+
+    // Special handling for CreateProposalFlowV2 modal
+    if (modalName === 'CreateProposalFlowV2') {
+      console.log('[HeaderMessagingPanel] Opening CreateProposalFlowV2 modal');
+
+      // Get listing data from threadInfo or context
+      const listingId = context?.listingId || threadInfo?.listing_id;
+
+      if (!listingId) {
+        console.error('[HeaderMessagingPanel] No listing ID available for proposal modal');
+        return;
+      }
+
+      try {
+        // Fetch listing details for the proposal modal
+        const { data: listingData, error: listingError } = await supabase
+          .from('listing')
+          .select('*')
+          .eq('_id', listingId)
+          .single();
+
+        if (listingError) {
+          console.error('[HeaderMessagingPanel] Error fetching listing for proposal:', listingError);
+          return;
+        }
+
+        console.log('[HeaderMessagingPanel] Listing data fetched:', listingData?.Name);
+
+        // Set up default days (Mon-Fri, weekdays)
+        const initialDays = [1, 2, 3, 4, 5].map(dayIndex => createDay(dayIndex, true));
+
+        // Calculate minimum move-in date (2 weeks from today)
+        const today = new Date();
+        const twoWeeksFromNow = new Date(today);
+        twoWeeksFromNow.setDate(today.getDate() + 14);
+        const minMoveInDate = twoWeeksFromNow.toISOString().split('T')[0];
+
+        // Calculate smart move-in date based on selected days
+        let smartMoveInDate = minMoveInDate;
+        try {
+          const selectedDayIndices = initialDays.map(d => d.dayOfWeek);
+          smartMoveInDate = calculateNextAvailableCheckIn({
+            selectedDayIndices,
+            minDate: minMoveInDate
+          });
+        } catch (err) {
+          console.error('[HeaderMessagingPanel] Error calculating smart move-in date:', err);
+        }
+
+        // Transform listing data for the modal
+        const transformedListing = {
+          _id: listingData._id,
+          id: listingData._id,
+          Name: listingData.Name || 'Unnamed Listing',
+          title: listingData.Name || 'Unnamed Listing',
+          'Primary Photo': listingData['Primary Photo'],
+          host: null,
+          // Pricing fields
+          '💰Nightly Host Rate for 2 nights': listingData['💰Nightly Host Rate for 2 nights'],
+          '💰Nightly Host Rate for 3 nights': listingData['💰Nightly Host Rate for 3 nights'],
+          '💰Nightly Host Rate for 4 nights': listingData['💰Nightly Host Rate for 4 nights'],
+          '💰Nightly Host Rate for 5 nights': listingData['💰Nightly Host Rate for 5 nights'],
+          '💰Nightly Host Rate for 7 nights': listingData['💰Nightly Host Rate for 7 nights'],
+          '💰Weekly Host Rate': listingData['💰Weekly Host Rate'],
+          '💰Monthly Host Rate': listingData['💰Monthly Host Rate'],
+          '💰Price Override': listingData['💰Price Override'],
+          '💰Cleaning Cost / Maintenance Fee': listingData['💰Cleaning Cost / Maintenance Fee'],
+          '💰Damage Deposit': listingData['💰Damage Deposit'],
+          '💰Unit Markup': listingData['💰Unit Markup'],
+          'rental type': listingData['rental type'],
+          'Weeks offered': listingData['Weeks offered'],
+          // Availability fields
+          ' First Available': listingData[' First Available'],
+          'Last Available': listingData['Last Available'],
+          '# of nights available': listingData['# of nights available'],
+          'Dates - Blocked': listingData['Dates - Blocked'],
+          'Nights Available (numbers)': listingData['Nights Available (numbers)'],
+          'Minimum Nights': listingData['Minimum Nights'],
+          'Maximum Nights': listingData['Maximum Nights'],
+          'Days Available (List of Days)': listingData['Days Available (List of Days)']
+        };
+
+        // Set proposal modal data
+        setProposalModalData({
+          listing: transformedListing,
+          moveInDate: smartMoveInDate,
+          daysSelected: initialDays,
+          nightsSelected: initialDays.length > 0 ? initialDays.length - 1 : 0,
+          reservationSpan: 13, // Default to 13 weeks
+          priceBreakdown: null // Will be calculated by the modal
+        });
+
+        // Set the active modal
+        setActiveModal(modalName);
+        setModalContext(context);
+
+      } catch (err) {
+        console.error('[HeaderMessagingPanel] Error preparing proposal modal:', err);
+      }
+
+      return;
+    }
+
+    // Default handling for other modals
+    setActiveModal(modalName);
+    setModalContext(context);
+  }, [threadInfo]);
+
+  const handleCloseModal = useCallback(() => {
+    setActiveModal(null);
+    setModalContext(null);
+    setProposalModalData(null);
+  }, []);
+
+  // ============================================================================
+  // PROPOSAL SUBMISSION HANDLER
+  // ============================================================================
+  const handleProposalSubmit = async (proposalData) => {
+    console.log('[HeaderMessagingPanel] Proposal submission initiated:', proposalData);
+    setIsSubmittingProposal(true);
+
+    try {
+      const guestId = getSessionId();
+      if (!guestId) {
+        throw new Error('User session not found');
+      }
+
+      // Days are already in JS format (0-6)
+      const daysInJsFormat = proposalData.daysSelectedObjects?.map(d => d.dayOfWeek) || [];
+      const sortedJsDays = [...daysInJsFormat].sort((a, b) => a - b);
+
+      // Check for wrap-around case
+      const hasSaturday = sortedJsDays.includes(6);
+      const hasSunday = sortedJsDays.includes(0);
+      const isWrapAround = hasSaturday && hasSunday && daysInJsFormat.length < 7;
+
+      let checkInDay, checkOutDay, nightsSelected;
+
+      if (isWrapAround) {
+        let gapIndex = -1;
+        for (let i = 0; i < sortedJsDays.length - 1; i++) {
+          if (sortedJsDays[i + 1] - sortedJsDays[i] > 1) {
+            gapIndex = i + 1;
+            break;
+          }
+        }
+
+        if (gapIndex !== -1) {
+          checkInDay = sortedJsDays[gapIndex];
+          checkOutDay = sortedJsDays[gapIndex - 1];
+          const reorderedDays = [...sortedJsDays.slice(gapIndex), ...sortedJsDays.slice(0, gapIndex)];
+          nightsSelected = reorderedDays.slice(0, -1);
+        } else {
+          checkInDay = sortedJsDays[0];
+          checkOutDay = sortedJsDays[sortedJsDays.length - 1];
+          nightsSelected = sortedJsDays.slice(0, -1);
+        }
+      } else {
+        checkInDay = sortedJsDays[0];
+        checkOutDay = sortedJsDays[sortedJsDays.length - 1];
+        nightsSelected = sortedJsDays.slice(0, -1);
+      }
+
+      const reservationSpanWeeks = proposalData.reservationSpan || 13;
+      const reservationSpanText = reservationSpanWeeks === 13
+        ? '13 weeks (3 months)'
+        : reservationSpanWeeks === 20
+          ? '20 weeks (approx. 5 months)'
+          : `${reservationSpanWeeks} weeks`;
+
+      const listingId = proposalModalData?.listing?._id || proposalModalData?.listing?.id;
+      const payload = {
+        guestId: guestId,
+        listingId: listingId,
+        moveInStartRange: proposalData.moveInDate,
+        moveInEndRange: proposalData.moveInDate,
+        daysSelected: daysInJsFormat,
+        nightsSelected: nightsSelected,
+        reservationSpan: reservationSpanText,
+        reservationSpanWeeks: reservationSpanWeeks,
+        checkIn: checkInDay,
+        checkOut: checkOutDay,
+        proposalPrice: proposalData.pricePerNight,
+        fourWeekRent: proposalData.pricePerFourWeeks,
+        hostCompensation: proposalData.pricePerFourWeeks,
+        needForSpace: proposalData.needForSpace || '',
+        aboutMe: proposalData.aboutYourself || '',
+        estimatedBookingTotal: proposalData.totalPrice,
+        specialNeeds: proposalData.hasUniqueRequirements ? proposalData.uniqueRequirements : '',
+        moveInRangeText: proposalData.moveInRange || '',
+        flexibleMoveIn: !!proposalData.moveInRange,
+        fourWeekCompensation: proposalData.pricePerFourWeeks
+      };
+
+      console.log('[HeaderMessagingPanel] Submitting proposal:', payload);
+
+      const { data, error } = await supabase.functions.invoke('proposal', {
+        body: {
+          action: 'create',
+          payload
+        }
+      });
+
+      if (error) {
+        console.error('[HeaderMessagingPanel] Edge Function error:', error);
+        throw new Error(error.message || 'Failed to submit proposal');
+      }
+
+      if (!data?.success) {
+        console.error('[HeaderMessagingPanel] Proposal submission failed:', data?.error);
+        throw new Error(data?.error || 'Failed to submit proposal');
+      }
+
+      console.log('[HeaderMessagingPanel] Proposal submitted successfully:', data);
+
+      // Clear localStorage draft
+      if (listingId) {
+        clearProposalDraft(listingId);
+      }
+
+      // Close modal
+      handleCloseModal();
+
+    } catch (error) {
+      console.error('[HeaderMessagingPanel] Error submitting proposal:', error);
+    } finally {
+      setIsSubmittingProposal(false);
+    }
+  };
+
+  // ============================================================================
+  // LOAD ZAT CONFIG ON MOUNT
+  // ============================================================================
+  useEffect(() => {
+    const loadZatConfig = async () => {
+      try {
+        const config = await fetchZatPriceConfiguration();
+        setZatConfig(config);
+      } catch (error) {
+        console.warn('[HeaderMessagingPanel] Failed to load ZAT config:', error);
+      }
+    };
+    loadZatConfig();
+  }, []);
+
+  // ============================================================================
   // CTA HANDLER (reuse from MessagingPage)
   // ============================================================================
   const user = { bubbleId: userBubbleId };
@@ -70,11 +333,7 @@ export function useHeaderMessagingPanelLogic({
     user,
     selectedThread,
     threadInfo,
-    onOpenModal: (modalName, context) => {
-      // For panel, we close and navigate instead of opening modals
-      onClose?.();
-      // The CTA handler will have already navigated
-    },
+    onOpenModal: handleOpenModal,
   });
 
   // ============================================================================
@@ -615,6 +874,13 @@ export function useHeaderMessagingPanelLogic({
     isOtherUserTyping,
     typingUserName,
 
+    // Modal state
+    activeModal,
+    modalContext,
+    proposalModalData,
+    zatConfig,
+    isSubmittingProposal,
+
     // Handlers
     handleThreadSelect,
     handleBackToList,
@@ -626,5 +892,9 @@ export function useHeaderMessagingPanelLogic({
     // CTA handlers
     handleCTAClick,
     getCTAButtonConfig,
+
+    // Modal handlers
+    handleCloseModal,
+    handleProposalSubmit,
   };
 }
