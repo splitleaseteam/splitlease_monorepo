@@ -374,7 +374,7 @@ async function handleGet(
   if (lease.Guest) {
     const { data } = await _supabase
       .from('user')
-      .select('_id, "Name - Full", "Name - First", "Name - Last", "email as text", "Profile Photo"')
+      .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo"')
       .eq('_id', lease.Guest)
       .single();
     guestData = data;
@@ -384,7 +384,7 @@ async function handleGet(
   if (lease.Host) {
     const { data } = await _supabase
       .from('user')
-      .select('_id, "Name - Full", "Name - First", "Name - Last", "email as text", "Profile Photo"')
+      .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo"')
       .eq('_id', lease.Host)
       .single();
     hostData = data;
@@ -393,11 +393,21 @@ async function handleGet(
   let listingData = null;
   if (lease.Listing) {
     const { data } = await _supabase
-      .from('Listing')
+      .from('listing')
       .select('_id, Name')
       .eq('_id', lease.Listing)
       .single();
     listingData = data;
+  }
+
+  let proposalData = null;
+  if (lease.Proposal) {
+    const { data } = await _supabase
+      .from('proposal')
+      .select('_id, "check in day", "check out day"')
+      .eq('_id', lease.Proposal)
+      .single();
+    proposalData = data;
   }
 
   // Fetch stays
@@ -411,6 +421,7 @@ async function handleGet(
     guest: guestData,
     host: hostData,
     listing: listingData,
+    proposal: proposalData,
     stays: stays || []
   };
 }
@@ -1066,7 +1077,7 @@ async function handleUpdateBookedDates(
   const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
-      'Booked Dates': bookedDates,
+      'List of Booked Dates': bookedDates,
       'Modified Date': new Date().toISOString(),
     })
     .eq('_id', leaseId)
