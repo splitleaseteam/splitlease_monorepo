@@ -1,10 +1,16 @@
 /**
  * Date Change Request Manager - Main Component
- * Manages 4 different views for date change request workflows:
+ * Manages 5 different views for date change request workflows:
  * 1. Create Request - Select dates and request type (calendar view)
- * 2. Request Details - Set price/message before submitting
- * 3. Request Management - Accept/decline interface (receiver only)
- * 4. Success Message - Post-submission feedback
+ * 2. Request Details - Set price/message and review fee breakdown
+ * 3. Payment - Secure payment processing via Stripe
+ * 4. Request Management - Accept/decline interface (receiver only)
+ * 5. Success Message - Post-submission feedback
+ *
+ * Pattern 5: Fee Transparency Integration
+ * - 1.5% split model (0.75% platform + 0.75% landlord)
+ * - Transparent fee display with FeePriceDisplay component
+ * - Secure payment via PaymentStep component
  */
 
 import { useState, useEffect } from 'react';
@@ -18,9 +24,17 @@ import ThrottlingWarningPopup from './ThrottlingWarningPopup.jsx';
 import ThrottlingBlockPopup from './ThrottlingBlockPopup.jsx';
 import SuccessMessage from './SuccessMessage.jsx';
 import './DateChangeRequestManager.css';
+import UrgencyCountdown from '../UrgencyCountdown/components/UrgencyCountdown';
+import '../UrgencyCountdown/styles/UrgencyCountdown.css';
+import analyticsService from '../../../services/analyticsService';
+
+// Pattern 5: Fee Transparency imports
+import { useFeeCalculation } from '../../../logic/hooks/useFeeCalculation';
+import FeePriceDisplay from '../FeePriceDisplay';
+import PaymentStep from '../PaymentStep';
 
 /**
- * ViewState type: 'create' | 'details' | 'manage' | 'success' | ''
+ * ViewState type: 'create' | 'details' | 'payment' | 'manage' | 'success' | ''
  *
  * @param {Object} props
  * @param {Object} props.lease - Lease object containing booking info
@@ -47,11 +61,16 @@ export default function DateChangeRequestManager({
   const [isLoading, setIsLoading] = useState(false);
 
   // Request creation state
-  const [requestType, setRequestType] = useState(null); // 'adding' | 'removing' | 'swapping'
+  const [requestType, setRequestType] = useState('adding'); // Default to 'adding'
   const [dateToAdd, setDateToAdd] = useState(null);
   const [dateToRemove, setDateToRemove] = useState(null);
   const [message, setMessage] = useState('');
   const [pricePercentage, setPricePercentage] = useState(100); // 50-150%
+  const [selectedTier, setSelectedTier] = useState('recommended');
+
+  // Roommate data
+  const [roommateDates, setRoommateDates] = useState([]);
+  const [isRequestTypeExpanded, setIsRequestTypeExpanded] = useState(false);
 
   // Throttling state
   const [throttleStatus, setThrottleStatus] = useState(null);
@@ -61,6 +80,18 @@ export default function DateChangeRequestManager({
 
   // Existing requests state
   const [existingRequests, setExistingRequests] = useState([]);
+
+  // Pattern 5: Fee transparency state
+  const [pendingRequestId, setPendingRequestId] = useState(null);
+
+  // Get monthly rent for fee calculation (use lease's Total Rent or calculate from nightly)
+  const monthlyRent = lease?.['Total Rent'] || (baseNightlyPrice * 30);
+
+  // Pattern 5: Fee calculation hook
+  const { feeBreakdown, isCalculating: isFeeCalculating, error: feeError } = useFeeCalculation(
+    monthlyRent,
+    'date_change'
+  );
 
   // Clear messages after 5 seconds
   useEffect(() => {
@@ -73,14 +104,31 @@ export default function DateChangeRequestManager({
     }
   }, [error, success]);
 
-  // Fetch throttle status and existing requests on mount
+  // Fetch throttle status, existing requests, and roommate dates on mount
   useEffect(() => {
     const userId = currentUser?._id || currentUser?.id;
-    if (userId && lease?._id) {
+    const leaseId = lease?._id || lease?.id;
+    const listingId = lease?.Listing || lease?.listingId;
+
+    if (userId && leaseId) {
       fetchThrottleStatus(userId);
-      fetchExistingRequests(lease._id);
+      fetchExistingRequests(leaseId);
+    }
+
+    if (listingId && leaseId) {
+      fetchRoommateDates(listingId, leaseId);
     }
   }, [currentUser, lease]);
+
+  /**
+   * Fetch roommate's booked dates
+   */
+  const fetchRoommateDates = async (listingId, currentLeaseId) => {
+    const result = await dateChangeRequestService.getRoommateBookedDates(listingId, currentLeaseId);
+    if (result.status === 'success') {
+      setRoommateDates(result.data || []);
+    }
+  };
 
   /**
    * Fetch enhanced throttle status for current user on this lease
@@ -233,7 +281,103 @@ export default function DateChangeRequestManager({
   };
 
   /**
-   * Handle submitting a new date change request
+   * Handle proceeding to payment (Pattern 5: Fee Transparency)
+   * Creates request in pending state and moves to payment view
+   */
+  const handleProceedToPayment = async () => {
+    const validationError = validateRequest();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Create request in pending_payment status
+      const result = await dateChangeRequestService.create({
+        leaseId: lease._id || lease.id,
+        typeOfRequest: requestType,
+        dateAdded: dateToAdd,
+        dateRemoved: dateToRemove,
+        message: message,
+        priceRate: calculateProposedPrice(),
+        percentageOfRegular: pricePercentage,
+        requestedById: getUserId(),
+        receiverId: getReceiverId(),
+        status: 'pending_payment', // Pattern 5: New status for payment flow
+        fee_breakdown: feeBreakdown, // Pattern 5: Store fee breakdown
+      });
+
+      if (result.status === 'success') {
+        const requestId = result.data?.id || result.data?._id;
+        setPendingRequestId(requestId);
+
+        // Track request creation (before payment)
+        analyticsService.trackRequestSubmitted({
+          id: requestId,
+          selectedTier: selectedTier,
+          feeBreakdown: feeBreakdown,
+          transactionType: requestType,
+          isBSBS: false,
+          paymentStatus: 'pending'
+        });
+
+        // Move to payment view
+        setView('payment');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create request');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Handle payment success (Pattern 5: Fee Transparency)
+   */
+  const handlePaymentSuccess = async (paymentData) => {
+    setSuccess('Payment successful! Request submitted.');
+
+    // Track payment completion
+    analyticsService.trackRequestSubmitted({
+      id: pendingRequestId,
+      selectedTier: selectedTier,
+      feeBreakdown: feeBreakdown,
+      transactionType: requestType,
+      isBSBS: false,
+      paymentStatus: 'completed',
+      paymentIntentId: paymentData?.paymentIntentId
+    });
+
+    setView('success');
+    if (onSuccess) {
+      onSuccess({
+        requestId: pendingRequestId,
+        paymentData,
+        feeBreakdown
+      });
+    }
+  };
+
+  /**
+   * Handle payment error (Pattern 5: Fee Transparency)
+   */
+  const handlePaymentError = (err) => {
+    setError(err?.message || 'Payment failed. Please try again.');
+    // Stay on payment view so user can retry
+  };
+
+  /**
+   * Handle going back from payment view
+   */
+  const handleBackFromPayment = () => {
+    setView('details');
+  };
+
+  /**
+   * Handle submitting a new date change request (legacy - for requests without payment)
    */
   const handleSubmitRequest = async () => {
     const validationError = validateRequest();
@@ -256,14 +400,23 @@ export default function DateChangeRequestManager({
         percentageOfRegular: pricePercentage,
         requestedById: getUserId(),
         receiverId: getReceiverId(),
+        fee_breakdown: feeBreakdown, // Pattern 5: Include fee breakdown
       });
 
       if (result.status === 'success') {
         setSuccess('Request submitted successfully!');
         setView('success');
+
+        // Track final submission
+        analyticsService.trackRequestSubmitted({
+          id: result.data?.id || result.data?._id,
+          selectedTier: selectedTier,
+          feeBreakdown: feeBreakdown || { totalPrice: calculateProposedPrice() },
+          transactionType: requestType,
+          isBSBS: false
+        });
+
         if (onSuccess) onSuccess(result.data);
-      } else {
-        throw new Error(result.message || 'Failed to submit request');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit request');
@@ -371,6 +524,16 @@ export default function DateChangeRequestManager({
     onClose();
   };
 
+  /**
+   * Handle price updates from the urgency countdown component
+   */
+  const handleUrgencyPriceUpdate = (newPrice) => {
+    if (baseNightlyPrice > 0) {
+      const newPercentage = Math.round((newPrice / baseNightlyPrice) * 100);
+      setPricePercentage(newPercentage);
+    }
+  };
+
   // Get booked dates from lease
   const bookedDates = lease?.bookedDates || lease?.['List of Booked Dates'] || [];
   const reservationStart = lease?.reservationStart || lease?.['Reservation Period : Start'];
@@ -405,19 +568,37 @@ export default function DateChangeRequestManager({
         {/* Create Request View */}
         {view === 'create' && (
           <div className="dcr-create-container">
-            <h2 className="dcr-title">Request Date Change</h2>
+            <h2 className="dcr-title">
+              {requestType === 'adding'
+                ? 'Request Extra Nights'
+                : requestType === 'removing'
+                ? 'Offer a Night'
+                : 'Swap Nights'}
+            </h2>
             <p className="dcr-description">
-              Select the type of change and choose the date(s) on the calendar.
+              {requestType === 'adding'
+                ? 'Select nights adjacent to your stay to request them from your roommate.'
+                : requestType === 'removing'
+                ? 'Select a night you want to offer back to your roommate.'
+                : 'Select a night to give up and a night to receive.'}
             </p>
 
-            <RequestTypeSelector
-              selectedType={requestType}
-              onTypeSelect={setRequestType}
-              disabled={isLoading}
-            />
+            {dateToAdd && requestType === 'adding' && (
+              <UrgencyCountdown
+                targetDate={dateToAdd}
+                basePrice={baseNightlyPrice}
+                urgencySteepness={2.0}
+                variant="prominent"
+                onUrgencyChange={() => {
+                  /* A/B testing hook */
+                }}
+                onPriceUpdate={handleUrgencyPriceUpdate}
+              />
+            )}
 
             <DateChangeRequestCalendar
               bookedDates={bookedDates}
+              roommateDates={roommateDates}
               reservationStart={reservationStart}
               reservationEnd={reservationEnd}
               requestType={requestType}
@@ -425,14 +606,45 @@ export default function DateChangeRequestManager({
               dateToRemove={dateToRemove}
               onDateSelect={handleDateSelect}
               existingRequests={existingRequests}
-              disabled={!requestType || isLoading}
+              disabled={isLoading}
             />
+
+            {/* Collapsible Request Type Selector */}
+            <div className="dcr-secondary-actions">
+              <button
+                className="dcr-secondary-actions-toggle"
+                onClick={() => setIsRequestTypeExpanded(!isRequestTypeExpanded)}
+                aria-expanded={isRequestTypeExpanded}
+              >
+                {isRequestTypeExpanded ? '▲ Hide other options' : '▾ Offer or Swap a Night'}
+              </button>
+
+              {isRequestTypeExpanded && (
+                <div className="dcr-secondary-options">
+                  <RequestTypeSelector
+                    selectedType={requestType}
+                    onTypeSelect={(type) => {
+                      setRequestType(type);
+                      // Don't auto-collapse, let user explore
+                    }}
+                    disabled={isLoading}
+                    variant="compact"
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="dcr-button-group">
               <button
                 className="dcr-button-primary"
                 onClick={handleProceedToDetails}
-                disabled={!requestType || isLoading || throttleStatus?.isBlocked}
+                disabled={
+                  isLoading ||
+                  throttleStatus?.isBlocked ||
+                  (requestType === 'adding' && !dateToAdd) ||
+                  (requestType === 'removing' && !dateToRemove) ||
+                  (requestType === 'swapping' && (!dateToAdd || !dateToRemove))
+                }
               >
                 Continue
               </button>
@@ -450,11 +662,50 @@ export default function DateChangeRequestManager({
             onMessageChange={setMessage}
             pricePercentage={pricePercentage}
             onPriceChange={setPricePercentage}
+            selectedTier={selectedTier}
+            onTierChange={setSelectedTier}
             baseNightlyPrice={baseNightlyPrice}
             onBack={handleBack}
-            onSubmit={handleSubmitRequest}
+            onSubmit={handleProceedToPayment}
             isLoading={isLoading}
+            feeBreakdown={feeBreakdown}
+            isFeeCalculating={isFeeCalculating}
           />
+        )}
+
+        {/* Payment View - Pattern 5: Fee Transparency */}
+        {view === 'payment' && feeBreakdown && (
+          <div className="dcr-payment-container">
+            <div className="dcr-details-header">
+              <button className="dcr-back-btn" onClick={handleBackFromPayment} aria-label="Go back">
+                ←
+              </button>
+              <h2 className="dcr-title">Complete Payment</h2>
+            </div>
+
+            {/* Fee Display Summary */}
+            <FeePriceDisplay
+              basePrice={monthlyRent}
+              transactionType="date_change"
+            />
+
+            {/* Stripe Payment Form */}
+            <PaymentStep
+              feeBreakdown={feeBreakdown}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+              onBack={handleBackFromPayment}
+              transactionType="date_change"
+              leaseId={lease?._id || lease?.id}
+              userId={getUserId()}
+              metadata={{
+                requestId: pendingRequestId,
+                requestType,
+                dateToAdd: dateToAdd?.toISOString?.() || dateToAdd,
+                dateToRemove: dateToRemove?.toISOString?.() || dateToRemove,
+              }}
+            />
+          </div>
         )}
 
         {/* Request Management View (for receiver) */}

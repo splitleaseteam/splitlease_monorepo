@@ -8,36 +8,47 @@
  * @param {'adding' | 'removing' | 'swapping' | null} props.selectedType - Currently selected type
  * @param {Function} props.onTypeSelect - Handler for type selection
  * @param {boolean} [props.disabled=false] - Whether selector is disabled
+ * @param {'default' | 'compact'} [props.variant='default'] - Visual variant
  */
 export default function RequestTypeSelector({
   selectedType,
   onTypeSelect,
   disabled = false,
+  variant = 'default',
 }) {
   const requestTypes = [
     {
       id: 'adding',
-      label: 'Add Date',
+      label: 'Add Night',
       icon: '➕',
-      description: 'Add a new date to your lease',
+      description: 'Add a new night to your lease',
     },
     {
       id: 'removing',
-      label: 'Remove Date',
+      label: 'Offer Night',
       icon: '➖',
-      description: 'Remove a date from your lease',
+      description: 'Offer a night back to your roommate',
     },
     {
       id: 'swapping',
-      label: 'Swap Dates',
+      label: 'Swap Nights',
       icon: '🔄',
-      description: 'Exchange one date for another',
+      description: 'Exchange one night for another',
     },
   ];
 
+  // In compact mode, we might want to hide "Add Night" if it's the default and we only show alternatives?
+  // Or just show all 3 but smaller.
+  // The spec says: "When expanded: - Offer Night - Swap Nights".
+  // This implies "Add" might not even be needed in the secondary menu if it's the main view.
+  // However, users might want to switch back to Add.
+  // Let's keep all 3 but style them appropriately.
+
   return (
-    <div className="dcr-type-selector">
-      <h3 className="dcr-type-selector-title">What would you like to do?</h3>
+    <div className={`dcr-type-selector ${variant === 'compact' ? 'dcr-type-selector-compact' : ''}`}>
+      {variant === 'default' && (
+        <h3 className="dcr-type-selector-title">What would you like to do?</h3>
+      )}
       <div className="dcr-type-buttons">
         {requestTypes.map((type) => (
           <button
@@ -52,7 +63,7 @@ export default function RequestTypeSelector({
           </button>
         ))}
       </div>
-      {selectedType && (
+      {selectedType && variant === 'default' && (
         <p className="dcr-type-description">
           {requestTypes.find((t) => t.id === selectedType)?.description}
         </p>
