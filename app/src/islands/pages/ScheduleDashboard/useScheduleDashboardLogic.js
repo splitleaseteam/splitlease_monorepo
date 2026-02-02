@@ -160,19 +160,34 @@ export function useScheduleDashboardLogic() {
   // DERIVED STATE
   // -------------------------------------------------------------------------
   const currentUserId = 'current-user';
+
+  const processedTransactions = useMemo(() => {
+    return txn.transactions.map(t => {
+      const isIncoming = t.payeeId === currentUserId;
+      const counterpartyId = isIncoming ? t.payerId : t.payeeId;
+      const counterpartyName = counterpartyId === 'user-456' ? 'Sarah C.' : 'Alex M.';
+      const direction = isIncoming ? 'incoming' : 'outgoing';
+      return {
+        ...t,
+        direction,
+        counterparty: counterpartyName
+      };
+    });
+  }, [txn.transactions, currentUserId]);
+
   const flexibilityScore = useMemo(
-    () => calculateFlexibilityScore(txn.transactions),
-    [txn.transactions]
+    () => calculateFlexibilityScore(processedTransactions),
+    [processedTransactions]
   );
 
   const netFlow = useMemo(
-    () => calculateNetFlow(txn.transactions),
-    [txn.transactions]
+    () => calculateNetFlow(processedTransactions),
+    [processedTransactions]
   );
 
   const transactionsByDate = useMemo(() => {
     const map = {};
-    txn.transactions.forEach((transaction) => {
+    processedTransactions.forEach((transaction) => {
       if (!transaction?.date) return;
       const date = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
       if (Number.isNaN(date.getTime())) return;
@@ -182,7 +197,7 @@ export function useScheduleDashboardLogic() {
       map[dateKey] = transaction;
     });
     return map;
-  }, [txn.transactions]);
+  }, [processedTransactions]);
 
   const responsePatterns = useMemo(() => {
     // Placeholder - would calculate from actual response times
@@ -902,8 +917,8 @@ export function useScheduleDashboardLogic() {
 
     const transactionId = message.requestData.transactionId;
     const transaction = transactionId
-      ? txn.transactions.find((t) => t.id === transactionId)
-      : txn.transactions.find(
+      ? processedTransactions.find((t) => t.id === transactionId)
+      : processedTransactions.find(
           (t) =>
             t.type === message.requestData.type &&
             t.status === 'pending' &&
@@ -981,7 +996,7 @@ export function useScheduleDashboardLogic() {
         type: 'message'
       }
     ]);
-  }, [messaging.messages, txn.transactions, currentUserId, calendar.roommateNights, calendar.userNights, calendar, txn, messaging]);
+  }, [messaging.messages, processedTransactions, currentUserId, calendar.roommateNights, calendar.userNights, calendar, txn, messaging]);
 
   const handleDeclineRequest = useCallback(async (requestId) => {
     const message = messaging.messages.find((msg) => msg.id === requestId);
@@ -989,8 +1004,8 @@ export function useScheduleDashboardLogic() {
 
     const transactionId = message.requestData.transactionId;
     const transaction = transactionId
-      ? txn.transactions.find((t) => t.id === transactionId)
-      : txn.transactions.find(
+      ? processedTransactions.find((t) => t.id === transactionId)
+      : processedTransactions.find(
           (t) =>
             t.type === message.requestData.type &&
             t.status === 'pending' &&
@@ -1022,7 +1037,7 @@ export function useScheduleDashboardLogic() {
         type: 'message'
       }
     ]);
-  }, [messaging.messages, txn.transactions, currentUserId, txn, messaging, calendar]);
+  }, [messaging.messages, processedTransactions, currentUserId, txn, messaging, calendar]);
 
   const handleCounterRequest = useCallback(async (requestId) => {
     const message = messaging.messages.find((msg) => msg.id === requestId);
@@ -1030,8 +1045,8 @@ export function useScheduleDashboardLogic() {
 
     const transactionId = message.requestData.transactionId;
     const transaction = transactionId
-      ? txn.transactions.find((t) => t.id === transactionId)
-      : txn.transactions.find(
+      ? processedTransactions.find((t) => t.id === transactionId)
+      : processedTransactions.find(
           (t) =>
             t.type === message.requestData.type &&
             t.status === 'pending' &&
@@ -1050,7 +1065,7 @@ export function useScheduleDashboardLogic() {
     request.setIsSwapMode(false);
     ui.setIsBuyOutOpen(true);
     calendar.setSelectedNight(null);
-  }, [messaging.messages, txn.transactions, ui, request, calendar]);
+  }, [messaging.messages, processedTransactions, ui, request, calendar]);
 
   const handleSubmitCounter = useCallback(async (messageText) => {
     if (!request.counteringRequestId || !request.counterOriginalNight || !request.counterTargetNight || request.isSubmitting) return;
@@ -1122,7 +1137,7 @@ export function useScheduleDashboardLogic() {
   }, [request.counteringRequestId, request.counterOriginalNight, request.counterTargetNight, request.isSubmitting, roommate, handleDeclineRequest, request, calendar]);
 
   const handleCancelRequest = useCallback(async (transactionId) => {
-    const transaction = txn.transactions.find((t) => t.id === transactionId);
+    const transaction = processedTransactions.find((t) => t.id === transactionId);
     if (!transaction) return;
 
     txn.setTransactions((prev) =>
@@ -1148,7 +1163,7 @@ export function useScheduleDashboardLogic() {
         type: 'message'
       }
     ]);
-  }, [txn.transactions, currentUserId, txn, calendar, messaging]);
+  }, [processedTransactions, currentUserId, txn, calendar, messaging]);
 
   const handleViewTransactionDetails = useCallback(async (transactionId) => {
     console.log('Viewing transaction details:', transactionId);
@@ -1278,7 +1293,7 @@ export function useScheduleDashboardLogic() {
     isSending: messaging.isSending,
 
     // Transaction History
-    transactions: txn.transactions,
+    transactions: processedTransactions,
     activeTransactionId: ui.activeTransactionId,
     transactionsByDate,
 
