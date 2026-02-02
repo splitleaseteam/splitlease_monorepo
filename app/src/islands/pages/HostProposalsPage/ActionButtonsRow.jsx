@@ -128,17 +128,33 @@ export function ActionButtonsRow({
     );
   }
 
-  // Awaiting Rental Application - guest needs to submit rental app before host can review
+  // Awaiting Rental Application - host can accept, modify, or decline (post-BUG-001 fix)
   if (isAwaitingRentalApp(statusKey)) {
     return (
       <div className="hp7-actions-row">
         <button
           type="button"
-          className="hp7-btn hp7-btn-primary"
-          onClick={onRequestRentalApp}
+          className="hp7-btn hp7-btn-success"
+          onClick={onAccept}
         >
-          <Bell size={14} />
-          Send Reminder
+          <Check size={14} />
+          Accept
+        </button>
+        <button
+          type="button"
+          className="hp7-btn hp7-btn-outline"
+          onClick={onModify}
+        >
+          <SlidersHorizontal size={14} />
+          Modify
+        </button>
+        <button
+          type="button"
+          className="hp7-btn hp7-btn-danger"
+          onClick={onDecline}
+        >
+          <X size={14} />
+          Decline
         </button>
         <button
           type="button"
@@ -152,8 +168,11 @@ export function ActionButtonsRow({
     );
   }
 
-  // New proposal - needs review
-  if (statusKey === 'proposal_submitted' || statusKey === 'host_review') {
+  // New proposal - needs review (match full Bubble status text)
+  if (statusKey === 'proposal_submitted' ||
+      statusKey === 'host_review' ||
+      statusKey === 'Host Review' ||
+      statusKey === 'Rental Application Submitted') {
     return (
       <div className="hp7-actions-row">
         <button
@@ -184,8 +203,9 @@ export function ActionButtonsRow({
     );
   }
 
-  // Host counteroffer - waiting for guest
-  if (statusKey === 'host_counteroffer') {
+  // Host counteroffer - waiting for guest (match full Bubble status text)
+  if (statusKey === 'host_counteroffer' ||
+      statusKey === 'Host Counteroffer Submitted / Awaiting Guest Review') {
     return (
       <div className="hp7-actions-row">
         <button
@@ -216,8 +236,12 @@ export function ActionButtonsRow({
     );
   }
 
-  // Accepted - in progress
-  if (statusKey === 'accepted' || statusKey.startsWith('lease_')) {
+  // Accepted - in progress (match full Bubble status text)
+  if (statusKey === 'accepted' ||
+      statusKey.startsWith('lease_') ||
+      statusKey === 'Proposal or Counteroffer Accepted / Drafting Lease Documents' ||
+      statusKey.startsWith('Lease Documents ') ||
+      statusKey === 'Reviewing Documents') {
     return (
       <div className="hp7-actions-row">
         <button
@@ -248,11 +272,14 @@ export function ActionButtonsRow({
     );
   }
 
-  // Declined/Cancelled - remove only
+  // Declined/Cancelled - remove only (match full Bubble status text)
   if (
     statusKey === 'rejected_by_host' ||
     statusKey === 'cancelled_by_guest' ||
-    statusKey === 'cancelled_by_splitlease'
+    statusKey === 'cancelled_by_splitlease' ||
+    statusKey === 'Proposal Rejected by Host' ||
+    statusKey === 'Proposal Cancelled by Guest' ||
+    statusKey === 'Proposal Cancelled by Split Lease'
   ) {
     return (
       <div className="hp7-actions-row">
@@ -268,8 +295,9 @@ export function ActionButtonsRow({
     );
   }
 
-  // Active lease - message only
-  if (statusKey === 'payment_submitted') {
+  // Active lease - message only (match full Bubble status text)
+  if (statusKey === 'payment_submitted' ||
+      statusKey === 'Initial Payment Submitted / Lease activated ') {
     return (
       <div className="hp7-actions-row">
         <button

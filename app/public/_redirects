@@ -160,6 +160,11 @@
 /guest-leases/  /_internal/guest-leases-view  200
 /guest-leases/*  /_internal/guest-leases-view  200
 
+# /schedule → schedule.html
+/schedule  /_internal/schedule-view  200
+/schedule/  /_internal/schedule-view  200
+/schedule/*  /_internal/schedule-view  200
+
 # /host-proposals → host-proposals.html
 /host-proposals  /_internal/host-proposals-view  200
 /host-proposals/  /_internal/host-proposals-view  200

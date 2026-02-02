@@ -1,18 +1,19 @@
 {
-  "sessionId": "e2e-guest-proposal-vm-20260131",
-  "testFlow": "signup-guest-proposal-virtual-meeting",
-  "createdAt": "2026-01-31T00:00:00.000Z",
+  "sessionId": "e2e-proposal-counteroffer-20260202",
+  "testFlow": "custom-proposal-counteroffer",
+  "createdAt": "2026-02-02T00:00:00.000Z",
+  "description": "Test counteroffer and proposal acceptance from both host and guest perspectives. Host account with 2 listings, guest creates proposals on both, test counteroffer flow and acceptance flow with message thread validation.",
   "budget": {
-    "maxTokens": 15000000,
-    "maxTimeMinutes": 300,
-    "maxIterations": 20,
-    "maxBugsToFix": 15
+    "maxTokens": 5000000,
+    "maxTimeMinutes": 120,
+    "maxIterations": 10,
+    "maxBugsToFix": 20
   },
   "targetUrl": "http://localhost:3000/",
   "fixMode": "auto",
   "testAccount": "fresh",
-  "focusArea": "messaging",
-  "customRequirements": "Extra validation of messages being created, check if confirmation messages are created after virtual meeting request sent",
+  "focusArea": "custom",
+  "customRequirements": "Test counteroffer and proposal acceptance. Need host with 2 listings and guest creating proposals on both. Verify messages and threads are created after every proposal action.",
   "dataReset": {
     "enabled": true,
     "targetProject": "splitlease-backend-dev"

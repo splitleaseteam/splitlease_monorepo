@@ -121,7 +121,7 @@ export function useCompareTermsModalLogic({
     const pricePerFourWeeks = nightlyPrice * nightsPerWeek * 4;
     const nightsPerFourWeeks = nightsPerWeek * 4;
     const maintenanceFeePerFourWeeks = maintenanceFee * 4;
-    const initialPayment = totalPrice + cleaningFee + damageDeposit;
+    const initialPayment = pricePerFourWeeks + cleaningFee + damageDeposit;
 
     return {
       moveInStart,
@@ -178,7 +178,7 @@ export function useCompareTermsModalLogic({
     const pricePerFourWeeks = nightlyPrice * nightsPerWeek * 4;
     const nightsPerFourWeeks = nightsPerWeek * 4;
     const maintenanceFeePerFourWeeks = maintenanceFee * 4;
-    const initialPayment = totalPrice + cleaningFee + damageDeposit;
+    const initialPayment = pricePerFourWeeks + cleaningFee + damageDeposit;
 
     return {
       moveInDate,

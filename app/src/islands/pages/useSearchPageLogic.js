@@ -515,7 +515,7 @@ export function useSearchPageLogic() {
             photos = JSON.parse(photosField)
           } catch (_e) {
             // Legacy photo data may have invalid JSON - fall back to empty array
-            photos = []
+            photos = [];
           }
         }
 

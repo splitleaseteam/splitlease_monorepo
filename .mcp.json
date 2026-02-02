@@ -20,7 +20,12 @@
     },
     "supabase": {
       "type": "http",
-      "url": "https://mcp.supabase.com/mcp"
+      "url": "https://mcp.supabase.com/mcp",
+      "env": {
+        "SUPABASE_URL": "https://qzsmhgyojmwvtjmnrdea.supabase.co",
+        "SUPABASE_ANON_KEY": "${SUPABASE_ANON_KEY}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      }
     }
   }
 }

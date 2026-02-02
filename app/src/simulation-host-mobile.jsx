@@ -5,7 +5,6 @@
  * component as an independent React root.
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import SimulationHostMobilePage from './islands/pages/SimulationHostMobilePage.jsx';
 

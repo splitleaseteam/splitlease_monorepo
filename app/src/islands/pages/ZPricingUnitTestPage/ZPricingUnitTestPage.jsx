@@ -287,15 +287,15 @@ export default function ZPricingUnitTestPage() {
 
                 <div className="zput-prorated-grid zput-prorated-grid--horizontal">
                   <div className="zput-prorated-panel zput-prorated-panel--small" onClick={() => logic.handleProratedClick('Monthly')}>
-                    <h4>Monthly</h4>
+                    <h4>Monthly (Prorated/Night)</h4>
                     <div className="prorated-value">{formatCurrency(logic.pricingOutput.monthly.proratedNightlyRate)}</div>
                   </div>
                   <div className="zput-prorated-panel zput-prorated-panel--small" onClick={() => logic.handleProratedClick('Weekly')}>
-                    <h4>Weekly</h4>
+                    <h4>Weekly (Prorated/Night)</h4>
                     <div className="prorated-value">{formatCurrency(logic.pricingOutput.weekly.proratedNightlyRate)}</div>
                   </div>
                   <div className="zput-prorated-panel zput-prorated-panel--small" onClick={() => logic.handleProratedClick('Nightly')}>
-                    <h4>Nightly</h4>
+                    <h4>Nightly (With Markup)</h4>
                     <div className="prorated-value">{formatCurrency(logic.pricingOutput.nightly.withMarkup)}</div>
                   </div>
                 </div>
