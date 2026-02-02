@@ -138,7 +138,10 @@ function normalizeProposal(proposal, normalizedGuest = null) {
 
     // Guest counteroffer detection
     last_modified_by: proposal['last_modified_by'] || proposal.last_modified_by || null,
-    has_guest_counteroffer: proposal.has_guest_counteroffer || false
+    has_guest_counteroffer: proposal.has_guest_counteroffer || false,
+
+    // Rental type (Monthly, Weekly, Nightly)
+    rental_type: proposal['rental type'] || proposal.rental_type || 'nightly'
   };
 }
 
