@@ -91,9 +91,10 @@ function normalizeGuest(guest) {
 function normalizeProposal(proposal, normalizedGuest = null) {
   if (!proposal) return null;
 
-  // Status normalization - handle both string and object formats
+  // Status - preserve original Bubble format (DO NOT normalize to snake_case)
+  // ActionButtonsRow expects exact Bubble status strings for matching
   const rawStatus = proposal.Status || proposal.status || '';
-  const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase().replace(/\s+/g, '_') : rawStatus;
+  const status = typeof rawStatus === 'string' ? rawStatus : rawStatus;
 
   return {
     ...proposal,

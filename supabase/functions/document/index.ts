@@ -6,12 +6,14 @@
  * - list_policies: Get all policy documents from Bubble
  * - list_hosts: Get all host users from Supabase
  * - create: Create a new document sent record
+ * - request_change: Submit a change request for a document
  *
  * This function bridges data from Bubble (policy documents) and Supabase (users, documentssent)
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handleRequestChange } from './handlers/requestChange.ts';
 
 // CORS headers
 const corsHeaders = {
@@ -39,7 +41,7 @@ Deno.serve(async (req: Request) => {
     console.log(`[document] Action: ${action}`);
 
     // Validate action
-    const validActions = ['list_policies', 'list_hosts', 'create'];
+    const validActions = ['list_policies', 'list_hosts', 'create', 'request_change'];
 
     if (!validActions.includes(action)) {
       return errorResponse(`Invalid action: ${action}`, 400);
@@ -58,6 +60,9 @@ Deno.serve(async (req: Request) => {
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
     if (user) {
       console.log(`[document] Authenticated user: ${user.email}`);
+    } else if (!['list_policies', 'list_hosts'].includes(action)) {
+      // request_change and create require authentication
+      throw new Error('Authentication required');
     } else {
       console.log('[document] No auth header - proceeding as internal page request');
     }
@@ -80,6 +85,10 @@ Deno.serve(async (req: Request) => {
 
       case 'create':
         result = await handleCreate(payload, supabase, user);
+        break;
+
+      case 'request_change':
+        result = await handleRequestChange(payload, supabase, user);
         break;
 
       default:
