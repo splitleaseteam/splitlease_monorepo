@@ -787,6 +787,18 @@ function parseArrayField(value) {
 }
 
 function runValidationChecks(listing, pricingList, hostRates) {
+  // Debug logging
+  console.log('[runValidationChecks] Input values:', {
+    listingId: listing?._id,
+    rentalType: listing?.['rental type'],
+    pricingListNull: pricingList === null,
+    pricingListNightlyPrice: pricingList?.nightlyPrice,
+    pricingListStartingNightly: pricingList?.startingNightlyPrice,
+    listingActive: listing?.Active,
+    listingComplete: listing?.Complete,
+    listingApproved: listing?.Approved
+  });
+
   // Check 1: Price exists
   const priceExists = pricingList !== null &&
     (pricingList.nightlyPrice?.some(p => p > 0) || pricingList.startingNightlyPrice > 0);
