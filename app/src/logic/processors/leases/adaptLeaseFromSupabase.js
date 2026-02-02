@@ -89,6 +89,10 @@ export function adaptLeaseFromSupabase(row) {
       checkOutDay: parseInt(row.proposal['check out day']) ?? null,
     } : null,
 
+    // Weekly schedule (from proposal)
+    checkInDay: row.proposal ? parseInt(row.proposal['check in day']) ?? null : null,
+    checkOutDay: row.proposal ? parseInt(row.proposal['check out day']) ?? null : null,
+
     // Stays (from join or JSONB)
     stays: Array.isArray(row.stays)
       ? row.stays.map(adaptStayFromSupabase)
