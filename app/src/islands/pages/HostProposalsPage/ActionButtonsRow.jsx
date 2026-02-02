@@ -128,17 +128,33 @@ export function ActionButtonsRow({
     );
   }
 
-  // Awaiting Rental Application - guest needs to submit rental app before host can review
+  // Awaiting Rental Application - host can accept, modify, or decline (post-BUG-001 fix)
   if (isAwaitingRentalApp(statusKey)) {
     return (
       <div className="hp7-actions-row">
         <button
           type="button"
-          className="hp7-btn hp7-btn-primary"
-          onClick={onRequestRentalApp}
+          className="hp7-btn hp7-btn-success"
+          onClick={onAccept}
         >
-          <Bell size={14} />
-          Send Reminder
+          <Check size={14} />
+          Accept
+        </button>
+        <button
+          type="button"
+          className="hp7-btn hp7-btn-outline"
+          onClick={onModify}
+        >
+          <SlidersHorizontal size={14} />
+          Modify
+        </button>
+        <button
+          type="button"
+          className="hp7-btn hp7-btn-danger"
+          onClick={onDecline}
+        >
+          <X size={14} />
+          Decline
         </button>
         <button
           type="button"
