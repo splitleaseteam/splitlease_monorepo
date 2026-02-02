@@ -984,6 +984,7 @@ async function handleCreateStays(
       'Last Night (night)': new Date(currentEnd.getTime() - 86400000).toISOString(),
       'Stay Status': 'Upcoming',
       'Created Date': new Date().toISOString(),
+      'Modified Date': new Date().toISOString(),
     });
 
     currentStart = new Date(currentEnd);
