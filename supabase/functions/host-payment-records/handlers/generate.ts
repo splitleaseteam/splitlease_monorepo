@@ -74,8 +74,6 @@ export async function handleGenerate(
     .select(`
       _id,
       Proposal,
-      "rental type",
-      "Move In Date",
       "Payment Records SL-Hosts",
       "Total Compensation"
     `)
