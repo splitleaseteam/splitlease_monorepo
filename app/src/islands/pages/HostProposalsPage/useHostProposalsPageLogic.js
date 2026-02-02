@@ -538,7 +538,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           "hc check in day",
           "hc check out day",
           "hc nights per week",
-          "hc house rules"
+          "hc house rules",
+          "rental type"
         `)
         .eq('Listing', listingId)
         .neq('Deleted', true)
