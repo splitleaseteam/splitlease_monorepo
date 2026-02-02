@@ -5,15 +5,15 @@
   "status": "in_progress",
   "progress": {
     "currentIteration": 1,
-    "currentPhase": "phase-1-complete",
-    "currentStep": "1.5"
+    "currentPhase": "phase-2-complete",
+    "currentStep": "2.11"
   },
   "metrics": {
-    "stepsCompleted": 5,
+    "stepsCompleted": 16,
     "stepsFailed": 0,
     "fixAttempts": 0,
     "dataResets": 0,
-    "screenshotsTaken": 4
+    "screenshotsTaken": 8
   },
   "bugs": {
     "found": [],
@@ -46,7 +46,23 @@
         "price": 200
       }
     ],
-    "proposals": [],
-    "messages": []
+    "proposals": [
+      {
+        "id": "1770049694673x84502900247355872",
+        "listingId": "1770049277028x47966089987932344",
+        "status": "accepted",
+        "offerPrice": 140,
+        "counterPrice": 145,
+        "finalPrice": 145,
+        "messageCount": 3
+      }
+    ],
+    "messages": [
+      {
+        "threadId": "1770049695133x59701351699192176",
+        "proposalId": "1770049694673x84502900247355872",
+        "messageCount": 3
+      }
+    ]
   }
 }

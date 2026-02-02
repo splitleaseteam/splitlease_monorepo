@@ -85,6 +85,48 @@ const INITIAL_PRICING_OUTPUT = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// HELPER: Map "Weeks offered" to Guest Pattern dropdown value
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Maps listing's "Weeks offered" field to guest pattern dropdown value
+ * @param {string} weeksOffered - The "Weeks offered" value from listing
+ * @returns {string} One of: 'every-week', 'one-on-off', 'two-on-off', 'one-three-off'
+ */
+function mapWeeksOfferedToGuestPattern(weeksOffered) {
+  if (!weeksOffered) return 'every-week';
+
+  const pattern = weeksOffered.toLowerCase();
+
+  // Match "1on1off" or "1 week on 1 week off" or similar variations
+  if (pattern.includes('1on1off') ||
+      pattern.includes('1 on 1 off') ||
+      (pattern.includes('1 week on') && pattern.includes('1 week off')) ||
+      (pattern.includes('one week on') && pattern.includes('one week off'))) {
+    return 'one-on-off';
+  }
+
+  // Match "2on2off" or "2 week on 2 week off"
+  if (pattern.includes('2on2off') ||
+      pattern.includes('2 on 2 off') ||
+      (pattern.includes('2 week on') && pattern.includes('2 week off')) ||
+      (pattern.includes('two week on') && pattern.includes('two week off'))) {
+    return 'two-on-off';
+  }
+
+  // Match "1on3off" or "1 week on 3 week off"
+  if (pattern.includes('1on3off') ||
+      pattern.includes('1 on 3 off') ||
+      (pattern.includes('1 week on') && pattern.includes('3 week off')) ||
+      (pattern.includes('one week on') && pattern.includes('three week off'))) {
+    return 'one-three-off';
+  }
+
+  // Default: "Every week" or unrecognized patterns
+  return 'every-week';
+}
+
+// ─────────────────────────────────────────────────────────────
 // MAIN HOOK
 // ─────────────────────────────────────────────────────────────
 
@@ -368,12 +410,15 @@ export function useZPricingUnitTestPageLogic() {
   function populateHostRates(listing) {
     if (!listing) {
       setHostRates(INITIAL_HOST_RATES);
+      setGuestPattern('every-week');
       return;
     }
 
+    const weeksOffered = listing['Weeks offered'] || 'Every week';
+
     setHostRates({
       hostCompStyle: listing['rental type'] || '',
-      weeksOffered: listing['Weeks offered'] || 'Every week',
+      weeksOffered,
       rate2Night: parseFloat(listing['💰Nightly Host Rate for 2 nights']) || 0,
       rate3Night: parseFloat(listing['💰Nightly Host Rate for 3 nights']) || 0,
       rate4Night: parseFloat(listing['💰Nightly Host Rate for 4 nights']) || 0,
@@ -390,6 +435,10 @@ export function useZPricingUnitTestPageLogic() {
       nightsPerWeek: listing['# of nights available'] || 7,
       nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) '])
     });
+
+    // Auto-populate Guest Pattern dropdown based on listing's Weeks Offered
+    const mappedPattern = mapWeeksOfferedToGuestPattern(weeksOffered);
+    setGuestPattern(mappedPattern);
   }
 
   // ═══════════════════════════════════════════════════════════
