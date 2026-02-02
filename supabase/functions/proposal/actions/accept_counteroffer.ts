@@ -36,8 +36,13 @@ export async function handleAcceptCounteroffer(
     .single();
 
   if (fetchError) {
-    console.error('[accept_counteroffer] Fetch error:', fetchError);
-    throw new Error(`Failed to fetch proposal: ${fetchError.message}`);
+    console.error('[accept_counteroffer] Fetch error:', {
+      code: fetchError.code,
+      message: fetchError.message,
+      details: fetchError.details,
+      hint: fetchError.hint,
+    });
+    throw new Error(`Failed to fetch proposal: code=${fetchError.code}, message=${fetchError.message}`);
   }
 
   // Accept the counteroffer - move to drafting lease status
@@ -79,8 +84,13 @@ export async function handleAcceptCounteroffer(
     .eq('_id', proposalId);
 
   if (updateError) {
-    console.error('[accept_counteroffer] Update error:', updateError);
-    throw new Error(`Failed to accept counteroffer: ${updateError.message}`);
+    console.error('[accept_counteroffer] Update error:', {
+      code: updateError.code,
+      message: updateError.message,
+      details: updateError.details,
+      hint: updateError.hint,
+    });
+    throw new Error(`Failed to accept counteroffer: code=${updateError.code}, message=${updateError.message}`);
   }
 
   console.log('[accept_counteroffer] Counteroffer accepted for proposal:', proposalId);
@@ -188,29 +198,37 @@ export async function handleAcceptCounteroffer(
     }
 
     if (threadId) {
-      // Message to guest
-      await createSplitBotMessage(supabase, {
-        threadId,
-        messageBody: "You have successfully accepted the host's counteroffer. The lease documents are now being prepared. You'll be notified once they're ready for your review.",
-        callToAction: 'View Lease',
-        visibleToHost: false,
-        visibleToGuest: true,
-        recipientUserId: proposal.Guest
-      });
-      console.log('[accept_counteroffer] Guest message created');
+      // Message to guest (isolated error handling)
+      try {
+        await createSplitBotMessage(supabase, {
+          threadId,
+          messageBody: "You have successfully accepted the host's counteroffer. The lease documents are now being prepared. You'll be notified once they're ready for your review.",
+          callToAction: 'View Lease',
+          visibleToHost: false,
+          visibleToGuest: true,
+          recipientUserId: proposal.Guest
+        });
+        console.log('[accept_counteroffer] Guest message created');
+      } catch (guestMsgError) {
+        console.error('[accept_counteroffer] Failed to notify guest:', guestMsgError instanceof Error ? guestMsgError.message : guestMsgError);
+      }
 
-      // Message to host
-      await createSplitBotMessage(supabase, {
-        threadId,
-        messageBody: "Great news! The guest has accepted your counteroffer. The lease documents are now being prepared.",
-        callToAction: 'View Lease',
-        visibleToHost: true,
-        visibleToGuest: false,
-        recipientUserId: proposal['Host User'] || proposal.Host
-      });
-      console.log('[accept_counteroffer] Host message created');
+      // Message to host (isolated error handling)
+      try {
+        await createSplitBotMessage(supabase, {
+          threadId,
+          messageBody: "Great news! The guest has accepted your counteroffer. The lease documents are now being prepared.",
+          callToAction: 'View Lease',
+          visibleToHost: true,
+          visibleToGuest: false,
+          recipientUserId: proposal['Host User'] || proposal.Host
+        });
+        console.log('[accept_counteroffer] Host message created');
+      } catch (hostMsgError) {
+        console.error('[accept_counteroffer] Failed to notify host:', hostMsgError instanceof Error ? hostMsgError.message : hostMsgError);
+      }
 
-      console.log('[accept_counteroffer] Notification messages created successfully');
+      console.log('[accept_counteroffer] Notification messages processing complete');
     } else {
       console.warn('[accept_counteroffer] All thread lookup strategies failed - messages not sent');
     }
