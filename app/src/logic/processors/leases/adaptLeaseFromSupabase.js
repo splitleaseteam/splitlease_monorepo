@@ -83,7 +83,11 @@ export function adaptLeaseFromSupabase(row) {
     guest: row.guest ? adaptUserFromSupabase(row.guest) : null,
     host: row.host ? adaptUserFromSupabase(row.host) : null,
     listing: row.listing ? adaptListingFromSupabase(row.listing) : null,
-    proposal: row.proposal ? { id: row.proposal._id } : null,
+    proposal: row.proposal ? {
+      id: row.proposal._id,
+      checkInDay: parseInt(row.proposal['check in day']) ?? null,
+      checkOutDay: parseInt(row.proposal['check out day']) ?? null,
+    } : null,
 
     // Stays (from join or JSONB)
     stays: Array.isArray(row.stays)
