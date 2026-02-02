@@ -532,10 +532,10 @@ export default function GuestEditingProposalModal({
   const [view, setView] = useState(initialView)
 
   // Check if proposal is in a state where editing is not allowed
-  const proposalStatus = proposal?.Status?.trim();
-  const isAcceptedOrDrafting = proposalStatus === PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key ||
-    proposalStatus?.includes('Accepted') ||
-    proposalStatus?.includes('Drafting');
+  const proposalStatusText = proposal?.Status?.trim();
+  const isAcceptedOrDrafting = proposalStatusText === PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key ||
+    proposalStatusText?.includes('Accepted') ||
+    proposalStatusText?.includes('Drafting');
 
   // Debug log to verify initial view state
   console.log('[GuestEditingProposalModal] initialView:', initialView, '| current view:', view, '| isAcceptedOrDrafting:', isAcceptedOrDrafting)
