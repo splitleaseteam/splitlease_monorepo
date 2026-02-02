@@ -634,7 +634,7 @@ export function useHeaderMessagingPanelLogic({
           contact_name: contact?.name || 'Split Lease',
           contact_avatar: contact?.avatar,
           property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
-          last_message_preview: thread['~Last Message'] || 'No messages yet',
+          last_message_preview: thread['last_message_preview'] || 'No messages yet',
           last_message_time: lastMessageTime,
           unread_count: unreadCountMap[thread._id] || 0,
           is_with_splitbot: false,
