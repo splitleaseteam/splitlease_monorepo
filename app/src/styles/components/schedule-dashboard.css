@@ -2373,6 +2373,89 @@
 }
 
 /* ============================================================================
+   MINIMALIST TABLE COMPONENTS (Book Refactoring Style)
+   ============================================================================ */
+
+/* Status Dot - Minimal status indicator */
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-dot__indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot--complete {
+  background-color: #22C55E;
+}
+
+.status-dot--pending {
+  background-color: #F59E0B;
+}
+
+.status-dot--declined {
+  background-color: #EF4444;
+}
+
+.status-dot--cancelled {
+  background-color: #9CA3AF;
+}
+
+.status-dot__label {
+  color: #6B7280;
+  font-size: 0.85rem;
+}
+
+/* Type Label - Plain text with subtle icon */
+.type-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.type-label__icon {
+  font-size: 0.9rem;
+}
+
+.type-label__text {
+  font-weight: 500;
+}
+
+/* Chevron indicator for expandable rows */
+.transaction-history__chevron {
+  color: #9CA3AF;
+  font-size: 1.25rem;
+  font-weight: 300;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.transaction-history__chevron--expanded {
+  transform: rotate(90deg);
+}
+
+.transaction-history__td--action {
+  width: 40px;
+  text-align: center;
+}
+
+.transaction-history__th--action {
+  width: 40px;
+}
+
+/* Row hover shows chevron more prominently */
+.transaction-history__row:hover .transaction-history__chevron {
+  color: #6B7280;
+}
+
+/* ============================================================================
    RESPONSIVE (Tablet/Mobile - Phase 2)
    ============================================================================ */
 

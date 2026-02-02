@@ -50,35 +50,38 @@ function formatAmount(amount, direction) {
 // SUB-COMPONENTS
 // ============================================================================
 
-function StatusBadge({ status }) {
-  const statusMap = {
-    complete: { label: 'Complete', icon: '✅' },
-    pending: { label: 'Pending', icon: '⏳' },
-    declined: { label: 'Declined', icon: '❌' },
-    cancelled: { label: 'Cancelled', icon: '🔙' }
+function StatusDot({ status }) {
+  const colorMap = {
+    complete: 'status-dot--complete',
+    pending: 'status-dot--pending',
+    declined: 'status-dot--declined',
+    cancelled: 'status-dot--cancelled'
   };
 
-  const { label, icon } = statusMap[status] || { label: status, icon: '' };
+  const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : '';
 
   return (
-    <span className={`status-badge status-badge--${status}`}>
-      <span className="status-badge__icon">{icon}</span> {label}
+    <span className="status-dot">
+      <span className={`status-dot__indicator ${colorMap[status] || ''}`} />
+      <span className="status-dot__label">{label}</span>
     </span>
   );
 }
 
-function TypeBadge({ type }) {
+function TypeLabel({ type }) {
   const typeMap = {
     buyout: { label: 'Buyout', icon: '💰' },
     swap: { label: 'Swap', icon: '🔄' },
+    share: { label: 'Share', icon: '🤝' },
     offer: { label: 'Offer', icon: '📤' }
   };
 
   const { label, icon } = typeMap[type] || { label: type, icon: '' };
 
   return (
-    <span className={`type-badge type-badge--${type}`}>
-      <span className="type-badge__icon">{icon}</span> {label}
+    <span className="type-label">
+      <span className="type-label__icon">{icon}</span>
+      <span className="type-label__text">{label}</span>
     </span>
   );
 }
@@ -289,7 +292,7 @@ export default function TransactionHistory({
                 >
                   Status{getSortIndicator('status')}
                 </th>
-                <th className="transaction-history__th">Actions</th>
+                <th className="transaction-history__th transaction-history__th--action"></th>
               </tr>
             </thead>
             <tbody>
@@ -305,7 +308,7 @@ export default function TransactionHistory({
                       {formatDate(new Date(txn.date))}
                     </td>
                     <td className="transaction-history__td">
-                      <TypeBadge type={txn.type} />
+                      <TypeLabel type={txn.type} />
                     </td>
                     <td className="transaction-history__td">
                       {formatNights((txn.nights || []).map(n => new Date(n)))}
@@ -314,12 +317,12 @@ export default function TransactionHistory({
                       {formatAmount(txn.amount, txn.direction)}
                     </td>
                     <td className="transaction-history__td">
-                      <StatusBadge status={txn.status} />
+                      <StatusDot status={txn.status} />
                     </td>
-                    <td className="transaction-history__td">
-                      <button className="transaction-history__detail-btn">
-                        {expandedId === txn.id ? 'Hide' : 'Details'}
-                      </button>
+                    <td className="transaction-history__td transaction-history__td--action">
+                      <span className={`transaction-history__chevron ${expandedId === txn.id ? 'transaction-history__chevron--expanded' : ''}`}>
+                        ›
+                      </span>
                     </td>
                   </tr>
                   {expandedId === txn.id && (
@@ -346,7 +349,7 @@ TransactionHistory.propTypes = {
   transactions: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string,
     date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-    type: PropTypes.oneOf(['buyout', 'swap', 'offer']),
+    type: PropTypes.oneOf(['buyout', 'swap', 'share', 'offer']),
     nights: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])),
     amount: PropTypes.number,
     status: PropTypes.oneOf(['complete', 'pending', 'declined', 'cancelled']),

@@ -575,7 +575,15 @@ export function useScheduleDashboardLogic() {
         // Set roommate based on perspective (the OTHER person)
         setRoommate(roommateData);
 
-        if (storedCalendar) {
+        const hasStoredCalendarData = storedCalendar && [
+          storedCalendar.userNights,
+          storedCalendar.roommateNights,
+          storedCalendar.pendingNights,
+          storedCalendar.blockedNights,
+          storedCalendar.sharedNights
+        ].some((list) => Array.isArray(list) && list.length > 0);
+
+        if (hasStoredCalendarData) {
           calendar.setUserNights(storedCalendar.userNights || []);
           calendar.setRoommateNights(storedCalendar.roommateNights || []);
           calendar.setPendingNights(storedCalendar.pendingNights || []);
