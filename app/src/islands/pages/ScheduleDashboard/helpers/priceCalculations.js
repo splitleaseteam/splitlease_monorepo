@@ -8,7 +8,7 @@
  * Maps notice threshold to price multiplier
  */
 export const DEFAULT_NOTICE_MULTIPLIERS = {
-  flexible: 1.0,      // 30+ days notice
+  flexible: 1.0,      // 30+ days notice ("Far Off")
   standard: 1.1,      // 14-30 days notice
   inconvenient: 1.5,  // 7-14 days notice
   disruptive: 2.0,    // <7 days notice

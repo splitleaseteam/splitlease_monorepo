@@ -159,21 +159,28 @@ export function useScheduleDashboardLogic() {
   // -------------------------------------------------------------------------
   // DERIVED STATE
   // -------------------------------------------------------------------------
-  const currentUserId = 'current-user';
+  const currentUserId = currentUserData?._id || 'current-user';
 
   const processedTransactions = useMemo(() => {
-    return txn.transactions.map(t => {
-      const isIncoming = t.payeeId === currentUserId;
-      const counterpartyId = isIncoming ? t.payerId : t.payeeId;
-      const counterpartyName = counterpartyId === 'user-456' ? 'Sarah C.' : 'Alex M.';
-      const direction = isIncoming ? 'incoming' : 'outgoing';
+    return txn.transactions.map((transaction) => {
+      const { payerId, payeeId, type } = transaction;
+      const hasDirection = payerId && payeeId && type !== 'swap';
+      const isIncoming = hasDirection && payeeId === currentUserId;
+      const direction = hasDirection ? (isIncoming ? 'incoming' : 'outgoing') : null;
+      const counterpartyId = hasDirection
+        ? (isIncoming ? payerId : payeeId)
+        : (payerId || payeeId);
+      const counterpartyName = counterpartyId === roommateData?._id
+        ? `${roommateData.firstName} ${roommateData.lastName?.charAt(0) || ''}.`
+        : `${currentUserData.firstName} ${currentUserData.lastName?.charAt(0) || ''}.`;
+
       return {
-        ...t,
+        ...transaction,
         direction,
         counterparty: counterpartyName
       };
     });
-  }, [txn.transactions, currentUserId]);
+  }, [txn.transactions, currentUserId, currentUserData, roommateData]);
 
   const flexibilityScore = useMemo(
     () => calculateFlexibilityScore(processedTransactions),
@@ -502,7 +509,7 @@ export function useScheduleDashboardLogic() {
         } else {
           // Normal: Alex's nights are "my nights", Sarah's are "available"
           [userNightsData, roommateNightsData] = await Promise.all([
-            fetchUserNights(leaseId, 'current-user'),
+            fetchUserNights(leaseId, currentUserData._id),
             fetchRoommateNights(leaseId, MOCK_ROOMMATE._id)
           ]);
         }
