@@ -71,6 +71,18 @@ export async function triggerGuestPaymentRecords(
       }),
     });
 
+    // CHECK HTTP STATUS BEFORE PARSING JSON
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[lease:paymentRecords] Guest payment HTTP error:', response.status, errorText);
+      return {
+        success: false,
+        recordCount: 0,
+        totalAmount: 0,
+        error: `HTTP ${response.status}: ${errorText}`,
+      };
+    }
+
     const result = await response.json();
 
     if (!result.success) {
@@ -153,6 +165,18 @@ export async function triggerHostPaymentRecords(
         },
       }),
     });
+
+    // CHECK HTTP STATUS BEFORE PARSING JSON
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[lease:paymentRecords] Host payment HTTP error:', response.status, errorText);
+      return {
+        success: false,
+        recordCount: 0,
+        totalAmount: 0,
+        error: `HTTP ${response.status}: ${errorText}`,
+      };
+    }
 
     const result = await response.json();
 
