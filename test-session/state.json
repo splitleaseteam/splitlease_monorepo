@@ -4,16 +4,16 @@
   "endedAt": null,
   "status": "in_progress",
   "progress": {
-    "currentIteration": 0,
-    "currentPhase": "initialization",
-    "currentStep": "session-created"
+    "currentIteration": 1,
+    "currentPhase": "phase-1-complete",
+    "currentStep": "1.5"
   },
   "metrics": {
-    "stepsCompleted": 0,
+    "stepsCompleted": 5,
     "stepsFailed": 0,
     "fixAttempts": 0,
     "dataResets": 0,
-    "screenshotsTaken": 0
+    "screenshotsTaken": 4
   },
   "bugs": {
     "found": [],
@@ -22,11 +22,30 @@
     "deferred": []
   },
   "testCredentials": {
-    "host": null,
-    "guest": null
+    "host": {
+      "email": "host_test_1770049063660@example.com",
+      "password": "TestHost123!"
+    },
+    "guest": {
+      "email": "guest_test_1770049457612@example.com",
+      "password": "TestGuest123!"
+    }
   },
   "testData": {
-    "listings": [],
+    "listings": [
+      {
+        "id": "1770049277028x47966089987932344",
+        "title": "Cozy Studio in Manhattan - Test Listing A",
+        "location": "Manhattan",
+        "price": 150
+      },
+      {
+        "id": "1770049404893x91412297566369040",
+        "title": "Spacious Brooklyn Loft - Test Listing B",
+        "location": "Brooklyn",
+        "price": 200
+      }
+    ],
     "proposals": [],
     "messages": []
   }
