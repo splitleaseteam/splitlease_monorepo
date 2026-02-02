@@ -15,6 +15,27 @@ export const MOCK_LEASE = {
   nightlyRate: 175
 };
 
+// Current user mock (needed for perspective swap in dev mode)
+export const MOCK_CURRENT_USER = {
+  _id: 'current-user',
+  firstName: 'Alex',
+  lastName: 'Morgan',
+  avatarUrl: null,
+  email: 'alex.m@example.com',
+  pricingStrategy: {
+    baseRate: 150,
+    noticeMultipliers: {
+      flexible: 1.0,
+      standard: 1.1,
+      inconvenient: 1.5,
+      disruptive: 2.0,
+      emergency: 3.0
+    },
+    edgePreference: 'neutral',
+    sharingWillingness: 'standard'
+  }
+};
+
 export const MOCK_ROOMMATE = {
   _id: 'user-456',
   firstName: 'Sarah',

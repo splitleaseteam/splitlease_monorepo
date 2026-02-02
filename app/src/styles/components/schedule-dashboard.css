@@ -4381,3 +4381,38 @@
     font-size: 12px;
   }
 }
+
+/* ============================================================================
+   PERSPECTIVE BANNER (Dev-only)
+   ============================================================================ */
+
+.schedule-dashboard__perspective-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(90deg, #FDE68A 0%, #FCD34D 100%);
+  color: #92400E;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 0.875rem;
+  border-bottom: 2px solid #F59E0B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.schedule-dashboard__perspective-banner strong {
+  font-weight: 600;
+}
+
+.schedule-dashboard__perspective-banner a {
+  margin-left: 16px;
+  color: #92400E;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.schedule-dashboard__perspective-banner a:hover {
+  color: #78350F;
+}

@@ -28,12 +28,14 @@ import {
 } from './helpers/priceCalculations.js';
 import {
   MOCK_LEASE,
+  MOCK_CURRENT_USER,
   MOCK_ROOMMATE,
   MOCK_MESSAGES,
   MOCK_TRANSACTIONS,
   MOCK_FLEXIBILITY_METRICS,
   MOCK_USER_FLEXIBILITY_SCORE,
 } from './data/mockData.js';
+import { usePerspective } from './hooks/usePerspective.js';
 import {
   fetchUserNights,
   fetchRoommateNights,
@@ -112,9 +114,21 @@ function calculateNetFlow(transactions) {
 
 export function useScheduleDashboardLogic() {
   // -------------------------------------------------------------------------
-  // URL PARAMS
+  // URL PARAMS & PERSPECTIVE (Dev Scaffolding)
   // -------------------------------------------------------------------------
   const [leaseId] = useState(() => getLeaseIdFromUrl());
+  const perspectiveUserId = usePerspective();
+  const isSwappedPerspective = perspectiveUserId !== 'current-user';
+
+  // Determine who is "me" and who is "roommate" based on perspective
+  const [currentUserData, roommateData] = useMemo(() => {
+    if (isSwappedPerspective) {
+      // Viewing as Sarah → Sarah is "current user", Alex is "roommate"
+      return [MOCK_ROOMMATE, MOCK_CURRENT_USER];
+    }
+    // Default: Alex is "current user", Sarah is "roommate"
+    return [MOCK_CURRENT_USER, MOCK_ROOMMATE];
+  }, [isSwappedPerspective]);
 
   // -------------------------------------------------------------------------
   // EXTRACTED HOOKS
@@ -441,7 +455,7 @@ export function useScheduleDashboardLogic() {
   }, [calendar.selectedNight, ui.isBuyOutOpen, ui.setIsBuyOutOpen]);
 
   // -------------------------------------------------------------------------
-  // DATA FETCHING
+  // DATA FETCHING (Perspective-Aware)
   // -------------------------------------------------------------------------
   useEffect(() => {
     async function loadData() {
@@ -454,15 +468,29 @@ export function useScheduleDashboardLogic() {
 
         // Load core data (mock for now)
         setLease(MOCK_LEASE);
-        setRoommate(MOCK_ROOMMATE);
+        // Set roommate based on perspective (the OTHER person)
+        setRoommate(roommateData);
 
-        // Fetch calendar data using stub functions
-        const [userNightsData, roommateNightsData, pendingData, blockedData] = await Promise.all([
-          fetchUserNights(leaseId, 'current-user'),
-          fetchRoommateNights(leaseId, MOCK_ROOMMATE._id),
+        // Fetch calendar data - SWAP based on perspective
+        let userNightsData, roommateNightsData;
+        const [pendingData, blockedData] = await Promise.all([
           fetchPendingRequests(leaseId),
           fetchBlockedDates(leaseId)
         ]);
+
+        if (isSwappedPerspective) {
+          // SWAP: Sarah's nights become "my nights", Alex's nights become "available"
+          [userNightsData, roommateNightsData] = await Promise.all([
+            fetchRoommateNights(leaseId, currentUserData._id),  // Sarah's nights → my nights
+            fetchUserNights(leaseId, roommateData._id)          // Alex's nights → roommate's
+          ]);
+        } else {
+          // Normal: Alex's nights are "my nights", Sarah's are "available"
+          [userNightsData, roommateNightsData] = await Promise.all([
+            fetchUserNights(leaseId, 'current-user'),
+            fetchRoommateNights(leaseId, MOCK_ROOMMATE._id)
+          ]);
+        }
 
         calendar.setUserNights(userNightsData);
         calendar.setRoommateNights(roommateNightsData);
@@ -490,7 +518,7 @@ export function useScheduleDashboardLogic() {
       setError('No lease ID provided');
       setIsLoading(false);
     }
-  }, [leaseId]);
+  }, [leaseId, isSwappedPerspective, currentUserData, roommateData]);
 
   // -------------------------------------------------------------------------
   // ADJACENCY DETECTION
@@ -1195,6 +1223,10 @@ export function useScheduleDashboardLogic() {
     // Core Data
     lease,
     roommate,
+
+    // Perspective (Dev Scaffolding)
+    isSwappedPerspective,
+    currentUserData,
 
     // Calendar (using string dates)
     userNights: calendar.userNights,

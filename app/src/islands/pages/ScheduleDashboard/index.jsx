@@ -142,6 +142,10 @@ export default function ScheduleDashboard() {
     roommatePriceOverlays,
     computedExamples,
 
+    // Perspective (Dev Scaffolding)
+    isSwappedPerspective,
+    currentUserData,
+
     // Handlers
     handleSelectNight,
     handleBuyOut,
@@ -182,6 +186,14 @@ export default function ScheduleDashboard() {
   return (
     <>
       <Header />
+
+      {/* Dev-only perspective indicator */}
+      {import.meta.env.MODE === 'development' && isSwappedPerspective && (
+        <div className="schedule-dashboard__perspective-banner">
+          <span role="img" aria-label="eye">👁️</span> Viewing as: <strong>{currentUserData?.firstName} {currentUserData?.lastName}</strong>
+          <a href={window.location.pathname}>Switch back to your view</a>
+        </div>
+      )}
 
       <main className="schedule-dashboard" role="main">
         {/* Loading State */}
