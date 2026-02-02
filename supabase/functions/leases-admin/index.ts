@@ -354,37 +354,50 @@ async function handleGet(
     throw new Error('leaseId is required');
   }
 
-  // Expand FK references for Guest, Host, Listing
-  const { data, error } = await _supabase
+  // Fetch lease
+  const { data: lease, error } = await _supabase
     .from('bookings_leases')
-    .select(`
-      *,
-      guestData:Guest!inner(
-        _id,
-        "Name - Full",
-        "Name - First",
-        "Name - Last",
-        "email as text",
-        "Profile Photo"
-      ),
-      hostData:Host!inner(
-        _id,
-        "Name - Full",
-        "Name - First",
-        "Name - Last",
-        "email as text",
-        "Profile Photo"
-      ),
-      listingData:Listing!inner(
-        _id,
-        Name
-      )
-    `)
+    .select('*')
     .eq('_id', leaseId)
     .single();
 
   if (error) {
     throw new Error(`Failed to fetch lease: ${error.message}`);
+  }
+
+  if (!lease) {
+    throw new Error('Lease not found');
+  }
+
+  // Fetch related data separately (Guest/Host have no FK constraints)
+  let guestData = null;
+  if (lease.Guest) {
+    const { data } = await _supabase
+      .from('user')
+      .select('_id, "Name - Full", "Name - First", "Name - Last", "email as text", "Profile Photo"')
+      .eq('_id', lease.Guest)
+      .single();
+    guestData = data;
+  }
+
+  let hostData = null;
+  if (lease.Host) {
+    const { data } = await _supabase
+      .from('user')
+      .select('_id, "Name - Full", "Name - First", "Name - Last", "email as text", "Profile Photo"')
+      .eq('_id', lease.Host)
+      .single();
+    hostData = data;
+  }
+
+  let listingData = null;
+  if (lease.Listing) {
+    const { data } = await _supabase
+      .from('Listing')
+      .select('_id, Name')
+      .eq('_id', lease.Listing)
+      .single();
+    listingData = data;
   }
 
   // Fetch stays
@@ -393,7 +406,13 @@ async function handleGet(
     .select('*')
     .eq('Lease', leaseId);
 
-  return { ...data, stays: stays || [] };
+  return {
+    ...lease,
+    guestData,
+    hostData,
+    listingData,
+    stays: stays || []
+  };
 }
 
 /**
