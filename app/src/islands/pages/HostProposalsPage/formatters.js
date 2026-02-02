@@ -138,9 +138,42 @@ export function generateNarrativeText(proposal) {
   const durationWeeks = proposal?.duration_weeks || 0;
   // Use host compensation values ONLY - never guest prices
   const hostTotalCompensation = proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation || 0;
+  const hostMonthlyCompensation = proposal?.['host compensation'] || 0;
+  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
   const nightsPerWeek = nightsSelected.length;
-  // Calculate host nightly compensation from total (total / total_nights)
   const totalNights = nightsPerWeek * durationWeeks;
+  const durationMonths = proposal?.['duration in months'] || Math.round(durationWeeks / 4);
+
+  // Get rental type to determine how to display compensation
+  const rentalType = (proposal?.['rental type'] || proposal?.rental_type || 'nightly').toLowerCase();
+  const isMonthly = rentalType === 'monthly';
+  const isWeekly = rentalType === 'weekly';
+
+  // Calculate rate based on rental type
+  let rateValue = 0;
+  let rateUnit = '';
+  let periodCount = 0;
+  let periodUnit = '';
+
+  if (isMonthly) {
+    rateValue = hostMonthlyCompensation || (host4WeekCompensation > 0 ? host4WeekCompensation : Math.round(hostTotalCompensation / durationMonths));
+    rateUnit = '/mo';
+    periodCount = durationMonths;
+    periodUnit = durationMonths === 1 ? 'month' : 'months';
+  } else if (isWeekly) {
+    rateValue = host4WeekCompensation > 0 ? Math.round(host4WeekCompensation / 4) : Math.round(hostTotalCompensation / durationWeeks);
+    rateUnit = '/wk';
+    periodCount = durationWeeks;
+    periodUnit = durationWeeks === 1 ? 'week' : 'weeks';
+  } else {
+    // Nightly rental
+    rateValue = totalNights > 0 ? Math.round((hostTotalCompensation / totalNights) * 100) / 100 : 0;
+    rateUnit = '/night';
+    periodCount = durationWeeks;
+    periodUnit = 'weeks';
+  }
+
+  // Legacy values for backward compatibility
   const hostNightlyCompensation = totalNights > 0 ? Math.round((hostTotalCompensation / totalNights) * 100) / 100 : 0;
   const weeklyEarnings = hostNightlyCompensation * nightsPerWeek;
 
@@ -175,11 +208,19 @@ export function generateNarrativeText(proposal) {
   const schedule = { text: scheduleText, dayRangeText, nightsPerWeek };
 
   // Pricing paragraph - all values are host compensation (NOT guest prices)
+  // Use rental-type-aware values
   const pricing = {
-    nightlyRate: hostNightlyCompensation,
-    weeklyEarnings,
+    nightlyRate: hostNightlyCompensation, // Legacy, kept for backward compat
+    weeklyEarnings, // Legacy
     total: hostTotalCompensation,
-    weeks: durationWeeks
+    weeks: durationWeeks,
+    // Rental-type-aware values
+    rateValue,
+    rateUnit,
+    periodCount,
+    periodUnit,
+    isMonthly,
+    isWeekly
   };
 
   // Guest context
