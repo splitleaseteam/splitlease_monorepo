@@ -1046,10 +1046,10 @@ async function handleUpdateBookedDates(
     throw new Error('leaseId is required');
   }
 
-  // Get lease details
+  // Get lease with proposal reference
   const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
-    .select('_id, "Reservation Period : Start", "Reservation Period : End"')
+    .select('_id, "Reservation Period : Start", "Reservation Period : End", Proposal')
     .eq('_id', leaseId)
     .single();
 
@@ -1059,18 +1059,57 @@ async function handleUpdateBookedDates(
 
   const startDate = lease['Reservation Period : Start'];
   const endDate = lease['Reservation Period : End'];
+  const proposalId = lease.Proposal;
 
   if (!startDate || !endDate) {
     throw new Error('Lease does not have valid reservation dates');
   }
 
-  // Generate list of booked dates
+  // Get proposal schedule (check-in/check-out days define weekly pattern)
+  let checkInDay = 0; // Default to Sunday
+  let checkOutDay = 6; // Default to Saturday (full week)
+
+  if (proposalId) {
+    const { data: proposal } = await _supabase
+      .from('proposal')
+      .select('"check in day", "check out day"')
+      .eq('_id', proposalId)
+      .single();
+
+    if (proposal) {
+      checkInDay = parseInt(proposal['check in day']) || 0;
+      checkOutDay = parseInt(proposal['check out day']) || 6;
+    }
+  }
+
+  // Generate booked dates based on weekly schedule
   const bookedDates: string[] = [];
   const current = new Date(startDate);
   const end = new Date(endDate);
 
-  while (current <= end) {
-    bookedDates.push(current.toISOString().split('T')[0]);
+  while (current < end) { // Note: < not <= (don't include end date)
+    const dayOfWeek = current.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+    // Check if this day is within the booked schedule
+    let isBooked = false;
+
+    if (checkInDay === checkOutDay) {
+      // Full week (7 nights) - same check-in and check-out day
+      isBooked = true;
+    } else if (checkInDay < checkOutDay) {
+      // Normal case: e.g., Sun (0) to Fri (5) = Sun,Mon,Tue,Wed,Thu nights
+      // Booked if: dayOfWeek >= checkInDay AND dayOfWeek < checkOutDay
+      isBooked = dayOfWeek >= checkInDay && dayOfWeek < checkOutDay;
+    } else {
+      // Wraparound case: e.g., Fri (5) to Tue (2) = Fri,Sat,Sun,Mon nights
+      // Booked if: dayOfWeek >= checkInDay OR dayOfWeek < checkOutDay
+      isBooked = dayOfWeek >= checkInDay || dayOfWeek < checkOutDay;
+    }
+
+    if (isBooked) {
+      bookedDates.push(current.toISOString().split('T')[0]);
+    }
+
     current.setDate(current.getDate() + 1);
   }
 
