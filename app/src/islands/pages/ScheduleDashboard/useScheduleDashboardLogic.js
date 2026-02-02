@@ -55,6 +55,80 @@ import { usePricingStrategy } from './hooks/usePricingStrategy.js';
 // HELPER FUNCTIONS
 // ============================================================================
 
+const STORAGE_KEYS = {
+  messages: 'sl_messages',
+  transactions: 'sl_transactions',
+  calendar: 'sl_calendar'
+};
+
+function parseStoredItem(key) {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.warn(`Invalid ${key} JSON in localStorage, using defaults`);
+    return null;
+  }
+}
+
+function hydrateTransactions(transactions = []) {
+  return transactions.map((transaction) => ({
+    ...transaction,
+    date: transaction.date ? new Date(transaction.date) : transaction.date,
+    nights: (transaction.nights || []).map((night) => new Date(night))
+  }));
+}
+
+function hydrateMessages(messages = []) {
+  return messages.map((message) => ({
+    ...message,
+    timestamp: message.timestamp ? new Date(message.timestamp) : message.timestamp,
+    requestData: message.requestData ? {
+      ...message.requestData,
+      nights: (message.requestData.nights || []).map((night) => new Date(night))
+    } : message.requestData
+  }));
+}
+
+function serializeTransactions(transactions = []) {
+  return transactions.map((transaction) => ({
+    ...transaction,
+    date: transaction.date instanceof Date ? transaction.date.toISOString() : transaction.date,
+    nights: (transaction.nights || []).map((night) => night instanceof Date ? night.toISOString() : night)
+  }));
+}
+
+function serializeMessages(messages = []) {
+  return messages.map((message) => ({
+    ...message,
+    timestamp: message.timestamp instanceof Date ? message.timestamp.toISOString() : message.timestamp,
+    requestData: message.requestData ? {
+      ...message.requestData,
+      nights: (message.requestData.nights || []).map((night) => night instanceof Date ? night.toISOString() : night)
+    } : message.requestData
+  }));
+}
+
+function syncRequestStatuses(messages = [], transactions = []) {
+  return messages.map((message) => {
+    if (message.type !== 'request' || !message.requestData?.transactionId) return message;
+    const transaction = transactions.find((txn) => txn.id === message.requestData.transactionId);
+    if (!transaction?.status) return message;
+    const statusMap = {
+      complete: 'accepted',
+      declined: 'declined',
+      cancelled: 'declined',
+      pending: 'pending'
+    };
+    return {
+      ...message,
+      status: statusMap[transaction.status] || message.status
+    };
+  });
+}
+
 /**
  * Extract leaseId from URL path
  * Route: /schedule/:leaseId
@@ -489,40 +563,58 @@ export function useScheduleDashboardLogic() {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
 
+        const storedMessagesRaw = parseStoredItem(STORAGE_KEYS.messages);
+        const storedTransactionsRaw = parseStoredItem(STORAGE_KEYS.transactions);
+        const storedCalendar = parseStoredItem(STORAGE_KEYS.calendar);
+
+        const storedMessages = storedMessagesRaw ? hydrateMessages(storedMessagesRaw) : [];
+        const storedTransactions = storedTransactionsRaw ? hydrateTransactions(storedTransactionsRaw) : [];
+
         // Load core data (mock for now)
         setLease(MOCK_LEASE);
         // Set roommate based on perspective (the OTHER person)
         setRoommate(roommateData);
 
-        // Fetch calendar data - SWAP based on perspective
-        let userNightsData, roommateNightsData;
-        const [pendingData, blockedData] = await Promise.all([
-          fetchPendingRequests(leaseId),
-          fetchBlockedDates(leaseId)
-        ]);
-
-        if (isSwappedPerspective) {
-          // SWAP: Sarah's nights become "my nights", Alex's nights become "available"
-          [userNightsData, roommateNightsData] = await Promise.all([
-            fetchRoommateNights(leaseId, currentUserData._id),  // Sarah's nights → my nights
-            fetchUserNights(leaseId, roommateData._id)          // Alex's nights → roommate's
-          ]);
+        if (storedCalendar) {
+          calendar.setUserNights(storedCalendar.userNights || []);
+          calendar.setRoommateNights(storedCalendar.roommateNights || []);
+          calendar.setPendingNights(storedCalendar.pendingNights || []);
+          calendar.setBlockedNights(storedCalendar.blockedNights || []);
+          calendar.setSharedNights(storedCalendar.sharedNights || []);
         } else {
-          // Normal: Alex's nights are "my nights", Sarah's are "available"
-          [userNightsData, roommateNightsData] = await Promise.all([
-            fetchUserNights(leaseId, currentUserData._id),
-            fetchRoommateNights(leaseId, MOCK_ROOMMATE._id)
+          // Fetch calendar data - SWAP based on perspective
+          let userNightsData, roommateNightsData;
+          const [pendingData, blockedData] = await Promise.all([
+            fetchPendingRequests(leaseId),
+            fetchBlockedDates(leaseId)
           ]);
+
+          if (isSwappedPerspective) {
+            // SWAP: Sarah's nights become "my nights", Alex's nights become "available"
+            [userNightsData, roommateNightsData] = await Promise.all([
+              fetchRoommateNights(leaseId, currentUserData._id),  // Sarah's nights → my nights
+              fetchUserNights(leaseId, roommateData._id)          // Alex's nights → roommate's
+            ]);
+          } else {
+            // Normal: Alex's nights are "my nights", Sarah's are "available"
+            [userNightsData, roommateNightsData] = await Promise.all([
+              fetchUserNights(leaseId, currentUserData._id),
+              fetchRoommateNights(leaseId, MOCK_ROOMMATE._id)
+            ]);
+          }
+
+          calendar.setUserNights(userNightsData);
+          calendar.setRoommateNights(roommateNightsData);
+          calendar.setPendingNights(pendingData);
+          calendar.setBlockedNights(blockedData);
         }
 
-        calendar.setUserNights(userNightsData);
-        calendar.setRoommateNights(roommateNightsData);
-        calendar.setPendingNights(pendingData);
-        calendar.setBlockedNights(blockedData);
+        // Load messages and transactions (from storage or mock)
+        const baseTransactions = storedTransactions.length > 0 ? storedTransactions : MOCK_TRANSACTIONS;
+        const baseMessages = storedMessages.length > 0 ? storedMessages : MOCK_MESSAGES;
 
-        // Load messages and transactions (mock for now)
-        messaging.setMessages(MOCK_MESSAGES);
-        txn.setTransactions(MOCK_TRANSACTIONS);
+        txn.setTransactions(baseTransactions);
+        messaging.setMessages(syncRequestStatuses(baseMessages, baseTransactions));
 
         // Set initial month to current lease period
         calendar.setCurrentMonth(new Date(2026, 1, 1)); // February 2026 for mock data
@@ -542,6 +634,83 @@ export function useScheduleDashboardLogic() {
       setIsLoading(false);
     }
   }, [leaseId, isSwappedPerspective, currentUserData, roommateData]);
+
+  // -------------------------------------------------------------------------
+  // LOCAL STORAGE SYNC (Single Source of Truth)
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined' || isLoading) return;
+    localStorage.setItem(
+      STORAGE_KEYS.messages,
+      JSON.stringify(serializeMessages(messaging.messages))
+    );
+  }, [messaging.messages, isLoading]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isLoading) return;
+    localStorage.setItem(
+      STORAGE_KEYS.transactions,
+      JSON.stringify(serializeTransactions(txn.transactions))
+    );
+  }, [txn.transactions, isLoading]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || isLoading) return;
+    localStorage.setItem(
+      STORAGE_KEYS.calendar,
+      JSON.stringify({
+        userNights: calendar.userNights,
+        roommateNights: calendar.roommateNights,
+        pendingNights: calendar.pendingNights,
+        blockedNights: calendar.blockedNights,
+        sharedNights: calendar.sharedNights
+      })
+    );
+  }, [
+    calendar.userNights,
+    calendar.roommateNights,
+    calendar.pendingNights,
+    calendar.blockedNights,
+    calendar.sharedNights,
+    isLoading
+  ]);
+
+  useEffect(() => {
+    const handleStorage = (event) => {
+      if (event.storageArea !== localStorage) return;
+      if (!Object.values(STORAGE_KEYS).includes(event.key)) return;
+
+      const storedMessagesRaw = parseStoredItem(STORAGE_KEYS.messages);
+      const storedTransactionsRaw = parseStoredItem(STORAGE_KEYS.transactions);
+      const storedCalendar = parseStoredItem(STORAGE_KEYS.calendar);
+
+      const storedTransactions = storedTransactionsRaw ? hydrateTransactions(storedTransactionsRaw) : null;
+      const storedMessages = storedMessagesRaw ? hydrateMessages(storedMessagesRaw) : null;
+
+      if (storedTransactions) {
+        txn.setTransactions(storedTransactions);
+      }
+
+      if (storedMessages) {
+        const syncedMessages = syncRequestStatuses(
+          storedMessages,
+          storedTransactions || txn.transactions
+        );
+        messaging.setMessages(syncedMessages);
+      }
+
+      if (storedCalendar) {
+        calendar.setUserNights(storedCalendar.userNights || []);
+        calendar.setRoommateNights(storedCalendar.roommateNights || []);
+        calendar.setPendingNights(storedCalendar.pendingNights || []);
+        calendar.setBlockedNights(storedCalendar.blockedNights || []);
+        calendar.setSharedNights(storedCalendar.sharedNights || []);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [calendar, messaging, txn]);
 
   // -------------------------------------------------------------------------
   // ADJACENCY DETECTION
@@ -1171,16 +1340,27 @@ export function useScheduleDashboardLogic() {
       calendar.setPendingNights((prev) => prev.filter((night) => !nightStrings.includes(night)));
     }
 
-    messaging.setMessages((prev) => [
-      ...prev,
-      {
-        id: `msg-${Date.now()}`,
-        senderId: currentUserId,
-        text: 'You cancelled the request.',
-        timestamp: new Date(),
-        type: 'message'
-      }
-    ]);
+    messaging.setMessages((prev) => {
+      const updated = prev.map((msg) =>
+        msg.requestData?.transactionId === transactionId
+          ? { ...msg, status: 'declined' }
+          : msg
+      );
+      return [
+        ...updated,
+        {
+          id: `msg-${Date.now()}`,
+          type: 'system',
+          text: 'Request cancelled.',
+          timestamp: new Date(),
+          requestData: {
+            type: transaction.type,
+            nights: transaction.nights,
+            transactionId: transaction.id
+          }
+        }
+      ];
+    });
   }, [processedTransactions, currentUserId, txn, calendar, messaging]);
 
   const handleViewTransactionDetails = useCallback(async (transactionId) => {
