@@ -201,18 +201,20 @@ export function HostEditingProposal({
     return dateChanged || weeksChanged || scheduleChanged || rulesChanged
   }, [proposal, listing, availableHouseRules, editedMoveInDate, editedWeeks, editedCheckInDay, editedCheckOutDay, editedHouseRules, houseRulesInitialized])
 
-  // Calculate host compensation from guest price (hosts earn ~85% of guest price)
-  // The database "Total Compensation (proposal - host)" field can be incorrect,
-  // so we calculate from guest nightly price which is the source of truth
+  // Calculate host compensation using actual database values (not 85% estimate)
+  // Get original values first to derive the actual host nightly rate
   const originalNightsPerWeek = extractNightsSelected(proposal).length
   const originalWeeksValue = extractReservationSpanWeeks(proposal)
   const originalTotalNights = originalNightsPerWeek * originalWeeksValue
 
-  // Get guest nightly price (source of truth) and calculate host compensation (85%)
-  const guestNightlyPrice = getProposalValue(proposal, 'proposalNightlyPrice', 0) ||
-                            getProposalValue(proposal, 'proposal nightly price', 0) || 100
-  const HOST_SHARE_PERCENTAGE = 0.85 // Host receives 85% of guest price
-  const nightlyCompensation = guestNightlyPrice * HOST_SHARE_PERCENTAGE
+  // Use actual Total Compensation from database - this is the source of truth
+  const databaseTotalCompensation = getProposalValue(proposal, 'Total Compensation (proposal - host)', 0) ||
+                                    getProposalValue(proposal, 'total_compensation', 0)
+
+  // Calculate actual host nightly rate from database total (not from guest price * 0.85)
+  const nightlyCompensation = originalTotalNights > 0
+    ? databaseTotalCompensation / originalTotalNights
+    : 0
 
   // Calculate compensation for edited values
   const nightsPerWeek = editedNightsSelected.length
@@ -220,8 +222,8 @@ export function HostEditingProposal({
   const totalCompensation = nightlyCompensation * totalNights
   const compensationPer4Weeks = editedWeeks > 0 ? (totalCompensation / editedWeeks) * 4 : 0
 
-  // Original compensation values for comparison
-  const originalTotalCompensation = nightlyCompensation * originalTotalNights
+  // Original compensation values for comparison (use database value directly)
+  const originalTotalCompensation = databaseTotalCompensation
   const originalCompensationPer4Weeks = originalWeeksValue > 0
     ? (originalTotalCompensation / originalWeeksValue) * 4
     : 0
