@@ -85,8 +85,8 @@ export default function PricingEditSection({
 
       const updates = {
         'rental type': selectedRentalType,
-        '💰Damage Deposit': damageDeposit,
-        '💰Cleaning Cost / Maintenance Fee': maintenanceFee,
+        'damage_deposit': damageDeposit,
+        'cleaning_fee': maintenanceFee,
         'Minimum Nights': minNights,
         'Maximum Nights': maxNights,
       };
@@ -110,39 +110,39 @@ export default function PricingEditSection({
         // Preserve 1-night rate if available (primarily set during listing creation)
         // Note: Dashboard currently doesn't have UI to edit 1-night rate directly
         if (listing?.pricing?.[1]) {
-          updates['💰Nightly Host Rate for 1 night'] = listing.pricing[1];
+          updates['nightly_rate_1_night'] = listing.pricing[1];
         }
 
         // Calculate nightly rates from weekly compensation
-        updates['💰Nightly Host Rate for 2 nights'] = calculateNightlyRate(
+        updates['nightly_rate_2_nights'] = calculateNightlyRate(
           nightlyPricing[2],
           2
         );
-        updates['💰Nightly Host Rate for 3 nights'] = calculateNightlyRate(
+        updates['nightly_rate_3_nights'] = calculateNightlyRate(
           nightlyPricing[3],
           3
         );
-        updates['💰Nightly Host Rate for 4 nights'] = calculateNightlyRate(
+        updates['nightly_rate_4_nights'] = calculateNightlyRate(
           nightlyPricing[4],
           4
         );
-        updates['💰Nightly Host Rate for 5 nights'] = calculateNightlyRate(
+        updates['nightly_rate_5_nights'] = calculateNightlyRate(
           nightlyPricing[5],
           5
         );
-        updates['💰Nightly Host Rate for 6 nights'] = calculateNightlyRate(
+        updates['nightly_rate_6_nights'] = calculateNightlyRate(
           nightlyPricing[5],
           6
         ); // Use 5-night rate for 6
-        updates['💰Nightly Host Rate for 7 nights'] = calculateNightlyRate(
+        updates['nightly_rate_7_nights'] = calculateNightlyRate(
           nightlyPricing[5],
           7
         ); // Use 5-night rate for 7
       } else if (selectedRentalType === 'Weekly') {
         updates['Weeks offered'] = weeksOffered;
-        updates['💰Weekly Host Rate'] = weeklyRate;
+        updates['weekly_host_rate'] = weeklyRate;
       } else if (selectedRentalType === 'Monthly') {
-        updates['💰Monthly Host Rate'] = monthlyRate;
+        updates['monthly_host_rate'] = monthlyRate;
       }
 
       await onSave(updates);

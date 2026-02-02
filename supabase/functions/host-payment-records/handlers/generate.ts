@@ -162,7 +162,7 @@ export async function handleGenerate(
       'Total Paid to Host': schedule.totalRentList[i],
       'Payment to Host?': true,
       'Payment from guest?': false,
-      source_calculation: 'supabase-edge-function',
+      'source calculation': 'supabase-edge-function',
       'Created Date': now,
       'Modified Date': now,
     };

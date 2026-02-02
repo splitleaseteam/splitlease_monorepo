@@ -204,23 +204,23 @@ export function useSearchPageLogic() {
         : null,
       price: {
         starting: toNumber(dbListing['Standarized Minimum Nightly Price (Filter)'], 0),
-        full: toNumber(dbListing['💰Nightly Host Rate for 7 nights'], 0)
+        full: toNumber(dbListing['nightly_rate_7_nights'], 0)
       },
       'Starting nightly price': toNumber(dbListing['Standarized Minimum Nightly Price (Filter)'], 0),
-      'Price 2 nights selected': toNumber(dbListing['💰Nightly Host Rate for 2 nights']),
-      'Price 3 nights selected': toNumber(dbListing['💰Nightly Host Rate for 3 nights']),
-      'Price 4 nights selected': toNumber(dbListing['💰Nightly Host Rate for 4 nights']),
-      'Price 5 nights selected': toNumber(dbListing['💰Nightly Host Rate for 5 nights']),
+      'Price 2 nights selected': toNumber(dbListing['nightly_rate_2_nights']),
+      'Price 3 nights selected': toNumber(dbListing['nightly_rate_3_nights']),
+      'Price 4 nights selected': toNumber(dbListing['nightly_rate_4_nights']),
+      'Price 5 nights selected': toNumber(dbListing['nightly_rate_5_nights']),
       'Price 6 nights selected': null,
-      'Price 7 nights selected': toNumber(dbListing['💰Nightly Host Rate for 7 nights']),
+      'Price 7 nights selected': toNumber(dbListing['nightly_rate_7_nights']),
       // 7 REQUIRED FIELDS (Golden Rule B) - with numeric coercion
       'rental type': dbListing['rental type'] || 'Nightly',
       rentalType: dbListing['rental type'] || 'Nightly',
-      '💰Monthly Host Rate': toNumber(dbListing['💰Monthly Host Rate']),
-      '💰Weekly Host Rate': toNumber(dbListing['💰Weekly Host Rate']),
-      '💰Cleaning Cost / Maintenance Fee': toNumber(dbListing['💰Cleaning Cost / Maintenance Fee'], 0),
-      '💰Damage Deposit': toNumber(dbListing['💰Damage Deposit'], 0),
-      '💰Unit Markup': toNumber(dbListing['💰Unit Markup'], 0),
+      'monthly_host_rate': toNumber(dbListing['monthly_host_rate']),
+      'weekly_host_rate': toNumber(dbListing['weekly_host_rate']),
+      'cleaning_fee': toNumber(dbListing['cleaning_fee'], 0),
+      'damage_deposit': toNumber(dbListing['damage_deposit'], 0),
+      'unit_markup': toNumber(dbListing['unit_markup'], 0),
       'Weeks offered': dbListing['Weeks offered'] || 'Every week',
       weeksOffered: dbListing['Weeks offered'] || 'Every week',
       type: propertyType,
@@ -515,7 +515,7 @@ export function useSearchPageLogic() {
             photos = JSON.parse(photosField)
           } catch (_e) {
             // Legacy photo data may have invalid JSON - fall back to empty array
-            photos = []
+            photos = [];
           }
         }
 

@@ -354,10 +354,32 @@ async function handleGet(
     throw new Error('leaseId is required');
   }
 
-  // Note: Simplified query without FK relationships due to schema limitations
-  const { data: _data, error } = await supabase
+  // Expand FK references for Guest, Host, Listing
+  const { data, error } = await supabase
     .from('bookings_leases')
-    .select('*')
+    .select(`
+      *,
+      guestData:Guest!inner(
+        _id,
+        "Name - Full",
+        "Name - First",
+        "Name - Last",
+        "email as text",
+        "Profile Photo"
+      ),
+      hostData:Host!inner(
+        _id,
+        "Name - Full",
+        "Name - First",
+        "Name - Last",
+        "email as text",
+        "Profile Photo"
+      ),
+      listingData:Listing!inner(
+        _id,
+        Name
+      )
+    `)
     .eq('_id', leaseId)
     .single();
 
@@ -1145,7 +1167,7 @@ async function handleGetDocumentChangeRequests(
   }
 
   const { data: _data, error } = await supabase
-    .from('bookings_date_change_requests')
+    .from('datechangerequest')
     .select(`
       *,
       requestedByUser:Requested by(

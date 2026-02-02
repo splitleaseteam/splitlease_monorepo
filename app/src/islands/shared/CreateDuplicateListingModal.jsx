@@ -71,7 +71,7 @@ export default function CreateDuplicateListingModal({
           Name: listingName.trim(),
           active: false,
           'Default Extension Setting': false,
-          '💰Damage Deposit': 500,
+          'damage_deposit': 500,
           'Host / Landlord': currentUser?.['Account - Host / Landlord']?._id || null,
           'HOST name': currentUser?.['Name - Full'] || currentUser?.firstName || '',
           'Host email': currentUser?.email || '',

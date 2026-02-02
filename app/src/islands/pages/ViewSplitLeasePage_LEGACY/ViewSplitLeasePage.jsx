@@ -337,7 +337,7 @@ function ErrorState({ message }) {
       <p className={styles.errorMessage}>
         {message || 'The property you are looking for does not exist or has been removed.'}
       </p>
-      <a href="/search.html" className={styles.errorButton}>
+      <a href="/search" className={styles.errorButton}>
         Browse All Listings
       </a>
     </div>
@@ -937,17 +937,17 @@ export default function ViewSplitLeasePage() {
     // Pricing fields for calculation
     'rental type': listing['rental type'] || 'Nightly',
     'Weeks offered': listing['Weeks offered'] || 'Every week',
-    '💰Unit Markup': listing['💰Unit Markup'] || 0,
-    '💰Nightly Host Rate for 2 nights': listing['💰Nightly Host Rate for 2 nights'],
-    '💰Nightly Host Rate for 3 nights': listing['💰Nightly Host Rate for 3 nights'],
-    '💰Nightly Host Rate for 4 nights': listing['💰Nightly Host Rate for 4 nights'],
-    '💰Nightly Host Rate for 5 nights': listing['💰Nightly Host Rate for 5 nights'],
-    '💰Nightly Host Rate for 7 nights': listing['💰Nightly Host Rate for 7 nights'],
-    '💰Weekly Host Rate': listing['💰Weekly Host Rate'],
-    '💰Monthly Host Rate': listing['💰Monthly Host Rate'],
-    '💰Price Override': listing['💰Price Override'],
-    '💰Cleaning Cost / Maintenance Fee': listing['💰Cleaning Cost / Maintenance Fee'],
-    '💰Damage Deposit': listing['💰Damage Deposit']
+    'unit_markup': listing['unit_markup'] || 0,
+    'nightly_rate_2_nights': listing['nightly_rate_2_nights'],
+    'nightly_rate_3_nights': listing['nightly_rate_3_nights'],
+    'nightly_rate_4_nights': listing['nightly_rate_4_nights'],
+    'nightly_rate_5_nights': listing['nightly_rate_5_nights'],
+    'nightly_rate_7_nights': listing['nightly_rate_7_nights'],
+    'weekly_host_rate': listing['weekly_host_rate'],
+    'monthly_host_rate': listing['monthly_host_rate'],
+    'price_override': listing['price_override'],
+    'cleaning_fee': listing['cleaning_fee'],
+    'damage_deposit': listing['damage_deposit']
   } : null, [listing]);
 
   // Initialize with Monday-Friday (1-5) as default

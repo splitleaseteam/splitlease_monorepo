@@ -22,7 +22,7 @@
  * })
  * // Returns: true
  */
-export function hasValidRatings({ ratings, reviewType }) {
+export function hasValidRatings({ ratings, reviewType: _reviewType }) {
   if (!ratings || !Array.isArray(ratings)) {
     return false;
   }

@@ -21,7 +21,7 @@ import { validateNumber } from '../../validators/pricingValidators.js'
  *
  * @example
  * const breakdown = calculatePricingBreakdown({
- *   listing: { '💰Nightly Host Rate for 4 nights': 100, '💰Cleaning Cost / Maintenance Fee': 50 },
+ *   listing: { nightly_rate_4_nights: 100, cleaning_fee: 50 },
  *   nightsPerWeek: 4,
  *   reservationWeeks: 13
  * })
@@ -58,12 +58,12 @@ export function calculatePricingBreakdown({ listing, nightsPerWeek, reservationW
 
   // Extract fees (with explicit validation)
   const cleaningFee = extractFee(
-    listing['💰Cleaning Cost / Maintenance Fee'],
+    listing['cleaning_fee'],
     'Cleaning Fee'
   )
 
   const damageDeposit = extractFee(
-    listing['💰Damage Deposit'],
+    listing['damage_deposit'],
     'Damage Deposit'
   )
 

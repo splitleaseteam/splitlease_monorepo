@@ -30,6 +30,7 @@ import Footer from '../shared/Footer.jsx';
 import { useGuestLeasesPageLogic } from './guest-leases/useGuestLeasesPageLogic.js';
 import LeaseCard from './guest-leases/LeaseCard.jsx';
 import CheckInCheckOutFlow from './guest-leases/CheckInCheckOutFlow.jsx';
+import DateChangeRequestManager from '../shared/DateChangeRequestManager/DateChangeRequestManager.jsx';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -106,6 +107,7 @@ export default function GuestLeasesPage() {
     // UI state
     expandedLeaseId,
     checkInOutModal,
+    dateChangeModal,
     isLoading,
     error,
 
@@ -130,6 +132,7 @@ export default function GuestLeasesPage() {
     handleDateChangeApprove,
     handleDateChangeReject,
     handleRequestDateChange,
+    handleCloseDateChangeModal,
 
     // Handlers - Documents
     handleDownloadDocument,
@@ -217,6 +220,16 @@ export default function GuestLeasesPage() {
       </main>
 
       <Footer />
+
+      {/* Date Change Request Modal */}
+      {dateChangeModal.isOpen && (
+        <DateChangeRequestManager
+          isOpen={dateChangeModal.isOpen}
+          onClose={handleCloseDateChangeModal}
+          lease={dateChangeModal.lease}
+          currentUser={user}
+        />
+      )}
 
       {/* Check-in/Checkout Modal */}
       <CheckInCheckOutFlow

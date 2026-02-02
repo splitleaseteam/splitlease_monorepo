@@ -161,7 +161,7 @@ export async function handleGenerate(
       'Total Paid by Guest': schedule.totalRentList[i],
       'Payment to Host?': false,
       'Payment from guest?': true,
-      source_calculation: 'supabase-edge-function',
+      'source calculation': 'supabase-edge-function',
       'Created Date': now,
       'Modified Date': now,
     };

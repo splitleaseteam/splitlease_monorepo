@@ -1,51 +1,118 @@
 {
-  "sessionId": "e2e-guest-proposal-vm-20260131",
-  "startedAt": "2026-01-31T00:00:00.000Z",
-  "endedAt": "2026-01-31T00:30:00.000Z",
-  "status": "completed",
+  "sessionId": "e2e-proposal-counteroffer-20260202",
+  "startedAt": "2026-02-02T00:00:00.000Z",
+  "endedAt": null,
+  "status": "in_progress",
   "progress": {
-    "currentIteration": 1,
-    "currentPhase": "completed",
-    "currentStep": "all-tests-passing"
+    "currentIteration": 2,
+    "currentPhase": "bug-analysis",
+    "currentStep": "investigating-BUG-003"
   },
   "metrics": {
-    "stepsCompleted": 20,
-    "stepsFailed": 0,
-    "fixAttempts": 1,
+    "stepsCompleted": 23,
+    "stepsFailed": 4,
+    "fixAttempts": 2,
     "dataResets": 0,
-    "screenshotsTaken": 5
+    "screenshotsTaken": 12
   },
   "bugs": {
     "found": [
       {
         "id": "BUG-001",
-        "category": "schema-mismatch",
-        "description": "Virtual meeting request fails - Phone Number column name wrong",
-        "step": "5.0",
-        "error": "column Phone - Number does not exist",
-        "timestamp": "2026-01-31T00:00:00.000Z"
+        "category": "workflow-blocker",
+        "description": "Proposal stuck at 'Awaiting Rental Application' - Host cannot accept proposal directly",
+        "step": "3.7",
+        "status": "FIXED"
+      },
+      {
+        "id": "BUG-002",
+        "category": "edge-function-error",
+        "description": "Edge Function error: 'supabase is not defined' in useProposalManagePageLogic.js",
+        "step": "3.7",
+        "status": "FIXED"
+      },
+      {
+        "id": "BUG-003",
+        "category": "message-creation-failure",
+        "description": "SplitBot initial messages fail to create when proposal submitted. Thread exists but has 0 messages.",
+        "step": "3.7-retest",
+        "proposalId": "1770052324942x64452081892439584",
+        "error": "[WARN] Thread creation failed (non-bl...)",
+        "status": "PENDING"
       }
     ],
-    "pending": [],
+    "pending": [
+      {
+        "id": "BUG-003",
+        "priority": "high",
+        "blocking": true
+      }
+    ],
     "fixed": [
       {
         "id": "BUG-001",
-        "fix": "Updated column name from Phone - Number to Phone Number (as text)",
-        "files": [
-          "supabase/functions/virtual-meeting/handlers/create.ts",
-          "supabase/functions/virtual-meeting/handlers/accept.ts"
-        ],
-        "commit": "6ccf80d05",
-        "deployed": true,
-        "verified": true,
-        "timestamp": "2026-01-31T00:00:00.000Z"
+        "commit": "7a39f1a94",
+        "deployed": true
+      },
+      {
+        "id": "BUG-002",
+        "commit": "7a39f1a94",
+        "deployed": true
       }
-    ]
+    ],
+    "deferred": []
   },
   "testCredentials": {
-    "email": "test-guest-1738321847@example.com",
-    "password": "TestPass123!",
-    "firstName": "TestGuest",
-    "lastName": "User7392"
+    "host": {
+      "email": "host_test_1770049063660@example.com",
+      "password": "TestHost123!"
+    },
+    "guest": {
+      "email": "guest_test_1770049457612@example.com",
+      "password": "TestGuest123!"
+    },
+    "guestRetest": {
+      "email": "testguest_phase3_1770052200@example.com",
+      "password": "TestGuest123!"
+    }
+  },
+  "testData": {
+    "listings": [
+      {
+        "id": "1770049277028x47966089987932344",
+        "title": "Cozy Studio in Manhattan - Test Listing A",
+        "location": "Manhattan",
+        "price": 150
+      },
+      {
+        "id": "1770049404893x91412297566369040",
+        "title": "Spacious Brooklyn Loft - Test Listing B",
+        "location": "Brooklyn",
+        "price": 200
+      }
+    ],
+    "proposals": [
+      {
+        "id": "1770049694673x84502900247355872",
+        "listingId": "1770049277028x47966089987932344",
+        "status": "accepted",
+        "messageCount": 3,
+        "testResult": "PASS"
+      },
+      {
+        "id": "1770050561455x12931805482580172",
+        "listingId": "1770049404893x91412297566369040",
+        "status": "awaiting-rental-application",
+        "messageCount": 0,
+        "testResult": "FAIL"
+      },
+      {
+        "id": "1770052324942x64452081892439584",
+        "listingId": "1701107772942x447054126943830000",
+        "status": "created",
+        "messageCount": 0,
+        "testResult": "FAIL"
+      }
+    ]
   }
 }

@@ -198,6 +198,21 @@
   font-style: italic;
 }
 
+.dcr-type-selector-compact {
+  margin-bottom: 0;
+}
+
+.dcr-type-selector-compact .dcr-type-button {
+  padding: 10px;
+  flex-direction: row;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.dcr-type-selector-compact .dcr-type-icon {
+  font-size: 16px;
+}
+
 /* ============================================
    CALENDAR STYLES
    ============================================ */
@@ -305,111 +320,56 @@
 }
 
 .dcr-date-available {
-  background: var(--dcr-gray-light);
+  background: white;
   color: var(--dcr-text-primary);
+  border: 1px solid var(--dcr-gray-border);
+  opacity: 0.6; /* Muted */
+}
+
+.dcr-date-adjacent {
+  background: white;
+  color: var(--dcr-blue-add);
+  border: 2px dashed var(--dcr-blue-add);
+  font-weight: 700;
+}
+
+.dcr-date-blocked {
+  background: #f3f4f6;
+  color: #9ca3af;
+  text-decoration: line-through;
+  cursor: not-allowed;
 }
 
 .dcr-date-outside {
   background: white;
-  border: 1px dashed var(--dcr-gray-border);
-  color: var(--dcr-gray-text);
+  border: none;
+  color: var(--dcr-gray-border);
 }
 
 .dcr-date-selected-add {
   background: var(--dcr-blue-add);
   color: white;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  border: none;
+}
+/* ... */
+.dcr-type-selector-compact {
+  margin-bottom: 0;
 }
 
-.dcr-date-selected-remove {
-  background: var(--dcr-red-remove);
-  color: white;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-}
-
-.dcr-date-pending-add {
-  background: var(--dcr-orange-light);
-  color: var(--dcr-orange-pending);
-  border: 2px dashed var(--dcr-orange-pending);
-}
-
-.dcr-date-pending-remove {
-  background: var(--dcr-red-light);
-  color: var(--dcr-red-remove);
-  border: 2px dashed var(--dcr-red-remove);
-}
-
-.dcr-date-past {
-  opacity: 0.3;
-}
-
-.dcr-date-selectable:hover:not(:disabled) {
-  transform: scale(1.1);
-  z-index: 1;
-}
-
-/* Calendar Legend */
-.dcr-calendar-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--dcr-gray-border);
-}
-
-.dcr-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--dcr-gray-text);
-}
-
-.dcr-legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-}
-
-.dcr-legend-booked {
-  background: var(--dcr-green-booked);
-}
-
-.dcr-legend-available {
-  background: var(--dcr-gray-light);
-  border: 1px solid var(--dcr-gray-border);
-}
-
-.dcr-legend-selected-add {
-  background: var(--dcr-blue-add);
-}
-
-.dcr-legend-selected-remove {
-  background: var(--dcr-red-remove);
-}
-
-.dcr-legend-pending {
-  background: var(--dcr-orange-light);
-  border: 1px dashed var(--dcr-orange-pending);
-}
-
-/* Calendar Instructions */
-.dcr-calendar-instructions {
-  margin-top: 12px;
-  padding: 12px;
-  background: var(--dcr-purple-light);
-  border-radius: 8px;
+.dcr-type-selector-compact .dcr-type-button {
+  padding: 10px;
+  flex-direction: row;
+  justify-content: center;
   font-size: 13px;
-  color: var(--dcr-purple-dark);
 }
 
-.dcr-calendar-instructions p {
-  margin: 0;
+.dcr-type-selector-compact .dcr-type-icon {
+  font-size: 16px;
 }
 
 /* ============================================
-   DETAILS VIEW
+   CALENDAR STYLES
    ============================================ */
 
 .dcr-details-container {
@@ -494,84 +454,6 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--dcr-text-primary);
-}
-
-/* Price Section */
-.dcr-price-section {
-  margin-bottom: 20px;
-}
-
-.dcr-price-slider-container {
-  margin-bottom: 16px;
-}
-
-.dcr-price-slider {
-  width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: var(--dcr-gray-light);
-  appearance: none;
-  cursor: pointer;
-}
-
-.dcr-price-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--dcr-purple-primary);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(109, 49, 194, 0.3);
-}
-
-.dcr-price-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--dcr-gray-text);
-}
-
-.dcr-price-display {
-  background: var(--dcr-gray-light);
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.dcr-price-proposed,
-.dcr-price-comparison,
-.dcr-price-difference {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.dcr-price-proposed {
-  border-bottom: 1px solid var(--dcr-gray-border);
-}
-
-.dcr-price-comparison {
-  border-bottom: 1px solid var(--dcr-gray-border);
-}
-
-.dcr-price-label {
-  font-size: 13px;
-  color: var(--dcr-gray-text);
-}
-
-.dcr-price-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--dcr-text-primary);
-}
-
-.dcr-price-positive .dcr-price-value {
-  color: var(--dcr-green-booked);
-}
-
-.dcr-price-negative .dcr-price-value {
-  color: var(--dcr-red-remove);
 }
 
 /* Message Section */
@@ -1198,5 +1080,70 @@
   .dcr-throttle-popup-buttons .dcr-button-secondary {
     flex: none;
     width: 100%;
+  }
+}
+
+/* ============================================
+   PATTERN 5: FEE TRANSPARENCY & PAYMENT
+   ============================================ */
+
+/* Payment View Container */
+.dcr-payment-container {
+  padding: 0;
+}
+
+.dcr-payment-container .dcr-details-header {
+  margin-bottom: 24px;
+}
+
+.dcr-payment-container .fee-price-display {
+  margin-bottom: 24px;
+}
+
+/* Fee Section in Details View */
+.dcr-fee-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--dcr-gray-light);
+  border-radius: 12px;
+}
+
+.dcr-fee-section .dcr-section-title {
+  margin-bottom: 12px;
+}
+
+.dcr-fee-loading {
+  padding: 20px;
+  text-align: center;
+  color: var(--dcr-gray-text);
+  font-size: 14px;
+}
+
+/* Override FeePriceDisplay styles for DCR context */
+.dcr-fee-section .fee-price-display {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.dcr-payment-container .payment-step-container {
+  margin-top: 0;
+}
+
+.dcr-payment-container .payment-step-card {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+/* Mobile adjustments for payment view */
+@media (max-width: 520px) {
+  .dcr-fee-section {
+    padding: 12px;
+  }
+
+  .dcr-payment-container .payment-step-card {
+    padding: 0;
   }
 }
