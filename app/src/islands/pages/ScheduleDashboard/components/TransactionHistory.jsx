@@ -24,12 +24,18 @@ function formatDate(date) {
   });
 }
 
-function formatNights(nights) {
+function formatNights(nights, transaction) {
   if (!nights || nights.length === 0) return '-';
   if (nights.length === 1) {
     return formatDate(nights[0]);
   }
   if (nights.length === 2) {
+    if (transaction?.type === 'swap' && transaction.direction) {
+      if (transaction.direction === 'outgoing') {
+        return `Give ${formatDate(nights[0])} → Get ${formatDate(nights[1])}`;
+      }
+      return `Get ${formatDate(nights[0])} → Give ${formatDate(nights[1])}`;
+    }
     return `${formatDate(nights[0])} ↔ ${formatDate(nights[1])}`;
   }
   return `${nights.length} nights`;
@@ -350,7 +356,7 @@ export default function TransactionHistory({
                       <TypeLabel type={txn.type} />
                     </td>
                     <td className="transaction-history__td">
-                      {formatNights((txn.nights || []).map(n => new Date(n)))}
+                      {formatNights((txn.nights || []).map(n => new Date(n)), txn)}
                     </td>
                     <td className="transaction-history__td">
                       {formatAmount(txn.amount, txn.direction)}

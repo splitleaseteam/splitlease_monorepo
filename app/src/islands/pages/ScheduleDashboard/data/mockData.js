@@ -157,7 +157,7 @@ export const MOCK_TRANSACTIONS = [
     id: 'txn-5',
     date: new Date(2026, 0, 30),
     type: 'swap',
-    nights: [new Date(2026, 1, 10), new Date(2026, 1, 14)],
+    nights: [new Date(2026, 1, 11), new Date(2026, 1, 14)],
     amount: 0,
     suggestedPrice: 0,    // Swaps have no suggested price
     offeredPrice: 0,      // Swaps are always free

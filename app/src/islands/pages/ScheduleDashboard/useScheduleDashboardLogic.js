@@ -37,8 +37,7 @@ import {
 } from './data/mockData.js';
 import { usePerspective } from './hooks/usePerspective.js';
 import {
-  fetchUserNights,
-  fetchRoommateNights,
+  fetchNightsForUser,
   fetchPendingRequests,
   fetchBlockedDates,
   sendMessage,
@@ -239,9 +238,12 @@ export function useScheduleDashboardLogic() {
     return txn.transactions.map((transaction) => {
       const { payerId, payeeId, type } = transaction;
       const hasParticipants = payerId && payeeId;
+      const isInitiator = hasParticipants && payerId === currentUserId;
       const hasDirection = hasParticipants && type !== 'swap';
       const isIncoming = hasDirection && payeeId === currentUserId;
-      const direction = hasDirection ? (isIncoming ? 'incoming' : 'outgoing') : null;
+      const direction = hasDirection
+        ? (isIncoming ? 'incoming' : 'outgoing')
+        : (type === 'swap' && hasParticipants ? (isInitiator ? 'outgoing' : 'incoming') : null);
       const counterpartyId = hasParticipants
         ? (payerId === currentUserId ? payeeId : payerId)
         : (payerId || payeeId);
@@ -256,6 +258,14 @@ export function useScheduleDashboardLogic() {
       };
     });
   }, [txn.transactions, currentUserId, currentUserData, roommateData]);
+
+  const isNightLocked = useCallback((nightString) => {
+    if (!nightString) return false;
+    return txn.transactions.some((transaction) =>
+      transaction.status === 'pending' &&
+      (transaction.nights || []).some((night) => toDateString(night) === nightString)
+    );
+  }, [txn.transactions]);
 
   const flexibilityScore = useMemo(
     () => calculateFlexibilityScore(processedTransactions),
@@ -552,6 +562,18 @@ export function useScheduleDashboardLogic() {
   }, [calendar.selectedNight, ui.isBuyOutOpen, ui.setIsBuyOutOpen]);
 
   // -------------------------------------------------------------------------
+  // CLEAR CALENDAR CACHE ON PERSPECTIVE CHANGE
+  // -------------------------------------------------------------------------
+  // When perspective changes (URL param ?as=sarah), clear cached calendar data
+  // so fresh perspective-aware data is fetched
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    // Clear calendar cache so loadData fetches fresh perspective-aware data
+    localStorage.removeItem(STORAGE_KEYS.calendar);
+    console.log('[Perspective] Cleared calendar cache for perspective:', isSwappedPerspective ? 'Sarah' : 'Alex');
+  }, [isSwappedPerspective]);
+
+  // -------------------------------------------------------------------------
   // DATA FETCHING (Perspective-Aware)
   // -------------------------------------------------------------------------
   useEffect(() => {
@@ -590,26 +612,18 @@ export function useScheduleDashboardLogic() {
           calendar.setBlockedNights(storedCalendar.blockedNights || []);
           calendar.setSharedNights(storedCalendar.sharedNights || []);
         } else {
-          // Fetch calendar data - SWAP based on perspective
-          let userNightsData, roommateNightsData;
-          const [pendingData, blockedData] = await Promise.all([
+          // Fetch calendar data - perspective-aware via user IDs
+          // currentUserData._id = whoever is viewing (Alex or Sarah based on URL param)
+          // roommateData._id = the other person
+          const [userNightsData, roommateNightsData, pendingData, blockedData] = await Promise.all([
+            fetchNightsForUser(leaseId, currentUserData._id),   // "My nights" for current perspective
+            fetchNightsForUser(leaseId, roommateData._id),      // "Roommate's nights" (available to buy)
             fetchPendingRequests(leaseId),
             fetchBlockedDates(leaseId)
           ]);
 
-          if (isSwappedPerspective) {
-            // SWAP: Sarah's nights become "my nights", Alex's nights become "available"
-            [userNightsData, roommateNightsData] = await Promise.all([
-              fetchRoommateNights(leaseId, currentUserData._id),  // Sarah's nights → my nights
-              fetchUserNights(leaseId, roommateData._id)          // Alex's nights → roommate's
-            ]);
-          } else {
-            // Normal: Alex's nights are "my nights", Sarah's are "available"
-            [userNightsData, roommateNightsData] = await Promise.all([
-              fetchUserNights(leaseId, currentUserData._id),
-              fetchRoommateNights(leaseId, MOCK_ROOMMATE._id)
-            ]);
-          }
+          console.log('[Data Fetch] Perspective:', isSwappedPerspective ? 'Sarah' : 'Alex');
+          console.log('[Data Fetch] My nights:', userNightsData.length, 'Roommate nights:', roommateNightsData.length);
 
           calendar.setUserNights(userNightsData);
           calendar.setRoommateNights(roommateNightsData);
@@ -754,6 +768,9 @@ export function useScheduleDashboardLogic() {
   const handleSelectNight = useCallback((dateString) => {
     // Validate it's a roommate night (not user's own or blocked)
     if (calendar.roommateNights.includes(dateString) && !calendar.pendingNights.includes(dateString)) {
+      if (isNightLocked(dateString)) {
+        throw new Error('This night is part of another pending request.');
+      }
       calendar.setSelectedNight(dateString);
 
       // Reset swap mode when selecting a new night
@@ -767,7 +784,7 @@ export function useScheduleDashboardLogic() {
       // Open the request panel
       ui.setIsBuyOutOpen(true);
     }
-  }, [calendar.roommateNights, calendar.pendingNights, isNightContiguous, ui, request, calendar]);
+  }, [calendar.roommateNights, calendar.pendingNights, isNightLocked, isNightContiguous, ui, request, calendar]);
 
   /**
    * Handle buy out request
@@ -776,6 +793,14 @@ export function useScheduleDashboardLogic() {
    */
   const handleBuyOut = useCallback(async (message, totalPrice) => {
     if (!calendar.selectedNight || request.isSubmitting) return;
+
+    if (!calendar.roommateNights.includes(calendar.selectedNight)) {
+      throw new Error("You don't own this night.");
+    }
+
+    if (isNightLocked(calendar.selectedNight)) {
+      throw new Error('This night is part of another pending request.');
+    }
 
     try {
       request.setIsSubmitting(true);
@@ -850,7 +875,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [calendar.selectedNight, request.isSubmitting, leaseId, lease, roommate, basePrice, calendar, request]);
+  }, [calendar.selectedNight, request.isSubmitting, calendar.roommateNights, isNightLocked, leaseId, lease, roommate, basePrice, calendar, request]);
 
   /**
    * Handle share request - request to co-occupy a night with roommate
@@ -859,6 +884,14 @@ export function useScheduleDashboardLogic() {
    */
   const handleShareRequest = useCallback(async (message, totalPrice) => {
     if (!calendar.selectedNight || request.isSubmitting) return;
+
+    if (!calendar.roommateNights.includes(calendar.selectedNight)) {
+      throw new Error("You don't own this night.");
+    }
+
+    if (isNightLocked(calendar.selectedNight)) {
+      throw new Error('This night is part of another pending request.');
+    }
 
     try {
       request.setIsSubmitting(true);
@@ -925,7 +958,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [calendar.selectedNight, request.isSubmitting, roommate, basePrice, calendar, request]);
+  }, [calendar.selectedNight, request.isSubmitting, calendar.roommateNights, isNightLocked, roommate, basePrice, calendar, request]);
 
   /**
    * Handle request type change (toggle between buyout, share, swap)
@@ -958,9 +991,12 @@ export function useScheduleDashboardLogic() {
   const handleSelectSwapOffer = useCallback((nightString) => {
     // Validate it's the user's night and not already pending
     if (calendar.userNights.includes(nightString) && !calendar.pendingNights.includes(nightString)) {
+      if (isNightLocked(nightString)) {
+        throw new Error('This night is part of another pending request.');
+      }
       request.setSwapOfferNight(nightString);
     }
-  }, [calendar.userNights, calendar.pendingNights, request]);
+  }, [calendar.userNights, calendar.pendingNights, isNightLocked, request]);
 
   const handleSelectCounterNight = useCallback((nightString) => {
     if (calendar.roommateNights.includes(nightString) && !calendar.pendingNights.includes(nightString)) {
@@ -974,6 +1010,18 @@ export function useScheduleDashboardLogic() {
    */
   const handleSubmitSwapRequest = useCallback(async (message) => {
     if (!calendar.selectedNight || !request.swapOfferNight || request.isSubmitting) return;
+
+    if (!calendar.roommateNights.includes(calendar.selectedNight)) {
+      throw new Error("You don't own this night.");
+    }
+
+    if (!calendar.userNights.includes(request.swapOfferNight)) {
+      throw new Error("You don't own this night.");
+    }
+
+    if (isNightLocked(calendar.selectedNight) || isNightLocked(request.swapOfferNight)) {
+      throw new Error('This night is part of another pending request.');
+    }
 
     try {
       request.setIsSubmitting(true);
@@ -1039,7 +1087,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [calendar.selectedNight, request.swapOfferNight, request.isSubmitting, roommate, calendar, request]);
+  }, [calendar.selectedNight, request.swapOfferNight, request.isSubmitting, calendar.roommateNights, calendar.userNights, isNightLocked, roommate, calendar, request]);
 
   /**
    * Handle canceling swap mode - return to buyout mode
