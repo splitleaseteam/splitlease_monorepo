@@ -26,9 +26,9 @@ export function PricingRow({ proposal, isDeclined = false }) {
     proposal?.counter_offer_happened;
 
   // Host compensation values (what host actually earns, NOT guest prices)
-  const hostNightlyCompensation = proposal?.['host compensation'] || proposal?.host_compensation || 0;
-  const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
+  // Total host compensation for the entire stay
   const hostTotalCompensation = proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation || 0;
+  const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
   let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
   if (typeof originalNights === 'string') {
     try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
@@ -45,19 +45,23 @@ export function PricingRow({ proposal, isDeclined = false }) {
   }
   const hcNightsPerWeek = hcNights.length > 0 ? hcNights.length : null;
 
-  // Display values: prioritize HC values when counteroffer happened
-  // When counteroffer exists, show HC values as current; otherwise use normalized or original
-  const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || hostNightlyCompensation);
+  // Display values: ALWAYS use host compensation values (NOT guest prices)
+  // Host compensation is what the host earns after Split Lease fees
   const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
   const nightsPerWeek = nightsSelected.length;
   const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
-  const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || hostTotalCompensation);
+  const totalEarnings = hostTotalCompensation;
 
-  // Comparison flags - detect which values changed (comparing HC values to host compensation)
-  const nightlyRateChanged = isCounteroffer && hcNightlyRate != null && hcNightlyRate !== hostNightlyCompensation;
+  // Calculate host nightly compensation from total (total / total_nights)
+  const totalNights = nightsPerWeek * weeks;
+  const nightlyRate = totalNights > 0 ? Math.round((hostTotalCompensation / totalNights) * 100) / 100 : 0;
+
+  // Comparison flags - detect which schedule terms changed (nights, weeks)
+  // Note: Nightly rate and total comparisons disabled since we always show host compensation
+  const nightlyRateChanged = false; // No HC host compensation field to compare
   const weeksChanged = isCounteroffer && hcWeeks != null && hcWeeks !== originalWeeks;
   const nightsChanged = isCounteroffer && hcNightsPerWeek != null && hcNightsPerWeek !== originalNightsPerWeek;
-  const totalChanged = isCounteroffer && hcTotalPrice != null && hcTotalPrice !== hostTotalCompensation;
+  const totalChanged = false; // No HC host compensation field to compare
 
   // Format the breakdown with strikethrough support
   const hasBreakdown = nightlyRate > 0 || nightsPerWeek > 0 || weeks > 0;

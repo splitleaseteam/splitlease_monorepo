@@ -91,12 +91,16 @@ function formatDuration(proposal) {
 }
 
 /**
- * Format total earnings
+ * Format total host compensation (NOT guest price)
  * @param {Object} proposal - The proposal object
  * @returns {string} Formatted currency string
  */
-function formatTotalEarnings(proposal) {
-  const total = proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || 0;
+function formatTotalHostCompensation(proposal) {
+  // Use host compensation fields ONLY - never guest prices
+  const total = proposal?.['Total Compensation (proposal - host)'] ||
+    proposal?.total_compensation ||
+    proposal?.host_earnings ||
+    0;
   return `$${Number(total).toLocaleString()}`;
 }
 
@@ -121,7 +125,7 @@ export function ProposalCardHeader({ proposal, isExpanded, onToggle, contentId }
   const daysSelected = proposal?.days_selected || proposal?.Days_Selected || [];
   const schedule = formatSchedule(daysSelected);
   const duration = formatDuration(proposal);
-  const total = formatTotalEarnings(proposal);
+  const total = formatTotalHostCompensation(proposal);
 
   const metaParts = [schedule, duration, `${total} total`].filter(Boolean);
   const metaLine = metaParts.join(' · ');

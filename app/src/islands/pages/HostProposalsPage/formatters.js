@@ -136,10 +136,13 @@ export function generateNarrativeText(proposal) {
   const guest = proposal?.guest || proposal?.user || {};
   const nightsSelected = proposal?.nights_selected || [];
   const durationWeeks = proposal?.duration_weeks || 0;
-  const nightlyRate = proposal?.nightly_rate || 0;
-  const hostCompensation = proposal?.host_compensation || proposal?.total_price || 0;
+  // Use host compensation values ONLY - never guest prices
+  const hostTotalCompensation = proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation || 0;
   const nightsPerWeek = nightsSelected.length;
-  const weeklyEarnings = nightlyRate * nightsPerWeek;
+  // Calculate host nightly compensation from total (total / total_nights)
+  const totalNights = nightsPerWeek * durationWeeks;
+  const hostNightlyCompensation = totalNights > 0 ? Math.round((hostTotalCompensation / totalNights) * 100) / 100 : 0;
+  const weeklyEarnings = hostNightlyCompensation * nightsPerWeek;
 
   // Format dates
   const startDate = proposal?.start_date ? new Date(proposal.start_date) : null;
@@ -171,11 +174,11 @@ export function generateNarrativeText(proposal) {
   }
   const schedule = { text: scheduleText, dayRangeText, nightsPerWeek };
 
-  // Pricing paragraph
+  // Pricing paragraph - all values are host compensation (NOT guest prices)
   const pricing = {
-    nightlyRate,
+    nightlyRate: hostNightlyCompensation,
     weeklyEarnings,
-    total: hostCompensation,
+    total: hostTotalCompensation,
     weeks: durationWeeks
   };
 
