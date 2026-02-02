@@ -54,11 +54,10 @@ export function NarrativeProposalBody({ proposal, handlers = {}, onViewProfile }
           ))}
         </p>
 
-        {/* Pricing paragraph */}
+        {/* Pricing paragraph - rental-type-aware */}
         <p className="hp7-narrative-paragraph">
-          At <strong className="hp7-highlight-money">${formatCurrency(pricing.nightlyRate)}/night</strong>, this works out to{' '}
-          <strong className="hp7-highlight-money">${formatCurrency(pricing.weeklyEarnings)} per week</strong> — totaling{' '}
-          <strong className="hp7-highlight-money">${formatCurrency(pricing.total)}</strong> over the {pricing.weeks} weeks.
+          At <strong className="hp7-highlight-money">${formatCurrency(pricing.rateValue)}{pricing.rateUnit}</strong>, this totals{' '}
+          <strong className="hp7-highlight-money">${formatCurrency(pricing.total)}</strong> over {pricing.periodCount} {pricing.periodUnit}.
         </p>
       </div>
 
