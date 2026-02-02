@@ -355,7 +355,7 @@ async function handleGet(
   }
 
   // Expand FK references for Guest, Host, Listing
-  const { data, error } = await supabase
+  const { data, error } = await _supabase
     .from('bookings_leases')
     .select(`
       *,
@@ -388,7 +388,7 @@ async function handleGet(
   }
 
   // Fetch stays
-  const { data: stays } = await supabase
+  const { data: stays } = await _supabase
     .from('bookings_stays')
     .select('*')
     .eq('Lease', leaseId);
