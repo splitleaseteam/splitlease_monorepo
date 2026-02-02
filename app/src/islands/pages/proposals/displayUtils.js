@@ -61,8 +61,9 @@ export function getShortStatusLabel(status) {
   if (normalizedStatus.includes('Split Lease - Pending Confirmation')) return 'SL Suggestion';
   if (normalizedStatus.includes('Split Lease - Awaiting Rental Application')) return 'Confirm + Apply';
 
-  if (normalizedStatus.includes('Counteroffer')) return 'Review Offer';
+  // Check for Accepted/Drafting BEFORE Counteroffer to handle "Counteroffer Accepted" status
   if (normalizedStatus.includes('Accepted') || normalizedStatus.includes('Drafting')) return 'Accepted';
+  if (normalizedStatus.includes('Counteroffer')) return 'Review Offer';
   if (normalizedStatus.includes('activated')) return 'Active';
   if (normalizedStatus.includes('Signed')) return 'Signed';
   if (normalizedStatus.includes('Awaiting Rental Application')) return 'Apply Now';

@@ -27,6 +27,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, FileText, HelpCircle } from 'lucide-react'
 import { executeCancelProposal } from '../../logic/workflows/proposals/cancelProposalWorkflow.js'
+import { PROPOSAL_STATUSES } from '../../logic/constants/proposalStatuses.js'
 import CancelProposalModal from './CancelProposalModal.jsx'
 import './GuestEditingProposalModal.css'
 
@@ -530,8 +531,14 @@ export default function GuestEditingProposalModal({
   // View state machine: 'pristine' | 'editing' | 'general' | 'cancel'
   const [view, setView] = useState(initialView)
 
+  // Check if proposal is in a state where editing is not allowed
+  const proposalStatus = proposal?.Status?.trim();
+  const isAcceptedOrDrafting = proposalStatus === PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key ||
+    proposalStatus?.includes('Accepted') ||
+    proposalStatus?.includes('Drafting');
+
   // Debug log to verify initial view state
-  console.log('[GuestEditingProposalModal] initialView:', initialView, '| current view:', view)
+  console.log('[GuestEditingProposalModal] initialView:', initialView, '| current view:', view, '| isAcceptedOrDrafting:', isAcceptedOrDrafting)
 
   // Helper to parse days selected from proposal
   const parseDaysSelected = (proposal) => {
@@ -1145,6 +1152,7 @@ export default function GuestEditingProposalModal({
             {view === 'pristine' ? (
               /* Pristine state: User just opened modal, hasn't edited anything */
               /* Close first, Edit Proposal second - side by side */
+              /* Hide "Edit Proposal" button if proposal is accepted or drafting */
               <>
                 <button
                   type="button"
@@ -1153,13 +1161,15 @@ export default function GuestEditingProposalModal({
                 >
                   Close
                 </button>
-                <button
-                  type="button"
-                  className="gep-button gep-button--primary"
-                  onClick={handleStartEditing}
-                >
-                  Edit Proposal
-                </button>
+                {!isAcceptedOrDrafting && (
+                  <button
+                    type="button"
+                    className="gep-button gep-button--primary"
+                    onClick={handleStartEditing}
+                  >
+                    Edit Proposal
+                  </button>
+                )}
               </>
             ) : view === 'editing' ? (
               /* Editing state: User is actively changing fields */
