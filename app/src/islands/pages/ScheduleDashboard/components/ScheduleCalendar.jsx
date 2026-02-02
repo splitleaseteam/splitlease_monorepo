@@ -157,7 +157,8 @@ export default function ScheduleCalendar({
   currentMonth: currentMonthProp,
   transactionsByDate = {},
   onSelectTransaction,
-  priceOverlays = null // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
+  priceOverlays = null, // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
+  roommatePriceOverlays = null // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
 }) {
   // Default to current date if no month provided
   const currentMonth = currentMonthProp || new Date();
@@ -196,12 +197,25 @@ export default function ScheduleCalendar({
   };
 
   /**
-   * Get price overlay for a specific date (user's nights only in pricing mode)
+   * Get price overlay for a specific date
+   * - For user's nights: use priceOverlays (from user's strategy)
+   * - For roommate's nights: use roommatePriceOverlays (from roommate's strategy)
    */
-  const getPriceOverlay = (date) => {
-    if (!date || !priceOverlays) return null;
+  const getPriceOverlay = (date, status) => {
+    if (!date) return null;
     const dateStr = toDateString(date);
-    return priceOverlays[dateStr] || null;
+
+    // User's nights - show user's price (existing behavior in Pricing Settings mode)
+    if (status === 'mine' && priceOverlays) {
+      return priceOverlays[dateStr] || null;
+    }
+
+    // Roommate's nights - show roommate's price (NEW - in Date Changes mode)
+    if ((status === 'roommate' || status === 'adjacent') && roommatePriceOverlays) {
+      return roommatePriceOverlays[dateStr] || null;
+    }
+
+    return null;
   };
 
   /**
@@ -376,8 +390,8 @@ export default function ScheduleCalendar({
                 const hasTransaction = isPast && transaction;
                 const transactionAmount = hasTransaction ? formatTransactionAmount(transaction) : null;
 
-                // Check for price overlay (shown on user's nights in pricing mode)
-                const priceOverlay = date && status === 'mine' ? getPriceOverlay(date) : null;
+                // Check for price overlay (user's nights OR roommate's nights)
+                const priceOverlay = date ? getPriceOverlay(date, status) : null;
 
                 // Check for shared night (co-occupancy)
                 const isShared = date && isInDateArray(date, sharedNights);
@@ -512,6 +526,10 @@ ScheduleCalendar.propTypes = {
   })),
   onSelectTransaction: PropTypes.func,
   priceOverlays: PropTypes.objectOf(PropTypes.shape({
+    price: PropTypes.number.isRequired,
+    tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
+  })),
+  roommatePriceOverlays: PropTypes.objectOf(PropTypes.shape({
     price: PropTypes.number.isRequired,
     tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
   }))

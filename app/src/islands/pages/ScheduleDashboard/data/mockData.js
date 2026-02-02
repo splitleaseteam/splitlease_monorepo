@@ -20,7 +20,19 @@ export const MOCK_ROOMMATE = {
   firstName: 'Sarah',
   lastName: 'Chen',
   avatarUrl: null,
-  email: 'sarah.c@example.com'
+  email: 'sarah.c@example.com',
+  pricingStrategy: {
+    baseRate: 165,
+    noticeMultipliers: {
+      flexible: 1.0,
+      standard: 1.1,
+      inconvenient: 1.5,
+      disruptive: 2.0,
+      emergency: 3.0
+    },
+    edgePreference: 'end_cheaper',
+    sharingWillingness: 'accommodating'
+  }
 };
 
 export const MOCK_MESSAGES = [

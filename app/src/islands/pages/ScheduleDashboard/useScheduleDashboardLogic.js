@@ -181,11 +181,46 @@ export function useScheduleDashboardLogic() {
   // Flexibility metrics breakdown for comparison
   const flexibilityMetrics = MOCK_FLEXIBILITY_METRICS;
 
-  // Base price for selected night (from lease nightly rate)
+  // Base price for selected night - USE ROOMMATE'S STRATEGY when buying out
   const basePrice = useMemo(() => {
-    if (!calendar.selectedNight || !lease) return null;
-    return lease.nightlyRate;
-  }, [calendar.selectedNight, lease]);
+    if (!calendar.selectedNight) return null;
+
+    // If buying a roommate's night, use THEIR pricing strategy
+    if (calendar.roommateNights?.includes(calendar.selectedNight)) {
+      // Calculate price using roommate's pricing strategy
+      if (roommate?.pricingStrategy) {
+        const roommateStrategy = roommate.pricingStrategy;
+        const baseCost = roommateStrategy.baseRate;
+        const noticeMultipliers = roommateStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
+
+        const date = new Date(calendar.selectedNight + 'T12:00:00');
+        if (!Number.isNaN(date.getTime())) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dayOfWeek = date.getDay();
+          const daysDiff = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+          // Tier 2: Notice multiplier (from roommate's settings)
+          const noticeThreshold = getNoticeThresholdForDate(daysDiff);
+          const noticeMultiplier = noticeMultipliers[noticeThreshold] ?? 1.0;
+
+          // Tier 3: Edge multiplier (from roommate's settings)
+          const edgeMultiplier = EDGE_MULTIPLIERS[roommateStrategy.edgePreference]?.[dayOfWeek] || 1.0;
+
+          // Calculate final price using ROOMMATE's formula
+          return Math.round(baseCost * noticeMultiplier * edgeMultiplier);
+        }
+      }
+
+      // Fallback to roommate's base rate if available
+      if (roommate?.pricingStrategy?.baseRate) {
+        return roommate.pricingStrategy.baseRate;
+      }
+    }
+
+    // Fallback to lease rate
+    return lease?.nightlyRate || null;
+  }, [calendar.selectedNight, calendar.roommateNights, roommate, lease]);
 
   // List of US holidays (simplified - could be expanded)
   const holidays = useMemo(() => {
@@ -293,6 +328,63 @@ export function useScheduleDashboardLogic() {
 
     return Object.keys(overlays).length > 0 ? overlays : null;
   }, [calendar.userNights, pricing.pricingStrategy]);
+
+  // =========================================================================
+  // ROOMMATE PRICE OVERLAYS (for Date Changes view)
+  // Uses ROOMMATE's pricing strategy, NOT the current user's
+  // =========================================================================
+  const roommatePriceOverlays = useMemo(() => {
+    // Only compute if we have roommate nights and roommate has pricing strategy
+    if (!calendar.roommateNights || calendar.roommateNights.length === 0) return null;
+    if (!roommate?.pricingStrategy) return null;
+
+    const overlays = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Use ROOMMATE's pricing strategy (NOT user's)
+    const roommateStrategy = roommate.pricingStrategy;
+    const baseCost = roommateStrategy.baseRate;
+    const noticeMultipliers = roommateStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
+
+    for (const nightStr of calendar.roommateNights) {
+      const date = new Date(nightStr + 'T12:00:00');
+      if (Number.isNaN(date.getTime())) continue;
+
+      const dayOfWeek = date.getDay();
+      const daysDiff = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+
+      // Skip past dates
+      if (daysDiff < 0) continue;
+
+      // Tier 2: Notice multiplier (from roommate's settings)
+      const noticeThreshold = getNoticeThresholdForDate(daysDiff);
+      const noticeMultiplier = noticeMultipliers[noticeThreshold] ?? 1.0;
+
+      // Tier 3: Edge multiplier (from roommate's settings)
+      const edgeMultiplier = EDGE_MULTIPLIERS[roommateStrategy.edgePreference]?.[dayOfWeek] || 1.0;
+
+      // Calculate final price using ROOMMATE's formula
+      const price = Math.round(baseCost * noticeMultiplier * edgeMultiplier);
+
+      // Determine tier for styling
+      let tier = 'within';
+      if (noticeThreshold === 'emergency' || noticeThreshold === 'disruptive') {
+        tier = 'limit';
+      } else if (noticeThreshold === 'inconvenient') {
+        tier = 'near';
+      }
+
+      overlays[nightStr] = {
+        price,
+        tier,
+        noticeThreshold,
+        edgeMultiplier
+      };
+    }
+
+    return Object.keys(overlays).length > 0 ? overlays : null;
+  }, [calendar.roommateNights, roommate?.pricingStrategy]);
 
   // Computed price examples for Live Preview section - 3-Tier Model
   // Shows example prices for Mon/Wed/Fri at 14 days notice (standard threshold)
@@ -1164,6 +1256,7 @@ export function useScheduleDashboardLogic() {
     isSavingPreferences: pricing.isSavingPreferences,
     computedSuggestedPrices,
     priceOverlays,
+    roommatePriceOverlays,
     computedExamples,
 
     // Handlers

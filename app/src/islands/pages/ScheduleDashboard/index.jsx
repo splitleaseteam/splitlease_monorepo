@@ -139,6 +139,7 @@ export default function ScheduleDashboard() {
     pricingStrategy,
     isSavingPreferences,
     priceOverlays,
+    roommatePriceOverlays,
     computedExamples,
 
     // Handlers
@@ -225,6 +226,7 @@ export default function ScheduleDashboard() {
                           onMonthChange={handleMonthChange}
                           transactionsByDate={transactionsByDate}
                           onSelectTransaction={handleSelectTransaction}
+                          roommatePriceOverlays={roommatePriceOverlays}
                         />
                       </section>
 
