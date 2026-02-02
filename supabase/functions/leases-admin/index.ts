@@ -265,8 +265,8 @@ async function handleList(
       .select('*')
       .in('_id', guestIds);
 
-    if (guestsError) {
-      console.error('[leases-admin] Fetch guests error:', guestsError);
+    if (_guestsError) {
+      console.error('[leases-admin] Fetch guests error:', _guestsError);
     } else {
       console.log(`[leases-admin] Fetched ${guests?.length || 0} guests for ${guestIds.length} IDs`);
       (guests || []).forEach((guest: Record<string, unknown>) => {
