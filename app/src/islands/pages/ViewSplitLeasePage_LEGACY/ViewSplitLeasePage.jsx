@@ -337,7 +337,7 @@ function ErrorState({ message }) {
       <p className={styles.errorMessage}>
         {message || 'The property you are looking for does not exist or has been removed.'}
       </p>
-      <a href="/search.html" className={styles.errorButton}>
+      <a href="/search" className={styles.errorButton}>
         Browse All Listings
       </a>
     </div>

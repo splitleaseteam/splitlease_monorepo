@@ -28,7 +28,7 @@
  */
 import { PRICING_CONSTANTS } from '../../constants/pricingConstants.js';
 
-export function calculateUnusedNightsDiscountArray({ selectedNights = [], baseDiscount = PRICING_CONSTANTS.UNUSED_NIGHTS_DISCOUNT_MULTIPLIER } = {}) {
+export function calculateUnusedNightsDiscountArray({ selectedNights: _selectedNights = [], baseDiscount = PRICING_CONSTANTS.UNUSED_NIGHTS_DISCOUNT_MULTIPLIER } = {}) {
   // No Fallback: Validate baseDiscount
   if (typeof baseDiscount !== 'number' || isNaN(baseDiscount)) {
     throw new Error(
