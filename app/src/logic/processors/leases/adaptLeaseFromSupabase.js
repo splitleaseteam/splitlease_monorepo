@@ -90,6 +90,10 @@ export function adaptLeaseFromSupabase(row) {
       ? row.stays.map(adaptStayFromSupabase)
       : parseJsonbArray(row['List of Stays']),
 
+    // Booked dates (from JSONB)
+    bookedDates: parseJsonbArray(row['List of Booked Dates']),
+    bookedDatesAfterRequest: parseJsonbArray(row['List of Booked Dates after Requests']),
+
     // Payment records (from join)
     paymentRecords: Array.isArray(row.paymentRecords)
       ? row.paymentRecords.map(adaptPaymentRecordFromSupabase)
