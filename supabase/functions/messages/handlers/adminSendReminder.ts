@@ -237,7 +237,7 @@ export async function handleAdminSendReminder(
     .select(`
       _id,
       "Thread Subject",
-      "~Last Message",
+      last_message_preview,
       host_user_id,
       guest_user_id
     `)
@@ -271,7 +271,7 @@ export async function handleAdminSendReminder(
   // Step 5: Send notifications
   const sentTo: AdminSendReminderResult['sentTo'] = [];
   const threadSubject = thread['Thread Subject'] || 'Your Conversation';
-  const messagePreview = thread['~Last Message'] || 'You have a new message';
+  const messagePreview = thread['last_message_preview'] || 'You have a new message';
 
   const recipientsToNotify: Array<{ type: 'host' | 'guest'; user: typeof hostUser }> = [];
 

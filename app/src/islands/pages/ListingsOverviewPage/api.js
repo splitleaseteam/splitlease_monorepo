@@ -88,9 +88,9 @@ export async function getListings({ filters, page = 1, pageSize = PAGE_SIZE }) {
       "host name",
       "Location - Borough",
       "Location - Hood",
-      "💰Nightly Host Rate for 1 night",
-      "💰Nightly Host Rate for 3 nights",
-      "💰Price Override",
+      "nightly_rate_1_night",
+      "nightly_rate_3_nights",
+      "price_override",
       "Active",
       "Approved",
       "Complete",
@@ -343,7 +343,7 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
     // Fetch current prices (note: column names have emoji prefixes from Bubble)
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
-      .select('"💰Nightly Host Rate for 1 night", "💰Nightly Host Rate for 3 nights"')
+      .select('"nightly_rate_1_night", "nightly_rate_3_nights"')
       .eq('_id', id)
       .single();
 
@@ -352,8 +352,8 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
       continue;
     }
 
-    const currentNightly = listing['💰Nightly Host Rate for 1 night'] || 0;
-    const current3Night = listing['💰Nightly Host Rate for 3 nights'] || 0;
+    const currentNightly = listing['nightly_rate_1_night'] || 0;
+    const current3Night = listing['nightly_rate_3_nights'] || 0;
 
     // Calculate new prices
     const newNightly = Math.round(currentNightly * multiplier * 100) / 100;
@@ -363,8 +363,8 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
     const { error: updateError } = await supabase
       .from('listing')
       .update({
-        '💰Nightly Host Rate for 1 night': newNightly,
-        '💰Nightly Host Rate for 3 nights': new3Night,
+        'nightly_rate_1_night': newNightly,
+        'nightly_rate_3_nights': new3Night,
         'Modified Date': new Date().toISOString(),
       })
       .eq('_id', id);

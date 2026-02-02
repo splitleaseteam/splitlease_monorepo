@@ -162,20 +162,20 @@ export async function handleCreate(
       "Host User",
       "rental type",
       "Features - House Rules",
-      "💰Cleaning Cost / Maintenance Fee",
-      "💰Damage Deposit",
+      cleaning_fee,
+      damage_deposit,
       "Weeks offered",
       "Days Available (List of Days)",
       "Nights Available (List of Nights) ",
       "Location - Address",
       "Location - slightly different address",
-      "💰Weekly Host Rate",
-      "💰Nightly Host Rate for 2 nights",
-      "💰Nightly Host Rate for 3 nights",
-      "💰Nightly Host Rate for 4 nights",
-      "💰Nightly Host Rate for 5 nights",
-      "💰Nightly Host Rate for 7 nights",
-      "💰Monthly Host Rate",
+      weekly_host_rate,
+      nightly_rate_2_nights,
+      nightly_rate_3_nights,
+      nightly_rate_4_nights,
+      nightly_rate_5_nights,
+      nightly_rate_7_nights,
+      monthly_host_rate,
       "Deleted"
     `
     )
@@ -326,8 +326,8 @@ export async function handleCreate(
     rentalType,
     nightsPerWeek,
     hostNightlyRate,
-    weeklyRate: listingData["💰Weekly Host Rate"],
-    monthlyRate: listingData["💰Monthly Host Rate"],
+    weeklyRate: listingData["weekly_host_rate"],
+    monthlyRate: listingData["monthly_host_rate"],
     guestProposalPrice: input.proposalPrice
   });
 
@@ -335,10 +335,10 @@ export async function handleCreate(
     rentalType,
     (input.reservationSpan || "other") as ReservationSpan,
     nightsPerWeek,
-    listingData["💰Weekly Host Rate"] || 0,
+    listingData["weekly_host_rate"] || 0,
     hostNightlyRate,
     input.reservationSpanWeeks,
-    listingData["💰Monthly Host Rate"] || 0
+    listingData["monthly_host_rate"] || 0
   );
 
   // Calculate move-out date
@@ -439,8 +439,8 @@ export async function handleCreate(
     "Total Compensation (proposal - host)": compensation.total_compensation,
     "host compensation": compensation.host_compensation_per_night,
     "4 week compensation": input.fourWeekCompensation || compensation.four_week_compensation,
-    "cleaning fee": listingData["💰Cleaning Cost / Maintenance Fee"] || 0,
-    "damage deposit": listingData["💰Damage Deposit"] || 0,
+    "cleaning fee": listingData["cleaning_fee"] || 0,
+    "damage deposit": listingData["damage_deposit"] || 0,
     "nightly price for map (text)": formatPriceForDisplay(input.proposalPrice),
 
     // From listing

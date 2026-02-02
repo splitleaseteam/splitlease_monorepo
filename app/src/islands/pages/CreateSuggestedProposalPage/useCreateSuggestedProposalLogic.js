@@ -105,13 +105,13 @@ function calculatePricing(listing, nightsPerWeek, weeks) {
 
   // Get nightly rate from listing (check various field names)
   const nightlyPrice =
-    listing[`💰Nightly Host Rate for ${nightsPerWeek} nights`] ||
-    listing['💰Nightly Host Rate for 4 nights'] ||
+    listing[`nightly_rate_${nightsPerWeek}_nights`] ||
+    listing['nightly_rate_4_nights'] ||
     listing['nightly price'] ||
     0;
 
-  const cleaningFee = listing['💰Cleaning Cost / Maintenance Fee'] || 0;
-  const damageDeposit = listing['💰Damage Deposit'] || 0;
+  const cleaningFee = listing['cleaning_fee'] || 0;
+  const damageDeposit = listing['damage_deposit'] || 0;
 
   const totalNights = nightsPerWeek * weeks;
   const fourWeekRent = nightlyPrice * nightsPerWeek * 4;

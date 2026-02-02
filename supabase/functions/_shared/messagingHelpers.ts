@@ -540,8 +540,8 @@ export async function updateThreadLastMessage(
   const { error } = await supabase
     .from('thread')
     .update({
-      "~Last Message": messageBody.substring(0, 100), // Truncate for preview
-      "~Date Last Message": now,
+      last_message_preview: messageBody.substring(0, 100), // Truncate for preview
+      last_message_at: now,
       "Modified Date": now,
       updated_at: now,
     })

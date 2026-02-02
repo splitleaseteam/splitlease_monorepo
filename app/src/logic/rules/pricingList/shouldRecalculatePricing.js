@@ -18,7 +18,7 @@
  *
  * @example
  * shouldRecalculatePricing({
- *   listing: { '💰Nightly Host Rate for 2 nights': 110 },
+ *   listing: { 'nightly_rate_2_nights': 110 },
  *   pricingList: { hostCompensation: [null, 100, ...] }
  * })
  * // => true (rate changed from 100 to 110)
@@ -45,13 +45,13 @@ export function shouldRecalculatePricing({ listing, pricingList }) {
   const hostCompensation = pricingList.hostCompensation || pricingList['Host Compensation'] || [];
 
   const rateFieldMapping = [
-    { field: '💰Nightly Host Rate for 1 night', index: 0 },
-    { field: '💰Nightly Host Rate for 2 nights', index: 1 },
-    { field: '💰Nightly Host Rate for 3 nights', index: 2 },
-    { field: '💰Nightly Host Rate for 4 nights', index: 3 },
-    { field: '💰Nightly Host Rate for 5 nights', index: 4 },
-    { field: '💰Nightly Host Rate for 6 nights', index: 5 },
-    { field: '💰Nightly Host Rate for 7 nights', index: 6 }
+    { field: 'nightly_rate_1_night', index: 0 },
+    { field: 'nightly_rate_2_nights', index: 1 },
+    { field: 'nightly_rate_3_nights', index: 2 },
+    { field: 'nightly_rate_4_nights', index: 3 },
+    { field: 'nightly_rate_5_nights', index: 4 },
+    { field: 'nightly_rate_6_nights', index: 5 },
+    { field: 'nightly_rate_7_nights', index: 6 }
   ];
 
   for (const { field, index } of rateFieldMapping) {
