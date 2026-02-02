@@ -12,7 +12,7 @@
  * - Success confirmation state
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useFeeCalculation } from '../../../../logic/hooks/useFeeCalculation';
 import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
@@ -93,6 +93,26 @@ function PriceBreakdown({ feeBreakdown, isCalculating, priceLabel = 'Base price'
         <span>${feeBreakdown.totalPrice.toFixed(2)}</span>
       </div>
     </div>
+  );
+}
+
+/**
+ * Fairness indicator for custom price offers
+ */
+function FairnessIndicator({ offered, suggested }) {
+  if (!suggested) return null;
+
+  const deviation = ((offered - suggested) / suggested) * 100;
+  let emoji = '🟢';
+  let label = 'Fair offer';
+
+  if (deviation < -20) { emoji = '🟠'; label = 'Below suggested'; }
+  else if (deviation < -10) { emoji = '🟡'; label = 'Slightly below'; }
+
+  return (
+    <span className="buyout-panel__fairness" title={label}>
+      {emoji}
+    </span>
   );
 }
 
@@ -348,6 +368,12 @@ export default function BuyOutPanel({
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSwapSuccess, setShowSwapSuccess] = useState(false);
   const [showShareSuccess, setShowShareSuccess] = useState(false);
+  const [customPrice, setCustomPrice] = useState(null);
+
+  // When basePrice changes, reset customPrice to null (use suggested)
+  useEffect(() => {
+    setCustomPrice(null);
+  }, [basePrice]);
 
   // Use the fee calculation hook - pass requestType for potential future different fee structures
   const { feeBreakdown, isCalculating, error: feeError } = useFeeCalculation(
@@ -375,9 +401,11 @@ export default function BuyOutPanel({
     if (isSubmitting) return;
 
     try {
-      // Pass totalPrice from feeBreakdown to parent for transaction creation
-      const totalPrice = feeBreakdown?.totalPrice || basePrice || 0;
-      await onBuyOut?.(message, totalPrice);
+      // Use customPrice if set, otherwise fall back to feeBreakdown basePrice or basePrice prop
+      const finalPrice = customPrice ?? feeBreakdown?.basePrice ?? basePrice ?? 0;
+      // Calculate total price with fees based on the final price
+      const totalPrice = feeBreakdown?.totalPrice || finalPrice || 0;
+      await onBuyOut?.(message, totalPrice, finalPrice);
       setMessage('');
       setShowSuccess(true);
     } catch (err) {
@@ -568,9 +596,34 @@ export default function BuyOutPanel({
             <PriceBreakdown
               feeBreakdown={feeBreakdown}
               isCalculating={isCalculating}
-              priceLabel={requestType === 'share' ? 'Share fee' : 'Base price'}
+              priceLabel={requestType === 'share' ? 'Share fee' : `${roommateName}'s suggested price`}
             />
           </div>
+
+          {/* Editable Price Offer - Only show for buyout mode */}
+          {requestType !== 'share' && (
+            <div className="buyout-panel__offer-price">
+              <label className="buyout-panel__offer-label">
+                Your offer
+                <span className="buyout-panel__offer-hint">(You can adjust this)</span>
+              </label>
+              <div className="buyout-panel__offer-input-row">
+                <span className="buyout-panel__currency">$</span>
+                <input
+                  type="number"
+                  className="buyout-panel__offer-input"
+                  value={customPrice ?? feeBreakdown?.basePrice ?? ''}
+                  onChange={(e) => setCustomPrice(Number(e.target.value))}
+                  min={0}
+                  step={5}
+                  disabled={isSubmitting}
+                />
+                {customPrice !== null && customPrice !== feeBreakdown?.basePrice && (
+                  <FairnessIndicator offered={customPrice} suggested={feeBreakdown?.basePrice} />
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Fee calculation error */}
           {feeError && (

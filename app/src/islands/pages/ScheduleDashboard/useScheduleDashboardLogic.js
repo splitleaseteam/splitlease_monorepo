@@ -826,6 +826,8 @@ export function useScheduleDashboardLogic() {
           type: 'buyout',
           nights: [nightDate],
           amount: finalAmount,
+          offeredPrice: finalAmount,        // User's chosen price
+          suggestedPrice: basePrice || 0,   // Roommate's suggested price
           transactionId: newTransaction.id
         }
       };
@@ -899,6 +901,8 @@ export function useScheduleDashboardLogic() {
           type: 'share',
           nights: [nightDate],
           amount: finalAmount,
+          offeredPrice: finalAmount,        // User's chosen price
+          suggestedPrice: basePrice || 0,   // Roommate's suggested price
           transactionId: newTransaction.id
         }
       };

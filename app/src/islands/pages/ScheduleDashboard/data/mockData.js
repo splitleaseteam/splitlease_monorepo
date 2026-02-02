@@ -111,6 +111,8 @@ export const MOCK_TRANSACTIONS = [
     type: 'buyout',
     nights: [new Date(2026, 1, 14)],
     amount: 150,
+    suggestedPrice: 198,  // Calculated from recipient's settings
+    offeredPrice: 150,    // What requester chose to offer (below suggested)
     payerId: 'current-user',
     payeeId: 'user-456',
     status: 'pending'
@@ -121,6 +123,8 @@ export const MOCK_TRANSACTIONS = [
     type: 'swap',
     nights: [new Date(2026, 1, 10), new Date(2026, 1, 17)],
     amount: 0,
+    suggestedPrice: 0,    // Swaps have no suggested price
+    offeredPrice: 0,      // Swaps are always free
     payerId: 'current-user',
     payeeId: 'user-456',
     status: 'complete'
@@ -131,6 +135,8 @@ export const MOCK_TRANSACTIONS = [
     type: 'buyout',
     nights: [new Date(2026, 1, 7)],
     amount: 125,
+    suggestedPrice: 125,  // Calculated from recipient's settings
+    offeredPrice: 125,    // Fair offer matching suggested
     payerId: 'user-456',
     payeeId: 'current-user',
     status: 'complete'
@@ -141,6 +147,8 @@ export const MOCK_TRANSACTIONS = [
     type: 'buyout',
     nights: [new Date(2026, 1, 3)],
     amount: 175,
+    suggestedPrice: 220,  // Calculated from recipient's settings
+    offeredPrice: 175,    // Below suggested (declined)
     payerId: 'current-user',
     payeeId: 'user-456',
     status: 'declined'
@@ -151,6 +159,8 @@ export const MOCK_TRANSACTIONS = [
     type: 'swap',
     nights: [new Date(2026, 1, 10), new Date(2026, 1, 14)],
     amount: 0,
+    suggestedPrice: 0,    // Swaps have no suggested price
+    offeredPrice: 0,      // Swaps are always free
     payerId: 'current-user',
     payeeId: 'user-456',
     status: 'pending'

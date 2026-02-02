@@ -1991,6 +1991,38 @@
   border: 1px solid var(--schedule-border);
 }
 
+.chat-bubble__request-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.chat-bubble__request-amount {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.chat-bubble--sent .chat-bubble__request-amount {
+  color: rgba(255,255,255,0.95);
+}
+
+.chat-bubble__suggested-price {
+  font-size: 0.85rem;
+  color: #9CA3AF;
+}
+
+.chat-bubble--sent .chat-bubble__suggested-price {
+  color: rgba(255,255,255,0.7);
+}
+
+.chat-bubble--sent .chat-bubble__request-info {
+  border-top-color: rgba(255,255,255,0.2);
+}
+
 .chat-notice {
   display: flex;
   flex-direction: column;
@@ -3634,6 +3666,13 @@
   margin: 4px 0 0 0;
 }
 
+.pricing-settings__explainer {
+  font-size: 0.9rem;
+  color: #6B7280;
+  margin: 0 20px 1.5rem 20px;
+  line-height: 1.5;
+}
+
 /* Content Container - 2-Column Grid (Notice Period Wide | Stacked Cost + Edge) */
 .pricing-settings__content {
   padding: 24px;
@@ -4498,4 +4537,65 @@
 
 .schedule-dashboard__perspective-banner a:hover {
   color: #78350F;
+}
+
+/* ============================================================================
+   BUYOUT PANEL - EDITABLE PRICE OFFER
+   ============================================================================ */
+
+.buyout-panel__offer-price {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #F9FAFB;
+  border-radius: 8px;
+}
+
+.buyout-panel__offer-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.buyout-panel__offer-hint {
+  font-weight: 400;
+  color: #9CA3AF;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+.buyout-panel__offer-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buyout-panel__currency {
+  font-size: 1.25rem;
+  color: #6B7280;
+}
+
+.buyout-panel__offer-input {
+  width: 100px;
+  padding: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid #E5E7EB;
+  border-radius: 6px;
+  text-align: right;
+}
+
+.buyout-panel__offer-input:focus {
+  outline: none;
+  border-color: #6D31C2;
+}
+
+.buyout-panel__offer-input:disabled {
+  background: #F3F4F6;
+  cursor: not-allowed;
+}
+
+.buyout-panel__fairness {
+  font-size: 1.25rem;
+  cursor: help;
 }

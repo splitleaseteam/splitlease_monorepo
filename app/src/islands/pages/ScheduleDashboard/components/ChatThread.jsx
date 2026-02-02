@@ -43,6 +43,19 @@ function MessageBubble({ message, isCurrentUser, displayName, onAccept, onDeclin
         <div className="chat-bubble__sender">{displayName}</div>
         {message.text || message.content}
 
+        {message.type === 'request' && message.requestData && (
+          <div className="chat-bubble__request-info">
+            <span className="chat-bubble__request-amount">
+              ${message.requestData.amount?.toFixed(2) || message.requestData.offeredPrice?.toFixed(2) || '0.00'}
+            </span>
+            {message.requestData.suggestedPrice && message.requestData.offeredPrice !== message.requestData.suggestedPrice && (
+              <span className="chat-bubble__suggested-price">
+                (suggested: ${message.requestData.suggestedPrice.toFixed(2)})
+              </span>
+            )}
+          </div>
+        )}
+
         {message.type === 'request' && message.status && message.status !== 'pending' && (
           <div className={`chat-bubble__status chat-bubble__status--${message.status}`}>
             {message.status === 'accepted' ? '✓ Accepted' : '✗ Declined'}
