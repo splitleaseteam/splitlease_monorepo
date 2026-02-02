@@ -33,13 +33,12 @@ export function PricingRow({ proposal, isDeclined = false }) {
   const isMonthly = rentalType === 'monthly';
   const isWeekly = rentalType === 'weekly';
 
-  // Host compensation values based on rental type
-  // - Monthly: use 'host compensation' (monthly rate) or '4 week compensation'
-  // - Weekly: use '4 week compensation' / 4
-  // - Nightly: calculate from total / nights
-  const hostTotalCompensation = proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation || 0;
-  const hostMonthlyCompensation = proposal?.['host compensation'] || 0;
-  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
+  // Calculate host compensation from GUEST price (hosts earn 85% of what guests pay)
+  // The database "Total Compensation (proposal - host)" field can be incorrect,
+  // so we calculate from guest nightly price which is the source of truth
+  const guestNightlyPrice = proposal?.['proposal nightly price'] || proposal?.nightly_rate || 0;
+  const HOST_SHARE_PERCENTAGE = 0.85; // Host receives 85% of guest price
+  const hostNightlyRate = guestNightlyPrice * HOST_SHARE_PERCENTAGE;
 
   const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
   const durationMonths = proposal?.['duration in months'] || Math.round(originalWeeks / 4);
@@ -62,30 +61,35 @@ export function PricingRow({ proposal, isDeclined = false }) {
   const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
   const nightsPerWeek = nightsSelected.length;
   const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
+
+  // Calculate host total from nightly rate (NOT from database field which can be incorrect)
+  const totalNightsCount = nightsPerWeek * weeks;
+  const hostTotalCompensation = Math.round(hostNightlyRate * totalNightsCount * 100) / 100;
   const totalEarnings = hostTotalCompensation;
 
-  // Calculate rate based on rental type
+  // Calculate rate display based on rental type
+  // All rates are derived from the correct host nightly rate
   let rateValue = 0;
   let rateUnit = '';
   let periodCount = 0;
   let periodUnit = '';
 
   if (isMonthly) {
-    // Monthly rental: show per-month compensation
-    rateValue = hostMonthlyCompensation || (host4WeekCompensation > 0 ? host4WeekCompensation : Math.round(hostTotalCompensation / durationMonths));
+    // Monthly rental: calculate monthly compensation from host nightly rate
+    const nightsPerMonth = nightsPerWeek * 4; // Approximate nights per month
+    rateValue = Math.round(hostNightlyRate * nightsPerMonth);
     rateUnit = '/mo';
     periodCount = durationMonths;
     periodUnit = durationMonths === 1 ? 'month' : 'months';
   } else if (isWeekly) {
-    // Weekly rental: show per-week compensation
-    rateValue = host4WeekCompensation > 0 ? Math.round(host4WeekCompensation / 4) : Math.round(hostTotalCompensation / weeks);
+    // Weekly rental: calculate weekly compensation from host nightly rate
+    rateValue = Math.round(hostNightlyRate * nightsPerWeek);
     rateUnit = '/wk';
     periodCount = weeks;
     periodUnit = weeks === 1 ? 'week' : 'weeks';
   } else {
-    // Nightly rental: show per-night compensation
-    const totalNights = nightsPerWeek * weeks;
-    rateValue = totalNights > 0 ? Math.round((hostTotalCompensation / totalNights) * 100) / 100 : 0;
+    // Nightly rental: show per-night host compensation directly
+    rateValue = Math.round(hostNightlyRate * 100) / 100;
     rateUnit = '/night';
     periodCount = weeks;
     periodUnit = 'wks';

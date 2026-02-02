@@ -91,17 +91,30 @@ function formatDuration(proposal) {
 }
 
 /**
- * Format total host compensation (NOT guest price)
+ * Format total host compensation (calculated from guest price × 85%)
+ * The database "Total Compensation (proposal - host)" field can be incorrect,
+ * so we calculate from guest nightly price which is the source of truth.
  * @param {Object} proposal - The proposal object
  * @returns {string} Formatted currency string
  */
 function formatTotalHostCompensation(proposal) {
-  // Use host compensation fields ONLY - never guest prices
-  const total = proposal?.['Total Compensation (proposal - host)'] ||
-    proposal?.total_compensation ||
-    proposal?.host_earnings ||
-    0;
-  return `$${Number(total).toLocaleString()}`;
+  // Get guest nightly price (source of truth)
+  const guestNightlyPrice = proposal?.['proposal nightly price'] || proposal?.nightly_rate || 0;
+  const HOST_SHARE_PERCENTAGE = 0.85; // Host receives 85% of guest price
+
+  // Get nights and weeks to calculate total
+  let nightsSelected = proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || [];
+  if (typeof nightsSelected === 'string') {
+    try { nightsSelected = JSON.parse(nightsSelected); } catch { nightsSelected = []; }
+  }
+  const nightsPerWeek = nightsSelected.length || 0;
+  const weeks = proposal?.duration_weeks || proposal?.['Reservation Span (Weeks)'] || proposal?.weeks || 0;
+
+  // Calculate host total: guest nightly × 85% × total nights
+  const totalNights = nightsPerWeek * weeks;
+  const hostTotal = Math.round(guestNightlyPrice * HOST_SHARE_PERCENTAGE * totalNights);
+
+  return `$${Number(hostTotal).toLocaleString()}`;
 }
 
 /**
