@@ -232,7 +232,7 @@ async function handleList(
   const { limit = 500, offset = 0 } = payload;
 
   // Fetch leases
-  const { data: _data, error, _count } = await supabase
+  const { data: _data, error, _count } = await _supabase
     .from('bookings_leases')
     .select('*', { count: 'exact' })
     .order('Created Date', { ascending: false })
@@ -243,7 +243,7 @@ async function handleList(
     throw new Error(`Failed to fetch leases: ${error.message}`);
   }
 
-  const leases = data || [];
+  const leases = _data || [];
   const leaseIds = leases.map((l: { _id: string }) => l._id);
 
   // Fetch related data separately
@@ -260,7 +260,7 @@ async function handleList(
   // Fetch guests
   const guestsMap: Record<string, unknown> = {};
   if (guestIds.length > 0) {
-    const { data: guests, error: _guestsError } = await supabase
+    const { data: guests, error: _guestsError } = await _supabase
       .from('user')
       .select('*')
       .in('_id', guestIds);
@@ -278,7 +278,7 @@ async function handleList(
   // Fetch hosts
   const hostsMap: Record<string, unknown> = {};
   if (hostIds.length > 0) {
-    const { data: hosts, error: hostsError } = await supabase
+    const { data: hosts, error: hostsError } = await _supabase
       .from('user')
       .select('*')
       .in('_id', hostIds);
@@ -296,7 +296,7 @@ async function handleList(
   // Fetch listings
   const listingsMap: Record<string, unknown> = {};
   if (listingIds.length > 0) {
-    const { data: listings, error: listingsError } = await supabase
+    const { data: listings, error: listingsError } = await _supabase
       .from('Listing')
       .select('*')
       .in('_id', listingIds);
@@ -314,7 +314,7 @@ async function handleList(
   // Fetch stays
   let staysMap: Record<string, unknown[]> = {};
   if (leaseIds.length > 0) {
-    const { data: stays } = await supabase
+    const { data: stays } = await _supabase
       .from('bookings_stays')
       .select('*')
       .in('Lease', leaseIds);
@@ -417,7 +417,7 @@ async function handleUpdateStatus(
   // Capitalize status for Bubble compatibility
   const bubbleStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': bubbleStatus,
@@ -447,7 +447,7 @@ async function handleSoftDelete(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
@@ -479,7 +479,7 @@ async function handleHardDelete(
   }
 
   // Verify lease is cancelled before hard delete
-  const { data: lease, error: fetchError } = await supabase
+  const { data: lease, error: fetchError } = await _supabase
     .from('bookings_leases')
     .select('_id, "Lease Status"')
     .eq('_id', leaseId)
@@ -494,7 +494,7 @@ async function handleHardDelete(
   }
 
   // Delete associated stays first
-  const { error: staysError } = await supabase
+  const { error: staysError } = await _supabase
     .from('bookings_stays')
     .delete()
     .eq('Lease', leaseId);
@@ -505,7 +505,7 @@ async function handleHardDelete(
   }
 
   // Delete the lease
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await _supabase
     .from('bookings_leases')
     .delete()
     .eq('_id', leaseId);
@@ -536,7 +536,7 @@ async function handleBulkUpdateStatus(
 
   const bubbleStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': bubbleStatus,
@@ -565,7 +565,7 @@ async function handleBulkSoftDelete(
     throw new Error('leaseIds array is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
@@ -595,7 +595,7 @@ async function handleBulkExport(
   }
 
   // Note: Simplified query without FK relationships due to schema limitations
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .select('*')
     .in('_id', leaseIds);
@@ -650,7 +650,7 @@ async function handleUploadDocument(
   // Upload to storage
   const filePath = `leases/${leaseId}/${Date.now()}-${fileName}`;
 
-  const { data: _data, error } = await supabase.storage
+  const { data: _data, error } = await __supabase.storage
     .from('lease-documents')
     .upload(filePath, fileData, {
       contentType: fileType || 'application/octet-stream',
@@ -662,7 +662,7 @@ async function handleUploadDocument(
   }
 
   // Get public URL
-  const { data: { publicUrl } } = supabase.storage
+  const { data: { publicUrl } } = _supabase.storage
     .from('lease-documents')
     .getPublicUrl(filePath);
 
@@ -684,7 +684,7 @@ async function handleDeleteDocument(
     throw new Error('documentPath is required');
   }
 
-  const { error } = await supabase.storage
+  const { error } = await __supabase.storage
     .from('lease-documents')
     .remove([documentPath]);
 
@@ -705,7 +705,7 @@ async function handleListDocuments(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase.storage
+  const { data: _data, error } = await __supabase.storage
     .from('lease-documents')
     .list(`leases/${leaseId}`);
 
@@ -716,7 +716,7 @@ async function handleListDocuments(
   // Get public URLs for each document
   const documents = (data || []).map((file: { name: string; created_at: string; metadata?: { size: number } }) => {
     const filePath = `leases/${leaseId}/${file.name}`;
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = _supabase.storage
       .from('lease-documents')
       .getPublicUrl(filePath);
 
@@ -761,7 +761,7 @@ async function handleCreatePaymentRecord(
   // Generate a unique ID for the payment record
   const paymentId = crypto.randomUUID();
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_payment_records')
     .insert({
       _id: paymentId,
@@ -826,7 +826,7 @@ async function handleUpdatePaymentRecord(
   if (updates.isPaid !== undefined) updateData['Is Paid'] = updates.isPaid;
   if (updates.paymentDelayed !== undefined) updateData['Payment Delayed'] = updates.paymentDelayed;
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_payment_records')
     .update(updateData)
     .eq('_id', paymentId)
@@ -854,7 +854,7 @@ async function handleDeletePaymentRecord(
     throw new Error('paymentId is required');
   }
 
-  const { error } = await supabase
+  const { error } = await _supabase
     .from('bookings_payment_records')
     .delete()
     .eq('_id', paymentId);
@@ -913,7 +913,7 @@ async function handleCreateStays(
   }
 
   // Get lease details
-  const { data: lease, error: leaseError } = await supabase
+  const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
     .select('_id, "Reservation Period : Start", "Reservation Period : End"')
     .eq('_id', leaseId)
@@ -961,7 +961,7 @@ async function handleCreateStays(
   }
 
   if (stays.length > 0) {
-    const { error: insertError } = await supabase
+    const { error: insertError } = await _supabase
       .from('bookings_stays')
       .insert(stays);
 
@@ -987,7 +987,7 @@ async function handleClearStays(
     throw new Error('leaseId is required');
   }
 
-  const { error } = await supabase
+  const { error } = await _supabase
     .from('bookings_stays')
     .delete()
     .eq('Lease', leaseId);
@@ -1016,7 +1016,7 @@ async function handleUpdateBookedDates(
   }
 
   // Get lease details
-  const { data: lease, error: leaseError } = await supabase
+  const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
     .select('_id, "Reservation Period : Start", "Reservation Period : End"')
     .eq('_id', leaseId)
@@ -1044,7 +1044,7 @@ async function handleUpdateBookedDates(
   }
 
   // Update lease with booked dates
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Booked Dates': bookedDates,
@@ -1076,14 +1076,14 @@ async function handleClearBookedDates(
   }
 
   // Get lease to find proposal
-  const { data: lease } = await supabase
+  const { data: lease } = await _supabase
     .from('bookings_leases')
     .select('_id, Proposal')
     .eq('_id', leaseId)
     .single();
 
   // Clear lease booked dates
-  const { error: leaseError } = await supabase
+  const { error: leaseError } = await _supabase
     .from('bookings_leases')
     .update({
       'Booked Dates': [],
@@ -1099,7 +1099,7 @@ async function handleClearBookedDates(
 
   // Clear proposal booked dates if exists
   if (lease?.Proposal) {
-    const { error: proposalError } = await supabase
+    const { error: proposalError } = await _supabase
       .from('bookings_proposals')
       .update({
         'Booked Dates': [],
@@ -1131,7 +1131,7 @@ async function handleCancelLease(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
@@ -1166,7 +1166,7 @@ async function handleGetDocumentChangeRequests(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('datechangerequest')
     .select(`
       *,
