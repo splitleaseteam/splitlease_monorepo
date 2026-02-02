@@ -1,16 +1,10 @@
 /**
  * AmenitiesGrid Component
- * 
+ *
  * Displays listing amenities and safety features in a grid layout.
  * Groups amenities by category and shows icons where available.
- * 
+ *
  * @component
- * @param {object} props
- * @param {Array} props.amenities - Array of amenity objects with name and icon
- * @param {Array} props.safetyFeatures - Array of safety feature objects
- * @param {boolean} props.isExpanded - Whether to show all amenities or just first 6
- * @param {Function} props.onToggle - Expand/collapse toggle handler
- * 
  * @architecture Presentational Component
  * @performance Memoized
  */
@@ -18,15 +12,28 @@
 import { memo } from 'react';
 import styles from './AmenitiesGrid.module.css';
 
+<<<<<<<< HEAD:app/src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid (1).tsx
+========
+// ============================================================================
+// TYPES
+// ============================================================================
+
+>>>>>>>> dde4e4b5b96fd0926091ebe5f9e47e060b986cb9:app/src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid.tsx
 interface Amenity {
     name: string;
     icon?: string;
 }
 
 interface AmenitiesGridProps {
+<<<<<<<< HEAD:app/src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid (1).tsx
     amenities?: Amenity[];
     safetyFeatures?: Amenity[];
     isExpanded?: boolean;
+========
+    amenities: Amenity[];
+    safetyFeatures: Amenity[];
+    isExpanded: boolean;
+>>>>>>>> dde4e4b5b96fd0926091ebe5f9e47e060b986cb9:app/src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid.tsx
     onToggle: () => void;
 }
 
