@@ -4737,3 +4737,127 @@
   font-size: 1.25rem;
   cursor: help;
 }
+
+
+/* Counter-Offer Content */
+.counter-offer-content {
+  padding: 1.5rem;
+}
+
+.counter-offer-content__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.counter-offer-content__comparison {
+  background: #F9FAFB;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.counter-offer-content__price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.counter-offer-content__label {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.counter-offer-content__value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.counter-offer-content__deviation {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #E5E7EB;
+  font-size: 0.875rem;
+  color: #6B7280;
+  text-align: center;
+}
+
+.counter-offer-content__input-section {
+  margin-bottom: 1.5rem;
+}
+
+.counter-offer-content__input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.counter-offer-content__input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.counter-offer-content__currency {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #6B7280;
+}
+
+.counter-offer-content__input {
+  width: 120px;
+  padding: 0.625rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid #E5E7EB;
+  border-radius: 6px;
+  text-align: right;
+}
+
+.counter-offer-content__input:focus {
+  outline: none;
+  border-color: #3B82F6;
+}
+
+.counter-offer-content__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.counter-offer-content__btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.counter-offer-content__btn--secondary {
+  background: white;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+}
+
+.counter-offer-content__btn--secondary:hover {
+  background: #F9FAFB;
+}
+
+.counter-offer-content__btn--primary {
+  background: #3B82F6;
+  border: 1px solid #3B82F6;
+  color: white;
+}
+
+.counter-offer-content__btn--primary:hover {
+  background: #2563EB;
+}
+
+.counter-offer-content__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

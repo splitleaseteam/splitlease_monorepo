@@ -87,8 +87,47 @@ function TypeLabel({ type }) {
 }
 
 function TransactionDetails({ transaction, onCancel }) {
+  const hasPriceComparison = transaction.suggestedPrice && transaction.offeredPrice &&
+                              transaction.suggestedPrice !== transaction.offeredPrice;
+
+  const deviation = hasPriceComparison
+    ? (((transaction.offeredPrice - transaction.suggestedPrice) / transaction.suggestedPrice) * 100).toFixed(0)
+    : null;
+
   return (
     <div className="transaction-details">
+      {hasPriceComparison && (
+        <div className="transaction-details__section">
+          <h4 className="transaction-details__subheading">Pricing</h4>
+          <div className="transaction-details__pricing">
+            <div className="transaction-details__pricing-row">
+              <span className="transaction-details__pricing-label">Offered:</span>
+              <span className="transaction-details__pricing-value">${transaction.offeredPrice.toFixed(2)}</span>
+            </div>
+            <div className="transaction-details__pricing-row">
+              <span className="transaction-details__pricing-label">Suggested:</span>
+              <span className="transaction-details__pricing-value">${transaction.suggestedPrice.toFixed(2)}</span>
+            </div>
+            {deviation && (
+              <div className="transaction-details__pricing-deviation">
+                <span className={`transaction-details__deviation-badge ${
+                  Number(deviation) >= -10 ? 'transaction-details__deviation-badge--fair' :
+                  Number(deviation) >= -20 ? 'transaction-details__deviation-badge--low' :
+                  'transaction-details__deviation-badge--very-low'
+                }`}>
+                  {deviation > 0 ? `+${deviation}` : deviation}%
+                </span>
+                <span className="transaction-details__deviation-label">
+                  {Number(deviation) >= -10 ? 'Fair offer' :
+                   Number(deviation) >= -20 ? 'Slightly below' :
+                   'Below suggested'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="transaction-details__section">
         <h4 className="transaction-details__subheading">Timeline</h4>
         <div className="transaction-details__timeline">
@@ -115,10 +154,10 @@ function TransactionDetails({ transaction, onCancel }) {
           )) || <p className="transaction-details__empty">No messages for this request.</p>}
         </div>
       </div>
-      
+
       <div className="transaction-details__footer">
         {transaction.status === 'pending' && (
-          <button 
+          <button
             className="transaction-details__btn transaction-details__btn--cancel"
             onClick={(e) => {
               e.stopPropagation();

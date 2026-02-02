@@ -1375,10 +1375,53 @@ export function useScheduleDashboardLogic() {
     });
   }, [processedTransactions, currentUserId, txn, calendar, messaging]);
 
+  /**
+   * Handle price-based counter-offer
+   * @param {string} transactionId - ID of transaction to counter
+   * @param {number} counterPrice - Proposed counter price
+   */
+  const handleCounterOffer = useCallback((transactionId, counterPrice) => {
+    txn.setTransactions(prev => {
+      const updated = prev.map(txn => {
+        if (txn.id === transactionId) {
+          return {
+            ...txn,
+            status: 'pending',
+            counterOfferPrice: counterPrice,
+            counterOfferBy: currentUserId
+          };
+        }
+        return txn;
+      });
+      localStorage.setItem(STORAGE_KEYS.transactions, JSON.stringify(updated));
+      return updated;
+    });
+
+    messaging.setMessages(prev => {
+      const counterMessage = {
+        id: `msg-${Date.now()}`,
+        senderId: currentUserId,
+        text: `Countered with $${counterPrice.toFixed(2)}`,
+        timestamp: new Date(),
+        type: 'counter',
+        requestData: {
+          transactionId,
+          counterPrice
+        }
+      };
+      const updated = [...prev, counterMessage];
+      localStorage.setItem(STORAGE_KEYS.messages, JSON.stringify(updated));
+      return updated;
+    });
+
+    ui.setActivePanel(null);
+  }, [currentUserId, txn, messaging, ui]);
+
   const handleViewTransactionDetails = useCallback(async (transactionId) => {
+    ui.handleSelectTransaction(transactionId);
     console.log('Viewing transaction details:', transactionId);
     // TODO: Fetch detailed history/thread if needed
-  }, []);
+  }, [ui]);
 
   /**
    * Handle month navigation
@@ -1533,6 +1576,7 @@ export function useScheduleDashboardLogic() {
     handleAcceptRequest,
     handleDeclineRequest,
     handleCounterRequest,
+    handleCounterOffer,
     handleCancelRequest,
     handleViewTransactionDetails,
     handleSelectTransaction: ui.handleSelectTransaction,

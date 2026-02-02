@@ -117,6 +117,79 @@ function FairnessIndicator({ offered, suggested }) {
 }
 
 /**
+ * Counter-Offer Content - Respond to incoming request with different price
+ */
+function CounterOfferContent({ requestData, onCounterOffer, onCancel, isSubmitting }) {
+  const [counterPrice, setCounterPrice] = useState(requestData.offeredPrice || 0);
+
+  const deviation = requestData.suggestedPrice
+    ? (((counterPrice - requestData.suggestedPrice) / requestData.suggestedPrice) * 100).toFixed(0)
+    : 0;
+
+  const handleSubmit = () => {
+    if (counterPrice <= 0) return;
+    onCounterOffer(counterPrice);
+  };
+
+  return (
+    <div className="counter-offer-content">
+      <h4 className="counter-offer-content__title">Counter This Request</h4>
+
+      <div className="counter-offer-content__comparison">
+        <div className="counter-offer-content__price-row">
+          <span className="counter-offer-content__label">They offered:</span>
+          <span className="counter-offer-content__value">${requestData.offeredPrice?.toFixed(2)}</span>
+        </div>
+        <div className="counter-offer-content__price-row">
+          <span className="counter-offer-content__label">You suggested:</span>
+          <span className="counter-offer-content__value">${requestData.suggestedPrice?.toFixed(2)}</span>
+        </div>
+        {deviation !== '0' && (
+          <div className="counter-offer-content__deviation">
+            {deviation > 0 ? `+${deviation}` : deviation}% from your suggestion
+          </div>
+        )}
+      </div>
+
+      <div className="counter-offer-content__input-section">
+        <label className="counter-offer-content__input-label">Your counter-offer:</label>
+        <div className="counter-offer-content__input-row">
+          <span className="counter-offer-content__currency">$</span>
+          <input
+            type="number"
+            className="counter-offer-content__input"
+            value={counterPrice}
+            onChange={(e) => setCounterPrice(Number(e.target.value))}
+            min={0}
+            step={5}
+            disabled={isSubmitting}
+          />
+        </div>
+      </div>
+
+      <div className="counter-offer-content__actions">
+        <button
+          type="button"
+          className="counter-offer-content__btn counter-offer-content__btn--secondary"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="counter-offer-content__btn counter-offer-content__btn--primary"
+          onClick={handleSubmit}
+          disabled={isSubmitting || counterPrice <= 0}
+        >
+          {isSubmitting ? 'Sending...' : 'Send Counter-Offer'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Swap Mode Content - Select a night to offer in exchange
  */
 function SwapModeContent({
