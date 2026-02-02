@@ -11,10 +11,11 @@
  * This function bridges the gap between user creation and AI profile parsing.
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 import { ValidationError } from '../_shared/errors.ts';
+import { sendWelcomeEmail, sendInternalSignupNotification, sendWelcomeSms as _sendWelcomeSms } from '../_shared/emailUtils.ts';
 
 console.log('[ai-signup-guest] Edge Function started');
 
@@ -130,6 +131,59 @@ Deno.serve(async (req) => {
     }
 
     console.log('[ai-signup-guest] ✅ Freeform text saved to user record');
+
+    // ========== STEP 3: Send Welcome Email ==========
+    // CRITICAL: Must be awaited in Deno Edge Functions - fire-and-forget IIFEs are cancelled when handler returns
+    // This matches the pattern used in auth-user/signup.ts
+    console.log('[ai-signup-guest] Step 3: Sending welcome email...');
+
+    // Generate login/magic link for the user
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://split.lease';
+    const loginLink = `${siteUrl}/login`;
+
+    // Extract name for email greeting
+    const firstName = userData['Name - First'] || '';
+    const userType = (userData['Type - User Current'] as string) || 'Guest';
+    const mappedUserType = userType.includes('Host') ? 'Host' : 'Guest';
+
+    try {
+      console.log('[ai-signup-guest] 📧 Sending welcome email to:', userData.email);
+      const emailResult = await sendWelcomeEmail(
+        mappedUserType,
+        userData.email,
+        firstName,
+        loginLink
+      );
+      if (!emailResult.success) {
+        console.error('[ai-signup-guest] Welcome email failed:', emailResult.error);
+        // Non-blocking: Continue with signup even if email fails
+      } else {
+        console.log('[ai-signup-guest] ✅ Welcome email sent');
+      }
+    } catch (_err) {
+      console.error('[ai-signup-guest] Welcome email error:', err);
+      // Non-blocking: Continue with signup even if email fails
+    }
+
+    // Send internal notification (non-blocking, but awaited to prevent Deno Edge Function cancellation)
+    try {
+      const lastName = userData['Name - Last'] || '';
+      const result = await sendInternalSignupNotification(
+        userData._id,
+        userData.email,
+        firstName,
+        lastName,
+        mappedUserType
+      );
+      if (!result.success) {
+        console.error('[ai-signup-guest] Internal notification failed:', result.error);
+      } else {
+        console.log('[ai-signup-guest] ✅ Internal notification sent');
+      }
+    } catch (_err) {
+      console.error('[ai-signup-guest] Internal notification error:', err);
+    }
+
     console.log('[ai-signup-guest] ========== SUCCESS ==========');
 
     // Return user data for subsequent parseProfile call

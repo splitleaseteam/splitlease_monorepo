@@ -17,7 +17,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { ValidationError, BubbleApiError } from "../../_shared/errors.ts";
+import { ValidationError as _ValidationError, BubbleApiError } from "../../_shared/errors.ts";
 import {
   NotifyParticipantsInput,
   NotifyParticipantsResponse,
@@ -31,7 +31,7 @@ import { validateNotifyParticipantsInput } from "../lib/validators.ts";
 export async function handleNotifyParticipants(
   payload: Record<string, unknown>,
   user: UserContext | null,
-  supabase: SupabaseClient
+  _supabase: SupabaseClient
 ): Promise<NotifyParticipantsResponse> {
   console.log(`[virtual-meeting:notify_participants] Starting for user: ${user?.email || 'public'}`);
 

@@ -226,13 +226,16 @@ export default function HostProposalsPage() {
 
     // Editing state
     showRejectOnOpen,
+    acceptMode,
+    isAccepting,
 
     // Editing handlers
     handleCloseEditing,
     handleAcceptAsIs,
     handleCounteroffer,
     handleRejectFromEditing,
-    handleEditingAlert
+    handleEditingAlert,
+    handleConfirmAcceptance
   } = useHostProposalsPageLogic({ skipAuth: DEMO_MODE });
 
   // ============================================================================
@@ -493,18 +496,21 @@ export default function HostProposalsPage() {
             onAlert={handleEditingAlert}
           />
         ) : (
-          // Normal editing mode: show with overlay and container
+          // Normal editing mode or accept mode: show with overlay and container
           <div className="editing-proposal-overlay">
             <div className="editing-proposal-container">
               <HostEditingProposal
                 proposal={selectedProposal}
                 availableHouseRules={allHouseRules}
                 initialShowReject={showRejectOnOpen}
+                mode={acceptMode ? 'accept' : 'edit'}
                 onAcceptAsIs={() => handleAcceptAsIs(selectedProposal)}
                 onCounteroffer={handleCounteroffer}
                 onReject={(reason) => handleRejectFromEditing(selectedProposal, reason)}
                 onCancel={handleCloseEditing}
                 onAlert={handleEditingAlert}
+                onConfirmAcceptance={handleConfirmAcceptance}
+                isAccepting={isAccepting}
               />
             </div>
           </div>

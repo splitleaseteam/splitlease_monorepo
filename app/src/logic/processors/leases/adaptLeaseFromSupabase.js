@@ -57,6 +57,7 @@ export function adaptLeaseFromSupabase(row) {
     id: row._id,
     bubbleId: row.bubble_id,
     agreementNumber: row['Agreement Number'] || null,
+    proposalId: row.Proposal || null,
 
     // Status
     status: mapLeaseStatus(row['Lease Status']),

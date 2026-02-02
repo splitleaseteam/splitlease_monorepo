@@ -303,7 +303,7 @@ export const DeleteProposal = {
 };
 
 // All Variations
-const AllVariationsComponent = () => {
+const AllVariationsWrapper = () => {
   const [openModal, setOpenModal] = useState(null);
 
   const scenarios = [
@@ -385,7 +385,7 @@ const AllVariationsComponent = () => {
 };
 
 export const AllVariations = {
-  render: () => <AllVariationsComponent />,
+  render: () => <AllVariationsWrapper />,
   parameters: {
     docs: {
       description: {

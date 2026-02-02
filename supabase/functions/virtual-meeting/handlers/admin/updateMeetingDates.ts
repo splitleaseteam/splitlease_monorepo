@@ -5,7 +5,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
+import { AuthenticationError as _AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
 
 interface UpdateDatesPayload {
   meetingId: string;
@@ -36,7 +36,7 @@ export async function handleAdminUpdateMeetingDates(
   console.log(`[admin_update_dates] Updating dates for meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Verify meeting exists and is still pending
-  const { data: existing, error: checkError } = await supabase
+  const { data: existing, error: _checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .select("_id, booked_date, status")
     .eq("_id", payload.meetingId)

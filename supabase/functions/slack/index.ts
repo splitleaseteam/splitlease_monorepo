@@ -11,7 +11,7 @@
  * INLINED DEPENDENCIES: All shared utilities inlined to resolve bundling issues
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 
 // ============ CORS Headers (from _shared/cors.ts) ============
 const corsHeaders = {

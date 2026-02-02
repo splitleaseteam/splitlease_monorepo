@@ -1,15 +1,10 @@
 /**
  * HostInfoCard Component
- * 
+ *
  * Displays host profile information and contact button.
  * Contact button is auth-gated - requires login before opening modal.
- * 
+ *
  * @component
- * @param {object} props
- * @param {object} props.host - Host data object
- * @param {Function} props.onContactClick - Contact button click handler (auth-gated)
- * @param {boolean} props.isAuthenticated - Whether user is logged in
- * 
  * @architecture Presentational Component
  * @performance Memoized
  * @security Contact action is auth-gated at hook level
@@ -20,6 +15,7 @@ import { memo } from 'react';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './HostInfoCard.module.css';
 
+<<<<<<<< HEAD:app/src/islands/pages/ViewSplitLeasePage/components/HostInfoCard (1).tsx
 interface Host {
     name?: string;
     'First Name'?: string;
@@ -32,6 +28,14 @@ interface Host {
 
 interface HostInfoCardProps {
     host: Host;
+========
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface HostInfoCardProps {
+    host: any;
+>>>>>>>> dde4e4b5b96fd0926091ebe5f9e47e060b986cb9:app/src/islands/pages/ViewSplitLeasePage/components/HostInfoCard.tsx
     onContactClick: () => void;
     isAuthenticated: boolean;
 }

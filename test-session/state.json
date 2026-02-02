@@ -1,0 +1,51 @@
+{
+  "sessionId": "e2e-guest-proposal-vm-20260131",
+  "startedAt": "2026-01-31T00:00:00.000Z",
+  "endedAt": "2026-01-31T00:30:00.000Z",
+  "status": "completed",
+  "progress": {
+    "currentIteration": 1,
+    "currentPhase": "completed",
+    "currentStep": "all-tests-passing"
+  },
+  "metrics": {
+    "stepsCompleted": 20,
+    "stepsFailed": 0,
+    "fixAttempts": 1,
+    "dataResets": 0,
+    "screenshotsTaken": 5
+  },
+  "bugs": {
+    "found": [
+      {
+        "id": "BUG-001",
+        "category": "schema-mismatch",
+        "description": "Virtual meeting request fails - Phone Number column name wrong",
+        "step": "5.0",
+        "error": "column Phone - Number does not exist",
+        "timestamp": "2026-01-31T00:00:00.000Z"
+      }
+    ],
+    "pending": [],
+    "fixed": [
+      {
+        "id": "BUG-001",
+        "fix": "Updated column name from Phone - Number to Phone Number (as text)",
+        "files": [
+          "supabase/functions/virtual-meeting/handlers/create.ts",
+          "supabase/functions/virtual-meeting/handlers/accept.ts"
+        ],
+        "commit": "6ccf80d05",
+        "deployed": true,
+        "verified": true,
+        "timestamp": "2026-01-31T00:00:00.000Z"
+      }
+    ]
+  },
+  "testCredentials": {
+    "email": "test-guest-1738321847@example.com",
+    "password": "TestPass123!",
+    "firstName": "TestGuest",
+    "lastName": "User7392"
+  }
+}

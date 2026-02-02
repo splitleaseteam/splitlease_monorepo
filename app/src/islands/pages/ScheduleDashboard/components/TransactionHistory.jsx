@@ -10,7 +10,7 @@
  * - Counterparty
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================
@@ -134,15 +134,51 @@ function TransactionDetails({ transaction, onCancel }) {
 // MAIN COMPONENT
 // ============================================================================
 
-export default function TransactionHistory({ 
+export default function TransactionHistory({
   transactions = [],
   onCancelRequest,
-  onViewDetails
+  onViewDetails,
+  activeTransactionId,
+  onClearActiveTransaction,
+  netFlow
 }) {
   const [sortField, setSortField] = useState('date');
   const [sortDirection, setSortDirection] = useState('desc');
   const [filter, setFilter] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
+  const rowRefs = useRef({});
+
+  // Effect to handle external transaction selection (from calendar click)
+  useEffect(() => {
+    if (activeTransactionId) {
+      // Expand the transaction row
+      setExpandedId(activeTransactionId);
+
+      // Scroll to the row after a short delay to ensure DOM is updated
+      setTimeout(() => {
+        const rowElement = rowRefs.current[activeTransactionId];
+        if (rowElement) {
+          rowElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+
+          // Add a highlight animation class
+          rowElement.classList.add('transaction-history__row--highlighted');
+          setTimeout(() => {
+            rowElement.classList.remove('transaction-history__row--highlighted');
+          }, 2000);
+        }
+      }, 100);
+
+      // Clear the active transaction after handling
+      if (onClearActiveTransaction) {
+        setTimeout(() => {
+          onClearActiveTransaction();
+        }, 500);
+      }
+    }
+  }, [activeTransactionId, onClearActiveTransaction]);
 
   // Filter transactions
   const filteredTransactions = transactions.filter(txn => {
@@ -211,6 +247,12 @@ export default function TransactionHistory({
           <option value="offer">Offers</option>
           <option value="pending">Pending</option>
         </select>
+        {netFlow && (
+          <div className={`net-flow-tracker net-flow-tracker--${netFlow.direction} transaction-history__net-flow`}>
+            <span className="net-flow-tracker__label">This Month</span>
+            <span className="net-flow-tracker__amount">{netFlow.formatted}</span>
+          </div>
+        )}
       </div>
 
       {filteredTransactions.length === 0 ? (
@@ -253,7 +295,9 @@ export default function TransactionHistory({
             <tbody>
               {sortedTransactions.map((txn) => (
                 <React.Fragment key={txn.id}>
-                  <tr 
+                  <tr
+                    ref={el => rowRefs.current[txn.id] = el}
+                    id={`txn-${txn.id}`}
                     className={`transaction-history__row ${expandedId === txn.id ? 'transaction-history__row--expanded' : ''}`}
                     onClick={() => toggleExpand(txn.id)}
                   >
@@ -311,4 +355,11 @@ TransactionHistory.propTypes = {
   })),
   onCancelRequest: PropTypes.func,
   onViewDetails: PropTypes.func,
+  activeTransactionId: PropTypes.string,
+  onClearActiveTransaction: PropTypes.func,
+  netFlow: PropTypes.shape({
+    amount: PropTypes.number,
+    direction: PropTypes.oneOf(['positive', 'negative', 'neutral']),
+    formatted: PropTypes.string
+  }),
 };

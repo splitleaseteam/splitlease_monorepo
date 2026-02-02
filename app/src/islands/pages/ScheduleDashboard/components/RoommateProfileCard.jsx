@@ -3,18 +3,20 @@
  *
  * Displays roommate info:
  * - Avatar and name
- * - Flexibility Score (1-10 gauge)
+ * - Flexibility Score (1-10 gauge) with comparison to user's score
+ * - Info icon to open detailed breakdown modal
  * - Response patterns
  * - Net Flow Tracker
  */
 
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
 
-function FlexibilityGauge({ score }) {
+function FlexibilityGauge({ score, userScore, roommateName, onInfoClick }) {
   // Score is 1-10
   const percentage = (score / 10) * 100;
 
@@ -27,37 +29,47 @@ function FlexibilityGauge({ score }) {
 
   return (
     <div className="flexibility-gauge">
+      {/* Header with Info Icon */}
       <div className="flexibility-gauge__header">
-        <span className="flexibility-gauge__label">Flexibility Score</span>
+        <div
+          className="flexibility-gauge__label-wrapper"
+          onClick={onInfoClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onInfoClick?.();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="View flexibility score breakdown"
+        >
+          <span className="flexibility-gauge__label">Flexibility Score</span>
+          <span className="flexibility-gauge__info-icon" aria-hidden="true">
+            &#9432;
+          </span>
+        </div>
         <span className="flexibility-gauge__score">{score}/10</span>
       </div>
+
+      {/* Roommate's Score Bar */}
       <div className="flexibility-gauge__bar">
         <div
           className="flexibility-gauge__fill"
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="flexibility-gauge__text">{getScoreLabel(score)}</span>
-    </div>
-  );
-}
+      <span className="flexibility-gauge__text">
+        {roommateName ? `${roommateName}: ` : ''}{getScoreLabel(score)}
+      </span>
 
-function NetFlowTracker({ netFlow }) {
-  if (!netFlow) return null;
-
-  const { amount, direction, formatted } = netFlow;
-
-  const getFlowLabel = () => {
-    if (direction === 'positive') return "They've paid you more";
-    if (direction === 'negative') return "You've paid them more";
-    return 'Even exchange';
-  };
-
-  return (
-    <div className={`net-flow-tracker net-flow-tracker--${direction}`}>
-      <span className="net-flow-tracker__label">This Month</span>
-      <span className="net-flow-tracker__amount">{formatted}</span>
-      <span className="net-flow-tracker__description">{getFlowLabel()}</span>
+      {/* User's Score Row */}
+      {userScore !== undefined && (
+        <div className="flexibility-gauge__my-score">
+          <span className="flexibility-gauge__my-score-label">My Score:</span>
+          <span className="flexibility-gauge__my-score-value">{userScore}/10</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -69,8 +81,9 @@ function NetFlowTracker({ netFlow }) {
 export default function RoommateProfileCard({
   roommate,
   flexibilityScore,
+  userFlexibilityScore,
   responsePatterns,
-  netFlow
+  onFlexibilityInfoClick
 }) {
   if (!roommate) {
     return (
@@ -85,7 +98,7 @@ export default function RoommateProfileCard({
 
   return (
     <div className="roommate-profile-card">
-      <h3 className="roommate-profile-card__heading">Your Roommate</h3>
+      <h3 className="roommate-profile-card__heading">Splitting with</h3>
 
       {/* Avatar and Name */}
       <div className="roommate-profile-card__header">
@@ -108,7 +121,12 @@ export default function RoommateProfileCard({
       </div>
 
       {/* Flexibility Score */}
-      <FlexibilityGauge score={flexibilityScore} />
+      <FlexibilityGauge
+        score={flexibilityScore}
+        userScore={userFlexibilityScore}
+        roommateName={roommate.firstName}
+        onInfoClick={onFlexibilityInfoClick}
+      />
 
       {/* Response Patterns */}
       <div className="roommate-profile-card__patterns">
@@ -120,8 +138,20 @@ export default function RoommateProfileCard({
         </span>
       </div>
 
-      {/* Net Flow */}
-      <NetFlowTracker netFlow={netFlow} />
     </div>
   );
 }
+
+RoommateProfileCard.propTypes = {
+  roommate: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    avatarUrl: PropTypes.string,
+    email: PropTypes.string
+  }),
+  flexibilityScore: PropTypes.number,
+  userFlexibilityScore: PropTypes.number,
+  responsePatterns: PropTypes.string,
+  onFlexibilityInfoClick: PropTypes.func
+};

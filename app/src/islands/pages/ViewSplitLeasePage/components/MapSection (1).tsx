@@ -1,19 +1,11 @@
 /**
  * MapSection Component
- * 
+ *
  * Lazy-loaded Google Map with neighborhood information.
  * Uses Intersection Observer to load map only when scrolled into view.
  * Auto-zooms to listing marker on initial load.
- * 
+ *
  * @component
- * @param {object} props
- * @param {object} props.coordinates - {lat, lng} coordinates
- * @param {string} props.listingName - Listing name for marker label
- * @param {string} props.neighborhood - Neighborhood name
- * @param {boolean} props.shouldLoad - Whether map should load (from Intersection Observer)
- * @param {Function} props.onLoadMap - Handler to trigger map loading
- * @param {React.RefObject} props.mapRef - Ref to GoogleMap component
- * 
  * @architecture Presentational Component
  * @performance Lazy-loaded via Intersection Observer
  */
@@ -22,6 +14,13 @@ import { memo, useEffect, useRef } from 'react';
 import GoogleMap from '../../../shared/GoogleMap.jsx';
 import styles from './MapSection.module.css';
 
+<<<<<<<< HEAD:app/src/islands/pages/ViewSplitLeasePage/components/MapSection (1).tsx
+========
+// ============================================================================
+// TYPES
+// ============================================================================
+
+>>>>>>>> dde4e4b5b96fd0926091ebe5f9e47e060b986cb9:app/src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx
 interface Coordinates {
     lat: number;
     lng: number;
@@ -111,17 +110,16 @@ const MapSection = memo(function MapSection({
                     <GoogleMap
                         ref={mapRef}
                         listings={[{
-                            _id: listingName,
-                            Name: listingName,
+                            id: listingName,
+                            title: listingName,
                             coordinates: coordinates
                         }]}
                         filteredListings={[]}
                         selectedListing={null}
                         selectedBorough={null}
                         onMarkerClick={() => { }}
-                        onMessageClick={() => { }}
-                        showControls={true}
-                        height="400px"
+                        simpleMode={true}
+                        initialZoom={17}
                     />
                 ) : (
                     <div className={styles.mapPlaceholder}>

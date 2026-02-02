@@ -133,7 +133,7 @@ export async function handleUpload(
   // UPLOAD TO STORAGE
   // ================================================
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { data: _uploadData, error: uploadError } = await supabase.storage
     .from('rental-applications')
     .upload(storagePath, fileBytes, {
       contentType: input.mimeType,

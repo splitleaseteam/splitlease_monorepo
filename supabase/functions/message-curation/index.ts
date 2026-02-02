@@ -15,7 +15,7 @@
  * Auth: Admin or Corporate user required
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -167,7 +167,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminOrCorporateStatus(
+async function _checkAdminOrCorporateStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {
@@ -201,7 +201,7 @@ async function handleGetThreads(
   const { search = '', limit = 50, offset = 0 } = payload;
 
   // Step 1: Fetch threads (without relationship joins - FKs don't exist)
-  let query = supabase
+  const query = supabase
     .from('thread')
     .select(`
       _id,
@@ -214,7 +214,7 @@ async function handleGetThreads(
     .order('"Modified Date"', { ascending: false });
 
   // Apply pagination
-  const { data: threadData, error: threadError, count } = await query.range(offset, offset + limit - 1);
+  const { data: _threadData, error: threadError, _count } = await query.range(offset, offset + limit - 1);
 
   if (threadError) {
     console.error('[message-curation] getThreads error:', threadError);
@@ -285,8 +285,8 @@ async function handleGetThreads(
 
     filteredData = enrichedThreads.filter((thread: Record<string, unknown>) => {
       const listing = thread.listing as Record<string, unknown> | null;
-      const guest = thread.guest as Record<string, unknown> | null;
-      const host = thread.host as Record<string, unknown> | null;
+      const _guest = thread.guest as Record<string, unknown> | null;
+      const _host = thread.host as Record<string, unknown> | null;
 
       const listingName = (listing?.['Name'] as string || '').toLowerCase();
       const guestEmail = (guest?.email as string || '').toLowerCase();
@@ -334,7 +334,7 @@ async function handleGetThreadMessages(
   }
 
   // Step 1: Fetch thread (without relationship joins - FKs don't exist)
-  const { data: threadData, error: threadError } = await supabase
+  const { data: _threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
       _id,
@@ -474,7 +474,7 @@ async function handleGetMessage(
   }
 
   // Step 2: Fetch thread
-  const { data: threadData, error: threadError } = await supabase
+  const { data: _threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
       _id,
@@ -655,7 +655,7 @@ async function handleForwardMessage(
   }
 
   // Step 2: Fetch thread
-  const { data: threadData, error: threadError } = await supabase
+  const { data: _threadData, error: threadError } = await supabase
     .from('thread')
     .select('_id, host_user_id, guest_user_id, "Listing"')
     .eq('_id', messageData.thread_id)
@@ -728,7 +728,7 @@ async function handleSendSplitBotMessage(
   }
 
   // Fetch thread to get host and guest
-  const { data: threadData, error: threadError } = await supabase
+  const { data: _threadData, error: threadError } = await supabase
     .from('thread')
     .select('_id, "host_user_id", "guest_user_id"')
     .eq('_id', threadId)
@@ -791,8 +791,8 @@ async function handleSendSplitBotMessage(
  * Format thread for API response
  */
 function formatThread(thread: Record<string, unknown>) {
-  const guest = thread.guest as Record<string, unknown> | null;
-  const host = thread.host as Record<string, unknown> | null;
+  const _guest = thread.guest as Record<string, unknown> | null;
+  const _host = thread.host as Record<string, unknown> | null;
   const listing = thread.listing as Record<string, unknown> | null;
 
   return {
@@ -828,8 +828,8 @@ function formatThread(thread: Record<string, unknown>) {
  */
 function formatMessage(message: Record<string, unknown>, thread: Record<string, unknown>) {
   const originator = message.originator as Record<string, unknown> | null;
-  const guest = thread.guest as Record<string, unknown> | null;
-  const host = thread.host as Record<string, unknown> | null;
+  const _guest = thread.guest as Record<string, unknown> | null;
+  const _host = thread.host as Record<string, unknown> | null;
 
   // Determine sender type
   let senderType: 'guest' | 'host' | 'splitbot' | 'unknown' = 'unknown';

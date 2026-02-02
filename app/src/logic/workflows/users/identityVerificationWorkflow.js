@@ -83,7 +83,7 @@ async function uploadDocument(supabase, userId, documentType, file) {
   const path = `${userId}/${documentType}_${timestamp}.${extension}`;
 
   // Upload file to storage
-  const { data, error } = await supabase.storage
+  const { data: _data, error } = await supabase.storage
     .from('identity-documents')
     .upload(path, file, {
       cacheControl: '3600',

@@ -100,6 +100,7 @@ export async function handleCreate(
       if (userData) {
         listingData['Host User'] = userData._id;
         listingData['Created By'] = userData._id;
+        listingData['Host email'] = user_email.toLowerCase();
         console.log('[listing:create] User found:', userData._id);
       }
     }

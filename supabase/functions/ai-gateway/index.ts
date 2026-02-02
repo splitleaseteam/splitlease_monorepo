@@ -18,7 +18,7 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { AIGatewayRequest } from "../_shared/aiTypes.ts";
 import {
@@ -29,7 +29,7 @@ import {
 // FP Utilities
 import { Result, ok, err } from "../_shared/functional/result.ts";
 import {
-  parseRequest,
+  parseRequest as _parseRequest,
   validateAction,
   routeToHandler,
   getSupabaseConfig,
@@ -79,7 +79,7 @@ const PUBLIC_PROMPTS: ReadonlySet<string> = new Set([
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   complete: handleComplete,
   stream: handleStream,
 };

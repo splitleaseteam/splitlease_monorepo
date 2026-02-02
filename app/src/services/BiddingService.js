@@ -273,7 +273,7 @@ export class BiddingService {
       .eq('session_id', sessionId);
 
     // Update participant bid count
-    const { error: updateError } = await this.supabase
+    const { error: _updateError } = await this.supabase
       .from('bidding_participants')
       .update({
         current_bid_amount: amount,
@@ -528,7 +528,7 @@ export class BiddingService {
     });
   }
 
-  async _notifyAutoBidTriggered(sessionId, autoBid, triggeredByUserId) {
+  async _notifyAutoBidTriggered(sessionId, autoBid, _triggeredByUserId) {
     await this._sendNotification({
       sessionId,
       userId: autoBid.userId,

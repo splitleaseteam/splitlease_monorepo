@@ -235,7 +235,7 @@ export const LastRow = {
 };
 
 // Multiple Rows
-const MultipleRowsComponent = () => {
+const MultipleRowsWrapper = () => {
   const categories = [
     messageForwardingCategory,
     paymentRemindersCategory,
@@ -278,7 +278,7 @@ const MultipleRowsComponent = () => {
 };
 
 export const MultipleRows = {
-  render: () => <MultipleRowsComponent />,
+  render: () => <MultipleRowsWrapper />,
   parameters: {
     docs: {
       description: {
@@ -289,7 +289,7 @@ export const MultipleRows = {
 };
 
 // Full Settings Panel
-const FullSettingsPanelComponent = () => {
+const FullSettingsPanelWrapper = () => {
   const categories = [
     { id: 'message_forwarding', label: 'Message Forwarding', description: 'Receive forwarded messages via your preferred channel' },
     { id: 'payment_reminders', label: 'Payment Reminders', description: 'Billing and payment notifications' },
@@ -352,7 +352,7 @@ const FullSettingsPanelComponent = () => {
 };
 
 export const FullSettingsPanel = {
-  render: () => <FullSettingsPanelComponent />,
+  render: () => <FullSettingsPanelWrapper />,
   parameters: {
     docs: {
       description: {

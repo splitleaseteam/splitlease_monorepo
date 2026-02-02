@@ -17,10 +17,10 @@
  * - Side effects isolated to boundaries (entry/exit of handler)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError } from "../_shared/errors.ts";
-import { Result, ok, err } from "../_shared/functional/result.ts";
+import { Result as _Result, ok as _ok, err as _err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -353,9 +353,9 @@ type HandlerFn = (
 ) => Promise<unknown>;
 
 const handlers: Readonly<Record<Action, HandlerFn | (() => unknown)>> = {
-  get: async (supabase, _url, _key, payload) =>
+  get: (supabase, _url, _key, payload) =>
     handleGet(supabase, payload as GetPayload),
-  record_scan: async (supabase, url, key, payload) =>
+  record_scan: (supabase, url, key, payload) =>
     handleRecordScan(supabase, url, key, payload as RecordScanPayload),
   health: handleHealth,
 };

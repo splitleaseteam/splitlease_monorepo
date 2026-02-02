@@ -50,7 +50,7 @@ export function parseBBCode(text) {
 
   // Track if any BBCode was found
   let hasMatch = false;
-  let result = text;
+  const result = text;
 
   // Try each pattern to see if we have any BBCode
   for (const { pattern } of BBCODE_PATTERNS) {

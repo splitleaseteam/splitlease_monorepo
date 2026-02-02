@@ -110,7 +110,6 @@ export const calculateFeeBreakdown = (
     ? Math.max(FEE_RATES.MIN_FEE_AMOUNT, baseFee)
     : baseFee;
 
-  const splitRate = config.splitModel ? FEE_RATES.TOTAL_RATE : FEE_RATES.PLATFORM_RATE;
   const platformFee = roundCurrency(
     config.splitModel
       ? totalFee * (FEE_RATES.PLATFORM_RATE / FEE_RATES.TOTAL_RATE)

@@ -268,6 +268,7 @@ export const resultToResponse = <T>(result: Result<T, Error>): Response =>
 export interface AuthenticatedUser {
   readonly id: string;
   readonly email: string;
+  readonly bubbleId?: string; // Bubble-style ID from user_metadata (set during signup)
 }
 
 /**

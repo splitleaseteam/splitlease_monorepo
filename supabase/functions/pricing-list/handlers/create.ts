@@ -8,8 +8,10 @@
  * 1. Fetch listing from Supabase
  * 2. Extract host rates from listing
  * 3. Calculate all pricing arrays and scalars
- * 4. Upsert pricing_list record
- * 5. Enqueue Bubble sync
+ * 4. Generate Bubble-compatible ID via RPC
+ * 5. Insert pricing_list record
+ * 6. Update listing FK to point to new pricing_list
+ * 7. Enqueue Bubble sync
  *
  * NO FALLBACK PRINCIPLE: Fails fast if listing not found or invalid
  */
@@ -81,6 +83,8 @@ export async function handleCreate(
         "💰Nightly Host Rate for 5 nights",
         "💰Nightly Host Rate for 6 nights",
         "💰Nightly Host Rate for 7 nights",
+        "💰Weekly Host Rate",
+        "💰Monthly Host Rate",
         "rental type",
         "Host User"
       `)
@@ -104,19 +108,29 @@ export async function handleCreate(
     console.log('[pricing-list:create] ✅ Step 2 complete - Pricing calculated');
     console.log('[pricing-list:create] Starting price:', pricingData.startingNightlyPrice);
 
-    // Step 3: Upsert pricing_list
-    console.log('[pricing-list:create] Step 3/4: Upserting pricing_list...');
+    // Step 3: Generate Bubble-compatible ID via RPC
+    console.log('[pricing-list:create] Step 3/6: Generating pricing_list ID...');
 
-    // Generate ID if not exists
-    const pricingListId = `pricing_${listing_id}`;
+    const { data: pricingListId, error: rpcError } = await supabase.rpc('generate_bubble_id');
+
+    if (rpcError || !pricingListId) {
+      console.error('[pricing-list:create] Failed to generate ID:', rpcError);
+      throw new Error('Failed to generate pricing_list ID');
+    }
+
+    console.log('[pricing-list:create] ✅ Step 3 complete - Generated ID:', pricingListId);
+
+    // Step 4: Insert pricing_list
+    console.log('[pricing-list:create] Step 4/6: Inserting pricing_list...');
     const now = new Date().toISOString();
 
+    // Note: Only include columns that exist in pricing_list table schema
+    // Missing columns (not in DB): listing, Overall Site Markup, Slope, rental type
     const pricingListRecord = {
       _id: pricingListId,
-      listing: listing_id,
       'Created By': user_id || listing['Host User'],
 
-      // Arrays
+      // Arrays (JSONB)
       'Host Compensation': pricingData.hostCompensation,
       'Markup and Discount Multiplier': pricingData.markupAndDiscountMultiplier,
       'Nightly Price': pricingData.nightlyPrice,
@@ -124,32 +138,45 @@ export async function handleCreate(
 
       // Scalar markups
       'Unit Markup': pricingData.unitMarkup,
-      'Overall Site Markup': pricingData.overallSiteMarkup,
       'Combined Markup': pricingData.combinedMarkup,
       'Full Time Discount': pricingData.fullTimeDiscount,
 
       // Derived scalars
       'Starting Nightly Price': pricingData.startingNightlyPrice,
-      'Slope': pricingData.slope,
 
       // Metadata
-      'rental type': listing['rental type'] || 'Nightly',
       'Modified Date': now,
+      'Created Date': now,
     };
 
-    const { error: upsertError } = await supabase
+    const { error: insertError } = await supabase
       .from('pricing_list')
-      .upsert(pricingListRecord, { onConflict: '_id' });
+      .insert(pricingListRecord);
 
-    if (upsertError) {
-      console.error('[pricing-list:create] Upsert failed:', upsertError);
-      throw new Error(`Failed to upsert pricing_list: ${upsertError.message}`);
+    if (insertError) {
+      console.error('[pricing-list:create] Insert failed:', insertError);
+      throw new Error(`Failed to insert pricing_list: ${insertError.message}`);
     }
 
-    console.log('[pricing-list:create] ✅ Step 3 complete - Pricing list saved');
+    console.log('[pricing-list:create] ✅ Step 4 complete - Pricing list saved');
 
-    // Step 4: Enqueue Bubble sync
-    console.log('[pricing-list:create] Step 4/4: Enqueueing Bubble sync...');
+    // Step 5: Update listing FK to point to new pricing_list
+    console.log('[pricing-list:create] Step 5/6: Updating listing FK...');
+
+    const { error: updateError } = await supabase
+      .from('listing')
+      .update({ pricing_list: pricingListId })
+      .eq('_id', listing_id);
+
+    if (updateError) {
+      console.error('[pricing-list:create] Failed to update listing FK:', updateError);
+      throw new Error(`Failed to update listing FK: ${updateError.message}`);
+    }
+
+    console.log('[pricing-list:create] ✅ Step 5 complete - Listing FK updated');
+
+    // Step 6: Enqueue Bubble sync
+    console.log('[pricing-list:create] Step 6/6: Enqueueing Bubble sync...');
 
     await enqueueBubbleSync(supabase, {
       correlationId: `pricing_list:${pricingListId}`,
@@ -164,7 +191,7 @@ export async function handleCreate(
 
     triggerQueueProcessing();
 
-    console.log('[pricing-list:create] ✅ Step 4 complete - Sync queued');
+    console.log('[pricing-list:create] ✅ Step 6 complete - Sync queued');
     console.log('[pricing-list:create] ========== SUCCESS ==========');
 
     return {

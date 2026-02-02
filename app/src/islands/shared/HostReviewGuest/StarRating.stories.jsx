@@ -242,7 +242,7 @@ export const AllRatingLevels = {
 };
 
 // In Form Context
-const InFormContextComponent = () => {
+const InFormContextWrapper = () => {
   const [ratings, setRatings] = useState({
     cleanliness: 0,
     communication: 0,
@@ -294,7 +294,7 @@ const InFormContextComponent = () => {
 };
 
 export const InFormContext = {
-  render: () => <InFormContextComponent />,
+  render: () => <InFormContextWrapper />,
   parameters: {
     docs: {
       description: {
