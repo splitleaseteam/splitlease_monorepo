@@ -1529,10 +1529,10 @@ export function SelfListingPageV2() {
           <details className="pricing-details">
             <summary>How does Smart Pricing work?</summary>
             <div className="details-content">
-              We automatically adjust your pricing to encourage longer bookings. The first night is your full Base Rate.
-              Each additional consecutive night gets slightly cheaper based on your Discount setting.
+              We offer a setting to automatically adjust your pricing to encourage more nights per week. The first night is your full Base Rate.
+              Each additional consecutive night gets slightly less expensive based on your Discount setting.
               This encourages guests to book longer stays (like Mon-Fri) instead of just two nights,
-              maximizing your occupancy and reducing turnover effort.
+              maximizing your weekly net revenue and reducing turnover effort.
             </div>
           </details>
 
