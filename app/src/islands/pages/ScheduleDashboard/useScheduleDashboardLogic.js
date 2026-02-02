@@ -159,20 +159,43 @@ export function useScheduleDashboardLogic() {
   // -------------------------------------------------------------------------
   // DERIVED STATE
   // -------------------------------------------------------------------------
-  const currentUserId = 'current-user';
+  const currentUserId = currentUserData?._id || 'current-user';
+
+  const processedTransactions = useMemo(() => {
+    return txn.transactions.map((transaction) => {
+      const { payerId, payeeId, type } = transaction;
+      const hasParticipants = payerId && payeeId;
+      const hasDirection = hasParticipants && type !== 'swap';
+      const isIncoming = hasDirection && payeeId === currentUserId;
+      const direction = hasDirection ? (isIncoming ? 'incoming' : 'outgoing') : null;
+      const counterpartyId = hasParticipants
+        ? (payerId === currentUserId ? payeeId : payerId)
+        : (payerId || payeeId);
+      const counterpartyName = counterpartyId === roommateData?._id
+        ? `${roommateData.firstName} ${roommateData.lastName?.charAt(0) || ''}.`
+        : `${currentUserData.firstName} ${currentUserData.lastName?.charAt(0) || ''}.`;
+
+      return {
+        ...transaction,
+        direction,
+        counterparty: counterpartyName
+      };
+    });
+  }, [txn.transactions, currentUserId, currentUserData, roommateData]);
+
   const flexibilityScore = useMemo(
-    () => calculateFlexibilityScore(txn.transactions),
-    [txn.transactions]
+    () => calculateFlexibilityScore(processedTransactions),
+    [processedTransactions]
   );
 
   const netFlow = useMemo(
-    () => calculateNetFlow(txn.transactions),
-    [txn.transactions]
+    () => calculateNetFlow(processedTransactions),
+    [processedTransactions]
   );
 
   const transactionsByDate = useMemo(() => {
     const map = {};
-    txn.transactions.forEach((transaction) => {
+    processedTransactions.forEach((transaction) => {
       if (!transaction?.date) return;
       const date = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
       if (Number.isNaN(date.getTime())) return;
@@ -182,7 +205,7 @@ export function useScheduleDashboardLogic() {
       map[dateKey] = transaction;
     });
     return map;
-  }, [txn.transactions]);
+  }, [processedTransactions]);
 
   const responsePatterns = useMemo(() => {
     // Placeholder - would calculate from actual response times
@@ -487,7 +510,7 @@ export function useScheduleDashboardLogic() {
         } else {
           // Normal: Alex's nights are "my nights", Sarah's are "available"
           [userNightsData, roommateNightsData] = await Promise.all([
-            fetchUserNights(leaseId, 'current-user'),
+            fetchUserNights(leaseId, currentUserData._id),
             fetchRoommateNights(leaseId, MOCK_ROOMMATE._id)
           ]);
         }
@@ -606,9 +629,9 @@ export function useScheduleDashboardLogic() {
         type: 'buyout',
         nights: [nightDate],
         amount: finalAmount,
-        direction: 'outgoing',
-        status: 'pending',
-        counterparty: roommate?.firstName ? `${roommate.firstName} ${roommate.lastName?.charAt(0) || ''}.` : 'Roommate'
+        payerId: currentUserId,
+        payeeId: roommate?._id,
+        status: 'pending'
       };
 
       // Add transaction to top of list (optimistic update)
@@ -617,11 +640,11 @@ export function useScheduleDashboardLogic() {
       // Create chat message for the request
       const requestMessage = {
         id: `msg-${Date.now()}`,
-        senderId: 'current-user',
-        senderName: 'You',
+        senderId: currentUserId,
         text: `Requested to buy out ${formattedNightDate} for $${finalAmount.toFixed(2)}`,
         timestamp: new Date(),
         type: 'request',
+        status: 'pending',
         requestData: {
           type: 'buyout',
           nights: [nightDate],
@@ -679,9 +702,9 @@ export function useScheduleDashboardLogic() {
         type: 'share', // Share type instead of buyout
         nights: [nightDate],
         amount: finalAmount,
-        direction: 'outgoing',
-        status: 'pending',
-        counterparty: roommate?.firstName ? `${roommate.firstName} ${roommate.lastName?.charAt(0) || ''}.` : 'Roommate'
+        payerId: currentUserId,
+        payeeId: roommate?._id,
+        status: 'pending'
       };
 
       // Add transaction to top of list (optimistic update)
@@ -690,11 +713,11 @@ export function useScheduleDashboardLogic() {
       // Create chat message for the request
       const requestMessage = {
         id: `msg-${Date.now()}`,
-        senderId: 'current-user',
-        senderName: 'You',
+        senderId: currentUserId,
         text: `Requested to share ${formattedNightDate} for $${finalAmount.toFixed(2)}`,
         timestamp: new Date(),
         type: 'request',
+        status: 'pending',
         requestData: {
           type: 'share',
           nights: [nightDate],
@@ -794,11 +817,9 @@ export function useScheduleDashboardLogic() {
         type: 'swap',
         nights: [requestedDate, offeredDate], // [Their night, Your night]
         amount: 0,
-        direction: null, // Swap has no direction
-        status: 'pending',
-        counterparty: roommate?.firstName
-          ? `${roommate.firstName} ${roommate.lastName?.charAt(0) || ''}.`
-          : 'Roommate'
+        payerId: currentUserId,
+        payeeId: roommate?._id,
+        status: 'pending'
       };
       txn.setTransactions(prev => [newTransaction, ...prev]);
 
@@ -808,11 +829,11 @@ export function useScheduleDashboardLogic() {
       // 3. Create Chat Message
       const requestMessage = {
         id: `msg-${Date.now()}`,
-        senderId: 'current-user',
-        senderName: 'You',
+        senderId: currentUserId,
         text: `Offered to swap ${formattedOffered} for ${formattedRequested}`,
         timestamp: new Date(),
         type: 'request',
+        status: 'pending',
         requestData: {
           type: 'swap',
           nights: [requestedDate, offeredDate],
@@ -878,7 +899,6 @@ export function useScheduleDashboardLogic() {
       const newMessage = {
         id: `msg-${Date.now()}`,
         senderId: currentUserId,
-        senderName: 'You',
         text: text,
         timestamp: new Date(),
         type: 'message'
@@ -902,8 +922,8 @@ export function useScheduleDashboardLogic() {
 
     const transactionId = message.requestData.transactionId;
     const transaction = transactionId
-      ? txn.transactions.find((t) => t.id === transactionId)
-      : txn.transactions.find(
+      ? processedTransactions.find((t) => t.id === transactionId)
+      : processedTransactions.find(
           (t) =>
             t.type === message.requestData.type &&
             t.status === 'pending' &&
@@ -969,19 +989,27 @@ export function useScheduleDashboardLogic() {
       calendar.setSharedNights((prev) => Array.from(new Set([...prev, ...nightStrings])));
     }
 
-    // Add chat notification
-    messaging.setMessages((prev) => [
-      ...prev,
-      {
-        id: `msg-${Date.now()}`,
-        senderId: currentUserId,
-        senderName: 'You',
-        text: 'You accepted the request.',
-        timestamp: new Date(),
-        type: 'message'
-      }
-    ]);
-  }, [messaging.messages, txn.transactions, currentUserId, calendar.roommateNights, calendar.userNights, calendar, txn, messaging]);
+    // Update request status and add system confirmation
+    messaging.setMessages((prev) => {
+      const updated = prev.map((msg) =>
+        msg.id === requestId ? { ...msg, status: 'accepted' } : msg
+      );
+      return [
+        ...updated,
+        {
+          id: `msg-${Date.now()}`,
+          type: 'system',
+          text: 'Request accepted.',
+          timestamp: new Date(),
+          requestData: {
+            type: transaction.type,
+            nights: transaction.nights,
+            transactionId: transaction.id
+          }
+        }
+      ];
+    });
+  }, [messaging.messages, processedTransactions, currentUserId, calendar.roommateNights, calendar.userNights, calendar, txn, messaging]);
 
   const handleDeclineRequest = useCallback(async (requestId) => {
     const message = messaging.messages.find((msg) => msg.id === requestId);
@@ -989,8 +1017,8 @@ export function useScheduleDashboardLogic() {
 
     const transactionId = message.requestData.transactionId;
     const transaction = transactionId
-      ? txn.transactions.find((t) => t.id === transactionId)
-      : txn.transactions.find(
+      ? processedTransactions.find((t) => t.id === transactionId)
+      : processedTransactions.find(
           (t) =>
             t.type === message.requestData.type &&
             t.status === 'pending' &&
@@ -1011,18 +1039,26 @@ export function useScheduleDashboardLogic() {
       calendar.setPendingNights((prev) => prev.filter((night) => !nightStrings.includes(night)));
     }
 
-    messaging.setMessages((prev) => [
-      ...prev,
-      {
-        id: `msg-${Date.now()}`,
-        senderId: currentUserId,
-        senderName: 'You',
-        text: 'You declined the request.',
-        timestamp: new Date(),
-        type: 'message'
-      }
-    ]);
-  }, [messaging.messages, txn.transactions, currentUserId, txn, messaging, calendar]);
+    messaging.setMessages((prev) => {
+      const updated = prev.map((msg) =>
+        msg.id === requestId ? { ...msg, status: 'declined' } : msg
+      );
+      return [
+        ...updated,
+        {
+          id: `msg-${Date.now()}`,
+          type: 'system',
+          text: 'Request declined.',
+          timestamp: new Date(),
+          requestData: {
+            type: transaction.type,
+            nights: transaction.nights,
+            transactionId: transaction.id
+          }
+        }
+      ];
+    });
+  }, [messaging.messages, processedTransactions, currentUserId, txn, messaging, calendar]);
 
   const handleCounterRequest = useCallback(async (requestId) => {
     const message = messaging.messages.find((msg) => msg.id === requestId);
@@ -1030,8 +1066,8 @@ export function useScheduleDashboardLogic() {
 
     const transactionId = message.requestData.transactionId;
     const transaction = transactionId
-      ? txn.transactions.find((t) => t.id === transactionId)
-      : txn.transactions.find(
+      ? processedTransactions.find((t) => t.id === transactionId)
+      : processedTransactions.find(
           (t) =>
             t.type === message.requestData.type &&
             t.status === 'pending' &&
@@ -1050,7 +1086,7 @@ export function useScheduleDashboardLogic() {
     request.setIsSwapMode(false);
     ui.setIsBuyOutOpen(true);
     calendar.setSelectedNight(null);
-  }, [messaging.messages, txn.transactions, ui, request, calendar]);
+  }, [messaging.messages, processedTransactions, ui, request, calendar]);
 
   const handleSubmitCounter = useCallback(async (messageText) => {
     if (!request.counteringRequestId || !request.counterOriginalNight || !request.counterTargetNight || request.isSubmitting) return;
@@ -1076,11 +1112,9 @@ export function useScheduleDashboardLogic() {
         type: 'swap',
         nights: [giveDate, receiveDate],
         amount: 0,
-        direction: null,
-        status: 'pending',
-        counterparty: roommate?.firstName
-          ? `${roommate.firstName} ${roommate.lastName?.charAt(0) || ''}.`
-          : 'Roommate'
+        payerId: currentUserId,
+        payeeId: roommate?._id,
+        status: 'pending'
       };
       txn.setTransactions((prev) => [newTransaction, ...prev]);
 
@@ -1093,11 +1127,11 @@ export function useScheduleDashboardLogic() {
 
       const requestMessage = {
         id: `msg-${Date.now()}`,
-        senderId: 'current-user',
-        senderName: 'You',
+        senderId: currentUserId,
         text: `You sent a counter-offer: Swap ${formattedGive} for ${formattedReceive}.`,
         timestamp: new Date(),
         type: 'request',
+        status: 'pending',
         requestData: {
           type: 'swap',
           nights: [giveDate, receiveDate],
@@ -1122,7 +1156,7 @@ export function useScheduleDashboardLogic() {
   }, [request.counteringRequestId, request.counterOriginalNight, request.counterTargetNight, request.isSubmitting, roommate, handleDeclineRequest, request, calendar]);
 
   const handleCancelRequest = useCallback(async (transactionId) => {
-    const transaction = txn.transactions.find((t) => t.id === transactionId);
+    const transaction = processedTransactions.find((t) => t.id === transactionId);
     if (!transaction) return;
 
     txn.setTransactions((prev) =>
@@ -1142,13 +1176,12 @@ export function useScheduleDashboardLogic() {
       {
         id: `msg-${Date.now()}`,
         senderId: currentUserId,
-        senderName: 'You',
         text: 'You cancelled the request.',
         timestamp: new Date(),
         type: 'message'
       }
     ]);
-  }, [txn.transactions, currentUserId, txn, calendar, messaging]);
+  }, [processedTransactions, currentUserId, txn, calendar, messaging]);
 
   const handleViewTransactionDetails = useCallback(async (transactionId) => {
     console.log('Viewing transaction details:', transactionId);
@@ -1278,7 +1311,7 @@ export function useScheduleDashboardLogic() {
     isSending: messaging.isSending,
 
     // Transaction History
-    transactions: txn.transactions,
+    transactions: processedTransactions,
     activeTransactionId: ui.activeTransactionId,
     transactionsByDate,
 

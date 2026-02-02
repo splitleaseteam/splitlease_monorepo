@@ -199,7 +199,7 @@ export default function ScheduleCalendar({
   /**
    * Get price overlay for a specific date
    * - For user's nights: use priceOverlays (from user's strategy)
-   * - For roommate's nights: use roommatePriceOverlays (from roommate's strategy)
+   * - For roommate's nights: use roommatePriceOverlays (adjacent only)
    */
   const getPriceOverlay = (date, status) => {
     if (!date) return null;
@@ -211,7 +211,7 @@ export default function ScheduleCalendar({
     }
 
     // Roommate's nights - show roommate's price (NEW - in Date Changes mode)
-    if ((status === 'roommate' || status === 'adjacent') && roommatePriceOverlays) {
+    if (status === 'adjacent' && roommatePriceOverlays) {
       return roommatePriceOverlays[dateStr] || null;
     }
 
@@ -390,8 +390,10 @@ export default function ScheduleCalendar({
                 const hasTransaction = isPast && transaction;
                 const transactionAmount = hasTransaction ? formatTransactionAmount(transaction) : null;
 
-                // Check for price overlay (user's nights OR roommate's nights)
-                const priceOverlay = date ? getPriceOverlay(date, status) : null;
+                // Check for price overlay (user's nights OR adjacent roommate nights only)
+                const priceOverlay = date && (status === 'mine' || status === 'adjacent')
+                  ? getPriceOverlay(date, status)
+                  : null;
 
                 // Check for shared night (co-occupancy)
                 const isShared = date && isInDateArray(date, sharedNights);
@@ -456,14 +458,6 @@ export default function ScheduleCalendar({
           &#8592;
         </button>
         <div className="schedule-calendar__legend">
-          <div className="schedule-calendar__legend-item">
-            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--mine" />
-            <span>My Nights</span>
-          </div>
-          <div className="schedule-calendar__legend-item">
-            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--roommate" />
-            <span>Available</span>
-          </div>
           <div className="schedule-calendar__legend-item">
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--adjacent" />
             <span>Recommended</span>

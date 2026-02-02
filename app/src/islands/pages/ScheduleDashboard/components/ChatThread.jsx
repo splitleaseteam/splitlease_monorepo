@@ -25,9 +25,9 @@ const QUICK_RESPONSES = [
 // SUB-COMPONENTS
 // ============================================================================
 
-function MessageBubble({ message, isCurrentUser, onAccept, onDecline, onCounter }) {
+function MessageBubble({ message, isCurrentUser, displayName, onAccept, onDecline, onCounter }) {
   if (message.type === 'system') {
-    return <TransactionNotice transaction={message.requestData} />;
+    return <TransactionNotice message={message} />;
   }
 
   const formattedTime = new Date(message.timestamp).toLocaleTimeString('en-US', {
@@ -40,9 +40,16 @@ function MessageBubble({ message, isCurrentUser, onAccept, onDecline, onCounter 
       className={`chat-bubble ${isCurrentUser ? 'chat-bubble--sent' : 'chat-bubble--received'} ${message.type === 'request' ? 'chat-bubble--request' : ''}`}
     >
       <div className="chat-bubble__content">
+        <div className="chat-bubble__sender">{displayName}</div>
         {message.text || message.content}
 
-        {message.type === 'request' && !isCurrentUser && (
+        {message.type === 'request' && message.status && message.status !== 'pending' && (
+          <div className={`chat-bubble__status chat-bubble__status--${message.status}`}>
+            {message.status === 'accepted' ? '✓ Accepted' : '✗ Declined'}
+          </div>
+        )}
+
+        {message.type === 'request' && message.status === 'pending' && !isCurrentUser && (
           <div className="chat-bubble__actions">
             <button
               className="chat-bubble__btn chat-bubble__btn--accept"
@@ -72,8 +79,10 @@ function MessageBubble({ message, isCurrentUser, onAccept, onDecline, onCounter 
   );
 }
 
-function TransactionNotice({ transaction }) {
+function TransactionNotice({ message }) {
   const getNoticeText = () => {
+    if (message?.text) return message.text;
+    const transaction = message?.requestData;
     if (!transaction) return 'Transaction processed';
 
     const nightStr = transaction.nights?.[0] ? new Date(transaction.nights[0]).toLocaleDateString('en-US', {
@@ -157,6 +166,7 @@ export default function ChatThread({
               key={msg.id}
               message={msg}
               isCurrentUser={msg.senderId === currentUserId}
+              displayName={msg.senderId === currentUserId ? 'You' : roommateName || 'Roommate'}
               onAccept={onAcceptRequest}
               onDecline={onDeclineRequest}
               onCounter={onCounterRequest}
@@ -219,6 +229,7 @@ ChatThread.propTypes = {
     text: PropTypes.string,
     timestamp: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
     type: PropTypes.oneOf(['message', 'system', 'request']),
+    status: PropTypes.oneOf(['pending', 'accepted', 'declined']),
     requestData: PropTypes.object,
   })),
   currentUserId: PropTypes.string,
