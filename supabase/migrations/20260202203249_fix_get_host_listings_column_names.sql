@@ -1,21 +1,15 @@
 -- ============================================================================
--- Migration: Create get_host_listings RPC Function
--- Generated: 2026-01-30
--- Updated: 2026-01-31 - Changed from RETURNS SETOF to RETURNS TABLE
---                       to explicitly type pricing_list as text
--- Purpose: Provide an RPC function to fetch listings for a host user
--- Issue: pricing_list contains Bubble IDs (text), not JSON data
+-- Migration: Fix get_host_listings column names
+-- Generated: 2026-02-02
+-- Purpose: Fix column names to use actual snake_case columns instead of emoji columns
+-- Issue: Previous version referenced non-existent emoji columns like "💰Nightly Host Rate for 2 nights"
+--        Actual columns are: nightly_rate_2_nights, weekly_host_rate, etc.
 -- ============================================================================
 
--- Drop existing function if it exists (to support re-running migration)
+-- Drop existing function
 DROP FUNCTION IF EXISTS get_host_listings(TEXT);
 
--- ============================================================================
--- FUNCTION: get_host_listings
--- Returns all listings where the user is either the Host User or Created By
--- Uses RETURNS TABLE to explicitly control column types
--- ============================================================================
-
+-- Recreate with correct column names
 CREATE OR REPLACE FUNCTION public.get_host_listings(host_user_id text)
 RETURNS TABLE(
   id text,
@@ -40,7 +34,7 @@ RETURNS TABLE(
   monthly_rate numeric,
   cleaning_fee numeric,
   damage_deposit numeric,
-  pricing_list text,  -- CRITICAL: Must be text, not jsonb (contains Bubble IDs)
+  pricing_list text,
   source text,
   bedrooms numeric,
   bathrooms numeric,
@@ -74,7 +68,7 @@ BEGIN
     l.monthly_host_rate::NUMERIC as monthly_rate,
     l.cleaning_fee::NUMERIC as cleaning_fee,
     l.damage_deposit::NUMERIC as damage_deposit,
-    l.pricing_list,  -- Returns as text, no cast needed
+    l.pricing_list,
     'listing'::TEXT as source,
     l."Features - Qty Bedrooms"::NUMERIC as bedrooms,
     l."Features - Qty Bathrooms"::NUMERIC as bathrooms,
@@ -85,11 +79,11 @@ BEGIN
 END;
 $function$;
 
--- Add helpful comment for documentation
-COMMENT ON FUNCTION get_host_listings IS
-'Returns all listings for a host user. Finds listings where "Host User" = host_user_id OR "Created By" = host_user_id. Excludes deleted listings. Uses RETURNS TABLE with explicit types to prevent pricing_list jsonb cast errors.';
-
 -- Grant execute permissions
 GRANT EXECUTE ON FUNCTION get_host_listings(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_host_listings(TEXT) TO anon;
 GRANT EXECUTE ON FUNCTION get_host_listings(TEXT) TO service_role;
+
+-- Add documentation
+COMMENT ON FUNCTION get_host_listings IS
+'Returns all listings for a host user. Uses RETURNS TABLE with explicit types. Fixed 2026-02-02 to use correct snake_case column names.';
