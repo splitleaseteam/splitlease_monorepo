@@ -531,6 +531,16 @@
   color: #DC2626;
 }
 
+/* Neutral transaction (low amount < $5, swaps) - grey */
+.schedule-calendar__day--transaction-neutral {
+  background: #F9FAFB;
+  border: 1px solid #D1D5DB;
+}
+
+.schedule-calendar__day--transaction-neutral .schedule-calendar__day-transaction {
+  color: #6B7280;
+}
+
 .schedule-calendar__legend {
   display: flex;
   gap: 1.5rem;

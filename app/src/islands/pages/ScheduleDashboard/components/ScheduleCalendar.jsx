@@ -391,6 +391,10 @@ export default function ScheduleCalendar({
                 const hasTransaction = isPast && transaction;
                 const transactionAmount = hasTransaction ? formatTransactionAmount(transaction) : null;
 
+                // Low amount threshold for neutral styling (swaps, small charges)
+                const LOW_AMOUNT_THRESHOLD = 5;
+                const isLowAmount = hasTransaction && Math.abs(transaction.amount) < LOW_AMOUNT_THRESHOLD;
+
                 // Check for price overlay (user's nights OR adjacent roommate nights only)
                 const priceOverlay = date && (status === 'mine' || status === 'adjacent')
                   ? getPriceOverlay(date, status)
@@ -409,8 +413,9 @@ export default function ScheduleCalendar({
                       ${isSelected ? 'schedule-calendar__day--selected' : ''}
                       ${clickable ? 'schedule-calendar__day--clickable' : ''}
                       ${hasTransaction ? 'schedule-calendar__day--has-transaction' : ''}
-                      ${hasTransaction && transaction.direction === 'incoming' ? 'schedule-calendar__day--transaction-incoming' : ''}
-                      ${hasTransaction && transaction.direction === 'outgoing' ? 'schedule-calendar__day--transaction-outgoing' : ''}
+                      ${hasTransaction && isLowAmount ? 'schedule-calendar__day--transaction-neutral' : ''}
+                      ${hasTransaction && !isLowAmount && transaction.direction === 'incoming' ? 'schedule-calendar__day--transaction-incoming' : ''}
+                      ${hasTransaction && !isLowAmount && transaction.direction === 'outgoing' ? 'schedule-calendar__day--transaction-outgoing' : ''}
                       ${priceOverlay ? 'schedule-calendar__day--has-price' : ''}
                       ${isShared ? 'schedule-calendar__day--shared' : ''}
                     `.trim().replace(/\s+/g, ' ')}
