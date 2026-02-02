@@ -39,7 +39,6 @@ export function useMessaging() {
         const newMessage = {
           id: `msg-${Date.now()}`,
           senderId: currentUserId,
-          senderName: 'You',
           text: text,
           timestamp: new Date(),
           type: 'message'
