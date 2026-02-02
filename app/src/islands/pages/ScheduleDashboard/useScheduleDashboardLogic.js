@@ -562,20 +562,11 @@ export function useScheduleDashboardLogic() {
   }, [calendar.selectedNight, ui.isBuyOutOpen, ui.setIsBuyOutOpen]);
 
   // -------------------------------------------------------------------------
-  // CLEAR CALENDAR CACHE ON PERSPECTIVE CHANGE
-  // -------------------------------------------------------------------------
-  // When perspective changes (URL param ?as=sarah), clear cached calendar data
-  // so fresh perspective-aware data is fetched
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    // Clear calendar cache so loadData fetches fresh perspective-aware data
-    localStorage.removeItem(STORAGE_KEYS.calendar);
-    console.log('[Perspective] Cleared calendar cache for perspective:', isSwappedPerspective ? 'Sarah' : 'Alex');
-  }, [isSwappedPerspective]);
-
-  // -------------------------------------------------------------------------
   // DATA FETCHING (Perspective-Aware)
   // -------------------------------------------------------------------------
+  // ALWAYS fetch fresh calendar data based on current perspective.
+  // This ensures Alex sees his nights (Mon-Thu) and Sarah sees hers (Fri-Sun).
+  // localStorage is only used for cross-tab sync, not initial load.
   useEffect(() => {
     async function loadData() {
       try {
@@ -587,7 +578,6 @@ export function useScheduleDashboardLogic() {
 
         const storedMessagesRaw = parseStoredItem(STORAGE_KEYS.messages);
         const storedTransactionsRaw = parseStoredItem(STORAGE_KEYS.transactions);
-        const storedCalendar = parseStoredItem(STORAGE_KEYS.calendar);
 
         const storedMessages = storedMessagesRaw ? hydrateMessages(storedMessagesRaw) : [];
         const storedTransactions = storedTransactionsRaw ? hydrateTransactions(storedTransactionsRaw) : [];
@@ -597,39 +587,26 @@ export function useScheduleDashboardLogic() {
         // Set roommate based on perspective (the OTHER person)
         setRoommate(roommateData);
 
-        const hasStoredCalendarData = storedCalendar && [
-          storedCalendar.userNights,
-          storedCalendar.roommateNights,
-          storedCalendar.pendingNights,
-          storedCalendar.blockedNights,
-          storedCalendar.sharedNights
-        ].some((list) => Array.isArray(list) && list.length > 0);
+        // ALWAYS fetch fresh calendar data based on perspective
+        // This is the fix for the "same nights for both users" bug
+        // currentUserData._id = whoever is viewing (Alex='current-user' or Sarah='user-456')
+        // roommateData._id = the other person
+        const [userNightsData, roommateNightsData, pendingData, blockedData] = await Promise.all([
+          fetchNightsForUser(leaseId, currentUserData._id),   // "My nights" for current perspective
+          fetchNightsForUser(leaseId, roommateData._id),      // "Roommate's nights" (available to buy)
+          fetchPendingRequests(leaseId),
+          fetchBlockedDates(leaseId)
+        ]);
 
-        if (hasStoredCalendarData) {
-          calendar.setUserNights(storedCalendar.userNights || []);
-          calendar.setRoommateNights(storedCalendar.roommateNights || []);
-          calendar.setPendingNights(storedCalendar.pendingNights || []);
-          calendar.setBlockedNights(storedCalendar.blockedNights || []);
-          calendar.setSharedNights(storedCalendar.sharedNights || []);
-        } else {
-          // Fetch calendar data - perspective-aware via user IDs
-          // currentUserData._id = whoever is viewing (Alex or Sarah based on URL param)
-          // roommateData._id = the other person
-          const [userNightsData, roommateNightsData, pendingData, blockedData] = await Promise.all([
-            fetchNightsForUser(leaseId, currentUserData._id),   // "My nights" for current perspective
-            fetchNightsForUser(leaseId, roommateData._id),      // "Roommate's nights" (available to buy)
-            fetchPendingRequests(leaseId),
-            fetchBlockedDates(leaseId)
-          ]);
+        console.log('[Data Fetch] Perspective:', isSwappedPerspective ? 'Sarah' : 'Alex');
+        console.log('[Data Fetch] currentUserData._id:', currentUserData._id);
+        console.log('[Data Fetch] roommateData._id:', roommateData._id);
+        console.log('[Data Fetch] My nights:', userNightsData.length, 'Roommate nights:', roommateNightsData.length);
 
-          console.log('[Data Fetch] Perspective:', isSwappedPerspective ? 'Sarah' : 'Alex');
-          console.log('[Data Fetch] My nights:', userNightsData.length, 'Roommate nights:', roommateNightsData.length);
-
-          calendar.setUserNights(userNightsData);
-          calendar.setRoommateNights(roommateNightsData);
-          calendar.setPendingNights(pendingData);
-          calendar.setBlockedNights(blockedData);
-        }
+        calendar.setUserNights(userNightsData);
+        calendar.setRoommateNights(roommateNightsData);
+        calendar.setPendingNights(pendingData);
+        calendar.setBlockedNights(blockedData);
 
         // Load messages and transactions (from storage or mock)
         const baseTransactions = storedTransactions.length > 0 ? storedTransactions : MOCK_TRANSACTIONS;
