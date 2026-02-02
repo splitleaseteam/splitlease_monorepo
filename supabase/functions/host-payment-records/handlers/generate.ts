@@ -74,8 +74,7 @@ export async function handleGenerate(
     .select(`
       _id,
       Proposal,
-      "rental type",
-      "Move In Date",
+      Host,
       "Payment Records SL-Hosts",
       "Total Compensation"
     `)
@@ -88,7 +87,7 @@ export async function handleGenerate(
   }
 
   const leaseData = lease as unknown as LeaseData;
-  console.log(`[host-payment-records:generate] Found lease, proposal: ${leaseData.Proposal}`);
+  console.log(`[host-payment-records:generate] Found lease, proposal: ${leaseData.Proposal}, host: ${leaseData.Host}`);
 
   // Optionally fetch proposal for damage deposit if not provided
   let damageDeposit = input.damageDeposit || 0;
@@ -163,6 +162,7 @@ export async function handleGenerate(
       'Payment to Host?': true,
       'Payment from guest?': false,
       'source calculation': 'supabase-edge-function',
+      'Created By': leaseData.Host,
       'Created Date': now,
       'Modified Date': now,
     };
