@@ -408,9 +408,9 @@ async function handleGet(
 
   return {
     ...lease,
-    guestData,
-    hostData,
-    listingData,
+    guest: guestData,
+    host: hostData,
+    listing: listingData,
     stays: stays || []
   };
 }
