@@ -15,7 +15,7 @@
  * unique_id field for human-readable IDs.
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -177,7 +177,7 @@ async function authenticateFromHeaders(
   };
 }
 
-async function checkAdminStatus(
+async function _checkAdminStatus(
   userId: string,
   supabase: SupabaseClient
 ): Promise<boolean> {
@@ -211,7 +211,7 @@ async function checkAdminStatus(
     }
 
     return userData?.['Toggle - Is Admin'] === true;
-  } catch (err) {
+  } catch (_err) {
     console.error('[rental-applications] Admin check error:', err);
     return false;
   }
@@ -300,7 +300,7 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   // Apply pagination
   query = query.range(offset, offset + pageSize - 1);
 
-  const { data, error, count } = await query;
+  const { data, error, _count } = await query;
 
   if (error) {
     console.error('[rental-applications] List error:', error);

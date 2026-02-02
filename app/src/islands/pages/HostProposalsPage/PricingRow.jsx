@@ -25,10 +25,10 @@ export function PricingRow({ proposal, isDeclined = false }) {
     proposal?.counterOfferHappened ||
     proposal?.counter_offer_happened;
 
-  // Original values (guest's proposal)
-  const originalNightlyRate = proposal?.['proposal nightly price'] || proposal?.proposal_nightly_price || 0;
+  // Host compensation values (what host actually earns, NOT guest prices)
+  const hostNightlyCompensation = proposal?.['host compensation'] || proposal?.host_compensation || 0;
   const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
-  const originalTotalPrice = proposal?.['Total Price for Reservation (guest)'] || proposal?.total_price_guest || 0;
+  const hostTotalCompensation = proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation || 0;
   let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
   if (typeof originalNights === 'string') {
     try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
@@ -47,24 +47,24 @@ export function PricingRow({ proposal, isDeclined = false }) {
 
   // Display values: prioritize HC values when counteroffer happened
   // When counteroffer exists, show HC values as current; otherwise use normalized or original
-  const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || originalNightlyRate);
+  const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || hostNightlyCompensation);
   const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
   const nightsPerWeek = nightsSelected.length;
   const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
-  const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || originalTotalPrice);
+  const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || hostTotalCompensation);
 
-  // Comparison flags - detect which values changed
-  const nightlyRateChanged = isCounteroffer && hcNightlyRate != null && hcNightlyRate !== originalNightlyRate;
+  // Comparison flags - detect which values changed (comparing HC values to host compensation)
+  const nightlyRateChanged = isCounteroffer && hcNightlyRate != null && hcNightlyRate !== hostNightlyCompensation;
   const weeksChanged = isCounteroffer && hcWeeks != null && hcWeeks !== originalWeeks;
   const nightsChanged = isCounteroffer && hcNightsPerWeek != null && hcNightsPerWeek !== originalNightsPerWeek;
-  const totalChanged = isCounteroffer && hcTotalPrice != null && hcTotalPrice !== originalTotalPrice;
+  const totalChanged = isCounteroffer && hcTotalPrice != null && hcTotalPrice !== hostTotalCompensation;
 
   // Format the breakdown with strikethrough support
   const hasBreakdown = nightlyRate > 0 || nightsPerWeek > 0 || weeks > 0;
 
   // Format total
   const formattedTotal = `$${Number(totalEarnings).toLocaleString()}`;
-  const formattedOriginalTotal = `$${Number(originalTotalPrice).toLocaleString()}`;
+  const formattedOriginalTotal = `$${Number(hostTotalCompensation).toLocaleString()}`;
 
   return (
     <div className="hp7-pricing-row">
@@ -75,7 +75,7 @@ export function PricingRow({ proposal, isDeclined = false }) {
             {nightlyRate > 0 && (
               <>
                 {nightlyRateChanged && (
-                  <span className="hp7-strikethrough">${originalNightlyRate}/night</span>
+                  <span className="hp7-strikethrough">${hostNightlyCompensation}/night</span>
                 )}
                 <span className={nightlyRateChanged ? 'hp7-changed-value' : ''}>
                   ${nightlyRate}/night

@@ -128,7 +128,7 @@ export function useInternalEmergencyPageLogic() {
       try {
         const updated = await fetchEmergencyById(selectedEmergency.id);
         setSelectedEmergency(updated);
-      // eslint-disable-next-line no-restricted-syntax -- Intentional: emergency may have been deleted
+       
       } catch {
         void 0; // Ignore error, selected emergency might have been deleted
       }

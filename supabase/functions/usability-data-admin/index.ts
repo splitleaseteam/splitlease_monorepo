@@ -17,7 +17,7 @@
  * Database tables: user, proposal, listing, message_threads
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import action handlers
@@ -192,7 +192,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminOrCorporateStatus(
+async function _checkAdminOrCorporateStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {

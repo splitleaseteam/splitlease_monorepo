@@ -1,15 +1,10 @@
 /**
  * HostInfoCard Component
- * 
+ *
  * Displays host profile information and contact button.
  * Contact button is auth-gated - requires login before opening modal.
- * 
+ *
  * @component
- * @param {object} props
- * @param {object} props.host - Host data object
- * @param {Function} props.onContactClick - Contact button click handler (auth-gated)
- * @param {boolean} props.isAuthenticated - Whether user is logged in
- * 
  * @architecture Presentational Component
  * @performance Memoized
  * @security Contact action is auth-gated at hook level
@@ -20,11 +15,21 @@ import { memo } from 'react';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './HostInfoCard.module.css';
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface HostInfoCardProps {
+    host: any;
+    onContactClick: () => void;
+    isAuthenticated: boolean;
+}
+
 const HostInfoCard = memo(function HostInfoCard({
     host,
     onContactClick,
     isAuthenticated
-}) {
+}: HostInfoCardProps) {
 
     if (!host) {
         return null;

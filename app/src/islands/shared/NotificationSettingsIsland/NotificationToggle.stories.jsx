@@ -158,64 +158,66 @@ export const DisabledOn = {
 };
 
 // In Form Context
-export const InFormContext = {
-  render: () => {
-    const [preferences, setPreferences] = useState({
-      sms: true,
-      email: false,
-      push: true,
-    });
+const InFormContextWrapper = () => {
+  const [preferences, setPreferences] = useState({
+    sms: true,
+    email: false,
+    push: true,
+  });
 
-    const handleToggle = (key) => (newValue) => {
-      setPreferences((prev) => ({ ...prev, [key]: newValue }));
-    };
+  const handleToggle = (key) => (newValue) => {
+    setPreferences((prev) => ({ ...prev, [key]: newValue }));
+  };
 
-    return (
-      <div style={{
-        backgroundColor: 'white',
-        padding: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        width: '320px',
-      }}>
-        <h3 style={{ margin: '0 0 20px', color: '#1f2937', fontSize: '16px' }}>
-          Notification Preferences
-        </h3>
+  return (
+    <div style={{
+      backgroundColor: 'white',
+      padding: '24px',
+      borderRadius: '12px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+      width: '320px',
+    }}>
+      <h3 style={{ margin: '0 0 20px', color: '#1f2937', fontSize: '16px' }}>
+        Notification Preferences
+      </h3>
 
-        {[
-          { key: 'sms', label: 'SMS Notifications' },
-          { key: 'email', label: 'Email Notifications' },
-          { key: 'push', label: 'Push Notifications' },
-        ].map(({ key, label }) => (
-          <div key={key} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            borderBottom: '1px solid #e5e7eb',
-          }}>
-            <span style={{ fontSize: '14px', color: '#374151' }}>{label}</span>
-            <NotificationToggle
-              checked={preferences[key]}
-              onChange={handleToggle(key)}
-              ariaLabel={`Toggle ${label.toLowerCase()}`}
-            />
-          </div>
-        ))}
-
-        <div style={{
-          marginTop: '16px',
-          padding: '12px',
-          backgroundColor: '#f9fafb',
-          borderRadius: '8px',
-          fontSize: '13px',
-          color: '#6b7280',
+      {[
+        { key: 'sms', label: 'SMS Notifications' },
+        { key: 'email', label: 'Email Notifications' },
+        { key: 'push', label: 'Push Notifications' },
+      ].map(({ key, label }) => (
+        <div key={key} style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 0',
+          borderBottom: '1px solid #e5e7eb',
         }}>
-          Active: {Object.entries(preferences).filter(([, v]) => v).map(([k]) => k.toUpperCase()).join(', ') || 'None'}
+          <span style={{ fontSize: '14px', color: '#374151' }}>{label}</span>
+          <NotificationToggle
+            checked={preferences[key]}
+            onChange={handleToggle(key)}
+            ariaLabel={`Toggle ${label.toLowerCase()}`}
+          />
         </div>
+      ))}
+
+      <div style={{
+        marginTop: '16px',
+        padding: '12px',
+        backgroundColor: '#f9fafb',
+        borderRadius: '8px',
+        fontSize: '13px',
+        color: '#6b7280',
+      }}>
+        Active: {Object.entries(preferences).filter(([, v]) => v).map(([k]) => k.toUpperCase()).join(', ') || 'None'}
       </div>
-    );
-  },
+    </div>
+  );
+};
+
+export const InFormContext = {
+  render: () => <InFormContextWrapper />,
   parameters: {
     docs: {
       description: {

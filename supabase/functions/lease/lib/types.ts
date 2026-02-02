@@ -27,6 +27,7 @@ export interface CreateLeaseResponse {
     host: string;
     guest: string;
   };
+  documentsGenerated: boolean;
 }
 
 export interface GetLeasePayload {

@@ -40,7 +40,13 @@
       "Read(//c/Users/Split Lease/My Drive \\(splitleaseteam@gmail.com\\)/_Agent Context and Tools/SL22/Design/2026/Ongoing Projects/image grid/**)",
       "Bash(bun run test:*)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_resize"
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(head:*)",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_evaluate",
+      "Bash({)",
+      "mcp__playwright__browser_install"
     ],
     "deny": [],
     "ask": []
@@ -54,5 +60,5 @@
   "enabledPlugins": {
     "supabase@claude-plugins-official": true
   },
-  "outputStyle": "Completion Summary"
+  "outputStyle": "splitlease-formal"
 }

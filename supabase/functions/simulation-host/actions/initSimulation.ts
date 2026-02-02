@@ -37,7 +37,7 @@ export async function handleInitSimulation(
 ): Promise<SimulationSession> {
   console.log('[initSimulation] Starting for user:', user.id);
 
-  const hostId = payload.hostId || user.id;
+  const _hostId = payload.hostId || user.id;
   const simulationId = generateSimulationId();
 
   // Verify the user exists and get their user record ID

@@ -7,7 +7,7 @@
 
 import type { TestConfigResponse } from '../lib/types.ts';
 
-export async function handleTestConfig(): Promise<TestConfigResponse> {
+export function handleTestConfig(): Promise<TestConfigResponse> {
   console.log('[calendar-automation:test-config] Configuration test requested');
 
   const googleAccessToken = Deno.env.get('GOOGLE_OAUTH_ACCESS_TOKEN');

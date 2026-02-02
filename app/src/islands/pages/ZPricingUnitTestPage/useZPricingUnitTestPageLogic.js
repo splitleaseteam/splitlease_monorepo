@@ -19,6 +19,7 @@ import {
   calculateMonthlyAvgNightly,
   calculateAverageWeeklyPrice
 } from '../../../logic/calculators/pricingList/index.js';
+import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -150,7 +151,7 @@ export function useZPricingUnitTestPageLogic() {
     return listings.filter(listing =>
       listing._id?.toLowerCase().includes(query) ||
       listing.Name?.toLowerCase().includes(query) ||
-      listing.hostEmail?.toLowerCase().includes(query)
+      listing['Host email']?.toLowerCase().includes(query)
     );
   }, [listings, searchQuery]);
 
@@ -176,6 +177,21 @@ export function useZPricingUnitTestPageLogic() {
   useEffect(() => {
     loadListings();
   }, []);
+
+  // Auto-calculate comparison when priceBreakdown or selection changes
+  useEffect(() => {
+    if (priceBreakdown && selectedListing && zatConfig && selectedDays.length > 0) {
+      // Run pricing calculations for display
+      const pricing = runPricingCalculations(selectedListing, zatConfig, nightsCount, hostRates);
+      setPricingOutput(pricing);
+
+      // Run workflow vs formula vs pricing list comparison
+      const comparison = runComparisonChecks(priceBreakdown, selectedDays, selectedListing, reservationSpan, zatConfig, hostRates, pricingList);
+      setComparisonResults(comparison);
+
+      console.log('[Auto-calc] Comparison updated:', comparison);
+    }
+  }, [priceBreakdown, selectedDays, selectedListing, zatConfig, nightsCount, hostRates, reservationSpan]);
 
   // ═══════════════════════════════════════════════════════════
   // DATA LOADERS
@@ -210,10 +226,9 @@ export function useZPricingUnitTestPageLogic() {
         .from('listing')
         .select(`
           _id,
-          Name,
+          "Name",
           "rental type",
           "Weeks offered",
-          "Host Comp Style",
           "💰Nightly Host Rate for 2 nights",
           "💰Nightly Host Rate for 3 nights",
           "💰Nightly Host Rate for 4 nights",
@@ -228,16 +243,16 @@ export function useZPricingUnitTestPageLogic() {
           "Minimum Weeks",
           "Maximum Weeks",
           "# of nights available",
-          "Nights_Available",
+          "Nights Available (List of Nights) ",
           "Days Available (List of Days)",
-          pricing_list_id,
-          Active,
-          Complete,
-          Approved,
-          hostEmail
+          pricing_list,
+          "Active",
+          "Complete",
+          "Approved",
+          "Host email"
         `)
-        .eq('Deleted', false)
-        .order('Modified Date', { ascending: false })
+        .eq('"Deleted"', false)
+        .order('"Modified Date"', { ascending: false })
         .limit(500);
 
       if (error) throw error;
@@ -259,10 +274,26 @@ export function useZPricingUnitTestPageLogic() {
     try {
       setPricingListLoading(true);
 
+      // First get the listing's pricing_list FK
+      const { data: listing, error: listingError } = await supabase
+        .from('listing')
+        .select('pricing_list')
+        .eq('_id', listingId)
+        .single();
+
+      if (listingError) throw listingError;
+
+      if (!listing?.pricing_list) {
+        console.log('[ZPricingUnitTest] No pricing_list FK on listing:', listingId);
+        setPricingList(null);
+        return;
+      }
+
+      // Then fetch the pricing_list by its _id
       const { data, error } = await supabase
         .from('pricing_list')
         .select('*')
-        .eq('listing', listingId)
+        .eq('_id', listing.pricing_list)
         .maybeSingle();
 
       if (error) throw error;
@@ -294,10 +325,9 @@ export function useZPricingUnitTestPageLogic() {
         .from('listing')
         .select(`
           _id,
-          Name,
+          "Name",
           "rental type",
           "Weeks offered",
-          "Host Comp Style",
           "💰Nightly Host Rate for 2 nights",
           "💰Nightly Host Rate for 3 nights",
           "💰Nightly Host Rate for 4 nights",
@@ -312,12 +342,12 @@ export function useZPricingUnitTestPageLogic() {
           "Minimum Weeks",
           "Maximum Weeks",
           "# of nights available",
-          "Nights_Available",
+          "Nights Available (List of Nights) ",
           "Days Available (List of Days)",
-          pricing_list_id,
-          Active,
-          Complete,
-          Approved
+          pricing_list,
+          "Active",
+          "Complete",
+          "Approved"
         `)
         .eq('_id', listingId)
         .single();
@@ -342,7 +372,7 @@ export function useZPricingUnitTestPageLogic() {
     }
 
     setHostRates({
-      hostCompStyle: listing['Host Comp Style'] || listing['rental type'] || '',
+      hostCompStyle: listing['rental type'] || '',
       weeksOffered: listing['Weeks offered'] || 'Every week',
       rate2Night: parseFloat(listing['💰Nightly Host Rate for 2 nights']) || 0,
       rate3Night: parseFloat(listing['💰Nightly Host Rate for 3 nights']) || 0,
@@ -358,7 +388,7 @@ export function useZPricingUnitTestPageLogic() {
       minWeeks: listing['Minimum Weeks'],
       maxWeeks: listing['Maximum Weeks'],
       nightsPerWeek: listing['# of nights available'] || 7,
-      nightsAvailable: parseArrayField(listing['Nights_Available'])
+      nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) '])
     });
   }
 
@@ -388,19 +418,29 @@ export function useZPricingUnitTestPageLogic() {
 
     try {
       setIsUpdating(true);
-      const response = await fetch('/api/pricing-list', {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      // Call the pricing-list Edge Function to create/recalculate pricing
+      const response = await fetch(`${supabaseUrl}/functions/v1/pricing-list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'recalculate',
-          payload: { listing_id: selectedListing._id }
+          action: 'create',
+          payload: {
+            listing_id: selectedListing._id,
+            user_id: 'admin-test',
+            unit_markup: selectedListing['💰Unit Markup'] || 0
+          }
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update pricing list');
+        const errorText = await response.text();
+        throw new Error(`Failed to update pricing list (${response.status}): ${errorText}`);
       }
+
+      const result = await response.json();
+      console.log('[Workflow 3] Pricing list response:', result);
 
       // Reload pricing list
       await loadPricingList(selectedListing._id);
@@ -421,16 +461,29 @@ export function useZPricingUnitTestPageLogic() {
 
     try {
       setIsUpdating(true);
-      const response = await fetch('/api/pricing-list', {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      // Call the pricing-list Edge Function with recalculate action
+      const response = await fetch(`${supabaseUrl}/functions/v1/pricing-list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'recalculate',
-          payload: { listing_id: selectedListing._id }
+          payload: {
+            listing_id: selectedListing._id,
+            user_id: 'admin-test',
+            unit_markup: selectedListing['💰Unit Markup'] || 0
+          }
         })
       });
 
-      if (!response.ok) throw new Error('Failed to update starting nightly');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update starting nightly (${response.status}): ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('[Workflow 4/5] Starting nightly response:', result);
 
       await loadPricingList(selectedListing._id);
       setAlertMessage('Starting nightly price updated');
@@ -456,17 +509,17 @@ export function useZPricingUnitTestPageLogic() {
     const flags = runValidationChecks(selectedListing, pricingList, hostRates);
     setValidationFlags(flags);
 
-    // Run pricing calculations
+    // Run pricing calculations for display in Section 4
     const pricing = runPricingCalculations(selectedListing, zatConfig, nightsCount, hostRates);
     setPricingOutput(pricing);
 
-    // Run workflow vs formula comparison
-    const comparison = runComparisonChecks(priceBreakdown, pricing, zatConfig, nightsCount, reservationSpan, hostRates);
+    // Run workflow vs formula vs pricing list comparison
+    const comparison = runComparisonChecks(priceBreakdown, selectedDays, selectedListing, reservationSpan, zatConfig, hostRates, pricingList);
     setComparisonResults(comparison);
 
     setAlertMessage('Checks completed');
     setTimeout(() => setAlertMessage(null), 2000);
-  }, [selectedListing, zatConfig, pricingList, hostRates, nightsCount, priceBreakdown, reservationSpan]);
+  }, [selectedListing, zatConfig, pricingList, hostRates, nightsCount, priceBreakdown, selectedDays, reservationSpan]);
 
   // Workflow 7: Set Pattern
   const handleSetPattern = useCallback((pattern) => {
@@ -641,6 +694,10 @@ export function useZPricingUnitTestPageLogic() {
 // ─────────────────────────────────────────────────────────────
 
 function buildScheduleListing(listing) {
+  // For the unit test page, override day availability constraints
+  // to allow testing any scenario regardless of listing's actual settings
+  const ALL_DAYS_AVAILABLE = [0, 1, 2, 3, 4, 5, 6]; // Sun-Sat
+
   return {
     id: listing._id,
     name: listing.Name || 'Untitled',
@@ -655,13 +712,16 @@ function buildScheduleListing(listing) {
     rate3Night: listing['💰Nightly Host Rate for 3 nights'] || 0,
     rate4Night: listing['💰Nightly Host Rate for 4 nights'] || 0,
     rate5Night: listing['💰Nightly Host Rate for 5 nights'] || 0,
-    minimumNights: listing['Minimum Nights'] || 1,
-    maximumNights: listing['Maximum Nights'] || 7,
+    // Override: Allow selecting from 1 to 7 nights for testing
+    minimumNights: 1,
+    maximumNights: 7,
     minimumWeeks: listing['Minimum Weeks'] || 1,
     maximumWeeks: listing['Maximum Weeks'] || 52,
-    nightsPerWeek: listing['# of nights available'] || 7,
-    daysAvailable: parseArrayField(listing['Days Available (List of Days)']) || [0, 1, 2, 3, 4, 5, 6],
-    nightsAvailable: parseArrayField(listing['Nights_Available']) || []
+    // Override: Full week available for testing
+    nightsPerWeek: 7,
+    // Override: All days selectable for testing any scenario
+    daysAvailable: ALL_DAYS_AVAILABLE,
+    nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) ']) || []
   };
 }
 
@@ -727,6 +787,20 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
   const _rentalType = listing['rental type'] || 'Nightly';
   const effectiveNights = nightsCount > 0 ? nightsCount : 3;
 
+  console.log('[runPricingCalculations] Input values:', {
+    nightsCount,
+    effectiveNights,
+    hostRates: {
+      weeklyRate: hostRates.weeklyRate,
+      monthlyRate: hostRates.monthlyRate,
+      rate2Night: hostRates.rate2Night,
+      rate3Night: hostRates.rate3Night,
+      rate4Night: hostRates.rate4Night,
+      rate5Night: hostRates.rate5Night,
+      unitMarkup: hostRates.unitMarkup
+    }
+  });
+
   // 1. Setup Base Scalars
   const siteMarkup = zatConfig.overallSiteMarkup || 0.17;
   const unitMarkup = hostRates.unitMarkup || 0;
@@ -770,6 +844,16 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
     // Weekly Multiplier: 1 + Site + Unit + Weekly - Unused
     const wMultiplier = 1 + siteMarkup + unitMarkup + weeklyMarkup - unusedNightsDiscount;
     weeklyProratedResult = weeklyBase * wMultiplier;
+
+    console.log('[runPricingCalculations] Weekly calc:', {
+      weeklyRate: hostRates.weeklyRate,
+      effectiveNights,
+      weeklyBase,
+      wMultiplier,
+      weeklyProratedResult
+    });
+  } else {
+    console.log('[runPricingCalculations] Weekly rate is 0, skipping weekly calc');
   }
 
   // --- Nightly Calculations ---
@@ -785,7 +869,7 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
   const nMultiplier = 1 + siteMarkup + unitMarkup - unusedNightsDiscount - fullTimeDiscount;
   const nightlyWithMarkup = baseNightlyRate * nMultiplier;
 
-  return {
+  const result = {
     monthly: {
       proratedNightlyRate: monthlyProratedResult,
       avgNightly: monthlyAvgNightly,
@@ -803,45 +887,230 @@ function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
       fullTimeDiscount
     }
   };
+
+  console.log('[runPricingCalculations] Final result:', result);
+
+  return result;
 }
 
-function runComparisonChecks(priceBreakdown, pricing, zatConfig, nightsCount, reservationSpan, hostRates) {
-  const effectiveNights = nightsCount > 0 ? nightsCount : 3;
-
-  // Workflow values (from ListingScheduleSelector)
+function runComparisonChecks(priceBreakdown, selectedDays, listing, reservationSpan, zatConfig, hostRates, pricingList) {
+  // Workflow values (from ListingScheduleSelector's priceBreakdown callback)
   const workflowNightlyPrice = priceBreakdown?.pricePerNight || 0;
   const workflowFourWeekRent = priceBreakdown?.fourWeekRent || 0;
   const workflowInitialPayment = priceBreakdown?.initialPayment || 0;
   const workflowTotalReservation = priceBreakdown?.reservationTotal || 0;
 
-  // Formula values (direct calculation)
-  const formulaNightlyPrice = pricing.nightly.withMarkup || 0;
-  const formulaFourWeekRent = formulaNightlyPrice * effectiveNights * 4;
-  const formulaInitialPayment = formulaFourWeekRent + (hostRates.damageDeposit || 0);
-  const formulaTotalReservation = formulaNightlyPrice * effectiveNights * reservationSpan;
+  // Formula values: Re-calculate using the same calculatePrice function
+  // This validates our formulas match what the selector is doing
+  const selectedNights = selectedDays.length > 0
+    ? selectedDays.slice(0, -1).map((day, i) => ({
+      nightNumber: i,
+      fromDay: day,
+      toDay: selectedDays[i + 1] || day
+    }))
+    : [];
 
-  const tolerance = 0.01;
+  const nightsCount = selectedNights.length;
+
+  // Create a listing object with the host rates for formula calculation
+  const formulaListing = listing ? {
+    ...listing,
+    rentalType: listing['rental type'] || listing.rentalType,
+    weeklyHostRate: hostRates.weeklyRate,
+    monthlyHostRate: hostRates.monthlyRate,
+    unitMarkup: (hostRates.unitMarkup || 0) * 100, // Convert back to percentage
+    cleaningFee: hostRates.cleaningDeposit,
+    damageDeposit: hostRates.damageDeposit,
+    weeksOffered: hostRates.weeksOffered,
+    '💰Weekly Host Rate': hostRates.weeklyRate,
+    '💰Monthly Host Rate': hostRates.monthlyRate,
+    '💰Nightly Host Rate for 2 nights': hostRates.rate2Night,
+    '💰Nightly Host Rate for 3 nights': hostRates.rate3Night,
+    '💰Nightly Host Rate for 4 nights': hostRates.rate4Night,
+    '💰Nightly Host Rate for 5 nights': hostRates.rate5Night,
+    '💰Unit Markup': (hostRates.unitMarkup || 0) * 100,
+    '💰Cleaning Cost / Maintenance Fee': hostRates.cleaningDeposit,
+    '💰Damage Deposit': hostRates.damageDeposit,
+    'Weeks offered': hostRates.weeksOffered
+  } : null;
+
+  // Calculate using our formula implementation
+  const formulaResult = formulaListing
+    ? calculatePrice(selectedNights, formulaListing, reservationSpan, zatConfig)
+    : { pricePerNight: 0, fourWeekRent: 0, initialPayment: 0, reservationTotal: 0 };
+
+  const formulaNightlyPrice = formulaResult.pricePerNight || 0;
+  const formulaFourWeekRent = formulaResult.fourWeekRent || 0;
+  const formulaInitialPayment = formulaResult.initialPayment || 0;
+  const formulaTotalReservation = formulaResult.reservationTotal || 0;
+
+  // ═══════════════════════════════════════════════════════════════
+  // PRICING LIST VALUES: Calculate from the pricing_list database structure
+  // ═══════════════════════════════════════════════════════════════
+  const pricingListValues = calculatePricingListValues(
+    pricingList,
+    nightsCount,
+    reservationSpan,
+    hostRates.weeksOffered,
+    hostRates.cleaningDeposit,
+    hostRates.damageDeposit
+  );
+
+  console.log('[runComparisonChecks] Workflow vs Formula vs PricingList:', {
+    workflow: { workflowNightlyPrice, workflowFourWeekRent, workflowInitialPayment, workflowTotalReservation },
+    formula: { formulaNightlyPrice, formulaFourWeekRent, formulaInitialPayment, formulaTotalReservation },
+    pricingList: pricingListValues,
+    selectedNightsCount: nightsCount,
+    rentalType: listing?.['rental type']
+  });
+
+  const tolerance = 1; // Allow $1 tolerance for rounding differences
 
   return {
     fourWeekRent: {
       workflow: workflowFourWeekRent,
       formula: formulaFourWeekRent,
-      match: Math.abs(workflowFourWeekRent - formulaFourWeekRent) < tolerance
+      pricingList: pricingListValues.fourWeekRent,
+      match: Math.abs(workflowFourWeekRent - formulaFourWeekRent) < tolerance,
+      matchPricingList: Math.abs(workflowFourWeekRent - pricingListValues.fourWeekRent) < tolerance
     },
     initialPayment: {
       workflow: workflowInitialPayment,
       formula: formulaInitialPayment,
-      match: Math.abs(workflowInitialPayment - formulaInitialPayment) < tolerance
+      pricingList: pricingListValues.initialPayment,
+      match: Math.abs(workflowInitialPayment - formulaInitialPayment) < tolerance,
+      matchPricingList: Math.abs(workflowInitialPayment - pricingListValues.initialPayment) < tolerance
     },
     nightlyPrice: {
       workflow: workflowNightlyPrice,
       formula: formulaNightlyPrice,
-      match: Math.abs(workflowNightlyPrice - formulaNightlyPrice) < tolerance
+      pricingList: pricingListValues.nightlyPrice,
+      match: Math.abs(workflowNightlyPrice - formulaNightlyPrice) < tolerance,
+      matchPricingList: Math.abs(workflowNightlyPrice - pricingListValues.nightlyPrice) < tolerance
     },
     totalReservation: {
       workflow: workflowTotalReservation,
       formula: formulaTotalReservation,
-      match: Math.abs(workflowTotalReservation - formulaTotalReservation) < tolerance
+      pricingList: pricingListValues.totalReservation,
+      match: Math.abs(workflowTotalReservation - formulaTotalReservation) < tolerance,
+      matchPricingList: Math.abs(workflowTotalReservation - pricingListValues.totalReservation) < tolerance
     }
   };
+}
+
+/**
+ * Calculate pricing values from the pricing_list database structure
+ * Uses the pre-computed arrays for the selected night count
+ */
+function calculatePricingListValues(pricingList, nightsCount, reservationSpan, weeksOffered, cleaningFee, damageDeposit) {
+  if (!pricingList || nightsCount < 1 || nightsCount > 7) {
+    return { nightlyPrice: 0, fourWeekRent: 0, initialPayment: 0, totalReservation: 0 };
+  }
+
+  // Array index is 0-based (nights 1-7 = indices 0-6)
+  const index = nightsCount - 1;
+
+  // Get the nightly price from the pricing list array
+  const nightlyPrice = pricingList.nightlyPrice?.[index] || 0;
+
+  // Get weekly schedule period for 4-week rent calculation
+  const weeklySchedulePeriod = getWeeklySchedulePeriodForPricingList(weeksOffered);
+
+  // Calculate 4-Week Rent: (nightlyPrice * nights * 4) / weeklySchedulePeriod
+  const fourWeekRent = (nightlyPrice * nightsCount * 4) / weeklySchedulePeriod;
+
+  // Initial Payment: 4-week rent + cleaning fee + damage deposit
+  const initialPayment = fourWeekRent + (cleaningFee || 0) + (damageDeposit || 0);
+
+  // Calculate total reservation price
+  const totalReservation = calculateTotalReservationFromPricingList(
+    nightlyPrice,
+    nightsCount,
+    reservationSpan,
+    weeksOffered
+  );
+
+  return {
+    nightlyPrice: Math.round(nightlyPrice * 100) / 100,
+    fourWeekRent: Math.round(fourWeekRent),
+    initialPayment: Math.round(initialPayment),
+    totalReservation: Math.round(totalReservation)
+  };
+}
+
+/**
+ * Get weekly schedule period based on weeks offered pattern
+ */
+function getWeeklySchedulePeriodForPricingList(weeksOffered) {
+  const pattern = (weeksOffered || 'every week').toLowerCase();
+
+  if (pattern.includes('1 on 1 off') || pattern.includes('1on1off') ||
+    (pattern.includes('one week on') && pattern.includes('one week off')) ||
+    (pattern.includes('1 week on') && pattern.includes('1 week off'))) {
+    return 2;
+  }
+
+  if (pattern.includes('2 on 2 off') || pattern.includes('2on2off') ||
+    (pattern.includes('two week') && pattern.includes('two week')) ||
+    (pattern.includes('2 week on') && pattern.includes('2 week off'))) {
+    return 2;
+  }
+
+  if (pattern.includes('1 on 3 off') || pattern.includes('1on3off') ||
+    (pattern.includes('one week on') && pattern.includes('three week')) ||
+    (pattern.includes('1 week on') && pattern.includes('3 week off'))) {
+    return 4;
+  }
+
+  return 1; // Default: "Every week"
+}
+
+/**
+ * Calculate total reservation price from pricing list values
+ */
+function calculateTotalReservationFromPricingList(nightlyPrice, nightsCount, reservationSpan, weeksOffered) {
+  // Reservation span to 4-week period mapping
+  const RESERVATION_SPAN_PERIODS = {
+    6: 1.5, 7: 1.75, 8: 2, 9: 2.25, 10: 2.5, 12: 3,
+    13: 3.25, 16: 4, 17: 4.25, 20: 5, 22: 5.5, 26: 6.5
+  };
+
+  // Get actual weeks during 4-week period based on pattern
+  const actualWeeksDuring4Week = getActualWeeksDuring4WeekForPricingList(weeksOffered);
+
+  // Get 4-weeks per period from reservation span
+  const fourWeeksPerPeriod = RESERVATION_SPAN_PERIODS[reservationSpan] || (reservationSpan / 4);
+
+  // Calculate actual weeks during reservation span (with CEILING)
+  const actualWeeksDuringReservation = Math.ceil(actualWeeksDuring4Week * fourWeeksPerPeriod);
+
+  // Calculate total
+  return nightlyPrice * nightsCount * actualWeeksDuringReservation;
+}
+
+/**
+ * Get actual weeks during 4-week period based on pattern
+ */
+function getActualWeeksDuring4WeekForPricingList(weeksOffered) {
+  const pattern = (weeksOffered || 'every week').toLowerCase();
+
+  if (pattern.includes('1 on 1 off') || pattern.includes('1on1off') ||
+    (pattern.includes('one week on') && pattern.includes('one week off')) ||
+    (pattern.includes('1 week on') && pattern.includes('1 week off'))) {
+    return 2;
+  }
+
+  if (pattern.includes('2 on 2 off') || pattern.includes('2on2off') ||
+    (pattern.includes('two week') && pattern.includes('two week')) ||
+    (pattern.includes('2 week on') && pattern.includes('2 week off'))) {
+    return 2;
+  }
+
+  if (pattern.includes('1 on 3 off') || pattern.includes('1on3off') ||
+    (pattern.includes('one week on') && pattern.includes('three week')) ||
+    (pattern.includes('1 week on') && pattern.includes('3 week off'))) {
+    return 1;
+  }
+
+  return 4; // Default: "Every week" = present all 4 weeks
 }

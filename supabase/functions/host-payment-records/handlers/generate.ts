@@ -23,7 +23,7 @@ import {
   PaymentRecord,
 } from '../lib/types.ts';
 import { validateGenerateInput, normalizeRentalType, normalizeWeekPattern } from '../lib/validators.ts';
-import { calculatePaymentSchedule, parseDate } from '../lib/calculations.ts';
+import { calculatePaymentSchedule, parseDate as _parseDate } from '../lib/calculations.ts';
 import { enqueueBubbleSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
 
 /**

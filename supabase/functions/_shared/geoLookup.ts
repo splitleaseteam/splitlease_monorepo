@@ -77,7 +77,7 @@ export async function getBoroughByZipCode(
       _id: data._id,
       displayName: data['Display Borough']
     };
-  } catch (err) {
+  } catch (_err) {
     console.error('[geoLookup] Exception in getBoroughByZipCode:', err);
     return null;
   }
@@ -133,7 +133,7 @@ export async function getHoodByZipCode(
       displayName: data['Display'],
       boroughId: data['Geo-Borough']
     };
-  } catch (err) {
+  } catch (_err) {
     console.error('[geoLookup] Exception in getHoodByZipCode:', err);
     return null;
   }
@@ -178,7 +178,7 @@ export async function getGeoByZipCode(
           displayName: data['Display Borough']
         };
       }
-    } catch (err) {
+    } catch (_err) {
       console.error('[geoLookup] Error fetching borough from hood reference:', err);
     }
   }

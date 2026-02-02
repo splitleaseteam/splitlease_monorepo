@@ -27,8 +27,8 @@ import { BubbleApiError, SupabaseSyncError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 export async function handleValidate(
-  bubbleAuthBaseUrl: string,
-  bubbleApiKey: string,
+  _bubbleAuthBaseUrl: string,
+  _bubbleApiKey: string,
   supabaseUrl: string,
   supabaseServiceKey: string,
   payload: any

@@ -32,17 +32,21 @@ export default function ThreadCard({ thread, isSelected, onClick }) {
   // Determine role badge - if contact is a host or guest relative to current user
   const contactRole = thread.contact_role; // 'host' or 'guest'
 
+  // Check if thread has a proposal and if it's pending (needs attention)
+  const hasProposal = Boolean(thread.proposal_id);
+  const hasPendingProposal = Boolean(thread.has_pending_proposal);
+
   // Format message preview with "You:" prefix if sent by current user
   const messagePreview = thread.last_message_is_mine
     ? `You: ${thread.last_message_preview || ''}`
     : thread.last_message_preview || 'No messages yet';
 
   // Build accessible label for screen readers
-  const ariaLabel = `Conversation with ${thread.contact_name || 'Unknown Contact'}${thread.property_name ? `, about ${thread.property_name}` : ''}${thread.unread_count > 0 ? `, ${thread.unread_count} unread messages` : ''}`;
+  const ariaLabel = `Conversation with ${thread.contact_name || 'Unknown Contact'}${thread.property_name ? `, about ${thread.property_name}` : ''}${hasPendingProposal ? ', has pending proposal' : ''}${thread.unread_count > 0 ? `, ${thread.unread_count} unread messages` : ''}`;
 
   return (
     <div
-      className={`thread-card ${isSelected ? 'thread-card--selected' : ''} ${thread.unread_count > 0 ? 'thread-card--unread' : ''}`}
+      className={`thread-card ${isSelected ? 'thread-card--selected' : ''} ${thread.unread_count > 0 ? 'thread-card--unread' : ''} ${hasPendingProposal ? 'thread-card--pending-proposal' : ''}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -83,7 +87,7 @@ export default function ThreadCard({ thread, isSelected, onClick }) {
 
       {/* Content */}
       <div className="thread-card__content">
-        {/* Header row: Name + Role Badge */}
+        {/* Header row: Name + Role Badge + Proposal Badge */}
         <div className="thread-card__name-row">
           <span className="thread-card__name">
             {thread.contact_name || 'Unknown Contact'}
@@ -91,6 +95,11 @@ export default function ThreadCard({ thread, isSelected, onClick }) {
           {contactRole && (
             <span className={`thread-card__role-badge thread-card__role-badge--${contactRole}`}>
               {contactRole}
+            </span>
+          )}
+          {hasProposal && (
+            <span className={`thread-card__proposal-badge ${hasPendingProposal ? 'thread-card__proposal-badge--pending' : ''}`}>
+              {hasPendingProposal ? 'New Proposal' : 'Proposal'}
             </span>
           )}
         </div>

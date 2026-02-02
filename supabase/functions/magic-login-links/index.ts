@@ -23,8 +23,8 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders } from '../_shared/cors.ts';
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
+import { corsHeaders as _corsHeaders } from '../_shared/cors.ts';
 
 // FP Utilities
 import { Result, ok, err } from "../_shared/functional/result.ts";
@@ -36,7 +36,7 @@ import {
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,
-  CorsPreflightSignal,
+  CorsPreflightSignal as _CorsPreflightSignal,
 } from "../_shared/functional/orchestration.ts";
 import { createErrorLog, addError, setAction, ErrorLog } from "../_shared/functional/errorLog.ts";
 import { reportErrorLog } from "../_shared/slack.ts";
@@ -61,7 +61,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   list_users: handleListUsers,
   get_user_data: handleGetUserData,
   send_magic_link: handleSendMagicLink,
@@ -75,7 +75,7 @@ const handlers: Readonly<Record<Action, Function>> = {
 /**
  * Validate that the authenticated user is an admin
  */
-async function validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
+async function _validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return err(new Error('Missing or invalid authorization header'));
@@ -243,8 +243,8 @@ Deno.serve(async (req) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
-  handler: Function,
+function executeHandler(
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   supabaseUrl: string,

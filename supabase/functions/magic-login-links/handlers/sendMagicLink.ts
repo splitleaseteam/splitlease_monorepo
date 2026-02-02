@@ -33,7 +33,7 @@ interface SendMagicLinkPayload {
 
 interface SendMagicLinkResponse {
   success: boolean;
-  link: string;
+  _link: string;
   sentViaSms: boolean;
   sentViaEmail: boolean;
 }
@@ -63,7 +63,7 @@ async function logAudit(
   phoneOverride: string | undefined,
   sentVia: string,
   adminUserId: string,
-  link: string
+  _link: string
 ): Promise<void> {
   const { error } = await supabaseAdmin
     .from('magic_link_audit')

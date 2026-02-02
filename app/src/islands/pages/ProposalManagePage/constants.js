@@ -69,3 +69,15 @@ export const CLOSED_STATUSES = [
   'Proposal Cancelled by Split Lease',
   'Guest Ignored Suggestion'
 ];
+
+/**
+ * Statuses that indicate a lease has been created for the proposal
+ * Used to determine if "View My Lease" button should be shown
+ */
+export const LEASE_CREATED_STATUSES = [
+  'Proposal or Counteroffer Accepted / Drafting Lease Documents',
+  'Lease Documents Sent for Review',
+  'Lease Documents Sent for Signatures',
+  'Lease Documents Signed / Awaiting Initial payment',
+  'Initial Payment Submitted / Lease activated'
+];

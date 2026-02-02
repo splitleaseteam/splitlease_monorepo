@@ -91,6 +91,15 @@ export default [
     },
   },
   {
+    // Storybook stories - relax rules-of-hooks for render functions
+    files: ['src/**/*.stories.jsx', 'src/**/*.stories.js'],
+    rules: {
+      // Storybook's render() pattern uses hooks in a function named "render"
+      // which triggers rules-of-hooks, but it's valid in Storybook context
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
+  {
     // Configuration files (vite.config.js, etc.)
     files: ['*.config.js', 'scripts/**/*.js'],
     languageOptions: {
@@ -106,6 +115,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'public/**/*.js', // Static assets
+      '.storybook/**', // Storybook config (has its own build process)
+      'tests/**', // Test files (separate test runner)
     ],
   },
 ];

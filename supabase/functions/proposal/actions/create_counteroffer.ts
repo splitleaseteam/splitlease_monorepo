@@ -30,7 +30,7 @@ export async function handleCreateCounteroffer(
 ): Promise<{ success: boolean; message: string }> {
   console.log('[create_counteroffer] Starting with proposalId:', payload.proposalId);
 
-  const { proposalId, counterofferData, isUsabilityTest = false, hostPersona } = payload;
+  const { proposalId, counterofferData, isUsabilityTest: _isUsabilityTest = false, hostPersona } = payload;
 
   if (!proposalId) {
     throw new Error('proposalId is required');
@@ -41,7 +41,7 @@ export async function handleCreateCounteroffer(
   }
 
   // Fetch current proposal to preserve existing data
-  const { data: proposal, error: fetchError } = await supabase
+  const { data: _proposal, error: fetchError } = await supabase
     .from('proposal')
     .select('*')
     .eq('_id', proposalId)

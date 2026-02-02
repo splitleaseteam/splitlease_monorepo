@@ -9,7 +9,7 @@ const CONTRACT_FUNCTION_URL = '/functions/v1/contract-generator';
  * @returns {Promise<object>} - The result with document URLs
  */
 export async function generateContract(action, payload) {
-  const { supabase } = await import('./supabase.js');
+  const { supabase } = await import('../supabase.js');
 
   const { data, error } = await supabase.functions.invoke('contract-generator', {
     body: { action, payload }
@@ -27,7 +27,7 @@ export async function generateContract(action, payload) {
  * @returns {Promise<Array>} - List of available templates
  */
 export async function listTemplates() {
-  const { supabase } = await import('./supabase.js');
+  const { supabase } = await import('../supabase.js');
 
   const { data, error } = await supabase.functions.invoke('contract-generator', {
     body: { action: 'list_templates', payload: {} }
@@ -46,7 +46,7 @@ export async function listTemplates() {
  * @returns {Promise<object>} - Template schema with fields
  */
 export async function getTemplateSchema(action) {
-  const { supabase } = await import('./supabase.js');
+  const { supabase } = await import('../supabase.js');
 
   const { data, error } = await supabase.functions.invoke('contract-generator', {
     body: { action: 'get_template_schema', payload: { action } }

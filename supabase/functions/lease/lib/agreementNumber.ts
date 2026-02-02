@@ -188,19 +188,16 @@ export function generateAgreementNumber(
 /**
  * @deprecated Legacy zero calculation for SL-XXXXX format
  *
+ * Calculate number of zeros needed based on current count
+ * Uses logarithmic scaling: 0-9 -> 4 zeros, 10-99 -> 3 zeros, etc.
+ *
  * @param count - Current lease count
- * @returns Number of leading zeros to use
+ * @returns Number of leading zeros needed
  */
 export function calculateNumberOfZeros(count: number): number {
-  if (count < 10) {
-    return 4; // Results in SL-0000X (5 digits total)
-  }
-  if (count < 100) {
-    return 3; // Results in SL-000XX (5 digits total)
-  }
-  if (count < 1000) {
-    return 2; // Results in SL-00XXX (5 digits total)
-  }
-  // For 1000+, let the number grow naturally
-  return 1;
+  if (count < 10) return 4;
+  if (count < 100) return 3;
+  if (count < 1000) return 2;
+  if (count < 10000) return 1;
+  return 0;
 }
