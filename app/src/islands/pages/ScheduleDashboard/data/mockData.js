@@ -93,6 +93,7 @@ export const MOCK_MESSAGES = [
     id: 'msg-r1',
     senderId: 'user-456',  // Sarah
     type: 'request',
+    status: 'pending',
     text: 'Sarah proposed swapping Feb 10 for Feb 14',
     requestData: {
       type: 'swap',

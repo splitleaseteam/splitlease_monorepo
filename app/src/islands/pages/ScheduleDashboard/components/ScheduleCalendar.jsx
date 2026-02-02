@@ -459,14 +459,6 @@ export default function ScheduleCalendar({
         </button>
         <div className="schedule-calendar__legend">
           <div className="schedule-calendar__legend-item">
-            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--mine" />
-            <span>My Nights</span>
-          </div>
-          <div className="schedule-calendar__legend-item">
-            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--roommate" />
-            <span>Available</span>
-          </div>
-          <div className="schedule-calendar__legend-item">
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--adjacent" />
             <span>Recommended</span>
           </div>
