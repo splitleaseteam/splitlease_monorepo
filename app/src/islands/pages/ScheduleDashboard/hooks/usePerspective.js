@@ -1,5 +1,5 @@
 /**
- * Dev-only hook for perspective switching
+ * Perspective switching hook for Schedule Dashboard
  * Reads ?as= query param to determine which user's perspective to show
  *
  * Usage:
@@ -8,7 +8,7 @@
  */
 import { useMemo } from 'react';
 
-// Map of allowed perspective switches (dev only)
+// Map of allowed perspective switches
 const PERSPECTIVE_MAP = {
   'sarah': 'user-456',      // Sarah Chen
   'user-456': 'user-456',   // Direct ID also works
@@ -21,11 +21,6 @@ const PERSPECTIVE_MAP = {
  */
 export function usePerspective() {
   return useMemo(() => {
-    // Only allow perspective switching in dev mode
-    if (import.meta.env.MODE !== 'development') {
-      return 'current-user';
-    }
-
     const params = new URLSearchParams(window.location.search);
     const asParam = params.get('as')?.toLowerCase();
 
