@@ -326,8 +326,8 @@ export async function handleCreate(
     rentalType,
     nightsPerWeek,
     hostNightlyRate,
-    weeklyRate: listingData["💰Weekly Host Rate"],
-    monthlyRate: listingData["💰Monthly Host Rate"],
+    weeklyRate: listingData["weekly_host_rate"],
+    monthlyRate: listingData["monthly_host_rate"],
     guestProposalPrice: input.proposalPrice
   });
 
@@ -335,10 +335,10 @@ export async function handleCreate(
     rentalType,
     (input.reservationSpan || "other") as ReservationSpan,
     nightsPerWeek,
-    listingData["💰Weekly Host Rate"] || 0,
+    listingData["weekly_host_rate"] || 0,
     hostNightlyRate,
     input.reservationSpanWeeks,
-    listingData["💰Monthly Host Rate"] || 0
+    listingData["monthly_host_rate"] || 0
   );
 
   // Calculate move-out date
@@ -439,8 +439,8 @@ export async function handleCreate(
     "Total Compensation (proposal - host)": compensation.total_compensation,
     "host compensation": compensation.host_compensation_per_night,
     "4 week compensation": input.fourWeekCompensation || compensation.four_week_compensation,
-    "cleaning fee": listingData["💰Cleaning Cost / Maintenance Fee"] || 0,
-    "damage deposit": listingData["💰Damage Deposit"] || 0,
+    "cleaning fee": listingData["cleaning_fee"] || 0,
+    "damage deposit": listingData["damage_deposit"] || 0,
     "nightly price for map (text)": formatPriceForDisplay(input.proposalPrice),
 
     // From listing
