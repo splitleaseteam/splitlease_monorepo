@@ -155,11 +155,16 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
   );
 
   console.log('Monthly calculation:', {
+    monthlyHostRate,
+    avgDaysPerMonth: config.avgDaysPerMonth,
     monthlyAvgNightly,
     averageWeeklyPrice,
     nightlyHostRate,
     unusedNights,
+    unusedNightsDiscountMultiplier: config.unusedNightsDiscountMultiplier,
     unusedNightsDiscountValue,
+    overallSiteMarkup: config.overallSiteMarkup,
+    unitMarkup,
     multiplier,
     totalWeeklyPrice,
     pricePerNight,
