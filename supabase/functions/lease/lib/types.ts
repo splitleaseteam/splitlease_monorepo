@@ -14,7 +14,7 @@ export interface CreateLeasePayload {
   isCounteroffer: boolean;
   fourWeekRent: number;
   fourWeekCompensation: number;
-  numberOfZeros?: number;
+  // numberOfZeros removed - now using date-based daily counter (YYYYMMDD-XXXX)
 }
 
 export interface CreateLeaseResponse {

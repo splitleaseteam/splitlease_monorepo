@@ -33,7 +33,7 @@ import {
   calculateTotalRent,
   calculateTotalCompensation,
 } from '../lib/calculations.ts';
-import { generateAgreementNumber } from '../lib/agreementNumber.ts';
+import { generateDailyAgreementNumber } from '../lib/agreementNumber.ts';
 import { generateStays } from '../lib/staysGenerator.ts';
 import {
   generateLeaseDates,
@@ -77,7 +77,6 @@ export async function handleCreate(
     isCounteroffer: normalizeIsCounteroffer(payload.isCounteroffer),
     fourWeekRent: payload.fourWeekRent as number,
     fourWeekCompensation: payload.fourWeekCompensation as number,
-    numberOfZeros: payload.numberOfZeros as number | undefined,
   };
 
   console.log('[lease:create] Input:', JSON.stringify(input, null, 2));
@@ -176,8 +175,11 @@ export async function handleCreate(
     throw new SupabaseSyncError('Failed to generate lease ID');
   }
 
-  // Generate agreement number using daily counter (format: YYYYMMDD-XXXX)
-  const agreementNumber = await generateAgreementNumber(supabase);
+  // Generate date-based agreement number (YYYYMMDD-XXXX)
+  // Uses atomic daily counter - no race conditions
+  const agreementNumber = await generateDailyAgreementNumber(supabase);
+  console.log('[lease:create] Generated agreement number:', agreementNumber);
+
   const firstPaymentDate = calculateFirstPaymentDate(activeTerms.moveInDate);
 
   // Calculate totals
