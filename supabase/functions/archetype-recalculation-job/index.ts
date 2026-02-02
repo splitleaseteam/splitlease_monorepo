@@ -133,12 +133,19 @@ serve(async (req: Request) => {
     );
 
   } catch (error) {
-    console.error('[Archetype Recalculation] Job failed:', error);
+    const errorDetails = {
+      code: (error as { code?: string })?.code || 'UNKNOWN',
+      message: error instanceof Error ? error.message : String(error),
+      details: (error as { details?: string })?.details,
+      hint: (error as { hint?: string })?.hint,
+    };
+    console.error('[Archetype Recalculation] Job failed:', errorDetails);
 
     return new Response(
       JSON.stringify({
         error: 'Job failed',
-        message: error.message,
+        message: errorDetails.message,
+        code: errorDetails.code,
         timestamp: new Date().toISOString()
       }),
       {
@@ -170,8 +177,13 @@ async function getUsersToProcess(
       .limit(config.batchSize * 10);  // Get more than we need
 
     if (error) {
-      console.error('Failed to fetch stale users:', error);
-      return [];
+      console.error('[Archetype Recalculation] Failed to fetch stale users:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw new Error(`Failed to fetch stale users: ${error.message}`);
     }
 
     const staleUserIds = staleUsers?.map(u => u.user_id) || [];
@@ -211,8 +223,13 @@ async function getUsersToProcess(
       .limit(config.batchSize * 10);
 
     if (error) {
-      console.error('Failed to fetch all users:', error);
-      return [];
+      console.error('[Archetype Recalculation] Failed to fetch all users:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      throw new Error(`Failed to fetch all users: ${error.message}`);
     }
 
     return allUsers?.map(u => u.id) || [];
@@ -244,7 +261,8 @@ async function processBatches(
     );
 
     // Count results
-    batchResults.forEach(result => {
+    batchResults.forEach((result, index) => {
+      const userId = batch[index];
       processed++;
       if (result.status === 'fulfilled') {
         if (result.value) {
@@ -252,7 +270,11 @@ async function processBatches(
         }
       } else {
         failed++;
-        console.error(`[Archetype Recalculation] Failed to process user:`, result.reason);
+        const reason = result.reason;
+        console.error(`[Archetype Recalculation] Batch ${Math.floor(i / config.batchSize) + 1}, user ${userId} failed:`, {
+          message: reason instanceof Error ? reason.message : String(reason),
+          code: (reason as { code?: string })?.code,
+        });
       }
     });
 
@@ -328,8 +350,13 @@ async function processUser(
     return true;  // Successfully updated
 
   } catch (error) {
-    console.error(`[Archetype Recalculation] Failed to process user ${userId}:`, error);
-    throw error;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorCode = (error as { code?: string })?.code;
+    console.error(`[Archetype Recalculation] Failed to process user ${userId}:`, {
+      code: errorCode,
+      message: errorMsg,
+    });
+    throw new Error(`Failed for user ${userId}: ${errorMsg}`);
   }
 }
 
@@ -354,7 +381,13 @@ async function logJobCompletion(
         completed_at: new Date().toISOString()
       });
   } catch (error) {
-    console.error('Failed to log job completion:', error);
     // Don't throw - logging failure shouldn't break the job
+    // But log with full details for debugging
+    console.warn('[Archetype Recalculation] Failed to log job completion:', {
+      code: (error as { code?: string })?.code,
+      message: error instanceof Error ? error.message : String(error),
+      results,
+      durationMs,
+    });
   }
 }
