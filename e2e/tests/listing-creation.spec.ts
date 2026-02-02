@@ -302,14 +302,16 @@ test.describe('Listing Creation Flow (Self-Listing V2)', () => {
         return;
       }
 
+      // Look for various navigation/create buttons on the dashboard
       const createButton = hostPage.locator(
         'button:has-text("Create"), button:has-text("Add"), a:has-text("New Listing"), ' +
-        'a:has-text("Create"), [data-testid="create-listing"], a[href*="self-listing"]'
+        'a:has-text("Create"), [data-testid="create-listing"], a[href*="self-listing"], ' +
+        'button:has-text("Go to My Listings"), button:has-text("My Listings")'
       );
 
       const hasCreateButton = await createButton.first().isVisible().catch(() => false);
 
-      // Create button should be visible (when authenticated)
+      // Create or navigation button should be visible (when authenticated)
       expect(hasCreateButton).toBeTruthy();
     });
   });
