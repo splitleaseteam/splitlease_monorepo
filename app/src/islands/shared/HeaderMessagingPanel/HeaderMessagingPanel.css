@@ -13,10 +13,11 @@
    PANEL CONTAINER
    ============================================================================ */
 .header-messaging-panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  top: 70px; /* Below header */
+  right: 20px; /* Fixed distance from viewport edge prevents overflow */
   width: 425px;
+  max-width: calc(100vw - 40px); /* Prevent overflow on smaller screens */
   max-height: calc(100vh - 100px);
   background: #ffffff;
   border: 1px solid #e5e5e5;
@@ -692,6 +693,13 @@
 }
 
 /* ============================================================================
+   Z-INDEX NOTE: CreateProposalFlowV2 Modal
+   The modal is now rendered via React Portal directly to document.body,
+   so it's completely outside the header DOM hierarchy and uses its own z-index.
+   No special z-index overrides needed here.
+   ============================================================================ */
+
+/* ============================================================================
    RESPONSIVE - HIDE ON MOBILE (should navigate to /messages instead)
    ============================================================================ */
 @media (max-width: 899px) {
@@ -704,6 +712,6 @@
 @media (max-width: 1024px) and (min-width: 900px) {
   .header-messaging-panel {
     width: 380px;
-    right: -20px;
+    right: 15px; /* Keep fixed distance from viewport edge */
   }
 }

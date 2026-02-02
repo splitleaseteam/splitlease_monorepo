@@ -309,7 +309,7 @@ export const AllSizes = {
 };
 
 // On Listing Card
-const OnListingCardComponent = () => {
+const OnListingCardWrapper = () => {
   const [favorited, setFavorited] = useState(false);
 
   return (
@@ -353,7 +353,7 @@ const OnListingCardComponent = () => {
 };
 
 export const OnListingCard = {
-  render: () => <OnListingCardComponent />,
+  render: () => <OnListingCardWrapper />,
   parameters: {
     docs: {
       description: {

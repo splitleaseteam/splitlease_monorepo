@@ -58,7 +58,7 @@ export async function handleStepA(
   }
 
   // Check if a lease already exists for this proposal
-  const { data: existingLease, error: leaseCheckError } = await supabase
+  const { data: existingLease, error: _leaseCheckError } = await supabase
     .from('lease')
     .select('*')
     .eq('proposal_id', proposalId)

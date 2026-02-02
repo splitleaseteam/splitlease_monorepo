@@ -2,6 +2,7 @@
  * Get Pricing List Handler
  *
  * Retrieves pricing_list by listing_id.
+ * First fetches the listing to get its pricing_list FK, then fetches the pricing_list.
  *
  * NO FALLBACK PRINCIPLE: Returns null if not found (not an error)
  */
@@ -51,11 +52,35 @@ export async function handleGet(
   console.log('[pricing-list:get] Looking up pricing for listing:', listing_id);
 
   try {
-    // Query pricing_list by listing FK
+    // Step 1: Fetch listing to get its pricing_list FK
+    // Note: The FK is on listing.pricing_list (listing points to pricing_list)
+    const { data: listing, error: listingError } = await supabase
+      .from('listing')
+      .select('pricing_list')
+      .eq('_id', listing_id)
+      .single();
+
+    if (listingError) {
+      console.error('[pricing-list:get] Listing fetch error:', listingError);
+      throw new Error(`Failed to fetch listing: ${listingError.message}`);
+    }
+
+    if (!listing?.pricing_list) {
+      console.log('[pricing-list:get] No pricing_list FK on listing:', listing_id);
+      return {
+        pricing_list: null,
+        found: false,
+        message: 'No pricing list found for this listing',
+      };
+    }
+
+    console.log('[pricing-list:get] Found pricing_list FK:', listing.pricing_list);
+
+    // Step 2: Fetch the pricing_list by its _id
     const { data: pricingList, error: fetchError } = await supabase
       .from('pricing_list')
       .select('*')
-      .eq('listing', listing_id)
+      .eq('_id', listing.pricing_list)
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -65,11 +90,11 @@ export async function handleGet(
     }
 
     if (!pricingList) {
-      console.log('[pricing-list:get] No pricing_list found for listing:', listing_id);
+      console.log('[pricing-list:get] pricing_list record not found:', listing.pricing_list);
       return {
         pricing_list: null,
         found: false,
-        message: 'No pricing list found for this listing',
+        message: 'Pricing list record not found (orphaned FK)',
       };
     }
 

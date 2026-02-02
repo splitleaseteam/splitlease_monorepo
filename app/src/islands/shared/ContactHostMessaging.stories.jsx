@@ -209,7 +209,7 @@ export const MobileView = {
 };
 
 // Multiple Listings Demo
-const MultipleListingsDemoComponent = () => {
+const MultipleListingsWrapper = () => {
   const [activeModal, setActiveModal] = useState(null);
 
   const listings = [mockListing, mockListingNoPhoto, mockListingSingleName];
@@ -271,7 +271,7 @@ const MultipleListingsDemoComponent = () => {
 };
 
 export const MultipleListingsDemo = {
-  render: () => <MultipleListingsDemoComponent />,
+  render: () => <MultipleListingsWrapper />,
   parameters: {
     docs: {
       description: {

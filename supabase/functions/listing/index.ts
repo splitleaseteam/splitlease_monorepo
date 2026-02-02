@@ -20,14 +20,14 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import {
   ValidationError,
-  AuthenticationError,
+  AuthenticationError as _AuthenticationError,
 } from "../_shared/errors.ts";
 
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
+import { Result, ok, err as _err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -62,7 +62,7 @@ const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(["create", "get", "delete"])
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   create: handleCreate,
   get: handleGet,
   submit: handleSubmit,
@@ -238,11 +238,11 @@ Deno.serve(async (req: Request) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
-  handler: Function,
+function executeHandler(
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
-  config: FullListingConfig | SupabaseOnlyConfig
+  _config: FullListingConfig | SupabaseOnlyConfig
 ): Promise<unknown> {
   switch (action) {
     case "create":

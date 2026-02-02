@@ -1,6 +1,6 @@
 // Get Template Schema Action
 
-import { getTemplateByAction } from '../lib/storage.ts';
+import { getTemplateByAction as _getTemplateByAction } from '../lib/storage.ts';
 
 export interface SchemaResult {
   success: boolean;
@@ -138,7 +138,7 @@ const SCHEMAS: Record<string, TemplateSchema> = {
 /**
  * Get template schema for a specific document type
  */
-export async function handleGetTemplateSchema(action: string): Promise<SchemaResult> {
+export function handleGetTemplateSchema(action: string): Promise<SchemaResult> {
   const schema = SCHEMAS[action];
 
   if (!schema) {

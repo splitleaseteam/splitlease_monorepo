@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     }
 
     // Query account_guest table
-    const { data: guests, error: guestsError } = await supabaseClient
+    const { data: guests, error: _guestsError } = await supabaseClient
       .from("account_guest")
       .select("*")
       .limit(10);

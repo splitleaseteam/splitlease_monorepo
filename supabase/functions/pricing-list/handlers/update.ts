@@ -2,6 +2,7 @@
  * Update Pricing List Handler
  *
  * Updates pricing inputs (unit markup) and recalculates pricing.
+ * First looks up the listing's pricing_list FK, then updates that record.
  *
  * NO FALLBACK PRINCIPLE: Fails fast if listing not found
  */
@@ -39,7 +40,7 @@ export async function handleUpdate(
   // Validate required fields
   validateRequiredFields(payload, ['listing_id']);
 
-  const { listing_id, unit_markup = 0, user_id } = payload as UpdatePayload;
+  const { listing_id, unit_markup = 0, user_id: _user_id } = payload as UpdatePayload;
 
   // Get environment variables
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -61,12 +62,13 @@ export async function handleUpdate(
   console.log('[pricing-list:update] Unit Markup:', unit_markup);
 
   try {
-    // Step 1: Fetch listing
+    // Step 1: Fetch listing with its pricing_list FK
     console.log('[pricing-list:update] Step 1/4: Fetching listing...');
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
       .select(`
         _id,
+        pricing_list,
         "💰Nightly Host Rate for 1 night",
         "💰Nightly Host Rate for 2 nights",
         "💰Nightly Host Rate for 3 nights",
@@ -85,7 +87,13 @@ export async function handleUpdate(
       throw new Error(`Listing not found: ${listing_id}`);
     }
 
-    console.log('[pricing-list:update] ✅ Step 1 complete - Listing found');
+    if (!listing.pricing_list) {
+      console.error('[pricing-list:update] No pricing_list FK on listing:', listing_id);
+      throw new Error(`No pricing_list found for listing: ${listing_id}. Call create first.`);
+    }
+
+    const pricingListId = listing.pricing_list;
+    console.log('[pricing-list:update] ✅ Step 1 complete - Listing found with pricing_list:', pricingListId);
 
     // Step 2: Calculate pricing with new inputs
     console.log('[pricing-list:update] Step 2/4: Calculating pricing...');
@@ -96,14 +104,14 @@ export async function handleUpdate(
 
     console.log('[pricing-list:update] ✅ Step 2 complete - Pricing calculated');
 
-    // Step 3: Update pricing_list
+    // Step 3: Update pricing_list by its _id
+    // Note: Only include columns that exist in pricing_list table schema
     console.log('[pricing-list:update] Step 3/4: Updating pricing_list...');
 
-    const pricingListId = `pricing_${listing_id}`;
     const now = new Date().toISOString();
 
     const updateData = {
-      // Arrays
+      // Arrays (JSONB)
       'Host Compensation': pricingData.hostCompensation,
       'Markup and Discount Multiplier': pricingData.markupAndDiscountMultiplier,
       'Nightly Price': pricingData.nightlyPrice,
@@ -112,10 +120,10 @@ export async function handleUpdate(
       // Scalar markups
       'Unit Markup': pricingData.unitMarkup,
       'Combined Markup': pricingData.combinedMarkup,
+      'Full Time Discount': pricingData.fullTimeDiscount,
 
       // Derived scalars
       'Starting Nightly Price': pricingData.startingNightlyPrice,
-      'Slope': pricingData.slope,
 
       // Metadata
       'Modified Date': now,
@@ -124,7 +132,7 @@ export async function handleUpdate(
     const { error: updateError } = await supabase
       .from('pricing_list')
       .update(updateData)
-      .eq('listing', listing_id);
+      .eq('_id', pricingListId);
 
     if (updateError) {
       console.error('[pricing-list:update] Update failed:', updateError);

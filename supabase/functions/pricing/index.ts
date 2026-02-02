@@ -13,7 +13,7 @@
  * NO AUTHENTICATION REQUIRED - Public endpoint (auth handled per action)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createErrorCollector, ErrorCollector } from '../_shared/slack.ts';
 
 // ============ CORS Headers ============
@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
 
     validateRequiredFields(body, ['action']);
     action = body.action;
-    const { payload } = body;
+    const { payload: _payload } = body;
 
     // Create error collector after we know the action
     collector = createErrorCollector('pricing', action);

@@ -223,7 +223,7 @@ export const Disabled = {
 };
 
 // Few Styles
-const FewStylesComponent = () => {
+const FewStylesWrapper = () => {
   const [selected, setSelected] = useState(null);
   const fewStyles = sampleStyles.slice(0, 4);
 
@@ -239,7 +239,7 @@ const FewStylesComponent = () => {
 };
 
 export const FewStyles = {
-  render: () => <FewStylesComponent />,
+  render: () => <FewStylesWrapper />,
   parameters: {
     docs: {
       description: {

@@ -15,7 +15,7 @@
  * Related tables: user (for host and co-host info), listing (for property info)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; canAssign: b
 const VALID_STATUSES = Object.keys(STATUS_CONFIG);
 
 // Column name mapping: JavaScript key <-> Database column
-const COLUMN_MAP = {
+const _COLUMN_MAP = {
   // Request fields
   id: '_id',
   hostUserId: 'Host User',
@@ -223,7 +223,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminStatus(
+async function _checkAdminStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {
@@ -389,7 +389,7 @@ async function handleList(
   // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
-  const { data, error, count } = await query;
+  const { data, error, _count } = await query;
 
   if (error) {
     console.error('[co-host-requests] List error:', error);
@@ -680,7 +680,7 @@ async function handleGetAvailableCoHosts(
 ) {
   const { searchText, limit = 20 } = payload;
 
-  let query = supabase
+  const query = supabase
     .from('user')
     .select('_id, email, "Name - Full", "Profile Photo"')
     .order('"Name - Full"', { ascending: true })

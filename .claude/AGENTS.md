@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Hey, this is your working guide for the Split Lease codebase. I've structured this to help you hit the ground running without drowning in context you don't need yet.
 
 # Split Lease
 
@@ -18,38 +18,67 @@ A flexible rental marketplace for NYC properties enabling split scheduling, repe
 
 ## MCP Servers
 
-Two Supabase MCP servers are configured for database operations:
+One Supabase MCP server is configured, connecting to two separate Supabase projects:
 
-| Server | Purpose | When to Use |
-|--------|---------|-------------|
-| **supabase-dev** | Development database | **DEFAULT** - Use for all development, testing, and most operations |
-| **supabase-live** | Production database | **RARE** - Only when explicitly specified or for production-critical operations |
+| Project | Project ID | Purpose | When to Use |
+|---------|-----------|---------|-------------|
+| **splitlease-backend-dev** | (dev project ID) | Development database | **DEFAULT** - Use for all local development, branches, previews, and testing |
+| **splitlease-backend-live** | (live project ID) | Production database | **RARE** - Only for split.lease production deployment, when explicitly requested |
 
-### MCP Usage Rules
+### MCP Usage Rules (MANDATORY)
 
-1. **Default to `supabase-dev`**: Unless explicitly told otherwise, always use the dev MCP server
-2. **Rare live access**: Only invoke `supabase-live` when:
-   - User explicitly requests production database access
-   - Deploying verified changes to production
+1. **Default to dev project**: Unless explicitly told otherwise, always target `splitlease-backend-dev`
+2. **Rare live access**: Only target `splitlease-backend-live` when:
+   - User explicitly requests production database operations
+   - Deploying verified changes to live site (split.lease)
    - Debugging production-specific issues (with extreme caution)
-3. **Always use `mcp-tool-specialist` subagent**: All MCP tool invocations (Supabase, Playwright, etc.) MUST go through the `mcp-tool-specialist` subagent - never invoke MCP tools directly
+3. **ALL MCP invocations MUST use `mcp-tool-specialist` subagent**: Never invoke MCP tools directly
 
 ### Example Usage
 
 ```javascript
-// ✅ CORRECT - Default to dev, through mcp-tool-specialist subagent
-Task tool → mcp-tool-specialist → supabase-dev (list_tables)
+// ✅ CORRECT - Default to dev project, through mcp-tool-specialist
+Task tool → mcp-tool-specialist → mcp__supabase__ (targets splitlease-backend-dev by default)
 
 // ✅ CORRECT - Explicit production request
-User: "Check production database tables"
-Task tool → mcp-tool-specialist → supabase-live (list_tables)
+User: "Check production database tables on split.lease"
+Task tool → mcp-tool-specialist → mcp__supabase__ (switch to splitlease-backend-live)
 
-// ❌ WRONG - Direct MCP invocation
-mcp__supabase-dev__list_tables() // Never call directly!
-
-// ❌ WRONG - Assuming production without explicit request
-Task tool → mcp-tool-specialist → supabase-live (apply_migration)
+// ❌ WRONG - Direct MCP invocation (bypassing subagent)
+mcp__supabase__list_tables({ project_id: "..." })
 ```
+
+---
+
+## Hooks
+
+**IMPORTANT: All hooks must be configured at project scope only** (`.claude/settings.json` in the project directory).
+
+### Hook Configuration Rules
+
+1. **Project-scoped only**: All hooks are defined in `.claude/settings.json` within the project directory
+2. **No global hooks**: Global hooks in `~/.claude/hooks/` are disabled to prevent conflicts
+3. **Current hooks**:
+   - **Stop hook**: `.claude/hooks/slack_notifier.py` - Sends completion notifications to Slack via TINYTASKAGENT webhook
+
+### Stop Hook Format
+
+The Stop hook sends notifications in the format:
+```
+Splitlease 8 says: [summary of what was accomplished]
+```
+
+- Extracts actual assistant response text from transcript (up to 600 characters)
+- Returns `None` if no meaningful summary found (no generic fallback messages)
+- Sends to TINYTASKAGENT webhook configured in `.env`
+
+### Adding New Hooks
+
+When adding new hooks:
+1. Create the hook script in `.claude/hooks/` (project directory)
+2. Configure in `.claude/settings.json` under `hooks` section
+3. Test that it doesn't conflict with existing hooks
+4. Never add hooks to global `~/.claude/` directory
 
 ---
 
@@ -61,6 +90,7 @@ bun run dev              # Start dev server at http://localhost:8000
 bun run build            # Production build (runs generate-routes first)
 bun run preview          # Preview production build locally
 bun run generate-routes  # Regenerate _redirects and _routes.json
+bun run test             # Run test suite
 
 # From app/ directory (alternative)
 cd app && bun run dev    # Same as above
@@ -100,47 +130,26 @@ deno fmt --check supabase/functions/ # Check formatting
 ### Tech Stack Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (app/)                          │
-│  React 18 + Vite | Islands Architecture | Cloudflare Pages     │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  public/*.html    ──→  src/*.jsx (entry)  ──→  islands/pages/  │
-│  (27 HTML files)       (mount React)           (page components)│
-│                                                                 │
-│  src/logic/  ────────────────────────────────────────────────  │
-│  ├── calculators/   (pure math: calculate*, get*)              │
-│  ├── rules/         (boolean predicates: is*, can*, should*)   │
-│  ├── processors/    (data transform: adapt*, format*, process*)│
-│  └── workflows/     (orchestration: *Workflow)                 │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   BACKEND (supabase/functions/)                  │
-│           Supabase Edge Functions (Deno/TypeScript)             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  auth-user/      Login, signup, password reset (Supabase Auth) │
-│  bubble-proxy/   Proxy to Bubble.io API (legacy backend)       │
-│  proposal/       Proposal CRUD with queue-based Bubble sync    │
-│  listing/        Listing CRUD with atomic Bubble sync          │
-│  ai-gateway/     OpenAI proxy with prompt templating           │
-│  bubble_sync/    Queue processor for Supabase→Bubble sync      │
-│  messages/       Real-time messaging threads                    │
-│                                                                 │
-│  _shared/        CORS, errors, validation, Slack, sync utils   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        DATA LAYER                               │
-├─────────────────────────────────────────────────────────────────┤
-│  Supabase PostgreSQL  ←──→  Bubble.io (legacy, source of truth)│
-│  (replica + native)        (migrating away)                    │
-└─────────────────────────────────────────────────────────────────┘
+FRONTEND (app/)
+React 18 + Vite | Islands Architecture | Cloudflare Pages
+├─ public/*.html → src/*.jsx (entry points) → islands/pages/
+├─ src/logic/ (four-layer business logic)
+│  ├─ calculators/  (pure functions)
+│  ├─ rules/        (boolean predicates)
+│  ├─ processors/   (data transforms)
+│  └─ workflows/    (orchestration)
+
+BACKEND (supabase/functions/)
+Supabase Edge Functions (Deno/TypeScript)
+├─ auth-user/     (Supabase Auth)
+├─ proposal/      (CRUD + Bubble sync queue)
+├─ listing/       (CRUD + Bubble sync)
+├─ ai-gateway/    (OpenAI proxy)
+├─ messages/      (real-time messaging)
+└─ _shared/       (CORS, errors, validation, Slack)
+
+DATA LAYER
+Supabase PostgreSQL ←→ Bubble.io (legacy, migrating away)
 ```
 
 ### Core Patterns
@@ -168,41 +177,48 @@ The database stores days natively in this format. No conversion needed.
 
 ## Key Files
 
-| What you need | Where to find it |
-|---------------|------------------|
+| Component | Path |
+|-----------|------|
 | Route Registry | `app/src/routes.config.js` |
-| Vite Config | `app/vite.config.js` |
-| ESLint Config | `app/eslint.config.js` |
-| Deno Lint Config | `supabase/functions/deno.json` |
-| Authentication | `app/src/lib/auth.js` |
-| Supabase client | `app/src/lib/supabase.js` |
-| Day utilities | `app/src/lib/dayUtils.js` |
-| Business rules | `app/src/logic/rules/` |
-| Pricing calculations | `app/src/logic/calculators/pricing/` |
+| Config | `app/vite.config.js` • `app/eslint.config.js` • `supabase/functions/deno.json` |
+| Auth & Client | `app/src/lib/auth.js` • `app/src/lib/supabase.js` |
+| Business Logic | `app/src/logic/` |
 | Edge Functions | `supabase/functions/` |
-| Shared Edge utilities | `supabase/functions/_shared/` |
-| Page components | `app/src/islands/pages/` |
-| Shared components | `app/src/islands/shared/` |
+| Components | `app/src/islands/` |
 
 ---
 
-## Documentation Hierarchy
+## Engagement Philosophy
 
-| File | Use For |
-|------|---------|
-| [miniCLAUDE.md](./Documentation/miniCLAUDE.md) | Quick reference, simple tasks |
-| [largeCLAUDE.md](./Documentation/largeCLAUDE.md) | Full context, complex tasks |
-| [app/CLAUDE.md](../app/CLAUDE.md) | Frontend architecture details |
-| [supabase/CLAUDE.md](../supabase/CLAUDE.md) | Edge Functions reference |
+You're not here to be a yes-machine. Here's what I expect:
+
+### Push Back When It Matters
+
+- **Trust your instincts**: If a request feels off—architecturally unsound, likely to cause regressions, or fighting against established patterns—say so. Back it up with what you've observed in the codebase or past outcomes.
+- **Surface conflicts early**: If a request contradicts previous instructions, existing code patterns, or documented decisions, call it out before proceeding. "You asked for X, but Y is already in place—which should win?" is a perfectly valid question.
+- **Ask clarifying questions**: When a request is ambiguous, has multiple valid interpretations, or depends on context I haven't given you—ask. Don't guess and apologize later.
+
+### When to Proceed Without Asking
+
+Not everything needs a conversation. Proceed confidently when:
+- The request aligns clearly with documented patterns
+- There's only one reasonable interpretation
+- The change is low-risk and easily reversible
+
+The goal is calibrated judgment, not permission-seeking paralysis.
 
 ---
 
 ## Rules
 
 ### DO
+- **ALWAYS invoke `/slack-webhook` skill after completing each task or prompt** - Send a 1-line summary to Slack including the device hostname (e.g., "[DESKTOP-ABC123] Implemented user auth flow" or "[LAPTOP-XYZ] Fixed proposal sync bug"). Use `--type success` for completions, `--type error` for failures. This is MANDATORY for all task completions.
+- **ALWAYS invoke `/fp-rater` skill after creating or updating code files** - Output the FP rating table at the bottom of your response (table only, no explanations)
 - Use Edge Functions for all API calls (never call external APIs from frontend)
 - Run `bun run generate-routes` after any route changes in `routes.config.js`
-- Commit after each meaningful change (do not push unless asked)
+- Commit after each meaningful change (do not push unless asked) and always use the `/git-commits` skill to structure the commit message
+- **Run `bun run build` after complex changes** - Verify the build passes after multi-file changes, component updates, or any changes touching imports/exports. Fix any build errors before proceeding.
+- **Provide a changelog of modified files** - After any file updates or creations, include a bulleted list of all files that were changed (e.g., "**Files Changed:** • `app/src/lib/auth.js` • `app/src/islands/pages/LoginPage.jsx`")
 - Use 0-indexed days (0=Sunday through 6=Saturday) everywhere
 - Use the four-layer logic architecture for business logic
 - Use `mcp-tool-specialist` subagent for all MCP tool invocations
@@ -210,8 +226,7 @@ The database stores days natively in this format. No conversion needed.
 - **Log full error details** on database errors: `code`, `message`, `details`, `hint`
 - Test edit flows with listings that have null FK values (legacy data)
 - **Informational text triggers**: When adding a `?` icon to open informational text modals, make the accompanying text label clickable too (not just the `?`). Wrap both the text and `?` in a single clickable container.
-- **ALWAYS invoke `/fp-rater` skill after creating or updating code files** - Output the FP rating table at the bottom of your response (table only, no explanations)
-- **ALWAYS invoke `/goodbye-automated` skill after completing each task or prompt** - This ensures proper conversation logging and Slack notification. This is MANDATORY for all task completions.
+- **Never recommend cache clearing unless stale code execution is proven**
 
 ### DON'T
 - Expose API keys in frontend code
@@ -221,6 +236,7 @@ The database stores days natively in this format. No conversion needed.
 - Over-engineer for hypothetical future needs
 - Manually edit `_redirects` or `_routes.json` (auto-generated)
 - **Send entire formData to updateListing** - always filter to changed fields only
+- **Use project-specific abbreviations** - Always use full, descriptive names for directories, files, variables, and functions. For example, use `functional/` not `fp/`, use `configuration/` not `cfg/`, use `utilities/` not `util/`, use `manager` not `mgr`. Industry-standard terms (API, URL, JSON, HTTP, HTML, CSS, DOM, SQL) are acceptable.
 
 ### Database Update Pattern (CRITICAL)
 
@@ -285,7 +301,7 @@ For ANY non-trivial task, follow this orchestration pipeline:
 │                        TASK ORCHESTRATION PIPELINE                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  Phase 1: CLASSIFY → task-classifier (haiku)                                │
+│  Phase 1: CLASSIFY → task-classifier (opus)                                │
 │     Input: Raw user request                                                 │
 │     Output: BUILD | DEBUG | CLEANUP | DESIGN classification + reformatted   │
 │                                                                             │
@@ -308,11 +324,11 @@ For ANY non-trivial task, follow this orchestration pipeline:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-> **⚠️ LOCKED PIPELINE RULE**: Once `task-classifier` is invoked, ALL 4 phases MUST execute in sequence. You are **PROHIBITED** from invoking ANY other subagent (such as `mcp-tool-specialist`, `context-lookup`, `codebase-explorer`, etc.) until the pipeline completes Phase 4. The pipeline is a sealed unit — no external agents may be injected mid-sequence.
+> **⚠️ LOCKED PIPELINE RULE**: Once `task-classifier` is invoked, ALL 4 phases MUST execute in sequence.
 
 ### Phase Transition Rules (STRICT)
 
-> **⛔ PHASE 1 → PHASE 2 CONSTRAINT**: Once `task-classifier` returns a classification, you MUST invoke **ONLY** the designated planner for that classification. No other subagent may be invoked.
+> **⛔ PHASE 1 → PHASE 2 CONSTRAINT**: Once `task-classifier` returns a classification, you MUST invoke **ONLY** the designated planner for that classification.
 
 | Classification Result | ONLY Permitted Next Subagent |
 |----------------------|------------------------------|
@@ -322,9 +338,6 @@ For ANY non-trivial task, follow this orchestration pipeline:
 | `DESIGN` | `design-planner` — nothing else |
 
 **Prohibited actions after receiving classification:**
-- ❌ Invoking `mcp-tool-specialist` for "additional context"
-- ❌ Invoking `context-lookup` to "gather more information"
-- ❌ Invoking `codebase-explorer` to "understand the codebase better"
 - ❌ Invoking any other subagent for any reason
 - ❌ Performing direct tool calls (Grep, Glob, Read) instead of proceeding to the planner
 
@@ -342,14 +355,14 @@ For ANY non-trivial task, follow this orchestration pipeline:
 
 | Agent | Purpose | Model | Location |
 |-------|---------|-------|----------|
-| `task-classifier` | Classify as BUILD/DEBUG/CLEANUP/DESIGN | haiku | [agents/task-classifier.md](./agents/task-classifier.md) |
+| `task-classifier` | Classify as BUILD/DEBUG/CLEANUP/DESIGN | opus | [agents/task-classifier.md](./agents/task-classifier.md) |
 | `implementation-planner` | Plan new features/changes | opus | [agents/implementation-planner.md](./agents/implementation-planner.md) |
 | `debug-analyst` | Investigate bugs/issues | opus | [agents/debug-analyst.md](./agents/debug-analyst.md) |
 | `cleanup-planner` | Plan refactoring/cleanup | opus | [agents/cleanup-planner.md](./agents/cleanup-planner.md) |
 | `design-planner` | Plan UI/UX implementations | opus | [agents/design-planner.md](./agents/design-planner.md) |
 | `plan-executor` | Execute plans from .claude/plans/ | opus | [agents/plan-executor.md](./agents/plan-executor.md) |
 | `input-reviewer` | Review/judge implementations | opus | [agents/input-reviewer.md](./agents/input-reviewer.md) |
-| `context-lookup` | Read-only codebase analysis | haiku | [agents/context-lookup.md](./agents/context-lookup.md) |
+| `context-lookup` | Read-only codebase analysis | opus | [agents/context-lookup.md](./agents/context-lookup.md) |
 
 ### Simple Questions
 
@@ -367,7 +380,7 @@ For **lookup, exploration, or research tasks** that do NOT modify code, **skip t
 
 **No classification, planning, or review needed** — just invoke the lookup subagent and return the result.
 
-> **Preferred agent for most lookups**: Use `context-lookup` (haiku model) for fast, read-only information retrieval. It is optimized for answering questions about existing code without modification.
+> **Preferred agent for most lookups**: Use `context-lookup` (sonet model) for fast, read-only information retrieval. It is optimized for answering questions about existing code without modification.
 
 ### Mandatory Subagent Invocation Rules (For Code-Modifying Tasks)
 
@@ -380,20 +393,92 @@ For **lookup, exploration, or research tasks** that do NOT modify code, **skip t
 | Refactoring, cleanup, consolidation | `task-classifier` → `cleanup-planner` → `plan-executor` → `input-reviewer` | Any CLEANUP task |
 | UI/UX implementation from visual references | `task-classifier` → `design-planner` → `plan-executor` → `input-reviewer` | Any DESIGN task |
 
-> **⛔ LOCKED PIPELINE**: Once `task-classifier` begins, you MUST complete all 4 phases. You are **PROHIBITED** from invoking any other subagent (e.g., `mcp-tool-specialist`, `context-lookup`, `codebase-explorer`) until the pipeline completes.
-
 ### Subagents Outside the Pipeline
 
-These subagents may ONLY be invoked **before** starting the pipeline or **after** the pipeline completes Phase 4:
 
 | Subagent | When to Use |
 |----------|-------------|
-| `mcp-tool-specialist` | Any MCP operation (Supabase, Playwright, etc.) — NEVER mid-pipeline |
-| `context-lookup` | Read-only codebase analysis — NEVER mid-pipeline |
-| `codebase-explorer` / `Explore` | Codebase exploration — NEVER mid-pipeline |
+| `mcp-tool-specialist` | Any MCP operation (Supabase, Playwright, etc.) |
+| `context-lookup` | Read-only codebase analysis |
+| `codebase-explorer` / `Explore` | Codebase exploration |
 
-**Violation of these rules is unacceptable.** If uncertain whether a task is "trivial" or "non-trivial," default to using the orchestration pipeline.
+These aren't suggestions—they're the workflow. If you're unsure whether a task is "trivial" or "non-trivial," lean toward the orchestration pipeline. It's better to over-structure than to miss dependencies.
 
 ---
 
-**VERSION**: 11.4 | **UPDATED**: 2026-01-13
+## Parallel Subagent Execution (Complex Tasks)
+
+> **⚡ THROUGHPUT OPTIMIZATION**: For complex tasks, invoke **2-8 subagents** to segregate parallelizable subtasks that would otherwise execute sequentially. This maximizes throughput by running independent work concurrently.
+
+### When to Parallelize
+
+Use parallel subagent execution when:
+- The task can be decomposed into **2-8 independent subtasks** (minimum 2, maximum 8)
+- Subtasks do NOT have sequential dependencies on each other
+- Each subtask modifies different files or components
+- The overall task would take significantly longer if executed sequentially
+
+> **⚠️ MANDATORY PARALLELIZATION**: When a task has 2+ independent subtasks, you MUST spawn parallel subagents rather than executing them one-by-one. Sequential execution of parallelizable work is inefficient and prohibited.
+
+### Execution Pattern
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      PARALLEL SUBAGENT EXECUTION                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Step 1: DECOMPOSE                                                          │
+│     Analyze the task and split into 2-8 independent subtasks                │
+│     Each subtask should be self-contained and not depend on others          │
+│                                                                             │
+│  Step 2: DISPATCH (PARALLEL)                                                │
+│     Spawn multiple Task tool calls in a SINGLE message                      │
+│     Each subagent works on its assigned subtask concurrently                │
+│                                                                             │
+│  Step 3: COLLECT                                                            │
+│     Wait for all subagents to complete                                      │
+│     Gather changelogs and results from each                                 │
+│                                                                             │
+│  Step 4: REVIEW                                                             │
+│     Invoke `input-reviewer` subagent to verify:                             │
+│     - All subtasks completed successfully                                   │
+│     - Changes align with original request                                   │
+│     - No conflicts or integration issues between subtasks                   │
+│     Output: PASS | NEEDS ATTENTION | FAIL                                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Rules for Parallel Execution
+
+1. **Independence is mandatory**: Only parallelize subtasks that don't depend on each other's output
+2. **Single message dispatch**: All parallel subagents MUST be spawned in ONE message with multiple Task tool calls
+3. **Clear scope per agent**: Each subagent gets a specific, well-defined subtask with explicit file boundaries
+4. **Always review**: After all parallel agents complete, ALWAYS invoke `input-reviewer` to validate the combined result
+5. **Conflict detection**: If subtasks might touch overlapping files, run them sequentially instead
+
+### Example Decomposition
+
+```
+User Request: "Add validation to all form components and update their tests"
+
+Decomposition (4 parallel subtasks):
+├─ Subagent 1: LoginForm validation + tests
+├─ Subagent 2: SearchForm validation + tests
+├─ Subagent 3: BookingForm validation + tests
+└─ Subagent 4: ProfileForm validation + tests
+
+Final: input-reviewer verifies all forms updated correctly
+```
+
+### Anti-Patterns (DON'T)
+
+- ❌ Spawning agents that will modify the same file
+- ❌ Creating dependencies between parallel subtasks
+- ❌ Skipping the review step after parallel execution
+- ❌ Spawning more than 8 subagents (diminishing returns, context overhead)
+- ❌ Using parallel execution for sequential workflows
+
+---
+
+**VERSION**: 11.8 | **UPDATED**: 2026-01-30

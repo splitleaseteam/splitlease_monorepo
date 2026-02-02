@@ -33,7 +33,7 @@ import {
   calculateTotalRent,
   calculateTotalCompensation,
 } from '../lib/calculations.ts';
-import { generateAgreementNumber } from '../lib/agreementNumber.ts';
+import { generateDailyAgreementNumber } from '../lib/agreementNumber.ts';
 import { generateStays } from '../lib/staysGenerator.ts';
 import {
   generateLeaseDates,
@@ -52,6 +52,7 @@ import type {
   UserContext,
   PaymentPayload,
 } from '../lib/types.ts';
+import { buildDocumentPayload } from '../lib/documentPayloadBuilder.ts';
 
 /**
  * Handle lease creation - main orchestrator
@@ -63,7 +64,7 @@ import type {
  */
 export async function handleCreate(
   payload: Record<string, unknown>,
-  user: UserContext | null,
+  _user: UserContext | null,
   supabase: SupabaseClient
 ): Promise<CreateLeaseResponse> {
   console.log('[lease:create] ========== CREATE LEASE ==========');
@@ -76,7 +77,6 @@ export async function handleCreate(
     isCounteroffer: normalizeIsCounteroffer(payload.isCounteroffer),
     fourWeekRent: payload.fourWeekRent as number,
     fourWeekCompensation: payload.fourWeekCompensation as number,
-    numberOfZeros: payload.numberOfZeros as number | undefined,
   };
 
   console.log('[lease:create] Input:', JSON.stringify(input, null, 2));
@@ -107,13 +107,13 @@ export async function handleCreate(
     Name?: string;
     'House manual'?: string;
     'users with permission'?: string[];
-    'cancellation policy'?: string;
+    'Cancellation Policy'?: string;
   } | null = null;
 
   if (proposalData.Listing) {
     const { data: listing, error: listingError } = await supabase
       .from('listing')
-      .select('_id, Name, "House manual", "users with permission", "cancellation policy"')
+      .select('_id, Name, "House manual", "users with permission", "Cancellation Policy"')
       .eq('_id', proposalData.Listing)
       .single();
 
@@ -175,16 +175,11 @@ export async function handleCreate(
     throw new SupabaseSyncError('Failed to generate lease ID');
   }
 
-  // Count existing leases for agreement number
-  const { count: leaseCount, error: countError } = await supabase
-    .from('bookings_leases')
-    .select('*', { count: 'exact', head: true });
+  // Generate date-based agreement number (YYYYMMDD-XXXX)
+  // Uses atomic daily counter - no race conditions
+  const agreementNumber = await generateDailyAgreementNumber(supabase);
+  console.log('[lease:create] Generated agreement number:', agreementNumber);
 
-  if (countError) {
-    console.warn('[lease:create] Could not count leases:', countError.message);
-  }
-
-  const agreementNumber = generateAgreementNumber(leaseCount || 0, input.numberOfZeros);
   const firstPaymentDate = calculateFirstPaymentDate(activeTerms.moveInDate);
 
   // Calculate totals
@@ -199,6 +194,11 @@ export async function handleCreate(
   // - 'Reservation Period : Start' (NOT 'Move In Date')
   // - 'Reservation Period : End' (NOT 'Move-out')
   // - 'rental type' column does NOT exist in bookings_leases
+  // FK CONSTRAINTS (2026-01-28):
+  // - 'Cancellation Policy' → zat_features_cancellationpolicy._id (use null if no valid FK, NOT text!)
+  // - 'Listing' → listing._id
+  // - 'Proposal' → proposal._id
+  // - 'Created By' → user._id
   const leaseRecord: Partial<LeaseData> = {
     _id: leaseId,
     'Agreement Number': agreementNumber,
@@ -207,7 +207,8 @@ export async function handleCreate(
     Host: proposalData['Host User'],
     Listing: proposalData.Listing,
     Participants: [proposalData.Guest, proposalData['Host User']],
-    'Cancellation Policy': listingData?.['cancellation policy'] || 'Standard',
+    // FK CONSTRAINT: Must be valid _id from zat_features_cancellationpolicy or null
+    'Cancellation Policy': listingData?.['Cancellation Policy'] || null,
     'First Payment Date': firstPaymentDate,
     'Reservation Period : Start': activeTerms.moveInDate,
     'Reservation Period : End': moveOutDate,
@@ -492,6 +493,83 @@ export async function handleCreate(
   console.log('[lease:create] Phase 7 complete');
 
   // ═══════════════════════════════════════════════════════════════
+  // PHASE 8: DOCUMENT GENERATION
+  // ═══════════════════════════════════════════════════════════════
+
+  console.log('[lease:create] Phase 8: Generating lease documents...');
+
+  let documentsGenerated = false;
+
+  try {
+    // Build document payload from lease data
+    const documentPayload = await buildDocumentPayload(supabase, {
+      leaseId,
+      agreementNumber,
+      proposal: proposalData,
+      activeTerms,
+      moveOutDate,
+      hostPaymentRecords: [],
+    });
+
+    console.log('[lease:create] Document payload built, calling lease-documents function...');
+
+    // Call lease-documents edge function
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (supabaseUrl && supabaseServiceKey) {
+      const documentResponse = await fetch(`${supabaseUrl}/functions/v1/lease-documents`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'generate_all',
+          payload: documentPayload,
+        }),
+      });
+
+      if (documentResponse.ok) {
+        const documentResult = await documentResponse.json();
+        console.log('[lease:create] Document generation result:', JSON.stringify(documentResult, null, 2));
+
+        // Check if all documents were generated successfully
+        const allSuccess =
+          documentResult.hostPayout?.success &&
+          documentResult.supplemental?.success &&
+          documentResult.periodicTenancy?.success &&
+          documentResult.creditCardAuth?.success;
+
+        if (allSuccess) {
+          documentsGenerated = true;
+          console.log('[lease:create] All 4 documents generated successfully');
+        } else {
+          console.warn('[lease:create] Some documents failed to generate');
+        }
+      } else {
+        const errorText = await documentResponse.text();
+        console.error('[lease:create] Document generation failed:', documentResponse.status, errorText);
+      }
+    } else {
+      console.warn('[lease:create] Missing Supabase credentials for document generation');
+    }
+  } catch (docError) {
+    console.error('[lease:create] Document generation error:', docError);
+    // Document generation is not critical enough to fail the entire lease creation
+  }
+
+  // Update lease with document generation status
+  if (documentsGenerated) {
+    await supabase
+      .from('bookings_leases')
+      .update({ 'were documents generated?': true })
+      .eq('_id', leaseId);
+  }
+
+  console.log(`[lease:create] Phase 8 complete: Documents generated = ${documentsGenerated}`);
+
+  // ═══════════════════════════════════════════════════════════════
   // BUBBLE SYNC (Non-blocking)
   // ═══════════════════════════════════════════════════════════════
 
@@ -537,6 +615,7 @@ export async function handleCreate(
     guestPaymentRecordsCreated: guestPaymentResult.recordCount,
     hostPaymentRecordsCreated: hostPaymentResult.recordCount,
     magicLinks,
+    documentsGenerated,
   };
 }
 

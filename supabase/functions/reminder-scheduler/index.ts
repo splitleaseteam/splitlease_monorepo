@@ -21,7 +21,7 @@
  * - Side effects isolated to boundaries
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import {
   ValidationError,
   AuthenticationError,
@@ -31,7 +31,7 @@ import {
 import {
   parseRequest,
   validateAction,
-  routeToHandler,
+  routeToHandler as _routeToHandler,
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,

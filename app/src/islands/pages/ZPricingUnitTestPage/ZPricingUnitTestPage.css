@@ -18,8 +18,20 @@
   margin: 0 auto;
   padding: 24px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px; /* Base size increased ~7% from 14px */
   background: #F9FAFB;
   min-height: 100vh;
+}
+
+/* Better number readability - use tabular figures for alignment */
+.zput-page [class*="value"],
+.zput-page [class*="price"],
+.zput-page [class*="rate"],
+.zput-page .metric-value,
+.zput-page .guideline-value,
+.zput-page .prorated-value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 .zput-page--loading,
@@ -41,7 +53,7 @@
 
 .zput-header h1 {
   margin: 0 0 8px;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   color: #111827;
 }
@@ -49,7 +61,7 @@
 .zput-header p {
   margin: 0;
   color: #6B7280;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -75,26 +87,30 @@
 }
 
 /* ═══════════════════════════════════════════════════════════ */
-/* MAIN LAYOUT (Sidebar + Main) */
+/* ROW LAYOUT (Sequential sections) */
 /* ═══════════════════════════════════════════════════════════ */
 
-.zput-layout {
+.zput-row {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.zput-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.zput-row--three {
+  grid-template-columns: repeat(3, 1fr);
 }
 
-.zput-main {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.zput-row--full {
+  grid-template-columns: 1fr;
+}
+
+.zput-card--narrow {
+  max-width: 350px;
+}
+
+.zput-card--wide {
+  min-width: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -120,7 +136,7 @@
 
 .zput-card-title {
   display: block;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #374151;
   margin-bottom: 12px;
@@ -145,7 +161,7 @@
 
 .zput-label {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #6B7280;
   margin-bottom: 4px;
@@ -155,7 +171,7 @@
 .zput-select {
   width: 100%;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 15px;
   border: 1px solid #D1D5DB;
   border-radius: 6px;
   background: white;
@@ -184,7 +200,7 @@
 }
 
 .zput-hint {
-  font-size: 12px;
+  font-size: 13px;
   color: #9CA3AF;
   margin-left: 8px;
 }
@@ -195,7 +211,7 @@
 
 .zput-btn {
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   border: none;
   border-radius: 6px;
@@ -261,7 +277,7 @@
 
 .zput-listing-info p {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: 14px;
   color: #374151;
 }
 
@@ -273,7 +289,7 @@
   display: flex;
   justify-content: space-between;
   padding: 6px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .zput-info-label {
@@ -307,7 +323,7 @@
   padding: 8px;
   background: #F9FAFB;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .zput-rate-item span:first-child {
@@ -338,13 +354,13 @@
 
 .guideline-label {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: #6B7280;
   margin-bottom: 4px;
 }
 
 .guideline-value {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
   color: #111827;
 }
@@ -382,6 +398,74 @@
   background: #FAFAFA;
 }
 
+/* Compact variant - matches ViewSplitLeasePage booking widget style */
+.zput-schedule-wrapper--compact {
+  padding: 12px;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+}
+
+.zput-schedule-wrapper--compact .listing-schedule-selector {
+  max-width: 320px;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.zput-schedule-wrapper--compact .selector-header {
+  display: none;
+}
+
+.zput-schedule-wrapper--compact .day-grid {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.zput-schedule-wrapper--compact .day-button {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  aspect-ratio: unset;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zput-schedule-wrapper--compact .day-button.selected {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(49, 19, 93, 0.4);
+}
+
+.zput-schedule-wrapper--compact .day-button:hover:not(.disabled):not(.not-clickable) {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.zput-schedule-wrapper--compact .selection-info {
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.zput-schedule-wrapper--compact .info-row {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.zput-schedule-wrapper--compact .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.zput-schedule-wrapper--compact .price-display {
+  display: none;
+}
+
 /* ═══════════════════════════════════════════════════════════ */
 /* PRORATED GRID */
 /* ═══════════════════════════════════════════════════════════ */
@@ -390,6 +474,37 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+}
+
+.zput-prorated-grid--vertical {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.zput-prorated-grid--vertical .zput-prorated-panel {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.zput-prorated-grid--vertical .zput-prorated-panel h4 {
+  margin: 0;
+  min-width: 70px;
+}
+
+.zput-prorated-grid--vertical .prorated-value {
+  font-size: 19px;
+  margin: 0;
+  min-width: 80px;
+}
+
+.zput-prorated-grid--vertical .prorated-details {
+  flex: 1;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .zput-prorated-panel {
@@ -409,13 +524,13 @@
 
 .zput-prorated-panel h4 {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #374151;
 }
 
 .prorated-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #4B47CE;
   margin-bottom: 8px;
@@ -425,7 +540,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: #6B7280;
 }
 
@@ -439,6 +554,35 @@
   gap: 12px;
 }
 
+.zput-span-info--inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.zput-span-info--inline .span-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.zput-span-info--inline .span-label {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.zput-span-info--inline .span-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.zput-combined-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .span-item {
   display: flex;
   justify-content: space-between;
@@ -448,12 +592,12 @@
 }
 
 .span-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #6B7280;
 }
 
 .span-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #111827;
 }
@@ -491,7 +635,7 @@
 .zput-pricing-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .zput-pricing-table th,
@@ -542,12 +686,12 @@
 }
 
 .summary-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #6B7280;
 }
 
 .summary-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #111827;
 }
@@ -556,7 +700,7 @@
   padding: 24px;
   text-align: center;
   color: #6B7280;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -576,7 +720,7 @@
 .zput-comparison-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .zput-comparison-table th,
@@ -608,7 +752,7 @@
   display: inline-block;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -629,7 +773,7 @@
   padding: 12px;
   margin-top: 12px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -660,7 +804,7 @@
 .zput-check-counter {
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -707,7 +851,7 @@
 .validation-badge {
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -722,14 +866,14 @@
 }
 
 .validation-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #111827;
 }
 
 .validation-description {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: #6B7280;
 }
 
@@ -740,7 +884,7 @@
   gap: 8px;
   padding: 16px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -755,7 +899,7 @@
 }
 
 .allgood-icon {
-  font-size: 20px;
+  font-size: 21px;
 }
 
 /* ═══════════════════════════════════════════════════════════ */
@@ -805,7 +949,7 @@
 
 .zput-empty-text {
   color: #9CA3AF;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
   padding: 12px;
 }
@@ -815,12 +959,16 @@
 /* ═══════════════════════════════════════════════════════════ */
 
 @media (max-width: 1200px) {
-  .zput-layout {
-    grid-template-columns: 280px 1fr;
+  .zput-row {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .zput-bottom-row {
-    grid-template-columns: 1fr;
+  .zput-row--three {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .zput-card--narrow {
+    max-width: none;
   }
 
   .zput-prorated-grid {
@@ -829,7 +977,8 @@
 }
 
 @media (max-width: 900px) {
-  .zput-layout {
+  .zput-row,
+  .zput-row--three {
     grid-template-columns: 1fr;
   }
 
@@ -843,5 +992,203 @@
 
   .zput-span-info {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════ */
+/* COMBINED HOST + PRORATED SECTION */
+/* ═══════════════════════════════════════════════════════════ */
+
+.zput-row--three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.zput-host-prorated-combined {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.zput-host-prices-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+.zput-info-row-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.zput-info-row-inline .zput-info-label {
+  color: #6B7280;
+}
+
+.zput-info-row-inline .zput-info-value {
+  font-weight: 600;
+  color: #111827;
+  margin-right: 8px;
+}
+
+.zput-rates-grid--compact {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.zput-rates-grid--compact .zput-rate-item {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.zput-fees-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.zput-vertical-divider {
+  width: 1px;
+  background: #E5E7EB;
+  margin: 0 8px;
+}
+
+.zput-prorated-compact {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.zput-prorated-grid--horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.zput-prorated-panel--small {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zput-prorated-panel--small h4 {
+  margin: 0;
+  font-size: 13px;
+  min-width: 55px;
+}
+
+.zput-prorated-panel--small .prorated-value {
+  font-size: 17px;
+  margin: 0;
+}
+
+/* Section card header styles */
+.zput-section-4 .zput-card-header,
+.zput-section-5 .zput-card-header,
+.zput-section-6 .zput-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Three-column comparison table */
+.zput-comparison-table--three-col {
+  font-size: 13px;
+}
+
+.zput-comparison-table--three-col th,
+.zput-comparison-table--three-col td {
+  padding: 8px 6px;
+}
+
+.zput-comparison-table--three-col .metric-label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.zput-comparison-table--three-col .metric-value {
+  font-size: 12px;
+  text-align: right;
+}
+
+.zput-comparison-table--three-col .metric-value--pricing-list {
+  background: #F0F9FF;
+  font-weight: 600;
+  color: #0369A1;
+}
+
+.zput-comparison-table--three-col .metric-status {
+  text-align: center;
+  padding: 6px 4px;
+}
+
+.status-badge--compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-badge--compact.match {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.status-badge--compact.mismatch {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+/* Responsive adjustments for combined section */
+@media (max-width: 1200px) {
+  .zput-row--three-col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .zput-host-prorated-combined {
+    flex-direction: column;
+  }
+
+  .zput-vertical-divider {
+    width: 100%;
+    height: 1px;
+    margin: 8px 0;
+  }
+
+  .zput-prorated-compact {
+    flex: 1;
+  }
+
+  .zput-prorated-grid--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .zput-prorated-panel--small {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 900px) {
+  .zput-row--three-col {
+    grid-template-columns: 1fr;
+  }
+
+  .zput-rates-grid--compact {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

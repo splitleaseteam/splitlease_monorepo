@@ -191,7 +191,7 @@ export const AllScaleLabels = {
 };
 
 // Full Review Form
-const FullReviewFormComponent = () => {
+const FullReviewFormWrapper = () => {
   const [ratings, setRatings] = useState({
     cleanliness: 0,
     communication: 0,
@@ -247,7 +247,7 @@ const FullReviewFormComponent = () => {
 };
 
 export const FullReviewForm = {
-  render: () => <FullReviewFormComponent />,
+  render: () => <FullReviewFormWrapper />,
   parameters: {
     docs: {
       description: {

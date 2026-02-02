@@ -49,6 +49,7 @@ import { showToast } from '../../shared/Toast.jsx';
 import { supabase } from '../../../lib/supabase.js';
 import { canConfirmSuggestedProposal, getNextStatusAfterConfirmation } from '../../../logic/rules/proposals/proposalRules.js';
 import { dismissProposal } from '../../shared/SuggestedProposals/suggestedProposalService.js';
+import LeaseCalendarSection from './LeaseCalendarSection.jsx';
 
 /**
  * Chevron icon for expand/collapse
@@ -627,6 +628,9 @@ export default function ExpandableProposalCard({
   // Counteroffer summary (SplitBot message explaining what changed)
   const counterofferSummary = proposal?.counterofferSummary || null;
 
+  // DEBUG: Log counteroffer data for this proposal
+  console.log(`[EPC DEBUG] Proposal ${proposal?._id}: isCounteroffer=${isCounteroffer}, hasCounteroffeSummary=${!!counterofferSummary}, summary=${counterofferSummary?.substring(0, 50) || 'null'}`);
+
   // Status flags
   const isSuggested = isSLSuggested(status);
   const isPending = isPendingConfirmation(status);
@@ -1038,6 +1042,9 @@ export default function ExpandableProposalCard({
             proposal={proposal}
           />
 
+          {/* Lease Calendar Section - shows for activated leases */}
+          <LeaseCalendarSection proposal={proposal} />
+
           {/* Actions Row */}
           <div className="epc-actions-row">
             {/* VM status text (for disabled states) */}
@@ -1106,19 +1113,6 @@ export default function ExpandableProposalCard({
                 }}
               >
                 {buttonConfig.guestAction2.label}
-              </button>
-            )}
-
-            {/* Edit button */}
-            {!isTerminal && !isCompleted && (
-              <button
-                className="epc-btn epc-btn--ghost"
-                onClick={() => {
-                  setProposalDetailsModalInitialView('pristine');
-                  setShowProposalDetailsModal(true);
-                }}
-              >
-                Edit
               </button>
             )}
 

@@ -1,19 +1,10 @@
 /**
  * ListingHeader Component
- * 
+ *
  * Displays listing title, location, host info, and action buttons (favorite, share).
  * Includes neighborhood pill that scrolls to map when clicked.
- * 
- * @component
- * @param {object} props
- * @param {object} props.listing - Listing data
- * @param {boolean} props.isFavorited - Whether listing is favorited by current user
- * @param {Function} props.onToggleFavorite - Favorite toggle handler
- * @param {Function} props.onLocationClick - Location pill click handler (scroll to map)
- * @param {boolean} props.isAuthenticated - Whether user is logged in
- * @param {string|null} [props.userId] - Current user ID (for favorite button)
- * @param {Function} [props.onRequireAuth] - Auth required callback (for favorite button)
  *
+ * @component
  * @architecture Presentational Component
  * @performance Memoized
  */
@@ -24,35 +15,18 @@ import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './ListingHeader.module.css';
 
-interface Listing {
-    _id: string;
-    Name: string;
-    resolvedNeighborhood?: string;
-    resolvedBorough?: string;
-    resolvedTypeOfSpace?: string;
-    neighborhoodName?: string;
-    boroughName?: string;
-    host?: {
-        name?: string;
-        'First Name'?: string;
-        'Last Name'?: string;
-    };
-    hostData?: {
-        name?: string;
-        profilePhotoUrl?: string;
-        verified?: boolean;
-        image?: string;
-    };
-}
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface ListingHeaderProps {
-    listing: Listing;
+    listing: any;
     isFavorited: boolean;
-    onToggleFavorite: () => void | Promise<void>;
+    onToggleFavorite: (listingId: string, listingTitle: string, newState: boolean) => void;
     onLocationClick: () => void;
     isAuthenticated: boolean;
-    userId?: string | null;
-    onRequireAuth?: () => void;
+    userId: string | null;
+    onRequireAuth: (() => void) | undefined;
 }
 
 const ListingHeader = memo(function ListingHeader({

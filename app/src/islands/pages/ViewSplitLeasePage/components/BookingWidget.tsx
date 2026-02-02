@@ -1,86 +1,44 @@
 /**
  * BookingWidget Component
- * 
+ *
  * Displays schedule selector, move-in date picker, reservation span selector,
  * and pricing breakdown. Validates booking and enables "Create Proposal" button.
  * Shows existing proposal state if user has already created one for this listing.
- * 
- * @component
- * @param {object} props
- * @param {object} props.listing - Listing data
- * @param {Day[]} props.selectedDays - Selected day objects
- * @param {string} props.moveInDate - Move-in date (YYYY-MM-DD)
- * @param {number} props.reservationSpan - Reservation span in weeks
- * @param {object|null} props.priceBreakdown - Calculated price breakdown
- * @param {string} props.minMoveInDate - Minimum allowed move-in date
- * @param {object} props.validationErrors - Validation error object
- * @param {boolean} props.isValid - Whether booking is valid
- * @param {string} props.formattedPrice - Formatted current price
- * @param {string} props.formattedStartingPrice - Formatted starting price
- * @param {object|null} props.existingProposal - Existing proposal for this listing
- * @param {Function} props.onScheduleChange - Schedule change handler
- * @param {Function} props.onMoveInDateChange - Move-in date change handler
- * @param {Function} props.onReservationSpanChange - Reservation span change handler
- * @param {Function} props.onSubmit - Submit handler (opens proposal modal)
  *
+ * @component
  * @architecture Presentational Component (receives all data via props)
  * @performance Memoized to prevent unnecessary re-renders
  */
 
-import { memo, Dispatch, SetStateAction } from 'react';
+import { memo } from 'react';
 import ListingScheduleSelector from '../../../shared/ListingScheduleSelector';
 import styles from './BookingWidget.module.css';
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
 interface Day {
-    day: number;
-    dayName: string;
-    selected: boolean;
-}
-
-interface PriceBreakdown {
-    weekly: number;
-    monthly: number;
-    fourWeek: number;
-    total: number;
-    nights: number;
-}
-
-interface ValidationErrors {
-    schedule?: string;
-    moveInDate?: string;
-    reservationSpan?: string;
-    hasErrors?: boolean;
-}
-
-interface ExistingProposal {
-    _id: string;
-    status: string;
-}
-
-interface Listing {
-    _id: string;
-    Name: string;
-    [key: string]: any;
+    dayOfWeek: number;
+    isSelected: boolean;
 }
 
 interface BookingWidgetProps {
-    listing: Listing;
+    listing: any;
     selectedDays: Day[];
     moveInDate: string;
     reservationSpan: number;
-    priceBreakdown: PriceBreakdown | null;
+    priceBreakdown: any;
     minMoveInDate: string;
-    validationErrors: ValidationErrors;
+    validationErrors: any;
     isValid: boolean;
     formattedPrice: string;
     formattedStartingPrice: string;
-    existingProposal: ExistingProposal | null;
+    existingProposal: any;
     onScheduleChange: (days: Day[]) => void;
     onMoveInDateChange: (date: string) => void;
-    onReservationSpanChange: (span: number) => void;
+    onReservationSpanChange: (weeks: number) => void;
     onSubmit: () => void;
-    activeInfoTooltip?: string | null;
-    setActiveInfoTooltip?: Dispatch<SetStateAction<string | null>>;
 }
 
 const BookingWidget = memo(function BookingWidget({

@@ -1,15 +1,10 @@
 /**
  * DescriptionSection Component
- * 
+ *
  * Displays property description with expand/collapse functionality.
  * Truncates long descriptions and shows "Read more" button.
- * 
+ *
  * @component
- * @param {object} props
- * @param {string} props.description - Listing description (may contain HTML)
- * @param {boolean} props.isExpanded - Whether description is expanded
- * @param {Function} props.onToggle - Expand/collapse toggle handler
- * 
  * @architecture Presentational Component
  * @performance Memoized
  * @security Sanitizes HTML content
@@ -17,6 +12,10 @@
 
 import { memo, useMemo } from 'react';
 import styles from './DescriptionSection.module.css';
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface DescriptionSectionProps {
     description: string;

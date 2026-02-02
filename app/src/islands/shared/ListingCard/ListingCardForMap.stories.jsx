@@ -267,7 +267,7 @@ export const NotLoggedIn = {
 };
 
 // Interactive Demo
-const InteractiveDemoComponent = () => {
+const InteractiveDemoWrapper = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -316,7 +316,7 @@ const InteractiveDemoComponent = () => {
 };
 
 export const InteractiveDemo = {
-  render: () => <InteractiveDemoComponent />,
+  render: () => <InteractiveDemoWrapper />,
   parameters: {
     docs: {
       description: {

@@ -165,10 +165,7 @@ export default function PreviewSplitLeasePage() {
                 <a href="/listings-overview.html" className={styles.exitPreviewButton}>Exit Preview</a>
             </div>
 
-            <Header
-                isAuthenticated={isAuthenticated}
-                userId={authUserId}
-            />
+            <Header />
 
             {/* Photo Gallery with Edit Overlay */}
             <div className={styles.editableSection}>
@@ -201,6 +198,8 @@ export default function PreviewSplitLeasePage() {
                             onToggleFavorite={() => { }}
                             onLocationClick={() => scrollToSection('map-section')}
                             isAuthenticated={isAuthenticated}
+                            userId={authUserId}
+                            onRequireAuth={undefined}
                         />
                         <button className={styles.editButtonInline} onClick={() => handleEdit('details')}>
                             Edit Details
@@ -275,9 +274,6 @@ export default function PreviewSplitLeasePage() {
                             onMoveInDateChange={handleMoveInDateChange}
                             onReservationSpanChange={handleReservationSpanChange}
                             onSubmit={() => { }} // Disabled
-                            informationalTexts={informationalTexts}
-                            activeInfoTooltip={activeInfoTooltip}
-                            setActiveInfoTooltip={setActiveInfoTooltip}
                         />
                         <div className={styles.disabledOverlay}>
                             <span>Booking controls disabled in preview</span>

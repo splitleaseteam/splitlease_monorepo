@@ -158,7 +158,7 @@ export const DisabledOn = {
 };
 
 // In Form Context
-const InFormContextComponent = () => {
+const InFormContextWrapper = () => {
   const [preferences, setPreferences] = useState({
     sms: true,
     email: false,
@@ -217,7 +217,7 @@ const InFormContextComponent = () => {
 };
 
 export const InFormContext = {
-  render: () => <InFormContextComponent />,
+  render: () => <InFormContextWrapper />,
   parameters: {
     docs: {
       description: {

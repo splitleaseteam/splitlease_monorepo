@@ -1,0 +1,22 @@
+{
+  "budget": {
+    "maxTimeMinutes": 30,
+    "maxIterations": 10,
+    "maxBugsToFix": 5
+  },
+  "scope": {
+    "testFlow": "guest-proposal",
+    "startFromStep": null,
+    "skipSteps": []
+  },
+  "exitConditions": {
+    "stopOnFirstBug": false,
+    "requireCleanRun": true,
+    "maxConsecutiveFailures": 3
+  },
+  "dataReset": {
+    "enabled": true,
+    "preserveTestAccounts": true,
+    "cleanupProposals": true
+  }
+}

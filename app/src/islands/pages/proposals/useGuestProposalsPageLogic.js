@@ -21,7 +21,7 @@
  * - Redirects to home if not authenticated or not a Guest
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { fetchUserProposalsFromUrl } from '../../../lib/proposals/userProposalQueries.js';
 import { updateUrlWithProposal, cleanLegacyUserIdFromUrl, getProposalIdFromQuery } from '../../../lib/proposals/urlParser.js';
 import { transformProposalData, getProposalDisplayText } from '../../../lib/proposals/dataTransformers.js';
@@ -59,6 +59,9 @@ export function useGuestProposalsPageLogic() {
 
   // V7 UI state: Accordion pattern - only one card expanded at a time
   const [expandedProposalId, setExpandedProposalId] = useState(null);
+
+  // Ref to track if URL-based auto-expand has been processed
+  const hasProcessedUrlExpand = useRef(false);
 
   // UI state
   const [isLoading, setIsLoading] = useState(true);
@@ -236,13 +239,22 @@ export function useGuestProposalsPageLogic() {
   /**
    * Auto-expand proposal card if proposal ID is in URL query parameter
    * This enables deep linking: /guest-proposals?proposal=<id> opens the card
+   *
+   * Uses a ref guard to ensure this only runs ONCE when proposals first load.
+   * This prevents constant state updates that cause page instability.
    */
   useEffect(() => {
+    // Skip if already processed (prevents repeated state updates causing page instability)
+    if (hasProcessedUrlExpand.current) return;
+
     // Wait until proposals are loaded
     if (proposals.length === 0 || isLoading) return;
 
     const proposalIdFromUrl = getProposalIdFromQuery();
-    if (!proposalIdFromUrl) return;
+    if (!proposalIdFromUrl) {
+      hasProcessedUrlExpand.current = true;
+      return;
+    }
 
     // Verify the proposal exists in the user's proposals
     const proposalExists = proposals.some(p => p._id === proposalIdFromUrl);
@@ -252,6 +264,7 @@ export function useGuestProposalsPageLogic() {
     } else {
       console.warn('⚠️ Proposal ID from URL not found in user proposals:', proposalIdFromUrl);
     }
+    hasProcessedUrlExpand.current = true;
   }, [proposals, isLoading]);
 
   // ============================================================================

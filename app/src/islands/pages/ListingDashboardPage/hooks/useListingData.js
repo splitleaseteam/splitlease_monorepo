@@ -48,7 +48,8 @@ async function fetchLookupTables() {
 
     // Fetch safety features
     const { data: safety } = await supabase
-      .from('zfut_safetyfeatures')
+      .schema('reference_table')
+      .from('zat_features_safetyfeature')
       .select('_id, "Name", "Icon"');
     if (safety) {
       safety.forEach((s) => {
