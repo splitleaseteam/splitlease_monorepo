@@ -129,6 +129,30 @@
 /host-guarantee
   Content-Type: text/html; charset=utf-8
 
+# Schedule page - serve as HTML (uses _internal pattern)
+/schedule
+  Content-Type: text/html; charset=utf-8
+/schedule/*
+  Content-Type: text/html; charset=utf-8
+
+# Guest Leases page - serve as HTML (uses _internal pattern)
+/guest-leases
+  Content-Type: text/html; charset=utf-8
+/guest-leases/*
+  Content-Type: text/html; charset=utf-8
+
+# Host Leases page - serve as HTML (uses _internal pattern)
+/host-leases
+  Content-Type: text/html; charset=utf-8
+
+# Quick Match page - serve as HTML (uses _internal pattern)
+/quick-match
+  Content-Type: text/html; charset=utf-8
+
+# List With Us V2 page - serve as HTML (uses _internal pattern)
+/list-with-us-v2
+  Content-Type: text/html; charset=utf-8
+
 # Underscore-prefixed internal pages - serve as HTML
 # These are admin/internal tools accessed via /_page-name URLs
 /_*
