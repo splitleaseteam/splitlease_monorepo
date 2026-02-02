@@ -1,0 +1,56 @@
+{
+  "created": "2026-01-30T04:15:00Z",
+  "pass": "investigation",
+  "summary": "PricingRow.jsx uses GUEST payment fields instead of HOST compensation fields",
+  "bugs": [
+    {
+      "id": 1,
+      "file": "app/src/islands/pages/HostProposalsPage/PricingRow.jsx",
+      "line": 29,
+      "code": "const originalNightlyRate = proposal?.['proposal nightly price'] || proposal?.proposal_nightly_price || 0;",
+      "issue": "Uses 'proposal nightly price' which is the GUEST price (includes 17% markup), not the HOST compensation",
+      "correctField": "host compensation",
+      "severity": "HIGH",
+      "fixStrategy": "Replace with proposal?.['host compensation'] || proposal?.host_compensation"
+    },
+    {
+      "id": 2,
+      "file": "app/src/islands/pages/HostProposalsPage/PricingRow.jsx",
+      "line": 31,
+      "code": "const originalTotalPrice = proposal?.['Total Price for Reservation (guest)'] || proposal?.total_price_guest || 0;",
+      "issue": "Uses 'Total Price for Reservation (guest)' which is what the GUEST pays, not HOST earnings",
+      "correctField": "Total Compensation (proposal - host)",
+      "severity": "HIGH",
+      "fixStrategy": "Replace with proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation"
+    },
+    {
+      "id": 3,
+      "file": "app/src/islands/pages/HostProposalsPage/PricingRow.jsx",
+      "line": 50,
+      "code": "const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || originalNightlyRate);",
+      "issue": "Falls back to originalNightlyRate which is the GUEST price",
+      "correctField": "host compensation",
+      "severity": "HIGH",
+      "fixStrategy": "Create hostNightlyRate variable using 'host compensation' field, use as fallback"
+    },
+    {
+      "id": 4,
+      "file": "app/src/islands/pages/HostProposalsPage/PricingRow.jsx",
+      "line": 54,
+      "code": "const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || originalTotalPrice);",
+      "issue": "Falls back to originalTotalPrice which is the GUEST total payment",
+      "correctField": "Total Compensation (proposal - host)",
+      "severity": "HIGH",
+      "fixStrategy": "Create hostTotalCompensation variable, use as primary fallback instead of originalTotalPrice"
+    }
+  ],
+  "databaseEvidence": {
+    "sampleProposal": {
+      "guest_nightly": 94.5,
+      "host_nightly": 90,
+      "guest_total": 3685,
+      "host_total": 3510
+    },
+    "observation": "Guest pays $94.50/night but host only receives $90/night (5% platform fee). Currently displaying guest prices to hosts."
+  }
+}

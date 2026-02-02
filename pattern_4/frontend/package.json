@@ -1,0 +1,54 @@
+{
+  "name": "@splitlease/pattern-4-competitive-bidding",
+  "version": "1.0.0",
+  "description": "BS+BS Competitive Bidding - Real-time auction interface for Split Lease",
+  "main": "index.tsx",
+  "types": "types/biddingTypes.ts",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,css,md}\""
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "socket.io-client": "^4.6.1",
+    "react-confetti": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/socket.io-client": "^3.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@storybook/react": "^7.6.0",
+    "@storybook/addon-essentials": "^7.6.0",
+    "@storybook/addon-interactions": "^7.6.0",
+    "@storybook/testing-library": "^0.2.2",
+    "typescript": "^5.3.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "keywords": [
+    "competitive-bidding",
+    "real-time",
+    "websocket",
+    "auction",
+    "split-lease",
+    "pattern-4"
+  ],
+  "author": "Split Lease Engineering Team",
+  "license": "PROPRIETARY"
+}

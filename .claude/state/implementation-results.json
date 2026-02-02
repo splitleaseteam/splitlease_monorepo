@@ -1,0 +1,51 @@
+{
+  "created": "2026-01-30T04:22:00Z",
+  "pass": "implementation",
+  "status": "completed",
+  "file": "app/src/islands/pages/HostProposalsPage/PricingRow.jsx",
+  "fixesApplied": [
+    {
+      "fixId": 1,
+      "line": 29,
+      "change": "Renamed originalNightlyRate to hostNightlyCompensation, now uses 'host compensation' field",
+      "status": "applied"
+    },
+    {
+      "fixId": 2,
+      "line": 31,
+      "change": "Renamed originalTotalPrice to hostTotalCompensation, now uses 'Total Compensation (proposal - host)' field",
+      "status": "applied"
+    },
+    {
+      "fixId": 3,
+      "line": 50,
+      "change": "nightlyRate fallback now uses hostNightlyCompensation instead of guest price",
+      "status": "applied"
+    },
+    {
+      "fixId": 4,
+      "line": 54,
+      "change": "totalEarnings fallback now uses hostTotalCompensation instead of guest total",
+      "status": "applied"
+    },
+    {
+      "fixId": 5,
+      "line": 57-60,
+      "change": "Comparison flags updated to use host compensation values",
+      "status": "applied"
+    },
+    {
+      "fixId": 6,
+      "line": 67,
+      "change": "formattedOriginalTotal now uses hostTotalCompensation",
+      "status": "applied"
+    },
+    {
+      "fixId": 7,
+      "line": 78,
+      "change": "Strikethrough display now shows hostNightlyCompensation",
+      "status": "applied"
+    }
+  ],
+  "summary": "All 7 fixes applied successfully. PricingRow now displays host compensation values instead of guest prices."
+}
