@@ -513,15 +513,29 @@ const PropertyCard = memo(function PropertyCard({
             onOpenInfoModal(listing, priceInfoTriggerRef);
           }}
         >
-          <div className="price-main">${dynamicPrice.toFixed(2)}</div>
-          <div className="price-period">/night</div>
+          {dynamicPrice > 0 ? (
+            <>
+              <div className="price-main">${dynamicPrice.toFixed(2)}</div>
+              <div className="price-period">/night</div>
+            </>
+          ) : (
+            <div className="price-unavailable" style={{
+              fontSize: '13px',
+              color: '#6b7280',
+              textAlign: 'center',
+              padding: '4px 0'
+            }}>
+              {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week<br/>
+              <strong>not available</strong>
+            </div>
+          )}
           <div className="price-divider"></div>
           {variant === 'search' ? (
-            selectedNightsCount >= 1 ? (
+            dynamicPrice > 0 && selectedNightsCount >= 1 ? (
               <div className="price-context">for {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week</div>
-            ) : (
+            ) : dynamicPrice > 0 ? (
               <div className="price-starting">Starting at<span>${parseFloat(startingPrice).toFixed(2)}/night</span></div>
-            )
+            ) : null
           ) : (
             <div className="price-starting">Starting at<span>${parseFloat(startingPrice).toFixed(2)}/night</span></div>
           )}

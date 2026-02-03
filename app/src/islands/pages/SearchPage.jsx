@@ -455,42 +455,6 @@ export default function SearchPage() {
     return !userIsHost;
   }, [isLoggedIn, currentUser]);
 
-  // Filter out listings with $0 price for selected nights (unavailable for that schedule)
-  const getListingPriceForNights = useCallback((listing, nightsCount) => {
-    if (nightsCount < 1) return null;
-
-    // Try pricingList first
-    const pricingList = listing.pricingList;
-    if (pricingList?.nightlyPrice) {
-      const index = nightsCount - 1;
-      const rawValue = pricingList.nightlyPrice[index];
-      const parsed = Number(rawValue);
-      if (!Number.isNaN(parsed)) return parsed;
-    }
-
-    // Fallback to startingNightlyPrice
-    const startingPrice = Number(pricingList?.startingNightlyPrice || listing['Starting nightly price'] || listing.price?.starting || 0);
-    return startingPrice;
-  }, []);
-
-  const availableDisplayedListings = useMemo(() => {
-    if (selectedNightsCount < 1) return displayedListings;
-
-    return displayedListings.filter(listing => {
-      const price = getListingPriceForNights(listing, selectedNightsCount);
-      return price !== null && price > 0;
-    });
-  }, [displayedListings, selectedNightsCount, getListingPriceForNights]);
-
-  const availableFallbackDisplayedListings = useMemo(() => {
-    if (selectedNightsCount < 1) return fallbackDisplayedListings;
-
-    return fallbackDisplayedListings.filter(listing => {
-      const price = getListingPriceForNights(listing, selectedNightsCount);
-      return price !== null && price > 0;
-    });
-  }, [fallbackDisplayedListings, selectedNightsCount, getListingPriceForNights]);
-
   // ==========================================================================
   // EFFECTS (UI-only)
   // ==========================================================================
@@ -1202,7 +1166,7 @@ export default function SearchPage() {
                       <p>Showing {fallbackListings.length} listings across all NYC boroughs</p>
                     </div>
                     <ListingsGrid
-                      listings={availableFallbackDisplayedListings}
+                      listings={fallbackDisplayedListings}
                       onLoadMore={handleFallbackLoadMore}
                       hasMore={hasFallbackMore}
                       isLoading={false}
@@ -1230,7 +1194,7 @@ export default function SearchPage() {
 
             {!isLoading && !error && allListings.length > 0 && (
               <ListingsGrid
-                listings={availableDisplayedListings}
+                listings={displayedListings}
                 onLoadMore={handleLoadMore}
                 hasMore={hasMore}
                 isLoading={isLoading}
