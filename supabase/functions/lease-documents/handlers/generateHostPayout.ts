@@ -16,7 +16,8 @@ import type { HostPayoutPayload, DocumentResult, UserContext } from '../lib/type
 import { validateHostPayoutPayload } from '../lib/validators.ts';
 import { formatDate, formatCurrency } from '../lib/formatters.ts';
 import { downloadAndRenderTemplate, TEMPLATE_PATHS } from '../lib/templateRenderer.ts';
-import { uploadToGoogleDrive, notifySlack } from '../lib/googleDrive.ts';
+import { uploadToSupabaseStorage } from '../lib/supabaseStorage.ts';
+import { notifySlack } from '../lib/googleDrive.ts';
 
 // ================================================
 // HANDLER
@@ -47,8 +48,13 @@ export async function handleGenerateHostPayout(
   // Generate filename (matching Python output format)
   const filename = `host_payout_schedule-${agreementNumber}.docx`;
 
-  // Upload to Google Drive
-  const uploadResult = await uploadToGoogleDrive(documentContent, filename);
+  // Upload to Supabase Storage (temporary solution while Google Drive is being configured)
+  const uploadResult = await uploadToSupabaseStorage(
+    supabase,
+    documentContent,
+    filename,
+    'host_payout' // folder
+  );
 
   if (!uploadResult.success) {
     const errorMsg = `Failed to upload Host Payout Schedule: ${uploadResult.error}`;
@@ -66,11 +72,11 @@ export async function handleGenerateHostPayout(
   return {
     success: true,
     filename,
-    driveUrl: uploadResult.webViewLink,
-    drive_url: uploadResult.webViewLink, // Python compatibility alias
-    web_view_link: uploadResult.webViewLink, // Python compatibility alias
-    fileId: uploadResult.fileId,
-    file_id: uploadResult.fileId, // Python compatibility alias
+    driveUrl: uploadResult.publicUrl, // Using Supabase URL instead of Drive
+    drive_url: uploadResult.publicUrl, // Python compatibility alias
+    web_view_link: uploadResult.publicUrl, // Python compatibility alias
+    fileId: uploadResult.filePath,
+    file_id: uploadResult.filePath, // Python compatibility alias
     returned_error: 'no',
   };
 }

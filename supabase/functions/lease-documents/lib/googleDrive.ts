@@ -242,9 +242,9 @@ export async function uploadToGoogleDrive(
     offset += fileContent.length;
     body.set(closingBoundary, offset);
 
-    // Upload to Google Drive
+    // Upload to Google Drive (supportsAllDrives enables Shared Drive support)
     const uploadResponse = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink&supportsAllDrives=true',
       {
         method: 'POST',
         headers: {
