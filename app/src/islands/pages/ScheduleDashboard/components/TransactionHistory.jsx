@@ -92,9 +92,12 @@ function TypeLabel({ type }) {
   );
 }
 
-function TransactionDetails({ transaction, onCancel }) {
+function TransactionDetails({ transaction, onCancel, onAccept, onDecline }) {
   const hasPriceComparison = transaction.suggestedPrice && transaction.offeredPrice &&
                               transaction.suggestedPrice !== transaction.offeredPrice;
+
+  // Determine if this is my request (outgoing) or someone else's (incoming)
+  const isMyRequest = transaction.direction === 'outgoing';
 
   const deviation = hasPriceComparison
     ? (((transaction.offeredPrice - transaction.suggestedPrice) / transaction.suggestedPrice) * 100).toFixed(0)
@@ -163,15 +166,42 @@ function TransactionDetails({ transaction, onCancel }) {
 
       <div className="transaction-details__footer">
         {transaction.status === 'pending' && (
-          <button
-            className="transaction-details__btn transaction-details__btn--cancel"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCancel(transaction.id);
-            }}
-          >
-            Cancel Request
-          </button>
+          <div className="transaction-details__actions">
+            {isMyRequest ? (
+              /* Case 1: I made the request -> I can Cancel */
+              <button
+                className="transaction-details__btn transaction-details__btn--cancel"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCancel(transaction.id);
+                }}
+              >
+                Cancel Request
+              </button>
+            ) : (
+              /* Case 2: I received the request -> Accept or Decline */
+              <>
+                <button
+                  className="transaction-details__btn transaction-details__btn--accept"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAccept?.(transaction.id);
+                  }}
+                >
+                  Accept
+                </button>
+                <button
+                  className="transaction-details__btn transaction-details__btn--decline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDecline?.(transaction.id);
+                  }}
+                >
+                  Decline
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -185,6 +215,8 @@ function TransactionDetails({ transaction, onCancel }) {
 export default function TransactionHistory({
   transactions = [],
   onCancelRequest,
+  onAcceptRequest,
+  onDeclineRequest,
   onViewDetails,
   activeTransactionId,
   onClearActiveTransaction,
@@ -373,9 +405,11 @@ export default function TransactionHistory({
                   {expandedId === txn.id && (
                     <tr className="transaction-history__details-row">
                       <td colSpan="6" className="transaction-history__td--details">
-                        <TransactionDetails 
-                          transaction={txn} 
-                          onCancel={onCancelRequest} 
+                        <TransactionDetails
+                          transaction={txn}
+                          onCancel={onCancelRequest}
+                          onAccept={onAcceptRequest}
+                          onDecline={onDeclineRequest}
                         />
                       </td>
                     </tr>
@@ -402,6 +436,8 @@ TransactionHistory.propTypes = {
     messages: PropTypes.array,
   })),
   onCancelRequest: PropTypes.func,
+  onAcceptRequest: PropTypes.func,
+  onDeclineRequest: PropTypes.func,
   onViewDetails: PropTypes.func,
   activeTransactionId: PropTypes.string,
   onClearActiveTransaction: PropTypes.func,

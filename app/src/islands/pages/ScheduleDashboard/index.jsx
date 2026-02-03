@@ -37,6 +37,19 @@ import BuyoutFormulaSettings from './components/BuyoutFormulaSettings.jsx';
 import BuyoutPriceVisualization from './components/BuyoutPriceVisualization.jsx';
 
 // ============================================================================
+// HELPERS
+// ============================================================================
+
+function formatHeaderDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString.includes('T') ? dateString : `${dateString}T12:00:00`);
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// ============================================================================
 // LOADING STATE
 // ============================================================================
 
@@ -260,7 +273,7 @@ export default function ScheduleDashboard() {
                       >
                         <span className="schedule-dashboard__drawer-handle-text">
                           {selectedNight
-                            ? `Buying Out ${selectedNight}`
+                            ? `Buying Out ${formatHeaderDate(selectedNight)}`
                             : 'Create a Buyout Request'}
                         </span>
                         <span className="schedule-dashboard__drawer-chevron">
@@ -315,6 +328,8 @@ export default function ScheduleDashboard() {
                           transactions={transactions}
                           netFlow={netFlow}
                           onCancelRequest={handleCancelRequest}
+                          onAcceptRequest={handleAcceptRequest}
+                          onDeclineRequest={handleDeclineRequest}
                           onViewDetails={handleViewTransactionDetails}
                           activeTransactionId={activeTransactionId}
                           onClearActiveTransaction={handleClearActiveTransaction}

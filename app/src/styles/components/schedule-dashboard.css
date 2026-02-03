@@ -2468,6 +2468,42 @@
   cursor: pointer;
 }
 
+.transaction-details__btn--accept {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #16a34a;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.transaction-details__btn--accept:hover {
+  background: #16a34a;
+  color: white;
+}
+
+.transaction-details__btn--decline {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #9CA3AF;
+  background: #F3F4F6;
+  color: #6B7280;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.transaction-details__btn--decline:hover {
+  background: #E5E7EB;
+  color: #4B5563;
+}
+
+.transaction-details__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* Transaction Details Pricing Section */
 .transaction-details__pricing {
   background: #F9FAFB;
