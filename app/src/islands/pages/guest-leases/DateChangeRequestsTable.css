@@ -1,136 +1,195 @@
 /**
- * DateChangeRequestsTable Component Styles
+ * DateChangeRequestsTable Component Styles (Paula Scher Style)
+ *
+ * Card-based layout for date change requests with status badges.
  */
 
+@import '../../../styles/design-tokens.css';
+
+/* =============================================================
+   CONTAINER
+   ============================================================= */
 .date-change-requests {
-  /* Container */
+  width: 100%;
 }
 
 .date-change-requests__empty {
   text-align: center;
-  padding: 24px;
-  color: #6B6B6B;
+  padding: var(--spacing-2xl);
+  color: var(--text-gray);
+  font-size: var(--text-base);
 }
 
 .date-change-requests__empty p {
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-md);
 }
 
+/* =============================================================
+   REQUEST LIST
+   ============================================================= */
 .date-change-requests__list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
 }
 
+/* =============================================================
+   REQUEST ITEM
+   ============================================================= */
 .date-change-requests__item {
-  background: #F7F8F9;
-  border-radius: 8px;
-  padding: 16px;
+  background: var(--bg-light-gray);
+  border-radius: var(--rounded-lg);
+  padding: var(--spacing-lg);
+  border: var(--border-width-thin) solid var(--border-color);
+  transition: border-color var(--transition-fast);
+}
+
+.date-change-requests__item:hover {
+  border-color: var(--border-gray-light);
 }
 
 .date-change-requests__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-md);
 }
 
+/* =============================================================
+   STATUS BADGES (Paula Style)
+   ============================================================= */
 .date-change-requests__status {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  border: var(--border-width-thin) solid;
 }
 
 .date-change-requests__status--pending {
-  background: #FEF3C7;
-  color: #92400E;
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .date-change-requests__status--accepted {
-  background: #DCFCE7;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success-green);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .date-change-requests__status--rejected {
-  background: #FEE2E2;
-  color: #991B1B;
+  background: var(--protocol-danger-hover);
+  color: var(--protocol-danger);
+  border-color: rgba(220, 53, 69, 0.3);
 }
 
 .date-change-requests__status--expired {
-  background: #E5E5E5;
-  color: #4D4D4D;
+  background: var(--bg-light-gray);
+  color: var(--text-gray);
+  border-color: var(--border-color);
 }
 
 .date-change-requests__status--expiring {
-  background: #FEF3C7;
-  color: #92400E;
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .date-change-requests__status--cancelled {
-  background: #E5E5E5;
-  color: #6B6B6B;
+  background: var(--bg-light-gray);
+  color: var(--text-light-gray);
+  border-color: var(--border-color);
 }
 
 .date-change-requests__date {
-  font-size: 12px;
-  color: #6B6B6B;
+  font-size: var(--text-xs);
+  color: var(--text-gray);
+  font-family: var(--font-mono);
 }
 
+/* =============================================================
+   DETAILS
+   ============================================================= */
 .date-change-requests__details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
 .date-change-requests__change {
   display: flex;
-  gap: 8px;
-  font-size: 14px;
+  gap: var(--spacing-sm);
+  font-size: var(--text-base);
 }
 
 .date-change-requests__label {
-  color: #6B6B6B;
+  color: var(--text-gray);
   min-width: 80px;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .date-change-requests__value {
-  color: #4D4D4D;
-  font-weight: 500;
+  color: var(--text-dark);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-mono);
 }
 
+/* =============================================================
+   MESSAGE
+   ============================================================= */
 .date-change-requests__message {
-  margin-top: 8px;
-  padding: 12px;
-  background: white;
-  border-radius: 4px;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--bg-white);
+  border-radius: var(--rounded-md);
+  border: var(--border-width-thin) solid var(--border-color);
 }
 
 .date-change-requests__message .date-change-requests__label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .date-change-requests__message p {
   margin: 0;
-  font-size: 14px;
-  color: #4D4D4D;
+  font-size: var(--text-base);
+  color: var(--text-dark);
+  line-height: var(--line-height-normal);
 }
 
+/* =============================================================
+   ACTIONS
+   ============================================================= */
 .date-change-requests__actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #E5E5E5;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-width-thin) solid var(--border-color);
 }
 
-/* Responsive */
+/* =============================================================
+   RESPONSIVE
+   ============================================================= */
 @media (max-width: 640px) {
+  .date-change-requests__item {
+    padding: var(--spacing-md);
+  }
+
+  .date-change-requests__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
   .date-change-requests__actions {
     flex-direction: column;
   }

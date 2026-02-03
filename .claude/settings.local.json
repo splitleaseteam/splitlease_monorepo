@@ -47,7 +47,10 @@
       "mcp__playwright__browser_evaluate",
       "Bash({)",
       "mcp__playwright__browser_install",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(bun install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

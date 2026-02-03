@@ -101,6 +101,62 @@ export function useGuestLeasesPageLogic() {
     async function checkAuth() {
       console.log('🔐 Guest Leases: Checking authentication...');
 
+      // DEV MODE: Skip auth for design testing (?dev=true in URL)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('dev') === 'true') {
+        console.log('🔧 Guest Leases: DEV MODE - Skipping auth with mock data');
+
+        const mockLeases = [
+          {
+            _id: 'lease-001',
+            agreementNumber: 'SL-2026-001',
+            status: 'active',
+            startDate: '2026-01-15',
+            endDate: '2026-06-15',
+            currentWeekNumber: 3,
+            totalWeekCount: 22,
+            listing: {
+              _id: 'listing-001',
+              name: 'Sunny Chelsea Studio',
+              neighborhood: 'Chelsea, Manhattan',
+              address: '234 W 23rd St, New York, NY 10011',
+              imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
+            },
+            host: {
+              _id: 'host-001',
+              firstName: 'Sarah',
+              lastName: 'Miller',
+              email: 'sarah.miller@example.com'
+            },
+            stays: [
+              { _id: 'stay-001', weekNumber: 1, checkIn: '2026-01-15', checkOut: '2026-01-22', status: 'completed', reviewSubmittedByGuest: true, reviewSubmittedByHost: { rating: 5, comment: 'Great guest!' } },
+              { _id: 'stay-002', weekNumber: 2, checkIn: '2026-01-22', checkOut: '2026-01-29', status: 'completed', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+              { _id: 'stay-003', weekNumber: 3, checkIn: '2026-01-29', checkOut: '2026-02-05', status: 'in_progress', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+              { _id: 'stay-004', weekNumber: 4, checkIn: '2026-02-05', checkOut: '2026-02-12', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+              { _id: 'stay-005', weekNumber: 5, checkIn: '2026-02-12', checkOut: '2026-02-19', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null }
+            ],
+            dateChangeRequests: [
+              { _id: 'dcr-001', requestedBy: 'host-001', originalDate: '2026-02-12', newDate: '2026-02-14', reason: 'Personal conflict', status: 'pending' }
+            ],
+            paymentRecords: [
+              { _id: 'pay-001', date: '2026-01-10', amount: 850, status: 'paid', description: 'Week 1 rent', receiptUrl: '#' },
+              { _id: 'pay-002', date: '2026-01-17', amount: 850, status: 'paid', description: 'Week 2 rent', receiptUrl: '#' },
+              { _id: 'pay-003', date: '2026-01-24', amount: 850, status: 'pending', description: 'Week 3 rent', receiptUrl: null }
+            ],
+            periodicTenancyAgreement: '#',
+            supplementalAgreement: '#',
+            creditCardAuthorizationForm: null
+          }
+        ];
+
+        setUser({ _id: 'dev-user-123', email: 'splitleasetesting@test.com', firstName: 'Test', lastName: 'Guest', userType: 'Guest' });
+        setLeases(mockLeases);
+        setExpandedLeaseId('lease-001');
+        setIsLoading(false);
+        setAuthState({ isChecking: false, isAuthenticated: true, isGuest: true, shouldRedirect: false, redirectReason: null });
+        return;
+      }
+
       try {
         // Check for Supabase session (primary auth method)
         let { data: { session } } = await supabase.auth.getSession();
@@ -193,6 +249,13 @@ export function useGuestLeasesPageLogic() {
   useEffect(() => {
     async function loadLeases() {
       if (authState.isChecking || authState.shouldRedirect || !user) {
+        return;
+      }
+
+      // DEV MODE: Skip fetching - mock data already set
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('dev') === 'true') {
+        console.log('🔧 Guest Leases: DEV MODE - Skipping data fetch');
         return;
       }
 
