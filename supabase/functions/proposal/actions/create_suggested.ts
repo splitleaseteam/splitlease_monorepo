@@ -31,6 +31,7 @@ import {
   calculateOrderRanking,
   formatPriceForDisplay,
   getNightlyRateForNights,
+  fetchAvgDaysPerMonth,
 } from "../lib/calculations.ts";
 import {
   addUserProposal,
@@ -354,6 +355,11 @@ export async function handleCreateSuggested(
   const rentalType = ((listingData["rental type"] || "nightly").toLowerCase()) as RentalType;
   const nightsPerWeek = input.nightsSelected.length;
   const hostNightlyRate = getNightlyRateForNights(listingData, nightsPerWeek);
+  const needsAvgDaysPerMonth =
+    rentalType === "monthly" || (input.reservationSpan || "other") === "other";
+  const avgDaysPerMonth = needsAvgDaysPerMonth
+    ? await fetchAvgDaysPerMonth(supabase)
+    : 30.4375;
 
   const compensation = calculateCompensation(
     rentalType,
@@ -362,7 +368,8 @@ export async function handleCreateSuggested(
     listingData["weekly_host_rate"] || 0,
     hostNightlyRate,
     input.reservationSpanWeeks,
-    listingData["monthly_host_rate"] || 0
+    listingData["monthly_host_rate"] || 0,
+    avgDaysPerMonth
   );
 
   // Move-out date

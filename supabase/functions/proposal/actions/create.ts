@@ -30,6 +30,7 @@ import {
   calculateOrderRanking,
   formatPriceForDisplay,
   getNightlyRateForNights,
+  fetchAvgDaysPerMonth,
 } from "../lib/calculations.ts";
 import { determineInitialStatus, ProposalStatusName } from "../lib/status.ts";
 import {
@@ -317,6 +318,7 @@ export async function handleCreate(
   // IMPORTANT: Use the HOST's nightly rate from listing pricing tiers, NOT the guest-facing price
   const rentalType = ((listingData["rental type"] || "nightly").toLowerCase()) as RentalType;
   const nightsPerWeek = input.nightsSelected.length;
+  const actualWeeks = input.actualWeeks || input.reservationSpanWeeks;
 
   // Get the host's nightly rate based on the number of nights selected
   // This matches Bubble's "host compensation" parameter which comes from listing pricing
@@ -331,14 +333,21 @@ export async function handleCreate(
     guestProposalPrice: input.proposalPrice
   });
 
+  const needsAvgDaysPerMonth =
+    rentalType === "monthly" || (input.reservationSpan || "other") === "other";
+  const avgDaysPerMonth = needsAvgDaysPerMonth
+    ? await fetchAvgDaysPerMonth(supabase)
+    : 30.4375;
+
   const compensation = calculateCompensation(
     rentalType,
     (input.reservationSpan || "other") as ReservationSpan,
     nightsPerWeek,
     listingData["weekly_host_rate"] || 0,
     hostNightlyRate,
-    input.reservationSpanWeeks,
-    listingData["monthly_host_rate"] || 0
+    actualWeeks,
+    listingData["monthly_host_rate"] || 0,
+    avgDaysPerMonth
   );
 
   // Calculate move-out date
@@ -418,7 +427,7 @@ export async function handleCreate(
     // Duration
     "Reservation Span": input.reservationSpan,
     "Reservation Span (Weeks)": input.reservationSpanWeeks,
-    "actual weeks during reservation span": input.actualWeeks || input.reservationSpanWeeks,
+    "actual weeks during reservation span": actualWeeks,
     "duration in months": compensation.duration_months,
 
     // Day/Night selection

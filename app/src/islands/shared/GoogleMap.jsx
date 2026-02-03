@@ -157,19 +157,35 @@ const GoogleMap = forwardRef(({
    * Falls back to starting price if no nights selected or calculation fails
    */
   const getDisplayPrice = useCallback((listing) => {
+    const pricingListStarting = Number(listing.pricingList?.startingNightlyPrice)
+    const startingPrice = !Number.isNaN(pricingListStarting) && pricingListStarting > 0
+      ? pricingListStarting
+      : (listing.price?.starting || listing['Starting nightly price'] || 0)
+
     // If no nights selected, show starting price
     if (selectedNightsCount < 1) {
-      return listing.price?.starting || listing['Starting nightly price'] || 0;
+      return startingPrice;
+    }
+
+    if (listing.pricingList?.nightlyPrice) {
+      const index = selectedNightsCount - 1
+      const rawValue = listing.pricingList.nightlyPrice[index]
+      const parsed = Number(rawValue)
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed
+      }
+
+      return startingPrice
     }
 
     try {
       // Create mock nights array (calculatePrice only uses .length)
       const mockNightsArray = Array(selectedNightsCount).fill({ nightNumber: 0 });
       const priceBreakdown = calculatePrice(mockNightsArray, listing, 13, null);
-      return priceBreakdown.pricePerNight || listing.price?.starting || listing['Starting nightly price'] || 0;
+      return priceBreakdown.pricePerNight || startingPrice;
     } catch (error) {
       // Fallback to starting price on error
-      return listing.price?.starting || listing['Starting nightly price'] || 0;
+      return startingPrice;
     }
   }, [selectedNightsCount]);
 
