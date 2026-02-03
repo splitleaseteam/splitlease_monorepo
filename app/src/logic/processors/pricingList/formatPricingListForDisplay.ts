@@ -9,12 +9,13 @@
  * @rule Provides labels for each night tier.
  * @rule Includes derived display values (starting price text).
  *
- * @param {object} pricingList - Adapted pricing list object.
- * @returns {object} Display-formatted pricing data.
+ * @param pricingList - Adapted pricing list object.
+ * @returns Display-formatted pricing data.
  *
- * @throws {Error} If pricingList is null or undefined.
+ * @throws Error if pricingList is null or undefined.
  *
  * @example
+ * ```ts
  * formatPricingListForDisplay({
  *   nightlyPrice: [null, 117, 111, 105, 99, 94, 76],
  *   startingNightlyPrice: 76,
@@ -29,16 +30,28 @@
  * //   startingAt: '$76/night',
  * //   markupDisplay: '17%'
  * // }
+ * ```
  */
-export function formatPricingListForDisplay(pricingList) {
+import type {
+  DisplayPricingData,
+  FrontendPricingList,
+  PriceTierDisplay,
+  SupabasePricingRow
+} from './types.js';
+
+type PricingListInput = Partial<FrontendPricingList> | Partial<SupabasePricingRow>;
+
+export function formatPricingListForDisplay(
+  pricingList: PricingListInput
+): DisplayPricingData {
   if (!pricingList) {
     throw new Error('formatPricingListForDisplay: pricingList is required');
   }
 
-  const nightlyPrices = pricingList.nightlyPrice || pricingList['Nightly Price'] || [];
+  const nightlyPrices = pricingList.nightlyPrice || (pricingList as Partial<SupabasePricingRow>)['Nightly Price'] || [];
 
   // Build price tiers array
-  const priceTiers = nightlyPrices.map((price, index) => {
+  const priceTiers: PriceTierDisplay[] = nightlyPrices.map((price, index) => {
     const nights = index + 1;
     return {
       nights,
@@ -50,36 +63,36 @@ export function formatPricingListForDisplay(pricingList) {
   });
 
   // Format starting price
-  const startingPrice = pricingList.startingNightlyPrice ?? pricingList['Starting Nightly Price'];
-  const startingAt = (startingPrice !== null && startingPrice !== undefined && !isNaN(startingPrice))
+  const startingPrice = pricingList.startingNightlyPrice ?? (pricingList as Partial<SupabasePricingRow>)['Starting Nightly Price'];
+  const startingAt = startingPrice !== null && startingPrice !== undefined
     ? `$${Math.round(startingPrice)}/night`
     : 'Price varies';
 
   // Format markup percentage
-  const combinedMarkup = pricingList.combinedMarkup ?? pricingList['Combined Markup'] ?? 0.17;
+  const combinedMarkup = pricingList.combinedMarkup ?? (pricingList as Partial<SupabasePricingRow>)['Combined Markup'] ?? 0.17;
   const markupDisplay = `${Math.round(combinedMarkup * 100)}%`;
 
   // Format discount percentage
-  const fullTimeDiscount = pricingList.fullTimeDiscount ?? pricingList['Full Time Discount'] ?? 0.13;
+  const fullTimeDiscount = pricingList.fullTimeDiscount ?? (pricingList as Partial<SupabasePricingRow>)['Full Time Discount'] ?? 0.13;
   const discountDisplay = `${Math.round(fullTimeDiscount * 100)}%`;
 
   return {
     priceTiers,
     startingAt,
-    startingPrice: (startingPrice !== null && startingPrice !== undefined) ? Math.round(startingPrice) : null,
+    startingPrice: startingPrice !== null ? Math.round(startingPrice) : null,
     markupDisplay,
     discountDisplay,
     fullTimePrice: formatPrice(nightlyPrices[6]), // 7-night price
-    rentalType: pricingList.rentalType ?? pricingList['rental type'] ?? 'Nightly'
+    rentalType: (pricingList.rentalType ?? (pricingList as Partial<SupabasePricingRow>)['rental type'] ?? 'Nightly') as 'Nightly' | 'Monthly' | 'Weekly'
   };
 }
 
 /**
  * Format a price for display.
- * @param {number|null} price - The price to format.
- * @returns {string} Formatted price string.
+ * @param price - The price to format.
+ * @returns Formatted price string.
  */
-function formatPrice(price) {
+function formatPrice(price: number | null | undefined): string {
   if (price === null || price === undefined || isNaN(price)) {
     return 'N/A';
   }

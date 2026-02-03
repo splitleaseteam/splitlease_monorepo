@@ -147,7 +147,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
   describe('type coercion handling', () => {
     it('should compare string numbers with numbers correctly', () => {
       const listing = {
-        'nightly_rate_2_nights': '100'
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': '100',
+        'nightly_rate_3_nights': '95',
+        'nightly_rate_4_nights': '90',
+        'nightly_rate_5_nights': '85',
+        'nightly_rate_6_nights': '80',
+        'nightly_rate_7_nights': '75'
       };
 
       const pricingList = {
@@ -175,7 +181,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should handle decimal comparisons correctly', () => {
       const listing = {
-        'nightly_rate_2_nights': 100.5
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 100.5,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -203,7 +215,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should normalize NaN to null for comparison', () => {
       const listing = {
-        'nightly_rate_2_nights': NaN
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': NaN,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -219,7 +237,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
   describe('Bubble-style field name handling', () => {
     it('should handle Bubble-style hostCompensation field name', () => {
       const listing = {
-        'nightly_rate_2_nights': 100
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 100,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -264,7 +288,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
   describe('array index mapping', () => {
     it('should map rate_1_night to index 0', () => {
       const listing = {
-        'nightly_rate_1_night': 150
+        'nightly_rate_1_night': 150,
+        'nightly_rate_2_nights': 100,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -278,7 +308,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should map rate_2_nights to index 1', () => {
       const listing = {
-        'nightly_rate_2_nights': 100
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 100,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -292,6 +328,12 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should map rate_7_nights to index 6', () => {
       const listing = {
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 100,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
         'nightly_rate_7_nights': 75
       };
 
@@ -404,7 +446,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should handle negative rate values', () => {
       const listing = {
-        'nightly_rate_2_nights': -100
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': -100,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -418,7 +466,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should handle very large rate values', () => {
       const listing = {
-        'nightly_rate_2_nights': 999999
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 999999,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -432,7 +486,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should handle floating point precision', () => {
       const listing = {
-        'nightly_rate_2_nights': 100.0000000001
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 100.0000000001,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -446,7 +506,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should detect tiny floating point differences', () => {
       const listing = {
-        'nightly_rate_2_nights': 100.0000000001
+        'nightly_rate_1_night': null,
+        'nightly_rate_2_nights': 100.0000000001,
+        'nightly_rate_3_nights': 95,
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
@@ -515,8 +581,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should handle Bubble data format with string numbers', () => {
       const listing = {
+        'nightly_rate_1_night': null,
         'nightly_rate_2_nights': '100',
-        'nightly_rate_3_nights': '95'
+        'nightly_rate_3_nights': '95',
+        'nightly_rate_4_nights': '90',
+        'nightly_rate_5_nights': '85',
+        'nightly_rate_6_nights': '80',
+        'nightly_rate_7_nights': '75'
       };
 
       const pricingList = {
@@ -563,9 +634,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
 
     it('should handle mixed valid and invalid rates', () => {
       const listing = {
+        'nightly_rate_1_night': null,
         'nightly_rate_2_nights': '100',
         'nightly_rate_3_nights': 'invalid',
-        'nightly_rate_4_nights': 90
+        'nightly_rate_4_nights': 90,
+        'nightly_rate_5_nights': 85,
+        'nightly_rate_6_nights': 80,
+        'nightly_rate_7_nights': 75
       };
 
       const pricingList = {
