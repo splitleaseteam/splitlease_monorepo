@@ -169,15 +169,21 @@ const ACTION_DESCRIPTIONS = {
 // ENVIRONMENT CONFIGURATION
 // ============================================
 
+// Anon keys for Supabase Edge Functions (public, safe for client)
+const DEV_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+const PROD_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxd3J2a2tmaXhyb2d4b2d1bnNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTcxMjEyMDIsImV4cCI6MjAzMjY5NzIwMn0.RLdus5-mCJZGKI1UT5LvOKEIlqhq6oqLbCYWyDwIKPg';
+
 const ENVIRONMENTS = {
   development: {
     name: 'Development',
     url: 'https://qzsmhgyojmwvtjmnrdea.supabase.co/functions/v1/lease-documents',
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || DEV_ANON_KEY,
     color: '#22c55e'
   },
   production: {
     name: 'Production',
     url: 'https://rqwrvkkfixrogxogunsk.supabase.co/functions/v1/lease-documents',
+    anonKey: PROD_ANON_KEY,
     color: '#ef4444'
   }
 };
@@ -394,7 +400,9 @@ function TestContractsPage() {
       const res = await fetch(env.url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.anonKey}`,
+          'apikey': env.anonKey
         },
         body: JSON.stringify(requestBody)
       });
