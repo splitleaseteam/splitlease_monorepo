@@ -34,8 +34,21 @@ export async function handleGenerateAll(
   console.log('[generateAll] Starting orchestrated document generation...');
 
   // Validate payload (Python-compatible format)
-  const validatedPayload = validateGenerateAllPayload(payload);
-  const agreementNumber = validatedPayload.hostPayout['Agreement Number'];
+  let validatedPayload;
+  let agreementNumber: string;
+  try {
+    validatedPayload = validateGenerateAllPayload(payload);
+    agreementNumber = validatedPayload.hostPayout['Agreement Number'];
+  } catch (validationError) {
+    const errorMessage = validationError instanceof Error ? validationError.message : String(validationError);
+    console.error('[generateAll] Validation error:', errorMessage);
+    return {
+      hostPayout: { success: false, error: errorMessage, returned_error: 'yes' },
+      supplemental: { success: false, error: errorMessage, returned_error: 'yes' },
+      periodicTenancy: { success: false, error: errorMessage, returned_error: 'yes' },
+      creditCardAuth: { success: false, error: errorMessage, returned_error: 'yes' },
+    };
+  }
   console.log(`[generateAll] Agreement: ${agreementNumber}`);
 
   const results: GenerateAllResult = {
@@ -128,16 +141,20 @@ export async function handleGenerateAll(
     failureCount++;
   }
 
-  // Summary notification
-  if (failureCount === 0) {
-    await notifySlack(`All 4 documents generated successfully for Agreement ${agreementNumber}`);
-  } else if (successCount === 0) {
-    await notifySlack(`All 4 documents failed to generate for Agreement ${agreementNumber}`, true);
-  } else {
-    await notifySlack(
-      `Generated ${successCount}/4 documents for Agreement ${agreementNumber} (${failureCount} failed)`,
-      true
-    );
+  // Summary notification (non-blocking - don't fail orchestration on Slack errors)
+  try {
+    if (failureCount === 0) {
+      await notifySlack(`All 4 documents generated successfully for Agreement ${agreementNumber}`);
+    } else if (successCount === 0) {
+      await notifySlack(`All 4 documents failed to generate for Agreement ${agreementNumber}`, true);
+    } else {
+      await notifySlack(
+        `Generated ${successCount}/4 documents for Agreement ${agreementNumber} (${failureCount} failed)`,
+        true
+      );
+    }
+  } catch (slackError) {
+    console.warn('[generateAll] Slack notification failed (non-blocking):', slackError instanceof Error ? slackError.message : slackError);
   }
 
   console.log(`[generateAll] Completed: ${successCount} success, ${failureCount} failures`);

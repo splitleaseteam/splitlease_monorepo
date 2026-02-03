@@ -160,7 +160,9 @@ function calculateUnusedNightsDiscountArray(
     const nightsBooked = nightIndex + 1;
     const unusedNights = maxNights - nightsBooked;
 
-    // LINEAR formula: unusedNights * multiplier
+    // UNUSED NIGHTS discount: compensate partial-week bookings
+    // At 1 night: 6 unused nights, discount = multiplier * 6 (maximum)
+    // At 7 nights: 0 unused nights, discount = 0 (full-time gets separate discount)
     const discount = unusedNights * discountMultiplier;
 
     discountArray.push(roundToFourDecimals(discount));

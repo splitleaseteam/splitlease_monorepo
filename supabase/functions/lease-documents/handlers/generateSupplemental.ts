@@ -18,6 +18,7 @@ import { validateSupplementalPayload } from '../lib/validators.ts';
 import { formatDate } from '../lib/formatters.ts';
 import { downloadAndRenderTemplate, TEMPLATE_PATHS } from '../lib/templateRenderer.ts';
 import { uploadToGoogleDrive, notifySlack } from '../lib/googleDrive.ts';
+import { uploadToSupabaseStorage } from '../lib/supabaseStorage.ts';
 
 // ================================================
 // HANDLER
@@ -64,11 +65,18 @@ export async function handleGenerateSupplemental(
   // Generate filename (matching Python output format)
   const filename = `supplement_agreement-${agreementNumber}.docx`;
 
-  // Upload to Google Drive
-  const uploadResult = await uploadToGoogleDrive(documentContent, filename);
+  const [driveUploadResult, storageUploadResult] = await Promise.all([
+    uploadToGoogleDrive(documentContent, filename),
+    uploadToSupabaseStorage(supabase, documentContent, filename, 'supplemental_agreement'),
+  ]);
 
-  if (!uploadResult.success) {
-    const errorMsg = `Failed to upload Supplemental Agreement: ${uploadResult.error}`;
+  const uploadErrors = [
+    driveUploadResult.success ? null : `Drive upload failed: ${driveUploadResult.error}`,
+    storageUploadResult.success ? null : `Supabase upload failed: ${storageUploadResult.error}`,
+  ].filter(Boolean);
+
+  if (uploadErrors.length > 0) {
+    const errorMsg = `Failed to upload Supplemental Agreement: ${uploadErrors.join(' | ')}`;
     await notifySlack(errorMsg, true);
     return {
       success: false,
@@ -83,11 +91,11 @@ export async function handleGenerateSupplemental(
   return {
     success: true,
     filename,
-    driveUrl: uploadResult.webViewLink,
-    drive_url: uploadResult.webViewLink, // Python compatibility alias
-    web_view_link: uploadResult.webViewLink, // Python compatibility alias
-    fileId: uploadResult.fileId,
-    file_id: uploadResult.fileId, // Python compatibility alias
+    driveUrl: driveUploadResult.webViewLink,
+    drive_url: driveUploadResult.webViewLink, // Python compatibility alias
+    web_view_link: driveUploadResult.webViewLink, // Python compatibility alias
+    fileId: storageUploadResult.filePath,
+    file_id: storageUploadResult.filePath, // Python compatibility alias
     returned_error: 'no',
   };
 }

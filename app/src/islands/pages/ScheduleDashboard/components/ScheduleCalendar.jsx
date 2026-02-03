@@ -158,7 +158,8 @@ export default function ScheduleCalendar({
   transactionsByDate = {},
   onSelectTransaction,
   priceOverlays = null, // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
-  roommatePriceOverlays = null // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
+  roommatePriceOverlays = null, // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
+  roommateName = null // Roommate's first name for tooltip
 }) {
   // Default to current date if no month provided
   const currentMonth = currentMonthProp || new Date();
@@ -269,8 +270,8 @@ export default function ScheduleCalendar({
     const status = getDayStatus(date);
     const transaction = getTransactionForDate(date);
 
-    // If it's a past date with a transaction, trigger transaction click
-    if (isDateInPast(date) && transaction) {
+    // If there's a transaction on this date, trigger transaction click
+    if (transaction) {
       onSelectTransaction?.(transaction.id);
       return;
     }
@@ -287,9 +288,9 @@ export default function ScheduleCalendar({
   const isDayClickable = (date, status) => {
     if (!date) return false;
 
-    // Past dates with transactions are clickable
+    // Dates with transactions are clickable
     const transaction = getTransactionForDate(date);
-    if (isDateInPast(date) && transaction) {
+    if (transaction) {
       return true;
     }
 
@@ -311,7 +312,7 @@ export default function ScheduleCalendar({
 
     // Check for transaction on this date
     const transaction = getTransactionForDate(date);
-    if (isDateInPast(date) && transaction) {
+    if (transaction) {
       const amount = formatTransactionAmount(transaction);
       return `${formattedDate}, Transaction: ${amount}. Click to view details.`;
     }
@@ -390,6 +391,10 @@ export default function ScheduleCalendar({
                 const hasTransaction = isPast && transaction;
                 const transactionAmount = hasTransaction ? formatTransactionAmount(transaction) : null;
 
+                // Low amount threshold for neutral styling (swaps, small charges)
+                const LOW_AMOUNT_THRESHOLD = 5;
+                const isLowAmount = hasTransaction && Math.abs(transaction.amount) < LOW_AMOUNT_THRESHOLD;
+
                 // Check for price overlay (user's nights OR adjacent roommate nights only)
                 const priceOverlay = date && (status === 'mine' || status === 'adjacent')
                   ? getPriceOverlay(date, status)
@@ -408,8 +413,9 @@ export default function ScheduleCalendar({
                       ${isSelected ? 'schedule-calendar__day--selected' : ''}
                       ${clickable ? 'schedule-calendar__day--clickable' : ''}
                       ${hasTransaction ? 'schedule-calendar__day--has-transaction' : ''}
-                      ${hasTransaction && transaction.direction === 'incoming' ? 'schedule-calendar__day--transaction-incoming' : ''}
-                      ${hasTransaction && transaction.direction === 'outgoing' ? 'schedule-calendar__day--transaction-outgoing' : ''}
+                      ${hasTransaction && isLowAmount ? 'schedule-calendar__day--transaction-neutral' : ''}
+                      ${hasTransaction && !isLowAmount && transaction.direction === 'incoming' ? 'schedule-calendar__day--transaction-incoming' : ''}
+                      ${hasTransaction && !isLowAmount && transaction.direction === 'outgoing' ? 'schedule-calendar__day--transaction-outgoing' : ''}
                       ${priceOverlay ? 'schedule-calendar__day--has-price' : ''}
                       ${isShared ? 'schedule-calendar__day--shared' : ''}
                     `.trim().replace(/\s+/g, ' ')}
@@ -431,8 +437,9 @@ export default function ScheduleCalendar({
                       <span
                         className="schedule-calendar__price-bar"
                         data-tier={priceOverlay.tier}
+                        title={status === 'adjacent' ? `This is ${roommateName || 'your roommate'}'s suggested price` : undefined}
                       >
-                        ${priceOverlay.price}
+                        {status === 'adjacent' ? '~' : ''}${priceOverlay.price}
                       </span>
                     )}
                   </button>
@@ -526,5 +533,6 @@ ScheduleCalendar.propTypes = {
   roommatePriceOverlays: PropTypes.objectOf(PropTypes.shape({
     price: PropTypes.number.isRequired,
     tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
-  }))
+  })),
+  roommateName: PropTypes.string
 };

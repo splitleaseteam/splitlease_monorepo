@@ -318,21 +318,26 @@ export async function handleSubmit(
       console.log('[listing:submit] ⚠️ Step 2 warning - User not found for email:', user_email);
     }
 
-    // Step 2b: Look up borough and hood from zip code
+    // Step 2b: Look up borough and hood from zip code (non-blocking - graceful degradation)
     console.log('[listing:submit] Step 2b/4: Looking up borough/hood from zip code...');
     let boroughId: string | null = null;
     let hoodId: string | null = null;
 
     const zipCode = listing_data['Zip'];
     if (zipCode) {
-      const geoResult = await getGeoByZipCode(supabase, zipCode as string);
-      if (geoResult.borough) {
-        boroughId = geoResult.borough._id;
-        console.log('[listing:submit] ✅ Borough found:', geoResult.borough.displayName);
-      }
-      if (geoResult.hood) {
-        hoodId = geoResult.hood._id;
-        console.log('[listing:submit] ✅ Hood found:', geoResult.hood.displayName);
+      try {
+        const geoResult = await getGeoByZipCode(supabase, zipCode as string);
+        if (geoResult.borough) {
+          boroughId = geoResult.borough._id;
+          console.log('[listing:submit] ✅ Borough found:', geoResult.borough.displayName);
+        }
+        if (geoResult.hood) {
+          hoodId = geoResult.hood._id;
+          console.log('[listing:submit] ✅ Hood found:', geoResult.hood.displayName);
+        }
+      } catch (geoError) {
+        // Geo lookup is supplementary - continue without location data
+        console.warn('[listing:submit] ⚠️ Geo lookup failed (non-blocking):', geoError instanceof Error ? geoError.message : geoError);
       }
     } else {
       console.log('[listing:submit] ⚠️ No zip code provided, skipping geo lookup');
@@ -462,7 +467,13 @@ export async function handleSubmit(
     };
   } catch (error) {
     console.error('[listing:submit] ========== ERROR ==========');
-    console.error('[listing:submit] Failed to submit listing:', error);
+    const errorDetails = {
+      code: (error as { code?: string })?.code || 'UNKNOWN',
+      message: error instanceof Error ? error.message : String(error),
+      details: (error as { details?: string })?.details,
+      hint: (error as { hint?: string })?.hint,
+    };
+    console.error('[listing:submit] Failed to submit listing:', errorDetails);
     throw error;
   }
 }

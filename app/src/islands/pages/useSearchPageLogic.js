@@ -54,6 +54,7 @@ import { logger } from '../../lib/logger.js'
 import { calculateGuestFacingPrice } from '../../logic/calculators/pricing/calculateGuestFacingPrice.js';
 import { formatHostName } from '../../logic/processors/display/formatHostName.js';
 import { extractListingCoordinates } from '../../logic/processors/listing/extractListingCoordinates.js';
+import { adaptPricingListFromSupabase } from '../../logic/processors/pricingList/adaptPricingListFromSupabase';
 import { isValidPriceTier } from '../../logic/rules/search/isValidPriceTier.js';
 import { isValidWeekPattern } from '../../logic/rules/search/isValidWeekPattern.js';
 import { isValidSortOption } from '../../logic/rules/search/isValidSortOption.js';
@@ -167,7 +168,7 @@ export function useSearchPageLogic() {
    * EXPORTED: This function is now exported for use by consumers
    * that need the same transformation logic (e.g., fallback listings).
    */
-  const transformListing = useCallback((dbListing, images, hostData) => {
+  const transformListing = useCallback((dbListing, images, hostData, pricingList) => {
     // Resolve human-readable names from database IDs
     const neighborhoodName = getNeighborhoodName(dbListing['Location - Hood'])
     const boroughName = getBoroughName(dbListing['Location - Borough'])
@@ -193,6 +194,8 @@ export function useSearchPageLogic() {
       return isNaN(num) ? fallback : num
     }
 
+    const startingNightlyPrice = pricingList?.startingNightlyPrice ?? toNumber(dbListing['Standarized Minimum Nightly Price (Filter)'], 0)
+
     return {
       id: dbListing._id,
       title: dbListing.Name || 'Unnamed Listing',
@@ -203,10 +206,10 @@ export function useSearchPageLogic() {
         ? { lat: coordinatesResult.lat, lng: coordinatesResult.lng }
         : null,
       price: {
-        starting: toNumber(dbListing['Standarized Minimum Nightly Price (Filter)'], 0),
+        starting: startingNightlyPrice,
         full: toNumber(dbListing['nightly_rate_7_nights'], 0)
       },
-      'Starting nightly price': toNumber(dbListing['Standarized Minimum Nightly Price (Filter)'], 0),
+      'Starting nightly price': startingNightlyPrice,
       'Price 2 nights selected': toNumber(dbListing['nightly_rate_2_nights']),
       'Price 3 nights selected': toNumber(dbListing['nightly_rate_3_nights']),
       'Price 4 nights selected': toNumber(dbListing['nightly_rate_4_nights']),
@@ -234,11 +237,41 @@ export function useSearchPageLogic() {
         image: null,
         verified: false
       },
+      pricingList: pricingList || null,
       images: images || [],
       description: `${(dbListing['Features - Qty Bedrooms'] || 0) === 0 ? 'Studio' : `${dbListing['Features - Qty Bedrooms']} bedroom`} • ${dbListing['Features - Qty Bathrooms'] || 0} bathroom`,
       weeks_offered: dbListing['Weeks offered'] || 'Every week',
       days_available: parseJsonArray({ field: dbListing['Days Available (List of Days)'], fieldName: 'Days Available' }),
       isNew: false
+    }
+  }, [])
+
+  const fetchPricingListMap = useCallback(async (listings) => {
+    const pricingListIds = Array.from(
+      new Set(listings.map((listing) => listing.pricing_list).filter(Boolean))
+    )
+
+    if (pricingListIds.length === 0) {
+      return {}
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('pricing_list')
+        .select('*')
+        .in('_id', pricingListIds)
+
+      if (error) throw error
+
+      const pricingListMap = {}
+      ;(data || []).forEach((pricingList) => {
+        pricingListMap[pricingList._id] = adaptPricingListFromSupabase(pricingList)
+      })
+
+      return pricingListMap
+    } catch (error) {
+      logger.warn('[SearchPage] Failed to load pricing lists:', error)
+      return {}
     }
   }, [])
 
@@ -267,6 +300,8 @@ export function useSearchPageLogic() {
       // Batch fetch photos
       const photoIdsArray = extractPhotoIdsFromListings(data)
       const photoMap = await fetchPhotoUrls(photoIdsArray)
+
+      const pricingListMap = await fetchPricingListMap(data)
 
       // Extract photos per listing
       const resolvedPhotos = {}
@@ -297,7 +332,12 @@ export function useSearchPageLogic() {
 
       // Transform listings using Logic Core
       const transformedListings = data.map((listing) =>
-        transformListing(listing, resolvedPhotos[listing._id], resolvedHosts[listing._id])
+        transformListing(
+          listing,
+          resolvedPhotos[listing._id],
+          resolvedHosts[listing._id],
+          pricingListMap[listing.pricing_list] || null
+        )
       )
 
       // Filter to only listings with valid coordinates
@@ -318,7 +358,7 @@ export function useSearchPageLogic() {
       logger.error('Failed to fetch all active listings:', error)
       // Don't set error state - this shouldn't block the page
     }
-  }, [transformListing])
+  }, [fetchPricingListMap, transformListing])
 
   /**
    * Fetch filtered listings based on current filter state.
@@ -433,9 +473,16 @@ export function useSearchPageLogic() {
         resolvedHosts[listing._id] = hostMap[hostId] || null
       })
 
+      const pricingListMap = await fetchPricingListMap(data)
+
       // Transform listings using Logic Core
       const transformedListings = data.map((listing) =>
-        transformListing(listing, resolvedPhotos[listing._id], resolvedHosts[listing._id])
+        transformListing(
+          listing,
+          resolvedPhotos[listing._id],
+          resolvedHosts[listing._id],
+          pricingListMap[listing.pricing_list] || null
+        )
       )
 
       // Filter out listings without valid coordinates
@@ -470,6 +517,7 @@ export function useSearchPageLogic() {
     weekPattern,
     priceTier,
     sortBy,
+    fetchPricingListMap,
     transformListing
   ])
 
@@ -561,9 +609,16 @@ export function useSearchPageLogic() {
         resolvedHosts[listing._id] = hostMap[hostId] || null
       })
 
+      const pricingListMap = await fetchPricingListMap(data)
+
       // Transform listings
       const transformedListings = data.map(listing =>
-        transformListing(listing, resolvedPhotos[listing._id], resolvedHosts[listing._id])
+        transformListing(
+          listing,
+          resolvedPhotos[listing._id],
+          resolvedHosts[listing._id],
+          pricingListMap[listing.pricing_list] || null
+        )
       )
 
       // Filter out listings without valid coordinates
@@ -589,7 +644,7 @@ export function useSearchPageLogic() {
     } finally {
       setIsFallbackLoading(false)
     }
-  }, [transformListing])
+  }, [fetchPricingListMap, transformListing])
 
   // ============================================================================
   // Effects - Data Loading

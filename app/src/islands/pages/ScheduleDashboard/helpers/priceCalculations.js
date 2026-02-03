@@ -126,3 +126,42 @@ export function getTierForNoticeThreshold(noticeThreshold) {
   }
   return 'within'; // Low urgency = green
 }
+
+/**
+ * Calculate price deviation percentage
+ * @param {number} offeredPrice - Price the requester is offering
+ * @param {number} suggestedPrice - Calculated suggested price from recipient's settings
+ * @returns {{ percentage: number, tier: 'fair'|'low'|'very-low' }}
+ */
+export function calculatePriceDeviation(offeredPrice, suggestedPrice) {
+  if (!suggestedPrice || suggestedPrice === 0) return { percentage: 0, tier: 'fair' };
+
+  const deviation = ((offeredPrice - suggestedPrice) / suggestedPrice) * 100;
+
+  let tier = 'fair';
+  if (deviation < -20) tier = 'very-low';
+  else if (deviation < -10) tier = 'low';
+
+  return {
+    percentage: Math.round(deviation),
+    tier
+  };
+}
+
+/**
+ * Get fairness indicator for price offer
+ * @param {number} offeredPrice
+ * @param {number} suggestedPrice
+ * @returns {{ emoji: string, label: string, color: string }}
+ */
+export function getFairnessIndicator(offeredPrice, suggestedPrice) {
+  const { tier } = calculatePriceDeviation(offeredPrice, suggestedPrice);
+
+  if (tier === 'very-low') {
+    return { emoji: '🟠', label: 'Below suggested', color: '#F59E0B' };
+  }
+  if (tier === 'low') {
+    return { emoji: '🟡', label: 'Slightly below', color: '#EAB308' };
+  }
+  return { emoji: '🟢', label: 'Fair offer', color: '#22C55E' };
+}

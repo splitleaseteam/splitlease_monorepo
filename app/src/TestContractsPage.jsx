@@ -301,6 +301,24 @@ const styles = {
     minHeight: '300px',
     overflow: 'auto'
   },
+  responseToolbar: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '8px'
+  },
+  copyButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 10px',
+    fontSize: '12px',
+    fontWeight: '600',
+    borderRadius: '6px',
+    border: '1px solid #374151',
+    backgroundColor: '#111827',
+    color: '#e5e7eb',
+    cursor: 'pointer'
+  },
   responseText: {
     fontFamily: 'Monaco, Consolas, "Courier New", monospace',
     fontSize: '12px',
@@ -358,6 +376,7 @@ function TestContractsPage() {
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [responseTime, setResponseTime] = useState(null);
+  const [copyStatus, setCopyStatus] = useState('Copy JSON');
 
   const handleActionChange = useCallback((e) => {
     const newAction = e.target.value;
@@ -374,6 +393,7 @@ function TestContractsPage() {
   }, []);
 
   const handleExecute = useCallback(async () => {
+    setCopyStatus('Copy JSON');
     setIsLoading(true);
     setResponse(null);
     setResponseTime(null);
@@ -437,6 +457,24 @@ function TestContractsPage() {
       setIsLoading(false);
     }
   }, [environment, action, payload]);
+
+  const handleCopyResponse = useCallback(async () => {
+    if (!response) {
+      return;
+    }
+
+    try {
+      const json = JSON.stringify(response.data, null, 2);
+      await navigator.clipboard.writeText(json);
+      setCopyStatus('Copied');
+    } catch (error) {
+      setCopyStatus('Copy failed');
+    }
+
+    window.setTimeout(() => {
+      setCopyStatus('Copy JSON');
+    }, 1500);
+  }, [response]);
 
   const env = ENVIRONMENTS[environment];
 
@@ -550,6 +588,13 @@ function TestContractsPage() {
           <h2 style={styles.panelTitle}>Response</h2>
 
           <div style={styles.responsePanel}>
+            {response && (
+              <div style={styles.responseToolbar}>
+                <button type="button" style={styles.copyButton} onClick={handleCopyResponse}>
+                  {copyStatus}
+                </button>
+              </div>
+            )}
             {!response && !isLoading && (
               <p style={{ ...styles.responseText, color: '#9ca3af' }}>
                 Click "Generate Document" to see the response...

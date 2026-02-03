@@ -28,6 +28,7 @@ import {
   calculateComplementaryNights,
   formatPriceForDisplay,
   getNightlyRateForNights,
+  fetchAvgDaysPerMonth,
 } from "../lib/calculations.ts";
 import {
   MOCK_GUEST_EMAIL,
@@ -218,6 +219,11 @@ export async function handleCreateMockup(
 
     const rentalTypeLower = (rentalType || "nightly").toLowerCase() as RentalType;
     const hostNightlyRate = getNightlyRateForNights(listingData, nightsPerWeek);
+    const needsAvgDaysPerMonth =
+      rentalTypeLower === "monthly" || reservationSpan === "other";
+    const avgDaysPerMonth = needsAvgDaysPerMonth
+      ? await fetchAvgDaysPerMonth(supabase)
+      : 30.4375;
 
     const compensation = calculateCompensation(
       rentalTypeLower,
@@ -226,7 +232,8 @@ export async function handleCreateMockup(
       listingData["weekly_host_rate"] || 0,
       hostNightlyRate,
       reservationSpanWeeks,
-      listingData["monthly_host_rate"] || 0
+      listingData["monthly_host_rate"] || 0,
+      avgDaysPerMonth
     );
 
     console.log("[proposal:create_mockup] Pricing calculated:", {

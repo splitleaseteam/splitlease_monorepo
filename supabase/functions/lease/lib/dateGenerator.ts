@@ -295,6 +295,33 @@ export function generateLeaseDates(input: DateGenerationInput): DateGenerationRe
 }
 
 /**
+ * Convert day index (0-6) or day name to day name
+ *
+ * Handles both numeric string indices ("0", "1", ..., "6") and day names ("Monday", "Tuesday", etc.)
+ * This allows flexible input from proposals that may store days as indices or names.
+ *
+ * @param dayValue - Day index (string or number) or day name
+ * @returns Day name (e.g., "Monday", "Tuesday")
+ * @throws Error if input is invalid
+ */
+export function dayIndexToName(dayValue: string | number): string {
+  // If it's already a valid day name, return as-is
+  if (typeof dayValue === 'string' && DAYS_OF_WEEK.includes(dayValue as (typeof DAYS_OF_WEEK)[number])) {
+    return dayValue;
+  }
+
+  // Convert to number if string
+  const index = typeof dayValue === 'string' ? parseInt(dayValue, 10) : dayValue;
+
+  // Validate index range
+  if (isNaN(index) || index < 0 || index > 6) {
+    throw new Error(`Invalid day value: ${dayValue} (must be 0-6 or day name)`);
+  }
+
+  return DAYS_OF_WEEK[index];
+}
+
+/**
  * Pre-normalization for proposals with exactly 7 nights selected (full week)
  *
  * When a proposal has all 7 days selected, the check-in and check-out days

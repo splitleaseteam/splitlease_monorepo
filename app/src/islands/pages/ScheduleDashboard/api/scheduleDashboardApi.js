@@ -5,19 +5,14 @@
  * TODO: Replace stubs with real Supabase/Edge Function calls
  */
 
-/**
- * Fetch user's nights for this lease
- * @param {string} leaseId - The lease ID
- * @param {string} userId - The current user's ID
- * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
- */
-export async function fetchUserNights(leaseId, userId) {
-  // TODO: Replace with real API call
-  // Query calendar_stays where user_id = userId AND lease_id = leaseId
-  console.log('[API Stub] fetchUserNights:', { leaseId, userId });
-
-  // Mock data - February & March 2026 (Mon-Thu user, Fri-Sun roommate pattern)
-  return [
+// ============================================================================
+// PERSPECTIVE-NEUTRAL CALENDAR DATA
+// ============================================================================
+// Universal store: Maps user IDs to their owned nights
+// This is the "truth" - derived views are calculated from this
+const CALENDAR_DATA = {
+  // Alex (current-user): Mon-Thu pattern
+  'current-user': [
     // February 2026
     '2026-02-02', '2026-02-03', '2026-02-04', '2026-02-05',
     '2026-02-09', '2026-02-10', '2026-02-11', '2026-02-12',
@@ -29,22 +24,9 @@ export async function fetchUserNights(leaseId, userId) {
     '2026-03-16', '2026-03-17', '2026-03-18', '2026-03-19',
     '2026-03-23', '2026-03-24', '2026-03-25', '2026-03-26',
     '2026-03-30', '2026-03-31'
-  ];
-}
-
-/**
- * Fetch roommate's nights for this lease
- * @param {string} leaseId - The lease ID
- * @param {string} roommateId - The roommate's user ID
- * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
- */
-export async function fetchRoommateNights(leaseId, roommateId) {
-  // TODO: Replace with real API call
-  // Query calendar_stays where user_id = roommateId AND lease_id = leaseId
-  console.log('[API Stub] fetchRoommateNights:', { leaseId, roommateId });
-
-  // Mock data - February & March 2026 (Fri-Sun roommate pattern)
-  return [
+  ],
+  // Sarah (user-456): Fri-Sun pattern (complement of Alex's schedule)
+  'user-456': [
     // February 2026
     '2026-02-06', '2026-02-07', '2026-02-08',
     '2026-02-13', '2026-02-14', '2026-02-15',
@@ -55,7 +37,48 @@ export async function fetchRoommateNights(leaseId, roommateId) {
     '2026-03-13', '2026-03-14', '2026-03-15',
     '2026-03-20', '2026-03-21', '2026-03-22',
     '2026-03-27', '2026-03-28', '2026-03-29'
-  ];
+  ]
+};
+
+/**
+ * Fetch nights for a specific user by their ID
+ * @param {string} leaseId - The lease ID
+ * @param {string} userId - The user's ID to fetch nights for
+ * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
+ */
+export async function fetchNightsForUser(leaseId, userId) {
+  console.log('[API Stub] fetchNightsForUser:', { leaseId, userId });
+  return CALENDAR_DATA[userId] || [];
+}
+
+/**
+ * Fetch user's nights for this lease (uses userId to look up correct data)
+ * @param {string} leaseId - The lease ID
+ * @param {string} userId - The current user's ID
+ * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
+ */
+export async function fetchUserNights(leaseId, userId) {
+  // TODO: Replace with real API call
+  // Query calendar_stays where user_id = userId AND lease_id = leaseId
+  console.log('[API Stub] fetchUserNights:', { leaseId, userId });
+
+  // Return nights for the specified user (perspective-aware)
+  return CALENDAR_DATA[userId] || [];
+}
+
+/**
+ * Fetch roommate's nights for this lease (uses roommateId to look up correct data)
+ * @param {string} leaseId - The lease ID
+ * @param {string} roommateId - The roommate's user ID
+ * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
+ */
+export async function fetchRoommateNights(leaseId, roommateId) {
+  // TODO: Replace with real API call
+  // Query calendar_stays where user_id = roommateId AND lease_id = leaseId
+  console.log('[API Stub] fetchRoommateNights:', { leaseId, roommateId });
+
+  // Return nights for the specified roommate (perspective-aware)
+  return CALENDAR_DATA[roommateId] || [];
 }
 
 /**

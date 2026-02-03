@@ -30,7 +30,10 @@ interface ServiceAccountCredentials {
  * Create a JWT for Google Service Account authentication.
  * This replaces the need for google-auth-library in Deno.
  */
-async function createServiceAccountJWT(credentials: ServiceAccountCredentials): Promise<string> {
+async function createServiceAccountJWT(
+  credentials: ServiceAccountCredentials,
+  impersonatedEmail?: string
+): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const expiry = now + 3600; // 1 hour
 
@@ -39,13 +42,18 @@ async function createServiceAccountJWT(credentials: ServiceAccountCredentials): 
     typ: 'JWT',
   };
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     iss: credentials.client_email,
     scope: 'https://www.googleapis.com/auth/drive.file',
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: expiry,
   };
+
+  // Add subject for Domain-Wide Delegation (Impersonation)
+  if (impersonatedEmail) {
+    payload.sub = impersonatedEmail;
+  }
 
   // Base64URL encode header and payload
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
@@ -122,8 +130,11 @@ async function signWithRSA(data: string, privateKeyPem: string): Promise<string>
 /**
  * Exchange JWT for an access token.
  */
-async function getAccessToken(credentials: ServiceAccountCredentials): Promise<string> {
-  const jwt = await createServiceAccountJWT(credentials);
+async function getAccessToken(
+  credentials: ServiceAccountCredentials,
+  impersonatedEmail?: string
+): Promise<string> {
+  const jwt = await createServiceAccountJWT(credentials, impersonatedEmail);
 
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -168,6 +179,13 @@ export async function uploadToGoogleDrive(
   const clientEmail = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_EMAIL');
   const privateKey = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY');
   const folderId = Deno.env.get('GOOGLE_DRIVE_FOLDER_ID');
+  const impersonatedEmail = Deno.env.get('GOOGLE_IMPERSONATED_USER_EMAIL');
+
+  console.log('[googleDrive] Configuration Check:');
+  console.log(`- Service Account Email: ${clientEmail ? clientEmail.substring(0, 5) + '...' : 'MISSING'}`);
+  console.log(`- Private Key Present: ${!!privateKey}`);
+  console.log(`- Folder ID: ${folderId}`);
+  console.log(`- Impersonated User: ${impersonatedEmail || 'NONE (Standard Service Account)'}`);
 
   if (!clientEmail || !privateKey) {
     console.error('[googleDrive] Missing service account credentials');
@@ -186,11 +204,22 @@ export async function uploadToGoogleDrive(
   }
 
   try {
-    // Get access token
-    const accessToken = await getAccessToken({
-      client_email: clientEmail,
-      private_key: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
-    });
+    // Get access token (with optional impersonation)
+    if (impersonatedEmail) {
+      console.log(`[googleDrive] Attempting to mint JWT with subject: ${impersonatedEmail}`);
+    } else {
+      console.log('[googleDrive] Minting standard Service Account JWT (no delegation)');
+    }
+
+    const accessToken = await getAccessToken(
+      {
+        client_email: clientEmail,
+        private_key: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
+      },
+      impersonatedEmail
+    );
+
+    console.log('[googleDrive] Access Token obtained successfully');
 
     // Prepare multipart upload
     const boundary = '-------' + Date.now().toString(16);
@@ -242,9 +271,9 @@ export async function uploadToGoogleDrive(
     offset += fileContent.length;
     body.set(closingBoundary, offset);
 
-    // Upload to Google Drive
+    // Upload to Google Drive (supportsAllDrives enables Shared Drive support)
     const uploadResponse = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink&supportsAllDrives=true',
       {
         method: 'POST',
         headers: {

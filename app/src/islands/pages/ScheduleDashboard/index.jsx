@@ -37,6 +37,27 @@ import BuyoutFormulaSettings from './components/BuyoutFormulaSettings.jsx';
 import BuyoutPriceVisualization from './components/BuyoutPriceVisualization.jsx';
 
 // ============================================================================
+// HELPERS
+// ============================================================================
+
+function formatHeaderDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString.includes('T') ? dateString : `${dateString}T12:00:00`);
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+function getDrawerLabel(dateString, requestType, isSwapMode) {
+  if (!dateString) return 'Create a Request';
+  const formattedDate = formatHeaderDate(dateString);
+  if (isSwapMode) return `Swapping ${formattedDate}`;
+  if (requestType === 'share') return `Sharing ${formattedDate}`;
+  return `Buying Out ${formattedDate}`;
+}
+
+// ============================================================================
 // LOADING STATE
 // ============================================================================
 
@@ -239,6 +260,7 @@ export default function ScheduleDashboard() {
                           transactionsByDate={transactionsByDate}
                           onSelectTransaction={handleSelectTransaction}
                           roommatePriceOverlays={roommatePriceOverlays}
+                          roommateName={roommate?.firstName}
                         />
                       </section>
 
@@ -258,9 +280,7 @@ export default function ScheduleDashboard() {
                         aria-controls="buyout-drawer"
                       >
                         <span className="schedule-dashboard__drawer-handle-text">
-                          {selectedNight
-                            ? `Buying Out ${selectedNight}`
-                            : 'Create a Buyout Request'}
+                          {getDrawerLabel(selectedNight, requestType, isSwapMode)}
                         </span>
                         <span className="schedule-dashboard__drawer-chevron">
                           {isBuyOutOpen ? '\u25B2' : '\u25BC'}
@@ -284,6 +304,9 @@ export default function ScheduleDashboard() {
                             onCancel={handleCancel}
                             isSubmitting={isSubmitting}
                             compact
+                            // Flexibility Score props (for "Guidance via Friction")
+                            myFlexibilityScore={userFlexibilityScore}
+                            roommateFlexibilityScore={flexibilityScore}
                             // Request Type props
                             requestType={requestType}
                             onRequestTypeChange={handleRequestTypeChange}
@@ -311,6 +334,8 @@ export default function ScheduleDashboard() {
                           transactions={transactions}
                           netFlow={netFlow}
                           onCancelRequest={handleCancelRequest}
+                          onAcceptRequest={handleAcceptRequest}
+                          onDeclineRequest={handleDeclineRequest}
                           onViewDetails={handleViewTransactionDetails}
                           activeTransactionId={activeTransactionId}
                           onClearActiveTransaction={handleClearActiveTransaction}
@@ -380,6 +405,8 @@ export default function ScheduleDashboard() {
                         onDeclineRequest={handleDeclineRequest}
                         onCounterRequest={handleCounterRequest}
                         isSending={isSending}
+                        activeTransactionId={activeTransactionId}
+                        onClearActiveTransaction={handleClearActiveTransaction}
                       />
                     </section>
                   )}

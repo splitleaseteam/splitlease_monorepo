@@ -48,8 +48,8 @@ const SHARING_WILLINGNESS_OPTIONS = [
 const NOTICE_TIERS = [
   { key: 'flexible', label: 'Far Off', period: '30+ days' },
   { key: 'standard', label: 'Standard', period: '14-30 days' },
-  { key: 'inconvenient', label: 'Inconvenient', period: '7-14 days' },
-  { key: 'disruptive', label: 'Disruptive', period: '< 7 days' },
+  { key: 'inconvenient', label: 'Soon', period: '7-14 days' },
+  { key: 'disruptive', label: 'Short Notice', period: '< 7 days' },
   { key: 'emergency', label: 'Emergency', period: '< 48 hours' }
 ];
 
@@ -198,7 +198,7 @@ export default function BuyoutFormulaSettings({
       {/* Header */}
       <div className="pricing-settings__header">
         <div>
-          <h3 className="pricing-settings__title">Pricing Configuration</h3>
+          <h3 className="pricing-settings__title">Set Your Suggested Pricing</h3>
           <p className="pricing-settings__subtitle">Suggest pricing for your co-tenants buyout requests</p>
         </div>
         <div className="pricing-settings__actions">
@@ -220,6 +220,10 @@ export default function BuyoutFormulaSettings({
           </button>
         </div>
       </div>
+
+      <p className="pricing-settings__explainer">
+        These prices will be shown as suggestions to your co-tenant. They can choose to offer a different amount.
+      </p>
 
       {/* 2-Column Layout: Notice Period (wide) | Stacked (Cost + Edge) */}
       <div className="pricing-settings__content">

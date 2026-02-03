@@ -1,6 +1,6 @@
 // Contract Generator API Client
 
-const CONTRACT_FUNCTION_URL = '/functions/v1/contract-generator';
+const CONTRACT_FUNCTION_URL = '/functions/v1/lease-documents';
 
 /**
  * Generate a contract document
@@ -11,7 +11,7 @@ const CONTRACT_FUNCTION_URL = '/functions/v1/contract-generator';
 export async function generateContract(action, payload) {
   const { supabase } = await import('../supabase.js');
 
-  const { data, error } = await supabase.functions.invoke('contract-generator', {
+  const { data, error } = await supabase.functions.invoke('lease-documents', {
     body: { action, payload }
   });
 
@@ -29,7 +29,7 @@ export async function generateContract(action, payload) {
 export async function listTemplates() {
   const { supabase } = await import('../supabase.js');
 
-  const { data, error } = await supabase.functions.invoke('contract-generator', {
+  const { data, error } = await supabase.functions.invoke('lease-documents', {
     body: { action: 'list_templates', payload: {} }
   });
 
@@ -48,7 +48,7 @@ export async function listTemplates() {
 export async function getTemplateSchema(action) {
   const { supabase } = await import('../supabase.js');
 
-  const { data, error } = await supabase.functions.invoke('contract-generator', {
+  const { data, error } = await supabase.functions.invoke('lease-documents', {
     body: { action: 'get_template_schema', payload: { action } }
   });
 

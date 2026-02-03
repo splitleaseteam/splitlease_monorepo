@@ -10,7 +10,7 @@
  *
  * REFACTORED: Added React.memo wrapper (Golden Rule C)
  */
-import { memo, useRef, useMemo } from 'react';
+import { memo, useRef, useMemo, useCallback } from 'react';
 import { useImageCarousel } from '../../../hooks/useImageCarousel.js';
 import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
 import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
@@ -75,13 +75,47 @@ const PropertyCard = memo(function PropertyCard({
     return messages[messageIndex];
   }, [listing.id, listing._id, variant]);
 
+  const startingPrice = useMemo(() => {
+    const pricingListStarting = Number(listing.pricingList?.startingNightlyPrice)
+    if (!Number.isNaN(pricingListStarting) && pricingListStarting > 0) {
+      return pricingListStarting
+    }
+
+    const listingStarting = Number(listing['Starting nightly price'] ?? listing.price?.starting ?? 0)
+    return Number.isNaN(listingStarting) ? 0 : listingStarting
+  }, [listing.pricingList?.startingNightlyPrice, listing['Starting nightly price'], listing.price?.starting])
+
+  const getPricingListNightlyPrice = useCallback((nightsCount) => {
+    if (!listing.pricingList?.nightlyPrice || nightsCount < 1) {
+      return null
+    }
+
+    const index = nightsCount - 1
+    const rawValue = listing.pricingList.nightlyPrice[index]
+    const parsed = Number(rawValue)
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      return parsed
+    }
+
+    return null
+  }, [listing.pricingList?.nightlyPrice])
+
   // Calculate dynamic price - memoized for performance
   const dynamicPrice = useMemo(() => {
     const nightsCount = selectedNightsCount;
 
     // If 0 nights, show starting price
     if (nightsCount < 1) {
-      return listing['Starting nightly price'] || listing.price?.starting || 0;
+      return startingPrice;
+    }
+
+    const pricingListNightly = getPricingListNightlyPrice(nightsCount)
+    if (pricingListNightly !== null) {
+      return pricingListNightly
+    }
+
+    if (listing.pricingList) {
+      return startingPrice
     }
 
     try {
@@ -101,23 +135,21 @@ const PropertyCard = memo(function PropertyCard({
         });
       }
 
-      return priceBreakdown.pricePerNight || listing['Starting nightly price'] || listing.price?.starting || 0;
+      return priceBreakdown.pricePerNight || startingPrice;
     } catch (error) {
       if (variant === 'search') {
         logger.warn(`[PropertyCard] Price calculation failed for listing ${listing.id}:`, error.message);
       }
-      return listing['Starting nightly price'] || listing.price?.starting || 0;
+      return startingPrice;
     }
   }, [
     selectedNightsCount,
+    startingPrice,
     listing._id,
-    listing['Starting nightly price'],
-    listing.price?.starting,
+    getPricingListNightlyPrice,
     listing.rentalType,
     variant
   ]);
-
-  const startingPrice = listing['Starting nightly price'] || listing.price?.starting || 0;
 
   // Render amenity icons (SearchPage only)
   const renderAmenityIcons = () => {
@@ -481,15 +513,29 @@ const PropertyCard = memo(function PropertyCard({
             onOpenInfoModal(listing, priceInfoTriggerRef);
           }}
         >
-          <div className="price-main">${dynamicPrice.toFixed(2)}</div>
-          <div className="price-period">/night</div>
+          {dynamicPrice > 0 ? (
+            <>
+              <div className="price-main">${dynamicPrice.toFixed(2)}</div>
+              <div className="price-period">/night</div>
+            </>
+          ) : (
+            <div className="price-unavailable" style={{
+              fontSize: '13px',
+              color: '#6b7280',
+              textAlign: 'center',
+              padding: '4px 0'
+            }}>
+              {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week<br/>
+              <strong>not available</strong>
+            </div>
+          )}
           <div className="price-divider"></div>
           {variant === 'search' ? (
-            selectedNightsCount >= 1 ? (
+            dynamicPrice > 0 && selectedNightsCount >= 1 ? (
               <div className="price-context">for {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week</div>
-            ) : (
+            ) : dynamicPrice > 0 ? (
               <div className="price-starting">Starting at<span>${parseFloat(startingPrice).toFixed(2)}/night</span></div>
-            )
+            ) : null
           ) : (
             <div className="price-starting">Starting at<span>${parseFloat(startingPrice).toFixed(2)}/night</span></div>
           )}
@@ -500,6 +546,29 @@ const PropertyCard = memo(function PropertyCard({
           ) : (
             <div className="availability-note">Message Split Lease<br/>for Availability</div>
           )}
+          {/* Debug: Show pricingList min nightly price */}
+          {variant === 'search' && listing.pricingList && (() => {
+            // Calculate actual minimum: use startingNightlyPrice if valid, otherwise find min from nightlyPrice array
+            const storedMin = Number(listing.pricingList.startingNightlyPrice);
+            const nightlyPrices = listing.pricingList.nightlyPrice || [];
+            const validPrices = nightlyPrices.filter(p => Number(p) > 0);
+            const arrayMin = validPrices.length > 0 ? Math.min(...validPrices) : null;
+            const displayMin = (storedMin > 0) ? storedMin : arrayMin;
+
+            return (
+              <div style={{
+                marginTop: '8px',
+                padding: '4px 6px',
+                fontSize: '10px',
+                backgroundColor: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '4px',
+                color: '#856404'
+              }}>
+                <div><strong>Min:</strong> {displayMin ? `$${displayMin.toFixed(2)}` : 'N/A'}</div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </a>
