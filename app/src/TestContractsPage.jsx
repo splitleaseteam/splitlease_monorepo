@@ -215,6 +215,51 @@ const ACTION_DESCRIPTIONS = {
   generate_all: 'Generate All 4 Documents'
 };
 
+const CREDIT_CARD_AUTH_TEST_CASES = {
+  prorated: {
+    label: 'Prorated (Is Prorated: true)',
+    payload: {
+      "Agreement Number": "AGR-TEST-004",
+      "Host Name": "John Test Host",
+      "Guest Name": "Jane Test Guest",
+      "Weeks Number": "16",
+      "Listing Description": "Cozy 2-bedroom apartment in downtown Manhattan",
+      "Number of Payments": "4",
+      "Four Week Rent": "2000.00",
+      "Damage Deposit": "1000.00",
+      "Maintenance Fee": "50.00",
+      "Total First Payment": "3050.00",
+      "Penultimate Week Number": "15",
+      "Total Second Payment": "2050.00",
+      "Last Payment Rent": "500.00",
+      "Splitlease Credit": "100.00",
+      "Last Payment Weeks": 4,
+      "Is Prorated": true
+    }
+  },
+  nonProrated: {
+    label: 'Non-Prorated (Is Prorated: false)',
+    payload: {
+      "Agreement Number": "AGR-TEST-004",
+      "Host Name": "John Test Host",
+      "Guest Name": "Jane Test Guest",
+      "Weeks Number": "16",
+      "Listing Description": "Cozy 2-bedroom apartment in downtown Manhattan",
+      "Number of Payments": "4",
+      "Four Week Rent": "2000.00",
+      "Damage Deposit": "1000.00",
+      "Maintenance Fee": "50.00",
+      "Total First Payment": "3050.00",
+      "Penultimate Week Number": "15",
+      "Total Second Payment": "2050.00",
+      "Last Payment Rent": "500.00",
+      "Splitlease Credit": "100.00",
+      "Last Payment Weeks": 4,
+      "Is Prorated": false
+    }
+  }
+};
+
 // ============================================
 // ENVIRONMENT CONFIGURATION
 // ============================================
@@ -427,14 +472,29 @@ function TestContractsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [responseTime, setResponseTime] = useState(null);
   const [copyStatus, setCopyStatus] = useState('Copy JSON');
+  const [creditCardAuthCase, setCreditCardAuthCase] = useState('prorated');
 
   const handleActionChange = useCallback((e) => {
     const newAction = e.target.value;
     setAction(newAction);
-    setPayload(JSON.stringify(SAMPLE_PAYLOADS[newAction], null, 2));
+    if (newAction === 'generate_credit_card_auth') {
+      setPayload(JSON.stringify(CREDIT_CARD_AUTH_TEST_CASES[creditCardAuthCase].payload, null, 2));
+    } else {
+      setPayload(JSON.stringify(SAMPLE_PAYLOADS[newAction], null, 2));
+    }
     setResponse(null);
     setResponseTime(null);
-  }, []);
+  }, [creditCardAuthCase]);
+
+  const handleCreditCardAuthCaseChange = useCallback((e) => {
+    const nextCase = e.target.value;
+    setCreditCardAuthCase(nextCase);
+    if (action === 'generate_credit_card_auth') {
+      setPayload(JSON.stringify(CREDIT_CARD_AUTH_TEST_CASES[nextCase].payload, null, 2));
+      setResponse(null);
+      setResponseTime(null);
+    }
+  }, [action]);
 
   const handleEnvironmentChange = useCallback((e) => {
     setEnvironment(e.target.value);
@@ -599,6 +659,23 @@ function TestContractsPage() {
               </option>
             ))}
           </select>
+
+          {action === 'generate_credit_card_auth' && (
+            <>
+              <label style={styles.label}>Credit Card Auth Test Case</label>
+              <select
+                style={styles.select}
+                value={creditCardAuthCase}
+                onChange={handleCreditCardAuthCaseChange}
+              >
+                {Object.entries(CREDIT_CARD_AUTH_TEST_CASES).map(([key, testCase]) => (
+                  <option key={key} value={key}>
+                    {testCase.label}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
 
           {/* Payload Editor */}
           <label style={styles.label}>Payload (JSON)</label>
