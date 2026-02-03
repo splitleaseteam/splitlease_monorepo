@@ -9,20 +9,21 @@ export const FEE_RATES = {
     LANDLORD_RATE: 0.0075,      // 0.75%
     TOTAL_RATE: 0.015,          // 1.5%
     TRADITIONAL_MARKUP: 0.17,   // 17% (old model comparison)
-    MIN_FEE_AMOUNT: 5.00,       // Minimum $5 fee
 };
 
 // ============================================================================
 // SCHEDULE DASHBOARD FEE STRUCTURE
 // ============================================================================
 // Buyout: 1.5% per party (both requestor and recipient pay 1.5%)
-// Swap: $5 flat total (split $2.50 each)
-// Share: Free (no platform fees)
+// Swap: $5 flat (initiator only)
+// Share: $5 flat (initiator only)
 
 export const FEE_STRUCTURE = {
     buyout: {
         type: 'percentage',
         rate: 0.015,       // 1.5% per party
+        minFee: null,
+        maxFee: null,
         perParty: true,
         label: 'Service Fee (1.5%)',
         description: 'Each party pays 1.5% of the buyout amount'
@@ -30,16 +31,16 @@ export const FEE_STRUCTURE = {
     swap: {
         type: 'flat',
         amount: 5.00,
-        perParty: 2.50,
+        initiatorOnly: true,
         label: 'Swap Fee',
-        description: 'Split $2.50 each between both parties'
+        description: 'Initiator pays a $5 fee'
     },
     share: {
-        type: 'none',
-        amount: 0,
-        perParty: 0,
-        label: 'Free',
-        description: 'Sharing is free — no platform fees'
+        type: 'flat',
+        amount: 5.00,
+        initiatorOnly: true,
+        label: 'Share Fee',
+        description: 'Initiator pays a $5 fee'
     }
 };
 
@@ -68,10 +69,20 @@ export const calculateTransactionFee = (transactionType, baseAmount = 0) => {
     }
 
     if (feeConfig.type === 'flat') {
+        if (feeConfig.initiatorOnly) {
+            return {
+                totalFee: feeConfig.amount,
+                requestorFee: feeConfig.amount,
+                recipientFee: 0,
+                type: 'flat',
+                label: feeConfig.label,
+                description: feeConfig.description
+            };
+        }
         return {
             totalFee: feeConfig.amount,
-            requestorFee: feeConfig.perParty,
-            recipientFee: feeConfig.perParty,
+            requestorFee: feeConfig.amount / 2,
+            recipientFee: feeConfig.amount / 2,
             type: 'flat',
             label: feeConfig.label,
             description: feeConfig.description
@@ -143,11 +154,6 @@ export const calculateFeeBreakdown = (basePrice, transactionType = 'date_change'
     const platformFee = basePrice * FEE_RATES.PLATFORM_RATE;
     const landlordShare = basePrice * FEE_RATES.LANDLORD_RATE;
     let totalFee = platformFee + landlordShare;
-
-    // Apply minimum fee
-    if (totalFee < FEE_RATES.MIN_FEE_AMOUNT) {
-        totalFee = FEE_RATES.MIN_FEE_AMOUNT;
-    }
 
     // Round to 2 decimal places
     const roundedPlatformFee = Math.round(platformFee * 100) / 100;

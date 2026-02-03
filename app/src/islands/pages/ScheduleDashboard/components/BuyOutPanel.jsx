@@ -30,6 +30,7 @@ import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
 const MAX_MESSAGE_LENGTH = 200;
 const FLEXIBILITY_THRESHOLD = 2; // Delta needed for "earned" discounts
 const SWAP_FEE = 5.00; // Flat swap fee
+const SHARE_FEE = 5.00; // Flat share fee
 
 // ============================================================================
 // HELPERS
@@ -95,7 +96,7 @@ function getFlexibilityContext(myScore, roommateScore) {
  */
 function getActionButtonText(transactionType, baseAmount, feeAmount, totalAmount) {
   if (transactionType === 'share') {
-    return 'Send Share Request';
+    return `Send Share Request ($${SHARE_FEE.toFixed(0)} fee)`;
   }
 
   if (transactionType === 'swap') {
@@ -103,14 +104,13 @@ function getActionButtonText(transactionType, baseAmount, feeAmount, totalAmount
   }
 
   // Buyout: Show full equation
-  const base = Math.round(baseAmount);
-  const fee = Math.round(feeAmount * 100) / 100;
-  const total = Math.round(totalAmount);
+  const base = Number.isFinite(baseAmount) && baseAmount % 1 === 0
+    ? baseAmount.toFixed(0)
+    : baseAmount.toFixed(2);
+  const fee = Number.isFinite(feeAmount) ? feeAmount.toFixed(2) : '0.00';
+  const total = Number.isFinite(totalAmount) ? totalAmount.toFixed(2) : '0.00';
 
-  // Format fee display
-  const feeDisplay = fee < 1 ? fee.toFixed(2) : fee.toFixed(0);
-
-  return `Send Offer ($${base} + $${feeDisplay} fee = $${total})`;
+  return `Send Offer ($${base} + $${fee} fee = $${total})`;
 }
 
 // ============================================================================
@@ -131,9 +131,9 @@ function LoadingSpinner() {
 /**
  * Hover tooltip for fee breakdown (Layer 2 disclosure)
  * Shows different fee structures based on transaction type:
- * - Buyout: 1.5% per party
- * - Swap: $5 flat ($2.50 each)
- * - Share: Free
+  * - Buyout: 1.5% per party
+  * - Swap: $5 flat (initiator only)
+  * - Share: $5 flat (initiator only)
  */
 function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = 'Roommate', children }) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -147,7 +147,7 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
 
   if (!feeBreakdown) return children;
 
-  // Share: No tooltip needed (free)
+  // Share: $5 flat fee (initiator only)
   if (transactionType === 'share') {
     return (
       <div
@@ -159,9 +159,13 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
         {children}
         {showTooltip && (
           <div className="buyout-panel__tooltip" role="tooltip">
-            <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--free">
-              <span>Sharing is free</span>
-              <span>$0.00</span>
+            <div className="buyout-panel__tooltip-row">
+              <span>Fee</span>
+              <span>$5.00</span>
+            </div>
+            <div className="buyout-panel__tooltip-divider" />
+            <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--note">
+              <span>Fee: $5.00 (you pay)</span>
             </div>
           </div>
         )}
@@ -169,7 +173,7 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
     );
   }
 
-  // Swap: $5 flat fee
+  // Swap: $5 flat fee (initiator only)
   if (transactionType === 'swap') {
     return (
       <div
@@ -182,12 +186,12 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
         {showTooltip && (
           <div className="buyout-panel__tooltip" role="tooltip">
             <div className="buyout-panel__tooltip-row">
-              <span>Swap Fee</span>
+              <span>Fee</span>
               <span>$5.00</span>
             </div>
             <div className="buyout-panel__tooltip-divider" />
             <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--note">
-              <span>Split $2.50 each</span>
+              <span>Fee: $5.00 (you pay)</span>
             </div>
           </div>
         )}
@@ -219,9 +223,6 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
             <span>You Pay</span>
             <span>${transactionFees.requestorPays.toFixed(2)}</span>
           </div>
-          <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--note">
-            <span>({roommateName} also pays ${transactionFees.fees.recipientFee.toFixed(2)} fee)</span>
-          </div>
         </div>
       )}
     </div>
@@ -230,9 +231,9 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
 
 /**
  * Price breakdown display - shows fee structure based on transaction type
- * - Buyout: 1.5% per party
- * - Swap: $5 flat ($2.50 each)
- * - Share: Free
+  * - Buyout: 1.5% per party
+  * - Swap: $5 flat (initiator only)
+  * - Share: $5 flat (initiator only)
  */
 function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'buyout', roommateName = 'Roommate', priceLabel = 'Base offer' }) {
   if (isCalculating) {
@@ -248,19 +249,22 @@ function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'buyout
     return null;
   }
 
-  // Share: Free, no fees
+  // Share: $5 flat fee (initiator only)
   if (transactionType === 'share') {
     return (
       <div className="buyout-panel__pricing">
-        <div className="buyout-panel__price-row buyout-panel__price-row--free">
-          <span>Sharing is free</span>
-          <span>$0.00</span>
+        <div className="buyout-panel__price-row">
+          <span>Share Fee</span>
+          <span>$5.00</span>
+        </div>
+        <div className="buyout-panel__price-row buyout-panel__price-row--note">
+          <span>(Fee: $5.00 you pay)</span>
         </div>
       </div>
     );
   }
 
-  // Swap: $5 flat fee
+  // Swap: $5 flat fee (initiator only)
   if (transactionType === 'swap') {
     return (
       <div className="buyout-panel__pricing">
@@ -269,7 +273,7 @@ function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'buyout
           <span>$5.00</span>
         </div>
         <div className="buyout-panel__price-row buyout-panel__price-row--note">
-          <span>(Split $2.50 each)</span>
+          <span>(Fee: $5.00 you pay)</span>
         </div>
       </div>
     );
@@ -646,7 +650,8 @@ export default function BuyOutPanel({
   const suggestedPrice = feeBreakdown?.basePrice ?? basePrice ?? 0;
   const offerPrice = customPrice ?? suggestedPrice;
   const stepAmount = suggestedPrice ? Math.round(suggestedPrice * 0.1) : 0;
-  const totalOfferPrice = feeBreakdown?.totalPrice ?? offerPrice ?? 0;
+  const transactionFees = calculatePaymentBreakdown(requestType, offerPrice || 0);
+  const totalOfferPrice = transactionFees.requestorPays ?? offerPrice ?? 0;
 
   const getOfferFeedback = () => {
     if (!suggestedPrice) return null;
@@ -681,8 +686,7 @@ export default function BuyOutPanel({
     try {
       // Use customPrice if set, otherwise fall back to feeBreakdown basePrice or basePrice prop
       const finalPrice = offerPrice ?? feeBreakdown?.basePrice ?? basePrice ?? 0;
-      // Calculate total price with fees based on the final price
-      const totalPrice = feeBreakdown?.totalPrice || finalPrice || 0;
+      const totalPrice = calculatePaymentBreakdown(requestType, finalPrice).requestorPays || finalPrice || 0;
       await onBuyOut?.(message, totalPrice, finalPrice);
       setMessage('');
       setShowSuccess(true);
@@ -699,7 +703,7 @@ export default function BuyOutPanel({
     if (isSubmitting) return;
 
     try {
-      const totalPrice = feeBreakdown?.totalPrice || basePrice || 0;
+      const totalPrice = calculatePaymentBreakdown(requestType, basePrice || 0).requestorPays || basePrice || 0;
       await onShareRequest?.(message, totalPrice);
       setMessage('');
       setShowShareSuccess(true);
@@ -898,29 +902,31 @@ export default function BuyOutPanel({
               <div className="buyout-panel__stepper">
                 {/* Smart -10% button with Flexibility Lever logic */}
                 <div className="buyout-panel__stepper-minus">
-                  <button
-                    type="button"
-                    className={`buyout-panel__stepper-btn buyout-panel__stepper-btn--minus ${
-                      (!flexibilityContext.canDiscount || offerFeedback?.tone === 'low')
-                        ? 'buyout-panel__stepper-btn--ghost'
-                        : ''
-                    } ${showDiscountWarning ? 'buyout-panel__stepper-btn--warning' : ''}`}
-                    onClick={() => {
-                      if (hasUsedDiscountStep) return;
-                      // If less flexible, show warning on first click
-                      if (!flexibilityContext.canDiscount && !showDiscountWarning) {
-                        setShowDiscountWarning(true);
-                        return;
-                      }
-                      setCustomPrice(Math.max(1, Math.round((offerPrice - stepAmount) * 100) / 100));
-                      setShowDiscountWarning(false);
-                      setHasUsedDiscountStep(true);
-                    }}
-                    disabled={isSubmitting || !stepAmount}
-                    title={flexibilityContext.warning || 'Reduce offer by 10%'}
-                  >
-                    -10%
-                  </button>
+                  {!hasUsedDiscountStep && (
+                    <button
+                      type="button"
+                      className={`buyout-panel__stepper-btn buyout-panel__stepper-btn--minus ${
+                        (!flexibilityContext.canDiscount || offerFeedback?.tone === 'low')
+                          ? 'buyout-panel__stepper-btn--ghost'
+                          : ''
+                      } ${showDiscountWarning ? 'buyout-panel__stepper-btn--warning' : ''}`}
+                      onClick={() => {
+                        if (hasUsedDiscountStep) return;
+                        // If less flexible, show warning on first click
+                        if (!flexibilityContext.canDiscount && !showDiscountWarning) {
+                          setShowDiscountWarning(true);
+                          return;
+                        }
+                        setCustomPrice(Math.max(1, Math.round((offerPrice - stepAmount) * 100) / 100));
+                        setShowDiscountWarning(false);
+                        setHasUsedDiscountStep(true);
+                      }}
+                      disabled={isSubmitting || !stepAmount}
+                      title={flexibilityContext.warning || 'Reduce offer by 10%'}
+                    >
+                      -10%
+                    </button>
+                  )}
                   {hasUsedDiscountStep && (
                     <span className="buyout-panel__discount-note">-10% limit reached.</span>
                   )}
@@ -935,7 +941,11 @@ export default function BuyOutPanel({
                     value={Number.isFinite(offerPrice) ? offerPrice : ''}
                     onChange={(e) => {
                       const value = e.target.value;
-                      setCustomPrice(value === '' ? null : Number(value));
+                      const nextValue = value === '' ? null : Number(value);
+                      if (Number.isFinite(nextValue) && Number.isFinite(offerPrice) && nextValue > offerPrice) {
+                        setHasUsedDiscountStep(false);
+                      }
+                      setCustomPrice(nextValue);
                       setShowDiscountWarning(false);
                     }}
                     min={0}
@@ -1070,7 +1080,7 @@ export default function BuyOutPanel({
                   getActionButtonText(
                     requestType,
                     offerPrice,
-                    totalOfferPrice - offerPrice,
+                    transactionFees.fees.requestorFee,
                     totalOfferPrice
                   )
                 )}

@@ -41,13 +41,36 @@ function formatNights(nights, transaction) {
   return `${nights.length} nights`;
 }
 
-function formatAmount(amount, direction) {
-  if (amount === 0) return '$0.00';
+/**
+ * Format transaction amount with perspective-aware display
+ * - Outgoing (buyer/initiator): Shows what they pay (base + their fee)
+ * - Incoming (seller/recipient): Shows what they receive (base - their fee)
+ */
+function formatAmount(transaction) {
+  const { direction, initiatorPays, recipientReceives, amount, type } = transaction;
+
+  // Swaps and shares have no monetary amount (just fees)
+  if (type === 'swap' || type === 'share') {
+    return '$0.00';
+  }
+
+  // Use perspective-aware amounts if available, fall back to legacy amount
+  let displayAmount;
+  if (direction === 'outgoing') {
+    // Buyer sees what they pay (base + their fee)
+    displayAmount = initiatorPays ?? amount;
+  } else {
+    // Seller sees what they receive (base - their fee)
+    displayAmount = recipientReceives ?? amount;
+  }
+
+  if (!displayAmount || displayAmount === 0) return '$0.00';
+
   const prefix = direction === 'incoming' ? '+' : '-';
   const colorClass = direction === 'incoming' ? 'transaction-history__amount--positive' : 'transaction-history__amount--negative';
   return (
     <span className={colorClass}>
-      {prefix}${amount.toFixed(2)}
+      {prefix}${displayAmount.toFixed(2)}
     </span>
   );
 }
@@ -391,7 +414,7 @@ export default function TransactionHistory({
                       {formatNights((txn.nights || []).map(n => new Date(n)), txn)}
                     </td>
                     <td className="transaction-history__td">
-                      {formatAmount(txn.amount, txn.direction)}
+                      {formatAmount(txn)}
                     </td>
                     <td className="transaction-history__td">
                       <StatusDot status={txn.status} />
