@@ -107,6 +107,9 @@ export default defineConfig({
       // Fix motion-utils broken ESM exports by using CJS version (absolute path)
       'motion-utils': resolve(__dirname, 'node_modules/motion-utils/dist/cjs/index.js'),
     },
+    // Ensure .ts, .js, .jsx, .tsx extensions are resolved
+    // TypeScript imports use .js extension but reference .ts files
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
   plugins: [
     react(),
