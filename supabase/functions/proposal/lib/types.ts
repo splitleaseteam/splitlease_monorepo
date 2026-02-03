@@ -85,12 +85,17 @@ export interface UpdateProposalInput {
   hc_nightly_price?: number;
   hc_days_selected?: number[];
   hc_nights_selected?: number[];
+  hc_nights_per_week?: number;
   hc_move_in_date?: string;
   hc_reservation_span_weeks?: number;
   hc_cleaning_fee?: number;
   hc_damage_deposit?: number;
   hc_total_price?: number;
   hc_four_week_rent?: number;
+  hc_four_week_compensation?: number;
+  hc_host_compensation?: number;
+  hc_total_host_compensation?: number;
+  hc_duration_in_months?: number;
   hc_check_in?: number;
   hc_check_out?: number;
   hc_house_rules?: string[];

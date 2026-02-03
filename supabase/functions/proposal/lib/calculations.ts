@@ -10,6 +10,7 @@ import {
   RentalType,
   ReservationSpan,
 } from "./types.ts";
+import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
  * Calculate compensation based on rental type and duration
@@ -38,7 +39,8 @@ export function calculateCompensation(
   weeklyRate: number,
   hostNightlyRate: number,
   weeks: number,
-  monthlyRate?: number
+  monthlyRate: number | undefined,
+  avgDaysPerMonth: number
 ): CompensationResult {
   let totalCompensation = 0;
   let durationMonths = 0;
@@ -61,41 +63,44 @@ export function calculateCompensation(
       totalCompensation = hostNightlyRate * nightsPerWeek * weeks;
       fourWeekRent = hostNightlyRate * nightsPerWeek * 4;
       fourWeekCompensation = fourWeekRent;
-      durationMonths = weeks / 4;
+      durationMonths = calculateDurationMonths(
+        reservationSpan,
+        weeks,
+        avgDaysPerMonth
+      );
       break;
 
-    case "weekly":
+    case "weekly": {
       // Step 14: Weekly calculation
       // Total = weekly_rate * total_weeks
       // Host compensation is the per-week rate
+      const effectiveWeeks = Math.ceil(weeks);
       hostCompensationPerPeriod = weeklyRate;
-      totalCompensation = weeklyRate * weeks;
+      totalCompensation = weeklyRate * effectiveWeeks;
       fourWeekRent = weeklyRate * 4;
       fourWeekCompensation = fourWeekRent;
-      durationMonths = weeks / 4;
+      durationMonths = calculateDurationMonths(
+        reservationSpan,
+        weeks,
+        avgDaysPerMonth
+      );
       break;
+    }
 
     case "monthly": {
       // Monthly uses the monthly rate directly
       // Host compensation is the per-month rate
       const effectiveMonthlyRate = monthlyRate || (weeklyRate * 4);
       hostCompensationPerPeriod = effectiveMonthlyRate;
-      if (reservationSpan !== "other") {
-        // Step 15: Monthly (standard span)
-        // Duration in months = weeks / 4
-        // Total = monthly_rate * months
-        durationMonths = weeks / 4;
-        totalCompensation = effectiveMonthlyRate * durationMonths;
-        fourWeekRent = effectiveMonthlyRate;
-        fourWeekCompensation = fourWeekRent;
-      } else {
-        // Step 16: Monthly (custom/other span)
-        // Proportional calculation for non-standard durations
-        durationMonths = weeks / 4;
-        totalCompensation = effectiveMonthlyRate * durationMonths;
-        fourWeekRent = effectiveMonthlyRate;
-        fourWeekCompensation = fourWeekRent;
-      }
+      // Step 15-16: Monthly (standard span vs other)
+      durationMonths = calculateDurationMonths(
+        reservationSpan,
+        weeks,
+        avgDaysPerMonth
+      );
+      totalCompensation = effectiveMonthlyRate * durationMonths;
+      fourWeekRent = effectiveMonthlyRate;
+      fourWeekCompensation = fourWeekRent;
       break;
     }
 
@@ -108,7 +113,11 @@ export function calculateCompensation(
       totalCompensation = hostNightlyRate * nightsPerWeek * weeks;
       fourWeekRent = hostNightlyRate * nightsPerWeek * 4;
       fourWeekCompensation = fourWeekRent;
-      durationMonths = weeks / 4;
+      durationMonths = calculateDurationMonths(
+        reservationSpan,
+        weeks,
+        avgDaysPerMonth
+      );
   }
 
   return {
@@ -118,6 +127,63 @@ export function calculateCompensation(
     four_week_compensation: roundToTwoDecimals(fourWeekCompensation),
     host_compensation_per_night: roundToTwoDecimals(hostCompensationPerPeriod),
   };
+}
+
+export interface PricingListRates {
+  hostCompensationPerNight: number;
+  guestNightlyPrice: number;
+}
+
+export interface PricingListRecord {
+  "Nightly Price"?: unknown;
+  "Host Compensation"?: unknown;
+}
+
+export function getPricingListRates(
+  pricingList: PricingListRecord,
+  nightsPerWeek: number
+): PricingListRates | null {
+  if (!pricingList || nightsPerWeek < 1) {
+    return null;
+  }
+
+  const nightlyPriceArray = normalizePricingArray(pricingList["Nightly Price"]);
+  const hostCompArray = normalizePricingArray(pricingList["Host Compensation"]);
+
+  const index = nightsPerWeek - 1;
+  const guestNightlyPrice = nightlyPriceArray?.[index];
+  const hostCompensationPerNight = hostCompArray?.[index];
+
+  if (!isFiniteNumber(guestNightlyPrice) || !isFiniteNumber(hostCompensationPerNight)) {
+    return null;
+  }
+
+  return {
+    guestNightlyPrice: guestNightlyPrice as number,
+    hostCompensationPerNight: hostCompensationPerNight as number,
+  };
+}
+
+export async function fetchAvgDaysPerMonth(
+  supabase: SupabaseClient
+): Promise<number> {
+  const { data, error } = await supabase
+    .schema("reference_table")
+    .from("zat_priceconfiguration")
+    .select('"Avg days per month"')
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch Avg days per month: ${error.message}`);
+  }
+
+  const avgDays = Number(data?.["Avg days per month"]);
+  if (!isFiniteNumber(avgDays) || avgDays <= 0) {
+    throw new Error("Invalid Avg days per month configuration");
+  }
+
+  return avgDays;
 }
 
 /**
@@ -284,8 +350,62 @@ export function formatPriceRangeForDisplay(
  * Round number to two decimal places
  * Prevents floating point precision issues
  */
-function roundToTwoDecimals(value: number): number {
+export function roundToTwoDecimals(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+export function calculateDurationMonths(
+  reservationSpan: ReservationSpan,
+  weeks: number,
+  avgDaysPerMonth: number
+): number {
+  if (reservationSpan === "other") {
+    return (weeks * 7) / avgDaysPerMonth;
+  }
+
+  const monthsBySpan: Record<ReservationSpan, number> = {
+    "1_week": 0.25,
+    "2_weeks": 0.5,
+    "1_month": 1,
+    "2_months": 2,
+    "3_months": 3,
+    "6_months": 6,
+    "1_year": 12,
+    "other": 0,
+  };
+
+  return monthsBySpan[reservationSpan] ?? (weeks / 4);
+}
+
+function normalizePricingArray(value: unknown): (number | null)[] | null {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizePricingValue(item));
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => normalizePricingValue(item));
+      }
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+function normalizePricingValue(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const num = Number(value);
+  return isFiniteNumber(num) ? num : null;
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
 }
 
 /**

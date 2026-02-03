@@ -1,0 +1,24 @@
+Run the bulk pricing-list recalculation across ALL listings in both Supabase projects:
+
+- DEV: qzsmhgyojmwvtjmnrdea
+- PROD: qcfifybkaddcoimjroca
+
+Use the pricing-list Edge Function (`action: "create"`) for each listing.
+Steps:
+1) Use MCP to create snapshot tables in each project:
+```
+create table if not exists pricing_list_listing_backup_20260203 as
+select _id as listing_id, pricing_list from listing;
+
+create table if not exists pricing_list_backup_20260203 as
+select pl.* from pricing_list pl join listing l on l.pricing_list = pl._id;
+```
+2) Run the bulk recalc using a local script or loop with rate limiting (3 concurrency, 150ms delay, 5 retries).
+3) Verify with MCP queries (missing pricing_list, empty arrays, sample weekly/monthly).
+4) Report total processed, failures, and verification counts.
+
+Environment vars (already set in that session):
+- SUPABASE_URL (per project)
+- SUPABASE_SERVICE_ROLE_KEY (per project)
+
+Proceed dev first, then prod after dev verifies cleanly.
