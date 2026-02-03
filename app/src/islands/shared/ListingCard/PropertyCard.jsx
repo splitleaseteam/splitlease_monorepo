@@ -532,6 +532,23 @@ const PropertyCard = memo(function PropertyCard({
           ) : (
             <div className="availability-note">Message Split Lease<br/>for Availability</div>
           )}
+          {/* Debug: Show pricingList min nightly price */}
+          {variant === 'search' && listing.pricingList && (
+            <div style={{
+              marginTop: '8px',
+              padding: '4px 6px',
+              fontSize: '10px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '4px',
+              color: '#856404'
+            }}>
+              <div><strong>Min:</strong> ${listing.pricingList.startingNightlyPrice?.toFixed(2) || 'N/A'}</div>
+              {selectedNightsCount >= 1 && (
+                <div><strong>{selectedNightsCount}N:</strong> ${listing.pricingList.nightlyPrice?.[selectedNightsCount - 1]?.toFixed(2) || 'N/A'}</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </a>
