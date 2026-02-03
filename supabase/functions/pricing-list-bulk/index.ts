@@ -56,16 +56,16 @@ serve(async (req: Request) => {
       .select(
         `
         _id,
-        "💰Nightly Host Rate for 1 night",
-        "💰Nightly Host Rate for 2 nights",
-        "💰Nightly Host Rate for 3 nights",
-        "💰Nightly Host Rate for 4 nights",
-        "💰Nightly Host Rate for 5 nights",
-        "💰Nightly Host Rate for 6 nights",
-        "💰Nightly Host Rate for 7 nights",
-        "💰Weekly Host Rate",
-        "💰Monthly Host Rate",
-        "💰Unit Markup",
+        nightly_rate_1_night,
+        nightly_rate_2_nights,
+        nightly_rate_3_nights,
+        nightly_rate_4_nights,
+        nightly_rate_5_nights,
+        nightly_rate_6_nights,
+        nightly_rate_7_nights,
+        weekly_host_rate,
+        monthly_host_rate,
+        unit_markup,
         "rental type",
         "Host User",
         pricing_list
@@ -93,7 +93,7 @@ serve(async (req: Request) => {
       try {
         const pricingData = calculatePricingList({
           listing,
-          unitMarkup: listing['💰Unit Markup'] || 0,
+          unitMarkup: listing['unit_markup'] || 0,
         });
 
         // Skip if no valid pricing data (no host rates at all)

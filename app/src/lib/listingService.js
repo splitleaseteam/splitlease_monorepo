@@ -659,7 +659,7 @@ function mapStateToDisplayName(stateInput) {
  * - address_validated → Stored in 'Location - Address' JSONB
  * - weekly_pattern → Mapped to 'Weeks offered'
  * - subsidy_agreement → Omitted (not in listing table)
- * - nightly_pricing → Mapped to individual '💰Nightly Host Rate for X nights' columns
+ * - nightly_pricing → Mapped to individual 'nightly_rate_X_nights' columns
  * - ideal_min_duration → Mapped to 'Minimum Months'
  * - ideal_max_duration → Mapped to 'Maximum Months'
  * - previous_reviews_link → Mapped to 'Source Link'
@@ -752,11 +752,11 @@ function mapFormDataToListingTable(formData, userId, generatedId, hostAccountId 
     'Weeks offered': formData.leaseStyles?.weeklyPattern || 'Every week',
 
     // Section 4: Pricing
-    '💰Damage Deposit': formData.pricing?.damageDeposit || 0,
-    '💰Cleaning Cost / Maintenance Fee': formData.pricing?.maintenanceFee || 0,
-    '💰Extra Charges': formData.pricing?.extraCharges || null,
-    '💰Weekly Host Rate': formData.pricing?.weeklyCompensation || null,
-    '💰Monthly Host Rate': formData.pricing?.monthlyCompensation || null,
+    'damage_deposit': formData.pricing?.damageDeposit || 0,
+    'cleaning_fee': formData.pricing?.maintenanceFee || 0,
+    'extra_charges': formData.pricing?.extraCharges || null,
+    'weekly_host_rate': formData.pricing?.weeklyCompensation || null,
+    'monthly_host_rate': formData.pricing?.monthlyCompensation || null,
 
     // Nightly rates from nightly_pricing.calculatedRates
     ...mapNightlyRatesToColumns(formData.pricing?.nightlyPricing),
@@ -958,11 +958,11 @@ function mapFormDataToListingTableForUpdate(formData) {
 
   // Section 4: Pricing
   if (formData.pricing) {
-    if (formData.pricing.damageDeposit !== undefined) updateData['💰Damage Deposit'] = formData.pricing.damageDeposit;
-    if (formData.pricing.maintenanceFee !== undefined) updateData['💰Cleaning Cost / Maintenance Fee'] = formData.pricing.maintenanceFee;
-    if (formData.pricing.extraCharges !== undefined) updateData['💰Extra Charges'] = formData.pricing.extraCharges;
-    if (formData.pricing.weeklyCompensation !== undefined) updateData['💰Weekly Host Rate'] = formData.pricing.weeklyCompensation;
-    if (formData.pricing.monthlyCompensation !== undefined) updateData['💰Monthly Host Rate'] = formData.pricing.monthlyCompensation;
+    if (formData.pricing.damageDeposit !== undefined) updateData['damage_deposit'] = formData.pricing.damageDeposit;
+    if (formData.pricing.maintenanceFee !== undefined) updateData['cleaning_fee'] = formData.pricing.maintenanceFee;
+    if (formData.pricing.extraCharges !== undefined) updateData['extra_charges'] = formData.pricing.extraCharges;
+    if (formData.pricing.weeklyCompensation !== undefined) updateData['weekly_host_rate'] = formData.pricing.weeklyCompensation;
+    if (formData.pricing.monthlyCompensation !== undefined) updateData['monthly_host_rate'] = formData.pricing.monthlyCompensation;
     if (formData.pricing.nightlyPricing) {
       Object.assign(updateData, mapNightlyRatesToColumns(formData.pricing.nightlyPricing));
     }
@@ -1166,13 +1166,13 @@ function mapNightlyRatesToColumns(nightlyPricing) {
   const rates = nightlyPricing.calculatedRates;
 
   return {
-    '💰Nightly Host Rate for 1 night': rates.night1 || null,
-    '💰Nightly Host Rate for 2 nights': rates.night2 || null,
-    '💰Nightly Host Rate for 3 nights': rates.night3 || null,
-    '💰Nightly Host Rate for 4 nights': rates.night4 || null,
-    '💰Nightly Host Rate for 5 nights': rates.night5 || null,
-    '💰Nightly Host Rate for 6 nights': rates.night6 || null,
-    '💰Nightly Host Rate for 7 nights': rates.night7 || null,
+    'nightly_rate_1_night': rates.night1 || null,
+    'nightly_rate_2_nights': rates.night2 || null,
+    'nightly_rate_3_nights': rates.night3 || null,
+    'nightly_rate_4_nights': rates.night4 || null,
+    'nightly_rate_5_nights': rates.night5 || null,
+    'nightly_rate_6_nights': rates.night6 || null,
+    'nightly_rate_7_nights': rates.night7 || null,
   };
 }
 
@@ -1228,10 +1228,10 @@ export function mapDatabaseToFormData(dbRecord) {
       subsidyAgreement: dbRecord.subsidy_agreement || false,
     },
     pricing: {
-      damageDeposit: dbRecord['💰Damage Deposit'] || 500,
-      maintenanceFee: dbRecord['💰Cleaning Cost / Maintenance Fee'] || 0,
-      weeklyCompensation: dbRecord['💰Weekly Host Rate'] || null,
-      monthlyCompensation: dbRecord['💰Monthly Host Rate'] || null,
+      damageDeposit: dbRecord['damage_deposit'] || 500,
+      maintenanceFee: dbRecord['cleaning_fee'] || 0,
+      weeklyCompensation: dbRecord['weekly_host_rate'] || null,
+      monthlyCompensation: dbRecord['monthly_host_rate'] || null,
       nightlyPricing: dbRecord.nightly_pricing || null,
     },
     rules: {

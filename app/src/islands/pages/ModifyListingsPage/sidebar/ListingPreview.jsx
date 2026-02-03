@@ -16,8 +16,8 @@ export default function ListingPreview({ listing }) {
   const photoUrl = mainPhoto?.url || mainPhoto?.Photo || '/assets/images/placeholder-listing.png';
 
   // Get price display
-  const monthlyRate = listing['💰Monthly Host Rate'];
-  const weeklyRate = listing['💰Weekly Host Rate'];
+  const monthlyRate = listing['monthly_host_rate'];
+  const weeklyRate = listing['weekly_host_rate'];
   const priceDisplay = monthlyRate
     ? `$${monthlyRate.toLocaleString()}/mo`
     : weeklyRate

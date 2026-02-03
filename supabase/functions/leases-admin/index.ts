@@ -232,7 +232,7 @@ async function handleList(
   const { limit = 500, offset = 0 } = payload;
 
   // Fetch leases
-  const { data: _data, error, _count } = await supabase
+  const { data: _data, error, _count } = await _supabase
     .from('bookings_leases')
     .select('*', { count: 'exact' })
     .order('Created Date', { ascending: false })
@@ -243,7 +243,7 @@ async function handleList(
     throw new Error(`Failed to fetch leases: ${error.message}`);
   }
 
-  const leases = data || [];
+  const leases = _data || [];
   const leaseIds = leases.map((l: { _id: string }) => l._id);
 
   // Fetch related data separately
@@ -260,13 +260,13 @@ async function handleList(
   // Fetch guests
   const guestsMap: Record<string, unknown> = {};
   if (guestIds.length > 0) {
-    const { data: guests, error: _guestsError } = await supabase
+    const { data: guests, error: _guestsError } = await _supabase
       .from('user')
       .select('*')
       .in('_id', guestIds);
 
-    if (guestsError) {
-      console.error('[leases-admin] Fetch guests error:', guestsError);
+    if (_guestsError) {
+      console.error('[leases-admin] Fetch guests error:', _guestsError);
     } else {
       console.log(`[leases-admin] Fetched ${guests?.length || 0} guests for ${guestIds.length} IDs`);
       (guests || []).forEach((guest: Record<string, unknown>) => {
@@ -278,7 +278,7 @@ async function handleList(
   // Fetch hosts
   const hostsMap: Record<string, unknown> = {};
   if (hostIds.length > 0) {
-    const { data: hosts, error: hostsError } = await supabase
+    const { data: hosts, error: hostsError } = await _supabase
       .from('user')
       .select('*')
       .in('_id', hostIds);
@@ -296,7 +296,7 @@ async function handleList(
   // Fetch listings
   const listingsMap: Record<string, unknown> = {};
   if (listingIds.length > 0) {
-    const { data: listings, error: listingsError } = await supabase
+    const { data: listings, error: listingsError } = await _supabase
       .from('Listing')
       .select('*')
       .in('_id', listingIds);
@@ -314,7 +314,7 @@ async function handleList(
   // Fetch stays
   let staysMap: Record<string, unknown[]> = {};
   if (leaseIds.length > 0) {
-    const { data: stays } = await supabase
+    const { data: stays } = await _supabase
       .from('bookings_stays')
       .select('*')
       .in('Lease', leaseIds);
@@ -354,32 +354,10 @@ async function handleGet(
     throw new Error('leaseId is required');
   }
 
-  // Expand FK references for Guest, Host, Listing
-  const { data, error } = await supabase
+  // Fetch lease
+  const { data: lease, error } = await _supabase
     .from('bookings_leases')
-    .select(`
-      *,
-      guestData:Guest!inner(
-        _id,
-        "Name - Full",
-        "Name - First",
-        "Name - Last",
-        "email as text",
-        "Profile Photo"
-      ),
-      hostData:Host!inner(
-        _id,
-        "Name - Full",
-        "Name - First",
-        "Name - Last",
-        "email as text",
-        "Profile Photo"
-      ),
-      listingData:Listing!inner(
-        _id,
-        Name
-      )
-    `)
+    .select('*')
     .eq('_id', leaseId)
     .single();
 
@@ -387,13 +365,65 @@ async function handleGet(
     throw new Error(`Failed to fetch lease: ${error.message}`);
   }
 
+  if (!lease) {
+    throw new Error('Lease not found');
+  }
+
+  // Fetch related data separately (Guest/Host have no FK constraints)
+  let guestData = null;
+  if (lease.Guest) {
+    const { data } = await _supabase
+      .from('user')
+      .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo"')
+      .eq('_id', lease.Guest)
+      .single();
+    guestData = data;
+  }
+
+  let hostData = null;
+  if (lease.Host) {
+    const { data } = await _supabase
+      .from('user')
+      .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo"')
+      .eq('_id', lease.Host)
+      .single();
+    hostData = data;
+  }
+
+  let listingData = null;
+  if (lease.Listing) {
+    const { data } = await _supabase
+      .from('listing')
+      .select('_id, Name')
+      .eq('_id', lease.Listing)
+      .single();
+    listingData = data;
+  }
+
+  let proposalData = null;
+  if (lease.Proposal) {
+    const { data } = await _supabase
+      .from('proposal')
+      .select('_id, "check in day", "check out day"')
+      .eq('_id', lease.Proposal)
+      .single();
+    proposalData = data;
+  }
+
   // Fetch stays
-  const { data: stays } = await supabase
+  const { data: stays } = await _supabase
     .from('bookings_stays')
     .select('*')
     .eq('Lease', leaseId);
 
-  return { ...data, stays: stays || [] };
+  return {
+    ...lease,
+    guest: guestData,
+    host: hostData,
+    listing: listingData,
+    proposal: proposalData,
+    stays: stays || []
+  };
 }
 
 /**
@@ -417,7 +447,7 @@ async function handleUpdateStatus(
   // Capitalize status for Bubble compatibility
   const bubbleStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': bubbleStatus,
@@ -447,7 +477,7 @@ async function handleSoftDelete(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
@@ -479,7 +509,7 @@ async function handleHardDelete(
   }
 
   // Verify lease is cancelled before hard delete
-  const { data: lease, error: fetchError } = await supabase
+  const { data: lease, error: fetchError } = await _supabase
     .from('bookings_leases')
     .select('_id, "Lease Status"')
     .eq('_id', leaseId)
@@ -494,7 +524,7 @@ async function handleHardDelete(
   }
 
   // Delete associated stays first
-  const { error: staysError } = await supabase
+  const { error: staysError } = await _supabase
     .from('bookings_stays')
     .delete()
     .eq('Lease', leaseId);
@@ -505,7 +535,7 @@ async function handleHardDelete(
   }
 
   // Delete the lease
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await _supabase
     .from('bookings_leases')
     .delete()
     .eq('_id', leaseId);
@@ -536,7 +566,7 @@ async function handleBulkUpdateStatus(
 
   const bubbleStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': bubbleStatus,
@@ -565,7 +595,7 @@ async function handleBulkSoftDelete(
     throw new Error('leaseIds array is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
@@ -595,7 +625,7 @@ async function handleBulkExport(
   }
 
   // Note: Simplified query without FK relationships due to schema limitations
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .select('*')
     .in('_id', leaseIds);
@@ -650,7 +680,7 @@ async function handleUploadDocument(
   // Upload to storage
   const filePath = `leases/${leaseId}/${Date.now()}-${fileName}`;
 
-  const { data: _data, error } = await supabase.storage
+  const { data: _data, error } = await __supabase.storage
     .from('lease-documents')
     .upload(filePath, fileData, {
       contentType: fileType || 'application/octet-stream',
@@ -662,7 +692,7 @@ async function handleUploadDocument(
   }
 
   // Get public URL
-  const { data: { publicUrl } } = supabase.storage
+  const { data: { publicUrl } } = _supabase.storage
     .from('lease-documents')
     .getPublicUrl(filePath);
 
@@ -684,7 +714,7 @@ async function handleDeleteDocument(
     throw new Error('documentPath is required');
   }
 
-  const { error } = await supabase.storage
+  const { error } = await __supabase.storage
     .from('lease-documents')
     .remove([documentPath]);
 
@@ -705,7 +735,7 @@ async function handleListDocuments(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase.storage
+  const { data: _data, error } = await __supabase.storage
     .from('lease-documents')
     .list(`leases/${leaseId}`);
 
@@ -716,7 +746,7 @@ async function handleListDocuments(
   // Get public URLs for each document
   const documents = (data || []).map((file: { name: string; created_at: string; metadata?: { size: number } }) => {
     const filePath = `leases/${leaseId}/${file.name}`;
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = _supabase.storage
       .from('lease-documents')
       .getPublicUrl(filePath);
 
@@ -761,7 +791,7 @@ async function handleCreatePaymentRecord(
   // Generate a unique ID for the payment record
   const paymentId = crypto.randomUUID();
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_payment_records')
     .insert({
       _id: paymentId,
@@ -826,7 +856,7 @@ async function handleUpdatePaymentRecord(
   if (updates.isPaid !== undefined) updateData['Is Paid'] = updates.isPaid;
   if (updates.paymentDelayed !== undefined) updateData['Payment Delayed'] = updates.paymentDelayed;
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_payment_records')
     .update(updateData)
     .eq('_id', paymentId)
@@ -854,7 +884,7 @@ async function handleDeletePaymentRecord(
     throw new Error('paymentId is required');
   }
 
-  const { error } = await supabase
+  const { error } = await _supabase
     .from('bookings_payment_records')
     .delete()
     .eq('_id', paymentId);
@@ -913,7 +943,7 @@ async function handleCreateStays(
   }
 
   // Get lease details
-  const { data: lease, error: leaseError } = await supabase
+  const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
     .select('_id, "Reservation Period : Start", "Reservation Period : End"')
     .eq('_id', leaseId)
@@ -954,6 +984,7 @@ async function handleCreateStays(
       'Last Night (night)': new Date(currentEnd.getTime() - 86400000).toISOString(),
       'Stay Status': 'Upcoming',
       'Created Date': new Date().toISOString(),
+      'Modified Date': new Date().toISOString(),
     });
 
     currentStart = new Date(currentEnd);
@@ -961,7 +992,7 @@ async function handleCreateStays(
   }
 
   if (stays.length > 0) {
-    const { error: insertError } = await supabase
+    const { error: insertError } = await _supabase
       .from('bookings_stays')
       .insert(stays);
 
@@ -987,7 +1018,7 @@ async function handleClearStays(
     throw new Error('leaseId is required');
   }
 
-  const { error } = await supabase
+  const { error } = await _supabase
     .from('bookings_stays')
     .delete()
     .eq('Lease', leaseId);
@@ -1015,10 +1046,10 @@ async function handleUpdateBookedDates(
     throw new Error('leaseId is required');
   }
 
-  // Get lease details
-  const { data: lease, error: leaseError } = await supabase
+  // Get lease with proposal reference
+  const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
-    .select('_id, "Reservation Period : Start", "Reservation Period : End"')
+    .select('_id, "Reservation Period : Start", "Reservation Period : End", Proposal')
     .eq('_id', leaseId)
     .single();
 
@@ -1028,26 +1059,65 @@ async function handleUpdateBookedDates(
 
   const startDate = lease['Reservation Period : Start'];
   const endDate = lease['Reservation Period : End'];
+  const proposalId = lease.Proposal;
 
   if (!startDate || !endDate) {
     throw new Error('Lease does not have valid reservation dates');
   }
 
-  // Generate list of booked dates
+  // Get proposal schedule (check-in/check-out days define weekly pattern)
+  let checkInDay = 0; // Default to Sunday
+  let checkOutDay = 6; // Default to Saturday (full week)
+
+  if (proposalId) {
+    const { data: proposal } = await _supabase
+      .from('proposal')
+      .select('"check in day", "check out day"')
+      .eq('_id', proposalId)
+      .single();
+
+    if (proposal) {
+      checkInDay = parseInt(proposal['check in day']) || 0;
+      checkOutDay = parseInt(proposal['check out day']) || 6;
+    }
+  }
+
+  // Generate booked dates based on weekly schedule
   const bookedDates: string[] = [];
   const current = new Date(startDate);
   const end = new Date(endDate);
 
-  while (current <= end) {
-    bookedDates.push(current.toISOString().split('T')[0]);
+  while (current < end) { // Note: < not <= (don't include end date)
+    const dayOfWeek = current.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+    // Check if this day is within the booked schedule
+    let isBooked = false;
+
+    if (checkInDay === checkOutDay) {
+      // Full week (7 nights) - same check-in and check-out day
+      isBooked = true;
+    } else if (checkInDay < checkOutDay) {
+      // Normal case: e.g., Sun (0) to Fri (5) = Sun,Mon,Tue,Wed,Thu nights
+      // Booked if: dayOfWeek >= checkInDay AND dayOfWeek < checkOutDay
+      isBooked = dayOfWeek >= checkInDay && dayOfWeek < checkOutDay;
+    } else {
+      // Wraparound case: e.g., Fri (5) to Tue (2) = Fri,Sat,Sun,Mon nights
+      // Booked if: dayOfWeek >= checkInDay OR dayOfWeek < checkOutDay
+      isBooked = dayOfWeek >= checkInDay || dayOfWeek < checkOutDay;
+    }
+
+    if (isBooked) {
+      bookedDates.push(current.toISOString().split('T')[0]);
+    }
+
     current.setDate(current.getDate() + 1);
   }
 
   // Update lease with booked dates
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
-      'Booked Dates': bookedDates,
+      'List of Booked Dates': bookedDates,
       'Modified Date': new Date().toISOString(),
     })
     .eq('_id', leaseId)
@@ -1076,14 +1146,14 @@ async function handleClearBookedDates(
   }
 
   // Get lease to find proposal
-  const { data: lease } = await supabase
+  const { data: lease } = await _supabase
     .from('bookings_leases')
     .select('_id, Proposal')
     .eq('_id', leaseId)
     .single();
 
   // Clear lease booked dates
-  const { error: leaseError } = await supabase
+  const { error: leaseError } = await _supabase
     .from('bookings_leases')
     .update({
       'Booked Dates': [],
@@ -1099,7 +1169,7 @@ async function handleClearBookedDates(
 
   // Clear proposal booked dates if exists
   if (lease?.Proposal) {
-    const { error: proposalError } = await supabase
+    const { error: proposalError } = await _supabase
       .from('bookings_proposals')
       .update({
         'Booked Dates': [],
@@ -1131,7 +1201,7 @@ async function handleCancelLease(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
@@ -1166,17 +1236,9 @@ async function handleGetDocumentChangeRequests(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await supabase
+  const { data: changeRequests, error } = await _supabase
     .from('datechangerequest')
-    .select(`
-      *,
-      requestedByUser:Requested by(
-        _id,
-        email,
-        "First Name",
-        "Last Name"
-      )
-    `)
+    .select('*')
     .eq('Lease', leaseId)
     .order('Created Date', { ascending: false });
 
@@ -1185,7 +1247,36 @@ async function handleGetDocumentChangeRequests(
     throw new Error(`Failed to get change requests: ${error.message}`);
   }
 
-  return data || [];
+  if (!changeRequests || changeRequests.length === 0) {
+    return [];
+  }
+
+  // Fetch user data for each unique "Requested by" ID
+  const requestedByIds = [...new Set(
+    changeRequests
+      .map((cr: Record<string, unknown>) => cr['Requested by'] as string)
+      .filter((id: string | undefined) => id)
+  )];
+
+  const usersMap: Record<string, unknown> = {};
+  if (requestedByIds.length > 0) {
+    const { data: users } = await _supabase
+      .from('user')
+      .select('_id, email, "First Name", "Last Name"')
+      .in('_id', requestedByIds);
+
+    if (users) {
+      users.forEach((user: Record<string, unknown>) => {
+        usersMap[user._id as string] = user;
+      });
+    }
+  }
+
+  // Attach user data to change requests
+  return changeRequests.map((cr: Record<string, unknown>) => ({
+    ...cr,
+    requestedByUser: cr['Requested by'] ? usersMap[cr['Requested by'] as string] : null
+  }));
 }
 
 console.log("[leases-admin] Edge Function ready");

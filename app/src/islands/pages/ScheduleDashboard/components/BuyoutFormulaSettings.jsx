@@ -46,7 +46,7 @@ const SHARING_WILLINGNESS_OPTIONS = [
 ];
 
 const NOTICE_TIERS = [
-  { key: 'flexible', label: 'Flexible', period: '30+ days' },
+  { key: 'flexible', label: 'Far Off', period: '30+ days' },
   { key: 'standard', label: 'Standard', period: '14-30 days' },
   { key: 'inconvenient', label: 'Inconvenient', period: '7-14 days' },
   { key: 'disruptive', label: 'Disruptive', period: '< 7 days' },

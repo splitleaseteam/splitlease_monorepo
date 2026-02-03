@@ -92,10 +92,9 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
       displayNeighborhood: neighborhoodName || 'Unknown',
     },
     pricing: {
-      // Note: Bubble columns have emoji prefixes
-      nightly: row['💰Nightly Host Rate for 1 night'] || 0,
-      override: row['💰Price Override'],
-      calculated3Night: row['💰Nightly Host Rate for 3 nights'] || 0,
+      nightly: row['nightly_rate_1_night'] || 0,
+      override: row['price_override'],
+      calculated3Night: row['nightly_rate_3_nights'] || 0,
     },
     status: computeListingStatus(row),
     availability: computeAvailability(row),
