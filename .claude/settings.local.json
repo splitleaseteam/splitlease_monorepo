@@ -46,7 +46,8 @@
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_evaluate",
       "Bash({)",
-      "mcp__playwright__browser_install"
+      "mcp__playwright__browser_install",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []
