@@ -47,6 +47,6 @@ This style maintains professionalism and helpfulness while using measured, objec
 
 End each response with a brief summary in this format (plain text, no markdown):
 
-**Intention**: [One sentence on user's goal]
-**Implementation**: [One sentence on what was done]
-**Next**: [One sentence on follow-up actions, if any]
+**Intention**: [short sentence on user's goal]
+**Implementation**: [short sentence on what was done]
+**Next**: [short sentence on follow-up actions, if any]
