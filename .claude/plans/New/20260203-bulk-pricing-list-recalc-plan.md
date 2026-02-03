@@ -1,5 +1,132 @@
 # Bulk Pricing-List Recalculation Plan (Dev + Prod)
 
+**Scheduled Execution**: 2026-02-03 @ 18:00 EST (23:00 UTC)
+**Status**: SCHEDULED
+
+---
+
+## Schedule Reminder
+
+| Time (EST) | Action |
+|------------|--------|
+| 17:45 | Pre-flight checks (env vars, Edge Function health) |
+| 18:00 | Execute DEV backup + recalc |
+| ~18:30 | DEV verification (gate for PROD) |
+| ~18:35 | Execute PROD backup + recalc |
+| ~19:00 | PROD verification + final report |
+
+**Slack notification required after completion.**
+
+---
+
+## Script Refactoring Analysis
+
+### Current State: [pricing-list-bulk-recalc.mjs](scripts/pricing-list-bulk-recalc.mjs)
+
+| Aspect | Current | Assessment |
+|--------|---------|------------|
+| Lines of code | 124 | Acceptable |
+| Dependencies | 2 (fs, path) | Minimal, good |
+| Error handling | Retry with backoff | Solid |
+| Logging | File + console | Good |
+| Configuration | Env vars | Standard |
+
+### Refactoring Recommendations
+
+#### 1. **Add Statistics Tracking** (Priority: HIGH)
+The script logs OK/FAIL but doesn't summarize. Add counters:
+
+```javascript
+const stats = { total: 0, success: 0, failed: 0, retried: 0 };
+
+// In callPricingList success path:
+stats.success++;
+
+// In callPricingList final failure:
+stats.failed++;
+
+// At end of run():
+log(`SUMMARY total=${stats.total} success=${stats.success} failed=${stats.failed} retried=${stats.retried}`);
+```
+
+#### 2. **Collect Failed IDs** (Priority: HIGH)
+For post-mortem analysis, track which listings failed:
+
+```javascript
+const failedIds = [];
+
+// In callPricingList final failure:
+failedIds.push(listingId);
+
+// At end:
+if (failedIds.length > 0) {
+  fs.writeFileSync(`${LOG_FILE}.failed.json`, JSON.stringify(failedIds, null, 2));
+}
+```
+
+#### 3. **Add Dry-Run Mode** (Priority: MEDIUM)
+For pre-flight validation without mutations:
+
+```javascript
+const DRY_RUN = process.env.DRY_RUN === 'true';
+
+// In callPricingList:
+if (DRY_RUN) {
+  log(`DRY_RUN ${listingId}`);
+  return;
+}
+```
+
+#### 4. **Add Progress Indicator** (Priority: MEDIUM)
+For long-running jobs, show progress percentage:
+
+```javascript
+// In worker loop:
+const progress = ((index / ids.length) * 100).toFixed(1);
+log(`[${progress}%] OK ${listingId}`);
+```
+
+#### 5. **Race Condition in Worker Index** (Priority: LOW)
+Current pattern `ids[index++]` is not atomic. For this use case (single-threaded JS), it's safe, but could be cleaner:
+
+```javascript
+// Alternative: queue-based
+const queue = [...ids];
+const workers = Array.from({ length: Number(CONCURRENCY) }).map(async () => {
+  while (queue.length > 0) {
+    const listingId = queue.shift();
+    // ...
+  }
+});
+```
+
+#### 6. **Add JSON Report Output** (Priority: MEDIUM)
+For LLM consumption, emit structured report:
+
+```javascript
+const report = {
+  project: SUPABASE_URL,
+  execution_time: new Date().toISOString(),
+  duration_seconds: Math.round((Date.now() - startTime) / 1000),
+  total: stats.total,
+  success: stats.success,
+  failed: stats.failed,
+  failed_ids: failedIds
+};
+
+fs.writeFileSync(`${LOG_FILE}.report.json`, JSON.stringify(report, null, 2));
+```
+
+### Deferred (Not Recommended Now)
+
+| Suggestion | Why Defer |
+|------------|-----------|
+| TypeScript conversion | Working script, low ROI for one-time job |
+| CLI argument parsing (yargs) | Env vars sufficient for this use case |
+| Unit tests | One-time script, manual verification adequate |
+
+---
+
 ## Goal
 Recalculate pricing lists for **all listings** in:
 - **DEV**: `qzsmhgyojmwvtjmnrdea`
@@ -338,3 +465,56 @@ on conflict (_id) do update set
 drop table if exists pricing_list_listing_backup_20260203;
 drop table if exists pricing_list_backup_20260203;
 ```
+
+---
+
+## Pre-Flight Checklist (17:45 EST)
+
+Execute these checks before 18:00 EST:
+
+- [ ] Verify `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set for DEV
+- [ ] Test Edge Function with single listing: `curl -X POST ...`
+- [ ] Confirm script exists: `ls scripts/pricing-list-bulk-recalc.mjs`
+- [ ] Confirm log directory writable: `mkdir -p scripts/logs && touch scripts/logs/test.log`
+- [ ] Review current listing count in DEV (estimate runtime)
+
+---
+
+## Execution Commands (Copy-Paste Ready)
+
+### DEV (18:00 EST)
+```powershell
+$env:SUPABASE_URL="https://qzsmhgyojmwvtjmnrdea.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY="<DEV_KEY>"
+$env:LOG_FILE="./scripts/logs/pricing-list-bulk-dev-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
+$env:RATE_DELAY_MS="150"
+$env:MAX_RETRIES="5"
+$env:CONCURRENCY="3"
+
+node ./scripts/pricing-list-bulk-recalc.mjs
+```
+
+### PROD (After DEV Passes)
+```powershell
+$env:SUPABASE_URL="https://qcfifybkaddcoimjroca.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY="<PROD_KEY>"
+$env:LOG_FILE="./scripts/logs/pricing-list-bulk-prod-$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
+$env:RATE_DELAY_MS="150"
+$env:MAX_RETRIES="5"
+$env:CONCURRENCY="3"
+
+node ./scripts/pricing-list-bulk-recalc.mjs
+```
+
+---
+
+## Files Concerned
+
+| File | Role |
+|------|------|
+| [scripts/pricing-list-bulk-recalc.mjs](scripts/pricing-list-bulk-recalc.mjs) | Execution script |
+| [supabase/functions/pricing-list/index.ts](supabase/functions/pricing-list/index.ts) | Edge Function being called |
+| Database: `listing` | Source of listing IDs |
+| Database: `pricing_list` | Target of recalculation |
+| Database: `pricing_list_listing_backup_20260203` | Backup table (created) |
+| Database: `pricing_list_backup_20260203` | Backup table (created) |
