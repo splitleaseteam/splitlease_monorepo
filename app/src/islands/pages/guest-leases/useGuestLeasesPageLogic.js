@@ -681,6 +681,165 @@ export function useGuestLeasesPageLogic() {
   }, [showToast]);
 
   // ============================================================================
+  // COMPUTED VALUES (for hybrid design)
+  // ============================================================================
+
+  /**
+   * Find the next upcoming stay across all leases
+   * Used by HeroSection component
+   */
+  const nextStay = (() => {
+    if (!leases || leases.length === 0) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let upcomingStay = null;
+    let upcomingLease = null;
+
+    for (const lease of leases) {
+      if (!lease.stays || lease.stays.length === 0) continue;
+
+      for (const stay of lease.stays) {
+        const checkIn = new Date(stay.checkIn);
+        checkIn.setHours(0, 0, 0, 0);
+
+        // Include stays that are upcoming or currently in progress
+        if (stay.status === 'in_progress' ||
+            (stay.status === 'not_started' && checkIn >= today)) {
+          if (!upcomingStay || checkIn < new Date(upcomingStay.checkIn)) {
+            upcomingStay = stay;
+            upcomingLease = lease;
+          }
+        }
+      }
+    }
+
+    return upcomingStay ? { ...upcomingStay, lease: upcomingLease } : null;
+  })();
+
+  /**
+   * Get host info from the next stay's lease
+   */
+  const nextStayHost = nextStay?.lease?.host || null;
+  const nextStayListing = nextStay?.lease?.listing || null;
+
+  /**
+   * Compute payment status across all leases
+   * Returns: 'current' | 'overdue' | 'pending'
+   */
+  const paymentsStatus = (() => {
+    if (!leases || leases.length === 0) return 'current';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const lease of leases) {
+      if (!lease.paymentRecords) continue;
+
+      for (const payment of lease.paymentRecords) {
+        if (payment.status === 'overdue') return 'overdue';
+        if (payment.status === 'pending') {
+          const dueDate = new Date(payment.date);
+          dueDate.setHours(0, 0, 0, 0);
+          if (dueDate < today) return 'overdue';
+        }
+      }
+    }
+
+    // Check for pending payments due soon
+    for (const lease of leases) {
+      if (!lease.paymentRecords) continue;
+      for (const payment of lease.paymentRecords) {
+        if (payment.status === 'pending') return 'pending';
+      }
+    }
+
+    return 'current';
+  })();
+
+  /**
+   * Compute documents status
+   * Returns: 'signed' | 'pending'
+   */
+  const documentsStatus = (() => {
+    if (!leases || leases.length === 0) return 'signed';
+
+    for (const lease of leases) {
+      // Check if required documents are present
+      if (lease.status === 'active' && !lease.periodicTenancyAgreement) {
+        return 'pending';
+      }
+    }
+
+    return 'signed';
+  })();
+
+  /**
+   * Compute celebration banner content
+   * Returns: { title, message } or null
+   */
+  const [celebrationBanner, setCelebrationBanner] = useState({ isVisible: false, title: '', message: '' });
+
+  // Update celebration banner when next stay changes
+  useEffect(() => {
+    if (!nextStay) {
+      setCelebrationBanner({ isVisible: false, title: '', message: '' });
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkIn = new Date(nextStay.checkIn);
+    checkIn.setHours(0, 0, 0, 0);
+    const daysUntil = Math.ceil((checkIn - today) / (1000 * 60 * 60 * 24));
+
+    if (nextStay.status === 'in_progress') {
+      setCelebrationBanner({
+        isVisible: true,
+        title: 'Check-in complete!',
+        message: 'Enjoy your stay at ' + (nextStayListing?.name || 'your rental')
+      });
+    } else if (daysUntil === 0) {
+      setCelebrationBanner({
+        isVisible: true,
+        title: 'Your stay begins today!',
+        message: 'Get ready to check in at ' + (nextStayListing?.name || 'your rental')
+      });
+    } else if (daysUntil === 1) {
+      setCelebrationBanner({
+        isVisible: true,
+        title: 'Your stay begins tomorrow!',
+        message: 'Remember to review check-in instructions'
+      });
+    } else {
+      setCelebrationBanner({ isVisible: false, title: '', message: '' });
+    }
+  }, [nextStay, nextStayListing?.name]);
+
+  /**
+   * Dismiss celebration banner
+   */
+  const handleDismissCelebration = useCallback(() => {
+    setCelebrationBanner(prev => ({ ...prev, isVisible: false }));
+  }, []);
+
+  /**
+   * Handle view details from hero section
+   * Expands the lease card for the next stay
+   */
+  const handleViewStayDetails = useCallback(() => {
+    if (nextStay?.lease?._id) {
+      setExpandedLeaseId(nextStay.lease._id);
+      // Scroll to the lease card
+      const leaseCard = document.querySelector(`[data-lease-id="${nextStay.lease._id}"]`);
+      if (leaseCard) {
+        leaseCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [nextStay]);
+
+  // ============================================================================
   // RETURN
   // ============================================================================
 
@@ -691,6 +850,14 @@ export function useGuestLeasesPageLogic() {
     // Raw data
     user,
     leases,
+
+    // Computed values (hybrid design)
+    nextStay,
+    nextStayHost,
+    nextStayListing,
+    paymentsStatus,
+    documentsStatus,
+    celebrationBanner,
 
     // UI state
     expandedLeaseId,
@@ -727,6 +894,10 @@ export function useGuestLeasesPageLogic() {
 
     // Handlers - Other
     handleEmergencyAssistance,
-    handleSeeReputation
+    handleSeeReputation,
+
+    // Handlers - Hybrid design
+    handleDismissCelebration,
+    handleViewStayDetails
   };
 }
