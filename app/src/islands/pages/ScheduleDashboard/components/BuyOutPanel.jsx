@@ -1,18 +1,23 @@
 /**
- * Buy Out Panel Component
+ * Buy Out Panel Component - Compact UI with "Guidance via Friction"
  *
- * Action panel for selected night:
- * - Selected night display with readable date format
- * - Price breakdown using useFeeCalculation hook
- * - Buy Out button (primary CTA)
- * - Swap Instead link (secondary)
- * - Cancel button (tertiary/ghost)
- * - Optional message input with character counter
- * - Loading/pending states
- * - Success confirmation state
+ * Core Philosophy:
+ * - Defaults Matter: Pre-fill the "Fair" price
+ * - Friction as Guidance: Make "fair" easy, "lowballing" harder
+ * - Progressive Disclosure: Only show math (fees/breakdown) on hover
+ *
+ * Information Architecture:
+ * Layer 1 (Visible): Date context, Price knob, Feedback, Send button
+ * Layer 2 (On Hover): Fee breakdown tooltip, Price context tooltip
+ * Layer 3 (Expandable): Flexibility comparison, Notes
+ *
+ * Flexibility Lever Logic:
+ * - Delta = MyScore - RoommateScore
+ * - If Delta < 0 (less flexible): -10% button is ghost/muted, shows warning
+ * - If Delta >= 2 (more flexible): -10% button is normal, green feedback
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useFeeCalculation } from '../../../../logic/hooks/useFeeCalculation';
 import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
@@ -22,6 +27,7 @@ import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
 // ============================================================================
 
 const MAX_MESSAGE_LENGTH = 200;
+const FLEXIBILITY_THRESHOLD = 2; // Delta needed for "earned" discounts
 
 // ============================================================================
 // HELPERS
@@ -45,6 +51,40 @@ function formatSelectedDate(date) {
   });
 }
 
+/**
+ * Compact date format for header (e.g., "Feb 19")
+ */
+function formatCompactDate(date) {
+  if (!date) return '';
+
+  const dateObj = typeof date === 'string'
+    ? new Date(date + 'T12:00:00')
+    : date;
+
+  return dateObj.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/**
+ * Calculate flexibility delta and determine discount eligibility
+ * @param {number} myScore - Current user's flexibility score
+ * @param {number} roommateScore - Roommate's flexibility score
+ * @returns {{ delta: number, canDiscount: boolean, warning: string|null }}
+ */
+function getFlexibilityContext(myScore, roommateScore) {
+  const delta = (myScore || 0) - (roommateScore || 0);
+  const canDiscount = delta >= FLEXIBILITY_THRESHOLD;
+
+  let warning = null;
+  if (delta < 0 && roommateScore && myScore) {
+    warning = `${roommateScore > myScore ? 'They\'re' : 'You\'re'} more flexible (${roommateScore}/10 vs ${myScore}/10). Discounts discouraged.`;
+  }
+
+  return { delta, canDiscount, warning };
+}
+
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
@@ -57,6 +97,44 @@ function LoadingSpinner() {
     <span className="buyout-panel__spinner" aria-hidden="true">
       <span className="buyout-panel__spinner-circle" />
     </span>
+  );
+}
+
+/**
+ * Hover tooltip for fee breakdown (Layer 2 disclosure)
+ */
+function FeeTooltip({ feeBreakdown, children }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipRef = useRef(null);
+
+  if (!feeBreakdown) return children;
+
+  return (
+    <div
+      className="buyout-panel__tooltip-wrapper"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+      ref={tooltipRef}
+    >
+      {children}
+      {showTooltip && (
+        <div className="buyout-panel__tooltip" role="tooltip">
+          <div className="buyout-panel__tooltip-row">
+            <span>Offer</span>
+            <span>${feeBreakdown.basePrice.toFixed(2)}</span>
+          </div>
+          <div className="buyout-panel__tooltip-row">
+            <span>Fee ({feeBreakdown.effectiveRate}%)</span>
+            <span>${feeBreakdown.totalFee.toFixed(2)}</span>
+          </div>
+          <div className="buyout-panel__tooltip-divider" />
+          <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--total">
+            <span>Total</span>
+            <span>${feeBreakdown.totalPrice.toFixed(2)}</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -93,26 +171,6 @@ function PriceBreakdown({ feeBreakdown, isCalculating, priceLabel = 'Base price'
         <span>${feeBreakdown.totalPrice.toFixed(2)}</span>
       </div>
     </div>
-  );
-}
-
-/**
- * Fairness indicator for custom price offers
- */
-function FairnessIndicator({ offered, suggested }) {
-  if (!suggested) return null;
-
-  const deviation = ((offered - suggested) / suggested) * 100;
-  let emoji = '🟢';
-  let label = 'Fair offer';
-
-  if (deviation < -20) { emoji = '🟠'; label = 'Below suggested'; }
-  else if (deviation < -10) { emoji = '🟡'; label = 'Slightly below'; }
-
-  return (
-    <span className="buyout-panel__fairness" title={label}>
-      {emoji}
-    </span>
   );
 }
 
@@ -200,7 +258,6 @@ function SwapModeContent({
   selectedOfferNight,
   onSelectOffer,
   onSubmit,
-  onBack,
   onCancel,
   isSubmitting
 }) {
@@ -238,7 +295,7 @@ function SwapModeContent({
   return (
     <div className="buyout-panel__swap-mode">
       <h3 className="buyout-panel__heading">
-        {isCounter ? 'Counter with a Swap' : 'Offer a Swap'}
+        {isCounter ? 'Counter with a Swap' : 'Swap'}
       </h3>
 
       {/* Swap Visualization */}
@@ -346,15 +403,6 @@ function SwapModeContent({
 
         <button
           type="button"
-          className="buyout-panel__btn buyout-panel__btn--secondary"
-          onClick={onBack}
-          disabled={isSubmitting}
-        >
-          {isCounter ? 'Back to Request' : 'Back to Buyout'}
-        </button>
-
-        <button
-          type="button"
           className="buyout-panel__btn buyout-panel__btn--ghost"
           onClick={onCancel}
           disabled={isSubmitting}
@@ -375,9 +423,9 @@ function SwapModeContent({
  */
 function RequestTypeTabs({ activeType, onTypeChange, disabled }) {
   const types = [
-    { key: 'buyout', label: 'Buyout', icon: '💰' },
-    { key: 'share', label: 'Share', icon: '👥' },
-    { key: 'swap', label: 'Swap', icon: '🔄' }
+    { key: 'buyout', label: 'Buyout' },
+    { key: 'swap', label: 'Swap' },
+    { key: 'share', label: 'Share' }
   ];
 
   return (
@@ -392,7 +440,6 @@ function RequestTypeTabs({ activeType, onTypeChange, disabled }) {
           onClick={() => onTypeChange(key)}
           disabled={disabled}
         >
-          <span className="buyout-panel__type-tab-icon">{icon}</span>
           <span className="buyout-panel__type-tab-label">{label}</span>
         </button>
       ))}
@@ -410,6 +457,9 @@ export default function BuyOutPanel({
   onCancel,
   isSubmitting = false,
   compact = false,
+  // Flexibility Score props (for "Guidance via Friction")
+  myFlexibilityScore = null,
+  roommateFlexibilityScore = null,
   // Request Type props
   requestType = 'buyout',
   onRequestTypeChange,
@@ -423,10 +473,8 @@ export default function BuyOutPanel({
   counterTargetNight = null,
   onSelectSwapOffer,
   onSubmitSwapRequest,
-  onCancelSwapMode,
   onSelectCounterNight,
   onSubmitCounterRequest,
-  onCancelCounterMode,
   // Buyout Settings props
   buyoutPreferences,
   isBuyoutSettingsOpen = false,
@@ -442,6 +490,13 @@ export default function BuyOutPanel({
   const [showSwapSuccess, setShowSwapSuccess] = useState(false);
   const [showShareSuccess, setShowShareSuccess] = useState(false);
   const [customPrice, setCustomPrice] = useState(null);
+  const [showNote, setShowNote] = useState(false);
+  const [showFees, setShowFees] = useState(false);
+  const [showDiscountWarning, setShowDiscountWarning] = useState(false);
+  const [showFeedbackDetail, setShowFeedbackDetail] = useState(false);
+
+  // Flexibility context for smart -10% button
+  const flexibilityContext = getFlexibilityContext(myFlexibilityScore, roommateFlexibilityScore);
 
   // When basePrice changes, reset customPrice to null (use suggested)
   useEffect(() => {
@@ -449,14 +504,37 @@ export default function BuyOutPanel({
   }, [basePrice]);
 
   // Use the fee calculation hook - pass requestType for potential future different fee structures
+  const priceForFees = requestType === 'share'
+    ? basePrice
+    : (customPrice ?? basePrice);
+
   const { feeBreakdown, isCalculating, error: feeError } = useFeeCalculation(
-    basePrice,
+    priceForFees,
     requestType === 'share' ? 'share' : 'date_change',
     { autoCalculate: true }
   );
 
   const formattedDate = formatSelectedDate(selectedDate);
   const remainingChars = MAX_MESSAGE_LENGTH - message.length;
+  const suggestedPrice = feeBreakdown?.basePrice ?? basePrice ?? 0;
+  const offerPrice = customPrice ?? suggestedPrice;
+  const stepAmount = suggestedPrice ? Math.round(suggestedPrice * 0.1) : 0;
+  const totalOfferPrice = feeBreakdown?.totalPrice ?? offerPrice ?? 0;
+
+  const getOfferFeedback = () => {
+    if (!suggestedPrice) return null;
+    const deviation = (offerPrice - suggestedPrice) / suggestedPrice;
+    if (Math.abs(deviation) < 0.02) {
+      return { label: `Matches ${roommateName}'s suggestion`, tone: 'fair' };
+    }
+    const percent = Math.round(Math.abs(deviation) * 100);
+    if (deviation < 0) {
+      return { label: `${percent}% below suggestion`, tone: 'low' };
+    }
+    return { label: `${percent}% above suggestion`, tone: 'fair' };
+  };
+
+  const offerFeedback = getOfferFeedback();
 
   // Determine which content state to show
   const showEmpty = !selectedDate && !showSuccess && !showSwapSuccess && !showShareSuccess;
@@ -475,7 +553,7 @@ export default function BuyOutPanel({
 
     try {
       // Use customPrice if set, otherwise fall back to feeBreakdown basePrice or basePrice prop
-      const finalPrice = customPrice ?? feeBreakdown?.basePrice ?? basePrice ?? 0;
+      const finalPrice = offerPrice ?? feeBreakdown?.basePrice ?? basePrice ?? 0;
       // Calculate total price with fees based on the final price
       const totalPrice = feeBreakdown?.totalPrice || finalPrice || 0;
       await onBuyOut?.(message, totalPrice, finalPrice);
@@ -522,6 +600,8 @@ export default function BuyOutPanel({
    */
   const handleCancel = () => {
     setMessage('');
+    setShowNote(false);
+    setShowFees(false);
     onCancel?.();
   };
 
@@ -610,6 +690,15 @@ export default function BuyOutPanel({
         </div>
       )}
 
+      {/* Persistent Request Type Toggle Tabs */}
+      {(showSwapPanel || showActivePanel) && !showSuccessState && !showSwapSuccessState && !showShareSuccessState && (
+        <RequestTypeTabs
+          activeType={isSwapMode ? 'swap' : requestType}
+          onTypeChange={handleTypeChange}
+          disabled={isSubmitting}
+        />
+      )}
+
       {/* Swap Mode Panel */}
       {showSwapPanel && (
         <SwapModeContent
@@ -627,7 +716,6 @@ export default function BuyOutPanel({
               setShowSwapSuccess(true);
             }
           }}
-          onBack={isCounterMode ? onCancelCounterMode : onCancelSwapMode}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
         />
@@ -636,16 +724,9 @@ export default function BuyOutPanel({
       {/* Active Panel Content (Buyout/Share Mode) */}
       {showActivePanel && (
         <>
-          {/* Request Type Toggle Tabs */}
-          <RequestTypeTabs
-            activeType={requestType}
-            onTypeChange={handleTypeChange}
-            disabled={isSubmitting}
-          />
-
           {/* Mode-specific heading */}
           <h3 className="buyout-panel__heading">
-            {requestType === 'share' ? 'Share Night' : 'Buy Out Night'}
+            {requestType === 'share' ? 'Share Night' : 'Make an Offer'}
           </h3>
 
           {/* Mode-specific description */}
@@ -665,36 +746,122 @@ export default function BuyOutPanel({
               </span>
             </div>
 
-            {/* Price Breakdown */}
-            <PriceBreakdown
-              feeBreakdown={feeBreakdown}
-              isCalculating={isCalculating}
-              priceLabel={requestType === 'share' ? 'Share fee' : `${roommateName}'s suggested price`}
-            />
+            {/* Fees Toggle */}
+            <div className="buyout-panel__fees">
+              <button
+                type="button"
+                className="buyout-panel__fees-toggle"
+                onClick={() => setShowFees((prev) => !prev)}
+                aria-expanded={showFees}
+              >
+                <span className="buyout-panel__fees-icon" aria-hidden="true">i</span>
+                Fees & breakdown
+              </button>
+              {showFees && (
+                <PriceBreakdown
+                  feeBreakdown={feeBreakdown}
+                  isCalculating={isCalculating}
+                  priceLabel={requestType === 'share' ? 'Share fee' : `${roommateName}'s suggested price`}
+                />
+              )}
+            </div>
           </div>
 
           {/* Editable Price Offer - Only show for buyout mode */}
           {requestType !== 'share' && (
             <div className="buyout-panel__offer-price">
-              <label className="buyout-panel__offer-label">
-                Your offer
-                <span className="buyout-panel__offer-hint">(You can adjust this)</span>
-              </label>
-              <div className="buyout-panel__offer-input-row">
-                <span className="buyout-panel__currency">$</span>
-                <input
-                  type="number"
-                  className="buyout-panel__offer-input"
-                  value={customPrice ?? feeBreakdown?.basePrice ?? ''}
-                  onChange={(e) => setCustomPrice(Number(e.target.value))}
-                  min={0}
-                  step={5}
-                  disabled={isSubmitting}
-                />
-                {customPrice !== null && customPrice !== feeBreakdown?.basePrice && (
-                  <FairnessIndicator offered={customPrice} suggested={feeBreakdown?.basePrice} />
-                )}
+              <div className="buyout-panel__stepper">
+                {/* Smart -10% button with Flexibility Lever logic */}
+                <button
+                  type="button"
+                  className={`buyout-panel__stepper-btn buyout-panel__stepper-btn--minus ${
+                    !flexibilityContext.canDiscount ? 'buyout-panel__stepper-btn--ghost' : ''
+                  } ${showDiscountWarning ? 'buyout-panel__stepper-btn--warning' : ''}`}
+                  onClick={() => {
+                    // If less flexible, show warning on first click
+                    if (!flexibilityContext.canDiscount && !showDiscountWarning) {
+                      setShowDiscountWarning(true);
+                      return;
+                    }
+                    setCustomPrice(Math.max(1, Math.round((offerPrice - stepAmount) * 100) / 100));
+                    setShowDiscountWarning(false);
+                  }}
+                  disabled={isSubmitting || !stepAmount}
+                  title={flexibilityContext.warning || 'Reduce offer by 10%'}
+                >
+                  -10%
+                </button>
+
+                {/* Huge editable price display */}
+                <div className="buyout-panel__stepper-center">
+                  <span className="buyout-panel__currency">$</span>
+                  <input
+                    type="number"
+                    className="buyout-panel__offer-input"
+                    value={Number.isFinite(offerPrice) ? offerPrice : ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCustomPrice(value === '' ? null : Number(value));
+                      setShowDiscountWarning(false);
+                    }}
+                    min={0}
+                    step={1}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                {/* +10% button (always normal style) */}
+                <button
+                  type="button"
+                  className="buyout-panel__stepper-btn buyout-panel__stepper-btn--plus"
+                  onClick={() => {
+                    setCustomPrice(Math.round((offerPrice + stepAmount) * 100) / 100);
+                    setShowDiscountWarning(false);
+                  }}
+                  disabled={isSubmitting || !stepAmount}
+                >
+                  +10%
+                </button>
               </div>
+
+              {/* Discount Warning (Friction for lowballing when less flexible) */}
+              {showDiscountWarning && flexibilityContext.warning && (
+                <div className="buyout-panel__discount-warning" role="alert">
+                  <span className="buyout-panel__warning-icon">⚠️</span>
+                  {flexibilityContext.warning}
+                </div>
+              )}
+
+              {/* Offer Feedback with expandable "Why?" */}
+              {offerFeedback && !showDiscountWarning && (
+                <div
+                  className={`buyout-panel__feedback buyout-panel__feedback--${offerFeedback.tone} ${showFeedbackDetail ? 'buyout-panel__feedback--expanded' : ''}`}
+                  onClick={() => setShowFeedbackDetail(!showFeedbackDetail)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setShowFeedbackDetail(!showFeedbackDetail)}
+                >
+                  <span className="buyout-panel__feedback-indicator">
+                    {offerFeedback.tone === 'fair' ? '🟢' : '🟠'}
+                  </span>
+                  <span className="buyout-panel__feedback-label">{offerFeedback.label}</span>
+                  <span className="buyout-panel__feedback-toggle">
+                    {showFeedbackDetail ? '▲' : 'ⓘ'}
+                  </span>
+                </div>
+              )}
+
+              {/* Feedback Detail (Layer 3) */}
+              {showFeedbackDetail && offerFeedback && (
+                <div className="buyout-panel__feedback-detail">
+                  <p>Based on {roommateName}'s pricing preferences and current demand.</p>
+                  {flexibilityContext.delta !== 0 && myFlexibilityScore && roommateFlexibilityScore && (
+                    <p className="buyout-panel__flexibility-comparison">
+                      Flexibility: You ({myFlexibilityScore}/10) vs {roommateName} ({roommateFlexibilityScore}/10)
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -707,53 +874,74 @@ export default function BuyOutPanel({
 
           {/* Message Input (optional) */}
           <div className="buyout-panel__message">
-            <label htmlFor="buyout-message" className="buyout-panel__message-label">
-              Add a note to your request (optional)
-            </label>
-            <textarea
-              id="buyout-message"
-              className="buyout-panel__message-input"
-              placeholder={requestType === 'share'
-                ? "e.g., I just need the space for a few hours..."
-                : "e.g., I have an early meeting that day..."}
-              value={message}
-              onChange={handleMessageChange}
-              rows={2}
-              maxLength={MAX_MESSAGE_LENGTH}
-              disabled={isSubmitting}
-            />
-            <div className="buyout-panel__message-counter">
-              <span className={remainingChars < 20 ? 'buyout-panel__message-counter--low' : ''}>
-                {remainingChars} characters remaining
-              </span>
-            </div>
+            <button
+              type="button"
+              className="buyout-panel__note-toggle"
+              onClick={() => setShowNote((prev) => !prev)}
+              aria-expanded={showNote}
+            >
+              {showNote ? 'Hide note' : '+ Add note'}
+            </button>
+            {showNote && (
+              <>
+                <label htmlFor="buyout-message" className="buyout-panel__message-label">
+                  Add a note (optional)
+                </label>
+                <textarea
+                  id="buyout-message"
+                  className="buyout-panel__message-input"
+                  placeholder={requestType === 'share'
+                    ? "e.g., I just need the space for a few hours..."
+                    : "e.g., I have an early meeting that day..."}
+                  value={message}
+                  onChange={handleMessageChange}
+                  rows={2}
+                  maxLength={MAX_MESSAGE_LENGTH}
+                  disabled={isSubmitting}
+                />
+                <div className="buyout-panel__message-counter">
+                  <span className={remainingChars < 20 ? 'buyout-panel__message-counter--low' : ''}>
+                    {remainingChars} characters remaining
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Actions */}
+          {/* Actions - Send button with fee tooltip on hover */}
           <div className="buyout-panel__actions">
-            <button
-              type="button"
-              className="buyout-panel__btn buyout-panel__btn--primary"
-              onClick={requestType === 'share' ? handleShare : handleBuyOut}
-              disabled={isSubmitting || isCalculating || !feeBreakdown}
-            >
-              {isSubmitting ? (
-                <>
-                  <LoadingSpinner />
-                  Sending Request...
-                </>
-              ) : (
-                requestType === 'share' ? 'Send Share Request' : 'Buy Out Night'
-              )}
-            </button>
+            <FeeTooltip feeBreakdown={feeBreakdown}>
+              <button
+                type="button"
+                className={`buyout-panel__btn buyout-panel__btn--primary ${
+                  offerFeedback?.tone === 'low' && !flexibilityContext.canDiscount
+                    ? 'buyout-panel__btn--cautious'
+                    : ''
+                }`}
+                onClick={requestType === 'share' ? handleShare : handleBuyOut}
+                disabled={isSubmitting || isCalculating || !feeBreakdown}
+              >
+                {isSubmitting ? (
+                  <>
+                    <LoadingSpinner />
+                    Sending...
+                  </>
+                ) : (
+                  requestType === 'share'
+                    ? `Send Share Request ($${totalOfferPrice.toFixed(0)})`
+                    : `Send Offer ($${totalOfferPrice.toFixed(0)})`
+                )}
+              </button>
+            </FeeTooltip>
 
             <button
               type="button"
-              className="buyout-panel__btn buyout-panel__btn--ghost"
+              className="buyout-panel__btn buyout-panel__btn--ghost buyout-panel__btn--close"
               onClick={handleCancel}
               disabled={isSubmitting}
+              aria-label="Cancel"
             >
-              Cancel
+              ✕
             </button>
           </div>
         </>
@@ -811,6 +999,9 @@ BuyOutPanel.propTypes = {
   onCancel: PropTypes.func,
   isSubmitting: PropTypes.bool,
   compact: PropTypes.bool,
+  // Flexibility Score props (for "Guidance via Friction")
+  myFlexibilityScore: PropTypes.number,
+  roommateFlexibilityScore: PropTypes.number,
   // Request Type props
   requestType: PropTypes.oneOf(['buyout', 'share', 'swap']),
   onRequestTypeChange: PropTypes.func,
@@ -830,10 +1021,8 @@ BuyOutPanel.propTypes = {
   ]),
   onSelectSwapOffer: PropTypes.func,
   onSubmitSwapRequest: PropTypes.func,
-  onCancelSwapMode: PropTypes.func,
   onSelectCounterNight: PropTypes.func,
   onSubmitCounterRequest: PropTypes.func,
-  onCancelCounterMode: PropTypes.func,
   // Buyout Settings props
   buyoutPreferences: PropTypes.shape({
     weekendPremium: PropTypes.number,

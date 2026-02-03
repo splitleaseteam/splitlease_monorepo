@@ -285,6 +285,9 @@ export default function ScheduleDashboard() {
                             onCancel={handleCancel}
                             isSubmitting={isSubmitting}
                             compact
+                            // Flexibility Score props (for "Guidance via Friction")
+                            myFlexibilityScore={userFlexibilityScore}
+                            roommateFlexibilityScore={flexibilityScore}
                             // Request Type props
                             requestType={requestType}
                             onRequestTypeChange={handleRequestTypeChange}
