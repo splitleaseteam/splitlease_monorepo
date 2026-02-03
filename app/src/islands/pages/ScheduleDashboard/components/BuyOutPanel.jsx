@@ -29,6 +29,7 @@ import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
 
 const MAX_MESSAGE_LENGTH = 200;
 const FLEXIBILITY_THRESHOLD = 2; // Delta needed for "earned" discounts
+const SWAP_FEE = 5.00; // Flat swap fee
 
 // ============================================================================
 // HELPERS
@@ -84,6 +85,32 @@ function getFlexibilityContext(myScore, roommateScore) {
   }
 
   return { delta, canDiscount, warning };
+}
+
+/**
+ * Generate transparent action button text showing full fee equation
+ * - Buyout: "Send Offer ($132 + $2 fee = $134)"
+ * - Swap: "Send Swap Request ($5 fee)"
+ * - Share: "Send Share Request"
+ */
+function getActionButtonText(transactionType, baseAmount, feeAmount, totalAmount) {
+  if (transactionType === 'share') {
+    return 'Send Share Request';
+  }
+
+  if (transactionType === 'swap') {
+    return `Send Swap Request ($${SWAP_FEE.toFixed(0)} fee)`;
+  }
+
+  // Buyout: Show full equation
+  const base = Math.round(baseAmount);
+  const fee = Math.round(feeAmount * 100) / 100;
+  const total = Math.round(totalAmount);
+
+  // Format fee display
+  const feeDisplay = fee < 1 ? fee.toFixed(2) : fee.toFixed(0);
+
+  return `Send Offer ($${base} + $${feeDisplay} fee = $${total})`;
 }
 
 // ============================================================================
@@ -591,6 +618,7 @@ export default function BuyOutPanel({
   const [customPrice, setCustomPrice] = useState(null);
   const [showNote, setShowNote] = useState(false);
   const [showFees, setShowFees] = useState(false);
+  const [hasUsedDiscountStep, setHasUsedDiscountStep] = useState(false);
   const [showDiscountWarning, setShowDiscountWarning] = useState(false);
   const [showFeedbackDetail, setShowFeedbackDetail] = useState(false);
 
@@ -701,6 +729,7 @@ export default function BuyOutPanel({
     setMessage('');
     setShowNote(false);
     setShowFees(false);
+    setHasUsedDiscountStep(false);
     onCancel?.();
   };
 
@@ -868,25 +897,34 @@ export default function BuyOutPanel({
             <div className="buyout-panel__offer-price">
               <div className="buyout-panel__stepper">
                 {/* Smart -10% button with Flexibility Lever logic */}
-                <button
-                  type="button"
-                  className={`buyout-panel__stepper-btn buyout-panel__stepper-btn--minus ${
-                    !flexibilityContext.canDiscount ? 'buyout-panel__stepper-btn--ghost' : ''
-                  } ${showDiscountWarning ? 'buyout-panel__stepper-btn--warning' : ''}`}
-                  onClick={() => {
-                    // If less flexible, show warning on first click
-                    if (!flexibilityContext.canDiscount && !showDiscountWarning) {
-                      setShowDiscountWarning(true);
-                      return;
-                    }
-                    setCustomPrice(Math.max(1, Math.round((offerPrice - stepAmount) * 100) / 100));
-                    setShowDiscountWarning(false);
-                  }}
-                  disabled={isSubmitting || !stepAmount}
-                  title={flexibilityContext.warning || 'Reduce offer by 10%'}
-                >
-                  -10%
-                </button>
+                <div className="buyout-panel__stepper-minus">
+                  <button
+                    type="button"
+                    className={`buyout-panel__stepper-btn buyout-panel__stepper-btn--minus ${
+                      (!flexibilityContext.canDiscount || offerFeedback?.tone === 'low')
+                        ? 'buyout-panel__stepper-btn--ghost'
+                        : ''
+                    } ${showDiscountWarning ? 'buyout-panel__stepper-btn--warning' : ''}`}
+                    onClick={() => {
+                      if (hasUsedDiscountStep) return;
+                      // If less flexible, show warning on first click
+                      if (!flexibilityContext.canDiscount && !showDiscountWarning) {
+                        setShowDiscountWarning(true);
+                        return;
+                      }
+                      setCustomPrice(Math.max(1, Math.round((offerPrice - stepAmount) * 100) / 100));
+                      setShowDiscountWarning(false);
+                      setHasUsedDiscountStep(true);
+                    }}
+                    disabled={isSubmitting || !stepAmount}
+                    title={flexibilityContext.warning || 'Reduce offer by 10%'}
+                  >
+                    -10%
+                  </button>
+                  {hasUsedDiscountStep && (
+                    <span className="buyout-panel__discount-note">-10% limit reached.</span>
+                  )}
+                </div>
 
                 {/* Huge editable price display */}
                 <div className="buyout-panel__stepper-center">
@@ -913,6 +951,7 @@ export default function BuyOutPanel({
                   onClick={() => {
                     setCustomPrice(Math.round((offerPrice + stepAmount) * 100) / 100);
                     setShowDiscountWarning(false);
+                    setHasUsedDiscountStep(false);
                   }}
                   disabled={isSubmitting || !stepAmount}
                 >
@@ -927,6 +966,7 @@ export default function BuyOutPanel({
                   {flexibilityContext.warning}
                 </div>
               )}
+
 
               {/* Offer Feedback with expandable "Why?" */}
               {offerFeedback && !showDiscountWarning && (
@@ -1027,9 +1067,12 @@ export default function BuyOutPanel({
                     Sending...
                   </>
                 ) : (
-                  requestType === 'share'
-                    ? 'Send Share Request (Free)'
-                    : `Send Offer ($${totalOfferPrice.toFixed(0)})`
+                  getActionButtonText(
+                    requestType,
+                    offerPrice,
+                    totalOfferPrice - offerPrice,
+                    totalOfferPrice
+                  )
                 )}
               </button>
             </FeeTooltip>

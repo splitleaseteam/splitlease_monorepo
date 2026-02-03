@@ -49,6 +49,14 @@ function formatHeaderDate(dateString) {
   });
 }
 
+function getDrawerLabel(dateString, requestType, isSwapMode) {
+  if (!dateString) return 'Create a Request';
+  const formattedDate = formatHeaderDate(dateString);
+  if (isSwapMode) return `Swapping ${formattedDate}`;
+  if (requestType === 'share') return `Sharing ${formattedDate}`;
+  return `Buying Out ${formattedDate}`;
+}
+
 // ============================================================================
 // LOADING STATE
 // ============================================================================
@@ -272,9 +280,7 @@ export default function ScheduleDashboard() {
                         aria-controls="buyout-drawer"
                       >
                         <span className="schedule-dashboard__drawer-handle-text">
-                          {selectedNight
-                            ? `Buying Out ${formatHeaderDate(selectedNight)}`
-                            : 'Create a Buyout Request'}
+                          {getDrawerLabel(selectedNight, requestType, isSwapMode)}
                         </span>
                         <span className="schedule-dashboard__drawer-chevron">
                           {isBuyOutOpen ? '\u25B2' : '\u25BC'}
