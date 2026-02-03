@@ -158,10 +158,11 @@ function calculateUnusedNightsDiscountArray(
 
   for (let nightIndex = 0; nightIndex < maxNights; nightIndex++) {
     const nightsBooked = nightIndex + 1;
-    const unusedNights = maxNights - nightsBooked;
 
-    // LINEAR formula: unusedNights * multiplier
-    const discount = unusedNights * discountMultiplier;
+    // LENGTH-OF-STAY discount: more nights booked = more discount
+    // At 1 night: (1-1) = 0, discount = 0 (no volume benefit)
+    // At 7 nights: (7-1) = 6, discount = multiplier * 6 (maximum discount)
+    const discount = (nightsBooked - 1) * discountMultiplier;
 
     discountArray.push(roundToFourDecimals(discount));
   }
