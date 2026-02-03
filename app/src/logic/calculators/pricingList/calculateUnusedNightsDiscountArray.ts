@@ -1,18 +1,18 @@
 /**
- * Calculate length-of-stay discount array based on nights booked.
+ * Calculate unused nights discount array for partial-week bookings.
  *
  * Creates a 7-element array where each index represents the discount
- * for that stay length. Discount INCREASES as more nights are booked
- * (incentivizes longer stays).
+ * for unused nights at that tier. Discount DECREASES as more nights
+ * are booked (compensates guests for partial-week bookings).
  *
- * @intent Incentivize guests to book more nights by offering volume discounts.
+ * @intent Compensate guests who book partial weeks for unused capacity.
  * @rule Array length must be exactly 7 elements.
- * @rule Discount is 0 at 1 night (no volume benefit).
- * @rule Discount increases linearly with nights booked.
+ * @rule Discount is 0 at 7 nights (no unused nights).
+ * @rule Discount increases linearly with unused nights.
  *
- * Formula: discount[n] = (nightsBooked - 1) × discountMultiplier (LINEAR)
- * - At 1 night: discount = 0 (no volume discount)
- * - At 7 nights: discount = 6 × discountMultiplier (maximum discount)
+ * Formula: discount[n] = unusedNights × discountMultiplier (LINEAR)
+ * - At 1 night: 6 unused nights, discount = 6 × discountMultiplier (maximum)
+ * - At 7 nights: 0 unused nights, discount = 0 (full-time gets separate discount)
  *
  * @param params - Named parameters.
  * @returns 7-element array of discount rates (0-1).
@@ -22,8 +22,8 @@
  * @example
  * ```ts
  * calculateUnusedNightsDiscountArray({ baseDiscount: 0.03 })
- * // => [0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.18]
- * // (discount increases as more nights are booked)
+ * // => [0.18, 0.15, 0.12, 0.09, 0.06, 0.03, 0]
+ * // (discount decreases as more nights are booked)
  * ```
  */
 import { PRICING_CONSTANTS } from '../../constants/pricingConstants.js';
@@ -49,14 +49,15 @@ export function calculateUnusedNightsDiscountArray({
   const maxNights = PRICING_CONSTANTS.PRICING_LIST_ARRAY_LENGTH;
   const discountArray: number[] = [];
 
-  // Build discount array: higher discount for MORE nights booked (volume discount)
+  // Build discount array: higher discount for FEWER nights booked (unused nights compensation)
   for (let nightIndex = 0; nightIndex < maxNights; nightIndex++) {
     const nightsBooked = nightIndex + 1; // nightIndex 0 = 1 night
+    const unusedNights = maxNights - nightsBooked;
 
-    // Discount is proportional to nights booked (length-of-stay discount)
-    // At 1 night: (1-1) = 0, discount = 0 (no volume benefit)
-    // At 7 nights: (7-1) = 6, discount = baseDiscount * 6 (maximum discount)
-    const discount = (nightsBooked - 1) * baseDiscount;
+    // Discount is proportional to unused nights (partial-week compensation)
+    // At 1 night: 6 unused nights, discount = baseDiscount * 6 (maximum)
+    // At 7 nights: 0 unused nights, discount = 0 (full-time gets separate discount)
+    const discount = unusedNights * baseDiscount;
 
     discountArray.push(roundToFourDecimals(discount));
   }
