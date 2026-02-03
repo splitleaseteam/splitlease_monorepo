@@ -666,6 +666,10 @@ export function useScheduleDashboardLogic() {
       request.setRequestType('swap');
     } else {
       request.setIsSwapMode(false);
+      request.setIsCounterMode(false);
+      request.setCounteringRequestId(null);
+      request.setCounterOriginalNight(null);
+      request.setCounterTargetNight(null);
       request.setSwapOfferNight(null);
       request.setRequestType(newType);
     }

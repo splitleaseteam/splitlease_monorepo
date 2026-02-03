@@ -693,7 +693,7 @@ export default function BuyOutPanel({
       {/* Persistent Request Type Toggle Tabs */}
       {(showSwapPanel || showActivePanel) && !showSuccessState && !showSwapSuccessState && !showShareSuccessState && (
         <RequestTypeTabs
-          activeType={isSwapMode ? 'swap' : requestType}
+          activeType={isSwapMode || isCounterMode ? 'swap' : requestType}
           onTypeChange={handleTypeChange}
           disabled={isSubmitting}
         />
@@ -724,48 +724,45 @@ export default function BuyOutPanel({
       {/* Active Panel Content (Buyout/Share Mode) */}
       {showActivePanel && (
         <>
-          {/* Mode-specific heading */}
-          <h3 className="buyout-panel__heading">
-            {requestType === 'share' ? 'Share Night' : 'Make an Offer'}
-          </h3>
-
-          {/* Mode-specific description */}
-          {requestType === 'share' && (
-            <p className="buyout-panel__description">
-              Request to share the space with {roommateName} on this night 👥
-            </p>
-          )}
-
-          {/* Content Row - Horizontal layout in compact mode */}
-          <div className={compact ? 'buyout-panel__content-row' : ''}>
-            {/* Selected Night */}
-            <div className="buyout-panel__selected">
-              <span className="buyout-panel__date">{formattedDate}</span>
-              <span className="buyout-panel__owner">
-                Currently held by {roommateName}
+          {/* Compact Header: "Buying Out [date]" with close button */}
+          {compact ? (
+            <div className="buyout-panel__compact-header">
+              <span className="buyout-panel__compact-title">
+                {requestType === 'share' ? 'Share' : 'Buying Out'} {formatCompactDate(selectedDate)}
               </span>
-            </div>
-
-            {/* Fees Toggle */}
-            <div className="buyout-panel__fees">
               <button
                 type="button"
-                className="buyout-panel__fees-toggle"
-                onClick={() => setShowFees((prev) => !prev)}
-                aria-expanded={showFees}
+                className="buyout-panel__compact-close"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                aria-label="Cancel"
               >
-                <span className="buyout-panel__fees-icon" aria-hidden="true">i</span>
-                Fees & breakdown
+                ✕
               </button>
-              {showFees && (
-                <PriceBreakdown
-                  feeBreakdown={feeBreakdown}
-                  isCalculating={isCalculating}
-                  priceLabel={requestType === 'share' ? 'Share fee' : `${roommateName}'s suggested price`}
-                />
-              )}
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Full mode heading */}
+              <h3 className="buyout-panel__heading">
+                {requestType === 'share' ? 'Share Night' : 'Make an Offer'}
+              </h3>
+
+              {/* Mode-specific description */}
+              {requestType === 'share' && (
+                <p className="buyout-panel__description">
+                  Request to share the space with {roommateName} on this night 👥
+                </p>
+              )}
+
+              {/* Selected Night - Full mode only */}
+              <div className="buyout-panel__selected">
+                <span className="buyout-panel__date">{formattedDate}</span>
+                <span className="buyout-panel__owner">
+                  Currently held by {roommateName}
+                </span>
+              </div>
+            </>
+          )}
 
           {/* Editable Price Offer - Only show for buyout mode */}
           {requestType !== 'share' && (
@@ -909,11 +906,11 @@ export default function BuyOutPanel({
           </div>
 
           {/* Actions - Send button with fee tooltip on hover */}
-          <div className="buyout-panel__actions">
+          <div className={`buyout-panel__actions ${compact ? 'buyout-panel__actions--compact' : ''}`}>
             <FeeTooltip feeBreakdown={feeBreakdown}>
               <button
                 type="button"
-                className={`buyout-panel__btn buyout-panel__btn--primary ${
+                className={`buyout-panel__btn buyout-panel__btn--primary buyout-panel__btn--send ${
                   offerFeedback?.tone === 'low' && !flexibilityContext.canDiscount
                     ? 'buyout-panel__btn--cautious'
                     : ''
@@ -934,15 +931,17 @@ export default function BuyOutPanel({
               </button>
             </FeeTooltip>
 
-            <button
-              type="button"
-              className="buyout-panel__btn buyout-panel__btn--ghost buyout-panel__btn--close"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              aria-label="Cancel"
-            >
-              ✕
-            </button>
+            {/* Cancel button only in non-compact mode */}
+            {!compact && (
+              <button
+                type="button"
+                className="buyout-panel__btn buyout-panel__btn--ghost"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+            )}
           </div>
         </>
       )}
@@ -1025,8 +1024,6 @@ BuyOutPanel.propTypes = {
   onSubmitCounterRequest: PropTypes.func,
   // Buyout Settings props
   buyoutPreferences: PropTypes.shape({
-    weekendPremium: PropTypes.number,
-    holidayPremium: PropTypes.number,
     lastMinuteDiscount: PropTypes.number,
     demandFactorEnabled: PropTypes.bool,
     floorPrice: PropTypes.number,
