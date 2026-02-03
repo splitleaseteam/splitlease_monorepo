@@ -25,7 +25,7 @@ const QUICK_RESPONSES = [
 // SUB-COMPONENTS
 // ============================================================================
 
-function MessageBubble({ message, isCurrentUser, displayName, onAccept, onDecline, onCounter }) {
+const MessageBubble = React.forwardRef(({ message, isCurrentUser, displayName, onAccept, onDecline, onCounter }, ref) => {
   if (message.type === 'system') {
     return <TransactionNotice message={message} />;
   }
@@ -37,11 +37,25 @@ function MessageBubble({ message, isCurrentUser, displayName, onAccept, onDeclin
 
   return (
     <div
+      ref={ref}
       className={`chat-bubble ${isCurrentUser ? 'chat-bubble--sent' : 'chat-bubble--received'} ${message.type === 'request' ? 'chat-bubble--request' : ''}`}
     >
       <div className="chat-bubble__content">
         <div className="chat-bubble__sender">{displayName}</div>
         {message.text || message.content}
+
+        {message.type === 'request' && message.requestData && (
+          <div className="chat-bubble__request-info">
+            <span className="chat-bubble__request-amount">
+              ${message.requestData.amount?.toFixed(2) || message.requestData.offeredPrice?.toFixed(2) || '0.00'}
+            </span>
+            {message.requestData.suggestedPrice && message.requestData.offeredPrice !== message.requestData.suggestedPrice && (
+              <span className="chat-bubble__suggested-price">
+                (suggested: ${message.requestData.suggestedPrice.toFixed(2)})
+              </span>
+            )}
+          </div>
+        )}
 
         {message.type === 'request' && message.status && message.status !== 'pending' && (
           <div className={`chat-bubble__status chat-bubble__status--${message.status}`}>
@@ -51,24 +65,33 @@ function MessageBubble({ message, isCurrentUser, displayName, onAccept, onDeclin
 
         {message.type === 'request' && message.status === 'pending' && !isCurrentUser && (
           <div className="chat-bubble__actions">
-            <button
-              className="chat-bubble__btn chat-bubble__btn--accept"
-              onClick={() => onAccept(message.id)}
-            >
-              Accept
-            </button>
-            <button
-              className="chat-bubble__btn chat-bubble__btn--decline"
-              onClick={() => onDecline(message.id)}
-            >
-              Decline
-            </button>
-            <button
-              className="chat-bubble__btn chat-bubble__btn--counter"
-              onClick={() => onCounter(message.id)}
-            >
-              Counter
-            </button>
+            {message.requestData?.suggestedPrice && message.requestData?.offeredPrice !== message.requestData?.suggestedPrice && (
+              <div className="chat-bubble__context">
+                <span className="chat-bubble__context-text">
+                  Your suggested price: ${message.requestData.suggestedPrice.toFixed(2)}
+                </span>
+              </div>
+            )}
+            <div className="chat-bubble__action-buttons">
+              <button
+                className="chat-bubble__action-btn chat-bubble__action-btn--accept"
+                onClick={() => onAccept(message.id)}
+              >
+                Accept
+              </button>
+              <button
+                className="chat-bubble__action-btn chat-bubble__action-btn--counter"
+                onClick={() => onCounter(message.id)}
+              >
+                Counter
+              </button>
+              <button
+                className="chat-bubble__action-btn chat-bubble__action-btn--decline"
+                onClick={() => onDecline(message.id)}
+              >
+                Decline
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -77,7 +100,7 @@ function MessageBubble({ message, isCurrentUser, displayName, onAccept, onDeclin
       </div>
     </div>
   );
-}
+});
 
 function TransactionNotice({ message }) {
   const getNoticeText = () => {
@@ -126,15 +149,39 @@ export default function ChatThread({
   onAcceptRequest,
   onDeclineRequest,
   onCounterRequest,
-  isSending = false
+  isSending = false,
+  activeTransactionId,
+  onClearActiveTransaction
 }) {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
+  const messageRefs = useRef({});
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Scroll to request message when transaction selected
+  useEffect(() => {
+    if (!activeTransactionId) return;
+    const targetId = Object.keys(messageRefs.current).find((messageId) => {
+      const message = messages.find((msg) => msg.id === messageId);
+      return message?.requestData?.transactionId === activeTransactionId;
+    });
+
+    if (!targetId) return;
+
+    const messageElement = messageRefs.current[targetId];
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      messageElement.classList.add('chat-bubble--highlighted');
+      setTimeout(() => {
+        messageElement.classList.remove('chat-bubble--highlighted');
+        onClearActiveTransaction?.();
+      }, 1500);
+    }
+  }, [activeTransactionId, messages, onClearActiveTransaction]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -165,6 +212,7 @@ export default function ChatThread({
             <MessageBubble
               key={msg.id}
               message={msg}
+              ref={(el) => { messageRefs.current[msg.id] = el; }}
               isCurrentUser={msg.senderId === currentUserId}
               displayName={msg.senderId === currentUserId ? 'You' : roommateName || 'Roommate'}
               onAccept={onAcceptRequest}
@@ -239,4 +287,6 @@ ChatThread.propTypes = {
   onDeclineRequest: PropTypes.func,
   onCounterRequest: PropTypes.func,
   isSending: PropTypes.bool,
+  activeTransactionId: PropTypes.string,
+  onClearActiveTransaction: PropTypes.func,
 };

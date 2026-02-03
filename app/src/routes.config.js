@@ -843,6 +843,17 @@ export const routes = [
     dynamicPattern: '/_manage-leases-payment-records/:leaseId'
   },
 
+  // ===== CONTRACT GENERATOR TEST PAGE (INTERNAL) =====
+  {
+    path: '/_test-contracts',
+    file: 'test-contracts.html',
+    aliases: ['/_test-contracts.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'test-contracts-view',
+    hasDynamicSegment: false
+  },
+
   // ===== CONTRACT GENERATOR PAGES =====
   {
     path: '/contracts/credit-card-auth',
