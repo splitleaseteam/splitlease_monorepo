@@ -1,0 +1,229 @@
+{
+  "generated_at": "2026-02-03T09:00:56.048322",
+  "root_dir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\processors\\pricingList",
+  "content_hash": "1087ea8eaead4624918659440e7eb0ede7c591f231ae074ec56a80d491faa16e",
+  "total_files": 9,
+  "total_exports": 8,
+  "total_imports": 16,
+  "parse_error_count": 0,
+  "symbol_table": {
+    "adaptPricingListForSupabase.js": [
+      {
+        "name": "adaptPricingListForSupabase",
+        "type": "declaration",
+        "line": 33,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "adaptPricingListFromSupabase.js": [
+      {
+        "name": "adaptPricingListFromSupabase",
+        "type": "declaration",
+        "line": 35,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "extractHostRatesFromListing.js": [
+      {
+        "name": "extractHostRatesFromListing",
+        "type": "declaration",
+        "line": 36,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "formatPricingListForDisplay.js": [
+      {
+        "name": "formatPricingListForDisplay",
+        "type": "declaration",
+        "line": 33,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "index.js": [
+      {
+        "name": "adaptPricingListFromSupabase",
+        "type": "re-export",
+        "line": 10,
+        "source_file": "./adaptPricingListFromSupabase.js",
+        "original_name": null
+      },
+      {
+        "name": "adaptPricingListForSupabase",
+        "type": "re-export",
+        "line": 11,
+        "source_file": "./adaptPricingListForSupabase.js",
+        "original_name": null
+      },
+      {
+        "name": "extractHostRatesFromListing",
+        "type": "re-export",
+        "line": 12,
+        "source_file": "./extractHostRatesFromListing.js",
+        "original_name": null
+      },
+      {
+        "name": "formatPricingListForDisplay",
+        "type": "re-export",
+        "line": 13,
+        "source_file": "./formatPricingListForDisplay.js",
+        "original_name": null
+      }
+    ]
+  },
+  "dependency_graph": {
+    "__tests__\\adaptPricingListForSupabase.integration.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "adaptPricingListForSupabase",
+        "type": "named",
+        "source": "../adaptPricingListForSupabase.js",
+        "resolved_path": "adaptPricingListForSupabase.js",
+        "line": 9,
+        "alias": null
+      }
+    ],
+    "__tests__\\adaptPricingListFromSupabase.integration.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "adaptPricingListFromSupabase",
+        "type": "named",
+        "source": "../adaptPricingListFromSupabase.js",
+        "resolved_path": "adaptPricingListFromSupabase.js",
+        "line": 9,
+        "alias": null
+      }
+    ],
+    "__tests__\\extractHostRatesFromListing.integration.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "extractHostRatesFromListing",
+        "type": "named",
+        "source": "../extractHostRatesFromListing.js",
+        "resolved_path": "extractHostRatesFromListing.js",
+        "line": 9,
+        "alias": null
+      }
+    ],
+    "__tests__\\formatPricingListForDisplay.integration.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "formatPricingListForDisplay",
+        "type": "named",
+        "source": "../formatPricingListForDisplay.js",
+        "resolved_path": "formatPricingListForDisplay.js",
+        "line": 9,
+        "alias": null
+      }
+    ]
+  },
+  "reverse_dependencies": {
+    "adaptPricingListForSupabase.js": [
+      "__tests__\\adaptPricingListForSupabase.integration.test.js"
+    ],
+    "adaptPricingListFromSupabase.js": [
+      "__tests__\\adaptPricingListFromSupabase.integration.test.js"
+    ],
+    "extractHostRatesFromListing.js": [
+      "__tests__\\extractHostRatesFromListing.integration.test.js"
+    ],
+    "formatPricingListForDisplay.js": [
+      "__tests__\\formatPricingListForDisplay.integration.test.js"
+    ]
+  }
+}

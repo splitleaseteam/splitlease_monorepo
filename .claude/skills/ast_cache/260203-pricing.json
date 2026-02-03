@@ -1,0 +1,499 @@
+{
+  "generated_at": "2026-02-03T09:00:55.737663",
+  "root_dir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\calculators\\pricing",
+  "content_hash": "949e1470e181768e54dac3f697dd82fe260678df7e6be14f57d2b109db137f5e",
+  "total_files": 13,
+  "total_exports": 17,
+  "total_imports": 37,
+  "parse_error_count": 0,
+  "symbol_table": {
+    "calculateFeeBreakdown.js": [
+      {
+        "name": "FEE_RATES",
+        "type": "declaration",
+        "line": 6,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "TRANSACTION_CONFIGS",
+        "type": "declaration",
+        "line": 14,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "formatCurrency",
+        "type": "declaration",
+        "line": 53,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "formatPercentage",
+        "type": "declaration",
+        "line": 61,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "validateFeeCalculation",
+        "type": "declaration",
+        "line": 65,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "calculateFeeBreakdown",
+        "type": "declaration",
+        "line": 90,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "formatFeeBreakdownForDB",
+        "type": "declaration",
+        "line": 186,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "calculateFourWeekRent.js": [
+      {
+        "name": "calculateFourWeekRent",
+        "type": "declaration",
+        "line": 22,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "calculateGuestFacingPrice.js": [
+      {
+        "name": "calculateGuestFacingPrice",
+        "type": "declaration",
+        "line": 35,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "calculatePricingBreakdown.js": [
+      {
+        "name": "calculatePricingBreakdown",
+        "type": "declaration",
+        "line": 30,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "calculateQuickProposal.js": [
+      {
+        "name": "calculateQuickProposal",
+        "type": "declaration",
+        "line": 19,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "formatDayPattern",
+        "type": "declaration",
+        "line": 78,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "dayLabelToIndex",
+        "type": "declaration",
+        "line": 92,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "indexToDayLabel",
+        "type": "declaration",
+        "line": 110,
+        "source_file": null,
+        "original_name": null
+      },
+      {
+        "name": "getAllDayIndices",
+        "type": "declaration",
+        "line": 119,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "calculateReservationTotal.js": [
+      {
+        "name": "calculateReservationTotal",
+        "type": "declaration",
+        "line": 22,
+        "source_file": null,
+        "original_name": null
+      }
+    ],
+    "getNightlyRateByFrequency.js": [
+      {
+        "name": "getNightlyRateByFrequency",
+        "type": "declaration",
+        "line": 26,
+        "source_file": null,
+        "original_name": null
+      }
+    ]
+  },
+  "dependency_graph": {
+    "calculateFourWeekRent.js": [
+      {
+        "name": "validateNonNegativeNumber",
+        "type": "named",
+        "source": "../../validators/pricingValidators.js",
+        "resolved_path": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\validators\\pricingValidators.js",
+        "line": 1,
+        "alias": null
+      },
+      {
+        "name": "validateRange",
+        "type": "named",
+        "source": "../../validators/pricingValidators.js",
+        "resolved_path": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\validators\\pricingValidators.js",
+        "line": 1,
+        "alias": null
+      }
+    ],
+    "calculateGuestFacingPrice.js": [
+      {
+        "name": "PRICING_CONSTANTS",
+        "type": "named",
+        "source": "../../constants/pricingConstants.js",
+        "resolved_path": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\constants\\pricingConstants.js",
+        "line": 33,
+        "alias": null
+      }
+    ],
+    "calculatePricingBreakdown.js": [
+      {
+        "name": "getNightlyRateByFrequency",
+        "type": "named",
+        "source": "./getNightlyRateByFrequency.js",
+        "resolved_path": "getNightlyRateByFrequency.js",
+        "line": 1,
+        "alias": null
+      },
+      {
+        "name": "calculateFourWeekRent",
+        "type": "named",
+        "source": "./calculateFourWeekRent.js",
+        "resolved_path": "calculateFourWeekRent.js",
+        "line": 2,
+        "alias": null
+      },
+      {
+        "name": "calculateReservationTotal",
+        "type": "named",
+        "source": "./calculateReservationTotal.js",
+        "resolved_path": "calculateReservationTotal.js",
+        "line": 3,
+        "alias": null
+      },
+      {
+        "name": "validateNumber",
+        "type": "named",
+        "source": "../../validators/pricingValidators.js",
+        "resolved_path": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\validators\\pricingValidators.js",
+        "line": 4,
+        "alias": null
+      }
+    ],
+    "calculateReservationTotal.js": [
+      {
+        "name": "validateNonNegativeNumber",
+        "type": "named",
+        "source": "../../validators/pricingValidators.js",
+        "resolved_path": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\validators\\pricingValidators.js",
+        "line": 1,
+        "alias": null
+      },
+      {
+        "name": "validatePositiveNumber",
+        "type": "named",
+        "source": "../../validators/pricingValidators.js",
+        "resolved_path": "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\validators\\pricingValidators.js",
+        "line": 1,
+        "alias": null
+      }
+    ],
+    "__tests__\\calculateFourWeekRent.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "calculateFourWeekRent",
+        "type": "named",
+        "source": "../calculateFourWeekRent.js",
+        "resolved_path": "calculateFourWeekRent.js",
+        "line": 8,
+        "alias": null
+      }
+    ],
+    "__tests__\\calculateGuestFacingPrice.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 13,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 13,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 13,
+        "alias": null
+      },
+      {
+        "name": "calculateGuestFacingPrice",
+        "type": "named",
+        "source": "../calculateGuestFacingPrice.js",
+        "resolved_path": "calculateGuestFacingPrice.js",
+        "line": 14,
+        "alias": null
+      }
+    ],
+    "__tests__\\calculatePricingBreakdown.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "calculatePricingBreakdown",
+        "type": "named",
+        "source": "../calculatePricingBreakdown.js",
+        "resolved_path": "calculatePricingBreakdown.js",
+        "line": 9,
+        "alias": null
+      }
+    ],
+    "__tests__\\calculateQuickProposal.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "calculateQuickProposal",
+        "type": "named",
+        "source": "../calculateQuickProposal.js",
+        "resolved_path": "calculateQuickProposal.js",
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "formatDayPattern",
+        "type": "named",
+        "source": "../calculateQuickProposal.js",
+        "resolved_path": "calculateQuickProposal.js",
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "dayLabelToIndex",
+        "type": "named",
+        "source": "../calculateQuickProposal.js",
+        "resolved_path": "calculateQuickProposal.js",
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "indexToDayLabel",
+        "type": "named",
+        "source": "../calculateQuickProposal.js",
+        "resolved_path": "calculateQuickProposal.js",
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "getAllDayIndices",
+        "type": "named",
+        "source": "../calculateQuickProposal.js",
+        "resolved_path": "calculateQuickProposal.js",
+        "line": 8,
+        "alias": null
+      }
+    ],
+    "__tests__\\calculateReservationTotal.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 7,
+        "alias": null
+      },
+      {
+        "name": "calculateReservationTotal",
+        "type": "named",
+        "source": "../calculateReservationTotal.js",
+        "resolved_path": "calculateReservationTotal.js",
+        "line": 8,
+        "alias": null
+      }
+    ],
+    "__tests__\\getNightlyRateByFrequency.test.js": [
+      {
+        "name": "describe",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "it",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "expect",
+        "type": "named",
+        "source": "vitest",
+        "resolved_path": null,
+        "line": 8,
+        "alias": null
+      },
+      {
+        "name": "getNightlyRateByFrequency",
+        "type": "named",
+        "source": "../getNightlyRateByFrequency.js",
+        "resolved_path": "getNightlyRateByFrequency.js",
+        "line": 9,
+        "alias": null
+      }
+    ]
+  },
+  "reverse_dependencies": {
+    "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\validators\\pricingValidators.js": [
+      "calculateFourWeekRent.js",
+      "calculateFourWeekRent.js",
+      "calculatePricingBreakdown.js",
+      "calculateReservationTotal.js",
+      "calculateReservationTotal.js"
+    ],
+    "C:\\Users\\Split Lease\\Documents\\Split Lease\\app\\src\\logic\\constants\\pricingConstants.js": [
+      "calculateGuestFacingPrice.js"
+    ],
+    "getNightlyRateByFrequency.js": [
+      "calculatePricingBreakdown.js",
+      "__tests__\\getNightlyRateByFrequency.test.js"
+    ],
+    "calculateFourWeekRent.js": [
+      "calculatePricingBreakdown.js",
+      "__tests__\\calculateFourWeekRent.test.js"
+    ],
+    "calculateReservationTotal.js": [
+      "calculatePricingBreakdown.js",
+      "__tests__\\calculateReservationTotal.test.js"
+    ],
+    "calculateGuestFacingPrice.js": [
+      "__tests__\\calculateGuestFacingPrice.test.js"
+    ],
+    "calculatePricingBreakdown.js": [
+      "__tests__\\calculatePricingBreakdown.test.js"
+    ],
+    "calculateQuickProposal.js": [
+      "__tests__\\calculateQuickProposal.test.js",
+      "__tests__\\calculateQuickProposal.test.js",
+      "__tests__\\calculateQuickProposal.test.js",
+      "__tests__\\calculateQuickProposal.test.js",
+      "__tests__\\calculateQuickProposal.test.js"
+    ]
+  }
+}
