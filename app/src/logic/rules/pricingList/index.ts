@@ -10,3 +10,16 @@
 export { isPricingListValid } from './isPricingListValid.js';
 export { canCalculatePricing } from './canCalculatePricing.js';
 export { shouldRecalculatePricing } from './shouldRecalculatePricing.js';
+
+export type {
+  CalculationPrerequisites,
+  ListingRateField,
+  ListingWithRates,
+  NormalizedRate,
+  PricingArray,
+  PricingList,
+  PricingListFieldNames,
+  PricingValidationCriteria,
+  RateFieldMapping,
+  RecalculationTrigger
+} from './types.js';

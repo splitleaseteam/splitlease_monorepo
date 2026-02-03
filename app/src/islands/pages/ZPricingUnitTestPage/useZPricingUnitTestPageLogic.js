@@ -13,12 +13,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants.js';
 import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
-import { adaptPricingListFromSupabase } from '../../../logic/processors/pricingList/adaptPricingListFromSupabase.js';
+import { adaptPricingListFromSupabase } from '../../../logic/processors/pricingList/adaptPricingListFromSupabase.ts';
 import {
   calculateCombinedMarkup,
   calculateMonthlyAvgNightly,
   calculateAverageWeeklyPrice
-} from '../../../logic/calculators/pricingList/index.js';
+} from '../../../logic/calculators/pricingList/index.ts';
 import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
 
 // ─────────────────────────────────────────────────────────────

@@ -9,11 +9,11 @@
  * @rule Scalar markups must be between 0 and 1.
  * @rule At least one nightly price must be non-null.
  *
- * @param {object} params - Named parameters.
- * @param {object} params.pricingList - The pricing list object to validate.
- * @returns {boolean} True if valid, false otherwise.
+ * @param params - Named parameters.
+ * @returns True if valid, false otherwise.
  *
  * @example
+ * ```ts
  * isPricingListValid({
  *   pricingList: {
  *     hostCompensation: [null, 100, 95, 90, 85, 80, 75],
@@ -22,17 +22,19 @@
  *   }
  * })
  * // => true
+ * ```
  */
 import { PRICING_CONSTANTS } from '../../constants/pricingConstants.js';
+import type { PricingList, PricingValidationCriteria } from './types.js';
 
-export function isPricingListValid({ pricingList }) {
+export function isPricingListValid({ pricingList }: PricingValidationCriteria): boolean {
   // Null or undefined is invalid
   if (!pricingList || typeof pricingList !== 'object') {
     return false;
   }
 
   // Validate array fields have correct length
-  const arrayFields = [
+  const arrayFields: Array<keyof PricingList & string> = [
     'hostCompensation',
     'nightlyPrice',
     'markupAndDiscountMultiplier',
@@ -40,7 +42,7 @@ export function isPricingListValid({ pricingList }) {
   ];
 
   // Map from camelCase to Bubble-style column names
-  const fieldMappings = {
+  const fieldMappings: Record<string, string[]> = {
     hostCompensation: ['hostCompensation', 'Host Compensation'],
     nightlyPrice: ['nightlyPrice', 'Nightly Price'],
     markupAndDiscountMultiplier: ['markupAndDiscountMultiplier', 'Markup and Discount Multiplier'],
@@ -49,11 +51,11 @@ export function isPricingListValid({ pricingList }) {
 
   for (const field of arrayFields) {
     const possibleNames = fieldMappings[field] || [field];
-    let foundArray = null;
+    let foundArray: unknown = null;
 
     for (const name of possibleNames) {
-      if (pricingList[name] !== undefined) {
-        foundArray = pricingList[name];
+      if ((pricingList as Record<string, unknown>)[name] !== undefined) {
+        foundArray = (pricingList as Record<string, unknown>)[name];
         break;
       }
     }
@@ -74,7 +76,7 @@ export function isPricingListValid({ pricingList }) {
   }
 
   // Validate at least one price exists
-  const nightlyPrices = pricingList.nightlyPrice || pricingList['Nightly Price'];
+  const nightlyPrices = (pricingList as Record<string, unknown>).nightlyPrice || (pricingList as Record<string, unknown>)['Nightly Price'];
   if (nightlyPrices && Array.isArray(nightlyPrices)) {
     const hasValidPrice = nightlyPrices.some(
       price => price !== null && price !== undefined && typeof price === 'number' && !isNaN(price)
@@ -85,12 +87,12 @@ export function isPricingListValid({ pricingList }) {
   }
 
   // Validate scalar markups if present
-  const combinedMarkup = pricingList.combinedMarkup ?? pricingList['Combined Markup'];
+  const combinedMarkup = (pricingList as Record<string, unknown>).combinedMarkup ?? (pricingList as Record<string, unknown>)['Combined Markup'];
   if (combinedMarkup !== undefined && combinedMarkup !== null) {
-    if (typeof combinedMarkup !== 'number' || isNaN(combinedMarkup)) {
+    if (typeof combinedMarkup !== 'number' || isNaN(combinedMarkup as number)) {
       return false;
     }
-    if (combinedMarkup < 0 || combinedMarkup > 1) {
+    if ((combinedMarkup as number) < 0 || (combinedMarkup as number) > 1) {
       return false;
     }
   }

@@ -8,13 +8,13 @@
  * @rule At least one nightly host rate must be defined (2-7 nights).
  * @rule Rate for 1 night is optional (rarely used).
  *
- * @param {object} params - Named parameters.
- * @param {object} params.listing - The listing object to check.
- * @returns {boolean} True if pricing can be calculated, false otherwise.
+ * @param params - Named parameters.
+ * @returns True if pricing can be calculated, false otherwise.
  *
  * @throws {Error} If listing is null or undefined.
  *
  * @example
+ * ```ts
  * canCalculatePricing({
  *   listing: {
  *     'nightly_rate_2_nights': 100,
@@ -27,15 +27,18 @@
  *   listing: { Name: 'Empty Listing' }
  * })
  * // => false
+ * ```
  */
-export function canCalculatePricing({ listing }) {
+import type { CalculationPrerequisites, ListingRateField } from './types.js';
+
+export function canCalculatePricing({ listing }: CalculationPrerequisites): boolean {
   // No Fallback: Validate listing exists
   if (!listing) {
     throw new Error('canCalculatePricing: listing is required');
   }
 
   // Check for any valid host rate
-  const rateFields = [
+  const rateFields: ListingRateField[] = [
     'nightly_rate_2_nights',
     'nightly_rate_3_nights',
     'nightly_rate_4_nights',
@@ -45,7 +48,7 @@ export function canCalculatePricing({ listing }) {
   ];
 
   for (const field of rateFields) {
-    const value = listing[field];
+    const value = (listing as Record<string, unknown>)[field];
     if (value !== null && value !== undefined && typeof value === 'number' && !isNaN(value) && value > 0) {
       return true;
     }

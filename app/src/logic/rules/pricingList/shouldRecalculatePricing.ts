@@ -9,23 +9,24 @@
  * @rule Recalculate if pricing list is missing or invalid.
  * @rule Recalculate if markup settings have changed.
  *
- * @param {object} params - Named parameters.
- * @param {object} params.listing - Current listing data.
- * @param {object|null} params.pricingList - Existing pricing list (null if none).
- * @returns {boolean} True if recalculation needed, false otherwise.
+ * @param params - Named parameters.
+ * @returns True if recalculation needed, false otherwise.
  *
  * @throws {Error} If listing is null or undefined.
  *
  * @example
+ * ```ts
  * shouldRecalculatePricing({
  *   listing: { 'nightly_rate_2_nights': 110 },
  *   pricingList: { hostCompensation: [null, 100, ...] }
  * })
  * // => true (rate changed from 100 to 110)
+ * ```
  */
 import { isPricingListValid } from './isPricingListValid.js';
+import type { ListingRateField, RateFieldMapping, RecalculationTrigger } from './types.js';
 
-export function shouldRecalculatePricing({ listing, pricingList }) {
+export function shouldRecalculatePricing({ listing, pricingList }: RecalculationTrigger): boolean {
   // No Fallback: Validate listing
   if (!listing) {
     throw new Error('shouldRecalculatePricing: listing is required');
@@ -42,9 +43,9 @@ export function shouldRecalculatePricing({ listing, pricingList }) {
   }
 
   // Compare host rates with stored compensation
-  const hostCompensation = pricingList.hostCompensation || pricingList['Host Compensation'] || [];
+  const hostCompensation = (pricingList as Record<string, unknown>).hostCompensation || (pricingList as Record<string, unknown>)['Host Compensation'] || [];
 
-  const rateFieldMapping = [
+  const rateFieldMapping: RateFieldMapping[] = [
     { field: 'nightly_rate_1_night', index: 0 },
     { field: 'nightly_rate_2_nights', index: 1 },
     { field: 'nightly_rate_3_nights', index: 2 },
@@ -55,7 +56,7 @@ export function shouldRecalculatePricing({ listing, pricingList }) {
   ];
 
   for (const { field, index } of rateFieldMapping) {
-    const listingRate = normalizeRate(listing[field]);
+    const listingRate = normalizeRate((listing as Record<string, unknown>)[field]);
     const storedRate = normalizeRate(hostCompensation[index]);
 
     // If either is null and the other isn't, or values differ
@@ -70,10 +71,10 @@ export function shouldRecalculatePricing({ listing, pricingList }) {
 
 /**
  * Normalize a rate value for comparison.
- * @param {*} value - The value to normalize.
- * @returns {number|null} Normalized rate.
+ * @param value - The value to normalize.
+ * @returns Normalized rate.
  */
-function normalizeRate(value) {
+function normalizeRate(value: unknown): number | null {
   if (value === undefined || value === null) {
     return null;
   }
