@@ -167,9 +167,15 @@ const GoogleMap = forwardRef(({
       return startingPrice;
     }
 
-    const pricingListNightly = Number(listing.pricingList?.nightlyPrice?.[selectedNightsCount - 1])
-    if (!Number.isNaN(pricingListNightly) && pricingListNightly > 0) {
-      return pricingListNightly
+    if (listing.pricingList?.nightlyPrice) {
+      const index = selectedNightsCount - 1
+      const rawValue = listing.pricingList.nightlyPrice[index]
+      const parsed = Number(rawValue)
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed
+      }
+
+      return startingPrice
     }
 
     try {

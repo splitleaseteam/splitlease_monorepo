@@ -10,7 +10,7 @@
  *
  * REFACTORED: Added React.memo wrapper (Golden Rule C)
  */
-import { memo, useRef, useMemo } from 'react';
+import { memo, useRef, useMemo, useCallback } from 'react';
 import { useImageCarousel } from '../../../hooks/useImageCarousel.js';
 import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
 import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
@@ -85,6 +85,21 @@ const PropertyCard = memo(function PropertyCard({
     return Number.isNaN(listingStarting) ? 0 : listingStarting
   }, [listing.pricingList?.startingNightlyPrice, listing['Starting nightly price'], listing.price?.starting])
 
+  const getPricingListNightlyPrice = useCallback((nightsCount) => {
+    if (!listing.pricingList?.nightlyPrice || nightsCount < 1) {
+      return null
+    }
+
+    const index = nightsCount - 1
+    const rawValue = listing.pricingList.nightlyPrice[index]
+    const parsed = Number(rawValue)
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      return parsed
+    }
+
+    return null
+  }, [listing.pricingList?.nightlyPrice])
+
   // Calculate dynamic price - memoized for performance
   const dynamicPrice = useMemo(() => {
     const nightsCount = selectedNightsCount;
@@ -94,9 +109,13 @@ const PropertyCard = memo(function PropertyCard({
       return startingPrice;
     }
 
-    const pricingListNightly = Number(listing.pricingList?.nightlyPrice?.[nightsCount - 1])
-    if (!Number.isNaN(pricingListNightly) && pricingListNightly > 0) {
+    const pricingListNightly = getPricingListNightlyPrice(nightsCount)
+    if (pricingListNightly !== null) {
       return pricingListNightly
+    }
+
+    if (listing.pricingList) {
+      return startingPrice
     }
 
     try {
@@ -127,7 +146,7 @@ const PropertyCard = memo(function PropertyCard({
     selectedNightsCount,
     startingPrice,
     listing._id,
-    listing.pricingList?.nightlyPrice,
+    getPricingListNightlyPrice,
     listing.rentalType,
     variant
   ]);
