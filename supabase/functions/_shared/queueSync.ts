@@ -152,7 +152,7 @@ export async function enqueueBubbleSync(
       } else {
         console.log(`[QueueSync] Enqueued: ${item.table}/${item.recordId} (${item.operation}, seq: ${item.sequence})`);
       }
-    } catch (_err) {
+    } catch (err) {
       // Log but continue - don't fail the main operation
       console.error(`[QueueSync] Error enqueuing item:`, err);
     }
@@ -220,7 +220,7 @@ export function triggerQueueProcessing(
     });
 
     console.log('[QueueSync] Queue processing triggered');
-  } catch (_err) {
+  } catch (err) {
     // Non-blocking - log and continue
     console.warn('[QueueSync] Failed to trigger queue (non-blocking):', err);
   }
@@ -276,7 +276,7 @@ export function triggerProposalMessaging(
     }).catch((err) => {
       console.warn('[QueueSync] Messaging trigger failed (non-blocking):', err.message);
     });
-  } catch (_err) {
+  } catch (err) {
     // Non-blocking - log and continue
     console.warn('[QueueSync] Failed to trigger messaging (non-blocking):', err);
   }
