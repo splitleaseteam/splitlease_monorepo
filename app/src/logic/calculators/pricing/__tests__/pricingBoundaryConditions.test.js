@@ -435,18 +435,16 @@ describe('Pricing Boundary Conditions', () => {
   // Array Index Boundaries (PricingList)
   // ============================================================================
   describe('pricing list array boundaries', () => {
-    it('should handle first element (index 0 = 1 night)', () => {
-      // Index 0 represents 1 night (though min is 2 nights in practice)
+    it('should reject nightsSelected of 1 (below minimum)', () => {
       const listing = {
         'nightly_rate_1_night': 200
       };
 
-      const result = getNightlyRateByFrequency({
+      // Nights selected 1 is below the valid range (2-7)
+      expect(() => getNightlyRateByFrequency({
         listing,
-        nightsSelected: 1 // This will fail validation, but tests the mapping
-      });
-      // Note: nightsSelected: 1 is below range, so this throws
-      expect(result).toBeUndefined();
+        nightsSelected: 1
+      })).toThrow('nightsSelected must be between 2-7');
     });
 
     it('should handle last element (index 6 = 7 nights)', () => {
@@ -526,8 +524,9 @@ describe('Pricing Boundary Conditions', () => {
         nightsCount: 4
       });
 
-      // Should round to 2 decimal places
-      expect(result).toBeCloseTo(117, 2);
+      // The actual calculation: 99.995 * 4 = 399.98, markup = 67.9966, total = 467.9766, per night = 116.99415
+      // Rounding to 2 decimals gives 116.99
+      expect(result).toBeCloseTo(116.99, 2);
     });
 
     it('should handle repeating decimals in division', () => {

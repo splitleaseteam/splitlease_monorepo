@@ -605,9 +605,11 @@ describe('Pricing Calculator Integration Tests', () => {
         reservationWeeks: 13
       });
 
+      // 60 * 4 * 4 = 960 (fourWeekRent)
+      // 960 * (13/4) = 3120 (reservationTotal)
       expect(breakdown.nightlyPrice).toBe(60);
-      expect(breakdown.reservationTotal).toBe(960);
-      expect(breakdown.grandTotal).toBe(1000);
+      expect(breakdown.reservationTotal).toBe(3120);
+      expect(breakdown.grandTotal).toBe(3160); // + cleaning fee
     });
 
     it('should calculate mid-range 1-bedroom in Manhattan', () => {
@@ -623,9 +625,11 @@ describe('Pricing Calculator Integration Tests', () => {
         reservationWeeks: 13
       });
 
+      // 175 * 4 * 4 = 2800 (fourWeekRent)
+      // 2800 * (13/4) = 9100 (reservationTotal)
       expect(breakdown.nightlyPrice).toBe(175);
-      expect(breakdown.reservationTotal).toBe(2800);
-      expect(breakdown.grandTotal).toBe(2900);
+      expect(breakdown.reservationTotal).toBe(9100);
+      expect(breakdown.grandTotal).toBe(9200); // + cleaning fee
     });
 
     it('should calculate luxury 2-bedroom in prime Manhattan', () => {
@@ -641,9 +645,11 @@ describe('Pricing Calculator Integration Tests', () => {
         reservationWeeks: 26
       });
 
+      // 350 * 7 * 4 = 9800 (fourWeekRent)
+      // 9800 * (26/4) = 63700 (reservationTotal)
       expect(breakdown.nightlyPrice).toBe(350);
-      expect(breakdown.reservationTotal).toBe(25480); // 9800 * 2.6
-      expect(breakdown.grandTotal).toBe(25680);
+      expect(breakdown.reservationTotal).toBe(63700); // 9800 * 6.5
+      expect(breakdown.grandTotal).toBe(63900); // + cleaning fee
     });
   });
 });

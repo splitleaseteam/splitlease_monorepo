@@ -508,9 +508,15 @@ describe('calculatePriceProximity', () => {
         proposalNightlyRate: proposalBudget
       }));
 
-      // Sorted by proximity (best to worst): 115, 125, 130, 100, 150
-      expect(candidates[0]).toBeLessThan(candidates[1]); // 115 is closest
-      expect(candidates[4]).toBeGreaterThan(candidates[3]); // 150 is farthest
+      // 115: |115-120|/120 = 5/120 = 0.0416...
+      // 125: |125-120|/120 = 5/120 = 0.0416... (same)
+      // 130: |130-120|/120 = 10/120 = 0.0833...
+      // 100: |100-120|/120 = 20/120 = 0.1667
+      // 150: |150-120|/120 = 30/120 = 0.25
+
+      expect(candidates[0]).toBeCloseTo(0.0417, 2); // 115
+      expect(candidates[1]).toBeCloseTo(0.0417, 2); // 125 (same as 115)
+      expect(candidates[4]).toBe(0.25); // 150 is farthest
     });
   });
 
@@ -534,12 +540,13 @@ describe('calculatePriceProximity', () => {
       expect(result).toBeCloseTo(0.00001, 5);
     });
 
-    it('should handle Infinity proposal rate', () => {
+    it('should handle Infinity proposal rate as NaN', () => {
       const result = calculatePriceProximity({
         candidateNightlyRate: 100,
         proposalNightlyRate: Infinity
       });
-      expect(result).toBe(0); // |100 - Infinity| / Infinity = 0
+      // |100 - Infinity| / Infinity = NaN (Infinity minus anything is Infinity, Infinity/Infinity is NaN)
+      expect(Number.isNaN(result)).toBe(true);
     });
 
     it('should handle Infinity candidate rate', () => {
