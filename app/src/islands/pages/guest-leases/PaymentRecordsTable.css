@@ -30,9 +30,16 @@
 
 .payment-records__table th,
 .payment-records__table td {
-  padding: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   text-align: left;
   border-bottom: var(--border-width-thin) solid var(--border-color);
+  vertical-align: middle;
+}
+
+/* Center the receipt column */
+.payment-records__table th:last-child,
+.payment-records__table td:last-child {
+  text-align: center;
 }
 
 .payment-records__table th {

@@ -35,7 +35,7 @@ import DateChangeRequestManager from '../shared/DateChangeRequestManager/DateCha
 // Hybrid Design Components (Charles Eames style)
 import HeroSection from './guest-leases/HeroSection.jsx';
 import CelebrationBanner from './guest-leases/CelebrationBanner.jsx';
-import StatusSummary from './guest-leases/StatusSummary.jsx';
+// StatusSummary removed - payment/document badges hidden per design
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -223,15 +223,9 @@ export default function GuestLeasesPage() {
                 {/* Hero Section (Charles Style) */}
                 <HeroSection
                   nextStay={nextStay}
-                  hostName={nextStayHost?.firstName}
                   listingName={nextStayListing?.name}
+                  totalStays={nextStay?.lease?.stays?.length || 0}
                   onViewDetails={handleViewStayDetails}
-                />
-
-                {/* Status Summary (Charles Style) */}
-                <StatusSummary
-                  paymentsStatus={paymentsStatus}
-                  documentsStatus={documentsStatus}
                 />
 
                 {/* Leases List (Paula Style cards) */}

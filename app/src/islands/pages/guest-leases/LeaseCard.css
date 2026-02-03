@@ -15,6 +15,7 @@
   border-radius: var(--rounded-xl);
   overflow: hidden;
   transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  padding: 0; /* Override global article padding from main.css */
 }
 
 .lease-card:hover {
@@ -26,7 +27,7 @@
 }
 
 /* =============================================================
-   CARD HEADER (matches design: padding 24px, min-height 80px)
+   CARD HEADER
    ============================================================= */
 .lease-card__header {
   display: flex;
@@ -55,7 +56,7 @@
   min-width: 0;
 }
 
-/* Property Thumbnail (matches design: 52px) */
+/* Property Thumbnail */
 .lease-card__image {
   width: 52px;
   height: 52px;
@@ -115,7 +116,7 @@
   display: none;
 }
 
-/* Status Badge (matches design) */
+/* Status Badge */
 .lease-card__status {
   display: inline-flex;
   align-items: center;
@@ -164,7 +165,7 @@
   gap: var(--spacing-lg);
 }
 
-/* Expand Toggle (matches design: 48px touch target) */
+/* Expand Toggle */
 .lease-card__toggle {
   width: var(--touch-min);
   height: var(--touch-min);
@@ -200,6 +201,12 @@
   border-bottom: none;
 }
 
+.lease-card__empty-text {
+  font-size: var(--text-sm);
+  color: var(--text-gray);
+  margin: 0;
+}
+
 .lease-card__section--emergency {
   text-align: center;
   padding-top: var(--spacing-2xl);
@@ -213,7 +220,12 @@
   margin-bottom: var(--spacing-lg);
 }
 
-/* Section Title (matches design: 18px, margin-bottom 16px) */
+.lease-card__section-header .btn {
+  flex-shrink: 0;
+  width: auto;
+}
+
+/* Section Title */
 .lease-card__section-title {
   font-size: var(--text-lg);
   font-weight: var(--font-weight-bold);
@@ -224,6 +236,10 @@
   gap: var(--spacing-sm);
 }
 
+.lease-card__section-header .lease-card__section-title {
+  margin-bottom: 0;
+}
+
 .lease-card__section-title svg {
   width: var(--icon-sm);
   height: var(--icon-sm);
@@ -232,7 +248,7 @@
 }
 
 /* =============================================================
-   HOST CONTACT (matches design: gap 16px, padding 16px, avatar 48px)
+   HOST CONTACT
    ============================================================= */
 .lease-card__host-card {
   display: flex;
@@ -263,10 +279,11 @@
 }
 
 .lease-card__host-name {
+  display: block;
   font-size: var(--text-md);
   font-weight: var(--font-weight-semibold);
   color: var(--text-dark);
-  margin-bottom: 2px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .lease-card__host-label {
@@ -351,7 +368,7 @@
 }
 
 /* =============================================================
-   ACTION FOOTER (matches design: padding 24px)
+   ACTION FOOTER
    ============================================================= */
 .lease-card__actions {
   background: var(--bg-off-white);

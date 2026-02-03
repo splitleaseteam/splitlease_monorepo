@@ -15,16 +15,22 @@
   min-height: calc(100vh - 200px);
   background: var(--bg-light);
   padding: var(--spacing-2xl) 0;
+  padding-top: calc(80px + var(--spacing-2xl)); /* Account for fixed header */
+}
+
+.guest-leases-page .main-content {
+  max-width: 65%;
+  padding: var(--spacing-2xl) 0; /* Override global main padding */
 }
 
 .page-container {
-  max-width: 65%;
+  max-width: 100%; /* Container is already constrained by .main-content */
   margin: 0 auto;
   padding: 0 var(--spacing-lg);
 }
 
 @media (max-width: 1200px) {
-  .page-container {
+  .guest-leases-page .main-content {
     max-width: 900px;
   }
 }
@@ -34,8 +40,12 @@
     padding: var(--spacing-lg) 0;
   }
 
-  .page-container {
+  .guest-leases-page .main-content {
     max-width: 100%;
+    padding: var(--spacing-lg) 0;
+  }
+
+  .page-container {
     padding: 0 var(--spacing-lg);
   }
 }

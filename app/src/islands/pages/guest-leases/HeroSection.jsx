@@ -2,29 +2,16 @@
  * HeroSection Component (Charles Eames Style)
  *
  * Displays the hero section with:
- * - Time-of-day greeting with host name
- * - Big date display for next stay
- * - Countdown context text
+ * - "Your Next Stay" heading
+ * - Big date display
+ * - Listing name with stay count
  * - Action link to view stay details
  */
 
 import { ChevronRight } from 'lucide-react';
 
 /**
- * Get time-of-day greeting
- * @returns {string} Greeting based on current hour
- */
-function getTimeGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-/**
- * Format date for hero display (e.g., "Feb 15")
- * @param {Date|string} date - Date to format
- * @returns {string} Formatted date
+ * Format date for hero display (e.g., "Jan 28")
  */
 function formatHeroDate(date) {
   if (!date) return '';
@@ -37,54 +24,34 @@ function formatHeroDate(date) {
 }
 
 /**
- * Calculate days until a date
- * @param {Date|string} date - Target date
- * @returns {number} Days until date
+ * Get day of week name
  */
-function getDaysUntil(date) {
-  if (!date) return 0;
-  const target = new Date(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  target.setHours(0, 0, 0, 0);
-  const diffTime = target.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+function getDayName(date) {
+  if (!date) return '';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { weekday: 'long' });
 }
 
 export default function HeroSection({
   nextStay,
-  hostName,
   listingName,
+  totalStays = 0,
   onViewDetails
 }) {
-  // If no next stay, don't render the hero
   if (!nextStay) return null;
 
-  const greeting = getTimeGreeting();
   const formattedDate = formatHeroDate(nextStay.checkIn);
-  const daysUntil = getDaysUntil(nextStay.checkIn);
-
-  // Build context message
-  let contextMessage = '';
-  if (daysUntil === 0) {
-    contextMessage = `Your stay at ${listingName || 'your rental'} begins today`;
-  } else if (daysUntil === 1) {
-    contextMessage = `Your stay at ${listingName || 'your rental'} begins tomorrow`;
-  } else if (daysUntil > 0) {
-    contextMessage = `Your next stay at ${listingName || 'your rental'} begins in ${daysUntil} days`;
-  } else {
-    // Stay has already started
-    contextMessage = `Your stay at ${listingName || 'your rental'} is in progress`;
-  }
+  const dayName = getDayName(nextStay.checkIn);
 
   return (
     <section className="hero" aria-labelledby="hero-heading">
-      <div className="hero__greeting">
-        {greeting} from <span className="hero__greeting-name">{hostName || 'your host'}</span>
-      </div>
+      <div className="hero__greeting">Your Next Stay</div>
       <h1 id="hero-heading" className="visually-hidden">Your next stay</h1>
       <div className="hero__date">{formattedDate}</div>
-      <div className="hero__context">{contextMessage}</div>
+      <div className="hero__context">
+        {listingName || 'Your rental'} – {totalStays} {totalStays === 1 ? 'stay' : 'stays'} starting {dayName}
+      </div>
       <button
         className="hero__action"
         onClick={onViewDetails}
