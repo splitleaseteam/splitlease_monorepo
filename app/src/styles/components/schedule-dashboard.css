@@ -917,6 +917,18 @@
   color: var(--schedule-text);
 }
 
+.buyout-panel__price-row--note {
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+  font-style: italic;
+  padding: 0.25rem 0;
+}
+
+.buyout-panel__price-row--free {
+  color: #16a34a;
+  font-weight: 500;
+}
+
 .buyout-panel__message {
   margin-bottom: 1rem;
 }
@@ -5003,6 +5015,18 @@
   height: 1px;
   background: rgba(255, 255, 255, 0.2);
   margin: 0.4rem 0;
+}
+
+.buyout-panel__tooltip-row--note {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding-top: 0.25rem;
+}
+
+.buyout-panel__tooltip-row--free {
+  color: #4ADE80;
+  font-weight: 500;
 }
 
 /* Cautious button state (low offer when less flexible) */

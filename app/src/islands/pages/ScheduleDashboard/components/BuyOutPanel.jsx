@@ -17,9 +17,10 @@
  * - If Delta >= 2 (more flexible): -10% button is normal, green feedback
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useFeeCalculation } from '../../../../logic/hooks/useFeeCalculation';
+import { calculateTransactionFee, calculatePaymentBreakdown } from '../../../../logic/calculators/feeCalculations';
 import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
 
 // ============================================================================
@@ -102,13 +103,72 @@ function LoadingSpinner() {
 
 /**
  * Hover tooltip for fee breakdown (Layer 2 disclosure)
+ * Shows different fee structures based on transaction type:
+ * - Buyout: 1.5% per party
+ * - Swap: $5 flat ($2.50 each)
+ * - Share: Free
  */
-function FeeTooltip({ feeBreakdown, children }) {
+function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = 'Roommate', children }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef(null);
 
+  // Calculate transaction-specific fees
+  const transactionFees = useMemo(() => {
+    if (!feeBreakdown?.basePrice) return null;
+    return calculatePaymentBreakdown(transactionType, feeBreakdown.basePrice);
+  }, [feeBreakdown?.basePrice, transactionType]);
+
   if (!feeBreakdown) return children;
 
+  // Share: No tooltip needed (free)
+  if (transactionType === 'share') {
+    return (
+      <div
+        className="buyout-panel__tooltip-wrapper"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        ref={tooltipRef}
+      >
+        {children}
+        {showTooltip && (
+          <div className="buyout-panel__tooltip" role="tooltip">
+            <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--free">
+              <span>Sharing is free</span>
+              <span>$0.00</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Swap: $5 flat fee
+  if (transactionType === 'swap') {
+    return (
+      <div
+        className="buyout-panel__tooltip-wrapper"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        ref={tooltipRef}
+      >
+        {children}
+        {showTooltip && (
+          <div className="buyout-panel__tooltip" role="tooltip">
+            <div className="buyout-panel__tooltip-row">
+              <span>Swap Fee</span>
+              <span>$5.00</span>
+            </div>
+            <div className="buyout-panel__tooltip-divider" />
+            <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--note">
+              <span>Split $2.50 each</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Buyout: 1.5% per party
   return (
     <div
       className="buyout-panel__tooltip-wrapper"
@@ -117,20 +177,23 @@ function FeeTooltip({ feeBreakdown, children }) {
       ref={tooltipRef}
     >
       {children}
-      {showTooltip && (
+      {showTooltip && transactionFees && (
         <div className="buyout-panel__tooltip" role="tooltip">
           <div className="buyout-panel__tooltip-row">
-            <span>Offer</span>
-            <span>${feeBreakdown.basePrice.toFixed(2)}</span>
+            <span>Base Offer</span>
+            <span>${transactionFees.baseAmount.toFixed(2)}</span>
           </div>
           <div className="buyout-panel__tooltip-row">
-            <span>Fee ({feeBreakdown.effectiveRate}%)</span>
-            <span>${feeBreakdown.totalFee.toFixed(2)}</span>
+            <span>Your Fee (1.5%)</span>
+            <span>${transactionFees.fees.requestorFee.toFixed(2)}</span>
           </div>
           <div className="buyout-panel__tooltip-divider" />
           <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--total">
-            <span>Total</span>
-            <span>${feeBreakdown.totalPrice.toFixed(2)}</span>
+            <span>You Pay</span>
+            <span>${transactionFees.requestorPays.toFixed(2)}</span>
+          </div>
+          <div className="buyout-panel__tooltip-row buyout-panel__tooltip-row--note">
+            <span>({roommateName} also pays ${transactionFees.fees.recipientFee.toFixed(2)} fee)</span>
           </div>
         </div>
       )}
@@ -139,9 +202,12 @@ function FeeTooltip({ feeBreakdown, children }) {
 }
 
 /**
- * Price breakdown display
+ * Price breakdown display - shows fee structure based on transaction type
+ * - Buyout: 1.5% per party
+ * - Swap: $5 flat ($2.50 each)
+ * - Share: Free
  */
-function PriceBreakdown({ feeBreakdown, isCalculating, priceLabel = 'Base price' }) {
+function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'buyout', roommateName = 'Roommate', priceLabel = 'Base offer' }) {
   if (isCalculating) {
     return (
       <div className="buyout-panel__pricing buyout-panel__pricing--loading">
@@ -155,20 +221,53 @@ function PriceBreakdown({ feeBreakdown, isCalculating, priceLabel = 'Base price'
     return null;
   }
 
+  // Share: Free, no fees
+  if (transactionType === 'share') {
+    return (
+      <div className="buyout-panel__pricing">
+        <div className="buyout-panel__price-row buyout-panel__price-row--free">
+          <span>Sharing is free</span>
+          <span>$0.00</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Swap: $5 flat fee
+  if (transactionType === 'swap') {
+    return (
+      <div className="buyout-panel__pricing">
+        <div className="buyout-panel__price-row">
+          <span>Swap Fee</span>
+          <span>$5.00</span>
+        </div>
+        <div className="buyout-panel__price-row buyout-panel__price-row--note">
+          <span>(Split $2.50 each)</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Buyout: 1.5% per party
+  const transactionFees = calculatePaymentBreakdown(transactionType, feeBreakdown.basePrice);
+
   return (
     <div className="buyout-panel__pricing">
       <div className="buyout-panel__price-row">
         <span>{priceLabel}</span>
-        <span>${feeBreakdown.basePrice.toFixed(2)}</span>
+        <span>${transactionFees.baseAmount.toFixed(2)}</span>
       </div>
       <div className="buyout-panel__price-row">
-        <span>Platform fee ({feeBreakdown.effectiveRate}%)</span>
-        <span>${feeBreakdown.totalFee.toFixed(2)}</span>
+        <span>Your Fee (1.5%)</span>
+        <span>${transactionFees.fees.requestorFee.toFixed(2)}</span>
       </div>
       <div className="buyout-panel__price-row buyout-panel__price-row--divider" aria-hidden="true" />
       <div className="buyout-panel__price-row buyout-panel__price-row--total">
-        <span>Total</span>
-        <span>${feeBreakdown.totalPrice.toFixed(2)}</span>
+        <span>You Pay</span>
+        <span>${transactionFees.requestorPays.toFixed(2)}</span>
+      </div>
+      <div className="buyout-panel__price-row buyout-panel__price-row--note">
+        <span>({roommateName} also pays ${transactionFees.fees.recipientFee.toFixed(2)} fee)</span>
       </div>
     </div>
   );
@@ -360,10 +459,10 @@ function SwapModeContent({
         </div>
       </div>
 
-      {/* Swap Info */}
+      {/* Swap Fee Info */}
       <div className="buyout-panel__swap-info">
         <span className="buyout-panel__swap-info-icon" aria-hidden="true">&#x1F4B0;</span>
-        <span>Swaps are free — no platform fee applies.</span>
+        <span>Swap Fee: $5.00 (split $2.50 each)</span>
       </div>
 
       {/* Message Input (optional) */}
@@ -907,7 +1006,11 @@ export default function BuyOutPanel({
 
           {/* Actions - Send button with fee tooltip on hover */}
           <div className={`buyout-panel__actions ${compact ? 'buyout-panel__actions--compact' : ''}`}>
-            <FeeTooltip feeBreakdown={feeBreakdown}>
+            <FeeTooltip
+              feeBreakdown={feeBreakdown}
+              transactionType={requestType}
+              roommateName={roommateName}
+            >
               <button
                 type="button"
                 className={`buyout-panel__btn buyout-panel__btn--primary buyout-panel__btn--send ${
@@ -925,7 +1028,7 @@ export default function BuyOutPanel({
                   </>
                 ) : (
                   requestType === 'share'
-                    ? `Send Share Request ($${totalOfferPrice.toFixed(0)})`
+                    ? 'Send Share Request (Free)'
                     : `Send Offer ($${totalOfferPrice.toFixed(0)})`
                 )}
               </button>
