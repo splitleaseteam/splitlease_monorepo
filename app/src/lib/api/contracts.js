@@ -1,6 +1,49 @@
-// Contract Generator API Client
+// Lease Documents API Client
 
-const CONTRACT_FUNCTION_URL = '/functions/v1/lease-documents';
+const CONTRACT_FUNCTION_PATH = '/functions/v1/lease-documents';
+const DEFAULT_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const DEFAULT_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const DEFAULT_CONTRACT_FUNCTION_URL = DEFAULT_SUPABASE_URL
+  ? `${DEFAULT_SUPABASE_URL}${CONTRACT_FUNCTION_PATH}`
+  : null;
+
+export async function invokeLeaseDocuments({
+  action,
+  payload = {},
+  endpointUrl = DEFAULT_CONTRACT_FUNCTION_URL,
+  anonKey = DEFAULT_SUPABASE_ANON_KEY
+} = {}) {
+  if (!action) {
+    throw new Error('action is required');
+  }
+
+  if (!endpointUrl) {
+    throw new Error('Missing Supabase URL for lease-documents');
+  }
+
+  if (!anonKey) {
+    throw new Error('Missing Supabase anon key for lease-documents');
+  }
+
+  const response = await fetch(endpointUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${anonKey}`,
+      apikey: anonKey
+    },
+    body: JSON.stringify({ action, payload })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const errorMessage = data?.error?.message || data?.error || `Contract generation failed (${response.status})`;
+    throw new Error(errorMessage);
+  }
+
+  return data;
+}
 
 /**
  * Generate a contract document
@@ -9,17 +52,7 @@ const CONTRACT_FUNCTION_URL = '/functions/v1/lease-documents';
  * @returns {Promise<object>} - The result with document URLs
  */
 export async function generateContract(action, payload) {
-  const { supabase } = await import('../supabase.js');
-
-  const { data, error } = await supabase.functions.invoke('lease-documents', {
-    body: { action, payload }
-  });
-
-  if (error) {
-    throw new Error(`Contract generation failed: ${error.message}`);
-  }
-
-  return data;
+  return invokeLeaseDocuments({ action, payload });
 }
 
 /**
@@ -27,15 +60,10 @@ export async function generateContract(action, payload) {
  * @returns {Promise<Array>} - List of available templates
  */
 export async function listTemplates() {
-  const { supabase } = await import('../supabase.js');
-
-  const { data, error } = await supabase.functions.invoke('lease-documents', {
-    body: { action: 'list_templates', payload: {} }
+  const data = await invokeLeaseDocuments({
+    action: 'list_templates',
+    payload: {}
   });
-
-  if (error) {
-    throw new Error(`Failed to list templates: ${error.message}`);
-  }
 
   return data.templates || [];
 }
@@ -46,15 +74,10 @@ export async function listTemplates() {
  * @returns {Promise<object>} - Template schema with fields
  */
 export async function getTemplateSchema(action) {
-  const { supabase } = await import('../supabase.js');
-
-  const { data, error } = await supabase.functions.invoke('lease-documents', {
-    body: { action: 'get_template_schema', payload: { action } }
+  const data = await invokeLeaseDocuments({
+    action: 'get_template_schema',
+    payload: { action }
   });
-
-  if (error) {
-    throw new Error(`Failed to get template schema: ${error.message}`);
-  }
 
   return data.schema;
 }

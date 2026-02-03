@@ -92,13 +92,11 @@ This report identifies **65+ undocumented features** across Edge Functions, page
 |----------|---------|----------|
 | `ai-tools/` | AI tools interface | MEDIUM |
 | `ai-room-redesign/` | AI-powered room design | LOW |
-| `contract-generator/` | Contract generation | HIGH |
 | `document/` | Document management | HIGH |
 | `message-curation/` | Message curation admin | MEDIUM |
 | `informational-texts/` | Informational text management | MEDIUM |
 
 **Recommended Docs**:
-- `CONTRACT_GENERATOR.md` (HIGH)
 - `DOCUMENT_SYSTEM.md` (HIGH)
 - `AI_TOOLS.md` (MEDIUM)
 

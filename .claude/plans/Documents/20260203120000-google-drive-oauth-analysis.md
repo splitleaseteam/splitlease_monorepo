@@ -23,12 +23,11 @@ Split Lease has **two separate implementations** for Google Drive integration in
 ### File Locations
 - **Google Drive Uploader**: `pythonAnywhere/mysite/modules/google_drive/uploader.py`
 - **OAuth Routes**: `pythonAnywhere/mysite/modules/google_drive/routes.py`
-- **Contract Generators**:
-  - `pythonAnywhere/mysite/modules/contract_generator/periodic_tenancy/generator.py`
-  - `pythonAnywhere/mysite/modules/contract_generator/credit_card_auth/generator.py`
-  - `pythonAnywhere/mysite/modules/contract_generator/supplemental/generator.py`
-  - `pythonAnywhere/mysite/modules/contract_generator/host_payout/generator.py`
-  - `pythonAnywhere/mysite/modules/contract_generator/credit_card_auth_nonprorated/generator.py`
+- **Lease documents (Supabase)**:
+  - `supabase/functions/lease-documents/handlers/generatePeriodicTenancy.ts`
+  - `supabase/functions/lease-documents/handlers/generateCreditCardAuth.ts`
+  - `supabase/functions/lease-documents/handlers/generateSupplemental.ts`
+  - `supabase/functions/lease-documents/handlers/generateHostPayout.ts`
 
 ### Authentication Method: OAuth 2.0 User Consent Flow
 

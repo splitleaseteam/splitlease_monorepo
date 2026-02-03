@@ -50,51 +50,6 @@ ENDPOINT_TESTS = {
         'expected_status': [200, 201, 202]
     },
 
-    # Contract Generator endpoints
-    '/contract/periodic-tenancy': {
-        'method': 'POST',
-        'data': {
-            'start_date': '2025-01-01',
-            'end_date': '2025-12-31',
-            'rent_amount': '1000'
-        },
-        'expected_status': [200, 201, 202]
-    },
-    '/contract/host-payout': {
-        'method': 'POST',
-        'data': {
-            'amount': '5000',
-            'payment_date': '2025-02-01'
-        },
-        'expected_status': [200, 201, 202]
-    },
-    '/contract/supplemental': {
-        'method': 'POST',
-        'data': {
-            'property_address': '123 Test St',
-            'start_date': '2025-01-01'
-        },
-        'expected_status': [200, 201, 202]
-    },
-    '/contract/credit-card-auth': {
-        'method': 'POST',
-        'data': {
-            'tenant_name': 'Test Tenant',
-            'card_type': 'Visa',
-            'last_four': '1234'
-        },
-        'expected_status': [200, 201, 202]
-    },
-    '/contract/credit-card-auth-nonprorated': {
-        'method': 'POST',
-        'data': {
-            'tenant_name': 'Test Tenant',
-            'card_type': 'Mastercard',
-            'last_four': '5678'
-        },
-        'expected_status': [200, 201, 202]
-    },
-
     # Google Drive endpoints
     '/google_drive/status': {
         'method': 'GET',

@@ -1,14 +1,14 @@
-# Contract Generator Storage Setup - Status Report
+# Lease Documents Storage Setup - Status Report
 
 **Date**: 2026-01-28
 **Project**: Split Lease
-**Component**: Contract Generator Storage Infrastructure
+**Component**: Lease Documents Storage Infrastructure
 
 ---
 
 ## Executive Summary
 
-The Supabase Storage infrastructure for the contract generator has been **designed and documented**, but **requires manual execution** due to MCP connection limitations. All necessary SQL scripts, documentation, and integration code are ready.
+The Supabase Storage infrastructure for lease documents has been **designed and documented**, but **requires manual execution** due to MCP connection limitations. All necessary SQL scripts, documentation, and integration code are ready.
 
 ---
 
@@ -19,7 +19,7 @@ The Supabase Storage infrastructure for the contract generator has been **design
 | Storage Bucket Design | ✅ Complete | Bucket name: `contract-templates` |
 | RLS Policies Design | ✅ Complete | Public read, Authenticated write |
 | SQL Migration Script | ✅ Complete | Ready for execution |
-| Edge Function Integration | ✅ Complete | Already implemented in `contract-generator` |
+| Edge Function Integration | ✅ Complete | Already implemented in `lease-documents` |
 | Bucket Creation | ⏳ Pending | Requires manual execution or MCP connection |
 | RLS Policy Application | ⏳ Pending | Requires manual execution or MCP connection |
 | Template File Upload | ⏳ Pending | Files not available, need manual upload |
@@ -110,23 +110,21 @@ The following DOCX template files need to be uploaded manually:
 
 ## Edge Function Integration
 
-The `contract-generator` Edge Function already has complete storage integration:
+The `lease-documents` Edge Function already has complete storage integration:
 
-### File: `supabase/functions/contract-generator/lib/storage.ts`
+### File: `supabase/functions/lease-documents/lib/supabaseStorage.ts`
 
 **Key Functions**:
-- `loadTemplateFromStorage()` - Downloads template from bucket
-- `verifyStorageAccess()` - Checks bucket accessibility
-- `getTemplatePublicUrl()` - Generates public URL for templates
-- `AVAILABLE_TEMPLATES` - Metadata for all 5 contract types
+- `uploadToSupabaseStorage()` - Uploads generated documents
+- `downloadAndRenderTemplate()` (from `templateRenderer.ts`) - Downloads templates and renders DOCX
 
 **Usage Example**:
 ```typescript
-const templateData = await loadTemplateFromStorage(
+const documentContent = await downloadAndRenderTemplate(
   supabase,
-  'periodictenancyagreement.docx'
+  'periodictenancyagreement.docx',
+  templateData
 );
-// Process template with docx library...
 ```
 
 ---
@@ -198,9 +196,9 @@ https://<PROJECT_ID>.supabase.co/storage/v1/object/public/contract-templates/per
 
 ### 4. Test Edge Function
 ```bash
-curl -X POST https://<PROJECT_ID>.supabase.co/functions/v1/contract-generator \
+curl -X POST https://<PROJECT_ID>.supabase.co/functions/v1/lease-documents \
   -H 'Content-Type: application/json' \
-  -d '{"action": "list_templates"}'
+  -d '{"action": "generate_host_payout", "payload": {"Agreement Number": "AGR-TEST-001", "Date1": "2024-01-15", "Rent1": "$1000", "Total1": "$1100"} }'
 ```
 
 Expected response:
@@ -208,15 +206,9 @@ Expected response:
 {
   "success": true,
   "data": {
-    "templates": [
-      {
-        "id": "credit_card_auth",
-        "name": "Credit Card Authorization (Prorated)",
-        "description": "Recurring credit card authorization form with prorated payments",
-        "action": "generate_credit_card_auth"
-      },
-      // ... 4 more templates
-    ]
+    "filename": "host_payout_schedule-AGR-TEST-001.docx",
+    "driveUrl": "https://drive.google.com/...",
+    "fileId": "..."
   }
 }
 ```
@@ -276,13 +268,13 @@ Expected response:
 - **Complete Setup Guide**: `.claude/plans/Documents/20260128-supabase-storage-setup-guide.md`
 - **Migration Script**: `supabase/migrations/20260128_contract_templates_storage_setup.sql`
 - **Setup Script**: `supabase/scripts/setup-contract-storage.sh`
-- **Storage Integration**: `supabase/functions/contract-generator/lib/storage.ts`
+- **Storage Integration**: `supabase/functions/lease-documents/lib/supabaseStorage.ts`
 
 ---
 
 ## Summary
 
-The Supabase Storage infrastructure for the contract generator is **fully designed and documented**, with all SQL scripts and integration code ready. The setup requires:
+The Supabase Storage infrastructure for lease documents is **fully designed and documented**, with all SQL scripts and integration code ready. The setup requires:
 
 1. ✅ **Manual execution** of migration script (5 minutes)
 2. ⏳ **Acquisition** of 5 DOCX template files (pending)

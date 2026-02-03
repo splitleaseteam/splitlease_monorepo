@@ -693,18 +693,21 @@ const response = await fetch(`${SUPABASE_URL}/functions/v1/messages`, {
 
 ---
 
-### contract-generator
+### lease-documents
 
-**Endpoint**: `POST /functions/v1/contract-generator`
+**Endpoint**: `POST /functions/v1/lease-documents`
 
-**Description**: Contract and agreement generation.
+**Description**: Lease document generation (DOCX) and upload.
 
 **Actions**:
 
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
-| `generate` | Yes | Generate lease contract |
-| `get_template` | Yes | Get contract template |
+| `generate_host_payout` | No | Generate host payout schedule form |
+| `generate_supplemental` | No | Generate supplemental agreement |
+| `generate_periodic_tenancy` | No | Generate periodic tenancy agreement |
+| `generate_credit_card_auth` | No | Generate credit card authorization form |
+| `generate_all` | No | Generate all four lease documents |
 
 ---
 

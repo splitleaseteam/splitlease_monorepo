@@ -353,7 +353,6 @@ The Edge Function test page should include the same sample payloads from `test_c
 |------|---------|
 | `modules/core/monitoring/test_config.py` | Test payloads and endpoint config |
 | `modules/core/monitoring/health_checker.py` | Test execution logic |
-| `modules/contract_generator/*/routes.py` | Endpoint implementations |
 | `modules/google_drive/uploader.py` | Google Drive OAuth integration |
 
 ### Edge Functions

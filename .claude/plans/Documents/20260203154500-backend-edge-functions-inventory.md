@@ -34,8 +34,7 @@ The Split Lease backend consists of **70 Edge Functions** following a consistent
 | **rental-applications** | Batch rental applications (admin) | get_all, get_by_proposal, update_status | Yes | ❌ |
 | **lease** | Lease management | create, get, update, sign | Yes | ❌ |
 | **leases-admin** | Admin lease operations | get_all, get_by_host, get_by_guest, update | Admin only | ❌ |
-| **lease-documents** | Lease document generation | generate, get, download | Yes | ❌ |
-| **contract-generator** | Contract PDF generation | generate | Yes | ❌ |
+| **lease-documents** | Lease document generation | generate_host_payout, generate_supplemental, generate_periodic_tenancy, generate_credit_card_auth, generate_all | No | ❌ |
 
 ### Communication Functions (4)
 
@@ -462,7 +461,6 @@ Automatically removes Bubble-incompatible fields:
 **Critical Missing Documentation**:
 - rental-application, rental-applications
 - lease, leases-admin, lease-documents
-- contract-generator
 - All pricing functions (11)
 - All bidding functions (3)
 - All calendar/scheduling functions (3)
@@ -507,8 +505,8 @@ Automatically removes Bubble-incompatible fields:
 ### Authentication & User Management (16 functions)
 auth-user, verify-users, identity-verification, user-archetype, archetype-recalculation-job, guest-management, magic-login-links, admin-query-auth
 
-### Proposals & Rentals (7 functions)
-proposal, rental-application, rental-applications, lease, leases-admin, lease-documents, contract-generator
+### Proposals & Rentals (6 functions)
+proposal, rental-application, rental-applications, lease, leases-admin, lease-documents
 
 ### Listings & Search (3 functions)
 listing, quick-match, calendar-automation

@@ -2,11 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import {
-  generateCreditCardAuth,
-  generateCreditCardAuthNonProrated,
-  generateHostPayout,
-  generatePeriodicTenancy,
-  generateSupplemental,
+  generateContract,
   listTemplates,
   getTemplateSchema
 } from '../lib/api/contracts.js';
@@ -25,26 +21,7 @@ export function useContractGenerator() {
     setResult(null);
 
     try {
-      let response;
-      switch (action) {
-        case 'generate_credit_card_auth':
-          response = await generateCreditCardAuth(payload);
-          break;
-        case 'generate_credit_card_auth_nonprorated':
-          response = await generateCreditCardAuthNonProrated(payload);
-          break;
-        case 'generate_host_payout':
-          response = await generateHostPayout(payload);
-          break;
-        case 'generate_periodic_tenancy':
-          response = await generatePeriodicTenancy(payload);
-          break;
-        case 'generate_supplemental':
-          response = await generateSupplemental(payload);
-          break;
-        default:
-          throw new Error(`Unknown action: ${action}`);
-      }
+      const response = await generateContract(action, payload);
 
       if (response.success) {
         setResult(response.data);

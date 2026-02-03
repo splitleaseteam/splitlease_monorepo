@@ -661,12 +661,6 @@ pythonAnywhere/
 │   ├── daily-login-check/      # Login monitoring
 │   ├── modules/                # Application modules
 │   │   ├── calendar_automation/    # Calendar sync
-│   │   ├── contract_generator/     # Contract/document generation
-│   │   │   ├── credit_card_auth/
-│   │   │   ├── credit_card_auth_nonprorated/
-│   │   │   ├── host_payout/
-│   │   │   ├── periodic_tenancy/
-│   │   │   └── supplemental/
 │   │   ├── core/                   # Core utilities
 │   │   │   └── monitoring/
 │   │   ├── curated_listings_pdf/   # PDF generation
