@@ -249,20 +249,25 @@ async function handleListUsers(
 ) {
   const { limit = 20, offset = 0 } = payload;
 
-  const { data, error, _count } = await supabase
+  const { data, error, count } = await supabase
     .from('user')
     .select(USER_SELECT_COLUMNS, { count: 'exact' })
     .order('Created Date', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('[verify-users] List users error:', error);
+    console.error('[verify-users] List users error:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
     throw new Error(`Failed to fetch users: ${error.message}`);
   }
 
   const users = (data || []).map(toJsUser);
 
-  return { users, total: count || 0, limit, offset };
+  return { users, total: count ?? 0, limit, offset };
 }
 
 /**
