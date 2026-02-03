@@ -533,22 +533,28 @@ const PropertyCard = memo(function PropertyCard({
             <div className="availability-note">Message Split Lease<br/>for Availability</div>
           )}
           {/* Debug: Show pricingList min nightly price */}
-          {variant === 'search' && listing.pricingList && (
-            <div style={{
-              marginTop: '8px',
-              padding: '4px 6px',
-              fontSize: '10px',
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffc107',
-              borderRadius: '4px',
-              color: '#856404'
-            }}>
-              <div><strong>Min:</strong> ${listing.pricingList.startingNightlyPrice?.toFixed(2) || 'N/A'}</div>
-              {selectedNightsCount >= 1 && (
-                <div><strong>{selectedNightsCount}N:</strong> ${listing.pricingList.nightlyPrice?.[selectedNightsCount - 1]?.toFixed(2) || 'N/A'}</div>
-              )}
-            </div>
-          )}
+          {variant === 'search' && listing.pricingList && (() => {
+            // Calculate actual minimum: use startingNightlyPrice if valid, otherwise find min from nightlyPrice array
+            const storedMin = Number(listing.pricingList.startingNightlyPrice);
+            const nightlyPrices = listing.pricingList.nightlyPrice || [];
+            const validPrices = nightlyPrices.filter(p => Number(p) > 0);
+            const arrayMin = validPrices.length > 0 ? Math.min(...validPrices) : null;
+            const displayMin = (storedMin > 0) ? storedMin : arrayMin;
+
+            return (
+              <div style={{
+                marginTop: '8px',
+                padding: '4px 6px',
+                fontSize: '10px',
+                backgroundColor: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '4px',
+                color: '#856404'
+              }}>
+                <div><strong>Min:</strong> {displayMin ? `$${displayMin.toFixed(2)}` : 'N/A'}</div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </a>
