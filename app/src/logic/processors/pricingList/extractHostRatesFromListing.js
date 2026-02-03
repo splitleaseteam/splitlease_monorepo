@@ -16,12 +16,12 @@
  *
  * @example
  * extractHostRatesFromListing({
- *   '💰Nightly Host Rate for 2 nights': 100,
- *   '💰Nightly Host Rate for 3 nights': 95,
- *   '💰Nightly Host Rate for 4 nights': 90,
- *   '💰Nightly Host Rate for 5 nights': 85,
- *   '💰Nightly Host Rate for 6 nights': 80,
- *   '💰Nightly Host Rate for 7 nights': 75
+ *   nightly_rate_2_nights: 100,
+ *   nightly_rate_3_nights: 95,
+ *   nightly_rate_4_nights: 90,
+ *   nightly_rate_5_nights: 85,
+ *   nightly_rate_6_nights: 80,
+ *   nightly_rate_7_nights: 75
  * })
  * // => {
  * //   rate1Night: null,
@@ -39,18 +39,18 @@ export function extractHostRatesFromListing(listing) {
   }
 
   return {
-    rate1Night: normalizeRate(listing['💰Nightly Host Rate for 1 night']),
-    rate2Nights: normalizeRate(listing['💰Nightly Host Rate for 2 nights']),
-    rate3Nights: normalizeRate(listing['💰Nightly Host Rate for 3 nights']),
-    rate4Nights: normalizeRate(listing['💰Nightly Host Rate for 4 nights']),
-    rate5Nights: normalizeRate(listing['💰Nightly Host Rate for 5 nights']),
-    rate6Nights: normalizeRate(listing['💰Nightly Host Rate for 6 nights']),
-    rate7Nights: normalizeRate(listing['💰Nightly Host Rate for 7 nights']),
+    rate1Night: normalizeRate(listing['nightly_rate_1_night']),
+    rate2Nights: normalizeRate(listing['nightly_rate_2_nights']),
+    rate3Nights: normalizeRate(listing['nightly_rate_3_nights']),
+    rate4Nights: normalizeRate(listing['nightly_rate_4_nights']),
+    rate5Nights: normalizeRate(listing['nightly_rate_5_nights']),
+    rate6Nights: normalizeRate(listing['nightly_rate_6_nights']),
+    rate7Nights: normalizeRate(listing['nightly_rate_7_nights']),
 
     // Also extract related pricing fields
-    cleaningFee: normalizeRate(listing['💰Cleaning Cost / Maintenance Fee']),
-    damageDeposit: normalizeRate(listing['💰Damage Deposit']),
-    priceOverride: normalizeRate(listing['💰Price Override'])
+    cleaningFee: normalizeRate(listing['cleaning_fee']),
+    damageDeposit: normalizeRate(listing['damage_deposit']),
+    priceOverride: normalizeRate(listing['price_override'])
   };
 }
 

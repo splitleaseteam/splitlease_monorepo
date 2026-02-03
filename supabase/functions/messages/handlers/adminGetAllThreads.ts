@@ -16,7 +16,7 @@ interface AdminThread {
   'Thread Subject': string;
   'Created Date': string;
   'Modified Date': string;
-  '~Date Last Message': string;
+  last_message_at: string;
   'Call to Action': string;
   'Proposal': string;
   'Listing': string;
@@ -131,7 +131,7 @@ export async function handleAdminGetAllThreads(
       "Thread Subject",
       "Created Date",
       "Modified Date",
-      "~Date Last Message",
+      last_message_at,
       "Call to Action",
       "Proposal",
       "Listing",

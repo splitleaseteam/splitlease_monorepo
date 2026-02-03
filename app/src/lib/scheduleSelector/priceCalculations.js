@@ -48,14 +48,14 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     weeklyMarkup: 0,
     fullTimeDiscount: 0.13,
     unusedNightsDiscountMultiplier: 0.03,
-    avgDaysPerMonth: 31
+    avgDaysPerMonth: 30.4  // Synchronized with Edge Function constant (pricing-list/utils/pricingCalculator.ts:88)
   };
 
   const rentalType = listing.rentalType || listing['rental type'] || 'Nightly';
   const weeksOffered = listing.weeksOffered || listing['Weeks offered'] || 'Every week';
-  const unitMarkup = parseFloat(listing.unitMarkup || listing['💰Unit Markup'] || 0) / 100;
-  const cleaningFee = parseFloat(listing.cleaningFee || listing['💰Cleaning Cost / Maintenance Fee'] || 0);
-  const damageDeposit = parseFloat(listing.damageDeposit || listing['💰Damage Deposit'] || 0);
+  const unitMarkup = parseFloat(listing.unitMarkup || listing['unit_markup'] || 0) / 100;
+  const cleaningFee = parseFloat(listing.cleaningFee || listing['cleaning_fee'] || 0);
+  const damageDeposit = parseFloat(listing.damageDeposit || listing['damage_deposit'] || 0);
 
   let pricePerNight = 0;
   let fourWeekRent = 0;
@@ -115,7 +115,7 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
  * Calculate Monthly rental price
  */
 function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, unitMarkup, weeksOffered) {
-  const monthlyHostRate = parseFloat(listing.monthlyHostRate || listing['💰Monthly Host Rate'] || 0);
+  const monthlyHostRate = parseFloat(listing.monthlyHostRate || listing['monthly_host_rate'] || 0);
   if (!monthlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
 
   // Step 1: Calculate Monthly Average Nightly Price
@@ -155,11 +155,16 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
   );
 
   console.log('Monthly calculation:', {
+    monthlyHostRate,
+    avgDaysPerMonth: config.avgDaysPerMonth,
     monthlyAvgNightly,
     averageWeeklyPrice,
     nightlyHostRate,
     unusedNights,
+    unusedNightsDiscountMultiplier: config.unusedNightsDiscountMultiplier,
     unusedNightsDiscountValue,
+    overallSiteMarkup: config.overallSiteMarkup,
+    unitMarkup,
     multiplier,
     totalWeeklyPrice,
     pricePerNight,
@@ -175,7 +180,7 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
  * Calculate Weekly rental price
  */
 function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, unitMarkup, weeksOffered) {
-  const weeklyHostRate = parseFloat(listing.weeklyHostRate || listing['💰Weekly Host Rate'] || 0);
+  const weeklyHostRate = parseFloat(listing.weeklyHostRate || listing['weekly_host_rate'] || 0);
   if (!weeklyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
 
   // Step 1: Calculate Prorated Nightly Host Rate
@@ -342,19 +347,19 @@ function getActualWeeksDuring4Week(weeksOffered) {
 function getNightlyRateForNights(nightsCount, listing) {
   // Map nights to price fields
   const priceFieldMap = {
-    1: listing.nightlyHostRateFor1Night || listing['💰Nightly Host Rate for 1 night'],
-    2: listing.nightlyHostRateFor2Nights || listing['💰Nightly Host Rate for 2 nights'],
-    3: listing.nightlyHostRateFor3Nights || listing['💰Nightly Host Rate for 3 nights'],
-    4: listing.nightlyHostRateFor4Nights || listing['💰Nightly Host Rate for 4 nights'],
-    5: listing.nightlyHostRateFor5Nights || listing['💰Nightly Host Rate for 5 nights'],
-    7: listing.nightlyHostRateFor7Nights || listing['💰Nightly Host Rate for 7 nights']
+    1: listing.nightlyHostRateFor1Night || listing['nightly_rate_1_night'],
+    2: listing.nightlyHostRateFor2Nights || listing['nightly_rate_2_nights'],
+    3: listing.nightlyHostRateFor3Nights || listing['nightly_rate_3_nights'],
+    4: listing.nightlyHostRateFor4Nights || listing['nightly_rate_4_nights'],
+    5: listing.nightlyHostRateFor5Nights || listing['nightly_rate_5_nights'],
+    7: listing.nightlyHostRateFor7Nights || listing['nightly_rate_7_nights']
   };
 
   const rate = parseFloat(priceFieldMap[nightsCount] || 0);
 
   // If no rate found for exact nights, fall back to 4-night rate
   if (!rate || rate === 0) {
-    return parseFloat(listing['💰Nightly Host Rate for 4 nights'] || 0);
+    return parseFloat(listing['nightly_rate_4_nights'] || 0);
   }
 
   return rate;

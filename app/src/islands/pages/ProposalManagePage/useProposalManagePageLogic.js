@@ -230,8 +230,8 @@ function normalizeListing(listing) {
     address: extractAddressString(listing['Location - Address']) || listing['Full Address'] || listing.address || '',
     rentalType: listing['rental type'] || listing.rentalType || '',
     coverPhoto: extractCoverPhotoUrl(listing['Features - Photos']) || listing['Cover Photo'] || listing.coverPhoto || null,
-    damageDeposit: listing['💰Damage Deposit'] || listing['Damage Deposit'] || listing.damageDeposit || 0,
-    cleaningCost: listing['💰Cleaning Cost / Maintenance Fee'] || listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
+    damageDeposit: listing['damage_deposit'] || listing['Damage Deposit'] || listing.damageDeposit || 0,
+    cleaningCost: listing['cleaning_fee'] || listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
     houseRules: listing['House Rules'] || listing.houseRules || []
   };
 }
@@ -499,7 +499,7 @@ export function useProposalManagePageLogic() {
         ),
         fetchInBatches(
           'listing',
-          '_id, Name, "Location - Address", "rental type", "Features - Photos", "💰Damage Deposit", "💰Cleaning Cost / Maintenance Fee"',
+          '_id, Name, "Location - Address", "rental type", "Features - Photos", "damage_deposit", "cleaning_fee"',
           listingIds
         )
       ]);

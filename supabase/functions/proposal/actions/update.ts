@@ -434,7 +434,7 @@ async function checkIsAdmin(
   _supabase: SupabaseClient,
   userId: string
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data } = await _supabase
     .from("user")
     .select(`"Toggle - Is Admin"`)
     .eq("_id", userId)

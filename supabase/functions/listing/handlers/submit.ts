@@ -173,16 +173,16 @@ function mapFieldsToSupabase(data: ListingSubmissionData): Record<string, unknow
     mapped['Weeks offered'] = data['Weekly Pattern'];
   }
   if (data['Damage Deposit'] !== undefined) {
-    mapped['💰Damage Deposit'] = data['Damage Deposit'];
+    mapped['damage_deposit'] = data['Damage Deposit'];
   }
   if (data['Maintenance Fee'] !== undefined) {
-    mapped['💰Cleaning Cost / Maintenance Fee'] = data['Maintenance Fee'];
+    mapped['cleaning_fee'] = data['Maintenance Fee'];
   }
   if (data['Monthly Compensation'] !== undefined) {
-    mapped['💰Monthly Host Rate'] = data['Monthly Compensation'];
+    mapped['monthly_host_rate'] = data['Monthly Compensation'];
   }
   if (data['Weekly Compensation'] !== undefined) {
-    mapped['💰Weekly Host Rate'] = data['Weekly Compensation'];
+    mapped['weekly_host_rate'] = data['Weekly Compensation'];
   }
   if (data['Cancellation Policy'] !== undefined) {
     mapped['Cancellation Policy'] = data['Cancellation Policy'];
@@ -221,25 +221,25 @@ function mapFieldsToSupabase(data: ListingSubmissionData): Record<string, unknow
 
   // Map nightly prices
   if (data['Price 1 night selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 1 night'] = data['Price 1 night selected'];
+    mapped['nightly_rate_1_night'] = data['Price 1 night selected'];
   }
   if (data['Price 2 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 2 nights'] = data['Price 2 nights selected'];
+    mapped['nightly_rate_2_nights'] = data['Price 2 nights selected'];
   }
   if (data['Price 3 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 3 nights'] = data['Price 3 nights selected'];
+    mapped['nightly_rate_3_nights'] = data['Price 3 nights selected'];
   }
   if (data['Price 4 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 4 nights'] = data['Price 4 nights selected'];
+    mapped['nightly_rate_4_nights'] = data['Price 4 nights selected'];
   }
   if (data['Price 5 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 5 nights'] = data['Price 5 nights selected'];
+    mapped['nightly_rate_5_nights'] = data['Price 5 nights selected'];
   }
   if (data['Price 6 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 6 nights'] = data['Price 6 nights selected'];
+    mapped['nightly_rate_6_nights'] = data['Price 6 nights selected'];
   }
   if (data['Price 7 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 7 nights'] = data['Price 7 nights selected'];
+    mapped['nightly_rate_7_nights'] = data['Price 7 nights selected'];
   }
 
   // Blocked dates mapping

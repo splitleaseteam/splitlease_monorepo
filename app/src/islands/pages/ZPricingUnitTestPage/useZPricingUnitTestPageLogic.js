@@ -85,6 +85,48 @@ const INITIAL_PRICING_OUTPUT = {
 };
 
 // ─────────────────────────────────────────────────────────────
+// HELPER: Map "Weeks offered" to Guest Pattern dropdown value
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Maps listing's "Weeks offered" field to guest pattern dropdown value
+ * @param {string} weeksOffered - The "Weeks offered" value from listing
+ * @returns {string} One of: 'every-week', 'one-on-off', 'two-on-off', 'one-three-off'
+ */
+function mapWeeksOfferedToGuestPattern(weeksOffered) {
+  if (!weeksOffered) return 'every-week';
+
+  const pattern = weeksOffered.toLowerCase();
+
+  // Match "1on1off" or "1 week on 1 week off" or similar variations
+  if (pattern.includes('1on1off') ||
+      pattern.includes('1 on 1 off') ||
+      (pattern.includes('1 week on') && pattern.includes('1 week off')) ||
+      (pattern.includes('one week on') && pattern.includes('one week off'))) {
+    return 'one-on-off';
+  }
+
+  // Match "2on2off" or "2 week on 2 week off"
+  if (pattern.includes('2on2off') ||
+      pattern.includes('2 on 2 off') ||
+      (pattern.includes('2 week on') && pattern.includes('2 week off')) ||
+      (pattern.includes('two week on') && pattern.includes('two week off'))) {
+    return 'two-on-off';
+  }
+
+  // Match "1on3off" or "1 week on 3 week off"
+  if (pattern.includes('1on3off') ||
+      pattern.includes('1 on 3 off') ||
+      (pattern.includes('1 week on') && pattern.includes('3 week off')) ||
+      (pattern.includes('one week on') && pattern.includes('three week off'))) {
+    return 'one-three-off';
+  }
+
+  // Default: "Every week" or unrecognized patterns
+  return 'every-week';
+}
+
+// ─────────────────────────────────────────────────────────────
 // MAIN HOOK
 // ─────────────────────────────────────────────────────────────
 
@@ -229,15 +271,15 @@ export function useZPricingUnitTestPageLogic() {
           "Name",
           "rental type",
           "Weeks offered",
-          "💰Nightly Host Rate for 2 nights",
-          "💰Nightly Host Rate for 3 nights",
-          "💰Nightly Host Rate for 4 nights",
-          "💰Nightly Host Rate for 5 nights",
-          "💰Weekly Host Rate",
-          "💰Monthly Host Rate",
-          "💰Damage Deposit",
-          "💰Cleaning Cost / Maintenance Fee",
-          "💰Unit Markup",
+          "nightly_rate_2_nights",
+          "nightly_rate_3_nights",
+          "nightly_rate_4_nights",
+          "nightly_rate_5_nights",
+          "weekly_host_rate",
+          "monthly_host_rate",
+          "damage_deposit",
+          "cleaning_fee",
+          "unit_markup",
           "Minimum Nights",
           "Maximum Nights",
           "Minimum Weeks",
@@ -328,15 +370,15 @@ export function useZPricingUnitTestPageLogic() {
           "Name",
           "rental type",
           "Weeks offered",
-          "💰Nightly Host Rate for 2 nights",
-          "💰Nightly Host Rate for 3 nights",
-          "💰Nightly Host Rate for 4 nights",
-          "💰Nightly Host Rate for 5 nights",
-          "💰Weekly Host Rate",
-          "💰Monthly Host Rate",
-          "💰Damage Deposit",
-          "💰Cleaning Cost / Maintenance Fee",
-          "💰Unit Markup",
+          "nightly_rate_2_nights",
+          "nightly_rate_3_nights",
+          "nightly_rate_4_nights",
+          "nightly_rate_5_nights",
+          "weekly_host_rate",
+          "monthly_host_rate",
+          "damage_deposit",
+          "cleaning_fee",
+          "unit_markup",
           "Minimum Nights",
           "Maximum Nights",
           "Minimum Weeks",
@@ -368,21 +410,24 @@ export function useZPricingUnitTestPageLogic() {
   function populateHostRates(listing) {
     if (!listing) {
       setHostRates(INITIAL_HOST_RATES);
+      setGuestPattern('every-week');
       return;
     }
+
+    const weeksOffered = listing['Weeks offered'] || 'Every week';
 
     setHostRates({
       hostCompStyle: listing['rental type'] || '',
       weeksOffered: listing['Weeks offered'] || 'Every week',
-      rate2Night: parseFloat(listing['💰Nightly Host Rate for 2 nights']) || 0,
-      rate3Night: parseFloat(listing['💰Nightly Host Rate for 3 nights']) || 0,
-      rate4Night: parseFloat(listing['💰Nightly Host Rate for 4 nights']) || 0,
-      rate5Night: parseFloat(listing['💰Nightly Host Rate for 5 nights']) || 0,
-      weeklyRate: parseFloat(listing['💰Weekly Host Rate']) || 0,
-      monthlyRate: parseFloat(listing['💰Monthly Host Rate']) || 0,
-      damageDeposit: parseFloat(listing['💰Damage Deposit']) || 0,
-      cleaningDeposit: parseFloat(listing['💰Cleaning Cost / Maintenance Fee']) || 0,
-      unitMarkup: parseFloat(listing['💰Unit Markup']) || 0,
+      rate2Night: parseFloat(listing['nightly_rate_2_nights']) || 0,
+      rate3Night: parseFloat(listing['nightly_rate_3_nights']) || 0,
+      rate4Night: parseFloat(listing['nightly_rate_4_nights']) || 0,
+      rate5Night: parseFloat(listing['nightly_rate_5_nights']) || 0,
+      weeklyRate: parseFloat(listing['weekly_host_rate']) || 0,
+      monthlyRate: parseFloat(listing['monthly_host_rate']) || 0,
+      damageDeposit: parseFloat(listing['damage_deposit']) || 0,
+      cleaningDeposit: parseFloat(listing['cleaning_fee']) || 0,
+      unitMarkup: parseFloat(listing['unit_markup']) || 0,
       minNights: listing['Minimum Nights'],
       maxNights: listing['Maximum Nights'],
       minWeeks: listing['Minimum Weeks'],
@@ -390,6 +435,10 @@ export function useZPricingUnitTestPageLogic() {
       nightsPerWeek: listing['# of nights available'] || 7,
       nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) '])
     });
+
+    // Auto-populate Guest Pattern dropdown based on listing's Weeks Offered
+    const mappedPattern = mapWeeksOfferedToGuestPattern(weeksOffered);
+    setGuestPattern(mappedPattern);
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -429,7 +478,7 @@ export function useZPricingUnitTestPageLogic() {
           payload: {
             listing_id: selectedListing._id,
             user_id: 'admin-test',
-            unit_markup: selectedListing['💰Unit Markup'] || 0
+            unit_markup: selectedListing['unit_markup'] || 0
           }
         })
       });
@@ -472,7 +521,7 @@ export function useZPricingUnitTestPageLogic() {
           payload: {
             listing_id: selectedListing._id,
             user_id: 'admin-test',
-            unit_markup: selectedListing['💰Unit Markup'] || 0
+            unit_markup: selectedListing['unit_markup'] || 0
           }
         })
       });
@@ -703,15 +752,15 @@ function buildScheduleListing(listing) {
     name: listing.Name || 'Untitled',
     rentalType: listing['rental type'] || 'Nightly',
     weeksOffered: listing['Weeks offered'] || 'Every week',
-    unitMarkup: listing['💰Unit Markup'] || 0,
-    cleaningFee: listing['💰Cleaning Cost / Maintenance Fee'] || 0,
-    damageDeposit: listing['💰Damage Deposit'] || 0,
-    weeklyHostRate: listing['💰Weekly Host Rate'] || 0,
-    monthlyHostRate: listing['💰Monthly Host Rate'] || 0,
-    rate2Night: listing['💰Nightly Host Rate for 2 nights'] || 0,
-    rate3Night: listing['💰Nightly Host Rate for 3 nights'] || 0,
-    rate4Night: listing['💰Nightly Host Rate for 4 nights'] || 0,
-    rate5Night: listing['💰Nightly Host Rate for 5 nights'] || 0,
+    unitMarkup: listing['unit_markup'] || 0,
+    cleaningFee: listing['cleaning_fee'] || 0,
+    damageDeposit: listing['damage_deposit'] || 0,
+    weeklyHostRate: listing['weekly_host_rate'] || 0,
+    monthlyHostRate: listing['monthly_host_rate'] || 0,
+    rate2Night: listing['nightly_rate_2_nights'] || 0,
+    rate3Night: listing['nightly_rate_3_nights'] || 0,
+    rate4Night: listing['nightly_rate_4_nights'] || 0,
+    rate5Night: listing['nightly_rate_5_nights'] || 0,
     // Override: Allow selecting from 1 to 7 nights for testing
     minimumNights: 1,
     maximumNights: 7,
@@ -738,6 +787,18 @@ function parseArrayField(value) {
 }
 
 function runValidationChecks(listing, pricingList, hostRates) {
+  // Debug logging
+  console.log('[runValidationChecks] Input values:', {
+    listingId: listing?._id,
+    rentalType: listing?.['rental type'],
+    pricingListNull: pricingList === null,
+    pricingListNightlyPrice: pricingList?.nightlyPrice,
+    pricingListStartingNightly: pricingList?.startingNightlyPrice,
+    listingActive: listing?.Active,
+    listingComplete: listing?.Complete,
+    listingApproved: listing?.Approved
+  });
+
   // Check 1: Price exists
   const priceExists = pricingList !== null &&
     (pricingList.nightlyPrice?.some(p => p > 0) || pricingList.startingNightlyPrice > 0);
@@ -922,15 +983,15 @@ function runComparisonChecks(priceBreakdown, selectedDays, listing, reservationS
     cleaningFee: hostRates.cleaningDeposit,
     damageDeposit: hostRates.damageDeposit,
     weeksOffered: hostRates.weeksOffered,
-    '💰Weekly Host Rate': hostRates.weeklyRate,
-    '💰Monthly Host Rate': hostRates.monthlyRate,
-    '💰Nightly Host Rate for 2 nights': hostRates.rate2Night,
-    '💰Nightly Host Rate for 3 nights': hostRates.rate3Night,
-    '💰Nightly Host Rate for 4 nights': hostRates.rate4Night,
-    '💰Nightly Host Rate for 5 nights': hostRates.rate5Night,
-    '💰Unit Markup': (hostRates.unitMarkup || 0) * 100,
-    '💰Cleaning Cost / Maintenance Fee': hostRates.cleaningDeposit,
-    '💰Damage Deposit': hostRates.damageDeposit,
+    'weekly_host_rate': hostRates.weeklyRate,
+    'monthly_host_rate': hostRates.monthlyRate,
+    'nightly_rate_2_nights': hostRates.rate2Night,
+    'nightly_rate_3_nights': hostRates.rate3Night,
+    'nightly_rate_4_nights': hostRates.rate4Night,
+    'nightly_rate_5_nights': hostRates.rate5Night,
+    'unit_markup': (hostRates.unitMarkup || 0) * 100,
+    'cleaning_fee': hostRates.cleaningDeposit,
+    'damage_deposit': hostRates.damageDeposit,
     'Weeks offered': hostRates.weeksOffered
   } : null;
 

@@ -56,7 +56,7 @@ function adaptThread(rawThread) {
     subject: rawThread['Thread Subject'] || 'No Subject',
     createdDate: rawThread['Created Date'],
     modifiedDate: rawThread['Modified Date'],
-    lastMessageDate: rawThread['~Date Last Message'],
+    lastMessageDate: rawThread['last_message_at'],
     callToAction: rawThread['Call to Action'],
     proposalId: rawThread.Proposal,
     listingId: rawThread.Listing,

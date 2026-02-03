@@ -1,5 +1,5 @@
 /**
- * Hook for perspective switching (scaffolding for testing)
+ * Perspective switching hook for Schedule Dashboard
  * Reads ?as= query param to determine which user's perspective to show
  *
  * Usage:

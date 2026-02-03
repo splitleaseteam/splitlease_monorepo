@@ -91,9 +91,10 @@ function normalizeGuest(guest) {
 function normalizeProposal(proposal, normalizedGuest = null) {
   if (!proposal) return null;
 
-  // Status normalization - handle both string and object formats
+  // Status - preserve original Bubble format (DO NOT normalize to snake_case)
+  // ActionButtonsRow expects exact Bubble status strings for matching
   const rawStatus = proposal.Status || proposal.status || '';
-  const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase().replace(/\s+/g, '_') : rawStatus;
+  const status = typeof rawStatus === 'string' ? rawStatus : rawStatus;
 
   return {
     ...proposal,
@@ -138,7 +139,10 @@ function normalizeProposal(proposal, normalizedGuest = null) {
 
     // Guest counteroffer detection
     last_modified_by: proposal['last_modified_by'] || proposal.last_modified_by || null,
-    has_guest_counteroffer: proposal.has_guest_counteroffer || false
+    has_guest_counteroffer: proposal.has_guest_counteroffer || false,
+
+    // Rental type (Monthly, Weekly, Nightly)
+    rental_type: proposal['rental type'] || proposal.rental_type || 'nightly'
   };
 }
 
@@ -535,7 +539,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           "hc check in day",
           "hc check out day",
           "hc nights per week",
-          "hc house rules"
+          "hc house rules",
+          "rental type"
         `)
         .eq('Listing', listingId)
         .neq('Deleted', true)

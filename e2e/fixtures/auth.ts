@@ -16,6 +16,11 @@
 
 import { test as base, expect, Page, BrowserContext } from '@playwright/test';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES Module compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ============================================================================
 // TYPES
