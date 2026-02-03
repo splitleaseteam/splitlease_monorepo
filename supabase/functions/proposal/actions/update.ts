@@ -24,9 +24,18 @@ import {
   ProposalData,
   UserContext,
   ProposalStatusName,
+  RentalType,
+  ReservationSpan,
 } from "../lib/types.ts";
 import { validateUpdateProposalInput, hasUpdateFields } from "../lib/validators.ts";
-import { calculateComplementaryNights } from "../lib/calculations.ts";
+import {
+  calculateComplementaryNights,
+  calculateDurationMonths,
+  fetchAvgDaysPerMonth,
+  getPricingListRates,
+  roundToTwoDecimals,
+} from "../lib/calculations.ts";
+import { calculatePricingList } from "../../pricing-list/utils/pricingCalculator.ts";
 import {
   isValidStatusTransition,
   isTerminalStatus,
@@ -250,6 +259,10 @@ export async function handleUpdate(
     updates["hc nights per week"] = input.hc_nights_selected.length;
     updatedFields.push("hc_nights_selected");
   }
+  if (input.hc_nights_per_week !== undefined) {
+    updates["hc nights per week"] = input.hc_nights_per_week;
+    updatedFields.push("hc_nights_per_week");
+  }
   if (input.hc_move_in_date !== undefined) {
     updates["hc move in date"] = input.hc_move_in_date;
     updatedFields.push("hc_move_in_date");
@@ -285,6 +298,176 @@ export async function handleUpdate(
   if (input.hc_house_rules !== undefined) {
     updates["hc house rules"] = input.hc_house_rules;
     updatedFields.push("hc_house_rules");
+  }
+
+  // ================================================
+  // COUNTEROFFER PRICING RECALCULATION
+  // ================================================
+
+  const hasCounterofferInputs =
+    input.hc_nights_selected !== undefined ||
+    input.hc_nights_per_week !== undefined ||
+    input.hc_reservation_span_weeks !== undefined ||
+    input.hc_move_in_date !== undefined ||
+    input.hc_check_in !== undefined ||
+    input.hc_check_out !== undefined ||
+    input.hc_days_selected !== undefined ||
+    input.hc_house_rules !== undefined ||
+    input.status === "Host Counteroffer Submitted / Awaiting Guest Review";
+
+  if (hasCounterofferInputs) {
+    const { data: listing, error: listingError } = await supabase
+      .from("listing")
+      .select(
+        `
+        _id,
+        pricing_list,
+        "rental type",
+        weekly_host_rate,
+        monthly_host_rate,
+        nightly_rate_1_night,
+        nightly_rate_2_nights,
+        nightly_rate_3_nights,
+        nightly_rate_4_nights,
+        nightly_rate_5_nights,
+        nightly_rate_6_nights,
+        nightly_rate_7_nights
+      `
+      )
+      .eq("_id", proposalData.Listing)
+      .single();
+
+    if (listingError || !listing) {
+      throw new ValidationError(
+        `Failed to load listing for pricing: ${proposalData.Listing}`
+      );
+    }
+
+    const reservationSpan =
+      (proposalData["Reservation Span"] as string | undefined) || "other";
+    const rentalType =
+      ((listing["rental type"] || proposalData["rental type"] || "nightly")
+        .toString()
+        .toLowerCase() as RentalType);
+
+    const hcNightsSelected =
+      input.hc_nights_selected ||
+      (proposalData["hc nights selected"] as number[] | undefined) ||
+      (proposalData["Nights Selected (Nights list)"] as number[] | undefined) ||
+      [];
+
+    const hcNightsPerWeek =
+      input.hc_nights_per_week ||
+      (Array.isArray(hcNightsSelected) ? hcNightsSelected.length : 0) ||
+      (proposalData["hc nights per week"] as number | undefined) ||
+      (proposalData["nights per week (num)"] as number | undefined) ||
+      0;
+
+    const hcReservationWeeks =
+      input.hc_reservation_span_weeks ||
+      (proposalData["hc reservation span (weeks)"] as number | undefined) ||
+      (proposalData["Reservation Span (Weeks)"] as number | undefined) ||
+      0;
+
+    let pricingListRates = null;
+
+    if (listing.pricing_list) {
+      const { data: pricingList, error: pricingListError } = await supabase
+        .from("pricing_list")
+        .select('"Nightly Price", "Host Compensation"')
+        .eq("_id", listing.pricing_list)
+        .single();
+
+      if (pricingListError) {
+        console.warn(
+          `[proposal:update] Pricing list fetch failed, falling back: ${pricingListError.message}`
+        );
+      } else if (pricingList) {
+        pricingListRates = getPricingListRates(pricingList, hcNightsPerWeek);
+      }
+    }
+
+    if (!pricingListRates) {
+      const fallbackPricing = calculatePricingList({ listing });
+      pricingListRates = getPricingListRates(
+        {
+          "Nightly Price": fallbackPricing.nightlyPrice,
+          "Host Compensation": fallbackPricing.hostCompensation,
+        },
+        hcNightsPerWeek
+      );
+    }
+
+    if (!pricingListRates) {
+      throw new ValidationError(
+        `Unable to determine pricing for ${hcNightsPerWeek} nights/week.`
+      );
+    }
+
+    const needsAvgDaysPerMonth =
+      rentalType === "monthly" || reservationSpan === "other";
+    const avgDaysPerMonth = needsAvgDaysPerMonth
+      ? await fetchAvgDaysPerMonth(supabase)
+      : 30.4375;
+
+    const durationMonths = calculateDurationMonths(
+      reservationSpan as ReservationSpan,
+      hcReservationWeeks,
+      avgDaysPerMonth
+    );
+
+    const hostCompPerNight = pricingListRates.hostCompensationPerNight;
+    const guestNightlyPrice = pricingListRates.guestNightlyPrice;
+
+    const derivedWeeklyRate = roundToTwoDecimals(hostCompPerNight * hcNightsPerWeek);
+    const derivedMonthlyRate = roundToTwoDecimals(
+      (hostCompPerNight * hcNightsPerWeek * avgDaysPerMonth) / 7
+    );
+
+    const hostCompPerPeriod =
+      rentalType === "weekly"
+        ? (listing.weekly_host_rate || derivedWeeklyRate)
+        : rentalType === "monthly"
+          ? (listing.monthly_host_rate || derivedMonthlyRate)
+          : hostCompPerNight;
+
+    const totalHostCompensation =
+      rentalType === "weekly"
+        ? hostCompPerPeriod * Math.ceil(hcReservationWeeks)
+        : rentalType === "monthly"
+          ? hostCompPerPeriod * durationMonths
+          : hostCompPerNight * hcNightsPerWeek * hcReservationWeeks;
+
+    const totalGuestPrice =
+      guestNightlyPrice * hcNightsPerWeek * hcReservationWeeks;
+
+    const fourWeekRent = guestNightlyPrice * hcNightsPerWeek * 4;
+    const fourWeekCompensation =
+      rentalType === "monthly"
+        ? 0
+        : rentalType === "weekly"
+          ? hostCompPerPeriod * 4
+          : hostCompPerNight * hcNightsPerWeek * 4;
+
+    updates["hc nights per week"] = hcNightsPerWeek;
+    updates["hc nightly price"] = roundToTwoDecimals(guestNightlyPrice);
+    updates["hc total price"] = roundToTwoDecimals(totalGuestPrice);
+    updates["hc 4 week rent"] = roundToTwoDecimals(fourWeekRent);
+    updates["hc 4 week compensation"] = roundToTwoDecimals(fourWeekCompensation);
+    updates["hc host compensation (per period)"] = roundToTwoDecimals(hostCompPerPeriod);
+    updates["hc total host compensation"] = roundToTwoDecimals(totalHostCompensation);
+    updates["hc duration in months"] = roundToTwoDecimals(durationMonths);
+
+    updatedFields.push(
+      "hc_nights_per_week",
+      "hc_nightly_price",
+      "hc_total_price",
+      "hc_four_week_rent",
+      "hc_four_week_compensation",
+      "hc_host_compensation",
+      "hc_total_host_compensation",
+      "hc_duration_in_months"
+    );
   }
 
   // Cancellation reason

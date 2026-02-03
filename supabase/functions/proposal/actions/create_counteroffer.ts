@@ -9,6 +9,13 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  calculateDurationMonths,
+  fetchAvgDaysPerMonth,
+  getPricingListRates,
+  roundToTwoDecimals,
+} from "../lib/calculations.ts";
+import { calculatePricingList } from "../../pricing-list/utils/pricingCalculator.ts";
 
 interface CreateCounterofferPayload {
   proposalId: string;
@@ -41,7 +48,7 @@ export async function handleCreateCounteroffer(
   }
 
   // Fetch current proposal to preserve existing data
-  const { data: _proposal, error: fetchError } = await supabase
+  const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
     .select('*')
     .eq('_id', proposalId)
@@ -65,6 +72,129 @@ export async function handleCreateCounteroffer(
     'Modified Date': new Date().toISOString(),
     'counter offer happened': true
   };
+
+  if (proposal) {
+    const { data: listing, error: listingError } = await supabase
+      .from("listing")
+      .select(
+        `
+        _id,
+        pricing_list,
+        "rental type",
+        weekly_host_rate,
+        monthly_host_rate,
+        nightly_rate_1_night,
+        nightly_rate_2_nights,
+        nightly_rate_3_nights,
+        nightly_rate_4_nights,
+        nightly_rate_5_nights,
+        nightly_rate_6_nights,
+        nightly_rate_7_nights
+      `
+      )
+      .eq("_id", proposal.Listing)
+      .single();
+
+    if (listingError || !listing) {
+      console.warn('[create_counteroffer] Listing lookup failed:', listingError?.message);
+    } else {
+      const rentalType =
+        ((listing["rental type"] || proposal["rental type"] || "nightly")
+          .toString()
+          .toLowerCase());
+      const reservationSpan = proposal["Reservation Span"] || "other";
+
+      const nightsPerWeek =
+        counterofferData['hc nights per week'] ||
+        proposal["hc nights per week"] ||
+        proposal["nights per week (num)"] ||
+        0;
+      const reservationWeeks =
+        proposal["hc reservation span (weeks)"] ||
+        proposal["Reservation Span (Weeks)"] ||
+        0;
+
+      let pricingListRates = null;
+
+      if (listing.pricing_list) {
+        const { data: pricingList, error: pricingListError } = await supabase
+          .from("pricing_list")
+          .select('"Nightly Price", "Host Compensation"')
+          .eq("_id", listing.pricing_list)
+          .single();
+
+        if (pricingListError) {
+          console.warn('[create_counteroffer] Pricing list fetch failed:', pricingListError.message);
+        } else if (pricingList) {
+          pricingListRates = getPricingListRates(pricingList, nightsPerWeek);
+        }
+      }
+
+      if (!pricingListRates) {
+        const fallbackPricing = calculatePricingList({ listing });
+        pricingListRates = getPricingListRates(
+          {
+            "Nightly Price": fallbackPricing.nightlyPrice,
+            "Host Compensation": fallbackPricing.hostCompensation,
+          },
+          nightsPerWeek
+        );
+      }
+
+      if (pricingListRates) {
+        const needsAvgDaysPerMonth =
+          rentalType === "monthly" || reservationSpan === "other";
+        const avgDaysPerMonth = needsAvgDaysPerMonth
+          ? await fetchAvgDaysPerMonth(supabase)
+          : 30.4375;
+
+        const durationMonths = calculateDurationMonths(
+          reservationSpan,
+          reservationWeeks,
+          avgDaysPerMonth
+        );
+
+        const hostCompPerNight = pricingListRates.hostCompensationPerNight;
+        const guestNightlyPrice = pricingListRates.guestNightlyPrice;
+
+        const derivedWeeklyRate = roundToTwoDecimals(hostCompPerNight * nightsPerWeek);
+        const derivedMonthlyRate = roundToTwoDecimals(
+          (hostCompPerNight * nightsPerWeek * avgDaysPerMonth) / 7
+        );
+
+        const hostCompPerPeriod =
+          rentalType === "weekly"
+            ? (listing.weekly_host_rate || derivedWeeklyRate)
+            : rentalType === "monthly"
+              ? (listing.monthly_host_rate || derivedMonthlyRate)
+              : hostCompPerNight;
+
+        const totalHostCompensation =
+          rentalType === "weekly"
+            ? hostCompPerPeriod * Math.ceil(reservationWeeks)
+            : rentalType === "monthly"
+              ? hostCompPerPeriod * durationMonths
+              : hostCompPerNight * nightsPerWeek * reservationWeeks;
+
+        const totalGuestPrice = guestNightlyPrice * nightsPerWeek * reservationWeeks;
+        const fourWeekRent = guestNightlyPrice * nightsPerWeek * 4;
+        const fourWeekCompensation =
+          rentalType === "monthly"
+            ? 0
+            : rentalType === "weekly"
+              ? hostCompPerPeriod * 4
+              : hostCompPerNight * nightsPerWeek * 4;
+
+        updateData['hc nightly price'] = roundToTwoDecimals(guestNightlyPrice);
+        updateData['hc total price'] = roundToTwoDecimals(totalGuestPrice);
+        updateData['hc 4 week rent'] = roundToTwoDecimals(fourWeekRent);
+        updateData['hc 4 week compensation'] = roundToTwoDecimals(fourWeekCompensation);
+        updateData['hc host compensation (per period)'] = roundToTwoDecimals(hostCompPerPeriod);
+        updateData['hc total host compensation'] = roundToTwoDecimals(totalHostCompensation);
+        updateData['hc duration in months'] = roundToTwoDecimals(durationMonths);
+      }
+    }
+  }
 
   // Apply counteroffer fields (all verified to exist)
   if (counterofferData['hc nightly price'] !== undefined) {
