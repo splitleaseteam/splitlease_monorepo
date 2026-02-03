@@ -1,50 +1,75 @@
 /**
- * LeaseCard Component Styles
+ * LeaseCard Component Styles (Paula Scher Style)
+ *
+ * Matches hybrid-charles-paula.html design specification.
  */
 
+@import '../../../styles/design-tokens.css';
+
+/* =============================================================
+   LEASE CARD CONTAINER
+   ============================================================= */
 .lease-card {
-  background: white;
-  border: 1px solid #6B6B6B;
-  border-radius: 8px;
-  margin-bottom: 16px;
+  background: var(--bg-white);
+  border: var(--border-width-thin) solid var(--border-color);
+  border-radius: var(--rounded-xl);
   overflow: hidden;
-  transition: border-color 0.2s ease;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  padding: 0; /* Override global article padding from main.css */
+}
+
+.lease-card:hover {
+  border-color: var(--border-gray-light);
 }
 
 .lease-card--expanded {
-  border-color: #7C3AED;
+  box-shadow: var(--shadow-lg);
 }
 
-/* Header */
+/* =============================================================
+   CARD HEADER
+   ============================================================= */
 .lease-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: var(--spacing-2xl);
   cursor: pointer;
-  background: #F7F8F9;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
+  min-height: 80px;
 }
 
 .lease-card__header:hover {
-  background: #EEEEF0;
+  background: var(--bg-light-gray);
+}
+
+.lease-card__header:active {
+  transform: scale(0.998);
+  background: var(--border-color);
 }
 
 .lease-card__header-main {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
   flex: 1;
   min-width: 0;
 }
 
+/* Property Thumbnail */
 .lease-card__image {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
-  overflow: hidden;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--rounded-sm);
+  background: linear-gradient(135deg, var(--bg-light-gray) 0%, var(--border-color) 100%);
   flex-shrink: 0;
-  background: #E5E5E5;
+  overflow: hidden;
+  border: var(--border-width-thick) solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.lease-card__header:hover .lease-card__image {
+  border-color: var(--favorites-purple-light);
 }
 
 .lease-card__image img {
@@ -59,90 +84,117 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6B6B6B;
+  color: var(--text-gray);
 }
 
+/* Property Info */
 .lease-card__info {
   min-width: 0;
   flex: 1;
 }
 
 .lease-card__title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #4D4D4D;
-  margin: 0 0 4px 0;
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-dark);
+  margin: 0 0 2px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .lease-card__address {
-  font-size: 14px;
-  color: #6B6B6B;
-  margin: 0 0 8px 0;
+  font-size: var(--text-base);
+  color: var(--text-gray);
+  margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .lease-card__meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  display: none;
 }
 
+/* Status Badge */
 .lease-card__status {
   display: inline-flex;
   align-items: center;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: capitalize;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-pill);
+  font-size: var(--text-sm-md);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  border: var(--border-width-thin) solid;
 }
 
 .lease-card__status--active {
-  background: #DCFCE7;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success-green);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .lease-card__status--completed {
-  background: #E5E5E5;
-  color: #4D4D4D;
+  background: var(--bg-light-gray);
+  color: var(--text-gray);
+  border-color: var(--border-color);
 }
 
 .lease-card__status--terminated {
-  background: #FEE2E2;
-  color: #991B1B;
+  background: var(--protocol-danger-hover);
+  color: var(--protocol-danger);
+  border-color: rgba(220, 53, 69, 0.3);
 }
 
 .lease-card__status--pending {
-  background: #FEF3C7;
-  color: #92400E;
+  background: rgba(109, 49, 194, 0.1);
+  color: var(--secondary-purple);
+  border-color: rgba(109, 49, 194, 0.3);
 }
 
 .lease-card__week {
-  font-size: 12px;
-  color: #6B6B6B;
+  font-size: var(--text-sm);
+  color: var(--text-gray);
 }
 
+/* Card Right Side */
+.lease-card__card-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+/* Expand Toggle */
 .lease-card__toggle {
-  color: #7C3AED;
-  padding: 8px;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light-gray);
+  transition: transform var(--transition-slow), color var(--transition-fast);
   flex-shrink: 0;
 }
 
-/* Content */
-.lease-card__content {
-  padding: 0 16px 16px;
-  border-top: 1px solid #E5E5E5;
+.lease-card--expanded .lease-card__toggle {
+  transform: rotate(180deg);
+  color: var(--secondary-purple);
 }
 
+/* =============================================================
+   CARD BODY
+   ============================================================= */
+.lease-card__content {
+  border-top: var(--border-width-thin) solid var(--border-color);
+}
+
+/* =============================================================
+   CARD SECTIONS (matches design: padding 24px)
+   ============================================================= */
 .lease-card__section {
-  padding: 16px 0;
-  border-bottom: 1px solid #E5E5E5;
+  padding: var(--spacing-2xl);
+  border-bottom: var(--border-width-thin) solid var(--border-color);
 }
 
 .lease-card__section:last-child {
@@ -150,165 +202,241 @@
 }
 
 .lease-card__empty-text {
-  color: #6B6B6B;
-  font-size: 14px;
-  font-style: italic;
-  padding: 12px 0;
+  font-size: var(--text-sm);
+  color: var(--text-gray);
+  margin: 0;
 }
 
 .lease-card__section--emergency {
   text-align: center;
-  padding-top: 24px;
+  padding-top: var(--spacing-2xl);
 }
 
 .lease-card__section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .lease-card__section-header .btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
-  white-space: nowrap;
+  flex-shrink: 0;
+  width: auto;
 }
 
+/* Section Title */
 .lease-card__section-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-dark);
+  margin: 0 0 var(--spacing-lg) 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #4D4D4D;
-  margin: 0 0 12px 0;
+  gap: var(--spacing-sm);
+}
+
+.lease-card__section-header .lease-card__section-title {
+  margin-bottom: 0;
 }
 
 .lease-card__section-title svg {
-  color: #7C3AED;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--secondary-purple);
+  opacity: 0.8;
 }
 
-/* Details Grid */
+/* =============================================================
+   HOST CONTACT
+   ============================================================= */
+.lease-card__host-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--bg-light-gray);
+  border-radius: var(--rounded-lg);
+}
+
+.lease-card__host-avatar {
+  width: var(--avatar-md);
+  height: var(--avatar-md);
+  border-radius: var(--rounded-full);
+  background: var(--gradient-purple-button);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-md);
+  flex-shrink: 0;
+}
+
+.lease-card__host-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lease-card__host-name {
+  display: block;
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+.lease-card__host-label {
+  font-size: var(--text-sm-md);
+  color: var(--text-gray);
+  margin-bottom: var(--spacing-sm);
+}
+
+.lease-card__contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.lease-card__contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--text-base);
+  color: var(--secondary-purple);
+  text-decoration: none;
+  padding: var(--spacing-xs) 0;
+  min-height: var(--touch-min);
+  transition: color var(--transition-fast);
+}
+
+.lease-card__contact-link:hover {
+  color: var(--accent-purple);
+  text-decoration: underline;
+}
+
+.lease-card__contact-link svg {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+.lease-card__host-email {
+  color: var(--secondary-purple);
+  font-size: var(--text-base);
+  text-decoration: none;
+}
+
+.lease-card__host-email:hover {
+  text-decoration: underline;
+}
+
+/* =============================================================
+   DETAILS GRID
+   ============================================================= */
 .lease-card__details-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  gap: var(--spacing-md);
 }
 
 .lease-card__detail {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-xs);
 }
 
 .lease-card__detail-label {
-  font-size: 12px;
-  color: #6B6B6B;
+  font-size: var(--text-xs);
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .lease-card__detail-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #4D4D4D;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-dark);
 }
 
-/* Host Info */
-.lease-card__host-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.lease-card__host-name {
-  font-weight: 500;
-  color: #4D4D4D;
-}
-
-.lease-card__host-email {
-  color: #7C3AED;
-  font-size: 14px;
-}
-
-/* Documents */
+/* =============================================================
+   DOCUMENTS
+   ============================================================= */
 .lease-card__documents {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
-/* Buttons */
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #7C3AED;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
+/* =============================================================
+   ACTION FOOTER
+   ============================================================= */
+.lease-card__actions {
+  background: var(--bg-off-white);
+  padding: var(--spacing-2xl);
 }
 
-.btn-secondary:hover {
-  background: #6D28D9;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 13px;
-}
-
-.btn-emergency {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #EF4444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.btn-emergency:hover {
-  background: #DC2626;
-}
-
-/* Responsive */
-@media (max-width: 640px) {
+/* =============================================================
+   RESPONSIVE
+   ============================================================= */
+@media (max-width: 768px) {
   .lease-card__header {
-    padding: 12px;
-  }
-
-  .lease-card__header-main {
-    gap: 12px;
+    padding: var(--spacing-lg);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
 
   .lease-card__image {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .lease-card__card-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lease-card__section {
+    padding: var(--spacing-lg);
+  }
+
+  .lease-card__actions {
+    padding: var(--spacing-lg);
+  }
+
+  .lease-card__host-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .lease-card__host-avatar {
+    margin: 0 auto;
+  }
+
+  .lease-card__contact-links {
+    align-items: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .lease-card__header {
+    padding: var(--spacing-md);
+  }
+
+  .lease-card__header-main {
+    gap: var(--spacing-md);
   }
 
   .lease-card__title {
-    font-size: 14px;
+    font-size: var(--text-base);
   }
 
   .lease-card__address {
-    font-size: 12px;
+    font-size: var(--text-sm);
   }
 
-  .lease-card__content {
-    padding: 0 12px 12px;
+  .lease-card__section {
+    padding: var(--spacing-md);
   }
 
   .lease-card__documents {

@@ -119,7 +119,7 @@ export const fromPromise = async <T>(
   try {
     const value = await promise;
     return ok(value);
-  } catch (_e) {
+  } catch (e) {
     return err(e instanceof Error ? e : new Error(String(e)));
   }
 };
@@ -134,7 +134,7 @@ export const fromAsync = <Args extends unknown[], T>(
   async (...args) => {
     try {
       return ok(await fn(...args));
-    } catch (_e) {
+    } catch (e) {
       return err(e instanceof Error ? e : new Error(String(e)));
     }
   };

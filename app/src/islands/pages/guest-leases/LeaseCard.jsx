@@ -250,23 +250,15 @@ export default function LeaseCard({
 
           {/* Date Change Requests */}
           <section className="lease-card__section">
-            <div
-              className="lease-card__section-header"
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.5rem',
-              }}
-            >
-              <h3 className="lease-card__section-title" style={{ margin: 0 }}>
+            <div className="lease-card__section-header">
+              <h3 className="lease-card__section-title">
                 Date Change Requests
               </h3>
               <button
                 className="btn btn-primary btn-sm"
                 onClick={() => onRequestDateChange(lease)}
               >
-                <Calendar size={16} style={{ marginRight: '4px' }} />
+                <Calendar size={16} />
                 Request Date Change
               </button>
             </div>
@@ -279,7 +271,7 @@ export default function LeaseCard({
                 onRequestChanges={onRequestDateChange}
               />
             ) : (
-              <p className="text-muted" style={{ fontSize: '0.9rem', color: '#666' }}>
+              <p className="lease-card__empty-text">
                 No date change requests yet.
               </p>
             )}

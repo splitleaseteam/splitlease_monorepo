@@ -1,18 +1,28 @@
 /**
- * PaymentRecordsTable Component Styles
+ * PaymentRecordsTable Component Styles (Paula Scher Style)
+ *
+ * Table and mobile card format for payment records with status badges.
  */
 
+@import '../../../styles/design-tokens.css';
+
+/* =============================================================
+   CONTAINER
+   ============================================================= */
 .payment-records {
-  /* Container */
+  width: 100%;
 }
 
 .payment-records__empty {
   text-align: center;
-  padding: 24px;
-  color: #6B6B6B;
+  padding: var(--spacing-2xl);
+  color: var(--text-gray);
+  font-size: var(--text-base);
 }
 
-/* Desktop Table */
+/* =============================================================
+   DESKTOP TABLE
+   ============================================================= */
 .payment-records__table {
   width: 100%;
   border-collapse: collapse;
@@ -20,47 +30,76 @@
 
 .payment-records__table th,
 .payment-records__table td {
-  padding: 12px;
+  padding: var(--spacing-md) var(--spacing-lg);
   text-align: left;
-  border-bottom: 1px solid #E5E5E5;
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+  vertical-align: middle;
+}
+
+/* Center the receipt column */
+.payment-records__table th:last-child,
+.payment-records__table td:last-child {
+  text-align: center;
 }
 
 .payment-records__table th {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B6B6B;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-gray);
   text-transform: uppercase;
-  background: #F7F8F9;
+  letter-spacing: 0.5px;
+  background: var(--bg-light-gray);
 }
 
 .payment-records__date {
   white-space: nowrap;
+  font-family: var(--font-mono);
 }
 
 .payment-records__actual-date {
   display: block;
-  font-size: 12px;
-  color: #6B6B6B;
+  font-size: var(--text-xs);
+  color: var(--text-gray);
+  margin-top: 2px;
 }
 
 .payment-records__amount {
-  font-weight: 600;
-  color: #4D4D4D;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
+  font-family: var(--font-mono);
 }
 
+/* =============================================================
+   STATUS BADGES (Paula Style)
+   ============================================================= */
 .payment-records__status {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  border: var(--border-width-thin) solid;
 }
 
 .payment-records__status.paid {
-  color: #166534;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success-green);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .payment-records__status.pending {
-  color: #92400E;
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.payment-records__status.overdue {
+  background: var(--protocol-danger-hover);
+  color: var(--protocol-danger);
+  border-color: rgba(220, 53, 69, 0.3);
 }
 
 .payment-records__receipt {
@@ -68,10 +107,13 @@
 }
 
 .payment-records__no-receipt {
-  color: #6B6B6B;
+  color: var(--text-light-gray);
+  font-size: var(--text-sm);
 }
 
-/* Mobile Cards */
+/* =============================================================
+   MOBILE CARDS
+   ============================================================= */
 .payment-records__cards {
   display: none;
 }
@@ -84,49 +126,58 @@
   .payment-records__cards {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-sm);
   }
 
   .payment-records__card {
-    background: #F7F8F9;
-    border-radius: 8px;
-    padding: 12px;
+    background: var(--bg-light-gray);
+    border-radius: var(--rounded-lg);
+    padding: var(--spacing-md);
+    border: var(--border-width-thin) solid var(--border-color);
   }
 
   .payment-records__card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-sm);
   }
 
   .payment-records__card-date {
-    font-size: 14px;
-    color: #4D4D4D;
+    font-size: var(--text-base);
+    font-family: var(--font-mono);
+    color: var(--text-dark);
   }
 
   .payment-records__card-status {
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--rounded-pill);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-medium);
+    border: var(--border-width-thin) solid;
   }
 
   .payment-records__card-status.paid {
-    background: #DCFCE7;
-    color: #166534;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-green);
+    border-color: rgba(34, 197, 94, 0.3);
   }
 
   .payment-records__card-status.pending {
-    background: #FEF3C7;
-    color: #92400E;
+    background: rgba(245, 158, 11, 0.1);
+    color: #D97706;
+    border-color: rgba(245, 158, 11, 0.3);
   }
 
   .payment-records__card-amount {
-    font-size: 18px;
-    font-weight: 600;
-    color: #4D4D4D;
-    margin-bottom: 12px;
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-mono);
+    color: var(--text-dark);
+    margin-bottom: var(--spacing-md);
   }
 
   .payment-records__card .btn {

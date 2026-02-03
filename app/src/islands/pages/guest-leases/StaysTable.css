@@ -1,131 +1,172 @@
 /**
- * StaysTable Component Styles
+ * StaysTable Component Styles (Paula Scher Style)
+ *
+ * Table format with row hover effects and action buttons.
  */
 
+@import '../../../styles/design-tokens.css';
+
+/* =============================================================
+   CONTAINER
+   ============================================================= */
 .stays-table {
-  /* Container */
+  width: 100%;
 }
 
 .stays-table__empty {
   text-align: center;
-  padding: 24px;
-  color: #6B6B6B;
+  padding: var(--spacing-2xl);
+  color: var(--text-gray);
+  font-size: var(--text-base);
 }
 
+/* =============================================================
+   TABLE LIST
+   ============================================================= */
 .stays-table__list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-sm);
 }
 
+/* =============================================================
+   TABLE ROWS
+   ============================================================= */
 .stays-table__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  background: #F7F8F9;
-  border-radius: 8px;
-  gap: 12px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--bg-light-gray);
+  border-radius: var(--rounded-lg);
+  gap: var(--spacing-md);
+  transition: background var(--transition-fast);
 }
 
+.stays-table__row:hover {
+  background: var(--border-color);
+}
+
+/* =============================================================
+   ROW INFO
+   ============================================================= */
 .stays-table__info {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-lg);
   flex-wrap: wrap;
   min-width: 0;
 }
 
 .stays-table__week {
-  font-weight: 600;
-  color: #4D4D4D;
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-dark);
   white-space: nowrap;
 }
 
 .stays-table__dates {
-  color: #6B6B6B;
-  font-size: 14px;
+  color: var(--text-gray);
+  font-size: var(--text-base);
   white-space: nowrap;
 }
 
+/* =============================================================
+   STATUS BADGES
+   ============================================================= */
 .stays-table__status {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--rounded-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
+  border: var(--border-width-thin) solid;
 }
 
 .stays-table__status--upcoming {
-  background: #E0E7FF;
-  color: #3730A3;
+  background: rgba(109, 49, 194, 0.1);
+  color: var(--secondary-purple);
+  border-color: rgba(109, 49, 194, 0.3);
 }
 
 .stays-table__status--starting {
-  background: #FEF3C7;
-  color: #92400E;
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .stays-table__status--active {
-  background: #DCFCE7;
-  color: #166534;
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success-green);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .stays-table__status--completed {
-  background: #E5E5E5;
-  color: #4D4D4D;
+  background: var(--bg-light-gray);
+  color: var(--text-gray);
+  border-color: var(--border-color);
 }
 
 .stays-table__status--unknown {
-  background: #F3F4F6;
-  color: #6B7280;
+  background: var(--bg-light-gray);
+  color: var(--text-gray);
+  border-color: var(--border-color);
 }
 
+/* =============================================================
+   ACTIONS
+   ============================================================= */
 .stays-table__actions {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-xs);
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
+/* =============================================================
+   TOGGLE BUTTON
+   ============================================================= */
 .stays-table__toggle {
   width: 100%;
-  padding: 12px;
-  margin-top: 8px;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-sm);
   background: transparent;
-  border: 1px dashed #7C3AED;
-  border-radius: 8px;
-  color: #7C3AED;
-  font-size: 14px;
-  font-weight: 500;
+  border: var(--border-width-thin) dashed var(--secondary-purple);
+  border-radius: var(--rounded-lg);
+  color: var(--secondary-purple);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background var(--transition-fast);
 }
 
 .stays-table__toggle:hover {
-  background: #F5F3FF;
+  background: var(--favorites-purple-light);
 }
 
-/* Responsive */
+/* =============================================================
+   RESPONSIVE
+   ============================================================= */
 @media (max-width: 640px) {
   .stays-table__row {
     flex-direction: column;
     align-items: flex-start;
+    padding: var(--spacing-md);
   }
 
   .stays-table__info {
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: var(--spacing-sm);
   }
 
   .stays-table__actions {
     width: 100%;
-    flex-wrap: wrap;
-    margin-top: 8px;
+    margin-top: var(--spacing-sm);
   }
 
   .stays-table__actions .btn {

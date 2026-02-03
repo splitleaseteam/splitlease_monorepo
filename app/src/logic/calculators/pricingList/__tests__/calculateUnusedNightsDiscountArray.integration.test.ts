@@ -25,8 +25,8 @@ describe('calculateUnusedNightsDiscountArray', () => {
     it('should use default UNUSED_NIGHTS_DISCOUNT_MULTIPLIER', () => {
       const result = calculateUnusedNightsDiscountArray({});
       const expectedMultiplier = PRICING_CONSTANTS.UNUSED_NIGHTS_DISCOUNT_MULTIPLIER;
-      expect(result[0]).toBe(6 * expectedMultiplier); // 1 night = 6 unused
-      expect(result[6]).toBe(0); // 7 nights = 0 unused
+      expect(result[0]).toBe(6 * expectedMultiplier); // 1 night = 6 unused = max discount
+      expect(result[6]).toBe(0); // 7 nights = 0 unused = no discount
     });
 
     it('should use default 0.03 discount when not specified', () => {
@@ -38,7 +38,7 @@ describe('calculateUnusedNightsDiscountArray', () => {
   describe('Linear Discount Calculation', () => {
     it('should calculate discounts linearly with default multiplier', () => {
       const result = calculateUnusedNightsDiscountArray({});
-      // At 1 night: 6 unused * 0.03 = 0.18
+      // At 1 night: 6 unused * 0.03 = 0.18 (max discount for partial week)
       expect(result[0]).toBe(0.18);
       // At 2 nights: 5 unused * 0.03 = 0.15
       expect(result[1]).toBe(0.15);
@@ -50,7 +50,7 @@ describe('calculateUnusedNightsDiscountArray', () => {
       expect(result[4]).toBe(0.06);
       // At 6 nights: 1 unused * 0.03 = 0.03
       expect(result[5]).toBe(0.03);
-      // At 7 nights: 0 unused * 0.03 = 0
+      // At 7 nights: 0 unused * 0.03 = 0 (full-time gets separate discount)
       expect(result[6]).toBe(0);
     });
 
@@ -176,10 +176,12 @@ describe('calculateUnusedNightsDiscountArray', () => {
       expect(result).toEqual([0.18, 0.15, 0.12, 0.09, 0.06, 0.03, 0]);
     });
 
-    it('should incentivize booking more nights', () => {
+    it('should compensate partial-week bookings', () => {
       const result = calculateUnusedNightsDiscountArray({ baseDiscount: 0.03 });
       const oneNightDiscount = result[0];
       const sevenNightDiscount = result[6];
+      // 1 night gets MORE unused nights discount (compensation for partial week)
+      // 7 nights gets 0 unused discount (but gets separate full-time discount)
       expect(oneNightDiscount).toBeGreaterThan(sevenNightDiscount);
       expect(sevenNightDiscount).toBe(0);
     });

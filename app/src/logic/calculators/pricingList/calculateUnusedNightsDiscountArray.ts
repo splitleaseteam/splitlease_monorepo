@@ -1,18 +1,18 @@
 /**
- * Calculate unused nights discount array based on selected nights pattern.
+ * Calculate unused nights discount array for partial-week bookings.
  *
  * Creates a 7-element array where each index represents the discount
- * for unused nights at that tier. Discount increases as more nights
- * remain unused (incentivizes filling gaps).
+ * for unused nights at that tier. Discount DECREASES as more nights
+ * are booked (compensates guests for partial-week bookings).
  *
- * @intent Incentivize guests to book more nights by discounting unused capacity.
+ * @intent Compensate guests who book partial weeks for unused capacity.
  * @rule Array length must be exactly 7 elements.
- * @rule Discount is 0 when all nights are used (7-night stay).
- * @rule Base discount is applied per unused night.
+ * @rule Discount is 0 at 7 nights (no unused nights).
+ * @rule Discount increases linearly with unused nights.
  *
  * Formula: discount[n] = unusedNights × discountMultiplier (LINEAR)
- * - At 7 nights: discount = 0 (no unused nights)
- * - At 2 nights: discount = 5 × discountMultiplier
+ * - At 1 night: 6 unused nights, discount = 6 × discountMultiplier (maximum)
+ * - At 7 nights: 0 unused nights, discount = 0 (full-time gets separate discount)
  *
  * @param params - Named parameters.
  * @returns 7-element array of discount rates (0-1).
@@ -49,14 +49,14 @@ export function calculateUnusedNightsDiscountArray({
   const maxNights = PRICING_CONSTANTS.PRICING_LIST_ARRAY_LENGTH;
   const discountArray: number[] = [];
 
-  // Build discount array: higher discount for fewer nights booked
+  // Build discount array: higher discount for FEWER nights booked (unused nights compensation)
   for (let nightIndex = 0; nightIndex < maxNights; nightIndex++) {
     const nightsBooked = nightIndex + 1; // nightIndex 0 = 1 night
     const unusedNights = maxNights - nightsBooked;
 
-    // Discount is proportional to unused nights
-    // At 7 nights: unusedNights = 0, discount = 0
-    // At 1 night: unusedNights = 6, discount = baseDiscount * 6
+    // Discount is proportional to unused nights (partial-week compensation)
+    // At 1 night: 6 unused nights, discount = baseDiscount * 6 (maximum)
+    // At 7 nights: 0 unused nights, discount = 0 (full-time gets separate discount)
     const discount = unusedNights * baseDiscount;
 
     discountArray.push(roundToFourDecimals(discount));
