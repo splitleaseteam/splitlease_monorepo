@@ -60,19 +60,56 @@ export async function downloadTemplate(
 // ================================================
 
 /**
- * Fetch an image from a URL and return as base64.
+ * Extract base64 payload from a data URL.
+ */
+function extractBase64FromDataUrl(value: string): string | null {
+  const match = value.match(/^data:image\/[a-zA-Z0-9+.-]+;base64,(.+)$/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Basic base64 shape check for raw image payloads.
+ */
+function looksLikeBase64(value: string): boolean {
+  const normalized = value.replace(/\s/g, '');
+  if (normalized.length < 32) {
+    return false;
+  }
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(normalized);
+}
+
+/**
+ * Fetch an image from a URL or data URL and return as base64.
  */
 async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
   if (!imageUrl) {
     return null;
   }
 
+  const trimmed = imageUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const dataUrlBase64 = extractBase64FromDataUrl(trimmed);
+  if (dataUrlBase64) {
+    return dataUrlBase64;
+  }
+
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    if (looksLikeBase64(trimmed)) {
+      return trimmed.replace(/\s/g, '');
+    }
+    console.warn(`[templateRenderer] Unsupported image format: ${trimmed.slice(0, 80)}...`);
+    return null;
+  }
+
   try {
-    console.log(`[templateRenderer] Fetching image: ${imageUrl}`);
-    const response = await fetch(imageUrl);
+    console.log(`[templateRenderer] Fetching image: ${trimmed}`);
+    const response = await fetch(trimmed);
 
     if (!response.ok) {
-      console.warn(`[templateRenderer] Failed to fetch image (${response.status}): ${imageUrl}`);
+      console.warn(`[templateRenderer] Failed to fetch image (${response.status}): ${trimmed}`);
       return null;
     }
 
