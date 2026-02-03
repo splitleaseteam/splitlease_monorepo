@@ -1,0 +1,310 @@
+/* ============================================
+   MOBILE CALENDAR
+   ============================================ */
+/* ============================================
+   MOBILE MONTH CALENDAR
+   ============================================ */
+.mobile-month-calendar {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Header */
+.mobile-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+}
+
+.mobile-calendar__nav {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mobile-calendar__nav:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mobile-calendar__title {
+  text-align: center;
+  color: white;
+}
+
+.mobile-calendar__month {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Month grid */
+.mobile-month-calendar__grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-month-calendar__week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+/* Day Labels */
+.mobile-calendar__day-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  padding: 8px 0;
+  background: #f8f9fa;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+}
+
+/* Day Cell (Compact) */
+.month-day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  min-height: 44px;
+}
+
+.month-day-cell__num {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.month-day-cell__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 4px;
+}
+
+/* Day cell states */
+.month-day-cell--mine { background: #f3e5f5; }
+.month-day-cell--mine .month-day-cell__dot { background: #7b1fa2; }
+.month-day-cell--roommate { background: #e3f2fd; }
+.month-day-cell--roommate .month-day-cell__dot { background: #1976d2; }
+.month-day-cell--pending { background: #fff3e0; }
+.month-day-cell--pending .month-day-cell__dot { background: #f57c00; }
+.month-day-cell--outside { opacity: 0.3; pointer-events: none; }
+
+/* Hover/active states for interactive cells */
+.month-day-cell:not(.month-day-cell--outside):hover {
+  background: #f0f0f0;
+  transform: scale(1.05);
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+.month-day-cell:not(.month-day-cell--outside):active {
+  transform: scale(0.95);
+  background: #e0e0e0;
+}
+
+.month-day-cell--mine:not(.month-day-cell--outside):hover { background: #e1bee7; }
+.month-day-cell--roommate:not(.month-day-cell--outside):hover { background: #bbdefb; }
+.month-day-cell--pending:not(.month-day-cell--outside):hover { background: #ffe0b2; }
+.month-day-cell--today .month-day-cell__num {
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-month-calendar__legend {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.mobile-month-calendar__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobile-month-calendar__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.mobile-month-calendar__legend-dot--mine { background: #7b1fa2; }
+.mobile-month-calendar__legend-dot--roommate { background: #1976d2; }
+.mobile-month-calendar__legend-dot--pending { background: #f57c00; }
+
+/* ============================================
+   DAY DETAIL PANEL (Inline - replaces drawer)
+   ============================================ */
+.day-detail-panel {
+  margin-top: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-top: 1px solid #e0e0e0;
+}
+
+.day-detail-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.day-detail-panel__date {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.day-detail-panel__close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-detail-panel__close:hover {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.day-detail-panel__close:active {
+  background: #e0e0e0;
+}
+
+.day-detail-panel__info {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.day-detail-panel__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.day-detail-panel__btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  touch-action: manipulation;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.day-detail-panel__btn:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+/* Action button variants */
+.day-detail-panel__btn--buyout {
+  background: #ff9800;
+}
+
+.day-detail-panel__btn--swap {
+  background: #2196f3;
+}
+
+.day-detail-panel__btn--share {
+  background: #4caf50;
+}
+
+.day-detail-panel__btn--view {
+  background: var(--primary-purple, #5a2d82);
+}
+
+.day-detail-panel__no-actions {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  padding: 8px;
+}
+
+/* ============================================
+   DEPRECATED: Day Drawer (Bottom Sheet)
+   Kept for reference - remove after confirming
+   inline panel works correctly
+   ============================================ */
+.day-drawer {
+  padding: 8px 0;
+}
+
+.day-drawer__date {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.day-drawer__status {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.day-drawer__price {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.day-drawer__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-drawer__actions button {
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+  cursor: pointer;
+}

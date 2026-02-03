@@ -1,0 +1,533 @@
+/* ============================================
+   SETTINGS MENU
+   ============================================ */
+.settings-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-menu__item:active {
+  background: #f8f8f8;
+}
+
+.settings-menu__item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-menu__icon {
+  font-size: 24px;
+}
+
+.settings-menu__text {
+  flex: 1;
+}
+
+.settings-menu__label {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.settings-menu__desc {
+  display: block;
+  font-size: 13px;
+  color: #666;
+}
+
+.settings-menu__arrow {
+  font-size: 20px;
+  color: #ccc;
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-header__back {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--primary-purple, #5a2d82);
+  cursor: pointer;
+}
+
+.section-header__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Section Content */
+.settings-section__content {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-section__footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+  background: white;
+  position: sticky;
+  bottom: 0;
+}
+
+.settings-section__footer button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+  border: none;
+}
+
+.btn--primary:disabled {
+  opacity: 0.5;
+}
+
+.btn--secondary {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+}
+
+/* Price Input */
+.price-input label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.price-input__field {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.price-input__currency {
+  font-size: 24px;
+  font-weight: 600;
+  color: #666;
+}
+
+.price-input__field input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 32px;
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+}
+
+/* Sliders */
+.multiplier-slider,
+.percentage-slider {
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+}
+
+.multiplier-slider__header,
+.percentage-slider__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.multiplier-slider__value,
+.percentage-slider__value {
+  font-weight: 600;
+  color: var(--primary-purple, #5a2d82);
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #e0e0e0;
+  appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-purple, #5a2d82);
+  cursor: pointer;
+}
+
+.percentage-slider__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.settings-hint {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+
+/* ============================================
+   ENHANCED SETTINGS STYLING
+   ============================================ */
+
+/* Mobile Settings Container */
+.mobile-settings {
+  background: #f8f9fa;
+  min-height: 100%;
+}
+
+/* Settings Menu Header */
+.settings-menu__header {
+  padding: 24px 16px 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-menu__title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: #333;
+}
+
+.settings-menu__subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* Settings Menu List */
+.settings-menu__list {
+  background: white;
+}
+
+/* Settings Menu Item - Enhanced Touch Target */
+.settings-menu__item {
+  min-height: 64px;
+  touch-action: manipulation;
+  transition: background 0.15s;
+}
+
+.settings-menu__item:first-child {
+  border-top: none;
+}
+
+.settings-menu__item--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Settings Menu Footer */
+.settings-menu__footer {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.settings-menu__version {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+/* Section Header - Enhanced */
+.section-header__back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px 8px 0;
+  min-height: 44px;
+}
+
+.section-header__back-icon {
+  font-size: 20px;
+}
+
+.section-header__back-text {
+  font-size: 15px;
+}
+
+.section-header__action {
+  margin-left: auto;
+}
+
+/* Settings Section Container */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #f8f9fa;
+}
+
+/* Price Input - Enhanced */
+.price-input {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.price-input__label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.price-input__wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: border-color 0.2s;
+}
+
+.price-input__wrapper:focus-within {
+  border-color: var(--primary-purple, #5a2d82);
+}
+
+.price-input__prefix {
+  font-size: 24px;
+  font-weight: 600;
+  color: #666;
+  margin-right: 4px;
+}
+
+.price-input__field {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 32px;
+  font-weight: 600;
+  outline: none;
+  width: 100%;
+  color: #333;
+}
+
+.price-input__field::-webkit-outer-spin-button,
+.price-input__field::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Multiplier Slider - Enhanced */
+.multiplier-slider,
+.percentage-slider {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 16px;
+}
+
+.multiplier-slider__label,
+.percentage-slider__label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Slider Input - Large Touch Target (28px+) */
+.multiplier-slider__input,
+.percentage-slider__input {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    var(--primary-purple, #5a2d82) 0%,
+    var(--primary-purple, #5a2d82) var(--slider-progress, 50%),
+    #e0e0e0 var(--slider-progress, 50%),
+    #e0e0e0 100%
+  );
+  appearance: none;
+  cursor: pointer;
+  margin: 12px 0;
+}
+
+.multiplier-slider__input::-webkit-slider-thumb,
+.percentage-slider__input::-webkit-slider-thumb {
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-purple, #5a2d82);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(90, 45, 130, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.multiplier-slider__input::-webkit-slider-thumb:active,
+.percentage-slider__input::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(90, 45, 130, 0.4);
+}
+
+/* Firefox slider thumb */
+.multiplier-slider__input::-moz-range-thumb,
+.percentage-slider__input::-moz-range-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-purple, #5a2d82);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(90, 45, 130, 0.3);
+}
+
+/* Slider Range Labels */
+.multiplier-slider__range,
+.percentage-slider__range {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+/* Percentage Slider Description */
+.percentage-slider__description {
+  font-size: 13px;
+  color: #666;
+  margin-top: 12px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Settings Divider */
+.settings-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 8px 0;
+}
+
+/* Settings Info Box */
+.settings-info-box {
+  display: flex;
+  gap: 12px;
+  background: #f0f7ff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #cce5ff;
+}
+
+.settings-info-box__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.settings-info-box p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #0066cc;
+}
+
+/* Sharing Examples */
+.sharing-examples {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.sharing-examples__title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #333;
+}
+
+.sharing-examples__list {
+  margin: 0;
+  padding: 0 0 0 20px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.sharing-examples__list li {
+  margin-bottom: 8px;
+}
+
+.sharing-examples__list li:last-child {
+  margin-bottom: 0;
+}
+
+.sharing-examples__list strong {
+  color: #333;
+}
+
+/* Settings Button Variants */
+.settings-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  touch-action: manipulation;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.settings-btn:active {
+  transform: scale(0.98);
+}
+
+.settings-btn--primary {
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+  border: none;
+}
+
+.settings-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-btn--secondary {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+}
+
+.settings-btn--secondary:active {
+  background: #e0e0e0;
+}
