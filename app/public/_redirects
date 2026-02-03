@@ -129,6 +129,10 @@
 /_internal/z-unit-payment-records-js  /_internal/z-unit-payment-records-js-view  200
 /_internal/z-unit-payment-records-js/  /_internal/z-unit-payment-records-js-view  200
 
+# /_test-contracts → test-contracts.html
+/_test-contracts  /_internal/test-contracts-view  200
+/_test-contracts/  /_internal/test-contracts-view  200
+
 # ===== DYNAMIC ROUTES (with parameters) =====
 # These routes use _internal/ files to avoid Cloudflare's 308 redirects
 

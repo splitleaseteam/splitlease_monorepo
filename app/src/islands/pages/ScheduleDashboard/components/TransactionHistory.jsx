@@ -24,24 +24,53 @@ function formatDate(date) {
   });
 }
 
-function formatNights(nights) {
+function formatNights(nights, transaction) {
   if (!nights || nights.length === 0) return '-';
   if (nights.length === 1) {
     return formatDate(nights[0]);
   }
   if (nights.length === 2) {
+    if (transaction?.type === 'swap' && transaction.direction) {
+      if (transaction.direction === 'outgoing') {
+        return `Give ${formatDate(nights[0])} → Get ${formatDate(nights[1])}`;
+      }
+      return `Get ${formatDate(nights[0])} → Give ${formatDate(nights[1])}`;
+    }
     return `${formatDate(nights[0])} ↔ ${formatDate(nights[1])}`;
   }
   return `${nights.length} nights`;
 }
 
-function formatAmount(amount, direction) {
-  if (amount === 0) return '$0.00';
+/**
+ * Format transaction amount with perspective-aware display
+ * - Outgoing (buyer/initiator): Shows what they pay (base + their fee)
+ * - Incoming (seller/recipient): Shows what they receive (base - their fee)
+ */
+function formatAmount(transaction) {
+  const { direction, initiatorPays, recipientReceives, amount, type } = transaction;
+
+  // Swaps and shares have no monetary amount (just fees)
+  if (type === 'swap' || type === 'share') {
+    return '$0.00';
+  }
+
+  // Use perspective-aware amounts if available, fall back to legacy amount
+  let displayAmount;
+  if (direction === 'outgoing') {
+    // Buyer sees what they pay (base + their fee)
+    displayAmount = initiatorPays ?? amount;
+  } else {
+    // Seller sees what they receive (base - their fee)
+    displayAmount = recipientReceives ?? amount;
+  }
+
+  if (!displayAmount || displayAmount === 0) return '$0.00';
+
   const prefix = direction === 'incoming' ? '+' : '-';
   const colorClass = direction === 'incoming' ? 'transaction-history__amount--positive' : 'transaction-history__amount--negative';
   return (
     <span className={colorClass}>
-      {prefix}${amount.toFixed(2)}
+      {prefix}${displayAmount.toFixed(2)}
     </span>
   );
 }
@@ -50,42 +79,87 @@ function formatAmount(amount, direction) {
 // SUB-COMPONENTS
 // ============================================================================
 
-function StatusBadge({ status }) {
-  const statusMap = {
-    complete: { label: 'Complete', icon: '✅' },
-    pending: { label: 'Pending', icon: '⏳' },
-    declined: { label: 'Declined', icon: '❌' },
-    cancelled: { label: 'Cancelled', icon: '🔙' }
+function StatusDot({ status }) {
+  const colorMap = {
+    complete: 'status-dot--complete',
+    pending: 'status-dot--pending',
+    declined: 'status-dot--declined',
+    cancelled: 'status-dot--cancelled'
   };
 
-  const { label, icon } = statusMap[status] || { label: status, icon: '' };
+  const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : '';
 
   return (
-    <span className={`status-badge status-badge--${status}`}>
-      <span className="status-badge__icon">{icon}</span> {label}
+    <span className="status-dot">
+      <span className={`status-dot__indicator ${colorMap[status] || ''}`} />
+      <span className="status-dot__label">{label}</span>
     </span>
   );
 }
 
-function TypeBadge({ type }) {
+function TypeLabel({ type }) {
   const typeMap = {
     buyout: { label: 'Buyout', icon: '💰' },
     swap: { label: 'Swap', icon: '🔄' },
+    share: { label: 'Share', icon: '🤝' },
     offer: { label: 'Offer', icon: '📤' }
   };
 
   const { label, icon } = typeMap[type] || { label: type, icon: '' };
 
   return (
-    <span className={`type-badge type-badge--${type}`}>
-      <span className="type-badge__icon">{icon}</span> {label}
+    <span className="type-label">
+      <span className="type-label__icon">{icon}</span>
+      <span className="type-label__text">{label}</span>
     </span>
   );
 }
 
-function TransactionDetails({ transaction, onCancel }) {
+function TransactionDetails({ transaction, onCancel, onAccept, onDecline }) {
+  const hasPriceComparison = transaction.suggestedPrice && transaction.offeredPrice &&
+                              transaction.suggestedPrice !== transaction.offeredPrice;
+
+  // Determine if this is my request (outgoing) or someone else's (incoming)
+  const isMyRequest = transaction.direction === 'outgoing';
+
+  const deviation = hasPriceComparison
+    ? (((transaction.offeredPrice - transaction.suggestedPrice) / transaction.suggestedPrice) * 100).toFixed(0)
+    : null;
+
   return (
     <div className="transaction-details">
+      {hasPriceComparison && (
+        <div className="transaction-details__section">
+          <h4 className="transaction-details__subheading">Pricing</h4>
+          <div className="transaction-details__pricing">
+            <div className="transaction-details__pricing-row">
+              <span className="transaction-details__pricing-label">Offered:</span>
+              <span className="transaction-details__pricing-value">${transaction.offeredPrice.toFixed(2)}</span>
+            </div>
+            <div className="transaction-details__pricing-row">
+              <span className="transaction-details__pricing-label">Suggested:</span>
+              <span className="transaction-details__pricing-value">${transaction.suggestedPrice.toFixed(2)}</span>
+            </div>
+            {deviation && (
+              <div className="transaction-details__pricing-deviation">
+                <span className={`transaction-details__deviation-badge ${
+                  Number(deviation) >= -10 ? 'transaction-details__deviation-badge--fair' :
+                  Number(deviation) >= -20 ? 'transaction-details__deviation-badge--low' :
+                  'transaction-details__deviation-badge--very-low'
+                }`}>
+                  {deviation > 0 ? `+${deviation}` : deviation}%
+                </span>
+                <span className="transaction-details__deviation-label">
+                  {Number(deviation) >= -10 ? 'Fair offer' :
+                   Number(deviation) >= -20 ? 'Slightly below' :
+                   'Below suggested'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="transaction-details__section">
         <h4 className="transaction-details__subheading">Timeline</h4>
         <div className="transaction-details__timeline">
@@ -112,18 +186,45 @@ function TransactionDetails({ transaction, onCancel }) {
           )) || <p className="transaction-details__empty">No messages for this request.</p>}
         </div>
       </div>
-      
+
       <div className="transaction-details__footer">
         {transaction.status === 'pending' && (
-          <button 
-            className="transaction-details__btn transaction-details__btn--cancel"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCancel(transaction.id);
-            }}
-          >
-            Cancel Request
-          </button>
+          <div className="transaction-details__actions">
+            {isMyRequest ? (
+              /* Case 1: I made the request -> I can Cancel */
+              <button
+                className="transaction-details__btn transaction-details__btn--cancel"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCancel(transaction.id);
+                }}
+              >
+                Cancel Request
+              </button>
+            ) : (
+              /* Case 2: I received the request -> Accept or Decline */
+              <>
+                <button
+                  className="transaction-details__btn transaction-details__btn--accept"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAccept?.(transaction.id);
+                  }}
+                >
+                  Accept
+                </button>
+                <button
+                  className="transaction-details__btn transaction-details__btn--decline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDecline?.(transaction.id);
+                  }}
+                >
+                  Decline
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -137,6 +238,8 @@ function TransactionDetails({ transaction, onCancel }) {
 export default function TransactionHistory({
   transactions = [],
   onCancelRequest,
+  onAcceptRequest,
+  onDeclineRequest,
   onViewDetails,
   activeTransactionId,
   onClearActiveTransaction,
@@ -289,7 +392,7 @@ export default function TransactionHistory({
                 >
                   Status{getSortIndicator('status')}
                 </th>
-                <th className="transaction-history__th">Actions</th>
+                <th className="transaction-history__th transaction-history__th--action"></th>
               </tr>
             </thead>
             <tbody>
@@ -305,29 +408,31 @@ export default function TransactionHistory({
                       {formatDate(new Date(txn.date))}
                     </td>
                     <td className="transaction-history__td">
-                      <TypeBadge type={txn.type} />
+                      <TypeLabel type={txn.type} />
                     </td>
                     <td className="transaction-history__td">
-                      {formatNights((txn.nights || []).map(n => new Date(n)))}
+                      {formatNights((txn.nights || []).map(n => new Date(n)), txn)}
                     </td>
                     <td className="transaction-history__td">
-                      {formatAmount(txn.amount, txn.direction)}
+                      {formatAmount(txn)}
                     </td>
                     <td className="transaction-history__td">
-                      <StatusBadge status={txn.status} />
+                      <StatusDot status={txn.status} />
                     </td>
-                    <td className="transaction-history__td">
-                      <button className="transaction-history__detail-btn">
-                        {expandedId === txn.id ? 'Hide' : 'Details'}
-                      </button>
+                    <td className="transaction-history__td transaction-history__td--action">
+                      <span className={`transaction-history__chevron ${expandedId === txn.id ? 'transaction-history__chevron--expanded' : ''}`}>
+                        ›
+                      </span>
                     </td>
                   </tr>
                   {expandedId === txn.id && (
                     <tr className="transaction-history__details-row">
                       <td colSpan="6" className="transaction-history__td--details">
-                        <TransactionDetails 
-                          transaction={txn} 
-                          onCancel={onCancelRequest} 
+                        <TransactionDetails
+                          transaction={txn}
+                          onCancel={onCancelRequest}
+                          onAccept={onAcceptRequest}
+                          onDecline={onDeclineRequest}
                         />
                       </td>
                     </tr>
@@ -346,7 +451,7 @@ TransactionHistory.propTypes = {
   transactions: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string,
     date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-    type: PropTypes.oneOf(['buyout', 'swap', 'offer']),
+    type: PropTypes.oneOf(['buyout', 'swap', 'share', 'offer']),
     nights: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])),
     amount: PropTypes.number,
     status: PropTypes.oneOf(['complete', 'pending', 'declined', 'cancelled']),
@@ -354,6 +459,8 @@ TransactionHistory.propTypes = {
     messages: PropTypes.array,
   })),
   onCancelRequest: PropTypes.func,
+  onAcceptRequest: PropTypes.func,
+  onDeclineRequest: PropTypes.func,
   onViewDetails: PropTypes.func,
   activeTransactionId: PropTypes.string,
   onClearActiveTransaction: PropTypes.func,

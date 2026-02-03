@@ -38,6 +38,7 @@ import { generateStays } from '../lib/staysGenerator.ts';
 import {
   generateLeaseDates,
   normalizeFullWeekProposal,
+  dayIndexToName,
   DateGenerationResult,
 } from '../lib/dateGenerator.ts';
 import { triggerGuestPaymentRecords, triggerHostPaymentRecords } from './paymentRecords.ts';
@@ -369,6 +370,18 @@ export async function handleCreate(
     checkInDay = normalizedDays.checkInDay;
     checkOutDay = normalizedDays.checkOutDay;
     console.log('[lease:create] Applied full-week normalization');
+  }
+
+  // Convert day indices to day names if needed (BUG #8 fix)
+  // Proposals may store check-in/check-out days as numeric strings ("0"-"6")
+  // but generateLeaseDates expects day names ("Sunday"-"Saturday")
+  try {
+    checkInDay = dayIndexToName(checkInDay);
+    checkOutDay = dayIndexToName(checkOutDay);
+    console.log('[lease:create] Converted day values:', { checkInDay, checkOutDay });
+  } catch (error) {
+    console.error('[lease:create] Failed to convert day indices to names:', error);
+    throw new Error(`Invalid check-in or check-out day values: ${checkInDay}, ${checkOutDay}`);
   }
 
   // Generate dates

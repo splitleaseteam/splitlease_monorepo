@@ -68,11 +68,9 @@ function calculateBarHeight(price, minPrice, maxPrice) {
 // SUB-COMPONENTS
 // ============================================================================
 
-function PriceBar({ data, barHeight, color, isWeekend }) {
+function PriceBar({ data, barHeight, color }) {
   return (
-    <div
-      className={`buyout-viz__bar-container ${isWeekend ? 'buyout-viz__bar-container--weekend' : ''}`}
-    >
+    <div className="buyout-viz__bar-container">
       <div className="buyout-viz__price-label">
         ${data.suggestedPrice.toFixed(0)}
       </div>
@@ -123,12 +121,8 @@ export default function BuyoutPriceVisualization({
 
     const withMeta = prices.map(p => {
       const d = typeof p.date === 'string' ? new Date(p.date) : p.date;
-      const dayOfWeek = d.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6;
-
       return {
         ...p,
-        isWeekend,
         color: getBarColor(p.suggestedPrice, floorPrice, ceilingPrice),
         barHeight: calculateBarHeight(p.suggestedPrice, min, max)
       };
@@ -186,7 +180,6 @@ export default function BuyoutPriceVisualization({
                 data={priceData}
                 barHeight={priceData.barHeight}
                 color={priceData.color}
-                isWeekend={priceData.isWeekend}
               />
             ))}
           </div>
