@@ -1,0 +1,8 @@
+{
+  "ts": "20260204090459",
+  "device": "SPLIT-LEASE-6",
+  "commit": "418ad8264",
+  "prompt": "help me uninstall the supabase plugin",
+  "summary": "*Intention*: Uninstall Supabase MCP plugin completely\n*Implementation*: Removed Supabase from enabledMcpjsonServers, enabledPlugins, and deleted server definition from .mcp.json\n*Changes*: `.claude/settings.local.json`, `.mcp.json`\n*Next*: Restart Claude Code for changes to take effect [settings.local.json, .mcp.json]",
+  "complete": "Done. The Supabase plugin has been fully removed from your configuration.\n\n**What was removed:**\n- `\"supabase\"` from `enabledMcpjsonServers` in `.claude/settings.local.json`\n- `\"supabase@claude-plugins-official\": true` from `enabledPlugins` in `.claude/settings.local.json`\n- The entire `supabase` server definition from `.mcp.json`\n\n**Remaining MCP servers:** `knip`, `playwright`\n\n**Next step:** Restart Claude Code for the changes to take effect. The Supabase MCP tools will no longer be available after restart.\n\n~~~ FOR SLACK ~~~\n\n*Intention*: Uninstall Supabase MCP plugin completely\n*Implementation*: Removed Supabase from enabledMcpjsonServers, enabledPlugins, and deleted server definition from .mcp.json\n*Changes*: `.claude/settings.local.json`, `.mcp.json`\n*Next*: Restart Claude Code for changes to take effect"
+}
