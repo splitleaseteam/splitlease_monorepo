@@ -1,4 +1,4 @@
-# Supabase Storage Setup for Contract Generator
+# Supabase Storage Setup for Lease Documents
 
 **Date**: 2026-01-28
 **Project**: splitlease-backend-dev (default)
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document outlines the setup required for Supabase Storage to support the contract generator feature. The storage bucket will host:
+This document outlines the setup required for Supabase Storage to support the lease documents feature. The storage bucket will host:
 
 1. **Template files** (read-only, public access) - DOCX templates used for contract generation
 2. **Generated contracts** (authenticated write) - Generated DOCX files stored in `generated/` subfolder
@@ -188,7 +188,7 @@ The following DOCX template files need to be manually uploaded to the `contract-
 ### Download Template
 
 ```typescript
-// In contract-generator Edge Function
+// In lease-documents Edge Function
 const { data, error } = await supabaseAdmin
   .storage
   .from('contract-templates')
@@ -200,7 +200,7 @@ if (error) throw new Error(`Failed to download template: ${error.message}`);
 ### Upload Generated Contract
 
 ```typescript
-// In contract-generator Edge Function
+// In lease-documents Edge Function
 const fileName = `generated/${userId}/${contractId}.docx`;
 const { data, error } = await supabaseAdmin
   .storage

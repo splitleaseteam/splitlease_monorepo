@@ -25,8 +25,8 @@ This plan consolidates 57 individual Supabase Edge Functions into **6 domain orc
 | AI & Content | 7 | ai-gateway, ai-parse-profile, ai-room-redesign, ai-signup-guest, ai-tools, query-leo |
 | Communications | 12 | send-email, send-sms, communications, message-curation, virtual-meeting, calendar-automation, date-change-*, reminder-scheduler, emergency, experience-survey, reviews-overview |
 | Integrations | 4 | bubble-proxy, bubble_sync, slack, cohost-request-slack-callback |
-| Admin & Utilities | 13 | pricing*, qr-*, quick-match, house-manual, informational-texts, usability-data-admin, contract-generator, workflow-*, backfill-*, temp-fix-trigger |
-| **TOTAL** | **57** | |
+| Admin & Utilities | 12 | pricing*, qr-*, quick-match, house-manual, informational-texts, usability-data-admin, workflow-*, backfill-*, temp-fix-trigger |
+| **TOTAL** | **56** | |
 
 ### Existing Patterns (Keep)
 
@@ -154,7 +154,6 @@ supabase/functions/
 │   │   ├── quick-match.ts
 │   │   ├── house-manual.ts
 │   │   ├── usability-data.ts
-│   │   ├── contract-generator.ts
 │   │   └── backfill.ts
 │   └── deno.json
 │

@@ -54,6 +54,7 @@ export function useManageLeasesPageLogic({ showToast }) {
   // ============================================================================
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isGeneratingDocs, setIsGeneratingDocs] = useState(false);
 
   // ============================================================================
   // AUTH SETUP (OPTIONAL - internal page uses soft headers pattern)
@@ -468,6 +469,321 @@ export function useManageLeasesPageLogic({ showToast }) {
     });
   }, [showToast]);
 
+  /**
+   * Fetch listing photos for document generation
+   * Photos are stored in 'Features - Photos' (JSONB) or listing_photo table
+   */
+  async function fetchListingPhotos(listingId) {
+    if (!listingId) return [];
+
+    try {
+      // First try to get photos from listing's 'Features - Photos' column
+      const { data: listingData } = await supabase
+        .from('Listing')
+        .select('"Features - Photos"')
+        .eq('_id', listingId)
+        .single();
+
+      // Parse embedded photos if available
+      if (listingData?.['Features - Photos']) {
+        const embeddedPhotos = listingData['Features - Photos'];
+        if (Array.isArray(embeddedPhotos) && embeddedPhotos.length > 0) {
+          // Could be array of URLs or array of objects with url property
+          return embeddedPhotos.slice(0, 3).map(photo =>
+            typeof photo === 'string' ? photo : (photo?.url || photo?.Photo || '')
+          ).filter(Boolean);
+        }
+      }
+
+      // Fallback: fetch from listing_photo table
+      const { data: photosData } = await supabase
+        .from('listing_photo')
+        .select('Photo')
+        .eq('Listing', listingId)
+        .order('SortOrder', { ascending: true, nullsLast: true })
+        .limit(3);
+
+      if (photosData && photosData.length > 0) {
+        return photosData.map(p => p.Photo).filter(Boolean);
+      }
+
+      return [];
+    } catch (err) {
+      console.warn('[ManageLeases] Failed to fetch listing photos:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Generate all 4 lease documents via lease-documents edge function
+   * This calls the same endpoint as the test-contracts page
+   */
+  const handleGenerateAllDocs = useCallback(async () => {
+    if (!selectedLease) {
+      showToast({ title: 'Error', content: 'No lease selected', type: 'error' });
+      return;
+    }
+
+    setIsGeneratingDocs(true);
+
+    try {
+      // Build payload from lease data
+      const lease = selectedLease;
+      const agreementNumber = lease.agreementNumber || `AGR-${lease.id?.slice(0, 8) || 'UNKNOWN'}`;
+
+      // Fetch listing photos for embedding in documents
+      const listingId = lease.listing?._id || lease.listing?.id;
+      const listingPhotos = await fetchListingPhotos(listingId);
+      console.log('[ManageLeases] Fetched listing photos:', listingPhotos.length, listingPhotos);
+
+      // Format dates for documents (MM/DD/YY)
+      const formatDateForDoc = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = String(d.getFullYear()).slice(-2);
+        return `${month}/${day}/${year}`;
+      };
+
+      // Get day name from date
+      const getDayName = (date) => {
+        if (!date) return '';
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[new Date(date).getDay()] || '';
+      };
+
+      // Format currency
+      const formatCurrency = (amount) => {
+        if (amount === undefined || amount === null) return '0.00';
+        return Number(amount).toFixed(2);
+      };
+
+      // Extract guest/host names
+      const hostName = lease.host?.fullName ||
+        `${lease.host?.firstName || ''} ${lease.host?.lastName || ''}`.trim() ||
+        'Host';
+      const guestName = lease.guest?.fullName ||
+        `${lease.guest?.firstName || ''} ${lease.guest?.lastName || ''}`.trim() ||
+        'Guest';
+      const hostEmail = lease.host?.email || '';
+      const hostPhone = lease.host?.phone || '';
+
+      // Extract listing info
+      const listingTitle = lease.listing?.name || 'Listing';
+      const listingAddress = lease.listing?.address || lease.listing?.neighborhood || '';
+
+      // Calculate weeks
+      const totalWeeks = lease.totalWeekCount || 1;
+      const fourWeekRent = lease.totalRent ? (lease.totalRent / totalWeeks) * 4 : 0;
+      const maintenanceFee = 0; // Would need to come from listing/proposal
+      const damageDeposit = 500; // Default value, would need from proposal
+
+      // Build generate_all payload matching edge function expectations
+      const payload = {
+        hostPayout: {
+          'Agreement Number': agreementNumber,
+          'Host Name': hostName,
+          'Host Email': hostEmail,
+          'Host Phone': hostPhone,
+          'Address': listingAddress,
+          'Payout Number': `${agreementNumber}-PO`,
+          'Maintenance Fee': formatCurrency(maintenanceFee),
+          // Payment dates would need to come from payment records
+          'Date1': formatDateForDoc(lease.startDate),
+          'Rent1': formatCurrency(fourWeekRent / 4),
+          'Total1': formatCurrency((fourWeekRent / 4) + maintenanceFee)
+        },
+        supplemental: {
+          'Agreement Number': agreementNumber,
+          'Check in Date': formatDateForDoc(lease.startDate),
+          'Check Out Date': formatDateForDoc(lease.endDate),
+          'Number of weeks': String(totalWeeks),
+          'Guests Allowed': '1',
+          'Host Name': hostName,
+          'Listing Title': listingTitle,
+          'Listing Description': '',
+          'Location': listingAddress,
+          'Type of Space': '',
+          'Space Details': '',
+          'Supplemental Number': `${agreementNumber}-SA`,
+          // Listing photos for document embedding
+          'image1': listingPhotos[0] || '',
+          'image2': listingPhotos[1] || '',
+          'image3': listingPhotos[2] || ''
+        },
+        periodicTenancy: {
+          'Agreement Number': agreementNumber,
+          'Check in Date': formatDateForDoc(lease.startDate),
+          'Check Out Date': formatDateForDoc(lease.endDate),
+          'Check In Day': getDayName(lease.startDate),
+          'Check Out Day': getDayName(lease.endDate),
+          'Number of weeks': String(totalWeeks),
+          'Guests Allowed': '1',
+          'Host name': hostName,
+          'Guest name': guestName,
+          'Supplemental Number': `${agreementNumber}-SA`,
+          'Authorization Card Number': `${agreementNumber}-CC`,
+          'Host Payout Schedule Number': `${agreementNumber}-PO`,
+          'Extra Requests on Cancellation Policy': '',
+          'Damage Deposit': formatCurrency(damageDeposit),
+          'Listing Title': listingTitle,
+          'Listing Description': '',
+          'Location': listingAddress,
+          'Type of Space': '',
+          'Space Details': '',
+          'House Rules': [],
+          // Listing photos for document embedding
+          'image1': listingPhotos[0] || '',
+          'image2': listingPhotos[1] || '',
+          'image3': listingPhotos[2] || ''
+        },
+        creditCardAuth: {
+          'Agreement Number': agreementNumber,
+          'Host Name': hostName,
+          'Guest Name': guestName,
+          'Four Week Rent': formatCurrency(fourWeekRent),
+          'Maintenance Fee': formatCurrency(maintenanceFee),
+          'Damage Deposit': formatCurrency(damageDeposit),
+          'Splitlease Credit': '0.00',
+          'Last Payment Rent': formatCurrency(fourWeekRent),
+          'Weeks Number': String(totalWeeks),
+          'Listing Description': listingTitle,
+          'Penultimate Week Number': String(Math.max(1, totalWeeks - 4)),
+          'Number of Payments': String(Math.ceil(totalWeeks / 4)),
+          'Last Payment Weeks': String(totalWeeks % 4 || 4),
+          'Is Prorated': totalWeeks % 4 !== 0
+        }
+      };
+
+      console.log('[ManageLeases] Calling lease-documents with generate_all:', payload);
+
+      // Call lease-documents edge function
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/lease-documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({
+          action: 'generate_all',
+          payload
+        })
+      });
+
+      const result = await response.json();
+      console.log('[ManageLeases] Document generation result:', result);
+
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}`);
+      }
+
+      // Edge function wraps response as { success: true, data: { hostPayout, supplemental, ... } }
+      // Extract the actual document results from result.data
+      const docResults = result.data || result;
+      console.log('[ManageLeases] Document results extracted:', docResults);
+
+      // Check results for each document and collect errors
+      const successes = [];
+      const failures = [];
+      const errorMessages = [];
+
+      console.log('='.repeat(60));
+      console.log('[ManageLeases] DOCUMENT GENERATION RESULTS');
+      console.log('='.repeat(60));
+
+      // Host Payout
+      if (docResults.hostPayout?.success) {
+        successes.push('Host Payout');
+        console.info('✅ Host Payout: SUCCESS', docResults.hostPayout.driveUrl ? `- ${docResults.hostPayout.driveUrl}` : '');
+      } else {
+        failures.push('Host Payout');
+        const error = docResults.hostPayout?.error || 'Unknown error';
+        errorMessages.push(`Host Payout: ${error}`);
+        console.error('❌ Host Payout: FAILED -', error);
+      }
+
+      // Supplemental
+      if (docResults.supplemental?.success) {
+        successes.push('Supplemental');
+        console.info('✅ Supplemental: SUCCESS', docResults.supplemental.driveUrl ? `- ${docResults.supplemental.driveUrl}` : '');
+      } else {
+        failures.push('Supplemental');
+        const error = docResults.supplemental?.error || 'Unknown error';
+        errorMessages.push(`Supplemental: ${error}`);
+        console.error('❌ Supplemental: FAILED -', error);
+      }
+
+      // Periodic Tenancy
+      if (docResults.periodicTenancy?.success) {
+        successes.push('Periodic Tenancy');
+        console.info('✅ Periodic Tenancy: SUCCESS', docResults.periodicTenancy.driveUrl ? `- ${docResults.periodicTenancy.driveUrl}` : '');
+      } else {
+        failures.push('Periodic Tenancy');
+        const error = docResults.periodicTenancy?.error || 'Unknown error';
+        errorMessages.push(`Periodic Tenancy: ${error}`);
+        console.error('❌ Periodic Tenancy: FAILED -', error);
+      }
+
+      // Credit Card Auth
+      if (docResults.creditCardAuth?.success) {
+        successes.push('Credit Card Auth');
+        console.info('✅ Credit Card Auth: SUCCESS', docResults.creditCardAuth.driveUrl ? `- ${docResults.creditCardAuth.driveUrl}` : '');
+      } else {
+        failures.push('Credit Card Auth');
+        const error = docResults.creditCardAuth?.error || 'Unknown error';
+        errorMessages.push(`Credit Card Auth: ${error}`);
+        console.error('❌ Credit Card Auth: FAILED -', error);
+      }
+
+      console.log('='.repeat(60));
+      console.log(`[ManageLeases] Summary: ${successes.length} succeeded, ${failures.length} failed`);
+      console.log('='.repeat(60));
+
+      if (failures.length === 0) {
+        showToast({
+          title: 'Documents Generated',
+          content: `All 4 documents generated successfully. Check Supabase Storage for files.`,
+          type: 'success'
+        });
+      } else if (successes.length > 0) {
+        // Show partial success with error details
+        const errorDetail = errorMessages.length > 0
+          ? ` Errors: ${errorMessages.join('; ')}`
+          : '';
+        showToast({
+          title: 'Partial Success',
+          content: `Generated: ${successes.join(', ')}. Failed: ${failures.join(', ')}.${errorDetail}`,
+          type: 'warning'
+        });
+      } else {
+        // All failed - show first error message for clarity
+        const errorDetail = errorMessages.length > 0
+          ? errorMessages[0]
+          : 'Check console for details';
+        showToast({
+          title: 'Generation Failed',
+          content: `All documents failed. ${errorDetail}`,
+          type: 'error'
+        });
+      }
+
+      // Refresh lease to get updated document URLs
+      await fetchLeaseDetails(lease.id);
+
+    } catch (err) {
+      console.error('[ManageLeases] Document generation error:', err);
+      showToast({
+        title: 'Generation Error',
+        content: err.message || 'Failed to generate documents',
+        type: 'error'
+      });
+    } finally {
+      setIsGeneratingDocs(false);
+    }
+  }, [selectedLease, showToast, fetchLeaseDetails]);
+
   const handleSendDocuments = useCallback(async () => {
     // Document sending integrates with HelloSign
     showToast({
@@ -557,8 +873,10 @@ export function useManageLeasesPageLogic({ showToast }) {
     // Documents
     handleUploadDocument,
     handleGenerateDocs,
+    handleGenerateAllDocs,
     handleSendDocuments,
     handleOpenPdf,
+    isGeneratingDocs,
 
     // Change Requests
     guestChangeRequests,

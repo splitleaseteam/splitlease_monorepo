@@ -201,12 +201,11 @@ const handlers: Readonly<Record<Action, Handler>> = {...}
 **Command**: `bun run sync:edge-functions`
 **Result**: Exit code 1 - Registry out of sync
 
-### Unregistered Functions (4)
+### Unregistered Functions (3)
 
 | Function | Status |
 |----------|--------|
 | `calendar-automation` | Not in config.toml |
-| `contract-generator` | Not in config.toml |
 | `date-change-reminder-cron` | Not in config.toml |
 | `temp-fix-trigger` | Not in config.toml |
 
@@ -220,12 +219,6 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/calendar-automation/deno.json"
 entrypoint = "./functions/calendar-automation/index.ts"
-
-[functions.contract-generator]
-enabled = true
-verify_jwt = false
-import_map = "./functions/contract-generator/deno.json"
-entrypoint = "./functions/contract-generator/index.ts"
 
 [functions.date-change-reminder-cron]
 enabled = true

@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "docx-templates": "npm:docx-templates@8.5.0",
-    "supabase": "npm:@supabase/supabase-js@2.39.0"
-  }
-}

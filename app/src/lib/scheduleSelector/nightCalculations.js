@@ -135,6 +135,10 @@ export const calculateSelectedNightsAsNumbers = (nights) => {
  * Count number of selected nights
  */
 export const countSelectedNights = (days) => {
+  // Full week (7 days) = 7 nights (full-time schedule)
+  if (days.length === 7) {
+    return 7;
+  }
   // Nights = Days - 1 (because nights are between check-in and check-out)
   return Math.max(0, days.length - 1);
 };

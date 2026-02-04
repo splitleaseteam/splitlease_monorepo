@@ -1,6 +1,6 @@
 -- Migration: Contract Templates Storage Bucket Setup
 -- Date: 2026-01-28
--- Purpose: Create storage bucket and RLS policies for contract generator
+-- Purpose: Create storage bucket and RLS policies for lease documents
 -- Project: splitlease-backend-dev
 
 -- ============================================================================
@@ -100,4 +100,4 @@ USING (
 --    https://<PROJECT_ID>.supabase.co/storage/v1/object/public/contract-templates/periodictenancyagreement.docx
 --
 -- 3. Verify Edge Function can access templates:
---    Call contract-generator Edge Function with action 'list_templates'
+--    Call lease-documents Edge Function with action 'generate_host_payout'

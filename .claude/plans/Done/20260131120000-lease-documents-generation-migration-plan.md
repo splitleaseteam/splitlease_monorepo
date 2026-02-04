@@ -419,13 +419,6 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ## File References
 
-### PythonAnywhere Export (Source)
-- [credit_card_auth/generator.py](C:/Users/Split Lease/Downloads/contract_generator_export/contract_generator/credit_card_auth/generator.py)
-- [host_payout/generator.py](C:/Users/Split Lease/Downloads/contract_generator_export/contract_generator/host_payout/generator.py)
-- [periodic_tenancy/generator.py](C:/Users/Split Lease/Downloads/contract_generator_export/contract_generator/periodic_tenancy/generator.py)
-- [supplemental/generator.py](C:/Users/Split Lease/Downloads/contract_generator_export/contract_generator/supplemental/generator.py)
-- [google_drive/uploader.py](C:/Users/Split Lease/Downloads/contract_generator_export/google_drive/uploader.py)
-
 ### Target Implementation Location
 - [supabase/functions/](supabase/functions/) - Edge Functions directory
 - [supabase/functions/_shared/](supabase/functions/_shared/) - Shared utilities

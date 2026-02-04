@@ -17,7 +17,7 @@ The pythonAnywhere directory contains 3 Flask applications (mysite, mysite2, mys
 
 | Module | Current Function | Files |
 |--------|------------------|-------|
-| **Contract Generators** | Generate DOCX legal documents from templates | `contract_generator/periodic_tenancy/`, `host_payout/`, `credit_card_auth/`, `supplemental/` |
+| **Lease document generation (Supabase)** | Generate DOCX legal documents from templates | `supabase/functions/lease-documents/` |
 | **Calendar Automation** | Google Calendar OAuth + Meet link creation | `calendar_automation/routes.py`, `google_calendar_service.py`, `bubble_service.py` |
 | **Document Parser** | Parse Google Docs | `doc_parser/google_doc_parser.py` |
 | **House Manual PDF** | Generate house manual PDFs | `house_manual_pdf/house_manual_generator.py` |
@@ -77,7 +77,7 @@ The pythonAnywhere directory contains 3 Flask applications (mysite, mysite2, mys
 
 | Functionality | Why Not Supabase | Recommendation |
 |---------------|------------------|----------------|
-| **Contract Generators (DOCX)** | DOCX template rendering requires `python-docx`/`docxtpl` | Keep in PythonAnywhere OR use external API (DocuSign, PandaDoc) |
+| **Lease documents (DOCX)** | DOCX template rendering requires `docxtpl` | Handled by Supabase Edge Functions (`lease-documents`) |
 | **TensorFlow Model** | ML inference needs GPU/specialized runtime | Move to Hugging Face Inference API, Replicate, or Cloudflare Workers AI |
 | **Embeddings Store** | Vector embeddings for similarity search | Use Supabase pgvector extension |
 
@@ -211,7 +211,7 @@ These PythonAnywhere functions now have Supabase Edge Function equivalents:
 | **Phase 2** | URL Shortener, QR Generator | Simple CRUD, self-contained |
 | **Phase 3** | Calendar Automation | Already have virtual-meeting Edge Function |
 | **Phase 4** | PDF Generation | Medium complexity, needs library evaluation |
-| **Phase 5** | Contract Generators | Keep in PythonAnywhere or move to external API |
+| **Phase 5** | Lease document generators | Keep in PythonAnywhere or move to external API |
 | **Defer** | TensorFlow/ML | Move to specialized ML platform when needed |
 
 ---
@@ -223,7 +223,6 @@ These PythonAnywhere functions now have Supabase Edge Function equivalents:
 - [pythonAnywhere/mysite/app.py](pythonAnywhere/mysite/app.py)
 - [pythonAnywhere/mysite/modules/database_checker/main.py](pythonAnywhere/mysite/modules/database_checker/main.py)
 - [pythonAnywhere/mysite/modules/calendar_automation/routes.py](pythonAnywhere/mysite/modules/calendar_automation/routes.py)
-- [pythonAnywhere/mysite/modules/contract_generator/periodic_tenancy/generator.py](pythonAnywhere/mysite/modules/contract_generator/periodic_tenancy/generator.py)
 
 ### Existing Supabase Edge Functions
 - [supabase/functions/virtual-meeting/](supabase/functions/virtual-meeting/)
@@ -234,7 +233,7 @@ These PythonAnywhere functions now have Supabase Edge Function equivalents:
 
 ## Decision Required
 
-1. **Contract Generation**: Keep in PythonAnywhere OR migrate to DocuSign/PandaDoc API?
+1. **Lease document generation**: Keep in PythonAnywhere OR migrate to DocuSign/PandaDoc API?
 2. **ML Recommendations**: Defer OR migrate to Cloudflare Workers AI / Hugging Face?
 3. **Calendar OAuth**: Store tokens in Supabase Vault OR keep in PythonAnywhere?
 

@@ -46,7 +46,15 @@
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_evaluate",
       "Bash({)",
-      "mcp__playwright__browser_install"
+      "mcp__playwright__browser_install",
+      "Bash(git config:*)",
+      "Bash(bun install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node -e:*)",
+      "Bash(supabase projects:*)",
+      "Bash(node:*)",
+      "Bash(npx supabase-mcp-execute-sql:*)",
+      "Bash(npx @anthropic-ai/mcp-server-supabase execute_sql:*)"
     ],
     "deny": [],
     "ask": []

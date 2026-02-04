@@ -60,33 +60,85 @@ export async function downloadTemplate(
 // ================================================
 
 /**
- * Fetch an image from a URL and return as base64.
+ * Extract base64 payload from a data URL.
  */
-async function fetchImageAsBase64(imageUrl: string): Promise<string | null> {
+function extractBase64FromDataUrl(value: string): string | null {
+  const match = value.match(/^data:image\/[a-zA-Z0-9+.-]+;base64,(.+)$/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Basic base64 shape check for raw image payloads.
+ */
+function looksLikeBase64(value: string): boolean {
+  const normalized = value.replace(/\s/g, '');
+  if (normalized.length < 32) {
+    return false;
+  }
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(normalized);
+}
+
+/**
+ * Fetch an image from a URL or data URL and return as base64.
+ */
+async function fetchImageAsBase64(imageUrl: string, imageKey: string): Promise<string | null> {
+  console.log(`[templateRenderer] 📷 Processing image "${imageKey}": input type=${typeof imageUrl}, length=${imageUrl?.length || 0}`);
+
   if (!imageUrl) {
+    console.log(`[templateRenderer] ❌ Image "${imageKey}": URL is null/undefined/empty`);
+    return null;
+  }
+
+  const trimmed = imageUrl.trim();
+  if (!trimmed) {
+    console.log(`[templateRenderer] ❌ Image "${imageKey}": URL is empty after trim`);
+    return null;
+  }
+
+  console.log(`[templateRenderer] 📷 Image "${imageKey}": URL preview = "${trimmed.slice(0, 100)}${trimmed.length > 100 ? '...' : ''}"`);
+
+  const dataUrlBase64 = extractBase64FromDataUrl(trimmed);
+  if (dataUrlBase64) {
+    console.log(`[templateRenderer] ✅ Image "${imageKey}": Extracted base64 from data URL (${dataUrlBase64.length} chars)`);
+    return dataUrlBase64;
+  }
+
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    if (looksLikeBase64(trimmed)) {
+      console.log(`[templateRenderer] ✅ Image "${imageKey}": Detected raw base64 (${trimmed.length} chars)`);
+      return trimmed.replace(/\s/g, '');
+    }
+    console.warn(`[templateRenderer] ❌ Image "${imageKey}": Unsupported format (not URL, data URL, or base64): ${trimmed.slice(0, 80)}...`);
     return null;
   }
 
   try {
-    console.log(`[templateRenderer] Fetching image: ${imageUrl}`);
-    const response = await fetch(imageUrl);
+    console.log(`[templateRenderer] 🌐 Image "${imageKey}": Fetching from URL: ${trimmed}`);
+    const response = await fetch(trimmed);
 
     if (!response.ok) {
-      console.warn(`[templateRenderer] Failed to fetch image (${response.status}): ${imageUrl}`);
+      console.warn(`[templateRenderer] ❌ Image "${imageKey}": HTTP ${response.status} ${response.statusText} for URL: ${trimmed}`);
       return null;
     }
 
+    const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    console.log(`[templateRenderer] 📷 Image "${imageKey}": Response content-type=${contentType}, content-length=${contentLength}`);
+
     const arrayBuffer = await response.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
+    console.log(`[templateRenderer] 📷 Image "${imageKey}": Downloaded ${uint8Array.byteLength} bytes`);
 
     // Convert to base64
     let binary = '';
     for (let i = 0; i < uint8Array.byteLength; i++) {
       binary += String.fromCharCode(uint8Array[i]);
     }
-    return btoa(binary);
+    const base64 = btoa(binary);
+    console.log(`[templateRenderer] ✅ Image "${imageKey}": Converted to base64 (${base64.length} chars)`);
+    return base64;
   } catch (error) {
-    console.warn(`[templateRenderer] Error fetching image: ${error}`);
+    console.error(`[templateRenderer] ❌ Image "${imageKey}": Fetch error:`, error);
     return null;
   }
 }
@@ -156,21 +208,39 @@ export async function renderTemplate(
   const modules: unknown[] = [];
 
   if (options.useImages && options.imageUrls) {
+    console.log('[templateRenderer] 📷 IMAGE PROCESSING START');
+    console.log('[templateRenderer] 📷 useImages:', options.useImages);
+    console.log('[templateRenderer] 📷 imageUrls keys:', Object.keys(options.imageUrls));
+    console.log('[templateRenderer] 📷 imageUrls values:', JSON.stringify(options.imageUrls, null, 2));
+
     const imageModule = new ImageModule(createImageModuleOptions());
     modules.push(imageModule);
 
     // Fetch all images and add to data
+    let successCount = 0;
+    let failCount = 0;
     for (const [key, url] of Object.entries(options.imageUrls)) {
+      console.log(`[templateRenderer] 📷 Processing "${key}": value="${url?.slice?.(0, 100) || url}"`);
       if (url) {
-        const base64 = await fetchImageAsBase64(url);
+        const base64 = await fetchImageAsBase64(url, key);
         if (base64) {
           processedData[key] = base64;
+          successCount++;
+          console.log(`[templateRenderer] ✅ "${key}": Added to processedData (${base64.length} chars)`);
         } else {
           // Set to empty string if image fetch failed
           processedData[key] = '';
+          failCount++;
+          console.log(`[templateRenderer] ❌ "${key}": Set to empty string (fetch failed)`);
         }
+      } else {
+        console.log(`[templateRenderer] ⚠️ "${key}": URL is falsy, skipping`);
+        failCount++;
       }
     }
+    console.log(`[templateRenderer] 📷 IMAGE PROCESSING COMPLETE: ${successCount} success, ${failCount} failed`);
+  } else {
+    console.log('[templateRenderer] 📷 No image processing requested (useImages:', options.useImages, ', imageUrls:', !!options.imageUrls, ')');
   }
 
   // Create docxtemplater instance

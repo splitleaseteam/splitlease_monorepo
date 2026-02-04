@@ -71,9 +71,11 @@ export default function PaymentRecordsTable({ records = [], onDownloadReceipt })
                 <td className="payment-records__amount">
                   {formatCurrency(record.totalAmount || record.rent)}
                 </td>
-                <td className={`payment-records__status ${isPaid ? 'paid' : 'pending'}`}>
-                  <StatusIcon size={14} />
-                  {isPaid ? 'Paid' : 'Pending'}
+                <td>
+                  <span className={`payment-records__status ${isPaid ? 'paid' : 'pending'}`}>
+                    <StatusIcon size={14} />
+                    {isPaid ? 'Paid' : 'Pending'}
+                  </span>
                 </td>
                 <td className="payment-records__receipt">
                   {record.receiptUrl ? (

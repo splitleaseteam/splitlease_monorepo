@@ -320,11 +320,6 @@ simulation-host/index.ts      - Host simulation
 | Module | Route File | Endpoints |
 |--------|-----------|-----------|
 | Calendar Automation | `calendar_automation/routes.py` | Google Calendar OAuth & sync |
-| Contract Generator - Credit Card Auth | `contract_generator/credit_card_auth/routes.py` | CC auth PDF generation |
-| Contract Generator - CC Auth Nonprorated | `contract_generator/credit_card_auth_nonprorated/routes.py` | Non-prorated CC auth |
-| Contract Generator - Host Payout | `contract_generator/host_payout/routes.py` | Host payout contracts |
-| Contract Generator - Periodic Tenancy | `contract_generator/periodic_tenancy/routes.py` | Tenancy agreements |
-| Contract Generator - Supplemental | `contract_generator/supplemental/routes.py` | Supplemental contracts |
 | Core Monitoring | `core/monitoring/routes.py` | Health checks |
 | Curated Listings PDF | `curated_listings_pdf/routes.py` | PDF generation |
 | Doc Parser | `doc_parser/routes.py` | Google Docs parsing |

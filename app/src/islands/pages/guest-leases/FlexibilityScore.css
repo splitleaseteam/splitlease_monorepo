@@ -1,172 +1,83 @@
 /**
- * FlexibilityScore Component Styles
+ * FlexibilityScore Component Styles (Simplified)
  */
 
+@import '../../../styles/design-tokens.css';
+
 .flexibility-score {
-  background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
-  border-radius: 12px;
-  padding: 20px;
+  background: var(--bg-white);
 }
 
 .flexibility-score__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
 }
 
 .flexibility-score__title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #4D4D4D;
+  gap: var(--spacing-sm);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-dark);
   margin: 0;
 }
 
 .flexibility-score__title svg {
-  color: #7C3AED;
+  color: var(--secondary-purple);
 }
 
 .flexibility-score__info-btn {
   background: transparent;
   border: none;
-  padding: 4px;
+  padding: var(--spacing-xs);
   cursor: pointer;
-  color: #6B6B6B;
-  transition: color 0.2s ease;
+  color: var(--text-gray);
+  transition: color var(--transition-fast);
 }
 
 .flexibility-score__info-btn:hover {
-  color: #7C3AED;
+  color: var(--secondary-purple);
 }
 
 .flexibility-score__content {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 16px;
 }
 
-/* Score Gauge */
-.flexibility-score__gauge {
-  display: flex;
-  flex-direction: column;
+/* Score Badge */
+.flexibility-score__badge {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--rounded-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  border: var(--border-width-thin) solid;
 }
 
-.flexibility-score__gauge--excellent {
-  border: 4px solid #10B981;
+.flexibility-score__badge--excellent {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success-green);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
-.flexibility-score__gauge--good {
-  border: 4px solid #7C3AED;
+.flexibility-score__badge--good {
+  background: rgba(109, 49, 194, 0.1);
+  color: var(--secondary-purple);
+  border-color: rgba(109, 49, 194, 0.3);
 }
 
-.flexibility-score__gauge--fair {
-  border: 4px solid #F59E0B;
+.flexibility-score__badge--fair {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
-.flexibility-score__gauge--poor {
-  border: 4px solid #EF4444;
-}
-
-.flexibility-score__score-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #4D4D4D;
-}
-
-.flexibility-score__score-label {
-  font-size: 12px;
-  color: #6B6B6B;
-}
-
-/* Trend */
-.flexibility-score__trend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.flexibility-score__trend--up {
-  color: #10B981;
-}
-
-.flexibility-score__trend--down {
-  color: #EF4444;
-}
-
-.flexibility-score__trend--neutral {
-  color: #6B6B6B;
-}
-
-/* Stats */
-.flexibility-score__stats {
-  display: flex;
-  gap: 24px;
-  padding: 12px 0;
-  border-top: 1px solid rgba(124, 58, 237, 0.2);
-  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-  width: 100%;
-  justify-content: center;
-}
-
-.flexibility-score__stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.flexibility-score__stat-value {
-  font-size: 20px;
-  font-weight: 600;
-  color: #4D4D4D;
-}
-
-.flexibility-score__stat-label {
-  font-size: 12px;
-  color: #6B6B6B;
-}
-
-/* Reputation */
-.flexibility-score__reputation {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.flexibility-score__reputation-label {
-  color: #6B6B6B;
-}
-
-.flexibility-score__reputation-value {
-  font-weight: 600;
-  color: #7C3AED;
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-  .flexibility-score {
-    padding: 16px;
-  }
-
-  .flexibility-score__stats {
-    gap: 16px;
-  }
-
-  .flexibility-score__stat-value {
-    font-size: 18px;
-  }
+.flexibility-score__badge--poor {
+  background: var(--protocol-danger-hover);
+  color: var(--protocol-danger);
+  border-color: rgba(220, 53, 69, 0.3);
 }

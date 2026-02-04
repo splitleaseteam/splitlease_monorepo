@@ -32,6 +32,24 @@ export async function handleGenerateAll(
   supabase: SupabaseClient
 ): Promise<GenerateAllResult> {
   console.log('[generateAll] Starting orchestrated document generation...');
+  console.log('[generateAll] 📷 INCOMING PAYLOAD IMAGE CHECK:');
+
+  // Type guard for payload
+  const typedPayload = payload as Record<string, Record<string, unknown>> | null;
+  if (typedPayload?.periodicTenancy) {
+    console.log('[generateAll] 📷 periodicTenancy.image1:', typedPayload.periodicTenancy['image1'] || '(not set)');
+    console.log('[generateAll] 📷 periodicTenancy.image2:', typedPayload.periodicTenancy['image2'] || '(not set)');
+    console.log('[generateAll] 📷 periodicTenancy.image3:', typedPayload.periodicTenancy['image3'] || '(not set)');
+  } else {
+    console.log('[generateAll] 📷 periodicTenancy payload not found');
+  }
+  if (typedPayload?.supplemental) {
+    console.log('[generateAll] 📷 supplemental.image1:', typedPayload.supplemental['image1'] || '(not set)');
+    console.log('[generateAll] 📷 supplemental.image2:', typedPayload.supplemental['image2'] || '(not set)');
+    console.log('[generateAll] 📷 supplemental.image3:', typedPayload.supplemental['image3'] || '(not set)');
+  } else {
+    console.log('[generateAll] 📷 supplemental payload not found');
+  }
 
   // Validate payload (Python-compatible format)
   let validatedPayload;

@@ -244,7 +244,7 @@ import { AuthenticationError, ValidationError } from "../_shared/errors.ts";
 ## 6. Edge Function Sync Check
 
 **Command:** `bun run sync:edge-functions`
-**Result:** 4 unregistered functions
+**Result:** 3 unregistered functions
 **Exit Code:** 1
 
 ### Unregistered Functions
@@ -252,7 +252,6 @@ import { AuthenticationError, ValidationError } from "../_shared/errors.ts";
 | Function | Status |
 |----------|--------|
 | `calendar-automation` | Missing from config.toml |
-| `contract-generator` | Missing from config.toml |
 | `date-change-reminder-cron` | Missing from config.toml |
 | `temp-fix-trigger` | Missing from config.toml |
 
@@ -260,7 +259,7 @@ import { AuthenticationError, ValidationError } from "../_shared/errors.ts";
 
 - **Discovered:** 55 Edge Functions
 - **Registered:** 51 in config.toml
-- **Missing:** 4 functions
+- **Missing:** 3 functions
 
 ### Fix
 
@@ -274,12 +273,6 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/calendar-automation/deno.json"
 entrypoint = "./functions/calendar-automation/index.ts"
-
-[functions.contract-generator]
-enabled = true
-verify_jwt = false
-import_map = "./functions/contract-generator/deno.json"
-entrypoint = "./functions/contract-generator/index.ts"
 
 [functions.date-change-reminder-cron]
 enabled = true

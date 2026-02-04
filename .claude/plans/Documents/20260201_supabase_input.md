@@ -181,20 +181,6 @@ supabase/
 │   ├── communications/                  # Communications placeholder
 │   │   └── index.ts
 │   │
-│   ├── contract-generator/              # Contract document generation (10 files)
-│   │   ├── deno.json
-│   │   ├── index.ts
-│   │   ├── types/
-│   │   │   └── contracts.ts
-│   │   └── actions/
-│   │       ├── generateCreditCardAuth.ts
-│   │       ├── generateCreditCardAuthNonProrated.ts
-│   │       ├── generateHostPayout.ts
-│   │       ├── generatePeriodicTenancy.ts
-│   │       ├── generateSupplemental.ts
-│   │       ├── getTemplateSchema.ts
-│   │       └── listTemplates.ts
-│   │
 │   ├── date-change-reminder-cron/       # Date change reminder cron job
 │   │   ├── deno.json
 │   │   └── index.ts
@@ -742,7 +728,6 @@ supabase/
 
 | Function | Purpose |
 |----------|---------|
-| `contract-generator/` | Contract document generation (Credit Card Auth, Host Payout, Periodic Tenancy, Supplemental) |
 | `lease-documents/` | Lease document generation with Google Drive integration |
 | `document/` | General document management |
 | `house-manual/` | House manual parsing and management |

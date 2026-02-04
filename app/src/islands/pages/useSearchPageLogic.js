@@ -54,7 +54,7 @@ import { logger } from '../../lib/logger.js'
 import { calculateGuestFacingPrice } from '../../logic/calculators/pricing/calculateGuestFacingPrice.js';
 import { formatHostName } from '../../logic/processors/display/formatHostName.js';
 import { extractListingCoordinates } from '../../logic/processors/listing/extractListingCoordinates.js';
-import { adaptPricingListFromSupabase } from '../../logic/processors/pricingList/adaptPricingListFromSupabase.js';
+import { adaptPricingListFromSupabase } from '../../logic/processors/pricingList/adaptPricingListFromSupabase';
 import { isValidPriceTier } from '../../logic/rules/search/isValidPriceTier.js';
 import { isValidWeekPattern } from '../../logic/rules/search/isValidWeekPattern.js';
 import { isValidSortOption } from '../../logic/rules/search/isValidSortOption.js';

@@ -136,22 +136,72 @@ const SAMPLE_PAYLOADS = {
   },
 
   generate_all: {
-    "leaseId": "test-lease-id-123",
-    "agreementNumber": "AGR-TEST-ALL",
-    "hostPayoutData": {
+    hostPayout: {
+      "Agreement Number": "AGR-TEST-ALL",
       "Address": "456 Test Ave, Brooklyn, NY 11201",
       "Host Name": "Test Host",
       "Host Email": "host@test.com",
-      "Host Phone": "555-000-1234"
+      "Host Phone": "555-000-1234",
+      "Maintenance Fee": "$100",
+      "Payout Number": "PAY-TEST-ALL",
+      "Date1": "2024-01-15",
+      "Rent1": "$1000",
+      "Total1": "$1100"
     },
-    "periodicTenancyData": {
+    periodicTenancy: {
+      "Agreement Number": "AGR-TEST-ALL",
+      "Check in Date": "01/15/24",
+      "Check Out Date": "04/15/24",
+      "Check In Day": "Monday",
+      "Check Out Day": "Monday",
+      "Number of weeks": 13,
+      "Guests Allowed": 2,
+      "Host name": "Test Host",
       "Guest name": "Test Guest",
-      "Location": "Brooklyn"
+      "Supplemental Number": "SUP-TEST-ALL",
+      "Authorization Card Number": "AUTH-TEST-ALL",
+      "Host Payout Schedule Number": "PAY-TEST-ALL",
+      "Extra Requests on Cancellation Policy": "Full refund if cancelled 14 days before check-in",
+      "Damage Deposit": "$500",
+      "Location": "Brooklyn, New York",
+      "Type of Space": "Private Room",
+      "House Rules": [
+        "No smoking",
+        "No pets",
+        "No parties"
+      ],
+      "Listing Title": "Test Listing",
+      "Listing Description": "Sample listing for combined generation",
+      "Space Details": "Private"
     },
-    "supplementalData": {
-      "Listing Title": "Test Listing"
+    supplemental: {
+      "Agreement Number": "AGR-TEST-ALL",
+      "Check in Date": "01/15/24",
+      "Check Out Date": "04/15/24",
+      "Number of weeks": 13,
+      "Guests Allowed": 2,
+      "Host Name": "Test Host",
+      "Supplemental Number": "SUP-TEST-ALL",
+      "Location": "Brooklyn, New York",
+      "Type of Space": "Private Room",
+      "Listing Title": "Test Listing",
+      "Listing Description": "Sample listing for combined generation",
+      "Space Details": "Private"
     },
-    "creditCardAuthData": {
+    creditCardAuth: {
+      "Agreement Number": "AGR-TEST-ALL",
+      "Host Name": "Test Host",
+      "Guest Name": "Test Guest",
+      "Weeks Number": "16",
+      "Listing Description": "Sample listing for combined generation",
+      "Number of Payments": "4",
+      "Four Week Rent": "2000.00",
+      "Damage Deposit": "1000.00",
+      "Maintenance Fee": "50.00",
+      "Penultimate Week Number": "15",
+      "Last Payment Rent": "500.00",
+      "Splitlease Credit": "100.00",
+      "Last Payment Weeks": 4,
       "Is Prorated": false
     }
   }
@@ -163,6 +213,51 @@ const ACTION_DESCRIPTIONS = {
   generate_supplemental: 'Supplemental Agreement',
   generate_credit_card_auth: 'Credit Card Authorization Form',
   generate_all: 'Generate All 4 Documents'
+};
+
+const CREDIT_CARD_AUTH_TEST_CASES = {
+  prorated: {
+    label: 'Prorated (Is Prorated: true)',
+    payload: {
+      "Agreement Number": "AGR-TEST-004",
+      "Host Name": "John Test Host",
+      "Guest Name": "Jane Test Guest",
+      "Weeks Number": "16",
+      "Listing Description": "Cozy 2-bedroom apartment in downtown Manhattan",
+      "Number of Payments": "4",
+      "Four Week Rent": "2000.00",
+      "Damage Deposit": "1000.00",
+      "Maintenance Fee": "50.00",
+      "Total First Payment": "3050.00",
+      "Penultimate Week Number": "15",
+      "Total Second Payment": "2050.00",
+      "Last Payment Rent": "500.00",
+      "Splitlease Credit": "100.00",
+      "Last Payment Weeks": 4,
+      "Is Prorated": true
+    }
+  },
+  nonProrated: {
+    label: 'Non-Prorated (Is Prorated: false)',
+    payload: {
+      "Agreement Number": "AGR-TEST-004",
+      "Host Name": "John Test Host",
+      "Guest Name": "Jane Test Guest",
+      "Weeks Number": "16",
+      "Listing Description": "Cozy 2-bedroom apartment in downtown Manhattan",
+      "Number of Payments": "4",
+      "Four Week Rent": "2000.00",
+      "Damage Deposit": "1000.00",
+      "Maintenance Fee": "50.00",
+      "Total First Payment": "3050.00",
+      "Penultimate Week Number": "15",
+      "Total Second Payment": "2050.00",
+      "Last Payment Rent": "500.00",
+      "Splitlease Credit": "100.00",
+      "Last Payment Weeks": 4,
+      "Is Prorated": false
+    }
+  }
 };
 
 // ============================================
@@ -377,14 +472,29 @@ function TestContractsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [responseTime, setResponseTime] = useState(null);
   const [copyStatus, setCopyStatus] = useState('Copy JSON');
+  const [creditCardAuthCase, setCreditCardAuthCase] = useState('prorated');
 
   const handleActionChange = useCallback((e) => {
     const newAction = e.target.value;
     setAction(newAction);
-    setPayload(JSON.stringify(SAMPLE_PAYLOADS[newAction], null, 2));
+    if (newAction === 'generate_credit_card_auth') {
+      setPayload(JSON.stringify(CREDIT_CARD_AUTH_TEST_CASES[creditCardAuthCase].payload, null, 2));
+    } else {
+      setPayload(JSON.stringify(SAMPLE_PAYLOADS[newAction], null, 2));
+    }
     setResponse(null);
     setResponseTime(null);
-  }, []);
+  }, [creditCardAuthCase]);
+
+  const handleCreditCardAuthCaseChange = useCallback((e) => {
+    const nextCase = e.target.value;
+    setCreditCardAuthCase(nextCase);
+    if (action === 'generate_credit_card_auth') {
+      setPayload(JSON.stringify(CREDIT_CARD_AUTH_TEST_CASES[nextCase].payload, null, 2));
+      setResponse(null);
+      setResponseTime(null);
+    }
+  }, [action]);
 
   const handleEnvironmentChange = useCallback((e) => {
     setEnvironment(e.target.value);
@@ -483,7 +593,7 @@ function TestContractsPage() {
       {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>
-          Contract Generator Test
+          Lease Documents Test
           <span
             style={{
               ...styles.envBadge,
@@ -549,6 +659,23 @@ function TestContractsPage() {
               </option>
             ))}
           </select>
+
+          {action === 'generate_credit_card_auth' && (
+            <>
+              <label style={styles.label}>Credit Card Auth Test Case</label>
+              <select
+                style={styles.select}
+                value={creditCardAuthCase}
+                onChange={handleCreditCardAuthCaseChange}
+              >
+                {Object.entries(CREDIT_CARD_AUTH_TEST_CASES).map(([key, testCase]) => (
+                  <option key={key} value={key}>
+                    {testCase.label}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
 
           {/* Payload Editor */}
           <label style={styles.label}>Payload (JSON)</label>
@@ -636,20 +763,22 @@ function TestContractsPage() {
           )}
 
           {/* Multiple Drive Links for generate_all */}
-          {response?.success && response?.data?.data?.documents && (
+          {action === 'generate_all' && response?.success && response?.data?.data && (
             <div style={{ marginTop: '12px' }}>
               <p style={{ fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
                 Generated Documents:
               </p>
-              {response.data.data.documents.map((doc, index) => (
+              {Object.entries(response.data.data)
+                .filter(([, doc]) => doc?.driveUrl)
+                .map(([key, doc]) => (
                 <a
-                  key={index}
+                  key={key}
                   href={doc.driveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ ...styles.linkButton, marginRight: '8px', marginTop: '4px' }}
                 >
-                  {doc.filename}
+                  {doc.filename || key}
                 </a>
               ))}
             </div>

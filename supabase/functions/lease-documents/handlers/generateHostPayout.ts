@@ -48,18 +48,23 @@ export async function handleGenerateHostPayout(
   // Generate filename (matching Python output format)
   const filename = `host_payout_schedule-${agreementNumber}.docx`;
 
+  // Perform uploads
   const [driveUploadResult, storageUploadResult] = await Promise.all([
     uploadToGoogleDrive(documentContent, filename),
     uploadToSupabaseStorage(supabase, documentContent, filename, 'host_payout'),
   ]);
 
-  const uploadErrors = [
-    driveUploadResult.success ? null : `Drive upload failed: ${driveUploadResult.error}`,
-    storageUploadResult.success ? null : `Supabase upload failed: ${storageUploadResult.error}`,
-  ].filter(Boolean);
+  // Log failures for debugging
+  if (!driveUploadResult.success) {
+    console.error(`[generateHostPayout] Drive upload failed: ${driveUploadResult.error}`);
+  }
+  if (!storageUploadResult.success) {
+    console.error(`[generateHostPayout] Supabase upload failed: ${storageUploadResult.error}`);
+  }
 
-  if (uploadErrors.length > 0) {
-    const errorMsg = `Failed to upload Host Payout Schedule: ${uploadErrors.join(' | ')}`;
+  // FAIL-SAFE LOGIC:
+  if (!driveUploadResult.success && !storageUploadResult.success) {
+    const errorMsg = `Failed to upload Host Payout Schedule: Drive (${driveUploadResult.error}) | Supabase (${storageUploadResult.error})`;
     await notifySlack(errorMsg, true);
     return {
       success: false,
@@ -68,19 +73,26 @@ export async function handleGenerateHostPayout(
     };
   }
 
-  // Success notification
-  await notifySlack(`Successfully created Host Payout Schedule: ${filename}`);
-
-  return {
+  // Construct response
+  const result: DocumentResult = {
     success: true,
     filename,
-    driveUrl: driveUploadResult.webViewLink,
-    drive_url: driveUploadResult.webViewLink, // Python compatibility alias
-    web_view_link: driveUploadResult.webViewLink, // Python compatibility alias
-    fileId: storageUploadResult.filePath,
-    file_id: storageUploadResult.filePath, // Python compatibility alias
+    driveUrl: driveUploadResult.success ? driveUploadResult.webViewLink : storageUploadResult.publicUrl,
+    drive_url: driveUploadResult.success ? driveUploadResult.webViewLink : storageUploadResult.publicUrl,
+    web_view_link: driveUploadResult.success ? driveUploadResult.webViewLink : storageUploadResult.publicUrl,
+    fileId: storageUploadResult.success ? storageUploadResult.filePath : driveUploadResult.fileId,
+    file_id: storageUploadResult.success ? storageUploadResult.filePath : driveUploadResult.fileId,
     returned_error: 'no',
   };
+
+  // Notification logic
+  if (!driveUploadResult.success) {
+    await notifySlack(`[WARNING] Host Payout uploaded to Supabase ONLY (Drive failed): ${filename}`, true);
+  } else {
+    await notifySlack(`Successfully created Host Payout Schedule: ${filename}`);
+  }
+
+  return result;
 }
 
 // ================================================

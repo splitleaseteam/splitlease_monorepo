@@ -2,19 +2,60 @@
 """
 Slack Notifier Hook for Claude Code
 Forwards completion messages to a Slack webhook when Claude finishes responding.
+Also logs each query to individual JSON files (version-controlled, per-entry).
 """
 import json
 import sys
 import os
+import re
+import subprocess
 import requests
 from pathlib import Path
 from datetime import datetime
+
+# Regex pattern to match the Slack divider
+SLACK_DIVIDER_PATTERN = re.compile(r'~~~\s*FOR\s+SLACK\s*~~~', re.IGNORECASE)
+
+# Log directory (in project, version-controlled)
+LOG_DIR = Path(__file__).parent.parent / 'query-logs'
 
 def log_debug(message):
     """Log debug messages to file for troubleshooting"""
     log_path = Path(__file__).parent / 'slack_notifier.log'
     with open(log_path, 'a', encoding='utf-8') as f:
         f.write(f"{datetime.now().isoformat()} - {message}\n")
+
+
+def get_git_commit():
+    """Get the current git HEAD commit hash (short)"""
+    try:
+        result = subprocess.run(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=Path(__file__).parent.parent.parent  # Project root
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return "unknown"
+
+
+def write_to_log(entry, timestamp, hostname, commit):
+    """Write a JSON entry to an individual file (per-entry, git-friendly)"""
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        # Filename format: {timestamp}-{hostname}-{commit}.json
+        filename = f"{timestamp}-{hostname}-{commit}.json"
+        log_file = LOG_DIR / filename
+        with open(log_file, 'w', encoding='utf-8') as f:
+            json.dump(entry, f, ensure_ascii=False, indent=2)
+        return log_file
+    except Exception as e:
+        log_debug(f"Failed to write log: {e}")
+        return None
 
 def load_env_file():
     """Load environment variables from .env file"""
@@ -32,15 +73,15 @@ def load_env_file():
     return env_vars
 
 def extract_info_from_transcript(transcript_path):
-    """Extract user prompt and assistant's final response summary"""
+    """Extract latest user prompt, complete response, and summary for Slack"""
     try:
         if not os.path.exists(transcript_path):
-            return None, None
+            return None, None, None
 
         with open(transcript_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        user_prompt = None
+        latest_user_prompt = None
         last_assistant_text = None
         files_changed = []
 
@@ -51,8 +92,8 @@ def extract_info_from_transcript(transcript_path):
                 message = entry.get('message', {})
                 content = message.get('content')
 
-                # Extract first user prompt (skip system tags)
-                if entry_type == 'user' and user_prompt is None:
+                # Extract LATEST user prompt (overwrite each time we find one)
+                if entry_type == 'user':
                     raw_prompt = None
                     if isinstance(content, str):
                         raw_prompt = content.strip()
@@ -64,8 +105,7 @@ def extract_info_from_transcript(transcript_path):
 
                     # Skip if it starts with system tags
                     if raw_prompt and not raw_prompt.startswith('<'):
-                        user_prompt = raw_prompt
-                        # No truncation - include full prompt
+                        latest_user_prompt = raw_prompt
 
                 # Extract assistant text responses and tool uses
                 if entry_type == 'assistant' and isinstance(content, list):
@@ -87,13 +127,26 @@ def extract_info_from_transcript(transcript_path):
             except:
                 continue
 
-        # Build summary from last assistant text - include complete message
+        # Store complete response (untruncated)
+        complete_response = last_assistant_text
+
+        # Build summary from last assistant text - extract only content after "~~~ FOR SLACK ~~~"
         summary = None
         if last_assistant_text:
+            # Check if the divider exists
+            divider_match = SLACK_DIVIDER_PATTERN.search(last_assistant_text)
+
+            if divider_match:
+                # Extract only the content after the divider
+                slack_content = last_assistant_text[divider_match.end():].strip()
+            else:
+                # Fallback: use full text if no divider found
+                slack_content = last_assistant_text
+
             # Get non-empty lines, skip code blocks
-            lines = []
+            summary_lines = []
             in_code_block = False
-            for line in last_assistant_text.split('\n'):
+            for line in slack_content.split('\n'):
                 stripped = line.strip()
                 # Track code block state
                 if stripped.startswith('```'):
@@ -104,10 +157,10 @@ def extract_info_from_transcript(transcript_path):
                     continue
                 # Include non-empty lines (keep bullets and dashes for context)
                 if stripped:
-                    lines.append(stripped)
+                    summary_lines.append(stripped)
 
             # Join all lines with newlines for complete message
-            summary = '\n'.join(lines)
+            summary = '\n'.join(summary_lines)
 
             # Slack has a 40,000 char limit, but keep reasonable for readability
             # Only truncate if extremely long (over 4000 chars)
@@ -122,10 +175,10 @@ def extract_info_from_transcript(transcript_path):
             else:
                 summary = f"Modified: {file_list}"
 
-        return user_prompt, summary
+        return latest_user_prompt, summary, complete_response
 
     except Exception as e:
-        return None, None
+        return None, None, None
 
 def send_to_slack(webhook_url, message):
     """Send message to Slack webhook"""
@@ -172,11 +225,28 @@ def main():
         # Extract information from hook input
         transcript_path = input_data.get('transcript_path', '')
 
-        # Get hostname
+        # Get hostname and git commit
         hostname = os.environ.get('COMPUTERNAME', os.environ.get('HOSTNAME', 'unknown'))
+        commit = get_git_commit()
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
-        # Extract prompt and summary from transcript
-        user_prompt, summary = extract_info_from_transcript(transcript_path)
+        # Extract prompt, summary, and complete response from transcript
+        user_prompt, summary, complete_response = extract_info_from_transcript(transcript_path)
+
+        # Write to individual JSON file (git-friendly, per-entry)
+        log_entry = {
+            "ts": timestamp,
+            "device": hostname,
+            "commit": commit,
+            "prompt": user_prompt or "",
+            "summary": summary or "",
+            "complete": complete_response or ""
+        }
+        log_file = write_to_log(log_entry, timestamp, hostname, commit)
+        if log_file:
+            log_debug(f"Logged query to {log_file}")
+        else:
+            log_debug("Failed to write log file")
 
         # If no summary, use user prompt as context
         if not summary:
@@ -188,10 +258,8 @@ def main():
                 print("No meaningful content to report")
                 return
 
-        # Format the message
-        message_parts = [summary, f"-{hostname}"]
-
-        message = "\n".join(message_parts)
+        # Format the message with hostname and commit
+        message = f"{summary}\n-{hostname} @ {commit}"
 
         # Send to Slack
         log_debug(f"Sending: {message[:100]}...")

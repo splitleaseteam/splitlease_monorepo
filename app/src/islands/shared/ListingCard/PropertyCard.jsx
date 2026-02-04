@@ -513,15 +513,29 @@ const PropertyCard = memo(function PropertyCard({
             onOpenInfoModal(listing, priceInfoTriggerRef);
           }}
         >
-          <div className="price-main">${dynamicPrice.toFixed(2)}</div>
-          <div className="price-period">/night</div>
+          {dynamicPrice > 0 ? (
+            <>
+              <div className="price-main">${dynamicPrice.toFixed(2)}</div>
+              <div className="price-period">/night</div>
+            </>
+          ) : (
+            <div className="price-unavailable" style={{
+              fontSize: '13px',
+              color: '#6b7280',
+              textAlign: 'center',
+              padding: '4px 0'
+            }}>
+              {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week<br/>
+              <strong>not available</strong>
+            </div>
+          )}
           <div className="price-divider"></div>
           {variant === 'search' ? (
-            selectedNightsCount >= 1 ? (
+            dynamicPrice > 0 && selectedNightsCount >= 1 ? (
               <div className="price-context">for {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week</div>
-            ) : (
+            ) : dynamicPrice > 0 ? (
               <div className="price-starting">Starting at<span>${parseFloat(startingPrice).toFixed(2)}/night</span></div>
-            )
+            ) : null
           ) : (
             <div className="price-starting">Starting at<span>${parseFloat(startingPrice).toFixed(2)}/night</span></div>
           )}
@@ -532,6 +546,29 @@ const PropertyCard = memo(function PropertyCard({
           ) : (
             <div className="availability-note">Message Split Lease<br/>for Availability</div>
           )}
+          {/* Debug: Show pricingList min nightly price */}
+          {variant === 'search' && listing.pricingList && (() => {
+            // Calculate actual minimum: use startingNightlyPrice if valid, otherwise find min from nightlyPrice array
+            const storedMin = Number(listing.pricingList.startingNightlyPrice);
+            const nightlyPrices = listing.pricingList.nightlyPrice || [];
+            const validPrices = nightlyPrices.filter(p => Number(p) > 0);
+            const arrayMin = validPrices.length > 0 ? Math.min(...validPrices) : null;
+            const displayMin = (storedMin > 0) ? storedMin : arrayMin;
+
+            return (
+              <div style={{
+                marginTop: '8px',
+                padding: '4px 6px',
+                fontSize: '10px',
+                backgroundColor: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '4px',
+                color: '#856404'
+              }}>
+                <div><strong>Min:</strong> {displayMin ? `$${displayMin.toFixed(2)}` : 'N/A'}</div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </a>

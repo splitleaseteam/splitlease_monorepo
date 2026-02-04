@@ -362,7 +362,7 @@ Large dependencies:
 1. **supabase/CLAUDE.md outdated:**
    - Lists 9 Edge Functions but 53 actually exist
    - Missing documentation for newer functions like:
-     - `contract-generator`, `calendar-automation`, `experience-survey`
+     - `calendar-automation`, `experience-survey`
      - `guest-management`, `pricing-list`, `pricing-admin`
      - `workflow-enqueue`, `workflow-orchestrator`
 
