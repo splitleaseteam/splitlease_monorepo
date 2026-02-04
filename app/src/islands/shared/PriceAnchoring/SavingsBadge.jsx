@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { formatCurrency } from '../../../lib/formatters';
 
 /**
  * @param {Object} props
@@ -59,9 +60,6 @@ export default function SavingsBadge({
   ]
     .filter(Boolean)
     .join(' ');
-
-  const formatCurrency = (val) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
 
   return (
     <div className={badgeClasses}>

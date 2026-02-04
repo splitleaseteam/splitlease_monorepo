@@ -1,8 +1,0 @@
-{
-  "ts": "20260204064719",
-  "device": "SPLIT-LEASE-6",
-  "commit": "72fbb3fc5",
-  "prompt": "okay lets do 2",
-  "summary": "*Intention*: Implement per-entry JSON logging for version control\n*Implementation*: Updated slack_notifier.py to write individual JSON files to .claude/query-logs/\n*Changes*: `.claude/hooks/slack_notifier.py`, `.claude/query-logs/README.md`\n*Next*: Logs will auto-populate on next Claude session completion [slack_notifier.py, README.md]",
-  "complete": "Done. Committed as `72fbb3fc5`.\n\n## Files\n\n| File | Purpose |\n|------|---------|\n| `.claude/hooks/slack_notifier.py` | The updated stop hook |\n| `.claude/query-logs/README.md` | Documents the log format |\n\n## What Changed\n\nThe hook now writes individual JSON files to `.claude/query-logs/`:\n\n```\n.claude/query-logs/\n├── 20260204070000-DESKTOP-ABC123-72fbb3f.json\n├── 20260204071500-LAPTOP-XYZ789-72fbb3f.json\n└── README.md\n```\n\nEach file is uniquely named, so multiple machines will never conflict. Safe to `git add` and commit after each session.\n\n~~~ FOR SLACK ~~~\n\n*Intention*: Implement per-entry JSON logging for version control\n*Implementation*: Updated slack_notifier.py to write individual JSON files to .claude/query-logs/\n*Changes*: `.claude/hooks/slack_notifier.py`, `.claude/query-logs/README.md`\n*Next*: Logs will auto-populate on next Claude session completion"
-}

@@ -240,6 +240,7 @@ export default function LeaseCard({
             </h3>
             <StaysTable
               stays={stays}
+              leaseId={_id}
               showAll={showAllStays}
               onToggleShowAll={() => setShowAllStays(!showAllStays)}
               onCheckInOut={onCheckInOut}

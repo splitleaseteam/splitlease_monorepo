@@ -1,8 +1,0 @@
-{
-  "ts": "20260204044354",
-  "device": "SPLIT-LEASE-16",
-  "commit": "379b6f950",
-  "prompt": "Summarize to test",
-  "summary": "*Intention*: User requested a summary related to testing\n*Implementation*: Awaiting clarification on specific summary target\n*Changes*: None\n*Next*: User to clarify what needs summarizing",
-  "complete": "I need clarification on what you'd like summarized. A few possibilities:\n\n1. **Test suite summary** - Overview of testing setup, frameworks, and test coverage in the codebase\n2. **Summarize something for testing** - You have specific content you want condensed\n3. **Test documentation summary** - Overview of testing patterns and conventions\n4. **Something else** - Please clarify\n\nWhat would you like me to summarize?\n\n~~~ FOR SLACK ~~~\n\n*Intention*: User requested a summary related to testing\n*Implementation*: Awaiting clarification on specific summary target\n*Changes*: None\n*Next*: User to clarify what needs summarizing"
-}
