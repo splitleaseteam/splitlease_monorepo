@@ -101,14 +101,58 @@
   bottom: 4px;
 }
 
+/* Price display on day cells */
+.month-day-cell__price {
+  font-size: 9px;
+  font-weight: 500;
+  color: #666;
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Price color variations by status */
+.month-day-cell--mine .month-day-cell__price {
+  color: #7b1fa2;
+}
+
+.month-day-cell--roommate .month-day-cell__price {
+  color: #1976d2;
+}
+
+.month-day-cell--pending .month-day-cell__price {
+  color: #f57c00;
+}
+
 /* Day cell states */
 .month-day-cell--mine { background: #f3e5f5; }
 .month-day-cell--mine .month-day-cell__dot { background: #7b1fa2; }
 .month-day-cell--roommate { background: #e3f2fd; }
 .month-day-cell--roommate .month-day-cell__dot { background: #1976d2; }
-.month-day-cell--pending { background: #fff3e0; }
-.month-day-cell--pending .month-day-cell__dot { background: #f57c00; }
+.month-day-cell--pending {
+  background: white;
+  border: 1px dotted #f57c00;
+}
 .month-day-cell--outside { opacity: 0.3; pointer-events: none; }
+
+/* Counter mode highlights */
+.month-day-cell--counter-original {
+  background: #fff1e6;
+  outline: 2px solid #ff7043;
+  outline-offset: -2px;
+}
+
+.month-day-cell--counter-target {
+  background: #e8f5e9;
+  outline: 2px solid #2e7d32;
+  outline-offset: -2px;
+}
+
+.month-day-cell--counter-selectable {
+  box-shadow: inset 0 0 0 1px rgba(46, 125, 50, 0.35);
+}
 
 /* Hover/active states for interactive cells */
 .month-day-cell:not(.month-day-cell--outside):hover {
@@ -160,6 +204,69 @@
 .mobile-month-calendar__legend-dot--mine { background: #7b1fa2; }
 .mobile-month-calendar__legend-dot--roommate { background: #1976d2; }
 .mobile-month-calendar__legend-dot--pending { background: #f57c00; }
+
+.mobile-month-calendar__legend-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.month-day-cell__pending-icon {
+  font-size: 12px;
+  line-height: 1;
+  position: absolute;
+  bottom: 14px;
+  animation: pendingPulse 2s ease-in-out infinite;
+}
+
+@keyframes pendingPulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* Counter mode banner */
+.mobile-month-calendar__counter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f6f0ff;
+  border-top: 1px solid rgba(90, 45, 130, 0.15);
+  border-bottom: 1px solid rgba(90, 45, 130, 0.15);
+}
+
+.mobile-month-calendar__counter-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-month-calendar__counter-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a2d66;
+}
+
+.mobile-month-calendar__counter-subtitle {
+  font-size: 12px;
+  color: #6d5a85;
+}
+
+.mobile-month-calendar__counter-cancel {
+  background: white;
+  border: 1px solid rgba(90, 45, 130, 0.25);
+  color: #5a2d82;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-month-calendar__counter-cancel:active {
+  transform: scale(0.98);
+}
 
 /* ============================================
    DAY DETAIL PANEL (Inline - replaces drawer)
@@ -257,6 +364,100 @@
 
 .day-detail-panel__btn--view {
   background: var(--primary-purple, #5a2d82);
+}
+
+.request-type-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.request-type-toggle__header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.request-type-toggle__segments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.request-type-toggle__segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #e0e0e0;
+  cursor: pointer;
+  color: #333;
+  min-height: 64px;
+}
+
+.request-type-toggle__segment:last-child {
+  border-right: none;
+}
+
+.request-type-toggle__segment.is-selected {
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+}
+
+.request-type-toggle__icon {
+  font-size: 16px;
+}
+
+.request-type-toggle__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.request-type-toggle__value {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.request-type-toggle__continue {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary-purple, #5a2d82);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.request-type-toggle__continue:active {
+  transform: scale(0.98);
+}
+
+.day-detail-panel__counter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.day-detail-panel__counter-summary {
+  margin: 0;
+  font-size: 14px;
+  color: #4a2d66;
+  font-weight: 600;
+}
+
+.day-detail-panel__btn--counter {
+  background: #6a3fa0;
 }
 
 .day-detail-panel__no-actions {

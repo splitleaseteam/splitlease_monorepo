@@ -430,3 +430,233 @@
 .txn-row--cancelled {
   border-left: 3px solid #9e9e9e;
 }
+
+/* ============================================
+   TRANSACTION DETAIL VIEW
+   ============================================ */
+.transaction-detail-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f7f7fb;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.25s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.transaction-detail-view__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.transaction-detail-view__back {
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a2d82;
+  cursor: pointer;
+}
+
+.transaction-detail-view__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.transaction-detail-view__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.transaction-detail-view__hero {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.transaction-detail-view__icon {
+  font-size: 28px;
+}
+
+.transaction-detail-view__type {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+}
+
+.transaction-detail-view__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.transaction-detail-view__section {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.transaction-detail-view__section-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #777;
+}
+
+.transaction-detail-view__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #efefef;
+  font-size: 14px;
+}
+
+.transaction-detail-view__row:last-child {
+  border-bottom: none;
+}
+
+.transaction-detail-view__label {
+  color: #666;
+}
+
+.transaction-detail-view__value {
+  font-weight: 600;
+  color: #333;
+}
+
+.transaction-detail-view__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transaction-detail-view__timeline-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.transaction-detail-view__timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5a2d82;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.transaction-detail-view__timeline-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.transaction-detail-view__timeline-time {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.transaction-detail-view__message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.transaction-detail-view__footer {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e6e6e6;
+  position: sticky;
+  bottom: 0;
+}
+
+.transaction-detail-view__btn {
+  flex: 1;
+  padding: 12px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.transaction-detail-view__btn:active {
+  transform: scale(0.98);
+}
+
+.transaction-detail-view__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.transaction-detail-view__btn--accept {
+  background: #4caf50;
+  color: white;
+}
+
+.transaction-detail-view__btn--decline {
+  background: #f44336;
+  color: white;
+}
+
+.transaction-detail-view__btn--counter {
+  background: #2196f3;
+  color: white;
+}
+
+.transaction-detail-view__btn--cancel {
+  background: #f2f2f2;
+  color: #555;
+}
+
+.transaction-detail-view__spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: txnSpin 0.8s linear infinite;
+}
+
+.transaction-detail-view__btn--cancel .transaction-detail-view__spinner {
+  border-color: rgba(0, 0, 0, 0.2);
+  border-top-color: #555;
+}

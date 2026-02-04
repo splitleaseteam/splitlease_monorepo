@@ -59,6 +59,16 @@ export function adaptLeaseFromSupabase(row) {
     agreementNumber: row['Agreement Number'] || null,
     proposalId: row.Proposal || null,
 
+    // Direct ID references (for DateChangeRequestManager compatibility)
+    hostId: row.Host || row.host?._id || null,
+    guestId: row.Guest || row.guest?._id || null,
+    listingId: row.Listing || row.listing?._id || null,
+
+    // Bubble-style field aliases (for backward compatibility)
+    Host: row.Host || row.host?._id || null,
+    Guest: row.Guest || row.guest?._id || null,
+    Listing: row.Listing || row.listing?._id || null,
+
     // Status
     status: mapLeaseStatus(row['Lease Status']),
     leaseSigned: row['Lease signed?'] || false,
@@ -70,10 +80,17 @@ export function adaptLeaseFromSupabase(row) {
     modifiedAt: parseDate(row['Modified Date']),
     firstPaymentDate: parseDate(row['First Payment Date']),
 
+    // Date aliases (for DateChangeRequestManager compatibility)
+    reservationStart: parseDate(row['Reservation Period : Start']),
+    reservationEnd: parseDate(row['Reservation Period : End']),
+    'Reservation Period : Start': row['Reservation Period : Start'] || null,
+    'Reservation Period : End': row['Reservation Period : End'] || null,
+
     // Financial
     totalRent: parseFloat(row['Total Rent']) || 0,
     totalCompensation: parseFloat(row['Total Compensation']) || 0,
     paidToDate: parseFloat(row['Paid to Date from Guest']) || 0,
+    'Total Rent': parseFloat(row['Total Rent']) || 0,
 
     // Week tracking
     currentWeekNumber: parseInt(row['current week number']) || null,
@@ -101,6 +118,7 @@ export function adaptLeaseFromSupabase(row) {
     // Booked dates (from JSONB)
     bookedDates: parseJsonbArray(row['List of Booked Dates']),
     bookedDatesAfterRequest: parseJsonbArray(row['List of Booked Dates after Requests']),
+    'List of Booked Dates': parseJsonbArray(row['List of Booked Dates']),
 
     // Payment records (from join)
     paymentRecords: Array.isArray(row.paymentRecords)

@@ -139,6 +139,32 @@ function CalendarHeader({ month, onPrev, onNext, useRotatedLayout, onToggleLayou
  * @param {Object} props.priceOverlays - Map of date string to price
  * @param {function} props.onWeekChange - Callback when week changes
  */
+function toDateKey(value) {
+  if (!value) return null;
+  if (value instanceof Date) return format(value, 'yyyy-MM-dd');
+  if (typeof value === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return format(parsed, 'yyyy-MM-dd');
+  }
+  return null;
+}
+
+function formatCounterDate(value) {
+  if (!value) return '';
+  if (value instanceof Date) return format(value, 'MMM d');
+  if (typeof value === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const parsed = new Date(`${value}T12:00:00`);
+      return Number.isNaN(parsed.getTime()) ? value : format(parsed, 'MMM d');
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : format(parsed, 'MMM d');
+  }
+  return '';
+}
+
 export default function MobileCalendar({
   userNights,
   roommateNights,
@@ -148,11 +174,19 @@ export default function MobileCalendar({
   roommateName,
   onSelectDay,
   onCloseDay,
-  onAction
+  onAction,
+  isCounterMode,
+  counterOriginalNight,
+  counterTargetNight,
+  onSelectCounterNight,
+  onCancelCounterMode,
+  onSubmitCounter
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [useRotatedLayout, setUseRotatedLayout] = useState(false);
   const weeks = useMemo(() => getMonthWeeks(currentMonth), [currentMonth]);
+  const counterOriginalKey = toDateKey(counterOriginalNight);
+  const counterTargetKey = toDateKey(counterTargetNight);
 
   const getPriceValue = (date) => {
     if (!date) return null;
@@ -175,18 +209,56 @@ export default function MobileCalendar({
         onToggleLayout={() => setUseRotatedLayout((prev) => !prev)}
       />
       <WeekDayLabels />
+      {isCounterMode && (
+        <div className="mobile-month-calendar__counter-banner" role="status">
+          <div className="mobile-month-calendar__counter-text">
+            <span className="mobile-month-calendar__counter-title">\ud83d\udd04 Counter: Select a night you want in return</span>
+            {counterOriginalNight && (
+              <span className="mobile-month-calendar__counter-subtitle">
+                You&apos;ll give up: {formatCounterDate(counterOriginalNight)}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            className="mobile-month-calendar__counter-cancel"
+            onClick={onCancelCounterMode}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <div className="mobile-month-calendar__grid">
         {weeks.map((week, i) => (
           <div key={`week-${i}`} className="mobile-month-calendar__week">
             {week.map((date) => {
               const dateStr = format(date, 'yyyy-MM-dd');
+              const isCounterSelectable = !!(
+                isCounterMode
+                && roommateNights?.includes(dateStr)
+                && !pendingNights?.includes(dateStr)
+              );
+              const isDisabled = isCounterMode && !isCounterSelectable;
               return (
                 <MonthDayCell
                   key={dateStr}
                   date={date}
                   status={getDayStatus(date, userNights, roommateNights, pendingNights)}
                   isCurrentMonth={isSameMonth(date, currentMonth)}
-                  onSelect={() => onSelectDay?.(date)}
+                  price={priceOverlays?.[dateStr]}
+                  onSelect={() => {
+                    if (isCounterMode) {
+                      if (isCounterSelectable) {
+                        onSelectCounterNight?.(dateStr, date);
+                      }
+                      return;
+                    }
+                    onSelectDay?.(date);
+                  }}
+                  isDisabled={isDisabled}
+                  isCounterOriginal={counterOriginalKey === dateStr}
+                  isCounterTarget={counterTargetKey === dateStr}
+                  isCounterSelectable={isCounterSelectable}
                 />
               );
             })}
@@ -203,7 +275,7 @@ export default function MobileCalendar({
           Roommate
         </span>
         <span className="mobile-month-calendar__legend-item">
-          <span className="mobile-month-calendar__legend-dot mobile-month-calendar__legend-dot--pending" />
+          <span className="mobile-month-calendar__legend-icon" aria-hidden="true">⏳</span>
           Pending
         </span>
       </div>
@@ -214,6 +286,10 @@ export default function MobileCalendar({
         status={selectedDay ? getDayStatus(selectedDay, userNights, roommateNights, pendingNights) : null}
         price={getPriceValue(selectedDay)}
         roommateName={roommateName}
+        isCounterMode={isCounterMode}
+        counterOriginalNight={counterOriginalNight}
+        counterTargetNight={counterTargetNight}
+        onSubmitCounter={onSubmitCounter}
         onAction={(action, date) => {
           onCloseDay?.();
           onAction?.(action, date);
