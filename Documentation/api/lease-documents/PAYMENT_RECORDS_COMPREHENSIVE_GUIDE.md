@@ -1,7 +1,7 @@
 # Complete Payment Records Mapping Guide for Lease Documents
 
 **Created**: 2026-02-04
-**Version**: 1.0
+**Version**: 1.1
 **Purpose**: Comprehensive guide for calculating, fetching, and mapping both guest and host payment records from Supabase to lease document payloads
 
 ---
@@ -15,6 +15,9 @@
 - [Key Differences: Guest vs Host](#key-differences-guest-vs-host)
 - [Lease Document Payload Mapping](#lease-document-payload-mapping)
 - [Complete Workflow Integration](#complete-workflow-integration)
+  - [Step 2: Create Fields For Lease Documents](#step-2-implementation-create-fields-for-lease-documents)
+  - [Step 6: Guest Payment Records](#step-6-implementation-guest-payment-records)
+  - [Step 7: Host Payment Records](#step-7-implementation-host-payment-records)
 - [Troubleshooting](#troubleshooting)
 - [API Reference](#api-reference)
 
@@ -703,6 +706,319 @@ Step 8: PythonAnywhere Service - *Host Payout Schedule Form
 
 Step 9: Make changes to Bookings - Leases
   └─ Set status to "Documents Generated"
+```
+
+---
+
+### Step 2 Implementation: Create Fields For Lease Documents
+
+Step 2 creates the `Fields For Lease Documents` record and populates it with data from the reservation, proposal, listing, and user accounts. This is the foundational step before payment records are added in Steps 6 and 7.
+
+> **Important**: Step 2's result (`this.result_of_step_2`) returns the **Lease record** (`Bookings - Leases`), NOT the newly created Fields For Lease Documents record. This is a critical distinction for subsequent steps.
+
+#### Field Mappings
+
+| Field | Data Source | Notes |
+|-------|-------------|-------|
+| **Address of the Property** | `D: Choose Reservation's value's Listing's Location - Address` | Full street address |
+| **Agreement number** | `D: Choose Reservation's value's Agreement Number` | e.g., "AGR-12345" |
+| **Cancellation Policy** | `D: Choose Reservation's value's Cancellation Policy's Display` | Human-readable policy |
+| **check in weekly** | `D: Choose Reservation's value's Proposal's hc check in day's Display` | Day of week |
+| **check in date** | `D: Choose Reservation's value's Reservation Period: Start:formatted as 2/04/26` | Start date |
+| **last night weekly** | `D: Choose Reservation's value's Proposal's hc nights selected:last item's Display` | Last night of week |
+| **check out date** | `D: Choose Reservation's value's Reservation Period: End:formatted as 2/04/26` | End date |
+| **Extra Requests on Cancellation Policy** | `D: Choose Reservation's value's Listing's host restrictions's Guidelines` | Host restrictions |
+| **Guest email** | `D: Choose Reservation's value's Guest's email` | Guest contact |
+| **Guest name** | `D: Choose Reservation's value's Guest's Name - Full` | Full name |
+| **Guest number** | `D: Choose Reservation's value's Guest's Phone Number (as text)` | Phone |
+| **Host email** | `D: Choose Reservation's value's Proposal's Host - Account's User's email` | Host contact |
+| **Host name** | `D: Choose Reservation's value's Proposal's Host - Account's User's Name - Full` | Full name |
+| **Host number** | `D: Choose Reservation's value's Proposal's Host - Account's User's Phone Number (as text)` | Phone |
+| **house rules set list** | `D: Choose Reservation's value's Proposal's hc house rules:each item's Name` | Array of rules |
+| **Listing type** | `D: Choose Reservation's value's Listing's rental type's Display` | Monthly/Weekly/Nightly |
+| **Nights Selected set list** | `D: Choose Reservation's value's Proposal's hc nights selected` | Array of night indices |
+| **Number of nights per week** | `D: Choose Reservation's value's Proposal's hc nights selected:count` | Count |
+| **Number of weeks** | `D: Choose Reservation's value's Proposal's hc reservation span (weeks)` | Duration |
+| **Damage Deposit** | `D: Choose Reservation's value's Proposal's hc damage deposit:formatted as 1,028.58` | Currency formatted |
+| **Host Compensation** | `D: Choose Reservation's value's Proposal's hc host compensation (per period):formatted as 1,028.58` | Per-period payout |
+| **4 week rent** | `D: Choose Reservation's value's Proposal's 4 week rent:formatted as 1,028.58` | 4-week rate |
+| **Price per night** | `D: Choose Reservation's value's Proposal's hc nightly price:formatted as 1,028.58` | Nightly rate |
+| **Total Host Compensation** | `D: Choose Reservation's value's Proposal's hc total host compensation:formatted as 1,028.58` | Full payout |
+| **Authorization Card Number** | `D: Choose Reservation's value's Agreement Number append -ARCCC-G1` | Auth form ID |
+| **Host Payout Schedule Number** | `D: Choose Reservation's value's Agreement Number append -PSF` | Payout form ID |
+| **Supplemental Number** | `D: Choose Reservation's value's Agreement Number append -SUPL` | Supplemental form ID |
+| **Due date for payment** | `Click` | Clickable trigger |
+| **Guest allowed** | `D: Choose Reservation's value's Listing's Features - Qty Guests` | Max guests |
+| **Listing Description** | `D: Choose Reservation's value's Listing's Description` | Full description |
+| **Number of Payments (host)** | `D: Choose Reservation's value's Total Amount of Payments` | Payment count |
+| **Listing Amenities Building set list** | `D: Choose Reservation's value's Listing's Features - Amenities In-Building:each item's Name` | Building amenities |
+| **Listing Amenities InUnit set list** | `D: Choose Reservation's value's Listing's Features - Amenities In-Unit merged with Amenities In-Building` | Combined amenities |
+| **Location** | `Arbitrary text` | Custom location text |
+| **Image1** | `D: Choose Reservation's value's Listing's Features - Photos:first item's Photo` | Primary photo |
+| **Image2** | `D: Choose Reservation's value's Listing's Features - Photos:item #2's Photo` | Second photo |
+| **Image3** | `D: Choose Reservation's value's Listing's Features - Photos:item #3's Photo` | Third photo |
+| **Listing Name** | `D: Choose Reservation's value's Listing's Name` | Property name |
+
+---
+
+#### Boolean Formatting Patterns
+
+Bubble.io uses Boolean Formatting to conditionally output text based on field values. The pattern is:
+- **Condition**: A boolean expression (e.g., "value is not empty", "value > 0")
+- **Formatting for yes**: Text output when condition is true
+- **Formatting for no**: Text output when condition is false (often empty)
+
+##### Type of Space Field
+
+Builds a comma-separated description of the space type:
+
+| Condition | Yes Format | No Format |
+|-----------|------------|-----------|
+| `Type of Space's Label is not empty` | `{Type of Space's Label append , }` | (empty) |
+| `SQFT Area is not empty` | `({SQFT Area:formatted as 1028.58} SQFT) -` | (empty) |
+| `Qty Guests is not empty` | `{Qty Guests} guest(s) max` | (empty) |
+
+**Example Output**: `"Studio, (450 SQFT) - 2 guest(s) max"`
+
+##### Splitlease Credit Field
+
+Handles the case where Splitlease Credits may be empty:
+
+| Condition | Yes Format | No Format |
+|-----------|------------|-----------|
+| `IN: Splitlease Credits's value is empty` | `0` | `{IN: Splitlease Credits's value}` |
+
+**Logic**: If credits are empty, display `0`; otherwise display the actual value (then converted to number).
+
+##### Details of Space Field
+
+Builds a detailed room description with multiple nested conditions:
+
+| Condition | Yes Format | No Format |
+|-----------|------------|-----------|
+| `Qty Bedrooms is 0` | `Studio` | (empty) |
+| `Qty Bedrooms > 1` | `{Qty Bedrooms}:formatted as text append Bedroom(s) -` | (empty) |
+| `Qty Beds is not empty` | `{Qty Beds} bed` | (empty) |
+| `Qty Beds > 1` | `(s) -` | (empty) |
+| `Qty Bathrooms ≥ 1` | `{Qty Bathrooms}:formatted as 1028.58 append bathroom(s)` | (empty) |
+| `Kitchen Type's Display` | (appended at end) | (empty) |
+
+**Example Outputs**:
+- Studio: `"Studio - 1 bed - 1 bathroom(s) - Full Kitchen"`
+- Multi-bedroom: `"2 Bedroom(s) - 3 bed(s) - 2 bathroom(s) - Kitchenette"`
+
+---
+
+#### TypeScript Implementation: Step 2 Logic
+
+```typescript
+/**
+ * Build Fields For Lease Documents from a reservation
+ * Replicates Bubble.io Step 2 logic
+ */
+interface FieldsForLeaseDocuments {
+  // Identification
+  'Address of the Property': string;
+  'Agreement number': string;
+  'Authorization Card Number': string;
+  'Host Payout Schedule Number': string;
+  'Supplemental Number': string;
+
+  // Dates
+  'check in date': string;
+  'check out date': string;
+  'check in weekly': string;
+  'last night weekly': string;
+
+  // Guest Info
+  'Guest email': string;
+  'Guest name': string;
+  'Guest number': string;
+
+  // Host Info
+  'Host email': string;
+  'Host name': string;
+  'Host number': string;
+
+  // Listing Details
+  'Listing type': string;
+  'Listing Name': string;
+  'Listing Description': string;
+  'Type of Space': string;
+  'Details of Space': string;
+  'Guest allowed': number;
+
+  // Financials (currency formatted as strings)
+  'Damage Deposit': string;
+  'Host Compensation': string;
+  '4 week rent': string;
+  'Price per night': string;
+  'Total Host Compensation': string;
+  'Splitlease Credit': number;
+
+  // Duration
+  'Number of weeks': number;
+  'Number of nights per week': number;
+  'Number of Payments (host)': number;
+
+  // Lists
+  'Nights Selected set list': number[];
+  'house rules set list': string[];
+  'Listing Amenities Building set list': string[];
+  'Listing Amenities InUnit set list': string[];
+
+  // Images
+  'Image1': string;
+  'Image2': string;
+  'Image3': string;
+
+  // Policies
+  'Cancellation Policy': string;
+  'Extra Requests on Cancellation Policy': string;
+}
+
+function buildFieldsForLeaseDocuments(
+  reservation: Reservation,
+  proposal: Proposal,
+  listing: Listing,
+  guest: User,
+  host: User,
+  splitleaseCredits: number | null
+): FieldsForLeaseDocuments {
+  // Format currency helper
+  const formatCurrency = (amount: number): string => {
+    return amount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  // Format date helper
+  const formatDate = (date: Date): string => {
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+    return `${mm}/${dd}/${yy}`;
+  };
+
+  // Build Type of Space with Boolean Formatting logic
+  const buildTypeOfSpace = (): string => {
+    const parts: string[] = [];
+
+    // Type of Space Label
+    if (listing.features.typeOfSpace?.label) {
+      parts.push(`${listing.features.typeOfSpace.label},`);
+    }
+
+    // SQFT Area
+    if (listing.features.sqftArea) {
+      parts.push(`(${formatCurrency(listing.features.sqftArea)} SQFT) -`);
+    }
+
+    // Qty Guests
+    if (listing.features.qtyGuests) {
+      parts.push(`${listing.features.qtyGuests} guest(s) max`);
+    }
+
+    return parts.join(' ');
+  };
+
+  // Build Details of Space with Boolean Formatting logic
+  const buildDetailsOfSpace = (): string => {
+    const parts: string[] = [];
+
+    // Bedrooms (0 = Studio)
+    if (listing.features.qtyBedrooms === 0) {
+      parts.push('Studio');
+    } else if (listing.features.qtyBedrooms > 1) {
+      parts.push(`${listing.features.qtyBedrooms} Bedroom(s) -`);
+    }
+
+    // Beds
+    if (listing.features.qtyBeds) {
+      const bedText = listing.features.qtyBeds > 1
+        ? `${listing.features.qtyBeds} bed(s) -`
+        : `${listing.features.qtyBeds} bed -`;
+      parts.push(bedText);
+    }
+
+    // Bathrooms
+    if (listing.features.qtyBathrooms >= 1) {
+      parts.push(`${formatCurrency(listing.features.qtyBathrooms)} bathroom(s)`);
+    }
+
+    // Kitchen Type
+    if (listing.kitchenType?.display) {
+      parts.push(`- ${listing.kitchenType.display}`);
+    }
+
+    return parts.join(' ');
+  };
+
+  return {
+    // Identification
+    'Address of the Property': listing.location?.address || '',
+    'Agreement number': reservation.agreementNumber || '',
+    'Authorization Card Number': `${reservation.agreementNumber}-ARCCC-G1`,
+    'Host Payout Schedule Number': `${reservation.agreementNumber}-PSF`,
+    'Supplemental Number': `${reservation.agreementNumber}-SUPL`,
+
+    // Dates
+    'check in date': formatDate(new Date(reservation.reservationPeriod.start)),
+    'check out date': formatDate(new Date(reservation.reservationPeriod.end)),
+    'check in weekly': proposal.hcCheckInDay?.display || '',
+    'last night weekly': proposal.hcNightsSelected?.slice(-1)[0]?.display || '',
+
+    // Guest Info
+    'Guest email': guest.email || '',
+    'Guest name': guest.nameFull || '',
+    'Guest number': guest.phoneNumber || '',
+
+    // Host Info
+    'Host email': host.email || '',
+    'Host name': host.nameFull || '',
+    'Host number': host.phoneNumber || '',
+
+    // Listing Details
+    'Listing type': listing.rentalType?.display || '',
+    'Listing Name': listing.name || '',
+    'Listing Description': listing.description || '',
+    'Type of Space': buildTypeOfSpace(),
+    'Details of Space': buildDetailsOfSpace(),
+    'Guest allowed': listing.features.qtyGuests || 0,
+
+    // Financials
+    'Damage Deposit': formatCurrency(proposal.hcDamageDeposit || 0),
+    'Host Compensation': formatCurrency(proposal.hcHostCompensationPerPeriod || 0),
+    '4 week rent': formatCurrency(proposal.fourWeekRent || 0),
+    'Price per night': formatCurrency(proposal.hcNightlyPrice || 0),
+    'Total Host Compensation': formatCurrency(proposal.hcTotalHostCompensation || 0),
+    'Splitlease Credit': splitleaseCredits ?? 0,
+
+    // Duration
+    'Number of weeks': proposal.hcReservationSpanWeeks || 0,
+    'Number of nights per week': proposal.hcNightsSelected?.length || 0,
+    'Number of Payments (host)': reservation.totalAmountOfPayments || 0,
+
+    // Lists
+    'Nights Selected set list': proposal.hcNightsSelected?.map(n => n.index) || [],
+    'house rules set list': proposal.hcHouseRules?.map(r => r.name) || [],
+    'Listing Amenities Building set list': listing.features.amenitiesInBuilding?.map(a => a.name) || [],
+    'Listing Amenities InUnit set list': [
+      ...(listing.features.amenitiesInUnit?.map(a => a.name) || []),
+      ...(listing.features.amenitiesInBuilding?.map(a => a.name) || [])
+    ],
+
+    // Images
+    'Image1': listing.features.photos?.[0]?.photo || '',
+    'Image2': listing.features.photos?.[1]?.photo || '',
+    'Image3': listing.features.photos?.[2]?.photo || '',
+
+    // Policies
+    'Cancellation Policy': reservation.cancellationPolicy?.display || '',
+    'Extra Requests on Cancellation Policy': listing.hostRestrictions?.guidelines || '',
+  };
+}
 ```
 
 ---
