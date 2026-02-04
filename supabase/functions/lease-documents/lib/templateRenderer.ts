@@ -187,9 +187,10 @@ export interface RenderOptions {
 
 /**
  * Convert text tags to image tags in DOCX XML.
- * docxtemplater-image-module-free requires {%tag} syntax for images,
- * but templates designed for Python docxtpl use {{tag}} syntax.
- * This function converts {{image1}}, {{image2}}, {{image3}} to {%image1}, etc.
+ * docxtemplater-image-module-free requires {{%tag}} syntax for images
+ * (the % prefix goes INSIDE the delimiters when using {{ }} delimiters).
+ * Templates designed for Python docxtpl use {{tag}} syntax.
+ * This function converts {{image1}}, {{image2}}, {{image3}} to {{%image1}}, etc.
  */
 function convertImageTagsInXml(zip: typeof PizZip.prototype, imageKeys: string[]): void {
   if (imageKeys.length === 0) return;
@@ -208,16 +209,17 @@ function convertImageTagsInXml(zip: typeof PizZip.prototype, imageKeys: string[]
   let content = docXml.asText();
   let replacementCount = 0;
 
-  // Replace {{imageN}} with {%imageN} for each image key
+  // Replace {{imageN}} with {{%imageN}} for each image key
+  // The % prefix goes INSIDE the {{ }} delimiters for docxtemplater-image-module-free
   // Note: In DOCX XML, the tags may be split across XML elements, so we need
   // to handle both simple cases and cases where text is fragmented
   for (const key of imageKeys) {
     // Simple replacement for non-fragmented tags
     const textTagPattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-    const newContent = content.replace(textTagPattern, `{%${key}}`);
+    const newContent = content.replace(textTagPattern, `{{%${key}}}`);
     if (newContent !== content) {
       replacementCount++;
-      console.log(`[templateRenderer] ✅ Converted {{${key}}} to {%${key}}`);
+      console.log(`[templateRenderer] ✅ Converted {{${key}}} to {{%${key}}}`);
     }
     content = newContent;
   }
