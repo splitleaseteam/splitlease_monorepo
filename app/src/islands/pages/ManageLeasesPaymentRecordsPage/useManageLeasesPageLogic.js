@@ -621,21 +621,62 @@ export function useManageLeasesPageLogic({ showToast }) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
 
-      // Check results for each document
+      // Check results for each document and collect errors
       const successes = [];
       const failures = [];
+      const errorMessages = [];
 
-      if (result.hostPayout?.success) successes.push('Host Payout');
-      else failures.push('Host Payout');
+      console.log('='.repeat(60));
+      console.log('[ManageLeases] DOCUMENT GENERATION RESULTS');
+      console.log('='.repeat(60));
 
-      if (result.supplemental?.success) successes.push('Supplemental');
-      else failures.push('Supplemental');
+      // Host Payout
+      if (result.hostPayout?.success) {
+        successes.push('Host Payout');
+        console.info('✅ Host Payout: SUCCESS', result.hostPayout.pdfUrl ? `- ${result.hostPayout.pdfUrl}` : '');
+      } else {
+        failures.push('Host Payout');
+        const error = result.hostPayout?.error || 'Unknown error';
+        errorMessages.push(`Host Payout: ${error}`);
+        console.error('❌ Host Payout: FAILED -', error);
+      }
 
-      if (result.periodicTenancy?.success) successes.push('Periodic Tenancy');
-      else failures.push('Periodic Tenancy');
+      // Supplemental
+      if (result.supplemental?.success) {
+        successes.push('Supplemental');
+        console.info('✅ Supplemental: SUCCESS', result.supplemental.pdfUrl ? `- ${result.supplemental.pdfUrl}` : '');
+      } else {
+        failures.push('Supplemental');
+        const error = result.supplemental?.error || 'Unknown error';
+        errorMessages.push(`Supplemental: ${error}`);
+        console.error('❌ Supplemental: FAILED -', error);
+      }
 
-      if (result.creditCardAuth?.success) successes.push('Credit Card Auth');
-      else failures.push('Credit Card Auth');
+      // Periodic Tenancy
+      if (result.periodicTenancy?.success) {
+        successes.push('Periodic Tenancy');
+        console.info('✅ Periodic Tenancy: SUCCESS', result.periodicTenancy.pdfUrl ? `- ${result.periodicTenancy.pdfUrl}` : '');
+      } else {
+        failures.push('Periodic Tenancy');
+        const error = result.periodicTenancy?.error || 'Unknown error';
+        errorMessages.push(`Periodic Tenancy: ${error}`);
+        console.error('❌ Periodic Tenancy: FAILED -', error);
+      }
+
+      // Credit Card Auth
+      if (result.creditCardAuth?.success) {
+        successes.push('Credit Card Auth');
+        console.info('✅ Credit Card Auth: SUCCESS', result.creditCardAuth.pdfUrl ? `- ${result.creditCardAuth.pdfUrl}` : '');
+      } else {
+        failures.push('Credit Card Auth');
+        const error = result.creditCardAuth?.error || 'Unknown error';
+        errorMessages.push(`Credit Card Auth: ${error}`);
+        console.error('❌ Credit Card Auth: FAILED -', error);
+      }
+
+      console.log('='.repeat(60));
+      console.log(`[ManageLeases] Summary: ${successes.length} succeeded, ${failures.length} failed`);
+      console.log('='.repeat(60));
 
       if (failures.length === 0) {
         showToast({
@@ -644,15 +685,23 @@ export function useManageLeasesPageLogic({ showToast }) {
           type: 'success'
         });
       } else if (successes.length > 0) {
+        // Show partial success with error details
+        const errorDetail = errorMessages.length > 0
+          ? ` Errors: ${errorMessages.join('; ')}`
+          : '';
         showToast({
           title: 'Partial Success',
-          content: `Generated: ${successes.join(', ')}. Failed: ${failures.join(', ')}`,
+          content: `Generated: ${successes.join(', ')}. Failed: ${failures.join(', ')}.${errorDetail}`,
           type: 'warning'
         });
       } else {
+        // All failed - show first error message for clarity
+        const errorDetail = errorMessages.length > 0
+          ? errorMessages[0]
+          : 'Check console for details';
         showToast({
           title: 'Generation Failed',
-          content: 'All document generation failed. Check console for details.',
+          content: `All documents failed. ${errorDetail}`,
           type: 'error'
         });
       }
