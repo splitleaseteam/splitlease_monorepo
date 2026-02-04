@@ -186,63 +186,50 @@ export async function fetchDocumentData(leaseId) {
   }
 
   // Step 5: Fetch payment records
-  // Note: PostgREST has issues with .order() on columns containing special characters like '#'
-  // We fetch without ordering and sort client-side instead
-  const [guestPaymentsResult, hostPaymentsResult] = await Promise.all([
-    supabase
-      .from('paymentrecords')
-      .select(`
-        _id,
-        "Payment #",
-        "Scheduled Date",
-        "Rent",
-        "Maintenance Fee",
-        "Total Paid by Guest",
-        "Damage Deposit",
-        "Payment from guest?",
-        "Payment to Host?"
-      `)
-      .eq('Booking - Reservation', leaseId)
-      .eq('Payment from guest?', true)
-      .limit(20),
-    supabase
-      .from('paymentrecords')
-      .select(`
-        _id,
-        "Payment #",
-        "Scheduled Date",
-        "Rent",
-        "Maintenance Fee",
-        "Total Paid to Host",
-        "Payment from guest?",
-        "Payment to Host?"
-      `)
-      .eq('Booking - Reservation', leaseId)
-      .eq('Payment to Host?', true)
-      .limit(20)
-  ]);
+  // Note: PostgREST has issues with columns containing special characters like '#' and '?'
+  // We fetch ALL payment records for the lease and filter client-side
+  const { data: allPaymentsData, error: paymentsError } = await supabase
+    .from('paymentrecords')
+    .select(`
+      _id,
+      "Payment #",
+      "Scheduled Date",
+      "Rent",
+      "Maintenance Fee",
+      "Total Paid by Guest",
+      "Total Paid to Host",
+      "Damage Deposit",
+      "Payment from guest?",
+      "Payment to Host?"
+    `)
+    .eq('Booking - Reservation', leaseId)
+    .limit(30);
+
+  if (paymentsError) {
+    console.warn('[fetchDocumentData] Payment records fetch failed:', paymentsError.message);
+  }
 
   // Sort payment records by Payment # client-side (ascending)
   const sortByPaymentNumber = (a, b) => (a['Payment #'] || 0) - (b['Payment #'] || 0);
 
-  const guestPayments = (guestPaymentsResult.data || [])
-    .sort(sortByPaymentNumber)
-    .slice(0, 13);
-  const hostPayments = (hostPaymentsResult.data || [])
+  // Filter and sort payment records client-side
+  // Guest payments: "Payment from guest?" === true
+  // Host payments: "Payment to Host?" === true
+  const allPayments = allPaymentsData || [];
+  console.log(`[fetchDocumentData] Fetched ${allPayments.length} total payment records`);
+
+  const guestPayments = allPayments
+    .filter(record => record['Payment from guest?'] === true)
     .sort(sortByPaymentNumber)
     .slice(0, 13);
 
-  if (guestPaymentsResult.error) {
-    console.warn('[fetchDocumentData] Guest payments fetch failed:', guestPaymentsResult.error.message);
-  } else {
-    console.log(`[fetchDocumentData] Found ${guestPayments.length} guest payment records`);
-  }
+  const hostPayments = allPayments
+    .filter(record => record['Payment to Host?'] === true)
+    .sort(sortByPaymentNumber)
+    .slice(0, 13);
 
-  if (hostPaymentsResult.error) {
-    console.warn('[fetchDocumentData] Host payments fetch failed:', hostPaymentsResult.error.message);
-  } else {
-    console.log(`[fetchDocumentData] Found ${hostPayments.length} host payment records`);
-  }
+  console.log(`[fetchDocumentData] Found ${guestPayments.length} guest payment records`);
+  console.log(`[fetchDocumentData] Found ${hostPayments.length} host payment records`);
 
   // Step 6: Fetch listing photos
   let listingPhotos = [];
