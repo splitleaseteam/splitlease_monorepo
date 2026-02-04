@@ -227,6 +227,8 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 - **Never recommend cache clearing unless stale code execution is proven**
 
 ### DON'T
+- Invoke `/slack-webhook` after every task — session-end notifications are handled by the stop hook
+- Use `git rebase` — always merge instead
 - Expose API keys in frontend code
 - Use `git push --force` or push to main without review
 - Modify database tables without explicit instruction
