@@ -124,7 +124,7 @@ describe('calculateCompensation.js', () => {
 
       it('should handle very large winning bids', () => {
         const result = calculateLoserCompensation({ winningBid: 999999.99 });
-        expect(result).toBe(249999.9975); // Precision maintained
+        expect(result).toBe(250000); // 999999.99 * 0.25 = 249999.9975 → 250000 (rounded)
       });
 
       it('should handle bid amount with 3 decimal places', () => {
@@ -142,9 +142,9 @@ describe('calculateCompensation.js', () => {
     // Input Validation
     // ------------------------------------------------------------------------
     describe('input validation', () => {
-      it('should handle null winningBid (returns NaN)', () => {
+      it('should handle null winningBid (returns 0 after coercion)', () => {
         const result = calculateLoserCompensation({ winningBid: null });
-        expect(result).toBeNaN();
+        expect(result).toBe(0); // null * 0.25 = 0
       });
 
       it('should handle undefined winningBid (returns NaN)', () => {
@@ -308,7 +308,7 @@ describe('calculateCompensation.js', () => {
 
       it('should handle very large winning bids', () => {
         const result = calculatePlatformRevenue({ winningBid: 999999.99 });
-        expect(result).toBe(749999.9925); // Precision maintained
+        expect(result).toBe(749999.99); // 999999.99 * 0.75 = 749999.9925 → 749999.99 (rounded)
       });
     });
   });

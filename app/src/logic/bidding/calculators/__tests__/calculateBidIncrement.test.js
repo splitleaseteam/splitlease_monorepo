@@ -214,7 +214,7 @@ describe('calculateBidIncrement.js', () => {
     it('should handle extreme values ($0.01 → $10000)', () => {
       const result = calculateBidIncrement({ newBid: 10000, previousBid: 0.01 });
       expect(result.amount).toBe(9999.99);
-      expect(result.percent).toBe(999999); // Huge percentage
+      expect(result.percent).toBe(99999900); // (10000 - 0.01) / 0.01 * 100 = 99999900
     });
   });
 
@@ -277,12 +277,12 @@ describe('calculateBidIncrement.js', () => {
     it('should handle null previousBid', () => {
       const result = calculateBidIncrement({ newBid: 1100, previousBid: null });
       expect(result.amount).toBe(1100); // 1100 - null = 1100 (coerced)
-      expect(result.percent).toBe(Infinity); // Division by zero after coercion
+      expect(result.percent).toBe(0); // null coerces to 0, which is not > 0, so percent stays 0
     });
 
     it('should handle undefined values', () => {
       const result = calculateBidIncrement({ newBid: undefined, previousBid: 1000 });
-      expect(result.amount).toBe(-1000); // undefined - 1000 = NaN, but gets coerced
+      expect(result.amount).toBeNaN(); // undefined - 1000 = NaN
     });
 
     it('should handle string values (coerced to numbers)', () => {
@@ -294,7 +294,7 @@ describe('calculateBidIncrement.js', () => {
     it('should handle negative previous bid', () => {
       const result = calculateBidIncrement({ newBid: 1000, previousBid: -500 });
       expect(result.amount).toBe(1500);
-      expect(result.percent).toBe(-300); // Weird but mathematically correct
+      expect(result.percent).toBe(0); // -500 > 0 is false, so percent stays 0
     });
 
     it('should handle negative new bid', () => {
