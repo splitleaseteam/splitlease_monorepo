@@ -362,6 +362,7 @@ export default function WhySplitLeasePage() {
             <div className="selector-label">Select your NYC nights →</div>
 
             <SearchScheduleSelector
+              enablePersistence={true}
               initialSelection={selectedDays}
               onSelectionChange={handleSelectionChange}
               onError={(error) => console.error('Schedule selector error:', error)}

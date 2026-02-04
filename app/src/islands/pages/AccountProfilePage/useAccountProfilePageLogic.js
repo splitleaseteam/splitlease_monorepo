@@ -25,21 +25,24 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 /**
  * Profile strength calculation weights
- * Base criteria: 75% (available to all users)
+ * Base criteria: 90% (available to all users)
  * Role-specific milestone: 25% (rental app for guests, first listing for hosts)
- * Total = 100%
+ * Max theoretical = 115%, capped at 100%
  */
 const PROFILE_STRENGTH_WEIGHTS = {
-  // Base criteria (75% total)
-  profilePhoto: 15,      // -5% from original 20%
-  bio: 10,               // -5% from original 15%
-  firstName: 5,          // unchanged
-  lastName: 5,           // unchanged
-  jobTitle: 5,           // unchanged
-  emailVerified: 8,      // -2% from original 10%
-  phoneVerified: 8,      // -2% from original 10%
-  govIdVerified: 12,     // -3% from original 15%
-  linkedinVerified: 7,   // -8% from original 15%
+  // Base criteria (90% total)
+  profilePhoto: 15,
+  bio: 10,
+  firstName: 5,
+  lastName: 5,
+  jobTitle: 5,
+  emailVerified: 8,
+  phoneVerified: 8,
+  govIdVerified: 12,
+  linkedinVerified: 7,
+  goodGuestReasons: 5,   // At least 1 "Reasons to Host Me" selected
+  storageItems: 5,       // At least 1 "Common Stored Items" selected
+  transportationTypes: 5, // At least 1 transportation method selected
   // Role-specific milestones (25% each - user gets one based on their role)
   rentalAppSubmitted: 25,  // Guest milestone
   firstListingCreated: 25  // Host milestone
@@ -70,7 +73,7 @@ function getUserIdFromUrl() {
 function calculateProfileStrength(profileData, verifications, milestones = {}) {
   let strength = 0;
 
-  // Base criteria (75% total)
+  // Base criteria (85% total)
   if (profileData?.profilePhoto) {
     strength += PROFILE_STRENGTH_WEIGHTS.profilePhoto;
   }
@@ -97,6 +100,18 @@ function calculateProfileStrength(profileData, verifications, milestones = {}) {
   }
   if (verifications?.linkedin) {
     strength += PROFILE_STRENGTH_WEIGHTS.linkedinVerified;
+  }
+  // Good Guest Reasons (at least 1 selected = 5%)
+  if (profileData?.goodGuestReasons && profileData.goodGuestReasons.length > 0) {
+    strength += PROFILE_STRENGTH_WEIGHTS.goodGuestReasons;
+  }
+  // Common Stored Items (at least 1 selected = 5%)
+  if (profileData?.storageItems && profileData.storageItems.length > 0) {
+    strength += PROFILE_STRENGTH_WEIGHTS.storageItems;
+  }
+  // Transportation Types (at least 1 selected = 5%)
+  if (profileData?.transportationTypes && profileData.transportationTypes.length > 0) {
+    strength += PROFILE_STRENGTH_WEIGHTS.transportationTypes;
   }
 
   // Role-specific milestone (25%)
@@ -195,6 +210,30 @@ function generateNextActions(profileData, verifications, milestones = {}) {
       text: 'Connect your LinkedIn',
       points: PROFILE_STRENGTH_WEIGHTS.linkedinVerified,
       icon: 'linkedin'
+    });
+  }
+  if (!profileData?.goodGuestReasons || profileData.goodGuestReasons.length === 0) {
+    actions.push({
+      id: 'goodGuestReasons',
+      text: 'Add reasons to host you',
+      points: PROFILE_STRENGTH_WEIGHTS.goodGuestReasons,
+      icon: 'star'
+    });
+  }
+  if (!profileData?.storageItems || profileData.storageItems.length === 0) {
+    actions.push({
+      id: 'storageItems',
+      text: 'Add common stored items',
+      points: PROFILE_STRENGTH_WEIGHTS.storageItems,
+      icon: 'box'
+    });
+  }
+  if (!profileData?.transportationTypes || profileData.transportationTypes.length === 0) {
+    actions.push({
+      id: 'transportationTypes',
+      text: 'Add transportation methods',
+      points: PROFILE_STRENGTH_WEIGHTS.transportationTypes,
+      icon: 'car'
     });
   }
 
@@ -369,7 +408,7 @@ export function useAccountProfilePageLogic() {
 
   /**
    * Calculate profile strength (0-100)
-   * Includes base criteria (75%) + role-specific milestone (25%)
+   * Includes base criteria (90%) + role-specific milestone (25%)
    */
   const profileStrength = useMemo(() => {
     const profileInfo = {
@@ -377,7 +416,10 @@ export function useAccountProfilePageLogic() {
       bio: formData.bio || profileData?.['About Me / Bio'],
       firstName: formData.firstName || profileData?.['Name - First'],
       lastName: formData.lastName || profileData?.['Name - Last'],
-      jobTitle: formData.jobTitle || profileData?.['Job Title']
+      jobTitle: formData.jobTitle || profileData?.['Job Title'],
+      goodGuestReasons: formData.goodGuestReasons || profileData?.['Reasons to Host me'] || [],
+      storageItems: formData.storageItems || profileData?.['About - Commonly Stored Items'] || [],
+      transportationTypes: formData.transportationTypes || []
     };
     return calculateProfileStrength(profileInfo, verifications, milestones);
   }, [profileData, formData, verifications, milestones]);
@@ -392,7 +434,10 @@ export function useAccountProfilePageLogic() {
       bio: formData.bio || profileData?.['About Me / Bio'],
       firstName: formData.firstName || profileData?.['Name - First'],
       lastName: formData.lastName || profileData?.['Name - Last'],
-      jobTitle: formData.jobTitle || profileData?.['Job Title']
+      jobTitle: formData.jobTitle || profileData?.['Job Title'],
+      goodGuestReasons: formData.goodGuestReasons || profileData?.['Reasons to Host me'] || [],
+      storageItems: formData.storageItems || profileData?.['About - Commonly Stored Items'] || [],
+      transportationTypes: formData.transportationTypes || []
     };
     return generateNextActions(profileInfo, verifications, milestones);
   }, [profileData, formData, verifications, milestones]);

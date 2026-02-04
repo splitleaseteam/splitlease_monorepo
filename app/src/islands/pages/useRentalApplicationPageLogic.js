@@ -99,11 +99,17 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'applicatio
 
 export function useRentalApplicationPageLogic() {
   // ============================================================================
+  // USER IDENTIFICATION (required for user-scoped localStorage)
+  // ============================================================================
+  const userId = getSessionId();
+
+  // ============================================================================
   // STORE INTEGRATION
   // ============================================================================
 
   // Use the localStorage-backed store for form data, occupants, and verification status
-  const store = useRentalApplicationStore();
+  // User-scoped to prevent data leaks between users on same browser
+  const store = useRentalApplicationStore({ userId });
 
   // Destructure store state for convenience
   const {

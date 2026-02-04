@@ -22,7 +22,7 @@
  * - Redirects to home if not authenticated or not a Host
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Inbox } from 'lucide-react';
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
@@ -254,6 +254,35 @@ export default function HostProposalsPage() {
   const proposalCountsByListing = DEMO_MODE
     ? { [MOCK_LISTINGS[0]._id]: 1, [MOCK_LISTINGS[1]._id]: 0 }
     : realProposalCounts;
+
+  // ============================================================================
+  // AUTO-EXPAND FROM URL PARAMETER
+  // ============================================================================
+
+  // Auto-expand proposal from URL parameter
+  useEffect(() => {
+    // Only process when not loading and we have proposals
+    if (isLoading || !proposals || proposals.length === 0) {
+      return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetProposalId = urlParams.get('proposalId');
+
+    if (targetProposalId) {
+      // Find the proposal in the list
+      const matchedProposal = proposals.find(p =>
+        (p._id || p.id) === targetProposalId
+      );
+
+      if (matchedProposal) {
+        setExpandedProposalId(targetProposalId);
+        console.log('[HostProposalsPage] Auto-expanded proposal from URL:', targetProposalId);
+      } else {
+        console.warn('[HostProposalsPage] Proposal not found for URL parameter:', targetProposalId);
+      }
+    }
+  }, [isLoading, proposals]);
 
   // ============================================================================
   // V7 COMPUTED VALUES

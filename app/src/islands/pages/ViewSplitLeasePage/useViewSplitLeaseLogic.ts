@@ -68,11 +68,22 @@ function parseUrlDays(daysParam) {
  */
 function getInitialStateFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
-  
+
+  // Check localStorage for last selected reservation span
+  const savedReservationSpan = localStorage.getItem('sl_last_reservation_span');
+  const defaultReservationSpan = savedReservationSpan ? parseInt(savedReservationSpan) : 13;
+
+  console.log('[ViewSplitLease] 🔍 Reservation Span Initialization:', {
+    savedReservationSpan,
+    defaultReservationSpan,
+    urlParam: urlParams.get('reservation-span'),
+    finalValue: parseInt(urlParams.get('reservation-span')) || defaultReservationSpan
+  });
+
   return {
     daysSelected: parseUrlDays(urlParams.get('days-selected')),
     moveInDate: urlParams.get('move-in') || null,
-    reservationSpan: parseInt(urlParams.get('reservation-span')) || 13
+    reservationSpan: parseInt(urlParams.get('reservation-span')) || defaultReservationSpan
   };
 }
 
@@ -390,6 +401,9 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   
   const handleReservationSpanChange = useCallback((newSpan) => {
     setReservationSpan(newSpan);
+    // Persist last selected reservation span to localStorage
+    localStorage.setItem('sl_last_reservation_span', String(newSpan));
+    console.log('[ViewSplitLease] 💾 Saved reservation span to localStorage:', newSpan);
     logger.debug('[useViewSplitLeaseLogic] Reservation span changed:', newSpan);
   }, []);
   
@@ -471,6 +485,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
         pricing: {
           pricePerNight: proposalData.pricePerNight,
           pricePerFourWeeks: proposalData.pricePerFourWeeks,
+          hostFourWeekCompensation: proposalData.hostFourWeekCompensation,
           totalPrice: proposalData.totalPrice
         },
         details: {

@@ -89,12 +89,18 @@ export function getAllPreferenceColumns() {
 }
 
 /**
- * Get default preferences object (all empty arrays)
+ * Get default preferences object
+ * New users get sensible defaults: Email + SMS for most categories,
+ * Email only for promotional content.
  */
 export function getDefaultPreferences() {
   const defaults = {};
   NOTIFICATION_CATEGORIES.forEach(cat => {
-    defaults[cat.dbColumn] = [];
+    // Promotional content defaults to Email only (opt-in for SMS)
+    // All other categories default to Email + SMS
+    defaults[cat.dbColumn] = cat.id === 'promotional'
+      ? [NOTIFICATION_CHANNELS.EMAIL]
+      : [NOTIFICATION_CHANNELS.EMAIL, NOTIFICATION_CHANNELS.SMS];
   });
   return defaults;
 }

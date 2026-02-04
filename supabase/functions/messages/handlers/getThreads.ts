@@ -11,6 +11,7 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
+import { getLastVisibleMessagesForThreads } from '../../_shared/messagingHelpers.ts';
 
 interface Thread {
   _id: string;
@@ -200,6 +201,22 @@ export async function handleGetThreads(
     console.log('[getThreads] Fetched proposal data for', Object.keys(proposalMap).length, 'proposals');
   }
 
+  // Step 5c: Compute visibility-aware message previews
+  // The static ~Last Message field doesn't consider visibility, so we compute
+  // the preview based on the most recent message visible to the current user
+  const threadUserRoles = new Map<string, 'host' | 'guest'>();
+  threads.forEach(thread => {
+    const role = thread.host_user_id === userBubbleId ? 'host' : 'guest';
+    threadUserRoles.set(thread._id, role);
+  });
+
+  const visiblePreviewMap = await getLastVisibleMessagesForThreads(
+    supabaseAdmin,
+    threadIds,
+    threadUserRoles
+  );
+  console.log('[getThreads] Computed visibility-aware previews for', visiblePreviewMap.size, 'threads');
+
   // Step 6: Transform threads to UI format
   const transformedThreads: Thread[] = threads.map(thread => {
     const hostId = thread.host_user_id;
@@ -247,7 +264,8 @@ export async function handleGetThreads(
       contact_name: contact?.name || 'Split Lease',
       contact_avatar: contact?.avatar,
       property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
-      last_message_preview: thread['last_message_preview'] || 'No messages yet',
+      // Use visibility-aware preview if available, fall back to static ~Last Message
+      last_message_preview: visiblePreviewMap.get(thread._id) || thread['~Last Message'] || 'No messages yet',
       last_message_time: lastMessageTime,
       unread_count: unreadCountMap[thread._id] || 0,
       is_with_splitbot: false,

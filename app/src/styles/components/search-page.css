@@ -988,12 +988,12 @@
   z-index: 1000;
 }
 
-/* Desktop: Force neighborhood and borough to wrap by making neighborhood wider */
+/* Desktop: Neighborhood group takes available space, wraps at reasonable widths */
 @media (min-width: 769px) {
   .inline-filters .neighborhoods-group {
-    flex: 1 1 auto;
-    min-width: 600px; /* Force wrapping - schedule selector + neighborhood = ~900px, forcing borough to next line */
-    max-width: 800px;
+    flex: 1 1 250px; /* Grow to fill space, shrink if needed, base width 250px */
+    min-width: 200px; /* Allow neighborhood to shrink on smaller screens */
+    max-width: 400px; /* Prevent it from dominating the row */
   }
 }
 

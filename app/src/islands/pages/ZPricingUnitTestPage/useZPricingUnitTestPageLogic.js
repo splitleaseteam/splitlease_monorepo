@@ -235,6 +235,15 @@ export function useZPricingUnitTestPageLogic() {
     }
   }, [priceBreakdown, selectedDays, selectedListing, zatConfig, nightsCount, hostRates, reservationSpan]);
 
+  // Auto-run validation when listing or pricing list changes
+  useEffect(() => {
+    if (selectedListing && zatConfig) {
+      const flags = runValidationChecks(selectedListing, pricingList, hostRates);
+      setValidationFlags(flags);
+      console.log('[Auto-validation] Flags updated:', flags);
+    }
+  }, [selectedListing, pricingList, zatConfig, hostRates]);
+
   // ═══════════════════════════════════════════════════════════
   // DATA LOADERS
   // ═══════════════════════════════════════════════════════════
@@ -293,8 +302,8 @@ export function useZPricingUnitTestPageLogic() {
           "Approved",
           "Host email"
         `)
-        .eq('"Deleted"', false)
-        .order('"Modified Date"', { ascending: false })
+        .eq('Deleted', false)
+        .order('Modified Date', { ascending: false })
         .limit(500);
 
       if (error) throw error;
@@ -750,17 +759,30 @@ function buildScheduleListing(listing) {
   return {
     id: listing._id,
     name: listing.Name || 'Untitled',
+    // Rental type fields - match calculatePrice expectations
     rentalType: listing['rental type'] || 'Nightly',
+    'rental type': listing['rental type'] || 'Nightly',
     weeksOffered: listing['Weeks offered'] || 'Every week',
+    'Weeks offered': listing['Weeks offered'] || 'Every week',
+    // Markup and fees - provide both formats for calculatePrice
     unitMarkup: listing['unit_markup'] || 0,
+    unit_markup: listing['unit_markup'] || 0,
     cleaningFee: listing['cleaning_fee'] || 0,
+    cleaning_fee: listing['cleaning_fee'] || 0,
     damageDeposit: listing['damage_deposit'] || 0,
+    damage_deposit: listing['damage_deposit'] || 0,
+    // Weekly/Monthly rates - provide both formats
     weeklyHostRate: listing['weekly_host_rate'] || 0,
+    weekly_host_rate: listing['weekly_host_rate'] || 0,
     monthlyHostRate: listing['monthly_host_rate'] || 0,
-    rate2Night: listing['nightly_rate_2_nights'] || 0,
-    rate3Night: listing['nightly_rate_3_nights'] || 0,
-    rate4Night: listing['nightly_rate_4_nights'] || 0,
-    rate5Night: listing['nightly_rate_5_nights'] || 0,
+    monthly_host_rate: listing['monthly_host_rate'] || 0,
+    // Nightly rates - use snake_case format that calculatePrice expects
+    nightly_rate_1_night: listing['nightly_rate_1_night'] || 0,
+    nightly_rate_2_nights: listing['nightly_rate_2_nights'] || 0,
+    nightly_rate_3_nights: listing['nightly_rate_3_nights'] || 0,
+    nightly_rate_4_nights: listing['nightly_rate_4_nights'] || 0,
+    nightly_rate_5_nights: listing['nightly_rate_5_nights'] || 0,
+    nightly_rate_7_nights: listing['nightly_rate_7_nights'] || 0,
     // Override: Allow selecting from 1 to 7 nights for testing
     minimumNights: 1,
     maximumNights: 7,

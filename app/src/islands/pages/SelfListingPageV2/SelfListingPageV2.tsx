@@ -367,14 +367,38 @@ export function SelfListingPageV2() {
   }, []);
 
   // Load draft and step from localStorage
+  // IMPORTANT: Always prioritize LAST_* keys for steps 1-2 (hostType, marketStrategy)
+  // This ensures returning hosts see their previous preferences prefilled
   useEffect(() => {
+    // Step 1: Load preferences from last completed listing (steps 1-2 prefill)
+    const lastHostType = localStorage.getItem(LAST_HOST_TYPE_KEY);
+    const lastMarketStrategy = localStorage.getItem(LAST_MARKET_STRATEGY_KEY);
+
+    const prefillFromLastListing: Partial<FormData> = {};
+
+    if (lastHostType && ['resident', 'liveout', 'coliving', 'agent'].includes(lastHostType)) {
+      prefillFromLastListing.hostType = lastHostType as FormData['hostType'];
+      console.log('[SelfListingPageV2] Prefilling hostType from last listing:', lastHostType);
+    }
+    if (lastMarketStrategy && ['private', 'public'].includes(lastMarketStrategy)) {
+      prefillFromLastListing.marketStrategy = lastMarketStrategy as FormData['marketStrategy'];
+      console.log('[SelfListingPageV2] Prefilling marketStrategy from last listing:', lastMarketStrategy);
+    }
+
+    // Step 2: Check for existing draft (steps 3+ restoration)
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Restore form data
+        // Restore form data, but let LAST_* values take precedence for steps 1-2
         if (parsed.formData) {
-          setFormData({ ...DEFAULT_FORM_DATA, ...parsed.formData });
+          setFormData({
+            ...DEFAULT_FORM_DATA,
+            ...parsed.formData,
+            // Override with LAST_* values for steps 1-2 (returning host preferences)
+            ...prefillFromLastListing,
+          });
+          console.log('[SelfListingPageV2] Restored draft with LAST_* prefill applied');
         }
         // Restore current step
         if (parsed.currentStep && parsed.currentStep >= 1 && parsed.currentStep <= 8) {
@@ -383,23 +407,10 @@ export function SelfListingPageV2() {
       } catch (e) {
         console.error('Failed to load draft:', e);
       }
-    } else {
-      // No draft exists - check if we have preferences from previous listing
-      const lastHostType = localStorage.getItem(LAST_HOST_TYPE_KEY);
-      const lastMarketStrategy = localStorage.getItem(LAST_MARKET_STRATEGY_KEY);
-
-      const updates: Partial<FormData> = {};
-
-      if (lastHostType && ['resident', 'liveout', 'coliving', 'agent'].includes(lastHostType)) {
-        updates.hostType = lastHostType as FormData['hostType'];
-      }
-      if (lastMarketStrategy && ['private', 'public'].includes(lastMarketStrategy)) {
-        updates.marketStrategy = lastMarketStrategy as FormData['marketStrategy'];
-      }
-
-      if (Object.keys(updates).length > 0) {
-        setFormData(prev => ({ ...prev, ...updates }));
-      }
+    } else if (Object.keys(prefillFromLastListing).length > 0) {
+      // No draft, but we have LAST_* preferences - apply them
+      setFormData(prev => ({ ...prev, ...prefillFromLastListing }));
+      console.log('[SelfListingPageV2] No draft, applied LAST_* prefill');
     }
   }, []);
 
@@ -531,24 +542,62 @@ export function SelfListingPageV2() {
     loadDraftFromUrl();
   }, []);
 
-  // Calculate nightly prices based on base rate and discount
+  // Platform pricing constants (must match priceCalculations.js)
+  const SITE_MARKUP = 0.17;
+  const UNUSED_NIGHTS_DISCOUNT_MULTIPLIER = 0.03;
+  const FULL_TIME_DISCOUNT = 0.13;
+
+  /**
+   * Calculate platform multiplier for a given night count
+   * This is what the platform applies to host rates to get guest prices
+   */
+  const getPlatformMultiplier = useCallback((nightsCount: number): number => {
+    const unusedNights = 7 - nightsCount;
+    const unusedDiscount = unusedNights * UNUSED_NIGHTS_DISCOUNT_MULTIPLIER;
+    const fullTimeDiscount = nightsCount === 7 ? FULL_TIME_DISCOUNT : 0;
+    return 1 + SITE_MARKUP - unusedDiscount - fullTimeDiscount;
+  }, []);
+
+  /**
+   * Calculate host rates that produce desired guest prices after platform markup
+   *
+   * Strategy:
+   * 1. Host sets desired GUEST price curve (base rate with long stay discount)
+   * 2. We reverse-calculate HOST rates by dividing by platform multiplier
+   * 3. This ensures guest prices ALWAYS decrease as nights increase
+   */
   const calculateNightlyPrices = useCallback(() => {
     const { nightlyBaseRate, nightlyDiscount } = formData;
-    const p5Target = nightlyBaseRate * (1 - nightlyDiscount / 100);
-    const decay = nightlyBaseRate > 0 ? Math.pow(p5Target / nightlyBaseRate, 0.25) : 1;
-    const clampedDecay = Math.max(0.7, Math.min(1, decay));
+    const N = 7;
 
-    const prices = [Math.ceil(nightlyBaseRate)];
-    for (let i = 1; i < 7; i++) {
-      prices.push(Math.ceil(prices[i - 1] * clampedDecay));
+    // Calculate desired guest prices (what host wants guests to see)
+    // Apply host's long stay discount progressively
+    const desiredGuestPrices: number[] = [];
+    for (let nights = 1; nights <= N; nights++) {
+      // Progressive discount: night 1 = 0%, night 7 = full discount
+      const progressiveFactor = (nights - 1) / (N - 1);
+      const nightDiscount = progressiveFactor * (nightlyDiscount / 100);
+      const guestPrice = nightlyBaseRate * (1 - nightDiscount);
+      desiredGuestPrices.push(guestPrice);
     }
-    nightlyPricesRef.current = prices;
 
-    // Calculate totals based on selected nights
+    // Reverse-calculate host rates: hostRate = guestPrice / platformMultiplier
+    const hostRates: number[] = [];
+    for (let nights = 1; nights <= N; nights++) {
+      const multiplier = getPlatformMultiplier(nights);
+      const hostRate = desiredGuestPrices[nights - 1] / multiplier;
+      hostRates.push(Math.ceil(hostRate));
+    }
+
+    nightlyPricesRef.current = hostRates;
+
+    // Calculate totals based on selected nights using GUEST prices (what guests pay)
     const numNights = formData.selectedNights.length;
     let weeklyTotal = 0;
-    for (let i = 0; i < numNights && i < prices.length; i++) {
-      weeklyTotal += prices[i];
+    for (let i = 0; i < numNights && i < hostRates.length; i++) {
+      // Calculate actual guest price for display
+      const guestPrice = hostRates[i] * getPlatformMultiplier(i + 1);
+      weeklyTotal += Math.round(guestPrice);
     }
 
     setFormData(prev => ({
@@ -556,7 +605,7 @@ export function SelfListingPageV2() {
       weeklyTotal,
       monthlyEstimate: weeklyTotal * 4.33,
     }));
-  }, [formData.nightlyBaseRate, formData.nightlyDiscount, formData.selectedNights]);
+  }, [formData.nightlyBaseRate, formData.nightlyDiscount, formData.selectedNights, getPlatformMultiplier]);
 
   // Recalculate prices when relevant values change
   useEffect(() => {
@@ -1398,8 +1447,14 @@ export function SelfListingPageV2() {
 
   // Render Step 4: Nightly Pricing Calculator (Vertical Layout - matches HTML reference)
   const renderStep4 = () => {
-    const sum5 = nightlyPricesRef.current.slice(0, 5).reduce((a, b) => a + b, 0);
-    const avgPrice = Math.round(sum5 / 5);
+    // Calculate GUEST prices for display (what guests will actually pay)
+    const guestPrices = nightlyPricesRef.current.map((hostRate, idx) => {
+      const nights = idx + 1;
+      const multiplier = getPlatformMultiplier(nights);
+      return Math.round(hostRate * multiplier);
+    });
+    const sum5Guest = guestPrices.slice(0, 5).reduce((a, b) => a + b, 0);
+    const avgPrice = Math.round(sum5Guest / 5);
 
     return (
       <div className="section-card">
@@ -1481,24 +1536,24 @@ export function SelfListingPageV2() {
             </p>
           </div>
 
-          {/* Color Palette Display - BELOW the slider */}
+          {/* Color Palette Display - Shows GUEST prices (what guests will pay) */}
           <div className="nights-display-wrapper">
             <div className="nights-display-header">Price per consecutive night</div>
             <div className="palette-container">
               <div className="palette-row">
                 {[1, 2, 3, 4, 5, 6, 7].map(night => (
                   <div key={night} className={`palette-swatch n${night}`}>
-                    <span className="swatch-number">Night {night}</span>
-                    <span className="swatch-price">${nightlyPricesRef.current[night - 1] || 0}</span>
-                    <span className="swatch-label">per night</span>
+                    <span className="swatch-number">NIGHT {night}</span>
+                    <span className="swatch-price">${guestPrices[night - 1] || 0}</span>
+                    <span className="swatch-label">PER NIGHT</span>
                   </div>
                 ))}
               </div>
             </div>
             <div className="formula-row">
               {[1, 2, 3, 4, 5, 6, 7].map(night => {
-                // Total for N nights = N * (price per night for that stay length)
-                const pricePerNight = nightlyPricesRef.current[night - 1] || 0;
+                // Total for N nights = N * (guest price per night for that stay length)
+                const pricePerNight = guestPrices[night - 1] || 0;
                 const total = night * pricePerNight;
                 return <div key={night} className="formula-item">${total}</div>;
               })}
@@ -1506,7 +1561,7 @@ export function SelfListingPageV2() {
             <div className="formula-total-row">
               <div className="formula-total-label">7-Night Total</div>
               <div className="formula-total">
-                ${7 * (nightlyPricesRef.current[6] || 0)}
+                ${7 * (guestPrices[6] || 0)}
               </div>
             </div>
           </div>

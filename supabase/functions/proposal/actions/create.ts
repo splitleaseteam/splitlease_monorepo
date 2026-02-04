@@ -24,14 +24,18 @@ import {
 } from "../lib/types.ts";
 import { validateCreateProposalInput } from "../lib/validators.ts";
 import {
-  calculateCompensation,
   calculateMoveOutDate,
   calculateComplementaryNights,
   calculateOrderRanking,
   formatPriceForDisplay,
-  getNightlyRateForNights,
   fetchAvgDaysPerMonth,
+  calculateDurationMonths,
+  getPricingListRates,
+  roundToTwoDecimals,
+  getWeeklySchedulePeriod,
+  calculateActualActiveWeeks,
 } from "../lib/calculations.ts";
+import { calculatePricingList } from "../../pricing-list/utils/pricingCalculator.ts";
 import { determineInitialStatus, ProposalStatusName } from "../lib/status.ts";
 import {
   addUserProposal,
@@ -171,12 +175,16 @@ export async function handleCreate(
       "Location - Address",
       "Location - slightly different address",
       weekly_host_rate,
+      nightly_rate_1_night,
       nightly_rate_2_nights,
       nightly_rate_3_nights,
       nightly_rate_4_nights,
       nightly_rate_5_nights,
+      nightly_rate_6_nights,
       nightly_rate_7_nights,
       monthly_host_rate,
+      pricing_list,
+      unit_markup,
       "Deleted"
     `
     )
@@ -314,41 +322,142 @@ export async function handleCreate(
     input.nightsSelected
   );
 
-  // Calculate compensation (Steps 13-18)
-  // IMPORTANT: Use the HOST's nightly rate from listing pricing tiers, NOT the guest-facing price
+  // Calculate compensation using pricing_list as the source of truth
+  // CRITICAL: pricing_list contains pre-calculated arrays:
+  // - pricing_list.host_compensation[nights-1] = host rate per night
+  // - pricing_list.nightly_prices[nights-1] = guest rate per night (includes markup)
   const rentalType = ((listingData["rental type"] || "nightly").toLowerCase()) as RentalType;
   const nightsPerWeek = input.nightsSelected.length;
   const actualWeeks = input.actualWeeks || input.reservationSpanWeeks;
-
-  // Get the host's nightly rate based on the number of nights selected
-  // This matches Bubble's "host compensation" parameter which comes from listing pricing
-  const hostNightlyRate = getNightlyRateForNights(listingData, nightsPerWeek);
-
-  console.log(`[proposal:create] Host pricing calculation:`, {
-    rentalType,
-    nightsPerWeek,
-    hostNightlyRate,
-    weeklyRate: listingData["weekly_host_rate"],
-    monthlyRate: listingData["monthly_host_rate"],
-    guestProposalPrice: input.proposalPrice
-  });
+  const reservationSpan = (input.reservationSpan || "other") as ReservationSpan;
 
   const needsAvgDaysPerMonth =
-    rentalType === "monthly" || (input.reservationSpan || "other") === "other";
+    rentalType === "monthly" || reservationSpan === "other";
   const avgDaysPerMonth = needsAvgDaysPerMonth
     ? await fetchAvgDaysPerMonth(supabase)
     : 30.4375;
 
-  const compensation = calculateCompensation(
-    rentalType,
-    (input.reservationSpan || "other") as ReservationSpan,
-    nightsPerWeek,
-    listingData["weekly_host_rate"] || 0,
-    hostNightlyRate,
-    actualWeeks,
-    listingData["monthly_host_rate"] || 0,
-    avgDaysPerMonth
-  );
+  // Fetch pricing_list to get both guest and host rates (single source of truth)
+  let pricingListRates = null;
+  const listingForPricing = listingData as unknown as Record<string, unknown>;
+
+  if (listingForPricing.pricing_list) {
+    const { data: pricingList, error: pricingListError } = await supabase
+      .from("pricing_list")
+      .select('"Nightly Price", "Host Compensation"')
+      .eq("_id", listingForPricing.pricing_list as string)
+      .single();
+
+    if (pricingListError) {
+      console.warn('[proposal:create] Pricing list fetch failed:', pricingListError.message);
+    } else if (pricingList) {
+      pricingListRates = getPricingListRates(pricingList, nightsPerWeek);
+    }
+  }
+
+  // Fallback: calculate pricing_list on-the-fly if not found
+  if (!pricingListRates) {
+    console.log('[proposal:create] Using fallback pricing calculation');
+    const fallbackPricing = calculatePricingList({ listing: listingForPricing });
+    pricingListRates = getPricingListRates(
+      {
+        "Nightly Price": fallbackPricing.nightlyPrice,
+        "Host Compensation": fallbackPricing.hostCompensation,
+      },
+      nightsPerWeek
+    );
+  }
+
+  // Calculate compensation values
+  // IMPORTANT: Guest prices include markup, Host compensation does NOT
+  let hostCompensationPerNight = 0;
+  let guestNightlyPrice = 0;
+  let totalCompensation = 0;
+  let fourWeekRent = 0;
+  let fourWeekCompensation = 0;
+  let durationMonths = 0;
+
+  if (pricingListRates) {
+    hostCompensationPerNight = pricingListRates.hostCompensationPerNight;
+    guestNightlyPrice = pricingListRates.guestNightlyPrice;
+
+    // Calculate duration in months
+    durationMonths = calculateDurationMonths(reservationSpan, actualWeeks, avgDaysPerMonth);
+
+    // Calculate derived rates for weekly/monthly
+    const derivedWeeklyRate = roundToTwoDecimals(hostCompensationPerNight * nightsPerWeek);
+    const derivedMonthlyRate = roundToTwoDecimals(
+      (hostCompensationPerNight * nightsPerWeek * avgDaysPerMonth) / 7
+    );
+
+    // Determine host compensation per period based on rental type
+    const hostCompPerPeriod =
+      rentalType === "weekly"
+        ? ((listingForPricing.weekly_host_rate as number) || derivedWeeklyRate)
+        : rentalType === "monthly"
+          ? ((listingForPricing.monthly_host_rate as number) || derivedMonthlyRate)
+          : hostCompensationPerNight;
+
+    // Get weeks offered pattern and calculate actual active weeks
+    // This accounts for alternating schedules (1on1off, 2on2off, etc.)
+    const weeksOffered = listingData["Weeks offered"] as string | undefined;
+    const weeklySchedulePeriod = getWeeklySchedulePeriod(weeksOffered);
+    const actualActiveWeeks = calculateActualActiveWeeks(actualWeeks, weeksOffered);
+
+    // Calculate total host compensation by rental type
+    // IMPORTANT: Use actualActiveWeeks (not actualWeeks) to account for alternating patterns
+    totalCompensation =
+      rentalType === "weekly"
+        ? hostCompPerPeriod * Math.ceil(actualActiveWeeks)
+        : rentalType === "monthly"
+          ? hostCompPerPeriod * durationMonths
+          : hostCompensationPerNight * nightsPerWeek * actualActiveWeeks;
+
+    // Calculate 4-week rent (GUEST price with markup)
+    // Formula: (pricePerNight * nights * 4) / weeklySchedulePeriod
+    fourWeekRent = (guestNightlyPrice * nightsPerWeek * 4) / weeklySchedulePeriod;
+
+    // Calculate 4-week compensation (HOST price WITHOUT markup)
+    // Formula: (hostRate * nights * 4) / weeklySchedulePeriod
+    fourWeekCompensation =
+      rentalType === "monthly"
+        ? 0 // Monthly doesn't use 4-week compensation
+        : rentalType === "weekly"
+          ? (hostCompPerPeriod * 4) / weeklySchedulePeriod
+          : (hostCompensationPerNight * nightsPerWeek * 4) / weeklySchedulePeriod;
+
+    console.log(`[proposal:create] Pricing from pricing_list:`, {
+      rentalType,
+      nightsPerWeek,
+      hostCompensationPerNight,
+      guestNightlyPrice,
+      hostCompPerPeriod,
+      totalCompensation,
+      fourWeekRent,
+      fourWeekCompensation,
+      durationMonths,
+      weeksOffered,
+      weeklySchedulePeriod,
+      actualWeeks,
+      actualActiveWeeks,
+    });
+  } else {
+    console.error('[proposal:create] Failed to get pricing rates - using input values');
+    // Last resort: use input values from frontend (may already be calculated)
+    fourWeekRent = input.fourWeekRent || 0;
+    fourWeekCompensation = input.fourWeekCompensation || input.fourWeekRent || 0;
+    totalCompensation = 0;
+    durationMonths = calculateDurationMonths(reservationSpan, actualWeeks, avgDaysPerMonth);
+  }
+
+  // Build compensation result object for consistency with existing code
+  const compensation = {
+    total_compensation: roundToTwoDecimals(totalCompensation),
+    duration_months: roundToTwoDecimals(durationMonths),
+    four_week_rent: roundToTwoDecimals(fourWeekRent),
+    four_week_compensation: roundToTwoDecimals(fourWeekCompensation),
+    host_compensation_per_night: roundToTwoDecimals(hostCompensationPerNight),
+  };
 
   // Calculate move-out date
   const moveOutDate = calculateMoveOutDate(
@@ -366,9 +475,10 @@ export async function handleCreate(
 
   console.log(`[proposal:create] Calculated status: ${status}, compensation:`, {
     hostCompensationPerNight: compensation.host_compensation_per_night,
-    totalCompensation: compensation.total_compensation,
-    fourWeekRent: compensation.four_week_rent,
-    fourWeekCompensation: compensation.four_week_compensation,
+    guestNightlyPrice: guestNightlyPrice,
+    totalHostCompensation: compensation.total_compensation,
+    fourWeekRentGuest: compensation.four_week_rent,
+    fourWeekCompensationHost: compensation.four_week_compensation,
     durationMonths: compensation.duration_months
   });
 

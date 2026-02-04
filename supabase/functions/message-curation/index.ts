@@ -214,7 +214,7 @@ async function handleGetThreads(
     .order('"Modified Date"', { ascending: false });
 
   // Apply pagination
-  const { data: _threadData, error: threadError, _count } = await query.range(offset, offset + limit - 1);
+  const { data: threadData, error: threadError, count } = await query.range(offset, offset + limit - 1);
 
   if (threadError) {
     console.error('[message-curation] getThreads error:', threadError);

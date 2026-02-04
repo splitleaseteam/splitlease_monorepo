@@ -60,6 +60,8 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
   let pricePerNight = 0;
   let fourWeekRent = 0;
   let reservationTotal = 0;
+  let hostFourWeekCompensation = 0;
+  let hostNightlyRate = 0;
 
   if (rentalType === 'Monthly') {
     // === MONTHLY RENTAL CALCULATION ===
@@ -67,6 +69,8 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     pricePerNight = result.pricePerNight;
     fourWeekRent = result.fourWeekRent;
     reservationTotal = result.reservationTotal;
+    hostFourWeekCompensation = result.hostFourWeekCompensation;
+    hostNightlyRate = result.hostNightlyRate;
 
   } else if (rentalType === 'Weekly') {
     // === WEEKLY RENTAL CALCULATION ===
@@ -74,6 +78,8 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     pricePerNight = result.pricePerNight;
     fourWeekRent = result.fourWeekRent;
     reservationTotal = result.reservationTotal;
+    hostFourWeekCompensation = result.hostFourWeekCompensation;
+    hostNightlyRate = result.hostNightlyRate;
 
   } else {
     // === NIGHTLY RENTAL CALCULATION ===
@@ -81,6 +87,8 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     pricePerNight = result.pricePerNight;
     fourWeekRent = result.fourWeekRent;
     reservationTotal = result.reservationTotal;
+    hostFourWeekCompensation = result.hostFourWeekCompensation;
+    hostNightlyRate = result.hostNightlyRate;
   }
 
   const initialPayment = fourWeekRent + cleaningFee + damageDeposit;
@@ -88,6 +96,7 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
   console.log('=== PRICE CALCULATION RESULT ===');
   console.log('pricePerNight:', pricePerNight);
   console.log('fourWeekRent:', fourWeekRent);
+  console.log('hostFourWeekCompensation:', hostFourWeekCompensation);
   console.log('reservationTotal:', reservationTotal);
   console.log('initialPayment:', initialPayment);
 
@@ -100,6 +109,8 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     pricePerNight: Math.round(pricePerNight * 100) / 100,
     numberOfNights: nightsCount,
     fourWeekRent: Math.round(fourWeekRent),
+    hostFourWeekCompensation: Math.round(hostFourWeekCompensation),
+    hostNightlyRate: Math.round(hostNightlyRate * 100) / 100,
     reservationTotal: Math.round(reservationTotal),
     initialPayment: Math.round(initialPayment),
     cleaningFee,
@@ -116,7 +127,7 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
  */
 function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, unitMarkup, weeksOffered) {
   const monthlyHostRate = parseFloat(listing.monthlyHostRate || listing['monthly_host_rate'] || 0);
-  if (!monthlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
+  if (!monthlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0, hostFourWeekCompensation: 0, hostNightlyRate: 0 };
 
   // Step 1: Calculate Monthly Average Nightly Price
   const monthlyAvgNightly = monthlyHostRate / config.avgDaysPerMonth;
@@ -143,8 +154,11 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
   // Step 8: Get Weekly Schedule Period
   const weeklySchedulePeriod = getWeeklySchedulePeriod(weeksOffered);
 
-  // Step 9: Calculate 4-Week Rent
+  // Step 9: Calculate 4-Week Rent (GUEST price with markup)
   const fourWeekRent = (pricePerNight * nightsCount * 4) / weeklySchedulePeriod;
+
+  // Step 10: Calculate 4-Week Host Compensation (HOST price WITHOUT markup)
+  const hostFourWeekCompensation = (nightlyHostRate * nightsCount * 4) / weeklySchedulePeriod;
 
   // Step 11: Calculate Total Reservation Price
   const reservationTotal = calculateTotalReservationPrice(
@@ -170,10 +184,11 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
     pricePerNight,
     weeklySchedulePeriod,
     fourWeekRent,
+    hostFourWeekCompensation,
     reservationTotal
   });
 
-  return { pricePerNight, fourWeekRent, reservationTotal };
+  return { pricePerNight, fourWeekRent, reservationTotal, hostFourWeekCompensation, hostNightlyRate: nightlyHostRate };
 }
 
 /**
@@ -181,7 +196,7 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
  */
 function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, unitMarkup, weeksOffered) {
   const weeklyHostRate = parseFloat(listing.weeklyHostRate || listing['weekly_host_rate'] || 0);
-  if (!weeklyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
+  if (!weeklyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0, hostFourWeekCompensation: 0, hostNightlyRate: 0 };
 
   // Step 1: Calculate Prorated Nightly Host Rate
   const nightlyHostRate = weeklyHostRate / nightsCount;
@@ -202,8 +217,12 @@ function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, uni
   // Step 6: Get Weekly Schedule Period
   const weeklySchedulePeriod = getWeeklySchedulePeriod(weeksOffered);
 
-  // Step 7: Calculate 4-Week Rent
+  // Step 7: Calculate 4-Week Rent (GUEST price with markup)
   const fourWeekRent = (pricePerNight * nightsCount * 4) / weeklySchedulePeriod;
+
+  // Step 8: Calculate 4-Week Host Compensation (HOST price WITHOUT markup)
+  // This is what the host actually receives - no markup applied
+  const hostFourWeekCompensation = (nightlyHostRate * nightsCount * 4) / weeklySchedulePeriod;
 
   // Step 9: Calculate Total Reservation Price
   const reservationTotal = calculateTotalReservationPrice(
@@ -213,7 +232,7 @@ function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, uni
     weeksOffered
   );
 
-  return { pricePerNight, fourWeekRent, reservationTotal };
+  return { pricePerNight, fourWeekRent, reservationTotal, hostFourWeekCompensation, hostNightlyRate: nightlyHostRate };
 }
 
 /**
@@ -223,7 +242,7 @@ function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, uni
 function calculateNightlyPrice(nightsCount, listing, reservationSpan, config, weeksOffered, unitMarkup = 0) {
   // Step 1: Get Nightly Host Rate
   const nightlyHostRate = getNightlyRateForNights(nightsCount, listing);
-  if (!nightlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
+  if (!nightlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0, hostFourWeekCompensation: 0, hostNightlyRate: 0 };
 
   // Step 2: Calculate Base Price
   const basePrice = nightlyHostRate * nightsCount;
@@ -249,10 +268,13 @@ function calculateNightlyPrice(nightsCount, listing, reservationSpan, config, we
   // Step 6: Get Weekly Schedule Period
   const weeklySchedulePeriod = getWeeklySchedulePeriod(weeksOffered);
 
-  // Step 7: Calculate 4-Week Rent
+  // Step 7: Calculate 4-Week Rent (GUEST price with markup)
   const fourWeekRent = (pricePerNight * nightsCount * 4) / weeklySchedulePeriod;
 
-  // Step 8: Calculate Total Reservation Price
+  // Step 8: Calculate 4-Week Host Compensation (HOST price WITHOUT markup)
+  const hostFourWeekCompensation = (nightlyHostRate * nightsCount * 4) / weeklySchedulePeriod;
+
+  // Step 9: Calculate Total Reservation Price
   const reservationTotal = calculateTotalReservationPrice(
     pricePerNight,
     nightsCount,
@@ -260,7 +282,7 @@ function calculateNightlyPrice(nightsCount, listing, reservationSpan, config, we
     weeksOffered
   );
 
-  return { pricePerNight, fourWeekRent, reservationTotal };
+  return { pricePerNight, fourWeekRent, reservationTotal, hostFourWeekCompensation, hostNightlyRate: nightlyHostRate };
 }
 
 /**
@@ -352,6 +374,7 @@ function getNightlyRateForNights(nightsCount, listing) {
     3: listing.nightlyHostRateFor3Nights || listing['nightly_rate_3_nights'],
     4: listing.nightlyHostRateFor4Nights || listing['nightly_rate_4_nights'],
     5: listing.nightlyHostRateFor5Nights || listing['nightly_rate_5_nights'],
+    6: listing.nightlyHostRateFor6Nights || listing['nightly_rate_6_nights'],
     7: listing.nightlyHostRateFor7Nights || listing['nightly_rate_7_nights']
   };
 
@@ -379,6 +402,8 @@ function createEmptyPriceBreakdown() {
     pricePerNight: 0,
     numberOfNights: 0,
     fourWeekRent: 0,
+    hostFourWeekCompensation: 0,
+    hostNightlyRate: 0,
     reservationTotal: 0,
     initialPayment: 0,
     cleaningFee: 0,

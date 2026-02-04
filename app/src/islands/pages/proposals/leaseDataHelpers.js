@@ -57,8 +57,8 @@ export async function fetchLeaseDataForProposal(proposalId) {
       .select(`
         _id,
         Proposal,
-        "Reservation Period: Start",
-        "Reservation Period: End",
+        "Reservation Period : Start",
+        "Reservation Period : End",
         "Move In Date",
         "Move-out",
         "Agreement Number",
@@ -94,8 +94,8 @@ export async function fetchLeaseDataForProposal(proposalId) {
     return {
       id: lease._id,
       proposalId: lease.Proposal,
-      startDate: lease['Reservation Period: Start'] || lease['Move In Date'],
-      endDate: lease['Reservation Period: End'] || lease['Move-out'],
+      startDate: lease['Reservation Period : Start'] || lease['Move In Date'],
+      endDate: lease['Reservation Period : End'] || lease['Move-out'],
       agreementNumber: lease['Agreement Number'],
       status: lease['Lease Status'],
       stays: (stays || []).map(stay => ({

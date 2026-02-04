@@ -90,8 +90,9 @@ function formatReservationSpan(weeks) {
  * @param {Object[]} params.daysSelectedObjects - Array of Day objects with dayOfWeek property
  * @param {number} params.reservationSpanWeeks - Reservation span in weeks (default: 13)
  * @param {Object} params.pricing - Price breakdown
- * @param {number} params.pricing.pricePerNight - Nightly price
- * @param {number} params.pricing.pricePerFourWeeks - 4-week total
+ * @param {number} params.pricing.pricePerNight - Guest-facing nightly price (with markup)
+ * @param {number} params.pricing.pricePerFourWeeks - Guest 4-week rent (with markup)
+ * @param {number} params.pricing.hostFourWeekCompensation - Host 4-week compensation (without markup)
  * @param {number} params.pricing.totalPrice - Estimated booking total
  * @param {Object} params.details - About me, needs, etc.
  * @param {string} params.details.needForSpace - Need for space text
@@ -133,6 +134,7 @@ export async function createProposal({
   const reservationSpanText = formatReservationSpan(reservationSpanWeeks)
 
   // Build the Edge Function payload
+  // IMPORTANT: fourWeekRent = GUEST price (with markup), fourWeekCompensation = HOST price (without markup)
   const payload = {
     guestId,
     listingId,
@@ -146,14 +148,14 @@ export async function createProposal({
     checkOut: checkOutDay,
     proposalPrice: pricing.pricePerNight,
     fourWeekRent: pricing.pricePerFourWeeks,
-    hostCompensation: pricing.pricePerFourWeeks, // Same as 4-week rent for now
+    hostCompensation: pricing.hostFourWeekCompensation || pricing.pricePerFourWeeks,
     estimatedBookingTotal: pricing.totalPrice,
     needForSpace: details.needForSpace || '',
     aboutMe: details.aboutMe || '',
     specialNeeds: details.specialNeeds || '',
     moveInRangeText: details.moveInRangeText || '',
     flexibleMoveIn: !!details.moveInRangeText,
-    fourWeekCompensation: pricing.pricePerFourWeeks
+    fourWeekCompensation: pricing.hostFourWeekCompensation || pricing.pricePerFourWeeks
   }
 
   logger.debug('[proposalService] Creating proposal:', { listingId, guestId: guestId.substring(0, 8) + '...' })

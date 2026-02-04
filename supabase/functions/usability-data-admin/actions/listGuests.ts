@@ -55,7 +55,7 @@ export async function handleListGuests(
   }
 
   // Apply pagination
-  const { data, error, _count } = await query.range(offset, offset + limit - 1);
+  const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
     console.error('[usability-data-admin] List guests error:', error);

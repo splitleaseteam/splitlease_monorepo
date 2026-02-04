@@ -110,6 +110,13 @@ export interface ListingWithPricing {
   /** Nightly rate for 7 night stay */
   'nightly_rate_7_nights'?: unknown;
 
+  /** Weekly host rate (for Weekly rental type) */
+  weekly_host_rate?: unknown;
+  /** Monthly host rate (for Monthly rental type) */
+  monthly_host_rate?: unknown;
+  /** Rental type determines which rate fields to use */
+  'rental type'?: 'Nightly' | 'Monthly' | 'Weekly';
+
   /** Additional pricing fields */
   cleaning_fee?: unknown;
   damage_deposit?: unknown;
