@@ -212,7 +212,6 @@ The goal is calibrated judgment, not permission-seeking paralysis.
 ## Rules
 
 ### DO
-- **ALWAYS invoke `/slack-webhook` skill after completing each task or prompt** - Send a 1-line summary to Slack including the device hostname (e.g., "[DESKTOP-ABC123] Implemented user auth flow" or "[LAPTOP-XYZ] Fixed proposal sync bug"). Use `--type success` for completions, `--type error` for failures. This is MANDATORY for all task completions.
 - Use Edge Functions for all API calls (never call external APIs from frontend)
 - Run `bun run generate-routes` after any route changes in `routes.config.js`
 - Commit after each meaningful change (do not push unless asked) and always use the `/git-commits` skill to structure the commit message
