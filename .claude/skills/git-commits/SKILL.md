@@ -78,6 +78,32 @@ git commit -m "[SL-3][feat] implement booking confirmation flow
 
 **EVERY TIME you commit, follow these steps in order:**
 
+### Step 0: Sanitize Query Logs (MANDATORY)
+
+Before staging any files, run the log sanitizer to redact sensitive data:
+
+```powershell
+# Run sanitization (from project root)
+powershell -ExecutionPolicy Bypass -File .claude/scripts/sanitize-query-logs.ps1
+
+# Or with verbose output to see what was sanitized
+powershell -ExecutionPolicy Bypass -File .claude/scripts/sanitize-query-logs.ps1 -Verbose
+
+# Dry run to preview without changes
+powershell -ExecutionPolicy Bypass -File .claude/scripts/sanitize-query-logs.ps1 -DryRun
+```
+
+**What gets sanitized:**
+| Pattern | Replacement |
+|---------|-------------|
+| Slack webhook URLs | `https://hooks.slack.com/services/REDACTED/REDACTED/REDACTED` |
+| Gmail addresses | `redacted@example.com` |
+| API keys (sk-*, key_*) | `REDACTED_API_KEY` |
+| Bearer tokens | `Bearer REDACTED_TOKEN` |
+| JWT tokens (eyJ...) | `REDACTED_JWT_TOKEN` |
+
+### Step 1-5: Standard Commit Flow
+
 1. **Identify the ticket number** from the current task context (e.g., SL-3)
 2. **Determine commit type** based on changes (`feat`, `fix`, `docs`, etc.)
 3. **Write clear, imperative commit message** describing the change
