@@ -621,6 +621,11 @@ export function useManageLeasesPageLogic({ showToast }) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
 
+      // Edge function wraps response as { success: true, data: { hostPayout, supplemental, ... } }
+      // Extract the actual document results from result.data
+      const docResults = result.data || result;
+      console.log('[ManageLeases] Document results extracted:', docResults);
+
       // Check results for each document and collect errors
       const successes = [];
       const failures = [];
@@ -631,45 +636,45 @@ export function useManageLeasesPageLogic({ showToast }) {
       console.log('='.repeat(60));
 
       // Host Payout
-      if (result.hostPayout?.success) {
+      if (docResults.hostPayout?.success) {
         successes.push('Host Payout');
-        console.info('✅ Host Payout: SUCCESS', result.hostPayout.pdfUrl ? `- ${result.hostPayout.pdfUrl}` : '');
+        console.info('✅ Host Payout: SUCCESS', docResults.hostPayout.driveUrl ? `- ${docResults.hostPayout.driveUrl}` : '');
       } else {
         failures.push('Host Payout');
-        const error = result.hostPayout?.error || 'Unknown error';
+        const error = docResults.hostPayout?.error || 'Unknown error';
         errorMessages.push(`Host Payout: ${error}`);
         console.error('❌ Host Payout: FAILED -', error);
       }
 
       // Supplemental
-      if (result.supplemental?.success) {
+      if (docResults.supplemental?.success) {
         successes.push('Supplemental');
-        console.info('✅ Supplemental: SUCCESS', result.supplemental.pdfUrl ? `- ${result.supplemental.pdfUrl}` : '');
+        console.info('✅ Supplemental: SUCCESS', docResults.supplemental.driveUrl ? `- ${docResults.supplemental.driveUrl}` : '');
       } else {
         failures.push('Supplemental');
-        const error = result.supplemental?.error || 'Unknown error';
+        const error = docResults.supplemental?.error || 'Unknown error';
         errorMessages.push(`Supplemental: ${error}`);
         console.error('❌ Supplemental: FAILED -', error);
       }
 
       // Periodic Tenancy
-      if (result.periodicTenancy?.success) {
+      if (docResults.periodicTenancy?.success) {
         successes.push('Periodic Tenancy');
-        console.info('✅ Periodic Tenancy: SUCCESS', result.periodicTenancy.pdfUrl ? `- ${result.periodicTenancy.pdfUrl}` : '');
+        console.info('✅ Periodic Tenancy: SUCCESS', docResults.periodicTenancy.driveUrl ? `- ${docResults.periodicTenancy.driveUrl}` : '');
       } else {
         failures.push('Periodic Tenancy');
-        const error = result.periodicTenancy?.error || 'Unknown error';
+        const error = docResults.periodicTenancy?.error || 'Unknown error';
         errorMessages.push(`Periodic Tenancy: ${error}`);
         console.error('❌ Periodic Tenancy: FAILED -', error);
       }
 
       // Credit Card Auth
-      if (result.creditCardAuth?.success) {
+      if (docResults.creditCardAuth?.success) {
         successes.push('Credit Card Auth');
-        console.info('✅ Credit Card Auth: SUCCESS', result.creditCardAuth.pdfUrl ? `- ${result.creditCardAuth.pdfUrl}` : '');
+        console.info('✅ Credit Card Auth: SUCCESS', docResults.creditCardAuth.driveUrl ? `- ${docResults.creditCardAuth.driveUrl}` : '');
       } else {
         failures.push('Credit Card Auth');
-        const error = result.creditCardAuth?.error || 'Unknown error';
+        const error = docResults.creditCardAuth?.error || 'Unknown error';
         errorMessages.push(`Credit Card Auth: ${error}`);
         console.error('❌ Credit Card Auth: FAILED -', error);
       }
