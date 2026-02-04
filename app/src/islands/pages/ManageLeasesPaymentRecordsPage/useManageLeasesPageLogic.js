@@ -470,6 +470,51 @@ export function useManageLeasesPageLogic({ showToast }) {
   }, [showToast]);
 
   /**
+   * Fetch listing photos for document generation
+   * Photos are stored in 'Features - Photos' (JSONB) or listing_photo table
+   */
+  async function fetchListingPhotos(listingId) {
+    if (!listingId) return [];
+
+    try {
+      // First try to get photos from listing's 'Features - Photos' column
+      const { data: listingData } = await supabase
+        .from('Listing')
+        .select('"Features - Photos"')
+        .eq('_id', listingId)
+        .single();
+
+      // Parse embedded photos if available
+      if (listingData?.['Features - Photos']) {
+        const embeddedPhotos = listingData['Features - Photos'];
+        if (Array.isArray(embeddedPhotos) && embeddedPhotos.length > 0) {
+          // Could be array of URLs or array of objects with url property
+          return embeddedPhotos.slice(0, 3).map(photo =>
+            typeof photo === 'string' ? photo : (photo?.url || photo?.Photo || '')
+          ).filter(Boolean);
+        }
+      }
+
+      // Fallback: fetch from listing_photo table
+      const { data: photosData } = await supabase
+        .from('listing_photo')
+        .select('Photo')
+        .eq('Listing', listingId)
+        .order('SortOrder', { ascending: true, nullsLast: true })
+        .limit(3);
+
+      if (photosData && photosData.length > 0) {
+        return photosData.map(p => p.Photo).filter(Boolean);
+      }
+
+      return [];
+    } catch (err) {
+      console.warn('[ManageLeases] Failed to fetch listing photos:', err);
+      return [];
+    }
+  }
+
+  /**
    * Generate all 4 lease documents via lease-documents edge function
    * This calls the same endpoint as the test-contracts page
    */
@@ -485,6 +530,11 @@ export function useManageLeasesPageLogic({ showToast }) {
       // Build payload from lease data
       const lease = selectedLease;
       const agreementNumber = lease.agreementNumber || `AGR-${lease.id?.slice(0, 8) || 'UNKNOWN'}`;
+
+      // Fetch listing photos for embedding in documents
+      const listingId = lease.listing?._id || lease.listing?.id;
+      const listingPhotos = await fetchListingPhotos(listingId);
+      console.log('[ManageLeases] Fetched listing photos:', listingPhotos.length, listingPhotos);
 
       // Format dates for documents (MM/DD/YY)
       const formatDateForDoc = (date) => {
@@ -556,7 +606,11 @@ export function useManageLeasesPageLogic({ showToast }) {
           'Location': listingAddress,
           'Type of Space': '',
           'Space Details': '',
-          'Supplemental Number': `${agreementNumber}-SA`
+          'Supplemental Number': `${agreementNumber}-SA`,
+          // Listing photos for document embedding
+          'image1': listingPhotos[0] || '',
+          'image2': listingPhotos[1] || '',
+          'image3': listingPhotos[2] || ''
         },
         periodicTenancy: {
           'Agreement Number': agreementNumber,
@@ -578,7 +632,11 @@ export function useManageLeasesPageLogic({ showToast }) {
           'Location': listingAddress,
           'Type of Space': '',
           'Space Details': '',
-          'House Rules': []
+          'House Rules': [],
+          // Listing photos for document embedding
+          'image1': listingPhotos[0] || '',
+          'image2': listingPhotos[1] || '',
+          'image3': listingPhotos[2] || ''
         },
         creditCardAuth: {
           'Agreement Number': agreementNumber,
