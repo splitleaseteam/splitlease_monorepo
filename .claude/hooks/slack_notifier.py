@@ -6,9 +6,13 @@ Forwards completion messages to a Slack webhook when Claude finishes responding.
 import json
 import sys
 import os
+import re
 import requests
 from pathlib import Path
 from datetime import datetime
+
+# Regex pattern to match the Slack divider
+SLACK_DIVIDER_PATTERN = re.compile(r'~~~\s*FOR\s+SLACK\s*~~~', re.IGNORECASE)
 
 def log_debug(message):
     """Log debug messages to file for troubleshooting"""
@@ -87,13 +91,23 @@ def extract_info_from_transcript(transcript_path):
             except:
                 continue
 
-        # Build summary from last assistant text - include complete message
+        # Build summary from last assistant text - extract only content after "~~~ FOR SLACK ~~~"
         summary = None
         if last_assistant_text:
+            # Check if the divider exists
+            divider_match = SLACK_DIVIDER_PATTERN.search(last_assistant_text)
+
+            if divider_match:
+                # Extract only the content after the divider
+                slack_content = last_assistant_text[divider_match.end():].strip()
+            else:
+                # Fallback: use full text if no divider found
+                slack_content = last_assistant_text
+
             # Get non-empty lines, skip code blocks
             lines = []
             in_code_block = False
-            for line in last_assistant_text.split('\n'):
+            for line in slack_content.split('\n'):
                 stripped = line.strip()
                 # Track code block state
                 if stripped.startswith('```'):
