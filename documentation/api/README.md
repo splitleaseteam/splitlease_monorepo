@@ -139,7 +139,7 @@ interface EdgeFunctionRequest {
 
 - **lease**: Lease operations
 - **leases-admin**: Administrative lease management
-- **lease-documents**: Lease document generation
+- **contract-generator**: Contract generation
 - **document**: Document management
 
 ### Reviews & Surveys
