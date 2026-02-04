@@ -1,7 +1,7 @@
 # Complete Payment Records Mapping Guide for Lease Documents
 
 **Created**: 2026-02-04
-**Version**: 1.1
+**Version**: 1.2
 **Purpose**: Comprehensive guide for calculating, fetching, and mapping both guest and host payment records from Supabase to lease document payloads
 
 ---
@@ -16,6 +16,7 @@
 - [Lease Document Payload Mapping](#lease-document-payload-mapping)
 - [Complete Workflow Integration](#complete-workflow-integration)
   - [Step 2: Create Fields For Lease Documents](#step-2-implementation-create-fields-for-lease-documents)
+  - [Last Payment Calculation Workflow](#last-payment-calculation-workflow)
   - [Step 6: Guest Payment Records](#step-6-implementation-guest-payment-records)
   - [Step 7: Host Payment Records](#step-7-implementation-host-payment-records)
 - [Troubleshooting](#troubleshooting)
@@ -1020,6 +1021,342 @@ function buildFieldsForLeaseDocuments(
   };
 }
 ```
+
+---
+
+### Last Payment Calculation Workflow
+
+The **Last Payment Calculation** workflow runs as a separate backend trigger to calculate proration fields for the final payment cycle. This workflow determines three critical fields based on the week pattern:
+
+- **`Last Payment Weeks`**: Number of weeks in the final payment period
+- **`Last Payment Rent`**: Rent amount for the final payment period
+- **`Prorated?`**: Boolean/text indicating if the final period is prorated
+
+#### Workflow Structure
+
+The workflow executes one of four conditional branches based on the lease's week pattern:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    LAST PAYMENT CALCULATION WORKFLOW                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  [Triggered]                                                                 │
+│       │                                                                      │
+│       ▼                                                                      │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │ Check: lease's Proposal's hc weeks schedule                         │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                      │
+│       ├─── "Every week"                 ──► Step 1 ──► Return (Step 5)      │
+│       │                                                                      │
+│       ├─── "One week on, one week off"  ──► Step 2 ──► Return (Step 6)      │
+│       │                                                                      │
+│       ├─── "Two weeks on, two weeks off" ─► Step 3 ──► Return (Step 7)      │
+│       │                                                                      │
+│       └─── "One week on, three weeks off" ► Step 4 ──► Return (Step 8)      │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Core Concept: Modulo 4 Calculation
+
+All patterns use **modulo 4** to determine remaining weeks in the last payment cycle:
+
+```
+remainingWeeks = reservationSpanWeeks % 4
+```
+
+| Total Weeks | remainingWeeks (% 4) | Interpretation |
+|-------------|---------------------|----------------|
+| 4, 8, 12... | 0 | Full 4-week cycle |
+| 5, 9, 13... | 1 | 1 week partial |
+| 6, 10, 14.. | 2 | 2 weeks partial |
+| 7, 11, 15.. | 3 | 3 weeks partial |
+
+---
+
+#### Step 1: Every Week Pattern
+
+**Condition**: `lease's Proposal's hc weeks schedule is Every week`
+
+This pattern prorates linearly based on remaining weeks.
+
+| Field | Calculation | Boolean Formatting |
+|-------|-------------|-------------------|
+| **Last Payment Weeks** | `(weeks % 4 == 0) ? 4 : (weeks % 4)` | Yes: `4`, No: `weeks % 4` |
+| **Last Payment Rent** | `lastPaymentWeeks / 4 * fourWeekRent` | (uses above result) |
+| **Prorated?** | `weeks % 4 != 0` | Boolean true/false |
+
+**Detailed Boolean Formatting Logic:**
+
+```javascript
+// Last Payment Weeks calculation
+const condition = (reservationSpanWeeks % 4) === 0;
+const lastPaymentWeeks = condition
+  ? 4                           // Formatting for yes
+  : reservationSpanWeeks % 4;   // Formatting for no
+
+// Last Payment Rent calculation (uses nested formatted as text)
+// The condition result is formatted as text, converted to number, then multiplied
+const lastPaymentRent = lastPaymentWeeks * (fourWeekRent / 4);
+
+// Prorated check
+const prorated = (reservationSpanWeeks % 4) !== 0;
+```
+
+**Example Calculations:**
+
+| Total Weeks | weeks % 4 | Last Payment Weeks | Last Payment Rent (@ $1000/4wk) | Prorated? |
+|-------------|-----------|--------------------|---------------------------------|-----------|
+| 8 | 0 | 4 | $1,000.00 | No |
+| 9 | 1 | 1 | $250.00 | Yes |
+| 10 | 2 | 2 | $500.00 | Yes |
+| 11 | 3 | 3 | $750.00 | Yes |
+
+---
+
+#### Step 2: One Week On, One Week Off Pattern
+
+**Condition**: `lease's Proposal's hc weeks schedule is One week on, one week off`
+
+This pattern uses a **≤ 2** threshold. If remaining weeks ≤ 2, the guest only stays half the cycle.
+
+| Field | Calculation | Boolean Formatting |
+|-------|-------------|-------------------|
+| **Last Payment Weeks** | `(weeks % 4 <= 2) ? (weeks % 4) : 4` | Yes: `weeks % 4`, No: `4` |
+| **Last Payment Rent** | `(weeks % 4 <= 2) ? (fourWeekRent / 2) : fourWeekRent` | Yes: `4wk rent / 2`, No: `4wk rent` |
+| **Prorated?** | `weeks % 4 <= 2` | Boolean true/false |
+
+**Detailed Boolean Formatting Logic:**
+
+```javascript
+// Condition: remaining weeks is 0, 1, or 2
+const condition = (reservationSpanWeeks % 4) <= 2;
+
+// Last Payment Weeks
+const lastPaymentWeeks = condition
+  ? reservationSpanWeeks % 4    // Formatting for yes: actual remaining
+  : 4;                          // Formatting for no: full cycle
+
+// Last Payment Rent (nested formatting)
+const lastPaymentRent = condition
+  ? fourWeekRent / 2            // Formatting for yes: half rent
+  : fourWeekRent;               // Formatting for no: full rent
+
+// Prorated check
+const prorated = (reservationSpanWeeks % 4) <= 2;
+```
+
+**Pattern Logic Explanation:**
+- With "one week on, one week off", the guest occupies **2 weeks per 4-week cycle**
+- If remaining weeks ≤ 2, they only stay for half the billing period → half rent
+- If remaining weeks > 2 (i.e., 3), they complete a full occupancy period → full rent
+
+**Example Calculations:**
+
+| Total Weeks | weeks % 4 | Condition (≤2) | Last Payment Weeks | Last Payment Rent (@ $1000/4wk) | Prorated? |
+|-------------|-----------|----------------|--------------------|---------------------------------|-----------|
+| 8 | 0 | ✓ (0 ≤ 2) | 0 | $500.00 | Yes |
+| 9 | 1 | ✓ (1 ≤ 2) | 1 | $500.00 | Yes |
+| 10 | 2 | ✓ (2 ≤ 2) | 2 | $500.00 | Yes |
+| 11 | 3 | ✗ (3 > 2) | 4 | $1,000.00 | No |
+
+---
+
+#### Step 3: Two Weeks On, Two Weeks Off Pattern
+
+**Condition**: `lease's Proposal's hc weeks schedule is Two weeks on, two weeks off`
+
+This pattern uses a **< 2** threshold (strict less than). Only 1 remaining week triggers proration.
+
+| Field | Calculation | Boolean Formatting |
+|-------|-------------|-------------------|
+| **Last Payment Weeks** | `(weeks % 4 < 2) ? (weeks % 4) : 4` | Yes: `weeks % 4`, No: `4` |
+| **Last Payment Rent** | `(weeks % 4 < 2) ? (fourWeekRent / 2) : fourWeekRent` | Yes: `4wk rent / 2`, No: `4wk rent` |
+| **Prorated?** | `weeks % 4 == 1` | Boolean (specifically checks for exactly 1) |
+
+**Detailed Boolean Formatting Logic:**
+
+```javascript
+// Condition: remaining weeks is 0 or 1 (strictly less than 2)
+const condition = (reservationSpanWeeks % 4) < 2;
+
+// Last Payment Weeks
+const lastPaymentWeeks = condition
+  ? reservationSpanWeeks % 4    // Formatting for yes: actual remaining
+  : 4;                          // Formatting for no: full cycle
+
+// Last Payment Rent (nested formatting)
+const lastPaymentRent = condition
+  ? fourWeekRent / 2            // Formatting for yes: half rent
+  : fourWeekRent;               // Formatting for no: full rent
+
+// Prorated check (DIFFERENT from condition!)
+// Only 1 remaining week counts as truly prorated
+const prorated = (reservationSpanWeeks % 4) === 1;
+```
+
+**Pattern Logic Explanation:**
+- With "two weeks on, two weeks off", the guest occupies **2 consecutive weeks per 4-week cycle**
+- If remaining weeks = 1, they only stay half their normal period → half rent, prorated
+- If remaining weeks = 0, 2, or 3, they can complete their full 2-week occupancy → full rent
+- Note: `Prorated?` specifically checks for `== 1`, not the same as the rent condition
+
+**Example Calculations:**
+
+| Total Weeks | weeks % 4 | Condition (<2) | Prorated? (==1) | Last Payment Weeks | Last Payment Rent (@ $1000/4wk) |
+|-------------|-----------|----------------|-----------------|--------------------|---------------------------------|
+| 8 | 0 | ✓ (0 < 2) | No | 0 | $500.00 |
+| 9 | 1 | ✓ (1 < 2) | **Yes** | 1 | $500.00 |
+| 10 | 2 | ✗ (2 ≮ 2) | No | 4 | $1,000.00 |
+| 11 | 3 | ✗ (3 ≮ 2) | No | 4 | $1,000.00 |
+
+---
+
+#### Step 4: One Week On, Three Weeks Off Pattern
+
+**Condition**: `lease's Proposal's hc weeks schedule is One week on, three weeks off`
+
+This pattern **never prorates**. The guest only stays 1 week per 4-week cycle, so any partial cycle still covers their full occupancy.
+
+| Field | Value | Notes |
+|-------|-------|-------|
+| **Last Payment Weeks** | `4` | Always full cycle |
+| **Last Payment Rent** | `lease's Proposal's 4 week rent` | Always full rent |
+| **Prorated?** | `"no"` | String literal, never prorated |
+
+**Logic Explanation:**
+- With "one week on, three weeks off", the guest only occupies **1 week per 4-week cycle**
+- Even if only 1-3 weeks remain, the guest's single occupancy week is covered
+- Therefore, always charge full rent with no proration
+
+**Example Calculations:**
+
+| Total Weeks | weeks % 4 | Last Payment Weeks | Last Payment Rent (@ $1000/4wk) | Prorated? |
+|-------------|-----------|--------------------|---------------------------------|-----------|
+| 8 | 0 | 4 | $1,000.00 | no |
+| 9 | 1 | 4 | $1,000.00 | no |
+| 10 | 2 | 4 | $1,000.00 | no |
+| 11 | 3 | 4 | $1,000.00 | no |
+
+---
+
+#### TypeScript Implementation: Last Payment Calculation
+
+```typescript
+/**
+ * Last Payment Calculation
+ * Replicates Bubble.io conditional workflow for proration fields
+ */
+
+type WeekPattern =
+  | 'Every week'
+  | 'One week on, one week off'
+  | 'Two weeks on, two weeks off'
+  | 'One week on, three weeks off';
+
+interface LastPaymentResult {
+  lastPaymentWeeks: number;
+  lastPaymentRent: number;
+  prorated: boolean | string;
+}
+
+function calculateLastPayment(
+  weekPattern: WeekPattern,
+  reservationSpanWeeks: number,
+  fourWeekRent: number
+): LastPaymentResult {
+  const remainingWeeks = reservationSpanWeeks % 4;
+
+  switch (weekPattern) {
+    case 'Every week':
+      // Step 1: Linear proration
+      return {
+        lastPaymentWeeks: remainingWeeks === 0 ? 4 : remainingWeeks,
+        lastPaymentRent: (remainingWeeks === 0 ? 4 : remainingWeeks) * (fourWeekRent / 4),
+        prorated: remainingWeeks !== 0,
+      };
+
+    case 'One week on, one week off':
+      // Step 2: Half rent if ≤ 2 remaining weeks
+      return {
+        lastPaymentWeeks: remainingWeeks <= 2 ? remainingWeeks : 4,
+        lastPaymentRent: remainingWeeks <= 2 ? fourWeekRent / 2 : fourWeekRent,
+        prorated: remainingWeeks <= 2,
+      };
+
+    case 'Two weeks on, two weeks off':
+      // Step 3: Half rent if < 2 remaining weeks, prorated only if exactly 1
+      return {
+        lastPaymentWeeks: remainingWeeks < 2 ? remainingWeeks : 4,
+        lastPaymentRent: remainingWeeks < 2 ? fourWeekRent / 2 : fourWeekRent,
+        prorated: remainingWeeks === 1,
+      };
+
+    case 'One week on, three weeks off':
+      // Step 4: Never prorated
+      return {
+        lastPaymentWeeks: 4,
+        lastPaymentRent: fourWeekRent,
+        prorated: 'no', // String literal as in Bubble
+      };
+
+    default:
+      throw new Error(`Unknown week pattern: ${weekPattern}`);
+  }
+}
+
+/**
+ * Format result for Fields For Lease Documents
+ */
+function formatLastPaymentFields(
+  result: LastPaymentResult,
+  formatCurrency: (amount: number) => string
+): Record<string, string | number | boolean> {
+  return {
+    'Last Payment Weeks': result.lastPaymentWeeks,
+    'Last Payment Rent': formatCurrency(result.lastPaymentRent),
+    'Prorated?': result.prorated,
+  };
+}
+
+// Example usage:
+const result = calculateLastPayment('One week on, one week off', 10, 1000);
+// result = { lastPaymentWeeks: 2, lastPaymentRent: 500, prorated: true }
+```
+
+---
+
+#### Summary: Pattern Comparison Matrix
+
+| Pattern | Proration Condition | Last Payment Rent Formula | Prorated? Logic |
+|---------|---------------------|---------------------------|-----------------|
+| **Every week** | `weeks % 4 != 0` | `(weeks % 4 \|\| 4) / 4 * rent` | `weeks % 4 != 0` |
+| **One week on, one week off** | `weeks % 4 <= 2` | `rent / 2` if ≤2, else `rent` | `weeks % 4 <= 2` |
+| **Two weeks on, two weeks off** | `weeks % 4 < 2` | `rent / 2` if <2, else `rent` | `weeks % 4 == 1` |
+| **One week on, three weeks off** | Never | Always `rent` | Always `"no"` |
+
+---
+
+#### Integration with Payment Records
+
+The `Last Payment Weeks`, `Last Payment Rent`, and `Prorated?` fields flow into the **final payment record** generation:
+
+```typescript
+// In guest-payment-records or host-payment-records calculation
+if (paymentNumber === numberOfPaymentCycles) {
+  // This is the last payment - use prorated values
+  const lastPaymentCalc = calculateLastPayment(weekPattern, reservationSpanWeeks, fourWeekRent);
+
+  record.Rent = lastPaymentCalc.lastPaymentRent;
+  // The `lastPaymentWeeks` determines the period covered
+}
+```
+
+> **Note**: The existing `calculations.ts` in `guest-payment-records` already implements this logic in the `calculateLastCycleRent` function. This documentation maps to that implementation.
 
 ---
 
