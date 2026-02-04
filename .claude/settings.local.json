@@ -57,7 +57,10 @@
       "Bash(npx @anthropic-ai/mcp-server-supabase execute_sql:*)",
       "mcp__playwright__browser_fill_form",
       "mcp__playwright__browser_press_key",
-      "Bash(copy \"host-overview-current-state.png\" \"C:\\\\Users\\\\Split Lease\\\\My Drive \\(splitleaseteam@gmail.com\\)\\\\_Agent Context and Tools\\\\SL22\\\\Design\\\\2026\\\\Ongoing Projects\\\\AI Team\\\\agents\\\\orchestrator\\\\runs\\\\run-010--2026-02-04\\\\screenshots\\\\orchestrator-baseline-capture.png\")"
+      "Bash(copy \"host-overview-current-state.png\" \"C:\\\\Users\\\\Split Lease\\\\My Drive \\(splitleaseteam@gmail.com\\)\\\\_Agent Context and Tools\\\\SL22\\\\Design\\\\2026\\\\Ongoing Projects\\\\AI Team\\\\agents\\\\orchestrator\\\\runs\\\\run-010--2026-02-04\\\\screenshots\\\\orchestrator-baseline-capture.png\")",
+      "Bash(copy:*)",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_close"
     ],
     "deny": [],
     "ask": []
