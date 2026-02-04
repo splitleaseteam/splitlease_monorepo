@@ -107,7 +107,9 @@ export default function ManageLeasesPaymentRecordsPage() {
               lease={logic.selectedLease}
               onUploadDocument={logic.handleUploadDocument}
               onGenerateDocs={logic.handleGenerateDocs}
+              onGenerateAllDocs={logic.handleGenerateAllDocs}
               onSendDocuments={logic.handleSendDocuments}
+              isGeneratingDocs={logic.isGeneratingDocs}
             />
 
             {/* Identity Verification */}

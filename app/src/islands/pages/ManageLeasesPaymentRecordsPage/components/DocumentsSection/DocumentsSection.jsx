@@ -41,7 +41,9 @@ export default function DocumentsSection({
   lease,
   onUploadDocument,
   onGenerateDocs,
-  onSendDocuments
+  onGenerateAllDocs,
+  onSendDocuments,
+  isGeneratingDocs = false
 }) {
   const [uploadingType, setUploadingType] = useState(null);
 
@@ -143,6 +145,29 @@ export default function DocumentsSection({
           >
             <Code size={16} />
             Generate via Python Script
+          </button>
+          <button
+            type="button"
+            className="mlpr-btn mlpr-btn-primary"
+            onClick={onGenerateAllDocs}
+            disabled={isGeneratingDocs}
+            style={{
+              minWidth: '180px',
+              opacity: isGeneratingDocs ? 0.7 : 1,
+              cursor: isGeneratingDocs ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isGeneratingDocs ? (
+              <>
+                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FileUp size={16} />
+                Generate Documents
+              </>
+            )}
           </button>
         </div>
 
