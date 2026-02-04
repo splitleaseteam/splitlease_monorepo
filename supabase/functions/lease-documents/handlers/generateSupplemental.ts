@@ -40,6 +40,11 @@ export async function handleGenerateSupplemental(
   const templateData = prepareTemplateData(validatedPayload);
 
   // Prepare image URLs for embedding
+  console.log('[generateSupplemental] 📷 IMAGE URL EXTRACTION:');
+  console.log('[generateSupplemental] 📷 Raw payload image1:', validatedPayload['image1'] || '(not provided)');
+  console.log('[generateSupplemental] 📷 Raw payload image2:', validatedPayload['image2'] || '(not provided)');
+  console.log('[generateSupplemental] 📷 Raw payload image3:', validatedPayload['image3'] || '(not provided)');
+
   const imageUrls: Record<string, string> = {};
   if (validatedPayload['image1']) {
     imageUrls.image1 = validatedPayload['image1'];
@@ -50,6 +55,9 @@ export async function handleGenerateSupplemental(
   if (validatedPayload['image3']) {
     imageUrls.image3 = validatedPayload['image3'];
   }
+
+  console.log('[generateSupplemental] 📷 Final imageUrls object:', JSON.stringify(imageUrls));
+  console.log('[generateSupplemental] 📷 Number of images to embed:', Object.keys(imageUrls).length);
 
   // Render the template with images
   const documentContent = await downloadAndRenderTemplate(

@@ -43,6 +43,11 @@ export async function handleGeneratePeriodicTenancy(
   const templateData = prepareTemplateData(validatedPayload);
 
   // Prepare image URLs for embedding
+  console.log('[generatePeriodicTenancy] 📷 IMAGE URL EXTRACTION:');
+  console.log('[generatePeriodicTenancy] 📷 Raw payload image1:', validatedPayload['image1'] || '(not provided)');
+  console.log('[generatePeriodicTenancy] 📷 Raw payload image2:', validatedPayload['image2'] || '(not provided)');
+  console.log('[generatePeriodicTenancy] 📷 Raw payload image3:', validatedPayload['image3'] || '(not provided)');
+
   const imageUrls: Record<string, string> = {};
   if (validatedPayload['image1']) {
     imageUrls.image1 = validatedPayload['image1'];
@@ -53,6 +58,9 @@ export async function handleGeneratePeriodicTenancy(
   if (validatedPayload['image3']) {
     imageUrls.image3 = validatedPayload['image3'];
   }
+
+  console.log('[generatePeriodicTenancy] 📷 Final imageUrls object:', JSON.stringify(imageUrls));
+  console.log('[generatePeriodicTenancy] 📷 Number of images to embed:', Object.keys(imageUrls).length);
 
   // Render the template with images
   const documentContent = await downloadAndRenderTemplate(
