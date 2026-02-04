@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import HostScheduleSelector from '../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import InformationalText from '../../../shared/InformationalText';
 import { logger } from '../../../../lib/logger';
-import { formatCurrency } from '../../../../lib/formatters';
+import { formatCurrency, calculateNightlyRate } from '../../../../lib/formatters';
 import LeaseStyleSelector from './PricingEditSection/LeaseStyleSelector';
 import NightlyPricingForm from './PricingEditSection/NightlyPricingForm';
 import WeeklyPricingForm from './PricingEditSection/WeeklyPricingForm';
@@ -230,12 +230,6 @@ export default function PricingEditSection({
       'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
     ]);
   }, []);
-
-  // Calculate nightly rate from weekly compensation
-  const calculateNightlyRate = (weeklyComp, nightCount) => {
-    if (!weeklyComp || nightCount === 0) return 0;
-    return Math.round(weeklyComp / nightCount);
-  };
 
   // Validate form based on rental type
   const isFormValid = useCallback(() => {

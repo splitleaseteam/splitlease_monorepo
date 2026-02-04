@@ -1,11 +1,16 @@
 /**
+ * Shared formatting utilities for the Split Lease application.
+ * @module lib/formatters
+ */
+
+/**
  * Format a number as USD currency.
  *
  * @param {number} amount - The amount to format
- * @param {Object} options - Formatting options
+ * @param {Object} [options] - Formatting options
  * @param {boolean} [options.showCents=false] - Whether to show cents
  * @param {string} [options.locale='en-US'] - Locale for formatting
- * @returns {string} Formatted currency string (e.g., "$1,234" or "$1,234.56")
+ * @returns {string} Formatted currency string
  */
 export function formatCurrency(amount, { showCents = false, locale = 'en-US' } = {}) {
   const numericAmount = Number(amount ?? 0);
@@ -32,4 +37,12 @@ export function safeParseJsonArray(value) {
   } catch {
     return [];
   }
+}
+
+/**
+ * Calculate nightly rate from weekly compensation.
+ */
+export function calculateNightlyRate(weeklyComp, nightCount) {
+  if (!weeklyComp || nightCount === 0) return 0;
+  return Math.round(weeklyComp / nightCount);
 }
