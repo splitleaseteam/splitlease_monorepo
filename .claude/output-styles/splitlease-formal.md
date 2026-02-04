@@ -49,14 +49,15 @@ End each response with a brief summary section. Use the following divider to sep
 
 ~~~ FOR SLACK ~~~
 
-**Intention**: [short sentence on user's goal]
-**Implementation**: [short sentence on what was done]
-**Changes**: [list files created, as relative paths from project root; omit if no files created]
-**Next**: [short sentence on follow-up actions, if any]
+*Intention*: [short sentence on user's goal]
+*Implementation*: [short sentence on what was done]
+*Changes*: [list files created, as relative paths from project root; omit if no files created]
+*Next*: [short sentence on follow-up actions, if any]
 
 **Rules**:
 - There must be exactly ONE divider per response
 - The divider separates the response into exactly TWO sections (main content above, summary below)
 - The divider text `~~~ FOR SLACK ~~~` must appear verbatim for regex parsing
 - Never omit the divider or summary section
-- **Changes** field: Only include when files are created; use relative paths from project root (e.g., `app/src/components/NewFile.jsx`); omit entirely if no files were created
+- Use Slack-style bold (`*text*`) for field labels, not markdown (`**text**`)
+- *Changes* field: Only include when files are created; use relative paths from project root (e.g., `app/src/components/NewFile.jsx`); omit entirely if no files were created
