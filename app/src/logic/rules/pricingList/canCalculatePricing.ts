@@ -1,11 +1,13 @@
 /**
  * Check if a listing has required fields for pricing calculation.
  *
- * Validates that the listing has at least one host rate defined
- * so pricing arrays can be computed.
+ * Validates that the listing has appropriate host rate(s) defined
+ * based on rental type so pricing arrays can be computed.
  *
  * @intent Gate pricing calculation to listings with valid pricing data.
- * @rule At least one nightly host rate must be defined (2-7 nights).
+ * @rule For Nightly: At least one nightly host rate must be defined (2-7 nights).
+ * @rule For Weekly: weekly_host_rate must be defined.
+ * @rule For Monthly: monthly_host_rate must be defined.
  * @rule Rate for 1 night is optional (rarely used).
  *
  * @param params - Named parameters.
@@ -15,10 +17,30 @@
  *
  * @example
  * ```ts
+ * // Nightly listing
  * canCalculatePricing({
  *   listing: {
+ *     'rental type': 'Nightly',
  *     'nightly_rate_2_nights': 100,
  *     'nightly_rate_3_nights': 95
+ *   }
+ * })
+ * // => true
+ *
+ * // Monthly listing
+ * canCalculatePricing({
+ *   listing: {
+ *     'rental type': 'Monthly',
+ *     'monthly_host_rate': 4800
+ *   }
+ * })
+ * // => true
+ *
+ * // Weekly listing
+ * canCalculatePricing({
+ *   listing: {
+ *     'rental type': 'Weekly',
+ *     'weekly_host_rate': 1200
  *   }
  * })
  * // => true
@@ -37,7 +59,22 @@ export function canCalculatePricing({ listing }: CalculationPrerequisites): bool
     throw new Error('canCalculatePricing: listing is required');
   }
 
-  // Check for any valid host rate
+  const listingRecord = listing as Record<string, unknown>;
+  const rentalType = listingRecord['rental type'] || 'Nightly';
+
+  // For Weekly rental type: check for weekly_host_rate
+  if (rentalType === 'Weekly') {
+    const weeklyRate = listingRecord['weekly_host_rate'];
+    return isValidRate(weeklyRate);
+  }
+
+  // For Monthly rental type: check for monthly_host_rate
+  if (rentalType === 'Monthly') {
+    const monthlyRate = listingRecord['monthly_host_rate'];
+    return isValidRate(monthlyRate);
+  }
+
+  // For Nightly rental type (or fallback): check for any valid nightly rate
   const rateFields: ListingRateField[] = [
     'nightly_rate_2_nights',
     'nightly_rate_3_nights',
@@ -48,11 +85,24 @@ export function canCalculatePricing({ listing }: CalculationPrerequisites): bool
   ];
 
   for (const field of rateFields) {
-    const value = (listing as Record<string, unknown>)[field];
-    if (value !== null && value !== undefined && typeof value === 'number' && !isNaN(value) && value > 0) {
+    const value = listingRecord[field];
+    if (isValidRate(value)) {
       return true;
     }
   }
 
   return false;
+}
+
+/**
+ * Check if a value is a valid positive rate.
+ * @param value - The value to check.
+ * @returns True if value is a valid positive number.
+ */
+function isValidRate(value: unknown): boolean {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  const num = Number(value);
+  return typeof num === 'number' && !isNaN(num) && num > 0;
 }

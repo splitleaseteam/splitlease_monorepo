@@ -511,19 +511,57 @@
   flex: 1;
 }
 
+.hp7-ai-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hp7-ai-summary-header:hover .hp7-ai-summary-chevron {
+  color: var(--hp7-purple-primary);
+}
+
 .hp7-ai-summary-title {
   font-weight: 600;
   font-size: var(--hp7-font-size-label); /* 14px - accessibility minimum for labels */
   color: var(--hp7-purple-dark);
-  margin-bottom: 2px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+}
+
+.hp7-ai-summary-chevron {
+  color: var(--hp7-purple-dark);
+  flex-shrink: 0;
+  transition: color 0.15s ease;
 }
 
 .hp7-ai-summary-text {
   font-size: var(--hp7-font-size-sm); /* 15px - accessibility minimum for small text */
   color: var(--hp7-text-secondary);
   line-height: var(--hp7-line-height-normal); /* 1.6 for better readability */
+  margin-top: 4px;
+}
+
+/* Collapsed state */
+.hp7-ai-summary-card.hp7-ai-summary-collapsed {
+  padding: 8px 16px;
+}
+
+.hp7-ai-summary-card.hp7-ai-summary-collapsed .hp7-ai-summary-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.hp7-ai-summary-card.hp7-ai-summary-collapsed .hp7-ai-summary-icon svg {
+  width: 10px;
+  height: 10px;
 }
 
 /* ========================================

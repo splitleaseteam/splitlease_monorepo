@@ -225,7 +225,7 @@ async function handleList(
     query = query.ilike('Information Tag-Title', `%${search}%`);
   }
 
-  const { data, error, _count } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('[informational-texts] List error:', error);

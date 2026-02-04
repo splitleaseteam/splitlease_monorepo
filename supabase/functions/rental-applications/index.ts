@@ -300,7 +300,7 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   // Apply pagination
   query = query.range(offset, offset + pageSize - 1);
 
-  const { data, error, _count } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('[rental-applications] List error:', error);
@@ -775,6 +775,12 @@ function transformApplication(record: Record<string, unknown>) {
   // Monthly income from 'Monthly Income' field
   const monthlyIncome = Number(record['Monthly Income']) || 0;
 
+  // Extract address - the 'permanent address' is JSONB with { address: string }
+  const permanentAddress = record['permanent address'] as { address?: string } | string | null;
+  const addressString = typeof permanentAddress === 'string'
+    ? permanentAddress
+    : (permanentAddress?.address || '');
+
   return {
     id: record['_id'] as string,
     unique_id: record['_id'] as string,
@@ -783,6 +789,7 @@ function transformApplication(record: Record<string, unknown>) {
     applicant_name: applicantName,
     applicant_email: applicantEmail,
     phone_number: record['phone number'] as string || '',
+    date_of_birth: record['DOB'] as string || '',
 
     // Status
     status: status,
@@ -799,10 +806,12 @@ function transformApplication(record: Record<string, unknown>) {
       name: applicantName,
       email: applicantEmail,
       phone: record['phone number'] as string || '',
+      dateOfBirth: record['DOB'] as string || '',
     },
 
-    // Address info
-    current_address: record['permanent address'] as Record<string, unknown> || {},
+    // Address info - provide both the raw address and structured view
+    current_address: addressString,
+    permanent_address_raw: permanentAddress,
     apartment_number: record['apartment number'] as string || '',
     length_resided: record['length resided'] as string || '',
     renting: record['renting'] as boolean || false,
@@ -813,10 +822,27 @@ function transformApplication(record: Record<string, unknown>) {
     employer_phone: record['employer phone number'] as string || '',
     job_title: record['job title'] as string || '',
 
+    // Self-employed info
+    business_name: record['business legal name'] as string || '',
+    business_year: record['year business was created?'] as number || null,
+    business_state: record['state business registered'] as string || '',
+
     // Additional flags
     pets: record['pets'] as boolean || false,
     smoking: record['smoking'] as boolean || false,
     parking: record['parking'] as boolean || false,
+
+    // Documents/files
+    proof_of_employment: record['proof of employment'] as string || '',
+    alternate_guarantee: record['alternate guarantee'] as string || '',
+    credit_score_file: record['credit score'] as string || '',
+    state_id_front: record['State ID - Front'] as string || '',
+    state_id_back: record['State ID - Back'] as string || '',
+    government_id: record['government ID'] as string || '',
+
+    // Signature
+    signature: record['signature'] as string || '',
+    signature_text: record['signature (text)'] as string || '',
 
     // Timestamps
     created_at: record['Created Date'] as string || '',

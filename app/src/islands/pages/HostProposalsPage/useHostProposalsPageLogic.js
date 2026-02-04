@@ -784,7 +784,20 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       console.log('[useHostProposalsPageLogic] Acceptance workflow completed:', result);
 
-      // Refresh proposals
+      // Optimistically update the proposal status in local state immediately
+      // This gives instant feedback while the server refresh catches up
+      const acceptedStatus = 'Proposal or Counteroffer Accepted / Drafting Lease Documents';
+      setProposals(prev => prev.map(p =>
+        (p._id === proposal._id || p.id === proposal.id)
+          ? { ...p, Status: acceptedStatus }
+          : p
+      ));
+
+      // Add a small delay to ensure the Supabase write has propagated
+      // before refreshing from the server
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Refresh proposals from server to get the authoritative state
       if (selectedListing) {
         const proposalsResult = await fetchProposalsForListing(selectedListing._id || selectedListing.id);
         setProposals(proposalsResult);

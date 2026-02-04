@@ -26,6 +26,7 @@ const BOROUGH_LOOKUP = {
 // ============================================================================
 
 // Standard fields to select for listing queries
+// Includes join with account_host and user to fetch host information
 const LISTING_SELECT_FIELDS = `
   _id,
   "Name",
@@ -35,6 +36,7 @@ const LISTING_SELECT_FIELDS = `
   "Host User",
   "Host email",
   "host name",
+  "Host / Landlord",
   "Location - Address",
   "Location - City",
   "Location - State",
@@ -60,7 +62,13 @@ const LISTING_SELECT_FIELDS = `
   "nightly_rate_6_nights",
   "nightly_rate_7_nights",
   "cleaning_fee",
-  "damage_deposit"
+  "damage_deposit",
+  account_host!inner(
+    user!inner(
+      "Name - Full",
+      "email as text"
+    )
+  )
 `;
 
 /**
@@ -99,7 +107,6 @@ export async function getDefaultListings() {
       .from('listing')
       .select(LISTING_SELECT_FIELDS)
       .eq('Deleted', false)
-      .eq('Active', true)
       .not('rental type', 'is', null)
       .order('Modified Date', { ascending: false })
       .limit(50);
@@ -125,7 +132,6 @@ export async function searchListings(searchTerm) {
       .from('listing')
       .select(LISTING_SELECT_FIELDS)
       .eq('Deleted', false)
-      .eq('Active', true)
       .or(`Name.ilike.%${searchTerm}%,host name.ilike.%${searchTerm}%,Host email.ilike.%${searchTerm}%,_id.ilike.%${searchTerm}%,rental type.ilike.%${searchTerm}%`)
       .limit(20);
 

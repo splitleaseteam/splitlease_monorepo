@@ -58,7 +58,7 @@ export default function LoggedInAvatar({
 
   // Fetch user data from Supabase for menu conditionals
   // Pass the userType from props as a fallback in case Supabase query doesn't return it
-  const { data: supabaseData, loading: dataLoading } = useLoggedInAvatarData(user.id, user.userType);
+  const { data: supabaseData, loading: dataLoading, refetchUnreadCount } = useLoggedInAvatarData(user.id, user.userType);
 
   // Get menu visibility based on Supabase data
   const menuVisibility = getMenuVisibility(supabaseData, currentPath);
@@ -458,6 +458,7 @@ export default function LoggedInAvatar({
               userBubbleId={user.id}
               userName={firstName}
               userAvatar={user.avatarUrl}
+              onUnreadCountChange={refetchUnreadCount}
             />
           )}
         </div>

@@ -275,12 +275,17 @@ export function calculateTotalGuestPrice(
  * Get nightly rate based on number of nights
  * Listings have different rates for different night counts
  *
+ * Supports both legacy Bubble emoji-prefixed field names and new snake_case column names:
+ * - Legacy: "💰Nightly Host Rate for X nights"
+ * - New: nightly_rate_X_nights
+ *
  * @param listing - Listing data with pricing tiers
  * @param nightsPerWeek - Number of nights per week
  * @returns Appropriate nightly rate
  */
 export function getNightlyRateForNights(
   listing: {
+    // Legacy Bubble emoji-prefixed field names
     "💰Nightly Host Rate for 2 nights"?: number;
     "💰Nightly Host Rate for 3 nights"?: number;
     "💰Nightly Host Rate for 4 nights"?: number;
@@ -288,32 +293,41 @@ export function getNightlyRateForNights(
     "💰Nightly Host Rate for 6 nights"?: number;
     "💰Nightly Host Rate for 7 nights"?: number;
     "💰Weekly Host Rate"?: number;
+    // New snake_case column names (from Supabase)
+    nightly_rate_2_nights?: number;
+    nightly_rate_3_nights?: number;
+    nightly_rate_4_nights?: number;
+    nightly_rate_5_nights?: number;
+    nightly_rate_6_nights?: number;
+    nightly_rate_7_nights?: number;
+    weekly_host_rate?: number;
   },
   nightsPerWeek: number
 ): number {
-  // Map nights to the appropriate rate field
+  // Map nights to the appropriate rate field - try snake_case first (Supabase), then emoji (legacy Bubble)
   const rateMap: Record<number, number | undefined> = {
-    2: listing["💰Nightly Host Rate for 2 nights"],
-    3: listing["💰Nightly Host Rate for 3 nights"],
-    4: listing["💰Nightly Host Rate for 4 nights"],
-    5: listing["💰Nightly Host Rate for 5 nights"],
-    6: listing["💰Nightly Host Rate for 6 nights"],
-    7: listing["💰Nightly Host Rate for 7 nights"],
+    2: listing.nightly_rate_2_nights ?? listing["💰Nightly Host Rate for 2 nights"],
+    3: listing.nightly_rate_3_nights ?? listing["💰Nightly Host Rate for 3 nights"],
+    4: listing.nightly_rate_4_nights ?? listing["💰Nightly Host Rate for 4 nights"],
+    5: listing.nightly_rate_5_nights ?? listing["💰Nightly Host Rate for 5 nights"],
+    6: listing.nightly_rate_6_nights ?? listing["💰Nightly Host Rate for 6 nights"],
+    7: listing.nightly_rate_7_nights ?? listing["💰Nightly Host Rate for 7 nights"],
   };
 
   // Try exact match first
-  if (rateMap[nightsPerWeek] !== undefined) {
+  if (rateMap[nightsPerWeek] !== undefined && rateMap[nightsPerWeek] !== null && rateMap[nightsPerWeek]! > 0) {
     return rateMap[nightsPerWeek]!;
   }
 
   // For 6 nights without explicit rate, fall back to 7-night rate
-  if (nightsPerWeek === 6 && rateMap[7]) {
+  if (nightsPerWeek === 6 && rateMap[7] && rateMap[7]! > 0) {
     return rateMap[7]!;
   }
 
   // Fallback to weekly rate divided by nights, or 0
-  if (listing["💰Weekly Host Rate"] && nightsPerWeek > 0) {
-    return roundToTwoDecimals(listing["💰Weekly Host Rate"] / nightsPerWeek);
+  const weeklyRate = listing.weekly_host_rate ?? listing["💰Weekly Host Rate"];
+  if (weeklyRate && weeklyRate > 0 && nightsPerWeek > 0) {
+    return roundToTwoDecimals(weeklyRate / nightsPerWeek);
   }
 
   return 0;
@@ -423,4 +437,122 @@ export function calculateWeeksBetweenDates(
   const diffMs = endDate.getTime() - startDate.getTime();
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
   return roundToTwoDecimals(diffDays / 7);
+}
+
+/**
+ * Get actual active weeks during a 4-week period based on "Weeks offered" pattern.
+ * Used for calculating total reservation prices and compensation.
+ *
+ * - "Every week": 4 active weeks per 4-week period
+ * - "1 on 1 off": 2 active weeks per 4-week period
+ * - "2 on 2 off": 2 active weeks per 4-week period
+ * - "1 on 3 off": 1 active week per 4-week period
+ *
+ * @param weeksOffered - The weeks offered pattern from listing
+ * @returns Number of active weeks in a 4-week period (1, 2, or 4)
+ */
+export function getActualWeeksDuring4Week(weeksOffered: string | null | undefined): number {
+  const pattern = (weeksOffered || "every week").toLowerCase();
+
+  // 1 on 1 off: 2 active weeks per 4-week period
+  if (
+    pattern.includes("1 on 1 off") ||
+    pattern.includes("1on1off") ||
+    (pattern.includes("one week on") && pattern.includes("one week off")) ||
+    (pattern.includes("1 week on") && pattern.includes("1 week off"))
+  ) {
+    return 2;
+  }
+
+  // 2 on 2 off: 2 active weeks per 4-week period
+  if (
+    pattern.includes("2 on 2 off") ||
+    pattern.includes("2on2off") ||
+    (pattern.includes("two week") && pattern.includes("two week")) ||
+    (pattern.includes("2 week on") && pattern.includes("2 week off"))
+  ) {
+    return 2;
+  }
+
+  // 1 on 3 off: 1 active week per 4-week period
+  if (
+    pattern.includes("1 on 3 off") ||
+    pattern.includes("1on3off") ||
+    (pattern.includes("one week on") && pattern.includes("three week")) ||
+    (pattern.includes("1 week on") && pattern.includes("3 week off"))
+  ) {
+    return 1;
+  }
+
+  // Default: "Every week" - 4 active weeks per 4-week period
+  return 4;
+}
+
+/**
+ * Calculate the actual number of active weeks during a reservation span.
+ * Accounts for alternating week patterns (1on1off, 2on2off, etc.)
+ *
+ * @param reservationSpanWeeks - Total calendar weeks in the reservation
+ * @param weeksOffered - The weeks offered pattern from listing
+ * @returns Number of active weeks the guest actually stays
+ */
+export function calculateActualActiveWeeks(
+  reservationSpanWeeks: number,
+  weeksOffered: string | null | undefined
+): number {
+  const activeWeeksPer4Week = getActualWeeksDuring4Week(weeksOffered);
+  const fourWeekPeriods = reservationSpanWeeks / 4;
+  return Math.ceil(activeWeeksPer4Week * fourWeekPeriods);
+}
+
+/**
+ * Get weekly schedule period divisor based on "Weeks offered" pattern.
+ * Used to calculate 4-week rent/compensation accurately.
+ *
+ * The divisor represents how many active weeks occur in a 4-week period:
+ * - "Every week": 4 active weeks in 4 calendar weeks -> divisor = 1
+ * - "1 on 1 off": 2 active weeks in 4 calendar weeks -> divisor = 2
+ * - "2 on 2 off": 2 active weeks in 4 calendar weeks -> divisor = 2
+ * - "1 on 3 off": 1 active week in 4 calendar weeks -> divisor = 4
+ *
+ * Formula: fourWeekRent = (pricePerNight * nights * 4) / divisor
+ *
+ * @param weeksOffered - The weeks offered pattern from listing
+ * @returns Divisor for 4-week calculations (1, 2, or 4)
+ */
+export function getWeeklySchedulePeriod(weeksOffered: string | null | undefined): number {
+  const pattern = (weeksOffered || "every week").toLowerCase();
+
+  // 1 on 1 off: 2 active weeks per 4-week period
+  if (
+    pattern.includes("1 on 1 off") ||
+    pattern.includes("1on1off") ||
+    (pattern.includes("one week on") && pattern.includes("one week off")) ||
+    (pattern.includes("1 week on") && pattern.includes("1 week off"))
+  ) {
+    return 2;
+  }
+
+  // 2 on 2 off: 2 active weeks per 4-week period
+  if (
+    pattern.includes("2 on 2 off") ||
+    pattern.includes("2on2off") ||
+    (pattern.includes("two week") && pattern.includes("two week")) ||
+    (pattern.includes("2 week on") && pattern.includes("2 week off"))
+  ) {
+    return 2;
+  }
+
+  // 1 on 3 off: 1 active week per 4-week period
+  if (
+    pattern.includes("1 on 3 off") ||
+    pattern.includes("1on3off") ||
+    (pattern.includes("one week on") && pattern.includes("three week")) ||
+    (pattern.includes("1 week on") && pattern.includes("3 week off"))
+  ) {
+    return 4;
+  }
+
+  // Default: "Every week" - 4 active weeks per 4-week period
+  return 1;
 }

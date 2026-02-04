@@ -551,7 +551,7 @@ export async function fetchZatPriceConfiguration() {
       weeklyMarkup: parseFloat(data['Weekly Markup']) || 0,
       fullTimeDiscount: parseFloat(data['full time (7 nights) Discount']) || 0,
       unusedNightsDiscountMultiplier: parseFloat(data['Unused Nights Discount Multiplier']) || 0,
-      avgDaysPerMonth: parseInt(data['Avg days per month']) || 31,
+      avgDaysPerMonth: parseFloat(data['Avg days per month']) || 30.4,
       minPricePerNight: parseFloat(data['Min Price per night']) || 0,
       maxPricePerNight: parseFloat(data['Max Price per night']) || 0
     };
@@ -565,7 +565,7 @@ export async function fetchZatPriceConfiguration() {
       weeklyMarkup: 0,
       fullTimeDiscount: 0.13,
       unusedNightsDiscountMultiplier: 0.03,
-      avgDaysPerMonth: 31,
+      avgDaysPerMonth: 30.4,
       minPricePerNight: 100,
       maxPricePerNight: 1000
     };

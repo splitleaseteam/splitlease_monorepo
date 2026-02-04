@@ -189,27 +189,40 @@ export interface ProposalData {
 
 /**
  * Listing data fetched from database
+ * Supports both legacy Bubble emoji-prefixed names and new Supabase snake_case columns
  */
 export interface ListingData {
   _id: string;
   "Host User": string;
   "rental type": string;
   "Features - House Rules": string[];
-  "💰Cleaning Cost / Maintenance Fee": number;
-  "💰Damage Deposit": number;
   "Weeks offered": string;
   "Days Available (List of Days)": number[];
   "Nights Available (List of Nights) ": number[];
   "Location - Address": Record<string, unknown>;
   "Location - slightly different address": string;
-  "💰Weekly Host Rate": number;
-  "💰Nightly Host Rate for 2 nights": number;
-  "💰Nightly Host Rate for 3 nights": number;
-  "💰Nightly Host Rate for 4 nights": number;
-  "💰Nightly Host Rate for 5 nights": number;
-  "💰Nightly Host Rate for 6 nights": number;
-  "💰Nightly Host Rate for 7 nights": number;
-  "💰Monthly Host Rate": number;
+  // New Supabase snake_case column names (from database)
+  cleaning_fee?: number;
+  damage_deposit?: number;
+  weekly_host_rate?: number;
+  nightly_rate_2_nights?: number;
+  nightly_rate_3_nights?: number;
+  nightly_rate_4_nights?: number;
+  nightly_rate_5_nights?: number;
+  nightly_rate_6_nights?: number;
+  nightly_rate_7_nights?: number;
+  monthly_host_rate?: number;
+  // Legacy Bubble emoji-prefixed field names (for backwards compatibility)
+  "💰Cleaning Cost / Maintenance Fee"?: number;
+  "💰Damage Deposit"?: number;
+  "💰Weekly Host Rate"?: number;
+  "💰Nightly Host Rate for 2 nights"?: number;
+  "💰Nightly Host Rate for 3 nights"?: number;
+  "💰Nightly Host Rate for 4 nights"?: number;
+  "💰Nightly Host Rate for 5 nights"?: number;
+  "💰Nightly Host Rate for 6 nights"?: number;
+  "💰Nightly Host Rate for 7 nights"?: number;
+  "💰Monthly Host Rate"?: number;
 }
 
 /**

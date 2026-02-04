@@ -331,6 +331,7 @@ export default function CreateProposalFlowV2({
     numberOfNights: nightsSelected * reservationSpan,
     totalPrice: pricingBreakdown?.reservationTotal || 0,
     pricePerFourWeeks: pricingBreakdown?.fourWeekRent || 0,
+    hostFourWeekCompensation: pricingBreakdown?.hostFourWeekCompensation || 0,
     damageDeposit: listing?.['damage_deposit'] || 0,
     maintenanceFee: listing?.['cleaning_fee'] || 0,
     firstFourWeeksTotal: calculateFirstFourWeeks(pricingBreakdown),
@@ -354,6 +355,7 @@ export default function CreateProposalFlowV2({
         ...prev,
         pricePerNight: internalPricingBreakdown.pricePerNight,
         pricePerFourWeeks: internalPricingBreakdown.fourWeekRent,
+        hostFourWeekCompensation: internalPricingBreakdown.hostFourWeekCompensation,
         totalPrice: internalPricingBreakdown.reservationTotal,
         numberOfNights: totalNights,
         firstFourWeeksTotal: firstFourWeeksTotal

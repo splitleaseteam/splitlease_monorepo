@@ -1,5 +1,98 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
+import { getSessionId } from '../../lib/auth.js';
+import { supabase } from '../../lib/supabase.js';
+
+// ============================================================================
+// DAY NAME <-> INDEX CONVERSION UTILITIES (for DB persistence)
+// ============================================================================
+
+/**
+ * Map day names to 0-based JavaScript indices
+ * Database stores day names as strings: ["Monday", "Tuesday", ...]
+ * Component uses 0-based indices: 0=Sunday, 1=Monday, ..., 6=Saturday
+ */
+const DAY_NAME_TO_INDEX = {
+  'Sunday': 0,
+  'Monday': 1,
+  'Tuesday': 2,
+  'Wednesday': 3,
+  'Thursday': 4,
+  'Friday': 5,
+  'Saturday': 6
+};
+
+const INDEX_TO_DAY_NAME = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+];
+
+/**
+ * Parse day names from database - handles both string and array formats
+ * @param {string|string[]} rawData - Raw data from database
+ * @returns {string[]|null} - Parsed array of day names, or null if invalid
+ */
+function parseDayNamesFromDB(rawData) {
+  if (!rawData) {
+    return null;
+  }
+
+  if (Array.isArray(rawData)) {
+    return rawData.length > 0 ? rawData : null;
+  }
+
+  if (typeof rawData === 'string') {
+    try {
+      const parsed = JSON.parse(rawData);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch (e) {
+      console.warn('📅 SearchScheduleSelector: Failed to parse day names string:', rawData, e);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Convert day names array from database to 0-based indices
+ * @param {string|string[]} rawDayNames - Raw day names from DB
+ * @returns {number[]|null} - Array of 0-based day indices, or null if invalid
+ */
+function dayNamesToIndices(rawDayNames) {
+  const dayNames = parseDayNamesFromDB(rawDayNames);
+
+  if (!dayNames) {
+    return null;
+  }
+
+  const indices = dayNames
+    .map(name => DAY_NAME_TO_INDEX[name])
+    .filter(idx => idx !== undefined);
+
+  return indices.length > 0 ? indices : null;
+}
+
+/**
+ * Convert 0-based day indices to day names for database storage
+ * @param {number[]} indices - Array of 0-based day indices
+ * @returns {string[]} - Array of day name strings
+ */
+function indicesToDayNames(indices) {
+  if (!Array.isArray(indices)) {
+    return [];
+  }
+
+  return indices
+    .filter(idx => idx >= 0 && idx <= 6)
+    .map(idx => INDEX_TO_DAY_NAME[idx]);
+}
 
 // ============================================================================
 // STYLED COMPONENTS
@@ -315,12 +408,15 @@ const getInitialSelectionFromUrl = () => {
  * @param {boolean} [props.requireContiguous=true] - Whether to require contiguous day selection
  * @param {number[]} [props.initialSelection] - Initial selected days (array of day indices 0-6). If not provided, reads from URL or defaults to Monday-Friday
  * @param {string} [props.weekPattern='every-week'] - The weekly pattern (e.g., 'every-week', 'one-on-off', 'two-on-off', 'one-three-off')
+ * @param {boolean} [props.enablePersistence=false] - When true, loads/saves selection to user's DB record
+ * @param {number} [props.debounceMs=1000] - Debounce delay for saving to DB (when enablePersistence is true)
  *
  * @example
  * ```jsx
  * <SearchScheduleSelector
  *   onSelectionChange={(days) => console.log(days)}
  *   onError={(error) => console.error(error)}
+ *   enablePersistence={true}
  * />
  * ```
  */
@@ -333,6 +429,8 @@ export default function SearchScheduleSelector({
   initialSelection,
   updateUrl = true,
   weekPattern = 'every-week',
+  enablePersistence = false,
+  debounceMs = 1000,
 }) {
   // Use initialSelection if provided, otherwise get from URL or use default
   const getInitialState = () => {
@@ -352,6 +450,135 @@ export default function SearchScheduleSelector({
   const [errorTimeout, setErrorTimeout] = useState(null);
   const [checkinDay, setCheckinDay] = useState('');
   const [checkoutDay, setCheckoutDay] = useState('');
+
+  // Persistence state (only used when enablePersistence=true)
+  const [userId, setUserId] = useState(null);
+  const [isLoadingFromDB, setIsLoadingFromDB] = useState(enablePersistence);
+  const saveTimeoutRef = useRef(null);
+  const hasLoadedFromDB = useRef(false);
+
+  // ============================================================================
+  // PERSISTENCE: LOAD USER'S SAVED DAYS ON MOUNT
+  // ============================================================================
+
+  useEffect(() => {
+    if (!enablePersistence) {
+      return;
+    }
+
+    const loadUserDays = async () => {
+      const sessionId = getSessionId();
+      console.log('📅 SearchScheduleSelector [persistence]: getSessionId() returned:', sessionId);
+      setUserId(sessionId);
+
+      // Check if there's a days-selected URL parameter - prioritize it over DB
+      const urlParams = new URLSearchParams(window.location.search);
+      const daysFromUrl = urlParams.get('days-selected');
+
+      if (daysFromUrl) {
+        console.log('📅 SearchScheduleSelector [persistence]: URL has days-selected parameter, prioritizing URL over DB:', daysFromUrl);
+        setIsLoadingFromDB(false);
+        return;
+      }
+
+      if (!sessionId) {
+        console.log('📅 SearchScheduleSelector [persistence]: No session, using default behavior');
+        setIsLoadingFromDB(false);
+        return;
+      }
+
+      try {
+        console.log('📅 SearchScheduleSelector [persistence]: Fetching user days for:', sessionId);
+
+        const { data, error } = await supabase
+          .from('user')
+          .select('"Recent Days Selected"')
+          .eq('_id', sessionId)
+          .maybeSingle();
+
+        console.log('📅 SearchScheduleSelector [persistence]: Supabase response:', { data, error });
+
+        if (error) {
+          console.error('📅 SearchScheduleSelector [persistence]: Supabase error:', error);
+          setIsLoadingFromDB(false);
+          return;
+        }
+
+        const recentDays = data?.['Recent Days Selected'];
+        console.log('📅 SearchScheduleSelector [persistence]: Recent Days Selected raw value:', recentDays);
+
+        if (recentDays) {
+          const indices = dayNamesToIndices(recentDays);
+
+          if (indices && indices.length > 0) {
+            console.log('📅 SearchScheduleSelector [persistence]: Loaded user days:', {
+              fromDB: recentDays,
+              asIndices: indices
+            });
+            setSelectedDays(new Set(indices));
+          } else {
+            console.log('📅 SearchScheduleSelector [persistence]: No valid days in DB, using default');
+          }
+        } else {
+          console.log('📅 SearchScheduleSelector [persistence]: No saved days in DB, using default');
+        }
+      } catch (err) {
+        console.error('📅 SearchScheduleSelector [persistence]: Failed to load user days:', err);
+      } finally {
+        setIsLoadingFromDB(false);
+        // Mark as loaded so subsequent changes will be saved
+        // (even if no data was found in DB)
+        hasLoadedFromDB.current = true;
+      }
+    };
+
+    loadUserDays();
+
+    // Cleanup any pending save on unmount
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [enablePersistence]);
+
+  // ============================================================================
+  // PERSISTENCE: SAVE USER'S SELECTION TO DATABASE (DEBOUNCED)
+  // ============================================================================
+
+  const saveUserDays = useCallback((dayIndices) => {
+    if (!enablePersistence || !userId) {
+      return;
+    }
+
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Debounce the save operation
+    saveTimeoutRef.current = setTimeout(async () => {
+      const dayNames = indicesToDayNames(dayIndices);
+
+      try {
+        console.log('📅 SearchScheduleSelector [persistence]: Saving user days:', dayNames);
+
+        const { error } = await supabase
+          .from('user')
+          .update({ 'Recent Days Selected': dayNames })
+          .eq('_id', userId);
+
+        if (error) {
+          console.error('📅 SearchScheduleSelector [persistence]: Failed to save:', error);
+          return;
+        }
+
+        console.log('📅 SearchScheduleSelector [persistence]: Saved successfully');
+      } catch (err) {
+        console.error('📅 SearchScheduleSelector [persistence]: Save error:', err);
+      }
+    }, debounceMs);
+  }, [enablePersistence, userId, debounceMs]);
 
   /**
    * Check if selected days are contiguous (handles wrap-around)
@@ -699,6 +926,7 @@ export default function SearchScheduleSelector({
   /**
    * Update parent component on selection change
    * Also check for contiguity errors in real-time
+   * Also save to DB if persistence is enabled
    */
   useEffect(() => {
     if (onSelectionChange) {
@@ -706,6 +934,12 @@ export default function SearchScheduleSelector({
         index => DAYS_OF_WEEK[index]
       );
       onSelectionChange(selectedDaysArray);
+    }
+
+    // Save to DB if persistence is enabled and user is logged in
+    // Skip saving on initial load from DB to prevent unnecessary write
+    if (enablePersistence && userId && hasLoadedFromDB.current) {
+      saveUserDays(Array.from(selectedDays));
     }
 
     // Calculate check-in/check-out
@@ -748,8 +982,16 @@ export default function SearchScheduleSelector({
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDays]);
+  }, [selectedDays, enablePersistence, userId, saveUserDays]);
 
+  // ============================================================================
+  // LOADING STATE
+  // ============================================================================
+
+  // Show nothing while loading from DB to prevent flash of default days
+  if (isLoadingFromDB) {
+    return null;
+  }
 
   return (
     <Container className={className}>

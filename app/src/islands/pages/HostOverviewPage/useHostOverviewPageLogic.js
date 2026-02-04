@@ -485,25 +485,28 @@ export function useHostOverviewPageLogic() {
 
     try {
       // Fetch virtual meetings where host is involved
+      // Note: Table has 'host' column (user ID), not 'host_account_id'
+      // Also fetch by proposal's host since older meetings may not have host field populated
       const { data, error: fetchError } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .select('*')
-        .eq('host_account_id', hostAccountId)
-        .order('booked_date', { ascending: true });
+        .eq('host', hostAccountId)
+        .order('"booked date"', { ascending: true });
 
       if (fetchError) throw fetchError;
 
       return (data || []).map(meeting => ({
-        id: meeting.id,
-        _id: meeting.id,
+        id: meeting._id,
+        _id: meeting._id,
         guest: {
-          firstName: meeting.guest_first_name || 'Guest'
+          firstName: meeting['guest name'] || 'Guest'
         },
         listing: {
-          name: meeting.listing_name || 'Listing'
+          name: meeting['Listing (for Co-Host feature)'] || 'Listing'
         },
-        bookedDate: meeting.booked_date,
-        notifications: meeting.notifications || []
+        bookedDate: meeting['booked date'],
+        meetingLink: meeting['meeting link'],
+        notifications: []
       }));
     } catch (err) {
       console.error('Error fetching virtual meetings:', err);
@@ -731,6 +734,11 @@ export function useHostOverviewPageLogic() {
     window.location.href = `/host-proposals?listingId=${listing.id || listing._id}`;
   }, []);
 
+  const handleViewLeases = useCallback((listing) => {
+    // Navigate to host-leases page with listing pre-selected
+    window.location.href = `/host-leases?listingId=${listing.id || listing._id}`;
+  }, []);
+
   const handleListingCardClick = useCallback((listing) => {
     // Navigate to listing dashboard (same as Manage button but for card click)
     window.location.href = `/listing-dashboard?id=${listing.id || listing._id}`;
@@ -883,6 +891,7 @@ export function useHostOverviewPageLogic() {
     handleEditListing,
     handlePreviewListing,
     handleViewProposals,
+    handleViewLeases,
     handleListingCardClick,
     handleSeeDetails,
     handleEditManual,

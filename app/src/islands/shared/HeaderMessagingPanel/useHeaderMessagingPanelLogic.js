@@ -29,6 +29,7 @@ import { clearProposalDraft } from '../CreateProposalFlowV2.jsx';
  * @param {string} options.userName - The user's first name (for typing indicator)
  * @param {string} options.userAvatar - The user's avatar URL
  * @param {function} options.onClose - Callback to close the panel
+ * @param {function} [options.onUnreadCountChange] - Callback to refresh header unread count
  */
 export function useHeaderMessagingPanelLogic({
   isOpen,
@@ -36,6 +37,7 @@ export function useHeaderMessagingPanelLogic({
   userName,
   userAvatar,
   onClose,
+  onUnreadCountChange,
 }) {
   // ============================================================================
   // DATA STATE
@@ -595,6 +597,42 @@ export function useHeaderMessagingPanelLogic({
         }
       }
 
+      // Compute visibility-aware message previews
+      // The static ~Last Message field doesn't consider visibility, so we fetch
+      // the most recent message visible to the current user for each thread
+      let visiblePreviewMap = {};
+      if (threadIds.length > 0) {
+        // Build a map of thread -> user role (host or guest)
+        const threadRoles = {};
+        threadsData.forEach((thread) => {
+          threadRoles[thread._id] = thread['host_user_id'] === bubbleId ? 'host' : 'guest';
+        });
+
+        // Fetch recent messages for all threads with visibility info
+        const { data: messagesData } = await supabase
+          .from('_message')
+          .select('"thread_id", "Message Body", "Created Date", "is Visible to Host", "is Visible to Guest"')
+          .in('"thread_id"', threadIds)
+          .order('"Created Date"', { ascending: false });
+
+        if (messagesData && messagesData.length > 0) {
+          // For each thread, find the most recent message visible to the user
+          for (const threadId of threadIds) {
+            const role = threadRoles[threadId];
+            const visibleMessage = messagesData.find((msg) => {
+              if (msg['thread_id'] !== threadId) return false;
+              return role === 'host'
+                ? msg['is Visible to Host'] === true
+                : msg['is Visible to Guest'] === true;
+            });
+
+            if (visibleMessage && visibleMessage['Message Body']) {
+              visiblePreviewMap[threadId] = visibleMessage['Message Body'].substring(0, 100);
+            }
+          }
+        }
+      }
+
       // Transform threads to UI format
       const transformedThreads = threadsData.map((thread) => {
         const hostId = thread['host_user_id'];
@@ -634,7 +672,8 @@ export function useHeaderMessagingPanelLogic({
           contact_name: contact?.name || 'Split Lease',
           contact_avatar: contact?.avatar,
           property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
-          last_message_preview: thread['last_message_preview'] || 'No messages yet',
+          // Use visibility-aware preview if available, fall back to static ~Last Message
+          last_message_preview: visiblePreviewMap[thread._id] || thread['~Last Message'] || 'No messages yet',
           last_message_time: lastMessageTime,
           unread_count: unreadCountMap[thread._id] || 0,
           is_with_splitbot: false,
@@ -679,6 +718,14 @@ export function useHeaderMessagingPanelLogic({
       if (data?.success) {
         setMessages(data.data.messages || []);
         setThreadInfo(data.data.thread_info || null);
+
+        // Refresh header unread count after backend marks messages as read
+        // Small delay ensures database update completes (fire-and-forget on backend)
+        if (onUnreadCountChange) {
+          setTimeout(() => {
+            onUnreadCountChange();
+          }, 500);
+        }
       } else {
         throw new Error(data?.error || 'Failed to fetch messages');
       }
