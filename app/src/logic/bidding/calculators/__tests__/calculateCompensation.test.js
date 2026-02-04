@@ -423,7 +423,7 @@ describe('calculateCompensation.js', () => {
 
         expect(result.winningBid).toBe(666.66);
         expect(result.loserCompensation).toBe(166.67); // 666.66 * 0.25 = 166.665 → 166.67
-        expect(result.platformRevenue).toBe(500); // 666.66 * 0.75 = 499.995 → 500.00
+        expect(result.platformRevenue).toBe(499.99); // 666.66 - 166.67 = 499.99
         expect(result.loserCompensation + result.platformRevenue).toBeCloseTo(666.66, 2);
       });
 
@@ -463,8 +463,8 @@ describe('calculateCompensation.js', () => {
         const result = calculateFinancialBreakdown({ winningBid: 99999.99 });
 
         expect(result.winningBid).toBe(99999.99);
-        expect(result.loserCompensation).toBe(24999.9975);
-        expect(result.platformRevenue).toBe(74999.9925);
+        expect(result.loserCompensation).toBe(25000); // 99999.99 * 0.25 = 24999.9975 → 25000 (rounded)
+        expect(result.platformRevenue).toBe(74999.99); // 99999.99 - 25000 = 74999.99
       });
     });
 

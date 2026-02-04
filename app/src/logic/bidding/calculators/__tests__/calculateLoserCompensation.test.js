@@ -200,7 +200,7 @@ describe('calculateLoserCompensation.js (standalone)', () => {
 
     it('should handle very large winning bids', () => {
       const result = calculateLoserCompensation({ winningBid: 999999.99 });
-      expect(result).toBe(249999.9975); // Precision maintained
+      expect(result).toBe(250000); // 999999.99 * 0.25 = 249999.9975 → 250000 (rounded)
     });
 
     it('should handle bid amount with 3 decimal places', () => {
