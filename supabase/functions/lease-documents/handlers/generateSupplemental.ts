@@ -57,7 +57,7 @@ export async function handleGenerateSupplemental(
     TEMPLATE_PATHS.supplemental,
     templateData,
     {
-      useImages: Object.keys(imageUrls).length > 0,
+      useImages: true,
       imageUrls,
     }
   );
@@ -135,5 +135,8 @@ function prepareTemplateData(payload: SupplementalPayload): Record<string, strin
     location: payload['Location'] || '',
     type_of_space: payload['Type of Space'] || '',
     supplement_number: payload['Supplemental Number'] || '',
+    image1: payload['image1'] || '',
+    image2: payload['image2'] || '',
+    image3: payload['image3'] || '',
   };
 }

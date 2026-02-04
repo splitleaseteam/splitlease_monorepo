@@ -60,7 +60,7 @@ export async function handleGeneratePeriodicTenancy(
     TEMPLATE_PATHS.periodicTenancy,
     templateData,
     {
-      useImages: Object.keys(imageUrls).length > 0,
+      useImages: true,
       imageUrls,
     }
   );
@@ -148,5 +148,8 @@ function prepareTemplateData(payload: PeriodicTenancyPayload): Record<string, st
     location: payload['Location'] || '',
     type_of_space: payload['Type of Space'] || '',
     House_rules_items: formatHouseRules(payload['House Rules']),
+    image1: payload['image1'] || '',
+    image2: payload['image2'] || '',
+    image3: payload['image3'] || '',
   };
 }
