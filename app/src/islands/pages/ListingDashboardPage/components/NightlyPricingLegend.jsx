@@ -9,6 +9,8 @@
  * @param {number} props.nightsPerWeekMin - Minimum nights per week (default 2)
  * @param {number} props.nightsPerWeekMax - Maximum nights per week (default 7)
  */
+import { formatCurrency } from '../../../../lib/formatters';
+
 export default function NightlyPricingLegend({
   weeklyCompensation = {},
   nightsPerWeekMin = 2,
@@ -26,16 +28,6 @@ export default function NightlyPricingLegend({
   for (let i = nightsPerWeekMin; i <= nightsPerWeekMax; i++) {
     nightsRange.push(i);
   }
-
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return (
     <div className="ld-nightly-legend">

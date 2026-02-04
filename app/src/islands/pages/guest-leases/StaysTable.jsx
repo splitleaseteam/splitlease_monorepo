@@ -94,6 +94,7 @@ function getActionButtons(stay, onCheckInOut, onSubmitReview, onSeeReview) {
 
 export default function StaysTable({
   stays = [],
+  leaseId,
   showAll = false,
   onToggleShowAll,
   onCheckInOut,
@@ -112,6 +113,17 @@ export default function StaysTable({
     );
   }
 
+  const handleRowClick = (stay, event) => {
+    if (!leaseId) return;
+    if (event?.target?.closest('.stays-table__actions')) return;
+    window.location.href = `/schedule/${leaseId}`;
+  };
+
+  const handleRowKeyDown = (stay, event) => {
+    if (event.key !== 'Enter') return;
+    handleRowClick(stay, event);
+  };
+
   return (
     <div className="stays-table">
       <div className="stays-table__list">
@@ -121,7 +133,14 @@ export default function StaysTable({
           const StatusIcon = statusInfo.icon;
 
           return (
-            <div key={stay._id || stay.id} className="stays-table__row">
+            <div
+              key={stay._id || stay.id}
+              className="stays-table__row stays-table__row--clickable"
+              onClick={(event) => handleRowClick(stay, event)}
+              onKeyDown={(event) => handleRowKeyDown(stay, event)}
+              role="button"
+              tabIndex={0}
+            >
               <div className="stays-table__info">
                 <div className="stays-table__week">
                   Week {stay.weekNumber || '?'}

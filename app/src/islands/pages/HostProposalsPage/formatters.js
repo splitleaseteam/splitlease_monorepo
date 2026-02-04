@@ -2,17 +2,16 @@
  * Formatting utilities for Host Proposals Page
  */
 
+import { formatCurrency as sharedFormatCurrency } from '../../../lib/formatters.js';
+
 /**
  * Format a number as currency (USD)
  * @param {number} amount - The amount to format
  * @returns {string} Formatted currency string
  */
 export function formatCurrency(amount) {
-  if (amount == null || isNaN(amount)) return '0.00';
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount);
+  const formatted = sharedFormatCurrency(amount, { showCents: true });
+  return formatted.replace('$', '');
 }
 
 /**

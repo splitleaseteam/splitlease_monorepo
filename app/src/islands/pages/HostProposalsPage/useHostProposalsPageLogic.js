@@ -237,7 +237,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           // Success path: Use validated user data
           userType = userData['User Type'] || userData.userType;
           finalUserData = userData;
-          console.log('[HostProposals] User data loaded, userType:', userType);
         } else {
           // ========================================================================
           // GOLD STANDARD AUTH PATTERN - Step 3: Fallback to Supabase session metadata
@@ -247,7 +246,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           if (session?.user) {
             // Session valid but profile fetch failed - use session metadata
             userType = session.user.user_metadata?.user_type || getUserType() || null;
-            console.log('[HostProposals] Using fallback session data, userType:', userType);
 
             // Create minimal user data from session for loadHostData
             if (userType && isHost({ userType })) {
@@ -262,7 +260,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
             // If we can't determine userType from session, redirect
             if (!userType) {
-              console.log('[HostProposals] Cannot determine user type from session, redirecting');
               setAuthState({
                 isChecking: false,
                 isAuthenticated: true,
@@ -274,7 +271,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             }
           } else {
             // No valid session - redirect
-            console.log('[HostProposals] No valid session, redirecting');
             setAuthState({
               isChecking: false,
               isAuthenticated: false,
@@ -333,7 +329,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       try {
         const rules = await getAllHouseRules();
         setAllHouseRules(rules);
-        console.log('[HostProposals] Loaded all house rules:', rules.length);
       } catch (err) {
         console.error('[HostProposals] Failed to load house rules:', err);
       }
@@ -413,9 +408,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           return bStats.count - aStats.count;
         });
 
-        console.log('[useHostProposalsPageLogic] Sorted listings by proposals:',
-          sortedListings.map(l => ({ id: l._id || l.id, name: l.Name, proposals: statsMap[l._id || l.id]?.count || 0 }))
-        );
 
         // Normalize listings for V7 components
         const normalizedListings = sortedListings.map(normalizeListing);
@@ -432,7 +424,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           );
           if (matchedListing) {
             listingToSelect = matchedListing;
-            console.log('[useHostProposalsPageLogic] Pre-selected listing from URL:', preselectedListingId);
           }
         }
 
@@ -467,7 +458,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    */
   const fetchHostListings = async (userId) => {
     try {
-      console.log('[useHostProposalsPageLogic] Fetching listings for user:', userId);
 
       // Use RPC function to fetch listings (handles special characters in column names)
       const { data: listings, error } = await supabase
@@ -478,7 +468,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         throw error;
       }
 
-      console.log('[useHostProposalsPageLogic] Found listings:', listings?.length || 0);
       return listings || [];
     } catch (err) {
       console.error('Failed to fetch listings:', err);
@@ -494,7 +483,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    */
   const fetchProposalsForListing = async (listingId, hostUserIdOverride = null) => {
     try {
-      console.log('[useHostProposalsPageLogic] Fetching proposals for listing:', listingId);
 
       const { data: proposals, error } = await supabase
         .from('proposal')
@@ -551,14 +539,12 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         throw error;
       }
 
-      console.log('[useHostProposalsPageLogic] Found proposals:', proposals?.length || 0);
 
       // Enrich proposals with guest data
       if (proposals && proposals.length > 0) {
         const guestIds = [...new Set(proposals.map(p => p.Guest).filter(Boolean))];
 
         if (guestIds.length > 0) {
-          console.log('[useHostProposalsPageLogic] Fetching guest data for IDs:', guestIds);
 
           const { data: guests, error: guestError } = await supabase
             .from('user')
@@ -569,7 +555,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             console.error('[useHostProposalsPageLogic] Error fetching guests:', guestError);
           }
 
-          console.log('[useHostProposalsPageLogic] Raw guest data:', guests);
 
           const guestMap = {};
           guests?.forEach(g => { guestMap[g._id] = g; });
@@ -578,12 +563,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           proposals.forEach(p => {
             if (p.Guest && guestMap[p.Guest]) {
               const normalized = normalizeGuest(guestMap[p.Guest]);
-              console.log('[useHostProposalsPageLogic] Normalized guest:', {
-                name: normalized.name,
-                bio: normalized.bio ? normalized.bio.substring(0, 30) + '...' : 'NO BIO',
-                id_verified: normalized.id_verified,
-                work_verified: normalized.work_verified
-              });
               p.guest = normalized;
             }
           });
@@ -628,11 +607,9 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         }
 
         // Enrich proposals with negotiation summaries (host-directed)
-        console.log('[useHostProposalsPageLogic] DEBUG: About to fetch negotiation summaries');
         const proposalIds = proposals.map(p => p._id);
         // Use override if provided (needed when called before user state is set), otherwise fall back to user state
         const hostUserId = hostUserIdOverride || user?._id || user?.userId;
-        console.log('[useHostProposalsPageLogic] DEBUG: proposalIds:', proposalIds, 'hostUserId:', hostUserId, 'override:', hostUserIdOverride);
 
         if (proposalIds.length > 0 && hostUserId) {
           const { data: summariesData, error: summariesError } = await supabase
@@ -659,7 +636,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
               p.negotiationSummaries = summaryMap[p._id] || [];
             });
 
-            console.log('[useHostProposalsPageLogic] Fetched negotiation summaries for', summariesData?.length || 0, 'proposals');
           }
         }
       }
@@ -747,7 +723,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Remove from local state
       setProposals(prev => prev.filter(p => (p._id || p.id) !== (proposal._id || proposal.id)));
-      console.log('[useHostProposalsPageLogic] Proposal deleted:', proposal._id);
 
     } catch (err) {
       console.error('Failed to delete proposal:', err);
@@ -764,7 +739,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     setShowRejectOnOpen(false);
     setAcceptMode(true); // Signal to open in accept mode
     setIsEditingProposal(true); // Open the editing view
-    console.log('[useHostProposalsPageLogic] Opening accept mode for proposal:', proposal._id);
   }, []);
 
   /**
@@ -774,7 +748,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   const handleConfirmAcceptance = useCallback(async (proposal) => {
     setIsAccepting(true);
     try {
-      console.log('[useHostProposalsPageLogic] Confirming acceptance for proposal:', proposal._id);
 
       // Execute the acceptance workflow
       const result = await hostAcceptProposalWorkflow({
@@ -782,7 +755,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         proposal
       });
 
-      console.log('[useHostProposalsPageLogic] Acceptance workflow completed:', result);
 
       // Optimistically update the proposal status in local state immediately
       // This gives instant feedback while the server refresh catches up
@@ -910,9 +882,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       // Use the proposal from counterofferData or fall back to selectedProposal
       const originalProposal = proposal || selectedProposal;
 
-      console.log('[useHostProposalsPageLogic] Counteroffer input:', {
-        checkIn, checkOut, nightsSelected, daysSelected
-      });
 
       // Get original values from proposal for fields not being changed
       const originalWeeks = originalProposal['Reservation Span (Weeks)'] || originalProposal.duration_weeks || 0;
@@ -979,32 +948,25 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           : []
       };
 
-      console.log('[useHostProposalsPageLogic] Converted payload with ALL hc_ fields:', payload);
 
       // Validate session exists before Edge Function call
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         console.error('[useHostProposalsPageLogic] Session error:', sessionError);
       }
-      console.log('[useHostProposalsPageLogic] Session exists:', !!session);
-      console.log('[useHostProposalsPageLogic] Access token exists:', !!session?.access_token);
 
       if (!session?.access_token) {
         // Try to refresh the session
-        console.log('[useHostProposalsPageLogic] No active session, attempting refresh...');
         const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
         if (refreshError || !refreshedSession) {
           throw new Error('Session expired. Please refresh the page and try again.');
         }
-        console.log('[useHostProposalsPageLogic] Session refreshed successfully');
       }
 
       // Get the latest session (might have been refreshed above)
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       const authToken = currentSession?.access_token;
 
-      console.log('[useHostProposalsPageLogic] Auth token length:', authToken?.length);
-      console.log('[useHostProposalsPageLogic] Invoking Edge Function with explicit auth...');
 
       const { data, error } = await supabase.functions.invoke('proposal', {
         headers: {
@@ -1027,7 +989,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       setIsEditingProposal(false);
       setSelectedProposal(null);
       showToast({ title: 'Counteroffer Sent!', content: 'Your counteroffer has been submitted for guest review.', type: 'success' });
-      console.log('[useHostProposalsPageLogic] Counteroffer sent:', selectedProposal._id);
 
     } catch (err) {
       console.error('Failed to send counteroffer:', err);
@@ -1067,7 +1028,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       setIsEditingProposal(false);
       setSelectedProposal(null);
       showToast({ title: 'Proposal Rejected', content: 'The proposal has been rejected.', type: 'info' });
-      console.log('[useHostProposalsPageLogic] Proposal rejected from editing:', proposal._id);
 
     } catch (err) {
       console.error('Failed to reject proposal:', err);
@@ -1113,7 +1073,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
     if (threadId) {
       // Navigate to messages page with thread pre-selected
-      console.log('[useHostProposalsPageLogic] Navigating to thread:', threadId);
       window.location.href = `/messages?thread=${threadId}`;
     } else {
       // Thread not found - this is unusual, show error
@@ -1133,7 +1092,6 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   const handleRemindSplitLease = useCallback(async (proposal) => {
     try {
       // For now, just show a confirmation - can be connected to a notification system later
-      console.log('[useHostProposalsPageLogic] Reminder requested for proposal:', proposal._id);
       showToast({ title: 'Coming Soon', content: 'Reminder feature coming soon! For urgent matters, please contact support@splitlease.com', type: 'info' });
     } catch (err) {
       console.error('Failed to send reminder:', err);
