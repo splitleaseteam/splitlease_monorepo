@@ -186,6 +186,8 @@ export async function fetchDocumentData(leaseId) {
   }
 
   // Step 5: Fetch payment records
+  // Note: PostgREST has issues with .order() on columns containing special characters like '#'
+  // We fetch without ordering and sort client-side instead
   const [guestPaymentsResult, hostPaymentsResult] = await Promise.all([
     supabase
       .from('paymentrecords')
@@ -202,8 +204,7 @@ export async function fetchDocumentData(leaseId) {
       `)
       .eq('Booking - Reservation', leaseId)
       .eq('Payment from guest?', true)
-      .order('Payment #', { ascending: true })
-      .limit(13),
+      .limit(20),
     supabase
       .from('paymentrecords')
       .select(`
@@ -218,12 +219,18 @@ export async function fetchDocumentData(leaseId) {
       `)
       .eq('Booking - Reservation', leaseId)
       .eq('Payment to Host?', true)
-      .order('Payment #', { ascending: true })
-      .limit(13)
+      .limit(20)
   ]);
 
-  const guestPayments = guestPaymentsResult.data || [];
-  const hostPayments = hostPaymentsResult.data || [];
+  // Sort payment records by Payment # client-side (ascending)
+  const sortByPaymentNumber = (a, b) => (a['Payment #'] || 0) - (b['Payment #'] || 0);
+
+  const guestPayments = (guestPaymentsResult.data || [])
+    .sort(sortByPaymentNumber)
+    .slice(0, 13);
+  const hostPayments = (hostPaymentsResult.data || [])
+    .sort(sortByPaymentNumber)
+    .slice(0, 13);
 
   if (guestPaymentsResult.error) {
     console.warn('[fetchDocumentData] Guest payments fetch failed:', guestPaymentsResult.error.message);
