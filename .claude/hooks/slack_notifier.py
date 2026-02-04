@@ -2,7 +2,7 @@
 """
 Slack Notifier Hook for Claude Code
 Forwards completion messages to a Slack webhook when Claude finishes responding.
-Also logs each query to a JSONL file for future review.
+Also logs each query to individual JSON files (version-controlled, per-entry).
 """
 import json
 import sys
@@ -16,9 +16,8 @@ from datetime import datetime
 # Regex pattern to match the Slack divider
 SLACK_DIVIDER_PATTERN = re.compile(r'~~~\s*FOR\s+SLACK\s*~~~', re.IGNORECASE)
 
-# Log file location
-LOG_DIR = Path.home() / '.claude' / 'logs'
-LOG_FILE = LOG_DIR / 'splitlease.jsonl'
+# Log directory (in project, version-controlled)
+LOG_DIR = Path(__file__).parent.parent / 'query-logs'
 
 def log_debug(message):
     """Log debug messages to file for troubleshooting"""
@@ -44,16 +43,19 @@ def get_git_commit():
     return "unknown"
 
 
-def write_to_log(entry):
-    """Append a JSON entry to the log file"""
+def write_to_log(entry, timestamp, hostname, commit):
+    """Write a JSON entry to an individual file (per-entry, git-friendly)"""
     try:
         LOG_DIR.mkdir(parents=True, exist_ok=True)
-        with open(LOG_FILE, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
-        return True
+        # Filename format: {timestamp}-{hostname}-{commit}.json
+        filename = f"{timestamp}-{hostname}-{commit}.json"
+        log_file = LOG_DIR / filename
+        with open(log_file, 'w', encoding='utf-8') as f:
+            json.dump(entry, f, ensure_ascii=False, indent=2)
+        return log_file
     except Exception as e:
         log_debug(f"Failed to write log: {e}")
-        return False
+        return None
 
 def load_env_file():
     """Load environment variables from .env file"""
@@ -231,7 +233,7 @@ def main():
         # Extract prompt, summary, and complete response from transcript
         user_prompt, summary, complete_response = extract_info_from_transcript(transcript_path)
 
-        # Write to JSONL log (always, even if partial data)
+        # Write to individual JSON file (git-friendly, per-entry)
         log_entry = {
             "ts": timestamp,
             "device": hostname,
@@ -240,11 +242,11 @@ def main():
             "summary": summary or "",
             "complete": complete_response or ""
         }
-        log_success = write_to_log(log_entry)
-        if log_success:
-            log_debug(f"Logged query to {LOG_FILE}")
+        log_file = write_to_log(log_entry, timestamp, hostname, commit)
+        if log_file:
+            log_debug(f"Logged query to {log_file}")
         else:
-            log_debug("Failed to write to JSONL log")
+            log_debug("Failed to write log file")
 
         # If no summary, use user prompt as context
         if not summary:
