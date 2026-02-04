@@ -62,11 +62,8 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "knip",
-    "playwright",
-    "supabase"
+    "playwright"
   ],
-  "enabledPlugins": {
-    "supabase@claude-plugins-official": true
-  },
+  "enabledPlugins": {},
   "outputStyle": "splitlease-formal"
 }

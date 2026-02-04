@@ -186,8 +186,8 @@ export async function fetchDocumentData(leaseId) {
   }
 
   // Step 5: Fetch payment records
-  // Note: PostgREST has issues with columns containing special characters like '#' and '?'
-  // We fetch ALL payment records for the lease and filter client-side
+  // Note: Column name "Booking - Reservation" contains spaces and dash which PostgREST
+  // cannot handle with .eq(). Use .filter() with explicit quoting instead.
   const { data: allPaymentsData, error: paymentsError } = await supabase
     .from('paymentrecords')
     .select(`
@@ -202,7 +202,7 @@ export async function fetchDocumentData(leaseId) {
       "Payment from guest?",
       "Payment to Host?"
     `)
-    .eq('Booking - Reservation', leaseId)
+    .filter('"Booking - Reservation"', 'eq', leaseId)
     .limit(30);
 
   if (paymentsError) {

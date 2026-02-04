@@ -225,9 +225,10 @@ export function validateCreditCardAuthPayload(payload: unknown): CreditCardAuthP
   }
 
   // Validate currency field (Four Week Rent is validated in Python)
+  // Currency values may include $ symbol and commas (e.g., "$3,292.20")
   if (p['Four Week Rent']) {
     try {
-      const cleanValue = String(p['Four Week Rent']).replace(',', '');
+      const cleanValue = String(p['Four Week Rent']).replace(/[$,]/g, '');
       if (isNaN(parseFloat(cleanValue))) {
         throw new ValidationError(
           `Invalid currency value for Four Week Rent: ${p['Four Week Rent']}`
