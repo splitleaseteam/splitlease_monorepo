@@ -266,6 +266,10 @@ export default function GuestLeasesPage() {
           onClose={handleCloseDateChangeModal}
           lease={dateChangeModal.lease}
           currentUser={user}
+          onSuccess={() => {
+            handleCloseDateChangeModal();
+            handleRetry();
+          }}
         />
       )}
 
