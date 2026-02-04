@@ -29,6 +29,7 @@ import MobileCalendar from './components/MobileCalendar.jsx';
 import { format } from 'date-fns';
 import MobileChatView from './components/MobileChatView.jsx';
 import MobileTransactionList from './components/MobileTransactionList.jsx';
+import TransactionDetailView from './components/TransactionDetailView.jsx';
 import MobileSettingsView from './components/MobileSettingsView.jsx';
 import BottomSheet from './components/BottomSheet.jsx';
 import BuyOutSheet from './components/sheets/BuyOutSheet.jsx';
@@ -36,6 +37,7 @@ import ShareSheet from './components/sheets/ShareSheet.jsx';
 import SwapSheet from './components/sheets/SwapSheet.jsx';
 import { useBottomSheet } from './hooks/useBottomSheet.js';
 import Toast, { useToast } from '../../../shared/Toast.jsx';
+import FlexibilityBreakdownModal from '../components/FlexibilityBreakdownModal.jsx';
 
 // ============================================================================
 // LOADING STATE
@@ -80,7 +82,13 @@ function CalendarView({
   roommateName,
   onSelectDay,
   onCloseDay,
-  onAction
+  onAction,
+  isCounterMode,
+  counterOriginalNight,
+  counterTargetNight,
+  onSelectCounterNight,
+  onCancelCounterMode,
+  onSubmitCounter
 }) {
   return (
     <div className="mobile-view mobile-view--calendar">
@@ -94,6 +102,12 @@ function CalendarView({
         onSelectDay={onSelectDay}
         onCloseDay={onCloseDay}
         onAction={onAction}
+        isCounterMode={isCounterMode}
+        counterOriginalNight={counterOriginalNight}
+        counterTargetNight={counterTargetNight}
+        onSelectCounterNight={onSelectCounterNight}
+        onCancelCounterMode={onCancelCounterMode}
+        onSubmitCounter={onSubmitCounter}
       />
     </div>
   );
@@ -131,7 +145,7 @@ function ChatView({
 // HISTORY VIEW (Phase 5)
 // ============================================================================
 
-function HistoryView({ transactions, currentUserId, onAccept, onDecline, onCancel }) {
+function HistoryView({ transactions, currentUserId, onAccept, onDecline, onCancel, onViewDetails }) {
   return (
     <div className="mobile-view mobile-view--history">
       <MobileTransactionList
@@ -140,6 +154,7 @@ function HistoryView({ transactions, currentUserId, onAccept, onDecline, onCance
         onAccept={onAccept}
         onDecline={onDecline}
         onCancel={onCancel}
+        onViewDetails={onViewDetails}
       />
     </div>
   );
@@ -174,6 +189,8 @@ function SettingsView({
 export default function MobileScheduleDashboard() {
   const [activeTab, setActiveTab] = useState('calendar');
   const [selectedDay, setSelectedDay] = useState(null);
+  const [detailTransaction, setDetailTransaction] = useState(null);
+  const [detailRequestMessage, setDetailRequestMessage] = useState(null);
   const sheet = useBottomSheet(false);
   const { toasts, showToast, removeToast } = useToast();
 
@@ -218,9 +235,23 @@ export default function MobileScheduleDashboard() {
     handleAcceptRequest,
     handleDeclineRequest,
     handleCounterRequest,
+    handleSelectCounterNight,
+    handleSubmitCounter,
+    handleCancelCounterMode,
     handleCancelRequest,
     handleSavePricingStrategy,
-    isSubmitting
+    isSubmitting,
+    isCounterMode,
+    counterOriginalNight,
+    counterTargetNight,
+
+    // Flexibility Modal
+    isFlexibilityModalOpen,
+    flexibilityScore,
+    userFlexibilityScore,
+    flexibilityMetrics,
+    handleOpenFlexibilityModal,
+    handleCloseFlexibilityModal
   } = useScheduleDashboardLogic();
 
   const sheetDate = sheet.sheetData?.date || null;
@@ -239,6 +270,60 @@ export default function MobileScheduleDashboard() {
       setActiveTab('transactions');
     }
   };
+
+  const handleCounterNightSelect = useCallback((nightString, date) => {
+    if (!nightString) return;
+    handleSelectCounterNight?.(nightString);
+    if (date) {
+      setSelectedDay(date);
+      return;
+    }
+    const parsed = new Date(`${nightString}T12:00:00`);
+    setSelectedDay(Number.isNaN(parsed.getTime()) ? null : parsed);
+  }, [handleSelectCounterNight]);
+
+  const handleCounterCancel = useCallback(() => {
+    handleCancelCounterMode?.();
+    setSelectedDay(null);
+  }, [handleCancelCounterMode]);
+
+  const handleCounterSubmit = useCallback(async () => {
+    try {
+      await handleSubmitCounter?.('');
+      setSelectedDay(null);
+      showToast({
+        title: 'Counter sent',
+        content: 'Your counter-offer has been sent.',
+        type: 'success'
+      });
+    } catch (err) {
+      showToast({
+        title: 'Counter failed',
+        content: err?.message || 'Failed to send counter-offer.',
+        type: 'error'
+      });
+    }
+  }, [handleSubmitCounter, showToast]);
+
+  const handleMobileCounterRequest = useCallback((requestId) => {
+    handleCounterRequest?.(requestId);
+    setActiveTab('calendar');
+    setSelectedDay(null);
+  }, [handleCounterRequest]);
+
+  const handleViewDetails = useCallback((transaction) => {
+    if (!transaction) return;
+    const requestMessage = messages.find(
+      (msg) => msg.requestData?.transactionId === transaction.id
+    );
+    setDetailTransaction(transaction);
+    setDetailRequestMessage(requestMessage || null);
+  }, [messages]);
+
+  const handleCloseDetails = useCallback(() => {
+    setDetailTransaction(null);
+    setDetailRequestMessage(null);
+  }, []);
 
   // -------------------------------------------------------------------------
   // SETTINGS DATA TRANSFORMATION
@@ -311,6 +396,12 @@ export default function MobileScheduleDashboard() {
             onSelectDay={setSelectedDay}
             onCloseDay={() => setSelectedDay(null)}
             onAction={handleCalendarAction}
+            isCounterMode={isCounterMode}
+            counterOriginalNight={counterOriginalNight}
+            counterTargetNight={counterTargetNight}
+            onSelectCounterNight={handleCounterNightSelect}
+            onCancelCounterMode={handleCounterCancel}
+            onSubmitCounter={handleCounterSubmit}
           />
         );
       case 'chat':
@@ -322,7 +413,7 @@ export default function MobileScheduleDashboard() {
             onSend={handleSendMessage}
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
-            onCounter={handleCounterRequest}
+            onCounter={handleMobileCounterRequest}
           />
         );
       case 'transactions':
@@ -333,6 +424,7 @@ export default function MobileScheduleDashboard() {
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
             onCancel={handleCancelRequest}
+            onViewDetails={handleViewDetails}
           />
         );
       case 'settings':
@@ -356,6 +448,12 @@ export default function MobileScheduleDashboard() {
             onSelectDay={setSelectedDay}
             onCloseDay={() => setSelectedDay(null)}
             onAction={handleCalendarAction}
+            isCounterMode={isCounterMode}
+            counterOriginalNight={counterOriginalNight}
+            counterTargetNight={counterTargetNight}
+            onSelectCounterNight={handleCounterNightSelect}
+            onCancelCounterMode={handleCounterCancel}
+            onSubmitCounter={handleCounterSubmit}
           />
         );
     }
@@ -371,6 +469,8 @@ export default function MobileScheduleDashboard() {
         activeTab={activeTab}
         userName={roommate?.firstName}
         listingAddress={lease?.propertyAddress}
+        roommateFlexibilityScore={flexibilityScore}
+        onOpenFlexibilityModal={handleOpenFlexibilityModal}
       />
 
       <main className="mobile-schedule-dashboard__content" role="main">
@@ -486,6 +586,28 @@ export default function MobileScheduleDashboard() {
       {toasts && toasts.length > 0 && (
         <Toast toasts={toasts} onRemove={removeToast} />
       )}
+
+      {detailTransaction && (
+        <TransactionDetailView
+          transaction={detailTransaction}
+          requestMessage={detailRequestMessage}
+          currentUserId={currentUserId}
+          onClose={handleCloseDetails}
+          onAccept={handleAcceptRequest}
+          onDecline={handleDeclineRequest}
+          onCancel={handleCancelRequest}
+          onCounter={handleMobileCounterRequest}
+        />
+      )}
+
+      <FlexibilityBreakdownModal
+        isOpen={isFlexibilityModalOpen}
+        onClose={handleCloseFlexibilityModal}
+        userScore={userFlexibilityScore}
+        roommateScore={flexibilityScore}
+        roommateName={roommate?.firstName || 'Roommate'}
+        flexibilityMetrics={flexibilityMetrics}
+      />
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
