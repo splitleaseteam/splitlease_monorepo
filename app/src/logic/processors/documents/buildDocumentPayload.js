@@ -409,9 +409,22 @@ function buildTypeOfSpace(listing) {
   const parts = [];
 
   // Type of Space Label
+  // Database may store: string label, JSONB object with label, or Bubble ID reference
   const spaceType = listing['Features - Type of Space'];
   if (spaceType) {
-    const label = typeof spaceType === 'string' ? spaceType : spaceType?.label || spaceType?.Label;
+    let label = null;
+
+    if (typeof spaceType === 'object' && spaceType !== null) {
+      // JSONB object - extract label
+      label = spaceType.label || spaceType.Label || spaceType.display || spaceType.Display || spaceType.name || spaceType.Name;
+    } else if (typeof spaceType === 'string') {
+      // Check if it's a Bubble ID (17+ digits with 'x' separator) - skip it
+      const isBubbleId = /^\d{13,}x\d+$/.test(spaceType);
+      if (!isBubbleId) {
+        label = spaceType;
+      }
+    }
+
     if (label) {
       parts.push(`${label},`);
     }
@@ -459,10 +472,12 @@ function buildSpaceDetails(listing) {
     parts.push(bedText);
   }
 
-  // Bathrooms
+  // Bathrooms - format without decimal for whole numbers (1 instead of 1.0)
   const bathrooms = listing['Features - Qty Bathrooms'];
   if (bathrooms && bathrooms >= 1) {
-    parts.push(`${Number(bathrooms).toFixed(1)} bathroom(s)`);
+    const bathroomNum = Number(bathrooms);
+    const bathroomDisplay = Number.isInteger(bathroomNum) ? String(bathroomNum) : bathroomNum.toFixed(1);
+    parts.push(`${bathroomDisplay} bathroom(s)`);
   }
 
   // Kitchen Type
