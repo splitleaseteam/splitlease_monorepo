@@ -186,6 +186,51 @@ export interface RenderOptions {
 }
 
 /**
+ * Convert text tags to image tags in DOCX XML.
+ * docxtemplater-image-module-free requires {%tag} syntax for images,
+ * but templates designed for Python docxtpl use {{tag}} syntax.
+ * This function converts {{image1}}, {{image2}}, {{image3}} to {%image1}, etc.
+ */
+function convertImageTagsInXml(zip: typeof PizZip.prototype, imageKeys: string[]): void {
+  if (imageKeys.length === 0) return;
+
+  console.log(`[templateRenderer] Converting image tags: ${imageKeys.join(', ')}`);
+
+  // Get document.xml from the ZIP
+  const docXmlPath = 'word/document.xml';
+  const docXml = zip.file(docXmlPath);
+
+  if (!docXml) {
+    console.warn('[templateRenderer] Could not find word/document.xml in template');
+    return;
+  }
+
+  let content = docXml.asText();
+  let replacementCount = 0;
+
+  // Replace {{imageN}} with {%imageN} for each image key
+  // Note: In DOCX XML, the tags may be split across XML elements, so we need
+  // to handle both simple cases and cases where text is fragmented
+  for (const key of imageKeys) {
+    // Simple replacement for non-fragmented tags
+    const textTagPattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+    const newContent = content.replace(textTagPattern, `{%${key}}`);
+    if (newContent !== content) {
+      replacementCount++;
+      console.log(`[templateRenderer] ✅ Converted {{${key}}} to {%${key}}`);
+    }
+    content = newContent;
+  }
+
+  if (replacementCount > 0) {
+    zip.file(docXmlPath, content);
+    console.log(`[templateRenderer] Updated document.xml with ${replacementCount} image tag conversions`);
+  } else {
+    console.log('[templateRenderer] No image tags found to convert (tags may be fragmented in XML)');
+  }
+}
+
+/**
  * Render a DOCX template with the provided data.
  *
  * @param templateContent - The template file content as Uint8Array
@@ -202,6 +247,12 @@ export async function renderTemplate(
 
   // Load the template into PizZip
   const zip = new PizZip(templateContent);
+
+  // Convert text image tags to image module tags if using images
+  if (options.useImages && options.imageUrls) {
+    const imageKeys = Object.keys(options.imageUrls);
+    convertImageTagsInXml(zip, imageKeys);
+  }
 
   // Process images if needed
   let processedData = { ...data };
