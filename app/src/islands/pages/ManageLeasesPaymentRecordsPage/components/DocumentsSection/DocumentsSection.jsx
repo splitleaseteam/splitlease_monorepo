@@ -8,7 +8,7 @@
  * 4. Draft 4: Authorization for Credit Card Charges
  */
 import { useState } from 'react';
-import { FileText, Upload, Send, ExternalLink, Zap, Code } from 'lucide-react';
+import { FileText, Upload, Send, ExternalLink, Zap, Code, FileUp, Loader2 } from 'lucide-react';
 
 const DOCUMENT_TYPES = [
   {
