@@ -70,6 +70,9 @@ logs/
 # Commit counter (local state tracking)
 .claude/commit_count.txt
 
+# Claude query logs (conversation logs)
+.claude/query-logs/
+
 # Agent output directories (root level only, not .claude/agents/)
 /agents/
 
