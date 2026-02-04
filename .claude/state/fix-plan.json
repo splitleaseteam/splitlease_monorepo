@@ -1,0 +1,72 @@
+{
+  "created": "2026-01-30T04:18:00Z",
+  "pass": "planning",
+  "targetFile": "app/src/islands/pages/HostProposalsPage/PricingRow.jsx",
+  "fixes": [
+    {
+      "id": 1,
+      "bugId": 1,
+      "description": "Replace guest nightly rate with host compensation",
+      "line": 29,
+      "oldCode": "const originalNightlyRate = proposal?.['proposal nightly price'] || proposal?.proposal_nightly_price || 0;",
+      "newCode": "const hostNightlyCompensation = proposal?.['host compensation'] || proposal?.host_compensation || 0;",
+      "variableRename": {
+        "from": "originalNightlyRate",
+        "to": "hostNightlyCompensation"
+      }
+    },
+    {
+      "id": 2,
+      "bugId": 2,
+      "description": "Replace guest total with host total compensation",
+      "line": 31,
+      "oldCode": "const originalTotalPrice = proposal?.['Total Price for Reservation (guest)'] || proposal?.total_price_guest || 0;",
+      "newCode": "const hostTotalCompensation = proposal?.['Total Compensation (proposal - host)'] || proposal?.total_compensation || 0;",
+      "variableRename": {
+        "from": "originalTotalPrice",
+        "to": "hostTotalCompensation"
+      }
+    },
+    {
+      "id": 3,
+      "bugId": 3,
+      "description": "Update nightlyRate to use host compensation as fallback",
+      "line": 50,
+      "oldCode": "const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || originalNightlyRate);",
+      "newCode": "const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || hostNightlyCompensation);",
+      "note": "Fallback now uses hostNightlyCompensation instead of guest price"
+    },
+    {
+      "id": 4,
+      "bugId": 4,
+      "description": "Update totalEarnings to use host total compensation",
+      "line": 54,
+      "oldCode": "const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || originalTotalPrice);",
+      "newCode": "const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || hostTotalCompensation);",
+      "note": "Fallback now uses hostTotalCompensation instead of guest total"
+    },
+    {
+      "id": 5,
+      "bugId": 2,
+      "description": "Update formattedOriginalTotal to use host compensation",
+      "line": 67,
+      "oldCode": "const formattedOriginalTotal = `$${Number(originalTotalPrice).toLocaleString()}`;",
+      "newCode": "const formattedOriginalTotal = `$${Number(hostTotalCompensation).toLocaleString()}`;",
+      "note": "Strikethrough comparison should show host values, not guest values"
+    }
+  ],
+  "additionalChanges": [
+    {
+      "description": "Update comments to clarify host compensation values",
+      "line": 28,
+      "oldCode": "// Original values (guest's proposal)",
+      "newCode": "// Host compensation values (what host actually earns)"
+    }
+  ],
+  "verificationSteps": [
+    "Start dev server (bun run dev)",
+    "Navigate to /host-proposals",
+    "Verify pricing shows host compensation values, not guest prices",
+    "Compare displayed values with database 'host compensation' and 'Total Compensation (proposal - host)' fields"
+  ]
+}

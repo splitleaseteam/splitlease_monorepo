@@ -256,6 +256,11 @@ export async function createListing(formData) {
   // NOTE: Bubble sync disabled - see /docs/tech-debt/BUBBLE_SYNC_DISABLED.md
   // The listing is now created directly in Supabase without Bubble synchronization
 
+  // Step 5.5: Trigger pricing list creation (non-blocking)
+  triggerPricingListCreation(userId, data._id).catch(err => {
+    logger.warn('[ListingService] ⚠️ Pricing list creation failed (non-blocking):', err.message);
+  });
+
   // Step 6: Trigger mockup proposal creation for first-time hosts (non-blocking)
   triggerMockupProposalIfFirstListing(userId, data._id).catch(err => {
     logger.warn('[ListingService] ⚠️ Mockup proposal creation failed (non-blocking):', err.message);
@@ -485,6 +490,45 @@ async function triggerMockupProposalIfFirstListing(userId, listingId) {
 }
 
 /**
+ * Trigger pricing list creation for a new listing.
+ * Non-blocking - failures logged but don't block listing creation.
+ *
+ * @param {string} userId - The host user ID
+ * @param {string} listingId - The newly created listing ID
+ * @param {number} unitMarkup - Optional unit markup (default: 0)
+ */
+async function triggerPricingListCreation(userId, listingId, unitMarkup = 0) {
+  logger.debug('[ListingService] Triggering pricing list creation for listing:', listingId);
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/pricing-list`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'create',
+      payload: {
+        listing_id: listingId,
+        user_id: userId,
+        unit_markup: unitMarkup,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Pricing list creation failed (${response.status}): ${errorText}`);
+  }
+
+  const result = await response.json();
+  logger.debug('[ListingService] Pricing list created:', result.data?.pricing_list_id);
+
+  return result;
+}
+
+/**
  * Map cancellation policy display name to its database FK ID
  * The 'Cancellation Policy' column has a foreign key constraint to reference_table.zat_features_cancellationpolicy
  *
@@ -615,7 +659,7 @@ function mapStateToDisplayName(stateInput) {
  * - address_validated → Stored in 'Location - Address' JSONB
  * - weekly_pattern → Mapped to 'Weeks offered'
  * - subsidy_agreement → Omitted (not in listing table)
- * - nightly_pricing → Mapped to individual '💰Nightly Host Rate for X nights' columns
+ * - nightly_pricing → Mapped to individual 'nightly_rate_X_nights' columns
  * - ideal_min_duration → Mapped to 'Minimum Months'
  * - ideal_max_duration → Mapped to 'Maximum Months'
  * - previous_reviews_link → Mapped to 'Source Link'
@@ -708,11 +752,11 @@ function mapFormDataToListingTable(formData, userId, generatedId, hostAccountId 
     'Weeks offered': formData.leaseStyles?.weeklyPattern || 'Every week',
 
     // Section 4: Pricing
-    '💰Damage Deposit': formData.pricing?.damageDeposit || 0,
-    '💰Cleaning Cost / Maintenance Fee': formData.pricing?.maintenanceFee || 0,
-    '💰Extra Charges': formData.pricing?.extraCharges || null,
-    '💰Weekly Host Rate': formData.pricing?.weeklyCompensation || null,
-    '💰Monthly Host Rate': formData.pricing?.monthlyCompensation || null,
+    'damage_deposit': formData.pricing?.damageDeposit || 0,
+    'cleaning_fee': formData.pricing?.maintenanceFee || 0,
+    'extra_charges': formData.pricing?.extraCharges || null,
+    'weekly_host_rate': formData.pricing?.weeklyCompensation || null,
+    'monthly_host_rate': formData.pricing?.monthlyCompensation || null,
 
     // Nightly rates from nightly_pricing.calculatedRates
     ...mapNightlyRatesToColumns(formData.pricing?.nightlyPricing),
@@ -914,11 +958,11 @@ function mapFormDataToListingTableForUpdate(formData) {
 
   // Section 4: Pricing
   if (formData.pricing) {
-    if (formData.pricing.damageDeposit !== undefined) updateData['💰Damage Deposit'] = formData.pricing.damageDeposit;
-    if (formData.pricing.maintenanceFee !== undefined) updateData['💰Cleaning Cost / Maintenance Fee'] = formData.pricing.maintenanceFee;
-    if (formData.pricing.extraCharges !== undefined) updateData['💰Extra Charges'] = formData.pricing.extraCharges;
-    if (formData.pricing.weeklyCompensation !== undefined) updateData['💰Weekly Host Rate'] = formData.pricing.weeklyCompensation;
-    if (formData.pricing.monthlyCompensation !== undefined) updateData['💰Monthly Host Rate'] = formData.pricing.monthlyCompensation;
+    if (formData.pricing.damageDeposit !== undefined) updateData['damage_deposit'] = formData.pricing.damageDeposit;
+    if (formData.pricing.maintenanceFee !== undefined) updateData['cleaning_fee'] = formData.pricing.maintenanceFee;
+    if (formData.pricing.extraCharges !== undefined) updateData['extra_charges'] = formData.pricing.extraCharges;
+    if (formData.pricing.weeklyCompensation !== undefined) updateData['weekly_host_rate'] = formData.pricing.weeklyCompensation;
+    if (formData.pricing.monthlyCompensation !== undefined) updateData['monthly_host_rate'] = formData.pricing.monthlyCompensation;
     if (formData.pricing.nightlyPricing) {
       Object.assign(updateData, mapNightlyRatesToColumns(formData.pricing.nightlyPricing));
     }
@@ -1122,13 +1166,13 @@ function mapNightlyRatesToColumns(nightlyPricing) {
   const rates = nightlyPricing.calculatedRates;
 
   return {
-    '💰Nightly Host Rate for 1 night': rates.night1 || null,
-    '💰Nightly Host Rate for 2 nights': rates.night2 || null,
-    '💰Nightly Host Rate for 3 nights': rates.night3 || null,
-    '💰Nightly Host Rate for 4 nights': rates.night4 || null,
-    '💰Nightly Host Rate for 5 nights': rates.night5 || null,
-    '💰Nightly Host Rate for 6 nights': rates.night6 || null,
-    '💰Nightly Host Rate for 7 nights': rates.night7 || null,
+    'nightly_rate_1_night': rates.night1 || null,
+    'nightly_rate_2_nights': rates.night2 || null,
+    'nightly_rate_3_nights': rates.night3 || null,
+    'nightly_rate_4_nights': rates.night4 || null,
+    'nightly_rate_5_nights': rates.night5 || null,
+    'nightly_rate_6_nights': rates.night6 || null,
+    'nightly_rate_7_nights': rates.night7 || null,
   };
 }
 
@@ -1184,10 +1228,10 @@ export function mapDatabaseToFormData(dbRecord) {
       subsidyAgreement: dbRecord.subsidy_agreement || false,
     },
     pricing: {
-      damageDeposit: dbRecord['💰Damage Deposit'] || 500,
-      maintenanceFee: dbRecord['💰Cleaning Cost / Maintenance Fee'] || 0,
-      weeklyCompensation: dbRecord['💰Weekly Host Rate'] || null,
-      monthlyCompensation: dbRecord['💰Monthly Host Rate'] || null,
+      damageDeposit: dbRecord['damage_deposit'] || 500,
+      maintenanceFee: dbRecord['cleaning_fee'] || 0,
+      weeklyCompensation: dbRecord['weekly_host_rate'] || null,
+      monthlyCompensation: dbRecord['monthly_host_rate'] || null,
       nightlyPricing: dbRecord.nightly_pricing || null,
     },
     rules: {

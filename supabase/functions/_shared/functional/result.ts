@@ -71,7 +71,7 @@ export const chain = <T, U, E>(
 /**
  * Async version of chain for async functions returning Results
  */
-export const chainAsync = async <T, U, E>(
+export const chainAsync = <T, U, E>(
   result: Result<T, E>,
   fn: (value: T) => Promise<Result<U, E>>
 ): Promise<Result<U, E>> =>

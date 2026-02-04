@@ -11,7 +11,7 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError } from "../../_shared/errors.ts";
-import { UserContext, CreateProposalInput, ListingData } from "../lib/types.ts";
+import { UserContext, CreateProposalInput as _CreateProposalInput, ListingData } from "../lib/types.ts";
 
 // ─────────────────────────────────────────────────────────────
 // INPUT TYPE
@@ -167,16 +167,16 @@ export async function handleSuggest(
         "Location - Address",
         "Location - slightly different address",
         "Features - House Rules",
-        "💰Cleaning Cost / Maintenance Fee",
-        "💰Damage Deposit",
+        "cleaning_fee",
+        "damage_deposit",
         "Weeks offered",
-        "💰Weekly Host Rate",
-        "💰Nightly Host Rate for 2 nights",
-        "💰Nightly Host Rate for 3 nights",
-        "💰Nightly Host Rate for 4 nights",
-        "💰Nightly Host Rate for 5 nights",
-        "💰Nightly Host Rate for 7 nights",
-        "💰Monthly Host Rate"
+        "weekly_host_rate",
+        "nightly_rate_2_nights",
+        "nightly_rate_3_nights",
+        "nightly_rate_4_nights",
+        "nightly_rate_5_nights",
+        "nightly_rate_7_nights",
+        "monthly_host_rate"
       `)
       .eq("Is Live", true)
       .eq("Deleted", false)
@@ -223,16 +223,16 @@ export async function handleSuggest(
           "Location - Address",
           "Location - slightly different address",
           "Features - House Rules",
-          "💰Cleaning Cost / Maintenance Fee",
-          "💰Damage Deposit",
+          "cleaning_fee",
+          "damage_deposit",
           "Weeks offered",
-          "💰Weekly Host Rate",
-          "💰Nightly Host Rate for 2 nights",
-          "💰Nightly Host Rate for 3 nights",
-          "💰Nightly Host Rate for 4 nights",
-          "💰Nightly Host Rate for 5 nights",
-          "💰Nightly Host Rate for 7 nights",
-          "💰Monthly Host Rate"
+          "weekly_host_rate",
+          "nightly_rate_2_nights",
+          "nightly_rate_3_nights",
+          "nightly_rate_4_nights",
+          "nightly_rate_5_nights",
+          "nightly_rate_7_nights",
+          "monthly_host_rate"
         `)
         .eq("Is Live", true)
         .eq("Deleted", false)
@@ -286,8 +286,8 @@ export async function handleSuggest(
         "preferred gender": originProposal["preferred gender"],
         "check in day": originProposal["check in day"],
         "check out day": originProposal["check out day"],
-        "cleaning fee": listing["💰Cleaning Cost / Maintenance Fee"] || 0,
-        "damage deposit": listing["💰Damage Deposit"] || 0,
+        "cleaning fee": listing["cleaning_fee"] || 0,
+        "damage deposit": listing["damage_deposit"] || 0,
         // Mark as suggestion
         "Is Suggested": true,
         "Origin Proposal": input.origin_proposal_id,

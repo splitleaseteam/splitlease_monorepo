@@ -6,7 +6,6 @@
  * Auth: None (internal test page)
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ZSharathTestPage from './islands/pages/ZSharathTestPage/ZSharathTestPage.jsx';
 

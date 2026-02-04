@@ -17,9 +17,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getAvatarUrl, getUserType } from '../../../lib/auth.js';
-import { getUserId } from '../../../lib/secureStorage.js';
+import { getUserId, getSessionId } from '../../../lib/secureStorage.js';
 import { supabase } from '../../../lib/supabase.js';
 import { useCTAHandler } from './useCTAHandler.js';
+import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
+import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
+import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
+import { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
 
 export function useMessagingPageLogic() {
   // ============================================================================
@@ -69,20 +73,157 @@ export function useMessagingPageLogic() {
   const [activeModal, setActiveModal] = useState(null);
   const [modalContext, setModalContext] = useState(null);
 
+  // ============================================================================
+  // PROPOSAL MODAL STATE
+  // ============================================================================
+  const [proposalModalData, setProposalModalData] = useState(null);
+  const [zatConfig, setZatConfig] = useState(null);
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
+  // ============================================================================
+  // VIRTUAL MEETING MODAL STATE
+  // ============================================================================
+  const [showVMModal, setShowVMModal] = useState(false);
+  const [vmInitialView, setVMInitialView] = useState('');
+
   // Ref to track if initial load is complete
   const initialLoadDone = useRef(false);
 
   // ============================================================================
   // CTA HANDLER HOOKS
   // ============================================================================
-  const handleOpenModal = useCallback((modalName, context) => {
+  const handleOpenModal = useCallback(async (modalName, context) => {
+    console.log('[MessagingPage] handleOpenModal called:', modalName, context);
+
+    // Special handling for CreateProposalFlowV2 modal
+    if (modalName === 'CreateProposalFlowV2') {
+      console.log('[MessagingPage] Opening CreateProposalFlowV2 modal');
+
+      // Get listing data from threadInfo or context
+      const listingId = context?.listingId || threadInfo?.listing_id;
+
+      if (!listingId) {
+        console.error('[MessagingPage] No listing ID available for proposal modal');
+        return;
+      }
+
+      try {
+        // Fetch listing details for the proposal modal
+        const { data: listingData, error: listingError } = await supabase
+          .from('listing')
+          .select('*')
+          .eq('_id', listingId)
+          .single();
+
+        if (listingError) {
+          console.error('[MessagingPage] Error fetching listing for proposal:', listingError);
+          return;
+        }
+
+        console.log('[MessagingPage] Listing data fetched:', listingData?.Name);
+
+        // Set up default days (Mon-Fri, weekdays)
+        const initialDays = [1, 2, 3, 4, 5].map(dayIndex => createDay(dayIndex, true));
+
+        // Calculate minimum move-in date (2 weeks from today)
+        const today = new Date();
+        const twoWeeksFromNow = new Date(today);
+        twoWeeksFromNow.setDate(today.getDate() + 14);
+        const minMoveInDate = twoWeeksFromNow.toISOString().split('T')[0];
+
+        // Calculate smart move-in date based on selected days
+        let smartMoveInDate = minMoveInDate;
+        try {
+          const selectedDayIndices = initialDays.map(d => d.dayOfWeek);
+          smartMoveInDate = calculateNextAvailableCheckIn({
+            selectedDayIndices,
+            minDate: minMoveInDate
+          });
+        } catch (err) {
+          console.error('[MessagingPage] Error calculating smart move-in date:', err);
+        }
+
+        // Transform listing data for the modal
+        const transformedListing = {
+          _id: listingData._id,
+          id: listingData._id,
+          Name: listingData.Name || 'Unnamed Listing',
+          title: listingData.Name || 'Unnamed Listing',
+          'Primary Photo': listingData['Primary Photo'],
+          host: null, // Host info not needed for proposal submission
+          // Pricing fields
+          'nightly_rate_2_nights': listingData['nightly_rate_2_nights'],
+          'nightly_rate_3_nights': listingData['nightly_rate_3_nights'],
+          'nightly_rate_4_nights': listingData['nightly_rate_4_nights'],
+          'nightly_rate_5_nights': listingData['nightly_rate_5_nights'],
+          'nightly_rate_7_nights': listingData['nightly_rate_7_nights'],
+          'weekly_host_rate': listingData['weekly_host_rate'],
+          'monthly_host_rate': listingData['monthly_host_rate'],
+          'price_override': listingData['price_override'],
+          'cleaning_fee': listingData['cleaning_fee'],
+          'damage_deposit': listingData['damage_deposit'],
+          'unit_markup': listingData['unit_markup'],
+          'rental type': listingData['rental type'],
+          'Weeks offered': listingData['Weeks offered'],
+          // Availability fields
+          ' First Available': listingData[' First Available'],
+          'Last Available': listingData['Last Available'],
+          '# of nights available': listingData['# of nights available'],
+          'Dates - Blocked': listingData['Dates - Blocked'],
+          'Nights Available (numbers)': listingData['Nights Available (numbers)'],
+          'Minimum Nights': listingData['Minimum Nights'],
+          'Maximum Nights': listingData['Maximum Nights'],
+          'Days Available (List of Days)': listingData['Days Available (List of Days)']
+        };
+
+        // Set proposal modal data
+        setProposalModalData({
+          listing: transformedListing,
+          moveInDate: smartMoveInDate,
+          daysSelected: initialDays,
+          nightsSelected: initialDays.length > 0 ? initialDays.length - 1 : 0,
+          reservationSpan: 13, // Default to 13 weeks
+          priceBreakdown: null // Will be calculated by the modal
+        });
+
+        // Set the active modal
+        setActiveModal(modalName);
+        setModalContext(context);
+
+      } catch (err) {
+        console.error('[MessagingPage] Error preparing proposal modal:', err);
+      }
+
+      return;
+    }
+
+    // Default handling for other modals
     setActiveModal(modalName);
     setModalContext(context);
-  }, []);
+  }, [threadInfo]);
 
   const handleCloseModal = useCallback(() => {
     setActiveModal(null);
     setModalContext(null);
+    setProposalModalData(null); // Also clear proposal modal data
+  }, []);
+
+  // ============================================================================
+  // VM MODAL HANDLERS
+  // ============================================================================
+  const handleOpenVMModal = useCallback((view = 'request') => {
+    setVMInitialView(view);
+    setShowVMModal(true);
+  }, []);
+
+  const handleCloseVMModal = useCallback(() => {
+    setShowVMModal(false);
+    setVMInitialView('');
+  }, []);
+
+  const handleVMSuccess = useCallback(() => {
+    // Reload page to get fresh data after VM action
+    window.location.reload();
   }, []);
 
   const { handleCTAClick, getCTAButtonConfig } = useCTAHandler({
@@ -172,6 +313,22 @@ export function useMessagingPageLogic() {
   const hasAutoSelectedThread = useRef(false);
 
   // ============================================================================
+  // FETCH ZAT PRICE CONFIGURATION ON MOUNT
+  // ============================================================================
+  useEffect(() => {
+    const loadZatConfig = async () => {
+      try {
+        const config = await fetchZatPriceConfiguration();
+        setZatConfig(config);
+        console.log('[MessagingPage] ZAT config loaded');
+      } catch (error) {
+        console.warn('[MessagingPage] Failed to load ZAT config:', error);
+      }
+    };
+    loadZatConfig();
+  }, []);
+
+  // ============================================================================
   // FETCH PANEL DATA WHEN THREAD INFO CHANGES
   // ============================================================================
   useEffect(() => {
@@ -232,7 +389,7 @@ export function useMessagingPageLogic() {
         if (!newRow) return;
 
         // Client-side filter: only process messages for this thread
-        if (newRow['Associated Thread/Conversation'] !== selectedThread._id) {
+        if (newRow.thread_id !== selectedThread._id) {
           console.log('[Realtime] Message is for different thread, ignoring');
           return;
         }
@@ -240,7 +397,7 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Message is for this thread, processing...');
 
         // Skip if this is our own message (already added optimistically)
-        const isOwnMessage = newRow['-Originator User'] === user?.bubbleId;
+        const isOwnMessage = newRow.originator_user_id === user?.bubbleId;
 
         // Add message to state (avoid duplicates)
         setMessages(prev => {
@@ -253,7 +410,7 @@ export function useMessagingPageLogic() {
             sender_name: newRow['is Split Bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
             sender_avatar: isOwnMessage ? user?.profilePhoto : undefined,
             sender_type: newRow['is Split Bot'] ? 'splitbot' :
-              (newRow['-Originator User'] === newRow['-Host User'] ? 'host' : 'guest'),
+              (newRow.originator_user_id === newRow.host_user_id ? 'host' : 'guest'),
             is_outgoing: isOwnMessage,
             timestamp: new Date(newRow['Created Date']).toLocaleString('en-US', {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
@@ -731,9 +888,11 @@ export function useMessagingPageLogic() {
 
   /**
    * Handle action button clicks from sidebar, header, and right panel
+   * @param {string} actionType - The action type
+   * @param {object} context - Optional context object (for VM state, etc.)
    */
-  const handlePanelAction = useCallback((actionType) => {
-    console.log('[MessagingPage] Action clicked:', actionType);
+  const handlePanelAction = useCallback((actionType, context = {}) => {
+    console.log('[MessagingPage] Action clicked:', actionType, context);
 
     switch (actionType) {
       // === Proposal Actions (Right Panel) ===
@@ -783,6 +942,25 @@ export function useMessagingPageLogic() {
         });
         break;
 
+      case 'virtual_meeting':
+        // Open Virtual Meeting Manager modal
+        // Determine initial view based on VM state
+        const { vmState } = context;
+        let initialView = 'request';
+
+        if (vmState === 'requested_by_other') {
+          initialView = 'respond';
+        } else if (vmState === 'requested_by_me') {
+          initialView = 'cancel';
+        } else if (vmState === 'booked_awaiting_confirmation' || vmState === 'confirmed') {
+          initialView = 'details';
+        } else if (vmState === 'expired') {
+          initialView = 'request';
+        }
+
+        handleOpenVMModal(initialView);
+        break;
+
       // === Navigation Actions ===
       case 'view_profile':
         // Navigate to contact's profile (if we have the ID)
@@ -811,7 +989,7 @@ export function useMessagingPageLogic() {
       default:
         console.warn('[MessagingPage] Unknown action:', actionType);
     }
-  }, [threadInfo, proposalData, listingData, selectedThread, handleOpenModal]);
+  }, [threadInfo, proposalData, listingData, selectedThread, handleOpenModal, handleOpenVMModal]);
 
   // ============================================================================
   // HANDLERS
@@ -917,6 +1095,147 @@ export function useMessagingPageLogic() {
   }, []);
 
   // ============================================================================
+  // PROPOSAL MODAL HANDLERS
+  // ============================================================================
+
+  /**
+   * Submit proposal to backend
+   * Based on FavoriteListingsPage implementation
+   */
+  const handleProposalSubmit = async (proposalData) => {
+    console.log('[MessagingPage] Proposal submission initiated:', proposalData);
+    setIsSubmittingProposal(true);
+
+    try {
+      const guestId = getSessionId();
+      if (!guestId) {
+        throw new Error('User session not found');
+      }
+
+      // Days are already in JS format (0-6) - database now uses 0-indexed natively
+      const daysInJsFormat = proposalData.daysSelectedObjects?.map(d => d.dayOfWeek) || [];
+
+      // Sort days in JS format first to detect wrap-around (Saturday/Sunday spanning)
+      const sortedJsDays = [...daysInJsFormat].sort((a, b) => a - b);
+
+      // Check for wrap-around case (both Saturday=6 and Sunday=0 present, but not all 7 days)
+      const hasSaturday = sortedJsDays.includes(6);
+      const hasSunday = sortedJsDays.includes(0);
+      const isWrapAround = hasSaturday && hasSunday && daysInJsFormat.length < 7;
+
+      let checkInDay, checkOutDay, nightsSelected;
+
+      if (isWrapAround) {
+        // Find the gap in the sorted selection to determine wrap-around point
+        let gapIndex = -1;
+        for (let i = 0; i < sortedJsDays.length - 1; i++) {
+          if (sortedJsDays[i + 1] - sortedJsDays[i] > 1) {
+            gapIndex = i + 1;
+            break;
+          }
+        }
+
+        if (gapIndex !== -1) {
+          // Wrap-around: check-in is the first day after the gap, check-out is the last day before gap
+          checkInDay = sortedJsDays[gapIndex];
+          checkOutDay = sortedJsDays[gapIndex - 1];
+
+          // Reorder days to be in actual sequence (check-in to check-out)
+          const reorderedDays = [...sortedJsDays.slice(gapIndex), ...sortedJsDays.slice(0, gapIndex)];
+
+          // Nights = all days except the last one (checkout day)
+          nightsSelected = reorderedDays.slice(0, -1);
+        } else {
+          // No gap found, use standard logic
+          checkInDay = sortedJsDays[0];
+          checkOutDay = sortedJsDays[sortedJsDays.length - 1];
+          nightsSelected = sortedJsDays.slice(0, -1);
+        }
+      } else {
+        // Standard case: check-in = first day, check-out = last day
+        checkInDay = sortedJsDays[0];
+        checkOutDay = sortedJsDays[sortedJsDays.length - 1];
+        // Nights = all days except the last one (checkout day)
+        nightsSelected = sortedJsDays.slice(0, -1);
+      }
+
+      // Format reservation span text
+      const reservationSpanWeeks = proposalData.reservationSpan || 13;
+      const reservationSpanText = reservationSpanWeeks === 13
+        ? '13 weeks (3 months)'
+        : reservationSpanWeeks === 20
+          ? '20 weeks (approx. 5 months)'
+          : `${reservationSpanWeeks} weeks`;
+
+      // Build payload (using 0-indexed days)
+      const listingId = proposalModalData?.listing?._id || proposalModalData?.listing?.id;
+      const payload = {
+        guestId: guestId,
+        listingId: listingId,
+        moveInStartRange: proposalData.moveInDate,
+        moveInEndRange: proposalData.moveInDate, // Same as start if no flexibility
+        daysSelected: daysInJsFormat,
+        nightsSelected: nightsSelected,
+        reservationSpan: reservationSpanText,
+        reservationSpanWeeks: reservationSpanWeeks,
+        checkIn: checkInDay,
+        checkOut: checkOutDay,
+        proposalPrice: proposalData.pricePerNight,
+        fourWeekRent: proposalData.pricePerFourWeeks,
+        hostCompensation: proposalData.pricePerFourWeeks, // Same as 4-week rent for now
+        needForSpace: proposalData.needForSpace || '',
+        aboutMe: proposalData.aboutYourself || '',
+        estimatedBookingTotal: proposalData.totalPrice,
+        // Optional fields
+        specialNeeds: proposalData.hasUniqueRequirements ? proposalData.uniqueRequirements : '',
+        moveInRangeText: proposalData.moveInRange || '',
+        flexibleMoveIn: !!proposalData.moveInRange,
+        fourWeekCompensation: proposalData.pricePerFourWeeks
+      };
+
+      console.log('[MessagingPage] Submitting proposal:', payload);
+
+      const { data, error } = await supabase.functions.invoke('proposal', {
+        body: {
+          action: 'create',
+          payload
+        }
+      });
+
+      if (error) {
+        console.error('[MessagingPage] Edge Function error:', error);
+        throw new Error(error.message || 'Failed to submit proposal');
+      }
+
+      if (!data?.success) {
+        console.error('[MessagingPage] Proposal submission failed:', data?.error);
+        throw new Error(data?.error || 'Failed to submit proposal');
+      }
+
+      console.log('[MessagingPage] Proposal submitted successfully:', data);
+      console.log('[MessagingPage] Proposal ID:', data.data?.proposalId);
+
+      // Clear the localStorage draft on successful submission
+      if (listingId) {
+        clearProposalDraft(listingId);
+      }
+
+      // Close modal and clear state
+      handleCloseModal();
+
+      // Optionally navigate to proposals page or show success message
+      // For now, just close the modal - the user can continue messaging
+      console.log('[MessagingPage] Proposal submitted - modal closed');
+
+    } catch (error) {
+      console.error('[MessagingPage] Error submitting proposal:', error);
+      // TODO: Show error toast/notification to user
+    } finally {
+      setIsSubmittingProposal(false);
+    }
+  };
+
+  // ============================================================================
   // RETURN HOOK API
   // ============================================================================
   return {
@@ -950,6 +1269,10 @@ export function useMessagingPageLogic() {
     activeModal,
     modalContext,
 
+    // VM modal state
+    showVMModal,
+    vmInitialView,
+
     // Handlers
     handleThreadSelect,
     handleMessageInputChange,
@@ -962,5 +1285,15 @@ export function useMessagingPageLogic() {
     handleCTAClick,
     getCTAButtonConfig,
     handleCloseModal,
+
+    // Proposal modal state
+    proposalModalData,
+    zatConfig,
+    isSubmittingProposal,
+    handleProposalSubmit,
+
+    // VM modal handlers
+    handleCloseVMModal,
+    handleVMSuccess,
   };
 }

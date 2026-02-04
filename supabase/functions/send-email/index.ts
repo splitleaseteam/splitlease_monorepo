@@ -17,14 +17,14 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import {
-  ValidationError,
+  ValidationError as _ValidationError,
   AuthenticationError,
 } from "../_shared/errors.ts";
 
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
+import { Result as _Result, ok as _ok, err as _err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -78,7 +78,7 @@ const handleHealth = (): { status: string; timestamp: string; actions: readonly 
 };
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   send: handleSend,
   health: handleHealth,
 };

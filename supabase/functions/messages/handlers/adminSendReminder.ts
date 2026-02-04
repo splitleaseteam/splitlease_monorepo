@@ -10,11 +10,18 @@
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AuthenticationError, ValidationError } from '../../_shared/errors.ts';
+import {
+  getNotificationPreferences,
+  shouldSendEmail as checkEmailPreference,
+  shouldSendSms as checkSmsPreference,
+} from '../../_shared/notificationHelpers.ts';
 
 interface AdminSendReminderPayload {
   threadId: string;
   recipientType: 'host' | 'guest' | 'both';
   method: 'email' | 'sms' | 'both';
+  /** When true, bypass user preferences (logged for compliance) */
+  forceOverride?: boolean;
 }
 
 interface AdminSendReminderResult {
@@ -127,7 +134,7 @@ async function sendReminderEmail(
 
     console.log('[adminSendReminder] Email sent successfully to:', to);
     return true;
-  } catch (err) {
+  } catch (_err) {
     console.error('[adminSendReminder] Email send failed:', err);
     return false;
   }
@@ -185,7 +192,7 @@ async function sendReminderSms(
 
     console.log('[adminSendReminder] SMS sent successfully to:', formattedPhone);
     return true;
-  } catch (err) {
+  } catch (_err) {
     console.error('[adminSendReminder] SMS send failed:', err);
     return false;
   }
@@ -198,10 +205,10 @@ async function sendReminderSms(
 export async function handleAdminSendReminder(
   supabaseAdmin: SupabaseClient,
   payload: AdminSendReminderPayload,
-  user: { id: string; email: string }
+  user: { id: string; email: string } | null
 ): Promise<AdminSendReminderResult> {
   console.log('[adminSendReminder] ========== ADMIN SEND REMINDER ==========');
-  console.log('[adminSendReminder] User:', user.email);
+  console.log('[adminSendReminder] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminSendReminder] Payload:', JSON.stringify(payload));
 
   // Step 1: Validate payload
@@ -215,12 +222,14 @@ export async function handleAdminSendReminder(
     throw new ValidationError('Invalid notification method');
   }
 
-  // Step 2: Verify admin role
-  // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // const isAdmin = await verifyAdminRole(supabaseAdmin, user);
-  // if (!isAdmin) {
-  //   throw new AuthenticationError('You do not have permission to send reminders.');
-  // }
+  // Step 2: Skip admin role check for internal access (user is null)
+  // When user is provided, verify admin role
+  if (user) {
+    const isAdmin = await verifyAdminRole(supabaseAdmin, user);
+    if (!isAdmin) {
+      throw new AuthenticationError('You do not have permission to send reminders.');
+    }
+  }
 
   // Step 3: Fetch thread with user data
   const { data: thread, error: threadError } = await supabaseAdmin
@@ -228,7 +237,7 @@ export async function handleAdminSendReminder(
     .select(`
       _id,
       "Thread Subject",
-      "~Last Message",
+      last_message_preview,
       host_user_id,
       guest_user_id
     `)
@@ -262,7 +271,7 @@ export async function handleAdminSendReminder(
   // Step 5: Send notifications
   const sentTo: AdminSendReminderResult['sentTo'] = [];
   const threadSubject = thread['Thread Subject'] || 'Your Conversation';
-  const messagePreview = thread['~Last Message'] || 'You have a new message';
+  const messagePreview = thread['last_message_preview'] || 'You have a new message';
 
   const recipientsToNotify: Array<{ type: 'host' | 'guest'; user: typeof hostUser }> = [];
 
@@ -276,36 +285,61 @@ export async function handleAdminSendReminder(
   for (const recipient of recipientsToNotify) {
     const recipientName = recipient.user['Name - Full'] || 'Valued User';
 
+    // Fetch user's notification preferences
+    const prefs = await getNotificationPreferences(supabaseAdmin, recipient.user._id);
+
     // Send email
     if ((payload.method === 'email' || payload.method === 'both') && recipient.user.email) {
-      const emailSent = await sendReminderEmail(
-        recipient.user.email,
-        recipientName,
-        threadSubject,
-        messagePreview
-      );
-      if (emailSent) {
-        sentTo.push({
-          type: recipient.type,
-          method: 'email',
-          recipient: recipient.user.email,
-        });
+      const emailAllowed = checkEmailPreference(prefs, 'message_forwarding');
+
+      if (!emailAllowed && !payload.forceOverride) {
+        console.log(`[adminSendReminder] Skipping ${recipient.type} email (preference: message_forwarding disabled)`);
+      } else {
+        // Log if this is an admin override
+        if (!emailAllowed && payload.forceOverride) {
+          console.log(`[adminSendReminder] Sending ${recipient.type} email with ADMIN OVERRIDE (user had opted out)`);
+        }
+
+        const emailSent = await sendReminderEmail(
+          recipient.user.email,
+          recipientName,
+          threadSubject,
+          messagePreview
+        );
+        if (emailSent) {
+          sentTo.push({
+            type: recipient.type,
+            method: 'email',
+            recipient: recipient.user.email,
+          });
+        }
       }
     }
 
     // Send SMS
     if ((payload.method === 'sms' || payload.method === 'both') && recipient.user['Phone Number (as text)']) {
-      const smsSent = await sendReminderSms(
-        recipient.user['Phone Number (as text)'],
-        recipientName,
-        threadSubject
-      );
-      if (smsSent) {
-        sentTo.push({
-          type: recipient.type,
-          method: 'sms',
-          recipient: recipient.user['Phone Number (as text)'],
-        });
+      const smsAllowed = checkSmsPreference(prefs, 'message_forwarding');
+
+      if (!smsAllowed && !payload.forceOverride) {
+        console.log(`[adminSendReminder] Skipping ${recipient.type} SMS (preference: message_forwarding disabled)`);
+      } else {
+        // Log if this is an admin override
+        if (!smsAllowed && payload.forceOverride) {
+          console.log(`[adminSendReminder] Sending ${recipient.type} SMS with ADMIN OVERRIDE (user had opted out)`);
+        }
+
+        const smsSent = await sendReminderSms(
+          recipient.user['Phone Number (as text)'],
+          recipientName,
+          threadSubject
+        );
+        if (smsSent) {
+          sentTo.push({
+            type: recipient.type,
+            method: 'sms',
+            recipient: recipient.user['Phone Number (as text)'],
+          });
+        }
       }
     }
   }

@@ -84,7 +84,7 @@ export async function handleCreateTestProposals(
 ): Promise<TestProposalsResult> {
   console.log('[createTestProposals] Starting for simulation:', payload.simulationId);
 
-  const { simulationId, guestId, listingId, hostId, rentalType } = payload;
+  const { simulationId, guestId, listingId, hostId, rentalType: _rentalType } = payload;
 
   if (!simulationId || !guestId || !listingId || !hostId) {
     throw new Error('simulationId, guestId, listingId, and hostId are required');

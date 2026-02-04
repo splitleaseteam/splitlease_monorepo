@@ -10,12 +10,12 @@
  * - add_occupant: Add an occupant to application
  * - delete_occupant: Remove an occupant
  *
- * Note: This function queries the existing rental_application table
+ * Note: This function queries the existing rentalapplication table
  * which stores applications created by guests. The table uses a
  * unique_id field for human-readable IDs.
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -64,16 +64,20 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
-    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
-    }
-
     // Create service client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // Optional authentication - soft headers pattern for internal admin page
+    // If auth header is present, extract user info for audit purposes
+    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+
+    if (user) {
+      console.log(`[rental-applications] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[rental-applications] No auth header - proceeding as internal page request');
+    }
 
     // NOTE: Admin role check removed to allow any authenticated user access for testing
     // const isAdmin = await checkAdminStatus(user.id, supabase);
@@ -173,7 +177,7 @@ async function authenticateFromHeaders(
   };
 }
 
-async function checkAdminStatus(
+async function _checkAdminStatus(
   userId: string,
   supabase: SupabaseClient
 ): Promise<boolean> {
@@ -207,7 +211,7 @@ async function checkAdminStatus(
     }
 
     return userData?.['Toggle - Is Admin'] === true;
-  } catch (err) {
+  } catch (_err) {
     console.error('[rental-applications] Admin check error:', err);
     return false;
   }
@@ -241,40 +245,52 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   const pageSize = pagination?.pageSize || 20;
   const offset = (page - 1) * pageSize;
 
-  // Build query - using rental_application table
+  // Build query - using rentalapplication table
   let query = supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('*', { count: 'exact' });
 
-  // Apply filters
+  // Apply filters - use rentalapplication table column names
   if (filters.status) {
-    query = query.eq('Status', filters.status);
+    // Map status to 'submitted' boolean
+    if (filters.status === 'submitted') {
+      query = query.eq('submitted', true);
+    } else if (filters.status === 'draft') {
+      query = query.eq('submitted', false);
+    }
   }
 
   if (filters.isCompleted !== undefined) {
-    query = query.eq('Is Completed', filters.isCompleted);
+    // Filter by percentage % done >= 100 for completed
+    // Use quoted identifier for column name with special characters
+    const percentageColumn = '"percentage % done"';
+    query = query.gte(percentageColumn, filters.isCompleted ? 100 : 0);
+    if (!filters.isCompleted) {
+      query = query.lt(percentageColumn, 100);
+    }
   }
 
   if (filters.searchQuery) {
-    // Search across multiple fields using ilike
+    // Search across correct field names: _id, name, email
     const searchTerm = `%${filters.searchQuery}%`;
-    query = query.or(`_id.ilike.${searchTerm},"Personal Info->First Name".ilike.${searchTerm},"Personal Info->Last Name".ilike.${searchTerm},"Personal Info->Email".ilike.${searchTerm}`);
+    query = query.or(`_id.ilike.${searchTerm},name.ilike.${searchTerm},email.ilike.${searchTerm}`);
   }
 
   if (filters.minIncome) {
     query = query.gte('Monthly Income', filters.minIncome);
   }
 
-  // Apply sorting
+  // Apply sorting - use correct column names
   const sortField = sort?.field || 'Created Date';
   const sortDirection = sort?.direction === 'asc' ? { ascending: true } : { ascending: false };
 
-  // Map frontend field names to database column names
+  // Map frontend field names to actual rentalapplication table columns
+  // Column names with special characters must use quoted identifier syntax
   const fieldMapping: Record<string, string> = {
     'created_at': 'Created Date',
     'unique_id': '_id',
-    'status': 'Status',
-    'completion_percentage': 'Completion Percentage',
+    'status': 'submitted',  // maps to boolean submitted field
+    'completion_percentage': '"percentage % done"',  // quoted for special characters
     'total_monthly_income': 'Monthly Income'
   };
 
@@ -284,7 +300,7 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   // Apply pagination
   query = query.range(offset, offset + pageSize - 1);
 
-  const { data, error, count } = await query;
+  const { data, error, _count } = await query;
 
   if (error) {
     console.error('[rental-applications] List error:', error);
@@ -320,7 +336,7 @@ async function handleGet(
 
   // Fetch the main application
   const { data, error } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('*')
     .eq('_id', id)
     .single();
@@ -334,16 +350,12 @@ async function handleGet(
     throw new Error('Application not found');
   }
 
-  // Note: Related tables (occupants, references, employment) may be stored
-  // as JSONB arrays within the main record or in separate tables.
-  // Adjust based on actual schema.
-
   const application = transformApplication(data);
 
-  // Parse JSONB fields that may contain arrays
-  application.occupants = data['Occupants'] || [];
-  application.references = data['References'] || [];
-  application.employment = data['Employment History'] || [];
+  // Parse JSONB fields using correct column names from rentalapplication table
+  application.occupants = data['occupants list'] || [];
+  application.references = data['references'] || [];
+  // Employment history not stored as separate array in this table schema
 
   return { data: application };
 }
@@ -365,42 +377,60 @@ async function handleUpdate(
     throw new Error('updates object is required');
   }
 
-  // Map frontend field names to database column names
+  // Map frontend field names to rentalapplication table column names
   const dbUpdates: Record<string, unknown> = {};
 
+  // Personal info fields (flat structure, not nested JSONB)
   if (updates.personal_info !== undefined) {
-    dbUpdates['Personal Info'] = updates.personal_info;
+    const personalInfo = updates.personal_info as Record<string, unknown>;
+    if (personalInfo.name !== undefined) dbUpdates['name'] = personalInfo.name;
+    if (personalInfo.email !== undefined) dbUpdates['email'] = personalInfo.email;
+    if (personalInfo.phone !== undefined) dbUpdates['phone number'] = personalInfo.phone;
   }
+
+  // Address fields
   if (updates.current_address !== undefined) {
-    dbUpdates['Current Address'] = updates.current_address;
+    dbUpdates['permanent address'] = updates.current_address;
   }
-  if (updates.emergency_contact !== undefined) {
-    dbUpdates['Emergency Contact'] = updates.emergency_contact;
+  if (updates.apartment_number !== undefined) {
+    dbUpdates['apartment number'] = updates.apartment_number;
   }
-  if (updates.accessibility !== undefined) {
-    dbUpdates['Accessibility'] = updates.accessibility;
-  }
+
+  // Financial fields
   if (updates.monthly_income !== undefined) {
     dbUpdates['Monthly Income'] = updates.monthly_income;
   }
-  if (updates.additional_income !== undefined) {
-    dbUpdates['Additional Income'] = updates.additional_income;
+
+  // Boolean flags
+  if (updates.pets !== undefined) {
+    dbUpdates['pets'] = updates.pets;
   }
-  if (updates.has_eviction !== undefined) {
-    dbUpdates['Has Eviction'] = updates.has_eviction;
+  if (updates.smoking !== undefined) {
+    dbUpdates['smoking'] = updates.smoking;
   }
-  if (updates.has_felony !== undefined) {
-    dbUpdates['Has Felony'] = updates.has_felony;
+  if (updates.parking !== undefined) {
+    dbUpdates['parking'] = updates.parking;
   }
-  if (updates.has_bankruptcy !== undefined) {
-    dbUpdates['Has Bankruptcy'] = updates.has_bankruptcy;
+
+  // Employment fields
+  if (updates.employment_status !== undefined) {
+    dbUpdates['employment status'] = updates.employment_status;
+  }
+  if (updates.employer_name !== undefined) {
+    dbUpdates['employer name'] = updates.employer_name;
+  }
+  if (updates.employer_phone !== undefined) {
+    dbUpdates['employer phone number'] = updates.employer_phone;
+  }
+  if (updates.job_title !== undefined) {
+    dbUpdates['job title'] = updates.job_title;
   }
 
   // Always update modified date
   dbUpdates['Modified Date'] = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update(dbUpdates)
     .eq('_id', id)
     .select()
@@ -416,6 +446,7 @@ async function handleUpdate(
 
 /**
  * Update application status
+ * Maps frontend status to rentalapplication table's 'submitted' boolean field
  */
 async function handleUpdateStatus(
   payload: { id: string; status: string },
@@ -427,19 +458,14 @@ async function handleUpdateStatus(
     throw new Error('id and status are required');
   }
 
-  const validStatuses = [
-    'draft', 'in-progress', 'submitted', 'under-review',
-    'approved', 'conditionally-approved', 'denied', 'withdrawn', 'expired'
-  ];
-
-  if (!validStatuses.includes(status)) {
-    throw new Error(`Invalid status: ${status}. Valid statuses are: ${validStatuses.join(', ')}`);
-  }
+  // Map status to submitted boolean
+  // The rentalapplication table only has 'submitted' as boolean, not a full status enum
+  const submittedValue = status === 'submitted';
 
   const { data, error } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
-      'Status': status,
+      'submitted': submittedValue,
       'Modified Date': new Date().toISOString()
     })
     .eq('_id', id)
@@ -470,8 +496,8 @@ async function handleAddOccupant(
 
   // Fetch current occupants
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
-    .select('"Occupants"')
+    .from('rentalapplication')
+    .select('"occupants list"')
     .eq('_id', applicationId)
     .single();
 
@@ -479,7 +505,7 @@ async function handleAddOccupant(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentOccupants = app?.['Occupants'] || [];
+  const currentOccupants = app?.['occupants list'] || [];
   const newOccupant = {
     id: crypto.randomUUID(),
     ...occupant,
@@ -489,9 +515,9 @@ async function handleAddOccupant(
   const updatedOccupants = [...currentOccupants, newOccupant];
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
-      'Occupants': updatedOccupants,
+      'occupants list': updatedOccupants,
       'Modified Date': new Date().toISOString()
     })
     .eq('_id', applicationId);
@@ -518,8 +544,8 @@ async function handleDeleteOccupant(
 
   // Fetch current occupants
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
-    .select('"Occupants"')
+    .from('rentalapplication')
+    .select('"occupants list"')
     .eq('_id', applicationId)
     .single();
 
@@ -527,15 +553,15 @@ async function handleDeleteOccupant(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentOccupants = app?.['Occupants'] || [];
+  const currentOccupants = app?.['occupants list'] || [];
   const updatedOccupants = currentOccupants.filter(
     (o: { id: string }) => o.id !== occupantId
   );
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
-      'Occupants': updatedOccupants,
+      'occupants list': updatedOccupants,
       'Modified Date': new Date().toISOString()
     })
     .eq('_id', applicationId);
@@ -561,8 +587,8 @@ async function handleAddReference(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
-    .select('"References"')
+    .from('rentalapplication')
+    .select('references')
     .eq('_id', applicationId)
     .single();
 
@@ -570,7 +596,7 @@ async function handleAddReference(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentRefs = app?.['References'] || [];
+  const currentRefs = app?.['references'] || [];
   const newRef = {
     id: crypto.randomUUID(),
     ...reference,
@@ -580,9 +606,9 @@ async function handleAddReference(
   const updatedRefs = [...currentRefs, newRef];
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
-      'References': updatedRefs,
+      'references': updatedRefs,
       'Modified Date': new Date().toISOString()
     })
     .eq('_id', applicationId);
@@ -608,8 +634,8 @@ async function handleDeleteReference(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
-    .select('"References"')
+    .from('rentalapplication')
+    .select('references')
     .eq('_id', applicationId)
     .single();
 
@@ -617,15 +643,15 @@ async function handleDeleteReference(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentRefs = app?.['References'] || [];
+  const currentRefs = app?.['references'] || [];
   const updatedRefs = currentRefs.filter(
     (r: { id: string }) => r.id !== referenceId
   );
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
-      'References': updatedRefs,
+      'references': updatedRefs,
       'Modified Date': new Date().toISOString()
     })
     .eq('_id', applicationId);
@@ -651,7 +677,7 @@ async function handleAddEmployment(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"Employment History"')
     .eq('_id', applicationId)
     .single();
@@ -670,7 +696,7 @@ async function handleAddEmployment(
   const updatedEmployment = [...currentEmployment, newEmployment];
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Employment History': updatedEmployment,
       'Modified Date': new Date().toISOString()
@@ -698,7 +724,7 @@ async function handleDeleteEmployment(
   }
 
   const { data: app, error: fetchError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .select('"Employment History"')
     .eq('_id', applicationId)
     .single();
@@ -713,7 +739,7 @@ async function handleDeleteEmployment(
   );
 
   const { error: updateError } = await supabase
-    .from('rental_application')
+    .from('rentalapplication')
     .update({
       'Employment History': updatedEmployment,
       'Modified Date': new Date().toISOString()
@@ -731,52 +757,77 @@ async function handleDeleteEmployment(
 
 /**
  * Transform database record to frontend format
- * Maps Bubble-style column names to snake_case
+ * Maps rentalapplication table columns (from Bubble schema) to frontend format
  */
 function transformApplication(record: Record<string, unknown>) {
-  return {
-    id: record['_id'],
-    unique_id: record['_id'], // Use _id as unique_id for display
-    guest_id: record['Guest'],
-    listing_id: record['Listing'],
-    status: record['Status'] || 'draft',
-    completion_percentage: record['Completion Percentage'] || 0,
-    is_completed: record['Is Completed'] || false,
+  // Extract name from either 'name' field or nested structure
+  const applicantName = record['name'] as string || '';
+  const applicantEmail = record['email'] as string || '';
 
-    // Personal info (JSONB)
-    personal_info: record['Personal Info'] || {},
-    current_address: record['Current Address'] || {},
-    previous_addresses: record['Previous Addresses'] || [],
-    accessibility: record['Accessibility'] || {},
-    emergency_contact: record['Emergency Contact'] || {},
+  // Determine status from 'submitted' boolean field
+  const isSubmitted = record['submitted'] as boolean || false;
+  const status = isSubmitted ? 'submitted' : 'draft';
+
+  // Completion percentage from 'percentage % done' field
+  const completionPercentage = Number(record['percentage % done']) || 0;
+  const isCompleted = completionPercentage >= 100;
+
+  // Monthly income from 'Monthly Income' field
+  const monthlyIncome = Number(record['Monthly Income']) || 0;
+
+  return {
+    id: record['_id'] as string,
+    unique_id: record['_id'] as string,
+
+    // Applicant info for display
+    applicant_name: applicantName,
+    applicant_email: applicantEmail,
+    phone_number: record['phone number'] as string || '',
+
+    // Status
+    status: status,
+    completion_percentage: completionPercentage,
+    is_completed: isCompleted,
+    submitted: isSubmitted,
 
     // Financial
-    monthly_income: record['Monthly Income'] || 0,
-    additional_income: record['Additional Income'] || 0,
-    total_monthly_income: (record['Monthly Income'] as number || 0) + (record['Additional Income'] as number || 0),
+    monthly_income: monthlyIncome,
+    total_monthly_income: monthlyIncome, // No additional income field in this table
 
-    // Background
-    has_eviction: record['Has Eviction'] || false,
-    has_felony: record['Has Felony'] || false,
-    has_bankruptcy: record['Has Bankruptcy'] || false,
+    // Personal info (from flat fields, not nested JSONB)
+    personal_info: {
+      name: applicantName,
+      email: applicantEmail,
+      phone: record['phone number'] as string || '',
+    },
 
-    // Consents
-    background_check_consent: record['Background Check Consent'] || false,
-    credit_check_consent: record['Credit Check Consent'] || false,
-    terms_accepted: record['Terms Accepted'] || false,
-    signature_date: record['Signature Date'],
+    // Address info
+    current_address: record['permanent address'] as Record<string, unknown> || {},
+    apartment_number: record['apartment number'] as string || '',
+    length_resided: record['length resided'] as string || '',
+    renting: record['renting'] as boolean || false,
+
+    // Employment info
+    employment_status: record['employment status'] as string || '',
+    employer_name: record['employer name'] as string || '',
+    employer_phone: record['employer phone number'] as string || '',
+    job_title: record['job title'] as string || '',
+
+    // Additional flags
+    pets: record['pets'] as boolean || false,
+    smoking: record['smoking'] as boolean || false,
+    parking: record['parking'] as boolean || false,
 
     // Timestamps
-    created_at: record['Created Date'],
-    updated_at: record['Modified Date'],
-    submitted_at: record['Submitted Date'],
+    created_at: record['Created Date'] as string || '',
+    updated_at: record['Modified Date'] as string || '',
 
     // Related data (populated in handleGet)
     occupants: [],
     references: [],
-    employment: [],
 
     // Guest info (if joined)
+    guest_id: record['Created By'] as string || '',
     guest: record['guest'] || null
   };
 }

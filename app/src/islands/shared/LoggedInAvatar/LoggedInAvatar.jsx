@@ -75,6 +75,10 @@ export default function LoggedInAvatar({
   const effectiveFirstListingId = dataLoading ? null : supabaseData.firstListingId;
   const effectiveThreadsCount = dataLoading ? 0 : (supabaseData.threadsCount || 0);
   const effectiveLastSuggestedProposalId = dataLoading ? null : supabaseData.lastSuggestedProposalId;
+  const effectivePendingProposalThreadsCount = dataLoading ? 0 : (supabaseData.pendingProposalThreadsCount || 0);
+
+  // Check if user is a host (for pending proposal notifications)
+  const isHost = effectiveUserType === NORMALIZED_USER_TYPES.HOST || effectiveUserType === NORMALIZED_USER_TYPES.TRIAL_HOST;
 
   // Handle resize for mobile detection
   useEffect(() => {
@@ -226,21 +230,8 @@ export default function LoggedInAvatar({
       });
     }
 
-    // 3. Proposals Suggested - GUEST only
-    //    Links to guest-proposals page with the most recent suggestion pre-selected
-    if (menuVisibility.myProposalsSuggested) {
-      // Build path with proposal ID query param if available for deep-linking
-      const suggestedPath = effectiveLastSuggestedProposalId
-        ? `/guest-proposals?proposal=${effectiveLastSuggestedProposalId}`
-        : '/guest-proposals';
-
-      items.push({
-        id: 'proposals-suggested',
-        label: 'Proposals Suggested',
-        lottieUrl: '/assets/lotties/proposals-suggested.json',
-        path: suggestedPath,
-      });
-    }
+    // 3. Proposals Suggested - REMOVED
+    //    Now shown via HeaderSuggestedProposalTrigger in mobile header instead of dropdown menu
 
     // 4. My Listings - HOST and TRIAL_HOST only
     if (menuVisibility.myListings) {
@@ -396,14 +387,25 @@ export default function LoggedInAvatar({
   // Hide messaging icon on the messages page (redundant since user is already there)
   const isMessagesPage = currentPath.includes('/messages');
 
+  // DEBUG: Log messaging icon visibility conditions
+  console.log('📧 Messaging icon visibility check:', {
+    effectiveThreadsCount,
+    isMessagesPage,
+    shouldShowMessagingIcon: effectiveThreadsCount > 0 && !isMessagesPage,
+    supabaseThreadsCount: supabaseData.threadsCount,
+    dataLoading,
+    isHost,
+    effectivePendingProposalThreadsCount
+  });
+
   return (
     <div className={`logged-in-avatar ${isSearchPage ? 'on-search-page' : ''} ${isLightHeaderPage ? 'on-light-header' : ''}`} ref={dropdownRef}>
       {/* Messaging icon - only shows when user has message threads AND not on messages page */}
       {effectiveThreadsCount > 0 && !isMessagesPage && (
         <div className="header-messages-wrapper">
           <button
-            className="header-messages-icon"
-            aria-label={`Messages${effectiveUnreadMessagesCount > 0 ? ` (${effectiveUnreadMessagesCount} unread)` : ''}`}
+            className={`header-messages-icon ${isHost && effectivePendingProposalThreadsCount > 0 ? 'has-pending-proposals' : ''}`}
+            aria-label={`Messages${effectiveUnreadMessagesCount > 0 ? ` (${effectiveUnreadMessagesCount} unread)` : ''}${isHost && effectivePendingProposalThreadsCount > 0 ? ` (${effectivePendingProposalThreadsCount} pending proposals)` : ''}`}
             aria-expanded={showMessagingPanel}
             onClick={(e) => {
               e.preventDefault();
@@ -434,9 +436,16 @@ export default function LoggedInAvatar({
               <rect x="2" y="4" width="20" height="16" rx="2" />
               <path d="M22 6L12 13L2 6" />
             </svg>
+            {/* Unread messages badge (red) */}
             {effectiveUnreadMessagesCount > 0 && (
               <span className="messages-badge">
                 {effectiveUnreadMessagesCount > 9 ? '9+' : effectiveUnreadMessagesCount}
+              </span>
+            )}
+            {/* Pending proposals badge for hosts (amber/gold) */}
+            {isHost && effectivePendingProposalThreadsCount > 0 && (
+              <span className="proposals-badge" title={`${effectivePendingProposalThreadsCount} pending proposal${effectivePendingProposalThreadsCount > 1 ? 's' : ''} need attention`}>
+                {effectivePendingProposalThreadsCount > 9 ? '9+' : effectivePendingProposalThreadsCount}
               </span>
             )}
           </button>

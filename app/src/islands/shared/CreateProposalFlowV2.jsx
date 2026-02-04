@@ -296,8 +296,8 @@ export default function CreateProposalFlowV2({
   // Calculate first 4 weeks total from pricing breakdown
   const calculateFirstFourWeeks = (breakdown) => {
     const fourWeekRent = breakdown?.fourWeekRent || 0;
-    const damageDeposit = listing?.['💰Damage Deposit'] || 0;
-    const maintenanceFee = listing?.['💰Cleaning Cost / Maintenance Fee'] || 0;
+    const damageDeposit = listing?.['damage_deposit'] || 0;
+    const maintenanceFee = listing?.['cleaning_fee'] || 0;
     return fourWeekRent + damageDeposit + maintenanceFee;
   };
 
@@ -331,8 +331,8 @@ export default function CreateProposalFlowV2({
     numberOfNights: nightsSelected * reservationSpan,
     totalPrice: pricingBreakdown?.reservationTotal || 0,
     pricePerFourWeeks: pricingBreakdown?.fourWeekRent || 0,
-    damageDeposit: listing?.['💰Damage Deposit'] || 0,
-    maintenanceFee: listing?.['💰Cleaning Cost / Maintenance Fee'] || 0,
+    damageDeposit: listing?.['damage_deposit'] || 0,
+    maintenanceFee: listing?.['cleaning_fee'] || 0,
     firstFourWeeksTotal: calculateFirstFourWeeks(pricingBreakdown),
 
     // Listing reference
@@ -394,17 +394,17 @@ export default function CreateProposalFlowV2({
       maximumNights: listing['Maximum Nights'] || 7,
       'rental type': listing['rental type'] || 'Nightly',
       'Weeks offered': listing['Weeks offered'] || 'Every week',
-      '💰Unit Markup': listing['💰Unit Markup'] || 0,
-      '💰Nightly Host Rate for 2 nights': listing['💰Nightly Host Rate for 2 nights'],
-      '💰Nightly Host Rate for 3 nights': listing['💰Nightly Host Rate for 3 nights'],
-      '💰Nightly Host Rate for 4 nights': listing['💰Nightly Host Rate for 4 nights'],
-      '💰Nightly Host Rate for 5 nights': listing['💰Nightly Host Rate for 5 nights'],
-      '💰Nightly Host Rate for 7 nights': listing['💰Nightly Host Rate for 7 nights'],
-      '💰Weekly Host Rate': listing['💰Weekly Host Rate'],
-      '💰Monthly Host Rate': listing['💰Monthly Host Rate'],
-      '💰Price Override': listing['💰Price Override'],
-      '💰Cleaning Cost / Maintenance Fee': listing['💰Cleaning Cost / Maintenance Fee'],
-      '💰Damage Deposit': listing['💰Damage Deposit']
+      unit_markup: listing['unit_markup'] || 0,
+      nightly_rate_2_nights: listing['nightly_rate_2_nights'],
+      nightly_rate_3_nights: listing['nightly_rate_3_nights'],
+      nightly_rate_4_nights: listing['nightly_rate_4_nights'],
+      nightly_rate_5_nights: listing['nightly_rate_5_nights'],
+      nightly_rate_7_nights: listing['nightly_rate_7_nights'],
+      weekly_host_rate: listing['weekly_host_rate'],
+      monthly_host_rate: listing['monthly_host_rate'],
+      price_override: listing['price_override'],
+      cleaning_fee: listing['cleaning_fee'],
+      damage_deposit: listing['damage_deposit']
     };
   }, [listing]);
 

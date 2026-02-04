@@ -171,7 +171,7 @@ export const getPrimaryError = (log: ErrorLog): Error | null =>
  * Convert ISO timestamp to human-readable relative time
  * Examples: "Just now", "2 min ago", "Today at 3:15 PM", "Yesterday at 8:00 AM"
  */
-const getRelativeTime = (isoTimestamp: string): string => {
+const _getRelativeTime = (isoTimestamp: string): string => {
   const now = new Date();
   const then = new Date(isoTimestamp);
   const diffMs = now.getTime() - then.getTime();
@@ -244,7 +244,7 @@ const inferLikelyCause = (error: Error): string | null => {
  * Generate actionable suggestions based on error
  * Returns array of suggestions - empty if error is expected user behavior
  */
-const getActionableSuggestions = (error: Error, functionName: string): string[] => {
+const _getActionableSuggestions = (error: Error, _functionName: string): string[] => {
   const msg = error.message.toLowerCase();
   const suggestions: string[] = [];
 
@@ -281,7 +281,7 @@ const getActionableSuggestions = (error: Error, functionName: string): string[] 
  * Convert action to user-friendly description
  * Maps technical action names to plain English
  */
-const getActionDescription = (action: string): string => {
+const _getActionDescription = (action: string): string => {
   const descriptions: Record<string, string> = {
     // Messages
     'get_threads': 'check their messages',

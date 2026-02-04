@@ -66,7 +66,7 @@ export async function handleListUsers(
     let query = supabaseAdmin
       .from('user')
       .select('_id, "email as text", "Name - First", "Name - Last", "Phone Number (as text)", "Type - User Current", "Profile Photo"')
-      .order('Name - First', { ascending: true })
+      .order('"Name - First"', { ascending: true })
       .limit(limit);
 
     // Apply search filter if provided

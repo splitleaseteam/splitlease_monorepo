@@ -74,8 +74,9 @@ export function calculateMatchHeuristics({ candidateListing, proposal, hostData 
         proposalNightlyRate
       });
     }
+   
   } catch {
-    // Price proximity calculation failed, leave as null
+    void 0; // Price proximity calculation failed, leave as null
   }
 
   // Calculate schedule compatibility

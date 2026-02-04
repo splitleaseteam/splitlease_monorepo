@@ -8,7 +8,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { ValidationError, SupabaseSyncError, AuthenticationError } from "../../_shared/errors.ts";
+import { ValidationError, SupabaseSyncError, AuthenticationError as _AuthenticationError } from "../../_shared/errors.ts";
 import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import {
   AcceptRequestInput,

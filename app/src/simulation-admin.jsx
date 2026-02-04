@@ -1,4 +1,3 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import SimulationAdminPage from './islands/pages/SimulationAdminPage';
 import { ToastProvider } from './islands/shared/Toast';

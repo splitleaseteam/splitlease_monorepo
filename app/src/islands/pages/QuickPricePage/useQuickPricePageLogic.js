@@ -21,6 +21,7 @@ import { supabase } from '../../../lib/supabase';
 import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const PAGE_SIZE = 25;
 
 // NYC Boroughs for filter dropdown
@@ -41,37 +42,38 @@ const RENTAL_TYPES = [
 
 /**
  * Adapt listing from Supabase format to frontend-friendly format
+ * Column names match actual database schema
  */
 function adaptListingFromSupabase(raw) {
   const host = raw.host || {};
 
   return {
     id: raw._id,
-    name: raw['🏷Name'] || 'Untitled Listing',
-    active: raw['✅Active'] ?? false,
-    rentalType: raw['🏠Rental Type'] || '',
-    borough: raw['📍Borough'] || '',
-    neighborhood: raw['📍Neighborhood'] || '',
+    name: raw['Name'] || 'Untitled Listing',
+    active: raw['Active'] ?? false,
+    rentalType: raw['rental type'] || '',
+    borough: raw['Location - Borough'] || '',
+    neighborhood: raw['Location - Hood'] || '',
 
-    // Pricing fields
-    unitMarkup: raw['💰Unit Markup'],
-    weeklyHostRate: raw['💰Weekly Host Rate'],
-    monthlyHostRate: raw['💰Monthly Host Rate'],
-    nightlyRate2: raw['💰Nightly Host Rate for 2 nights'],
-    nightlyRate3: raw['💰Nightly Host Rate for 3 nights'],
-    nightlyRate4: raw['💰Nightly Host Rate for 4 nights'],
-    nightlyRate5: raw['💰Nightly Host Rate for 5 nights'],
-    nightlyRate6: raw['💰Nightly Host Rate for 6 nights'],
-    nightlyRate7: raw['💰Nightly Host Rate for 7 nights'],
-    cleaningCost: raw['💰Cleaning Cost / Maintenance Fee'],
-    damageDeposit: raw['💰Damage Deposit'],
-    priceOverride: raw['💰Price Override'],
-    extraCharges: raw['💰Extra Charges'],
+    // Pricing fields (these columns have emoji prefixes in the database)
+    unitMarkup: raw['unit_markup'],
+    weeklyHostRate: raw['weekly_host_rate'],
+    monthlyHostRate: raw['monthly_host_rate'],
+    nightlyRate2: raw['nightly_rate_2_nights'],
+    nightlyRate3: raw['nightly_rate_3_nights'],
+    nightlyRate4: raw['nightly_rate_4_nights'],
+    nightlyRate5: raw['nightly_rate_5_nights'],
+    nightlyRate6: raw['nightly_rate_6_nights'],
+    nightlyRate7: raw['nightly_rate_7_nights'],
+    cleaningCost: raw['cleaning_fee'],
+    damageDeposit: raw['damage_deposit'],
+    priceOverride: raw['price_override'],
+    extraCharges: raw['extra_charges'],
 
-    // Host info
+    // Host info (host is fetched separately and enriched by edge function)
     hostId: host._id || null,
     hostEmail: host.email || '',
-    hostName: `${host['First Name'] || ''} ${host['Last Name'] || ''}`.trim() || 'Unknown Host',
+    hostName: `${host.name_first || ''} ${host.name_last || ''}`.trim() || 'Unknown Host',
 
     // Dates
     createdAt: raw['Created Date'] ? new Date(raw['Created Date']) : null,
@@ -144,7 +146,11 @@ export function useQuickPricePageLogic({ showToast }) {
   }, []);
 
   const buildHeaders = useCallback(() => {
-    const headers = { 'Content-Type': 'application/json' };
+    // Build headers with apikey (required) and optional auth (soft headers pattern)
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+    };
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -178,9 +184,9 @@ export function useQuickPricePageLogic({ showToast }) {
       const sortFieldMap = {
         createdAt: 'Created Date',
         modifiedAt: 'Modified Date',
-        name: '🏷Name',
-        priceOverride: '💰Price Override',
-        weeklyHostRate: '💰Weekly Host Rate',
+        name: 'Name',
+        priceOverride: 'price_override',
+        weeklyHostRate: 'weekly_host_rate',
       };
 
       const data = await callEdgeFunction('list', {
@@ -317,19 +323,19 @@ export function useQuickPricePageLogic({ showToast }) {
 
     // Map frontend field names to database field names
     const fieldMap = {
-      unitMarkup: '💰Unit Markup',
-      weeklyHostRate: '💰Weekly Host Rate',
-      monthlyHostRate: '💰Monthly Host Rate',
-      nightlyRate2: '💰Nightly Host Rate for 2 nights',
-      nightlyRate3: '💰Nightly Host Rate for 3 nights',
-      nightlyRate4: '💰Nightly Host Rate for 4 nights',
-      nightlyRate5: '💰Nightly Host Rate for 5 nights',
-      nightlyRate6: '💰Nightly Host Rate for 6 nights',
-      nightlyRate7: '💰Nightly Host Rate for 7 nights',
-      cleaningCost: '💰Cleaning Cost / Maintenance Fee',
-      damageDeposit: '💰Damage Deposit',
-      priceOverride: '💰Price Override',
-      extraCharges: '💰Extra Charges',
+      unitMarkup: 'unit_markup',
+      weeklyHostRate: 'weekly_host_rate',
+      monthlyHostRate: 'monthly_host_rate',
+      nightlyRate2: 'nightly_rate_2_nights',
+      nightlyRate3: 'nightly_rate_3_nights',
+      nightlyRate4: 'nightly_rate_4_nights',
+      nightlyRate5: 'nightly_rate_5_nights',
+      nightlyRate6: 'nightly_rate_6_nights',
+      nightlyRate7: 'nightly_rate_7_nights',
+      cleaningCost: 'cleaning_fee',
+      damageDeposit: 'damage_deposit',
+      priceOverride: 'price_override',
+      extraCharges: 'extra_charges',
     };
 
     // Build changed fields only (critical for avoiding FK constraint violations)

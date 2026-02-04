@@ -60,6 +60,43 @@ export default [
       'no-duplicate-imports': 'warn',
       'eqeqeq': ['warn', 'always', { null: 'ignore' }],
       'prefer-const': 'warn',
+
+      // ==================================================================
+      // SYSTEM ENFORCEMENT: No silent error swallowing
+      // ==================================================================
+
+      // Ban empty catch blocks
+      'no-empty': ['error', { allowEmptyCatch: false }],
+
+      // Custom rules to detect error-hiding patterns
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'BinaryExpression[operator="||"][right.raw="true"]',
+          message:
+            'SYSTEM BLOCK: The "|| true" pattern hides errors. Use proper error handling with reportError().',
+        },
+        {
+          selector: 'CatchClause > BlockStatement[body.length=0]',
+          message:
+            'SYSTEM BLOCK: Empty catch blocks swallow errors. Use reportError() from @/lib/errorReporting.',
+        },
+      ],
+
+      // Require catch clauses to have a parameter
+      'no-ex-assign': 'error',
+
+      // Disallow fallthrough in switch statements (common error source)
+      'no-fallthrough': 'error',
+    },
+  },
+  {
+    // Storybook stories - relax rules-of-hooks for render functions
+    files: ['src/**/*.stories.jsx', 'src/**/*.stories.js'],
+    rules: {
+      // Storybook's render() pattern uses hooks in a function named "render"
+      // which triggers rules-of-hooks, but it's valid in Storybook context
+      'react-hooks/rules-of-hooks': 'off',
     },
   },
   {
@@ -78,6 +115,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'public/**/*.js', // Static assets
+      '.storybook/**', // Storybook config (has its own build process)
+      'tests/**', // Test files (separate test runner)
     ],
   },
 ];

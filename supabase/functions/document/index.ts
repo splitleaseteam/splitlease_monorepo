@@ -6,12 +6,14 @@
  * - list_policies: Get all policy documents from Bubble
  * - list_hosts: Get all host users from Supabase
  * - create: Create a new document sent record
+ * - request_change: Submit a change request for a document
  *
  * This function bridges data from Bubble (policy documents) and Supabase (users, documentssent)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { handleRequestChange } from './handlers/requestChange.ts';
 
 // CORS headers
 const corsHeaders = {
@@ -39,7 +41,7 @@ Deno.serve(async (req: Request) => {
     console.log(`[document] Action: ${action}`);
 
     // Validate action
-    const validActions = ['list_policies', 'list_hosts', 'create'];
+    const validActions = ['list_policies', 'list_hosts', 'create', 'request_change'];
 
     if (!validActions.includes(action)) {
       return errorResponse(`Invalid action: ${action}`, 400);
@@ -54,10 +56,15 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (optional for internal pages)
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+    if (user) {
+      console.log(`[document] Authenticated user: ${user.email}`);
+    } else if (!['list_policies', 'list_hosts'].includes(action)) {
+      // request_change and create require authentication
+      throw new Error('Authentication required');
+    } else {
+      console.log('[document] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -78,6 +85,10 @@ Deno.serve(async (req: Request) => {
 
       case 'create':
         result = await handleCreate(payload, supabase, user);
+        break;
+
+      case 'request_change':
+        result = await handleRequestChange(payload, supabase, user);
         break;
 
       default:
@@ -174,7 +185,7 @@ async function handleListPolicies(supabase: SupabaseClient) {
           createdDate: policy['Created Date']
         }));
       }
-    } catch (err) {
+    } catch (_err) {
       // Table doesn't exist, try next
       console.log(`[document] Table ${tableName} not found, trying next...`);
     }
@@ -205,10 +216,12 @@ async function handleListPolicies(supabase: SupabaseClient) {
 async function handleListHosts(supabase: SupabaseClient) {
   console.log('[document] Fetching host users...');
 
+  // Fetch users with Type - User Current, then filter client-side
+  // (PostgREST has issues with parentheses in filter values)
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, Name, "Type - User Current"')
-    .or('"Type - User Current".eq.A Host (I have a space available to rent),"Type - User Current".eq.Trial Host')
+    .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Type - User Current"')
+    .not('"Type - User Current"', 'is', null)
     .order('email', { ascending: true });
 
   if (error) {
@@ -216,9 +229,15 @@ async function handleListHosts(supabase: SupabaseClient) {
     throw new Error(`Failed to fetch host users: ${error.message}`);
   }
 
-  console.log(`[document] Found ${data?.length || 0} host users`);
+  // Filter for hosts client-side (values contain parentheses that break PostgREST filters)
+  const hosts = (data || []).filter((user: Record<string, unknown>) => {
+    const userType = user['Type - User Current'] as string;
+    return userType?.toLowerCase().includes('host');
+  });
 
-  return data || [];
+  console.log(`[document] Found ${hosts.length} host users`);
+
+  return hosts;
 }
 
 /**

@@ -4,6 +4,7 @@ import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { checkContiguity } from '../../shared/HostScheduleSelector/utils.js';
 import { ALL_NIGHTS } from '../../shared/HostScheduleSelector/constants.js';
 import { calculateCheckInCheckOut } from '../../../lib/scheduleSelector/nightCalculations.js';
+import { createAllDays } from '../../../lib/scheduleSelector/dayHelpers.js';
 
 const DEFAULT_RESERVATION_SPAN = 13;
 
@@ -21,6 +22,44 @@ const NIGHT_LABELS = ALL_NIGHTS.reduce((acc, night) => {
   acc[night.id] = night.display;
   return acc;
 }, {});
+
+const EDGE_CASE_SCENARIOS = [
+  {
+    id: 'normal-5-night',
+    name: 'Normal 5-Night Stay (Mon-Sat)',
+    dayIndices: [1, 2, 3, 4, 5, 6],
+    expectedValid: true,
+    expectedNights: 5
+  },
+  {
+    id: 'wrap-around',
+    name: 'Wrap-Around Weekend (Fri-Mon)',
+    dayIndices: [5, 6, 0, 1],
+    expectedValid: true,
+    expectedNights: 3
+  },
+  {
+    id: 'gap-selection',
+    name: 'Gap Selection (Mon, Wed, Fri)',
+    dayIndices: [1, 3, 5],
+    expectedValid: false,
+    expectedError: 'CONTIGUITY'
+  },
+  {
+    id: 'below-min',
+    name: 'Below Minimum (1 night)',
+    dayIndices: [1, 2],
+    expectedValid: false,
+    expectedError: 'ABSOLUTE_MINIMUM'
+  },
+  {
+    id: 'full-week',
+    name: 'Full Week (7 days = 7 nights)',
+    dayIndices: [0, 1, 2, 3, 4, 5, 6],
+    expectedValid: true,
+    expectedNights: 7  // NOT 6!
+  }
+];
 
 export function useZScheduleTestPageLogic() {
   const [listings, setListings] = useState([]);
@@ -45,6 +84,7 @@ export function useZScheduleTestPageLogic() {
   const [listingSelectedDays, setListingSelectedDays] = useState([]);
   const [listingPriceBreakdown, setListingPriceBreakdown] = useState(null);
   const [listingScheduleState, setListingScheduleState] = useState(null);
+  const [selectedScenario, setSelectedScenario] = useState(null);
 
   useEffect(() => {
     document.title = 'Schedule Test | Admin';
@@ -109,15 +149,15 @@ export function useZScheduleTestPageLogic() {
           Name,
           "rental type",
           "Weeks offered",
-          "💰Nightly Host Rate for 2 nights",
-          "💰Nightly Host Rate for 3 nights",
-          "💰Nightly Host Rate for 4 nights",
-          "💰Nightly Host Rate for 5 nights",
-          "💰Weekly Host Rate",
-          "💰Monthly Host Rate",
-          "💰Damage Deposit",
-          "💰Cleaning Cost / Maintenance Fee",
-          "💰Unit Markup",
+          "nightly_rate_2_nights",
+          "nightly_rate_3_nights",
+          "nightly_rate_4_nights",
+          "nightly_rate_5_nights",
+          "weekly_host_rate",
+          "monthly_host_rate",
+          "damage_deposit",
+          "cleaning_fee",
+          "unit_markup",
           "Nights_Available",
           "Nights Available (numbers)",
           "Days Available (List of Days)",
@@ -186,6 +226,21 @@ export function useZScheduleTestPageLogic() {
     setListingScheduleState(state);
   }, []);
 
+  const handleLoadScenario = useCallback((scenarioId) => {
+    const scenario = EDGE_CASE_SCENARIOS.find(s => s.id === scenarioId);
+    if (!scenario || !scheduleListing) return;
+
+    setSelectedScenario(scenario);
+
+    // Convert day indices to day objects
+    const allDaysArray = createAllDays(scheduleListing.daysAvailable || [0,1,2,3,4,5,6]);
+    const dayObjects = scenario.dayIndices
+      .map(idx => allDaysArray.find(d => d.dayOfWeek === idx))
+      .filter(Boolean);
+
+    setListingSelectedDays(dayObjects);
+  }, [scheduleListing]);
+
   return {
     listings,
     listingsLoading,
@@ -216,7 +271,10 @@ export function useZScheduleTestPageLogic() {
     handleListingSelectionChange,
     handleListingPriceChange,
     handleListingScheduleChange,
-    toggleOptionSets
+    toggleOptionSets,
+    edgeCaseScenarios: EDGE_CASE_SCENARIOS,
+    selectedScenario,
+    handleLoadScenario
   };
 }
 
@@ -236,15 +294,15 @@ function buildScheduleListing(listing) {
     name: listing.Name || 'Untitled',
     rentalType: listing['rental type'] || 'Nightly',
     weeksOffered: listing['Weeks offered'] || 'Every week',
-    unitMarkup: listing['💰Unit Markup'] || 0,
-    cleaningFee: listing['💰Cleaning Cost / Maintenance Fee'] || 0,
-    damageDeposit: listing['💰Damage Deposit'] || 0,
-    weeklyHostRate: listing['💰Weekly Host Rate'] || 0,
-    monthlyHostRate: listing['💰Monthly Host Rate'] || 0,
-    rate2Night: listing['💰Nightly Host Rate for 2 nights'] || 0,
-    rate3Night: listing['💰Nightly Host Rate for 3 nights'] || 0,
-    rate4Night: listing['💰Nightly Host Rate for 4 nights'] || 0,
-    rate5Night: listing['💰Nightly Host Rate for 5 nights'] || 0,
+    unitMarkup: listing['unit_markup'] || 0,
+    cleaningFee: listing['cleaning_fee'] || 0,
+    damageDeposit: listing['damage_deposit'] || 0,
+    weeklyHostRate: listing['weekly_host_rate'] || 0,
+    monthlyHostRate: listing['monthly_host_rate'] || 0,
+    rate2Night: listing['nightly_rate_2_nights'] || 0,
+    rate3Night: listing['nightly_rate_3_nights'] || 0,
+    rate4Night: listing['nightly_rate_4_nights'] || 0,
+    rate5Night: listing['nightly_rate_5_nights'] || 0,
     minimumNights: listing['Minimum Nights'] || 0,
     maximumNights: listing['Maximum Nights'] || 7,
     nightsAvailable: listing['Nights_Available'] || listing['Nights Available (numbers)'] || [],

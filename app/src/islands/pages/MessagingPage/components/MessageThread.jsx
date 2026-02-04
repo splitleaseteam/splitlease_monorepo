@@ -53,6 +53,8 @@ function getDateKey(dateString) {
  * @param {object} props
  * @param {object[]} props.messages - Array of message objects
  * @param {object} props.threadInfo - Thread info (contact_name, property_name, proposal_id, etc.)
+ * @param {object} props.proposalData - Extended proposal data with virtualMeeting
+ * @param {object} props.user - Current user object
  * @param {boolean} props.isLoading - Whether messages are loading
  * @param {function} props.onBack - Handler for mobile back button
  * @param {boolean} props.isMobile - Whether in mobile view
@@ -70,6 +72,8 @@ function getDateKey(dateString) {
 export default function MessageThread({
   messages,
   threadInfo,
+  proposalData,
+  user,
   isLoading,
   onBack,
   isMobile,
@@ -93,12 +97,6 @@ export default function MessageThread({
     leaseId: threadInfo?.lease_id,
   };
 
-  // Auto-scroll to bottom when messages change or typing indicator appears
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isOtherUserTyping]);
 
   // Group messages by date for date separators
   let lastDateKey = '';
@@ -109,6 +107,8 @@ export default function MessageThread({
       {threadInfo && (
         <ThreadHeader
           info={threadInfo}
+          proposalData={proposalData}
+          user={user}
           onBack={onBack}
           isMobile={isMobile}
           showRightPanel={showRightPanel}

@@ -17,19 +17,56 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 // TYPES
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * Complete notification preferences interface matching the database table.
+ * 11 categories x 2 channels (SMS + Email) = 22 boolean fields
+ */
 export interface NotificationPreferences {
   user_id: string;
+  // Proposal Updates
   proposal_updates_sms: boolean;
   proposal_updates_email: boolean;
+  // Message Forwarding
   message_forwarding_sms: boolean;
   message_forwarding_email: boolean;
-  // ... other categories exist but proposal_updates is what we need
+  // Payment Reminders
+  payment_reminders_sms: boolean;
+  payment_reminders_email: boolean;
+  // Promotional
+  promotional_sms: boolean;
+  promotional_email: boolean;
+  // Reservation Updates
+  reservation_updates_sms: boolean;
+  reservation_updates_email: boolean;
+  // Lease Requests
+  lease_requests_sms: boolean;
+  lease_requests_email: boolean;
+  // Check-in/Check-out
+  checkin_checkout_sms: boolean;
+  checkin_checkout_email: boolean;
+  // Reviews
+  reviews_sms: boolean;
+  reviews_email: boolean;
+  // Tips/Insights
+  tips_insights_sms: boolean;
+  tips_insights_email: boolean;
+  // Account Assistance
+  account_assistance_sms: boolean;
+  account_assistance_email: boolean;
+  // Virtual Meetings
+  virtual_meetings_sms: boolean;
+  virtual_meetings_email: boolean;
 }
 
+/**
+ * All notification categories supported by the system.
+ * Each category has both SMS and Email preference toggles.
+ */
 export type NotificationCategory =
   | 'proposal_updates'
   | 'message_forwarding'
   | 'payment_reminders'
+  | 'promotional'
   | 'reservation_updates'
   | 'lease_requests'
   | 'checkin_checkout'
@@ -110,7 +147,7 @@ export function shouldSendSms(
  * Send email via internal Edge Function call
  * Fire-and-forget - logs errors but doesn't throw
  */
-export async function sendProposalEmail(
+export function sendProposalEmail(
   params: SendEmailParams
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -169,7 +206,7 @@ const SPLIT_LEASE_SMS_NUMBER = '+14155692985';
  * Send SMS via internal Edge Function call
  * Fire-and-forget - logs errors but doesn't throw
  */
-export async function sendProposalSms(
+export function sendProposalSms(
   params: SendSmsParams
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');

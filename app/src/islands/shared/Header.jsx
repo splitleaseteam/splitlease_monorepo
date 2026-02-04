@@ -569,6 +569,16 @@ export default function Header({ autoShowLogin = false }) {
           </a>
         </div>
 
+        {/* Mobile Suggested Proposal Trigger - visible only on mobile, positioned before hamburger */}
+        {currentUser && isGuest() && pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
+          <HeaderSuggestedProposalTrigger
+            onClick={handleSuggestedTriggerClick}
+            isActive={showSuggestedPopup}
+            proposalCount={pendingProposalCount}
+            className="mobile-sp-trigger"
+          />
+        )}
+
         {/* Mobile Hamburger Menu */}
         <button
           className={`hamburger-menu ${mobileMenuActive ? 'active' : ''}`}
@@ -730,8 +740,9 @@ export default function Header({ autoShowLogin = false }) {
           )}
 
           {/* Stay with Us Dropdown - Only show if not logged in OR if logged in as Guest/Split Lease */}
+          {/* Hidden on mobile when suggested proposal icons are visible to reduce clutter */}
           {(!currentUser || !userType || isGuest()) && (
-          <div className="nav-dropdown">
+          <div className={`nav-dropdown${pendingProposalCount > 0 ? ' hide-on-mobile-with-suggestions' : ''}`}>
             <a
               href="#stay"
               className="nav-link dropdown-trigger"
@@ -879,16 +890,6 @@ export default function Header({ autoShowLogin = false }) {
 
         {/* Right Navigation - Auth Buttons */}
         <div className={`nav-right ${mobileMenuActive ? 'mobile-active' : ''}`}>
-          {/* Suggested Proposal Trigger - shows for guest users with pending proposals */}
-          {/* Hidden on /guest-proposals page since suggestions are already shown in the list */}
-          {currentUser && isGuest() && pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
-            <HeaderSuggestedProposalTrigger
-              onClick={handleSuggestedTriggerClick}
-              isActive={showSuggestedPopup}
-              proposalCount={pendingProposalCount}
-            />
-          )}
-
           {currentUser && isHost() ? (
             <a href={HOST_OVERVIEW_URL} className="explore-rentals-btn">
               Host Overview
@@ -897,6 +898,16 @@ export default function Header({ autoShowLogin = false }) {
             <a href={SEARCH_URL} className="explore-rentals-btn">
               Explore Rentals
             </a>
+          )}
+
+          {/* Desktop Suggested Proposal Trigger - visible only on desktop for guests with pending proposals */}
+          {currentUser && isGuest() && pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
+            <HeaderSuggestedProposalTrigger
+              onClick={handleSuggestedTriggerClick}
+              isActive={showSuggestedPopup}
+              proposalCount={pendingProposalCount}
+              className="desktop-sp-trigger"
+            />
           )}
 
           {currentUser && currentUser.firstName ? (

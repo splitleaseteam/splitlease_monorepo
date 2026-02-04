@@ -20,12 +20,7 @@ from modules.house_manual_pdf.routes import house_manual_generator
 from modules.logging.error_logger import log_error
 from modules.logging.success_logger import log_success
 
-# Imports template, scripts for creation of Google Docs for Contract Creation and forwarding the created contract to Google Drive
-from modules.contract_generator.periodic_tenancy.routes import periodic_tenancy
-from modules.contract_generator.host_payout.routes import host_payout
-from modules.contract_generator.credit_card_auth.routes import credit_card_auth
-from modules.contract_generator.credit_card_auth_nonprorated.routes import credit_card_auth_nonprorated
-from modules.contract_generator.supplemental.routes import supplemental_agreement
+# Legacy contract generation has moved to Supabase Edge Functions
 from modules.google_drive.routes import google_drive
 from modules.core.monitoring import monitoring
 
@@ -83,11 +78,6 @@ def create_app():
         logger.info("Registering blueprints...")
         app.register_blueprint(doc_parser_bp, url_prefix='/docs')
         app.register_blueprint(house_manual_generator, url_prefix='/housemanual')
-        app.register_blueprint(periodic_tenancy, url_prefix='/contract')
-        app.register_blueprint(host_payout, url_prefix='/contract')
-        app.register_blueprint(credit_card_auth, url_prefix='/contract')
-        app.register_blueprint(credit_card_auth_nonprorated, url_prefix='/contract')
-        app.register_blueprint(supplemental_agreement, url_prefix='/contract')
         app.register_blueprint(google_drive, url_prefix='/google_drive')
         app.register_blueprint(monitoring)
         app.register_blueprint(curated_listings_generator, url_prefix='/curatedlistings')

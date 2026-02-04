@@ -1,0 +1,97 @@
+/**
+ * TabNavigation Styles
+ * Reviews Overview Page
+ */
+
+.reviews-tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--color-gray-100, #f3f4f6);
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.reviews-tab-nav__tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-gray-600, #4b5563);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reviews-tab-nav__tab:hover {
+  background-color: var(--color-gray-200, #e5e7eb);
+}
+
+.reviews-tab-nav__tab--active {
+  background-color: white;
+  color: var(--color-primary, #6366f1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.reviews-tab-nav__icon {
+  flex-shrink: 0;
+}
+
+.reviews-tab-nav__label {
+  white-space: nowrap;
+}
+
+.reviews-tab-nav__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--color-primary, #6366f1);
+  color: white;
+  border-radius: 9999px;
+}
+
+.reviews-tab-nav__tab--active .reviews-tab-nav__badge {
+  background-color: var(--color-primary-dark, #4f46e5);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .reviews-tab-nav {
+    gap: 0.25rem;
+    padding: 0.375rem;
+  }
+
+  .reviews-tab-nav__tab {
+    padding: 0.625rem 0.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .reviews-tab-nav__label {
+    font-size: 0.75rem;
+  }
+
+  .reviews-tab-nav__badge {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    min-width: 1rem;
+    height: 1rem;
+    font-size: 0.625rem;
+  }
+
+  .reviews-tab-nav__tab {
+    position: relative;
+  }
+}

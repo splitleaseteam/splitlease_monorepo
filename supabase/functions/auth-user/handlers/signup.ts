@@ -37,6 +37,12 @@ import {
   sendInternalSignupNotification,
   sendWelcomeSms
 } from '../../_shared/emailUtils.ts';
+import { createDefaultNotificationPreferences } from '../../_shared/notificationSender.ts';
+import {
+  getNotificationPreferences,
+  shouldSendEmail as _checkEmailPreference,
+  shouldSendSms as checkSmsPreference,
+} from '../../_shared/notificationHelpers.ts';
 
 interface SignupAdditionalData {
   firstName?: string;
@@ -50,7 +56,7 @@ interface SignupAdditionalData {
  * Map simple user type values to reference_table.os_user_type.display values
  * The foreign key constraint fk_user_type_current requires exact match to display column
  */
-function mapUserTypeToDisplay(userType: string): string {
+function _mapUserTypeToDisplay(userType: string): string {
   const mapping: Record<string, string> = {
     'Host': 'A Host (I have a space available to rent)',
     'Guest': 'A Guest (I would like to rent a space)',
@@ -250,7 +256,7 @@ export async function handleSignup(
     if (birthDate) {
       try {
         dateOfBirth = new Date(birthDate).toISOString();
-      } catch (e) {
+      } catch (_e) {
         console.log('[signup] Could not parse birthDate:', birthDate);
       }
     }
@@ -302,11 +308,26 @@ export async function handleSignup(
     }
 
     console.log('[signup] ✅ User inserted into public.user table');
+
+    // ========== CREATE NOTIFICATION PREFERENCES ==========
+    // Create default notification preferences row with opt-out model
+    // All notifications enabled by default (except promotional SMS)
+    console.log('[signup] Creating default notification preferences...');
+
+    const prefsResult = await createDefaultNotificationPreferences(supabaseAdmin, generatedUserId);
+    if (prefsResult.success) {
+      console.log('[signup] ✅ Notification preferences created (opt-out model)');
+    } else {
+      // Non-blocking - user can configure preferences later via UI
+      console.warn('[signup] ⚠️ Failed to create notification preferences:', prefsResult.error);
+    }
+
     console.log(`[signup] ========== SIGNUP COMPLETE ==========`);
     console.log(`[signup]    User ID (_id): ${generatedUserId}`);
     console.log(`[signup]    Host Account ID (legacy FK): ${generatedHostId}`);
     console.log(`[signup]    Supabase Auth ID: ${supabaseUserId}`);
     console.log(`[signup]    public.user created: yes`);
+    console.log(`[signup]    notification_preferences created: ${prefsResult.success ? 'yes' : 'no'}`);
     console.log(`[signup]    account_host created: SKIPPED (deprecated)`);
 
     // ========== QUEUE BUBBLE SYNC ==========
@@ -328,9 +349,10 @@ export async function handleSignup(
     }
 
     // ========== SEND WELCOME EMAILS & SMS ==========
-    // Use EdgeRuntime.waitUntil() to send async (non-blocking)
+    // Fire-and-forget pattern: promises run without awaiting
     // This matches Bubble's "Schedule API Workflow" pattern
     // Emails/SMS are sent after response returns, but before function terminates
+    // Respects notification preferences (account_assistance category)
     console.log('[signup] Triggering welcome emails and SMS (async)...');
 
     // Generate email verification magic link
@@ -351,48 +373,60 @@ export async function handleSignup(
       console.error('[signup] Failed to generate verification link (non-blocking):', linkError);
     }
 
-    // Send welcome email with verification link (async, non-blocking)
-    EdgeRuntime.waitUntil(
-      sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink)
-        .then(result => {
-          if (!result.success) {
-            console.error('[signup] Welcome email failed:', result.error);
-          } else {
-            console.log('[signup] ✅ Welcome email sent');
-          }
-        })
-        .catch(err => console.error('[signup] Welcome email error:', err))
-    );
-
-    // Send internal notification (async, non-blocking)
-    EdgeRuntime.waitUntil(
-      sendInternalSignupNotification(generatedUserId, email.toLowerCase(), firstName, lastName, userType as 'Host' | 'Guest')
-        .then(result => {
-          if (!result.success) {
-            console.error('[signup] Internal notification failed:', result.error);
-          } else {
-            console.log('[signup] ✅ Internal notification sent');
-          }
-        })
-        .catch(err => console.error('[signup] Internal notification error:', err))
-    );
-
-    // Send welcome SMS to Guests with phone numbers (async, non-blocking)
-    if (userType === 'Guest' && phoneNumber) {
-      EdgeRuntime.waitUntil(
-        sendWelcomeSms(phoneNumber, firstName)
-          .then(result => {
-            if (!result.success) {
-              console.error('[signup] Welcome SMS failed:', result.error);
-            } else {
-              console.log('[signup] ✅ Welcome SMS sent');
-            }
-          })
-          .catch(err => console.error('[signup] Welcome SMS error:', err))
-      );
+    // Send welcome email with verification link
+    // IMPORTANT: Welcome email is ALWAYS sent for new signups, regardless of preferences
+    // This is critical for email verification and account confirmation
+    // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget IIFEs are cancelled when handler returns
+    try {
+      console.log('[signup] 📧 Sending welcome email to:', email.toLowerCase());
+      const result = await sendWelcomeEmail(userType as 'Host' | 'Guest', email.toLowerCase(), firstName, verificationLink);
+      if (!result.success) {
+        console.error('[signup] Welcome email failed:', result.error);
+        // Non-blocking: Continue with signup even if email fails
+      } else {
+        console.log('[signup] ✅ Welcome email sent');
+      }
+    } catch (_err) {
+      console.error('[signup] Welcome email error:', err);
+      // Non-blocking: Continue with signup even if email fails
     }
 
-    console.log('[signup] Email/SMS triggers dispatched');
+    // Send internal notification (non-blocking, but awaited to prevent Deno Edge Function cancellation)
+    // Note: Internal notifications to team are always sent (not preference-gated)
+    // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget promises are cancelled when handler returns
+    try {
+      const result = await sendInternalSignupNotification(generatedUserId, email.toLowerCase(), firstName, lastName, userType as 'Host' | 'Guest');
+      if (!result.success) {
+        console.error('[signup] Internal notification failed:', result.error);
+      } else {
+        console.log('[signup] ✅ Internal notification sent');
+      }
+    } catch (_err) {
+      console.error('[signup] Internal notification error:', err);
+    }
+
+    // Send welcome SMS to Guests with phone numbers
+    // Checks notification_preferences table
+    // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget IIFEs are cancelled when handler returns
+    if (userType === 'Guest' && phoneNumber) {
+      try {
+        const prefs = await getNotificationPreferences(supabaseAdmin, generatedUserId);
+        if (!checkSmsPreference(prefs, 'account_assistance')) {
+          console.log('[signup] Welcome SMS SKIPPED (preference: account_assistance disabled)');
+        } else {
+          const result = await sendWelcomeSms(phoneNumber, firstName);
+          if (!result.success) {
+            console.error('[signup] Welcome SMS failed:', result.error);
+          } else {
+            console.log('[signup] ✅ Welcome SMS sent');
+          }
+        }
+      } catch (_err) {
+        console.error('[signup] Welcome SMS error:', err);
+      }
+    }
+
+    console.log('[signup] Email/SMS/notification processing complete');
 
     // Return session and user data
     return {

@@ -16,7 +16,7 @@
  * calculateNextSendTime({ scheduledDateTime: '2026-01-20T14:00:00Z' })
  * // => Date object representing the scheduled time
  */
-export function calculateNextSendTime({ scheduledDateTime, timezone = 'America/New_York' }) {
+export function calculateNextSendTime({ scheduledDateTime, timezone: _timezone = 'America/New_York' }) {
   if (!scheduledDateTime) {
     throw new Error('calculateNextSendTime: scheduledDateTime is required');
   }

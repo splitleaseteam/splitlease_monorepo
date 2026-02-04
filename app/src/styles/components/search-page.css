@@ -8,8 +8,9 @@
   padding-top: 0 !important;
   margin: 0;
   height: 100vh;
-  width: 100vw;
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Two-Column Layout: 45% listings, 55% map */
@@ -21,6 +22,7 @@
   padding: 0;
   gap: 0;
   max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ========================================
@@ -1362,6 +1364,177 @@
   text-align: center;
 }
 
+/* ============================================================================
+   BOROUGH MULTI-SELECT FILTER STYLES
+   Mirror the neighborhood filter styles for consistent UX
+   ============================================================================ */
+
+.borough-search-group {
+  position: relative;
+  width: 100%;
+}
+
+.borough-search-group > label {
+  display: none;
+}
+
+/* "All Boroughs" button state */
+.borough-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.borough-all-btn:hover {
+  border-color: var(--secondary-purple, #6D31C2);
+}
+
+.borough-all-btn svg {
+  opacity: 0.5;
+}
+
+/* Chips row for selected boroughs */
+.borough-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.borough-chip-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--secondary-purple, #6D31C2);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.borough-chip-compact button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.borough-chip-compact button:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Add more button */
+.borough-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px dashed #d1d5db;
+  background: white;
+  border-radius: 9999px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.borough-add-btn:hover {
+  border-color: var(--secondary-purple, #6D31C2);
+  color: var(--secondary-purple, #6D31C2);
+  background: #f5f3ff;
+}
+
+/* Search dropdown */
+.borough-search-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 9999;
+}
+
+.borough-dropdown-search {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  background: white;
+}
+
+.borough-search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.borough-search-input:focus {
+  outline: none;
+  border-color: var(--secondary-purple, #6D31C2);
+  box-shadow: 0 0 0 3px rgba(109, 49, 194, 0.1);
+}
+
+.borough-search-option {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.borough-search-option:hover {
+  background: #f5f3ff;
+}
+
+.borough-search-option:focus {
+  outline: none;
+  background: #ede9fe;
+}
+
+.borough-search-empty {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
 /* Mobile adjustments for compact search filter */
 @media (max-width: 768px) {
   .inline-filters .neighborhood-search-group {
@@ -1846,33 +2019,37 @@
   display: none;
 }
 
-.filter-toggle-btn,
-.map-toggle-btn {
-  flex: 1;
+/* Mobile Filter Toggle Button in header - Compact icon button */
+.filter-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: 6px;
+  padding: 8px 14px;
   background: white;
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 13px;
   font-weight: 600;
   color: #374151;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
-.filter-toggle-btn:hover,
-.map-toggle-btn:hover {
+.filter-toggle-btn:hover {
   background: #f9fafb;
   border-color: #9ca3af;
 }
 
-.filter-toggle-btn:active,
-.map-toggle-btn:active {
+.filter-toggle-btn:active {
   background: #f3f4f6;
+}
+
+.filter-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* Compact Schedule Indicator - Hidden by default on desktop */
@@ -1995,6 +2172,14 @@
     right: 0;
     z-index: 100;
     transition: transform 0.3s ease, opacity 0.3s ease;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Constrain the schedule selector content on mobile */
+  .mobile-schedule-selector > div {
+    max-width: 100%;
+    overflow: hidden;
   }
 
   /* Hidden state for mobile schedule selector - collapses with header */
@@ -2108,12 +2293,15 @@
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
     width: 100%;
-    height: 100vh;
+    height: 100%;
     background: white;
     z-index: 2000;
     padding: 1rem;
     overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   /* Show inline filters when filter panel is active */
@@ -2548,6 +2736,325 @@
 }
 
 /* ========================================
+   MOBILE MAP FLOATING ACTION BUTTON
+   ======================================== */
+
+/* Hide on desktop */
+.mobile-map-fab {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-map-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 24px;
+    background: #31135D;
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(49, 19, 93, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 90;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-map-fab:hover,
+  .mobile-map-fab:active {
+    background: #4a1f8a;
+    box-shadow: 0 6px 20px rgba(49, 19, 93, 0.4), 0 3px 10px rgba(0, 0, 0, 0.15);
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  .mobile-map-fab:active {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .mobile-map-fab svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+}
+
+/* ========================================
+   MOBILE FILTER BOTTOM SHEET
+   Following POPUP_REPLICATION_PROTOCOL
+   ======================================== */
+
+/* Hide on desktop */
+.mobile-filter-backdrop,
+.mobile-filter-sheet {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Backdrop */
+  .mobile-filter-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2999;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Bottom Sheet Container */
+  .mobile-filter-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 92vh;
+    background: white;
+    border-radius: 24px 24px 0 0;
+    z-index: 3000;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Grab Handle */
+  .mobile-filter-handle {
+    width: 36px;
+    height: 4px;
+    background: #E7E0EC;
+    border-radius: 2px;
+    margin: 12px auto 0 auto;
+    flex-shrink: 0;
+  }
+
+  /* Header */
+  .mobile-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #E7E0EC;
+    flex-shrink: 0;
+  }
+
+  .mobile-filter-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-filter-title {
+    font-size: 18px;
+    font-weight: 400;
+    color: #31135D;
+    margin: 0;
+  }
+
+  /* Close Button - 32x32px per protocol */
+  .mobile-filter-close {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #49454F;
+    transition: background 0.2s ease;
+    padding: 0;
+  }
+
+  .mobile-filter-close:hover,
+  .mobile-filter-close:active {
+    background: #F7F2FA;
+  }
+
+  .mobile-filter-close svg {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  /* Body - Scrollable */
+  .mobile-filter-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Filter Group */
+  .mobile-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #49454F;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mobile-filter-select {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    color: #1D1B20;
+    background: white;
+    border: 1px solid #E7E0EC;
+    border-radius: 12px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2331135D' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .mobile-filter-select:focus {
+    outline: none;
+    border-color: #31135D;
+    box-shadow: 0 0 0 3px rgba(49, 19, 93, 0.1);
+  }
+
+  /* Neighborhood filter adjustments for mobile sheet */
+  .mobile-filter-group .neighborhood-search-group {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .mobile-filter-group .neighborhood-search-input {
+    padding: 14px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .mobile-filter-group .neighborhood-chips-row {
+    margin-top: 8px;
+  }
+
+  .mobile-filter-group .neighborhood-search-dropdown {
+    position: relative;
+    margin-top: 8px;
+    max-height: 200px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Borough filter adjustments for mobile sheet */
+  .mobile-filter-group .borough-search-group {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .mobile-filter-group .borough-all-btn {
+    padding: 14px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .mobile-filter-group .borough-search-input {
+    padding: 14px 16px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .mobile-filter-group .borough-chips-row {
+    margin-top: 8px;
+  }
+
+  .mobile-filter-group .borough-search-dropdown {
+    position: relative;
+    margin-top: 8px;
+    max-height: 200px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Footer */
+  .mobile-filter-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid #E7E0EC;
+    flex-shrink: 0;
+    background: white;
+  }
+
+  /* Buttons - Pill shaped per protocol */
+  .mobile-filter-btn-secondary,
+  .mobile-filter-btn-primary {
+    flex: 1;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-filter-btn-secondary {
+    background: transparent;
+    border: 1px solid #31135D;
+    color: #31135D;
+  }
+
+  .mobile-filter-btn-secondary:hover,
+  .mobile-filter-btn-secondary:active {
+    background: #F7F2FA;
+  }
+
+  .mobile-filter-btn-primary {
+    background: #31135D;
+    border: 1px solid #31135D;
+    color: white;
+  }
+
+  .mobile-filter-btn-primary:hover,
+  .mobile-filter-btn-primary:active {
+    background: #4a1f8a;
+    border-color: #4a1f8a;
+  }
+}
+
+/* ========================================
    MOBILE MAP MODAL - Fullscreen Map View
    ======================================== */
 
@@ -2563,8 +3070,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background: white;
     z-index: 3000;
     overflow: hidden;

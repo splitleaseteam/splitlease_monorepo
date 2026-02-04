@@ -2,9 +2,9 @@
 name: git-commits
 description: |
   Standardized git commit message formatter. Use this skill to structure all git commits with:
-  [hostname][type] commit message
+  [SL-X][type] commit message
 
-  CRITICAL: ALWAYS run `hostname` command FIRST to get the current device name, then use that value in the commit message.
+  Where X is the ticket/issue number being worked on.
 
   This ensures consistent commit history and traceability across the team.
 
@@ -15,28 +15,19 @@ description: |
 
 Structure all git commits with a standardized prefix format.
 
-## ⚠️ MANDATORY: Get Hostname FIRST
-
-**Before EVERY commit, run this command:**
-```bash
-hostname
-```
-
-**Then use the output value in your commit message format.**
-
 ## Commit Message Format
 
 ```
-[<HOSTNAME>][<type>] <commit_message>
+[SL-<ticket_number>][<type>] <commit_message>
 ```
 
-Where `<HOSTNAME>` is the **actual output** from running the `hostname` command.
+Where `<ticket_number>` is the issue/ticket number being worked on (e.g., 3, 42, 100).
 
 ### Components
 
 | Component | Description | Source |
 |-----------|-------------|--------|
-| `<HOSTNAME>` | Current device name (e.g., SPLIT-LEASE-6) | **Run `hostname` command** |
+| `SL-<ticket_number>` | Ticket/issue reference (e.g., SL-3, SL-42) | From current task or user context |
 | `<type>` | Conventional commit type | `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `style` |
 | `<commit_message>` | Clear, imperative description | Write based on changes made |
 
@@ -54,54 +45,28 @@ Where `<HOSTNAME>` is the **actual output** from running the `hostname` command.
 | `perf` | Performance improvements |
 | `revert` | Reverting previous commits |
 
-## Usage Workflow
-
-### STEP 1: Get Hostname (REQUIRED)
+## Usage Examples
 
 ```bash
-hostname
-```
+# Feature commit (working on ticket SL-3)
+git commit -m "[SL-3][feat] add proposal submission workflow"
 
-**Example output:** `SPLIT-LEASE-6`
+# Bug fix (working on ticket SL-42)
+git commit -m "[SL-42][fix] resolve FK constraint error in listing updates"
 
-### STEP 2: Create Commit with Dynamic Hostname
+# Documentation (working on ticket SL-3)
+git commit -m "[SL-3][docs] update CLAUDE.md with git-commits skill"
 
-Use the hostname from Step 1 in your commit message:
-
-```bash
-# If hostname returned: SPLIT-LEASE-6
-
-# Feature commit
-git commit -m "[SPLIT-LEASE-6][feat] add proposal submission workflow"
-
-# Bug fix
-git commit -m "[SPLIT-LEASE-6][fix] resolve FK constraint error in listing updates"
-
-# Documentation
-git commit -m "[SPLIT-LEASE-6][docs] update CLAUDE.md with git-commits skill"
-
-# Chore
-git commit -m "[SPLIT-LEASE-6][chore] update dependencies to latest versions"
-```
-
-**Different device example:**
-```bash
-# If hostname returned: SPLIT-LEASE-2
-
-git commit -m "[SPLIT-LEASE-2][feat] add user authentication"
+# Chore (working on ticket SL-100)
+git commit -m "[SL-100][chore] update dependencies to latest versions"
 ```
 
 ## Multi-File Commits
 
-For commits spanning multiple files, use a summary message with the actual hostname:
+For commits spanning multiple files, use a summary message with bullet points:
 
 ```bash
-# STEP 1: Get hostname first
-hostname
-# Output: SPLIT-LEASE-6
-
-# STEP 2: Use that hostname in the commit
-git commit -m "[SPLIT-LEASE-6][feat] implement booking confirmation flow
+git commit -m "[SL-3][feat] implement booking confirmation flow
 
 - Add BookingConfirmation component
 - Create useBookingConfirmation hook
@@ -113,72 +78,32 @@ git commit -m "[SPLIT-LEASE-6][feat] implement booking confirmation flow
 
 **EVERY TIME you commit, follow these steps in order:**
 
-1. **Run `hostname` command** to get current device name
-2. **Capture the output** (e.g., `SPLIT-LEASE-6`)
-3. **Determine commit type** based on changes (`feat`, `fix`, `docs`, etc.)
-4. **Write clear, imperative commit message** describing the change
-5. **Construct commit** using format: `[<hostname_output>][<type>] <message>`
-6. **Use heredoc format** for multi-line commits or co-authoring
+1. **Identify the ticket number** from the current task context (e.g., SL-3)
+2. **Determine commit type** based on changes (`feat`, `fix`, `docs`, etc.)
+3. **Write clear, imperative commit message** describing the change
+4. **Construct commit** using format: `[SL-<ticket>][<type>] <message>`
+5. **Use heredoc format** for multi-line commits or co-authoring
 
 ## Heredoc Format (Recommended for Multi-line)
 
-**STEP 1: Get hostname**
-```bash
-hostname
-# Output: SPLIT-LEASE-6
-```
-
-**STEP 2: Use in heredoc commit**
 ```bash
 git commit -m "$(cat <<'EOF'
-[SPLIT-LEASE-6][feat] implement user authentication
+[SL-3][feat] implement user authentication
 
 - Add login/signup components
 - Create auth edge functions
 - Update routing configuration
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-EOF
-)"
-```
-
-**If on different device (e.g., SPLIT-LEASE-2):**
-```bash
-git commit -m "$(cat <<'EOF'
-[SPLIT-LEASE-2][feat] implement user authentication
-
-- Add login/signup components
-- Create auth edge functions
-- Update routing configuration
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 EOF
 )"
 ```
 
 ## Rules
 
-- **MANDATORY: Run `hostname` before EVERY commit** - Never use a hardcoded or guessed hostname
-- **Always** substitute the actual hostname output into the commit message
+- **Always use ticket number** from the current task context
 - Keep messages imperative and concise ("add" not "added")
-- Never commit without the proper format: `[<HOSTNAME>][<type>] <message>`
+- Never commit without the proper format: `[SL-X][<type>] <message>`
 - Co-author Claude on all commits (append co-author line)
 - Use heredoc for commits with body text or co-authoring
-
-## ⚠️ Common Mistake to Avoid
-
-❌ **WRONG:** Assuming the hostname without checking
-```bash
-# Don't do this - never assume the hostname!
-git commit -m "[SPLIT-LEASE-6][feat] add feature"
-```
-
-✅ **CORRECT:** Always run hostname first
-```bash
-# Step 1: Get actual hostname
-hostname
-# Output: SPLIT-LEASE-6
-
-# Step 2: Use that output
-git commit -m "[SPLIT-LEASE-6][feat] add feature"
-```
+- If no ticket number is available, ask the user or use `[SL-0]` for general maintenance

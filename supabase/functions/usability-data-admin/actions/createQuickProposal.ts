@@ -64,9 +64,10 @@ export async function handleCreateQuickProposal(
   });
 
   // Get listing details to find the host
+  // SCHEMA NOTE: Column is "Host User" not "Host"
   const { data: listing, error: listingError } = await supabase
     .from('listing')
-    .select('_id, "Host", "Unique ID", "Listing Name"')
+    .select('_id, "Host User", "Unique ID", Name')
     .eq('_id', listingId)
     .single();
 
@@ -75,7 +76,7 @@ export async function handleCreateQuickProposal(
     throw new Error(`Failed to fetch listing: ${listingError.message}`);
   }
 
-  const hostId = listing['Host'];
+  const hostId = listing['Host User'];
   if (!hostId) {
     throw new Error('Listing does not have a host');
   }
@@ -151,7 +152,7 @@ export async function handleCreateQuickProposal(
     proposal: {
       id: proposalId,
       listingId,
-      listingName: listing['Listing Name'],
+      listingName: listing['Name'],
       guestId,
       hostId,
       moveInDate,

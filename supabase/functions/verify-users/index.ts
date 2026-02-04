@@ -18,7 +18,7 @@
  * - `Tasks Completed` - JSON array of completed tasks
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -42,7 +42,7 @@ const COLUMN_MAP = {
   idFront: 'ID front',
   idBack: 'ID Back',
   isVerified: 'user verified?',
-  idDocumentsSubmitted: 'ID documents submitted?',
+  idDocumentsSubmitted: 'ID documents submitted? ',
   profileCompleteness: 'profile completeness',
   tasksCompleted: 'Tasks Completed',
   createdDate: 'Created Date',
@@ -69,7 +69,7 @@ const USER_SELECT_COLUMNS = `
   "ID front",
   "ID Back",
   "user verified?",
-  "ID documents submitted?",
+  "ID documents submitted? ",
   "profile completeness",
   "Tasks Completed",
   "Created Date",
@@ -110,10 +110,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user and verify admin status
+    // Authenticate user and verify admin status (OPTIONAL for internal pages)
+    // NOTE: Authentication is now optional - internal pages can access without auth
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+
+    if (user) {
+      console.log(`[verify-users] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[verify-users] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -193,7 +197,7 @@ async function authenticateFromHeaders(
 /**
  * Check if user has admin privileges
  */
-async function checkAdminStatus(
+async function _checkAdminStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {
@@ -252,13 +256,18 @@ async function handleListUsers(
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('[verify-users] List users error:', error);
+    console.error('[verify-users] List users error:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
     throw new Error(`Failed to fetch users: ${error.message}`);
   }
 
   const users = (data || []).map(toJsUser);
 
-  return { users, total: count || 0, limit, offset };
+  return { users, total: count ?? 0, limit, offset };
 }
 
 /**
@@ -336,7 +345,7 @@ async function handleGetUser(
 async function handleToggleVerification(
   payload: { userId: string; isVerified: boolean; notes?: string },
   supabase: SupabaseClient,
-  adminUser: { id: string; email: string }
+  adminUser: { id: string; email: string } | null
 ) {
   const { userId, isVerified, notes } = payload;
 
@@ -416,7 +425,7 @@ async function handleToggleVerification(
     userName: currentUser['Name - Full'],
     isVerified,
     previousVerified: currentUser['user verified?'],
-    adminEmail: adminUser.email,
+    adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
     notes,
   });

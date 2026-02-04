@@ -1,0 +1,49 @@
+/**
+ * ReviewStarDisplay Styles
+ */
+
+.review-star-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.review-star-display__stars {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.review-star-display__star {
+  display: inline-flex;
+  color: var(--color-gray-300, #d1d5db);
+}
+
+.review-star-display__star--filled {
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.review-star-display__star--filled svg {
+  fill: var(--color-amber-400, #fbbf24);
+}
+
+.review-star-display__star--half {
+  position: relative;
+  color: var(--color-gray-300, #d1d5db);
+}
+
+.review-star-display__star--half::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.review-star-display__value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700, #374151);
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["budget", "scope", "exitConditions"],
+  "properties": {
+    "budget": {
+      "type": "object",
+      "required": ["maxTimeMinutes", "maxIterations"],
+      "properties": {
+        "maxTimeMinutes": { "type": "number", "minimum": 5, "maximum": 120 },
+        "maxIterations": { "type": "number", "minimum": 1, "maximum": 50 },
+        "maxBugsToFix": { "type": "number", "minimum": 1, "maximum": 20 }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": ["testFlow"],
+      "properties": {
+        "testFlow": { "enum": ["guest-proposal", "host-listing", "full-suite"] },
+        "startFromStep": { "type": "string" },
+        "skipSteps": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "exitConditions": {
+      "type": "object",
+      "properties": {
+        "stopOnFirstBug": { "type": "boolean", "default": false },
+        "requireCleanRun": { "type": "boolean", "default": true },
+        "maxConsecutiveFailures": { "type": "number", "default": 3 }
+      }
+    },
+    "dataReset": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "preserveTestAccounts": { "type": "boolean", "default": true },
+        "cleanupProposals": { "type": "boolean", "default": true }
+      }
+    }
+  }
+}

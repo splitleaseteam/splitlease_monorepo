@@ -17,7 +17,7 @@
  *   'Location - Borough': 'Manhattan',
  *   'Schedule days available': [0, 1, 2, 3, 4, 5, 6],
  *   'Minimum Nights': 3,
- *   '💰Nightly Host Rate for 4 nights': 150,
+ *   'nightly_rate_4_nights': 150,
  *   'Host User': 'host123'
  * })
  * // => {
@@ -72,26 +72,26 @@ export function adaptCandidateListing(rawListing) {
 
     // Pricing (keep raw fields for getNightlyRateByFrequency)
     pricing: {
-      rate2Nights: rawListing['💰Nightly Host Rate for 2 nights'] || null,
-      rate3Nights: rawListing['💰Nightly Host Rate for 3 nights'] || null,
-      rate4Nights: rawListing['💰Nightly Host Rate for 4 nights'] || null,
-      rate5Nights: rawListing['💰Nightly Host Rate for 5 nights'] || null,
-      rate6Nights: rawListing['💰Nightly Host Rate for 6 nights'] || null,
-      rate7Nights: rawListing['💰Nightly Host Rate for 7 nights'] || null,
-      cleaningFee: rawListing['💰Cleaning Cost / Maintenance Fee'] || 0,
-      damageDeposit: rawListing['💰Damage Deposit'] || 0,
-      priceOverride: rawListing['💰Price Override'] || null
+      rate2Nights: rawListing['nightly_rate_2_nights'] || null,
+      rate3Nights: rawListing['nightly_rate_3_nights'] || null,
+      rate4Nights: rawListing['nightly_rate_4_nights'] || null,
+      rate5Nights: rawListing['nightly_rate_5_nights'] || null,
+      rate6Nights: rawListing['nightly_rate_6_nights'] || null,
+      rate7Nights: rawListing['nightly_rate_7_nights'] || null,
+      cleaningFee: rawListing['cleaning_fee'] || 0,
+      damageDeposit: rawListing['damage_deposit'] || 0,
+      priceOverride: rawListing['price_override'] || null
     },
 
     // Keep original pricing fields for calculator compatibility
-    '💰Nightly Host Rate for 1 night': rawListing['💰Nightly Host Rate for 1 night'] || null,
-    '💰Nightly Host Rate for 2 nights': rawListing['💰Nightly Host Rate for 2 nights'] || null,
-    '💰Nightly Host Rate for 3 nights': rawListing['💰Nightly Host Rate for 3 nights'] || null,
-    '💰Nightly Host Rate for 4 nights': rawListing['💰Nightly Host Rate for 4 nights'] || null,
-    '💰Nightly Host Rate for 5 nights': rawListing['💰Nightly Host Rate for 5 nights'] || null,
-    '💰Nightly Host Rate for 6 nights': rawListing['💰Nightly Host Rate for 6 nights'] || null,
-    '💰Nightly Host Rate for 7 nights': rawListing['💰Nightly Host Rate for 7 nights'] || null,
-    '💰Price Override': rawListing['💰Price Override'] || null,
+    'nightly_rate_1_night': rawListing['nightly_rate_1_night'] || null,
+    'nightly_rate_2_nights': rawListing['nightly_rate_2_nights'] || null,
+    'nightly_rate_3_nights': rawListing['nightly_rate_3_nights'] || null,
+    'nightly_rate_4_nights': rawListing['nightly_rate_4_nights'] || null,
+    'nightly_rate_5_nights': rawListing['nightly_rate_5_nights'] || null,
+    'nightly_rate_6_nights': rawListing['nightly_rate_6_nights'] || null,
+    'nightly_rate_7_nights': rawListing['nightly_rate_7_nights'] || null,
+    'price_override': rawListing['price_override'] || null,
 
     // Keep original schedule field for calculator compatibility
     'Schedule days available': rawListing['Schedule days available'] || [],

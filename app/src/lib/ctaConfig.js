@@ -179,6 +179,12 @@ export const CTA_ROUTES = {
   'see_house_manual_host': {
     actionType: 'none',
     destination: null
+  },
+
+  // --- Create Proposal (Modal) ---
+  'create_proposal_guest': {
+    actionType: 'modal',
+    destination: 'CreateProposalFlowV2'
   }
 };
 

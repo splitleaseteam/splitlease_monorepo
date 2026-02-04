@@ -1,0 +1,471 @@
+/**
+ * Pattern 2: Urgency Countdown - PriceIncreaseRate Styles
+ */
+
+/* ========================================
+   PRICE INCREASE RATE CONTAINER
+   ======================================== */
+
+.price-increase-rate {
+  padding: 16px;
+  background: rgba(255, 152, 0, 0.08);
+  border-radius: 8px;
+  border-left: 3px solid #FF9800;
+}
+
+.price-increase-rate.rate-critical {
+  background: rgba(244, 67, 54, 0.1);
+  border-left-color: #F44336;
+  animation: pulse-border 2s infinite;
+}
+
+.price-increase-rate.rate-high {
+  background: rgba(255, 87, 34, 0.1);
+  border-left-color: #FF5722;
+}
+
+/* ========================================
+   RATE CONTAINER
+   ======================================== */
+
+.rate-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rate-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rate-critical .rate-icon {
+  animation: fire-flicker 1s infinite;
+}
+
+.rate-content {
+  flex: 1;
+}
+
+/* ========================================
+   RATE MAIN DISPLAY
+   ======================================== */
+
+.rate-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rate-label {
+  font-size: 13px;
+  color: #666;
+}
+
+.rate-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #E65100;
+}
+
+.rate-period {
+  font-size: 14px;
+  color: #999;
+}
+
+/* ========================================
+   RATE CONTEXT
+   ======================================== */
+
+.rate-context {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ========================================
+   RATE INDICATOR BAR
+   ======================================== */
+
+.rate-indicator {
+  margin-top: 8px;
+}
+
+.rate-indicator-bar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rate-indicator-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFA726, #FF5722, #F44336);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  animation: slide-in 0.8s ease;
+}
+
+.rate-indicator-label {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* ========================================
+   COMPACT VARIANT
+   ======================================== */
+
+.price-increase-rate-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #E65100;
+}
+
+.price-increase-rate-compact.rate-critical {
+  background: rgba(244, 67, 54, 0.15);
+  color: #D32F2F;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.rate-icon-compact {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ========================================
+   DETAILED VARIANT
+   ======================================== */
+
+.price-increase-rate-detailed {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.rate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.rate-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.rate-urgency-badge {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.rate-detailed.rate-critical .rate-urgency-badge {
+  background: #FFEBEE;
+  color: #D32F2F;
+}
+
+.rate-detailed.rate-high .rate-urgency-badge {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.rate-detailed.rate-medium .rate-urgency-badge {
+  background: #FFF8E1;
+  color: #F57C00;
+}
+
+/* ========================================
+   RATE BREAKDOWN
+   ======================================== */
+
+.rate-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.rate-item {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rate-item.rate-primary {
+  border-color: #FF9800;
+  border-width: 2px;
+}
+
+.rate-item-label {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rate-item-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E65100;
+}
+
+/* ========================================
+   RATE SUMMARY
+   ======================================== */
+
+.rate-summary {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.summary-row:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.summary-label {
+  color: #666;
+}
+
+.summary-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-total {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.summary-total .summary-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-total .summary-value {
+  font-size: 16px;
+  color: #D84315;
+}
+
+/* ========================================
+   RATE VISUAL
+   ======================================== */
+
+.rate-visual {
+  margin-top: 16px;
+}
+
+.rate-progress-bar {
+  position: relative;
+  height: 30px;
+  background: #E0E0E0;
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.rate-progress-current {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 15px;
+  transition: width 0.5s ease;
+}
+
+.rate-progress-peak {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #FFA726, #F44336);
+  border-radius: 15px;
+  transition: width 0.5s ease;
+  animation: slide-in 1s ease;
+}
+
+.rate-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #999;
+}
+
+/* ========================================
+   PRICE VELOCITY INDICATOR
+   ======================================== */
+
+.price-velocity {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.price-velocity.velocity-slow {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.price-velocity.velocity-moderate {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.price-velocity.velocity-fast {
+  background: #FFEBEE;
+  color: #C62828;
+}
+
+.price-velocity.velocity-extreme {
+  background: #FFEBEE;
+  color: #B71C1C;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.velocity-arrows {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fire-flicker {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(1.1) rotate(-2deg);
+    filter: brightness(1.2);
+  }
+  50% {
+    transform: scale(0.95) rotate(0deg);
+    filter: brightness(0.9);
+  }
+  75% {
+    transform: scale(1.05) rotate(2deg);
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-left-color: #FF9800;
+  }
+  50% {
+    border-left-color: #F44336;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .rate-value {
+    font-size: 20px;
+  }
+
+  .rate-breakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .rate-item-value {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-increase-rate {
+    padding: 12px;
+  }
+
+  .rate-icon {
+    font-size: 24px;
+  }
+
+  .rate-value {
+    font-size: 18px;
+  }
+
+  .price-increase-rate-detailed {
+    padding: 16px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .rate-icon,
+  .rate-indicator-fill,
+  .rate-progress-current,
+  .rate-progress-peak,
+  .price-velocity,
+  .price-increase-rate-compact {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}

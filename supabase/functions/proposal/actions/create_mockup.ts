@@ -28,6 +28,7 @@ import {
   calculateComplementaryNights,
   formatPriceForDisplay,
   getNightlyRateForNights,
+  fetchAvgDaysPerMonth,
 } from "../lib/calculations.ts";
 import {
   MOCK_GUEST_EMAIL,
@@ -125,16 +126,16 @@ export async function handleCreateMockup(
         "Host User",
         "Days Available (List of Days)",
         "Nights Available (List of Nights) ",
-        "💰Weekly Host Rate",
-        "💰Monthly Host Rate",
-        "💰Nightly Host Rate for 2 nights",
-        "💰Nightly Host Rate for 3 nights",
-        "💰Nightly Host Rate for 4 nights",
-        "💰Nightly Host Rate for 5 nights",
-        "💰Nightly Host Rate for 6 nights",
-        "💰Nightly Host Rate for 7 nights",
-        "💰Cleaning Cost / Maintenance Fee",
-        "💰Damage Deposit",
+        "weekly_host_rate",
+        "monthly_host_rate",
+        "nightly_rate_2_nights",
+        "nightly_rate_3_nights",
+        "nightly_rate_4_nights",
+        "nightly_rate_5_nights",
+        "nightly_rate_6_nights",
+        "nightly_rate_7_nights",
+        "cleaning_fee",
+        "damage_deposit",
         "Features - House Rules",
         "Location - Address",
         "Location - slightly different address"
@@ -218,15 +219,21 @@ export async function handleCreateMockup(
 
     const rentalTypeLower = (rentalType || "nightly").toLowerCase() as RentalType;
     const hostNightlyRate = getNightlyRateForNights(listingData, nightsPerWeek);
+    const needsAvgDaysPerMonth =
+      rentalTypeLower === "monthly" || reservationSpan === "other";
+    const avgDaysPerMonth = needsAvgDaysPerMonth
+      ? await fetchAvgDaysPerMonth(supabase)
+      : 30.4375;
 
     const compensation = calculateCompensation(
       rentalTypeLower,
       reservationSpan as ReservationSpan,
       nightsPerWeek,
-      listingData["💰Weekly Host Rate"] || 0,
+      listingData["weekly_host_rate"] || 0,
       hostNightlyRate,
       reservationSpanWeeks,
-      listingData["💰Monthly Host Rate"] || 0
+      listingData["monthly_host_rate"] || 0,
+      avgDaysPerMonth
     );
 
     console.log("[proposal:create_mockup] Pricing calculated:", {
@@ -326,8 +333,8 @@ export async function handleCreateMockup(
       "host compensation": compensation.host_compensation_per_night,
       "4 week compensation": compensation.four_week_compensation,
       "cleaning fee":
-        listingData["💰Cleaning Cost / Maintenance Fee"] || 0,
-      "damage deposit": listingData["💰Damage Deposit"] || 0,
+        listingData["cleaning_fee"] || 0,
+      "damage deposit": listingData["damage_deposit"] || 0,
       "nightly price for map (text)": formatPriceForDisplay(hostNightlyRate),
 
       // From listing

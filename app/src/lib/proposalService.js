@@ -267,16 +267,16 @@ export function transformListingForProposal(listing) {
     'rental type': listing.rentalType || listing['rental type'] || 'Nightly',
     'Weeks offered': listing.weeksOffered || listing.weeks_offered || listing['Weeks offered'] || 'Every week',
     // Monetary fields with Number() coercion for safety
-    '💰Unit Markup': Number(listing['💰Unit Markup']) || 0,
-    '💰Nightly Host Rate for 2 nights': Number(listing['Price 2 nights selected']) || null,
-    '💰Nightly Host Rate for 3 nights': Number(listing['Price 3 nights selected']) || null,
-    '💰Nightly Host Rate for 4 nights': Number(listing['Price 4 nights selected']) || null,
-    '💰Nightly Host Rate for 5 nights': Number(listing['Price 5 nights selected']) || null,
-    '💰Nightly Host Rate for 7 nights': Number(listing['Price 7 nights selected']) || null,
-    '💰Cleaning Cost / Maintenance Fee': Number(listing['💰Cleaning Cost / Maintenance Fee']) || 0,
-    '💰Damage Deposit': Number(listing['💰Damage Deposit']) || 0,
-    '💰Monthly Host Rate': Number(listing['💰Monthly Host Rate']) || null,
-    '💰Weekly Host Rate': Number(listing['💰Weekly Host Rate']) || null,
+    'unit_markup': Number(listing['unit_markup']) || 0,
+    'nightly_rate_2_nights': Number(listing['Price 2 nights selected']) || null,
+    'nightly_rate_3_nights': Number(listing['Price 3 nights selected']) || null,
+    'nightly_rate_4_nights': Number(listing['Price 4 nights selected']) || null,
+    'nightly_rate_5_nights': Number(listing['Price 5 nights selected']) || null,
+    'nightly_rate_7_nights': Number(listing['Price 7 nights selected']) || null,
+    'cleaning_fee': Number(listing['cleaning_fee']) || 0,
+    'damage_deposit': Number(listing['damage_deposit']) || 0,
+    'monthly_host_rate': Number(listing['monthly_host_rate']) || null,
+    'weekly_host_rate': Number(listing['weekly_host_rate']) || null,
     host: listing.host
   }
 }

@@ -94,6 +94,13 @@ screenshots/
 # Playwright video recordings
 videos/
 
+# Playwright test results
+test-results/
+!test-results/README.md
+!test-results/comet-questions/.gitkeep
+playwright-report/
+.playwright/
+
 # Note: bun.lock files are tracked for reproducible builds
 
 # Agent Context and Tools directories
@@ -149,6 +156,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!app/src/lib/
 lib64/
 parts/
 sdist/

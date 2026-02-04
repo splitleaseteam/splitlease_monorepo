@@ -31,6 +31,7 @@ import {
   calculateOrderRanking,
   formatPriceForDisplay,
   getNightlyRateForNights,
+  fetchAvgDaysPerMonth,
 } from "../lib/calculations.ts";
 import {
   addUserProposal,
@@ -250,22 +251,22 @@ export async function handleCreateSuggested(
       "Host User",
       "rental type",
       "Features - House Rules",
-      "💰Cleaning Cost / Maintenance Fee",
-      "💰Damage Deposit",
+      "cleaning_fee",
+      "damage_deposit",
       "Weeks offered",
       "Days Available (List of Days)",
       "Nights Available (List of Nights) ",
       "Location - Address",
       "Location - slightly different address",
       "Location - Borough",
-      "💰Weekly Host Rate",
-      "💰Nightly Host Rate for 2 nights",
-      "💰Nightly Host Rate for 3 nights",
-      "💰Nightly Host Rate for 4 nights",
-      "💰Nightly Host Rate for 5 nights",
-      "💰Nightly Host Rate for 6 nights",
-      "💰Nightly Host Rate for 7 nights",
-      "💰Monthly Host Rate",
+      "weekly_host_rate",
+      "nightly_rate_2_nights",
+      "nightly_rate_3_nights",
+      "nightly_rate_4_nights",
+      "nightly_rate_5_nights",
+      "nightly_rate_6_nights",
+      "nightly_rate_7_nights",
+      "monthly_host_rate",
       "Deleted"
     `)
     .eq("_id", input.listingId)
@@ -354,15 +355,21 @@ export async function handleCreateSuggested(
   const rentalType = ((listingData["rental type"] || "nightly").toLowerCase()) as RentalType;
   const nightsPerWeek = input.nightsSelected.length;
   const hostNightlyRate = getNightlyRateForNights(listingData, nightsPerWeek);
+  const needsAvgDaysPerMonth =
+    rentalType === "monthly" || (input.reservationSpan || "other") === "other";
+  const avgDaysPerMonth = needsAvgDaysPerMonth
+    ? await fetchAvgDaysPerMonth(supabase)
+    : 30.4375;
 
   const compensation = calculateCompensation(
     rentalType,
     (input.reservationSpan || "other") as ReservationSpan,
     nightsPerWeek,
-    listingData["💰Weekly Host Rate"] || 0,
+    listingData["weekly_host_rate"] || 0,
     hostNightlyRate,
     input.reservationSpanWeeks,
-    listingData["💰Monthly Host Rate"] || 0
+    listingData["monthly_host_rate"] || 0,
+    avgDaysPerMonth
   );
 
   // Move-out date
@@ -458,8 +465,8 @@ export async function handleCreateSuggested(
     "Total Compensation (proposal - host)": input.hostCompensation || compensation.total_compensation,
     "host compensation": compensation.host_compensation_per_night,
     "4 week compensation": compensation.four_week_compensation,
-    "cleaning fee": input.cleaningFee || listingData["💰Cleaning Cost / Maintenance Fee"] || 0,
-    "damage deposit": input.damageDeposit || listingData["💰Damage Deposit"] || 0,
+    "cleaning fee": input.cleaningFee || listingData["cleaning_fee"] || 0,
+    "damage deposit": input.damageDeposit || listingData["damage_deposit"] || 0,
     "nightly price for map (text)": formatPriceForDisplay(input.nightlyPrice),
 
     // From listing

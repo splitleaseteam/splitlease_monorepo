@@ -22,20 +22,24 @@ export async function handleAcceptProposal(
 ): Promise<{ success: boolean; message: string }> {
   console.log('[accept_proposal] Starting with proposalId:', payload.proposalId);
 
-  const { proposalId, isUsabilityTest = false, hostPersona } = payload;
+  const { proposalId, isUsabilityTest: _isUsabilityTest = false, hostPersona } = payload;
 
   if (!proposalId) {
     throw new Error('proposalId is required');
   }
 
   // Update proposal status to accepted
+  // SCHEMA-VERIFIED COLUMNS ONLY (2026-01-28):
+  // - Status: text ✅
+  // - Modified Date: timestamp ✅
+  // - Is Finalized: boolean ✅
+  // REMOVED non-existent: acceptance_date, accepted_by_persona
   const { error: updateError } = await supabase
     .from('proposal')
     .update({
-      Status: 'Accepted - Drafting Lease',
-      'acceptance_date': new Date().toISOString(),
+      Status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
       'Modified Date': new Date().toISOString(),
-      ...(hostPersona && { 'accepted_by_persona': hostPersona })
+      'Is Finalized': true
     })
     .eq('_id', proposalId);
 

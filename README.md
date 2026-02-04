@@ -462,17 +462,48 @@ await updateListing(id, changedFields);
 
 ## Deployment
 
-### Cloudflare Pages
+### CI/CD (Automated - Recommended)
+
+**GitHub Actions automatically deploys on push to `main` branch:**
+
+| What Changed | Workflow Triggered | Deployment Target | Time |
+|--------------|-------------------|-------------------|------|
+| `app/**` files | `deploy-frontend-prod.yml` | Cloudflare Pages (production) | ~1.8 min |
+| `supabase/functions/**` files | `deploy-edge-functions-prod.yml` | Supabase Edge Functions (live) | ~23 sec (single function) |
+| `pythonAnywhere/**` files | `deploy-pythonanywhere.yml` | PythonAnywhere (3 Flask apps) | ~1-2 min |
+| Multiple | Workflows run in parallel | All affected platforms | ~1.8 min (parallel) |
+
+**Setup Required:**
+1. **First time only:** Configure GitHub secrets (see [`.github/SECRETS_SETUP.md`](.github/SECRETS_SETUP.md))
+2. **Then:** Just push to `main` - deployments happen automatically
+
+**Dev/Feature Branches:**
+- Push to any non-`main` branch → Deploys to dev environment automatically
+- Preview URLs generated for frontend changes
+- Edge Functions deploy to `splitlease-backend-dev` project
+
+**Smart Deployment:**
+- **Changed functions only**: If you edit `auth-user`, only `auth-user` deploys (~23 seconds)
+- **All functions**: If you edit `_shared/`, all 17 functions deploy (~2 minutes)
+- **Tests required**: Deployments blocked if `bun run test` fails
+
+---
+
+### Manual Deployment (Legacy)
+
+**Cloudflare Pages:**
 
 ```bash
-# Manual deployment
+# From app/ directory
+cd app
+bun run build
 npx wrangler pages deploy dist --project-name splitlease
 
 # Or use Claude slash command
 /deploy
 ```
 
-### Edge Functions
+**Edge Functions:**
 
 ```bash
 # Deploy all
@@ -483,6 +514,46 @@ supabase functions deploy auth-user
 
 # View logs
 supabase functions logs auth-user
+```
+
+**PythonAnywhere:**
+
+```bash
+# SSH into PythonAnywhere
+ssh <username>@ssh.pythonanywhere.com
+
+# Navigate to repository
+cd pythonanywhere
+
+# Pull latest code
+git pull origin main
+
+# Install dependencies (for each app)
+cd pythonAnywhere/mysite && pip3 install --user -r requirements.txt
+cd ../mysite2 && pip3 install --user -r requirements.txt
+cd ../mysite3 && pip3 install --user -r requirements.txt
+
+# Reload web app
+touch /var/www/<username>_pythonanywhere_com_wsgi.py
+```
+
+See [`pythonAnywhere/DEPLOYMENT.md`](pythonAnywhere/DEPLOYMENT.md) for detailed setup instructions.
+
+---
+
+### Rollback Procedure
+
+If a deployment breaks production:
+
+```bash
+# Method 1: Revert the commit
+git revert HEAD
+git push origin main  # Triggers automatic re-deployment
+
+# Method 2: Deploy specific previous version (Edge Functions only)
+git checkout <previous-commit-hash>
+supabase functions deploy <function-name>
+git checkout main
 ```
 
 ---

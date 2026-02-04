@@ -7,22 +7,21 @@
  * - SMS (via send-sms Edge Function)
  * - In-app messaging (via messages Edge Function)
  *
- * Respects user notification preferences.
+ * Uses notification_preferences table for preference checking.
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { MagicLinksResult } from '../lib/types.ts';
-
-interface UserNotificationPrefs {
-  email_notifications?: boolean;
-  sms_notifications?: boolean;
-}
+import {
+  getNotificationPreferences,
+  shouldSendEmail as checkEmailPreference,
+  shouldSendSms as checkSmsPreference,
+} from '../../_shared/notificationHelpers.ts';
 
 interface UserData {
   _id: string;
   email: string;
   'First Name'?: string;
-  'notification preferences'?: UserNotificationPrefs;
   'Cell phone number'?: string;
 }
 
@@ -49,10 +48,10 @@ export async function sendLeaseNotifications(
 ): Promise<void> {
   console.log('[lease:notifications] Sending notifications for lease:', leaseId);
 
-  // Fetch user preferences
+  // Fetch user data (preferences are now in separate notification_preferences table)
   const { data: users, error: usersError } = await supabase
     .from('user')
-    .select('_id, email, "First Name", "notification preferences", "Cell phone number"')
+    .select('_id, email, "First Name", "Cell phone number"')
     .in('_id', [guestId, hostId]);
 
   if (usersError || !users) {
@@ -76,14 +75,21 @@ export async function sendLeaseNotifications(
     return;
   }
 
+  // Fetch notification preferences for both users
+  const [guestPrefs, hostPrefs] = await Promise.all([
+    getNotificationPreferences(supabase, guestId),
+    getNotificationPreferences(supabase, hostId),
+  ]);
+
   // Send all notifications concurrently (non-blocking)
+  // Note: Preferences are checked in each function
   await Promise.allSettled([
     // Email notifications
-    sendGuestEmail(supabaseUrl, serviceRoleKey, guest, agreementNumber, magicLinks.guest),
-    sendHostEmail(supabaseUrl, serviceRoleKey, host, guest, agreementNumber, magicLinks.host),
+    sendGuestEmail(supabaseUrl, serviceRoleKey, guest, agreementNumber, magicLinks.guest, guestPrefs),
+    sendHostEmail(supabaseUrl, serviceRoleKey, host, guest, agreementNumber, magicLinks.host, hostPrefs),
     // SMS notifications
-    sendGuestSms(supabaseUrl, serviceRoleKey, guest, agreementNumber),
-    sendHostSms(supabaseUrl, serviceRoleKey, host, guest, agreementNumber),
+    sendGuestSms(supabaseUrl, serviceRoleKey, guest, agreementNumber, guestPrefs),
+    sendHostSms(supabaseUrl, serviceRoleKey, host, guest, agreementNumber, hostPrefs),
     // In-app message
     sendInAppMessage(supabaseUrl, serviceRoleKey, guestId, hostId, leaseId, agreementNumber),
   ]);
@@ -91,34 +97,28 @@ export async function sendLeaseNotifications(
   console.log('[lease:notifications] All notification requests sent');
 }
 
-/**
- * Check if user wants email notifications
- */
-function shouldSendEmail(prefs: UserNotificationPrefs | undefined): boolean {
-  if (!prefs || typeof prefs !== 'object') return true; // Default to yes
-  return prefs.email_notifications !== false;
-}
-
-/**
- * Check if user wants SMS notifications
- */
-function shouldSendSms(prefs: UserNotificationPrefs | undefined): boolean {
-  if (!prefs || typeof prefs !== 'object') return false; // Default to no
-  return prefs.sms_notifications === true;
-}
+// Import NotificationPreferences type for function signatures
+import type { NotificationPreferences } from '../../_shared/notificationHelpers.ts';
 
 /**
  * Send email notification to guest
+ * Uses notification_preferences table for preference checking
  */
 async function sendGuestEmail(
   supabaseUrl: string,
   serviceRoleKey: string,
   guest: UserData,
   agreementNumber: string,
-  magicLink: string
+  magicLink: string,
+  prefs: NotificationPreferences | null
 ): Promise<void> {
-  if (!guest.email || !shouldSendEmail(guest['notification preferences'])) {
-    console.log('[lease:notifications] Skipping guest email (no email or preferences)');
+  if (!guest.email) {
+    console.log('[lease:notifications] Skipping guest email (no email)');
+    return;
+  }
+
+  if (!checkEmailPreference(prefs, 'lease_requests')) {
+    console.log('[lease:notifications] Skipping guest email (preference: lease_requests disabled)');
     return;
   }
 
@@ -151,6 +151,7 @@ async function sendGuestEmail(
 
 /**
  * Send email notification to host
+ * Uses notification_preferences table for preference checking
  */
 async function sendHostEmail(
   supabaseUrl: string,
@@ -158,10 +159,16 @@ async function sendHostEmail(
   host: UserData,
   guest: UserData,
   agreementNumber: string,
-  magicLink: string
+  magicLink: string,
+  prefs: NotificationPreferences | null
 ): Promise<void> {
-  if (!host.email || !shouldSendEmail(host['notification preferences'])) {
-    console.log('[lease:notifications] Skipping host email (no email or preferences)');
+  if (!host.email) {
+    console.log('[lease:notifications] Skipping host email (no email)');
+    return;
+  }
+
+  if (!checkEmailPreference(prefs, 'lease_requests')) {
+    console.log('[lease:notifications] Skipping host email (preference: lease_requests disabled)');
     return;
   }
 
@@ -195,15 +202,22 @@ async function sendHostEmail(
 
 /**
  * Send SMS notification to guest
+ * Uses notification_preferences table for preference checking
  */
 async function sendGuestSms(
   supabaseUrl: string,
   serviceRoleKey: string,
   guest: UserData,
-  agreementNumber: string
+  agreementNumber: string,
+  prefs: NotificationPreferences | null
 ): Promise<void> {
-  if (!guest['Cell phone number'] || !shouldSendSms(guest['notification preferences'])) {
-    console.log('[lease:notifications] Skipping guest SMS (no phone or preferences)');
+  if (!guest['Cell phone number']) {
+    console.log('[lease:notifications] Skipping guest SMS (no phone)');
+    return;
+  }
+
+  if (!checkSmsPreference(prefs, 'lease_requests')) {
+    console.log('[lease:notifications] Skipping guest SMS (preference: lease_requests disabled)');
     return;
   }
 
@@ -231,16 +245,23 @@ async function sendGuestSms(
 
 /**
  * Send SMS notification to host
+ * Uses notification_preferences table for preference checking
  */
 async function sendHostSms(
   supabaseUrl: string,
   serviceRoleKey: string,
   host: UserData,
   guest: UserData,
-  agreementNumber: string
+  agreementNumber: string,
+  prefs: NotificationPreferences | null
 ): Promise<void> {
-  if (!host['Cell phone number'] || !shouldSendSms(host['notification preferences'])) {
-    console.log('[lease:notifications] Skipping host SMS (no phone or preferences)');
+  if (!host['Cell phone number']) {
+    console.log('[lease:notifications] Skipping host SMS (no phone)');
+    return;
+  }
+
+  if (!checkSmsPreference(prefs, 'lease_requests')) {
+    console.log('[lease:notifications] Skipping host SMS (preference: lease_requests disabled)');
     return;
   }
 

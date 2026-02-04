@@ -22,11 +22,11 @@ export default function FilterBar({
     <div className="admin-threads__filters">
       <div className="admin-threads__filter-row">
         <div className="admin-threads__filter-group">
-          <label className="admin-threads__filter-label">Guest Email</label>
+          <label className="admin-threads__filter-label">Guest Search</label>
           <input
             type="text"
             className="admin-threads__filter-input"
-            placeholder="Search guest email..."
+            placeholder="Search by name, email, or phone..."
             value={filters.guestEmail}
             onChange={(e) => onFilterChange('guestEmail', e.target.value)}
             onKeyDown={handleKeyDown}
@@ -34,11 +34,11 @@ export default function FilterBar({
         </div>
 
         <div className="admin-threads__filter-group">
-          <label className="admin-threads__filter-label">Host Email</label>
+          <label className="admin-threads__filter-label">Host Search</label>
           <input
             type="text"
             className="admin-threads__filter-input"
-            placeholder="Search host email..."
+            placeholder="Search by name, email, or phone..."
             value={filters.hostEmail}
             onChange={(e) => onFilterChange('hostEmail', e.target.value)}
             onKeyDown={handleKeyDown}

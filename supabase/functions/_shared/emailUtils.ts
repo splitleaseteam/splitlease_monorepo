@@ -141,7 +141,7 @@ export async function sendEmail(params: SendEmailParams): Promise<EmailResult> {
  * Send welcome email to new user with verification link
  * Matches Bubble's l2-signup-user-emails-sending Step 5 (Guest) / Step 7 (Host)
  */
-export async function sendWelcomeEmail(
+export function sendWelcomeEmail(
   userType: 'Host' | 'Guest',
   email: string,
   firstName: string,
@@ -151,23 +151,32 @@ export async function sendWelcomeEmail(
     ? 'Welcome to Split Lease! Verify your email'
     : 'Welcome to Split Lease! Start hosting today';
 
-  const bodyIntro = userType === 'Guest'
+  // Include greeting in body text since template uses $$body text$$ not $$first_name$$
+  const greeting = firstName ? `Hi ${firstName}!` : 'Hi there!';
+  const bodyContent = userType === 'Guest'
     ? 'Thanks for joining Split Lease! Click below to verify your email and start finding flexible rentals.'
     : 'Thanks for joining Split Lease as a host! Click below to verify your email and start listing your space.';
+  const bodyText = `${greeting}<br><br>${bodyContent}`;
 
   return sendEmail({
-    templateId: EMAIL_TEMPLATES.BASIC_EMAIL,
+    templateId: EMAIL_TEMPLATES.MAGIC_LOGIN_LINK, // Using working template (BASIC_EMAIL has corrupted JSON)
     toEmail: email,
     toName: firstName,
     subject,
     variables: {
-      first_name: firstName || 'there',
-      user_type: userType,
-      verification_link: verificationLink,
-      login_url: 'https://split.lease/login',
-      body_intro: bodyIntro,
-      button_text: 'Verify Email',
-      button_url: verificationLink,
+      // MAGIC_LOGIN_LINK template uses different variable names
+      toemail: email,
+      fromemail: 'no-reply@split.lease',
+      fromname: 'Split Lease',
+      subject: subject,
+      preheadertext: userType === 'Guest'
+        ? 'Welcome! Verify your email to start finding flexible rentals.'
+        : 'Welcome! Verify your email to start hosting your space.',
+      title: userType === 'Guest' ? 'Welcome to Split Lease!' : 'Welcome to Split Lease!',
+      bodytext: bodyText.replace(/<br>/g, ' '), // Convert <br> to spaces for plain text
+      buttontext: 'Verify Email',
+      buttonurl: verificationLink,
+      footermessage: 'Thank you for joining Split Lease!',
     },
   });
 }
@@ -181,7 +190,7 @@ export async function sendWelcomeEmail(
  * Matches Bubble's l2-signup-user-emails-sending Step 1
  * BCCs all Slack channels + team emails for visibility
  */
-export async function sendInternalSignupNotification(
+export function sendInternalSignupNotification(
   userId: string,
   email: string,
   firstName: string,
@@ -191,6 +200,16 @@ export async function sendInternalSignupNotification(
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown';
   const timestamp = new Date().toISOString();
 
+  // Build body text with all signup details (template uses $$body text$$ not individual variables)
+  const bodyText = `Hi Team,<br><br>
+A new ${userType.toLowerCase()} has signed up for Split Lease.<br><br>
+<strong>Details:</strong><br>
+• Name: ${fullName}<br>
+• Email: ${email}<br>
+• Type: ${userType}<br>
+• User ID: ${userId}<br>
+• Time: ${timestamp}`;
+
   return sendEmail({
     templateId: EMAIL_TEMPLATES.BASIC_EMAIL,
     toEmail: 'tech@leasesplit.com', // Primary recipient
@@ -198,13 +217,9 @@ export async function sendInternalSignupNotification(
     fromName: 'Split Lease System',
     subject: `New ${userType} Signup: ${fullName}`,
     variables: {
-      first_name: 'Team',
-      body_intro: `A new ${userType.toLowerCase()} has signed up for Split Lease.`,
-      user_id: userId,
-      user_email: email,
-      user_name: fullName,
-      user_type: userType,
-      signup_timestamp: timestamp,
+      // Note: Template uses space-delimited placeholders like $$body text$$
+      // The send.ts normalizeVariableNames() converts these automatically
+      body_intro: bodyText,
       button_text: 'View in Dashboard',
       button_url: 'https://split.lease/admin',
     },

@@ -81,7 +81,7 @@ export async function handleGuestRequest(
         'Created Date': new Date().toISOString(),
       });
     console.log('[handleGuestRequest] Created request record');
-  } catch (requestErr) {
+  } catch (_requestErr) {
     console.warn('[handleGuestRequest] Could not create request record (table may not exist)');
     // Continue - table may not exist
   }

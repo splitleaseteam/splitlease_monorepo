@@ -19,6 +19,137 @@ const DEFAULT_FROM_EMAIL = 'noreply@splitlease.com';
 const DEFAULT_FROM_NAME = 'Split Lease';
 
 /**
+ * Mapping from code variable names (underscore) to template placeholder names (space)
+ * The database templates use space-delimited placeholders like $$from email$$
+ * but the code uses underscore-delimited names like from_email
+ */
+const VARIABLE_NAME_MAPPING: Record<string, string> = {
+  'from_email': 'from email',
+  'from_name': 'from name',
+  'to_email': 'to',
+  'to_name': 'to name',
+  'body_intro': 'body text',
+  'body_text': 'body text',
+  'logo_url': 'logo url',
+  'button_text': 'buttontext',
+  'button_url': 'buttonurl',
+  'reply_to': 'reply_to',
+  'first_name': 'first_name',
+};
+
+/**
+ * Generate a styled HTML button for email templates
+ * The BASIC_EMAIL template expects a complete HTML table row with button
+ */
+function generateButtonHtml(buttonText: string, buttonUrl: string): string {
+  if (!buttonText || !buttonUrl) {
+    return '';
+  }
+
+  return `<tr>
+  <td align="center" style="padding:24px 32px;">
+    <a href="${buttonUrl}" style="display:inline-block; background:#7c3aed; color:#ffffff; padding:14px 28px; border-radius:8px; font-weight:600; font-size:16px; text-decoration:none;">
+      ${buttonText}
+    </a>
+  </td>
+</tr>`;
+}
+
+/**
+ * Normalize variable names to match template placeholders
+ * Adds both underscore and space versions of each variable
+ * This ensures compatibility with templates using either format
+ */
+function normalizeVariableNames(variables: Record<string, string>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(variables)) {
+    // Keep the original key
+    normalized[key] = value;
+
+    // If there's a mapping, add the mapped version too
+    if (VARIABLE_NAME_MAPPING[key]) {
+      normalized[VARIABLE_NAME_MAPPING[key]] = value;
+    }
+
+    // Also add space-to-underscore conversion for any key with underscores
+    if (key.includes('_')) {
+      normalized[key.replace(/_/g, ' ')] = value;
+    }
+  }
+
+  // Generate combined button HTML if button_text and button_url are provided
+  // Template expects $$button$$ to be a complete HTML table row
+  const buttonText = variables.button_text || variables.buttontext;
+  const buttonUrl = variables.button_url || variables.buttonurl;
+  if (buttonText && buttonUrl) {
+    normalized['button'] = generateButtonHtml(buttonText, buttonUrl);
+  } else if (!normalized['button']) {
+    // If no button provided, set empty string to remove placeholder cleanly
+    normalized['button'] = '';
+  }
+
+  // Set defaults for optional placeholders to prevent JSON breakage
+  // These are marked as "optional" in the BASIC_EMAIL template
+  if (!normalized['header']) {
+    normalized['header'] = '';
+  }
+  if (!normalized['logo url'] && !normalized['logo_url']) {
+    normalized['logo url'] = '';
+    normalized['logo_url'] = '';
+  }
+
+  // STRUCTURAL PLACEHOLDERS: These sit outside JSON string values in Bubble templates
+  // They need to be valid JSON fragments or empty strings
+  // The template structure is: "to": [...] $$cc$$ $$bcc$$
+  // When populated, these should inject: , "cc": [{"email": "..."}]
+
+  // Handle $$cc$$ - needs to be empty (will be injected via SendGrid body later if needed)
+  if (!normalized['cc']) {
+    normalized['cc'] = '';
+  }
+
+  // Handle $$bcc$$ - needs to be empty (will be injected via SendGrid body later if needed)
+  if (!normalized['bcc']) {
+    normalized['bcc'] = '';
+  }
+
+  // Handle $$from name$$ - should be: , "name": "Value" or empty
+  // This is injected after "email": "..." in the from object
+  const fromName = variables.from_name || variables['from name'] || DEFAULT_FROM_NAME;
+  if (fromName) {
+    normalized['from name'] = `, "name": "${escapeJsonValue(fromName)}"`;
+  } else {
+    normalized['from name'] = '';
+  }
+
+  // Handle $$reply_to$$ - should be: "reply_to": {"email": "..."}, or empty
+  // This sits between "from" and "subject"
+  if (!normalized['reply_to']) {
+    normalized['reply_to'] = '';
+  }
+
+  // Handle $$attachment$$ - should be empty for now (attachments not implemented)
+  if (!normalized['attachment']) {
+    normalized['attachment'] = '';
+  }
+
+  return normalized;
+}
+
+/**
+ * Escape a string value for safe JSON embedding
+ */
+function escapeJsonValue(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t');
+}
+
+/**
  * Handle send email action
  */
 export async function handleSend(
@@ -109,20 +240,49 @@ export async function handleSend(
   // The template is a SendGrid JSON payload with $$placeholder$$ variables
   console.log('[send-email:send] Step 2/3: Processing template placeholders...');
 
-  // Build the complete variables object, merging payload values with provided overrides
-  const allVariables: Record<string, string> = {
+  // Debug: Log template content around problematic positions
+  // The error mentions position ~3900, let's show content around that area
+  const debugStart = 3850;
+  const debugEnd = 3950;
+  if (templateJsonString.length > debugEnd) {
+    console.log('[send-email:send] === TEMPLATE DEBUG (chars ' + debugStart + '-' + debugEnd + ') ===');
+    const debugContent = templateJsonString.substring(debugStart, debugEnd);
+    console.log('[send-email:send] Debug content:', JSON.stringify(debugContent));
+    // Build character code array without template literal nesting issues
+    const charCodes: string[] = [];
+    for (let i = 0; i < debugContent.length; i++) {
+      const c = debugContent[i];
+      const code = c.charCodeAt(0);
+      const pos = debugStart + i;
+      if (code < 32 || code > 126) {
+        charCodes.push(pos + ':0x' + code.toString(16));
+      } else {
+        charCodes.push(pos + ":'" + c + "'");
+      }
+    }
+    console.log('[send-email:send] Char codes:', charCodes.join(', '));
+  }
+
+  // Build the base variables object with explicit payload values
+  const baseVariables: Record<string, string> = {
     ...variables,
     // Override with explicit payload values if provided
     to_email: to_email,
     from_email: from_email || DEFAULT_FROM_EMAIL,
     from_name: from_name || DEFAULT_FROM_NAME,
     subject: providedSubject || variables.subject || 'Message from Split Lease',
+    // Add current year for footer
+    year: new Date().getFullYear().toString(),
   };
 
   // Add to_name if provided
   if (to_name) {
-    allVariables.to_name = to_name;
+    baseVariables.to_name = to_name;
   }
+
+  // Normalize variable names to support both underscore and space formats
+  // Template uses $$from email$$ but code passes from_email
+  const allVariables = normalizeVariableNames(baseVariables);
 
   // Log placeholder replacements for debugging
   console.log('[send-email:send] Placeholder replacements:', JSON.stringify(allVariables, null, 2));
@@ -144,9 +304,14 @@ export async function handleSend(
   let sendGridBody: Record<string, unknown>;
   try {
     sendGridBody = JSON.parse(processedJsonString);
-  } catch (parseError) {
-    console.error('[send-email:send] Failed to parse processed template as JSON:', parseError);
-    throw new Error(`Template ${template_id} produced invalid JSON after placeholder processing`);
+  } catch (_parseError) {
+    const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+    console.error('[send-email:send] ========== JSON PARSE ERROR ==========');
+    console.error('[send-email:send] Error:', errorMessage);
+    console.error('[send-email:send] JSON length:', processedJsonString.length);
+    console.error('[send-email:send] JSON preview (first 2000 chars):', processedJsonString.substring(0, 2000));
+    console.error('[send-email:send] JSON preview (last 500 chars):', processedJsonString.substring(processedJsonString.length - 500));
+    throw new Error(`Template ${template_id} produced invalid JSON: ${errorMessage}`);
   }
 
   // Inject CC and BCC recipients into personalizations if provided

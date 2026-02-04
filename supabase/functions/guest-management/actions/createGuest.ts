@@ -61,7 +61,7 @@ export async function handleCreateGuest(
   console.log(`[createGuest] Creating guest: ${firstName} ${lastName} (${email})`);
 
   // Check if email already exists
-  const { data: existingUser, error: checkError } = await supabase
+  const { data: existingUser, error: _checkError } = await supabase
     .from('user')
     .select('_id, email')
     .eq('email', email.toLowerCase().trim())

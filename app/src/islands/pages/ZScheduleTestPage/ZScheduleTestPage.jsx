@@ -12,6 +12,7 @@ import { useZScheduleTestPageLogic } from './useZScheduleTestPageLogic.js';
 import HostScheduleSelector from '../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import SearchScheduleSelector from '../../shared/SearchScheduleSelector.jsx';
 import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
+import ScheduleValidationMatrix from '../../shared/ScheduleValidationMatrix.jsx';
 import './ZScheduleTestPage.css';
 
 const WEEK_PATTERN_OPTIONS = [
@@ -62,7 +63,10 @@ export default function ZScheduleTestPage() {
     handleListingSelectionChange,
     handleListingPriceChange,
     handleListingScheduleChange,
-    toggleOptionSets
+    toggleOptionSets,
+    edgeCaseScenarios,
+    selectedScenario,
+    handleLoadScenario
   } = useZScheduleTestPageLogic();
 
   if (listingsLoading) {
@@ -187,6 +191,31 @@ export default function ZScheduleTestPage() {
               <p className="zst-muted">Loading configuration...</p>
             )}
           </div>
+
+          <div className="zst-card">
+            <span className="zst-card-title">Edge Case Scenarios</span>
+            <div className="zst-button-row">
+              {edgeCaseScenarios.map(scenario => (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  className={`zst-button ${selectedScenario?.id === scenario.id ? 'active' : ''}`}
+                  onClick={() => handleLoadScenario(scenario.id)}
+                >
+                  {scenario.name}
+                </button>
+              ))}
+            </div>
+            {selectedScenario && (
+              <div className="zst-meta">
+                <p><span>Expected Valid</span>{selectedScenario.expectedValid ? 'Yes' : 'No'}</p>
+                <p><span>Expected Nights</span>{selectedScenario.expectedNights ?? 'N/A'}</p>
+                {selectedScenario.expectedError && (
+                  <p><span>Expected Error</span>{selectedScenario.expectedError}</p>
+                )}
+              </div>
+            )}
+          </div>
         </aside>
 
         <section className="zst-main">
@@ -230,6 +259,21 @@ export default function ZScheduleTestPage() {
                 onPriceChange={handleListingPriceChange}
                 onScheduleChange={handleListingScheduleChange}
               />
+            </div>
+
+            <div className="zst-card">
+              <span className="zst-card-title">Triple-Check Validation Matrix</span>
+              <p className="zst-description">
+                Compares validation results across Golden Validator, Backend Workflow, and Frontend Validators.
+              </p>
+              {listingSelectedDays.length > 0 ? (
+                <ScheduleValidationMatrix
+                  selectedDayIndices={listingSelectedDays.map(d => d.dayOfWeek)}
+                  listing={scheduleListing}
+                />
+              ) : (
+                <p className="zst-muted">Select days above to see validation matrix</p>
+              )}
             </div>
           </div>
 

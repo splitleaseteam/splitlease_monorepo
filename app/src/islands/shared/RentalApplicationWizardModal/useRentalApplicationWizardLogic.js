@@ -848,11 +848,15 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
   // HANDLERS - Submission
   // ============================================================================
   const handleSubmit = useCallback(async () => {
+    console.log('[RentalAppWizard] handleSubmit called, canSubmit:', canSubmit);
+
     if (!canSubmit) {
+      console.log('[RentalAppWizard] Cannot submit - setting error');
       setSubmitError('Please complete at least 80% of the application and sign.');
       return;
     }
 
+    console.log('[RentalAppWizard] Starting submission...');
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -899,17 +903,18 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
       // Clear localStorage on success
       resetStore();
 
-      // Notify parent
+      console.log('[RentalAppWizard] Submission successful, calling onSuccess');
+      // Notify parent (parent's handleRentalWizardSuccess already closes modal)
       onSuccess?.();
-      onClose?.();
 
     } catch (error) {
-      console.error('Submit error:', error);
+      console.error('[RentalAppWizard] Submit error:', error);
       setSubmitError(error.message || 'Submission failed. Please try again.');
     } finally {
+      console.log('[RentalAppWizard] Submission complete, setting isSubmitting false');
       setIsSubmitting(false);
     }
-  }, [canSubmit, formData, occupants, verificationStatus, resetStore, onSuccess, onClose]);
+  }, [canSubmit, formData, occupants, verificationStatus, resetStore, onSuccess]);
 
   // ============================================================================
   // RETURN PUBLIC API

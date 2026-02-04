@@ -34,7 +34,7 @@
  * - get_narrators: Get available narrator voices
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
@@ -99,7 +99,7 @@ const ADMIN_EMAILS = [
 ];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   // Data fetching
   get_house_manuals: handleGetHouseManuals,
   get_deepfakes: handleGetDeepfakes,

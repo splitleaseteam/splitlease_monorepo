@@ -16,7 +16,7 @@
  * calculateMatchScore({
  *   candidateListing: {
  *     boroughName: 'Manhattan',
- *     '💰Nightly Host Rate for 4 nights': 105,
+ *     'nightly_rate_4_nights': 105,
  *     'Schedule days available': [0, 1, 2, 3, 4, 5, 6],
  *     'Minimum Nights': 4
  *   },

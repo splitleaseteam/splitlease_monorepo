@@ -24,7 +24,16 @@ import {
   NotificationEvent,
 } from '../lib/types.ts';
 import { generateNotificationContent } from '../lib/notificationContent.ts';
+import { generateEmailTemplateVariables, getTemplateIdForScenario as _getTemplateIdForScenario } from '../lib/emailTemplateGenerator.ts';
 import { sendEmail, EMAIL_TEMPLATES } from '../../_shared/emailUtils.ts';
+import { fetchListingFromLease, buildPropertyDisplay as _buildPropertyDisplay } from '../lib/propertyDisplay.ts';
+import type { EmailNotificationContext, ListingData as _ListingData } from '../lib/types.ts';
+import {
+  getNotificationPreferences as _NotificationPreferences,
+  shouldSendEmail as checkEmailPreference,
+  shouldSendSms as checkSmsPreference,
+  NotificationPreferences as _NotificationPreferences,
+} from '../../_shared/notificationHelpers.ts';
 
 // ─────────────────────────────────────────────────────────────
 // Configuration
@@ -35,7 +44,7 @@ import { sendEmail, EMAIL_TEMPLATES } from '../../_shared/emailUtils.ts';
  * GENERAL: Used for SUBMITTED and REJECTED events
  * CELEBRATION: Used for ACCEPTED events (approval)
  */
-const DATE_CHANGE_EMAIL_TEMPLATES = {
+const _DATE_CHANGE_EMAIL_TEMPLATES = {
   GENERAL: EMAIL_TEMPLATES.BASIC_EMAIL,
   CELEBRATION: EMAIL_TEMPLATES.BASIC_EMAIL, // TODO: Create celebration template if desired
 };
@@ -148,14 +157,15 @@ export async function sendDateChangeRequestNotifications(
   };
 
   // Step 4: Send all notifications concurrently (non-blocking)
+  // Note: Email/SMS functions now check notification_preferences table
   const results = await Promise.allSettled([
     // Requester notifications (isRequester = true)
-    sendEmailNotification(context, 'requester', magicLinks.requester),
-    sendSmsNotification(context, 'requester'),
+    sendEmailNotification(supabase, context, 'requester', magicLinks.requester),
+    sendSmsNotification(supabase, context, 'requester'),
 
     // Receiver notifications (isRequester = false)
-    sendEmailNotification(context, 'receiver', magicLinks.receiver),
-    sendSmsNotification(context, 'receiver'),
+    sendEmailNotification(supabase, context, 'receiver', magicLinks.receiver),
+    sendSmsNotification(supabase, context, 'receiver'),
 
     // In-app message (single message visible to both)
     sendInAppNotification(supabase, context),
@@ -383,49 +393,81 @@ async function auditMagicLink(
 
 /**
  * Send email notification to a recipient
+ * Uses new notification_preferences table for preference checking
+ * Uses new email template generator with 16+ scenarios
  *
+ * @param supabase - Supabase client for preference lookup
  * @param context - Full notification context
  * @param recipientType - 'requester' or 'receiver'
  * @param magicLink - Pre-generated magic link for this recipient
  */
 async function sendEmailNotification(
+  supabase: SupabaseClient,
   context: NotificationContext,
   recipientType: 'requester' | 'receiver',
   magicLink: string
 ): Promise<void> {
   const recipient = recipientType === 'requester' ? context.requestedBy : context.receiver;
 
-  // Check if user wants email notifications
-  if (!shouldSendEmail(recipient.notificationPreferences)) {
-    console.log(`[dcr:notifications] Skipping email for ${recipientType} (preference)`);
+  if (!recipient.email) {
+    console.log(`[dcr:notifications] Skipping email for ${recipientType} (no email)`);
     return;
   }
 
-  if (!recipient.email) {
-    console.log(`[dcr:notifications] Skipping email for ${recipientType} (no email)`);
+  // Check notification preferences from new table
+  const prefs = await getNotificationPreferences(supabase, recipient.userId);
+  if (!checkEmailPreference(prefs, 'reservation_updates')) {
+    console.log(`[dcr:notifications] Skipping email for ${recipientType} (preference: reservation_updates disabled)`);
     return;
   }
 
   // CRITICAL: Determine if this recipient is the one who initiated the request
   const isRequester = recipientType === 'requester';
 
-  const content = generateNotificationContent(context, recipient.role, isRequester);
-  const templateId = context.event === 'ACCEPTED'
-    ? DATE_CHANGE_EMAIL_TEMPLATES.CELEBRATION
-    : DATE_CHANGE_EMAIL_TEMPLATES.GENERAL;
-
   try {
+    // Fetch additional data needed for new email templates
+    const listingData = await fetchListingFromLease(supabase, context.leaseId);
+
+    // Fetch lease data with check-in/check-out dates
+    const { data: leaseData } = await supabase
+      .from('bookings_leases')
+      .select('check_in, check_out')
+      .eq('_id', context.leaseId)
+      .maybeSingle();
+
+    // Build full email notification context
+    const emailContext: EmailNotificationContext = {
+      ...context,
+      leaseData: {
+        checkIn: leaseData?.check_in || null,
+        checkOut: leaseData?.check_out || null,
+        agreementNumber: context.agreementNumber,
+      },
+      listingData: listingData,
+      percentageOfRegular: null, // Would need to fetch from request data if needed
+    };
+
+    // Generate email template variables using new generator
+    const templateVars = generateEmailTemplateVariables(
+      emailContext,
+      recipient.role,
+      isRequester
+    );
+
+    // Determine template ID based on scenario (use BASIC_EMAIL as default for now)
+    // TODO: Replace with scenario-based template IDs once templates are created in Bubble
+    const templateId = EMAIL_TEMPLATES.BASIC_EMAIL;
+
+    // Override button URL with magic link
+    templateVars.buttonurl = magicLink;
+
+    // Send email with all template variables
     await sendEmail({
       templateId,
       toEmail: recipient.email,
       toName: recipient.firstName || undefined,
-      subject: content.subject,
-      variables: {
-        first_name: recipient.firstName || 'there',
-        body_intro: content.emailBody,
-        button_text: content.ctaButtonText,
-        button_url: magicLink || content.ctaUrl,
-      },
+      subject: templateVars.subject || 'Split Lease - Date Change Request',
+      variables: templateVars,
       bccEmails: DATE_CHANGE_BCC_EMAILS,
     });
 
@@ -435,35 +477,30 @@ async function sendEmailNotification(
   }
 }
 
-/**
- * Check if user wants email notifications
- */
-function shouldSendEmail(prefs: { email_notifications?: boolean } | null): boolean {
-  if (!prefs || typeof prefs !== 'object') return true; // Default to yes
-  return prefs.email_notifications !== false;
-}
-
 // ─────────────────────────────────────────────────────────────
 // SMS Notifications
 // ─────────────────────────────────────────────────────────────
 
 /**
  * Send SMS notification to a recipient
+ * Uses new notification_preferences table for preference checking
  */
 async function sendSmsNotification(
+  supabase: SupabaseClient,
   context: NotificationContext,
   recipientType: 'requester' | 'receiver'
 ): Promise<void> {
   const recipient = recipientType === 'requester' ? context.requestedBy : context.receiver;
 
-  // Check if user wants SMS notifications
-  if (!shouldSendSms(recipient.notificationPreferences)) {
-    console.log(`[dcr:notifications] Skipping SMS for ${recipientType} (preference)`);
+  if (!recipient.phone) {
+    console.log(`[dcr:notifications] Skipping SMS for ${recipientType} (no phone)`);
     return;
   }
 
-  if (!recipient.phone) {
-    console.log(`[dcr:notifications] Skipping SMS for ${recipientType} (no phone)`);
+  // Check notification preferences from new table
+  const prefs = await getNotificationPreferences(supabase, recipient.userId);
+  if (!checkSmsPreference(prefs, 'reservation_updates')) {
+    console.log(`[dcr:notifications] Skipping SMS for ${recipientType} (preference: reservation_updates disabled)`);
     return;
   }
 
@@ -479,7 +516,7 @@ async function sendSmsNotification(
   const isRequester = recipientType === 'requester';
 
   // Get the other person's name for the SMS content
-  const otherPersonName = isRequester
+  const _otherPersonName = isRequester
     ? context.receiver.firstName || 'the other party'
     : context.requestedBy.firstName || 'the other party';
 
@@ -512,14 +549,6 @@ async function sendSmsNotification(
   } catch (error) {
     console.warn(`[dcr:notifications] SMS failed for ${recipientType} (non-blocking):`, (error as Error).message);
   }
-}
-
-/**
- * Check if user wants SMS notifications
- */
-function shouldSendSms(prefs: { sms_notifications?: boolean } | null): boolean {
-  if (!prefs || typeof prefs !== 'object') return false; // Default to no
-  return prefs.sms_notifications === true;
 }
 
 /**

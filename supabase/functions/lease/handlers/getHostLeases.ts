@@ -162,9 +162,9 @@ export async function handleGetHostLeases(
   const leaseIds = leases.map((l: LeaseData) => l._id);
 
   // Step 4: Fetch guests
-  let guestMap: Record<string, GuestInfo> = {};
+  const guestMap: Record<string, GuestInfo> = {};
   if (guestIds.length > 0) {
-    const { data: guests, error: guestsError } = await supabase
+    const { data: guests, error: _guestsError } = await supabase
       .from('user')
       .select(`
         _id,
@@ -189,7 +189,7 @@ export async function handleGetHostLeases(
   }
 
   // Step 5: Fetch listing details
-  let listingMap: Record<string, ListingInfo> = {};
+  const listingMap: Record<string, ListingInfo> = {};
   if (leaseListingIds.length > 0) {
     const { data: listings, error: listingsError2 } = await supabase
       .from('listing')
@@ -211,7 +211,7 @@ export async function handleGetHostLeases(
   }
 
   // Step 6: Fetch stays for all leases
-  let staysByLease: Record<string, StayWithReview[]> = {};
+  const staysByLease: Record<string, StayWithReview[]> = {};
   if (leaseIds.length > 0) {
     const { data: stays, error: staysError } = await supabase
       .from('bookings_stays')
@@ -246,7 +246,7 @@ export async function handleGetHostLeases(
   }
 
   // Step 7: Fetch payment records for all leases
-  let paymentsByLease: Record<string, PaymentRecord[]> = {};
+  const paymentsByLease: Record<string, PaymentRecord[]> = {};
   if (leaseIds.length > 0) {
     const { data: payments, error: paymentsError } = await supabase
       .from('paymentrecords')
@@ -282,7 +282,7 @@ export async function handleGetHostLeases(
   }
 
   // Step 8: Fetch date change requests for all leases
-  let dateChangesByLease: Record<string, DateChangeRequest[]> = {};
+  const dateChangesByLease: Record<string, DateChangeRequest[]> = {};
   if (leaseIds.length > 0) {
     const { data: dateChanges, error: dateChangesError } = await supabase
       .from('datechangerequest')
@@ -310,7 +310,7 @@ export async function handleGetHostLeases(
       const requestedByIds = [...new Set(dateChanges.map((dc: DateChangeRequest) => dc['Requested by']).filter(Boolean))];
 
       // Fetch user info for requestedBy
-      let requestedByMap: Record<string, GuestInfo> = {};
+      const requestedByMap: Record<string, GuestInfo> = {};
       if (requestedByIds.length > 0) {
         const { data: requestedByUsers } = await supabase
           .from('user')

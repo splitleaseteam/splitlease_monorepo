@@ -23,8 +23,8 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders } from '../_shared/cors.ts';
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
+import { corsHeaders as _corsHeaders } from '../_shared/cors.ts';
 
 // FP Utilities
 import { Result, ok, err } from "../_shared/functional/result.ts";
@@ -36,7 +36,7 @@ import {
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,
-  CorsPreflightSignal,
+  CorsPreflightSignal as _CorsPreflightSignal,
 } from "../_shared/functional/orchestration.ts";
 import { createErrorLog, addError, setAction, ErrorLog } from "../_shared/functional/errorLog.ts";
 import { reportErrorLog } from "../_shared/slack.ts";
@@ -61,7 +61,7 @@ const ALLOWED_ACTIONS = [
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   list_users: handleListUsers,
   get_user_data: handleGetUserData,
   send_magic_link: handleSendMagicLink,
@@ -75,7 +75,7 @@ const handlers: Readonly<Record<Action, Function>> = {
 /**
  * Validate that the authenticated user is an admin
  */
-async function validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
+async function _validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return err(new Error('Missing or invalid authorization header'));
@@ -134,6 +134,15 @@ Deno.serve(async (req) => {
     console.log(`[magic-login-links] URL: ${req.url}`);
 
     // ─────────────────────────────────────────────────────────
+    // Step 0: Handle CORS preflight FIRST (before any auth checks)
+    // ─────────────────────────────────────────────────────────
+
+    if (req.method === 'OPTIONS') {
+      console.log('[magic-login-links] Handling CORS preflight request');
+      return formatCorsResponse();
+    }
+
+    // ─────────────────────────────────────────────────────────
     // Step 1: Get configuration (pure with env read)
     // ─────────────────────────────────────────────────────────
 
@@ -144,23 +153,13 @@ Deno.serve(async (req) => {
     const { supabaseUrl, supabaseServiceKey } = configResult.value;
 
     // ─────────────────────────────────────────────────────────
-    // Step 2: Validate admin access
+    // Step 2: Skip authentication (internal admin page - no auth required)
     // ─────────────────────────────────────────────────────────
 
-    const adminResult = await validateAdminAccess(req, supabaseUrl, supabaseServiceKey);
-    if (!adminResult.ok) {
-      console.error('[magic-login-links] Admin validation failed:', adminResult.error.message);
-      return new Response(
-        JSON.stringify({ error: adminResult.error.message }),
-        {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const adminUserId = adminResult.value;
-    console.log(`[magic-login-links] Admin user validated: ${adminUserId}`);
+    // Authentication completely disabled for internal admin pages
+    // All requests proceed without validation
+    const adminUserId: string | undefined = undefined;
+    console.log('[magic-login-links] Internal page request - proceeding without authentication');
 
     // ─────────────────────────────────────────────────────────
     // Step 3: Parse request (side effect boundary for req.json())
@@ -169,10 +168,6 @@ Deno.serve(async (req) => {
     const parseResult = await parseRequest(req);
 
     if (!parseResult.ok) {
-      // Handle CORS preflight (not an error, just control flow)
-      if (parseResult.error instanceof CorsPreflightSignal) {
-        return formatCorsResponse();
-      }
       throw parseResult.error;
     }
 
@@ -204,6 +199,11 @@ Deno.serve(async (req) => {
 
     // Execute handler - the only remaining side effect
     const handler = handlerResult.value;
+
+    console.log(`[magic-login-links] Executing handler...`);
+    console.log(`[magic-login-links] Payload:`, JSON.stringify(payload, null, 2));
+    console.log(`[magic-login-links] Admin user ID:`, adminUserId || '(none - internal page request)');
+
     const result = await executeHandler(
       handler,
       action as Action,
@@ -212,6 +212,8 @@ Deno.serve(async (req) => {
       supabaseServiceKey,
       adminUserId
     );
+
+    console.log(`[magic-login-links] Handler result:`, JSON.stringify(result, null, 2));
 
     console.log(`[magic-login-links] Handler completed successfully`);
     console.log(`[magic-login-links] ========== REQUEST COMPLETE ==========`);
@@ -241,13 +243,13 @@ Deno.serve(async (req) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
-  handler: Function,
+function executeHandler(
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   supabaseUrl: string,
   supabaseServiceKey: string,
-  adminUserId: string
+  adminUserId?: string  // Optional - may be undefined for internal page requests
 ): Promise<unknown> {
   switch (action) {
     case 'list_users':
@@ -257,7 +259,7 @@ async function executeHandler(
       return handler(supabaseUrl, supabaseServiceKey, payload);
 
     case 'send_magic_link':
-      // Pass adminUserId for audit logging
+      // Pass adminUserId for audit logging (optional - may be undefined)
       return handler(supabaseUrl, supabaseServiceKey, { ...payload, adminUserId });
 
     case 'get_destination_pages':

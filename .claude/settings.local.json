@@ -34,25 +34,39 @@
       "Bash(bun run lint)",
       "Bash(start:*)",
       "Bash(echo:*)",
+      "Bash(bun --version:*)",
+      "Bash(where:*)",
+      "Bash(bun run lint:*)",
+      "Read(//c/Users/Split Lease/My Drive \\(splitleaseteam@gmail.com\\)/_Agent Context and Tools/SL22/Design/2026/Ongoing Projects/image grid/**)",
       "Bash(bun run test:*)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_resize"
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_take_screenshot",
+      "Bash(head:*)",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_evaluate",
+      "Bash({)",
+      "mcp__playwright__browser_install",
+      "Bash(git config:*)",
+      "Bash(bun install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node -e:*)",
+      "Bash(supabase projects:*)",
+      "Bash(node:*)",
+      "Bash(npx supabase-mcp-execute-sql:*)",
+      "Bash(npx @anthropic-ai/mcp-server-supabase execute_sql:*)"
     ],
     "deny": [],
     "ask": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "supabase-dev",
-    "supabase-live",
-    "shadcn",
-    "playwright-host-live",
-    "playwright-host-dev",
-    "playwright-guest-live",
-    "playwright-guest-dev"
+    "knip",
+    "playwright",
+    "supabase"
   ],
   "enabledPlugins": {
     "supabase@claude-plugins-official": true
   },
-  "outputStyle": "Explanatory"
+  "outputStyle": "splitlease-formal"
 }

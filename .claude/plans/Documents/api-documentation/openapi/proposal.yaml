@@ -1,0 +1,629 @@
+openapi: 3.0.3
+info:
+  title: Split Lease Proposal API
+  description: |
+    Proposal Edge Function for Split Lease marketplace.
+    Handles proposal creation, updates, retrieval, and negotiation flows.
+
+    All requests use the action-based pattern: `{ action, payload }`.
+  version: 1.0.0
+  contact:
+    name: Split Lease Engineering
+
+servers:
+  - url: https://{project-ref}.supabase.co/functions/v1
+    description: Supabase Edge Functions
+    variables:
+      project-ref:
+        default: your-project-ref
+        description: Supabase project reference
+
+paths:
+  /proposal:
+    post:
+      summary: Proposal Operations
+      description: All proposal operations via action-based routing
+      operationId: proposalAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CreateProposalRequest'
+                - $ref: '#/components/schemas/UpdateProposalRequest'
+                - $ref: '#/components/schemas/GetProposalRequest'
+                - $ref: '#/components/schemas/SuggestProposalRequest'
+                - $ref: '#/components/schemas/CreateSuggestedRequest'
+                - $ref: '#/components/schemas/CreateMockupRequest'
+                - $ref: '#/components/schemas/GetPrefillDataRequest'
+                - $ref: '#/components/schemas/CreateTestProposalRequest'
+                - $ref: '#/components/schemas/CreateTestRentalApplicationRequest'
+                - $ref: '#/components/schemas/AcceptProposalRequest'
+                - $ref: '#/components/schemas/CreateCounterofferRequest'
+                - $ref: '#/components/schemas/AcceptCounterofferRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+        - {}  # Some actions are public
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token from Authorization header
+
+  schemas:
+    # =========================================================================
+    # REQUEST SCHEMAS
+    # =========================================================================
+
+    CreateProposalRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [create]
+        payload:
+          $ref: '#/components/schemas/CreateProposalPayload'
+      example:
+        action: create
+        payload:
+          listingId: "1234567890123x0987654321"
+          guestId: "0987654321098x1234567890"
+          moveInStartRange: "2025-03-01"
+          moveInEndRange: "2025-03-15"
+          daysSelected: [1, 2, 3, 4]
+          nightsSelected: [0, 1, 2, 3]
+          checkIn: "Monday"
+          checkOut: "Friday"
+          reservationSpan: "other"
+          reservationSpanWeeks: 12
+          proposalPrice: 150
+          estimatedBookingTotal: 7200
+          fourWeekRent: 2400
+          fourWeekCompensation: 2160
+          aboutMe: "I'm a remote worker looking for a quiet space"
+          needForSpace: "Home office for focused work"
+
+    CreateProposalPayload:
+      type: object
+      required:
+        - listingId
+        - guestId
+        - moveInStartRange
+        - moveInEndRange
+        - daysSelected
+        - nightsSelected
+        - checkIn
+        - checkOut
+        - reservationSpanWeeks
+        - proposalPrice
+      properties:
+        listingId:
+          type: string
+          description: ID of the listing (Bubble-style ID)
+        guestId:
+          type: string
+          description: ID of the guest user (must match authenticated user)
+        moveInStartRange:
+          type: string
+          format: date
+          description: Start of move-in date range
+        moveInEndRange:
+          type: string
+          format: date
+          description: End of move-in date range
+        moveInRangeText:
+          type: string
+          description: Human-readable move-in range text
+        daysSelected:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          description: Days of week selected (0=Sunday, 6=Saturday)
+        nightsSelected:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          description: Nights selected (0-indexed)
+        checkIn:
+          type: string
+          description: Check-in day name (e.g., "Monday")
+        checkOut:
+          type: string
+          description: Check-out day name (e.g., "Friday")
+        reservationSpan:
+          type: string
+          enum: [month, other]
+          description: Reservation span type
+        reservationSpanWeeks:
+          type: integer
+          minimum: 1
+          description: Duration in weeks
+        actualWeeks:
+          type: integer
+          description: Actual weeks during reservation span
+        proposalPrice:
+          type: number
+          description: Nightly price proposed by guest
+        estimatedBookingTotal:
+          type: number
+          description: Estimated total booking cost
+        fourWeekRent:
+          type: number
+          description: Calculated 4-week rent
+        fourWeekCompensation:
+          type: number
+          description: Calculated 4-week host compensation
+        aboutMe:
+          type: string
+          description: Guest bio/about me text
+        needForSpace:
+          type: string
+          description: Guest's need for the space
+        specialNeeds:
+          type: string
+          description: Any special needs or requirements
+        comment:
+          type: string
+          description: Additional comments from guest
+        guestFlexibility:
+          type: string
+          enum: [Flexible, Somewhat Flexible, Not Flexible]
+          default: Flexible
+        preferredGender:
+          type: string
+          enum: [any, male, female]
+          default: any
+        customScheduleDescription:
+          type: string
+          description: Freeform custom schedule description
+        status:
+          type: string
+          description: Override initial status (internal use)
+
+    UpdateProposalRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [update]
+        payload:
+          $ref: '#/components/schemas/UpdateProposalPayload'
+      example:
+        action: update
+        payload:
+          proposal_id: "1234567890123x0987654321"
+          status: "Host Counteroffer Submitted / Awaiting Guest Review"
+          hc_nightly_price: 160
+          hc_days_selected: [1, 2, 3, 4, 5]
+          hc_move_in_date: "2025-03-05"
+
+    UpdateProposalPayload:
+      type: object
+      required:
+        - proposal_id
+      properties:
+        proposal_id:
+          type: string
+          description: Proposal ID to update
+        status:
+          type: string
+          description: New status value
+        proposal_price:
+          type: number
+          description: Updated nightly price
+        move_in_start_range:
+          type: string
+          format: date
+        move_in_end_range:
+          type: string
+          format: date
+        days_selected:
+          type: array
+          items:
+            type: integer
+        nights_selected:
+          type: array
+          items:
+            type: integer
+        reservation_span_weeks:
+          type: integer
+        comment:
+          type: string
+        # Host counteroffer fields
+        hc_nightly_price:
+          type: number
+          description: Host counter-offer nightly price
+        hc_days_selected:
+          type: array
+          items:
+            type: integer
+        hc_nights_selected:
+          type: array
+          items:
+            type: integer
+        hc_move_in_date:
+          type: string
+          format: date
+        hc_reservation_span_weeks:
+          type: integer
+        hc_cleaning_fee:
+          type: number
+        hc_damage_deposit:
+          type: number
+        hc_total_price:
+          type: number
+        hc_four_week_rent:
+          type: number
+        hc_check_in:
+          type: string
+        hc_check_out:
+          type: string
+        hc_house_rules:
+          type: array
+          items:
+            type: string
+        reason_for_cancellation:
+          type: string
+
+    GetProposalRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get]
+        payload:
+          type: object
+          required:
+            - proposal_id
+          properties:
+            proposal_id:
+              type: string
+              description: Proposal ID to retrieve
+      example:
+        action: get
+        payload:
+          proposal_id: "1234567890123x0987654321"
+
+    SuggestProposalRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [suggest]
+        payload:
+          type: object
+          required:
+            - origin_proposal_id
+            - suggestion_type
+          properties:
+            origin_proposal_id:
+              type: string
+              description: Reference proposal to base suggestions on
+            suggestion_type:
+              type: string
+              enum: [weekly_match, same_address, both]
+              description: Type of suggestions to generate
+            max_suggestions:
+              type: integer
+              default: 5
+              description: Maximum suggestions to return
+            exclude_listing_ids:
+              type: array
+              items:
+                type: string
+              description: Listing IDs to exclude
+
+    CreateSuggestedRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [create_suggested]
+        payload:
+          type: object
+          description: Internal tool payload for creating suggested proposals
+
+    CreateMockupRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [create_mockup]
+        payload:
+          type: object
+          required:
+            - listingId
+            - hostUserId
+            - hostEmail
+          properties:
+            listingId:
+              type: string
+            hostUserId:
+              type: string
+            hostEmail:
+              type: string
+
+    GetPrefillDataRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get_prefill_data]
+        payload:
+          type: object
+          description: Payload for prefill data retrieval
+
+    CreateTestProposalRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [createTestProposal]
+        payload:
+          type: object
+          description: Usability test simulation payload
+
+    CreateTestRentalApplicationRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [createTestRentalApplication]
+        payload:
+          type: object
+          description: Usability test rental application payload
+
+    AcceptProposalRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [acceptProposal]
+        payload:
+          type: object
+          required:
+            - proposalId
+          properties:
+            proposalId:
+              type: string
+
+    CreateCounterofferRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [createCounteroffer]
+        payload:
+          type: object
+          description: Counteroffer creation payload
+
+    AcceptCounterofferRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [acceptCounteroffer]
+        payload:
+          type: object
+          required:
+            - proposalId
+          properties:
+            proposalId:
+              type: string
+
+    # =========================================================================
+    # RESPONSE SCHEMAS
+    # =========================================================================
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/CreateProposalResponse'
+            - $ref: '#/components/schemas/UpdateProposalResponse'
+            - $ref: '#/components/schemas/GetProposalResponse'
+            - $ref: '#/components/schemas/SuggestProposalResponse'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: string
+          description: Error message
+
+    CreateProposalResponse:
+      type: object
+      properties:
+        proposalId:
+          type: string
+          description: Created proposal ID
+        status:
+          type: string
+          description: Initial proposal status
+        orderRanking:
+          type: string
+          description: Order ranking for display
+        listingId:
+          type: string
+        guestId:
+          type: string
+        hostId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        threadId:
+          type: string
+          nullable: true
+          description: Associated message thread ID
+        aiHostSummary:
+          type: string
+          nullable: true
+          description: AI-generated summary for host
+
+    UpdateProposalResponse:
+      type: object
+      properties:
+        proposal_id:
+          type: string
+        status:
+          type: string
+        updated_fields:
+          type: array
+          items:
+            type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    GetProposalResponse:
+      type: object
+      properties:
+        proposal:
+          type: object
+          description: Full proposal data
+        status_display:
+          type: string
+        status_stage:
+          type: integer
+        listing:
+          type: object
+          properties:
+            _id:
+              type: string
+            Name:
+              type: string
+            "Location - Address":
+              type: object
+        guest:
+          type: object
+          properties:
+            _id:
+              type: string
+            "Name - Full":
+              type: string
+            email:
+              type: string
+        host:
+          type: object
+          properties:
+            _id:
+              type: string
+            "Name - Full":
+              type: string
+            email:
+              type: string
+
+    SuggestProposalResponse:
+      type: object
+      properties:
+        origin_proposal_id:
+          type: string
+        suggestion_type:
+          type: string
+        suggestions_found:
+          type: integer
+        suggestions_created:
+          type: integer
+        suggestion_ids:
+          type: array
+          items:
+            type: string
+        skipped_reasons:
+          type: array
+          items:
+            type: string
+
+# =========================================================================
+# ACTION AUTHENTICATION MATRIX
+# =========================================================================
+# Action                          | Auth Required | Notes
+# --------------------------------|---------------|---------------------------
+# create                          | Yes (JWT)     | guestId must match auth user
+# update                          | Optional      | Soft headers for internal admin
+# get                             | No            | Public read
+# suggest                         | Yes (JWT)     | Must own origin proposal
+# create_suggested                | No            | Internal tool only
+# create_mockup                   | No            | Internal service call
+# get_prefill_data                | No            | Internal tool only
+# createTestProposal              | Yes (JWT)     | Usability testing
+# createTestRentalApplication     | Yes (JWT)     | Usability testing
+# acceptProposal                  | Yes (JWT)     | Usability testing
+# createCounteroffer              | Yes (JWT)     | Usability testing
+# acceptCounteroffer              | Optional      | Legacy token support

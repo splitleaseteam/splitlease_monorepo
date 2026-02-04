@@ -322,8 +322,8 @@ export default function PricingEditSection({
       const changeSummary = getChangeSummary();
       const updates = {
         'rental type': selectedRentalType,
-        '💰Damage Deposit': damageDeposit,
-        '💰Cleaning Cost / Maintenance Fee': maintenanceFee,
+        'damage_deposit': damageDeposit,
+        'cleaning_fee': maintenanceFee,
         'Minimum Nights': minNights,
         'Maximum Nights': maxNights,
       };
@@ -333,17 +333,17 @@ export default function PricingEditSection({
         const dayIndices = selectedNights.map((n) => nightMap[n]).sort((a, b) => a - b);
         updates['Days Available (List of Days)'] = JSON.stringify(dayIndices);
 
-        updates['💰Nightly Host Rate for 2 nights'] = calculateNightlyRate(nightlyPricing[2], 2);
-        updates['💰Nightly Host Rate for 3 nights'] = calculateNightlyRate(nightlyPricing[3], 3);
-        updates['💰Nightly Host Rate for 4 nights'] = calculateNightlyRate(nightlyPricing[4], 4);
-        updates['💰Nightly Host Rate for 5 nights'] = calculateNightlyRate(nightlyPricing[5], 5);
-        updates['💰Nightly Host Rate for 6 nights'] = calculateNightlyRate(nightlyPricing[5], 6);
-        updates['💰Nightly Host Rate for 7 nights'] = calculateNightlyRate(nightlyPricing[5], 7);
+        updates['nightly_rate_2_nights'] = calculateNightlyRate(nightlyPricing[2], 2);
+        updates['nightly_rate_3_nights'] = calculateNightlyRate(nightlyPricing[3], 3);
+        updates['nightly_rate_4_nights'] = calculateNightlyRate(nightlyPricing[4], 4);
+        updates['nightly_rate_5_nights'] = calculateNightlyRate(nightlyPricing[5], 5);
+        updates['nightly_rate_6_nights'] = calculateNightlyRate(nightlyPricing[5], 6);
+        updates['nightly_rate_7_nights'] = calculateNightlyRate(nightlyPricing[5], 7);
       } else if (selectedRentalType === 'Weekly') {
         updates['Weeks offered'] = weeksOffered;
-        updates['💰Weekly Host Rate'] = weeklyRate;
+        updates['weekly_host_rate'] = weeklyRate;
       } else if (selectedRentalType === 'Monthly') {
-        updates['💰Monthly Host Rate'] = monthlyRate;
+        updates['monthly_host_rate'] = monthlyRate;
       }
 
       await onSave(updates);

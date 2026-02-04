@@ -109,13 +109,17 @@
 /_internal/z-emails-unit  /_internal/z-emails-unit-view  200
 /_internal/z-emails-unit/  /_internal/z-emails-unit-view  200
 
-# /_internal/z-pricing-unit-test → z-pricing-unit-test.html
-/_internal/z-pricing-unit-test  /_internal/z-pricing-unit-test-view  200
-/_internal/z-pricing-unit-test/  /_internal/z-pricing-unit-test-view  200
+# /_pricing-unit-test → _pricing-unit-test.html
+/_pricing-unit-test  /_internal/_pricing-unit-test-view  200
+/_pricing-unit-test/  /_internal/_pricing-unit-test-view  200
 
 # /_internal/z-schedule-test → z-schedule-test.html
 /_internal/z-schedule-test  /_internal/z-schedule-test-view  200
 /_internal/z-schedule-test/  /_internal/z-schedule-test-view  200
+
+# /_internal/z-sharath-test → z-sharath-test.html
+/_internal/z-sharath-test  /_internal/z-sharath-test-view  200
+/_internal/z-sharath-test/  /_internal/z-sharath-test-view  200
 
 # /_internal/z-unit-chatgpt-models → z-unit-chatgpt-models.html
 /_internal/z-unit-chatgpt-models  /_internal/z-unit-chatgpt-models-view  200
@@ -124,6 +128,10 @@
 # /_internal/z-unit-payment-records-js → z-unit-payment-records-js.html
 /_internal/z-unit-payment-records-js  /_internal/z-unit-payment-records-js-view  200
 /_internal/z-unit-payment-records-js/  /_internal/z-unit-payment-records-js-view  200
+
+# /_test-contracts → test-contracts.html
+/_test-contracts  /_internal/test-contracts-view  200
+/_test-contracts/  /_internal/test-contracts-view  200
 
 # ===== DYNAMIC ROUTES (with parameters) =====
 # These routes use _internal/ files to avoid Cloudflare's 308 redirects
@@ -156,6 +164,11 @@
 /guest-leases/  /_internal/guest-leases-view  200
 /guest-leases/*  /_internal/guest-leases-view  200
 
+# /schedule → schedule.html
+/schedule  /_internal/schedule-view  200
+/schedule/  /_internal/schedule-view  200
+/schedule/*  /_internal/schedule-view  200
+
 # /host-proposals → host-proposals.html
 /host-proposals  /_internal/host-proposals-view  200
 /host-proposals/  /_internal/host-proposals-view  200
@@ -165,6 +178,11 @@
 /_manage-rental-applications  /_internal/manage-rental-applications-view  200
 /_manage-rental-applications/  /_internal/manage-rental-applications-view  200
 /_manage-rental-applications/*  /_internal/manage-rental-applications-view  200
+
+# /_manage-leases-payment-records → manage-leases-payment-records.html
+/_manage-leases-payment-records  /_internal/manage-leases-payment-records-view  200
+/_manage-leases-payment-records/  /_internal/manage-leases-payment-records-view  200
+/_manage-leases-payment-records/*  /_internal/manage-leases-payment-records-view  200
 
 # ===== STATIC PAGES =====
 
@@ -289,6 +307,10 @@
 /visit-manual  /_internal/visit-manual-view  200
 /visit-manual/  /_internal/visit-manual-view  200
 
+# /qr-code-landing → qr-code-landing.html
+/qr-code-landing  /_internal/qr-code-landing-view  200
+/qr-code-landing/  /_internal/qr-code-landing-view  200
+
 # /simulation-guest-mobile → simulation-guest-mobile.html
 /simulation-guest-mobile  /_internal/simulation-guest-mobile-view  200
 /simulation-guest-mobile/  /_internal/simulation-guest-mobile-view  200
@@ -321,6 +343,42 @@
 /host-simulation  /_internal/simulation-host-mobile-view  200
 /host-simulation/  /_internal/simulation-host-mobile-view  200
 
+# /guest-experience-review → guest-experience-review.html
+/guest-experience-review  /_internal/guest-experience-review-view  200
+/guest-experience-review/  /_internal/guest-experience-review-view  200
+
+# Alias: /guest-experience → guest-experience-review.html
+/guest-experience  /_internal/guest-experience-review-view  200
+/guest-experience/  /_internal/guest-experience-review-view  200
+
+# Alias: /experience-review → guest-experience-review.html
+/experience-review  /_internal/guest-experience-review-view  200
+/experience-review/  /_internal/guest-experience-review-view  200
+
+# /host-experience-review → host-experience-review.html
+/host-experience-review  /_internal/host-experience-review-view  200
+/host-experience-review/  /_internal/host-experience-review-view  200
+
+# Alias: /host-experience → host-experience-review.html
+/host-experience  /_internal/host-experience-review-view  200
+/host-experience/  /_internal/host-experience-review-view  200
+
+# Alias: /host-feedback → host-experience-review.html
+/host-feedback  /_internal/host-experience-review-view  200
+/host-feedback/  /_internal/host-experience-review-view  200
+
+# /reviews-overview → reviews-overview.html
+/reviews-overview  /_internal/reviews-overview-view  200
+/reviews-overview/  /_internal/reviews-overview-view  200
+
+# Alias: /reviews → reviews-overview.html
+/reviews  /_internal/reviews-overview-view  200
+/reviews/  /_internal/reviews-overview-view  200
+
+# Alias: /my-reviews → reviews-overview.html
+/my-reviews  /_internal/reviews-overview-view  200
+/my-reviews/  /_internal/reviews-overview-view  200
+
 # /report-emergency → report-emergency.html
 /report-emergency  /_internal/report-emergency-view  200
 /report-emergency/  /_internal/report-emergency-view  200
@@ -328,6 +386,22 @@
 # Alias: /emergency-form → report-emergency.html
 /emergency-form  /_internal/report-emergency-view  200
 /emergency-form/  /_internal/report-emergency-view  200
+
+# /contracts/credit-card-auth → contracts/credit-card-auth.html
+/contracts/credit-card-auth  /_internal/credit-card-auth-view  200
+/contracts/credit-card-auth/  /_internal/credit-card-auth-view  200
+
+# /contracts/host-payout → contracts/host-payout.html
+/contracts/host-payout  /_internal/host-payout-view  200
+/contracts/host-payout/  /_internal/host-payout-view  200
+
+# /contracts/periodic-tenancy → contracts/periodic-tenancy.html
+/contracts/periodic-tenancy  /_internal/periodic-tenancy-view  200
+/contracts/periodic-tenancy/  /_internal/periodic-tenancy-view  200
+
+# /contracts/supplemental → contracts/supplemental.html
+/contracts/supplemental  /_internal/supplemental-view  200
+/contracts/supplemental/  /_internal/supplemental-view  200
 
 # Note: Cloudflare Pages automatically serves /404.html for not found routes
 # No explicit catch-all rule needed - native 404.html support handles this

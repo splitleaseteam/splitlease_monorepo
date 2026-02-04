@@ -9,8 +9,11 @@
  * - InfoGrid (always)
  * - DayPillsRow (always, hidden on mobile)
  * - PricingRow (always)
- * - ProgressTrackerV7 (only for accepted proposals)
+ * - ProgressTrackerV7 (always - matches guest proposals behavior)
  * - ActionButtonsRow (always)
+ *
+ * On mobile (≤640px), renders NarrativeProposalBody instead of structured layout.
+ * CSS handles show/hide based on viewport width (no JS breakpoint detection).
  *
  * Part of the Host Proposals V7 redesign.
  */
@@ -24,6 +27,7 @@ import DayPillsRow from './DayPillsRow.jsx';
 import PricingRow from './PricingRow.jsx';
 import ProgressTrackerV7 from './ProgressTrackerV7.jsx';
 import ActionButtonsRow from './ActionButtonsRow.jsx';
+import NarrativeProposalBody from './NarrativeProposalBody.jsx';
 
 /**
  * Check if proposal is declined/cancelled
@@ -65,6 +69,10 @@ function hasGuestCounteroffer(proposal) {
 /**
  * ProposalCardBody displays the expanded content
  *
+ * Renders BOTH structured and narrative views. CSS handles visibility:
+ * - Desktop/Tablet (>640px): Shows .hp7-structured-body, hides .hp7-narrative-body
+ * - Mobile (≤640px): Shows .hp7-narrative-body, hides .hp7-structured-body
+ *
  * @param {Object} props
  * @param {Object} props.proposal - The proposal object
  * @param {Object} props.handlers - Object containing all action handlers
@@ -93,57 +101,67 @@ export function ProposalCardBody({ proposal, handlers = {} }) {
 
   return (
     <div className="hp7-card-body-inner">
-      {/* Status Banner - Always shown */}
-      <StatusBanner proposal={proposal} />
+      {/* Mobile Narrative View - CSS shows only on ≤640px */}
+      <NarrativeProposalBody
+        proposal={proposal}
+        handlers={handlers}
+        onViewProfile={() => handlers.onViewProfile?.(proposal)}
+      />
 
-      {/* AI Summary - Only for new proposals */}
-      <AISummaryCard proposal={proposal} />
+      {/* Desktop/Tablet Structured View - CSS shows only on >640px */}
+      <div className="hp7-structured-body">
+        {/* Status Banner - Always shown */}
+        <StatusBanner proposal={proposal} />
 
-      {/* Guest Info - Always shown (except declined) */}
-      {!declined && (
-        <GuestInfoCard guest={guest} />
-      )}
+        {/* AI Summary - Only for new proposals */}
+        <AISummaryCard proposal={proposal} />
 
-      {/* Quick Links - Always shown (except declined) */}
-      {!declined && (
-        <QuickLinksRow
-          onViewProfile={() => handlers.onViewProfile?.(proposal)}
+        {/* Guest Info - Always shown (except declined) */}
+        {!declined && (
+          <GuestInfoCard guest={guest} />
+        )}
+
+        {/* Quick Links - Always shown (except declined) */}
+        {!declined && (
+          <QuickLinksRow
+            onViewProfile={() => handlers.onViewProfile?.(proposal)}
+            onMessage={() => handlers.onMessage?.(proposal)}
+            onScheduleMeeting={() => handlers.onScheduleMeeting?.(proposal)}
+            onCompareTerms={() => handlers.onCompareTerms?.(proposal)}
+            showCompareTerms={showCompareTerms}
+          />
+        )}
+
+        {/* Info Grid - Always shown */}
+        <InfoGrid proposal={proposal} />
+
+        {/* Night Pills - Always shown (CSS hides on mobile) */}
+        {/* Hosts see nights (when guest sleeps), not days (when guest is present) */}
+        {!declined && (
+          <DayPillsRow nightsSelected={nightsSelected} />
+        )}
+
+        {/* Pricing - Always shown */}
+        <PricingRow proposal={proposal} isDeclined={declined} />
+
+        {/* Progress Tracker - Always shown (matches guest proposals) */}
+        <ProgressTrackerV7 proposal={proposal} />
+
+        {/* Action Buttons - Always shown */}
+        <ActionButtonsRow
+          proposal={proposal}
+          onAccept={() => handlers.onAccept?.(proposal)}
+          onModify={() => handlers.onModify?.(proposal)}
+          onDecline={() => handlers.onDecline?.(proposal)}
+          onRemindGuest={() => handlers.onRemindGuest?.(proposal)}
           onMessage={() => handlers.onMessage?.(proposal)}
           onScheduleMeeting={() => handlers.onScheduleMeeting?.(proposal)}
-          onCompareTerms={() => handlers.onCompareTerms?.(proposal)}
-          showCompareTerms={showCompareTerms}
+          onEditCounter={() => handlers.onEditCounter?.(proposal)}
+          onWithdraw={() => handlers.onWithdraw?.(proposal)}
+          onRemove={() => handlers.onRemove?.(proposal)}
+          onRequestRentalApp={() => handlers.onRequestRentalApp?.(proposal)}
         />
-      )}
-
-      {/* Info Grid - Always shown */}
-      <InfoGrid proposal={proposal} />
-
-      {/* Night Pills - Always shown (CSS hides on mobile) */}
-      {/* Hosts see nights (when guest sleeps), not days (when guest is present) */}
-      {!declined && (
-        <DayPillsRow nightsSelected={nightsSelected} />
-      )}
-
-      {/* Pricing - Always shown */}
-      <PricingRow proposal={proposal} isDeclined={declined} />
-
-      {/* Progress Tracker - Only for accepted proposals */}
-      <ProgressTrackerV7 proposal={proposal} />
-
-      {/* Action Buttons - Always shown */}
-      <ActionButtonsRow
-        proposal={proposal}
-        onAccept={() => handlers.onAccept?.(proposal)}
-        onModify={() => handlers.onModify?.(proposal)}
-        onDecline={() => handlers.onDecline?.(proposal)}
-        onRemindGuest={() => handlers.onRemindGuest?.(proposal)}
-        onMessage={() => handlers.onMessage?.(proposal)}
-        onScheduleMeeting={() => handlers.onScheduleMeeting?.(proposal)}
-        onEditCounter={() => handlers.onEditCounter?.(proposal)}
-        onWithdraw={() => handlers.onWithdraw?.(proposal)}
-        onRemove={() => handlers.onRemove?.(proposal)}
-        onRequestRentalApp={() => handlers.onRequestRentalApp?.(proposal)}
-      />
+      </div>
     </div>
   );
 }

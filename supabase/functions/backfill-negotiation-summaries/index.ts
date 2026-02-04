@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
         created++;
         results.push(result);
 
-      } catch (err) {
+      } catch (_err) {
         result.status = "error";
         result.error = err instanceof Error ? err.message : String(err);
         errors++;

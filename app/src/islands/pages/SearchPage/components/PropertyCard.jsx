@@ -58,7 +58,7 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
       logger.debug(`[PropertyCard] Dynamic price for ${listing.title}:`, {
         nightsCount,
         rentalType: listing.rentalType,
-        hostRate: listing[`💰Nightly Host Rate for ${nightsCount} nights`],
+        hostRate: listing[`nightly_rate_${nightsCount}_night${nightsCount === 1 ? '' : 's'}`],
         pricePerNight: priceBreakdown.pricePerNight,
         valid: priceBreakdown.valid
       });

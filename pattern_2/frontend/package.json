@@ -1,0 +1,64 @@
+{
+  "name": "@split-lease/pattern-2-urgency-countdown",
+  "version": "1.0.0",
+  "description": "Production-ready urgency countdown component with exponential pricing",
+  "main": "index.ts",
+  "types": "types.ts",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx",
+    "build": "tsc && vite build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "keywords": [
+    "urgency",
+    "countdown",
+    "pricing",
+    "behavioral-economics",
+    "react",
+    "typescript"
+  ],
+  "author": "Split Lease Team",
+  "license": "PROPRIETARY",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/jest": "^29.5.11",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8"
+  },
+  "files": [
+    "components/",
+    "hooks/",
+    "utils/",
+    "styles/",
+    "types.ts",
+    "index.ts",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/split-lease/platform"
+  },
+  "bugs": {
+    "url": "https://github.com/split-lease/platform/issues"
+  }
+}

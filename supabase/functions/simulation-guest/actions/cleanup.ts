@@ -49,7 +49,7 @@ export async function handleCleanup(
 
     results.proposals = deletedProposals?.length || 0;
     console.log(`[cleanup] Deleted ${results.proposals} proposals`);
-  } catch (err) {
+  } catch (_err) {
     console.log('[cleanup] Could not clean proposals:', (err as Error).message);
   }
 
@@ -63,7 +63,7 @@ export async function handleCleanup(
 
     results.leases = deletedLeases?.length || 0;
     console.log(`[cleanup] Deleted ${results.leases} leases`);
-  } catch (err) {
+  } catch (_err) {
     console.log('[cleanup] Could not clean leases:', (err as Error).message);
   }
 
@@ -77,7 +77,7 @@ export async function handleCleanup(
 
     results.dateChangeRequests = deletedRequests?.length || 0;
     console.log(`[cleanup] Deleted ${results.dateChangeRequests} date change requests`);
-  } catch (err) {
+  } catch (_err) {
     console.log('[cleanup] Could not clean date change requests:', (err as Error).message);
   }
 
@@ -91,7 +91,7 @@ export async function handleCleanup(
 
     results.houseManualVisits = deletedVisits?.length || 0;
     console.log(`[cleanup] Deleted ${results.houseManualVisits} house manual visits`);
-  } catch (err) {
+  } catch (_err) {
     console.log('[cleanup] Could not clean house manual visits:', (err as Error).message);
   }
 

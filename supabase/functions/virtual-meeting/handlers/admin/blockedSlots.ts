@@ -5,7 +5,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
+import { AuthenticationError as _AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
 
 interface AuthenticatedUser {
   id: string;
@@ -25,15 +25,13 @@ export async function handleAdminFetchBlockedSlots(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown[]> {
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   if (!payload.hostId) {
     throw new ValidationError("Host ID is required");
   }
 
-  console.log(`[admin_fetch_blocked_slots] Fetching blocked slots for host: ${payload.hostId}`);
+  console.log(`[admin_fetch_blocked_slots] Fetching blocked slots for host: ${payload.hostId}${user ? ` (${user.email})` : ' (unauthenticated)'}`);
 
   const { data, error } = await supabase
     .from("blocked_time_slots")
@@ -65,15 +63,13 @@ export async function handleAdminBlockTimeSlot(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown> {
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   if (!payload.hostId || !payload.date || !payload.startTime || !payload.endTime) {
     throw new ValidationError("Host ID, date, start time, and end time are required");
   }
 
-  console.log(`[admin_block_time_slot] Blocking slot for host ${payload.hostId} on ${payload.date}`);
+  console.log(`[admin_block_time_slot] Blocking slot for host ${payload.hostId} on ${payload.date}${user ? ` (${user.email})` : ' (unauthenticated)'}`);
 
   const { data, error } = await supabase
     .from("blocked_time_slots")
@@ -108,15 +104,13 @@ export async function handleAdminUnblockTimeSlot(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<{ deleted: boolean; slotId: string }> {
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   if (!payload.slotId) {
     throw new ValidationError("Slot ID is required");
   }
 
-  console.log(`[admin_unblock_time_slot] Unblocking slot: ${payload.slotId}`);
+  console.log(`[admin_unblock_time_slot] Unblocking slot: ${payload.slotId}${user ? ` (${user.email})` : ' (unauthenticated)'}`);
 
   const { error } = await supabase
     .from("blocked_time_slots")
@@ -148,15 +142,13 @@ export async function handleAdminBlockFullDay(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown> {
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   if (!payload.hostId || !payload.date) {
     throw new ValidationError("Host ID and date are required");
   }
 
-  console.log(`[admin_block_full_day] Blocking full day for host ${payload.hostId} on ${payload.date}`);
+  console.log(`[admin_block_full_day] Blocking full day for host ${payload.hostId} on ${payload.date}${user ? ` (${user.email})` : ' (unauthenticated)'}`);
 
   // First, remove any partial blocks for this day
   await supabase
@@ -200,15 +192,13 @@ export async function handleAdminUnblockFullDay(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<{ deleted: boolean; hostId: string; date: string }> {
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   if (!payload.hostId || !payload.date) {
     throw new ValidationError("Host ID and date are required");
   }
 
-  console.log(`[admin_unblock_full_day] Unblocking full day for host ${payload.hostId} on ${payload.date}`);
+  console.log(`[admin_unblock_full_day] Unblocking full day for host ${payload.hostId} on ${payload.date}${user ? ` (${user.email})` : ' (unauthenticated)'}`);
 
   const { error } = await supabase
     .from("blocked_time_slots")

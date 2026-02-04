@@ -1,0 +1,167 @@
+/* ============================================================================
+   PATTERN 5: FEE TRANSPARENCY - FeeExplainer Modal Styles
+   ============================================================================ */
+
+.fee-explainer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal, 1000);
+    backdrop-filter: blur(4px);
+}
+
+.fee-explainer-modal {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--rounded-2xl, 16px);
+    overflow: hidden;
+    box-shadow: var(--shadow-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.fee-explainer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--padding-xl, 24px);
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.fee-explainer-title {
+    font-size: var(--text-xl, 20px);
+    font-weight: 700;
+    color: var(--text-dark, #1f2937);
+    margin: 0;
+}
+
+.fee-explainer-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-gray, #6b7280);
+    transition: color 0.2s, transform 0.2s;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fee-explainer-close:hover {
+    color: var(--text-dark, #1f2937);
+    transform: rotate(90deg);
+}
+
+.fee-explainer-content {
+    padding: var(--padding-xl, 24px);
+}
+
+.value-prop-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg, 20px);
+}
+
+.value-prop-item {
+    display: flex;
+    gap: var(--spacing-md, 16px);
+    align-items: flex-start;
+}
+
+.icon-wrapper {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--rounded-lg, 12px);
+    background: linear-gradient(135deg, var(--primary-purple, #6b21a8) 0%, var(--accent-purple, #9333ea) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.prop-text h4 {
+    font-size: var(--text-base, 14px);
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--text-dark, #1f2937);
+}
+
+.prop-text p {
+    font-size: var(--text-sm, 12px);
+    color: var(--text-gray, #6b7280);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.comparison-box {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1px solid var(--success-green, #10b981);
+    border-radius: var(--rounded-lg, 12px);
+    padding: var(--padding-lg, 20px);
+    display: flex;
+    gap: var(--spacing-md, 16px);
+    align-items: center;
+    margin-top: var(--spacing-xl, 24px);
+}
+
+.comparison-icon {
+    color: var(--success-green, #10b981);
+    flex-shrink: 0;
+}
+
+.comparison-text {
+    flex: 1;
+}
+
+.comparison-label {
+    font-weight: 600;
+    font-size: var(--text-base, 14px);
+    color: var(--text-dark, #1f2937);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.comparison-text p {
+    font-size: var(--text-sm, 12px);
+    color: var(--success-green, #10b981);
+    margin: 0;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-purple, #6b21a8) 0%, var(--accent-purple, #9333ea) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--rounded-lg, 12px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: var(--text-base, 14px);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -5px rgba(107, 33, 168, 0.3);
+}
+
+.btn-full-width {
+    width: 100%;
+}

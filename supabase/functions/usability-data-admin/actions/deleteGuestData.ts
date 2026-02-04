@@ -41,7 +41,7 @@ export async function handleDeleteGuestData(
   console.log('[usability-data-admin] Deleted proposals:', proposalsDeleted);
 
   // Delete message threads where guest is a participant
-  const { data: threadData, error: threadError } = await supabase
+  const { data: _threadData, error: threadError } = await supabase
     .from('message_threads')
     .delete()
     .eq('guest_id', guestId)

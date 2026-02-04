@@ -23,11 +23,17 @@ export const STATUS_TRANSITIONS: Record<
   // Pre-submission states
   "Proposal Submitted for guest by Split Lease - Awaiting Rental Application": [
     "Host Review",
+    "Host Counteroffer Submitted / Awaiting Guest Review",
+    "Proposal or Counteroffer Accepted / Drafting Lease Documents",
+    "Proposal Rejected by Host",
     "Proposal Cancelled by Split Lease",
     "Guest Ignored Suggestion",
   ],
   "Proposal Submitted by guest - Awaiting Rental Application": [
     "Host Review",
+    "Host Counteroffer Submitted / Awaiting Guest Review",
+    "Proposal or Counteroffer Accepted / Drafting Lease Documents",
+    "Proposal Rejected by Host",
     "Proposal Cancelled by Guest",
   ],
   "Proposal Submitted for guest by Split Lease - Pending Confirmation": [

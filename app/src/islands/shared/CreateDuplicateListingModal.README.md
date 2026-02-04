@@ -172,7 +172,7 @@ The `existingListings` prop should match the `zat_listings` table structure:
   Name: 'Cozy Downtown Apartment',
   active: false,
   'Default Extension Setting': false,
-  '💰Damage Deposit': 500,
+  'damage_deposit': 500,
   'Host / Landlord': 'host-account-uuid',
   'HOST name': 'John Doe',
   'Host email': 'john@example.com',
@@ -187,7 +187,7 @@ When creating a new listing, these defaults are set:
 
 - `active`: `false` (inactive)
 - `Default Extension Setting`: `false`
-- `💰Damage Deposit`: `500` (dollars)
+- `damage_deposit`: `500` (dollars)
 - `Features - Qty Beds`: `1`
 - `Operator Last Updated AUT`: Current timestamp
 - `HOST name`: User's full name or first name

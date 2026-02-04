@@ -17,6 +17,7 @@ interface UserRecord {
   "Name - First": string;
   "Name - Last": string;
   "Modified Date": string;
+  "Type - User Current"?: string;
 }
 
 /**
@@ -39,11 +40,12 @@ export async function handleListGuests(
 ) {
   const { limit = 50, offset = 0, search = '' } = payload;
 
+  // Note: Fetch all usability testers, filter guests client-side
+  // Column name with spaces causes issues in PostgREST filters
   let query = supabase
     .from('user')
-    .select('_id, email, "Name - First", "Name - Last", "Modified Date"', { count: 'exact' })
+    .select('_id, email, "Name - First", "Name - Last", "Modified Date", "Type - User Current"', { count: 'exact' })
     .eq('is usability tester', true)
-    .eq('User Type', 'Guest')
     .order('"Name - First"', { ascending: true });
 
   // Apply search filter across name and email fields
@@ -53,14 +55,18 @@ export async function handleListGuests(
   }
 
   // Apply pagination
-  const { data, error, count } = await query.range(offset, offset + limit - 1);
+  const { data, error, _count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
     console.error('[usability-data-admin] List guests error:', error);
     throw new Error(`Failed to fetch guests: ${error.message}`);
   }
 
-  const guests = (data || []).map(formatUser);
+  // Filter guests client-side (column name with spaces causes issues in PostgREST filters)
+  const guestData = (data || []).filter((user: UserRecord) =>
+    user['Type - User Current']?.toLowerCase().includes('guest')
+  );
+  const guests = guestData.map(formatUser);
 
   return {
     users: guests,

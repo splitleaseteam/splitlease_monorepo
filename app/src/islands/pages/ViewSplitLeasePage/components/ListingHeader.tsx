@@ -1,19 +1,10 @@
 /**
  * ListingHeader Component
- * 
+ *
  * Displays listing title, location, host info, and action buttons (favorite, share).
  * Includes neighborhood pill that scrolls to map when clicked.
- * 
- * @component
- * @param {object} props
- * @param {object} props.listing - Listing data
- * @param {boolean} props.isFavorited - Whether listing is favorited by current user
- * @param {Function} props.onToggleFavorite - Favorite toggle handler
- * @param {Function} props.onLocationClick - Location pill click handler (scroll to map)
- * @param {boolean} props.isAuthenticated - Whether user is logged in
- * @param {string|null} [props.userId] - Current user ID (for favorite button)
- * @param {Function} [props.onRequireAuth] - Auth required callback (for favorite button)
  *
+ * @component
  * @architecture Presentational Component
  * @performance Memoized
  */
@@ -24,6 +15,20 @@ import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
 import styles from './ListingHeader.module.css';
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface ListingHeaderProps {
+    listing: any;
+    isFavorited: boolean;
+    onToggleFavorite: (listingId: string, listingTitle: string, newState: boolean) => void;
+    onLocationClick: () => void;
+    isAuthenticated: boolean;
+    userId: string | null;
+    onRequireAuth: (() => void) | undefined;
+}
+
 const ListingHeader = memo(function ListingHeader({
     listing,
     isFavorited,
@@ -32,7 +37,7 @@ const ListingHeader = memo(function ListingHeader({
     isAuthenticated,
     userId,
     onRequireAuth
-}) {
+}: ListingHeaderProps) {
 
     const handleShare = async () => {
         const url = window.location.href;

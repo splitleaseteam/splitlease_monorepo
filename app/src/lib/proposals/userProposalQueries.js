@@ -15,10 +15,10 @@ import { supabase } from '../supabase.js';
 import { getUserIdFromSession, getProposalIdFromQuery } from './urlParser.js';
 
 /**
- * STEP 1: Fetch user data with Proposals List
+ * STEP 1: Fetch user data
  *
  * @param {string} userId - User ID from URL path
- * @returns {Promise<Object>} User object with Proposals List
+ * @returns {Promise<Object>} User object
  */
 export async function fetchUserWithProposalList(userId) {
   // Use .maybeSingle() instead of .single() to avoid 406 error when no rows found
@@ -30,8 +30,7 @@ export async function fetchUserWithProposalList(userId) {
       "Name - Last",
       "Name - Full",
       "Profile Photo",
-      "email as text",
-      "Proposals List"
+      "email as text"
     `)
     .eq('_id', userId)
     .maybeSingle();
@@ -51,24 +50,29 @@ export async function fetchUserWithProposalList(userId) {
 }
 
 /**
- * STEP 2: Extract proposal IDs from user's Proposals List
+ * STEP 2: Fetch proposal IDs for a guest user by querying the proposal table directly
+ * This ensures data integrity and avoids missing proposals due to Proposals List sync issues
  *
- * After migration, Proposals List is a native text[] array.
- * Supabase client returns text[] as JavaScript array directly.
- *
- * @param {Object} user - User object with Proposals List
- * @returns {Array<string>} Array of proposal IDs
+ * @param {string} userId - User ID
+ * @returns {Promise<Array<string>>} Array of proposal IDs
  */
-export function extractProposalIds(user) {
-  const proposalsList = user['Proposals List'];
+export async function extractProposalIds(userId) {
+  // Query proposals directly by Guest field
+  const { data, error } = await supabase
+    .from('proposal')
+    .select('_id')
+    .eq('Guest', userId)
+    .or('"Deleted".is.null,"Deleted".eq.false')
+    .neq('Status', 'Proposal Cancelled by Guest');
 
-  if (!proposalsList || !Array.isArray(proposalsList)) {
-    console.warn('extractProposalIds: User has no Proposals List or invalid format');
+  if (error) {
+    console.error('extractProposalIds: Error fetching proposal IDs:', error);
     return [];
   }
 
-  console.log(`extractProposalIds: Extracted ${proposalsList.length} proposal IDs from user's Proposals List`);
-  return proposalsList;
+  const proposalIds = (data || []).map(p => p._id);
+  console.log(`extractProposalIds: Found ${proposalIds.length} proposal IDs for guest ${userId}`);
+  return proposalIds;
 }
 
 /**
@@ -213,7 +217,9 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     } else if (typeof photosField === 'string') {
       try {
         photos = JSON.parse(photosField);
-      } catch { /* ignore */ }
+      } catch {
+        void 0; // Intentional: malformed JSON falls back to empty array
+      }
     }
 
     // Check if first photo is an object (new embedded format)
@@ -499,16 +505,21 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (proposalIdsForSummaries.length > 0) {
     // First, fetch threads for all proposals
+    // Note: Use unquoted column name for .in() filter - Supabase JS client handles quoting
     const { data: threadsData, error: threadsError } = await supabase
       .from('thread')
       .select('_id, "Proposal"')
-      .in('"Proposal"', proposalIdsForSummaries);
+      .in('Proposal', proposalIdsForSummaries);
 
+    console.log('[DEBUG] Thread query result:', { threadsData, threadsError, count: threadsData?.length });
     if (threadsError) {
       console.error('fetchProposalsByIds: Error fetching threads:', threadsError);
     } else if (threadsData && threadsData.length > 0) {
+      console.log('[DEBUG] First thread object keys:', Object.keys(threadsData[0]));
+      console.log('[DEBUG] First thread:', JSON.stringify(threadsData[0]));
       const threadIds = threadsData.map(t => t._id);
       const threadToProposalMap = new Map(threadsData.map(t => [t._id, t.Proposal]));
+      console.log('[DEBUG] threadToProposalMap entries:', [...threadToProposalMap.entries()]);
 
       // Fetch SplitBot counteroffer messages
       const { data: counterofferMsgs, error: counterofferError } = await supabase
@@ -517,30 +528,39 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
           _id,
           "Message Body",
           "Call to Action",
-          "Associated Thread/Conversation",
+          thread_id,
           "Created Date"
         `)
-        .in('"Associated Thread/Conversation"', threadIds)
+        .in('thread_id', threadIds)
         .eq('"is Split Bot"', true)
         .eq('"Call to Action"', 'Respond to Counter Offer')
         .order('"Created Date"', { ascending: false });
 
+      console.log('[DEBUG] Message query result:', { counterofferMsgs, counterofferError, count: counterofferMsgs?.length });
       if (counterofferError) {
         console.error('fetchProposalsByIds: Error fetching counteroffer messages:', counterofferError);
       } else if (counterofferMsgs && counterofferMsgs.length > 0) {
         console.log(`fetchProposalsByIds: Fetched ${counterofferMsgs.length} counteroffer summary messages`);
+        console.log('[DEBUG] First message:', JSON.stringify(counterofferMsgs[0]));
 
         // Map messages to their proposals (take only the most recent per proposal)
         counterofferMsgs.forEach(msg => {
-          const threadId = msg['Associated Thread/Conversation'];
+          const threadId = msg.thread_id;
           const proposalId = threadToProposalMap.get(threadId);
+          console.log(`[DEBUG] Mapping: threadId=${threadId} -> proposalId=${proposalId}`);
           if (proposalId && !counterofferSummaryMap.has(proposalId)) {
             counterofferSummaryMap.set(proposalId, msg['Message Body']);
           }
         });
+      } else {
+        console.log('[DEBUG] No counteroffer messages found or empty result');
       }
+    } else {
+      console.log('[DEBUG] No threads found for proposals');
     }
   }
+
+  console.log('[DEBUG] Final counterofferSummaryMap:', [...counterofferSummaryMap.entries()].map(([k, v]) => [k, v?.substring(0, 50)]));
 
   // Step 7: Create lookup maps for efficient joining
   const listingMap = new Map((listings || []).map(l => [l._id, l]));
@@ -638,15 +658,15 @@ export async function fetchUserProposalsFromUrl() {
     throw new Error('NOT_AUTHENTICATED');
   }
 
-  // Step 2: Fetch user data with Proposals List
+  // Step 2: Fetch user data
   const user = await fetchUserWithProposalList(userId);
 
-  // Step 3: Extract proposal IDs from user's Proposals List
-  const proposalIds = extractProposalIds(user);
+  // Step 3: Fetch proposal IDs by querying proposal table directly
+  const proposalIds = await extractProposalIds(userId);
 
   // Handle case where user has no proposals
   if (proposalIds.length === 0) {
-    console.log('fetchUserProposalsFromUrl: User has no proposal IDs in their Proposals List');
+    console.log('fetchUserProposalsFromUrl: User has no proposals');
     return {
       user,
       proposals: [],
@@ -658,7 +678,7 @@ export async function fetchUserProposalsFromUrl() {
   const proposals = await fetchProposalsByIds(proposalIds, userId);
 
   if (proposals.length === 0) {
-    console.log('fetchUserProposalsFromUrl: No valid proposals found (all IDs may be orphaned)');
+    console.log('fetchUserProposalsFromUrl: No valid proposals found (all IDs may be filtered out)');
     return {
       user,
       proposals: [],

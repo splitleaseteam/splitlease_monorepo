@@ -8,16 +8,40 @@
 @import '../../../styles/components/toast.css';
 
 /* ============================================
+   HIDE SCROLLBARS (page-wide)
+   Keep content scrollable but hide visual scrollbars
+   ============================================ */
+html,
+body {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* ============================================
    SUB-HEADER (Title + Count + View Toggle)
    Per mockup: sits below main header, above content
    ============================================ */
 .favorites-subheader {
   position: sticky;
-  top: 80px; /* Below main header */
+  top: 80px; /* Below main header when sticky */
   z-index: 50;
   background: white;
   border-bottom: 1px solid #E8ECF0;
   padding: 0 24px;
+  margin-top: 80px; /* Push below fixed header - header is 80px tall */
 }
 
 .favorites-subheader__inner {
@@ -61,11 +85,18 @@
    PAGE CONTAINER
    ============================================ */
 .favorites-page {
-  padding-top: 0 !important; /* Sub-header handles spacing now */
+  padding-top: 0; /* Sub-header handles spacing now */
   margin: 0;
   min-height: 100vh;
   width: 100%;
   background: #FAFBFC; /* Light background from mockup */
+  /* Hide scrollbars while keeping content scrollable */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.favorites-page::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* ============================================
@@ -142,13 +173,15 @@
    TWO-COLUMN LAYOUT
    Map aligns with cards (both start below sub-header)
    ============================================ */
+/* V6 Design: Main grid layout with listings + sticky map sidebar */
 .favorites-page .two-column-layout {
-  display: grid !important;
-  grid-template-columns: 1fr 400px !important; /* Map width from mockup */
-  gap: 24px !important;
-  max-width: 1400px;
+  display: grid;
+  grid-template-columns: 1fr 380px; /* V6 spec: --map-width: 380px */
+  gap: 24px; /* V6 spec: --gap-sections */
+  max-width: 1500px; /* V6 spec: max-width for content */
   margin: 0 auto;
-  padding: 24px 24px 300px; /* Top gap + generous bottom padding for footer */
+  padding: 8px 24px 300px; /* Reduced top padding - content closer to subheader */
+  margin-top: 0;
   min-height: auto;
   align-items: start;
 }
@@ -156,31 +189,148 @@
 .favorites-page .listings-column {
   overflow-y: visible;
   background: transparent;
-  padding-top: 50px; /* Top gap for cards below sub-header */
+  padding-top: 0;
 }
 
+/* V6 Design: Map column with premium styling
+   Matches V6 WCAG mockup: 2px border, 20px radius, proper shadow
+   NOTE: Sticky disabled temporarily for debugging alignment */
 .favorites-page .map-column {
-  width: 400px !important; /* Map width from mockup */
+  width: 380px;
   flex-shrink: 0;
-  position: sticky;
-  top: 160px; /* Aligned with cards below sub-header */
-  margin-top: 70px !important; /* Push map down to align with first card */
-  height: calc(100vh - 212px); /* Viewport minus headers */
+  /* Sticky disabled for debugging - uncomment when alignment is fixed */
+  /* position: sticky; */
+  /* top: 152px; */
+  height: calc(100vh - 200px);
   background: white;
-  border-radius: 16px;
+  border-radius: 20px; /* V6: --radius-xl */
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05); /* V6: --shadow-lg */
+  border: 2px solid rgba(0, 0, 0, 0.12); /* V6: thicker border */
+  display: flex;
+  flex-direction: column;
+  /* Force content to top - no internal spacing */
+  padding: 0 !important;
+  margin: 0;
+  margin-top: 15px !important; /* Slight offset from subheader for visual alignment */
+  justify-content: flex-start;
+  align-items: stretch;
+  /* Align to top of grid cell */
+  align-self: start;
+  box-sizing: border-box;
+}
+
+/* Ensure all children have no top margin */
+.favorites-page .map-column > * {
+  margin-top: 0 !important;
+}
+
+/* Remove any pseudo-elements that might add space */
+.favorites-page .map-column::before,
+.favorites-page .map-column::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* GoogleMap container - no padding, fills remaining space */
+.favorites-page .map-column > .google-map-container {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.favorites-page .map-column:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1), 0 0 20px rgba(109, 49, 194, 0.1);
+}
+
+/* V6 Map Header - Simple "Map" label with zoom controls
+   Matches V6 WCAG mockup: 16px padding, semi-transparent bg */
+.favorites-page .v6-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px; /* V6: --spacing-lg */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.98);
+  flex-shrink: 0;
+  /* Force flush to top of parent - override any inherited styles */
+  margin: 0 !important;
+  margin-top: 0 !important;
+  padding-top: 16px !important;
+  position: relative;
+  top: 0;
+  /* Explicit height for consistency */
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.favorites-page .v6-map-header .map-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px; /* V6: --font-size-base (WCAG minimum) */
+  font-weight: 600;
+  color: #1E0A3C; /* V6: --color-text */
+}
+
+.favorites-page .v6-map-header .map-title svg {
+  color: #5B28A6;
+}
+
+.favorites-page .v6-map-header .zoom-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.favorites-page .v6-map-header .zoom-btn {
+  /* WCAG 2.1 AA: 44x44px minimum touch target */
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 500;
+  color: #4A4A4A;
+  transition: all 0.15s ease;
+}
+
+.favorites-page .v6-map-header .zoom-btn:hover {
+  background: #F5F0FA;
+  border-color: #5B28A6;
+  color: #5B28A6;
+}
+
+/* Map container fills remaining space */
+.favorites-page .map-column .google-map-container,
+.favorites-page .map-column > div:last-child {
+  flex: 1;
+  min-height: 0;
 }
 
 /* ============================================
    CARD WRAPPER - Force zero padding to override global styles
    ============================================ */
 .favorites-card-wrapper {
-  padding: 0 !important;
-  margin: 0 !important;
-  box-shadow: none !important;
-  border-radius: 24px !important;
-  background: transparent !important;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  border-radius: 24px;
+  background: transparent;
+}
+
+/* V6 Cards - Basic resets (no !important to allow inline styles) */
+.v6-listings-grid article {
+  margin: 0;
+}
+
+.v6-listings-grid article img {
+  display: block;
 }
 
 /* ============================================
@@ -191,6 +341,24 @@
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
   padding: 0;
+}
+
+/* ============================================
+   V6 LISTINGS GRID - Two-column card layout
+   Matches V6 WCAG mockup design
+   ============================================ */
+.v6-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 0;
+}
+
+@media (max-width: 700px) {
+  .v6-listings-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 /* ============================================
@@ -439,12 +607,23 @@
 }
 
 /* ============================================
-   RESPONSIVE - TABLET (1024px)
-   Map hides, single column layout (mockup spec)
+   RESPONSIVE - TABLET (1100px) - V6 spec
+   Map hides at 1100px, cards remain 2-column until 700px
    ============================================ */
+@media (max-width: 1100px) {
+  .favorites-page .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .favorites-page .map-column {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) {
   .favorites-subheader {
     top: 60px; /* Smaller header on tablet */
+    margin-top: 60px; /* Match smaller header height */
   }
 
   .favorites-subheader__inner {
@@ -453,14 +632,6 @@
 
   .favorites-subheader__title {
     font-size: 22px;
-  }
-
-  .favorites-page .two-column-layout {
-    grid-template-columns: 1fr !important;
-  }
-
-  .favorites-page .map-column {
-    display: none;
   }
 
   .favorites-grid {
@@ -476,6 +647,7 @@
 @media (max-width: 768px) {
   .favorites-subheader {
     top: 60px;
+    margin-top: 60px; /* Match smaller header height */
     padding: 0 16px;
   }
 
@@ -505,57 +677,49 @@
     display: none;
   }
 
-  /* ROW 2: Map Button Row - fixed below sub-header */
+  /* ROW 2: Map Button - Floating pill at bottom */
   .favorites-page .mobile-map-row {
     display: flex;
     position: fixed;
-    top: 116px; /* Below shared Header (60px) + Sub-header (56px) */
-    left: 0;
-    right: 0;
-    z-index: 49;
-    padding: 0.5rem 1rem;
-    background: white;
-    border-bottom: 1px solid var(--favorites-border, #E8ECF0);
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99;
+    padding: 0;
+    background: transparent;
+    border: none;
   }
 
   .favorites-page .mobile-map-row .map-toggle-btn {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    background: #f3f4f6;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
+    gap: 8px;
+    padding: 14px 28px;
+    min-height: 48px;
+    background: #1E293B;
+    border: none;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   .favorites-page .mobile-map-row .map-toggle-btn:hover {
-    background: #e5e7eb;
-    border-color: #9ca3af;
+    background: #334155;
+    transform: scale(1.02);
   }
 
-  /* ROW 3: Schedule Selector - fixed below map row */
-  .favorites-page .mobile-schedule-selector {
-    display: block;
-    position: fixed;
-    top: 166px; /* Below Header (60px) + Sub-header (56px) + Map row (50px) */
-    left: 0;
-    right: 0;
-    z-index: 48;
-    padding: 0.75rem 1rem;
-    background: white;
-    border-bottom: 1px solid var(--favorites-border, #E8ECF0);
+  .favorites-page .mobile-map-row .map-toggle-btn:active {
+    transform: scale(0.98);
   }
 
-  /* Adjust listings column padding for fixed rows */
+  /* No padding needed - map button is now floating at bottom */
   .favorites-page .listings-column {
-    padding-top: 100px; /* Space for Map row + Schedule selector */
+    padding-top: 0;
   }
 
   /* Page Title Section mobile */
@@ -614,6 +778,41 @@
    RESPONSIVE - SMALL MOBILE (480px)
    ============================================ */
 @media (max-width: 480px) {
+  .favorites-subheader {
+    padding: 0 12px;
+  }
+
+  .favorites-subheader__inner {
+    height: 48px;
+  }
+
+  .favorites-subheader__title {
+    font-size: 18px;
+  }
+
+  .favorites-subheader__count {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  /* Compact view toggle on small screens */
+  .view-toggle {
+    padding: 2px;
+    border-radius: 8px;
+  }
+
+  .view-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    gap: 4px;
+    border-radius: 6px;
+  }
+
+  .view-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
   .favorites-page__title-section {
     padding: 12px 16px;
   }
@@ -625,6 +824,17 @@
   .favorites-grid {
     padding: 12px;
     gap: 12px;
+  }
+
+  /* Adjust floating map pill for small screens */
+  .favorites-page .mobile-map-row {
+    bottom: 20px;
+  }
+
+  .favorites-page .mobile-map-row .map-toggle-btn {
+    padding: 12px 24px;
+    min-height: 44px;
+    font-size: 14px;
   }
 }
 

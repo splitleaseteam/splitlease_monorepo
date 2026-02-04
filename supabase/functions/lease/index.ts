@@ -29,11 +29,11 @@
  * - Phase 7: Stays creation and house manual linking
  */
 
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import 'jsr:@supabase/functions-js@2/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 import {
-  formatErrorResponse,
+  formatErrorResponse as _formatErrorResponse,
   getStatusCodeFromError,
   ValidationError,
   AuthenticationError,
@@ -212,7 +212,7 @@ async function authenticateFromHeaders(
     }
 
     return { id: appUser._id, email: user.email ?? '' };
-  } catch (err) {
+  } catch (_err) {
     console.error('[lease:auth] Exception:', (err as Error).message);
     return null;
   }

@@ -205,7 +205,7 @@ function ScheduleSection() {
   ];
 
   const handleExploreClick = () => {
-    window.location.href = `/search.html?days-selected=${schedules[activeIndex].days}`;
+    window.location.href = `/search?days-selected=${schedules[activeIndex].days}`;
   };
 
   // Load Lottie player script
@@ -776,10 +776,10 @@ export default function HomePage() {
 
     if (daysParam) {
       // Pass through the URL parameter directly to the search page
-      window.location.href = `/search.html?days-selected=${daysParam}`;
+      window.location.href = `/search?days-selected=${daysParam}`;
     } else {
       // No selection in URL, navigate without parameter
-      window.location.href = '/search.html';
+      window.location.href = '/search';
     }
   };
 

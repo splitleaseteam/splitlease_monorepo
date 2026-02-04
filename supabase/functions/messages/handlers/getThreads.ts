@@ -9,7 +9,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { User } from 'https://esm.sh/@supabase/supabase-js@2';
+import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 
 interface Thread {
@@ -23,6 +23,9 @@ interface Thread {
   is_with_splitbot: boolean;
   host_user_id: string;
   guest_user_id: string;
+  proposal_id?: string;
+  proposal_status?: string;
+  has_pending_proposal: boolean;
 }
 
 interface GetThreadsResult {
@@ -35,26 +38,30 @@ interface GetThreadsResult {
  */
 export async function handleGetThreads(
   supabaseAdmin: SupabaseClient,
-  payload: Record<string, unknown>,
-  user: { id: string; email: string }
+  _payload: Record<string, unknown>,
+  user: { id: string; email: string; bubbleId?: string }
 ): Promise<GetThreadsResult> {
   console.log('[getThreads] ========== GET THREADS ==========');
-  console.log('[getThreads] User ID:', user.id, 'Email:', user.email);
+  console.log('[getThreads] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
 
-  // Determine user's Bubble ID:
-  // - For legacy auth: user.id IS the Bubble ID (passed directly)
-  // - For JWT auth: user.id is Supabase UUID, need to look up by email
+  // Determine user's Bubble ID (priority order):
+  // 1. user.bubbleId from JWT user_metadata (set during signup)
+  // 2. user.id if it looks like a Bubble ID (legacy auth)
+  // 3. Lookup from public.user by email (fallback for migrated users)
   let userBubbleId: string;
 
-  // Check if user.id looks like a Bubble ID (they typically start with numbers and contain 'x')
-  const isBubbleId = /^\d+x\d+$/.test(user.id);
-
-  if (isBubbleId) {
-    // Legacy auth - user.id is already the Bubble ID
+  // Priority 1: Use bubbleId from JWT user_metadata if available
+  if (user.bubbleId) {
+    userBubbleId = user.bubbleId;
+    console.log('[getThreads] Using Bubble ID from JWT user_metadata:', userBubbleId);
+  }
+  // Priority 2: Check if user.id looks like a Bubble ID (legacy auth)
+  else if (/^\d+x\d+$/.test(user.id)) {
     userBubbleId = user.id;
     console.log('[getThreads] Using direct Bubble ID from legacy auth:', userBubbleId);
-  } else {
-    // JWT auth - need to look up Bubble ID by email
+  }
+  // Priority 3: JWT auth without metadata - look up by email in public.user
+  else {
     if (!user.email) {
       console.error('[getThreads] No email in auth token');
       throw new ValidationError('Could not find user profile. Please try logging in again.');
@@ -168,6 +175,31 @@ export async function handleGetThreads(
     }
   }
 
+  // Step 5b: Fetch proposal data for threads with proposals
+  // This enables hosts to see which threads have pending proposals
+  const proposalIds = new Set<string>();
+  threads.forEach(thread => {
+    if (thread['Proposal']) proposalIds.add(thread['Proposal']);
+  });
+
+  let proposalMap: Record<string, { status: string }> = {};
+  if (proposalIds.size > 0) {
+    const { data: proposals, error: proposalsError } = await supabaseAdmin
+      .from('proposal')
+      .select('_id, "Status"')
+      .in('_id', Array.from(proposalIds));
+
+    if (!proposalsError && proposals) {
+      proposalMap = proposals.reduce((acc, proposal) => {
+        acc[proposal._id] = {
+          status: proposal['Status'] || 'unknown',
+        };
+        return acc;
+      }, {} as Record<string, { status: string }>);
+    }
+    console.log('[getThreads] Fetched proposal data for', Object.keys(proposalMap).length, 'proposals');
+  }
+
   // Step 6: Transform threads to UI format
   const transformedThreads: Thread[] = threads.map(thread => {
     const hostId = thread.host_user_id;
@@ -192,6 +224,22 @@ export async function handleGetThreads(
       lastMessageTime = modifiedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
+    // Get proposal data if thread has a proposal
+    const proposalId = thread['Proposal'];
+    const proposalData = proposalId ? proposalMap[proposalId] : null;
+    const proposalStatus = proposalData?.status;
+
+    // Determine if this is a pending proposal that needs host attention
+    // Pending statuses that require host review:
+    const pendingStatuses = [
+      'Proposal Pending',
+      'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
+      'Proposal Submitted for guest by Split Lease - Pending Confirmation',
+      'Counter Proposal Sent',
+      'Counter Proposal Pending'
+    ];
+    const hasPendingProposal = proposalStatus ? pendingStatuses.includes(proposalStatus) : false;
+
     return {
       _id: thread._id,
       host_user_id: hostId,
@@ -199,10 +247,13 @@ export async function handleGetThreads(
       contact_name: contact?.name || 'Split Lease',
       contact_avatar: contact?.avatar,
       property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
-      last_message_preview: thread['~Last Message'] || 'No messages yet',
+      last_message_preview: thread['last_message_preview'] || 'No messages yet',
       last_message_time: lastMessageTime,
       unread_count: unreadCountMap[thread._id] || 0,
       is_with_splitbot: false,
+      proposal_id: proposalId,
+      proposal_status: proposalStatus,
+      has_pending_proposal: hasPendingProposal,
     };
   });
 

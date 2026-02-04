@@ -90,12 +90,18 @@ export async function callBubbleWorkflow(
         }
 
         console.error(`[BubblePush] ========== PUSH ERROR ==========`);
-        console.error(`[BubblePush] Error:`, error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorDetails = {
+            originalError: error instanceof Error ? error.name : typeof error,
+            message: errorMsg,
+            stack: error instanceof Error ? error.stack : undefined,
+        };
+        console.error(`[BubblePush] Error:`, errorDetails);
 
         throw new BubbleApiError(
-            `Failed to push to Bubble workflow: ${error.message}`,
+            `Failed to push to Bubble workflow: ${errorMsg}`,
             500,
-            error
+            errorDetails
         );
     }
 }
@@ -149,10 +155,17 @@ export async function batchPushToWorkflow(
             results.push({ _id: payload._id, success: true });
             success++;
         } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : String(error);
+            const errorType = error instanceof Error ? error.name : typeof error;
+            console.error(`[BubblePush] Batch item ${i + 1}/${payloads.length} failed:`, {
+                _id: payload._id,
+                errorType,
+                message: errorMsg,
+            });
             results.push({
                 _id: payload._id,
                 success: false,
-                error: error.message
+                error: errorMsg
             });
             failed++;
         }

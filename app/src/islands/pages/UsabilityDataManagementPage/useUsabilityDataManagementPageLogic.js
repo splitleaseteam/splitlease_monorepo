@@ -101,20 +101,8 @@ export function useUsabilityDataManagementPageLogic() {
   const dayPattern = formatDayPattern(selectedDayIndices);
 
   // ============================================================================
-  // Load Initial Data
+  // Load Initial Data Helpers
   // ============================================================================
-  useEffect(() => {
-    loadHosts();
-    loadGuests();
-    setDefaultMoveInDate();
-  }, [loadHosts, loadGuests, setDefaultMoveInDate]);
-
-  useEffect(() => {
-    if (window.$crisp?.push) {
-      window.$crisp.push(["do", "chat:hide"]);
-    }
-  }, []);
-
   const setDefaultMoveInDate = useCallback(() => {
     const today = new Date();
     today.setDate(today.getDate() + 7); // Default to 1 week from now
@@ -210,6 +198,21 @@ Also deleted ${result.deletedCounts.proposals} associated proposals.`);
       showAlertMessage('Error', `Failed to load guests: ${error.message}`);
     } finally {
       setGuestsLoading(false);
+    }
+  }, []);
+
+  // ============================================================================
+  // Load Initial Data
+  // ============================================================================
+  useEffect(() => {
+    loadHosts();
+    loadGuests();
+    setDefaultMoveInDate();
+  }, [loadHosts, loadGuests, setDefaultMoveInDate]);
+
+  useEffect(() => {
+    if (window.$crisp?.push) {
+      window.$crisp.push(["do", "chat:hide"]);
     }
   }, []);
 

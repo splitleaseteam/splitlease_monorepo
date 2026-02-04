@@ -1,0 +1,446 @@
+/**
+ * Pattern 2: Urgency Countdown - Main Styles
+ *
+ * Production-ready CSS with animations, responsive design, and accessibility
+ */
+
+/* ========================================
+   ROOT VARIABLES
+   ======================================== */
+
+:root {
+  /* Urgency Colors */
+  --urgency-low-bg: #F0F4F8;
+  --urgency-low-text: #4A5568;
+  --urgency-low-accent: #4A90E2;
+  --urgency-low-border: #B3D9FF;
+
+  --urgency-medium-bg: #FFF8E1;
+  --urgency-medium-text: #F57C00;
+  --urgency-medium-accent: #FFA726;
+  --urgency-medium-border: #FFD54F;
+
+  --urgency-high-bg: #FFE5E5;
+  --urgency-high-text: #D32F2F;
+  --urgency-high-accent: #FF5722;
+  --urgency-high-border: #FF8A80;
+
+  --urgency-critical-bg: #FFEBEE;
+  --urgency-critical-text: #B71C1C;
+  --urgency-critical-accent: #F44336;
+  --urgency-critical-border: #FF5252;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ========================================
+   MAIN CONTAINER
+   ======================================== */
+
+.urgency-countdown {
+  position: relative;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  background: var(--urgency-bg, #FFFFFF);
+  border-left: 4px solid var(--urgency-color, #4A90E2);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-normal);
+}
+
+/* Urgency Level Styles */
+.urgency-countdown.urgency-low {
+  --urgency-color: var(--urgency-low-accent);
+  --urgency-bg: var(--urgency-low-bg);
+  border-left-color: var(--urgency-low-accent);
+}
+
+.urgency-countdown.urgency-medium {
+  --urgency-color: var(--urgency-medium-accent);
+  --urgency-bg: var(--urgency-medium-bg);
+  border-left-color: var(--urgency-medium-accent);
+  box-shadow: 0 4px 12px rgba(255, 167, 38, 0.2);
+}
+
+.urgency-countdown.urgency-high {
+  --urgency-color: var(--urgency-high-accent);
+  --urgency-bg: var(--urgency-high-bg);
+  border-left-color: var(--urgency-high-accent);
+  border-left-width: 5px;
+  box-shadow: 0 6px 16px rgba(255, 87, 34, 0.25);
+}
+
+.urgency-countdown.urgency-critical {
+  --urgency-color: var(--urgency-critical-accent);
+  --urgency-bg: var(--urgency-critical-bg);
+  border-left-color: var(--urgency-critical-accent);
+  border-left-width: 6px;
+  box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+  animation: pulse-border 2s infinite;
+}
+
+/* Variant Styles */
+.urgency-countdown.variant-compact {
+  padding: var(--spacing-md);
+}
+
+.urgency-countdown.variant-minimal {
+  padding: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.urgency-countdown.variant-prominent {
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ========================================
+   SECTION LAYOUTS
+   ======================================== */
+
+.countdown-section,
+.current-price-section,
+.projections-section,
+.rate-section,
+.action-section,
+.alerts-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.countdown-section:last-child,
+.current-price-section:last-child,
+.projections-section:last-child,
+.rate-section:last-child,
+.action-section:last-child,
+.alerts-section:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================
+   CURRENT PRICE DISPLAY
+   ======================================== */
+
+.current-price-section {
+  background: rgba(255, 255, 255, 0.7);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+}
+
+.price-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.price-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.multiplier-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--urgency-color);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.price-display {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-xs);
+}
+
+.price-amount {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1;
+}
+
+.price-period {
+  font-size: 16px;
+  color: #666;
+}
+
+/* ========================================
+   BUDGET WARNING
+   ======================================== */
+
+.budget-warning {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: #FFF3CD;
+  border: 1px solid #FFC107;
+  border-radius: var(--radius-md);
+  color: #856404;
+  font-size: 14px;
+  margin-bottom: var(--spacing-md);
+}
+
+.warning-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.warning-text {
+  flex: 1;
+}
+
+/* ========================================
+   ALERTS
+   ======================================== */
+
+.alerts-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.alert-low {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.alert-medium {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.alert-high {
+  background: #FFEBEE;
+  color: #C62828;
+}
+
+.alert-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.alert-message {
+  flex: 1;
+}
+
+/* ========================================
+   TRANSACTION CONTEXT
+   ======================================== */
+
+.transaction-context {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: #666;
+  margin-top: var(--spacing-md);
+}
+
+.context-icon {
+  font-size: 16px;
+}
+
+/* ========================================
+   LOADING & ERROR STATES
+   ======================================== */
+
+.urgency-countdown.urgency-loading,
+.urgency-countdown.urgency-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--urgency-color, #4A90E2);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: var(--spacing-md);
+  font-size: 14px;
+  color: #666;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.error-message {
+  font-size: 14px;
+  color: #D32F2F;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-left-color: var(--urgency-critical-accent);
+    box-shadow: 0 8px 20px rgba(244, 67, 54, 0.3);
+  }
+  50% {
+    border-left-color: #FF1744;
+    box-shadow: 0 8px 20px rgba(244, 67, 54, 0.5);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .urgency-countdown {
+    padding: var(--spacing-md);
+  }
+
+  .urgency-countdown.variant-prominent {
+    padding: var(--spacing-lg);
+  }
+
+  .price-amount {
+    font-size: 28px;
+  }
+
+  .price-period {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .urgency-countdown {
+    padding: var(--spacing-sm);
+  }
+
+  .price-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .price-amount {
+    font-size: 24px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+.urgency-countdown:focus-within {
+  outline: 2px solid var(--urgency-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .urgency-countdown,
+  .urgency-countdown * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ========================================
+   DEBUG INFO (Development Only)
+   ======================================== */
+
+.debug-info {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background: #f5f5f5;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+
+.debug-info summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+}
+
+.debug-info pre {
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-sm);
+  background: #fff;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+}

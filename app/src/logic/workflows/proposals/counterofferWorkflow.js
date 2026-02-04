@@ -15,16 +15,17 @@
  * 7. Schedule API workflow: CORE-create-lease (+15 seconds)
  */
 
-import { supabase } from '../../../lib/supabase.js';
-import { hasReviewableCounteroffer } from '../../rules/proposals/proposalRules.js';
 import { PROPOSAL_STATUSES } from '../../constants/proposalStatuses.js';
 
 /**
  * Accept a counteroffer
  * Updates proposal status and prepares for lease creation
  *
+ * Uses Edge Function to bypass RLS policies (legacy auth users don't have
+ * Supabase Auth sessions, so direct Supabase calls are blocked by RLS).
+ *
  * @param {string} proposalId - Proposal ID
- * @returns {Promise<Object>} Updated proposal data
+ * @returns {Promise<Object>} Result from Edge Function
  */
 export async function acceptCounteroffer(proposalId) {
   if (!proposalId) {
@@ -33,75 +34,44 @@ export async function acceptCounteroffer(proposalId) {
 
   console.log('[counterofferWorkflow] Accepting counteroffer for proposal:', proposalId);
 
-  // First, fetch the proposal to validate it has a counteroffer
-  const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
-    .select('*')
-    .eq('_id', proposalId)
-    .single();
-
-  if (fetchError) {
-    throw new Error(`Failed to fetch proposal: ${fetchError.message}`);
-  }
-
-  if (!proposal['counter offer happened']) {
-    throw new Error('Proposal does not have a counteroffer to accept');
-  }
-
-  // Update proposal status to accepted
-  const now = new Date().toISOString();
-  const updateData = {
-    'Status': PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
-    'Modified Date': now,
-    'Is Finalized': true
-  };
-
-  const { data, error } = await supabase
-    .from('proposal')
-    .update(updateData)
-    .eq('_id', proposalId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('[counterofferWorkflow] Error accepting counteroffer:', error);
-    throw new Error(`Failed to accept counteroffer: ${error.message}`);
-  }
-
-  console.log('[counterofferWorkflow] Counteroffer accepted successfully:', proposalId);
-
-  // Trigger lease creation via Edge Function (fire and forget)
-  // Note: When called from CompareTermsModal, the modal handles lease creation directly
-  // This is a fallback for other code paths that call acceptCounteroffer directly
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (supabaseUrl && proposal) {
-    const originalNightsPerWeek = proposal['nights per week (num)'] || 0;
-    const originalNightlyPrice = proposal['proposal nightly price'] || 0;
-    const fourWeekCompensation = originalNightsPerWeek * 4 * originalNightlyPrice;
-    const fourWeekRent = fourWeekCompensation; // Same for non-counteroffer flow
-
-    fetch(`${supabaseUrl}/functions/v1/lease`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'create',
-        payload: {
-          proposalId,
-          isCounteroffer: false,
-          fourWeekRent,
-          fourWeekCompensation,
-        },
-      }),
-    }).catch(err => {
-      console.warn('[counterofferWorkflow] Lease creation trigger failed (non-blocking):', err);
-    });
+  if (!supabaseUrl) {
+    throw new Error('VITE_SUPABASE_URL is not configured');
   }
 
-  return data;
+  // Call Edge Function which uses service_role key to bypass RLS
+  const response = await fetch(`${supabaseUrl}/functions/v1/proposal`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'acceptCounteroffer',
+      payload: {
+        proposalId,
+      },
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    console.error('[counterofferWorkflow] Edge Function error:', result);
+    throw new Error(result.error || 'Failed to accept counteroffer');
+  }
+
+  console.log('[counterofferWorkflow] Counteroffer accepted successfully via Edge Function:', proposalId);
+
+  // Note: Lease creation is handled separately by useCompareTermsModalLogic.js
+  // The Edge Function only updates the proposal status and copies counteroffer terms
+
+  return result.data;
 }
 
 /**
  * Decline a counteroffer (equivalent to cancel proposal)
+ *
+ * Uses Edge Function to bypass RLS policies.
  *
  * @param {string} proposalId - Proposal ID
  * @param {string} reason - Reason for declining
@@ -114,28 +84,37 @@ export async function declineCounteroffer(proposalId, reason = 'Counteroffer dec
 
   console.log('[counterofferWorkflow] Declining counteroffer for proposal:', proposalId);
 
-  const now = new Date().toISOString();
-  const updateData = {
-    'Status': PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key,
-    'Deleted': true,
-    'Modified Date': now,
-    'reason for cancellation': reason
-  };
-
-  const { data, error } = await supabase
-    .from('proposal')
-    .update(updateData)
-    .eq('_id', proposalId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('[counterofferWorkflow] Error declining counteroffer:', error);
-    throw new Error(`Failed to decline counteroffer: ${error.message}`);
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) {
+    throw new Error('VITE_SUPABASE_URL is not configured');
   }
 
-  console.log('[counterofferWorkflow] Counteroffer declined successfully:', proposalId);
-  return data;
+  // Call Edge Function which uses service_role key to bypass RLS
+  // Uses 'update' action with the expected payload structure
+  const response = await fetch(`${supabaseUrl}/functions/v1/proposal`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'update',
+      payload: {
+        proposal_id: proposalId,  // underscore format expected by Edge Function
+        status: PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key,
+        reason_for_cancellation: reason
+      },
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    console.error('[counterofferWorkflow] Edge Function error:', result);
+    throw new Error(result.error || 'Failed to decline counteroffer');
+  }
+
+  console.log('[counterofferWorkflow] Counteroffer declined successfully via Edge Function:', proposalId);
+  return result.data;
 }
 
 /**

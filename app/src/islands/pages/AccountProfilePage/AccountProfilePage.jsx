@@ -110,6 +110,7 @@ export default function AccountProfilePage() {
     nextActions: logic.nextActions,
     onCoverPhotoChange: logic.handleCoverPhotoChange,
     onAvatarChange: logic.handleAvatarChange,
+    onActionClick: logic.handleNextActionClick,
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,

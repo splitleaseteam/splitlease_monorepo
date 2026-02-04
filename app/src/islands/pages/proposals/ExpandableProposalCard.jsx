@@ -16,6 +16,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import MatchReasonCard from './MatchReasonCard.jsx';
 import NegotiationSummarySection from './NegotiationSummarySection.jsx';
 import CounterofferSummarySection from './CounterofferSummarySection.jsx';
+import NarrativeGuestProposalBody from './NarrativeGuestProposalBody.jsx';
 import {
   DAY_ABBREVS,
   DAY_NAMES,
@@ -48,6 +49,7 @@ import { showToast } from '../../shared/Toast.jsx';
 import { supabase } from '../../../lib/supabase.js';
 import { canConfirmSuggestedProposal, getNextStatusAfterConfirmation } from '../../../logic/rules/proposals/proposalRules.js';
 import { dismissProposal } from '../../shared/SuggestedProposals/suggestedProposalService.js';
+import LeaseCalendarSection from './LeaseCalendarSection.jsx';
 
 /**
  * Chevron icon for expand/collapse
@@ -339,16 +341,19 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
 
   // Stage 3: Host Review
   if (stageIndex === 2) {
+    // Check completion first to avoid matching "Counteroffer Accepted" status
+    if (usualOrder >= 3) return PROGRESS_COLORS.purple;
     if (normalizedStatus === 'Host Review' || normalizedStatus?.includes('Counteroffer')) {
       return PROGRESS_COLORS.green;
     }
-    if (usualOrder >= 3) return PROGRESS_COLORS.purple;
     return PROGRESS_COLORS.gray;
   }
 
-  // Stage 4: Documents
+  // Stage 4: Accepted/Documents
   if (stageIndex === 3) {
-    if (normalizedStatus?.includes('Documents Sent for Review')) {
+    if (normalizedStatus?.includes('Accepted') ||
+        normalizedStatus?.includes('Drafting') ||
+        normalizedStatus?.includes('Documents Sent for Review')) {
       return PROGRESS_COLORS.green;
     }
     if (usualOrder >= 4) return PROGRESS_COLORS.purple;
@@ -626,6 +631,9 @@ export default function ExpandableProposalCard({
   // Counteroffer summary (SplitBot message explaining what changed)
   const counterofferSummary = proposal?.counterofferSummary || null;
 
+  // DEBUG: Log counteroffer data for this proposal
+  console.log(`[EPC DEBUG] Proposal ${proposal?._id}: isCounteroffer=${isCounteroffer}, hasCounteroffeSummary=${!!counterofferSummary}, summary=${counterofferSummary?.substring(0, 50) || 'null'}`);
+
   // Status flags
   const isSuggested = isSLSuggested(status);
   const isPending = isPendingConfirmation(status);
@@ -780,24 +788,84 @@ export default function ExpandableProposalCard({
         hidden={!isExpanded && contentHeight === 0}
       >
         <div ref={contentRef} className="epc-content">
-          {/* Match Reason Card for SL-suggested proposals */}
-          {isSuggested && <MatchReasonCard proposal={proposal} />}
+          {/* Mobile Narrative View - CSS shows only on ≤640px */}
+          <NarrativeGuestProposalBody
+            proposal={proposal}
+            onViewListing={() => window.open(getListingUrlWithProposalContext(listing?._id, {
+              daysSelected: parseDaysSelectedForContext(proposal),
+              reservationSpan: getEffectiveReservationSpan(proposal),
+              moveInDate: proposal['Move in range start']
+            }), '_blank')}
+          >
+            {/* Action buttons for narrative view */}
+            <div className="epc-actions-row">
+              {buttonConfig?.guestAction1?.visible && (
+                buttonConfig.guestAction1.action === 'go_to_leases' ? (
+                  <a href="/my-leases" className="epc-btn epc-btn--primary">
+                    {buttonConfig.guestAction1.label}
+                  </a>
+                ) : (
+                  <button
+                    className={`epc-btn ${buttonConfig.guestAction1.action === 'delete_proposal' ? 'epc-btn--danger' : 'epc-btn--primary'}`}
+                    disabled={buttonConfig.guestAction1.action === 'confirm_proposal' && isConfirming}
+                    onClick={() => {
+                      if (buttonConfig.guestAction1.action === 'modify_proposal') {
+                        setProposalDetailsModalInitialView('pristine');
+                        setShowProposalDetailsModal(true);
+                      } else if (buttonConfig.guestAction1.action === 'submit_rental_app') {
+                        goToRentalApplication(proposal._id);
+                      } else if (buttonConfig.guestAction1.action === 'delete_proposal') {
+                        handleDeleteProposal();
+                      } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
+                        handleConfirmProposal();
+                      }
+                    }}
+                  >
+                    {buttonConfig.guestAction1.label}
+                  </button>
+                )
+              )}
+              {buttonConfig?.cancelButton?.visible && (
+                <button
+                  className={`epc-btn ${
+                    buttonConfig.cancelButton.action === 'delete_proposal' ? 'epc-btn--danger' :
+                    'epc-btn--ghost'
+                  }`}
+                  disabled={buttonConfig.cancelButton.disabled}
+                  onClick={() => {
+                    if (buttonConfig.cancelButton.action === 'delete_proposal') {
+                      handleDeleteProposal();
+                    } else if (['cancel_proposal', 'reject_counteroffer', 'reject_proposal'].includes(buttonConfig.cancelButton.action)) {
+                      setShowCancelModal(true);
+                    }
+                  }}
+                >
+                  {buttonConfig.cancelButton.label}
+                </button>
+              )}
+            </div>
+          </NarrativeGuestProposalBody>
 
-          {/* Negotiation Summary Section - for all proposals with summaries */}
-          {negotiationSummaries.length > 0 && (
-            <NegotiationSummarySection summaries={negotiationSummaries} />
-          )}
+          {/* Desktop/Tablet Structured View - CSS shows only on >640px */}
+          <div className="epc-structured-body">
+            {/* Match Reason Card for SL-suggested proposals */}
+            {isSuggested && <MatchReasonCard proposal={proposal} />}
 
-          {/* Counteroffer Summary Section - for proposals with host counteroffer */}
-          {isCounteroffer && counterofferSummary && (
-            <CounterofferSummarySection summary={counterofferSummary} />
-          )}
+            {/* Negotiation Summary Section - for all proposals with summaries */}
+            {negotiationSummaries.length > 0 && (
+              <NegotiationSummarySection summaries={negotiationSummaries} />
+            )}
 
-          {/* Status Banner */}
-          <StatusBanner status={status} cancelReason={cancelReason} isCounteroffer={isCounteroffer} />
+            {/* Counteroffer Summary Section - for proposals with host counteroffer */}
+            {isCounteroffer && counterofferSummary && (
+              <CounterofferSummarySection summary={counterofferSummary} />
+            )}
 
-          {/* Detail Header */}
-          <div className="epc-detail-header">
+            {/* Status Banner */}
+            <StatusBanner status={status} cancelReason={cancelReason} isCounteroffer={isCounteroffer} />
+
+            {/* Detail Header */}
+            <div className="epc-detail-header">
             <div className="epc-detail-title-area">
               <div className="epc-detail-title">{listingName}</div>
               <div className="epc-detail-location">{location}</div>
@@ -977,6 +1045,9 @@ export default function ExpandableProposalCard({
             proposal={proposal}
           />
 
+          {/* Lease Calendar Section - shows for activated leases */}
+          <LeaseCalendarSection proposal={proposal} />
+
           {/* Actions Row */}
           <div className="epc-actions-row">
             {/* VM status text (for disabled states) */}
@@ -1006,6 +1077,8 @@ export default function ExpandableProposalCard({
                       handleDeleteProposal();
                     } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
                       handleConfirmProposal();
+                    } else if (buttonConfig.guestAction1.action === 'accept_counteroffer') {
+                      setShowCompareTermsModal(true);
                     }
                   }}
                 >
@@ -1046,19 +1119,6 @@ export default function ExpandableProposalCard({
               </button>
             )}
 
-            {/* Edit button */}
-            {!isTerminal && !isCompleted && (
-              <button
-                className="epc-btn epc-btn--ghost"
-                onClick={() => {
-                  setProposalDetailsModalInitialView('pristine');
-                  setShowProposalDetailsModal(true);
-                }}
-              >
-                Edit
-              </button>
-            )}
-
             {/* Cancel/Delete button */}
             {buttonConfig?.cancelButton?.visible && (
               <button
@@ -1080,6 +1140,7 @@ export default function ExpandableProposalCard({
               </button>
             )}
           </div>
+          </div>{/* End .epc-structured-body */}
         </div>
       </div>
 
@@ -1148,7 +1209,8 @@ export default function ExpandableProposalCard({
       />
 
       {/* Compare Terms Modal - for proposals with counteroffer */}
-      {showCompareTermsModal && isCounteroffer && (
+      {/* Note: Once modal is opened, keep it mounted regardless of proposal state changes during async operations */}
+      {showCompareTermsModal && (
         <CompareTermsModal
           proposal={proposal}
           onClose={() => setShowCompareTermsModal(false)}

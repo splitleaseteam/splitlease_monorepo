@@ -93,17 +93,17 @@ export async function fetchListingComplete(listingId) {
         "neighborhood (manual input by user)",
         "Time to Station (commute)",
         "Map HTML Web",
-        "💰Nightly Host Rate for 1 night",
-        "💰Nightly Host Rate for 2 nights",
-        "💰Nightly Host Rate for 3 nights",
-        "💰Nightly Host Rate for 4 nights",
-        "💰Nightly Host Rate for 5 nights",
-        "💰Nightly Host Rate for 7 nights",
-        "💰Weekly Host Rate",
-        "💰Monthly Host Rate",
-        "💰Damage Deposit",
-        "💰Cleaning Cost / Maintenance Fee",
-        "💰Price Override",
+        "nightly_rate_1_night",
+        "nightly_rate_2_nights",
+        "nightly_rate_3_nights",
+        "nightly_rate_4_nights",
+        "nightly_rate_5_nights",
+        "nightly_rate_7_nights",
+        "weekly_host_rate",
+        "monthly_host_rate",
+        "damage_deposit",
+        "cleaning_fee",
+        "price_override",
         "Days Available (List of Days)",
         "Nights Available (List of Nights) ",
         "Days Not Available",
@@ -119,7 +119,7 @@ export async function fetchListingComplete(listingId) {
         "Maximum Months",
         "Weeks offered",
         "rental type",
-        "💰Unit Markup",
+        "unit_markup",
         "NEW Date Check-in Time",
         "NEW Date Check-out Time",
         "Host User",
@@ -446,17 +446,17 @@ export function getListingIdFromUrl() {
  */
 export function getNightlyPrice(listing, nightsSelected) {
   const priceMap = {
-    1: listing['💰Nightly Host Rate for 1 night'],
-    2: listing['💰Nightly Host Rate for 2 nights'],
-    3: listing['💰Nightly Host Rate for 3 nights'],
-    4: listing['💰Nightly Host Rate for 4 nights'],
-    5: listing['💰Nightly Host Rate for 5 nights'],
-    7: listing['💰Nightly Host Rate for 7 nights']
+    1: listing['nightly_rate_1_night'],
+    2: listing['nightly_rate_2_nights'],
+    3: listing['nightly_rate_3_nights'],
+    4: listing['nightly_rate_4_nights'],
+    5: listing['nightly_rate_5_nights'],
+    7: listing['nightly_rate_7_nights']
   };
 
   // Use price override if available
-  if (listing['💰Price Override']) {
-    return listing['💰Price Override'];
+  if (listing['price_override']) {
+    return listing['price_override'];
   }
 
   // Return price for exact nights match

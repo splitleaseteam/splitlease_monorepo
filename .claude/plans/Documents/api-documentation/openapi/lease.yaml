@@ -1,0 +1,343 @@
+openapi: 3.0.3
+info:
+  title: Split Lease Lease API
+  description: |
+    Lease Edge Function for Split Lease marketplace.
+    Implements the complete lease creation workflow from accepted proposals.
+
+    All requests use the action-based pattern: `{ action, payload }`.
+
+    ## Lease Creation Flow (7 Phases)
+    1. Proposal status update
+    2. Lease record creation
+    3. Auxiliary setups (permissions, magic links)
+    4. Multi-channel notifications
+    5. User association
+    6. Payment records + date generation
+    7. Stays creation and house manual linking
+  version: 1.0.0
+  contact:
+    name: Split Lease Engineering
+
+servers:
+  - url: https://{project-ref}.supabase.co/functions/v1
+    description: Supabase Edge Functions
+
+paths:
+  /lease:
+    post:
+      summary: Lease Operations
+      description: All lease operations via action-based routing
+      operationId: leaseAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CreateLeaseRequest'
+                - $ref: '#/components/schemas/GetLeaseRequest'
+                - $ref: '#/components/schemas/GenerateDatesRequest'
+                - $ref: '#/components/schemas/GetHostLeasesRequest'
+                - $ref: '#/components/schemas/GetGuestLeasesRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+        - {}  # Some actions are public
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token
+
+  schemas:
+    # =========================================================================
+    # REQUEST SCHEMAS
+    # =========================================================================
+
+    CreateLeaseRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [create]
+        payload:
+          $ref: '#/components/schemas/CreateLeasePayload'
+      example:
+        action: create
+        payload:
+          proposalId: "1234567890123x0987654321"
+          isCounteroffer: true
+          fourWeekRent: 2000
+          fourWeekCompensation: 1800
+
+    CreateLeasePayload:
+      type: object
+      required:
+        - proposalId
+        - fourWeekRent
+        - fourWeekCompensation
+      properties:
+        proposalId:
+          type: string
+          description: ID of the accepted proposal
+        isCounteroffer:
+          type: boolean
+          description: |
+            Whether this is from an accepted counteroffer.
+            If true, uses HC (host counteroffer) values.
+            If false, copies original values to HC fields.
+        fourWeekRent:
+          type: number
+          description: Calculated 4-week rent amount
+        fourWeekCompensation:
+          type: number
+          description: Calculated 4-week host compensation
+
+    GetLeaseRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get]
+        payload:
+          type: object
+          required:
+            - leaseId
+          properties:
+            leaseId:
+              type: string
+              description: Lease ID to retrieve
+      example:
+        action: get
+        payload:
+          leaseId: "1234567890123x0987654321"
+
+    GenerateDatesRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [generate_dates]
+        payload:
+          type: object
+          description: Payload for date generation (re-generate dates for existing lease)
+
+    GetHostLeasesRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get_host_leases]
+        payload:
+          type: object
+          properties:
+            limit:
+              type: integer
+              default: 50
+            offset:
+              type: integer
+              default: 0
+            status:
+              type: string
+              description: Filter by lease status
+      example:
+        action: get_host_leases
+        payload:
+          limit: 20
+          offset: 0
+
+    GetGuestLeasesRequest:
+      type: object
+      required:
+        - action
+        - payload
+      properties:
+        action:
+          type: string
+          enum: [get_guest_leases]
+        payload:
+          type: object
+          properties:
+            limit:
+              type: integer
+              default: 50
+            offset:
+              type: integer
+              default: 0
+            status:
+              type: string
+              description: Filter by lease status
+      example:
+        action: get_guest_leases
+        payload:
+          limit: 20
+
+    # =========================================================================
+    # RESPONSE SCHEMAS
+    # =========================================================================
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/CreateLeaseResponse'
+            - $ref: '#/components/schemas/GetLeaseResponse'
+            - $ref: '#/components/schemas/GetLeasesListResponse'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: string
+
+    CreateLeaseResponse:
+      type: object
+      properties:
+        leaseId:
+          type: string
+          description: Created lease ID
+        agreementNumber:
+          type: string
+          description: Date-based agreement number (YYYYMMDD-XXXX)
+        staysCreated:
+          type: integer
+          description: Number of stay records created
+        guestPaymentRecordsCreated:
+          type: integer
+          description: Number of guest payment records
+        hostPaymentRecordsCreated:
+          type: integer
+          description: Number of host payment records
+        magicLinks:
+          type: object
+          properties:
+            host:
+              type: string
+              description: Magic link URL for host
+            guest:
+              type: string
+              description: Magic link URL for guest
+        documentsGenerated:
+          type: boolean
+          description: Whether lease documents were generated
+      example:
+        leaseId: "1234567890123x0987654321"
+        agreementNumber: "20250215-0001"
+        staysCreated: 12
+        guestPaymentRecordsCreated: 3
+        hostPaymentRecordsCreated: 3
+        magicLinks:
+          host: "https://split.lease/magic?token=abc123"
+          guest: "https://split.lease/magic?token=xyz789"
+        documentsGenerated: true
+
+    GetLeaseResponse:
+      type: object
+      description: Full lease data with related records
+      properties:
+        lease:
+          type: object
+          description: Lease record from bookings_leases table
+          additionalProperties: true
+        proposal:
+          type: object
+          description: Associated proposal data
+        listing:
+          type: object
+          description: Associated listing data
+        guest:
+          type: object
+          description: Guest user data
+        host:
+          type: object
+          description: Host user data
+        stays:
+          type: array
+          items:
+            type: object
+          description: List of stay records
+        paymentRecords:
+          type: object
+          properties:
+            guest:
+              type: array
+              items:
+                type: object
+            host:
+              type: array
+              items:
+                type: object
+
+    GetLeasesListResponse:
+      type: object
+      properties:
+        leases:
+          type: array
+          items:
+            type: object
+            description: Lease summary data
+        total:
+          type: integer
+          description: Total count of leases
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+# =========================================================================
+# ACTION AUTHENTICATION MATRIX
+# =========================================================================
+# Action           | Auth Required | Notes
+# -----------------|---------------|------------------------------------------
+# create           | No            | Internal service call (proposal flow)
+# get              | Yes (JWT)     | Must be participant (guest/host)
+# generate_dates   | No            | Internal service call
+# get_host_leases  | Yes (JWT)     | Returns leases where user is host
+# get_guest_leases | Yes (JWT)     | Returns leases where user is guest

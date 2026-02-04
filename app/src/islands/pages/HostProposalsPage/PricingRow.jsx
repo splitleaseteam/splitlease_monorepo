@@ -2,10 +2,13 @@
  * PricingRow Component (V7 Design)
  *
  * Pricing breakdown and total earnings display:
- * - Left: breakdown formula "$165/night x 4 x 12 wks"
- * - Right: "Your Earnings" label + large total "$7,920"
+ * - Left: breakdown formula based on rental type (monthly, weekly, or nightly)
+ * - Right: "Your Earnings" label + large total
  *
- * Shows strikethrough comparison when counteroffer terms differ from original.
+ * Shows compensation in the appropriate unit based on rental type:
+ * - Monthly: "$4,500/mo × 5 months"
+ * - Weekly: "$1,125/wk × 20 weeks"
+ * - Nightly: "$375/night × 3 × 20 wks"
  *
  * Part of the Host Proposals V7 redesign.
  */
@@ -13,7 +16,7 @@ import React from 'react';
 
 /**
  * PricingRow displays the pricing information
- * Shows strikethrough comparison when counteroffer pricing differs from original
+ * Shows host compensation based on rental type (monthly, weekly, or nightly)
  *
  * @param {Object} props
  * @param {Object} props.proposal - The proposal object
@@ -25,10 +28,20 @@ export function PricingRow({ proposal, isDeclined = false }) {
     proposal?.counterOfferHappened ||
     proposal?.counter_offer_happened;
 
-  // Original values (guest's proposal)
-  const originalNightlyRate = proposal?.['proposal nightly price'] || proposal?.proposal_nightly_price || 0;
+  // Get rental type to determine how to display compensation
+  const rentalType = (proposal?.['rental type'] || proposal?.rental_type || 'nightly').toLowerCase();
+  const isMonthly = rentalType === 'monthly';
+  const isWeekly = rentalType === 'weekly';
+
+  // Host compensation values - USE '4 week compensation' as the source of truth
+  // The database "Total Compensation (proposal - host)" field can be incorrect
+  // (e.g., using full monthly rate instead of prorated for partial-week schedules)
+  // The '4 week compensation' field is calculated correctly from the pricing_list
+  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
+
   const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
-  const originalTotalPrice = proposal?.['Total Price for Reservation (guest)'] || proposal?.total_price_guest || 0;
+  const durationMonths = proposal?.['duration in months'] || Math.round(originalWeeks / 4);
+
   let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
   if (typeof originalNights === 'string') {
     try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
@@ -36,57 +49,77 @@ export function PricingRow({ proposal, isDeclined = false }) {
   const originalNightsPerWeek = originalNights.length;
 
   // HC values (host counteroffer)
-  const hcNightlyRate = proposal?.['hc nightly price'];
   const hcWeeks = proposal?.['hc reservation span (weeks)'];
-  const hcTotalPrice = proposal?.['hc total price'];
   let hcNights = proposal?.['hc nights selected'] || [];
   if (typeof hcNights === 'string') {
     try { hcNights = JSON.parse(hcNights); } catch { hcNights = []; }
   }
   const hcNightsPerWeek = hcNights.length > 0 ? hcNights.length : null;
 
-  // Display values: prioritize HC values when counteroffer happened
-  // When counteroffer exists, show HC values as current; otherwise use normalized or original
-  const nightlyRate = (isCounteroffer && hcNightlyRate != null) ? hcNightlyRate : (proposal?.nightly_rate || proposal?.price_per_night || originalNightlyRate);
+  // Display values
   const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
   const nightsPerWeek = nightsSelected.length;
   const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
-  const totalEarnings = (isCounteroffer && hcTotalPrice != null) ? hcTotalPrice : (proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || originalTotalPrice);
 
-  // Comparison flags - detect which values changed
-  const nightlyRateChanged = isCounteroffer && hcNightlyRate != null && hcNightlyRate !== originalNightlyRate;
+  // Calculate total host compensation from '4 week compensation'
+  // This is the source of truth, not 'Total Compensation (proposal - host)'
+  const fourWeekPeriods = weeks / 4;
+  const hostTotalCompensation = Math.round(host4WeekCompensation * fourWeekPeriods * 100) / 100;
+  const totalEarnings = hostTotalCompensation;
+
+  // Derive nightly host rate from 4 week compensation
+  const hostNightlyRate = nightsPerWeek > 0 ? host4WeekCompensation / (4 * nightsPerWeek) : 0;
+
+  // Calculate rate display based on rental type
+  let rateValue = 0;
+  let rateUnit = '';
+  let periodCount = 0;
+  let periodUnit = '';
+
+  if (isMonthly) {
+    // Monthly rental: use 4 week compensation as the monthly rate
+    rateValue = host4WeekCompensation;
+    rateUnit = '/mo';
+    periodCount = durationMonths;
+    periodUnit = durationMonths === 1 ? 'month' : 'months';
+  } else if (isWeekly) {
+    // Weekly rental: derive weekly rate from 4 week compensation
+    rateValue = Math.round(host4WeekCompensation / 4);
+    rateUnit = '/wk';
+    periodCount = weeks;
+    periodUnit = weeks === 1 ? 'week' : 'weeks';
+  } else {
+    // Nightly rental: derive nightly rate from 4 week compensation
+    rateValue = Math.round(hostNightlyRate * 100) / 100;
+    rateUnit = '/night';
+    periodCount = weeks;
+    periodUnit = 'wks';
+  }
+
+  // Comparison flags - detect which schedule terms changed (nights, weeks)
   const weeksChanged = isCounteroffer && hcWeeks != null && hcWeeks !== originalWeeks;
   const nightsChanged = isCounteroffer && hcNightsPerWeek != null && hcNightsPerWeek !== originalNightsPerWeek;
-  const totalChanged = isCounteroffer && hcTotalPrice != null && hcTotalPrice !== originalTotalPrice;
 
   // Format the breakdown with strikethrough support
-  const hasBreakdown = nightlyRate > 0 || nightsPerWeek > 0 || weeks > 0;
+  const hasBreakdown = rateValue > 0 || periodCount > 0;
 
   // Format total
   const formattedTotal = `$${Number(totalEarnings).toLocaleString()}`;
-  const formattedOriginalTotal = `$${Number(originalTotalPrice).toLocaleString()}`;
 
   return (
     <div className="hp7-pricing-row">
       <div className="hp7-pricing-breakdown">
         {hasBreakdown ? (
           <>
-            {/* Nightly rate */}
-            {nightlyRate > 0 && (
-              <>
-                {nightlyRateChanged && (
-                  <span className="hp7-strikethrough">${originalNightlyRate}/night</span>
-                )}
-                <span className={nightlyRateChanged ? 'hp7-changed-value' : ''}>
-                  ${nightlyRate}/night
-                </span>
-              </>
+            {/* Rate (monthly, weekly, or nightly depending on rental type) */}
+            {rateValue > 0 && (
+              <span>${rateValue.toLocaleString()}{rateUnit}</span>
             )}
-            {nightlyRate > 0 && nightsPerWeek > 0 && <span>×</span>}
 
-            {/* Nights per week */}
-            {nightsPerWeek > 0 && (
+            {/* For nightly rentals, show nights per week */}
+            {!isMonthly && !isWeekly && rateValue > 0 && nightsPerWeek > 0 && (
               <>
+                <span>×</span>
                 {nightsChanged && (
                   <span className="hp7-strikethrough">{originalNightsPerWeek}</span>
                 )}
@@ -95,16 +128,16 @@ export function PricingRow({ proposal, isDeclined = false }) {
                 </span>
               </>
             )}
-            {nightsPerWeek > 0 && weeks > 0 && <span>×</span>}
 
-            {/* Weeks */}
-            {weeks > 0 && (
+            {/* Period count (months, weeks) */}
+            {periodCount > 0 && (
               <>
+                <span>×</span>
                 {weeksChanged && (
-                  <span className="hp7-strikethrough">{originalWeeks} wks</span>
+                  <span className="hp7-strikethrough">{isMonthly ? Math.round(originalWeeks / 4) : originalWeeks} {periodUnit}</span>
                 )}
                 <span className={weeksChanged ? 'hp7-changed-value' : ''}>
-                  {weeks} wks
+                  {periodCount} {periodUnit}
                 </span>
               </>
             )}
@@ -118,12 +151,7 @@ export function PricingRow({ proposal, isDeclined = false }) {
           {isDeclined ? 'Was Offered' : 'Your Earnings'}
         </div>
         <div className={`hp7-pricing-total${isDeclined ? ' declined' : ''}`}>
-          {totalChanged && (
-            <span className="hp7-strikethrough hp7-total-strikethrough">{formattedOriginalTotal}</span>
-          )}
-          <span className={totalChanged ? 'hp7-changed-value' : ''}>
-            {formattedTotal}
-          </span>
+          {formattedTotal}
         </div>
       </div>
     </div>

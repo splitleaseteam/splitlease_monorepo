@@ -1,8 +1,8 @@
 /**
- * CompareTermsModal Component
+ * CompareTermsModal Component - v2.0 PROTOCOL REDESIGN
  *
  * Side-by-side comparison of original proposal vs host counteroffer.
- * Follows Bubble spec styling and the Hollow Component pattern.
+ * Design: POPUP_REPLICATION_PROTOCOL - Monochromatic purple (NO GREEN, NO YELLOW)
  *
  * Features:
  * - Non-dismissible overlay (no Escape key, no overlay click)
@@ -16,6 +16,7 @@
 
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { X, Info } from 'lucide-react';
 import { useCompareTermsModalLogic } from './useCompareTermsModalLogic.js';
 import CancelProposalModal from './CancelProposalModal.jsx';
 import './CompareTermsModal.css';
@@ -77,18 +78,12 @@ function NegotiationSummaryBanner({ summaries = [] }) {
 
   return (
     <div className="compare-terms-negotiation" role="status">
-      <svg
+      <Info
         className="compare-terms-negotiation-icon"
-        viewBox="0 0 20 20"
-        fill="currentColor"
+        size={20}
+        strokeWidth={2}
         aria-hidden="true"
-      >
-        <path
-          fillRule="evenodd"
-          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-          clipRule="evenodd"
-        />
-      </svg>
+      />
       <span className="compare-terms-negotiation-text">{summaryText}</span>
     </div>
   );
@@ -197,6 +192,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
     isCancelling,
     isLoading,
     error,
+    acceptanceSuccess,
     originalTerms,
     counterofferTerms,
     negotiationSummaries,
@@ -209,7 +205,8 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
     handleCancelConfirm,
     handleClose,
     handleCloseCancelModal,
-    handleToggleExpanded
+    handleToggleExpanded,
+    handleSuccessAcknowledge
   } = useCompareTermsModalLogic({
     proposal,
     onClose,
@@ -240,6 +237,61 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
     return null;
   }
 
+  // Success view content
+  if (acceptanceSuccess) {
+    console.log('[CompareTermsModal] 🎉 Rendering SUCCESS view - user should see celebration modal');
+    const successContent = (
+      <div
+        className="compare-terms-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compare-terms-success-title"
+      >
+        <div className="compare-terms-modal compare-terms-modal--success">
+          {/* Mobile Grab Handle */}
+          <div className="compare-terms-grab-handle" />
+
+          {/* Success Header */}
+          <div className="compare-terms-header">
+            <h2 id="compare-terms-success-title" className="compare-terms-title">
+              🎉 Counteroffer Accepted!
+            </h2>
+          </div>
+
+          {/* Success Body */}
+          <div className="compare-terms-body compare-terms-body--success">
+            <div className="compare-terms-success-message">
+              <p className="compare-terms-success-text">
+                <strong>Great news!</strong> You have accepted the host&apos;s counteroffer.
+              </p>
+              <p className="compare-terms-success-text">
+                Split Lease will now draft the lease documents based on the agreed terms.
+                Please allow up to <strong>48 hours</strong> for completion.
+              </p>
+              <p className="compare-terms-success-text compare-terms-success-text--light">
+                You&apos;ll receive a notification when your lease is ready for review.
+              </p>
+            </div>
+          </div>
+
+          {/* Success Footer */}
+          <div className="compare-terms-footer">
+            <div className="compare-terms-actions compare-terms-actions--centered">
+              <button
+                className="compare-terms-btn compare-terms-btn--accept"
+                onClick={handleSuccessAcknowledge}
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    return createPortal(successContent, document.body);
+  }
+
   const modalContent = (
     <div
       className="compare-terms-overlay"
@@ -248,6 +300,9 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
       aria-labelledby="compare-terms-title"
     >
       <div className="compare-terms-modal">
+        {/* Mobile Grab Handle */}
+        <div className="compare-terms-grab-handle" />
+
         {/* Header */}
         <div className="compare-terms-header">
           <h2 id="compare-terms-title" className="compare-terms-title">
@@ -259,7 +314,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
             disabled={isLoading}
             aria-label="Close modal"
           >
-            ×
+            <X size={24} strokeWidth={2} />
           </button>
         </div>
 

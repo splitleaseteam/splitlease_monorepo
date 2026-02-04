@@ -31,7 +31,7 @@ function generateTestEmail(simulationId: string): string {
 
 export async function handleCreateTestGuest(
   payload: CreateTestGuestPayload,
-  user: AuthUser,
+  _user: AuthUser,
   supabase: SupabaseClient
 ): Promise<TestGuestResult> {
   console.log('[createTestGuest] Starting for simulation:', payload.simulationId);

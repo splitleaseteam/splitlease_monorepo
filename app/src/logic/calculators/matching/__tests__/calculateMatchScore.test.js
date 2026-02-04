@@ -42,7 +42,7 @@ const perfectMatchListing = {
   _id: 'listing-perfect',
   boroughName: 'Manhattan',
   'Location - Borough': 'Manhattan',
-  '💰Nightly Host Rate for 4 nights': 100,
+  'nightly_rate_4_nights': 100,
   'Schedule days available': [0, 1, 2, 3, 4, 5, 6],
   'Minimum Nights': 4
 };
@@ -172,7 +172,7 @@ describe('Price Matching', () => {
   describe('calculatePriceScore', () => {
     it('returns 20 for within 10% price difference', () => {
       const score = calculatePriceScore({
-        candidateListing: { '💰Nightly Host Rate for 4 nights': 105 },
+        candidateListing: { 'nightly_rate_4_nights': 105 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(score).toBe(MATCH_WEIGHTS.PRICE);
@@ -180,7 +180,7 @@ describe('Price Matching', () => {
 
     it('returns 15 for within 20% price difference', () => {
       const score = calculatePriceScore({
-        candidateListing: { '💰Nightly Host Rate for 4 nights': 115 },
+        candidateListing: { 'nightly_rate_4_nights': 115 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(score).toBe(15);
@@ -188,7 +188,7 @@ describe('Price Matching', () => {
 
     it('returns 10 for within 30% price difference', () => {
       const score = calculatePriceScore({
-        candidateListing: { '💰Nightly Host Rate for 4 nights': 125 },
+        candidateListing: { 'nightly_rate_4_nights': 125 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(score).toBe(10);
@@ -196,7 +196,7 @@ describe('Price Matching', () => {
 
     it('returns 0 for over 50% price difference', () => {
       const score = calculatePriceScore({
-        candidateListing: { '💰Nightly Host Rate for 4 nights': 160 },
+        candidateListing: { 'nightly_rate_4_nights': 160 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(score).toBe(0);
@@ -506,7 +506,7 @@ describe('calculateMatchScore', () => {
     const result = calculateMatchScore({
       candidateListing: {
         boroughName: 'Queens',
-        '💰Nightly Host Rate for 5 nights': 145,
+        'nightly_rate_5_nights': 145,
         'Schedule days available': [1, 2, 3, 4],
         'Minimum Nights': 3
       },
@@ -543,7 +543,7 @@ describe('calculateMatchScore', () => {
     const result = calculateMatchScore({
       candidateListing: {
         boroughName: 'Staten Island',
-        '💰Nightly Host Rate for 7 nights': 300,
+        'nightly_rate_7_nights': 300,
         'Schedule days available': [5, 6],
         'Minimum Nights': 2
       },

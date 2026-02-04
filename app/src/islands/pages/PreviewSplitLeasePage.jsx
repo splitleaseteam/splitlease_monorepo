@@ -730,17 +730,17 @@ export default function PreviewSplitLeasePage() {
     daysNotAvailable: [],
     'rental type': listing['rental type'] || 'Nightly',
     'Weeks offered': listing['Weeks offered'] || 'Every week',
-    '💰Unit Markup': listing['💰Unit Markup'] || 0,
-    '💰Nightly Host Rate for 2 nights': listing['💰Nightly Host Rate for 2 nights'],
-    '💰Nightly Host Rate for 3 nights': listing['💰Nightly Host Rate for 3 nights'],
-    '💰Nightly Host Rate for 4 nights': listing['💰Nightly Host Rate for 4 nights'],
-    '💰Nightly Host Rate for 5 nights': listing['💰Nightly Host Rate for 5 nights'],
-    '💰Nightly Host Rate for 7 nights': listing['💰Nightly Host Rate for 7 nights'],
-    '💰Weekly Host Rate': listing['💰Weekly Host Rate'],
-    '💰Monthly Host Rate': listing['💰Monthly Host Rate'],
-    '💰Price Override': listing['💰Price Override'],
-    '💰Cleaning Cost / Maintenance Fee': listing['💰Cleaning Cost / Maintenance Fee'],
-    '💰Damage Deposit': listing['💰Damage Deposit']
+    'unit_markup': listing['unit_markup'] || 0,
+    'nightly_rate_2_nights': listing['nightly_rate_2_nights'],
+    'nightly_rate_3_nights': listing['nightly_rate_3_nights'],
+    'nightly_rate_4_nights': listing['nightly_rate_4_nights'],
+    'nightly_rate_5_nights': listing['nightly_rate_5_nights'],
+    'nightly_rate_7_nights': listing['nightly_rate_7_nights'],
+    'weekly_host_rate': listing['weekly_host_rate'],
+    'monthly_host_rate': listing['monthly_host_rate'],
+    'price_override': listing['price_override'],
+    'cleaning_fee': listing['cleaning_fee'],
+    'damage_deposit': listing['damage_deposit']
   } : null, [listing]);
 
   // Initialize default days
@@ -1543,7 +1543,7 @@ export default function PreviewSplitLeasePage() {
             border: '1px solid #e9d5ff'
           }}>
             {/* Show Weekly or Monthly rate if rental type is Weekly/Monthly */}
-            {listing?.['rental type'] === 'Weekly' && listing?.['💰Weekly Host Rate'] ? (
+            {listing?.['rental type'] === 'Weekly' && listing?.['weekly_host_rate'] ? (
               <>
                 <div style={{
                   fontSize: '32px',
@@ -1555,7 +1555,7 @@ export default function PreviewSplitLeasePage() {
                   letterSpacing: '-1px',
                   display: 'inline-block'
                 }}>
-                  ${listing['💰Weekly Host Rate']}
+                  ${listing['weekly_host_rate']}
                   <span style={{
                     fontSize: '16px',
                     color: '#6B7280',
@@ -1568,7 +1568,7 @@ export default function PreviewSplitLeasePage() {
                   Your weekly host rate
                 </div>
               </>
-            ) : listing?.['rental type'] === 'Monthly' && listing?.['💰Monthly Host Rate'] ? (
+            ) : listing?.['rental type'] === 'Monthly' && listing?.['monthly_host_rate'] ? (
               <>
                 <div style={{
                   fontSize: '32px',
@@ -1580,7 +1580,7 @@ export default function PreviewSplitLeasePage() {
                   letterSpacing: '-1px',
                   display: 'inline-block'
                 }}>
-                  ${listing['💰Monthly Host Rate']}
+                  ${listing['monthly_host_rate']}
                   <span style={{
                     fontSize: '16px',
                     color: '#6B7280',
@@ -1607,8 +1607,8 @@ export default function PreviewSplitLeasePage() {
                 }}>
                   {(() => {
                     // Get the host rate based on nights selected
-                    const rateKey = `💰Nightly Host Rate for ${nightsSelected} nights`;
-                    const rate = listing?.[rateKey] || listing?.['💰Nightly Host Rate for 4 nights'];
+                    const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
+                    const rate = listing?.[rateKey] || listing?.['nightly_rate_4_nights'];
                     return rate ? `$${rate}` : 'Select Days';
                   })()}
                   <span style={{
@@ -1744,13 +1744,13 @@ export default function PreviewSplitLeasePage() {
               <span style={{ color: '#111827', fontWeight: '500' }}>4-Week Compensation</span>
               <span style={{ color: '#111827', fontWeight: '700', fontSize: '16px' }}>
                 {(() => {
-                  if (listing?.['rental type'] === 'Weekly' && listing?.['💰Weekly Host Rate']) {
-                    return formatPrice(listing['💰Weekly Host Rate'] * 4);
-                  } else if (listing?.['rental type'] === 'Monthly' && listing?.['💰Monthly Host Rate']) {
-                    return formatPrice(listing['💰Monthly Host Rate']);
+                  if (listing?.['rental type'] === 'Weekly' && listing?.['weekly_host_rate']) {
+                    return formatPrice(listing['weekly_host_rate'] * 4);
+                  } else if (listing?.['rental type'] === 'Monthly' && listing?.['monthly_host_rate']) {
+                    return formatPrice(listing['monthly_host_rate']);
                   } else {
-                    const rateKey = `💰Nightly Host Rate for ${nightsSelected} nights`;
-                    const rate = listing?.[rateKey] || listing?.['💰Nightly Host Rate for 4 nights'];
+                    const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
+                    const rate = listing?.[rateKey] || listing?.['nightly_rate_4_nights'];
                     return rate ? formatPrice(rate * nightsSelected * 4) : 'Select Days';
                   }
                 })()}
@@ -1781,13 +1781,13 @@ export default function PreviewSplitLeasePage() {
               backgroundClip: 'text'
             }}>
               {(() => {
-                if (listing?.['rental type'] === 'Weekly' && listing?.['💰Weekly Host Rate']) {
-                  return formatPrice(listing['💰Weekly Host Rate'] * reservationSpan);
-                } else if (listing?.['rental type'] === 'Monthly' && listing?.['💰Monthly Host Rate']) {
-                  return formatPrice(listing['💰Monthly Host Rate'] * (reservationSpan / 4));
+                if (listing?.['rental type'] === 'Weekly' && listing?.['weekly_host_rate']) {
+                  return formatPrice(listing['weekly_host_rate'] * reservationSpan);
+                } else if (listing?.['rental type'] === 'Monthly' && listing?.['monthly_host_rate']) {
+                  return formatPrice(listing['monthly_host_rate'] * (reservationSpan / 4));
                 } else {
-                  const rateKey = `💰Nightly Host Rate for ${nightsSelected} nights`;
-                  const rate = listing?.[rateKey] || listing?.['💰Nightly Host Rate for 4 nights'];
+                  const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
+                  const rate = listing?.[rateKey] || listing?.['nightly_rate_4_nights'];
                   return rate ? formatPrice(rate * nightsSelected * reservationSpan) : 'Select Days';
                 }
               })()}

@@ -58,7 +58,7 @@ export default function SpaceSnapshot({ listing }) {
         <LocationIcon style={styles.locationIcon} />
         <div style={styles.addressText}>
           <span style={styles.streetAddress}>
-            {listing['Address - Full Street Address'] || 'Address not set'}
+            {listing['Location - Address']?.address || listing['street_address'] || 'Address not set'}
           </span>
           <span style={styles.cityState}>
             {[

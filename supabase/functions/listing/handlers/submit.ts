@@ -64,6 +64,7 @@ interface ListingSubmissionData {
   'Price 4 nights selected'?: number;
   'Price 5 nights selected'?: number;
   'Price 6 nights selected'?: number;
+  'Price 7 nights selected'?: number;
   'Nightly Decay Rate'?: number;
 
   // Rules
@@ -172,16 +173,16 @@ function mapFieldsToSupabase(data: ListingSubmissionData): Record<string, unknow
     mapped['Weeks offered'] = data['Weekly Pattern'];
   }
   if (data['Damage Deposit'] !== undefined) {
-    mapped['💰Damage Deposit'] = data['Damage Deposit'];
+    mapped['damage_deposit'] = data['Damage Deposit'];
   }
   if (data['Maintenance Fee'] !== undefined) {
-    mapped['💰Cleaning Cost / Maintenance Fee'] = data['Maintenance Fee'];
+    mapped['cleaning_fee'] = data['Maintenance Fee'];
   }
   if (data['Monthly Compensation'] !== undefined) {
-    mapped['💰Monthly Host Rate'] = data['Monthly Compensation'];
+    mapped['monthly_host_rate'] = data['Monthly Compensation'];
   }
   if (data['Weekly Compensation'] !== undefined) {
-    mapped['💰Weekly Host Rate'] = data['Weekly Compensation'];
+    mapped['weekly_host_rate'] = data['Weekly Compensation'];
   }
   if (data['Cancellation Policy'] !== undefined) {
     mapped['Cancellation Policy'] = data['Cancellation Policy'];
@@ -220,22 +221,25 @@ function mapFieldsToSupabase(data: ListingSubmissionData): Record<string, unknow
 
   // Map nightly prices
   if (data['Price 1 night selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 1 night'] = data['Price 1 night selected'];
+    mapped['nightly_rate_1_night'] = data['Price 1 night selected'];
   }
   if (data['Price 2 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 2 nights'] = data['Price 2 nights selected'];
+    mapped['nightly_rate_2_nights'] = data['Price 2 nights selected'];
   }
   if (data['Price 3 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 3 nights'] = data['Price 3 nights selected'];
+    mapped['nightly_rate_3_nights'] = data['Price 3 nights selected'];
   }
   if (data['Price 4 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 4 nights'] = data['Price 4 nights selected'];
+    mapped['nightly_rate_4_nights'] = data['Price 4 nights selected'];
   }
   if (data['Price 5 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 5 nights'] = data['Price 5 nights selected'];
+    mapped['nightly_rate_5_nights'] = data['Price 5 nights selected'];
   }
   if (data['Price 6 nights selected'] !== undefined) {
-    mapped['💰Nightly Host Rate for 6 nights'] = data['Price 6 nights selected'];
+    mapped['nightly_rate_6_nights'] = data['Price 6 nights selected'];
+  }
+  if (data['Price 7 nights selected'] !== undefined) {
+    mapped['nightly_rate_7_nights'] = data['Price 7 nights selected'];
   }
 
   // Blocked dates mapping
@@ -314,21 +318,26 @@ export async function handleSubmit(
       console.log('[listing:submit] ⚠️ Step 2 warning - User not found for email:', user_email);
     }
 
-    // Step 2b: Look up borough and hood from zip code
+    // Step 2b: Look up borough and hood from zip code (non-blocking - graceful degradation)
     console.log('[listing:submit] Step 2b/4: Looking up borough/hood from zip code...');
     let boroughId: string | null = null;
     let hoodId: string | null = null;
 
     const zipCode = listing_data['Zip'];
     if (zipCode) {
-      const geoResult = await getGeoByZipCode(supabase, zipCode as string);
-      if (geoResult.borough) {
-        boroughId = geoResult.borough._id;
-        console.log('[listing:submit] ✅ Borough found:', geoResult.borough.displayName);
-      }
-      if (geoResult.hood) {
-        hoodId = geoResult.hood._id;
-        console.log('[listing:submit] ✅ Hood found:', geoResult.hood.displayName);
+      try {
+        const geoResult = await getGeoByZipCode(supabase, zipCode as string);
+        if (geoResult.borough) {
+          boroughId = geoResult.borough._id;
+          console.log('[listing:submit] ✅ Borough found:', geoResult.borough.displayName);
+        }
+        if (geoResult.hood) {
+          hoodId = geoResult.hood._id;
+          console.log('[listing:submit] ✅ Hood found:', geoResult.hood.displayName);
+        }
+      } catch (geoError) {
+        // Geo lookup is supplementary - continue without location data
+        console.warn('[listing:submit] ⚠️ Geo lookup failed (non-blocking):', geoError instanceof Error ? geoError.message : geoError);
       }
     } else {
       console.log('[listing:submit] ⚠️ No zip code provided, skipping geo lookup');
@@ -362,6 +371,7 @@ export async function handleSubmit(
     if (userId) {
       updateData['Host User'] = userId;
       updateData['Created By'] = userId;
+      updateData['Host email'] = user_email.toLowerCase();
     }
 
     const { error: updateError } = await supabase
@@ -457,7 +467,13 @@ export async function handleSubmit(
     };
   } catch (error) {
     console.error('[listing:submit] ========== ERROR ==========');
-    console.error('[listing:submit] Failed to submit listing:', error);
+    const errorDetails = {
+      code: (error as { code?: string })?.code || 'UNKNOWN',
+      message: error instanceof Error ? error.message : String(error),
+      details: (error as { details?: string })?.details,
+      hint: (error as { hint?: string })?.hint,
+    };
+    console.error('[listing:submit] Failed to submit listing:', errorDetails);
     throw error;
   }
 }

@@ -140,7 +140,7 @@ export default function HostLeasesPage() {
   // Don't render content if redirecting (auth failed)
   if (authState.shouldRedirect) {
     return (
-      <>
+      <div className="host-leases-page">
         <Header />
         <main className="main-content">
           <div className="hl-page">
@@ -148,7 +148,7 @@ export default function HostLeasesPage() {
           </div>
         </main>
         <Footer />
-      </>
+      </div>
     );
   }
 
@@ -161,7 +161,7 @@ export default function HostLeasesPage() {
   const hasLeases = leases && leases.length > 0;
 
   return (
-    <>
+    <div className="host-leases-page">
       <Header />
 
       <main className="main-content" role="main" id="main-content">
@@ -237,6 +237,6 @@ export default function HostLeasesPage() {
         onAccept={handleAcceptDateChangeRequest}
         onDecline={handleDeclineDateChangeRequest}
       />
-    </>
+    </div>
   );
 }

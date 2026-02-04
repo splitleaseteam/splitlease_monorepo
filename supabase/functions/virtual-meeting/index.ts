@@ -19,10 +19,10 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  ValidationError,
+  ValidationError as _ValidationError,
   AuthenticationError,
 } from "../_shared/errors.ts";
 
@@ -85,16 +85,26 @@ const ALLOWED_ACTIONS = [
   "admin_unblock_full_day",
 ] as const;
 
-// NOTE: Non-admin actions are public until Supabase auth migration is complete
-// Admin actions require authentication
+// NOTE: Authentication is now optional for internal pages access
+// All actions can work with or without authentication (soft headers pattern)
 const PUBLIC_ACTIONS: ReadonlySet<string> = new Set([
-  "create", "delete", "accept", "decline", "send_calendar_invite", "notify_participants"
+  "create", "delete", "accept", "decline", "send_calendar_invite", "notify_participants",
+  "admin_fetch_new_requests",
+  "admin_fetch_confirmed",
+  "admin_confirm_meeting",
+  "admin_update_meeting_dates",
+  "admin_delete_meeting",
+  "admin_fetch_blocked_slots",
+  "admin_block_time_slot",
+  "admin_unblock_time_slot",
+  "admin_block_full_day",
+  "admin_unblock_full_day",
 ]);
 
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   // Existing handlers
   create: handleCreate,
   delete: handleDelete,

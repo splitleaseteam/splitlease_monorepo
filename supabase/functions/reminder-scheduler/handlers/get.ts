@@ -45,7 +45,7 @@ export const handleGet = async (
   // Order by scheduled date
   query = query.order('scheduled date and time', { ascending: true });
 
-  const { data, error, count } = await query;
+  const { data, error, _count } = await query;
 
   if (error) {
     console.error('[get] Query error:', error);

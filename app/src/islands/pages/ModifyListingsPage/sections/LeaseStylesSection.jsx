@@ -117,8 +117,8 @@ export default function LeaseStylesSection({
           {/* Damage Deposit */}
           <FormInput
             label="Damage Deposit ($)"
-            name="💰Damage Deposit"
-            value={listing['💰Damage Deposit']}
+            name="damage_deposit"
+            value={listing['damage_deposit']}
             onChange={handleChange}
             type="number"
             placeholder="500"
@@ -128,8 +128,8 @@ export default function LeaseStylesSection({
           {/* Maintenance Fee */}
           <FormInput
             label="Cleaning/Maintenance Fee ($)"
-            name="💰Cleaning Cost / Maintenance Fee"
-            value={listing['💰Cleaning Cost / Maintenance Fee']}
+            name="cleaning_fee"
+            value={listing['cleaning_fee']}
             onChange={handleChange}
             type="number"
             placeholder="0"
@@ -139,8 +139,8 @@ export default function LeaseStylesSection({
           {(rentalType === 'Monthly' || rentalType === 'Weekly') && (
             <FormInput
               label="Monthly Host Rate ($)"
-              name="💰Monthly Host Rate"
-              value={listing['💰Monthly Host Rate']}
+              name="monthly_host_rate"
+              value={listing['monthly_host_rate']}
               onChange={handleChange}
               type="number"
               placeholder="2000"
@@ -152,8 +152,8 @@ export default function LeaseStylesSection({
           {rentalType === 'Weekly' && (
             <FormInput
               label="Weekly Host Rate ($)"
-              name="💰Weekly Host Rate"
-              value={listing['💰Weekly Host Rate']}
+              name="weekly_host_rate"
+              value={listing['weekly_host_rate']}
               onChange={handleChange}
               type="number"
               placeholder="600"
@@ -171,8 +171,8 @@ export default function LeaseStylesSection({
                 <FormInput
                   key={nights}
                   label={`${nights} night${nights > 1 ? 's' : ''} ($)`}
-                  name={`💰Nightly Host Rate for ${nights} night${nights > 1 ? 's' : ''}`}
-                  value={listing[`💰Nightly Host Rate for ${nights} night${nights > 1 ? 's' : ''}`]}
+                  name={`nightly_rate_${nights}_night${nights > 1 ? 's' : ''}`}
+                  value={listing[`nightly_rate_${nights}_night${nights > 1 ? 's' : ''}`]}
                   onChange={handleChange}
                   type="number"
                   placeholder="0"
@@ -185,8 +185,8 @@ export default function LeaseStylesSection({
         {/* Extra Charges */}
         <FormInput
           label="Extra Charges Description"
-          name="💰Extra Charges"
-          value={listing['💰Extra Charges']}
+          name="extra_charges"
+          value={listing['extra_charges']}
           onChange={handleChange}
           placeholder="e.g., Parking $50/month, Pet fee $25/night"
         />

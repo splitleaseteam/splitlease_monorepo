@@ -9,14 +9,14 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { AuthenticationError, ValidationError } from '../../_shared/errors.ts';
+import { AuthenticationError, ValidationError as _ValidationError } from '../../_shared/errors.ts';
 
 interface AdminThread {
   _id: string;
   'Thread Subject': string;
   'Created Date': string;
   'Modified Date': string;
-  '~Date Last Message': string;
+  last_message_at: string;
   'Call to Action': string;
   'Proposal': string;
   'Listing': string;
@@ -59,11 +59,6 @@ interface AdminGetAllThreadsPayload {
   includeMessages?: boolean;
 }
 
-interface AdminGetAllThreadsResult {
-  data: AdminThread[];
-  total: number;
-}
-
 /**
  * Verify that the current user is an admin
  */
@@ -98,19 +93,21 @@ async function verifyAdminRole(
 export async function handleAdminGetAllThreads(
   supabaseAdmin: SupabaseClient,
   payload: AdminGetAllThreadsPayload,
-  user: { id: string; email: string }
-): Promise<AdminGetAllThreadsResult> {
+  user: { id: string; email: string } | null
+): Promise<AdminThread[]> {
   console.log('[adminGetAllThreads] ========== ADMIN GET ALL THREADS ==========');
-  console.log('[adminGetAllThreads] User:', user.email);
+  console.log('[adminGetAllThreads] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminGetAllThreads] Payload:', JSON.stringify(payload));
 
-  // Step 1: Verify admin role
-  // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // const isAdmin = await verifyAdminRole(supabaseAdmin, user);
-  // if (!isAdmin) {
-  //   console.error('[adminGetAllThreads] User is not an admin');
-  //   throw new AuthenticationError('You do not have permission to access this resource.');
-  // }
+  // Step 1: Skip admin role check for internal access (user is null)
+  // When user is provided, verify admin role
+  if (user) {
+    const isAdmin = await verifyAdminRole(supabaseAdmin, user);
+    if (!isAdmin) {
+      console.error('[adminGetAllThreads] User is not an admin');
+      throw new AuthenticationError('You do not have permission to access this resource.');
+    }
+  }
 
   const limit = Math.min(payload.limit || 100, 500);
   const offset = payload.offset || 0;
@@ -127,14 +124,14 @@ export async function handleAdminGetAllThreads(
   }
 
   // Step 3: Query all threads with user data
-  let query = supabaseAdmin
+  const query = supabaseAdmin
     .from('thread')
     .select(`
       _id,
       "Thread Subject",
       "Created Date",
       "Modified Date",
-      "~Date Last Message",
+      last_message_at,
       "Call to Action",
       "Proposal",
       "Listing",
@@ -235,5 +232,6 @@ export async function handleAdminGetAllThreads(
   console.log('[adminGetAllThreads] Returning', result.length, 'threads');
   console.log('[adminGetAllThreads] ========== ADMIN GET ALL THREADS COMPLETE ==========');
 
-  return { data: result, total: count || 0 };
+  // Return array directly - formatSuccessResponse will wrap as { success: true, data: result }
+  return result;
 }

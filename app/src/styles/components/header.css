@@ -624,6 +624,22 @@
     gap: 4px;
 }
 
+/* Suggested proposal trigger - hidden on desktop (shown only on mobile) */
+.mobile-sp-trigger {
+    display: none;
+}
+
+/* Desktop suggested proposal trigger - shown on desktop, hidden on mobile */
+.desktop-sp-trigger {
+    display: flex;
+    margin-right: 8px;
+}
+
+/* Desktop/mobile visibility utilities */
+.desktop-only {
+    display: flex;
+}
+
 /* Show hamburger menu and hide desktop navigation on mobile */
 @media (max-width: 768px) {
     .main-header {
@@ -634,6 +650,22 @@
         padding: 0.75rem 1rem;
         max-width: 100%;
         box-sizing: border-box;
+    }
+
+    /* Mobile suggested proposal trigger - show on mobile */
+    .mobile-sp-trigger {
+        display: flex !important;
+        margin-left: auto;
+    }
+
+    /* Desktop suggested proposal trigger - hide on mobile */
+    .desktop-sp-trigger {
+        display: none !important;
+    }
+
+    /* Visibility utilities on mobile */
+    .desktop-only {
+        display: none !important;
     }
 
     .hamburger-menu {
@@ -733,6 +765,11 @@
 
     .menu-column {
         min-width: 100%;
+    }
+
+    /* Hide guest dropdown on mobile when suggested proposal icons are visible */
+    .nav-dropdown.hide-on-mobile-with-suggestions {
+        display: none;
     }
 }
 

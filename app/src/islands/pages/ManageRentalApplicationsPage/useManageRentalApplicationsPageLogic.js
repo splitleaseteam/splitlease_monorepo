@@ -17,7 +17,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Get dev project credentials from .env or hardcode for reliability
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
 
 // ===== CONSTANTS =====
 const DEFAULT_FILTERS = {
@@ -42,14 +44,7 @@ const DEFAULT_PAGINATION = {
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
   { value: 'draft', label: 'Draft' },
-  { value: 'in-progress', label: 'In Progress' },
-  { value: 'submitted', label: 'Submitted' },
-  { value: 'under-review', label: 'Under Review' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'conditionally-approved', label: 'Conditionally Approved' },
-  { value: 'denied', label: 'Denied' },
-  { value: 'withdrawn', label: 'Withdrawn' },
-  { value: 'expired', label: 'Expired' }
+  { value: 'submitted', label: 'Submitted' }
 ];
 
 /**
@@ -101,11 +96,13 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
   }, []);
 
   const buildHeaders = useCallback(() => {
-    const headers = { 'Content-Type': 'application/json' };
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return headers;
+    // Build headers with optional auth (soft headers pattern)
+    // For unauthenticated requests, use anon key in Authorization header
+    return {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${accessToken || SUPABASE_ANON_KEY}`
+    };
   }, [accessToken]);
 
   // ===== EDGE FUNCTION CALLER =====
@@ -202,13 +199,10 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
 
   // ===== STATS =====
   const stats = useMemo(() => {
-    // Note: For accurate stats, we'd ideally get these from the server
-    // For now, calculate from current page if we don't have server stats
+    // Calculate stats based on current applications
     return {
+      draft: applications.filter(a => a.status === 'draft').length,
       submitted: applications.filter(a => a.status === 'submitted').length,
-      underReview: applications.filter(a => a.status === 'under-review').length,
-      approved: applications.filter(a => a.status === 'approved' || a.status === 'conditionally-approved').length,
-      denied: applications.filter(a => a.status === 'denied').length,
       total: pagination.total
     };
   }, [applications, pagination.total]);

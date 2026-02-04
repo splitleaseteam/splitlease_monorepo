@@ -15,8 +15,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getUserId } from '../../../lib/secureStorage.js';
+import { getUserId, getSessionId } from '../../../lib/secureStorage.js';
 import { useCTAHandler } from '../../pages/MessagingPage/useCTAHandler.js';
+import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
+import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
+import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
+import { clearProposalDraft } from '../CreateProposalFlowV2.jsx';
 
 /**
  * @param {object} options
@@ -63,6 +67,265 @@ export function useHeaderMessagingPanelLogic({
   const hasLoadedThreads = useRef(false);
 
   // ============================================================================
+  // MODAL STATE
+  // ============================================================================
+  const [activeModal, setActiveModal] = useState(null);
+  const [modalContext, setModalContext] = useState(null);
+  const [proposalModalData, setProposalModalData] = useState(null);
+  const [zatConfig, setZatConfig] = useState(null);
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+
+  // ============================================================================
+  // MODAL HANDLERS
+  // ============================================================================
+  const handleOpenModal = useCallback(async (modalName, context) => {
+    console.log('[HeaderMessagingPanel] handleOpenModal called:', modalName, context);
+
+    // Special handling for CreateProposalFlowV2 modal
+    if (modalName === 'CreateProposalFlowV2') {
+      console.log('[HeaderMessagingPanel] Opening CreateProposalFlowV2 modal');
+
+      // Get listing data from threadInfo or context
+      const listingId = context?.listingId || threadInfo?.listing_id;
+
+      if (!listingId) {
+        console.error('[HeaderMessagingPanel] No listing ID available for proposal modal');
+        return;
+      }
+
+      try {
+        // Fetch listing details for the proposal modal
+        const { data: listingData, error: listingError } = await supabase
+          .from('listing')
+          .select('*')
+          .eq('_id', listingId)
+          .single();
+
+        if (listingError) {
+          console.error('[HeaderMessagingPanel] Error fetching listing for proposal:', listingError);
+          return;
+        }
+
+        console.log('[HeaderMessagingPanel] Listing data fetched:', listingData?.Name);
+
+        // Set up default days (Mon-Fri, weekdays)
+        const initialDays = [1, 2, 3, 4, 5].map(dayIndex => createDay(dayIndex, true));
+
+        // Calculate minimum move-in date (2 weeks from today)
+        const today = new Date();
+        const twoWeeksFromNow = new Date(today);
+        twoWeeksFromNow.setDate(today.getDate() + 14);
+        const minMoveInDate = twoWeeksFromNow.toISOString().split('T')[0];
+
+        // Calculate smart move-in date based on selected days
+        let smartMoveInDate = minMoveInDate;
+        try {
+          const selectedDayIndices = initialDays.map(d => d.dayOfWeek);
+          smartMoveInDate = calculateNextAvailableCheckIn({
+            selectedDayIndices,
+            minDate: minMoveInDate
+          });
+        } catch (err) {
+          console.error('[HeaderMessagingPanel] Error calculating smart move-in date:', err);
+        }
+
+        // Transform listing data for the modal
+        const transformedListing = {
+          _id: listingData._id,
+          id: listingData._id,
+          Name: listingData.Name || 'Unnamed Listing',
+          title: listingData.Name || 'Unnamed Listing',
+          'Primary Photo': listingData['Primary Photo'],
+          host: null,
+          // Pricing fields
+          nightly_rate_2_nights: listingData['nightly_rate_2_nights'],
+          nightly_rate_3_nights: listingData['nightly_rate_3_nights'],
+          nightly_rate_4_nights: listingData['nightly_rate_4_nights'],
+          nightly_rate_5_nights: listingData['nightly_rate_5_nights'],
+          nightly_rate_7_nights: listingData['nightly_rate_7_nights'],
+          weekly_host_rate: listingData['weekly_host_rate'],
+          monthly_host_rate: listingData['monthly_host_rate'],
+          price_override: listingData['price_override'],
+          cleaning_fee: listingData['cleaning_fee'],
+          damage_deposit: listingData['damage_deposit'],
+          unit_markup: listingData['unit_markup'],
+          'rental type': listingData['rental type'],
+          'Weeks offered': listingData['Weeks offered'],
+          // Availability fields
+          ' First Available': listingData[' First Available'],
+          'Last Available': listingData['Last Available'],
+          '# of nights available': listingData['# of nights available'],
+          'Dates - Blocked': listingData['Dates - Blocked'],
+          'Nights Available (numbers)': listingData['Nights Available (numbers)'],
+          'Minimum Nights': listingData['Minimum Nights'],
+          'Maximum Nights': listingData['Maximum Nights'],
+          'Days Available (List of Days)': listingData['Days Available (List of Days)']
+        };
+
+        // Set proposal modal data
+        setProposalModalData({
+          listing: transformedListing,
+          moveInDate: smartMoveInDate,
+          daysSelected: initialDays,
+          nightsSelected: initialDays.length > 0 ? initialDays.length - 1 : 0,
+          reservationSpan: 13, // Default to 13 weeks
+          priceBreakdown: null // Will be calculated by the modal
+        });
+
+        // Set the active modal
+        setActiveModal(modalName);
+        setModalContext(context);
+
+      } catch (err) {
+        console.error('[HeaderMessagingPanel] Error preparing proposal modal:', err);
+      }
+
+      return;
+    }
+
+    // Default handling for other modals
+    setActiveModal(modalName);
+    setModalContext(context);
+  }, [threadInfo]);
+
+  const handleCloseModal = useCallback(() => {
+    setActiveModal(null);
+    setModalContext(null);
+    setProposalModalData(null);
+  }, []);
+
+  // ============================================================================
+  // PROPOSAL SUBMISSION HANDLER
+  // ============================================================================
+  const handleProposalSubmit = async (proposalData) => {
+    console.log('[HeaderMessagingPanel] Proposal submission initiated:', proposalData);
+    setIsSubmittingProposal(true);
+
+    try {
+      const guestId = getSessionId();
+      if (!guestId) {
+        throw new Error('User session not found');
+      }
+
+      // Days are already in JS format (0-6)
+      const daysInJsFormat = proposalData.daysSelectedObjects?.map(d => d.dayOfWeek) || [];
+      const sortedJsDays = [...daysInJsFormat].sort((a, b) => a - b);
+
+      // Check for wrap-around case
+      const hasSaturday = sortedJsDays.includes(6);
+      const hasSunday = sortedJsDays.includes(0);
+      const isWrapAround = hasSaturday && hasSunday && daysInJsFormat.length < 7;
+
+      let checkInDay, checkOutDay, nightsSelected;
+
+      if (isWrapAround) {
+        let gapIndex = -1;
+        for (let i = 0; i < sortedJsDays.length - 1; i++) {
+          if (sortedJsDays[i + 1] - sortedJsDays[i] > 1) {
+            gapIndex = i + 1;
+            break;
+          }
+        }
+
+        if (gapIndex !== -1) {
+          checkInDay = sortedJsDays[gapIndex];
+          checkOutDay = sortedJsDays[gapIndex - 1];
+          const reorderedDays = [...sortedJsDays.slice(gapIndex), ...sortedJsDays.slice(0, gapIndex)];
+          nightsSelected = reorderedDays.slice(0, -1);
+        } else {
+          checkInDay = sortedJsDays[0];
+          checkOutDay = sortedJsDays[sortedJsDays.length - 1];
+          nightsSelected = sortedJsDays.slice(0, -1);
+        }
+      } else {
+        checkInDay = sortedJsDays[0];
+        checkOutDay = sortedJsDays[sortedJsDays.length - 1];
+        nightsSelected = sortedJsDays.slice(0, -1);
+      }
+
+      const reservationSpanWeeks = proposalData.reservationSpan || 13;
+      const reservationSpanText = reservationSpanWeeks === 13
+        ? '13 weeks (3 months)'
+        : reservationSpanWeeks === 20
+          ? '20 weeks (approx. 5 months)'
+          : `${reservationSpanWeeks} weeks`;
+
+      const listingId = proposalModalData?.listing?._id || proposalModalData?.listing?.id;
+      const payload = {
+        guestId: guestId,
+        listingId: listingId,
+        moveInStartRange: proposalData.moveInDate,
+        moveInEndRange: proposalData.moveInDate,
+        daysSelected: daysInJsFormat,
+        nightsSelected: nightsSelected,
+        reservationSpan: reservationSpanText,
+        reservationSpanWeeks: reservationSpanWeeks,
+        checkIn: checkInDay,
+        checkOut: checkOutDay,
+        proposalPrice: proposalData.pricePerNight,
+        fourWeekRent: proposalData.pricePerFourWeeks,
+        hostCompensation: proposalData.pricePerFourWeeks,
+        needForSpace: proposalData.needForSpace || '',
+        aboutMe: proposalData.aboutYourself || '',
+        estimatedBookingTotal: proposalData.totalPrice,
+        specialNeeds: proposalData.hasUniqueRequirements ? proposalData.uniqueRequirements : '',
+        moveInRangeText: proposalData.moveInRange || '',
+        flexibleMoveIn: !!proposalData.moveInRange,
+        fourWeekCompensation: proposalData.pricePerFourWeeks
+      };
+
+      console.log('[HeaderMessagingPanel] Submitting proposal:', payload);
+
+      const { data, error } = await supabase.functions.invoke('proposal', {
+        body: {
+          action: 'create',
+          payload
+        }
+      });
+
+      if (error) {
+        console.error('[HeaderMessagingPanel] Edge Function error:', error);
+        throw new Error(error.message || 'Failed to submit proposal');
+      }
+
+      if (!data?.success) {
+        console.error('[HeaderMessagingPanel] Proposal submission failed:', data?.error);
+        throw new Error(data?.error || 'Failed to submit proposal');
+      }
+
+      console.log('[HeaderMessagingPanel] Proposal submitted successfully:', data);
+
+      // Clear localStorage draft
+      if (listingId) {
+        clearProposalDraft(listingId);
+      }
+
+      // Close modal
+      handleCloseModal();
+
+    } catch (error) {
+      console.error('[HeaderMessagingPanel] Error submitting proposal:', error);
+    } finally {
+      setIsSubmittingProposal(false);
+    }
+  };
+
+  // ============================================================================
+  // LOAD ZAT CONFIG ON MOUNT
+  // ============================================================================
+  useEffect(() => {
+    const loadZatConfig = async () => {
+      try {
+        const config = await fetchZatPriceConfiguration();
+        setZatConfig(config);
+      } catch (error) {
+        console.warn('[HeaderMessagingPanel] Failed to load ZAT config:', error);
+      }
+    };
+    loadZatConfig();
+  }, []);
+
+  // ============================================================================
   // CTA HANDLER (reuse from MessagingPage)
   // ============================================================================
   const user = { bubbleId: userBubbleId };
@@ -70,11 +333,7 @@ export function useHeaderMessagingPanelLogic({
     user,
     selectedThread,
     threadInfo,
-    onOpenModal: (modalName, context) => {
-      // For panel, we close and navigate instead of opening modals
-      onClose?.();
-      // The CTA handler will have already navigated
-    },
+    onOpenModal: handleOpenModal,
   });
 
   // ============================================================================
@@ -124,11 +383,11 @@ export function useHeaderMessagingPanelLogic({
         if (!newRow) return;
 
         // Client-side filter for this thread
-        if (newRow['Associated Thread/Conversation'] !== selectedThread._id) {
+        if (newRow['thread_id'] !== selectedThread._id) {
           return;
         }
 
-        const isOwnMessage = newRow['-Originator User'] === userBubbleId;
+        const isOwnMessage = newRow['originator_user_id'] === userBubbleId;
 
         // Add message to state (avoid duplicates)
         setMessages((prev) => {
@@ -145,7 +404,7 @@ export function useHeaderMessagingPanelLogic({
             sender_avatar: isOwnMessage ? userAvatar : undefined,
             sender_type: newRow['is Split Bot']
               ? 'splitbot'
-              : newRow['-Originator User'] === newRow['-Host User']
+              : newRow['originator_user_id'] === newRow['host_user_id']
                 ? 'host'
                 : 'guest',
             is_outgoing: isOwnMessage,
@@ -248,7 +507,7 @@ export function useHeaderMessagingPanelLogic({
 
       // Query threads where user is host or guest
       // Uses RPC function because PostgREST .or() doesn't handle column names
-      // with leading hyphens ("-Host User", "-Guest User") correctly
+      // with leading hyphens ("host_user_id", "guest_user_id") correctly
       const { data: threadsData, error: threadsError } = await supabase
         .rpc('get_user_threads', { user_id: bubbleId });
 
@@ -267,8 +526,8 @@ export function useHeaderMessagingPanelLogic({
       const listingIds = new Set();
 
       threadsData.forEach((thread) => {
-        const hostId = thread['-Host User'];
-        const guestId = thread['-Guest User'];
+        const hostId = thread['host_user_id'];
+        const guestId = thread['guest_user_id'];
         const contactId = hostId === bubbleId ? guestId : hostId;
         if (contactId) contactIds.add(contactId);
         if (thread['Listing']) listingIds.add(thread['Listing']);
@@ -322,14 +581,14 @@ export function useHeaderMessagingPanelLogic({
       if (threadIds.length > 0) {
         const { data: unreadData } = await supabase
           .from('_message')
-          .select('"Associated Thread/Conversation"')
-          .in('"Associated Thread/Conversation"', threadIds)
+          .select('"thread_id"')
+          .in('"thread_id"', threadIds)
           .filter('"Unread Users"', 'cs', JSON.stringify([bubbleId]));
 
         if (unreadData) {
           // Count occurrences of each thread ID
           unreadCountMap = unreadData.reduce((acc, msg) => {
-            const threadId = msg['Associated Thread/Conversation'];
+            const threadId = msg['thread_id'];
             acc[threadId] = (acc[threadId] || 0) + 1;
             return acc;
           }, {});
@@ -338,8 +597,8 @@ export function useHeaderMessagingPanelLogic({
 
       // Transform threads to UI format
       const transformedThreads = threadsData.map((thread) => {
-        const hostId = thread['-Host User'];
-        const guestId = thread['-Guest User'];
+        const hostId = thread['host_user_id'];
+        const guestId = thread['guest_user_id'];
         const contactId = hostId === bubbleId ? guestId : hostId;
         const contact = contactId ? contactMap[contactId] : null;
 
@@ -370,12 +629,12 @@ export function useHeaderMessagingPanelLogic({
 
         return {
           _id: thread._id,
-          '-Host User': hostId,
-          '-Guest User': guestId,
+          'host_user_id': hostId,
+          'guest_user_id': guestId,
           contact_name: contact?.name || 'Split Lease',
           contact_avatar: contact?.avatar,
           property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
-          last_message_preview: thread['~Last Message'] || 'No messages yet',
+          last_message_preview: thread['last_message_preview'] || 'No messages yet',
           last_message_time: lastMessageTime,
           unread_count: unreadCountMap[thread._id] || 0,
           is_with_splitbot: false,
@@ -615,6 +874,13 @@ export function useHeaderMessagingPanelLogic({
     isOtherUserTyping,
     typingUserName,
 
+    // Modal state
+    activeModal,
+    modalContext,
+    proposalModalData,
+    zatConfig,
+    isSubmittingProposal,
+
     // Handlers
     handleThreadSelect,
     handleBackToList,
@@ -626,5 +892,9 @@ export function useHeaderMessagingPanelLogic({
     // CTA handlers
     handleCTAClick,
     getCTAButtonConfig,
+
+    // Modal handlers
+    handleCloseModal,
+    handleProposalSubmit,
   };
 }

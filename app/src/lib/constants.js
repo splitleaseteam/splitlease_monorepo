@@ -261,7 +261,7 @@ export const DATABASE = {
     NEIGHBORHOOD: 'zat_geo_hood_mediumlevel',
     LISTING_TYPE: 'zat_features_listingtype',
     AMENITY: 'zat_features_amenity',
-    SAFETY: 'zfut_safetyfeatures',
+    SAFETY: 'zat_features_safetyfeature',
     HOUSE_RULE: 'zat_features_houserule',
     PARKING: 'zat_features_parkingoptions',
     CANCELLATION_POLICY: 'zat_features_cancellationpolicy',

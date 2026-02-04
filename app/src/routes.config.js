@@ -238,6 +238,18 @@ export const routes = [
     excludeFromFunctions: true
   },
 
+  // ===== SCHEDULE DASHBOARD =====
+  {
+    path: '/schedule',
+    file: 'schedule.html',
+    aliases: ['/schedule.html'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'schedule-view',
+    hasDynamicSegment: true,
+    dynamicPattern: '/schedule/:leaseId'
+  },
+
   // ===== HOST/LISTING MANAGEMENT =====
   {
     path: '/host-proposals',
@@ -386,6 +398,17 @@ export const routes = [
     protected: false,
     cloudflareInternal: true,
     internalName: 'visit-manual-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== QR CODE LANDING (GUEST-FACING) =====
+  {
+    path: '/qr-code-landing',
+    file: 'qr-code-landing.html',
+    aliases: ['/qr-code-landing.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'qr-code-landing-view',
     hasDynamicSegment: false
   },
 
@@ -687,6 +710,39 @@ export const routes = [
     hasDynamicSegment: false
   },
 
+  // ===== GUEST EXPERIENCE REVIEW (PUBLIC-FACING SURVEY) =====
+  {
+    path: '/guest-experience-review',
+    file: 'guest-experience-review.html',
+    aliases: ['/guest-experience-review.html', '/guest-experience', '/experience-review'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'guest-experience-review-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== HOST EXPERIENCE REVIEW (HOST FEEDBACK SURVEY) =====
+  {
+    path: '/host-experience-review',
+    file: 'host-experience-review.html',
+    aliases: ['/host-experience-review.html', '/host-experience', '/host-feedback'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'host-experience-review-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== REVIEWS OVERVIEW =====
+  {
+    path: '/reviews-overview',
+    file: 'reviews-overview.html',
+    aliases: ['/reviews-overview.html', '/reviews', '/my-reviews'],
+    protected: true,
+    cloudflareInternal: true,
+    internalName: 'reviews-overview-view',
+    hasDynamicSegment: false
+  },
+
   // ===== Z-SEARCH UNIT TEST (INTERNAL) =====
   {
     path: '/_internal/z-search-unit-test',
@@ -709,14 +765,14 @@ export const routes = [
     hasDynamicSegment: false
   },
 
-  // ===== Z-PRICING UNIT TEST (INTERNAL) =====
+  // ===== PRICING UNIT TEST (INTERNAL) =====
   {
-    path: '/_internal/z-pricing-unit-test',
-    file: 'z-pricing-unit-test.html',
-    aliases: ['/_internal/z-pricing-unit-test.html'],
+    path: '/_pricing-unit-test',
+    file: '_pricing-unit-test.html',
+    aliases: ['/_pricing-unit-test.html'],
     protected: false,
     cloudflareInternal: true,
-    internalName: 'z-pricing-unit-test-view',
+    internalName: '_pricing-unit-test-view',
     hasDynamicSegment: false
   },
 
@@ -772,6 +828,67 @@ export const routes = [
     protected: false,
     cloudflareInternal: true,
     internalName: 'z-unit-payment-records-js-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== MANAGE LEASES & PAYMENT RECORDS (INTERNAL ADMIN) =====
+  {
+    path: '/_manage-leases-payment-records',
+    file: 'manage-leases-payment-records.html',
+    aliases: ['/_manage-leases-payment-records.html', '/_mlpr'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'manage-leases-payment-records-view',
+    hasDynamicSegment: true,
+    dynamicPattern: '/_manage-leases-payment-records/:leaseId'
+  },
+
+  // ===== LEASE DOCUMENTS TEST PAGE (INTERNAL) =====
+  {
+    path: '/_test-contracts',
+    file: 'test-contracts.html',
+    aliases: ['/_test-contracts.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'test-contracts-view',
+    hasDynamicSegment: false
+  },
+
+  // ===== LEASE DOCUMENTS PAGES =====
+  {
+    path: '/contracts/credit-card-auth',
+    file: 'contracts/credit-card-auth.html',
+    aliases: ['/contracts/credit-card-auth.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'credit-card-auth-view',
+    hasDynamicSegment: false
+  },
+  {
+    path: '/contracts/host-payout',
+    file: 'contracts/host-payout.html',
+    aliases: ['/contracts/host-payout.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'host-payout-view',
+    hasDynamicSegment: false
+  },
+  {
+    path: '/contracts/periodic-tenancy',
+    file: 'contracts/periodic-tenancy.html',
+    aliases: ['/contracts/periodic-tenancy.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'periodic-tenancy-view',
+    hasDynamicSegment: false
+  },
+  {
+    path: '/contracts/supplemental',
+    file: 'contracts/supplemental.html',
+    aliases: ['/contracts/supplemental.html'],
+    protected: false,
+    cloudflareInternal: true,
+    internalName: 'supplemental-view',
     hasDynamicSegment: false
   }
 ];

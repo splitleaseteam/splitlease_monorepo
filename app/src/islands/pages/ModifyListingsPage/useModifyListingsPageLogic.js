@@ -57,6 +57,35 @@ const SECTIONS = [
 ];
 
 const AUTO_SAVE_DELAY = 30000; // 30 seconds
+const SEARCH_DEBOUNCE_MS = 300; // 300ms debounce for search
+
+// Standard fields to select for listing search (mirrors CreateSuggestedProposal)
+const LISTING_SELECT_FIELDS = `
+  _id,
+  Name,
+  "Location - Address",
+  Active,
+  Approved,
+  "Host email",
+  "host name",
+  "rental type",
+  "Modified Date"
+`;
+
+/**
+ * Debounce utility function
+ */
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 // ============================================================================
 // HOOK
@@ -96,20 +125,24 @@ export default function useModifyListingsPageLogic() {
   const [safetyFeatures, setSafetyFeatures] = useState([]);
   const [cancellationPolicyOptions, setCancellationPolicyOptions] = useState([]);
 
-  // Refs for auto-save
+  // Refs for auto-save and state tracking
   const autoSaveTimerRef = useRef(null);
   const hasChangesRef = useRef(false);
+  const currentListingIdRef = useRef(null); // Track current listing to prevent redundant loads
 
   // ---------------------------------------------------------------------------
   // INITIALIZATION
   // ---------------------------------------------------------------------------
 
-  // Get listing ID from URL on mount
+  // Get listing ID from URL on mount, or load default listings
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     if (id) {
       setListingId(id);
+    } else {
+      // Load default listings when no listing ID is specified
+      getDefaultListings();
     }
   }, []);
 
@@ -154,15 +187,16 @@ export default function useModifyListingsPageLogic() {
 
   async function loadAmenities() {
     try {
+      // Column names with spaces need quotes in both select and filter
       const { data: inUnit } = await supabase
-        .from('zat_features_amenities')
-        .select('_id, Name, "In unit?"')
-        .eq('In unit?', true);
+        .from('zat_features_amenity')
+        .select('_id, Name, "Type - Amenity Categories"')
+        .eq('"Type - Amenity Categories"', 'In Unit');
 
       const { data: inBuilding } = await supabase
-        .from('zat_features_amenities')
-        .select('_id, Name, "In unit?"')
-        .eq('In unit?', false);
+        .from('zat_features_amenity')
+        .select('_id, Name, "Type - Amenity Categories"')
+        .eq('"Type - Amenity Categories"', 'In Building');
 
       setAmenitiesInUnit(inUnit || []);
       setAmenitiesInBuilding(inBuilding || []);
@@ -175,7 +209,7 @@ export default function useModifyListingsPageLogic() {
     try {
       const { data } = await supabase
         .schema('reference_table')
-        .from('zat_features_houserules')
+        .from('zat_features_houserule')
         .select('_id, Name, Icon');
 
       setHouseRules(data || []);
@@ -187,7 +221,8 @@ export default function useModifyListingsPageLogic() {
   async function loadSafetyFeatures() {
     try {
       const { data } = await supabase
-        .from('zat_features_safety')
+        .schema('reference_table')
+        .from('zat_features_safetyfeature')
         .select('_id, Name, Icon');
 
       setSafetyFeatures(data || []);
@@ -207,9 +242,25 @@ export default function useModifyListingsPageLogic() {
 
   /**
    * Load a listing by ID
+   * IMPORTANT: Skips loading if there are unsaved changes (prevents auth refresh from wiping edits)
    * @param {string} id - Listing ID
+   * @param {boolean} force - Force reload even if there are unsaved changes
    */
-  async function loadListing(id) {
+  async function loadListing(id, force = false) {
+    // CRITICAL: Don't overwrite unsaved changes unless forced
+    // This prevents auth token refresh from wiping user edits
+    if (hasChangesRef.current && !force) {
+      console.log('[ModifyListings] Skipping reload - unsaved changes present');
+      return;
+    }
+
+    // Also skip if we already have this listing loaded (prevents redundant fetches)
+    // Use ref to avoid stale closure issues with listing state
+    if (currentListingIdRef.current === id && !force) {
+      console.log('[ModifyListings] Skipping reload - listing already loaded');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -220,12 +271,14 @@ export default function useModifyListingsPageLogic() {
         setError('Listing not found');
         setListing(null);
         setOriginalListing(null);
+        currentListingIdRef.current = null;
         return;
       }
 
       setListing(data);
       setOriginalListing(structuredClone(data));
       hasChangesRef.current = false;
+      currentListingIdRef.current = data._id; // Track current listing ID
       setLastSaved(data['Modified Date'] ? new Date(data['Modified Date']) : null);
 
       // Update URL
@@ -242,35 +295,99 @@ export default function useModifyListingsPageLogic() {
   }
 
   /**
-   * Search for listings by name or ID
+   * Get default listings (active, approved, recently modified)
+   * Matches CreateSuggestedProposal pattern
+   */
+  async function getDefaultListings() {
+    setIsSearching(true);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('listing')
+        .select(LISTING_SELECT_FIELDS)
+        .eq('Deleted', false)
+        .order('"Modified Date"', { ascending: false })
+        .limit(20);
+
+      if (fetchError) throw fetchError;
+      setSearchResults(data || []);
+    } catch (err) {
+      console.error('[ModifyListings] Failed to load default listings:', err);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  /**
+   * Search for listings by name, ID, host name, host email, or rental type
+   * Enhanced to match CreateSuggestedProposal pattern
    * @param {string} query - Search query
    */
   async function searchListings(query) {
-    if (!query || query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
     setIsSearching(true);
 
     try {
+      // Empty search = show defaults
+      if (!query || query.length === 0) {
+        await getDefaultListings();
+        return;
+      }
+
       const { data, error: searchError } = await supabase
         .from('listing')
-        .select('_id, Name, "Address - Full Street Address", Active, Approved')
-        .or(`Name.ilike.%${query}%,_id.ilike.%${query}%`)
-        .limit(20)
-        .order('Modified Date', { ascending: false });
+        .select(LISTING_SELECT_FIELDS)
+        .eq('Deleted', false)
+        .or(`Name.ilike.%${query}%,_id.ilike.%${query}%,"host name".ilike.%${query}%,"Host email".ilike.%${query}%,"rental type".ilike.%${query}%`)
+        .order('"Modified Date"', { ascending: false })
+        .limit(20);
 
       if (searchError) throw searchError;
 
       setSearchResults(data || []);
     } catch (err) {
-      console.error('Search failed:', err);
+      console.error('[ModifyListings] Search failed:', err);
       showAlert('error', 'Search failed: ' + err.message);
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
   }
+
+  /**
+   * Debounced search handler (matches CreateSuggestedProposal pattern)
+   */
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      searchListings(term);
+    }, SEARCH_DEBOUNCE_MS),
+    []
+  );
+
+  /**
+   * Handle search input change with debouncing
+   */
+  const handleSearchChange = useCallback((e) => {
+    const term = e.target.value;
+    setSearchQuery(term);
+    debouncedSearch(term);
+  }, [debouncedSearch]);
+
+  /**
+   * Handle search input focus - show default listings
+   */
+  const handleSearchFocus = useCallback(async () => {
+    if (searchResults.length === 0 && !listing) {
+      await getDefaultListings();
+    }
+  }, [searchResults.length, listing]);
+
+  /**
+   * Clear search and results
+   */
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setSearchResults([]);
+  }, []);
 
   /**
    * Update listing with partial data (FK-safe pattern)
@@ -458,7 +575,7 @@ export default function useModifyListingsPageLogic() {
 
     return {
       address: {
-        isComplete: Boolean(listing.Name && listing['Address - Full Street Address']),
+        isComplete: Boolean(listing.Name && (listing['Location - Address']?.address || listing['street_address'])),
         hasChanges: false
       },
       features: {
@@ -507,6 +624,7 @@ export default function useModifyListingsPageLogic() {
     setOriginalListing(null);
     setListingId(null);
     hasChangesRef.current = false;
+    currentListingIdRef.current = null; // Clear listing ID ref
 
     // Update URL
     const params = new URLSearchParams(window.location.search);
@@ -541,12 +659,15 @@ export default function useModifyListingsPageLogic() {
     alert,
     lastSaved,
 
-    // Search
+    // Search (matches CreateSuggestedProposal pattern)
     searchQuery,
     searchResults,
     setSearchQuery,
     searchListings,
     selectSearchResult,
+    handleSearchChange,
+    handleSearchFocus,
+    handleClearSearch,
 
     // Navigation
     activeSection,

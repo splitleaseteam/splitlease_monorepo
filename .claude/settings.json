@@ -1,4 +1,4 @@
- {
+{
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
@@ -20,7 +20,25 @@
       "Bash(rm -rf:*)"
     ]
   },
-  "hooks": {},
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \".claude\\hooks\\git_auto_commit.py\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "python \".claude\\hooks\\slack_notifier.py\"",
+            "timeout": 30,
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "hostname=$(hostname); ip=$(hostname -I | awk '{print $1}'); printf '%s@%s' \"$hostname\" \"$ip\""
@@ -29,7 +47,7 @@
     "commit-commands@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": false,
-    "ralph-loop@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": false,
     "hookify@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true

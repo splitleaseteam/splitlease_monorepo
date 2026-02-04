@@ -30,11 +30,14 @@ export function filterMeetings(meetings, filters = {}) {
   } = filters;
 
   return meetings.filter(meeting => {
-    // Guest search (name or email)
+    // Guest search (name or email) - use enriched object or flat fields
     if (guestSearch) {
       const searchLower = guestSearch.toLowerCase();
-      const guestName = getFullName(meeting.guest).toLowerCase();
-      const guestEmail = (meeting.guest?.email || '').toLowerCase();
+      const guestNameFromObject = getFullName(meeting.guest);
+      const guestName = (guestNameFromObject !== 'Unknown'
+        ? guestNameFromObject
+        : meeting['guest name'] || '').toLowerCase();
+      const guestEmail = (meeting.guest?.email || meeting['guest email'] || '').toLowerCase();
 
       const matchesGuest = guestName.includes(searchLower) ||
                           guestEmail.includes(searchLower);
@@ -83,16 +86,25 @@ export function extractUniqueHosts(meetings) {
   const hostMap = new Map();
 
   meetings.forEach(meeting => {
-    if (!meeting.host) return;
+    // Use enriched host object or flat fields
+    const hasHostObject = meeting.host && (meeting.host.id || meeting.host._id);
+    const hasHostFlat = meeting['host name'] || meeting['host email'];
 
-    const hostId = meeting.host.id || meeting.host._id;
+    if (!hasHostObject && !hasHostFlat) return;
+
+    const hostId = meeting.host?.id || meeting.host?._id || meeting['host email'] || meeting['host name'];
     if (!hostId || hostMap.has(hostId)) return;
+
+    const hostNameFromObject = getFullName(meeting.host);
+    const hostName = hostNameFromObject !== 'Unknown'
+      ? hostNameFromObject
+      : meeting['host name'] || 'Unknown';
 
     hostMap.set(hostId, {
       id: hostId,
-      name: getFullName(meeting.host),
-      email: meeting.host.email || '',
-      avatarUrl: meeting.host.avatar_url || meeting.host.profile_photo_url
+      name: hostName,
+      email: meeting.host?.email || meeting['host email'] || '',
+      avatarUrl: meeting.host?.avatar_url || meeting.host?.profile_photo_url || ''
     });
   });
 
@@ -114,15 +126,24 @@ export function extractUniqueGuests(meetings) {
   const guestMap = new Map();
 
   meetings.forEach(meeting => {
-    if (!meeting.guest) return;
+    // Use enriched guest object or flat fields
+    const hasGuestObject = meeting.guest && (meeting.guest.id || meeting.guest._id);
+    const hasGuestFlat = meeting['guest name'] || meeting['guest email'];
 
-    const guestId = meeting.guest.id || meeting.guest._id;
+    if (!hasGuestObject && !hasGuestFlat) return;
+
+    const guestId = meeting.guest?.id || meeting.guest?._id || meeting['guest email'] || meeting['guest name'];
     if (!guestId || guestMap.has(guestId)) return;
+
+    const guestNameFromObject = getFullName(meeting.guest);
+    const guestName = guestNameFromObject !== 'Unknown'
+      ? guestNameFromObject
+      : meeting['guest name'] || 'Unknown';
 
     guestMap.set(guestId, {
       id: guestId,
-      name: getFullName(meeting.guest),
-      email: meeting.guest.email || ''
+      name: guestName,
+      email: meeting.guest?.email || meeting['guest email'] || ''
     });
   });
 
@@ -156,15 +177,30 @@ export function getFullName(user) {
 export function formatMeetingForDisplay(meeting) {
   if (!meeting) return null;
 
+  // Get guest info from enriched object or flat fields (legacy Bubble denormalization)
+  const guestFromObject = getFullName(meeting.guest);
+  const guestName = guestFromObject !== 'Unknown'
+    ? guestFromObject
+    : meeting['guest name'] || 'Unknown';
+  const guestEmail = meeting.guest?.email || meeting['guest email'] || '';
+  const guestPhone = meeting.guest?.phone_number || meeting['guest phone'] || '';
+
+  // Get host info from enriched object or flat fields
+  const hostFromObject = getFullName(meeting.host);
+  const hostName = hostFromObject !== 'Unknown'
+    ? hostFromObject
+    : meeting['host name'] || 'Unknown';
+  const hostEmail = meeting.host?.email || meeting['host email'] || '';
+
   return {
     id: meeting._id || meeting.id,
     status: meeting.status || 'unknown',
-    guestName: getFullName(meeting.guest),
-    guestEmail: meeting.guest?.email || '',
-    guestPhone: meeting.guest?.phone_number || '',
+    guestName,
+    guestEmail,
+    guestPhone,
     guestTimezone: meeting.guest?.timezone || 'America/New_York',
-    hostName: getFullName(meeting.host),
-    hostEmail: meeting.host?.email || '',
+    hostName,
+    hostEmail,
     hostTimezone: meeting.host?.timezone || 'America/New_York',
     proposalId: meeting.proposal_unique_id || '',
     listingAddress: formatListingAddress(meeting.listing),

@@ -67,7 +67,7 @@ const NARRATORS = [
   },
 ];
 
-export async function handleGetNarrators(_context: HandlerContext) {
+export function handleGetNarrators(_context: HandlerContext) {
   console.log(`[ai-tools:get_narrators] Returning ${NARRATORS.length} narrator voices`);
 
   return {

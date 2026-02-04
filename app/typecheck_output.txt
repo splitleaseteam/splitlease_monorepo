@@ -1,0 +1,151 @@
+$ tsc --noEmit
+src/islands/pages/PreviewSplitLeasePage.tsx(169,17): error TS2322: Type '{ isAuthenticated: any; userId: any; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'isAuthenticated' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+src/islands/pages/PreviewSplitLeasePage.tsx(176,21): error TS2322: Type '{ photos: any; listingName: any; onPhotoClick: (index: any) => void; currentIndex: number; isModalOpen: boolean; onCloseModal: () => void; isMobile: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/PreviewSplitLeasePage.tsx(199,29): error TS2322: Type '{ listing: any; isFavorited: boolean; onToggleFavorite: () => void; onLocationClick: () => void; isAuthenticated: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'listing' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/PreviewSplitLeasePage.tsx(212,29): error TS2322: Type '{ description: any; isExpanded: boolean; onToggle: () => void; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'description' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/PreviewSplitLeasePage.tsx(223,29): error TS2322: Type '{ amenities: any; safetyFeatures: any; isExpanded: boolean; onToggle: () => void; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'amenities' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/PreviewSplitLeasePage.tsx(235,29): error TS2322: Type '{ coordinates: any; listingName: any; neighborhood: any; shouldLoad: boolean; onLoadMap: () => void; mapRef: RefObject<any>; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'coordinates' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/PreviewSplitLeasePage.tsx(249,29): error TS2322: Type '{ host: any; onContactClick: () => void; isAuthenticated: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'host' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/PreviewSplitLeasePage.tsx(263,29): error TS2322: Type '{ listing: any; selectedDays: any; moveInDate: string; reservationSpan: number; priceBreakdown: any; minMoveInDate: string; validationErrors: any; isValid: boolean; formattedPrice: string; formattedStartingPrice: string; ... 7 more ...; setActiveInfoTooltip: Dispatch<...>; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'listing' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(177,17): error TS2322: Type '{ isAuthenticated: any; userId: any; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'isAuthenticated' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+src/islands/pages/ViewSplitLeasePage.tsx(183,17): error TS2322: Type '{ photos: any; listingName: any; onPhotoClick: (index: any) => void; currentIndex: number; isModalOpen: boolean; onCloseModal: () => void; isMobile: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(196,25): error TS2322: Type '{ listing: any; isFavorited: boolean; onToggleFavorite: () => Promise<void>; onLocationClick: () => void; isAuthenticated: any; userId: any; onRequireAuth: () => void; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'listing' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(206,25): error TS2322: Type '{ description: any; isExpanded: boolean; onToggle: () => void; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'description' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(212,25): error TS2322: Type '{ amenities: any; safetyFeatures: any; isExpanded: boolean; onToggle: () => void; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'amenities' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(220,29): error TS2322: Type '{ coordinates: any; listingName: any; neighborhood: any; shouldLoad: boolean; onLoadMap: () => void; mapRef: RefObject<any>; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'coordinates' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(230,25): error TS2322: Type '{ host: any; onContactClick: () => Promise<void>; isAuthenticated: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'host' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage.tsx(239,25): error TS2322: Type '{ listing: any; selectedDays: any; moveInDate: string; reservationSpan: number; priceBreakdown: any; minMoveInDate: string; validationErrors: any; isValid: boolean; formattedPrice: string; formattedStartingPrice: string; ... 7 more ...; setActiveInfoTooltip: Dispatch<...>; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'listing' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid.tsx(22,5): error TS2339: Property 'amenities' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid.tsx(23,5): error TS2339: Property 'safetyFeatures' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid.tsx(24,5): error TS2339: Property 'isExpanded' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/AmenitiesGrid.tsx(25,5): error TS2339: Property 'onToggle' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(35,5): error TS2339: Property 'listing' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(36,5): error TS2339: Property 'selectedDays' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(37,5): error TS2339: Property 'moveInDate' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(38,5): error TS2339: Property 'reservationSpan' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(39,5): error TS2339: Property 'priceBreakdown' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(40,5): error TS2339: Property 'minMoveInDate' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(41,5): error TS2339: Property 'validationErrors' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(42,5): error TS2339: Property 'isValid' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(43,5): error TS2339: Property 'formattedPrice' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(44,5): error TS2339: Property 'formattedStartingPrice' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(45,5): error TS2339: Property 'existingProposal' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(46,5): error TS2339: Property 'onScheduleChange' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(47,5): error TS2339: Property 'onMoveInDateChange' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(48,5): error TS2339: Property 'onReservationSpanChange' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/BookingWidget.tsx(49,5): error TS2339: Property 'onSubmit' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/DescriptionSection.tsx(22,5): error TS2339: Property 'description' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/DescriptionSection.tsx(23,5): error TS2339: Property 'isExpanded' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/DescriptionSection.tsx(24,5): error TS2339: Property 'onToggle' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/HostInfoCard.tsx(24,5): error TS2339: Property 'host' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/HostInfoCard.tsx(25,5): error TS2339: Property 'onContactClick' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/HostInfoCard.tsx(26,5): error TS2339: Property 'isAuthenticated' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(28,5): error TS2339: Property 'listing' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(29,5): error TS2339: Property 'isFavorited' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(30,5): error TS2339: Property 'onToggleFavorite' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(31,5): error TS2339: Property 'onLocationClick' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(32,5): error TS2339: Property 'isAuthenticated' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(33,5): error TS2339: Property 'userId' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/ListingHeader.tsx(34,5): error TS2339: Property 'onRequireAuth' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(26,5): error TS2339: Property 'coordinates' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(27,5): error TS2339: Property 'listingName' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(28,5): error TS2339: Property 'neighborhood' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(29,5): error TS2339: Property 'shouldLoad' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(30,5): error TS2339: Property 'onLoadMap' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(31,5): error TS2339: Property 'mapRef' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/MapSection.tsx(98,25): error TS2322: Type '{ ref: any; listings: { _id: any; Name: any; coordinates: any; }[]; filteredListings: undefined[]; selectedListing: null; selectedBorough: null; onMarkerClick: () => void; onMessageClick: () => void; showControls: boolean; height: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  Property 'listings' does not exist on type 'IntrinsicAttributes & RefAttributes<any>'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(32,5): error TS2339: Property 'photos' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(33,5): error TS2339: Property 'listingName' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(34,5): error TS2339: Property 'onPhotoClick' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(35,5): error TS2339: Property 'currentIndex' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(36,5): error TS2339: Property 'isModalOpen' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(37,5): error TS2339: Property 'onCloseModal' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(38,5): error TS2339: Property 'isMobile' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(106,25): error TS2322: Type '{ photos: any; currentIndex: any; onClose: any; listingName: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(135,25): error TS2322: Type '{ photo: any; index: number; onClick: any; alt: string; priority: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(144,25): error TS2322: Type '{ photos: any; currentIndex: any; onClose: any; listingName: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(162,29): error TS2322: Type '{ key: any; photo: any; index: any; onClick: any; alt: string; priority: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(172,25): error TS2322: Type '{ photos: any; currentIndex: any; onClose: any; listingName: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(188,25): error TS2322: Type '{ photo: any; index: number; onClick: any; alt: string; className: string; priority: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(198,29): error TS2322: Type '{ key: any; photo: any; index: any; onClick: any; alt: string; useThumbnail: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(208,25): error TS2322: Type '{ photos: any; currentIndex: any; onClose: any; listingName: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(224,25): error TS2322: Type '{ photo: any; index: number; onClick: any; alt: string; className: string; priority: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(234,29): error TS2322: Type '{ key: any; photo: any; index: any; onClick: any; alt: string; useThumbnail: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(244,25): error TS2322: Type '{ photos: any; currentIndex: any; onClose: any; listingName: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(261,21): error TS2322: Type '{ photo: any; index: number; onClick: any; alt: string; className: string; priority: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(271,25): error TS2322: Type '{ key: any; photo: any; index: any; onClick: any; alt: string; useThumbnail: boolean; showAllOverlay: boolean; totalPhotos: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photo' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(283,21): error TS2322: Type '{ photos: any; currentIndex: any; onClose: any; listingName: any; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(303,5): error TS2339: Property 'photo' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(304,5): error TS2339: Property 'index' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(305,5): error TS2339: Property 'onClick' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(306,5): error TS2339: Property 'alt' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(307,5): error TS2339: Property 'className' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(308,5): error TS2339: Property 'priority' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(309,5): error TS2339: Property 'useThumbnail' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(310,5): error TS2339: Property 'showAllOverlay' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(311,5): error TS2339: Property 'totalPhotos' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(367,5): error TS2339: Property 'photos' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(368,5): error TS2339: Property 'currentIndex' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(369,5): error TS2339: Property 'onClose' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/components/PhotoGallery.tsx(370,5): error TS2339: Property 'listingName' does not exist on type '{}'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1021,29): error TS2322: Type '{ photos: any; listingName: any; onPhotoClick: (index: any) => void; isMobile: boolean; }' is not assignable to type 'IntrinsicAttributes & object'.
+  Property 'photos' does not exist on type 'IntrinsicAttributes & object'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1066,49): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1067,49): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1442,19): error TS2322: Type '{ ref: RefObject<any>; listings: { id: any; title: any; coordinates: any; price: { starting: any; }; location: any; type: any; bedrooms: any; bathrooms: any; images: any; borough: any; }[]; filteredListings: { ...; }[]; selectedBorough: any; simpleMode: boolean; initialZoom: number; disableAutoZoom: boolean; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<any>'.
+  Property 'listings' does not exist on type 'IntrinsicAttributes & RefAttributes<any>'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1517,32): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1518,32): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1519,32): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1522,32): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1523,32): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1524,32): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1679,51): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(1680,51): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2052,28): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2053,28): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2057,30): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2058,30): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2151,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2153,28): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2182,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2183,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2188,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2189,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2214,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/pages/ViewSplitLeasePage/ViewSplitLeasePage.tsx(2217,26): error TS2339: Property 'style' does not exist on type 'EventTarget'.
+src/islands/shared/DateChangeRequestManager/utils/formatting.ts(37,9): error TS2322: Type '{ month: string; day: string; year: string; } | { month: string; day: string; year: string; } | { month: string; day: string; year: string; weekday: string; }' is not assignable to type 'DateTimeFormatOptions'.
+  Type '{ month: string; day: string; year: string; }' is not assignable to type 'DateTimeFormatOptions'.
+    Types of property 'year' are incompatible.
+      Type 'string' is not assignable to type '"numeric" | "2-digit"'.

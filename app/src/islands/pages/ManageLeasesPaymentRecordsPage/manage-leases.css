@@ -1,0 +1,1039 @@
+/**
+ * Manage Leases & Payment Records - Admin Page Styles
+ *
+ * Naming Convention: mlpr-* (manage leases payment records)
+ * Uses CSS custom properties from global styles
+ */
+
+/* ============================================================================
+   PAGE LAYOUT
+   ============================================================================ */
+
+.mlpr-page {
+  min-height: 100vh;
+  background-color: var(--color-gray-50, #f9fafb);
+}
+
+.mlpr-header {
+  background: linear-gradient(135deg, var(--color-primary, #7c3aed) 0%, #6d28d9 100%);
+  padding: var(--spacing-6, 1.5rem) var(--spacing-8, 2rem);
+  color: white;
+}
+
+.mlpr-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.mlpr-title {
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: 700;
+  margin: 0;
+}
+
+.mlpr-subtitle {
+  font-size: var(--text-sm, 0.875rem);
+  opacity: 0.9;
+  margin: var(--spacing-2, 0.5rem) 0 0 0;
+}
+
+.mlpr-guest-indicator {
+  margin-left: var(--spacing-2, 0.5rem);
+  opacity: 0.8;
+}
+
+.mlpr-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-6, 1.5rem);
+}
+
+/* ============================================================================
+   SECTIONS
+   ============================================================================ */
+
+.mlpr-section {
+  background: white;
+  border-radius: var(--radius-lg, 0.5rem);
+  padding: var(--spacing-6, 1.5rem);
+  margin-bottom: var(--spacing-6, 1.5rem);
+  box-shadow: var(--shadow-sm, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+}
+
+.mlpr-section-title {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 600;
+  margin: 0 0 var(--spacing-4, 1rem) 0;
+  color: var(--color-gray-900, #111827);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+.mlpr-section-subtitle {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-gray-500, #6b7280);
+  margin: calc(-1 * var(--spacing-2, 0.5rem)) 0 var(--spacing-4, 1rem) 0;
+}
+
+/* ============================================================================
+   GRID LAYOUTS
+   ============================================================================ */
+
+.mlpr-grid {
+  display: grid;
+  gap: var(--spacing-4, 1rem);
+}
+
+.mlpr-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.mlpr-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.mlpr-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.mlpr-details-grid,
+.mlpr-identity-grid,
+.mlpr-documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-4, 1rem);
+}
+
+/* ============================================================================
+   CARDS
+   ============================================================================ */
+
+.mlpr-card {
+  background: var(--color-gray-50, #f9fafb);
+  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-md, 0.375rem);
+  padding: var(--spacing-4, 1rem);
+}
+
+.mlpr-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  margin-bottom: var(--spacing-3, 0.75rem);
+}
+
+.mlpr-card-header h4 {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-gray-700, #374151);
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.mlpr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2, 0.5rem);
+  padding: var(--spacing-2, 0.5rem) var(--spacing-4, 1rem);
+  border-radius: var(--radius-md, 0.375rem);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.mlpr-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mlpr-btn-primary {
+  background: var(--color-primary, #7c3aed);
+  color: white;
+}
+
+.mlpr-btn-primary:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.mlpr-btn-secondary {
+  background: var(--color-gray-100, #f3f4f6);
+  color: var(--color-gray-700, #374151);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+}
+
+.mlpr-btn-secondary:hover:not(:disabled) {
+  background: var(--color-gray-200, #e5e7eb);
+}
+
+.mlpr-btn-danger {
+  background: var(--color-red-600, #dc2626);
+  color: white;
+}
+
+.mlpr-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.mlpr-btn-outline {
+  background: transparent;
+  color: var(--color-gray-700, #374151);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+}
+
+.mlpr-btn-outline:hover:not(:disabled) {
+  background: var(--color-gray-50, #f9fafb);
+}
+
+.mlpr-btn-sm {
+  padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+  font-size: var(--text-xs, 0.75rem);
+}
+
+.mlpr-btn-icon {
+  padding: var(--spacing-2, 0.5rem);
+}
+
+/* ============================================================================
+   FORM ELEMENTS
+   ============================================================================ */
+
+.mlpr-input,
+.mlpr-select,
+.mlpr-textarea {
+  width: 100%;
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: var(--radius-md, 0.375rem);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-gray-900, #111827);
+  background: white;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mlpr-input:focus,
+.mlpr-select:focus,
+.mlpr-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.mlpr-input:read-only {
+  background: var(--color-gray-50, #f9fafb);
+  cursor: default;
+}
+
+.mlpr-label {
+  display: block;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-gray-700, #374151);
+  margin-bottom: var(--spacing-1, 0.25rem);
+}
+
+.mlpr-form-field {
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+.mlpr-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-4, 1rem);
+}
+
+.mlpr-form-actions {
+  display: flex;
+  gap: var(--spacing-3, 0.75rem);
+  margin-top: var(--spacing-4, 1rem);
+}
+
+/* ============================================================================
+   STATUS BADGES
+   ============================================================================ */
+
+.mlpr-status {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 500;
+}
+
+.mlpr-status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mlpr-status-completed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.mlpr-status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mlpr-status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mlpr-status-draft {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.mlpr-status-unknown {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* ============================================================================
+   SEARCH BAR
+   ============================================================================ */
+
+.mlpr-search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  position: relative;
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+.mlpr-search-icon {
+  position: absolute;
+  left: var(--spacing-3, 0.75rem);
+  color: var(--color-gray-400, #9ca3af);
+  pointer-events: none;
+}
+
+.mlpr-search-input {
+  flex: 1;
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  padding-left: var(--spacing-10, 2.5rem);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: var(--radius-md, 0.375rem);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.mlpr-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.mlpr-search-clear {
+  position: absolute;
+  right: var(--spacing-2, 0.5rem);
+  background: none;
+  border: none;
+  padding: var(--spacing-1, 0.25rem);
+  cursor: pointer;
+  color: var(--color-gray-400, #9ca3af);
+}
+
+.mlpr-search-clear:hover {
+  color: var(--color-gray-600, #4b5563);
+}
+
+/* ============================================================================
+   DROPDOWN
+   ============================================================================ */
+
+.mlpr-dropdown {
+  position: relative;
+}
+
+.mlpr-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  background: white;
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: var(--radius-md, 0.375rem);
+  font-size: var(--text-sm, 0.875rem);
+  cursor: pointer;
+  text-align: left;
+}
+
+.mlpr-dropdown-trigger:hover {
+  border-color: var(--color-gray-400, #9ca3af);
+}
+
+.mlpr-dropdown-trigger svg {
+  transition: transform 0.2s ease;
+}
+
+.mlpr-dropdown-trigger svg.rotated {
+  transform: rotate(180deg);
+}
+
+.mlpr-dropdown-placeholder {
+  color: var(--color-gray-500, #6b7280);
+}
+
+.mlpr-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-md, 0.375rem);
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgb(0 0 0 / 0.1));
+  z-index: 50;
+  list-style: none;
+  margin: 0;
+  padding: var(--spacing-1, 0.25rem) 0;
+}
+
+.mlpr-dropdown-item {
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  cursor: pointer;
+  position: relative;
+}
+
+.mlpr-dropdown-item:hover {
+  background: var(--color-gray-50, #f9fafb);
+}
+
+.mlpr-dropdown-item.selected {
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.mlpr-dropdown-item-main {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+.mlpr-dropdown-guest {
+  font-weight: 500;
+  color: var(--color-gray-900, #111827);
+}
+
+.mlpr-dropdown-agreement {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.mlpr-dropdown-item-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  margin-top: var(--spacing-1, 0.25rem);
+}
+
+.mlpr-dropdown-dates {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.mlpr-dropdown-check {
+  position: absolute;
+  right: var(--spacing-3, 0.75rem);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-primary, #7c3aed);
+}
+
+.mlpr-dropdown-empty {
+  padding: var(--spacing-4, 1rem);
+  text-align: center;
+  color: var(--color-gray-500, #6b7280);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+/* ============================================================================
+   SELECTED HEADER
+   ============================================================================ */
+
+.mlpr-selected-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  padding: var(--spacing-3, 0.75rem);
+  background: rgba(124, 58, 237, 0.1);
+  border-radius: var(--radius-md, 0.375rem);
+  margin-bottom: var(--spacing-4, 1rem);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.mlpr-selected-header strong {
+  color: var(--color-primary, #7c3aed);
+}
+
+.mlpr-guest-name {
+  color: var(--color-gray-600, #4b5563);
+}
+
+/* ============================================================================
+   DETAIL ROWS
+   ============================================================================ */
+
+.mlpr-detail-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  padding: var(--spacing-2, 0.5rem) 0;
+  border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+}
+
+.mlpr-detail-row:last-child {
+  border-bottom: none;
+}
+
+.mlpr-detail-label {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-gray-500, #6b7280);
+  min-width: 140px;
+}
+
+.mlpr-detail-value {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-gray-900, #111827);
+  font-weight: 500;
+}
+
+.mlpr-detail-value.mlpr-id {
+  font-family: monospace;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-gray-600, #4b5563);
+  word-break: break-all;
+}
+
+/* ============================================================================
+   CALENDAR
+   ============================================================================ */
+
+.mlpr-calendar {
+  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-md, 0.375rem);
+  overflow: hidden;
+}
+
+.mlpr-calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--color-gray-100, #f3f4f6);
+}
+
+.mlpr-calendar-weekday {
+  padding: var(--spacing-2, 0.5rem);
+  text-align: center;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-gray-600, #4b5563);
+}
+
+.mlpr-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.mlpr-calendar-day {
+  padding: var(--spacing-2, 0.5rem);
+  text-align: center;
+  font-size: var(--text-sm, 0.875rem);
+  border: 1px solid var(--color-gray-100, #f3f4f6);
+  min-height: 40px;
+  cursor: default;
+}
+
+.mlpr-calendar-day.other-month {
+  color: var(--color-gray-300, #d1d5db);
+}
+
+.mlpr-calendar-day.today {
+  background: rgba(124, 58, 237, 0.1);
+  font-weight: 600;
+}
+
+.mlpr-calendar-day.booked {
+  background: var(--color-primary, #7c3aed);
+  color: white;
+}
+
+.mlpr-calendar-day.booked-after-request {
+  background: #fbbf24;
+  color: #78350f;
+}
+
+.mlpr-calendar-day.in-lease-range {
+  background: rgba(124, 58, 237, 0.05);
+}
+
+.mlpr-calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+.mlpr-calendar-month {
+  font-size: var(--text-base, 1rem);
+  font-weight: 600;
+}
+
+.mlpr-calendar-nav {
+  display: flex;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+.mlpr-calendar-toggles {
+  display: flex;
+  gap: var(--spacing-2, 0.5rem);
+  margin-bottom: var(--spacing-4, 1rem);
+  flex-wrap: wrap;
+}
+
+.mlpr-toggle-btn {
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: var(--radius-md, 0.375rem);
+  background: white;
+  font-size: var(--text-sm, 0.875rem);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mlpr-toggle-btn.active {
+  background: var(--color-primary, #7c3aed);
+  color: white;
+  border-color: var(--color-primary, #7c3aed);
+}
+
+.mlpr-date-actions {
+  display: flex;
+  gap: var(--spacing-3, 0.75rem);
+  margin-top: var(--spacing-4, 1rem);
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   TABLES
+   ============================================================================ */
+
+.mlpr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.mlpr-table th,
+.mlpr-table td {
+  padding: var(--spacing-3, 0.75rem);
+  text-align: left;
+  border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+}
+
+.mlpr-table th {
+  background: var(--color-gray-50, #f9fafb);
+  font-weight: 600;
+  color: var(--color-gray-700, #374151);
+}
+
+.mlpr-table tbody tr:hover {
+  background: var(--color-gray-50, #f9fafb);
+}
+
+.mlpr-table-actions {
+  display: flex;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+/* ============================================================================
+   IDENTITY SECTION
+   ============================================================================ */
+
+.mlpr-identity-card {
+  background: var(--color-gray-50, #f9fafb);
+  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-lg, 0.5rem);
+  padding: var(--spacing-4, 1rem);
+}
+
+.mlpr-identity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-3, 0.75rem);
+}
+
+.mlpr-identity-header h4 {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  margin: 0;
+}
+
+.mlpr-verification-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1, 0.25rem);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 500;
+  padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+  border-radius: var(--radius-full, 9999px);
+}
+
+.mlpr-verification-status.verified {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mlpr-verification-status.pending {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mlpr-identity-name {
+  font-weight: 500;
+  margin-bottom: var(--spacing-3, 0.75rem);
+}
+
+.mlpr-identity-images {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3, 0.75rem);
+}
+
+.mlpr-identity-image-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1, 0.25rem);
+}
+
+.mlpr-identity-image-label {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.mlpr-identity-image {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-md, 0.375rem);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mlpr-identity-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mlpr-identity-image-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  color: white;
+}
+
+.mlpr-identity-image:hover .mlpr-identity-image-overlay {
+  opacity: 1;
+}
+
+.mlpr-identity-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-1, 0.25rem);
+  aspect-ratio: 4/3;
+  background: var(--color-gray-100, #f3f4f6);
+  border-radius: var(--radius-md, 0.375rem);
+  color: var(--color-gray-400, #9ca3af);
+  font-size: var(--text-xs, 0.75rem);
+}
+
+/* ============================================================================
+   STAYS
+   ============================================================================ */
+
+.mlpr-stays-actions {
+  display: flex;
+  gap: var(--spacing-3, 0.75rem);
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+.mlpr-stays-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-4, 1rem);
+}
+
+.mlpr-stays-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8, 2rem);
+  color: var(--color-gray-400, #9ca3af);
+  text-align: center;
+}
+
+.mlpr-stays-empty svg {
+  margin-bottom: var(--spacing-2, 0.5rem);
+}
+
+.mlpr-stay-card {
+  background: var(--color-gray-50, #f9fafb);
+  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-md, 0.375rem);
+  padding: var(--spacing-4, 1rem);
+}
+
+.mlpr-stay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-3, 0.75rem);
+}
+
+.mlpr-stay-number {
+  font-weight: 600;
+  color: var(--color-gray-900, #111827);
+}
+
+.mlpr-stay-id {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1, 0.25rem);
+  font-size: var(--text-xs, 0.75rem);
+  font-family: monospace;
+  color: var(--color-gray-500, #6b7280);
+}
+
+.mlpr-stay-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+.mlpr-stay-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-2, 0.5rem);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.mlpr-stay-label {
+  color: var(--color-gray-500, #6b7280);
+  min-width: 80px;
+}
+
+.mlpr-stay-value {
+  color: var(--color-gray-900, #111827);
+  font-weight: 500;
+}
+
+.mlpr-stay-dates-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1, 0.25rem);
+}
+
+.mlpr-stay-date-badge {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--color-primary, #7c3aed);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 0.25rem);
+  font-size: var(--text-xs, 0.75rem);
+}
+
+.mlpr-stay-date-more {
+  color: var(--color-gray-500, #6b7280);
+  font-size: var(--text-xs, 0.75rem);
+}
+
+/* ============================================================================
+   CHANGE REQUESTS
+   ============================================================================ */
+
+.mlpr-change-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+.mlpr-change-tab {
+  padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
+  background: none;
+  border: none;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-gray-500, #6b7280);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.mlpr-change-tab.active {
+  color: var(--color-primary, #7c3aed);
+  border-bottom-color: var(--color-primary, #7c3aed);
+}
+
+.mlpr-change-tab-count {
+  margin-left: var(--spacing-1, 0.25rem);
+  background: var(--color-gray-100, #f3f4f6);
+  padding: 2px 6px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--text-xs, 0.75rem);
+}
+
+.mlpr-change-tab.active .mlpr-change-tab-count {
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.mlpr-change-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3, 0.75rem);
+}
+
+.mlpr-change-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-8, 2rem);
+  color: var(--color-gray-400, #9ca3af);
+  text-align: center;
+}
+
+/* ============================================================================
+   LOADING & ERROR STATES
+   ============================================================================ */
+
+.mlpr-loading-state,
+.mlpr-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12, 3rem);
+  text-align: center;
+}
+
+.mlpr-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-gray-200, #e5e7eb);
+  border-top-color: var(--color-primary, #7c3aed);
+  border-radius: 50%;
+  animation: mlpr-spin 0.8s linear infinite;
+}
+
+@keyframes mlpr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.mlpr-loading-message {
+  margin-top: var(--spacing-4, 1rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.mlpr-error-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-red-500, #ef4444);
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+.mlpr-error-message {
+  color: var(--color-gray-700, #374151);
+  margin-bottom: var(--spacing-4, 1rem);
+}
+
+/* ============================================================================
+   LOADING OVERLAY
+   ============================================================================ */
+
+.mlpr-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .mlpr-content {
+    padding: var(--spacing-4, 1rem);
+  }
+
+  .mlpr-section {
+    padding: var(--spacing-4, 1rem);
+  }
+
+  .mlpr-details-grid,
+  .mlpr-identity-grid,
+  .mlpr-documents-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mlpr-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mlpr-calendar-toggles {
+    flex-direction: column;
+  }
+
+  .mlpr-toggle-btn {
+    width: 100%;
+  }
+
+  .mlpr-date-actions {
+    flex-direction: column;
+  }
+
+  .mlpr-date-actions .mlpr-btn {
+    width: 100%;
+  }
+
+  .mlpr-identity-images {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

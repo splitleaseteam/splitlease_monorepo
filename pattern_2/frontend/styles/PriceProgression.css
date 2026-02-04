@@ -1,0 +1,442 @@
+/**
+ * Pattern 2: Urgency Countdown - PriceProgression Styles
+ */
+
+/* ========================================
+   PRICE PROGRESSION CONTAINER
+   ======================================== */
+
+.price-progression {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.price-progression.price-progression-critical {
+  background: rgba(255, 235, 238, 0.5);
+  border-color: rgba(244, 67, 54, 0.2);
+}
+
+.price-progression.price-progression-high {
+  background: rgba(255, 245, 229, 0.5);
+  border-color: rgba(255, 87, 34, 0.2);
+}
+
+/* ========================================
+   PROGRESSION HEADER
+   ======================================== */
+
+.progression-header {
+  margin-bottom: 16px;
+}
+
+.progression-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.progression-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+/* ========================================
+   PROGRESSION LIST
+   ======================================== */
+
+.progression-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progression-item {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.progression-item.progression-increase {
+  border-left-color: #F57C00;
+}
+
+.progression-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   PROGRESSION TIMELINE
+   ======================================== */
+
+.progression-timeline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.timeline-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.timeline-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+/* ========================================
+   PROGRESSION PRICE
+   ======================================== */
+
+.progression-price-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progression-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1A1A;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.price-night {
+  font-size: 12px;
+  font-weight: 400;
+  color: #999;
+}
+
+/* ========================================
+   INCREASE BADGE
+   ======================================== */
+
+.progression-increase-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(245, 124, 0, 0.1);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #F57C00;
+}
+
+.increase-arrow {
+  font-size: 14px;
+}
+
+.increase-amount {
+  font-weight: 700;
+}
+
+.increase-percentage {
+  font-weight: 400;
+  color: #E65100;
+}
+
+/* ========================================
+   PROGRESS BAR
+   ======================================== */
+
+.progression-bar-container {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progression-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #FFA726, #F44336);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ========================================
+   PROGRESSION SUMMARY
+   ======================================== */
+
+.progression-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 152, 0, 0.08);
+  border-radius: 6px;
+  border-left: 3px solid #FF9800;
+}
+
+.summary-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.summary-text {
+  flex: 1;
+  font-size: 13px;
+  color: #E65100;
+  line-height: 1.4;
+}
+
+.summary-text strong {
+  font-weight: 700;
+  color: #D84315;
+}
+
+/* ========================================
+   COMPACT VARIANT
+   ======================================== */
+
+.price-progression-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #E65100;
+}
+
+.compact-icon {
+  font-size: 14px;
+}
+
+/* ========================================
+   TABLE VARIANT
+   ======================================== */
+
+.price-progression-table {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.progression-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.progression-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.progression-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.progression-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-timeline {
+  font-weight: 600;
+  color: #333;
+}
+
+.table-days {
+  color: #666;
+}
+
+.table-price {
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.table-increase {
+  color: #F57C00;
+  font-weight: 600;
+}
+
+.table-percentage {
+  color: #E65100;
+  font-weight: 500;
+}
+
+/* ========================================
+   CHART VARIANT
+   ======================================== */
+
+.price-progression-chart {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+}
+
+.chart-header h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.chart-container {
+  display: flex;
+  gap: 12px;
+  height: 200px;
+}
+
+.chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #999;
+  padding-right: 8px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chart-bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 8px;
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 60px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  transition: all 0.5s ease;
+}
+
+.bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, #4CAF50, #FFA726);
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+}
+
+.chart-bar:hover .bar-fill {
+  background: linear-gradient(180deg, #66BB6A, #FFB74D);
+  transform: scaleY(1.05);
+}
+
+.chart-label {
+  font-size: 10px;
+  color: #666;
+  margin-top: 8px;
+  text-align: center;
+  writing-mode: horizontal-tb;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .progression-price {
+    font-size: 16px;
+  }
+
+  .progression-increase-badge {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .chart-container {
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-progression {
+    padding: 12px;
+  }
+
+  .progression-price-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .progression-table {
+    font-size: 11px;
+  }
+
+  .progression-table thead th,
+  .progression-table tbody td {
+    padding: 6px 8px;
+  }
+
+  .chart-bars {
+    gap: 4px;
+  }
+
+  .chart-label {
+    font-size: 9px;
+  }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.progression-item {
+  animation: slide-in 0.3s ease;
+}
+
+.progression-item:nth-child(1) { animation-delay: 0.1s; }
+.progression-item:nth-child(2) { animation-delay: 0.2s; }
+.progression-item:nth-child(3) { animation-delay: 0.3s; }
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .progression-item,
+  .progression-bar,
+  .bar-fill {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}

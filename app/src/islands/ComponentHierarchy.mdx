@@ -1,0 +1,204 @@
+# Component Hierarchy
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Documentation/Component Hierarchy" />
+
+## Split Lease Component Architecture
+
+The Split Lease frontend uses an **Islands Architecture** pattern where each page is an independent React application.
+Components are organized into a clear hierarchy for maintainability and reusability.
+
+---
+
+## Directory Structure
+
+```
+app/src/islands/
+├── modals/                    # Modal/overlay components
+├── pages/                     # Page-level components (React islands)
+│   ├── [PageName]/            # Page with sub-components
+│   │   ├── components/        # Page-specific components
+│   │   └── use[PageName]Logic.js  # Page business logic hook
+│   └── [PageName].jsx         # Standalone page components
+├── proposals/                 # Proposal-specific components
+└── shared/                    # Reusable components across pages
+    └── [ComponentName]/       # Complex components with sub-modules
+```
+
+---
+
+## Component Categories
+
+### 1. Primitive/Atomic Components
+
+The smallest, most reusable building blocks.
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **Button** | `shared/Button.jsx` | Universal button with variants |
+| **DayButton** | `shared/DayButton.jsx` | Day selection toggle |
+| **PriceDisplay** | `shared/PriceDisplay.jsx` | Price breakdown display |
+| **SelectableChip** | `pages/AccountProfilePage/.../SelectableChip.jsx` | Multi-select tag |
+
+### 2. Composite Components
+
+Combinations of primitives for specific features.
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **ProfileCard** | `pages/AccountProfilePage/.../ProfileCard.jsx` | Consistent card wrapper |
+| **ListingCard** | `shared/ListingCard/` | Listing preview card |
+| **Toast** | `shared/Toast.jsx` | Notification system |
+| **ErrorOverlay** | `shared/ErrorOverlay.jsx` | Error modal display |
+
+### 3. Feature Modules
+
+Complex features encapsulated as component groups.
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| **ScheduleSelector** | `shared/SearchScheduleSelector.jsx` | Day/date selection |
+| **HostScheduleSelector** | `shared/HostScheduleSelector/` | Host availability picker |
+| **CreateProposalFlowV2** | `shared/CreateProposalFlowV2.jsx` | Booking wizard |
+| **VirtualMeetingManager** | `shared/VirtualMeetingManager/` | Meeting scheduling |
+| **EditListingDetails** | `shared/EditListingDetails/` | Listing edit forms |
+
+### 4. Modal Components
+
+Overlay dialogs for focused interactions.
+
+| Modal | Location | Purpose |
+|-------|----------|---------|
+| **MapModal** | `modals/MapModal.jsx` | Location display |
+| **ProposalDetailsModal** | `modals/ProposalDetailsModal.jsx` | Proposal view |
+| **VirtualMeetingModal** | `modals/VirtualMeetingModal.jsx` | Meeting details |
+| **EditProposalModal** | `modals/EditProposalModal.jsx` | Proposal editing |
+| **CancelProposalModal** | `modals/CancelProposalModal.jsx` | Cancel confirmation |
+
+### 5. State Components
+
+UI states for loading, empty, and error conditions.
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **LoadingState** | `pages/AdminThreadsPage/.../LoadingState.jsx` | Loading spinner |
+| **EmptyState** | `pages/AdminThreadsPage/.../EmptyState.jsx` | No results display |
+| **ErrorBoundary** | `shared/ErrorBoundary.jsx` | Error catching |
+| **ErrorState** | Various locations | Error display |
+
+### 6. Page Components
+
+Top-level components mounted as React islands.
+
+| Page | Location | Description |
+|------|----------|-------------|
+| **HomePage** | `pages/HomePage.jsx` | Landing page |
+| **SearchPage** | `pages/SearchPage.jsx` | Listing search |
+| **ViewSplitLeasePage** | `pages/ViewSplitLeasePage.jsx` | Listing detail |
+| **GuestProposalsPage** | `pages/GuestProposalsPage.jsx` | Guest dashboard |
+| **HostProposalsPage** | `pages/HostProposalsPage/` | Host dashboard |
+| **AccountProfilePage** | `pages/AccountProfilePage/` | User profile |
+| **ListingDashboardPage** | `pages/ListingDashboardPage/` | Listing management |
+
+---
+
+## Component Hierarchy Diagram
+
+```
+                                    ┌─────────────────────┐
+                                    │      App Root       │
+                                    │   (HTML + Entry)    │
+                                    └──────────┬──────────┘
+                                               │
+                    ┌──────────────────────────┼──────────────────────────┐
+                    │                          │                          │
+           ┌────────┴────────┐        ┌────────┴────────┐        ┌────────┴────────┐
+           │    Header       │        │  Page Component │        │     Footer      │
+           │   (shared)      │        │   (islands)     │        │   (shared)      │
+           └────────┬────────┘        └────────┬────────┘        └─────────────────┘
+                    │                          │
+    ┌───────────────┼───────────────┐          │
+    │               │               │          │
+┌───┴────┐   ┌──────┴──────┐  ┌─────┴─────┐    │
+│ Logo   │   │ Navigation  │  │ Auth UI   │    │
+└────────┘   └─────────────┘  └───────────┘    │
+                                               │
+          ┌────────────────────────────────────┼────────────────────────────────────┐
+          │                                    │                                    │
+   ┌──────┴──────┐                      ┌──────┴──────┐                      ┌──────┴──────┐
+   │  Feature    │                      │   State     │                      │   Modal     │
+   │  Modules    │                      │ Components  │                      │ Components  │
+   └──────┬──────┘                      └──────┬──────┘                      └──────┬──────┘
+          │                                    │                                    │
+   ┌──────┴──────┐                      ┌──────┴──────┐                      ┌──────┴──────┐
+   │ Composite   │                      │ Loading     │                      │ Map Modal   │
+   │ Components  │                      │ Empty       │                      │ Proposal    │
+   └──────┬──────┘                      │ Error       │                      │ Details     │
+          │                             └─────────────┘                      └─────────────┘
+   ┌──────┴──────┐
+   │  Primitive  │
+   │ Components  │
+   └─────────────┘
+```
+
+---
+
+## The Hollow Component Pattern
+
+Page components follow the **Hollow Component Pattern** - they contain NO business logic.
+All logic is delegated to custom hooks.
+
+```jsx
+// Page Component (UI only)
+function SearchPage() {
+  const {
+    listings,
+    filters,
+    isLoading,
+    handleFilterChange
+  } = useSearchPageLogic();  // ← All logic here
+
+  return (
+    <div>
+      {/* Pure JSX rendering */}
+    </div>
+  );
+}
+
+// Logic Hook (all state & behavior)
+function useSearchPageLogic() {
+  const [listings, setListings] = useState([]);
+  const [filters, setFilters] = useState({});
+  // ... all state, effects, handlers
+  return { listings, filters, handleFilterChange };
+}
+```
+
+**Benefits:**
+- Testable business logic (can test hooks independently)
+- Focused UI components (easy to understand)
+- Reusable logic (hooks can be shared)
+
+---
+
+## Component Count Summary
+
+| Category | Count |
+|----------|-------|
+| **Total JSX/TSX Components** | ~609 |
+| **Shared Components** | ~50 |
+| **Modal Components** | ~13 |
+| **Page Components** | ~30 |
+| **Page Sub-components** | ~200+ |
+| **Feature Modules** | ~15 |
+
+---
+
+## Key Relationships
+
+1. **Header** → appears on all pages, contains SignUpLoginModal
+2. **Footer** → appears on all public pages
+3. **Toast** → global notification system via ToastProvider
+4. **ErrorBoundary** → wraps major page sections
+5. **ScheduleSelector** variants → used in search, proposals, listing creation

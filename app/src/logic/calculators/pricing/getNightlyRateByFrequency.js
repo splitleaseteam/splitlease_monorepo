@@ -18,7 +18,7 @@
  *
  * @example
  * const rate = getNightlyRateByFrequency({
- *   listing: { '💰Nightly Host Rate for 4 nights': 100 },
+ *   listing: { nightly_rate_4_nights: 100 },
  *   nightsSelected: 4
  * })
  * // => 100
@@ -45,11 +45,11 @@ export function getNightlyRateByFrequency({ listing, nightsSelected }) {
   }
 
   // Price override takes precedence
-  if (listing['💰Price Override']) {
-    const overridePrice = Number(listing['💰Price Override'])
+  if (listing['price_override']) {
+    const overridePrice = Number(listing['price_override'])
     if (isNaN(overridePrice) || overridePrice < 0) {
       throw new Error(
-        `getNightlyRateByFrequency: Invalid price override value ${listing['💰Price Override']}`
+        `getNightlyRateByFrequency: Invalid price override value ${listing['price_override']}`
       )
     }
     return overridePrice
@@ -57,13 +57,13 @@ export function getNightlyRateByFrequency({ listing, nightsSelected }) {
 
   // Map nights to price fields
   const priceFieldMap = {
-    1: '💰Nightly Host Rate for 1 night',
-    2: '💰Nightly Host Rate for 2 nights',
-    3: '💰Nightly Host Rate for 3 nights',
-    4: '💰Nightly Host Rate for 4 nights',
-    5: '💰Nightly Host Rate for 5 nights',
-    6: '💰Nightly Host Rate for 6 nights',
-    7: '💰Nightly Host Rate for 7 nights'
+    1: 'nightly_rate_1_night',
+    2: 'nightly_rate_2_nights',
+    3: 'nightly_rate_3_nights',
+    4: 'nightly_rate_4_nights',
+    5: 'nightly_rate_5_nights',
+    6: 'nightly_rate_6_nights',
+    7: 'nightly_rate_7_nights'
   }
 
   const fieldName = priceFieldMap[nightsSelected]

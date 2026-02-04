@@ -30,6 +30,12 @@ import Footer from '../shared/Footer.jsx';
 import { useGuestLeasesPageLogic } from './guest-leases/useGuestLeasesPageLogic.js';
 import LeaseCard from './guest-leases/LeaseCard.jsx';
 import CheckInCheckOutFlow from './guest-leases/CheckInCheckOutFlow.jsx';
+import DateChangeRequestManager from '../shared/DateChangeRequestManager/DateChangeRequestManager.jsx';
+
+// Hybrid Design Components (Charles Eames style)
+import HeroSection from './guest-leases/HeroSection.jsx';
+import CelebrationBanner from './guest-leases/CelebrationBanner.jsx';
+// StatusSummary removed - payment/document badges hidden per design
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -103,9 +109,18 @@ export default function GuestLeasesPage() {
     user,
     leases,
 
+    // Computed values (hybrid design)
+    nextStay,
+    nextStayHost,
+    nextStayListing,
+    paymentsStatus,
+    documentsStatus,
+    celebrationBanner,
+
     // UI state
     expandedLeaseId,
     checkInOutModal,
+    dateChangeModal,
     isLoading,
     error,
 
@@ -130,13 +145,18 @@ export default function GuestLeasesPage() {
     handleDateChangeApprove,
     handleDateChangeReject,
     handleRequestDateChange,
+    handleCloseDateChangeModal,
 
     // Handlers - Documents
     handleDownloadDocument,
 
     // Handlers - Other
     handleEmergencyAssistance,
-    handleSeeReputation
+    handleSeeReputation,
+
+    // Handlers - Hybrid design
+    handleDismissCelebration,
+    handleViewStayDetails
   } = useGuestLeasesPageLogic();
 
   // Don't render content if redirecting (auth failed)
@@ -189,34 +209,65 @@ export default function GuestLeasesPage() {
               <EmptyState />
             )}
 
-            {/* Leases List */}
+            {/* Content with Hybrid Design */}
             {!isLoading && !error && leases.length > 0 && (
-              <div className="leases-list">
-                {leases.map(lease => (
-                  <LeaseCard
-                    key={lease._id}
-                    lease={lease}
-                    isExpanded={expandedLeaseId === lease._id}
-                    currentUserId={user?._id}
-                    onToggleExpand={() => handleToggleExpand(lease._id)}
-                    onCheckInOut={handleCheckInOut}
-                    onSubmitReview={handleSubmitReview}
-                    onSeeReview={handleSeeReview}
-                    onDateChangeApprove={handleDateChangeApprove}
-                    onDateChangeReject={handleDateChangeReject}
-                    onRequestDateChange={handleRequestDateChange}
-                    onDownloadDocument={handleDownloadDocument}
-                    onEmergencyAssistance={handleEmergencyAssistance}
-                    onSeeReputation={handleSeeReputation}
-                  />
-                ))}
-              </div>
+              <>
+                {/* Celebration Banner (Charles Style) */}
+                <CelebrationBanner
+                  title={celebrationBanner.title}
+                  message={celebrationBanner.message}
+                  isVisible={celebrationBanner.isVisible}
+                  onDismiss={handleDismissCelebration}
+                />
+
+                {/* Hero Section (Charles Style) */}
+                <HeroSection
+                  nextStay={nextStay}
+                  listingName={nextStayListing?.name}
+                  totalStays={nextStay?.lease?.stays?.length || 0}
+                  onViewDetails={handleViewStayDetails}
+                />
+
+                {/* Leases List (Paula Style cards) */}
+                <div className="section-header">Your Leases</div>
+                <div className="leases-list">
+                  {leases.map(lease => (
+                    <LeaseCard
+                      key={lease._id}
+                      lease={lease}
+                      isExpanded={expandedLeaseId === lease._id}
+                      currentUserId={user?._id}
+                      onToggleExpand={() => handleToggleExpand(lease._id)}
+                      onCheckInOut={handleCheckInOut}
+                      onSubmitReview={handleSubmitReview}
+                      onSeeReview={handleSeeReview}
+                      onDateChangeApprove={handleDateChangeApprove}
+                      onDateChangeReject={handleDateChangeReject}
+                      onRequestDateChange={handleRequestDateChange}
+                      onDownloadDocument={handleDownloadDocument}
+                      onEmergencyAssistance={handleEmergencyAssistance}
+                      onSeeReputation={handleSeeReputation}
+                      data-lease-id={lease._id}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
       </main>
 
       <Footer />
+
+      {/* Date Change Request Modal */}
+      {dateChangeModal.isOpen && (
+        <DateChangeRequestManager
+          isOpen={dateChangeModal.isOpen}
+          onClose={handleCloseDateChangeModal}
+          lease={dateChangeModal.lease}
+          currentUser={user}
+        />
+      )}
 
       {/* Check-in/Checkout Modal */}
       <CheckInCheckOutFlow

@@ -10,6 +10,7 @@
  * - get_threads: Get all threads for authenticated user (requires auth)
  * - send_guest_inquiry: Contact host without auth (name/email required)
  * - create_proposal_thread: Create thread for proposal (internal service call)
+ * - send_splitbot_message: Send SplitBot automated message (internal service call)
  *
  * Admin Actions (require auth + admin role):
  * - admin_get_all_threads: Fetch ALL threads across platform
@@ -25,7 +26,7 @@
  * - Result type for error propagation (exceptions only at outer boundary)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AuthenticationError } from '../_shared/errors.ts';
 
@@ -52,6 +53,7 @@ import { handleGetMessages } from './handlers/getMessages.ts';
 import { handleGetThreads } from './handlers/getThreads.ts';
 import { handleSendGuestInquiry } from './handlers/sendGuestInquiry.ts';
 import { handleCreateProposalThread } from './handlers/createProposalThread.ts';
+import { handleSendSplitBotMessage } from './handlers/sendSplitBotMessage.ts';
 
 // Admin handlers
 import { handleAdminGetAllThreads } from './handlers/adminGetAllThreads.ts';
@@ -68,6 +70,7 @@ const ALLOWED_ACTIONS = [
   'get_threads',
   'send_guest_inquiry',
   'create_proposal_thread',
+  'send_splitbot_message',
   // Admin actions
   'admin_get_all_threads',
   'admin_delete_thread',
@@ -77,17 +80,27 @@ const ALLOWED_ACTIONS = [
 // Actions that don't require authentication
 // - send_guest_inquiry: Public form submission
 // - create_proposal_thread: Internal service-to-service call
-const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(['send_guest_inquiry', 'create_proposal_thread']);
+// - send_splitbot_message: Internal service call (SplitBot automation)
+// - admin_* actions: Internal admin pages (no auth gating)
+const PUBLIC_ACTIONS: ReadonlySet<string> = new Set([
+  'send_guest_inquiry',
+  'create_proposal_thread',
+  'send_splitbot_message',
+  'admin_get_all_threads',
+  'admin_delete_thread',
+  'admin_send_reminder',
+]);
 
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record) - replaces switch statement
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   send_message: handleSendMessage,
   get_messages: handleGetMessages,
   get_threads: handleGetThreads,
   send_guest_inquiry: handleSendGuestInquiry,
   create_proposal_thread: handleCreateProposalThread,
+  send_splitbot_message: handleSendSplitBotMessage,
   // Admin handlers
   admin_get_all_threads: handleAdminGetAllThreads,
   admin_delete_thread: handleAdminDeleteThread,
@@ -138,7 +151,10 @@ const authenticateUser = async (
 
     if (!authError && authUser) {
       console.log('[messages] ✅ Authenticated via Supabase JWT');
-      return ok({ id: authUser.id, email: authUser.email ?? "" });
+      // Extract bubbleId from user_metadata (set during signup)
+      const bubbleId = authUser.user_metadata?.user_id as string | undefined;
+      console.log('[messages] DEBUG: user_metadata.user_id (bubbleId):', bubbleId);
+      return ok({ id: authUser.id, email: authUser.email ?? "", bubbleId });
     }
 
     console.log('[messages] DEBUG: JWT auth failed:', authError?.message);
@@ -312,8 +328,8 @@ Deno.serve(async (req) => {
  * Execute the appropriate handler with correct parameters
  * This function handles the different signatures of each handler
  */
-async function executeHandler(
-  handler: Function,
+function executeHandler(
+  handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
   user: AuthenticatedUser | null,
@@ -339,15 +355,20 @@ async function executeHandler(
       // Internal action - no user auth needed (service-level call)
       return handler(supabaseAdmin, payload);
 
-    // Admin actions - require auth (admin verification happens in handler)
+    case 'send_splitbot_message':
+      // Internal action - SplitBot automation (service-level call)
+      return handler(supabaseAdmin, payload);
+
+    // Admin actions - no auth gating for internal admin pages
+    // Pass user (nullable) - handlers will skip admin check when user is null
     case 'admin_get_all_threads':
-      return handler(supabaseAdmin, payload, user!);
+      return handler(supabaseAdmin, payload, user);
 
     case 'admin_delete_thread':
-      return handler(supabaseAdmin, payload, user!);
+      return handler(supabaseAdmin, payload, user);
 
     case 'admin_send_reminder':
-      return handler(supabaseAdmin, payload, user!);
+      return handler(supabaseAdmin, payload, user);
 
     default: {
       // Exhaustive check - TypeScript ensures all cases are handled

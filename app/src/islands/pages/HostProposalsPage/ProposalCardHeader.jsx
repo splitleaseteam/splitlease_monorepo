@@ -91,13 +91,22 @@ function formatDuration(proposal) {
 }
 
 /**
- * Format total earnings
+ * Format total host compensation (calculated from '4 week compensation')
+ * The database "Total Compensation (proposal - host)" field can be incorrect,
+ * so we calculate from '4 week compensation' which is derived from the pricing_list.
  * @param {Object} proposal - The proposal object
  * @returns {string} Formatted currency string
  */
-function formatTotalEarnings(proposal) {
-  const total = proposal?.total_price || proposal?.host_earnings || proposal?.total_amount || 0;
-  return `$${Number(total).toLocaleString()}`;
+function formatTotalHostCompensation(proposal) {
+  // Use '4 week compensation' as the source of truth
+  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
+  const weeks = proposal?.duration_weeks || proposal?.['Reservation Span (Weeks)'] || proposal?.weeks || 0;
+
+  // Calculate total: 4 week compensation × (total weeks / 4)
+  const fourWeekPeriods = weeks / 4;
+  const hostTotal = Math.round(host4WeekCompensation * fourWeekPeriods);
+
+  return `$${Number(hostTotal).toLocaleString()}`;
 }
 
 /**
@@ -121,7 +130,7 @@ export function ProposalCardHeader({ proposal, isExpanded, onToggle, contentId }
   const daysSelected = proposal?.days_selected || proposal?.Days_Selected || [];
   const schedule = formatSchedule(daysSelected);
   const duration = formatDuration(proposal);
-  const total = formatTotalEarnings(proposal);
+  const total = formatTotalHostCompensation(proposal);
 
   const metaParts = [schedule, duration, `${total} total`].filter(Boolean);
   const metaLine = metaParts.join(' · ');

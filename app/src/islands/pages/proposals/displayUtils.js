@@ -61,8 +61,9 @@ export function getShortStatusLabel(status) {
   if (normalizedStatus.includes('Split Lease - Pending Confirmation')) return 'SL Suggestion';
   if (normalizedStatus.includes('Split Lease - Awaiting Rental Application')) return 'Confirm + Apply';
 
-  if (normalizedStatus.includes('Counteroffer')) return 'Review Offer';
+  // Check for Accepted/Drafting BEFORE Counteroffer to handle "Counteroffer Accepted" status
   if (normalizedStatus.includes('Accepted') || normalizedStatus.includes('Drafting')) return 'Accepted';
+  if (normalizedStatus.includes('Counteroffer')) return 'Review Offer';
   if (normalizedStatus.includes('activated')) return 'Active';
   if (normalizedStatus.includes('Signed')) return 'Signed';
   if (normalizedStatus.includes('Awaiting Rental Application')) return 'Apply Now';
@@ -270,4 +271,166 @@ export function getProgressStageLabels() {
     'Signing',
     'Active'
   ];
+}
+
+/* ========================================
+   NARRATIVE TEXT GENERATION
+   For mobile guest proposal display
+   ======================================== */
+
+const DAY_NAMES_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/**
+ * Convert days array to day range text for narrative
+ * @param {number[]} days - Array of day indices (0-6)
+ * @returns {Object} { dayRangeText, checkInDay, checkOutDay, isWeekdays, isWeekends, isEveryDay }
+ */
+function getNightRangeInfo(days) {
+  if (!days || days.length === 0) {
+    return { dayRangeText: '', checkInDay: '', checkOutDay: '', isWeekdays: false, isWeekends: false, isEveryDay: false };
+  }
+
+  // Parse days if they're strings
+  const parsed = days.map(d => {
+    if (typeof d === 'number') return d;
+    if (typeof d === 'string') {
+      const num = parseInt(d, 10);
+      if (!isNaN(num)) return num;
+      const idx = DAY_NAMES_FULL.indexOf(d) !== -1 ? DAY_NAMES_FULL.indexOf(d) : DAY_NAMES.indexOf(d);
+      return idx >= 0 ? idx : -1;
+    }
+    return -1;
+  }).filter(d => d >= 0 && d <= 6);
+
+  if (parsed.length === 0) {
+    return { dayRangeText: '', checkInDay: '', checkOutDay: '', isWeekdays: false, isWeekends: false, isEveryDay: false };
+  }
+
+  const sorted = [...parsed].sort((a, b) => a - b);
+  const isEveryDay = sorted.length === 7;
+  const isWeekdays = sorted.length === 5 &&
+    sorted.includes(1) && sorted.includes(2) && sorted.includes(3) &&
+    sorted.includes(4) && sorted.includes(5) && !sorted.includes(0) && !sorted.includes(6);
+  const isWeekends = sorted.length === 2 && sorted.includes(0) && sorted.includes(6);
+
+  let dayRangeText;
+  if (isEveryDay) {
+    dayRangeText = 'every day';
+  } else if (isWeekdays) {
+    dayRangeText = 'Monday through Friday';
+  } else if (isWeekends) {
+    dayRangeText = 'weekends only';
+  } else {
+    dayRangeText = sorted.map(d => DAY_NAMES_FULL[d]).join(', ');
+  }
+
+  const checkInDay = DAY_NAMES_FULL[sorted[0]];
+  const checkOutDay = DAY_NAMES_FULL[sorted[sorted.length - 1]];
+
+  return { dayRangeText, checkInDay, checkOutDay, isWeekdays, isWeekends, isEveryDay };
+}
+
+/**
+ * Generates narrative text for mobile guest proposal display
+ * @param {Object} proposal - Proposal object with listing relation
+ * @returns {Object} - { duration, schedule, pricing, listingContext }
+ */
+export function generateGuestNarrativeText(proposal) {
+  const isCounteroffer = proposal?.['counter offer happened'];
+
+  // Days selected (prefer counteroffer if exists)
+  let daysSelected = isCounteroffer && proposal?.['hc days selected']?.length > 0
+    ? proposal['hc days selected']
+    : proposal?.['Days Selected'] || [];
+
+  // Parse if string
+  if (typeof daysSelected === 'string') {
+    try { daysSelected = JSON.parse(daysSelected); } catch (e) { daysSelected = []; }
+  }
+
+  const nightsPerWeek = Array.isArray(daysSelected) ? daysSelected.length : 0;
+
+  // Duration
+  const durationWeeks = isCounteroffer && proposal?.['hc reservation span (weeks)']
+    ? proposal['hc reservation span (weeks)']
+    : proposal?.['Reservation Span (Weeks)'] || 0;
+
+  // Pricing
+  const nightlyRate = isCounteroffer && proposal?.['hc nightly price'] != null
+    ? proposal['hc nightly price']
+    : proposal?.['proposal nightly price'] || 0;
+
+  const totalPrice = isCounteroffer && proposal?.['hc total price'] != null
+    ? proposal['hc total price']
+    : proposal?.['Total Price for Reservation (guest)'] || 0;
+
+  const weeklyPrice = nightlyRate * nightsPerWeek;
+
+  // Dates
+  const moveInDate = isCounteroffer && proposal?.['hc move in date']
+    ? proposal['hc move in date']
+    : proposal?.['Move in range start'];
+
+  // Format dates
+  const startFormatted = moveInDate
+    ? new Date(moveInDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+    : '';
+
+  // Calculate end date
+  let endFormatted = '';
+  if (moveInDate && durationWeeks) {
+    const endDate = new Date(moveInDate);
+    endDate.setDate(endDate.getDate() + (durationWeeks * 7));
+    endFormatted = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  // Get day range info
+  const { dayRangeText, checkInDay, checkOutDay, isEveryDay } = getNightRangeInfo(daysSelected);
+  const weekendsFree = Array.isArray(daysSelected) && !daysSelected.includes(0) && !daysSelected.includes(6);
+
+  // Build narrative objects
+  const weekWord = durationWeeks === 1 ? 'week' : 'weeks';
+
+  const duration = {
+    text: `This is a ${durationWeeks}-${weekWord} stay`,
+    startDate: startFormatted,
+    endDate: endFormatted
+  };
+
+  let scheduleText;
+  if (isEveryDay) {
+    scheduleText = `The schedule is every day of each week. That's ${nightsPerWeek} nights per week.`;
+  } else if (dayRangeText) {
+    const weekendSuffix = weekendsFree ? ', with weekends free' : '';
+    scheduleText = `The schedule is ${dayRangeText} each week — checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
+  } else {
+    scheduleText = `That's ${nightsPerWeek} nights per week.`;
+  }
+
+  const schedule = { text: scheduleText, dayRangeText, nightsPerWeek };
+
+  const pricing = {
+    nightlyRate,
+    weeklyPrice,
+    total: totalPrice,
+    weeks: durationWeeks,
+    cleaningFee: proposal?.['cleaning fee'] || 0
+  };
+
+  // Listing context (what guest sees about the listing)
+  const listing = proposal?.listing || {};
+  const host = listing?.host || {};
+  const listingName = listing?.Name || 'Listing';
+  const location = [listing?.hoodName, listing?.boroughName].filter(Boolean).join(', ') || 'New York';
+  const hostFirstName = host?.['Name - First'] || host?.['Name - Full']?.split(' ')[0] || 'Host';
+  const hostPhoto = host?.['Profile Photo'] || null;
+
+  const listingContext = {
+    listingName,
+    location,
+    hostFirstName,
+    hostPhoto
+  };
+
+  return { duration, schedule, pricing, listingContext };
 }

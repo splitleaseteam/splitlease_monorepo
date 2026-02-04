@@ -10,11 +10,11 @@
  * - pg_cron backup (every 30 seconds)
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { createErrorCollector } from "../_shared/slack.ts";
-import type { WorkflowStep, QueueMessage } from "./lib/types.ts";
+import type { WorkflowStep as _WorkflowStep, QueueMessage } from "./lib/types.ts";
 
 Deno.serve(async (req: Request) => {
     if (req.method === "OPTIONS") {

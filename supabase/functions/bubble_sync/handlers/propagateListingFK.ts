@@ -82,7 +82,7 @@ export async function handlePropagateListingFK(
         } else if (typeof listings === 'string') {
             currentListings = JSON.parse(listings);
         }
-    } catch (parseError) {
+    } catch (_parseError) {
         console.warn('[propagateListingFK] Failed to parse Listings, using empty array');
         currentListings = [];
     }
@@ -124,7 +124,7 @@ export async function handlePropagateListingFK(
         try {
             // Fetch current listings from Bubble user
             const bubbleUser = await getRecord(bubbleConfig, 'user', hostUser.bubble_id);
-            let bubbleListings: string[] = (bubbleUser?.Listings as string[]) || [];
+            const bubbleListings: string[] = (bubbleUser?.Listings as string[]) || [];
 
             if (!bubbleListings.includes(listing_bubble_id)) {
                 bubbleListings.push(listing_bubble_id);

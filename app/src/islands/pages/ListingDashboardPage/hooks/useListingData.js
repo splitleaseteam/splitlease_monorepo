@@ -48,7 +48,8 @@ async function fetchLookupTables() {
 
     // Fetch safety features
     const { data: safety } = await supabase
-      .from('zfut_safetyfeatures')
+      .schema('reference_table')
+      .from('zat_features_safetyfeature')
       .select('_id, "Name", "Icon"');
     if (safety) {
       safety.forEach((s) => {
@@ -283,29 +284,29 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
     nightsAvailable,
 
     pricing: {
-      1: dbListing['💰Nightly Host Rate for 1 night'] || 0,
-      2: dbListing['💰Nightly Host Rate for 2 nights'] || 0,
-      3: dbListing['💰Nightly Host Rate for 3 nights'] || 0,
-      4: dbListing['💰Nightly Host Rate for 4 nights'] || 0,
-      5: dbListing['💰Nightly Host Rate for 5 nights'] || 0,
-      6: dbListing['💰Nightly Host Rate for 5 nights'] || 0,
-      7: dbListing['💰Nightly Host Rate for 7 nights'] || 0,
+      1: dbListing['nightly_rate_1_night'] || 0,
+      2: dbListing['nightly_rate_2_nights'] || 0,
+      3: dbListing['nightly_rate_3_nights'] || 0,
+      4: dbListing['nightly_rate_4_nights'] || 0,
+      5: dbListing['nightly_rate_5_nights'] || 0,
+      6: dbListing['nightly_rate_5_nights'] || 0,
+      7: dbListing['nightly_rate_7_nights'] || 0,
     },
 
     weeklyCompensation: {
-      1: (dbListing['💰Nightly Host Rate for 1 night'] || 0) * 1,
-      2: (dbListing['💰Nightly Host Rate for 2 nights'] || 0) * 2,
-      3: (dbListing['💰Nightly Host Rate for 3 nights'] || 0) * 3,
-      4: (dbListing['💰Nightly Host Rate for 4 nights'] || 0) * 4,
-      5: (dbListing['💰Nightly Host Rate for 5 nights'] || 0) * 5,
-      6: (dbListing['💰Nightly Host Rate for 5 nights'] || 0) * 6,
-      7: (dbListing['💰Nightly Host Rate for 7 nights'] || 0) * 7,
+      1: (dbListing['nightly_rate_1_night'] || 0) * 1,
+      2: (dbListing['nightly_rate_2_nights'] || 0) * 2,
+      3: (dbListing['nightly_rate_3_nights'] || 0) * 3,
+      4: (dbListing['nightly_rate_4_nights'] || 0) * 4,
+      5: (dbListing['nightly_rate_5_nights'] || 0) * 5,
+      6: (dbListing['nightly_rate_5_nights'] || 0) * 6,
+      7: (dbListing['nightly_rate_7_nights'] || 0) * 7,
     },
 
-    damageDeposit: dbListing['💰Damage Deposit'] || 0,
-    maintenanceFee: dbListing['💰Cleaning Cost / Maintenance Fee'] || 0,
-    monthlyHostRate: dbListing['💰Monthly Host Rate'] || 0,
-    weeklyHostRate: dbListing['💰Weekly Host Rate'] || 0,
+    damageDeposit: dbListing['damage_deposit'] || 0,
+    maintenanceFee: dbListing['cleaning_fee'] || 0,
+    monthlyHostRate: dbListing['monthly_host_rate'] || 0,
+    weeklyHostRate: dbListing['weekly_host_rate'] || 0,
     weeksOffered: dbListing['Weeks offered'] || '',
 
     // Availability

@@ -66,6 +66,7 @@ import { LoadingState } from './components/LoadingState.jsx';
 import { ErrorState } from './components/ErrorState.jsx';
 import { PhotoGallery } from './components/PhotoGallery.jsx';
 import { SchedulePatternHighlight } from './components/SchedulePatternHighlight.jsx';
+import CustomDatePicker from '../../shared/CustomDatePicker';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -544,17 +545,17 @@ export default function ViewSplitLeasePage() {
     // Pricing fields for calculation
     'rental type': listing['rental type'] || 'Nightly',
     'Weeks offered': listing['Weeks offered'] || 'Every week',
-    '💰Unit Markup': listing['💰Unit Markup'] || 0,
-    '💰Nightly Host Rate for 2 nights': listing['💰Nightly Host Rate for 2 nights'],
-    '💰Nightly Host Rate for 3 nights': listing['💰Nightly Host Rate for 3 nights'],
-    '💰Nightly Host Rate for 4 nights': listing['💰Nightly Host Rate for 4 nights'],
-    '💰Nightly Host Rate for 5 nights': listing['💰Nightly Host Rate for 5 nights'],
-    '💰Nightly Host Rate for 7 nights': listing['💰Nightly Host Rate for 7 nights'],
-    '💰Weekly Host Rate': listing['💰Weekly Host Rate'],
-    '💰Monthly Host Rate': listing['💰Monthly Host Rate'],
-    '💰Price Override': listing['💰Price Override'],
-    '💰Cleaning Cost / Maintenance Fee': listing['💰Cleaning Cost / Maintenance Fee'],
-    '💰Damage Deposit': listing['💰Damage Deposit']
+    'unit_markup': listing['unit_markup'] || 0,
+    'nightly_rate_2_nights': listing['nightly_rate_2_nights'],
+    'nightly_rate_3_nights': listing['nightly_rate_3_nights'],
+    'nightly_rate_4_nights': listing['nightly_rate_4_nights'],
+    'nightly_rate_5_nights': listing['nightly_rate_5_nights'],
+    'nightly_rate_7_nights': listing['nightly_rate_7_nights'],
+    'weekly_host_rate': listing['weekly_host_rate'],
+    'monthly_host_rate': listing['monthly_host_rate'],
+    'price_override': listing['price_override'],
+    'cleaning_fee': listing['cleaning_fee'],
+    'damage_deposit': listing['damage_deposit']
   } : null, [listing]);
 
   // Initialize with Monday-Friday (1-5) as default
@@ -634,6 +635,10 @@ export default function ViewSplitLeasePage() {
   const handlePhotoClick = (index) => {
     setCurrentPhotoIndex(index);
     setShowPhotoModal(true);
+  };
+
+  const handleClosePhotoModal = () => {
+    setShowPhotoModal(false);
   };
 
   const toggleSection = (section) => {
@@ -1017,7 +1022,15 @@ export default function ViewSplitLeasePage() {
           {/* Photo Gallery - Magazine Editorial Style */}
           <section style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
             {listing.photos && listing.photos.length > 0 ? (
-              <PhotoGallery photos={listing.photos} listingName={listing.Name} onPhotoClick={handlePhotoClick} isMobile={isMobile} />
+              <PhotoGallery
+                photos={listing.photos}
+                listingName={listing.Name}
+                onPhotoClick={handlePhotoClick}
+                currentIndex={currentPhotoIndex}
+                isModalOpen={showPhotoModal}
+                onCloseModal={handleClosePhotoModal}
+                isMobile={isMobile}
+              />
             ) : (
               <div style={{
                 width: '100%',
@@ -1062,8 +1075,8 @@ export default function ViewSplitLeasePage() {
                     textDecoration: 'underline',
                     transition: 'color 0.2s'
                   }}
-                  onMouseEnter={(e) => e.target.style.color = COLORS.PRIMARY}
-                  onMouseLeave={(e) => e.target.style.color = COLORS.TEXT_LIGHT}
+                  onMouseEnter={(e) => (e.target as HTMLElement).style.color = COLORS.PRIMARY}
+                  onMouseLeave={(e) => (e.target as HTMLElement).style.color = COLORS.TEXT_LIGHT}
                 >
                   Located in {listing.resolvedNeighborhood}, {listing.resolvedBorough}
                 </span>
@@ -1513,14 +1526,16 @@ export default function ViewSplitLeasePage() {
                       boxShadow: '0 2px 6px rgba(49, 19, 93, 0.2)'
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.background = COLORS.PRIMARY_HOVER;
-                      e.target.style.transform = 'translateY(-1px)';
-                      e.target.style.boxShadow = '0 3px 8px rgba(49, 19, 93, 0.25)';
+                      const target = e.target as HTMLElement;
+                      target.style.background = COLORS.PRIMARY_HOVER;
+                      target.style.transform = 'translateY(-1px)';
+                      target.style.boxShadow = '0 3px 8px rgba(49, 19, 93, 0.25)';
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.background = COLORS.PRIMARY;
-                      e.target.style.transform = '';
-                      e.target.style.boxShadow = '0 2px 6px rgba(49, 19, 93, 0.2)';
+                      const target = e.target as HTMLElement;
+                      target.style.background = COLORS.PRIMARY;
+                      target.style.transform = '';
+                      target.style.boxShadow = '0 2px 6px rgba(49, 19, 93, 0.2)';
                     }}
                   >
                     <svg
@@ -1675,8 +1690,8 @@ export default function ViewSplitLeasePage() {
                       alignItems: 'center',
                       gap: '0.25rem'
                     }}
-                    onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-                    onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                    onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+                    onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
                   >
                     View full cancellation policy →
                   </a>
@@ -1797,45 +1812,12 @@ export default function ViewSplitLeasePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </label>
-            <div style={{ position: 'relative', marginBottom: '8px' }}>
-              <input
-                type="date"
+            <div style={{ marginBottom: '8px' }}>
+              <CustomDatePicker
                 value={moveInDate || ''}
-                min={minMoveInDate}
-                onChange={(e) => setMoveInDate(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '2px solid #E5E7EB',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontWeight: '500',
-                  color: '#111827',
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer',
-                  background: 'white',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.borderColor = '#31135d';
-                  e.target.style.boxShadow = '0 4px 6px rgba(49, 19, 93, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  if (document.activeElement !== e.target) {
-                    e.target.style.borderColor = '#E5E7EB';
-                    e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
-                  }
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#31135d';
-                  e.target.style.boxShadow = '0 0 0 4px rgba(49, 19, 93, 0.15)';
-                  e.target.style.transform = 'translateY(-1px)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#E5E7EB';
-                  e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
-                  e.target.style.transform = '';
-                }}
+                onChange={setMoveInDate}
+                minDate={minMoveInDate}
+                placeholder="Select move-in date"
               />
             </div>
             <div style={{
@@ -2006,11 +1988,12 @@ export default function ViewSplitLeasePage() {
                       boxSizing: 'border-box'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#7C3AED';
-                      e.target.style.outline = 'none';
+                      const target = e.target as HTMLElement;
+                      target.style.borderColor = '#7C3AED';
+                      target.style.outline = 'none';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = '#E5E7EB';
+                      (e.target as HTMLElement).style.borderColor = '#E5E7EB';
                     }}
                   />
                   <p style={{
@@ -2081,22 +2064,26 @@ export default function ViewSplitLeasePage() {
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.borderColor = '#31135d';
-                  e.target.style.boxShadow = '0 4px 6px rgba(49, 19, 93, 0.1)';
+                  const target = e.target as HTMLElement;
+                  target.style.borderColor = '#31135d';
+                  target.style.boxShadow = '0 4px 6px rgba(49, 19, 93, 0.1)';
                 }}
                 onMouseLeave={(e) => {
                   if (document.activeElement !== e.target) {
-                    e.target.style.borderColor = '#E5E7EB';
-                    e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                    const target = e.target as HTMLElement;
+                    target.style.borderColor = '#E5E7EB';
+                    target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
                   }
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#31135d';
-                  e.target.style.boxShadow = '0 0 0 4px rgba(49, 19, 93, 0.15)';
+                  const target = e.target as HTMLElement;
+                  target.style.borderColor = '#31135d';
+                  target.style.boxShadow = '0 0 0 4px rgba(49, 19, 93, 0.15)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = '#E5E7EB';
-                  e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                  const target = e.target as HTMLElement;
+                  target.style.borderColor = '#E5E7EB';
+                  target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
                 }}
               >
                 {[6, 7, 8, 9, 10, 12, 13, 16, 17, 20, 22, 26].map(weeks => (
@@ -2180,9 +2167,10 @@ export default function ViewSplitLeasePage() {
           <button
             onClick={(e) => {
               if (scheduleValidation?.valid && pricingBreakdown?.valid && !existingProposalForListing) {
-                e.target.style.transform = 'scale(0.98)';
+                const target = e.target as HTMLElement;
+                target.style.transform = 'scale(0.98)';
                 setTimeout(() => {
-                  e.target.style.transform = '';
+                  target.style.transform = '';
                 }, 150);
                 handleCreateProposal();
               }
@@ -2211,14 +2199,16 @@ export default function ViewSplitLeasePage() {
             }}
             onMouseEnter={(e) => {
               if (!existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid) {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 24px rgba(49, 19, 93, 0.5)';
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(-2px)';
+                target.style.boxShadow = '0 8px 24px rgba(49, 19, 93, 0.5)';
               }
             }}
             onMouseLeave={(e) => {
               if (!existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid) {
-                e.target.style.transform = '';
-                e.target.style.boxShadow = '0 4px 14px rgba(49, 19, 93, 0.4)';
+                const target = e.target as HTMLElement;
+                target.style.transform = '';
+                target.style.boxShadow = '0 4px 14px rgba(49, 19, 93, 0.4)';
               }
             }}
           >
@@ -2243,10 +2233,10 @@ export default function ViewSplitLeasePage() {
                 textDecoration: 'none'
               }}
               onMouseEnter={(e) => {
-                e.target.style.textDecoration = 'underline';
+                (e.target as HTMLElement).style.textDecoration = 'underline';
               }}
               onMouseLeave={(e) => {
-                e.target.style.textDecoration = 'none';
+                (e.target as HTMLElement).style.textDecoration = 'none';
               }}
             >
               View your proposal in Dashboard
@@ -2621,8 +2611,8 @@ export default function ViewSplitLeasePage() {
         />
       )}
 
-      {/* Mobile Bottom Booking Bar - hide when proposal modal or photo gallery is open */}
-      {isMobile && !isProposalModalOpen && !showPhotoModal && (
+      {/* Mobile Bottom Booking Bar - hide when proposal modal, photo gallery, or auth modal is open */}
+      {isMobile && !isProposalModalOpen && !showPhotoModal && !showAuthModal && (
         <>
           {/* Overlay when expanded */}
           {mobileBookingExpanded && (
@@ -2639,6 +2629,7 @@ export default function ViewSplitLeasePage() {
 
           {/* Bottom Bar */}
           <div
+            className="mobile-bottom-booking-bar"
             style={{
               position: 'fixed',
               bottom: 0,
@@ -2791,21 +2782,11 @@ export default function ViewSplitLeasePage() {
                   }}>
                     Ideal Move-In
                   </label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
                     value={moveInDate || ''}
-                    min={minMoveInDate}
-                    onChange={(e) => setMoveInDate(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '2px solid #E5E7EB',
-                      borderRadius: '10px',
-                      fontSize: '16px',
-                      fontWeight: '500',
-                      color: '#111827',
-                      boxSizing: 'border-box'
-                    }}
+                    onChange={setMoveInDate}
+                    minDate={minMoveInDate}
+                    placeholder="Select move-in date"
                   />
                 </div>
 
@@ -2921,11 +2902,12 @@ export default function ViewSplitLeasePage() {
                             boxSizing: 'border-box'
                           }}
                           onFocus={(e) => {
-                            e.target.style.borderColor = '#7C3AED';
-                            e.target.style.outline = 'none';
+                            const target = e.target as HTMLElement;
+                            target.style.borderColor = '#7C3AED';
+                            target.style.outline = 'none';
                           }}
                           onBlur={(e) => {
-                            e.target.style.borderColor = '#E5E7EB';
+                            (e.target as HTMLElement).style.borderColor = '#E5E7EB';
                           }}
                         />
                         <p style={{

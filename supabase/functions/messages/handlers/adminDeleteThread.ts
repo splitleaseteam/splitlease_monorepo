@@ -48,7 +48,7 @@ async function verifyAdminRole(
  */
 async function logAdminAction(
   supabaseAdmin: SupabaseClient,
-  user: { id: string; email: string },
+  user: { id: string; email: string } | null,
   action: string,
   targetId: string,
   details: Record<string, unknown>
@@ -58,7 +58,7 @@ async function logAdminAction(
     const { error } = await supabaseAdmin
       .from('admin_audit_log')
       .insert({
-        admin_email: user.email,
+        admin_email: user?.email ?? 'internal',
         action,
         target_id: targetId,
         target_type: 'thread',
@@ -69,7 +69,7 @@ async function logAdminAction(
     if (error) {
       // Table might not exist - just log to console
       console.log('[adminDeleteThread] Audit log (table may not exist):', {
-        admin: user.email,
+        admin: user?.email ?? 'internal',
         action,
         targetId,
         details,
@@ -78,7 +78,7 @@ async function logAdminAction(
   } catch {
     // Audit logging should not block the operation
     console.log('[adminDeleteThread] Audit log entry:', {
-      admin: user.email,
+      admin: user?.email ?? 'internal',
       action,
       targetId,
       details,
@@ -93,10 +93,10 @@ async function logAdminAction(
 export async function handleAdminDeleteThread(
   supabaseAdmin: SupabaseClient,
   payload: AdminDeleteThreadPayload,
-  user: { id: string; email: string }
+  user: { id: string; email: string } | null
 ): Promise<AdminDeleteThreadResult> {
   console.log('[adminDeleteThread] ========== ADMIN DELETE THREAD ==========');
-  console.log('[adminDeleteThread] User:', user.email);
+  console.log('[adminDeleteThread] User:', user?.email ?? 'internal (no auth)');
   console.log('[adminDeleteThread] Thread ID:', payload.threadId);
 
   // Step 1: Validate payload
@@ -104,13 +104,15 @@ export async function handleAdminDeleteThread(
     throw new ValidationError('Thread ID is required');
   }
 
-  // Step 2: Verify admin role
-  // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // const isAdmin = await verifyAdminRole(supabaseAdmin, user);
-  // if (!isAdmin) {
-  //   console.error('[adminDeleteThread] User is not an admin');
-  //   throw new AuthenticationError('You do not have permission to delete threads.');
-  // }
+  // Step 2: Skip admin role check for internal access (user is null)
+  // When user is provided, verify admin role
+  if (user) {
+    const isAdmin = await verifyAdminRole(supabaseAdmin, user);
+    if (!isAdmin) {
+      console.error('[adminDeleteThread] User is not an admin');
+      throw new AuthenticationError('You do not have permission to delete threads.');
+    }
+  }
 
   // Step 3: Verify thread exists
   const { data: thread, error: threadError } = await supabaseAdmin

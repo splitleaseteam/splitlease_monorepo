@@ -10,7 +10,7 @@
  * - delete: Hard delete entry
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -76,10 +76,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (OPTIONAL for internal pages)
+    // NOTE: Authentication is now optional - internal pages can access without auth
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+
+    if (user) {
+      console.log(`[informational-texts] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[informational-texts] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -157,7 +161,7 @@ async function authenticateFromHeaders(
 /**
  * Convert JS object keys to database column names
  */
-function toDbColumns(jsData: Record<string, unknown>): Record<string, unknown> {
+function _toDbColumns(jsData: Record<string, unknown>): Record<string, unknown> {
   const dbData: Record<string, unknown> = {};
   for (const [jsKey, value] of Object.entries(jsData)) {
     const dbCol = COLUMN_MAP[jsKey as keyof typeof COLUMN_MAP];
@@ -221,7 +225,7 @@ async function handleList(
     query = query.ilike('Information Tag-Title', `%${search}%`);
   }
 
-  const { data, error, count } = await query;
+  const { data, error, _count } = await query;
 
   if (error) {
     console.error('[informational-texts] List error:', error);

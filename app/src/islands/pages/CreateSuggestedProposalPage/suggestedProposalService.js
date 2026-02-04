@@ -51,16 +51,16 @@ const LISTING_SELECT_FIELDS = `
   "Days Available (List of Days)",
   "Minimum Nights",
   "Maximum Weeks",
-  "💰Monthly Host Rate",
-  "💰Weekly Host Rate",
-  "💰Nightly Host Rate for 2 nights",
-  "💰Nightly Host Rate for 3 nights",
-  "💰Nightly Host Rate for 4 nights",
-  "💰Nightly Host Rate for 5 nights",
-  "💰Nightly Host Rate for 6 nights",
-  "💰Nightly Host Rate for 7 nights",
-  "💰Cleaning Cost / Maintenance Fee",
-  "💰Damage Deposit"
+  "monthly_host_rate",
+  "weekly_host_rate",
+  "nightly_rate_2_nights",
+  "nightly_rate_3_nights",
+  "nightly_rate_4_nights",
+  "nightly_rate_5_nights",
+  "nightly_rate_6_nights",
+  "nightly_rate_7_nights",
+  "cleaning_fee",
+  "damage_deposit"
 `;
 
 /**
@@ -73,19 +73,19 @@ function hasValidPricing(listing) {
   if (!rentalType) return false;
 
   if (rentalType === 'Monthly') {
-    return !!listing['💰Monthly Host Rate'] && listing['💰Monthly Host Rate'] > 0;
+    return !!listing['monthly_host_rate'] && listing['monthly_host_rate'] > 0;
   }
   if (rentalType === 'Weekly') {
-    return !!listing['💰Weekly Host Rate'] && listing['💰Weekly Host Rate'] > 0;
+    return !!listing['weekly_host_rate'] && listing['weekly_host_rate'] > 0;
   }
   // Nightly - check if any nightly rate is set
   return !!(
-    listing['💰Nightly Host Rate for 2 nights'] ||
-    listing['💰Nightly Host Rate for 3 nights'] ||
-    listing['💰Nightly Host Rate for 4 nights'] ||
-    listing['💰Nightly Host Rate for 5 nights'] ||
-    listing['💰Nightly Host Rate for 6 nights'] ||
-    listing['💰Nightly Host Rate for 7 nights']
+    listing['nightly_rate_2_nights'] ||
+    listing['nightly_rate_3_nights'] ||
+    listing['nightly_rate_4_nights'] ||
+    listing['nightly_rate_5_nights'] ||
+    listing['nightly_rate_6_nights'] ||
+    listing['nightly_rate_7_nights']
   );
 }
 

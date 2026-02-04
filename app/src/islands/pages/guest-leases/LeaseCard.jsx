@@ -249,9 +249,20 @@ export default function LeaseCard({
           </section>
 
           {/* Date Change Requests */}
-          {dateChangeRequests.length > 0 && (
-            <section className="lease-card__section">
-              <h3 className="lease-card__section-title">Date Change Requests</h3>
+          <section className="lease-card__section">
+            <div className="lease-card__section-header">
+              <h3 className="lease-card__section-title">
+                Date Change Requests
+              </h3>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => onRequestDateChange(lease)}
+              >
+                <Calendar size={16} />
+                Request Date Change
+              </button>
+            </div>
+            {dateChangeRequests.length > 0 ? (
               <DateChangeRequestsTable
                 requests={dateChangeRequests}
                 currentUserId={currentUserId}
@@ -259,8 +270,12 @@ export default function LeaseCard({
                 onReject={onDateChangeReject}
                 onRequestChanges={onRequestDateChange}
               />
-            </section>
-          )}
+            ) : (
+              <p className="lease-card__empty-text">
+                No date change requests yet.
+              </p>
+            )}
+          </section>
 
           {/* Flexibility Score */}
           <section className="lease-card__section">

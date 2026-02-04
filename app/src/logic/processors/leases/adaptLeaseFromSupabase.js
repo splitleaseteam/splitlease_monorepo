@@ -57,6 +57,7 @@ export function adaptLeaseFromSupabase(row) {
     id: row._id,
     bubbleId: row.bubble_id,
     agreementNumber: row['Agreement Number'] || null,
+    proposalId: row.Proposal || null,
 
     // Status
     status: mapLeaseStatus(row['Lease Status']),
@@ -82,12 +83,24 @@ export function adaptLeaseFromSupabase(row) {
     guest: row.guest ? adaptUserFromSupabase(row.guest) : null,
     host: row.host ? adaptUserFromSupabase(row.host) : null,
     listing: row.listing ? adaptListingFromSupabase(row.listing) : null,
-    proposal: row.proposal ? { id: row.proposal._id } : null,
+    proposal: row.proposal ? {
+      id: row.proposal._id,
+      checkInDay: parseInt(row.proposal['check in day']) ?? null,
+      checkOutDay: parseInt(row.proposal['check out day']) ?? null,
+    } : null,
+
+    // Weekly schedule (from proposal)
+    checkInDay: row.proposal ? parseInt(row.proposal['check in day']) ?? null : null,
+    checkOutDay: row.proposal ? parseInt(row.proposal['check out day']) ?? null : null,
 
     // Stays (from join or JSONB)
     stays: Array.isArray(row.stays)
       ? row.stays.map(adaptStayFromSupabase)
       : parseJsonbArray(row['List of Stays']),
+
+    // Booked dates (from JSONB)
+    bookedDates: parseJsonbArray(row['List of Booked Dates']),
+    bookedDatesAfterRequest: parseJsonbArray(row['List of Booked Dates after Requests']),
 
     // Payment records (from join)
     paymentRecords: Array.isArray(row.paymentRecords)

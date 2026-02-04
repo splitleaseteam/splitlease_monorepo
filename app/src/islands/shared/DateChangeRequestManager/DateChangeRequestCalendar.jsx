@@ -17,9 +17,11 @@ import {
   getMonthNames,
 } from './dateUtils.js';
 
+
 /**
  * @param {Object} props
- * @param {(Date|string)[]} props.bookedDates - Array of currently booked dates
+ * @param {(Date|string)[]} props.bookedDates - Array of currently booked dates (My Nights)
+ * @param {(Date|string)[]} [props.roommateDates=[]] - Array of roommate's booked dates
  * @param {Date|string} props.reservationStart - Lease start date
  * @param {Date|string} props.reservationEnd - Lease end date
  * @param {'adding' | 'removing' | 'swapping' | null} props.requestType - Current request type
@@ -31,6 +33,7 @@ import {
  */
 export default function DateChangeRequestCalendar({
   bookedDates = [],
+  roommateDates = [],
   reservationStart,
   reservationEnd,
   requestType,
@@ -41,6 +44,24 @@ export default function DateChangeRequestCalendar({
   disabled = false,
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // Helper to check if a date is adjacent to any booked date
+  const isAdjacent = (date) => {
+    // Convert date to timestamp for easy comparison if needed, but isDateInList likely handles strings/dates
+    // Assuming bookedDates are standardized.
+    // Simple check: date + 1 or date - 1 is in bookedDates
+    // We need to implement this logic.
+    // Since we don't have addDays imported, let's just do simple day arithmetic.
+
+    const d = new Date(date);
+    const prev = new Date(d); prev.setDate(prev.getDate() - 1);
+    const next = new Date(d); next.setDate(next.getDate() + 1);
+
+    const isPrevBooked = isDateInList(prev, bookedDates);
+    const isNextBooked = isDateInList(next, bookedDates);
+
+    return isPrevBooked || isNextBooked;
+  };
 
   // Get dates with pending add/remove requests
   const pendingAddDates = existingRequests
@@ -76,9 +97,21 @@ export default function DateChangeRequestCalendar({
       return 'booked';
     }
 
-    // Within reservation period but not booked
+    // Roommate's dates (Available to request)
+    if (isDateInList(date, roommateDates)) {
+      if (isAdjacent(date)) {
+        return 'adjacent'; // Prioritized
+      }
+      return 'available'; // Standard roommate night
+    }
+
+    // Within reservation period but not booked by anyone (or blocked)
+    // If not in bookedDates and not in roommateDates, treat as blocked or available?
+    // Spec says: "Roommate's Nights" and "Host-Blocked".
+    // If we only have bookedDates and roommateDates, any other date in range is likely blocked or unassigned.
+    // Let's assume blocked for now as we don't have explicit available-from-host logic here.
     if (reservationStart && reservationEnd && isDateInRange(date, reservationStart, reservationEnd)) {
-      return 'available';
+      return 'blocked';
     }
 
     // Outside reservation period
@@ -95,21 +128,20 @@ export default function DateChangeRequestCalendar({
 
     switch (requestType) {
       case 'adding':
-        // Can only add dates that are available (not already booked)
-        return status === 'available' || status === 'outside';
+        // Can add adjacent or available (roommate) nights
+        return status === 'adjacent' || status === 'available';
 
       case 'removing':
-        // Can only remove dates that are booked
+        // Can only remove booked dates
         return status === 'booked';
 
       case 'swapping':
-        // Can select booked date to remove OR available date to add
         if (!dateToRemove) {
-          // First selection: pick date to remove (must be booked)
+          // First: select date to remove
           return status === 'booked';
         } else {
-          // Second selection: pick date to add (must be available)
-          return status === 'available' || status === 'outside';
+          // Second: select date to add
+          return status === 'adjacent' || status === 'available';
         }
 
       default:
@@ -153,7 +185,12 @@ export default function DateChangeRequestCalendar({
     const classes = ['dcr-calendar-date'];
     const status = getDateStatus(date);
 
-    classes.push(`dcr-date-${status}`);
+    // Status-based class
+    if (status === 'adjacent') {
+      classes.push('dcr-date-adjacent');
+    } else {
+      classes.push(`dcr-date-${status}`);
+    }
 
     if (isPastDate(date)) {
       classes.push('dcr-date-past');
@@ -248,23 +285,19 @@ export default function DateChangeRequestCalendar({
       <div className="dcr-calendar-legend">
         <div className="dcr-legend-item">
           <span className="dcr-legend-dot dcr-legend-booked"></span>
-          <span>Booked</span>
+          <span>My Night</span>
+        </div>
+        <div className="dcr-legend-item">
+          <span className="dcr-legend-dot dcr-legend-adjacent"></span>
+          <span>Recommended Add</span>
         </div>
         <div className="dcr-legend-item">
           <span className="dcr-legend-dot dcr-legend-available"></span>
-          <span>Available</span>
+          <span>Roommate Night</span>
         </div>
         <div className="dcr-legend-item">
-          <span className="dcr-legend-dot dcr-legend-selected-add"></span>
-          <span>Add</span>
-        </div>
-        <div className="dcr-legend-item">
-          <span className="dcr-legend-dot dcr-legend-selected-remove"></span>
-          <span>Remove</span>
-        </div>
-        <div className="dcr-legend-item">
-          <span className="dcr-legend-dot dcr-legend-pending"></span>
-          <span>Pending</span>
+          <span className="dcr-legend-dot dcr-legend-blocked"></span>
+          <span>Blocked</span>
         </div>
       </div>
 
@@ -272,16 +305,16 @@ export default function DateChangeRequestCalendar({
       {requestType && (
         <div className="dcr-calendar-instructions">
           {requestType === 'adding' && (
-            <p>Click on an available date to add it to your lease.</p>
+            <p>Select a recommended night (blue dashed) to add it to your stay.</p>
           )}
           {requestType === 'removing' && (
-            <p>Click on a booked date (green) to remove it from your lease.</p>
+            <p>Select one of your nights (green) to offer back to your roommate.</p>
           )}
           {requestType === 'swapping' && !dateToRemove && (
-            <p>First, click on a booked date (green) that you want to swap out.</p>
+            <p>Select one of your nights (green) to give up.</p>
           )}
           {requestType === 'swapping' && dateToRemove && !dateToAdd && (
-            <p>Now, click on an available date to swap in.</p>
+            <p>Now select a night to receive.</p>
           )}
         </div>
       )}

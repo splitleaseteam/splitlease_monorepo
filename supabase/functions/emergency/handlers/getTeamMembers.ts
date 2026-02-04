@@ -20,7 +20,7 @@ export async function handleGetTeamMembers(
   const { activeOnly = true } = payload;
 
   // Query users with admin = true
-  let query = supabase
+  const query = supabase
     .from('user')
     .select('_id, email, "First name", "Last name", "Phone number", admin')
     .eq('admin', true)

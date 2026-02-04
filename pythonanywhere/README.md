@@ -8,7 +8,7 @@ This repository contains three Flask applications:
 
 ```
 pythonanywhere/
-├── mysite/      # Primary application (contract generation, Slack integration, document processing)
+├── mysite/      # Primary application (Slack integration, document processing)
 ├── mysite2/     # Utility services (URL shortener, QR generator)
 └── mysite3/     # ML services (TensorFlow-based listing matching)
 ```
@@ -22,7 +22,6 @@ Main service hub with comprehensive feature set:
 | Module | Purpose |
 |--------|---------|
 | **Slack Events** | Universal webhook endpoint for Slack Events API with HMAC signature verification |
-| **Contract Generators** | Auto-generate legal documents:<br>• Periodic Tenancy Agreements<br>• Host Payout Schedules<br>• Credit Card Authorization Forms<br>• Supplemental Agreements |
 | **Calendar Automation** | Google Calendar OAuth integration for automated booking management |
 | **Document Parser** | Parse and extract data from various document formats |
 | **PDF Generators** | Create:<br>• House Manual PDFs<br>• Curated Listings PDFs |
@@ -326,13 +325,6 @@ pythonanywhere/
 │   │   │   ├── routes.py           # Webhook endpoints
 │   │   │   ├── event_handler.py    # Event processing logic
 │   │   │   └── README.md           # Slack Events documentation
-│   │   │
-│   │   ├── contract_generator/     # Legal document generation
-│   │   │   ├── periodic_tenancy/
-│   │   │   ├── host_payout/
-│   │   │   ├── credit_card_auth/
-│   │   │   ├── credit_card_auth_nonprorated/
-│   │   │   └── supplemental/
 │   │   │
 │   │   ├── calendar_automation/    # Google Calendar integration
 │   │   ├── google_drive/           # Google Drive upload

@@ -48,7 +48,7 @@ function ErrorState({ message }) {
             <p className={styles.errorMessage}>
                 {message || 'The property you are looking for does not exist or has been removed.'}
             </p>
-            <a href="/search.html" className={styles.errorButton}>
+            <a href="/search" className={styles.errorButton}>
                 Browse All Listings
             </a>
         </div>
@@ -173,10 +173,7 @@ export default function ViewSplitLeasePage() {
 
     return (
         <div className={styles.pageContainer}>
-            <Header
-                isAuthenticated={isAuthenticated}
-                userId={authUserId}
-            />
+            <Header />
 
             {/* Photo Gallery */}
             <PhotoGallery
@@ -251,9 +248,6 @@ export default function ViewSplitLeasePage() {
                         onMoveInDateChange={handleMoveInDateChange}
                         onReservationSpanChange={handleReservationSpanChange}
                         onSubmit={handleOpenProposalModal}
-                        informationalTexts={informationalTexts}
-                        activeInfoTooltip={activeInfoTooltip}
-                        setActiveInfoTooltip={setActiveInfoTooltip}
                     />
                 </aside>
             </div>

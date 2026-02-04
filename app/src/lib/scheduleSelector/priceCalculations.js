@@ -48,14 +48,14 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
     weeklyMarkup: 0,
     fullTimeDiscount: 0.13,
     unusedNightsDiscountMultiplier: 0.03,
-    avgDaysPerMonth: 31
+    avgDaysPerMonth: 30.4  // Synchronized with Edge Function constant (pricing-list/utils/pricingCalculator.ts:88)
   };
 
   const rentalType = listing.rentalType || listing['rental type'] || 'Nightly';
   const weeksOffered = listing.weeksOffered || listing['Weeks offered'] || 'Every week';
-  const unitMarkup = parseFloat(listing.unitMarkup || listing['💰Unit Markup'] || 0) / 100;
-  const cleaningFee = parseFloat(listing.cleaningFee || listing['💰Cleaning Cost / Maintenance Fee'] || 0);
-  const damageDeposit = parseFloat(listing.damageDeposit || listing['💰Damage Deposit'] || 0);
+  const unitMarkup = parseFloat(listing.unitMarkup || listing['unit_markup'] || 0) / 100;
+  const cleaningFee = parseFloat(listing.cleaningFee || listing['cleaning_fee'] || 0);
+  const damageDeposit = parseFloat(listing.damageDeposit || listing['damage_deposit'] || 0);
 
   let pricePerNight = 0;
   let fourWeekRent = 0;
@@ -77,7 +77,7 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
 
   } else {
     // === NIGHTLY RENTAL CALCULATION ===
-    const result = calculateNightlyPrice(nightsCount, listing, reservationSpan, config, weeksOffered);
+    const result = calculateNightlyPrice(nightsCount, listing, reservationSpan, config, weeksOffered, unitMarkup);
     pricePerNight = result.pricePerNight;
     fourWeekRent = result.fourWeekRent;
     reservationTotal = result.reservationTotal;
@@ -115,7 +115,7 @@ export const calculatePrice = (selectedNights, listing, reservationSpan = 13, za
  * Calculate Monthly rental price
  */
 function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, unitMarkup, weeksOffered) {
-  const monthlyHostRate = parseFloat(listing.monthlyHostRate || listing['💰Monthly Host Rate'] || 0);
+  const monthlyHostRate = parseFloat(listing.monthlyHostRate || listing['monthly_host_rate'] || 0);
   if (!monthlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
 
   // Step 1: Calculate Monthly Average Nightly Price
@@ -155,11 +155,16 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
   );
 
   console.log('Monthly calculation:', {
+    monthlyHostRate,
+    avgDaysPerMonth: config.avgDaysPerMonth,
     monthlyAvgNightly,
     averageWeeklyPrice,
     nightlyHostRate,
     unusedNights,
+    unusedNightsDiscountMultiplier: config.unusedNightsDiscountMultiplier,
     unusedNightsDiscountValue,
+    overallSiteMarkup: config.overallSiteMarkup,
+    unitMarkup,
     multiplier,
     totalWeeklyPrice,
     pricePerNight,
@@ -175,7 +180,7 @@ function calculateMonthlyPrice(nightsCount, listing, reservationSpan, config, un
  * Calculate Weekly rental price
  */
 function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, unitMarkup, weeksOffered) {
-  const weeklyHostRate = parseFloat(listing.weeklyHostRate || listing['💰Weekly Host Rate'] || 0);
+  const weeklyHostRate = parseFloat(listing.weeklyHostRate || listing['weekly_host_rate'] || 0);
   if (!weeklyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
 
   // Step 1: Calculate Prorated Nightly Host Rate
@@ -214,7 +219,8 @@ function calculateWeeklyPrice(nightsCount, listing, reservationSpan, config, uni
 /**
  * Calculate Nightly rental price
  */
-function calculateNightlyPrice(nightsCount, listing, reservationSpan, config, weeksOffered) {
+// TO (CORRECT - additive):
+function calculateNightlyPrice(nightsCount, listing, reservationSpan, config, weeksOffered, unitMarkup = 0) {
   // Step 1: Get Nightly Host Rate
   const nightlyHostRate = getNightlyRateForNights(nightsCount, listing);
   if (!nightlyHostRate) return { pricePerNight: 0, fourWeekRent: 0, reservationTotal: 0 };
@@ -222,28 +228,31 @@ function calculateNightlyPrice(nightsCount, listing, reservationSpan, config, we
   // Step 2: Calculate Base Price
   const basePrice = nightlyHostRate * nightsCount;
 
-  // Step 3: Calculate Discounts (Full-Time Discount for 7 nights only)
-  const fullTimeDiscount = nightsCount === 7 ? basePrice * config.fullTimeDiscount : 0;
+  // Step 3: Calculate Discounts & Multipliers (Additive Model)
 
-  // Step 4: Price After Discounts
-  const priceAfterDiscounts = basePrice - fullTimeDiscount;
+  // Unused nights discount (LINEAR formula matching Bubble)
+  const unusedNights = 7 - nightsCount;
+  const unusedNightsDiscount = unusedNights * (config.unusedNightsDiscountMultiplier || 0.03);
 
-  // Step 5: Calculate Site Markup
-  const siteMarkup = priceAfterDiscounts * config.overallSiteMarkup;
+  // Full-time discount rate (only for 7 nights)
+  const fullTimeDiscountRate = nightsCount === 7 ? (config.fullTimeDiscount || 0.13) : 0;
 
-  // Step 6: Calculate Total Price
-  const totalPrice = basePrice - fullTimeDiscount + siteMarkup;
+  // MULTIPLIER FORMULA (Additive: 1 + site + unit - unused - fullTime)
+  const multiplier = 1 + config.overallSiteMarkup + unitMarkup - unusedNightsDiscount - fullTimeDiscountRate;
 
-  // Step 7: Calculate Price Per Night
+  // Step 4: Calculate Total Price
+  const totalPrice = basePrice * multiplier;
+
+  // Step 5: Calculate Price Per Night
   const pricePerNight = totalPrice / nightsCount;
 
-  // Step 8: Get Weekly Schedule Period
+  // Step 6: Get Weekly Schedule Period
   const weeklySchedulePeriod = getWeeklySchedulePeriod(weeksOffered);
 
-  // Step 9: Calculate 4-Week Rent
+  // Step 7: Calculate 4-Week Rent
   const fourWeekRent = (pricePerNight * nightsCount * 4) / weeklySchedulePeriod;
 
-  // Step 10: Calculate Total Reservation Price
+  // Step 8: Calculate Total Reservation Price
   const reservationTotal = calculateTotalReservationPrice(
     pricePerNight,
     nightsCount,
@@ -281,20 +290,20 @@ function getWeeklySchedulePeriod(weeksOffered) {
 
   // Check for various patterns
   if (pattern.includes('1 on 1 off') || pattern.includes('1on1off') ||
-      (pattern.includes('one week on') && pattern.includes('one week off')) ||
-      (pattern.includes('1 week on') && pattern.includes('1 week off'))) {
+    (pattern.includes('one week on') && pattern.includes('one week off')) ||
+    (pattern.includes('1 week on') && pattern.includes('1 week off'))) {
     return 2;
   }
 
   if (pattern.includes('2 on 2 off') || pattern.includes('2on2off') ||
-      (pattern.includes('two week') && pattern.includes('two week')) ||
-      (pattern.includes('2 week on') && pattern.includes('2 week off'))) {
+    (pattern.includes('two week') && pattern.includes('two week')) ||
+    (pattern.includes('2 week on') && pattern.includes('2 week off'))) {
     return 2;
   }
 
   if (pattern.includes('1 on 3 off') || pattern.includes('1on3off') ||
-      (pattern.includes('one week on') && pattern.includes('three week')) ||
-      (pattern.includes('1 week on') && pattern.includes('3 week off'))) {
+    (pattern.includes('one week on') && pattern.includes('three week')) ||
+    (pattern.includes('1 week on') && pattern.includes('3 week off'))) {
     return 4;
   }
 
@@ -309,20 +318,20 @@ function getActualWeeksDuring4Week(weeksOffered) {
 
   // Check for various patterns
   if (pattern.includes('1 on 1 off') || pattern.includes('1on1off') ||
-      (pattern.includes('one week on') && pattern.includes('one week off')) ||
-      (pattern.includes('1 week on') && pattern.includes('1 week off'))) {
+    (pattern.includes('one week on') && pattern.includes('one week off')) ||
+    (pattern.includes('1 week on') && pattern.includes('1 week off'))) {
     return 2;
   }
 
   if (pattern.includes('2 on 2 off') || pattern.includes('2on2off') ||
-      (pattern.includes('two week') && pattern.includes('two week')) ||
-      (pattern.includes('2 week on') && pattern.includes('2 week off'))) {
+    (pattern.includes('two week') && pattern.includes('two week')) ||
+    (pattern.includes('2 week on') && pattern.includes('2 week off'))) {
     return 2;
   }
 
   if (pattern.includes('1 on 3 off') || pattern.includes('1on3off') ||
-      (pattern.includes('one week on') && pattern.includes('three week')) ||
-      (pattern.includes('1 week on') && pattern.includes('3 week off'))) {
+    (pattern.includes('one week on') && pattern.includes('three week')) ||
+    (pattern.includes('1 week on') && pattern.includes('3 week off'))) {
     return 1;
   }
 
@@ -338,19 +347,19 @@ function getActualWeeksDuring4Week(weeksOffered) {
 function getNightlyRateForNights(nightsCount, listing) {
   // Map nights to price fields
   const priceFieldMap = {
-    1: listing.nightlyHostRateFor1Night || listing['💰Nightly Host Rate for 1 night'],
-    2: listing.nightlyHostRateFor2Nights || listing['💰Nightly Host Rate for 2 nights'],
-    3: listing.nightlyHostRateFor3Nights || listing['💰Nightly Host Rate for 3 nights'],
-    4: listing.nightlyHostRateFor4Nights || listing['💰Nightly Host Rate for 4 nights'],
-    5: listing.nightlyHostRateFor5Nights || listing['💰Nightly Host Rate for 5 nights'],
-    7: listing.nightlyHostRateFor7Nights || listing['💰Nightly Host Rate for 7 nights']
+    1: listing.nightlyHostRateFor1Night || listing['nightly_rate_1_night'],
+    2: listing.nightlyHostRateFor2Nights || listing['nightly_rate_2_nights'],
+    3: listing.nightlyHostRateFor3Nights || listing['nightly_rate_3_nights'],
+    4: listing.nightlyHostRateFor4Nights || listing['nightly_rate_4_nights'],
+    5: listing.nightlyHostRateFor5Nights || listing['nightly_rate_5_nights'],
+    7: listing.nightlyHostRateFor7Nights || listing['nightly_rate_7_nights']
   };
 
   const rate = parseFloat(priceFieldMap[nightsCount] || 0);
 
   // If no rate found for exact nights, fall back to 4-night rate
   if (!rate || rate === 0) {
-    return parseFloat(listing['💰Nightly Host Rate for 4 nights'] || 0);
+    return parseFloat(listing['nightly_rate_4_nights'] || 0);
   }
 
   return rate;

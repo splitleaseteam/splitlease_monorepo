@@ -61,7 +61,7 @@ export interface HostProposalContext {
 /**
  * Generate AI summary for a Split Lease suggested proposal
  */
-export async function generateSuggestedProposalSummary(
+export function generateSuggestedProposalSummary(
   supabase: SupabaseClient,
   context: SuggestedProposalContext
 ): Promise<string | null> {
@@ -71,7 +71,7 @@ export async function generateSuggestedProposalSummary(
 /**
  * Generate AI summary for a host counteroffer
  */
-export async function generateCounterOfferSummary(
+export function generateCounterOfferSummary(
   supabase: SupabaseClient,
   context: CounterOfferContext
 ): Promise<string | null> {
@@ -81,7 +81,7 @@ export async function generateCounterOfferSummary(
 /**
  * Generate AI summary of proposal for host
  */
-export async function generateHostProposalSummary(
+export function generateHostProposalSummary(
   supabase: SupabaseClient,
   context: HostProposalContext
 ): Promise<string | null> {
@@ -127,7 +127,7 @@ async function callAIGateway(
     }
 
     return content;
-  } catch (err) {
+  } catch (_err) {
     console.error(`[negotiationSummary] Failed to generate summary:`, err);
     return null;
   }
@@ -189,7 +189,7 @@ export async function formatPreviousProposals(
       const listingName = listing?.Name || "Unknown listing";
       return `${i + 1}. ${listingName} - ${weeks} weeks, $${nightlyPrice}/night`;
     }).join("\n");
-  } catch (err) {
+  } catch (_err) {
     console.error(`[negotiationSummary] Error formatting previous proposals:`, err);
     return "";
   }

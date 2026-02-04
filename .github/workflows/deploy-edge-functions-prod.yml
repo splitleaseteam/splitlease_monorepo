@@ -1,0 +1,167 @@
+name: Deploy Edge Functions (Production)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/functions/**'
+      - '.github/workflows/deploy-edge-functions-prod.yml'
+      - '.github/scripts/detect-changed-functions.sh'
+
+# Prevent concurrent deployments to production
+concurrency:
+  group: edge-functions-prod
+  cancel-in-progress: false
+
+jobs:
+  detect-changes:
+    name: Detect Changed Functions
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_all: ${{ steps.detect.outputs.deploy_all }}
+      changed_functions: ${{ steps.detect.outputs.changed_functions }}
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need previous commit for diff
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: SYSTEM CHECK - Edge Function Registry Sync
+        run: node supabase/scripts/sync-edge-functions.js
+
+      - name: Make scripts executable
+        run: chmod +x .github/scripts/*.sh
+
+      - name: Detect changed functions
+        id: detect
+        run: .github/scripts/detect-changed-functions.sh
+
+  deploy-all:
+    name: Deploy All Functions
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy_all == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy all Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN_PROD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID_PROD }}
+        run: |
+          echo "🚀 Deploying ALL Edge Functions to production..."
+          supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+
+      - name: Notify Slack on success
+        if: success()
+        run: |
+          python .github/scripts/send_slack.py \
+            "✅ Deployed ALL Edge Functions to production (\_shared/ changed)" \
+            --type success
+        continue-on-error: true
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          python .github/scripts/send_slack.py \
+            "❌ Failed to deploy Edge Functions to production" \
+            --type error
+        continue-on-error: true
+
+  deploy-changed:
+    name: Deploy Changed Functions
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy_all == 'false' && needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    strategy:
+      matrix:
+        function: ${{ fromJson(needs.detect-changes.outputs.changed_functions) }}
+      max-parallel: 5  # Deploy up to 5 functions concurrently
+      fail-fast: false  # Continue deploying other functions if one fails
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy ${{ matrix.function }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN_PROD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID_PROD }}
+        run: |
+          echo "🚀 Deploying ${{ matrix.function }} to production..."
+          supabase functions deploy ${{ matrix.function }} --project-ref $SUPABASE_PROJECT_ID
+
+      - name: Health check ${{ matrix.function }}
+        env:
+          PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL_PROD }}
+          ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_PROD }}
+        run: |
+          chmod +x .github/scripts/health-check.sh
+          .github/scripts/health-check.sh "${{ matrix.function }}" "$PROJECT_URL" "$ANON_KEY"
+        continue-on-error: true  # Don't fail deployment if health check fails
+
+      - name: Notify Slack on success
+        if: success()
+        run: |
+          python .github/scripts/send_slack.py \
+            "✅ Deployed ${{ matrix.function }} to production" \
+            --type success
+        continue-on-error: true
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          python .github/scripts/send_slack.py \
+            "❌ Failed to deploy ${{ matrix.function }} to production" \
+            --type error
+        continue-on-error: true
+
+  summary:
+    name: Deployment Summary
+    needs: [detect-changes, deploy-all, deploy-changed]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 🚀 Edge Functions Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.detect-changes.outputs.deploy_all }}" == "true" ]; then
+            echo "**Mode:** Deploy All (\_shared/ directory changed)" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.detect-changes.outputs.has_changes }}" == "true" ]; then
+            echo "**Mode:** Deploy Changed Only" >> $GITHUB_STEP_SUMMARY
+            echo "**Changed Functions:**" >> $GITHUB_STEP_SUMMARY
+            echo '${{ needs.detect-changes.outputs.changed_functions }}' | jq -r '.[]' | while read func; do
+              echo "  - $func" >> $GITHUB_STEP_SUMMARY
+            done
+          else
+            echo "**Mode:** No Deployment (No changes detected)" >> $GITHUB_STEP_SUMMARY
+          fi

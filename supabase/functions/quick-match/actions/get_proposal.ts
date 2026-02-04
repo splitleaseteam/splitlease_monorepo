@@ -6,7 +6,7 @@
  * for display in the Quick Match interface.
  */
 
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient as _createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 import type {
   GetProposalPayload,
@@ -198,15 +198,15 @@ async function fetchListingInfo(
       "Nights Available (List of Nights)",
       "Minimum Nights",
       "Maximum Nights",
-      "💰Nightly Host Rate for 1 night",
-      "💰Nightly Host Rate for 2 nights",
-      "💰Nightly Host Rate for 3 nights",
-      "💰Nightly Host Rate for 4 nights",
-      "💰Nightly Host Rate for 5 nights",
-      "💰Nightly Host Rate for 6 nights",
-      "💰Nightly Host Rate for 7 nights",
-      "💰Cleaning Cost / Maintenance Fee",
-      "💰Damage Deposit",
+      "nightly_rate_1_night",
+      "nightly_rate_2_nights",
+      "nightly_rate_3_nights",
+      "nightly_rate_4_nights",
+      "nightly_rate_5_nights",
+      "nightly_rate_6_nights",
+      "nightly_rate_7_nights",
+      "cleaning_fee",
+      "damage_deposit",
       Active,
       Deleted
     `)
@@ -245,13 +245,13 @@ async function fetchListingInfo(
   }
 
   const nightlyRates: NightlyRates = {
-    rate1: listing['\u{1F4B0}Nightly Host Rate for 1 night'],
-    rate2: listing['\u{1F4B0}Nightly Host Rate for 2 nights'],
-    rate3: listing['\u{1F4B0}Nightly Host Rate for 3 nights'],
-    rate4: listing['\u{1F4B0}Nightly Host Rate for 4 nights'],
-    rate5: listing['\u{1F4B0}Nightly Host Rate for 5 nights'],
-    rate6: listing['\u{1F4B0}Nightly Host Rate for 6 nights'],
-    rate7: listing['\u{1F4B0}Nightly Host Rate for 7 nights'],
+    rate1: listing['nightly_rate_1_night'],
+    rate2: listing['nightly_rate_2_nights'],
+    rate3: listing['nightly_rate_3_nights'],
+    rate4: listing['nightly_rate_4_nights'],
+    rate5: listing['nightly_rate_5_nights'],
+    rate6: listing['nightly_rate_6_nights'],
+    rate7: listing['nightly_rate_7_nights'],
   };
 
   return {
@@ -263,8 +263,8 @@ async function fetchListingInfo(
     hoodName,
     address: listing['Location - Address'],
     nightlyRates,
-    cleaningFee: listing['\u{1F4B0}Cleaning Cost / Maintenance Fee'],
-    damageDeposit: listing['\u{1F4B0}Damage Deposit'],
+    cleaningFee: listing['cleaning_fee'],
+    damageDeposit: listing['damage_deposit'],
     minimumNights: listing['Minimum Nights'],
     maximumNights: listing['Maximum Nights'],
     daysAvailable: normalizeJsonbArray(listing['Days Available (List of Days)']),

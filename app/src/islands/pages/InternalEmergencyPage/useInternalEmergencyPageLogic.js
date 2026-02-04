@@ -128,8 +128,9 @@ export function useInternalEmergencyPageLogic() {
       try {
         const updated = await fetchEmergencyById(selectedEmergency.id);
         setSelectedEmergency(updated);
+       
       } catch {
-        // Ignore error, selected emergency might have been deleted
+        void 0; // Ignore error, selected emergency might have been deleted
       }
     }
   }, [loadEmergencies, selectedEmergency]);

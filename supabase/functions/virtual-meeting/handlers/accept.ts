@@ -191,8 +191,8 @@ export async function handleAccept(
   try {
     // Fetch user data for phone numbers and notification settings
     const [hostData, guestData] = await Promise.all([
-      supabase.from("user").select(`_id, "Phone - Number", "Notification Setting"`).eq("_id", existingVM.host).single(),
-      supabase.from("user").select(`_id, "Phone - Number", "Notification Setting"`).eq("_id", existingVM.guest).single(),
+      supabase.from("user").select(`_id, "Phone Number (as text)", "Notification Setting"`).eq("_id", existingVM.host).single(),
+      supabase.from("user").select(`_id, "Phone Number (as text)", "Notification Setting"`).eq("_id", existingVM.guest).single(),
     ]);
 
     // Fetch notification preferences
@@ -229,8 +229,8 @@ export async function handleAccept(
       guestName: existingVM["guest name"],
       hostEmail: existingVM["host email"],
       guestEmail: existingVM["guest email"],
-      hostPhone: hostData.data?.["Phone - Number"],
-      guestPhone: guestData.data?.["Phone - Number"],
+      hostPhone: hostData.data?.["Phone Number (as text)"],
+      guestPhone: guestData.data?.["Phone Number (as text)"],
       bookedDate: input.bookedDate,
       notifyHostSms: hostVmNotifs.includes('SMS'),
       notifyHostEmail: hostVmNotifs.includes('Email'),

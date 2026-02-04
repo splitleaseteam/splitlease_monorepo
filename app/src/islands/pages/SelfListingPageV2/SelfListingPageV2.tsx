@@ -99,7 +99,7 @@ const DEFAULT_FORM_DATA: FormData = {
   hostType: 'resident',
   marketStrategy: 'private',
   leaseStyle: 'nightly',
-  selectedNights: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'], // Mon-Fri default
+  selectedNights: ['monday', 'tuesday', 'wednesday', 'thursday'], // Mon-Thu default (keep weekends)
   weeklyPattern: '1on1off',
   monthlyAgreement: true,
   nightlyBaseRate: 100,
@@ -187,6 +187,9 @@ export function SelfListingPageV2() {
   // Edit mode state - for editing existing listings via ?id= parameter
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingListingId, setEditingListingId] = useState<string | null>(null);
+
+  // Mobile detection state
+  const [isMobile, setIsMobile] = useState(false);
 
   // Toast notifications
   const { toasts, showToast, removeToast } = useToast();
@@ -308,6 +311,18 @@ export function SelfListingPageV2() {
       setInformationalTexts(texts);
     };
     loadInformationalTexts();
+  }, []);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Access control state - guests should not access this page
@@ -720,8 +735,8 @@ export function SelfListingPageV2() {
   // Get schedule text
   const getScheduleText = () => {
     const count = formData.selectedNights.length;
-    const weekdayNights: NightId[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    const isWeekdays = count === 5 && weekdayNights.every(n => formData.selectedNights.includes(n));
+    const weekdayNights: NightId[] = ['monday', 'tuesday', 'wednesday', 'thursday'];
+    const isWeekdays = count === 4 && weekdayNights.every(n => formData.selectedNights.includes(n));
 
     if (count < 2) return { text: 'Select at least 2 nights', error: true };
     if (isWeekdays) return { text: 'Weekdays Only (You keep weekends!)', error: false };
@@ -1208,7 +1223,7 @@ export function SelfListingPageV2() {
             <div className="privacy-radio"></div>
             <div className="privacy-content">
               <h3>Private Network (Concierge)</h3>
-              <p>We search for a guest for you. Address remains hidden until vetting is complete. <strong>Recommended.</strong></p>
+              <p>We search for a guest for you. Address remains hidden until vetting is complete.</p>
             </div>
           </div>
           <div
@@ -1514,10 +1529,10 @@ export function SelfListingPageV2() {
           <details className="pricing-details">
             <summary>How does Smart Pricing work?</summary>
             <div className="details-content">
-              We calculate a "decay curve" for your pricing. The first night is your full Base Rate.
-              Each consecutive night gets slightly cheaper based on your Discount setting.
-              This encourages guests to book longer blocks (like Mon-Fri) instead of just two nights,
-              maximizing your occupancy and reducing turnover effort.
+              We offer a setting to automatically adjust your pricing to encourage more nights per week. The first night is your full Base Rate.
+              Each additional consecutive night gets slightly less expensive based on your Discount setting.
+              This encourages guests to book longer stays (like Mon-Fri) instead of just two nights,
+              maximizing your weekly net revenue and reducing turnover effort.
             </div>
           </details>
 
@@ -1911,9 +1926,11 @@ export function SelfListingPageV2() {
         <button className="btn-skip" onClick={skipStep}>Skip for Now</button>
         <div className="btn-row-secondary">
           <button className="btn-back" onClick={prevStep}>Back</button>
-          <button className="btn-continue-phone" onClick={handleContinueOnPhone}>
-            <Smartphone size={18} color="#5b21b6" /> Continue on Phone
-          </button>
+          {!isMobile && (
+            <button className="btn-continue-phone" onClick={handleContinueOnPhone}>
+              <Smartphone size={18} color="#5b21b6" /> Continue on Phone
+            </button>
+          )}
         </div>
       </div>
     </div>

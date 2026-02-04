@@ -64,11 +64,14 @@ export function HostEditingProposal({
   availableHouseRules = [],
   isInternalUsage = false,
   initialShowReject = false,
+  mode = 'edit', // 'edit' (default) or 'accept' for acceptance confirmation flow
+  isAccepting = false, // Loading state for acceptance confirmation
   onAcceptAsIs,
   onCounteroffer,
   onReject,
   onCancel,
-  onAlert
+  onAlert,
+  onConfirmAcceptance // Callback for accept mode confirmation
 }) {
   // 3-state view machine: 'pristine' | 'editing' | 'general'
   const [view, setView] = useState('pristine')
@@ -198,23 +201,30 @@ export function HostEditingProposal({
     return dateChanged || weeksChanged || scheduleChanged || rulesChanged
   }, [proposal, listing, availableHouseRules, editedMoveInDate, editedWeeks, editedCheckInDay, editedCheckOutDay, editedHouseRules, houseRulesInitialized])
 
-  // Calculate host compensation (host-facing view, no guest pricing)
-  const nightsPerWeek = editedNightsSelected.length
-  const totalNights = nightsPerWeek * editedWeeks
-  const nightlyPrice = getProposalValue(proposal, 'proposalNightlyPrice', 0) ||
-                       getProposalValue(proposal, 'proposal nightly price', 0) || 100
-  const nightlyCompensation = nightlyPrice * 0.85 // 85% goes to host
-  const totalCompensation = nightlyCompensation * totalNights
-  const compensationPer4Weeks = editedWeeks > 0 ? (totalCompensation / editedWeeks) * 4 : 0
-
-  // Calculate original compensation values for comparison
+  // Calculate host compensation using '4 week compensation' as the source of truth
+  // The database "Total Compensation (proposal - host)" field can be incorrect
   const originalNightsPerWeek = extractNightsSelected(proposal).length
   const originalWeeksValue = extractReservationSpanWeeks(proposal)
   const originalTotalNights = originalNightsPerWeek * originalWeeksValue
-  const originalTotalCompensation = nightlyCompensation * originalTotalNights
-  const originalCompensationPer4Weeks = originalWeeksValue > 0
-    ? (originalTotalCompensation / originalWeeksValue) * 4
+
+  // Use '4 week compensation' from proposal - this is calculated from the pricing_list
+  const host4WeekCompensation = getProposalValue(proposal, '4 week compensation', 0)
+
+  // Derive nightly host rate from 4 week compensation
+  const nightlyCompensation = originalNightsPerWeek > 0
+    ? host4WeekCompensation / (4 * originalNightsPerWeek)
     : 0
+
+  // Calculate compensation for edited values
+  const nightsPerWeek = editedNightsSelected.length
+  const totalNights = nightsPerWeek * editedWeeks
+  const totalCompensation = nightlyCompensation * totalNights
+  const compensationPer4Weeks = editedWeeks > 0 ? (totalCompensation / editedWeeks) * 4 : 0
+
+  // Original compensation values for comparison
+  const originalFourWeekPeriods = originalWeeksValue / 4
+  const originalTotalCompensation = host4WeekCompensation * originalFourWeekPeriods
+  const originalCompensationPer4Weeks = host4WeekCompensation
 
   // Get original values for comparison display
   const originalValues = parseProposalData(proposal, listing, availableHouseRules)
@@ -325,6 +335,36 @@ export function HostEditingProposal({
 
   // Render header based on view state
   const renderHeader = () => {
+    // Accept mode header - readonly acceptance confirmation view
+    if (mode === 'accept') {
+      return (
+        <div className="hep-header hep-header--accept">
+          <div className="hep-header-left">
+            <div className="hep-header-icon hep-header-icon--success">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22,4 12,14.01 9,11.01"/>
+              </svg>
+            </div>
+            <div>
+              <div className="hep-header-title">Accept Proposal</div>
+              <div className="hep-header-subtitle">Review terms from {guestName}</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="hep-header-close"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      )
+    }
+
     if (view === 'pristine') {
       // Pristine header: Document icon + "Review Proposal" title
       return (
@@ -422,6 +462,30 @@ export function HostEditingProposal({
 
   // Render footer based on view state
   const renderFooter = () => {
+    // Accept mode footer - Cancel + Confirm Acceptance buttons
+    if (mode === 'accept') {
+      return (
+        <div className="hep-footer hep-footer--accept">
+          <button
+            type="button"
+            className="hep-btn hep-btn-secondary"
+            onClick={handleClose}
+            disabled={isAccepting}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="hep-btn hep-btn-success"
+            onClick={() => onConfirmAcceptance?.(proposal)}
+            disabled={isAccepting}
+          >
+            {isAccepting ? 'Accepting...' : 'Confirm Acceptance'}
+          </button>
+        </div>
+      )
+    }
+
     if (view === 'pristine') {
       // Pristine: "Cancel" (secondary) + "Edit Proposal" (primary) - side by side
       return (
@@ -630,7 +694,16 @@ export function HostEditingProposal({
 
       {/* Scrollable Body */}
       <div className="hep-body">
-        {view === 'pristine' && renderPristineView()}
+        {mode === 'accept' && (
+          <div className="hep-accept-view">
+            <div className="hep-accept-message">
+              <p>By accepting this proposal, a lease will be created and both parties will be notified. Lease documents will be ready within 48 hours.</p>
+            </div>
+            {renderPristineView()}
+          </div>
+        )}
+
+        {mode !== 'accept' && view === 'pristine' && renderPristineView()}
 
         {view === 'editing' && renderEditingView()}
 

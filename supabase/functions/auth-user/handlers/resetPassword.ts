@@ -20,7 +20,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { BubbleApiError as _BubbleApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields, validateEmail } from '../../_shared/validation.ts';
 
 export async function handleRequestPasswordReset(

@@ -10,7 +10,7 @@
  * - getStatusCodeFromError() utility
  */
 
-import { assertEquals, assertInstanceOf } from 'jsr:@std/assert';
+import { assertEquals, assertInstanceOf } from 'jsr:@std/assert@1';
 import {
   BubbleApiError,
   SupabaseSyncError,
@@ -44,7 +44,7 @@ Deno.test('ValidationError can be caught as Error', () => {
   let caught = false;
   try {
     throw new ValidationError('test');
-  } catch (e) {
+  } catch (_e) {
     if (e instanceof Error) {
       caught = true;
     }

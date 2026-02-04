@@ -39,7 +39,7 @@ function deriveSenderType(message, hostUserId, guestUserId) {
     return 'bot-to-both';
   }
 
-  const originatorId = message['-Originator User'];
+  const originatorId = message.originator_user_id;
   if (originatorId === hostUserId) return 'host';
   if (originatorId === guestUserId) return 'guest';
   return 'unknown';
@@ -56,7 +56,7 @@ function adaptThread(rawThread) {
     subject: rawThread['Thread Subject'] || 'No Subject',
     createdDate: rawThread['Created Date'],
     modifiedDate: rawThread['Modified Date'],
-    lastMessageDate: rawThread['~Date Last Message'],
+    lastMessageDate: rawThread['last_message_at'],
     callToAction: rawThread['Call to Action'],
     proposalId: rawThread.Proposal,
     listingId: rawThread.Listing,
@@ -94,8 +94,8 @@ function adaptThread(rawThread) {
  * @returns {Object} Adapted message object
  */
 function adaptMessage(rawMessage, rawThread) {
-  const hostUserId = rawThread['-Host User'];
-  const guestUserId = rawThread['-Guest User'];
+  const hostUserId = rawThread.host_user_id;
+  const guestUserId = rawThread.guest_user_id;
 
   return {
     id: rawMessage._id,
@@ -214,17 +214,31 @@ export function useAdminThreadsPageLogic() {
 
     if (filters.guestEmail) {
       const search = filters.guestEmail.toLowerCase();
-      result = result.filter(t =>
-        t.guest?.email?.toLowerCase().includes(search) ||
-        t.maskedEmail?.toLowerCase().includes(search)
-      );
+      result = result.filter(t => {
+        const guest = t.guest;
+        if (!guest) return false;
+        // Search across name, email, and phone
+        return (
+          guest.name?.toLowerCase().includes(search) ||
+          guest.email?.toLowerCase().includes(search) ||
+          guest.phone?.includes(search) ||
+          t.maskedEmail?.toLowerCase().includes(search)
+        );
+      });
     }
 
     if (filters.hostEmail) {
       const search = filters.hostEmail.toLowerCase();
-      result = result.filter(t =>
-        t.host?.email?.toLowerCase().includes(search)
-      );
+      result = result.filter(t => {
+        const host = t.host;
+        if (!host) return false;
+        // Search across name, email, and phone
+        return (
+          host.name?.toLowerCase().includes(search) ||
+          host.email?.toLowerCase().includes(search) ||
+          host.phone?.includes(search)
+        );
+      });
     }
 
     if (filters.threadId) {

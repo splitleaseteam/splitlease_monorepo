@@ -1,0 +1,25 @@
+{
+  "$schema": "./bugs.schema.json",
+  "version": "1.0.0",
+  "bugs": [
+    {
+      "id": "REG-001",
+      "title": "FK Constraint Violation on Listing Update",
+      "description": "Sending unchanged FK fields (even null) during listing updates triggers database validation errors (409 with code 23503)",
+      "dateIdentified": "2025-12-17",
+      "severity": "critical",
+      "affectedFiles": [
+        "app/src/islands/shared/EditListingDetails/useEditListingDetailsLogic.js",
+        "app/src/lib/listingService.js"
+      ],
+      "pattern": "only-send-changed-fields",
+      "invariant": "When updating a listing, only fields that have actually changed from the original should be sent to the database",
+      "testFile": "app/src/__tests__/regression/REG-001-fk-constraint-violation.test.js",
+      "references": [
+        ".claude/plans/Documents/20251217091827-edit-listing-409-regression-report.md"
+      ],
+      "status": "fixed",
+      "fixedIn": "useEditListingDetailsLogic.js - handleSave function"
+    }
+  ]
+}

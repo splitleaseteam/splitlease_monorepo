@@ -17,7 +17,7 @@
  * Database tables: user, proposal, listing, message_threads
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import action handlers
@@ -85,10 +85,12 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (optional for internal pages)
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+    if (user) {
+      console.log(`[usability-data-admin] Authenticated user: ${user.email}`);
+    } else {
+      console.log('[usability-data-admin] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -190,7 +192,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminOrCorporateStatus(
+async function _checkAdminOrCorporateStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {

@@ -1,0 +1,34 @@
+{
+  "name": "pattern-4-bidding-backend",
+  "version": "1.0.0",
+  "description": "Complete production backend for Pattern 4 (BS+BS Competitive Bidding)",
+  "type": "module",
+  "scripts": {
+    "test": "deno test --allow-all tests/",
+    "test:coverage": "deno test --allow-all --coverage=coverage tests/ && deno coverage coverage/",
+    "test:load": "deno run --allow-all load_tests/biddingLoadTest.ts",
+    "lint": "deno lint src/",
+    "format": "deno fmt src/ tests/ load_tests/",
+    "check": "deno check src/**/*.ts",
+    "deploy:functions": "supabase functions deploy submit-bid && supabase functions deploy set-auto-bid",
+    "migrate:up": "supabase db push",
+    "migrate:reset": "supabase db reset",
+    "dev": "deno run --allow-all --watch src/index.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "deno": "^1.40.0"
+  },
+  "keywords": [
+    "bidding",
+    "competitive",
+    "real-time",
+    "supabase",
+    "websocket",
+    "auction"
+  ],
+  "author": "Split Lease Inc.",
+  "license": "PROPRIETARY"
+}

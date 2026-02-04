@@ -7,7 +7,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Environment-aware session storage:
+// - Localhost (HTTP): Use localStorage to avoid Secure cookie rejection
+// - Production (HTTPS): Use default cookie storage for security
+const isLocalhost = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+   window.location.hostname === '127.0.0.1');
+
+const clientOptions = isLocalhost
+  ? {
+      auth: {
+        storage: window.localStorage,
+        storageKey: 'supabase.auth.token',
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    }
+  : undefined; // Production uses secure cookies (default)
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, clientOptions);
 
 // Default export for compatibility with files using default import syntax
 export default supabase;

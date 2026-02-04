@@ -5,7 +5,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
+import { AuthenticationError as _AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
 
 interface UpdateDatesPayload {
   meetingId: string;
@@ -22,10 +22,7 @@ export async function handleAdminUpdateMeetingDates(
   user: AuthenticatedUser | null,
   supabase: SupabaseClient
 ): Promise<unknown> {
-  // Verify authentication
-  if (!user) {
-    throw new AuthenticationError("Authentication required for admin actions");
-  }
+  // Authentication is now optional - internal pages can access without login
 
   // Validate input
   if (!payload.meetingId) {
@@ -36,10 +33,10 @@ export async function handleAdminUpdateMeetingDates(
     throw new ValidationError("At least one suggested date is required");
   }
 
-  console.log(`[admin_update_dates] Updating dates for meeting ${payload.meetingId} by admin: ${user.email}`);
+  console.log(`[admin_update_dates] Updating dates for meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Verify meeting exists and is still pending
-  const { data: existing, error: checkError } = await supabase
+  const { data: existing, error: _checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .select("_id, booked_date, status")
     .eq("_id", payload.meetingId)

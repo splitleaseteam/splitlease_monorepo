@@ -1,0 +1,21 @@
+{
+  "sessionId": "e2e-proposal-counteroffer-20260202",
+  "testFlow": "custom-proposal-counteroffer",
+  "createdAt": "2026-02-02T00:00:00.000Z",
+  "description": "Test counteroffer and proposal acceptance from both host and guest perspectives. Host account with 2 listings, guest creates proposals on both, test counteroffer flow and acceptance flow with message thread validation.",
+  "budget": {
+    "maxTokens": 5000000,
+    "maxTimeMinutes": 120,
+    "maxIterations": 10,
+    "maxBugsToFix": 20
+  },
+  "targetUrl": "http://localhost:3000/",
+  "fixMode": "auto",
+  "testAccount": "fresh",
+  "focusArea": "custom",
+  "customRequirements": "Test counteroffer and proposal acceptance. Need host with 2 listings and guest creating proposals on both. Verify messages and threads are created after every proposal action.",
+  "dataReset": {
+    "enabled": true,
+    "targetProject": "splitlease-backend-dev"
+  }
+}

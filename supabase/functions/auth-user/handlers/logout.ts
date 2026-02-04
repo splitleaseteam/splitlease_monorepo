@@ -14,9 +14,9 @@
  * @returns {message: string}
  */
 
-import { validateRequiredFields } from '../../_shared/validation.ts';
+import { validateRequiredFields as _validateRequiredFields } from '../../_shared/validation.ts';
 
-export async function handleLogout(
+export function handleLogout(
   payload: any
 ): Promise<any> {
   console.log('[logout] ========== LOGOUT REQUEST ==========');

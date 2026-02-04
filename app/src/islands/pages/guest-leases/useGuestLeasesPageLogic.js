@@ -28,6 +28,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { checkAuthStatus, validateTokenAndFetchUser, getUserType } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
+import { SIGNUP_LOGIN_URL } from '../../../lib/constants.js';
 import {
   fetchGuestLeases,
   sendCheckinMessage,
@@ -73,6 +74,12 @@ export function useGuestLeasesPageLogic() {
     stay: null
   });
 
+  // UI state - Date change modal
+  const [dateChangeModal, setDateChangeModal] = useState({
+    isOpen: false,
+    lease: null
+  });
+
   // Loading and error state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -85,109 +92,148 @@ export function useGuestLeasesPageLogic() {
    * Check authentication status and user type
    * Redirects if not authenticated or not a Guest
    *
-   * Uses two-step auth pattern (same as GuestProposalsPage):
-   * 1. checkAuthStatus() - lightweight check for tokens/cookies
-   * 2. validateTokenAndFetchUser() - validates token AND fetches user data
+   * Uses optimistic pattern matching Header component:
+   * 1. Trust cached auth/session if it exists
+   * 2. Validate in background (non-blocking)
+   * 3. Only redirect if truly unauthenticated
    */
   useEffect(() => {
     async function checkAuth() {
       console.log('🔐 Guest Leases: Checking authentication...');
 
-      // Step 1: Lightweight auth check
-      const isAuthenticated = await checkAuthStatus();
+      // DEV MODE: Skip auth for design testing (?dev=true in URL)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('dev') === 'true') {
+        console.log('🔧 Guest Leases: DEV MODE - Skipping auth with mock data');
 
-      if (!isAuthenticated) {
-        console.log('❌ Guest Leases: User not authenticated, redirecting to home');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isGuest: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_AUTHENTICATED'
-        });
-        window.location.href = '/';
+        const mockLeases = [
+          {
+            _id: 'lease-001',
+            agreementNumber: 'SL-2026-001',
+            status: 'active',
+            startDate: '2026-01-15',
+            endDate: '2026-06-15',
+            currentWeekNumber: 3,
+            totalWeekCount: 22,
+            listing: {
+              _id: 'listing-001',
+              name: 'Sunny Chelsea Studio',
+              neighborhood: 'Chelsea, Manhattan',
+              address: '234 W 23rd St, New York, NY 10011',
+              imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
+            },
+            host: {
+              _id: 'host-001',
+              firstName: 'Sarah',
+              lastName: 'Miller',
+              email: 'sarah.miller@example.com'
+            },
+            stays: [
+              { _id: 'stay-001', weekNumber: 1, checkIn: '2026-01-15', checkOut: '2026-01-22', status: 'completed', reviewSubmittedByGuest: true, reviewSubmittedByHost: { rating: 5, comment: 'Great guest!' } },
+              { _id: 'stay-002', weekNumber: 2, checkIn: '2026-01-22', checkOut: '2026-01-29', status: 'completed', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+              { _id: 'stay-003', weekNumber: 3, checkIn: '2026-01-29', checkOut: '2026-02-05', status: 'in_progress', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+              { _id: 'stay-004', weekNumber: 4, checkIn: '2026-02-05', checkOut: '2026-02-12', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+              { _id: 'stay-005', weekNumber: 5, checkIn: '2026-02-12', checkOut: '2026-02-19', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null }
+            ],
+            dateChangeRequests: [
+              { _id: 'dcr-001', requestedBy: 'host-001', originalDate: '2026-02-12', newDate: '2026-02-14', reason: 'Personal conflict', status: 'pending' }
+            ],
+            paymentRecords: [
+              { _id: 'pay-001', date: '2026-01-10', amount: 850, status: 'paid', description: 'Week 1 rent', receiptUrl: '#' },
+              { _id: 'pay-002', date: '2026-01-17', amount: 850, status: 'paid', description: 'Week 2 rent', receiptUrl: '#' },
+              { _id: 'pay-003', date: '2026-01-24', amount: 850, status: 'pending', description: 'Week 3 rent', receiptUrl: null }
+            ],
+            periodicTenancyAgreement: '#',
+            supplementalAgreement: '#',
+            creditCardAuthorizationForm: null
+          }
+        ];
+
+        setUser({ _id: 'dev-user-123', email: 'splitleasetesting@test.com', firstName: 'Test', lastName: 'Guest', userType: 'Guest' });
+        setLeases(mockLeases);
+        setExpandedLeaseId('lease-001');
+        setIsLoading(false);
+        setAuthState({ isChecking: false, isAuthenticated: true, isGuest: true, shouldRedirect: false, redirectReason: null });
         return;
       }
 
-      // Step 2: Deep validation with clearOnFailure: false
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
+      try {
+        // Check for Supabase session (primary auth method)
+        let { data: { session } } = await supabase.auth.getSession();
 
-      let userType = null;
-      let isGuest = false;
+        // If no session on first try, wait briefly for initialization
+        if (!session) {
+          console.log('🔄 Guest Leases: Waiting for Supabase session initialization...');
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const retryResult = await supabase.auth.getSession();
+          session = retryResult.data?.session;
+        }
 
-      if (userData) {
-        // Success path: Use validated user data
-        userType = userData.userType;
-        isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-        console.log('✅ Guest Leases: User data loaded, userType:', userType);
-        setUser(userData);
-      } else {
-        // Fallback to Supabase session metadata
-        const { data: { session } } = await supabase.auth.getSession();
+        // Background validation to get user data (non-blocking)
+        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
 
-        if (session?.user) {
-          userType = session.user.user_metadata?.user_type || getUserType() || null;
+        let userType = null;
+        let isGuest = false;
+
+        if (userData) {
+          // Success: Use validated user data
+          userType = userData.userType;
           isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-          console.log('⚠️ Guest Leases: Using fallback session data, userType:', userType);
+          console.log('✅ Guest Leases: User data loaded, userType:', userType);
+          setUser(userData);
+        } else if (session?.user) {
+          // Fallback: Use session metadata
+          userType = session.user.user_metadata?.user_type || getUserType();
+          isGuest = userType === 'Guest' || userType?.includes?.('Guest');
+          console.log('⚠️ Guest Leases: Using session metadata, userType:', userType);
 
-          if (!userType) {
-            console.log('❌ Guest Leases: Cannot determine user type, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              isGuest: false,
-              shouldRedirect: true,
-              redirectReason: 'USER_TYPE_UNKNOWN'
-            });
-            window.location.href = '/';
-            return;
-          }
-
-          // Set minimal user data from session
           setUser({
-            _id: session.user.id,
+            _id: session.user.user_metadata?.user_id || session.user.id,
             email: session.user.email,
             firstName: session.user.user_metadata?.first_name || 'Guest',
             lastName: session.user.user_metadata?.last_name || '',
             userType
           });
         } else {
-          console.log('❌ Guest Leases: No valid session, redirecting to home');
+          // No session or user data - redirect to home
+          console.log('❌ Guest Leases: Not authenticated, redirecting');
           setAuthState({
             isChecking: false,
             isAuthenticated: false,
             isGuest: false,
             shouldRedirect: true,
-            redirectReason: 'TOKEN_INVALID'
+            redirectReason: 'NOT_AUTHENTICATED'
           });
           window.location.href = '/';
           return;
         }
-      }
 
-      // Check if user is a Guest
-      if (!isGuest) {
-        console.log('❌ Guest Leases: User is not a Guest, redirecting');
+        // Check if user is a Guest
+        if (!isGuest) {
+          console.log('❌ Guest Leases: User is not a Guest, redirecting to host-leases');
+          setAuthState({
+            isChecking: false,
+            isAuthenticated: true,
+            isGuest: false,
+            shouldRedirect: true,
+            redirectReason: 'NOT_GUEST'
+          });
+          window.location.href = '/host-leases';
+          return;
+        }
+
+        // Auth successful
         setAuthState({
           isChecking: false,
           isAuthenticated: true,
-          isGuest: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_GUEST'
+          isGuest: true,
+          shouldRedirect: false,
+          redirectReason: null
         });
-        // Redirect Hosts to host-leases page
-        window.location.href = '/host-leases';
-        return;
+      } catch (err) {
+        console.error('❌ Guest Leases: Auth check error:', err);
+        window.location.href = '/';
       }
-
-      // Auth successful
-      setAuthState({
-        isChecking: false,
-        isAuthenticated: true,
-        isGuest: true,
-        shouldRedirect: false,
-        redirectReason: null
-      });
     }
 
     checkAuth();
@@ -203,6 +249,13 @@ export function useGuestLeasesPageLogic() {
   useEffect(() => {
     async function loadLeases() {
       if (authState.isChecking || authState.shouldRedirect || !user) {
+        return;
+      }
+
+      // DEV MODE: Skip fetching - mock data already set
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('dev') === 'true') {
+        console.log('🔧 Guest Leases: DEV MODE - Skipping data fetch');
         return;
       }
 
@@ -226,7 +279,14 @@ export function useGuestLeasesPageLogic() {
         }
       } catch (err) {
         console.error('❌ Guest Leases: Error fetching leases:', err);
-        setError(err.message || 'Failed to load leases. Please try again.');
+
+        // Handle session expiration - show error instead of redirecting
+        if (err.message === 'SESSION_EXPIRED') {
+          console.log('⚠️ Guest Leases: Session expired');
+          setError('Your session has expired. Please refresh the page to log in again.');
+        } else {
+          setError(err.message || 'Failed to load leases. Please try again.');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -262,7 +322,13 @@ export function useGuestLeasesPageLogic() {
         }
       }
     } catch (err) {
-      setError(err.message || 'Failed to load leases. Please try again.');
+      // Handle session expiration - show error instead of redirecting
+      if (err.message === 'SESSION_EXPIRED') {
+        console.log('⚠️ Guest Leases: Session expired');
+        setError('Your session has expired. Please refresh the page to log in again.');
+      } else {
+        setError(err.message || 'Failed to load leases. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -546,15 +612,24 @@ export function useGuestLeasesPageLogic() {
   /**
    * Open date change request modal
    */
-  const handleRequestDateChange = useCallback(() => {
-    console.log('📅 Guest Leases: Request date change');
-    // TODO: Open date change request modal
-    showToast({
-      title: 'Coming Soon',
-      message: 'Date change requests will be available soon.',
-      type: 'info'
+  const handleRequestDateChange = useCallback((lease) => {
+    console.log('📅 Guest Leases: Opening date change modal for lease:', lease?._id);
+    setDateChangeModal({
+      isOpen: true,
+      lease
     });
-  }, [showToast]);
+  }, []);
+
+  /**
+   * Close date change request modal
+   */
+  const handleCloseDateChangeModal = useCallback(() => {
+    console.log('📅 Guest Leases: Closing date change modal');
+    setDateChangeModal({
+      isOpen: false,
+      lease: null
+    });
+  }, []);
 
   // ============================================================================
   // HANDLERS - DOCUMENTS
@@ -606,6 +681,165 @@ export function useGuestLeasesPageLogic() {
   }, [showToast]);
 
   // ============================================================================
+  // COMPUTED VALUES (for hybrid design)
+  // ============================================================================
+
+  /**
+   * Find the next upcoming stay across all leases
+   * Used by HeroSection component
+   */
+  const nextStay = (() => {
+    if (!leases || leases.length === 0) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let upcomingStay = null;
+    let upcomingLease = null;
+
+    for (const lease of leases) {
+      if (!lease.stays || lease.stays.length === 0) continue;
+
+      for (const stay of lease.stays) {
+        const checkIn = new Date(stay.checkIn);
+        checkIn.setHours(0, 0, 0, 0);
+
+        // Include stays that are upcoming or currently in progress
+        if (stay.status === 'in_progress' ||
+            (stay.status === 'not_started' && checkIn >= today)) {
+          if (!upcomingStay || checkIn < new Date(upcomingStay.checkIn)) {
+            upcomingStay = stay;
+            upcomingLease = lease;
+          }
+        }
+      }
+    }
+
+    return upcomingStay ? { ...upcomingStay, lease: upcomingLease } : null;
+  })();
+
+  /**
+   * Get host info from the next stay's lease
+   */
+  const nextStayHost = nextStay?.lease?.host || null;
+  const nextStayListing = nextStay?.lease?.listing || null;
+
+  /**
+   * Compute payment status across all leases
+   * Returns: 'current' | 'overdue' | 'pending'
+   */
+  const paymentsStatus = (() => {
+    if (!leases || leases.length === 0) return 'current';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const lease of leases) {
+      if (!lease.paymentRecords) continue;
+
+      for (const payment of lease.paymentRecords) {
+        if (payment.status === 'overdue') return 'overdue';
+        if (payment.status === 'pending') {
+          const dueDate = new Date(payment.date);
+          dueDate.setHours(0, 0, 0, 0);
+          if (dueDate < today) return 'overdue';
+        }
+      }
+    }
+
+    // Check for pending payments due soon
+    for (const lease of leases) {
+      if (!lease.paymentRecords) continue;
+      for (const payment of lease.paymentRecords) {
+        if (payment.status === 'pending') return 'pending';
+      }
+    }
+
+    return 'current';
+  })();
+
+  /**
+   * Compute documents status
+   * Returns: 'signed' | 'pending'
+   */
+  const documentsStatus = (() => {
+    if (!leases || leases.length === 0) return 'signed';
+
+    for (const lease of leases) {
+      // Check if required documents are present
+      if (lease.status === 'active' && !lease.periodicTenancyAgreement) {
+        return 'pending';
+      }
+    }
+
+    return 'signed';
+  })();
+
+  /**
+   * Compute celebration banner content
+   * Returns: { title, message } or null
+   */
+  const [celebrationBanner, setCelebrationBanner] = useState({ isVisible: false, title: '', message: '' });
+
+  // Update celebration banner when next stay changes
+  useEffect(() => {
+    if (!nextStay) {
+      setCelebrationBanner({ isVisible: false, title: '', message: '' });
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkIn = new Date(nextStay.checkIn);
+    checkIn.setHours(0, 0, 0, 0);
+    const daysUntil = Math.ceil((checkIn - today) / (1000 * 60 * 60 * 24));
+
+    if (nextStay.status === 'in_progress') {
+      setCelebrationBanner({
+        isVisible: true,
+        title: 'Check-in complete!',
+        message: 'Enjoy your stay at ' + (nextStayListing?.name || 'your rental')
+      });
+    } else if (daysUntil === 0) {
+      setCelebrationBanner({
+        isVisible: true,
+        title: 'Your stay begins today!',
+        message: 'Get ready to check in at ' + (nextStayListing?.name || 'your rental')
+      });
+    } else if (daysUntil === 1) {
+      setCelebrationBanner({
+        isVisible: true,
+        title: 'Your stay begins tomorrow!',
+        message: 'Remember to review check-in instructions'
+      });
+    } else {
+      setCelebrationBanner({ isVisible: false, title: '', message: '' });
+    }
+  }, [nextStay, nextStayListing?.name]);
+
+  /**
+   * Dismiss celebration banner
+   */
+  const handleDismissCelebration = useCallback(() => {
+    setCelebrationBanner(prev => ({ ...prev, isVisible: false }));
+  }, []);
+
+  /**
+   * Handle view details from hero section
+   * Expands the lease card for the next stay
+   */
+  const handleViewStayDetails = useCallback(() => {
+    if (nextStay?.lease?._id) {
+      setExpandedLeaseId(nextStay.lease._id);
+      // Scroll to the lease card
+      const leaseCard = document.querySelector(`[data-lease-id="${nextStay.lease._id}"]`);
+      if (leaseCard) {
+        leaseCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [nextStay]);
+
+  // ============================================================================
   // RETURN
   // ============================================================================
 
@@ -616,6 +850,14 @@ export function useGuestLeasesPageLogic() {
     // Raw data
     user,
     leases,
+
+    // Computed values (hybrid design)
+    nextStay,
+    nextStayHost,
+    nextStayListing,
+    paymentsStatus,
+    documentsStatus,
+    celebrationBanner,
 
     // UI state
     expandedLeaseId,
@@ -641,15 +883,21 @@ export function useGuestLeasesPageLogic() {
     handleSeeReview,
 
     // Handlers - Date changes
+    dateChangeModal,
     handleDateChangeApprove,
     handleDateChangeReject,
     handleRequestDateChange,
+    handleCloseDateChangeModal,
 
     // Handlers - Documents
     handleDownloadDocument,
 
     // Handlers - Other
     handleEmergencyAssistance,
-    handleSeeReputation
+    handleSeeReputation,
+
+    // Handlers - Hybrid design
+    handleDismissCelebration,
+    handleViewStayDetails
   };
 }

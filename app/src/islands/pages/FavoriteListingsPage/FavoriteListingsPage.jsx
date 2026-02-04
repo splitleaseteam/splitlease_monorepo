@@ -1,15 +1,13 @@
 /**
  * FavoriteListingsPage Component
  * Displays user's favorited listings with same layout/style as SearchPage
- * Includes Google Map with pins and AuthAwareSearchScheduleSelector
+ * Includes Google Map with pins
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { createRoot } from 'react-dom/client';
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import GoogleMap from '../../shared/GoogleMap.jsx';
-import AuthAwareSearchScheduleSelector from '../../shared/AuthAwareSearchScheduleSelector.jsx';
 import ContactHostMessaging from '../../shared/ContactHostMessaging.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
 import LoggedInAvatar from '../../shared/LoggedInAvatar/LoggedInAvatar.jsx';
@@ -19,7 +17,15 @@ import ProposalSuccessModal from '../../modals/ProposalSuccessModal.jsx';
 import SignUpLoginModal from '../../shared/SignUpLoginModal.jsx';
 import EmptyState from './components/EmptyState';
 import FavoritesCardV2 from './components/FavoritesCardV2.jsx';
+import FavoritesCardV3 from './components/FavoritesCardV3.jsx';
 import { getFavoritedListingIds, removeFromFavorites } from './favoritesApi';
+
+/**
+ * CARD VERSION TOGGLE
+ * Set to true to use the new horizontal card with mini-map (V3)
+ * Set to false to revert to the original vertical card (V2)
+ */
+const USE_CARD_V3 = true;
 import { checkAuthStatus, validateTokenAndFetchUser, getSessionId } from '../../../lib/auth/tokenValidation.js';
 import { logoutUser } from '../../../lib/auth/logout.js';
 import { fetchProposalsByGuest, fetchLastProposalDefaults } from '../../../lib/proposalDataFetcher.js';
@@ -67,21 +73,59 @@ async function fetchInformationalTexts() {
 }
 
 /**
- * ListingsGridV2 - Grid using pure inline styles (no CSS conflicts)
+ * ListingsGridV2 - V6 Design: Two-column card grid layout
+ * WCAG compliant with proper spacing and responsive behavior
  */
-function ListingsGridV2({ listings, onOpenContactModal, isLoggedIn, onToggleFavorite, userId, proposalsByListingId, onCreateProposal, onPhotoClick, viewMode }) {
-  const isGrid = viewMode === 'grid';
-  
+function ListingsGridV2({ listings, onOpenContactModal, isLoggedIn, onToggleFavorite, userId, proposalsByListingId, onCreateProposal, onPhotoClick, onMapClick, viewMode }) {
+  // Use device detection for responsive layout
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileView(window.innerWidth < 700);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // V6 Design: Two-column card grid (matches V6 WCAG mockup)
+  // Responsive: Single column on mobile (< 700px)
+  const gridStyles = USE_CARD_V3
+    ? {
+        display: 'grid',
+        gridTemplateColumns: isMobileView ? '1fr' : 'repeat(2, 1fr)',
+        gap: '24px',
+        padding: '0',
+      }
+    : {
+        display: viewMode === 'grid' ? 'grid' : 'flex',
+        flexDirection: viewMode === 'grid' ? 'initial' : 'column',
+        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
+        gap: '20px',
+        padding: '0',
+      };
+
   return (
-    <div style={{
-      display: isGrid ? 'grid' : 'flex',
-      flexDirection: isGrid ? 'initial' : 'column',
-      gridTemplateColumns: isGrid ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
-      gap: '20px',
-      padding: '0',
-    }}>
+    <div style={gridStyles} className="v6-listings-grid">
       {listings.map((listing) => {
         const proposalForListing = proposalsByListingId?.get(listing.id) || null;
+
+        // Use V3 (V6 design vertical cards) or V2 (legacy) based on toggle
+        if (USE_CARD_V3) {
+          return (
+            <FavoritesCardV3
+              key={listing.id}
+              listing={listing}
+              onToggleFavorite={onToggleFavorite}
+              userId={userId}
+              proposalForListing={proposalForListing}
+              onOpenCreateProposalModal={onCreateProposal}
+              onMapClick={onMapClick}
+            />
+          );
+        }
+
         return (
           <FavoritesCardV2
             key={listing.id}
@@ -264,6 +308,17 @@ const FavoriteListingsPage = () => {
   // Refs
   const mapRef = useRef(null);
 
+  // Scroll to top on page load - prevents browser scroll restoration
+  // from causing misalignment between cards and map
+  useEffect(() => {
+    // Disable browser scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    // Scroll to top immediately
+    window.scrollTo(0, 0);
+  }, []);
+
   // Transform raw listing data to match SearchPage format
   const transformListing = useCallback((dbListing, images, hostData) => {
     const neighborhoodName = getNeighborhoodName(dbListing['Location - Hood']);
@@ -307,15 +362,15 @@ const FavoriteListingsPage = () => {
       coordinates,
       price: {
         starting: dbListing['Standarized Minimum Nightly Price (Filter)'] || 0,
-        full: dbListing['💰Nightly Host Rate for 7 nights'] || 0
+        full: dbListing['nightly_rate_7_nights'] || 0
       },
       'Starting nightly price': dbListing['Standarized Minimum Nightly Price (Filter)'] || 0,
-      'Price 2 nights selected': dbListing['💰Nightly Host Rate for 2 nights'] || null,
-      'Price 3 nights selected': dbListing['💰Nightly Host Rate for 3 nights'] || null,
-      'Price 4 nights selected': dbListing['💰Nightly Host Rate for 4 nights'] || null,
-      'Price 5 nights selected': dbListing['💰Nightly Host Rate for 5 nights'] || null,
+      'Price 2 nights selected': dbListing['nightly_rate_2_nights'] || null,
+      'Price 3 nights selected': dbListing['nightly_rate_3_nights'] || null,
+      'Price 4 nights selected': dbListing['nightly_rate_4_nights'] || null,
+      'Price 5 nights selected': dbListing['nightly_rate_5_nights'] || null,
       'Price 6 nights selected': null,
-      'Price 7 nights selected': dbListing['💰Nightly Host Rate for 7 nights'] || null,
+      'Price 7 nights selected': dbListing['nightly_rate_7_nights'] || null,
       type: propertyType,
       squareFeet: dbListing['Features - SQFT Area'] || null,
       maxGuests: dbListing['Features - Qty Guests'] || 1,
@@ -328,18 +383,18 @@ const FavoriteListingsPage = () => {
       weeks_offered: dbListing['Weeks offered'] || 'Every week',
       isNew: false,
 
-      // Original pricing fields for CreateProposalFlowV2 / DaysSelectionSection
-      '💰Nightly Host Rate for 2 nights': dbListing['💰Nightly Host Rate for 2 nights'],
-      '💰Nightly Host Rate for 3 nights': dbListing['💰Nightly Host Rate for 3 nights'],
-      '💰Nightly Host Rate for 4 nights': dbListing['💰Nightly Host Rate for 4 nights'],
-      '💰Nightly Host Rate for 5 nights': dbListing['💰Nightly Host Rate for 5 nights'],
-      '💰Nightly Host Rate for 7 nights': dbListing['💰Nightly Host Rate for 7 nights'],
-      '💰Weekly Host Rate': dbListing['💰Weekly Host Rate'],
-      '💰Monthly Host Rate': dbListing['💰Monthly Host Rate'],
-      '💰Price Override': dbListing['💰Price Override'],
-      '💰Cleaning Cost / Maintenance Fee': dbListing['💰Cleaning Cost / Maintenance Fee'],
-      '💰Damage Deposit': dbListing['💰Damage Deposit'],
-      '💰Unit Markup': dbListing['💰Unit Markup'],
+      // Pricing fields for CreateProposalFlowV2 / DaysSelectionSection
+      'nightly_rate_2_nights': dbListing['nightly_rate_2_nights'],
+      'nightly_rate_3_nights': dbListing['nightly_rate_3_nights'],
+      'nightly_rate_4_nights': dbListing['nightly_rate_4_nights'],
+      'nightly_rate_5_nights': dbListing['nightly_rate_5_nights'],
+      'nightly_rate_7_nights': dbListing['nightly_rate_7_nights'],
+      'weekly_host_rate': dbListing['weekly_host_rate'],
+      'monthly_host_rate': dbListing['monthly_host_rate'],
+      'price_override': dbListing['price_override'],
+      'cleaning_fee': dbListing['cleaning_fee'],
+      'damage_deposit': dbListing['damage_deposit'],
+      'unit_markup': dbListing['unit_markup'],
       'rental type': dbListing['rental type'],
       'Weeks offered': dbListing['Weeks offered'],
 
@@ -497,7 +552,9 @@ const FavoriteListingsPage = () => {
           } else if (typeof photosField === 'string') {
             try {
               photos = JSON.parse(photosField);
-            } catch { /* ignore */ }
+            } catch {
+              void 0; // Intentional: malformed JSON falls back to empty array
+            }
           }
 
           // Only collect string IDs (legacy format), not objects (new format)
@@ -925,36 +982,6 @@ const FavoriteListingsPage = () => {
     }
   };
 
-  // Mount AuthAwareSearchScheduleSelector in mount points
-  useEffect(() => {
-    const mountPointDesktop = document.getElementById('schedule-selector-mount-point');
-    const mountPointMobile = document.getElementById('schedule-selector-mount-point-mobile');
-    const roots = [];
-
-    const selectorProps = {
-      onSelectionChange: (days) => {
-        console.log('Schedule selector changed:', days);
-      },
-      onError: (error) => console.error('AuthAwareSearchScheduleSelector error:', error)
-    };
-
-    if (mountPointDesktop) {
-      const rootDesktop = createRoot(mountPointDesktop);
-      rootDesktop.render(<AuthAwareSearchScheduleSelector {...selectorProps} />);
-      roots.push(rootDesktop);
-    }
-
-    if (mountPointMobile) {
-      const rootMobile = createRoot(mountPointMobile);
-      rootMobile.render(<AuthAwareSearchScheduleSelector {...selectorProps} />);
-      roots.push(rootMobile);
-    }
-
-    return () => {
-      roots.forEach(root => root.unmount());
-    };
-  }, []);
-
   // Determine if "Message" button should be visible on listing cards
   // Hidden for logged-in host users (hosts shouldn't message other hosts)
   const showMessageButton = useMemo(() => {
@@ -1118,20 +1145,6 @@ const FavoriteListingsPage = () => {
               </button>
             </div>
 
-            {/* ROW 3: Mobile Schedule Selector with Check-in/Check-out */}
-            <div className="mobile-schedule-selector">
-              <div className="filter-group schedule-selector-group" id="schedule-selector-mount-point-mobile">
-                {/* AuthAwareSearchScheduleSelector will be mounted here on mobile */}
-              </div>
-            </div>
-
-            {/* Desktop Schedule Selector */}
-            <div className="inline-filters">
-              <div className="filter-group schedule-selector-group" id="schedule-selector-mount-point">
-                {/* AuthAwareSearchScheduleSelector will be mounted here on desktop */}
-              </div>
-            </div>
-
             {/* Listings content */}
             <div className="listings-content">
               {isLoading && <LoadingState />}
@@ -1157,72 +1170,40 @@ const FavoriteListingsPage = () => {
                   proposalsByListingId={proposalsByListingId}
                   onCreateProposal={handleOpenProposalModal}
                   onPhotoClick={handlePhotoGalleryOpen}
+                  onMapClick={() => setMobileMapVisible(true)}
                   viewMode={viewMode}
                 />
               )}
             </div>
           </section>
 
-          {/* RIGHT COLUMN: Map with integrated header */}
+          {/* RIGHT COLUMN: Map with V6 header */}
           <section className="map-column">
-            {/* Integrated Logo and Menu */}
-            <div className="map-header">
-              <a href="/" className="map-logo">
-                <img
-                  src="/assets/images/split-lease-purple-circle.png"
-                  alt="Split Lease Logo"
-                  className="logo-icon"
-                  width="36"
-                  height="36"
-                />
-                <span className="logo-text">Split Lease</span>
-              </a>
-
-              {/* Right side: Auth state */}
-              <div className="map-header-actions">
-                {isLoggedIn && currentUser ? (
-                  <>
-                    {/* Favorites Heart with Count */}
-                    <a href="/favorite-listings" className="favorites-link active" aria-label="My Favorite Listings">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="#FF6B35"
-                        stroke="#FF6B35"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                      {listings.length > 0 && (
-                        <span className="favorites-badge">{listings.length}</span>
-                      )}
-                    </a>
-
-                    {/* Logged In Avatar */}
-                    <LoggedInAvatar
-                      user={currentUser}
-                      currentPath="/favorite-listings"
-                      onNavigate={handleNavigate}
-                      onLogout={handleLogout}
-                    />
-                  </>
-                ) : (
-                  <button
-                    className="hamburger-menu"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    aria-label="Toggle menu"
-                  >
-                    <span>Menu</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="3" y1="12" x2="21" y2="12" />
-                      <line x1="3" y1="6" x2="21" y2="6" />
-                      <line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                  </button>
-                )}
+            {/* V6 Map Header - Simple label with zoom controls */}
+            <div className="v6-map-header">
+              <div className="map-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                  <line x1="8" y1="2" x2="8" y2="18" />
+                  <line x1="16" y1="6" x2="16" y2="22" />
+                </svg>
+                <span>Map</span>
+              </div>
+              <div className="zoom-controls">
+                <button
+                  className="zoom-btn"
+                  onClick={() => mapRef.current?.zoomIn?.()}
+                  aria-label="Zoom in"
+                >
+                  +
+                </button>
+                <button
+                  className="zoom-btn"
+                  onClick={() => mapRef.current?.zoomOut?.()}
+                  aria-label="Zoom out"
+                >
+                  −
+                </button>
               </div>
             </div>
 

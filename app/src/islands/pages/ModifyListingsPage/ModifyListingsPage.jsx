@@ -54,19 +54,27 @@ export default function ModifyListingsPage() {
             Search for a listing by name or ID to begin editing.
           </p>
 
-          {/* Search Input */}
+          {/* Search Input - matches CreateSuggestedProposal pattern */}
           <div className="modify-listings-page__search-input-wrapper">
             <SearchIcon className="modify-listings-page__search-icon" />
             <input
               type="text"
               value={logic.searchQuery}
-              onChange={(e) => {
-                logic.setSearchQuery(e.target.value);
-                logic.searchListings(e.target.value);
-              }}
-              placeholder="Search listings by name or ID..."
+              onChange={logic.handleSearchChange}
+              onFocus={logic.handleSearchFocus}
+              placeholder="Search by name, ID, host, or rental type..."
               className="modify-listings-page__search-input"
             />
+            {logic.searchQuery && (
+              <button
+                type="button"
+                onClick={logic.handleClearSearch}
+                className="modify-listings-page__clear-search-btn"
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
             {logic.isSearching && <div className="modify-listings-page__mini-spinner" />}
           </div>
 
@@ -84,7 +92,7 @@ export default function ModifyListingsPage() {
                       {result.Name || 'Unnamed Listing'}
                     </span>
                     <span className="modify-listings-page__search-result-address">
-                      {result['Address - Full Street Address'] || 'No address'}
+                      {result['Location - Address']?.address || 'No address'}
                     </span>
                   </div>
                   <div className="modify-listings-page__search-result-status">

@@ -19,7 +19,7 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
     BubbleDataApiConfig,
     createRecord,
-    updateRecord,
+    updateRecord as _updateRecord,
 } from '../lib/bubbleDataApi.ts';
 
 export interface SyncSignupAtomicPayload {

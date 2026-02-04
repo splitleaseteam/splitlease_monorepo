@@ -5,9 +5,12 @@
  * - Uses message-row container with avatar on the side
  * - Incoming messages: white background with border (left-aligned)
  * - Outgoing messages: dark purple background (right-aligned)
+ * - BBCode formatting: [b]bold[/b], [i]italic[/i], [color=#HEX]text[/color]
  *
  * CTA buttons are rendered dynamically based on CTA type and user role.
  */
+
+import { parseBBCode } from '../../../../lib/parseBBCode.js';
 
 /**
  * Get initials from a name string
@@ -79,7 +82,7 @@ export default function MessageBubble({ message, onCTAClick, getCTAButtonConfig,
 
         {/* Message Bubble */}
         <div className="msg-bubble">
-          <p className="msg-text">{message.message_body}</p>
+          <p className="msg-text">{parseBBCode(message.message_body)}</p>
 
           {/* Dynamic CTA Button */}
           {showCTA && (

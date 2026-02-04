@@ -1,0 +1,87 @@
+# Split Lease - Cursor IDE Rules for E2E Testing Orchestration
+
+## Overview
+
+This project uses Claude Code as the primary orchestrator for E2E testing with MCPs (Model Context Protocol). Cursor IDE serves as the development environment for viewing, editing, and debugging code during the orchestration loop.
+
+## MCP Invocation Pattern
+
+CRITICAL: MCPs must be invoked through the orchestration pattern, not directly.
+
+Pattern:
+```
+Claude Code -> mcp-tool-specialist subagent -> MCP tools
+```
+
+MCPs available:
+- Playwright MCP: Browser automation, screenshots, web testing
+- Supabase MCP: Database operations, auth, edge functions
+- Knip MCP: Dead code detection
+
+## E2E Testing Workflow
+
+When the E2E Testing Orchestrator is running:
+
+1. READ-ONLY in Cursor: During test execution, do not modify files being tested
+2. WAIT for fix phase: Claude Code will indicate when fixes are needed
+3. ASSIST with debugging: Help identify issues in console output, screenshots
+4. VERIFY changes: After Claude Code applies fixes, review the diffs
+
+## Session Files
+
+The `test-session/` directory contains orchestration state:
+
+- `config.json` - Do not modify during session
+- `state.json` - Read-only, tracks progress
+- `screenshots/` - Test evidence, viewable in Cursor
+
+## Code Conventions
+
+When assisting with bug fixes:
+
+1. Follow existing patterns in the codebase
+2. Use 0-indexed days (0=Sunday through 6=Saturday)
+3. Only send changed fields in database updates
+4. Use hollow component pattern (logic in useXxxPageLogic hooks)
+5. Use four-layer logic architecture (calculators -> rules -> processors -> workflows)
+
+## MCP Tool Reference
+
+### Playwright MCP (via mcp-tool-specialist)
+- browser_navigate - Navigate to URL
+- browser_snapshot - Get page structure (use before interactions)
+- browser_click - Click element (requires ref from snapshot)
+- browser_type - Type text into element
+- browser_take_screenshot - Capture visual evidence
+
+### Supabase MCP (via mcp-tool-specialist)
+- execute_sql - Run SQL queries (dev database only)
+- list_tables - View database schema
+- get_logs - Check edge function logs
+
+## Testing Guidelines
+
+1. Always start dev server before testing: `bun run dev`
+2. Test credentials in environment variables (never hardcode)
+3. Screenshots saved to `test-session/screenshots/{session-id}/`
+4. Bug reports go to `.claude/plans/New/`
+
+## Integration Points
+
+Claude Code orchestrates, Cursor assists:
+
+| Task | Owner | Cursor Role |
+|------|-------|-------------|
+| Test execution | Claude Code | View screenshots |
+| Bug detection | Claude Code | Review console logs |
+| Bug analysis | Claude Code | Verify analysis |
+| Fix planning | Claude Code | Review plan |
+| Fix implementation | Claude Code | Review diff, assist |
+| Verification | Claude Code | View retest results |
+
+## Environment Variables
+
+Required for E2E testing (set via PowerShell):
+- TESTGUESTEMAILADDRESS - Test guest account email
+- TESTPASSWORD - Shared test account password
+- TESTHOSTEMAILADDRESS - Test host account email (optional)

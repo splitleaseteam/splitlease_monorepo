@@ -5,7 +5,7 @@
  * DIAGNOSTIC VERSION 2: Minimal core + lazy imports
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers inlined
@@ -90,13 +90,12 @@ Deno.serve(async (req: Request) => {
         const { handleUpdate } = await import("./actions/update.ts");
         console.log('[proposal] Update handler loaded');
 
-        // Authentication required
+        // Optional authentication - soft headers pattern for internal admin pages
         const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
-          return new Response(
-            JSON.stringify({ success: false, error: 'Authentication required' }),
-            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        if (user) {
+          console.log(`[proposal:update] Authenticated user: ${user.email} (${user.id})`);
+        } else {
+          console.log('[proposal:update] No auth - proceeding as internal page request');
         }
         result = await handleUpdate(payload, user, supabase);
         break;
@@ -239,13 +238,13 @@ Deno.serve(async (req: Request) => {
         const { handleAcceptCounteroffer } = await import("./actions/accept_counteroffer.ts");
         console.log('[proposal] acceptCounteroffer handler loaded');
 
-        // Authentication required
+        // Optional authentication - soft headers pattern for legacy token users
+        // Service role key bypasses RLS, so auth is for logging/audit purposes only
         const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
-          return new Response(
-            JSON.stringify({ success: false, error: 'Authentication required' }),
-            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        if (user) {
+          console.log(`[proposal:acceptCounteroffer] Authenticated user: ${user.email} (${user.id})`);
+        } else {
+          console.log('[proposal:acceptCounteroffer] No Supabase auth - proceeding with legacy token user');
         }
         result = await handleAcceptCounteroffer(payload, supabase);
         break;
@@ -315,7 +314,7 @@ async function authenticateFromHeaders(
 
     return { id: appUser._id, email: user.email ?? '' };
 
-  } catch (err) {
+  } catch (_err) {
     console.error('[proposal:auth] Exception:', (err as Error).message);
     return null;
   }

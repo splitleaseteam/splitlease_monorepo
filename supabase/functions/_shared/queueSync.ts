@@ -190,7 +190,7 @@ export async function enqueueSingleItem(
  * @param options - Optional configuration
  * @param options.batchSize - Number of items to process (default: 10)
  */
-export async function triggerQueueProcessing(
+export function triggerQueueProcessing(
   options: { batchSize?: number } = {}
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -240,7 +240,7 @@ export interface TriggerProposalMessagingParams {
   proposalStatus: string;
 }
 
-export async function triggerProposalMessaging(
+export function triggerProposalMessaging(
   params: TriggerProposalMessagingParams
 ): Promise<void> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL');

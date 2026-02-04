@@ -25,7 +25,9 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import { X, ChevronLeft, ChevronRight, FileText, HelpCircle } from 'lucide-react'
 import { executeCancelProposal } from '../../logic/workflows/proposals/cancelProposalWorkflow.js'
+import { PROPOSAL_STATUSES } from '../../logic/constants/proposalStatuses.js'
 import CancelProposalModal from './CancelProposalModal.jsx'
 import './GuestEditingProposalModal.css'
 
@@ -529,8 +531,14 @@ export default function GuestEditingProposalModal({
   // View state machine: 'pristine' | 'editing' | 'general' | 'cancel'
   const [view, setView] = useState(initialView)
 
+  // Check if proposal is in a state where editing is not allowed
+  const proposalStatusText = proposal?.Status?.trim();
+  const isAcceptedOrDrafting = proposalStatusText === PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key ||
+    proposalStatusText?.includes('Accepted') ||
+    proposalStatusText?.includes('Drafting');
+
   // Debug log to verify initial view state
-  console.log('[GuestEditingProposalModal] initialView:', initialView, '| current view:', view)
+  console.log('[GuestEditingProposalModal] initialView:', initialView, '| current view:', view, '| isAcceptedOrDrafting:', isAcceptedOrDrafting)
 
   // Helper to parse days selected from proposal
   const parseDaysSelected = (proposal) => {
@@ -611,9 +619,6 @@ export default function GuestEditingProposalModal({
   // House rules visibility
   const [isHouseRulesVisible, setIsHouseRulesVisible] = useState(false)
 
-  // Schedule and financial section hover state
-  const [isScheduleHovered, setIsScheduleHovered] = useState(false)
-
   // Open for first time flag for initial state setup
   const [openForFirstTime, setOpenForFirstTime] = useState(true)
 
@@ -631,7 +636,6 @@ export default function GuestEditingProposalModal({
   const showMainView = view !== 'cancel'
   const showEditingPortion = view === 'editing'
   const showBreakdownDetails = view === 'general' || view === 'pristine'
-  const showScheduleFinancial = isStatusAccepted || view === 'editing' || isInternalUsage
   const showButtons = view === 'editing' || view === 'general' || view === 'pristine' || isStatusAccepted || isInternalUsage
   const isPristine = view === 'pristine'
 
@@ -687,15 +691,6 @@ export default function GuestEditingProposalModal({
       handleClose()
     }
   }, [view, handleClose])
-
-  // Handle schedule and financial click
-  const handleScheduleFinancialClick = useCallback(() => {
-    if (view !== 'editing') {
-      setView('editing')
-    } else {
-      setView('general')
-    }
-  }, [view])
 
   // Handle "Edit Proposal" button click from pristine state
   const handleStartEditing = useCallback(() => {
@@ -897,12 +892,7 @@ export default function GuestEditingProposalModal({
                 <>
                   <div className="gep-header-left">
                     <div className="gep-header-icon" aria-hidden="true">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                      </svg>
+                      <FileText size={20} strokeWidth={2} />
                     </div>
                     <div>
                       <h2 id="gep-modal-title" className="gep-header-title-text">Proposal Details</h2>
@@ -915,10 +905,7 @@ export default function GuestEditingProposalModal({
                     onClick={handleClose}
                     aria-label="Close modal"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <X size={20} strokeWidth={2} />
                   </button>
                 </>
               ) : (
@@ -931,9 +918,7 @@ export default function GuestEditingProposalModal({
                       onClick={handleBack}
                       aria-label="Go back to previous view"
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                        <path d="M15 18L9 12L15 6" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
                     </button>
                     <div>
                       <h2 id="gep-modal-title" className="gep-header-title-text">Edit Proposal</h2>
@@ -946,10 +931,7 @@ export default function GuestEditingProposalModal({
                     onClick={handleClose}
                     aria-label="Close modal"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
+                    <X size={20} strokeWidth={2} />
                   </button>
                 </>
               )}
@@ -993,26 +975,16 @@ export default function GuestEditingProposalModal({
                 {/* Move-In Date Section */}
                 <div className="gep-form-section">
                   <label htmlFor="gep-move-in-date" className="gep-form-label">Move-In Date</label>
-                  <div className="gep-date-input-container">
-                    <input
-                      type="date"
-                      id="gep-move-in-date"
-                      className="gep-date-input"
-                      value={formState.moveInDate instanceof Date && !isNaN(formState.moveInDate)
-                        ? formState.moveInDate.toISOString().split('T')[0]
-                        : ''}
-                      onChange={handleMoveInDateChange}
-                      aria-describedby="gep-move-in-display"
-                    />
-                    <button type="button" className="gep-calendar-button" aria-label="Open calendar picker">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
-                        <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2"/>
-                        <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  </div>
+                  <input
+                    type="date"
+                    id="gep-move-in-date"
+                    className="gep-date-input"
+                    value={formState.moveInDate instanceof Date && !isNaN(formState.moveInDate)
+                      ? formState.moveInDate.toISOString().split('T')[0]
+                      : ''}
+                    onChange={handleMoveInDateChange}
+                    aria-describedby="gep-move-in-display"
+                  />
                   <p id="gep-move-in-display" className="gep-date-display" aria-live="polite">
                     Move-in: {formatDate(formState.moveInDate, isSmallScreen)}
                   </p>
@@ -1023,10 +995,7 @@ export default function GuestEditingProposalModal({
                   <label htmlFor="gep-flexible-move-in" className="gep-form-label">
                     Flexible move-in date?
                     <button type="button" className="gep-info-button" aria-label="More information about flexible move-in dates">
-                      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2"/>
-                        <text x="10" y="14" textAnchor="middle" fontSize="12" fill="currentColor" fontWeight="bold">?</text>
-                      </svg>
+                      <HelpCircle size={16} strokeWidth={2} aria-hidden="true" />
                     </button>
                   </label>
                   <textarea
@@ -1174,49 +1143,17 @@ export default function GuestEditingProposalModal({
               </div>
             )}
 
-            {/* Schedule and financial section - conditionally visible */}
-            {showScheduleFinancial && (
-              <div
-                className={`gep-schedule-financial ${isScheduleHovered ? 'gep-schedule-financial--hovered' : ''}`}
-                onClick={handleScheduleFinancialClick}
-                onMouseEnter={() => setIsScheduleHovered(true)}
-                onMouseLeave={() => setIsScheduleHovered(false)}
-              >
-                <div className="gep-schedule-financial-content">
-                  <span className="gep-schedule-financial-label">
-                    Edit Proposal Terms (Nights, Weeks, Move-in date)
-                  </span>
-                  <svg
-                    className={`gep-expand-icon ${view === 'editing' ? 'gep-expand-icon--expanded' : ''}`}
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-            )}
-
           </div>
         )}
 
         {/* Buttons section - OUTSIDE gep-main-view so they stay pinned at bottom */}
         {showMainView && showButtons && (
-          <div className={`gep-buttons ${view === 'pristine' ? 'gep-buttons--vertical' : ''}`}>
+          <div className="gep-buttons">
             {view === 'pristine' ? (
               /* Pristine state: User just opened modal, hasn't edited anything */
-              /* Edit Proposal on top, Close on bottom - stacked vertically */
+              /* Close first, Edit Proposal second - side by side */
+              /* Hide "Edit Proposal" button if proposal is accepted or drafting */
               <>
-                <button
-                  type="button"
-                  className="gep-button gep-button--primary"
-                  onClick={handleStartEditing}
-                >
-                  Edit Proposal
-                </button>
                 <button
                   type="button"
                   className="gep-button gep-button--secondary"
@@ -1224,6 +1161,15 @@ export default function GuestEditingProposalModal({
                 >
                   Close
                 </button>
+                {!isAcceptedOrDrafting && (
+                  <button
+                    type="button"
+                    className="gep-button gep-button--primary"
+                    onClick={handleStartEditing}
+                  >
+                    Edit Proposal
+                  </button>
+                )}
               </>
             ) : view === 'editing' ? (
               /* Editing state: User is actively changing fields */

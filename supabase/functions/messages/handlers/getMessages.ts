@@ -10,7 +10,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { User } from 'https://esm.sh/@supabase/supabase-js@2';
+import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
@@ -59,10 +59,10 @@ interface GetMessagesResult {
 export async function handleGetMessages(
   supabaseAdmin: SupabaseClient,
   payload: Record<string, unknown>,
-  user: { id: string; email: string }
+  user: { id: string; email: string; bubbleId?: string }
 ): Promise<GetMessagesResult> {
   console.log('[getMessages] ========== GET MESSAGES ==========');
-  console.log('[getMessages] User ID:', user.id, 'Email:', user.email);
+  console.log('[getMessages] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
   console.log('[getMessages] Payload:', JSON.stringify(payload, null, 2));
 
   // Validate required fields
@@ -71,17 +71,28 @@ export async function handleGetMessages(
 
   const { thread_id, limit = 50, offset = 0 } = typedPayload;
 
-  // Determine user's Bubble ID:
-  // - For legacy auth: user.id IS the Bubble ID (passed directly)
-  // - For JWT auth: user.id is Supabase UUID, need to look up by email
+  // Determine user's Bubble ID (priority order):
+  // 1. user.bubbleId from JWT user_metadata (set during signup)
+  // 2. user.id if it looks like a Bubble ID (legacy auth)
+  // 3. Lookup from public.user by email (fallback for migrated users)
   let userBubbleId: string;
   let userType: string = '';
 
-  // Check if user.id looks like a Bubble ID (they typically start with numbers and contain 'x')
-  const isBubbleId = /^\d+x\d+$/.test(user.id);
+  // Priority 1: Use bubbleId from JWT user_metadata if available
+  if (user.bubbleId) {
+    userBubbleId = user.bubbleId;
+    console.log('[getMessages] Using Bubble ID from JWT user_metadata:', userBubbleId);
 
-  if (isBubbleId) {
-    // Legacy auth - user.id is already the Bubble ID, but we still need user type
+    // Still need to fetch user type from database
+    const { data: userData } = await supabaseAdmin
+      .from('user')
+      .select('"Type - User Current"')
+      .eq('_id', userBubbleId)
+      .maybeSingle();
+    userType = userData?.['Type - User Current'] || '';
+  }
+  // Priority 2: Check if user.id looks like a Bubble ID (legacy auth)
+  else if (/^\d+x\d+$/.test(user.id)) {
     userBubbleId = user.id;
     console.log('[getMessages] Using direct Bubble ID from legacy auth:', userBubbleId);
 
@@ -92,8 +103,9 @@ export async function handleGetMessages(
       .eq('_id', userBubbleId)
       .maybeSingle();
     userType = userData?.['Type - User Current'] || '';
-  } else {
-    // JWT auth - need to look up Bubble ID by email
+  }
+  // Priority 3: JWT auth without metadata - look up by email in public.user
+  else {
     if (!user.email) {
       console.error('[getMessages] No email in auth token');
       throw new ValidationError('Could not find user profile. Please try logging in again.');

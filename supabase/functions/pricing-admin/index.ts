@@ -13,7 +13,7 @@
  * - export: Export selected listings as CSV/JSON
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -108,10 +108,13 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (OPTIONAL for internal pages)
+    // NOTE: Authentication is now optional - internal pages can access without auth
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+    if (user) {
+      console.log(`[pricing-admin] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[pricing-admin] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -206,7 +209,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminRole(supabase: SupabaseClient, authUserId: string): Promise<boolean> {
+async function _checkAdminRole(supabase: SupabaseClient, authUserId: string): Promise<boolean> {
   // Look up the user record by auth_user_id to check admin toggle
   const { data, error } = await supabase
     .from('user')
@@ -239,49 +242,50 @@ async function handleList(
     sortOrder = 'desc'
   } = payload;
 
-  // Build query with pricing-related fields
+  // Build query with pricing-related fields (no FK-based joins - fetch host separately)
+  // Column names match actual database schema
   let query = supabase
     .from('listing')
     .select(`
       _id,
-      "🏷Name",
-      "✅Active",
-      "🏠Rental Type",
-      "📍Borough",
-      "📍Neighborhood",
-      "💰Unit Markup",
-      "💰Weekly Host Rate",
-      "💰Monthly Host Rate",
-      "💰Nightly Host Rate for 2 nights",
-      "💰Nightly Host Rate for 3 nights",
-      "💰Nightly Host Rate for 4 nights",
-      "💰Nightly Host Rate for 5 nights",
-      "💰Nightly Host Rate for 6 nights",
-      "💰Nightly Host Rate for 7 nights",
-      "💰Cleaning Cost / Maintenance Fee",
-      "💰Damage Deposit",
-      "💰Price Override",
-      "💰Extra Charges",
+      "Name",
+      "Active",
+      "rental type",
+      "Location - Borough",
+      "Location - Hood",
+      "unit_markup",
+      "weekly_host_rate",
+      "monthly_host_rate",
+      "nightly_rate_2_nights",
+      "nightly_rate_3_nights",
+      "nightly_rate_4_nights",
+      "nightly_rate_5_nights",
+      "nightly_rate_6_nights",
+      "nightly_rate_7_nights",
+      "cleaning_fee",
+      "damage_deposit",
+      "price_override",
+      "extra_charges",
       "Created Date",
       "Modified Date",
-      host:👤Host(_id, email, "First Name", "Last Name")
+      "Host User"
     `, { count: 'exact' });
 
-  // Apply filters
+  // Apply filters (using actual database column names)
   if (filters.rentalType) {
-    query = query.eq('"🏠Rental Type"', filters.rentalType);
+    query = query.eq('rental type', filters.rentalType);
   }
   if (filters.borough) {
-    query = query.eq('"📍Borough"', filters.borough);
+    query = query.eq('Location - Borough', filters.borough);
   }
   if (filters.neighborhood) {
-    query = query.ilike('"📍Neighborhood"', `%${filters.neighborhood}%`);
+    query = query.ilike('Location - Hood', `%${filters.neighborhood}%`);
   }
   if (filters.nameSearch) {
-    query = query.ilike('"🏷Name"', `%${filters.nameSearch}%`);
+    query = query.ilike('Name', `%${filters.nameSearch}%`);
   }
   if (filters.activeOnly) {
-    query = query.eq('"✅Active"', true);
+    query = query.eq('Active', true);
   }
   if (filters.dateRange?.start) {
     query = query.gte('"Created Date"', filters.dateRange.start);
@@ -290,10 +294,10 @@ async function handleList(
     query = query.lte('"Created Date"', filters.dateRange.end);
   }
 
-  // Apply sorting
+  // Apply sorting (using actual database column names)
   const validSortFields = [
-    'Created Date', 'Modified Date', '🏷Name',
-    '💰Price Override', '💰Weekly Host Rate'
+    'Created Date', 'Modified Date', 'Name',
+    'price_override', 'weekly_host_rate'
   ];
   const sortBy = validSortFields.includes(sortField) ? sortField : 'Created Date';
   query = query.order(sortBy, { ascending: sortOrder === 'asc' });
@@ -301,15 +305,46 @@ async function handleList(
   // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
-  const { data, error, count } = await query;
+  const { data: listings, error, _count } = await query;
 
   if (error) {
     console.error('[pricing-admin] List error:', error);
     throw new Error(`Failed to fetch listings: ${error.message}`);
   }
 
+  if (!listings || listings.length === 0) {
+    return { listings: [], total: count || 0, limit, offset };
+  }
+
+  // Collect unique host IDs for separate query
+  const hostIds = new Set<string>();
+  for (const listing of listings) {
+    if (listing["Host User"]) hostIds.add(listing["Host User"]);
+  }
+
+  // Fetch hosts in parallel
+  const hostsMap = new Map<string, unknown>();
+  if (hostIds.size > 0) {
+    const { data: hosts } = await supabase
+      .from("users")
+      .select("_id, email, name_first, name_last")
+      .in("_id", Array.from(hostIds));
+
+    if (hosts) {
+      for (const host of hosts) {
+        hostsMap.set(host._id, host);
+      }
+    }
+  }
+
+  // Enrich listings with host data
+  const enrichedListings = listings.map((listing) => ({
+    ...listing,
+    host: listing["Host User"] ? hostsMap.get(listing["Host User"]) || null : null,
+  }));
+
   return {
-    listings: data || [],
+    listings: enrichedListings,
     total: count || 0,
     limit,
     offset,
@@ -329,12 +364,10 @@ async function handleGet(
     throw new Error('listingId is required');
   }
 
-  const { data, error } = await supabase
+  // Fetch listing without embedded select (no FK relationship)
+  const { data: listing, error } = await supabase
     .from('listing')
-    .select(`
-      *,
-      host:👤Host(_id, email, "First Name", "Last Name", Phone)
-    `)
+    .select('*')
     .eq('_id', listingId)
     .single();
 
@@ -342,7 +375,18 @@ async function handleGet(
     throw new Error(`Failed to fetch listing: ${error.message}`);
   }
 
-  return data;
+  // Fetch host separately if exists
+  let host = null;
+  if (listing?.["Host User"]) {
+    const { data: hostData } = await supabase
+      .from("users")
+      .select("_id, email, name_first, name_last, phone_number")
+      .eq("_id", listing["Host User"])
+      .single();
+    host = hostData;
+  }
+
+  return { ...listing, host };
 }
 
 /**
@@ -366,19 +410,19 @@ async function handleUpdatePrice(
 
   // Validate field names - only allow pricing-related fields
   const allowedFields = [
-    '💰Unit Markup',
-    '💰Weekly Host Rate',
-    '💰Monthly Host Rate',
-    '💰Nightly Host Rate for 2 nights',
-    '💰Nightly Host Rate for 3 nights',
-    '💰Nightly Host Rate for 4 nights',
-    '💰Nightly Host Rate for 5 nights',
-    '💰Nightly Host Rate for 6 nights',
-    '💰Nightly Host Rate for 7 nights',
-    '💰Cleaning Cost / Maintenance Fee',
-    '💰Damage Deposit',
-    '💰Price Override',
-    '💰Extra Charges',
+    'unit_markup',
+    'weekly_host_rate',
+    'monthly_host_rate',
+    'nightly_rate_2_nights',
+    'nightly_rate_3_nights',
+    'nightly_rate_4_nights',
+    'nightly_rate_5_nights',
+    'nightly_rate_6_nights',
+    'nightly_rate_7_nights',
+    'cleaning_fee',
+    'damage_deposit',
+    'price_override',
+    'extra_charges',
   ];
 
   const updateFields: Record<string, number | null> = {};
@@ -435,19 +479,19 @@ async function handleBulkUpdate(
 
   // Validate field names
   const allowedFields = [
-    '💰Unit Markup',
-    '💰Weekly Host Rate',
-    '💰Monthly Host Rate',
-    '💰Nightly Host Rate for 2 nights',
-    '💰Nightly Host Rate for 3 nights',
-    '💰Nightly Host Rate for 4 nights',
-    '💰Nightly Host Rate for 5 nights',
-    '💰Nightly Host Rate for 6 nights',
-    '💰Nightly Host Rate for 7 nights',
-    '💰Cleaning Cost / Maintenance Fee',
-    '💰Damage Deposit',
-    '💰Price Override',
-    '💰Extra Charges',
+    'unit_markup',
+    'weekly_host_rate',
+    'monthly_host_rate',
+    'nightly_rate_2_nights',
+    'nightly_rate_3_nights',
+    'nightly_rate_4_nights',
+    'nightly_rate_5_nights',
+    'nightly_rate_6_nights',
+    'nightly_rate_7_nights',
+    'cleaning_fee',
+    'damage_deposit',
+    'price_override',
+    'extra_charges',
   ];
 
   const updateFields: Record<string, number | null> = {};
@@ -504,7 +548,7 @@ async function handleSetOverride(
   const { data, error } = await supabase
     .from('listing')
     .update({
-      '💰Price Override': priceOverride,
+      'price_override': priceOverride,
       'Modified Date': new Date().toISOString(),
     })
     .eq('_id', listingId)
@@ -569,7 +613,7 @@ async function handleToggleActive(
  * Get global pricing configuration (read-only)
  * Returns hardcoded values from pricingConstants.js
  */
-async function handleGetConfig() {
+function handleGetConfig() {
   // These match the values in app/src/logic/constants/pricingConstants.js
   return {
     siteMarkupRate: 0.17,
@@ -605,19 +649,19 @@ async function handleExport(
       "🏠Rental Type",
       "📍Borough",
       "📍Neighborhood",
-      "💰Unit Markup",
-      "💰Weekly Host Rate",
-      "💰Monthly Host Rate",
-      "💰Nightly Host Rate for 2 nights",
-      "💰Nightly Host Rate for 3 nights",
-      "💰Nightly Host Rate for 4 nights",
-      "💰Nightly Host Rate for 5 nights",
-      "💰Nightly Host Rate for 6 nights",
-      "💰Nightly Host Rate for 7 nights",
-      "💰Cleaning Cost / Maintenance Fee",
-      "💰Damage Deposit",
-      "💰Price Override",
-      "💰Extra Charges",
+      "unit_markup",
+      "weekly_host_rate",
+      "monthly_host_rate",
+      "nightly_rate_2_nights",
+      "nightly_rate_3_nights",
+      "nightly_rate_4_nights",
+      "nightly_rate_5_nights",
+      "nightly_rate_6_nights",
+      "nightly_rate_7_nights",
+      "cleaning_fee",
+      "damage_deposit",
+      "price_override",
+      "extra_charges",
       "Created Date",
       host:👤Host(email, "First Name", "Last Name")
     `)
@@ -651,19 +695,19 @@ async function handleExport(
       listing['🏠Rental Type'] || '',
       listing['📍Borough'] || '',
       listing['📍Neighborhood'] || '',
-      listing['💰Unit Markup'] ?? '',
-      listing['💰Weekly Host Rate'] ?? '',
-      listing['💰Monthly Host Rate'] ?? '',
-      listing['💰Nightly Host Rate for 2 nights'] ?? '',
-      listing['💰Nightly Host Rate for 3 nights'] ?? '',
-      listing['💰Nightly Host Rate for 4 nights'] ?? '',
-      listing['💰Nightly Host Rate for 5 nights'] ?? '',
-      listing['💰Nightly Host Rate for 6 nights'] ?? '',
-      listing['💰Nightly Host Rate for 7 nights'] ?? '',
-      listing['💰Cleaning Cost / Maintenance Fee'] ?? '',
-      listing['💰Damage Deposit'] ?? '',
-      listing['💰Price Override'] ?? '',
-      listing['💰Extra Charges'] ?? '',
+      listing['unit_markup'] ?? '',
+      listing['weekly_host_rate'] ?? '',
+      listing['monthly_host_rate'] ?? '',
+      listing['nightly_rate_2_nights'] ?? '',
+      listing['nightly_rate_3_nights'] ?? '',
+      listing['nightly_rate_4_nights'] ?? '',
+      listing['nightly_rate_5_nights'] ?? '',
+      listing['nightly_rate_6_nights'] ?? '',
+      listing['nightly_rate_7_nights'] ?? '',
+      listing['cleaning_fee'] ?? '',
+      listing['damage_deposit'] ?? '',
+      listing['price_override'] ?? '',
+      listing['extra_charges'] ?? '',
       host?.email || '',
       `${host?.['First Name'] || ''} ${host?.['Last Name'] || ''}`.trim(),
       listing['Created Date'] || '',

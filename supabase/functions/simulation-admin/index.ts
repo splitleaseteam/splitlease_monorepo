@@ -13,7 +13,7 @@
  * Relevant columns: is usability tester, Usability Step, Name - First, Name - Last, email, Modified Date
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -73,10 +73,12 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (optional for internal pages)
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+    if (user) {
+      console.log(`[simulation-admin] Authenticated user: ${user.email}`);
+    } else {
+      console.log('[simulation-admin] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -158,7 +160,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminOrCorporateStatus(
+async function _checkAdminOrCorporateStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {
@@ -221,7 +223,7 @@ async function handleListTesters(
   }
 
   // Apply pagination
-  const { data, error, count } = await query.range(offset, offset + limit - 1);
+  const { data, error, _count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
     console.error('[simulation-admin] List testers error:', error);

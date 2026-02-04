@@ -57,8 +57,9 @@ export async function sendMagicLinkViaSms({ email, phoneNumber, redirectTo }) {
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
+         
         } catch (_parseErr) {
-          // Use default message
+          void 0; // Use default message
         }
       }
 

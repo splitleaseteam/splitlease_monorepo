@@ -47,14 +47,19 @@ export async function getUserBubbleId(
   supabase: SupabaseClient,
   userEmail: string
 ): Promise<string | null> {
+  // Try the 'email' column first (case-insensitive), then fall back to 'email as text'
+  // Both columns should have the same value due to signup logic
+  const normalizedEmail = userEmail.toLowerCase();
+
   const { data, error } = await supabase
     .from('user')
     .select('_id')
-    .ilike('email', userEmail)
-    .single();
+    .or(`email.ilike.${normalizedEmail},"email as text".ilike.${normalizedEmail}`)
+    .limit(1)
+    .maybeSingle();
 
   if (error || !data) {
-    console.error('[messagingHelpers] User lookup failed:', error?.message);
+    console.error('[messagingHelpers] User lookup failed:', error?.message, 'for email:', normalizedEmail);
     return null;
   }
 
@@ -535,8 +540,8 @@ export async function updateThreadLastMessage(
   const { error } = await supabase
     .from('thread')
     .update({
-      "~Last Message": messageBody.substring(0, 100), // Truncate for preview
-      "~Date Last Message": now,
+      last_message_preview: messageBody.substring(0, 100), // Truncate for preview
+      last_message_at: now,
       "Modified Date": now,
       updated_at: now,
     })

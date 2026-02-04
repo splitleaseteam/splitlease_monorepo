@@ -102,7 +102,7 @@ export async function handleCreate(
 
   const { data: hostUser, error: hostUserError } = await supabase
     .from("user")
-    .select(`_id, email, "Name - First", "Name - Full", "Phone - Number", "Notification Setting"`)
+    .select(`_id, email, "Name - First", "Name - Full", "Phone Number (as text)", "Notification Setting"`)
     .eq("_id", hostUserId)
     .single();
 
@@ -120,7 +120,7 @@ export async function handleCreate(
   // Fetch Guest User
   const { data: guestUser, error: guestUserError } = await supabase
     .from("user")
-    .select(`_id, email, "Name - First", "Name - Full", "Phone - Number", "Notification Setting"`)
+    .select(`_id, email, "Name - First", "Name - Full", "Phone Number (as text)", "Notification Setting"`)
     .eq("_id", proposalData.Guest)
     .single();
 
@@ -295,8 +295,8 @@ export async function handleCreate(
       guestName: guestUserData["Name - First"],
       hostEmail: hostUserData.email,
       guestEmail: guestUserData.email,
-      hostPhone: hostUserData["Phone - Number"],
-      guestPhone: guestUserData["Phone - Number"],
+      hostPhone: hostUserData["Phone Number (as text)"],
+      guestPhone: guestUserData["Phone Number (as text)"],
       suggestedDates: input.timesSelected,
       notifyHostSms: hostVmNotifs.includes('SMS'),
       notifyHostEmail: hostVmNotifs.includes('Email'),

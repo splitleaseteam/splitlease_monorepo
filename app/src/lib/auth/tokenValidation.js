@@ -281,8 +281,9 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             console.error('   Detailed error from response:', errorBody.error);
           }
+         
         } catch (_parseErr) {
-          // Silent - just for logging
+          void 0; // Silent - just for logging
         }
       } else if (error.context?.body) {
         // Fallback for older Supabase JS versions
@@ -293,8 +294,9 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
           if (errorBody?.error) {
             console.error('   Detailed error from response:', errorBody.error);
           }
+         
         } catch (_parseErr) {
-          // Silent - just for logging
+          void 0; // Silent - just for logging
         }
       }
 

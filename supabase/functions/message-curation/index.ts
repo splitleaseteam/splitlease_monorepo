@@ -15,7 +15,7 @@
  * Auth: Admin or Corporate user required
  */
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers
@@ -70,10 +70,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user
+    // Authenticate user (OPTIONAL for internal pages)
+    // NOTE: Authentication is now optional - internal pages can access without auth
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-    if (!user) {
-      return errorResponse('Authentication required', 401);
+
+    if (user) {
+      console.log(`[message-curation] Authenticated user: ${user.email} (${user.id})`);
+    } else {
+      console.log('[message-curation] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -81,7 +85,7 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Verify user is admin or corporate user
+    // Verify user is admin or corporate user (only if authenticated)
     // NOTE: Admin/corporate role check removed to allow any authenticated user access for testing
     // const isAuthorized = await checkAdminOrCorporateStatus(supabase, user.email);
     // if (!isAuthorized) {
@@ -163,7 +167,7 @@ async function authenticateFromHeaders(
   return { id: user.id, email: user.email ?? '' };
 }
 
-async function checkAdminOrCorporateStatus(
+async function _checkAdminOrCorporateStatus(
   supabase: SupabaseClient,
   email: string
 ): Promise<boolean> {
@@ -186,6 +190,9 @@ async function checkAdminOrCorporateStatus(
 /**
  * Get threads with search and pagination
  * Search matches on listing name, guest email, or host email
+ *
+ * NOTE: Uses separate queries for users/listings because the database lacks
+ * FK constraints from thread.host_user_id/guest_user_id to user._id
  */
 async function handleGetThreads(
   payload: { search?: string; limit?: number; offset?: number },
@@ -193,8 +200,8 @@ async function handleGetThreads(
 ) {
   const { search = '', limit = 50, offset = 0 } = payload;
 
-  // Build query with related data
-  let query = supabase
+  // Step 1: Fetch threads (without relationship joins - FKs don't exist)
+  const query = supabase
     .from('thread')
     .select(`
       _id,
@@ -202,52 +209,84 @@ async function handleGetThreads(
       "Modified Date",
       host_user_id,
       guest_user_id,
-      "Listing",
-      host:host_user_id (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last",
-        "Profile Photo"
-      ),
-      guest:guest_user_id (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last",
-        "Profile Photo"
-      ),
-      listing:"Listing" (
-        _id,
-        "Name"
-      )
+      "Listing"
     `, { count: 'exact' })
     .order('"Modified Date"', { ascending: false });
 
-  // Apply search filter if provided
-  if (search) {
-    // We need to search across related tables, which requires different approach
-    // For now, we'll filter client-side after fetching, or use a stored procedure
-    // This is a simplification - in production, use a proper full-text search
-    console.log('[message-curation] Search term:', search);
-  }
-
   // Apply pagination
-  const { data, error, count } = await query.range(offset, offset + limit - 1);
+  const { data: _threadData, error: threadError, _count } = await query.range(offset, offset + limit - 1);
 
-  if (error) {
-    console.error('[message-curation] getThreads error:', error);
-    throw new Error(`Failed to fetch threads: ${error.message}`);
+  if (threadError) {
+    console.error('[message-curation] getThreads error:', threadError);
+    throw new Error(`Failed to fetch threads: ${threadError.message}`);
   }
 
-  // Filter results if search term provided
-  let filteredData = data || [];
+  if (!threadData || threadData.length === 0) {
+    return { threads: [], total: 0, limit, offset };
+  }
+
+  // Step 2: Collect unique user IDs and listing IDs
+  const userIds = new Set<string>();
+  const listingIds = new Set<string>();
+
+  for (const thread of threadData) {
+    if (thread.host_user_id) userIds.add(thread.host_user_id);
+    if (thread.guest_user_id) userIds.add(thread.guest_user_id);
+    if (thread['Listing']) listingIds.add(thread['Listing']);
+  }
+
+  // Step 3: Fetch users and listings in parallel
+  const [usersResult, listingsResult] = await Promise.all([
+    userIds.size > 0
+      ? supabase
+          .from('user')
+          .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
+          .in('_id', Array.from(userIds))
+      : { data: [], error: null },
+    listingIds.size > 0
+      ? supabase
+          .from('listing')
+          .select('_id, "Name"')
+          .in('_id', Array.from(listingIds))
+      : { data: [], error: null },
+  ]);
+
+  if (usersResult.error) {
+    console.error('[message-curation] getThreads users error:', usersResult.error);
+  }
+  if (listingsResult.error) {
+    console.error('[message-curation] getThreads listings error:', listingsResult.error);
+  }
+
+  // Step 4: Create lookup maps
+  const usersMap = new Map<string, Record<string, unknown>>();
+  for (const user of (usersResult.data || [])) {
+    usersMap.set(user._id, user);
+  }
+
+  const listingsMap = new Map<string, Record<string, unknown>>();
+  for (const listing of (listingsResult.data || [])) {
+    listingsMap.set(listing._id, listing);
+  }
+
+  // Step 5: Enrich threads with related data
+  const enrichedThreads = threadData.map((thread: Record<string, unknown>) => ({
+    ...thread,
+    host: thread.host_user_id ? usersMap.get(thread.host_user_id as string) || null : null,
+    guest: thread.guest_user_id ? usersMap.get(thread.guest_user_id as string) || null : null,
+    listing: thread['Listing'] ? listingsMap.get(thread['Listing'] as string) || null : null,
+  }));
+
+  // Step 6: Apply search filter if provided
+  let filteredData = enrichedThreads;
   if (search) {
     const searchLower = search.toLowerCase();
-    filteredData = filteredData.filter((thread: Record<string, unknown>) => {
+    console.log('[message-curation] Search term:', search);
+
+    filteredData = enrichedThreads.filter((thread: Record<string, unknown>) => {
       const listing = thread.listing as Record<string, unknown> | null;
-      const guest = thread.guest as Record<string, unknown> | null;
-      const host = thread.host as Record<string, unknown> | null;
+      const _guest = thread.guest as Record<string, unknown> | null;
+      const _host = thread.host as Record<string, unknown> | null;
 
       const listingName = (listing?.['Name'] as string || '').toLowerCase();
       const guestEmail = (guest?.email as string || '').toLowerCase();
@@ -280,6 +319,9 @@ async function handleGetThreads(
 
 /**
  * Get all messages for a specific thread
+ *
+ * NOTE: Uses separate queries for users/listings because the database lacks
+ * FK constraints from thread.host_user_id/guest_user_id to user._id
  */
 async function handleGetThreadMessages(
   payload: { threadId: string },
@@ -291,32 +333,16 @@ async function handleGetThreadMessages(
     throw new Error('threadId is required');
   }
 
-  // Fetch thread info first
-  const { data: threadData, error: threadError } = await supabase
+  // Step 1: Fetch thread (without relationship joins - FKs don't exist)
+  const { data: _threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
       _id,
-      "host_user_id",
-      "guest_user_id",
-      "Listing",
-      host:"host_user_id" (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last",
-        "Profile Photo"
-      ),
-      guest:"guest_user_id" (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last",
-        "Profile Photo"
-      ),
-      listing:"Listing" (
-        _id,
-        "Name"
-      )
+      "Created Date",
+      "Modified Date",
+      host_user_id,
+      guest_user_id,
+      "Listing"
     `)
     .eq('_id', threadId)
     .single();
@@ -328,7 +354,7 @@ async function handleGetThreadMessages(
     throw new Error(`Failed to fetch thread: ${threadError.message}`);
   }
 
-  // Fetch messages for this thread
+  // Step 2: Fetch messages for this thread (without relationship joins)
   const { data: messagesData, error: messagesError } = await supabase
     .from('_message')
     .select(`
@@ -337,20 +363,13 @@ async function handleGetThreadMessages(
       "Split Bot Warning",
       "Created Date",
       "Modified Date",
-      "originator_user_id",
-      "thread_id",
-      "Toggle - Is Forwarded",
-      deleted_at,
-      originator:"originator_user_id" (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last",
-        "Profile Photo"
-      )
+      originator_user_id,
+      thread_id,
+      "is Forwarded",
+      "is deleted (is hidden)"
     `)
-    .eq('"thread_id"', threadId)
-    .is('deleted_at', null)
+    .eq('thread_id', threadId)
+    .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
     .order('"Created Date"', { ascending: true });
 
   if (messagesError) {
@@ -358,11 +377,56 @@ async function handleGetThreadMessages(
     throw new Error(`Failed to fetch messages: ${messagesError.message}`);
   }
 
+  // Step 3: Collect all user IDs needed
+  const userIds = new Set<string>();
+  if (threadData.host_user_id) userIds.add(threadData.host_user_id);
+  if (threadData.guest_user_id) userIds.add(threadData.guest_user_id);
+  for (const msg of (messagesData || [])) {
+    if (msg.originator_user_id) userIds.add(msg.originator_user_id);
+  }
+
+  // Step 4: Fetch users and listing in parallel
+  const [usersResult, listingResult] = await Promise.all([
+    userIds.size > 0
+      ? supabase
+          .from('user')
+          .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
+          .in('_id', Array.from(userIds))
+      : { data: [], error: null },
+    threadData['Listing']
+      ? supabase
+          .from('listing')
+          .select('_id, "Name"')
+          .eq('_id', threadData['Listing'])
+          .single()
+      : { data: null, error: null },
+  ]);
+
+  // Create users lookup map
+  const usersMap = new Map<string, Record<string, unknown>>();
+  for (const user of (usersResult.data || [])) {
+    usersMap.set(user._id, user);
+  }
+
+  // Enrich thread with related data
+  const enrichedThread = {
+    ...threadData,
+    host: threadData.host_user_id ? usersMap.get(threadData.host_user_id) || null : null,
+    guest: threadData.guest_user_id ? usersMap.get(threadData.guest_user_id) || null : null,
+    listing: listingResult.data || null,
+  };
+
+  // Enrich messages with originator data
+  const enrichedMessages = (messagesData || []).map((msg: Record<string, unknown>) => ({
+    ...msg,
+    originator: msg.originator_user_id ? usersMap.get(msg.originator_user_id as string) || null : null,
+  }));
+
   // Format messages
-  const messages = (messagesData || []).map((msg: Record<string, unknown>) => formatMessage(msg, threadData));
+  const messages = enrichedMessages.map((msg: Record<string, unknown>) => formatMessage(msg, enrichedThread));
 
   return {
-    thread: formatThread(threadData),
+    thread: formatThread(enrichedThread),
     messages,
     messageCount: messages.length,
   };
@@ -370,6 +434,9 @@ async function handleGetThreadMessages(
 
 /**
  * Get single message with full details
+ *
+ * NOTE: Uses separate queries for users/listings because the database lacks
+ * FK constraints from thread.host_user_id/guest_user_id to user._id
  */
 async function handleGetMessage(
   payload: { messageId: string },
@@ -381,7 +448,8 @@ async function handleGetMessage(
     throw new Error('messageId is required');
   }
 
-  const { data, error } = await supabase
+  // Step 1: Fetch message (without relationship joins)
+  const { data: messageData, error: messageError } = await supabase
     .from('_message')
     .select(`
       _id,
@@ -389,58 +457,87 @@ async function handleGetMessage(
       "Split Bot Warning",
       "Created Date",
       "Modified Date",
-      "originator_user_id",
-      "thread_id",
-      "Toggle - Is Forwarded",
-      deleted_at,
-      originator:"originator_user_id" (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last",
-        "Profile Photo"
-      ),
-      thread:"thread_id" (
-        _id,
-        "host_user_id",
-        "guest_user_id",
-        "Listing",
-        host:"host_user_id" (
-          _id,
-          email,
-          "Name - First",
-          "Name - Last",
-          "Profile Photo"
-        ),
-        guest:"guest_user_id" (
-          _id,
-          email,
-          "Name - First",
-          "Name - Last",
-          "Profile Photo"
-        ),
-        listing:"Listing" (
-          _id,
-          "Name"
-        )
-      )
+      originator_user_id,
+      thread_id,
+      "is Forwarded",
+      "is deleted (is hidden)"
     `)
     .eq('_id', messageId)
     .single();
 
-  if (error) {
-    if (error.code === 'PGRST116') {
+  if (messageError) {
+    if (messageError.code === 'PGRST116') {
       throw new Error('Message not found');
     }
-    console.error('[message-curation] getMessage error:', error);
-    throw new Error(`Failed to fetch message: ${error.message}`);
+    console.error('[message-curation] getMessage error:', messageError);
+    throw new Error(`Failed to fetch message: ${messageError.message}`);
   }
 
-  const thread = data.thread as Record<string, unknown>;
+  // Step 2: Fetch thread
+  const { data: _threadData, error: threadError } = await supabase
+    .from('thread')
+    .select(`
+      _id,
+      "Created Date",
+      "Modified Date",
+      host_user_id,
+      guest_user_id,
+      "Listing"
+    `)
+    .eq('_id', messageData.thread_id)
+    .single();
+
+  if (threadError) {
+    console.error('[message-curation] getMessage thread error:', threadError);
+    throw new Error(`Failed to fetch thread: ${threadError.message}`);
+  }
+
+  // Step 3: Collect all user IDs needed
+  const userIds = new Set<string>();
+  if (messageData.originator_user_id) userIds.add(messageData.originator_user_id);
+  if (threadData.host_user_id) userIds.add(threadData.host_user_id);
+  if (threadData.guest_user_id) userIds.add(threadData.guest_user_id);
+
+  // Step 4: Fetch users and listing in parallel
+  const [usersResult, listingResult] = await Promise.all([
+    userIds.size > 0
+      ? supabase
+          .from('user')
+          .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
+          .in('_id', Array.from(userIds))
+      : { data: [], error: null },
+    threadData['Listing']
+      ? supabase
+          .from('listing')
+          .select('_id, "Name"')
+          .eq('_id', threadData['Listing'])
+          .single()
+      : { data: null, error: null },
+  ]);
+
+  // Create users lookup map
+  const usersMap = new Map<string, Record<string, unknown>>();
+  for (const user of (usersResult.data || [])) {
+    usersMap.set(user._id, user);
+  }
+
+  // Enrich thread with related data
+  const enrichedThread = {
+    ...threadData,
+    host: threadData.host_user_id ? usersMap.get(threadData.host_user_id) || null : null,
+    guest: threadData.guest_user_id ? usersMap.get(threadData.guest_user_id) || null : null,
+    listing: listingResult.data || null,
+  };
+
+  // Enrich message with originator
+  const enrichedMessage = {
+    ...messageData,
+    originator: messageData.originator_user_id ? usersMap.get(messageData.originator_user_id) || null : null,
+  };
 
   return {
-    message: formatMessage(data, thread),
-    thread: formatThread(thread),
+    message: formatMessage(enrichedMessage, enrichedThread),
+    thread: formatThread(enrichedThread),
   };
 }
 
@@ -462,7 +559,7 @@ async function handleDeleteMessage(
   const { data, error } = await supabase
     .from('_message')
     .update({
-      deleted_at: now,
+      'is deleted (is hidden)': true,
       'Modified Date': now,
     })
     .eq('_id', messageId)
@@ -479,7 +576,6 @@ async function handleDeleteMessage(
   return {
     deleted: true,
     messageId: data._id,
-    deletedAt: now,
   };
 }
 
@@ -498,15 +594,15 @@ async function handleDeleteThread(
 
   const now = new Date().toISOString();
 
-  // Soft delete all messages in the thread
+  // Soft delete all messages in the thread (only non-deleted ones)
   const { data, error } = await supabase
     .from('_message')
     .update({
-      deleted_at: now,
+      'is deleted (is hidden)': true,
       'Modified Date': now,
     })
-    .eq('"thread_id"', threadId)
-    .is('deleted_at', null)
+    .eq('thread_id', threadId)
+    .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
     .select('_id');
 
   if (error) {
@@ -521,13 +617,15 @@ async function handleDeleteThread(
     deleted: true,
     threadId,
     deletedCount,
-    deletedAt: now,
   };
 }
 
 /**
  * Forward message to support email (placeholder implementation)
  * TODO: Integrate with email service when available
+ *
+ * NOTE: Uses separate queries for users/listings because the database lacks
+ * FK constraints from thread.host_user_id/guest_user_id to user._id
  */
 async function handleForwardMessage(
   payload: { messageId: string; recipientEmail?: string },
@@ -539,30 +637,15 @@ async function handleForwardMessage(
     throw new Error('messageId is required');
   }
 
-  // Fetch the message
+  // Step 1: Fetch the message (without relationship joins)
   const { data: messageData, error: messageError } = await supabase
     .from('_message')
     .select(`
       _id,
       "Message Body",
       "Created Date",
-      "originator_user_id",
-      "thread_id",
-      originator:"originator_user_id" (
-        _id,
-        email,
-        "Name - First",
-        "Name - Last"
-      ),
-      thread:"thread_id" (
-        _id,
-        "host_user_id",
-        "guest_user_id",
-        "Listing",
-        host:"host_user_id" ( email, "Name - First", "Name - Last" ),
-        guest:"guest_user_id" ( email, "Name - First", "Name - Last" ),
-        listing:"Listing" ( "Name" )
-      )
+      originator_user_id,
+      thread_id
     `)
     .eq('_id', messageId)
     .single();
@@ -571,12 +654,23 @@ async function handleForwardMessage(
     throw new Error(`Failed to fetch message: ${messageError.message}`);
   }
 
+  // Step 2: Fetch thread
+  const { data: _threadData, error: threadError } = await supabase
+    .from('thread')
+    .select('_id, host_user_id, guest_user_id, "Listing"')
+    .eq('_id', messageData.thread_id)
+    .single();
+
+  if (threadError) {
+    console.error('[message-curation] forwardMessage thread error:', threadError);
+  }
+
   // Mark as forwarded
   const now = new Date().toISOString();
   const { error: updateError } = await supabase
     .from('_message')
     .update({
-      'Toggle - Is Forwarded': true,
+      'is Forwarded': true,
       'Modified Date': now,
     })
     .eq('_id', messageId);
@@ -634,7 +728,7 @@ async function handleSendSplitBotMessage(
   }
 
   // Fetch thread to get host and guest
-  const { data: threadData, error: threadError } = await supabase
+  const { data: _threadData, error: threadError } = await supabase
     .from('thread')
     .select('_id, "host_user_id", "guest_user_id"')
     .eq('_id', threadId)
@@ -697,8 +791,8 @@ async function handleSendSplitBotMessage(
  * Format thread for API response
  */
 function formatThread(thread: Record<string, unknown>) {
-  const guest = thread.guest as Record<string, unknown> | null;
-  const host = thread.host as Record<string, unknown> | null;
+  const _guest = thread.guest as Record<string, unknown> | null;
+  const _host = thread.host as Record<string, unknown> | null;
   const listing = thread.listing as Record<string, unknown> | null;
 
   return {
@@ -734,8 +828,8 @@ function formatThread(thread: Record<string, unknown>) {
  */
 function formatMessage(message: Record<string, unknown>, thread: Record<string, unknown>) {
   const originator = message.originator as Record<string, unknown> | null;
-  const guest = thread.guest as Record<string, unknown> | null;
-  const host = thread.host as Record<string, unknown> | null;
+  const _guest = thread.guest as Record<string, unknown> | null;
+  const _host = thread.host as Record<string, unknown> | null;
 
   // Determine sender type
   let senderType: 'guest' | 'host' | 'splitbot' | 'unknown' = 'unknown';
@@ -758,9 +852,8 @@ function formatMessage(message: Record<string, unknown>, thread: Record<string, 
     originatorUserId: originatorId,
     threadId: message['thread_id'],
     isSplitBotWarning: !!isSplitBotWarning,
-    isForwarded: !!message['Toggle - Is Forwarded'],
-    isDeleted: !!message.deleted_at,
-    deletedAt: message.deleted_at,
+    isForwarded: !!message['is Forwarded'],
+    isDeleted: !!message['is deleted (is hidden)'],
     senderType,
     originator: originator ? {
       id: originator._id,

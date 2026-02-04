@@ -23,7 +23,10 @@ import { sortLeases } from '../../../logic/processors/leases/sortLeases';
 import { canDeleteLease } from '../../../logic/rules/leases/canDeleteLease';
 import { canHardDeleteLease } from '../../../logic/rules/leases/canHardDeleteLease';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Get dev project credentials from .env or hardcode for reliability
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+
 const PAGE_SIZE = 20;
 
 /**
@@ -48,7 +51,6 @@ export function useLeasesOverviewPageLogic({ showToast }) {
   const [leases, setLeases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState('');
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,28 +90,27 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     { value: 'cancelled', label: 'Mark Cancelled' },
   ], []);
 
-  // ===== AUTH TOKEN SETUP (NO PERMISSION GATING) =====
-  useEffect(() => {
-    const loadToken = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const legacyToken = localStorage.getItem('sl_auth_token') || sessionStorage.getItem('sl_auth_token');
-        setAccessToken(session?.access_token || legacyToken || '');
-      } catch (err) {
-        console.error('[LeasesOverview] Token lookup failed:', err);
-        setAccessToken('');
-      }
-    };
-    loadToken();
-  }, []);
+  // Build headers with optional auth (soft headers pattern)
+  // For unauthenticated requests, use anon key in Authorization header
+  // Note: We use anon key for both apikey and Authorization when not authenticated
+  const buildHeaders = useCallback(async () => {
+    let accessToken = '';
 
-  const buildHeaders = useCallback(() => {
-    const headers = { 'Content-Type': 'application/json' };
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
+    // Try to get session token if available (for audit purposes)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      accessToken = session?.access_token || '';
+     
+    } catch {
+      void 0; // Silently ignore auth errors - we'll use anon key
     }
-    return headers;
-  }, [accessToken]);
+
+    return {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${accessToken || SUPABASE_ANON_KEY}`
+    };
+  }, []);
 
   // ===== FETCH LEASES =====
   const fetchLeases = useCallback(async () => {
@@ -117,9 +118,10 @@ export function useLeasesOverviewPageLogic({ showToast }) {
     setError(null);
 
     try {
+      const headers = await buildHeaders();
       const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
         method: 'POST',
-        headers: buildHeaders(),
+        headers,
         body: JSON.stringify({
           action: 'list',
           payload: {
@@ -211,9 +213,10 @@ export function useLeasesOverviewPageLogic({ showToast }) {
 
   // ===== ACTION HANDLERS =====
   const callEdgeFunction = useCallback(async (action, payload) => {
+    const headers = await buildHeaders();
     const response = await fetch(`${SUPABASE_URL}/functions/v1/leases-admin`, {
       method: 'POST',
-      headers: buildHeaders(),
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 

@@ -1,0 +1,324 @@
+# Refactoring Recommendations
+
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Documentation/Refactoring Recommendations" />
+
+## Component Consolidation Opportunities
+
+Based on analysis of 609+ components across the codebase, the following refactoring opportunities have been identified.
+
+---
+
+## Priority 1: High Impact Consolidation
+
+### 1. EmptyState Components
+
+**Issue:** Multiple similar EmptyState components exist across different pages.
+
+**Locations:**
+- `pages/AdminThreadsPage/components/EmptyState.jsx`
+- `pages/FavoriteListingsPage/components/EmptyState.jsx`
+- `pages/HostProposalsPage/components/EmptyState.jsx`
+- `proposals/EmptyState.jsx`
+
+**Recommendation:** Create a unified `shared/EmptyState.jsx` component with configurable props:
+
+```jsx
+// Proposed unified component
+<EmptyState
+  icon={<MessageSquare />}  // or any lucide-react icon
+  title="No results found"
+  message="Try adjusting your filters."
+  action={<Button onClick={onClear}>Clear Filters</Button>}
+  variant="compact" | "full"  // size variant
+/>
+```
+
+**Impact:** 4+ files consolidated into 1
+
+---
+
+### 2. LoadingState Components
+
+**Issue:** Multiple loading spinner implementations.
+
+**Locations:**
+- `pages/AdminThreadsPage/components/LoadingState.jsx`
+- `pages/HostProposalsPage/components/LoadingState.jsx`
+- Various inline loading states
+
+**Recommendation:** Create `shared/LoadingState.jsx` with variants:
+
+```jsx
+<LoadingState
+  message="Loading..."
+  size="small" | "medium" | "large"
+  variant="spinner" | "skeleton" | "overlay"
+/>
+```
+
+**Impact:** Consistent loading UI across application
+
+---
+
+### 3. ErrorState Components
+
+**Issue:** Multiple error display patterns.
+
+**Locations:**
+- `pages/AdminThreadsPage/components/ErrorState.jsx`
+- `proposals/ErrorState.jsx`
+- `shared/ErrorOverlay.jsx`
+
+**Recommendation:** Consolidate into `shared/ErrorState.jsx` with:
+
+```jsx
+<ErrorState
+  title="Something went wrong"
+  message="Please try again."
+  onRetry={() => refetch()}
+  variant="inline" | "overlay" | "page"
+/>
+```
+
+**Impact:** 3+ files consolidated
+
+---
+
+### 4. Pagination Components
+
+**Issue:** Multiple pagination implementations.
+
+**Locations:**
+- `pages/CoHostRequestsPage/components/Pagination.jsx`
+- Various page-specific implementations
+
+**Recommendation:** Create `shared/Pagination.jsx`:
+
+```jsx
+<Pagination
+  currentPage={page}
+  totalPages={totalPages}
+  onPageChange={setPage}
+  showFirstLast={true}
+  siblingCount={1}
+/>
+```
+
+---
+
+## Priority 2: Pattern Standardization
+
+### 5. ProfileCard Variants
+
+**Issue:** ProfileCard pattern duplicated in different contexts.
+
+**Locations:**
+- `pages/AccountProfilePage/components/shared/ProfileCard.jsx`
+- Similar card patterns in other pages
+
+**Recommendation:** Move to `shared/ProfileCard.jsx` or create generic `shared/Card.jsx`:
+
+```jsx
+<Card
+  title="Section Title"
+  subtitle="Optional subtitle"
+  headerAction={<Button>Edit</Button>}
+  variant="default" | "elevated" | "bordered"
+>
+  {children}
+</Card>
+```
+
+---
+
+### 6. Modal Header/Footer Pattern
+
+**Issue:** Modal structure repeated in every modal component.
+
+**Recommendation:** Create `shared/Modal/` with composable parts:
+
+```jsx
+<Modal isOpen={open} onClose={onClose}>
+  <Modal.Header>
+    <Modal.Title>Title</Modal.Title>
+    <Modal.CloseButton />
+  </Modal.Header>
+  <Modal.Body>
+    {content}
+  </Modal.Body>
+  <Modal.Footer>
+    <Button onClick={onClose}>Cancel</Button>
+    <Button variant="primary" onClick={onConfirm}>Confirm</Button>
+  </Modal.Footer>
+</Modal>
+```
+
+**Impact:** Consistent modal structure, reduced duplication
+
+---
+
+### 7. ScheduleSelector Variants
+
+**Issue:** Multiple schedule selector implementations with overlapping functionality.
+
+**Locations:**
+- `shared/SearchScheduleSelector.jsx`
+- `shared/AuthAwareSearchScheduleSelector.jsx`
+- `shared/ListingScheduleSelector.jsx`
+- `shared/ListingScheduleSelectorV2.jsx`
+- `shared/HostScheduleSelector/`
+- `pages/FavoriteListingsPage/components/SplitScheduleSelector.jsx`
+
+**Recommendation:** Create a unified `shared/ScheduleSelector/` module with context-specific wrappers:
+
+```jsx
+// Core component with all features
+<ScheduleSelector
+  mode="search" | "host" | "guest" | "listing"
+  selectedDays={[1, 2, 3]}
+  availableDays={[0, 1, 2, 3, 4, 5, 6]}
+  onDaysChange={setDays}
+  showPricing={true}
+  readOnly={false}
+/>
+```
+
+**Impact:** 6+ files consolidated, single source of truth
+
+---
+
+## Priority 3: Code Organization
+
+### 8. Toast Component Simplification
+
+**Issue:** Toast system has complex dual API (context + global).
+
+**Current:** Both `useToast()` hook and `showToast()` global function.
+
+**Recommendation:** Simplify to single pattern:
+
+```jsx
+// Preferred: Hook-based
+const toast = useToast();
+toast.success('Saved!');
+toast.error('Failed!');
+
+// Global (for non-React contexts)
+import { toast } from 'shared/Toast';
+toast.success('Saved!');
+```
+
+---
+
+### 9. Form Components Standardization
+
+**Issue:** Inconsistent form patterns across pages.
+
+**Recommendation:** Create shared form components:
+
+- `shared/Form/Input.jsx`
+- `shared/Form/Select.jsx`
+- `shared/Form/Checkbox.jsx`
+- `shared/Form/TextArea.jsx`
+- `shared/Form/DatePicker.jsx`
+- `shared/Form/FormGroup.jsx`
+
+All using react-hook-form integration.
+
+---
+
+### 10. Icon Usage Standardization
+
+**Issue:** Mix of inline SVGs and lucide-react icons.
+
+**Current:**
+- Some components use inline `<svg>` elements
+- Others use `lucide-react` components
+
+**Recommendation:** Standardize on `lucide-react` exclusively:
+
+```jsx
+import { Search, Plus, X } from 'lucide-react';
+
+// Consistent sizing
+<Search size={18} />
+<Plus className="icon-sm" />
+```
+
+---
+
+## Priority 4: Type Safety
+
+### 11. TypeScript Migration Candidates
+
+**Recommendation:** Prioritize TypeScript conversion for:
+
+1. `shared/Button.jsx` - heavily used, clear prop types
+2. `shared/Toast.jsx` - complex state management
+3. `shared/ScheduleSelector*.jsx` - complex day/date logic
+4. Modal components - consistent prop interfaces
+
+**Example conversion:**
+
+```typescript
+// Button.tsx
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
+  size?: 'small' | 'medium' | 'large';
+  loading?: boolean;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
+  onClick?: () => void;
+  type?: 'button' | 'submit' | 'reset';
+  children: React.ReactNode;
+}
+```
+
+---
+
+## Action Plan
+
+### Phase 1: Foundation (Week 1-2)
+
+1. Create `shared/EmptyState.jsx` - unified empty state
+2. Create `shared/LoadingState.jsx` - unified loading state
+3. Create `shared/ErrorState.jsx` - unified error state
+4. Update existing pages to use new components
+
+### Phase 2: Core Components (Week 3-4)
+
+5. Create `shared/Card.jsx` - generic card component
+6. Create `shared/Modal/` - composable modal system
+7. Consolidate ScheduleSelector variants
+
+### Phase 3: Forms & Polish (Week 5-6)
+
+8. Create `shared/Form/` components
+9. Standardize icon usage
+10. Add TypeScript to critical components
+
+---
+
+## Estimated Impact
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Duplicate components | ~15 | ~3 |
+| Lines of redundant code | ~2000 | ~500 |
+| Inconsistent patterns | 8+ | 2-3 |
+| Type coverage | ~30% | ~60% |
+
+---
+
+## Breaking Changes to Watch
+
+When refactoring, ensure these patterns remain compatible:
+
+1. **Day indexing:** Always 0-6 (Sun=0, Sat=6)
+2. **Hollow Component Pattern:** Keep logic in hooks
+3. **Toast API:** Maintain backward compatibility during migration
+4. **Modal callbacks:** `onClose`, `onConfirm` naming convention

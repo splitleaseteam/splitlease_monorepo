@@ -8,6 +8,7 @@ export default function ConfirmedMeetingsSection({
   meetings = [],
   onEdit,
   onReschedule,
+  onProcessCalendarInvites,
   isLoading
 }) {
   return (
@@ -56,6 +57,7 @@ export default function ConfirmedMeetingsSection({
                 meeting={meeting}
                 onEdit={() => onEdit(meeting)}
                 onReschedule={() => onReschedule(meeting)}
+                onProcessCalendarInvites={onProcessCalendarInvites}
                 isLoading={isLoading}
               />
             ))}

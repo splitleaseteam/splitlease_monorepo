@@ -159,7 +159,7 @@ async function checkProposalMatchTableExists(supabase: SupabaseClient): Promise<
     // For other errors, assume table exists but has access issues
     console.warn('[quick-match:save_choice] Table check error:', error.code, error.message);
     return false;
-  } catch (e) {
+  } catch (_e) {
     console.warn('[quick-match:save_choice] Table check exception:', e);
     return false;
   }

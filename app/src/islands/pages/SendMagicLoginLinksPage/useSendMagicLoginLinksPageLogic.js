@@ -11,7 +11,9 @@ import { supabase } from '../../../lib/supabase.js';
 // Original: import { getUserId, getUserType } from '../../../lib/auth.js';
 import { useToast } from '../../shared/Toast';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+// Supabase credentials - anon key required for edge function gateway
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
 
 export function useSendMagicLoginLinksPageLogic() {
   const { showToast } = useToast();
@@ -65,27 +67,27 @@ export function useSendMagicLoginLinksPageLogic() {
 
   /**
    * Call Edge Function action
-   * Supports both Supabase Auth and legacy token auth
+   * Soft headers pattern: apikey always required, Authorization optional
+   * If no valid session, skip Authorization header (backend handles unauthenticated)
    */
   const callEdgeFunction = async (action, payload) => {
-    // Try Supabase Auth session first
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Get auth token - prefer Supabase session, fallback to legacy token
-    const authToken = session?.access_token
-      || localStorage.getItem('sl_auth_token')
-      || sessionStorage.getItem('sl_auth_token');
+    // Build headers - apikey always required, Authorization only with valid session
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+    };
 
-    if (!authToken) {
-      throw new Error('Not authenticated');
+    // Only add Authorization if there's a valid Supabase session
+    // (no localStorage/sessionStorage fallback - those tokens may be invalid)
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
     }
 
     const response = await fetch(`${SUPABASE_URL}/functions/v1/magic-login-links`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
-      },
+      headers,
       body: JSON.stringify({ action, payload }),
     });
 

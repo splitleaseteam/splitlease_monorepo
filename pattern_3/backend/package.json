@@ -1,0 +1,52 @@
+{
+  "name": "pattern-3-price-anchoring-backend",
+  "version": "1.0.0",
+  "description": "Pattern 3: Price Anchoring - Production Backend Implementation",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
+    "lint": "eslint lib/**/*.ts tests/**/*.ts",
+    "lint:fix": "eslint lib/**/*.ts tests/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "supabase db push",
+    "db:reset": "supabase db reset",
+    "db:seed": "psql -f supabase/migrations/001_pricing_tiers_schema.sql",
+    "functions:deploy": "npm run functions:deploy:get_pricing_tiers && npm run functions:deploy:track_tier_selection && npm run functions:deploy:calculate_savings",
+    "functions:deploy:get_pricing_tiers": "supabase functions deploy get_pricing_tiers",
+    "functions:deploy:track_tier_selection": "supabase functions deploy track_tier_selection",
+    "functions:deploy:calculate_savings": "supabase functions deploy calculate_savings",
+    "functions:logs": "supabase functions logs",
+    "dev": "supabase start",
+    "stop": "supabase stop"
+  },
+  "keywords": [
+    "supabase",
+    "price-anchoring",
+    "behavioral-patterns",
+    "edge-functions",
+    "postgres"
+  ],
+  "author": "Backend Team",
+  "license": "PROPRIETARY",
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.0.4",
+    "eslint": "^8.55.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

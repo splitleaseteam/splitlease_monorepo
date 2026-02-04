@@ -20,8 +20,8 @@ interface StepFResult {
   };
 }
 
-export async function handleStepF(
-  supabase: SupabaseClient,
+export function handleStepF(
+  _supabase: SupabaseClient,
   payload: StepFPayload
 ): Promise<StepFResult> {
   const { simulationId } = payload;

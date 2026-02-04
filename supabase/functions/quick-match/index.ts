@@ -17,12 +17,12 @@
  * - Side effects isolated to boundaries
  */
 
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import 'jsr:@supabase/functions-js@2/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // Shared utilities
 import { ValidationError } from '../_shared/errors.ts';
-import { Result, ok, err } from '../_shared/functional/result.ts';
+import { Result as _Result, ok as _ok, err as _err } from '../_shared/functional/result.ts';
 import {
   parseRequest,
   validateAction,
@@ -47,12 +47,12 @@ import { handleSaveChoice } from './actions/save_choice.ts';
 const ALLOWED_ACTIONS = ['get_proposal', 'search_candidates', 'save_choice'] as const;
 
 // All actions are public (internal tool, no user auth required)
-const PUBLIC_ACTIONS: ReadonlySet<string> = new Set(ALLOWED_ACTIONS);
+const _PUBLIC_ACTIONS: ReadonlySet<string> = new Set(ALLOWED_ACTIONS);
 
 type Action = typeof ALLOWED_ACTIONS[number];
 
 // Handler map (immutable record)
-const handlers: Readonly<Record<Action, Function>> = {
+const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
   get_proposal: handleGetProposal,
   search_candidates: handleSearchCandidates,
   save_choice: handleSaveChoice,

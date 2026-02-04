@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, Zap, Calendar, Coffee, Clock, X } from 'lucide-react';
+import { Send, Zap, Calendar, Coffee, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { formatHostName } from '../../logic/processors/display/formatHostName.js';
 
@@ -496,7 +496,9 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
     setErrors({});
 
     // Validate we have the host user ID
-    if (!listing.host?.userId) {
+    // The listing table has "Host / Landlord" field directly, not nested under host object
+    const hostUserId = listing['Host / Landlord'] || listing.host?.userId;
+    if (!hostUserId) {
       setErrors({
         submit: 'Host information unavailable. Please try again later.'
       });
@@ -511,7 +513,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
       if (session) {
         // Authenticated user: send via native messaging
         console.log('[ContactHostMessaging] Sending authenticated message', {
-          recipient_user_id: listing.host?.userId,
+          recipient_user_id: hostUserId,
           listing_id: listing.id,
           message_body_length: formData.message.length
         });
@@ -520,7 +522,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
           body: {
             action: 'send_message',
             payload: {
-              recipient_user_id: listing.host.userId,
+              recipient_user_id: hostUserId,
               listing_id: listing.id,
               message_body: formData.message.trim(),
               send_welcome_messages: true
@@ -530,8 +532,19 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
 
         if (error) {
           console.error('[ContactHostMessaging] Edge Function error:', error);
+          console.error('[ContactHostMessaging] Full error details:', JSON.stringify(error, null, 2));
+
+          // Try to extract the actual error message from the Edge Function response
+          let errorMessage = 'Failed to send message. Please try again.';
+          if (error.context) {
+            const contextData = typeof error.context === 'string'
+              ? JSON.parse(error.context)
+              : error.context;
+            errorMessage = contextData.error || contextData.message || errorMessage;
+          }
+
           setErrors({
-            submit: error.message || 'Failed to send message. Please try again.'
+            submit: errorMessage
           });
           return;
         }
@@ -555,7 +568,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
         console.log('[ContactHostMessaging] Sending guest inquiry', {
           sender_name: formData.userName,
           sender_email: formData.email,
-          recipient_user_id: listing.host?.userId,
+          recipient_user_id: hostUserId,
           listing_id: listing.id,
           message_body_length: formData.message.length
         });
@@ -566,7 +579,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
             payload: {
               sender_name: formData.userName.trim(),
               sender_email: formData.email.trim(),
-              recipient_user_id: listing.host.userId,
+              recipient_user_id: hostUserId,
               listing_id: listing.id,
               message_body: formData.message.trim()
             }
@@ -575,8 +588,19 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
 
         if (error) {
           console.error('[ContactHostMessaging] Edge Function error:', error);
+          console.error('[ContactHostMessaging] Full error details:', JSON.stringify(error, null, 2));
+
+          // Try to extract the actual error message from the Edge Function response
+          let errorMessage = 'Failed to send message. Please try again.';
+          if (error.context) {
+            const contextData = typeof error.context === 'string'
+              ? JSON.parse(error.context)
+              : error.context;
+            errorMessage = contextData.error || contextData.message || errorMessage;
+          }
+
           setErrors({
-            submit: error.message || 'Failed to send message. Please try again.'
+            submit: errorMessage
           });
           return;
         }
@@ -753,7 +777,27 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
               onMouseEnter={(e) => e.target.style.background = '#F7F2FA'}
               onMouseLeave={(e) => e.target.style.background = 'transparent'}
             >
-              <X size={20} color="#49454F" />
+              {/* Close icon with full defensive sizing per POPUP_REPLICATION_PROTOCOL */}
+              <svg
+                className="close-icon"
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                strokeWidth="2.5"
+                fill="none"
+                stroke="#49454F"
+                aria-hidden="true"
+                style={{
+                  width: 32,
+                  height: 32,
+                  minWidth: 32,
+                  minHeight: 32,
+                  flexShrink: 0
+                }}
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
 
