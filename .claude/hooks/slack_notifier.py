@@ -256,10 +256,8 @@ def main():
                 print("No meaningful content to report")
                 return
 
-        # Format the message
-        message_parts = [summary, f"-{hostname}"]
-
-        message = "\n".join(message_parts)
+        # Format the message with hostname and commit
+        message = f"{summary}\n-{hostname} @ {commit}"
 
         # Send to Slack
         log_debug(f"Sending: {message[:100]}...")
