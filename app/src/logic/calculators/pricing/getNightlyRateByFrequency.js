@@ -1,3 +1,5 @@
+import { PRICING_FIELDS, NIGHTLY_RATE_BY_COUNT } from '../../../data/fieldMappings';
+
 /**
  * Get nightly price based on number of nights selected.
  * Matches Bubble logic for price field selection.
@@ -45,28 +47,18 @@ export function getNightlyRateByFrequency({ listing, nightsSelected }) {
   }
 
   // Price override takes precedence
-  if (listing['price_override']) {
-    const overridePrice = Number(listing['price_override'])
+  if (listing[PRICING_FIELDS.PRICE_OVERRIDE]) {
+    const overridePrice = Number(listing[PRICING_FIELDS.PRICE_OVERRIDE])
     if (isNaN(overridePrice) || overridePrice < 0) {
       throw new Error(
-        `getNightlyRateByFrequency: Invalid price override value ${listing['price_override']}`
+        `getNightlyRateByFrequency: Invalid price override value ${listing[PRICING_FIELDS.PRICE_OVERRIDE]}`
       )
     }
     return overridePrice
   }
 
-  // Map nights to price fields
-  const priceFieldMap = {
-    1: 'nightly_rate_1_night',
-    2: 'nightly_rate_2_nights',
-    3: 'nightly_rate_3_nights',
-    4: 'nightly_rate_4_nights',
-    5: 'nightly_rate_5_nights',
-    6: 'nightly_rate_6_nights',
-    7: 'nightly_rate_7_nights'
-  }
-
-  const fieldName = priceFieldMap[nightsSelected]
+  // Use centralized field mapping
+  const fieldName = NIGHTLY_RATE_BY_COUNT[nightsSelected]
 
   // No Fallback: Exact match required
   if (!fieldName || !listing[fieldName]) {
