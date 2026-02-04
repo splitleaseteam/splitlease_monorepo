@@ -17,6 +17,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { adaptLeaseFromSupabase } from '../../../logic/processors/leases/adaptLeaseFromSupabase.js';
 import { generateAllDocuments } from '../../../logic/workflows/documents/generateAllDocuments.js';
+import {
+  checkAllDocumentsReadiness,
+  formatReadinessReport,
+  formatReadinessForSlack,
+} from '../../../logic/rules/documents/leaseReadinessChecks.js';
 
 // Get dev project credentials from .env or hardcode for reliability
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://qzsmhgyojmwvtjmnrdea.supabase.co';
@@ -56,6 +61,13 @@ export function useManageLeasesPageLogic({ showToast }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isGeneratingDocs, setIsGeneratingDocs] = useState(false);
+
+  // ============================================================================
+  // DOCUMENT READINESS STATE
+  // ============================================================================
+  const [showReadinessModal, setShowReadinessModal] = useState(false);
+  const [readinessReport, setReadinessReport] = useState(null);
+  const [readinessData, setReadinessData] = useState(null);
 
   // ============================================================================
   // AUTH SETUP (OPTIONAL - internal page uses soft headers pattern)
@@ -516,13 +528,8 @@ export function useManageLeasesPageLogic({ showToast }) {
   }
 
   /**
-   * Generate all 4 lease documents via the generateAllDocuments workflow
-   *
-   * Uses the four-layer logic architecture:
-   * - Workflow: generateAllDocuments (orchestration)
-   * - Processors: buildAllDocumentPayloads, transformPaymentRecords
-   * - Rules: canGenerateDocuments, shouldUseProrated
-   * - Calculators: formatters
+   * Check lease readiness and show the readiness modal before generating documents.
+   * This replaces the old direct generation approach with a pre-flight check.
    */
   const handleGenerateAllDocs = useCallback(async () => {
     if (!selectedLease) {
@@ -530,14 +537,145 @@ export function useManageLeasesPageLogic({ showToast }) {
       return;
     }
 
+    setIsLoading(true);
+
+    try {
+      console.log('[ManageLeases] Checking document readiness for lease:', selectedLease.id);
+
+      // Fetch all data needed for readiness check
+      const leaseId = selectedLease.id;
+
+      // Fetch lease details
+      const { data: leaseData } = await supabase
+        .from('bookings_leases')
+        .select('*')
+        .eq('_id', leaseId)
+        .single();
+
+      // Fetch proposal if linked
+      let proposalData = null;
+      if (leaseData?.Proposal) {
+        const { data: proposal } = await supabase
+          .from('proposal')
+          .select('*')
+          .eq('_id', leaseData.Proposal)
+          .single();
+        proposalData = proposal;
+      }
+
+      // Fetch listing if linked
+      let listingData = null;
+      if (leaseData?.Listing) {
+        const { data: listing } = await supabase
+          .from('listing')
+          .select('*')
+          .eq('_id', leaseData.Listing)
+          .single();
+        listingData = listing;
+      }
+
+      // Fetch guest user if linked
+      let guestData = null;
+      if (leaseData?.Guest) {
+        const { data: guest } = await supabase
+          .from('user')
+          .select('*')
+          .eq('_id', leaseData.Guest)
+          .single();
+        guestData = guest;
+      }
+
+      // Fetch host user if linked
+      let hostData = null;
+      if (leaseData?.Host) {
+        const { data: host } = await supabase
+          .from('user')
+          .select('*')
+          .eq('_id', leaseData.Host)
+          .single();
+        hostData = host;
+      }
+
+      // Fetch payment records
+      const { data: allPaymentsData } = await supabase
+        .from('paymentrecords')
+        .select('*')
+        .filter('"Booking - Reservation"', 'eq', leaseId)
+        .limit(30);
+
+      const guestPaymentsData = (allPaymentsData || []).filter(r => r['Payment from guest?'] === true);
+      const hostPaymentsData = (allPaymentsData || []).filter(r => r['Payment to Host?'] === true);
+
+      // Fetch listing photos
+      let listingPhotosData = [];
+      if (listingData?._id) {
+        const { data: photos } = await supabase
+          .from('listing_photo')
+          .select('Photo')
+          .eq('Listing', listingData._id)
+          .order('SortOrder', { ascending: true, nullsLast: true })
+          .limit(3);
+        listingPhotosData = (photos || []).map(p => p.Photo).filter(Boolean);
+      }
+
+      // Build data object for readiness check
+      const readinessCheckData = {
+        lease: leaseData,
+        proposal: proposalData,
+        listing: listingData,
+        guest: guestData,
+        host: hostData,
+        guestPayments: guestPaymentsData,
+        hostPayments: hostPaymentsData,
+        listingPhotos: listingPhotosData,
+      };
+
+      // Run readiness check
+      const report = checkAllDocumentsReadiness(readinessCheckData);
+
+      console.log('[ManageLeases] Readiness check complete:', report.summary);
+      console.log(formatReadinessReport(report, leaseData));
+
+      // Store readiness data for later use in generation
+      setReadinessData(readinessCheckData);
+      setReadinessReport(report);
+      setShowReadinessModal(true);
+
+    } catch (err) {
+      console.error('[ManageLeases] Readiness check error:', err);
+      showToast({
+        title: 'Readiness Check Failed',
+        content: err.message || 'Failed to check document readiness',
+        type: 'error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedLease, showToast]);
+
+  /**
+   * Generate selected documents after readiness check approval.
+   * Called from the readiness modal with the list of document types to generate.
+   *
+   * @param {string[]} documentTypes - Array of document types to generate (e.g., ['hostPayout', 'supplemental'])
+   */
+  const handleGenerateSelectedDocs = useCallback(async (documentTypes) => {
+    if (!selectedLease || !documentTypes || documentTypes.length === 0) {
+      showToast({ title: 'Error', content: 'No documents selected', type: 'error' });
+      return;
+    }
+
+    setShowReadinessModal(false);
     setIsGeneratingDocs(true);
 
     try {
-      console.log('[ManageLeases] Starting document generation for lease:', selectedLease.id);
+      console.log('[ManageLeases] Starting document generation for:', documentTypes);
+      console.log('[ManageLeases] Lease:', selectedLease.id);
 
-      // Call the workflow with lease ID - it handles all data fetching and payload building
+      // Call the workflow with lease ID and selected document types
       const results = await generateAllDocuments({
         leaseId: selectedLease.id,
+        documentTypes, // Pass the selected types
         onProgress: (progress) => {
           console.log(`[ManageLeases] Progress: Step ${progress.step} - ${progress.message}`);
         }
@@ -553,6 +691,14 @@ export function useManageLeasesPageLogic({ showToast }) {
       // Check for validation errors (data issues preventing generation)
       if (results.errors && results.errors.length > 0 && !results.success) {
         console.error('[ManageLeases] Validation errors:', results.errors);
+
+        // Send to Slack for tracking
+        if (readinessReport && !readinessReport.canGenerateAll) {
+          const slackPayload = formatReadinessForSlack(readinessReport, selectedLease);
+          console.log('[ManageLeases] Would send to Slack:', slackPayload);
+          // TODO: Integrate with Slack service when available
+        }
+
         showToast({
           title: 'Validation Failed',
           content: results.errors[0] || 'Missing required data for document generation',
@@ -562,7 +708,13 @@ export function useManageLeasesPageLogic({ showToast }) {
       }
 
       // Process document results
-      const documentTypes = ['hostPayout', 'supplemental', 'periodicTenancy', 'creditCardAuth'];
+      const docTypeNames = {
+        hostPayout: 'Host Payout',
+        supplemental: 'Supplemental',
+        periodicTenancy: 'Periodic Tenancy',
+        creditCardAuth: 'Credit Card Auth'
+      };
+
       const successes = [];
       const failures = [];
       const errorMessages = [];
@@ -572,13 +724,8 @@ export function useManageLeasesPageLogic({ showToast }) {
       console.log('='.repeat(60));
 
       documentTypes.forEach(docType => {
-        const docResult = results.documents[docType];
-        const displayName = {
-          hostPayout: 'Host Payout',
-          supplemental: 'Supplemental',
-          periodicTenancy: 'Periodic Tenancy',
-          creditCardAuth: 'Credit Card Auth'
-        }[docType];
+        const docResult = results.documents?.[docType];
+        const displayName = docTypeNames[docType] || docType;
 
         if (docResult?.success) {
           successes.push(displayName);
@@ -599,7 +746,7 @@ export function useManageLeasesPageLogic({ showToast }) {
       if (failures.length === 0) {
         showToast({
           title: 'Documents Generated',
-          content: `All 4 documents generated successfully. Check Supabase Storage for files.`,
+          content: `${successes.length} document(s) generated successfully.`,
           type: 'success'
         });
       } else if (successes.length > 0) {
@@ -635,7 +782,7 @@ export function useManageLeasesPageLogic({ showToast }) {
     } finally {
       setIsGeneratingDocs(false);
     }
-  }, [selectedLease, showToast, fetchLeaseDetails]);
+  }, [selectedLease, showToast, fetchLeaseDetails, readinessReport]);
 
   const handleSendDocuments = useCallback(async () => {
     // Document sending integrates with HelloSign
@@ -727,9 +874,16 @@ export function useManageLeasesPageLogic({ showToast }) {
     handleUploadDocument,
     handleGenerateDocs,
     handleGenerateAllDocs,
+    handleGenerateSelectedDocs,
     handleSendDocuments,
     handleOpenPdf,
     isGeneratingDocs,
+
+    // Document Readiness
+    showReadinessModal,
+    setShowReadinessModal,
+    readinessReport,
+    selectedLease,
 
     // Change Requests
     guestChangeRequests,

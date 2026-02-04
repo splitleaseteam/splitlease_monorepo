@@ -271,14 +271,25 @@ export async function fetchDocumentData(leaseId) {
 }
 
 /**
- * Generate all 4 lease documents
+ * Generate lease documents (all or selected types)
  *
  * @param {object} params - Generation parameters
  * @param {string} params.leaseId - Lease ID
+ * @param {string[]} params.documentTypes - Optional array of document types to generate
+ *   Valid values: 'hostPayout', 'supplemental', 'periodicTenancy', 'creditCardAuth'
+ *   If not provided, all 4 documents are generated.
  * @param {function} params.onProgress - Progress callback (optional)
  * @returns {Promise<object>} { success, documents, errors, warnings }
  */
-export async function generateAllDocuments({ leaseId, onProgress }) {
+export async function generateAllDocuments({ leaseId, documentTypes, onProgress }) {
+  // Default to all document types if not specified
+  const ALL_DOCUMENT_TYPES = ['hostPayout', 'supplemental', 'periodicTenancy', 'creditCardAuth'];
+  const typesToGenerate = documentTypes && documentTypes.length > 0
+    ? documentTypes.filter(t => ALL_DOCUMENT_TYPES.includes(t))
+    : ALL_DOCUMENT_TYPES;
+
+  console.log(`[generateAllDocuments] Will generate: ${typesToGenerate.join(', ')}`);
+
   const results = {
     success: false,
     documents: {},
@@ -364,10 +375,8 @@ export async function generateAllDocuments({ leaseId, onProgress }) {
     // Extract document results
     const docResults = result.data || result;
 
-    // Process results
-    const documentTypes = ['hostPayout', 'supplemental', 'periodicTenancy', 'creditCardAuth'];
-
-    documentTypes.forEach(docType => {
+    // Process results for selected document types
+    typesToGenerate.forEach(docType => {
       const docResult = docResults[docType];
       if (docResult?.success) {
         results.documents[docType] = {
@@ -389,7 +398,7 @@ export async function generateAllDocuments({ leaseId, onProgress }) {
     const successCount = Object.values(results.documents).filter(d => d.success).length;
     results.success = successCount > 0;
 
-    console.log(`[generateAllDocuments] Complete: ${successCount}/4 documents generated`);
+    console.log(`[generateAllDocuments] Complete: ${successCount}/${typesToGenerate.length} documents generated`);
 
     return results;
 
