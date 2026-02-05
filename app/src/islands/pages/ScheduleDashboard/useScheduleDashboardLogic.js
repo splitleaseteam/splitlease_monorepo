@@ -46,7 +46,6 @@ import { useScheduleState } from './state/useScheduleState.js';
 
 // API imports for real data fetching
 import { fetchLeaseById } from './api/scheduleDashboardApi.js';
-import { supabase } from '../../../lib/supabase.js';
 
 // Toast for user feedback
 import { useToast } from '../../../islands/shared/Toast.jsx';
@@ -153,6 +152,7 @@ export function useScheduleDashboardLogic() {
   // -------------------------------------------------------------------------
   const [lease, setLease] = useState(null);
   const [roommate, setRoommate] = useState(null);
+  const [dateChangeRequests, setDateChangeRequests] = useState([]);
   const [selectedNight, setSelectedNight] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
 
@@ -1028,9 +1028,7 @@ export function useScheduleDashboardLogic() {
         type: 'success'
       });
 
-      // Refresh pending requests
-      // TODO: Implement refreshDateChangeRequests when API is ready
-      // For now, just close the panel
+      await refreshDateChangeRequests();
       setSelectedNight(null);
       ui.closeBuyOut();
 
@@ -1049,7 +1047,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [lease, request, showToast, ui]);
+  }, [lease, refreshDateChangeRequests, request, showToast, ui]);
 
   /**
    * Handle month navigation
@@ -1107,12 +1105,46 @@ export function useScheduleDashboardLogic() {
     window.location.reload();
   }, []);
 
+  const refreshDateChangeRequests = useCallback(async () => {
+    if (!leaseId) return;
+    try {
+      const requests = await fetchDateChangeRequestsForLease(leaseId);
+      setDateChangeRequests(requests);
+    } catch (err) {
+      console.warn('[ScheduleDashboard] Failed to refresh date change requests:', err?.message || err);
+    }
+  }, [leaseId]);
+
   // Note: handleCreateDateChangeRequest with toast support is defined above
 
   const handleUpdateDateChangeRequestStatus = useCallback(async (requestId, status) => {
-    // TODO: Implement proper API call
-    console.log('Updating date change request status:', requestId, status);
-  }, []);
+    const updated = await updateDateChangeRequestStatus(requestId, status);
+    await refreshDateChangeRequests();
+    return updated;
+  }, [refreshDateChangeRequests, updateDateChangeRequestStatus]);
+
+  useEffect(() => {
+    refreshDateChangeRequests();
+  }, [refreshDateChangeRequests]);
+
+  useEffect(() => {
+    if (!leaseId) return;
+    const channel = supabase
+      .channel('date-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'date_change_requests',
+        filter: `Lease=eq.${leaseId}`
+      }, () => {
+        refreshDateChangeRequests();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [leaseId, refreshDateChangeRequests]);
 
   // -------------------------------------------------------------------------
   // RETURN
@@ -1126,6 +1158,7 @@ export function useScheduleDashboardLogic() {
     // Core Data
     lease,
     roommate,
+    dateChangeRequests,
 
     // Perspective (Dev Scaffolding)
     isSwappedPerspective,
@@ -1219,6 +1252,7 @@ export function useScheduleDashboardLogic() {
     handleSelectTransaction: ui.handleSelectTransaction,
     handleMonthChange,
     handleRefresh,
+    refreshDateChangeRequests,
     handleCreateDateChangeRequest,
     handleUpdateDateChangeRequestStatus,
     handleToggleBuyOut: ui.handleToggleBuyOut,
