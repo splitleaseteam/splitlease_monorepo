@@ -307,8 +307,7 @@ export default function CareersPage() {
                 aspectRatio: '16 / 9',
                 width: '100%',
                 borderRadius: '16px',
-                overflow: 'hidden',
-                background: 'white'
+                overflow: 'hidden'
               }}
             >
               <iframe
@@ -317,9 +316,10 @@ export default function CareersPage() {
                 allowFullScreen
                 style={{
                   border: 'none',
-                  width: '100%',
-                  height: '100%',
-                  display: 'block'
+                  width: 'calc(100% + 4px)',
+                  height: 'calc(100% + 4px)',
+                  display: 'block',
+                  margin: '-2px'
                 }}
                 title="Split Lease Company Journey"
               />
