@@ -14,7 +14,7 @@ import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
 import SearchScheduleSelector from '../../../shared/SearchScheduleSelector.jsx';
 import TrustVerificationCard from './cards/TrustVerificationCard.jsx';
-import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin } from 'lucide-react';
+import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin, Pencil } from 'lucide-react';
 
 // ============================================================================
 // VERIFICATION ICONS MAP
@@ -63,6 +63,9 @@ export default function ProfileSidebar({
   selectedDays = [],
   onDayToggle,
   isHostUser = false,
+  // Edit name props
+  showEditNameIcon = false,
+  onEditName,
   // Public view specific
   responseTime,
   responseRate,
@@ -113,7 +116,14 @@ export default function ProfileSidebar({
 
       {/* Profile Info */}
       <div className="sidebar-profile-info">
-        <h1 className="sidebar-profile-name">{fullName}</h1>
+        <h1 className="sidebar-profile-name">
+          {fullName}
+          {showEditNameIcon && (
+            <button type="button" className="edit-name-btn" onClick={onEditName} aria-label="Edit name">
+              <Pencil size={14} />
+            </button>
+          )}
+        </h1>
         {jobTitle && <p className="sidebar-profile-title">{jobTitle}</p>}
       </div>
 
@@ -142,12 +152,14 @@ export default function ProfileSidebar({
 
       {/* Schedule Selector - Editor View, Guest-only */}
       {isEditorView && !isHostUser && (
-        <SearchScheduleSelector
-          initialSelection={selectedDays}
-          onSelectionChange={onDayToggle}
-          enablePersistence={true}
-          updateUrl={false}
-        />
+        <div className="sidebar-schedule-section">
+          <SearchScheduleSelector
+            initialSelection={selectedDays}
+            onSelectionChange={onDayToggle}
+            enablePersistence={true}
+            updateUrl={false}
+          />
+        </div>
       )}
 
       {/* Trust & Verification - Editor View */}

@@ -71,6 +71,7 @@ export default function AccountProfilePage() {
   const logic = useAccountProfilePageLogic();
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showImproveProfileModal, setShowImproveProfileModal] = useState(false);
+  const [showBasicInfoOverride, setShowBasicInfoOverride] = useState(false);
 
   // Show loading state
   if (logic.loading) {
@@ -125,6 +126,9 @@ export default function AccountProfilePage() {
     selectedDays: logic.formData.selectedDays,
     onDayToggle: logic.handleDayToggle,
     isHostUser: logic.isHostUser,
+    // Edit name props (guest with submitted app)
+    showEditNameIcon: !logic.isHostUser && logic.rentalApplicationStatus === 'submitted',
+    onEditName: () => setShowBasicInfoOverride(true),
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,
@@ -184,6 +188,8 @@ export default function AccountProfilePage() {
                 // Email verification state
                 isVerifyingEmail={logic.isVerifyingEmail}
                 verificationEmailSent={logic.verificationEmailSent}
+                // Force show basic info
+                forceShowBasicInfo={showBasicInfoOverride}
               />
             ) : (
               <PublicView

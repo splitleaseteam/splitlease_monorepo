@@ -48,20 +48,23 @@ export default function EditorView({
   onOpenRentalWizard,
   // Email verification state
   isVerifyingEmail = false,
-  verificationEmailSent = false
+  // Force show override
+  forceShowBasicInfo = false
 }) {
   return (
     <>
-      {/* Basic Information - Always shown */}
-      <BasicInfoCard
-        firstName={formData.firstName}
-        lastName={formData.lastName}
-        jobTitle={formData.jobTitle}
-        dateOfBirth={formData.dateOfBirth}
-        showDateOfBirthField={showDateOfBirthField}
-        errors={formErrors}
-        onFieldChange={onFieldChange}
-      />
+      {/* Basic Information - Hidden for guests with rental app completed (unless forced) */}
+      {(isHostUser || rentalApplicationStatus !== 'submitted' || forceShowBasicInfo) && (
+        <BasicInfoCard
+          firstName={formData.firstName}
+          lastName={formData.lastName}
+          jobTitle={formData.jobTitle}
+          dateOfBirth={formData.dateOfBirth}
+          showDateOfBirthField={showDateOfBirthField}
+          errors={formErrors}
+          onFieldChange={onFieldChange}
+        />
+      )}
 
       {/* About You - Always shown */}
       <AboutCard
