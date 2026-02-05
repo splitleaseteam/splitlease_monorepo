@@ -3,13 +3,20 @@
  *
  * Header section displaying:
  * - Property name and address
- * - Roommate name
+ * - Co-tenant name
  * - Lease period dates
  */
 
 import React from 'react';
 
-export default function LeaseInfoBar({ lease, roommate }) {
+export default function LeaseInfoBar({
+  lease,
+  coTenant,
+  roommate // @deprecated Use coTenant
+}) {
+  // Resolve prop with backward compatibility
+  const resolvedCoTenant = coTenant ?? roommate;
+
   if (!lease) return null;
 
   const formatDate = (dateStr) => {
@@ -30,11 +37,11 @@ export default function LeaseInfoBar({ lease, roommate }) {
           <p className="lease-info-bar__address">{lease.propertyAddress}</p>
         </div>
 
-        {/* Roommate */}
-        <div className="lease-info-bar__roommate">
+        {/* Co-tenant */}
+        <div className="lease-info-bar__cotenant">
           <span className="lease-info-bar__label">Sharing with</span>
           <span className="lease-info-bar__name">
-            {roommate ? `${roommate.firstName} ${roommate.lastName}` : 'Loading...'}
+            {resolvedCoTenant ? `${resolvedCoTenant.firstName} ${resolvedCoTenant.lastName}` : 'Loading...'}
           </span>
         </div>
 

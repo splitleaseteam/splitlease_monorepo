@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
  * Calendar day cell for ScheduleCalendar.
  *
  * @param {Date|null} date - Day date or null for empty cells.
- * @param {string} ownership - 'mine' | 'roommate' | 'outside' | 'empty'.
+ * @param {string} ownership - 'mine' | 'cotenant' | 'roommate' (deprecated) | 'outside' | 'empty'.
  * @param {boolean} isAdjacent - Whether the day is adjacent to user's nights.
  * @param {string|null} requestStatus - 'pending' | 'blocked' | null.
  * @param {boolean} isSelected - Whether the day is currently selected.
@@ -38,7 +38,9 @@ export default function CalendarDay({
 }) {
   const assignedUser = stay?.User || stay?.assignedTo || transaction?.User || transaction?.assignedTo;
   const isAssigned = Boolean(assignedUser);
-  const resolvedOwnership = ownership === 'empty' && isAssigned ? 'roommate' : ownership;
+  // Normalize ownership: 'roommate' → 'cotenant' for CSS class compatibility
+  const normalizedOwnership = ownership === 'roommate' ? 'cotenant' : ownership;
+  const resolvedOwnership = normalizedOwnership === 'empty' && isAssigned ? 'cotenant' : normalizedOwnership;
 
   if (date && date.getMonth() === 1 && date.getDate() === 14) {
     console.log('[CalendarDay] Feb 14 debug', {

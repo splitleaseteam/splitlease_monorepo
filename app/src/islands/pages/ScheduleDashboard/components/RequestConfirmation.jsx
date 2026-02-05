@@ -48,11 +48,11 @@ const confirmationTextGenerators = {
   // Co-tenant lease confirmations
   co_tenant: {
     buyout: ({ night, counterpartyName, amount }) =>
-      `Request to buy out ${formatDate(night)} from ${counterpartyName || 'your roommate'} for $${amount?.toFixed(2) || '0.00'}?`,
+      `Request to buy out ${formatDate(night)} from ${counterpartyName || 'your co-tenant'} for $${amount?.toFixed(2) || '0.00'}?`,
     swap: ({ night, counterpartyName, offerNight }) =>
-      `Offer to swap ${formatDate(night)} with ${counterpartyName || 'your roommate'}${offerNight ? ` for ${formatDate(offerNight)}` : ''}?`,
+      `Offer to swap ${formatDate(night)} with ${counterpartyName || 'your co-tenant'}${offerNight ? ` for ${formatDate(offerNight)}` : ''}?`,
     share: ({ night, counterpartyName }) =>
-      `Request to co-occupy the space on ${formatDate(night)} with ${counterpartyName || 'your roommate'}?`,
+      `Request to co-occupy the space on ${formatDate(night)} with ${counterpartyName || 'your co-tenant'}?`,
   },
 
   // Guest-host lease confirmations (guest perspective)

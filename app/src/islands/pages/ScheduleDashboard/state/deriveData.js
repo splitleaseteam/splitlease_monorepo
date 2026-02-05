@@ -1,12 +1,14 @@
 export function derivePerspective({
   currentUserId,
+  coTenantId,
   roommateId,
   calendarOwnership = {},
   transactions,
   messages
 }) {
   const userNights = (calendarOwnership || {})[currentUserId] || [];
-  const roommateNights = (calendarOwnership || {})[roommateId] || [];
+  const resolvedCoTenantId = coTenantId || roommateId;
+  const coTenantNights = (calendarOwnership || {})[resolvedCoTenantId] || [];
 
   const processedTransactions = transactions.map((transaction) => {
     const { payerId, payeeId, type } = transaction;
@@ -30,7 +32,8 @@ export function derivePerspective({
 
   return {
     userNights,
-    roommateNights,
+    coTenantNights,
+    roommateNights: coTenantNights,
     processedTransactions,
     messages
   };

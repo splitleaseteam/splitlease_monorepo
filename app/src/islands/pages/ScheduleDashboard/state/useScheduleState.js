@@ -96,16 +96,17 @@ function reducer(state, action) {
   return effects.reduce((nextState, effect) => applyEffect(nextState, effect), state);
 }
 
-export function useScheduleState({ currentUserId, roommateId }) {
+export function useScheduleState({ currentUserId, coTenantId, roommateId }) {
   const [state, dispatch] = useReducer(reducer, null, initialState);
+  const resolvedCoTenantId = coTenantId || roommateId;
 
   const derived = useMemo(() => derivePerspective({
     currentUserId,
-    roommateId,
+    coTenantId: resolvedCoTenantId,
     calendarOwnership: state.calendarOwnership,
     transactions: state.transactions,
     messages: state.messages
-  }), [currentUserId, roommateId, state.calendarOwnership, state.transactions, state.messages]);
+  }), [currentUserId, resolvedCoTenantId, state.calendarOwnership, state.transactions, state.messages]);
 
   const sendMessage = useCallback((text) => {
     const message = buildMessage({ senderId: currentUserId, text });
