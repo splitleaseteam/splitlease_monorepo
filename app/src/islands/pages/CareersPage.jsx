@@ -183,7 +183,19 @@ export default function CareersPage() {
           src="https://www.youtube.com/embed/DDsSMV2sBoE?autoplay=1&mute=1&loop=1&playlist=DDsSMV2sBoE&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
           allow="autoplay; encrypted-media"
           allowFullScreen
-          style={{ border: 'none', pointerEvents: 'none' }}
+          style={{
+            border: 'none',
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '100vw',
+            height: '100vh',
+            transform: 'translate(-50%, -50%)',
+            objectFit: 'cover',
+            minWidth: '177.77vh',
+            minHeight: '56.25vw'
+          }}
         />
         <div className="hero-overlay"></div>
         <div className="hero-container">
