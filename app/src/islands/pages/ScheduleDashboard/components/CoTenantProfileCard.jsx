@@ -81,18 +81,22 @@ function FlexibilityGauge({ score, userScore, coTenantName, userName, onInfoClic
 /**
  * CoTenantProfileCard - Displays co-tenant profile information
  *
- * Note: Props use 'roommate' naming for backward compatibility with
- * existing data structures. UI displays "Co-tenant" terminology.
+ * Note: Both 'coTenant' and 'roommate' props are supported.
+ * 'roommate' is @deprecated - use 'coTenant' for new code.
  */
 export default function CoTenantProfileCard({
-  roommate, // Keep prop name for backward compatibility
+  coTenant,
+  roommate, // @deprecated Use coTenant
   flexibilityScore,
   userFlexibilityScore,
   userName,
   responsePatterns,
   onFlexibilityInfoClick
 }) {
-  if (!roommate) {
+  // Resolve prop with backward compatibility
+  const resolvedCoTenant = coTenant ?? roommate;
+
+  if (!resolvedCoTenant) {
     return (
       <div className="cotenant-profile-card cotenant-profile-card--loading">
         <div className="cotenant-profile-card__skeleton" />
@@ -101,17 +105,17 @@ export default function CoTenantProfileCard({
   }
 
   // Generate initials for avatar fallback
-  const initials = `${roommate.firstName?.[0] || ''}${roommate.lastName?.[0] || ''}`.toUpperCase();
+  const initials = `${resolvedCoTenant.firstName?.[0] || ''}${resolvedCoTenant.lastName?.[0] || ''}`.toUpperCase();
 
   return (
     <div className="cotenant-profile-card">
       {/* Avatar and Name */}
       <div className="cotenant-profile-card__header">
         <div className="cotenant-profile-card__avatar">
-          {roommate.avatarUrl ? (
+          {resolvedCoTenant.avatarUrl ? (
             <img
-              src={roommate.avatarUrl}
-              alt={`${roommate.firstName}'s profile`}
+              src={resolvedCoTenant.avatarUrl}
+              alt={`${resolvedCoTenant.firstName}'s profile`}
             />
           ) : (
             <span className="cotenant-profile-card__initials">{initials}</span>
@@ -119,7 +123,7 @@ export default function CoTenantProfileCard({
         </div>
         <div className="cotenant-profile-card__info">
           <span className="cotenant-profile-card__name">
-            {roommate.firstName} {roommate.lastName}
+            {resolvedCoTenant.firstName} {resolvedCoTenant.lastName}
           </span>
           <span className="cotenant-profile-card__score">{flexibilityScore}/10</span>
         </div>
@@ -129,7 +133,7 @@ export default function CoTenantProfileCard({
       <FlexibilityGauge
         score={flexibilityScore}
         userScore={userFlexibilityScore}
-        coTenantName={roommate.firstName}
+        coTenantName={resolvedCoTenant.firstName}
         userName={userName}
         onInfoClick={onFlexibilityInfoClick}
       />
@@ -149,7 +153,14 @@ export default function CoTenantProfileCard({
 }
 
 CoTenantProfileCard.propTypes = {
-  roommate: PropTypes.shape({
+  coTenant: PropTypes.shape({
+    _id: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    avatarUrl: PropTypes.string,
+    email: PropTypes.string
+  }),
+  roommate: PropTypes.shape({ // @deprecated Use coTenant
     _id: PropTypes.string,
     firstName: PropTypes.string,
     lastName: PropTypes.string,

@@ -579,6 +579,8 @@ function RequestTypeTabs({ activeType, onTypeChange, disabled }) {
 
 export default function BuyOutPanel({
   selectedDate,
+  coTenant,
+  roommate,
   roommateName = 'Roommate',
   basePrice,
   onBuyOut,
@@ -598,6 +600,7 @@ export default function BuyOutPanel({
   isCounterMode = false,
   swapOfferNight = null,
   userNights = [],
+  coTenantNights = [],
   roommateNights = [],
   counterOriginalNight = null,
   counterTargetNight = null,
@@ -619,6 +622,9 @@ export default function BuyOutPanel({
   guestName = null, // Guest's first name (for host view)
   hostName = null // Host's first name (for guest view)
 }) {
+  const resolvedCoTenant = coTenant || roommate;
+  const resolvedCoTenantName = roommateName || resolvedCoTenant?.firstName || 'Roommate';
+  const resolvedCoTenantNights = coTenantNights.length > 0 ? coTenantNights : roommateNights;
   const [message, setMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSwapSuccess, setShowSwapSuccess] = useState(false);
@@ -627,14 +633,14 @@ export default function BuyOutPanel({
   // Compute labels based on lease type
   const counterpartyLabel = useMemo(() => {
     if (!lease || lease.isCoTenant) {
-      return roommateName || 'Roommate';
+      return resolvedCoTenantName || 'Roommate';
     }
     // Guest-host lease
     if (lease.userRole === 'guest') {
       return hostName ? `Host (${hostName})` : 'Host';
     }
     return guestName ? `Guest (${guestName})` : 'Guest';
-  }, [lease, roommateName, guestName, hostName]);
+  }, [lease, resolvedCoTenantName, guestName, hostName]);
 
   const panelLabels = useMemo(() => {
     if (!lease || lease.isCoTenant) {
@@ -703,7 +709,7 @@ export default function BuyOutPanel({
     if (!suggestedPrice) return null;
     const deviation = (offerPrice - suggestedPrice) / suggestedPrice;
     if (Math.abs(deviation) < 0.02) {
-      return { label: `Matches ${roommateName}'s suggestion`, tone: 'fair' };
+      return { label: `Matches ${resolvedCoTenantName}'s suggestion`, tone: 'fair' };
     }
     const percent = Math.round(Math.abs(deviation) * 100);
     if (deviation < 0) {
@@ -882,8 +888,8 @@ export default function BuyOutPanel({
         <SwapModeContent
           mode={isCounterMode ? 'counter' : 'swap'}
           requestedNight={isCounterMode ? counterOriginalNight : selectedDate}
-          roommateName={roommateName}
-          availableNights={isCounterMode ? roommateNights : userNights}
+          roommateName={resolvedCoTenantName}
+          availableNights={isCounterMode ? resolvedCoTenantNights : userNights}
           selectedOfferNight={isCounterMode ? counterTargetNight : swapOfferNight}
           onSelectOffer={isCounterMode ? onSelectCounterNight : onSelectSwapOffer}
           onSubmit={async (msg) => {
@@ -1046,12 +1052,12 @@ export default function BuyOutPanel({
               {/* Feedback Detail (Layer 3) */}
               {showFeedbackDetail && offerFeedback && (
                 <div className="buyout-panel__feedback-detail">
-                  <p>Based on {roommateName}'s pricing preferences and current demand.</p>
-                  {flexibilityContext.delta !== 0 && myFlexibilityScore && roommateFlexibilityScore && (
-                    <p className="buyout-panel__flexibility-comparison">
-                      Flexibility: You ({myFlexibilityScore}/10) vs {roommateName} ({roommateFlexibilityScore}/10)
-                    </p>
-                  )}
+                   <p>Based on {resolvedCoTenantName}'s pricing preferences and current demand.</p>
+                   {flexibilityContext.delta !== 0 && myFlexibilityScore && roommateFlexibilityScore && (
+                     <p className="buyout-panel__flexibility-comparison">
+                       Flexibility: You ({myFlexibilityScore}/10) vs {resolvedCoTenantName} ({roommateFlexibilityScore}/10)
+                     </p>
+                   )}
                 </div>
               )}
             </div>
@@ -1105,7 +1111,7 @@ export default function BuyOutPanel({
             <FeeTooltip
               feeBreakdown={feeBreakdown}
               transactionType={requestType}
-              roommateName={roommateName}
+              roommateName={resolvedCoTenantName}
             >
               <button
                 type="button"
@@ -1192,6 +1198,12 @@ BuyOutPanel.propTypes = {
     PropTypes.string,
     PropTypes.instanceOf(Date)
   ]),
+  coTenant: PropTypes.shape({
+    firstName: PropTypes.string
+  }),
+  roommate: PropTypes.shape({
+    firstName: PropTypes.string
+  }),
   roommateName: PropTypes.string,
   basePrice: PropTypes.number,
   onBuyOut: PropTypes.func,
@@ -1211,6 +1223,7 @@ BuyOutPanel.propTypes = {
   isCounterMode: PropTypes.bool,
   swapOfferNight: PropTypes.string,
   userNights: PropTypes.arrayOf(PropTypes.string),
+  coTenantNights: PropTypes.arrayOf(PropTypes.string),
   roommateNights: PropTypes.arrayOf(PropTypes.string),
   counterOriginalNight: PropTypes.oneOfType([
     PropTypes.string,

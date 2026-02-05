@@ -99,10 +99,12 @@ export default function ScheduleDashboard() {
 
     // Core Data
     lease,
+    coTenant,
     roommate,
 
     // Calendar (string dates)
     userNights,
+    coTenantNights,
     roommateNights,
     pendingNights,
     blockedNights,
@@ -199,6 +201,9 @@ export default function ScheduleDashboard() {
     handleSwitchMode
   } = useScheduleDashboardLogic();
 
+  const resolvedCoTenant = coTenant || roommate;
+  const resolvedCoTenantNights = coTenantNights || roommateNights;
+
   // -------------------------------------------------------------------------
   // RENDER
   // -------------------------------------------------------------------------
@@ -209,7 +214,7 @@ export default function ScheduleDashboard() {
       {!isLoading && !error && lease && (
         <ReservationHeader
           lease={lease}
-          roommate={roommate}
+          roommate={resolvedCoTenant}
           onBack={() => window.location.assign('/guest-leases')}
         />
       )}
@@ -252,6 +257,8 @@ export default function ScheduleDashboard() {
                       >
                         <ScheduleCalendar
                           userNights={userNights}
+                          coTenant={resolvedCoTenant}
+                          coTenantNights={resolvedCoTenantNights}
                           roommateNights={roommateNights}
                           pendingNights={pendingNights}
                           blockedNights={blockedNights}
@@ -263,7 +270,7 @@ export default function ScheduleDashboard() {
                           transactionsByDate={transactionsByDate}
                           onSelectTransaction={handleSelectTransaction}
                           roommatePriceOverlays={roommatePriceOverlays}
-                          roommateName={roommate?.firstName}
+                          roommateName={resolvedCoTenant?.firstName}
                         />
                       </section>
 
@@ -299,7 +306,8 @@ export default function ScheduleDashboard() {
                         <section className="schedule-dashboard__section schedule-dashboard__buyout">
                           <BuyOutPanel
                             selectedDate={isCounterMode ? counterOriginalNight : selectedNight}
-                            roommateName={roommate?.firstName}
+                            coTenant={resolvedCoTenant}
+                            roommateName={resolvedCoTenant?.firstName}
                             basePrice={basePrice}
                             onBuyOut={handleBuyOut}
                             onShareRequest={handleShareRequest}
@@ -318,6 +326,7 @@ export default function ScheduleDashboard() {
                             isCounterMode={isCounterMode}
                             swapOfferNight={swapOfferNight}
                             userNights={userNights}
+                            coTenantNights={resolvedCoTenantNights}
                             roommateNights={roommateNights}
                             counterOriginalNight={counterOriginalNight}
                             counterTargetNight={counterTargetNight}
@@ -360,6 +369,8 @@ export default function ScheduleDashboard() {
                       >
                         <ScheduleCalendar
                           userNights={userNights}
+                          coTenant={resolvedCoTenant}
+                          coTenantNights={resolvedCoTenantNights}
                           roommateNights={roommateNights}
                           pendingNights={pendingNights}
                           blockedNights={blockedNights}
@@ -380,7 +391,7 @@ export default function ScheduleDashboard() {
                   {/* Profile Card - Always Visible */}
                   <section className="schedule-dashboard__section schedule-dashboard__profile">
                     <RoommateProfileCard
-                      roommate={roommate}
+                      roommate={resolvedCoTenant}
                       flexibilityScore={flexibilityScore}
                       userFlexibilityScore={userFlexibilityScore}
                       userName={currentUserData?.firstName}
@@ -404,7 +415,7 @@ export default function ScheduleDashboard() {
                       <ChatThread
                         messages={messages}
                         currentUserId={currentUserId}
-                        roommateName={roommate?.firstName}
+                        roommateName={resolvedCoTenant?.firstName}
                         onSendMessage={handleSendMessage}
                         onAcceptRequest={handleAcceptRequest}
                         onDeclineRequest={handleDeclineRequest}
@@ -450,7 +461,7 @@ export default function ScheduleDashboard() {
           onClose={handleCloseFlexibilityModal}
           userScore={userFlexibilityScore}
           roommateScore={flexibilityScore}
-          roommateName={roommate?.firstName}
+          roommateName={resolvedCoTenant?.firstName}
           userName={currentUserData?.firstName}
           flexibilityMetrics={flexibilityMetrics}
         />

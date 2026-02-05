@@ -10,15 +10,22 @@ import {
  * @param {Object} params
  * @param {Object} params.pricingStrategy - Current user's pricing strategy.
  * @param {string[]} params.userNights - Current user's nights (YYYY-MM-DD).
- * @param {string[]} params.roommateNights - Roommate's nights (YYYY-MM-DD).
- * @param {Object|null} params.roommateStrategy - Roommate's pricing strategy.
+ * @param {string[]} params.coTenantNights - Co-tenant's nights (YYYY-MM-DD).
+ * @param {string[]} [params.roommateNights] - @deprecated Use coTenantNights instead.
+ * @param {Object|null} params.coTenantStrategy - Co-tenant's pricing strategy.
+ * @param {Object|null} [params.roommateStrategy] - @deprecated Use coTenantStrategy instead.
  */
 export function usePricingOverlays({
   pricingStrategy,
   userNights,
-  roommateNights,
-  roommateStrategy
+  coTenantNights,
+  roommateNights, // @deprecated - use coTenantNights
+  coTenantStrategy,
+  roommateStrategy // @deprecated - use coTenantStrategy
 }) {
+  // Support both new and deprecated param names
+  const resolvedCoTenantNights = coTenantNights || roommateNights;
+  const resolvedCoTenantStrategy = coTenantStrategy || roommateStrategy;
   const computedSuggestedPrices = useMemo(() => {
     const prices = [];
     const today = new Date();
@@ -101,18 +108,18 @@ export function usePricingOverlays({
     return Object.keys(overlays).length > 0 ? overlays : null;
   }, [userNights, pricingStrategy]);
 
-  const roommatePriceOverlays = useMemo(() => {
-    if (!roommateNights || roommateNights.length === 0) return null;
-    if (!roommateStrategy) return null;
+  const coTenantPriceOverlays = useMemo(() => {
+    if (!resolvedCoTenantNights || resolvedCoTenantNights.length === 0) return null;
+    if (!resolvedCoTenantStrategy) return null;
 
     const overlays = {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const baseCost = roommateStrategy.baseRate;
-    const noticeMultipliers = roommateStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
+    const baseCost = resolvedCoTenantStrategy.baseRate;
+    const noticeMultipliers = resolvedCoTenantStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
 
-    for (const nightStr of roommateNights) {
+    for (const nightStr of resolvedCoTenantNights) {
       const date = new Date(nightStr + 'T12:00:00');
       if (Number.isNaN(date.getTime())) continue;
 
@@ -123,7 +130,7 @@ export function usePricingOverlays({
 
       const noticeThreshold = getNoticeThresholdForDate(daysDiff);
       const noticeMultiplier = noticeMultipliers[noticeThreshold] ?? 1.0;
-      const edgeMultiplier = EDGE_MULTIPLIERS[roommateStrategy.edgePreference]?.[dayOfWeek] || 1.0;
+      const edgeMultiplier = EDGE_MULTIPLIERS[resolvedCoTenantStrategy.edgePreference]?.[dayOfWeek] || 1.0;
 
       const price = Math.round(baseCost * noticeMultiplier * edgeMultiplier);
 
@@ -143,7 +150,7 @@ export function usePricingOverlays({
     }
 
     return Object.keys(overlays).length > 0 ? overlays : null;
-  }, [roommateNights, roommateStrategy]);
+  }, [resolvedCoTenantNights, resolvedCoTenantStrategy]);
 
   const computedExamples = useMemo(() => {
     const baseCost = pricingStrategy.baseRate;
@@ -186,7 +193,8 @@ export function usePricingOverlays({
   return {
     computedSuggestedPrices,
     priceOverlays,
-    roommatePriceOverlays,
+    coTenantPriceOverlays,
+    roommatePriceOverlays: coTenantPriceOverlays, // @deprecated - use coTenantPriceOverlays
     computedExamples
   };
 }

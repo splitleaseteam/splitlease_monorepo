@@ -41,18 +41,18 @@ function getPercentileText(score) {
  * Compare two metric values and determine which is better
  * @returns 'better' | 'worse' | 'equal'
  */
-function compareMetrics(userValue, roommateValue, lowerIsBetter = false) {
+function compareMetrics(userValue, coTenantValue, lowerIsBetter = false) {
   const userNum = parseFloat(userValue) || 0;
-  const roommateNum = parseFloat(roommateValue) || 0;
+  const coTenantNum = parseFloat(coTenantValue) || 0;
 
   if (lowerIsBetter) {
-    if (userNum < roommateNum) return 'better';
-    if (userNum > roommateNum) return 'worse';
+    if (userNum < coTenantNum) return 'better';
+    if (userNum > coTenantNum) return 'worse';
     return 'equal';
   }
 
-  if (userNum > roommateNum) return 'better';
-  if (userNum < roommateNum) return 'worse';
+  if (userNum > coTenantNum) return 'better';
+  if (userNum < coTenantNum) return 'worse';
   return 'equal';
 }
 
@@ -86,8 +86,8 @@ function ScoreBar({ label, score, maxScore = 10, isUser = false }) {
 /**
  * Metric Comparison Row
  */
-function MetricRow({ label, userValue, roommateValue, lowerIsBetter = false }) {
-  const comparison = compareMetrics(userValue, roommateValue, lowerIsBetter);
+function MetricRow({ label, userValue, coTenantValue, lowerIsBetter = false }) {
+  const comparison = compareMetrics(userValue, coTenantValue, lowerIsBetter);
 
   return (
     <div className="flexibility-modal__metric-row">
@@ -98,8 +98,8 @@ function MetricRow({ label, userValue, roommateValue, lowerIsBetter = false }) {
         {comparison === 'worse' && <span className="flexibility-modal__metric-icon flexibility-modal__metric-icon--warn">&#x26A0;</span>}
       </span>
       <span className="flexibility-modal__metric-vs">vs</span>
-      <span className="flexibility-modal__metric-value flexibility-modal__metric-value--roommate">
-        {roommateValue}
+      <span className="flexibility-modal__metric-value flexibility-modal__metric-value--cotenant">
+        {coTenantValue}
       </span>
     </div>
   );
@@ -113,15 +113,21 @@ export default function FlexibilityBreakdownModal({
   isOpen,
   onClose,
   userScore,
-  roommateScore,
-  roommateName = 'Roommate',
+  coTenantScore,
+  roommateScore, // @deprecated Use coTenantScore
+  coTenantName = 'Co-tenant',
+  roommateName, // @deprecated Use coTenantName
   userName,
   flexibilityMetrics
 }) {
   if (!isOpen) return null;
 
+  // Resolve props with backward compatibility
+  const resolvedCoTenantScore = coTenantScore ?? roommateScore;
+  const resolvedCoTenantName = coTenantName !== 'Co-tenant' ? coTenantName : (roommateName ?? 'Co-tenant');
+
   const userMetrics = flexibilityMetrics?.user || {};
-  const roommateMetrics = flexibilityMetrics?.roommate || {};
+  const coTenantMetrics = flexibilityMetrics?.coTenant || flexibilityMetrics?.roommate || {};
 
   return (
     <div className="flexibility-modal__overlay" onClick={onClose}>
@@ -160,15 +166,15 @@ export default function FlexibilityBreakdownModal({
                 isUser={true}
               />
               <ScoreBar
-                label={roommateName}
-                score={roommateScore}
+                label={resolvedCoTenantName}
+                score={resolvedCoTenantScore}
               />
             </div>
 
             <p className="flexibility-modal__summary">
-              {userScore >= roommateScore
+              {userScore >= resolvedCoTenantScore
                 ? getPercentileText(userScore)
-                : `${roommateName} has a slightly higher flexibility score.`
+                : `${resolvedCoTenantName} has a slightly higher flexibility score.`
               }
             </p>
           </div>
@@ -182,32 +188,32 @@ export default function FlexibilityBreakdownModal({
                 <span></span>
                 <span className="flexibility-modal__metrics-header-you">{userName || 'You'}</span>
                 <span></span>
-                <span className="flexibility-modal__metrics-header-roommate">{roommateName}</span>
+                <span className="flexibility-modal__metrics-header-cotenant">{resolvedCoTenantName}</span>
               </div>
 
               <MetricRow
                 label="Response Time"
                 userValue={userMetrics.responseTime || 'N/A'}
-                roommateValue={roommateMetrics.responseTime || 'N/A'}
+                coTenantValue={coTenantMetrics.responseTime || 'N/A'}
                 lowerIsBetter={true}
               />
 
               <MetricRow
                 label="Approval Rate"
                 userValue={userMetrics.approvalRate || 'N/A'}
-                roommateValue={roommateMetrics.approvalRate || 'N/A'}
+                coTenantValue={coTenantMetrics.approvalRate || 'N/A'}
               />
 
               <MetricRow
                 label="Nights Offered"
                 userValue={userMetrics.nightsOffered?.toString() || '0'}
-                roommateValue={roommateMetrics.nightsOffered?.toString() || '0'}
+                coTenantValue={coTenantMetrics.nightsOffered?.toString() || '0'}
               />
 
               <MetricRow
                 label="Cancellations"
                 userValue={userMetrics.cancellations?.toString() || '0'}
-                roommateValue={roommateMetrics.cancellations?.toString() || '0'}
+                coTenantValue={coTenantMetrics.cancellations?.toString() || '0'}
                 lowerIsBetter={true}
               />
             </div>
@@ -233,8 +239,10 @@ FlexibilityBreakdownModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   userScore: PropTypes.number,
-  roommateScore: PropTypes.number,
-  roommateName: PropTypes.string,
+  coTenantScore: PropTypes.number,
+  roommateScore: PropTypes.number, // @deprecated Use coTenantScore
+  coTenantName: PropTypes.string,
+  roommateName: PropTypes.string, // @deprecated Use coTenantName
   userName: PropTypes.string,
   flexibilityMetrics: PropTypes.shape({
     user: PropTypes.shape({
@@ -243,7 +251,13 @@ FlexibilityBreakdownModal.propTypes = {
       nightsOffered: PropTypes.number,
       cancellations: PropTypes.number
     }),
-    roommate: PropTypes.shape({
+    coTenant: PropTypes.shape({
+      responseTime: PropTypes.string,
+      approvalRate: PropTypes.string,
+      nightsOffered: PropTypes.number,
+      cancellations: PropTypes.number
+    }),
+    roommate: PropTypes.shape({ // @deprecated Use coTenant
       responseTime: PropTypes.string,
       approvalRate: PropTypes.string,
       nightsOffered: PropTypes.number,

@@ -69,17 +69,17 @@ export async function fetchLeaseById(leaseId) {
 }
 
 /**
- * Split nights between current user and roommate
+ * Split nights between current user and co-tenant
  * @param {Object} lease - Adapted lease data
  * @param {string} currentUserId - Current user ID
- * @returns {{ userNights: string[], roommateNights: string[] }}
+ * @returns {{ userNights: string[], coTenantNights: string[], roommateNights: string[] }}
  */
 export function splitNightsByUser(lease, currentUserId) {
   const allDates = lease?.bookedDates || [];
   const stays = lease?.stays || [];
 
   const userNights = [];
-  const roommateNights = [];
+  const coTenantNights = [];
 
   stays.forEach((stay) => {
     const isUserStay = stay?.assignedTo === currentUserId;
@@ -91,11 +91,15 @@ export function splitNightsByUser(lease, currentUserId) {
     if (isUserStay) {
       userNights.push(...nights);
     } else {
-      roommateNights.push(...nights);
+      coTenantNights.push(...nights);
     }
   });
 
-  return { userNights, roommateNights };
+  return {
+    userNights,
+    coTenantNights,
+    roommateNights: coTenantNights // @deprecated - use coTenantNights
+  };
 }
 
 // ============================================================================
@@ -160,18 +164,29 @@ export async function fetchUserNights(leaseId, userId) {
 }
 
 /**
- * Fetch roommate's nights for this lease (uses roommateId to look up correct data)
+ * Fetch co-tenant's nights for this lease (uses coTenantId to look up correct data)
  * @param {string} leaseId - The lease ID
- * @param {string} roommateId - The roommate's user ID
+ * @param {string} coTenantId - The co-tenant's user ID
+ * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
+ */
+export async function fetchCoTenantNights(leaseId, coTenantId) {
+  // TODO: Replace with real API call
+  // Query calendar_stays where user_id = coTenantId AND lease_id = leaseId
+  console.log('[API Stub] fetchCoTenantNights:', { leaseId, coTenantId });
+
+  // Return nights for the specified co-tenant (perspective-aware)
+  return CALENDAR_DATA[coTenantId] || [];
+}
+
+/**
+ * @deprecated Use fetchCoTenantNights instead.
+ * Fetch co-tenant's nights for this lease (legacy alias)
+ * @param {string} leaseId - The lease ID
+ * @param {string} roommateId - The co-tenant's user ID
  * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
  */
 export async function fetchRoommateNights(leaseId, roommateId) {
-  // TODO: Replace with real API call
-  // Query calendar_stays where user_id = roommateId AND lease_id = leaseId
-  console.log('[API Stub] fetchRoommateNights:', { leaseId, roommateId });
-
-  // Return nights for the specified roommate (perspective-aware)
-  return CALENDAR_DATA[roommateId] || [];
+  return fetchCoTenantNights(leaseId, roommateId);
 }
 
 /**

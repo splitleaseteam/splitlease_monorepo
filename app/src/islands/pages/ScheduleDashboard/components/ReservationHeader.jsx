@@ -14,19 +14,27 @@ function formatLeaseDate(dateInput) {
   });
 }
 
-function getInitials(roommate) {
-  const first = roommate?.firstName?.[0] || '';
-  const last = roommate?.lastName?.[0] || '';
+function getInitials(person) {
+  const first = person?.firstName?.[0] || '';
+  const last = person?.lastName?.[0] || '';
   return `${first}${last}`.toUpperCase();
 }
 
-export default function ReservationHeader({ lease, roommate, onBack }) {
+export default function ReservationHeader({
+  lease,
+  coTenant,
+  roommate, // @deprecated Use coTenant
+  onBack
+}) {
+  // Resolve prop with backward compatibility
+  const resolvedCoTenant = coTenant ?? roommate;
+
   const address = lease?.propertyAddress || lease?.propertyName || 'Lease';
   const leaseDates = lease?.startDate && lease?.endDate
     ? `${formatLeaseDate(lease.startDate)} - ${formatLeaseDate(lease.endDate)}`
     : 'Lease dates unavailable';
-  const roommateName = roommate ? `${roommate.firstName} ${roommate.lastName}` : 'Co-tenant';
-  const initials = getInitials(roommate);
+  const coTenantName = resolvedCoTenant ? `${resolvedCoTenant.firstName} ${resolvedCoTenant.lastName}` : 'Co-tenant';
+  const initials = getInitials(resolvedCoTenant);
 
   return (
     <header className="reservation-header" role="banner">
@@ -39,15 +47,15 @@ export default function ReservationHeader({ lease, roommate, onBack }) {
         {address}
       </div>
       <span className="reservation-header__divider" aria-hidden="true" />
-      <div className="reservation-header__roommate">
+      <div className="reservation-header__cotenant">
         <div className="reservation-header__avatar">
-          {roommate?.avatarUrl ? (
-            <img src={roommate.avatarUrl} alt={roommateName} />
+          {resolvedCoTenant?.avatarUrl ? (
+            <img src={resolvedCoTenant.avatarUrl} alt={coTenantName} />
           ) : (
             <span className="reservation-header__initials">{initials}</span>
           )}
         </div>
-        <span className="reservation-header__name">{roommateName}</span>
+        <span className="reservation-header__name">{coTenantName}</span>
       </div>
       <span className="reservation-header__divider" aria-hidden="true" />
       <div className="reservation-header__dates">
@@ -64,7 +72,12 @@ ReservationHeader.propTypes = {
     startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
     endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
   }),
-  roommate: PropTypes.shape({
+  coTenant: PropTypes.shape({
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+    avatarUrl: PropTypes.string
+  }),
+  roommate: PropTypes.shape({ // @deprecated Use coTenant
     firstName: PropTypes.string,
     lastName: PropTypes.string,
     avatarUrl: PropTypes.string

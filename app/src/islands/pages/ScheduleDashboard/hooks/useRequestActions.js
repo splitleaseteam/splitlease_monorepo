@@ -6,7 +6,8 @@ import { calculatePaymentBreakdown } from '../../../../logic/calculators/feeCalc
  * @param {Object} params.scheduleState - Schedule state with nights/actions.
  * @param {Object} params.request - Request flow state/actions.
  * @param {string} params.currentUserId - Current user id.
- * @param {Object} params.roommate - Roommate data.
+ * @param {Object} params.coTenant - Co-tenant data.
+ * @param {Object} [params.roommate] - @deprecated Use coTenant instead.
  * @param {number|null} params.basePrice - Base price for selected night.
  * @param {string|null} params.selectedNight - Selected night string.
  * @param {Function} params.setSelectedNight - Setter for selected night.
@@ -17,13 +18,16 @@ export function useRequestActions({
   scheduleState,
   request,
   currentUserId,
-  roommate,
+  coTenant,
+  roommate, // @deprecated - use coTenant
   basePrice,
   selectedNight,
   setSelectedNight,
   isNightLocked,
   setCounterRequestData
 }) {
+  // Support both new and deprecated param names
+  const resolvedCoTenant = coTenant || roommate;
   /**
    * Handle buy out request.
    * @param {number} totalPrice - Total price including fees.
@@ -59,7 +63,7 @@ export function useRequestActions({
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: resolvedCoTenant?._id,
         status: 'pending'
       };
 
@@ -104,14 +108,14 @@ export function useRequestActions({
     scheduleState.actions,
     isNightLocked,
     currentUserId,
-    roommate,
+    resolvedCoTenant,
     basePrice,
     request,
     setSelectedNight
   ]);
 
   /**
-   * Handle share request - request to co-occupy a night with roommate.
+   * Handle share request - request to co-occupy a night with co-tenant.
    * @param {number} totalPrice - Total price including fees.
    */
   const handleShareRequest = useCallback(async (totalPrice) => {
@@ -144,7 +148,7 @@ export function useRequestActions({
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: resolvedCoTenant?._id,
         status: 'pending'
       };
 
@@ -189,7 +193,7 @@ export function useRequestActions({
     scheduleState.actions,
     isNightLocked,
     currentUserId,
-    roommate,
+    resolvedCoTenant,
     basePrice,
     request,
     setSelectedNight
@@ -273,7 +277,7 @@ export function useRequestActions({
         nights: [requestedDate, offeredDate],
         amount: 0,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: resolvedCoTenant?._id,
         status: 'pending'
       };
 
@@ -317,7 +321,7 @@ export function useRequestActions({
     scheduleState.actions,
     isNightLocked,
     currentUserId,
-    roommate,
+    resolvedCoTenant,
     request,
     setSelectedNight
   ]);

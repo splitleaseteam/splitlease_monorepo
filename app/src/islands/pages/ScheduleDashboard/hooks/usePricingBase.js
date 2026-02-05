@@ -9,18 +9,24 @@ import {
  * @param {Object} params
  * @param {string|null} params.selectedNight - Selected night string.
  * @param {Object} params.scheduleState - Schedule state with nights.
- * @param {Object} params.roommate - Roommate data.
+ * @param {Object} params.coTenant - Co-tenant data.
+ * @param {Object} [params.roommate] - @deprecated Use coTenant instead.
  * @param {Object} params.lease - Lease data.
  */
-export function usePricingBase({ selectedNight, scheduleState, roommate, lease }) {
+export function usePricingBase({ selectedNight, scheduleState, coTenant, roommate, lease }) {
+  // Support both new and deprecated param names
+  const resolvedCoTenant = coTenant || roommate;
+
   const basePrice = useMemo(() => {
     if (!selectedNight) return null;
 
-    if (scheduleState.roommateNights?.includes(selectedNight)) {
-      if (roommate?.pricingStrategy) {
-        const roommateStrategy = roommate.pricingStrategy;
-        const baseCost = roommateStrategy.baseRate;
-        const noticeMultipliers = roommateStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
+    // Check co-tenant nights (scheduleState may use roommateNights or coTenantNights)
+    const coTenantNights = scheduleState.coTenantNights || scheduleState.roommateNights;
+    if (coTenantNights?.includes(selectedNight)) {
+      if (resolvedCoTenant?.pricingStrategy) {
+        const coTenantStrategy = resolvedCoTenant.pricingStrategy;
+        const baseCost = coTenantStrategy.baseRate;
+        const noticeMultipliers = coTenantStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
 
         const date = new Date(selectedNight + 'T12:00:00');
         if (!Number.isNaN(date.getTime())) {
@@ -31,19 +37,19 @@ export function usePricingBase({ selectedNight, scheduleState, roommate, lease }
 
           const noticeThreshold = getNoticeThresholdForDate(daysDiff);
           const noticeMultiplier = noticeMultipliers[noticeThreshold] ?? 1.0;
-          const edgeMultiplier = EDGE_MULTIPLIERS[roommateStrategy.edgePreference]?.[dayOfWeek] || 1.0;
+          const edgeMultiplier = EDGE_MULTIPLIERS[coTenantStrategy.edgePreference]?.[dayOfWeek] || 1.0;
 
           return Math.round(baseCost * noticeMultiplier * edgeMultiplier);
         }
       }
 
-      if (roommate?.pricingStrategy?.baseRate) {
-        return roommate.pricingStrategy.baseRate;
+      if (resolvedCoTenant?.pricingStrategy?.baseRate) {
+        return resolvedCoTenant.pricingStrategy.baseRate;
       }
     }
 
     return lease?.nightlyRate || null;
-  }, [selectedNight, scheduleState.roommateNights, roommate, lease]);
+  }, [selectedNight, scheduleState.coTenantNights, scheduleState.roommateNights, resolvedCoTenant, lease]);
 
   return { basePrice };
 }

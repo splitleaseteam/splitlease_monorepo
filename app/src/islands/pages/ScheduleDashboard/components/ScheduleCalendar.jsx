@@ -147,6 +147,9 @@ function findAdjacentNights(userNights, roommateNights) {
 
 export default function ScheduleCalendar({
   userNights = [],
+  coTenant,
+  roommate,
+  coTenantNights = [],
   roommateNights = [],
   pendingNights = [],
   blockedNights = [],
@@ -167,6 +170,10 @@ export default function ScheduleCalendar({
   guestName = null, // Guest's first name (for host view)
   hostName = null // Host's first name (for guest view)
 }) {
+  const resolvedCoTenant = coTenant || roommate;
+  const resolvedCoTenantNights = coTenantNights.length > 0 ? coTenantNights : roommateNights;
+  const resolvedCoTenantName = roommateName || resolvedCoTenant?.firstName || null;
+
   // Build set of dates affected by pending date change requests
   const pendingChangeDates = useMemo(() => {
     const dates = new Set();
@@ -189,7 +196,7 @@ export default function ScheduleCalendar({
     if (!lease || lease.isCoTenant) {
       return {
         user: "Your Nights",
-        other: roommateName ? `${roommateName}'s Nights` : "Co-tenant's Nights"
+        other: resolvedCoTenantName ? `${resolvedCoTenantName}'s Nights` : "Co-tenant's Nights"
       };
     }
 
@@ -206,7 +213,7 @@ export default function ScheduleCalendar({
       user: "Available Nights",
       other: guestName ? `${guestName}'s Bookings` : "Guest's Bookings"
     };
-  }, [lease, roommateName, guestName, hostName]);
+  }, [lease, resolvedCoTenantName, guestName, hostName]);
 
   /**
    * Check if a date has a pending date change request
@@ -264,8 +271,8 @@ export default function ScheduleCalendar({
 
   // Calculate adjacent nights (memoized for performance)
   const adjacentNights = useMemo(
-    () => findAdjacentNights(userNights, roommateNights),
-    [userNights, roommateNights]
+    () => findAdjacentNights(userNights, resolvedCoTenantNights),
+    [userNights, resolvedCoTenantNights]
   );
 
   // Today's date for comparison (normalized to start of day)
@@ -363,7 +370,7 @@ export default function ScheduleCalendar({
 
     // Co-tenant logic (default)
     if (isInDateArray(date, userNights)) return 'mine';
-    if (isInDateArray(date, roommateNights)) {
+    if (isInDateArray(date, resolvedCoTenantNights)) {
       // Check if it's also an adjacent night
       if (adjacentNights.includes(dateStr)) {
         return 'adjacent';
@@ -580,7 +587,7 @@ export default function ScheduleCalendar({
                       <span
                         className="schedule-calendar__price-bar"
                         data-tier={priceOverlay.tier}
-                        title={status === 'adjacent' ? `This is ${roommateName || 'your co-tenant'}'s suggested price` : undefined}
+                        title={status === 'adjacent' ? `This is ${resolvedCoTenantName || 'your co-tenant'}'s suggested price` : undefined}
                       >
                         {status === 'adjacent' ? '~' : ''}${priceOverlay.price}
                       </span>
@@ -654,6 +661,16 @@ export default function ScheduleCalendar({
 
 ScheduleCalendar.propTypes = {
   userNights: PropTypes.arrayOf(PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.instanceOf(Date)
+  ])),
+  coTenant: PropTypes.shape({
+    firstName: PropTypes.string
+  }),
+  roommate: PropTypes.shape({
+    firstName: PropTypes.string
+  }),
+  coTenantNights: PropTypes.arrayOf(PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.instanceOf(Date)
   ])),
