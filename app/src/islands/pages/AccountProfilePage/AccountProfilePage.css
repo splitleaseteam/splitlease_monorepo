@@ -605,6 +605,22 @@
   margin-bottom: 16px;
 }
 
+.profile-card-header.collapsible {
+  cursor: pointer;
+}
+
+.collapse-icon {
+  transition: transform 0.2s ease;
+}
+
+.collapse-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.profile-card-content {
+  overflow: hidden;
+}
+
 .profile-card-title {
   font-size: 18px;
   font-weight: 600;
@@ -1615,6 +1631,7 @@
    ============================================================================ */
 
 .referral-banner {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1624,6 +1641,27 @@
   padding: 18px 22px;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   animation: fadeIn 0.3s ease;
+}
+
+.referral-banner-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sl-text-tertiary);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.referral-banner-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--sl-text-secondary);
 }
 
 .referral-banner-left {

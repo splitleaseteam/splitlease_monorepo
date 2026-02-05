@@ -36,7 +36,7 @@ export default function AboutCard({
   }
 
   return (
-    <ProfileCard title="About You">
+    <ProfileCard title="About You" collapsible>
       <div className="profile-form-group">
         <label className="profile-form-label" htmlFor="bio">
           Tell us about yourself

@@ -14,6 +14,7 @@ import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
 import SearchScheduleSelector from '../../../shared/SearchScheduleSelector.jsx';
 import TrustVerificationCard from './cards/TrustVerificationCard.jsx';
+import AccountSettingsCard from './cards/AccountSettingsCard.jsx';
 import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin, Pencil } from 'lucide-react';
 
 // ============================================================================
@@ -66,6 +67,9 @@ export default function ProfileSidebar({
   // Edit name props
   showEditNameIcon = false,
   onEditName,
+  // Account settings (editor view)
+  onOpenNotificationSettings,
+  onChangePassword,
   // Public view specific
   responseTime,
   responseRate,
@@ -187,6 +191,14 @@ export default function ProfileSidebar({
           <Calendar size={14} />
           <span className="sidebar-member-since-text">Member since {memberSinceFormatted}</span>
         </div>
+      )}
+
+      {/* Editor View: Account Settings (at bottom of sidebar) */}
+      {isEditorView && (
+        <AccountSettingsCard
+          onOpenNotificationSettings={onOpenNotificationSettings}
+          onChangePassword={onChangePassword}
+        />
       )}
     </aside>
   );

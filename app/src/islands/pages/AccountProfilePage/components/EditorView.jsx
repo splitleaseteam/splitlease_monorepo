@@ -12,7 +12,6 @@ import RequirementsCard from './cards/RequirementsCard.jsx';
 import TransportCard from './cards/TransportCard.jsx';
 import ReasonsCard from './cards/ReasonsCard.jsx';
 import StorageItemsCard from './cards/StorageItemsCard.jsx';
-import AccountSettingsCard from './cards/AccountSettingsCard.jsx';
 import ListingsCard from './cards/ListingsCard.jsx';
 import RentalApplicationCard from './RentalApplicationCard.jsx';
 
@@ -126,12 +125,6 @@ export default function EditorView({
           onOpenWizard={onOpenRentalWizard}
         />
       )}
-
-      {/* Account Settings - Always shown */}
-      <AccountSettingsCard
-        onOpenNotificationSettings={onOpenNotificationSettings}
-        onChangePassword={onChangePassword}
-      />
     </>
   );
 }

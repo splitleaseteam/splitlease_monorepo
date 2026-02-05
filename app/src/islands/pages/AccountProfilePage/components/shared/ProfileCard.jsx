@@ -6,7 +6,8 @@
  * Supports optional subtitle for secondary description.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 export default function ProfileCard({
   id,
@@ -14,24 +15,41 @@ export default function ProfileCard({
   subtitle,
   children,
   className = '',
-  headerAction = null
+  headerAction = null,
+  collapsible = false,
+  defaultCollapsed = false
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const toggleCollapse = () => setIsCollapsed((prev) => !prev);
+
   return (
     <div id={id} className={`profile-card ${className}`}>
-      <div className="profile-card-header">
+      <div
+        className={`profile-card-header ${collapsible ? 'collapsible' : ''}`.trim()}
+        onClick={collapsible ? toggleCollapse : undefined}
+      >
         <div>
           <h2 className="profile-card-title">{title}</h2>
           {subtitle && (
             <p className="profile-card-subtitle">{subtitle}</p>
           )}
         </div>
+        {collapsible && (
+          <ChevronDown className={`collapse-icon ${isCollapsed ? 'collapsed' : ''}`} />
+        )}
         {headerAction && (
           <div className="profile-card-header-action">
             {headerAction}
           </div>
         )}
       </div>
-      {children}
+      {collapsible ? (
+        !isCollapsed && (
+          <div className="profile-card-content">{children}</div>
+        )
+      ) : (
+        <div className="profile-card-content">{children}</div>
+      )}
     </div>
   );
 }

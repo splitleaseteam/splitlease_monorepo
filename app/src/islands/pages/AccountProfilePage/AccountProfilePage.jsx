@@ -72,6 +72,14 @@ export default function AccountProfilePage() {
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showImproveProfileModal, setShowImproveProfileModal] = useState(false);
   const [showBasicInfoOverride, setShowBasicInfoOverride] = useState(false);
+  const [showReferralBanner, setShowReferralBanner] = useState(
+    () => localStorage.getItem('referralBannerDismissed') !== 'true'
+  );
+
+  const handleDismissReferral = () => {
+    setShowReferralBanner(false);
+    localStorage.setItem('referralBannerDismissed', 'true');
+  };
 
   // Show loading state
   if (logic.loading) {
@@ -129,6 +137,9 @@ export default function AccountProfilePage() {
     // Edit name props (guest with submitted app)
     showEditNameIcon: !logic.isHostUser && logic.rentalApplicationStatus === 'submitted',
     onEditName: () => setShowBasicInfoOverride(true),
+    // Account settings (editor view)
+    onOpenNotificationSettings: logic.handleOpenNotificationSettings,
+    onChangePassword: logic.handleChangePassword,
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,
@@ -147,9 +158,10 @@ export default function AccountProfilePage() {
           {/* Main Feed */}
           <div className="account-profile-feed">
             {/* Referral Banner - shown only in Editor View (user viewing own profile) */}
-            {logic.isEditorView && (
+            {logic.isEditorView && showReferralBanner && (
               <ReferralBanner
                 onInviteClick={() => setShowReferralModal(true)}
+                onDismiss={handleDismissReferral}
                 userType={logic.isHostUser ? 'host' : 'guest'}
               />
             )}

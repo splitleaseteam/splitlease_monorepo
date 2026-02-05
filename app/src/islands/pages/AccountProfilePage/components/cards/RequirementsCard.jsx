@@ -34,7 +34,7 @@ export default function RequirementsCard({
   }
 
   return (
-    <ProfileCard title="Why Split Lease?">
+    <ProfileCard title="Why Split Lease?" collapsible>
       <div className="profile-form-group">
         <label className="profile-form-label" htmlFor="needForSpace">
           Why do you need the space?

@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { X } from 'lucide-react';
 
 // Gift icon SVG (matches Feather icons style)
 function GiftIcon() {
@@ -30,7 +31,7 @@ function GiftIcon() {
   );
 }
 
-export default function ReferralBanner({ onInviteClick, userType = 'guest' }) {
+export default function ReferralBanner({ onInviteClick, onDismiss, userType = 'guest' }) {
   const handleClick = () => {
     if (onInviteClick) {
       onInviteClick();
@@ -47,6 +48,11 @@ export default function ReferralBanner({ onInviteClick, userType = 'guest' }) {
 
   return (
     <div className="referral-banner">
+      {onDismiss && (
+        <button className="referral-banner-close" onClick={onDismiss} aria-label="Dismiss">
+          <X size={16} />
+        </button>
+      )}
       <div className="referral-banner-left">
         <div className="referral-banner-icon">
           <GiftIcon />
