@@ -32,6 +32,11 @@ dist/
 *.db
 *.sqlite
 *.sqlite3
+
+# SQL files (scratch/temp) — migrations are tracked separately
+/*.sql
+/scripts/*.sql
+/test-session/*.sql
 !app/server/db/backup.db
 supabase-migrations/
 
