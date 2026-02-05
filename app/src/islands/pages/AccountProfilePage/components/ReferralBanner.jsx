@@ -37,7 +37,6 @@ export default function ReferralBanner({ onInviteClick, userType = 'guest' }) {
     } else {
       // TODO(human): Implement referral invite flow
       // Default behavior - could open a modal, copy referral link, or navigate
-      console.log('Invite friends clicked');
     }
   };
 

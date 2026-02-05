@@ -612,15 +612,11 @@ export function useAccountProfilePageLogic() {
     if (!userId) return;
     setLoadingListings(true);
     try {
-      console.log('[AccountProfile] Fetching listings for host:', userId);
-
       // Use RPC function to fetch listings (handles "Host User" column name)
       const { data, error } = await supabase
         .rpc('get_host_listings', { host_user_id: userId });
 
       if (error) throw error;
-
-      console.log('[AccountProfile] Listings fetched:', data?.length || 0);
 
       // Map RPC results to the format expected by ListingsCard component
       // RPC returns: _id, Name, Complete, "Location - Borough", hood, bedrooms, bathrooms,
@@ -676,8 +672,6 @@ export function useAccountProfilePageLogic() {
         // This must happen before any auth checks to prevent redirect loops
         const authError = checkUrlForAuthError();
         if (authError) {
-          console.log('[AccountProfile] Auth error detected in URL:', authError);
-
           // Clear the error from URL to prevent re-processing on reload
           clearAuthErrorFromUrl();
 
@@ -712,11 +706,9 @@ export function useAccountProfilePageLogic() {
           const validatedUser = await validateTokenAndFetchUser({ clearOnFailure: false });
           if (validatedUser?.userId) {
             validatedUserId = validatedUser.userId;
-            console.log('[AccountProfile] Using validated userId (Bubble _id):', validatedUserId);
           } else {
             // Fallback to session ID if validation fails (shouldn't happen if isAuth is true)
             validatedUserId = getSessionId();
-            console.log('[AccountProfile] Falling back to session ID:', validatedUserId);
           }
         }
         setLoggedInUserId(validatedUserId);
@@ -731,7 +723,6 @@ export function useAccountProfilePageLogic() {
           throw new Error('Please log in to view your profile, or provide a user ID in the URL');
         }
 
-        console.log('[AccountProfile] Target user ID:', targetUserId, urlUserId ? '(from URL)' : '(from session - viewing own profile)');
         setProfileUserId(targetUserId);
 
         // Fetch reference data
@@ -845,8 +836,6 @@ export function useAccountProfilePageLogic() {
         return;
       }
 
-      console.log('[email-verification] Processing verification callback');
-
       // Clean URL immediately to prevent re-processing
       const url = new URL(window.location.href);
       url.searchParams.delete('verified');
@@ -866,8 +855,6 @@ export function useAccountProfilePageLogic() {
           }
           return;
         }
-
-        console.log('[email-verification] Email verified successfully');
 
         // Refresh profile data to reflect new verification status
         await fetchProfileData(profileUserId);
@@ -910,8 +897,6 @@ export function useAccountProfilePageLogic() {
 
     // Only process rental application navigation
     if (section !== 'rental-application') return;
-
-    console.log('[rental-app-navigation] Processing rental application deep link');
 
     // Clean URL to prevent re-processing on state changes
     const url = new URL(window.location.href);
@@ -1074,18 +1059,15 @@ export function useAccountProfilePageLogic() {
    * Handle transportation method toggle (multi-select)
    */
   const handleTransportToggle = useCallback((transportValue) => {
-    console.log('[handleTransportToggle] Toggling transport:', transportValue);
     setFormData(prev => {
       const currentTypes = prev.transportationTypes;
       const newTypes = currentTypes.includes(transportValue)
         ? currentTypes.filter(t => t !== transportValue)
         : [...currentTypes, transportValue];
 
-      console.log('[handleTransportToggle] Current:', currentTypes, '-> New:', newTypes);
       return { ...prev, transportationTypes: newTypes };
     });
     setIsDirty(true);
-    console.log('[handleTransportToggle] isDirty set to true');
   }, []);
 
   /**
@@ -1108,8 +1090,6 @@ export function useAccountProfilePageLogic() {
    * Save profile changes
    */
   const handleSave = useCallback(async () => {
-    console.log('[handleSave] Called. isEditorView:', isEditorView, 'profileUserId:', profileUserId);
-
     if (!isEditorView || !profileUserId) {
       console.error('Cannot save: not in editor view or no user ID');
       return { success: false, error: 'Cannot save changes' };
@@ -1155,8 +1135,6 @@ export function useAccountProfilePageLogic() {
         'Modified Date': new Date().toISOString()
       };
 
-      console.log('[handleSave] Update data:', updateData);
-
       const { error: updateError } = await supabase
         .from('user')
         .update(updateData)
@@ -1166,8 +1144,6 @@ export function useAccountProfilePageLogic() {
         console.error('[handleSave] Update error:', updateError);
         throw updateError;
       }
-
-      console.log('[handleSave] User data saved successfully');
 
       // Save job title to rental application table (if user has one)
       const rentalAppId = profileData?._rentalAppId;
@@ -1291,8 +1267,6 @@ export function useAccountProfilePageLogic() {
 
     try {
       // Step 1: Fetch BCC email addresses from os_slack_channels
-      console.log('[handleVerifyEmail] Fetching BCC email addresses');
-
       const { data: channelData, error: channelError } = await supabase
         .schema('reference_table')
         .from('os_slack_channels')
@@ -1307,8 +1281,6 @@ export function useAccountProfilePageLogic() {
       }
 
       // Step 2: Generate magic link with redirect to account profile + verification param
-      console.log('[handleVerifyEmail] Generating magic link');
-
       const redirectTo = `${window.location.origin}/account-profile/${profileUserId}?verified=email`;
 
       const { data: magicLinkData, error: magicLinkError } = await supabase.functions.invoke('auth-user', {
@@ -1334,8 +1306,6 @@ export function useAccountProfilePageLogic() {
       const firstName = profileData?.['Name - First'] || 'there';
 
       // Step 3: Send verification email using send-email edge function
-      console.log('[handleVerifyEmail] Sending verification email');
-
       const bodyText = `Hi ${firstName}. Please click the link below to verify your email address on Split Lease. This helps us ensure your account is secure and builds trust with other members of our community.`;
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
@@ -1372,7 +1342,6 @@ export function useAccountProfilePageLogic() {
           window.showToast({ title: 'Error', content: 'Failed to send verification email. Please try again.', type: 'error' });
         }
       } else {
-        console.log('[handleVerifyEmail] Verification email sent successfully');
         setVerificationEmailSent(true);
         if (window.showToast) {
           window.showToast({ title: 'Email Sent', content: 'Verification email sent! Check your inbox and click the link to verify.', type: 'success' });
@@ -1411,9 +1380,7 @@ export function useAccountProfilePageLogic() {
         selfieFile: verificationData.selfieFile,
         frontIdFile: verificationData.frontIdFile,
         backIdFile: verificationData.backIdFile,
-        onProgress: (message) => {
-          console.log('[Identity Verification]', message);
-        },
+        onProgress: () => {},
       });
 
       // Refresh profile data to reflect new verification status
@@ -1436,7 +1403,6 @@ export function useAccountProfilePageLogic() {
 
   const handleConnectLinkedIn = useCallback(() => {
     // Trigger LinkedIn OAuth flow
-    console.log('Connect LinkedIn clicked');
   }, []);
 
   const handleEditPhone = useCallback(() => {
@@ -1484,7 +1450,6 @@ export function useAccountProfilePageLogic() {
         break;
       case 'linkedin':
         // LinkedIn OAuth flow (TODO: implement)
-        console.log('Connect LinkedIn clicked');
         break;
       case 'rentalApp':
         // Open rental application wizard (guest-only)
@@ -1537,7 +1502,6 @@ export function useAccountProfilePageLogic() {
 
   const handleCoverPhotoChange = useCallback(async (file) => {
     // TODO: Implement cover photo upload
-    console.log('Cover photo change:', file);
   }, []);
 
   const handleAvatarChange = useCallback(async (file) => {
@@ -1619,7 +1583,6 @@ export function useAccountProfilePageLogic() {
         'Profile Photo': publicUrl
       }));
 
-      console.log('✅ Avatar uploaded successfully:', publicUrl);
     } catch (err) {
       console.error('❌ Error uploading avatar:', err);
       setError(err.message || 'Failed to upload profile photo');
