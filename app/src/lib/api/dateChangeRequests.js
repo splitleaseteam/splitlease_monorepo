@@ -98,7 +98,7 @@ export async function handleDateChangeResponse(requestId, action, lease) {
 
 export async function fetchDateChangeRequestsForLease(leaseId) {
   const { data, error } = await supabase
-    .from('date_change_requests')
+    .from('datechangerequest')
     .select('*, requestedByUser:User(*)')
     .eq('Lease', leaseId)
     .order('Created Date', { ascending: false });
@@ -109,7 +109,7 @@ export async function fetchDateChangeRequestsForLease(leaseId) {
 
 export async function createDateChangeRequest(payload) {
   const { data, error } = await supabase
-    .from('date_change_requests')
+    .from('datechangerequest')
     .insert(payload)
     .select()
     .single();
@@ -120,7 +120,7 @@ export async function createDateChangeRequest(payload) {
 
 export async function updateDateChangeRequestStatus(requestId, status) {
   const { data, error } = await supabase
-    .from('date_change_requests')
+    .from('datechangerequest')
     .update({ status })
     .eq('_id', requestId)
     .select()

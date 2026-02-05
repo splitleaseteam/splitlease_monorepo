@@ -1137,7 +1137,7 @@ export function useScheduleDashboardLogic() {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'date_change_requests',
+        table: 'datechangerequest',
         filter: `Lease=eq.${leaseId}`
       }, () => {
         refreshDateChangeRequests();

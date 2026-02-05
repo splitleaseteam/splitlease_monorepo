@@ -17,6 +17,7 @@
   --schedule-warning: #F59E0B;
   --schedule-danger: #EF4444;
   --schedule-bg: #F7F2FA;
+  --schedule-bg-light: #F9FAFB;
   --schedule-bg-white: #FFFFFF;
   --schedule-border: #E5E7EB;
   --schedule-text: #1F2937;
@@ -632,14 +633,14 @@
    ============================================================================ */
 
 .roommate-profile-card {
-  min-height: 350px;
+  padding: 1rem;
 }
 
 .roommate-profile-card__heading {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--schedule-text-muted);
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -647,19 +648,20 @@
 .roommate-profile-card__header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .roommate-profile-card__avatar {
-  width: 64px;
-  height: 64px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--schedule-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .roommate-profile-card__avatar img {
@@ -670,25 +672,39 @@
 
 .roommate-profile-card__initials {
   color: white;
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
+}
+
+.roommate-profile-card__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
 }
 
 .roommate-profile-card__name {
   display: block;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--schedule-text);
 }
 
 .roommate-profile-card__role {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--schedule-text-muted);
+}
+
+.roommate-profile-card__score {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  white-space: nowrap;
 }
 
 /* Flexibility Gauge */
 .flexibility-gauge {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .flexibility-gauge__header {
@@ -732,10 +748,10 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.5rem 0.75rem;
   background: var(--schedule-bg);
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
 }
 
 .roommate-profile-card__pattern-icon {
@@ -2620,18 +2636,21 @@
 }
 
 .transaction-details__deviation-badge--fair {
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .transaction-details__deviation-badge--low {
-  background: #FEF3C7;
-  color: #92400E;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .transaction-details__deviation-badge--very-low {
-  background: #FED7AA;
-  color: #9A3412;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .transaction-details__deviation-label {
@@ -3371,13 +3390,15 @@
 }
 
 .schedule-calendar__price-bar[data-tier="near"] {
-  background: #FEF3C7;
-  color: #B45309;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .schedule-calendar__price-bar[data-tier="limit"] {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 /* ==========================================================================
@@ -3666,18 +3687,21 @@
 }
 
 .buyout-settings__semantic-label--high {
-  background: #FEF3C7;
-  color: #B45309;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .buyout-settings__semantic-label--aggressive {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .buyout-settings__semantic-label--minimal {
-  background: #FEF3C7;
-  color: #B45309;
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
 }
 
 .buyout-settings__semantic-label--generous {
@@ -3697,9 +3721,9 @@
   gap: 0.35rem;
   margin-top: 0.5rem;
   padding: 0.4rem 0.6rem;
-  background: linear-gradient(135deg, #FEF9C3 0%, #FEF3C7 100%);
+  background: var(--schedule-bg-light);
   border-radius: 6px;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  border: 1px solid var(--schedule-border);
 }
 
 .buyout-settings__hint-icon {
@@ -3710,7 +3734,7 @@
 .buyout-settings__hint-text {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #92400E;
+  color: var(--schedule-text-secondary);
 }
 
 /* Price Range Visualization */
@@ -4007,6 +4031,13 @@
   background: var(--pricing-surface);
   border-radius: 12px;
   border: 1px solid var(--pricing-border);
+}
+
+.pricing-tier--low,
+.pricing-tier--medium,
+.pricing-tier--high {
+  background: var(--schedule-bg-light);
+  border: 1px solid var(--schedule-border);
 }
 
 /* Notice Period Tier - Primary Focus (01) - Direct child of content */

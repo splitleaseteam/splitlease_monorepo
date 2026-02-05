@@ -38,7 +38,7 @@ export async function fetchLeaseById(leaseId) {
   // Step 2: Fetch host user if Host column exists
   if (lease?.Host) {
     const { data: host } = await supabase
-      .from('User')
+      .from('user')
       .select('*')
       .eq('_id', lease.Host)
       .single();
@@ -48,7 +48,7 @@ export async function fetchLeaseById(leaseId) {
   // Step 3: Fetch guest user if Guest column exists
   if (lease?.Guest) {
     const { data: guest } = await supabase
-      .from('User')
+      .from('user')
       .select('*')
       .eq('_id', lease.Guest)
       .single();
@@ -58,7 +58,7 @@ export async function fetchLeaseById(leaseId) {
   // Step 4: Fetch listing if Listing column exists
   if (lease?.Listing) {
     const { data: listing } = await supabase
-      .from('Listing')
+      .from('listing')
       .select('*')
       .eq('_id', lease.Listing)
       .single();
@@ -181,7 +181,7 @@ export async function fetchRoommateNights(leaseId, roommateId) {
  */
 export async function fetchPendingRequests(leaseId) {
   // TODO: Replace with real API call
-  // Query date_change_requests where lease_id = leaseId AND status = 'pending'
+  // Query datechangerequest where lease_id = leaseId AND status = 'pending'
   console.log('[API Stub] fetchPendingRequests:', { leaseId });
 
   // Mock data - one pending request for Valentine's Day
@@ -220,7 +220,7 @@ export async function fetchChatMessages(leaseId) {
  */
 export async function fetchTransactions(leaseId) {
   // TODO: Replace with real API call
-  // Query date_change_requests where lease_id = leaseId
+  // Query datechangerequest where lease_id = leaseId
   // Include related payment_records for amounts
   // Order by created_at DESC
   console.log('[API Stub] fetchTransactions:', { leaseId });

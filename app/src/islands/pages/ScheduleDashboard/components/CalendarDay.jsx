@@ -29,15 +29,31 @@ export default function CalendarDay({
   hasTransaction,
   isLowAmount,
   transaction,
+  stay,
   transactionAmount,
   priceOverlay,
   isShared,
   onClick,
   ariaLabel
 }) {
+  const assignedUser = stay?.User || stay?.assignedTo || transaction?.User || transaction?.assignedTo;
+  const isAssigned = Boolean(assignedUser);
+  const resolvedOwnership = ownership === 'empty' && isAssigned ? 'roommate' : ownership;
+
+  if (date && date.getMonth() === 1 && date.getDate() === 14) {
+    console.log('[CalendarDay] Feb 14 debug', {
+      date: date.toISOString(),
+      ownership,
+      resolvedOwnership,
+      assignedUser,
+      stay,
+      transaction
+    });
+  }
+
   const dayClassName = `
     schedule-calendar__day
-    schedule-calendar__day--${ownership}
+    schedule-calendar__day--${resolvedOwnership}
     ${isAdjacent ? 'schedule-calendar__day--adjacent' : ''}
     ${requestStatus ? `schedule-calendar__day--${requestStatus}` : ''}
     ${isSelected ? 'schedule-calendar__day--selected' : ''}
@@ -92,6 +108,10 @@ CalendarDay.propTypes = {
   isLowAmount: PropTypes.bool.isRequired,
   transaction: PropTypes.shape({
     direction: PropTypes.oneOf(['incoming', 'outgoing'])
+  }),
+  stay: PropTypes.shape({
+    User: PropTypes.string,
+    assignedTo: PropTypes.string
   }),
   transactionAmount: PropTypes.string,
   priceOverlay: PropTypes.shape({

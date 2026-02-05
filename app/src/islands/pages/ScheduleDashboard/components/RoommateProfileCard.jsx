@@ -99,8 +99,6 @@ export default function RoommateProfileCard({
 
   return (
     <div className="roommate-profile-card">
-      <h3 className="roommate-profile-card__heading">Splitting with</h3>
-
       {/* Avatar and Name */}
       <div className="roommate-profile-card__header">
         <div className="roommate-profile-card__avatar">
@@ -117,7 +115,7 @@ export default function RoommateProfileCard({
           <span className="roommate-profile-card__name">
             {roommate.firstName} {roommate.lastName}
           </span>
-          <span className="roommate-profile-card__role">Co-tenant</span>
+          <span className="roommate-profile-card__score">{flexibilityScore}/10</span>
         </div>
       </div>
 

@@ -19,7 +19,10 @@ import { format } from 'date-fns';
  */
 const STATUS_CONFIG = {
   mine: { icon: '🟣', label: 'Your Night' },
-  pending: { icon: '⏳', label: 'Pending Request' }
+  pending: { icon: '⏳', label: 'Pending Request' },
+  blocked: { icon: '🚫', label: 'Blocked' },
+  adjacent: { icon: '🔵', label: 'Adjacent Night' },
+  outside: { icon: '⚪', label: 'Outside Lease' }
 };
 
 /**
@@ -72,7 +75,7 @@ export default function DayDetailPanel({
   const { icon, label } = STATUS_CONFIG[status]
     || (status === 'roommate'
       ? { icon: '🔵', label: `${resolvedRoommateName}'s Night` }
-      : { icon: '⚪', label: 'Unassigned' });
+      : { icon: '⚪', label: 'Outside Lease Period' });
 
   return (
     <div className="day-detail-panel">

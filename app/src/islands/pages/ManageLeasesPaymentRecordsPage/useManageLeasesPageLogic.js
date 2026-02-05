@@ -492,7 +492,7 @@ export function useManageLeasesPageLogic({ showToast }) {
     try {
       // First try to get photos from listing's 'Features - Photos' column
       const { data: listingData } = await supabase
-        .from('Listing')
+        .from('listing')
         .select('"Features - Photos"')
         .eq('_id', listingId)
         .single();
