@@ -132,6 +132,13 @@ ZEP - scripts/
 # ADW orchestrator (deprecated)
 adws/
 
+# BMAD method (local only)
+_bmad/
+.agent/
+.cursor/
+.gemini/
+.windsurf/
+
 # Ralph plans (deprecated)
 ralph-plans/
 
