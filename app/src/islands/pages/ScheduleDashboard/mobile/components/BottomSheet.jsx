@@ -32,6 +32,7 @@ export default function BottomSheet({
   const startY = useRef(null);
   const currentY = useRef(null);
   const backdropTouchStarted = useRef(false);
+  const closeTimer = useRef(null);
 
   // Animation guard: keep mounted during close animation (300ms)
   const [shouldRender, setShouldRender] = useState(isOpen);
@@ -63,10 +64,23 @@ export default function BottomSheet({
     }
   }, [isOpen, shouldRender]);
 
+  useEffect(() => {
+    return () => {
+      if (closeTimer.current) {
+        clearTimeout(closeTimer.current);
+      }
+    };
+  }, []);
+
   // Close on backdrop click (only when interactable)
   const handleBackdropClick = (e) => {
     if (closeOnBackdrop && e.target === e.currentTarget && isInteractable) {
-      onClose?.();
+      if (closeTimer.current) {
+        clearTimeout(closeTimer.current);
+      }
+      closeTimer.current = setTimeout(() => {
+        onClose?.();
+      }, 150);
     }
   };
 

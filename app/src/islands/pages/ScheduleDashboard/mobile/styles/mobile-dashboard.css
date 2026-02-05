@@ -442,13 +442,14 @@
 
 .mobile-calendar__month {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--schedule-text, #1F2937);
 }
 
 .mobile-calendar__range {
   font-size: 12px;
-  color: var(--schedule-text-muted, #6B7280);
+  font-weight: 600;
+  color: var(--schedule-text, #1F2937);
 }
 
 /* Day Labels Row */

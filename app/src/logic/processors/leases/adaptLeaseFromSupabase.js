@@ -156,9 +156,21 @@ export function adaptLeaseFromSupabase(row) {
     propertyName: row.listing?.Name || row.listing?.['Listing Title'] || row.listing?.name || null,
     propertyAddress: row.listing?.Address || row.listing?.address || null,
     getRoommate(currentUserId) {
-      if (this.host?._id === currentUserId) return this.guest;
-      if (this.guest?._id === currentUserId) return this.host;
-      return this.coTenant || this.host || this.guest;
+      // For co-tenant leases: return the OTHER co-tenant, not current user
+      // Compare as strings to handle ID format differences
+      const hostId = String(this.host?._id || '');
+      const guestId = String(this.guest?._id || '');
+      const userId = String(currentUserId || '');
+
+      if (hostId && hostId === userId) return this.guest;
+      if (guestId && guestId === userId) return this.host;
+
+      // Fallback: If we can't determine current user, compare by lease role
+      // For co-tenant, both are "guests" so return whichever we have that isn't empty
+      console.warn('[getRoommate] Could not match currentUserId to host/guest', {
+        currentUserId, hostId, guestId
+      });
+      return this.guest || this.host;
     },
     getCounterparty(currentUserId) {
       return getCounterparty(this, currentUserId);

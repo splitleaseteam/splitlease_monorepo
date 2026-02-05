@@ -20,7 +20,7 @@ function getInitials(roommate) {
   return `${first}${last}`.toUpperCase();
 }
 
-export default function ReservationHeader({ lease, roommate, onBack, onHelp }) {
+export default function ReservationHeader({ lease, roommate, onBack }) {
   const address = lease?.propertyAddress || lease?.propertyName || 'Lease';
   const leaseDates = lease?.startDate && lease?.endDate
     ? `${formatLeaseDate(lease.startDate)} - ${formatLeaseDate(lease.endDate)}`
@@ -53,10 +53,6 @@ export default function ReservationHeader({ lease, roommate, onBack, onHelp }) {
       <div className="reservation-header__dates">
         {leaseDates}
       </div>
-      <span className="reservation-header__divider" aria-hidden="true" />
-      <button type="button" className="reservation-header__help" onClick={onHelp} aria-label="Open help">
-        ?
-      </button>
     </header>
   );
 }
@@ -73,6 +69,5 @@ ReservationHeader.propTypes = {
     lastName: PropTypes.string,
     avatarUrl: PropTypes.string
   }),
-  onBack: PropTypes.func,
-  onHelp: PropTypes.func
+  onBack: PropTypes.func
 };

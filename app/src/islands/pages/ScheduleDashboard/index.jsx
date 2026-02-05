@@ -22,10 +22,8 @@
  */
 
 import React from 'react';
-import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { useScheduleDashboardLogic } from './useScheduleDashboardLogic.js';
-import LeaseInfoBar from './components/LeaseInfoBar.jsx';
 import ScheduleCalendar from './components/ScheduleCalendar.jsx';
 import RoommateProfileCard from './components/RoommateProfileCard.jsx';
 import BuyOutPanel from './components/BuyOutPanel.jsx';
@@ -212,8 +210,7 @@ export default function ScheduleDashboard() {
         <ReservationHeader
           lease={lease}
           roommate={roommate}
-          onBack={() => window.history.back()}
-          onHelp={() => console.log('Help clicked')}
+          onBack={() => window.location.assign('/guest-leases')}
         />
       )}
 

@@ -152,7 +152,7 @@ export default function ChatThread({
   // Compute counterparty label based on lease type
   const counterpartyLabel = useMemo(() => {
     if (!lease || lease.isCoTenant) {
-      return roommateName || 'Roommate';
+      return roommateName || 'Co-tenant';
     }
     if (lease.userRole === 'guest') {
       return hostName ? `Host (${hostName})` : 'Host';
