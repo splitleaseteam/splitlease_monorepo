@@ -20,11 +20,7 @@ import { toDateString } from './helpers/dateHelpers.js';
 import {
   DEFAULT_NOTICE_MULTIPLIERS,
   EDGE_MULTIPLIERS,
-  SHARING_MULTIPLIERS,
   getNoticeThresholdForDate,
-  calculateSharePrice,
-  calculateBuyoutPrice,
-  calculatePriceForDate,
 } from './helpers/priceCalculations.js';
 import {
   MOCK_CURRENT_USER,
@@ -157,7 +153,7 @@ export function useScheduleDashboardLogic() {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
 
   // Pending date change requests state
-  const [pendingDateChangeRequests, setPendingDateChangeRequests] = useState([]);
+  const [pendingDateChangeRequests] = useState([]);
 
   // NOTE: Pricing strategy state (pricingStrategy, isSavingPreferences) now in usePricingStrategy hook
 
@@ -247,19 +243,6 @@ export function useScheduleDashboardLogic() {
     // Fallback to lease rate
     return lease?.nightlyRate || null;
   }, [selectedNight, scheduleState.roommateNights, roommate, lease]);
-
-  // List of US holidays (simplified - could be expanded)
-  const holidays = useMemo(() => {
-    const year = new Date().getFullYear();
-    return [
-      `${year}-01-01`, // New Year's Day
-      `${year}-07-04`, // Independence Day
-      `${year}-12-25`, // Christmas
-      `${year}-12-31`, // New Year's Eve
-      `${year + 1}-01-01`, // Next New Year's Day
-      `${year + 1}-02-14`, // Valentine's Day
-    ];
-  }, []);
 
   // Computed suggested prices for visualization (next 14 days) - 3-Tier Model
   const computedSuggestedPrices = useMemo(() => {
@@ -559,10 +542,9 @@ export function useScheduleDashboardLogic() {
 
   /**
    * Handle buy out request
-   * @param {string} message - Optional message to include with request
    * @param {number} totalPrice - Total price including fees (from BuyOutPanel)
    */
-  const handleBuyOut = useCallback(async (message, totalPrice) => {
+  const handleBuyOut = useCallback(async (totalPrice) => {
     if (!selectedNight || request.isSubmitting) return;
 
     if (!scheduleState.roommateNights.includes(selectedNight)) {
@@ -629,10 +611,9 @@ export function useScheduleDashboardLogic() {
 
   /**
    * Handle share request - request to co-occupy a night with roommate
-   * @param {string} message - Optional message to include with request
    * @param {number} totalPrice - Total price including fees
    */
-  const handleShareRequest = useCallback(async (message, totalPrice) => {
+  const handleShareRequest = useCallback(async (totalPrice) => {
     if (!selectedNight || request.isSubmitting) return;
 
     if (!scheduleState.roommateNights.includes(selectedNight)) {
@@ -747,9 +728,8 @@ export function useScheduleDashboardLogic() {
 
   /**
    * Handle submitting a swap request
-   * @param {string} message - Optional message to include with request
    */
-  const handleSubmitSwapRequest = useCallback(async (message) => {
+  const handleSubmitSwapRequest = useCallback(async () => {
     if (!selectedNight || !request.swapOfferNight || request.isSubmitting) return;
 
     if (!scheduleState.roommateNights.includes(selectedNight)) {

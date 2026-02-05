@@ -78,6 +78,32 @@ function getCounterparty(lease, currentUserId) {
 }
 
 /**
+ * Get the other co-tenant in a co-tenant lease
+ * For co-tenant leases: returns the OTHER co-tenant, not the current user
+ * @param {Object} lease - Adapted lease object with host and guest
+ * @param {string} currentUserId - Current user ID to exclude
+ * @returns {Object|null} The other co-tenant user object
+ */
+function getCoTenantForLease(lease, currentUserId) {
+  if (!lease) return null;
+
+  // Compare as strings to handle ID format differences
+  const hostId = String(lease.host?._id || '');
+  const guestId = String(lease.guest?._id || '');
+  const userId = String(currentUserId || '');
+
+  if (hostId && hostId === userId) return lease.guest;
+  if (guestId && guestId === userId) return lease.host;
+
+  // Fallback: If we can't determine current user, compare by lease role
+  // For co-tenant, both are "guests" so return whichever we have that isn't empty
+  console.warn('[getCoTenant] Could not match currentUserId to host/guest', {
+    currentUserId, hostId, guestId
+  });
+  return lease.guest || lease.host;
+}
+
+/**
  * Get user role based on lease type
  * @param {Object} lease - Adapted lease object
  * @param {string} currentUserId - Current user ID
@@ -155,23 +181,26 @@ export function adaptLeaseFromSupabase(row) {
     listing: row.listing ? adaptListingFromSupabase(row.listing) : null,
     propertyName: row.listing?.Name || row.listing?.['Listing Title'] || row.listing?.name || null,
     propertyAddress: row.listing?.Address || row.listing?.address || null,
-    getRoommate(currentUserId) {
-      // For co-tenant leases: return the OTHER co-tenant, not current user
-      // Compare as strings to handle ID format differences
-      const hostId = String(this.host?._id || '');
-      const guestId = String(this.guest?._id || '');
-      const userId = String(currentUserId || '');
 
-      if (hostId && hostId === userId) return this.guest;
-      if (guestId && guestId === userId) return this.host;
-
-      // Fallback: If we can't determine current user, compare by lease role
-      // For co-tenant, both are "guests" so return whichever we have that isn't empty
-      console.warn('[getRoommate] Could not match currentUserId to host/guest', {
-        currentUserId, hostId, guestId
-      });
-      return this.guest || this.host;
+    /**
+     * Get the other co-tenant in a co-tenant lease
+     * @param {string} currentUserId - Current user ID to exclude
+     * @returns {Object|null} The other co-tenant user object
+     */
+    getCoTenant(currentUserId) {
+      return getCoTenantForLease(this, currentUserId);
     },
+
+    /**
+     * @deprecated Use getCoTenant() instead. This method will be removed in a future release.
+     * Get the other co-tenant in a co-tenant lease (legacy alias)
+     * @param {string} currentUserId - Current user ID to exclude
+     * @returns {Object|null} The other co-tenant user object
+     */
+    getRoommate(currentUserId) {
+      return this.getCoTenant(currentUserId);
+    },
+
     getCounterparty(currentUserId) {
       return getCounterparty(this, currentUserId);
     },

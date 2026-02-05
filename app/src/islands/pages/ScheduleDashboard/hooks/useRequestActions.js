@@ -1,12 +1,10 @@
 import { useCallback } from 'react';
-import { toDateString } from '../helpers/dateHelpers.js';
 import { calculatePaymentBreakdown } from '../../../../logic/calculators/feeCalculations.js';
 
 /**
  * @param {Object} params
  * @param {Object} params.scheduleState - Schedule state with nights/actions.
  * @param {Object} params.request - Request flow state/actions.
- * @param {Object} params.ui - UI state/actions.
  * @param {string} params.currentUserId - Current user id.
  * @param {Object} params.roommate - Roommate data.
  * @param {number|null} params.basePrice - Base price for selected night.
@@ -18,7 +16,6 @@ import { calculatePaymentBreakdown } from '../../../../logic/calculators/feeCalc
 export function useRequestActions({
   scheduleState,
   request,
-  ui,
   currentUserId,
   roommate,
   basePrice,
@@ -29,11 +26,10 @@ export function useRequestActions({
 }) {
   /**
    * Handle buy out request.
-   * @param {string} message - Optional message to include with request.
    * @param {number} totalPrice - Total price including fees.
    * @param {number} baseAmountOverride - Optional base price override.
    */
-  const handleBuyOut = useCallback(async (message, totalPrice, baseAmountOverride) => {
+  const handleBuyOut = useCallback(async (totalPrice, baseAmountOverride) => {
     if (!selectedNight || request.isSubmitting) return;
 
     if (!scheduleState.roommateNights.includes(selectedNight)) {
@@ -116,10 +112,9 @@ export function useRequestActions({
 
   /**
    * Handle share request - request to co-occupy a night with roommate.
-   * @param {string} message - Optional message to include with request.
    * @param {number} totalPrice - Total price including fees.
    */
-  const handleShareRequest = useCallback(async (message, totalPrice) => {
+  const handleShareRequest = useCallback(async (totalPrice) => {
     if (!selectedNight || request.isSubmitting) return;
 
     if (!scheduleState.roommateNights.includes(selectedNight)) {
@@ -240,9 +235,8 @@ export function useRequestActions({
 
   /**
    * Handle submitting a swap request.
-   * @param {string} message - Optional message to include with request.
    */
-  const handleSubmitSwapRequest = useCallback(async (message) => {
+  const handleSubmitSwapRequest = useCallback(async () => {
     if (!selectedNight || !request.swapOfferNight || request.isSubmitting) return;
 
     if (!scheduleState.roommateNights.includes(selectedNight)) {

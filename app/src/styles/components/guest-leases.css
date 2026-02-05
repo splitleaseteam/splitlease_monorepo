@@ -208,46 +208,6 @@
 }
 
 /* =============================================================
-   STATUS SUMMARY (Charles Style)
-   ============================================================= */
-.status-summary {
-  display: flex;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-7xl);
-  flex-wrap: wrap;
-}
-
-.status-summary__item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-white);
-  border: var(--border-width-thin) solid var(--border-color);
-  border-radius: var(--rounded-lg);
-  font-size: var(--text-sm);
-  color: var(--text-gray);
-}
-
-.status-summary__item--success {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: var(--success-green);
-  color: var(--success-green);
-}
-
-.status-summary__item--warning {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: #F59E0B;
-  color: #D97706;
-}
-
-.status-summary__icon {
-  width: var(--icon-xs);
-  height: var(--icon-xs);
-  flex-shrink: 0;
-}
-
-/* =============================================================
    SECTION HEADER
    ============================================================= */
 .section-header {
@@ -266,36 +226,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-}
-
-/* =============================================================
-   PAST LEASES SECTION
-   ============================================================= */
-.past-leases-section {
-  background: var(--bg-light);
-  margin-left: calc(-50vw + 50%);
-  margin-right: calc(-50vw + 50%);
-  padding: var(--spacing-4xl) calc(50vw - 50%);
-  margin-top: var(--spacing-7xl);
-}
-
-.past-leases-inner {
-  max-width: 65%;
-  margin: 0 auto;
-  padding: 0 var(--spacing-2xl);
-}
-
-@media (max-width: 768px) {
-  .past-leases-section {
-    margin-left: calc(-1 * var(--spacing-lg));
-    margin-right: calc(-1 * var(--spacing-lg));
-    padding: var(--spacing-2xl) var(--spacing-lg);
-  }
-
-  .past-leases-inner {
-    max-width: 100%;
-    padding: 0;
-  }
 }
 
 /* =============================================================

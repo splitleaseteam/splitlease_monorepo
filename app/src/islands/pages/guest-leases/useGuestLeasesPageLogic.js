@@ -26,9 +26,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, getUserType } from '../../../lib/auth.js';
+import { validateTokenAndFetchUser, getUserType } from '../../../lib/auth.js';
 import { supabase } from '../../../lib/supabase.js';
-import { SIGNUP_LOGIN_URL } from '../../../lib/constants.js';
 import {
   fetchGuestLeases,
   sendCheckinMessage,
