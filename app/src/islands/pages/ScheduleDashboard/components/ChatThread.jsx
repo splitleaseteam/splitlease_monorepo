@@ -8,7 +8,7 @@
  * - Inline transaction confirmations
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================
@@ -145,6 +145,9 @@ export default function ChatThread({
   messages = [],
   currentUserId,
   roommateName,
+  lease,
+  guestName,
+  hostName,
   onSendMessage,
   onAcceptRequest,
   onDeclineRequest,
@@ -156,6 +159,17 @@ export default function ChatThread({
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
+
+  // Compute counterparty label based on lease type
+  const counterpartyLabel = useMemo(() => {
+    if (!lease || lease.isCoTenant) {
+      return roommateName || 'Roommate';
+    }
+    if (lease.userRole === 'guest') {
+      return hostName ? `Host (${hostName})` : 'Host';
+    }
+    return guestName ? `Guest (${guestName})` : 'Guest';
+  }, [lease, roommateName, guestName, hostName]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -198,7 +212,7 @@ export default function ChatThread({
   return (
     <div className="chat-thread">
       <h3 className="chat-thread__heading">
-        Chat with {roommateName || 'Split Partner'}
+        Chat with {counterpartyLabel}
       </h3>
 
       {/* Messages Area */}
@@ -214,7 +228,7 @@ export default function ChatThread({
               message={msg}
               ref={(el) => { messageRefs.current[msg.id] = el; }}
               isCurrentUser={msg.senderId === currentUserId}
-              displayName={msg.senderId === currentUserId ? 'You' : roommateName || 'Roommate'}
+              displayName={msg.senderId === currentUserId ? 'You' : counterpartyLabel}
               onAccept={onAcceptRequest}
               onDecline={onDeclineRequest}
               onCounter={onCounterRequest}
@@ -282,6 +296,12 @@ ChatThread.propTypes = {
   })),
   currentUserId: PropTypes.string,
   roommateName: PropTypes.string,
+  lease: PropTypes.shape({
+    isCoTenant: PropTypes.bool,
+    userRole: PropTypes.oneOf(['guest', 'host']),
+  }),
+  guestName: PropTypes.string,
+  hostName: PropTypes.string,
   onSendMessage: PropTypes.func,
   onAcceptRequest: PropTypes.func,
   onDeclineRequest: PropTypes.func,

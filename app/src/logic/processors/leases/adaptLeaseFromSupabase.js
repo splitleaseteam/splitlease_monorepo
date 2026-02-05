@@ -44,12 +44,62 @@ function parseDate(dateStr) {
 }
 
 /**
+ * Derive lease type from row data
+ * @param {Object} row - Raw bookings_leases row with joins
+ * @returns {string} Lease type identifier
+ */
+function deriveLeaseType(row) {
+  if (row?.['Lease Type']) {
+    return row['Lease Type'].toLowerCase().replace(/\s+/g, '_');
+  }
+
+  const hostType = row?.host?.userType || row?.Host?.userType;
+  const guestType = row?.guest?.userType || row?.Guest?.userType;
+
+  if (hostType === 'Guest' && guestType === 'Guest') {
+    return 'co_tenant';
+  }
+
+  return 'guest_host';
+}
+
+/**
+ * Get lease counterparty based on lease type
+ * @param {Object} lease - Adapted lease object
+ * @param {string} currentUserId - Current user ID
+ * @returns {Object|null} Counterparty user
+ */
+function getCounterparty(lease, currentUserId) {
+  if (!lease) return null;
+  if (lease.leaseType === 'co_tenant') {
+    return lease.host?._id === currentUserId ? lease.guest : lease.host;
+  }
+  return lease.guest?._id === currentUserId ? lease.host : lease.guest;
+}
+
+/**
+ * Get user role based on lease type
+ * @param {Object} lease - Adapted lease object
+ * @param {string} currentUserId - Current user ID
+ * @returns {string} Role identifier
+ */
+function getUserRole(lease, currentUserId) {
+  if (!lease) return 'unknown';
+  if (lease.leaseType === 'co_tenant') {
+    return 'co_tenant';
+  }
+  return lease.guest?._id === currentUserId ? 'guest' : 'host';
+}
+
+/**
  * Adapt a single lease record from Supabase format
  * @param {Object} row - Raw bookings_leases row with joins
  * @returns {Object} Frontend-friendly lease object
  */
 export function adaptLeaseFromSupabase(row) {
   if (!row) return null;
+
+  const leaseType = deriveLeaseType(row);
 
   return {
     // Core identifiers
@@ -58,6 +108,9 @@ export function adaptLeaseFromSupabase(row) {
     bubbleId: row.bubble_id,
     agreementNumber: row['Agreement Number'] || null,
     proposalId: row.Proposal || null,
+    leaseType,
+    isCoTenant: leaseType === 'co_tenant',
+    isGuestHost: leaseType === 'guest_host',
 
     // Direct ID references (for DateChangeRequestManager compatibility)
     hostId: row.Host || row.host?._id || null,
@@ -106,6 +159,12 @@ export function adaptLeaseFromSupabase(row) {
       if (this.host?._id === currentUserId) return this.guest;
       if (this.guest?._id === currentUserId) return this.host;
       return this.coTenant || this.host || this.guest;
+    },
+    getCounterparty(currentUserId) {
+      return getCounterparty(this, currentUserId);
+    },
+    getUserRole(currentUserId) {
+      return getUserRole(this, currentUserId);
     },
     proposal: row.proposal ? {
       id: row.proposal._id,

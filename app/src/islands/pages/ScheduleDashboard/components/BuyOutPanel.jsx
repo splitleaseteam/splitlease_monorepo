@@ -613,12 +613,58 @@ export default function BuyOutPanel({
   onToggleBuyoutSettings,
   onBuyoutPreferenceChange,
   onSaveBuyoutPreferences,
-  onResetBuyoutPreferences
+  onResetBuyoutPreferences,
+  // Lease type props for conditional labels
+  lease = null, // { isCoTenant: bool, isGuestHost: bool, userRole: 'guest' | 'host' }
+  guestName = null, // Guest's first name (for host view)
+  hostName = null // Host's first name (for guest view)
 }) {
   const [message, setMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSwapSuccess, setShowSwapSuccess] = useState(false);
   const [showShareSuccess, setShowShareSuccess] = useState(false);
+
+  // Compute labels based on lease type
+  const counterpartyLabel = useMemo(() => {
+    if (!lease || lease.isCoTenant) {
+      return roommateName || 'Roommate';
+    }
+    // Guest-host lease
+    if (lease.userRole === 'guest') {
+      return hostName ? `Host (${hostName})` : 'Host';
+    }
+    return guestName ? `Guest (${guestName})` : 'Guest';
+  }, [lease, roommateName, guestName, hostName]);
+
+  const panelLabels = useMemo(() => {
+    if (!lease || lease.isCoTenant) {
+      return {
+        emptyTitle: 'Select a Night',
+        emptyText: 'Click on an available night in the calendar to request a buyout from your roommate.',
+        successText: `Waiting for ${counterpartyLabel}'s response. You'll be notified when they respond.`,
+        selectedOwner: `Currently held by ${counterpartyLabel}`,
+        actionLabel: 'Buy Out Night'
+      };
+    }
+    // Guest-host lease
+    if (lease.userRole === 'guest') {
+      return {
+        emptyTitle: 'Request Date Change',
+        emptyText: 'Select a night to request a change from your host.',
+        successText: `Waiting for ${counterpartyLabel}'s response. You'll be notified when they respond.`,
+        selectedOwner: `Host's night`,
+        actionLabel: 'Request Night Change'
+      };
+    }
+    // Host view
+    return {
+      emptyTitle: 'Review Booking',
+      emptyText: `Select a guest's booking to review or respond.`,
+      successText: `Response sent to ${counterpartyLabel}.`,
+      selectedOwner: `${counterpartyLabel}'s booking`,
+      actionLabel: 'Accept/Decline Booking'
+    };
+  }, [lease, counterpartyLabel]);
   const [customPrice, setCustomPrice] = useState(null);
   const [showNote, setShowNote] = useState(false);
   const [showFees, setShowFees] = useState(false);
@@ -755,9 +801,9 @@ export default function BuyOutPanel({
           <span className="buyout-panel__empty-icon" aria-hidden="true">
             &#x1F4C5;
           </span>
-          <h3 className="buyout-panel__empty-title">Select a Night</h3>
+          <h3 className="buyout-panel__empty-title">{panelLabels.emptyTitle}</h3>
           <p className="buyout-panel__empty-text">
-            Click on an available night in the calendar to request a buyout from your roommate.
+            {panelLabels.emptyText}
           </p>
         </div>
       )}
@@ -770,7 +816,7 @@ export default function BuyOutPanel({
           </span>
           <h3 className="buyout-panel__success-title">Request Sent!</h3>
           <p className="buyout-panel__success-text">
-            Waiting for {roommateName}'s response. You'll be notified when they respond.
+            {panelLabels.successText}
           </p>
           <button
             type="button"
@@ -790,7 +836,7 @@ export default function BuyOutPanel({
           </span>
           <h3 className="buyout-panel__success-title">Swap Request Sent!</h3>
           <p className="buyout-panel__success-text">
-            Waiting for {roommateName}'s response. You'll be notified when they respond.
+            {panelLabels.successText}
           </p>
           <button
             type="button"
@@ -810,7 +856,7 @@ export default function BuyOutPanel({
           </span>
           <h3 className="buyout-panel__success-title">Share Request Sent!</h3>
           <p className="buyout-panel__success-text">
-            Waiting for {roommateName}'s response. If accepted, you'll both have access to this night.
+            Waiting for {counterpartyLabel}'s response. If accepted, you'll both have access to this night.
           </p>
           <button
             type="button"
@@ -882,7 +928,7 @@ export default function BuyOutPanel({
               {/* Mode-specific description */}
               {requestType === 'share' && (
                 <p className="buyout-panel__description">
-                  Request to share the space with {roommateName} on this night 👥
+                  Request to share the space with {counterpartyLabel} on this night 👥
                 </p>
               )}
 
@@ -890,7 +936,7 @@ export default function BuyOutPanel({
               <div className="buyout-panel__selected">
                 <span className="buyout-panel__date">{formattedDate}</span>
                 <span className="buyout-panel__owner">
-                  Currently held by {roommateName}
+                  {panelLabels.selectedOwner}
                 </span>
               </div>
             </>
@@ -1195,5 +1241,13 @@ BuyOutPanel.propTypes = {
   onToggleBuyoutSettings: PropTypes.func,
   onBuyoutPreferenceChange: PropTypes.func,
   onSaveBuyoutPreferences: PropTypes.func,
-  onResetBuyoutPreferences: PropTypes.func
+  onResetBuyoutPreferences: PropTypes.func,
+  // Lease type props for conditional labels
+  lease: PropTypes.shape({
+    isCoTenant: PropTypes.bool,
+    isGuestHost: PropTypes.bool,
+    userRole: PropTypes.oneOf(['guest', 'host'])
+  }),
+  guestName: PropTypes.string,
+  hostName: PropTypes.string
 };

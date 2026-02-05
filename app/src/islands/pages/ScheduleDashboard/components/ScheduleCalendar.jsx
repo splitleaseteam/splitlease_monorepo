@@ -161,7 +161,11 @@ export default function ScheduleCalendar({
   roommatePriceOverlays = null, // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
   roommateName = null, // Roommate's first name for tooltip
   isLoading = false, // Loading state for skeleton UI
-  pendingDateChangeRequests = [] // Array of pending date change requests
+  pendingDateChangeRequests = [], // Array of pending date change requests
+  // Lease type props for conditional labels
+  lease = null, // { isCoTenant: bool, isGuestHost: bool, userRole: 'guest' | 'host' }
+  guestName = null, // Guest's first name (for host view)
+  hostName = null // Host's first name (for guest view)
 }) {
   // Build set of dates affected by pending date change requests
   const pendingChangeDates = useMemo(() => {
@@ -178,6 +182,31 @@ export default function ScheduleCalendar({
     });
     return dates;
   }, [pendingDateChangeRequests]);
+
+  // Compute legend labels based on lease type
+  const legendLabels = useMemo(() => {
+    // Default co-tenant labels
+    if (!lease || lease.isCoTenant) {
+      return {
+        user: "Your Nights",
+        other: roommateName ? `${roommateName}'s Nights` : "Roommate's Nights"
+      };
+    }
+
+    // Guest-host lease labels
+    if (lease.userRole === 'guest') {
+      return {
+        user: "Your Booked Nights",
+        other: hostName ? `Host (${hostName})'s Nights` : "Host's Nights"
+      };
+    }
+
+    // Host view
+    return {
+      user: "Available Nights",
+      other: guestName ? `${guestName}'s Bookings` : "Guest's Bookings"
+    };
+  }, [lease, roommateName, guestName, hostName]);
 
   /**
    * Check if a date has a pending date change request
@@ -306,6 +335,7 @@ export default function ScheduleCalendar({
 
   /**
    * Get the status of a day for styling
+   * For guest-host leases: unbooked nights belong to host
    */
   const getDayStatus = (date) => {
     if (!date) return 'empty';
@@ -315,6 +345,23 @@ export default function ScheduleCalendar({
     // Check each status in priority order
     if (isInDateArray(date, blockedNights)) return 'blocked';
     if (isInDateArray(date, pendingNights)) return 'pending';
+
+    // Guest-host lease logic
+    if (lease?.isGuestHost) {
+      const isGuestBookedNight = isInDateArray(date, userNights);
+
+      if (lease.userRole === 'guest') {
+        // Guest view: their bookings are 'mine', everything else is host's (unavailable to them)
+        if (isGuestBookedNight) return 'mine';
+        return 'unavailable';
+      } else {
+        // Host view: guest bookings are 'other-night', unbooked nights are 'mine available'
+        if (isGuestBookedNight) return 'roommate';
+        return 'mine-available';
+      }
+    }
+
+    // Co-tenant logic (default)
     if (isInDateArray(date, userNights)) return 'mine';
     if (isInDateArray(date, roommateNights)) {
       // Check if it's also an adjacent night
@@ -365,6 +412,7 @@ export default function ScheduleCalendar({
 
   /**
    * Get accessible label for day
+   * Labels vary based on lease type (co-tenant vs guest-host)
    */
   const getAccessibleLabel = (date, status) => {
     if (!date) return '';
@@ -382,14 +430,37 @@ export default function ScheduleCalendar({
       return `${formattedDate}, Transaction: ${amount}. Click to view details.`;
     }
 
-    const statusLabels = {
-      mine: 'Your night',
-      roommate: 'Available to buy out',
-      adjacent: 'Recommended - adjacent to your stay',
-      pending: 'Pending request',
-      blocked: 'Blocked',
-      outside: 'Outside lease period'
-    };
+    // Status labels vary by lease type
+    let statusLabels;
+    if (lease?.isGuestHost) {
+      if (lease.userRole === 'guest') {
+        statusLabels = {
+          mine: 'Your booked night',
+          unavailable: "Host's night - not available",
+          pending: 'Pending request',
+          blocked: 'Blocked'
+        };
+      } else {
+        // Host view
+        statusLabels = {
+          mine: 'Available night',
+          'mine-available': 'Available night',
+          roommate: `${guestName || 'Guest'}'s booking`,
+          pending: 'Pending request',
+          blocked: 'Blocked'
+        };
+      }
+    } else {
+      // Co-tenant labels (default)
+      statusLabels = {
+        mine: 'Your night',
+        roommate: 'Available to buy out',
+        adjacent: 'Recommended - adjacent to your stay',
+        pending: 'Pending request',
+        blocked: 'Blocked',
+        outside: 'Outside lease period'
+      };
+    }
 
     return `${formattedDate}, ${statusLabels[status] || ''}`;
   };
@@ -539,11 +610,11 @@ export default function ScheduleCalendar({
         <div className="schedule-calendar__legend">
           <div className="schedule-calendar__legend-item">
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--mine" />
-            <span>Your Nights</span>
+            <span>{legendLabels.user}</span>
           </div>
           <div className="schedule-calendar__legend-item">
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--roommate" />
-            <span>{roommateName ? `${roommateName}'s Nights` : "Roommate's Nights"}</span>
+            <span>{legendLabels.other}</span>
           </div>
           <div className="schedule-calendar__legend-item">
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--adjacent" />
@@ -634,5 +705,13 @@ ScheduleCalendar.propTypes = {
       PropTypes.instanceOf(Date)
     ])),
     status: PropTypes.string
-  }))
+  })),
+  // Lease type props for conditional labels
+  lease: PropTypes.shape({
+    isCoTenant: PropTypes.bool,
+    isGuestHost: PropTypes.bool,
+    userRole: PropTypes.oneOf(['guest', 'host'])
+  }),
+  guestName: PropTypes.string,
+  hostName: PropTypes.string
 };
