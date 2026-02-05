@@ -302,9 +302,14 @@ export default function CareersPage() {
 
           <div>
             <div
-              className="video-player-container"
               id="videoPlayerContainer"
-              style={{ aspectRatio: '16 / 9', width: '100%' }}
+              style={{
+                aspectRatio: '16 / 9',
+                width: '100%',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                boxShadow: '0 12px 32px rgba(49, 19, 93, 0.15)'
+              }}
             >
               <iframe
                 src="https://www.youtube.com/embed/DDsSMV2sBoE?rel=0&modestbranding=1"
@@ -313,8 +318,7 @@ export default function CareersPage() {
                 style={{
                   border: 'none',
                   width: '100%',
-                  height: '100%',
-                  transform: 'none'
+                  height: '100%'
                 }}
                 title="Split Lease Company Journey"
               />
