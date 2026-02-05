@@ -1646,7 +1646,7 @@
 .referral-banner-close {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 8px;
   background: none;
   border: none;
   cursor: pointer;
