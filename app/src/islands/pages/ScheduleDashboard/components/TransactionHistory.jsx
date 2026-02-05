@@ -115,7 +115,7 @@ function TypeLabel({ type }) {
   );
 }
 
-function TransactionDetails({ transaction, onCancel, onAccept, onDecline }) {
+function TransactionDetails({ transaction, onCancel, onAccept, onDecline, onCounter }) {
   const hasPriceComparison = transaction.suggestedPrice && transaction.offeredPrice &&
                               transaction.suggestedPrice !== transaction.offeredPrice;
 
@@ -202,7 +202,7 @@ function TransactionDetails({ transaction, onCancel, onAccept, onDecline }) {
                 Cancel Request
               </button>
             ) : (
-              /* Case 2: I received the request -> Accept or Decline */
+              /* Case 2: I received the request -> Accept, Counter, or Decline */
               <>
                 <button
                   className="transaction-details__btn transaction-details__btn--accept"
@@ -213,6 +213,17 @@ function TransactionDetails({ transaction, onCancel, onAccept, onDecline }) {
                 >
                   Accept
                 </button>
+                {transaction.type === 'buyout' && (
+                  <button
+                    className="transaction-details__btn transaction-details__btn--counter"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCounter?.(transaction.id);
+                    }}
+                  >
+                    Counter
+                  </button>
+                )}
                 <button
                   className="transaction-details__btn transaction-details__btn--decline"
                   onClick={(e) => {
@@ -240,6 +251,7 @@ export default function TransactionHistory({
   onCancelRequest,
   onAcceptRequest,
   onDeclineRequest,
+  onCounterRequest,
   onViewDetails,
   activeTransactionId,
   onClearActiveTransaction,
@@ -433,6 +445,7 @@ export default function TransactionHistory({
                           onCancel={onCancelRequest}
                           onAccept={onAcceptRequest}
                           onDecline={onDeclineRequest}
+                          onCounter={onCounterRequest}
                         />
                       </td>
                     </tr>
@@ -461,6 +474,7 @@ TransactionHistory.propTypes = {
   onCancelRequest: PropTypes.func,
   onAcceptRequest: PropTypes.func,
   onDeclineRequest: PropTypes.func,
+  onCounterRequest: PropTypes.func,
   onViewDetails: PropTypes.func,
   activeTransactionId: PropTypes.string,
   onClearActiveTransaction: PropTypes.func,

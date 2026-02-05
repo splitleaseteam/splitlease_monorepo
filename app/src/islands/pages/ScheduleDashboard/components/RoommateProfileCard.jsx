@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 // SUB-COMPONENTS
 // ============================================================================
 
-function FlexibilityGauge({ score, userScore, roommateName, onInfoClick }) {
+function FlexibilityGauge({ score, userScore, roommateName, userName, onInfoClick }) {
   // Score is 1-10
   const percentage = (score / 10) * 100;
 
@@ -66,7 +66,7 @@ function FlexibilityGauge({ score, userScore, roommateName, onInfoClick }) {
       {/* User's Score Row */}
       {userScore !== undefined && (
         <div className="flexibility-gauge__my-score">
-          <span className="flexibility-gauge__my-score-label">My Score:</span>
+          <span className="flexibility-gauge__my-score-label">{userName ? `${userName}'s Score:` : 'My Score:'}</span>
           <span className="flexibility-gauge__my-score-value">{userScore}/10</span>
         </div>
       )}
@@ -82,6 +82,7 @@ export default function RoommateProfileCard({
   roommate,
   flexibilityScore,
   userFlexibilityScore,
+  userName,
   responsePatterns,
   onFlexibilityInfoClick
 }) {
@@ -125,6 +126,7 @@ export default function RoommateProfileCard({
         score={flexibilityScore}
         userScore={userFlexibilityScore}
         roommateName={roommate.firstName}
+        userName={userName}
         onInfoClick={onFlexibilityInfoClick}
       />
 
@@ -152,6 +154,7 @@ RoommateProfileCard.propTypes = {
   }),
   flexibilityScore: PropTypes.number,
   userFlexibilityScore: PropTypes.number,
+  userName: PropTypes.string,
   responsePatterns: PropTypes.string,
   onFlexibilityInfoClick: PropTypes.func
 };

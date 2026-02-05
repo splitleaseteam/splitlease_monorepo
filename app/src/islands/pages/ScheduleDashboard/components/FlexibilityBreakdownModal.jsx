@@ -115,6 +115,7 @@ export default function FlexibilityBreakdownModal({
   userScore,
   roommateScore,
   roommateName = 'Roommate',
+  userName,
   flexibilityMetrics
 }) {
   if (!isOpen) return null;
@@ -154,7 +155,7 @@ export default function FlexibilityBreakdownModal({
 
             <div className="flexibility-modal__scores">
               <ScoreBar
-                label="You"
+                label={userName || 'You'}
                 score={userScore}
                 isUser={true}
               />
@@ -179,7 +180,7 @@ export default function FlexibilityBreakdownModal({
             <div className="flexibility-modal__metrics">
               <div className="flexibility-modal__metrics-header">
                 <span></span>
-                <span className="flexibility-modal__metrics-header-you">You</span>
+                <span className="flexibility-modal__metrics-header-you">{userName || 'You'}</span>
                 <span></span>
                 <span className="flexibility-modal__metrics-header-roommate">{roommateName}</span>
               </div>
@@ -234,6 +235,7 @@ FlexibilityBreakdownModal.propTypes = {
   userScore: PropTypes.number,
   roommateScore: PropTypes.number,
   roommateName: PropTypes.string,
+  userName: PropTypes.string,
   flexibilityMetrics: PropTypes.shape({
     user: PropTypes.shape({
       responseTime: PropTypes.string,

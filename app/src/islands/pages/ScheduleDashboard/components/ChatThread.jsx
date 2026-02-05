@@ -44,18 +44,7 @@ const MessageBubble = React.forwardRef(({ message, isCurrentUser, displayName, o
         <div className="chat-bubble__sender">{displayName}</div>
         {message.text || message.content}
 
-        {message.type === 'request' && message.requestData && (
-          <div className="chat-bubble__request-info">
-            <span className="chat-bubble__request-amount">
-              ${message.requestData.amount?.toFixed(2) || message.requestData.offeredPrice?.toFixed(2) || '0.00'}
-            </span>
-            {message.requestData.suggestedPrice && message.requestData.offeredPrice !== message.requestData.suggestedPrice && (
-              <span className="chat-bubble__suggested-price">
-                (suggested: ${message.requestData.suggestedPrice.toFixed(2)})
-              </span>
-            )}
-          </div>
-        )}
+        {/* Price info hidden from initial request bubble per spec - price shows only in Accept button */}
 
         {message.type === 'request' && message.status && message.status !== 'pending' && (
           <div className={`chat-bubble__status chat-bubble__status--${message.status}`}>
@@ -77,7 +66,7 @@ const MessageBubble = React.forwardRef(({ message, isCurrentUser, displayName, o
                 className="chat-bubble__action-btn chat-bubble__action-btn--accept"
                 onClick={() => onAccept(message.id)}
               >
-                Accept
+                Accept{message.requestData?.amount ? ` $${message.requestData.amount.toFixed(2)}` : message.requestData?.offeredPrice ? ` $${message.requestData.offeredPrice.toFixed(2)}` : ''}
               </button>
               <button
                 className="chat-bubble__action-btn chat-bubble__action-btn--counter"

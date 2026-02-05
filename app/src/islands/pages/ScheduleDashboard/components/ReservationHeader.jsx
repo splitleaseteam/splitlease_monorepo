@@ -1,9 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-function formatLeaseDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString.includes('T') ? dateString : `${dateString}T12:00:00`);
+function formatLeaseDate(dateInput) {
+  if (!dateInput) return '';
+  // Handle both Date objects and strings
+  const date = dateInput instanceof Date
+    ? dateInput
+    : new Date(typeof dateInput === 'string' && dateInput.includes('T') ? dateInput : `${dateInput}T12:00:00`);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -22,7 +25,7 @@ export default function ReservationHeader({ lease, roommate, onBack, onHelp }) {
   const leaseDates = lease?.startDate && lease?.endDate
     ? `${formatLeaseDate(lease.startDate)} - ${formatLeaseDate(lease.endDate)}`
     : 'Lease dates unavailable';
-  const roommateName = roommate ? `${roommate.firstName} ${roommate.lastName}` : 'Roommate';
+  const roommateName = roommate ? `${roommate.firstName} ${roommate.lastName}` : 'Co-tenant';
   const initials = getInitials(roommate);
 
   return (
@@ -62,8 +65,8 @@ ReservationHeader.propTypes = {
   lease: PropTypes.shape({
     propertyName: PropTypes.string,
     propertyAddress: PropTypes.string,
-    startDate: PropTypes.string,
-    endDate: PropTypes.string
+    startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
   }),
   roommate: PropTypes.shape({
     firstName: PropTypes.string,

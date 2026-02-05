@@ -17,19 +17,23 @@ import { adaptLeaseFromSupabase } from '../../../../logic/processors/leases/adap
  * @returns {Promise<Object>} Normalized lease object
  */
 export async function fetchLeaseById(leaseId) {
-  // Step 1: Fetch lease with stays only
+  // Step 1: Fetch lease without any joins (FKs may not be defined)
   const { data: lease, error } = await supabase
     .from('bookings_leases')
-    .select(`
-      *,
-      stays:bookings_stays(*)
-    `)
+    .select('*')
     .eq('_id', leaseId)
     .single();
 
   if (error) {
     throw error;
   }
+
+  // Step 1.5: Fetch stays separately (FK not defined in Supabase)
+  const { data: stays } = await supabase
+    .from('bookings_stays')
+    .select('*')
+    .eq('Lease', leaseId);
+  lease.stays = stays || [];
 
   // Step 2: Fetch host user if Host column exists
   if (lease?.Host) {

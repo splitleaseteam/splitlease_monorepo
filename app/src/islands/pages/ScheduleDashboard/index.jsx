@@ -35,6 +35,7 @@ import FlexibilityBreakdownModal from './components/FlexibilityBreakdownModal.js
 import DashboardModeToggle from './components/DashboardModeToggle.jsx';
 import BuyoutFormulaSettings from './components/BuyoutFormulaSettings.jsx';
 import BuyoutPriceVisualization from './components/BuyoutPriceVisualization.jsx';
+import ReservationHeader from './components/ReservationHeader.jsx';
 
 // ============================================================================
 // HELPERS
@@ -206,7 +207,15 @@ export default function ScheduleDashboard() {
 
   return (
     <>
-      <Header />
+      {/* Reservation-specific header (replaces regular Header on this page) */}
+      {!isLoading && !error && lease && (
+        <ReservationHeader
+          lease={lease}
+          roommate={roommate}
+          onBack={() => window.history.back()}
+          onHelp={() => console.log('Help clicked')}
+        />
+      )}
 
       {/* Dev-only perspective indicator */}
       {import.meta.env.MODE === 'development' && isSwappedPerspective && (
@@ -228,10 +237,7 @@ export default function ScheduleDashboard() {
         {/* Dashboard Content */}
         {!isLoading && !error && (
           <>
-            {/* Header: Lease Info Bar */}
-            <LeaseInfoBar lease={lease} roommate={roommate} />
-
-            {/* Main Grid */}
+            {/* Main Grid (LeaseInfoBar removed - ReservationHeader replaces it) */}
             <div className="schedule-dashboard__grid">
               {/* Asymmetric Two-Column Layout (2.5:1) */}
               <div className="schedule-dashboard__columns">
@@ -336,6 +342,7 @@ export default function ScheduleDashboard() {
                           onCancelRequest={handleCancelRequest}
                           onAcceptRequest={handleAcceptRequest}
                           onDeclineRequest={handleDeclineRequest}
+                          onCounterRequest={handleCounterRequest}
                           onViewDetails={handleViewTransactionDetails}
                           activeTransactionId={activeTransactionId}
                           onClearActiveTransaction={handleClearActiveTransaction}
@@ -379,6 +386,7 @@ export default function ScheduleDashboard() {
                       roommate={roommate}
                       flexibilityScore={flexibilityScore}
                       userFlexibilityScore={userFlexibilityScore}
+                      userName={currentUserData?.firstName}
                       responsePatterns={responsePatterns}
                       netFlow={netFlow}
                       onFlexibilityInfoClick={handleOpenFlexibilityModal}
@@ -412,6 +420,14 @@ export default function ScheduleDashboard() {
                   )}
 
                   {/* Pricing Settings Mode: Right column is empty (controls shown wide below calendar) */}
+
+                  {/* Mode Toggle - Duplicate at Bottom for Easy Access */}
+                  <section className="schedule-dashboard__section schedule-dashboard__mode-toggle schedule-dashboard__mode-toggle--bottom">
+                    <DashboardModeToggle
+                      currentMode={dashboardMode}
+                      onModeChange={handleSwitchMode}
+                    />
+                  </section>
                 </div>
               </div>
 
@@ -438,6 +454,7 @@ export default function ScheduleDashboard() {
           userScore={userFlexibilityScore}
           roommateScore={flexibilityScore}
           roommateName={roommate?.firstName}
+          userName={currentUserData?.firstName}
           flexibilityMetrics={flexibilityMetrics}
         />
       </main>

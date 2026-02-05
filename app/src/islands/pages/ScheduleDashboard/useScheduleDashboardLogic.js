@@ -842,7 +842,7 @@ export function useScheduleDashboardLogic() {
    * Handle cancel selection
    */
   const handleCancel = useCallback(() => {
-      setSelectedNight(null);
+    setSelectedNight(null);
     request.setSwapOfferNight(null);
     request.setIsSwapMode(false);
     request.setIsCounterMode(false);
@@ -867,11 +867,11 @@ export function useScheduleDashboardLogic() {
     const transaction = transactionId
       ? scheduleState.transactions.find((t) => t.id === transactionId)
       : scheduleState.transactions.find(
-          (t) =>
-            t.type === message.requestData.type &&
-            t.status === 'pending' &&
-            JSON.stringify(t.nights) === JSON.stringify(message.requestData.nights)
-        );
+        (t) =>
+          t.type === message.requestData.type &&
+          t.status === 'pending' &&
+          JSON.stringify(t.nights) === JSON.stringify(message.requestData.nights)
+      );
 
     if (!transaction) return;
     scheduleState.actions.acceptRequest({ requestId, transaction });
@@ -885,11 +885,11 @@ export function useScheduleDashboardLogic() {
     const transaction = transactionId
       ? scheduleState.transactions.find((t) => t.id === transactionId)
       : scheduleState.transactions.find(
-          (t) =>
-            t.type === message.requestData.type &&
-            t.status === 'pending' &&
-            JSON.stringify(t.nights) === JSON.stringify(message.requestData.nights)
-        );
+        (t) =>
+          t.type === message.requestData.type &&
+          t.status === 'pending' &&
+          JSON.stringify(t.nights) === JSON.stringify(message.requestData.nights)
+      );
 
     if (!transaction) return;
     scheduleState.actions.declineRequest({ requestId, transaction });
@@ -903,11 +903,11 @@ export function useScheduleDashboardLogic() {
     const transaction = transactionId
       ? scheduleState.transactions.find((t) => t.id === transactionId)
       : scheduleState.transactions.find(
-          (t) =>
-            t.type === message.requestData.type &&
-            t.status === 'pending' &&
-            JSON.stringify(t.nights) === JSON.stringify(message.requestData.nights)
-        );
+        (t) =>
+          t.type === message.requestData.type &&
+          t.status === 'pending' &&
+          JSON.stringify(t.nights) === JSON.stringify(message.requestData.nights)
+      );
 
     if (!transaction || transaction.status !== 'pending') return;
 
@@ -1008,6 +1008,17 @@ export function useScheduleDashboardLogic() {
     // TODO: Fetch detailed history/thread if needed
   }, [ui]);
 
+  // Define refreshDateChangeRequests before handleCreateDateChangeRequest uses it
+  const refreshDateChangeRequests = useCallback(async () => {
+    if (!leaseId) return;
+    try {
+      const requests = await fetchDateChangeRequestsForLease(leaseId);
+      setDateChangeRequests(requests);
+    } catch (err) {
+      console.warn('[ScheduleDashboard] Failed to refresh date change requests:', err?.message || err);
+    }
+  }, [leaseId]);
+
   /**
    * Handle creating a date change request
    * @param {Object} payload - Request payload with listOfOldDates, listOfNewDates, reason
@@ -1064,7 +1075,7 @@ export function useScheduleDashboardLogic() {
       ...prev,
       [key]: value
     }));
-  }, []);
+  }, [pricing]);
 
   /**
    * Save pricing strategy to localStorage
@@ -1105,15 +1116,7 @@ export function useScheduleDashboardLogic() {
     window.location.reload();
   }, []);
 
-  const refreshDateChangeRequests = useCallback(async () => {
-    if (!leaseId) return;
-    try {
-      const requests = await fetchDateChangeRequestsForLease(leaseId);
-      setDateChangeRequests(requests);
-    } catch (err) {
-      console.warn('[ScheduleDashboard] Failed to refresh date change requests:', err?.message || err);
-    }
-  }, [leaseId]);
+  // refreshDateChangeRequests is now defined earlier (before handleCreateDateChangeRequest)
 
   // Note: handleCreateDateChangeRequest with toast support is defined above
 
