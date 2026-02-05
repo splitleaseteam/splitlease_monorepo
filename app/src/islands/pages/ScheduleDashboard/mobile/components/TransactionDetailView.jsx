@@ -111,7 +111,7 @@ export default function TransactionDetailView({
     if (status === 'pending') {
       events.push({ label: 'Waiting for response' });
     } else if (status) {
-      events.push({ label: `${getStatusLabel(status)} by roommate` });
+      events.push({ label: `${getStatusLabel(status)} by co-tenant` });
     }
 
     return events;

@@ -1,7 +1,7 @@
 /**
- * Roommate Profile Card Component
+ * Co-Tenant Profile Card Component
  *
- * Displays roommate info:
+ * Displays co-tenant info:
  * - Avatar and name
  * - Flexibility Score (1-10 gauge) with comparison to user's score
  * - Info icon to open detailed breakdown modal
@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 // SUB-COMPONENTS
 // ============================================================================
 
-function FlexibilityGauge({ score, userScore, roommateName, userName, onInfoClick }) {
+function FlexibilityGauge({ score, userScore, coTenantName, userName, onInfoClick }) {
   // Score is 1-10
   const percentage = (score / 10) * 100;
 
@@ -52,7 +52,7 @@ function FlexibilityGauge({ score, userScore, roommateName, userName, onInfoClic
         <span className="flexibility-gauge__score">{score}/10</span>
       </div>
 
-      {/* Roommate's Score Bar */}
+      {/* Co-Tenant's Score Bar */}
       <div className="flexibility-gauge__bar">
         <div
           className="flexibility-gauge__fill"
@@ -60,7 +60,7 @@ function FlexibilityGauge({ score, userScore, roommateName, userName, onInfoClic
         />
       </div>
       <span className="flexibility-gauge__text">
-        {roommateName ? `${roommateName}: ` : ''}{getScoreLabel(score)}
+        {coTenantName ? `${coTenantName}: ` : ''}{getScoreLabel(score)}
       </span>
 
       {/* User's Score Row */}
@@ -78,8 +78,14 @@ function FlexibilityGauge({ score, userScore, roommateName, userName, onInfoClic
 // MAIN COMPONENT
 // ============================================================================
 
-export default function RoommateProfileCard({
-  roommate,
+/**
+ * CoTenantProfileCard - Displays co-tenant profile information
+ *
+ * Note: Props use 'roommate' naming for backward compatibility with
+ * existing data structures. UI displays "Co-tenant" terminology.
+ */
+export default function CoTenantProfileCard({
+  roommate, // Keep prop name for backward compatibility
   flexibilityScore,
   userFlexibilityScore,
   userName,
@@ -88,8 +94,8 @@ export default function RoommateProfileCard({
 }) {
   if (!roommate) {
     return (
-      <div className="roommate-profile-card roommate-profile-card--loading">
-        <div className="roommate-profile-card__skeleton" />
+      <div className="cotenant-profile-card cotenant-profile-card--loading">
+        <div className="cotenant-profile-card__skeleton" />
       </div>
     );
   }
@@ -98,24 +104,24 @@ export default function RoommateProfileCard({
   const initials = `${roommate.firstName?.[0] || ''}${roommate.lastName?.[0] || ''}`.toUpperCase();
 
   return (
-    <div className="roommate-profile-card">
+    <div className="cotenant-profile-card">
       {/* Avatar and Name */}
-      <div className="roommate-profile-card__header">
-        <div className="roommate-profile-card__avatar">
+      <div className="cotenant-profile-card__header">
+        <div className="cotenant-profile-card__avatar">
           {roommate.avatarUrl ? (
             <img
               src={roommate.avatarUrl}
               alt={`${roommate.firstName}'s profile`}
             />
           ) : (
-            <span className="roommate-profile-card__initials">{initials}</span>
+            <span className="cotenant-profile-card__initials">{initials}</span>
           )}
         </div>
-        <div className="roommate-profile-card__info">
-          <span className="roommate-profile-card__name">
+        <div className="cotenant-profile-card__info">
+          <span className="cotenant-profile-card__name">
             {roommate.firstName} {roommate.lastName}
           </span>
-          <span className="roommate-profile-card__score">{flexibilityScore}/10</span>
+          <span className="cotenant-profile-card__score">{flexibilityScore}/10</span>
         </div>
       </div>
 
@@ -123,17 +129,17 @@ export default function RoommateProfileCard({
       <FlexibilityGauge
         score={flexibilityScore}
         userScore={userFlexibilityScore}
-        roommateName={roommate.firstName}
+        coTenantName={roommate.firstName}
         userName={userName}
         onInfoClick={onFlexibilityInfoClick}
       />
 
       {/* Response Patterns */}
-      <div className="roommate-profile-card__patterns">
-        <span className="roommate-profile-card__pattern-icon" aria-hidden="true">
+      <div className="cotenant-profile-card__patterns">
+        <span className="cotenant-profile-card__pattern-icon" aria-hidden="true">
           &#x23F1;
         </span>
-        <span className="roommate-profile-card__pattern-text">
+        <span className="cotenant-profile-card__pattern-text">
           {responsePatterns}
         </span>
       </div>
@@ -142,7 +148,7 @@ export default function RoommateProfileCard({
   );
 }
 
-RoommateProfileCard.propTypes = {
+CoTenantProfileCard.propTypes = {
   roommate: PropTypes.shape({
     _id: PropTypes.string,
     firstName: PropTypes.string,

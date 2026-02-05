@@ -29,10 +29,12 @@ const STATUS_CONFIG = {
  * Inline day detail panel
  * @param {Object} props
  * @param {Date|null} props.date - Selected date (null = hidden)
- * @param {'mine'|'roommate'|'pending'|null} props.status - Day ownership status
+ * @param {'mine'|'cotenant'|'pending'|null} props.status - Day ownership status
  * @param {number|null} props.price - Price for this day
  * @param {function} props.onAction - Callback: (actionType, date) => void
  * @param {function} props.onClose - Callback to close the panel
+ * @param {string} [props.coTenantName] - Co-tenant's display name
+ * @param {string} [props.roommateName] - @deprecated Use coTenantName
  */
 function formatCounterDate(value) {
   if (!value) return '';
@@ -52,7 +54,8 @@ export default function DayDetailPanel({
   date,
   status,
   price,
-  roommateName,
+  coTenantName,
+  roommateName, // @deprecated - use coTenantName
   onAction,
   onClose,
   isCounterMode,
@@ -63,18 +66,19 @@ export default function DayDetailPanel({
   // Don't render if no date selected
   if (!date) return null;
 
+  // Support both new and deprecated prop names
+  const resolvedCoTenantName = coTenantName || roommateName || 'Co-tenant';
   const [requestType, setRequestType] = useState('buyout');
 
   useEffect(() => {
-    if (status === 'roommate') {
+    if (status === 'cotenant') {
       setRequestType('buyout');
     }
   }, [date, status]);
 
-  const resolvedRoommateName = roommateName || 'Roommate';
   const { icon, label } = STATUS_CONFIG[status]
-    || (status === 'roommate'
-      ? { icon: '🔵', label: `${resolvedRoommateName}'s Night` }
+    || (status === 'cotenant'
+      ? { icon: '🔵', label: `${resolvedCoTenantName}'s Night` }
       : { icon: '⚪', label: 'Outside Lease Period' });
 
   return (
@@ -108,7 +112,7 @@ export default function DayDetailPanel({
             )}
             {counterOriginalNight && !counterTargetNight && (
               <p className="day-detail-panel__counter-summary">
-                Select a roommate night to request in return.
+                Select a co-tenant night to request in return.
               </p>
             )}
             {counterOriginalNight && counterTargetNight && (
@@ -123,7 +127,7 @@ export default function DayDetailPanel({
           </div>
         ) : (
           <>
-            {status === 'roommate' && (
+            {status === 'cotenant' && (
               <div className="request-type-toggle">
                 <div className="request-type-toggle__header">Request Type</div>
                 <div className="request-type-toggle__segments" role="group" aria-label="Request type">

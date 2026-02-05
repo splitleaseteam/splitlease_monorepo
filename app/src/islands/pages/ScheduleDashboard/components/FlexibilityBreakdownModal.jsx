@@ -2,7 +2,7 @@
  * Flexibility Breakdown Modal Component
  *
  * Displays a detailed comparison of flexibility scores between
- * the current user and their roommate, including:
+ * the current user and their co-tenant, including:
  * - Visual score comparison (side-by-side bars)
  * - Breakdown of driving factors (response time, approval rate, etc.)
  * - Helpful summary text
@@ -30,9 +30,9 @@ function getScoreLabel(score) {
  * Get percentile text (mock implementation)
  */
 function getPercentileText(score) {
-  if (score >= 9) return 'Top 5% of flexible roommates!';
-  if (score >= 8) return 'Top 10% of flexible roommates!';
-  if (score >= 7) return 'Top 25% of flexible roommates!';
+  if (score >= 9) return 'Top 5% of flexible co-tenants!';
+  if (score >= 8) return 'Top 10% of flexible co-tenants!';
+  if (score >= 7) return 'Top 25% of flexible co-tenants!';
   if (score >= 5) return 'Average flexibility level';
   return 'Below average flexibility';
 }

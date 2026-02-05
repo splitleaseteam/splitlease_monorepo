@@ -24,6 +24,19 @@ export function formatCurrency(amount, { showCents = false, locale = 'en-US' } =
 }
 
 /**
+ * Format a date into a short US format (e.g., "Feb 5").
+ *
+ * @param {string|Date|number} date - Date input
+ * @returns {string} Formatted date string
+ */
+export function formatShortDate(date) {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+/**
  * Safely parse a JSON array from a string or return empty array.
  *
  * @param {string|Array} value - The value to parse

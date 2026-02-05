@@ -24,16 +24,20 @@ function getTabTitle(tabId) {
  * @param {string} props.activeTab - Currently active tab id
  * @param {string} [props.userName] - User's display name (optional)
  * @param {string} [props.listingAddress] - Listing address for context (optional)
- * @param {number} [props.roommateFlexibilityScore] - Roommate's flexibility score (1-10)
+ * @param {number} [props.coTenantFlexibilityScore] - Co-tenant's flexibility score (1-10)
+ * @param {number} [props.roommateFlexibilityScore] - @deprecated Use coTenantFlexibilityScore
  * @param {function} [props.onOpenFlexibilityModal] - Handler to open flexibility modal
  */
 export function MobileHeader({
   activeTab,
   userName,
   listingAddress,
-  roommateFlexibilityScore,
+  coTenantFlexibilityScore,
+  roommateFlexibilityScore, // @deprecated - use coTenantFlexibilityScore
   onOpenFlexibilityModal
 }) {
+  // Support both new and deprecated prop names
+  const resolvedFlexibilityScore = coTenantFlexibilityScore ?? roommateFlexibilityScore;
   const title = getTabTitle(activeTab);
 
   return (
@@ -49,14 +53,14 @@ export function MobileHeader({
           type="button"
           className="mobile-header__user"
           onClick={onOpenFlexibilityModal}
-          aria-label={`View ${userName}'s flexibility score: ${roommateFlexibilityScore}/10`}
+          aria-label={`View ${userName}'s flexibility score: ${resolvedFlexibilityScore}/10`}
         >
           <span className="mobile-header__avatar" aria-hidden="true">
             {userName.charAt(0).toUpperCase()}
           </span>
-          {typeof roommateFlexibilityScore === 'number' && (
+          {typeof resolvedFlexibilityScore === 'number' && (
             <span className="mobile-header__flex-badge" aria-hidden="true">
-              {roommateFlexibilityScore}
+              {resolvedFlexibilityScore}
             </span>
           )}
         </button>

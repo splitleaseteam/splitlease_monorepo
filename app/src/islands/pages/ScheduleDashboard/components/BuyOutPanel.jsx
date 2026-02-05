@@ -640,7 +640,7 @@ export default function BuyOutPanel({
     if (!lease || lease.isCoTenant) {
       return {
         emptyTitle: 'Select a Night',
-        emptyText: 'Click on an available night in the calendar to request a buyout from your roommate.',
+        emptyText: 'Click on an available night in the calendar to request a buyout from your co-tenant.',
         successText: `Waiting for ${counterpartyLabel}'s response. You'll be notified when they respond.`,
         selectedOwner: `Currently held by ${counterpartyLabel}`,
         actionLabel: 'Buy Out Night'

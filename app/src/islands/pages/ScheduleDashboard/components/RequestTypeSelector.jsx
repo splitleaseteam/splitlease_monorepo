@@ -109,13 +109,13 @@ const CO_TENANT_REQUEST_TYPES = [
     id: 'buyout',
     label: 'Buy Out Night',
     icon: 'DollarSign',
-    description: 'Purchase a night from your roommate',
+    description: 'Purchase a night from your co-tenant',
   },
   {
     id: 'swap',
     label: 'Swap Nights',
     icon: 'ArrowRightLeft',
-    description: 'Exchange nights with your roommate',
+    description: 'Exchange nights with your co-tenant',
   },
   {
     id: 'share',

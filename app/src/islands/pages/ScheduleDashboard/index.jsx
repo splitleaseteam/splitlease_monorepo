@@ -25,7 +25,7 @@ import React from 'react';
 import Footer from '../../shared/Footer.jsx';
 import { useScheduleDashboardLogic } from './useScheduleDashboardLogic.js';
 import ScheduleCalendar from './components/ScheduleCalendar.jsx';
-import RoommateProfileCard from './components/RoommateProfileCard.jsx';
+import RoommateProfileCard from './components/CoTenantProfileCard.jsx';
 import BuyOutPanel from './components/BuyOutPanel.jsx';
 import ChatThread from './components/ChatThread.jsx';
 import TransactionHistory from './components/TransactionHistory.jsx';

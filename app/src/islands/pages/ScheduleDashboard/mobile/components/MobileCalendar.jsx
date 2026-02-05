@@ -28,15 +28,15 @@ import DayDetailPanel from './DayDetailPanel.jsx';
  * Determine day ownership/status
  * @param {Date} date - The date to check
  * @param {string[]} userNights - Array of date strings the user owns
- * @param {string[]} roommateNights - Array of date strings the roommate owns
+ * @param {string[]} coTenantNights - Array of date strings the co-tenant owns
  * @param {string[]} pendingNights - Array of date strings with pending requests
- * @returns {'pending' | 'mine' | 'roommate' | null}
+ * @returns {'pending' | 'mine' | 'cotenant' | null}
  */
-function getDayStatus(date, userNights, roommateNights, pendingNights) {
+function getDayStatus(date, userNights, coTenantNights, pendingNights) {
   const dateStr = format(date, 'yyyy-MM-dd');
   if (pendingNights?.includes(dateStr)) return 'pending';
   if (userNights?.includes(dateStr)) return 'mine';
-  if (roommateNights?.includes(dateStr)) return 'roommate';
+  if (coTenantNights?.includes(dateStr)) return 'cotenant';
   return null;
 }
 
@@ -132,12 +132,15 @@ function CalendarHeader({ month, onPrev, onNext, useRotatedLayout, onToggleLayou
  * Week-based mobile calendar
  * @param {Object} props
  * @param {string[]} props.userNights - Dates the current user owns
- * @param {string[]} props.roommateNights - Dates the roommate owns
+ * @param {string[]} props.coTenantNights - Dates the co-tenant owns
+ * @param {string[]} [props.roommateNights] - @deprecated Use coTenantNights
  * @param {string[]} props.pendingNights - Dates with pending requests
  * @param {string|null} props.selectedNight - Currently selected date string
  * @param {function} props.onSelectNight - Callback when a night is selected
  * @param {Object} props.priceOverlays - Map of date string to price
  * @param {function} props.onWeekChange - Callback when week changes
+ * @param {string} [props.coTenantName] - Co-tenant's display name
+ * @param {string} [props.roommateName] - @deprecated Use coTenantName
  */
 function toDateKey(value) {
   if (!value) return null;
@@ -167,11 +170,13 @@ function formatCounterDate(value) {
 
 export default function MobileCalendar({
   userNights,
-  roommateNights,
+  coTenantNights,
+  roommateNights, // @deprecated - use coTenantNights
   pendingNights,
   priceOverlays,
   selectedDay,
-  roommateName,
+  coTenantName,
+  roommateName, // @deprecated - use coTenantName
   onSelectDay,
   onCloseDay,
   onAction,
@@ -182,6 +187,9 @@ export default function MobileCalendar({
   onCancelCounterMode,
   onSubmitCounter
 }) {
+  // Support both new and deprecated prop names
+  const resolvedCoTenantNights = coTenantNights || roommateNights;
+  const resolvedCoTenantName = coTenantName || roommateName;
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [useRotatedLayout, setUseRotatedLayout] = useState(false);
   const weeks = useMemo(() => getMonthWeeks(currentMonth), [currentMonth]);
@@ -235,7 +243,7 @@ export default function MobileCalendar({
               const dateStr = format(date, 'yyyy-MM-dd');
               const isCounterSelectable = !!(
                 isCounterMode
-                && roommateNights?.includes(dateStr)
+                && resolvedCoTenantNights?.includes(dateStr)
                 && !pendingNights?.includes(dateStr)
               );
               const isDisabled = isCounterMode && !isCounterSelectable;
@@ -243,7 +251,7 @@ export default function MobileCalendar({
                 <MonthDayCell
                   key={dateStr}
                   date={date}
-                  status={getDayStatus(date, userNights, roommateNights, pendingNights)}
+                  status={getDayStatus(date, userNights, resolvedCoTenantNights, pendingNights)}
                   isCurrentMonth={isSameMonth(date, currentMonth)}
                   price={priceOverlays?.[dateStr]}
                   onSelect={() => {
@@ -271,8 +279,8 @@ export default function MobileCalendar({
           Mine
         </span>
         <span className="mobile-month-calendar__legend-item">
-          <span className="mobile-month-calendar__legend-dot mobile-month-calendar__legend-dot--roommate" />
-          Roommate
+          <span className="mobile-month-calendar__legend-dot mobile-month-calendar__legend-dot--cotenant" />
+          Co-tenant
         </span>
         <span className="mobile-month-calendar__legend-item">
           <span className="mobile-month-calendar__legend-icon" aria-hidden="true">⏳</span>
@@ -283,9 +291,9 @@ export default function MobileCalendar({
       {/* Inline panel - no overlay, no portal, no animation timing issues */}
       <DayDetailPanel
         date={selectedDay}
-        status={selectedDay ? getDayStatus(selectedDay, userNights, roommateNights, pendingNights) : null}
+        status={selectedDay ? getDayStatus(selectedDay, userNights, resolvedCoTenantNights, pendingNights) : null}
         price={getPriceValue(selectedDay)}
-        roommateName={roommateName}
+        coTenantName={resolvedCoTenantName}
         isCounterMode={isCounterMode}
         counterOriginalNight={counterOriginalNight}
         counterTargetNight={counterTargetNight}

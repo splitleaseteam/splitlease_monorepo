@@ -3,12 +3,12 @@
  *
  * Monthly calendar view with color-coded nights:
  * - Green: User's booked nights
- * - White/Gray: Roommate's nights (available to buy out)
+ * - White/Gray: Co-tenant's nights (available to buy out)
  * - Blue Dashed Border: Adjacent nights (recommended to buy)
  * - Yellow: Pending request
  * - Red strikethrough: Blocked/unavailable
  *
- * Click roommate's night to select for Buy Out Panel.
+ * Click co-tenant's night to select for Buy Out Panel.
  */
 
 import React, { useMemo } from 'react';
@@ -189,7 +189,7 @@ export default function ScheduleCalendar({
     if (!lease || lease.isCoTenant) {
       return {
         user: "Your Nights",
-        other: roommateName ? `${roommateName}'s Nights` : "Roommate's Nights"
+        other: roommateName ? `${roommateName}'s Nights` : "Co-tenant's Nights"
       };
     }
 
@@ -580,7 +580,7 @@ export default function ScheduleCalendar({
                       <span
                         className="schedule-calendar__price-bar"
                         data-tier={priceOverlay.tier}
-                        title={status === 'adjacent' ? `This is ${roommateName || 'your roommate'}'s suggested price` : undefined}
+                        title={status === 'adjacent' ? `This is ${roommateName || 'your co-tenant'}'s suggested price` : undefined}
                       >
                         {status === 'adjacent' ? '~' : ''}${priceOverlay.price}
                       </span>

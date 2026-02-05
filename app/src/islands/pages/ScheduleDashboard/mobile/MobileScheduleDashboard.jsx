@@ -75,11 +75,13 @@ function MobileErrorState({ error, onRetry }) {
 
 function CalendarView({
   userNights,
-  roommateNights,
+  coTenantNights,
+  roommateNights, // @deprecated - use coTenantNights
   pendingNights,
   priceOverlays,
   selectedDay,
-  roommateName,
+  coTenantName,
+  roommateName, // @deprecated - use coTenantName
   onSelectDay,
   onCloseDay,
   onAction,
@@ -90,15 +92,19 @@ function CalendarView({
   onCancelCounterMode,
   onSubmitCounter
 }) {
+  // Support both new and deprecated prop names
+  const resolvedCoTenantNights = coTenantNights || roommateNights;
+  const resolvedCoTenantName = coTenantName || roommateName;
+
   return (
     <div className="mobile-view mobile-view--calendar">
       <MobileCalendar
         userNights={userNights}
-        roommateNights={roommateNights}
+        coTenantNights={resolvedCoTenantNights}
         pendingNights={pendingNights}
         priceOverlays={priceOverlays}
         selectedDay={selectedDay}
-        roommateName={roommateName}
+        coTenantName={resolvedCoTenantName}
         onSelectDay={onSelectDay}
         onCloseDay={onCloseDay}
         onAction={onAction}
@@ -120,18 +126,22 @@ function CalendarView({
 function ChatView({
   messages,
   currentUserId,
-  roommate,
+  coTenant,
+  roommate, // @deprecated - use coTenant
   onSend,
   onAccept,
   onDecline,
   onCounter
 }) {
+  // Support both new and deprecated prop names
+  const resolvedCoTenant = coTenant || roommate;
+
   return (
     <div className="mobile-view mobile-view--chat">
       <MobileChatView
         messages={messages}
         currentUserId={currentUserId}
-        roommate={roommate}
+        coTenant={resolvedCoTenant}
         onSendMessage={onSend}
         onAccept={onAccept}
         onDecline={onDecline}
@@ -201,12 +211,12 @@ export default function MobileScheduleDashboard() {
 
     // Core Data
     lease,
-    roommate,
+    roommate, // Note: This comes from hook as "roommate" - aliased to coTenant below
     currentUserId,
 
     // Calendar Data
     userNights,
-    roommateNights,
+    roommateNights, // Note: This comes from hook - aliased to coTenantNights below
     pendingNights,
     selectedNight,
     priceOverlays,
@@ -388,11 +398,11 @@ export default function MobileScheduleDashboard() {
         return (
           <CalendarView
             userNights={userNights}
-            roommateNights={roommateNights}
+            coTenantNights={roommateNights}
             pendingNights={pendingNights}
             priceOverlays={priceOverlays}
             selectedDay={selectedDay}
-            roommateName={roommate?.firstName || 'Roommate'}
+            coTenantName={roommate?.firstName || 'Co-tenant'}
             onSelectDay={setSelectedDay}
             onCloseDay={() => setSelectedDay(null)}
             onAction={handleCalendarAction}
@@ -409,7 +419,7 @@ export default function MobileScheduleDashboard() {
           <ChatView
             messages={messages}
             currentUserId={currentUserId}
-            roommate={roommate}
+            coTenant={roommate}
             onSend={handleSendMessage}
             onAccept={handleAcceptRequest}
             onDecline={handleDeclineRequest}
@@ -440,11 +450,11 @@ export default function MobileScheduleDashboard() {
         return (
           <CalendarView
             userNights={userNights}
-            roommateNights={roommateNights}
+            coTenantNights={roommateNights}
             pendingNights={pendingNights}
             priceOverlays={priceOverlays}
             selectedDay={selectedDay}
-            roommateName={roommate?.firstName || 'Roommate'}
+            coTenantName={roommate?.firstName || 'Co-tenant'}
             onSelectDay={setSelectedDay}
             onCloseDay={() => setSelectedDay(null)}
             onAction={handleCalendarAction}
@@ -469,7 +479,7 @@ export default function MobileScheduleDashboard() {
         activeTab={activeTab}
         userName={roommate?.firstName}
         listingAddress={lease?.propertyAddress}
-        roommateFlexibilityScore={flexibilityScore}
+        coTenantFlexibilityScore={flexibilityScore}
         onOpenFlexibilityModal={handleOpenFlexibilityModal}
       />
 
@@ -604,8 +614,8 @@ export default function MobileScheduleDashboard() {
         isOpen={isFlexibilityModalOpen}
         onClose={handleCloseFlexibilityModal}
         userScore={userFlexibilityScore}
-        roommateScore={flexibilityScore}
-        roommateName={roommate?.firstName || 'Roommate'}
+        coTenantScore={flexibilityScore}
+        coTenantName={roommate?.firstName || 'Co-tenant'}
         flexibilityMetrics={flexibilityMetrics}
       />
 

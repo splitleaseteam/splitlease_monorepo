@@ -6,12 +6,23 @@
  * See api/scheduleDashboardApi.js for API stubs.
  */
 
+const formatDateYmd = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const startDate = new Date();
+startDate.setDate(1);
+const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 6, 0);
+
 export const MOCK_LEASE = {
   _id: 'lease-123',
   propertyName: 'Modern 2BR in Williamsburg',
   propertyAddress: '150 Bedford Ave, Brooklyn, NY 11211',
-  startDate: '2025-01-01',
-  endDate: '2025-06-30',
+  startDate: formatDateYmd(startDate),
+  endDate: formatDateYmd(endDate),
   nightlyRate: 175
 };
 

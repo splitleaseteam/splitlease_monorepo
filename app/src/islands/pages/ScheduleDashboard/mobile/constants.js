@@ -33,7 +33,9 @@ export const TAB_IDS = {
  */
 export const DAY_STATUS = {
   MINE: 'mine',
-  ROOMMATE: 'roommate',
+  CO_TENANT: 'cotenant',
+  /** @deprecated Use CO_TENANT instead */
+  ROOMMATE: 'cotenant', // Alias for backward compatibility
   PENDING: 'pending',
   SHARED: 'shared',
   BLOCKED: 'blocked'

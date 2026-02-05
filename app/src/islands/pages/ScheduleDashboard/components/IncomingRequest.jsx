@@ -126,11 +126,11 @@ export default function IncomingRequest({
 
     switch (type) {
       case 'buyout':
-        return `${senderName || 'Roommate'} wants to buy ${formatDate(night || nights?.[0])} for $${amount?.toFixed(2) || '0.00'}`;
+        return `${senderName || 'Co-tenant'} wants to buy ${formatDate(night || nights?.[0])} for $${amount?.toFixed(2) || '0.00'}`;
       case 'swap':
-        return `${senderName || 'Roommate'} wants to swap ${formatDate(night || nights?.[0])}`;
+        return `${senderName || 'Co-tenant'} wants to swap ${formatDate(night || nights?.[0])}`;
       case 'share':
-        return `${senderName || 'Roommate'} wants to co-occupy on ${formatDate(night || nights?.[0])}`;
+        return `${senderName || 'Co-tenant'} wants to co-occupy on ${formatDate(night || nights?.[0])}`;
       case 'date_change':
         return `${senderName || 'Guest'} wants to change from ${formatDates(oldDates)} to ${formatDates(newDates)}`;
       case 'cancellation':
