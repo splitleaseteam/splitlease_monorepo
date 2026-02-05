@@ -9,7 +9,6 @@ import React from 'react';
 import BasicInfoCard from './cards/BasicInfoCard.jsx';
 import AboutCard from './cards/AboutCard.jsx';
 import RequirementsCard from './cards/RequirementsCard.jsx';
-import ScheduleCard from './cards/ScheduleCard.jsx';
 import TransportCard from './cards/TransportCard.jsx';
 import ReasonsCard from './cards/ReasonsCard.jsx';
 import StorageItemsCard from './cards/StorageItemsCard.jsx';
@@ -76,14 +75,6 @@ export default function EditorView({
           needForSpace={formData.needForSpace}
           specialNeeds={formData.specialNeeds}
           onFieldChange={onFieldChange}
-        />
-      )}
-
-      {/* Guest-only: Schedule */}
-      {!isHostUser && (
-        <ScheduleCard
-          selectedDays={formData.selectedDays}
-          onDayToggle={onDayToggle}
         />
       )}
 

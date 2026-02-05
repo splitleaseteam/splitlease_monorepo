@@ -116,6 +116,15 @@ export default function AccountProfilePage() {
     onVerifyPhone: logic.isEditorView ? logic.handleVerifyPhone : null,
     onVerifyGovId: logic.isEditorView ? logic.handleVerifyGovId : null,
     onConnectLinkedIn: logic.isEditorView ? logic.handleConnectLinkedIn : null,
+    onEditPhone: logic.isEditorView ? logic.handleEditPhone : null,
+    emailAddress: logic.profileData?.email || logic.profileData?.['Email'] || '',
+    phoneNumber: logic.profileData?.['Phone Number (as text)'] || '',
+    isVerifyingEmail: logic.isVerifyingEmail,
+    verificationEmailSent: logic.verificationEmailSent,
+    // Schedule props (guest-only)
+    selectedDays: logic.formData.selectedDays,
+    onDayToggle: logic.handleDayToggle,
+    isHostUser: logic.isHostUser,
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,

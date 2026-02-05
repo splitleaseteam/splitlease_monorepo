@@ -405,11 +405,25 @@
 }
 
 .sidebar-verifications-compact {
-  padding: 12px 24px 16px;
-  border-top: 1px solid var(--sl-border-subtle);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 12px;
+  padding: 0 24px;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  overflow: hidden;
+  pointer-events: none;
+  transition: max-height 0.25s ease, opacity 0.2s ease, transform 0.2s ease, padding 0.25s ease;
+}
+
+.sidebar-verifications-compact.is-open {
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--sl-border-subtle);
+  max-height: 140px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .sidebar-verification-item {

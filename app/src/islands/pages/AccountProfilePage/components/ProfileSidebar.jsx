@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
+import ScheduleCard from './cards/ScheduleCard.jsx';
 import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin } from 'lucide-react';
 
 // ============================================================================
@@ -52,6 +53,15 @@ export default function ProfileSidebar({
   onVerifyPhone,
   onVerifyGovId,
   onConnectLinkedIn,
+  onEditPhone,
+  emailAddress,
+  phoneNumber,
+  isVerifyingEmail,
+  verificationEmailSent,
+  // Schedule props (guest-only)
+  selectedDays = [],
+  onDayToggle,
+  isHostUser = false,
   // Public view specific
   responseTime,
   responseRate,
@@ -129,29 +139,12 @@ export default function ProfileSidebar({
         </div>
       )}
 
-      {/* Verification List */}
-      {showVerifications && (
-        <div className="sidebar-verifications-compact">
-          {verificationOrder.map((key) => {
-            const isVerified = verifications?.[key] === true;
-            const Icon = isVerified ? Check : X;
-            const handler = verificationHandlers[key];
-            const isActionable = !isVerified && typeof handler === 'function' && isEditorView;
-            const ItemTag = isActionable ? 'button' : 'div';
-
-            return (
-              <ItemTag
-                key={key}
-                type={isActionable ? 'button' : undefined}
-                className={`sidebar-verification-item ${isVerified ? 'verified' : 'unverified'}${isActionable ? ' sidebar-verification-item--actionable' : ''}`}
-                onClick={isActionable ? handler : undefined}
-              >
-                <Icon size={16} />
-                <span className="sidebar-verification-text">{VERIFICATION_LABELS[key]}</span>
-              </ItemTag>
-            );
-          })}
-        </div>
+      {/* Schedule Card - Editor View, Guest-only */}
+      {isEditorView && !isHostUser && (
+        <ScheduleCard
+          selectedDays={selectedDays}
+          onDayToggle={onDayToggle}
+        />
       )}
 
       {/* Public View: Member Since */}
