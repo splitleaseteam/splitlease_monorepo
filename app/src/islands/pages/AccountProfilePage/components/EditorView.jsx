@@ -11,7 +11,6 @@ import AboutCard from './cards/AboutCard.jsx';
 import RequirementsCard from './cards/RequirementsCard.jsx';
 import ScheduleCard from './cards/ScheduleCard.jsx';
 import TransportCard from './cards/TransportCard.jsx';
-import TrustVerificationCard from './cards/TrustVerificationCard.jsx';
 import ReasonsCard from './cards/ReasonsCard.jsx';
 import StorageItemsCard from './cards/StorageItemsCard.jsx';
 import AccountSettingsCard from './cards/AccountSettingsCard.jsx';
@@ -63,6 +62,16 @@ export default function EditorView({
         showDateOfBirthField={showDateOfBirthField}
         errors={formErrors}
         onFieldChange={onFieldChange}
+        emailAddress={profileData?.email || profileData?.['Email'] || ''}
+        phoneNumber={profileData?.['Phone Number (as text)'] || ''}
+        verifications={verifications}
+        onVerifyEmail={onVerifyEmail}
+        onVerifyPhone={onVerifyPhone}
+        onVerifyGovId={onVerifyGovId}
+        onConnectLinkedIn={onConnectLinkedIn}
+        onEditPhone={onEditPhone}
+        isVerifyingEmail={isVerifyingEmail}
+        verificationEmailSent={verificationEmailSent}
       />
 
       {/* About You - Always shown */}
@@ -96,20 +105,6 @@ export default function EditorView({
           onTransportToggle={onTransportToggle}
         />
       )}
-
-      {/* Trust & Verification - Always shown */}
-      <TrustVerificationCard
-        verifications={verifications}
-        emailAddress={profileData?.email || profileData?.['Email'] || ''}
-        phoneNumber={profileData?.['Phone Number (as text)'] || ''}
-        onVerifyEmail={onVerifyEmail}
-        onVerifyPhone={onVerifyPhone}
-        onVerifyGovId={onVerifyGovId}
-        onConnectLinkedIn={onConnectLinkedIn}
-        onEditPhone={onEditPhone}
-        isVerifyingEmail={isVerifyingEmail}
-        verificationEmailSent={verificationEmailSent}
-      />
 
       {/* Guest-only: Reasons to Host Me */}
       {!isHostUser && (

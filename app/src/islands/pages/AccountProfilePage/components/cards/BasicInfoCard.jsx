@@ -1,7 +1,9 @@
 /**
  * BasicInfoCard.jsx
  *
- * Basic information form card: First name, Last name, Job title, and conditionally Date of Birth.
+ * Basic information form card: First name, Last name, Job title, Date of Birth (conditional),
+ * and Contact & Verification section (Email, Phone, Gov ID, LinkedIn).
+ *
  * Editor view only (public view shows name in sidebar).
  *
  * Date of Birth is only shown when:
@@ -12,6 +14,7 @@
 
 import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
+import { Mail, Phone, ShieldCheck, Linkedin, CheckCircle } from 'lucide-react';
 
 export default function BasicInfoCard({
   firstName,
@@ -20,7 +23,18 @@ export default function BasicInfoCard({
   dateOfBirth = '',
   showDateOfBirthField = false,
   errors = {},
-  onFieldChange
+  onFieldChange,
+  // Contact & Verification props
+  emailAddress = '',
+  phoneNumber = '',
+  verifications = {},
+  onVerifyEmail,
+  onVerifyPhone,
+  onVerifyGovId,
+  onConnectLinkedIn,
+  onEditPhone,
+  isVerifyingEmail = false,
+  verificationEmailSent = false
 }) {
   return (
     <ProfileCard title="Basic Information">
@@ -87,6 +101,164 @@ export default function BasicInfoCard({
             onChange={(e) => onFieldChange('jobTitle', e.target.value)}
             placeholder="e.g., Software Engineer, Marketing Manager"
           />
+        </div>
+      </div>
+
+      {/* Contact & Verification Section */}
+      <div className="profile-card-divider" />
+      <h4 className="profile-card-subtitle">Contact & Verification</h4>
+
+      <div className="verification-list">
+        {/* Email */}
+        <div className="verification-item">
+          <div className="verification-item-left">
+            <div className="verification-icon-container">
+              <Mail size={24} />
+            </div>
+            <div className="verification-info">
+              <span className="verification-title">Email Address</span>
+              {emailAddress && (
+                <span className="verification-value">{emailAddress}</span>
+              )}
+              {verifications.email ? (
+                <span className="verification-status verification-status--verified">
+                  <CheckCircle size={14} />
+                  Verified
+                </span>
+              ) : (
+                <span className="verification-status verification-status--unverified">
+                  Not verified
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="verification-item-right">
+            {!verifications.email && onVerifyEmail && (
+              <button
+                type="button"
+                className={`verification-btn${verificationEmailSent ? ' verification-btn--success' : ''}`}
+                onClick={onVerifyEmail}
+                disabled={isVerifyingEmail || verificationEmailSent}
+              >
+                {isVerifyingEmail
+                  ? 'Sending...'
+                  : verificationEmailSent
+                    ? 'Email Sent ✓'
+                    : 'Verify'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Phone */}
+        <div className="verification-item">
+          <div className="verification-item-left">
+            <div className="verification-icon-container">
+              <Phone size={24} />
+            </div>
+            <div className="verification-info">
+              <span className="verification-title">Phone Number</span>
+              {phoneNumber && (
+                <span className="verification-value">{phoneNumber}</span>
+              )}
+              {verifications.phone ? (
+                <span className="verification-status verification-status--verified">
+                  <CheckCircle size={14} />
+                  Verified
+                </span>
+              ) : (
+                <span className="verification-status verification-status--unverified">
+                  Not verified
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="verification-item-right">
+            {verifications.phone && onEditPhone && (
+              <button
+                type="button"
+                className="verification-btn verification-btn--secondary"
+                onClick={onEditPhone}
+              >
+                Edit
+              </button>
+            )}
+            {!verifications.phone && onVerifyPhone && (
+              <button
+                type="button"
+                className="verification-btn"
+                onClick={onVerifyPhone}
+              >
+                Verify
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Government ID */}
+        <div className="verification-item">
+          <div className="verification-item-left">
+            <div className="verification-icon-container">
+              <ShieldCheck size={24} />
+            </div>
+            <div className="verification-info">
+              <span className="verification-title">Government ID</span>
+              {verifications.govId ? (
+                <span className="verification-status verification-status--verified">
+                  <CheckCircle size={14} />
+                  Verified
+                </span>
+              ) : (
+                <span className="verification-status verification-status--unverified">
+                  Not verified
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="verification-item-right">
+            {!verifications.govId && onVerifyGovId && (
+              <button
+                type="button"
+                className="verification-btn"
+                onClick={onVerifyGovId}
+              >
+                Verify
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* LinkedIn */}
+        <div className="verification-item">
+          <div className="verification-item-left">
+            <div className="verification-icon-container">
+              <Linkedin size={24} />
+            </div>
+            <div className="verification-info">
+              <span className="verification-title">LinkedIn</span>
+              {verifications.linkedin ? (
+                <span className="verification-status verification-status--verified">
+                  <CheckCircle size={14} />
+                  Connected
+                </span>
+              ) : (
+                <span className="verification-status verification-status--unverified">
+                  Not connected
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="verification-item-right">
+            {!verifications.linkedin && onConnectLinkedIn && (
+              <button
+                type="button"
+                className="verification-btn"
+                onClick={onConnectLinkedIn}
+              >
+                Connect
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </ProfileCard>

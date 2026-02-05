@@ -309,6 +309,10 @@
   padding: 0 24px 20px;
 }
 
+.profile-strength-section--clickable {
+  cursor: pointer;
+}
+
 .profile-strength-label {
   font-size: 12px;
   font-weight: 500;
@@ -383,6 +387,15 @@
   align-items: center;
   gap: 8px;
   padding: 6px 0;
+}
+
+.sidebar-verification-item--actionable {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
 }
 
 .sidebar-verification-item svg {

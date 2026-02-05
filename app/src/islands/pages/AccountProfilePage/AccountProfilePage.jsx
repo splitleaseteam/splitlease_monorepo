@@ -22,6 +22,7 @@ import PublicView from './components/PublicView.jsx';
 import FixedSaveBar from './components/shared/FixedSaveBar.jsx';
 import ReferralBanner from './components/ReferralBanner.jsx';
 import ReferralModal from './components/ReferralModal.jsx';
+import ImproveProfileModal from './components/ImproveProfileModal.jsx';
 import RentalApplicationWizardModal from '../../shared/RentalApplicationWizardModal/RentalApplicationWizardModal.jsx';
 import IdentityVerification from '../../shared/IdentityVerification/IdentityVerification.jsx';
 import './AccountProfilePage.css';
@@ -69,6 +70,7 @@ function ErrorState({ error }) {
 export default function AccountProfilePage() {
   const logic = useAccountProfilePageLogic();
   const [showReferralModal, setShowReferralModal] = useState(false);
+  const [showImproveProfileModal, setShowImproveProfileModal] = useState(false);
 
   // Show loading state
   if (logic.loading) {
@@ -107,10 +109,13 @@ export default function AccountProfilePage() {
     jobTitle: logic.displayJobTitle,
     profileStrength: logic.profileStrength,
     verifications: logic.verifications,
-    nextActions: logic.nextActions,
     onCoverPhotoChange: logic.handleCoverPhotoChange,
     onAvatarChange: logic.handleAvatarChange,
-    onActionClick: logic.handleNextActionClick,
+    onStrengthClick: logic.isEditorView ? () => setShowImproveProfileModal(true) : null,
+    onVerifyEmail: logic.isEditorView ? logic.handleVerifyEmail : null,
+    onVerifyPhone: logic.isEditorView ? logic.handleVerifyPhone : null,
+    onVerifyGovId: logic.isEditorView ? logic.handleVerifyGovId : null,
+    onConnectLinkedIn: logic.isEditorView ? logic.handleConnectLinkedIn : null,
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,
@@ -225,6 +230,16 @@ export default function AccountProfilePage() {
           }}
           userType={logic.isHostUser ? 'host' : 'guest'}
           referrerName={logic.profileData?.['Name - First'] || logic.profileData?.firstName || ''}
+        />
+
+        <ImproveProfileModal
+          isOpen={showImproveProfileModal}
+          nextActions={logic.nextActions}
+          onActionClick={(actionId) => {
+            logic.handleNextActionClick(actionId);
+            setShowImproveProfileModal(false);
+          }}
+          onClose={() => setShowImproveProfileModal(false)}
         />
 
         {/* Rental Application Wizard (Guest-only) */}

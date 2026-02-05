@@ -12,7 +12,6 @@ import React from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
-import NextActionCard from './shared/NextActionCard.jsx';
 import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin } from 'lucide-react';
 
 // ============================================================================
@@ -46,10 +45,13 @@ export default function ProfileSidebar({
   jobTitle,
   profileStrength,
   verifications,
-  nextActions = [],
   onCoverPhotoChange,
   onAvatarChange,
-  onActionClick,
+  onStrengthClick,
+  onVerifyEmail,
+  onVerifyPhone,
+  onVerifyGovId,
+  onConnectLinkedIn,
   // Public view specific
   responseTime,
   responseRate,
@@ -69,6 +71,13 @@ export default function ProfileSidebar({
   };
 
   const memberSinceFormatted = formatMemberSince(memberSince);
+  const verificationOrder = ['email', 'phone', 'govId', 'linkedin'];
+  const verificationHandlers = {
+    email: onVerifyEmail,
+    phone: onVerifyPhone,
+    govId: onVerifyGovId,
+    linkedin: onConnectLinkedIn
+  };
 
   return (
     <aside className="profile-sidebar">
@@ -98,25 +107,10 @@ export default function ProfileSidebar({
 
       {/* Editor View: Profile Strength Meter */}
       {isEditorView && (
-        <ProfileStrengthMeter percentage={profileStrength} />
-      )}
-
-      {/* Editor View: Next Actions */}
-      {isEditorView && nextActions.length > 0 && (
-        <div className="sidebar-next-actions">
-          <h3 className="sidebar-next-actions-title">Complete Your Profile</h3>
-          <div className="next-action-cards">
-            {nextActions.map(action => (
-              <NextActionCard
-                key={action.id}
-                text={action.text}
-                points={action.points}
-                icon={action.icon}
-                onClick={() => onActionClick?.(action.id)}
-              />
-            ))}
-          </div>
-        </div>
+        <ProfileStrengthMeter
+          percentage={profileStrength}
+          onClick={onStrengthClick}
+        />
       )}
 
       {/* Public View: Stats */}
@@ -133,21 +127,28 @@ export default function ProfileSidebar({
         </div>
       )}
 
-      {/* Public View: Verification List */}
-      {!isEditorView && (
-        <div className="sidebar-verifications">
-          {Object.entries(verifications).map(([key, isVerified]) => {
-            if (!isVerified) return null; // Only show verified items in public view
-            const Icon = VERIFICATION_ICONS[key];
-            return (
-              <div key={key} className="sidebar-verification-item verified">
-                <Check size={16} />
-                <span className="sidebar-verification-text">{VERIFICATION_LABELS[key]}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Verification List */}
+      <div className="sidebar-verifications">
+        {verificationOrder.map((key) => {
+          const isVerified = verifications?.[key] === true;
+          const Icon = isVerified ? Check : X;
+          const handler = verificationHandlers[key];
+          const isActionable = !isVerified && typeof handler === 'function' && isEditorView;
+          const ItemTag = isActionable ? 'button' : 'div';
+
+          return (
+            <ItemTag
+              key={key}
+              type={isActionable ? 'button' : undefined}
+              className={`sidebar-verification-item ${isVerified ? 'verified' : 'unverified'}${isActionable ? ' sidebar-verification-item--actionable' : ''}`}
+              onClick={isActionable ? handler : undefined}
+            >
+              <Icon size={16} />
+              <span className="sidebar-verification-text">{VERIFICATION_LABELS[key]}</span>
+            </ItemTag>
+          );
+        })}
+      </div>
 
       {/* Public View: Member Since */}
       {!isEditorView && memberSinceFormatted && (
