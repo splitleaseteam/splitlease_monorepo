@@ -301,13 +301,21 @@ export default function CareersPage() {
           </div>
 
           <div>
-            <div className="video-player-container" id="videoPlayerContainer">
+            <div
+              className="video-player-container"
+              id="videoPlayerContainer"
+              style={{ aspectRatio: '16 / 9', width: '100%' }}
+            >
               <iframe
-                className="video-player"
                 src="https://www.youtube.com/embed/DDsSMV2sBoE?rel=0&modestbranding=1"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                style={{ border: 'none', width: '100%', height: '100%' }}
+                style={{
+                  border: 'none',
+                  width: '100%',
+                  height: '100%',
+                  transform: 'none'
+                }}
                 title="Split Lease Company Journey"
               />
             </div>
