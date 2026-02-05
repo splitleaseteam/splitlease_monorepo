@@ -30,7 +30,7 @@ import Footer from '../shared/Footer.jsx';
 import { useGuestLeasesPageLogic } from './guest-leases/useGuestLeasesPageLogic.js';
 import LeaseCard from './guest-leases/LeaseCard.jsx';
 import CheckInCheckOutFlow from './guest-leases/CheckInCheckOutFlow.jsx';
-import DateChangeRequestManager from '../shared/DateChangeRequestManager/DateChangeRequestManager.jsx';
+// DateChangeRequestManager removed - date changes now handled via Schedule Dashboard
 
 // Hybrid Design Components (Charles Eames style)
 import HeroSection from './guest-leases/HeroSection.jsx';
@@ -259,19 +259,7 @@ export default function GuestLeasesPage() {
 
       <Footer />
 
-      {/* Date Change Request Modal */}
-      {dateChangeModal.isOpen && (
-        <DateChangeRequestManager
-          isOpen={dateChangeModal.isOpen}
-          onClose={handleCloseDateChangeModal}
-          lease={dateChangeModal.lease}
-          currentUser={user}
-          onSuccess={() => {
-            handleCloseDateChangeModal();
-            handleRetry();
-          }}
-        />
-      )}
+      {/* Date Change Request Modal removed - now using Schedule Dashboard at /schedule/:leaseId */}
 
       {/* Check-in/Checkout Modal */}
       <CheckInCheckOutFlow

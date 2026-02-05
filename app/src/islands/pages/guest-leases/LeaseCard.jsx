@@ -257,10 +257,10 @@ export default function LeaseCard({
               </h3>
               <button
                 className="btn btn-primary btn-sm"
-                onClick={() => onRequestDateChange(lease)}
+                onClick={() => window.location.href = `/schedule/${_id}`}
               >
                 <Calendar size={16} />
-                Request Date Change
+                Manage Schedule
               </button>
             </div>
             {dateChangeRequests.length > 0 ? (
