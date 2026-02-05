@@ -177,9 +177,14 @@ export default function CareersPage() {
 
       {/* Hero Section */}
       <section className="hero-section">
-        <video autoPlay muted loop playsInline className="hero-video-background" id="heroVideo">
-          <source src="/assets/videos/time-lapse.mp4" type="video/mp4" />
-        </video>
+        <iframe
+          className="hero-video-background"
+          id="heroVideo"
+          src="https://www.youtube.com/embed/DDsSMV2sBoE?autoplay=1&mute=1&loop=1&playlist=DDsSMV2sBoE&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          style={{ border: 'none', pointerEvents: 'none' }}
+        />
         <div className="hero-overlay"></div>
         <div className="hero-container">
           <div className="hero-badge">
@@ -285,22 +290,14 @@ export default function CareersPage() {
 
           <div>
             <div className="video-player-container" id="videoPlayerContainer">
-              <video className="video-player" id="careerVideo" preload="metadata">
-                <source src="/assets/videos/time-lapse.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              <div className="play-button-overlay" id="playButtonOverlay" onClick={() => {
-                const video = document.getElementById('careerVideo');
-                if (video) {
-                  video.play();
-                  video.setAttribute('controls', 'controls');
-                  document.getElementById('playButtonOverlay').classList.add('hidden');
-                }
-              }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </div>
+              <iframe
+                className="video-player"
+                src="https://www.youtube.com/embed/DDsSMV2sBoE?rel=0&modestbranding=1"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ border: 'none', width: '100%', height: '100%' }}
+                title="Split Lease Company Journey"
+              />
             </div>
             <p className="video-caption">
               A time-lapse of Split Lease in motion
