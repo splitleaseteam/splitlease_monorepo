@@ -308,7 +308,7 @@ export default function CareersPage() {
                 width: '100%',
                 borderRadius: '16px',
                 overflow: 'hidden',
-                boxShadow: '0 12px 32px rgba(49, 19, 93, 0.15)'
+                background: 'white'
               }}
             >
               <iframe
