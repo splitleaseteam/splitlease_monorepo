@@ -1,3 +1,7 @@
+# BMad Method (agent framework — local only)
+_bmad/
+.agent/
+
 # Environment variables
 .env
 .env.local
