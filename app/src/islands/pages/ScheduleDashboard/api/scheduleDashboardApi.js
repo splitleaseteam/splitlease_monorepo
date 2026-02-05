@@ -10,17 +10,18 @@ import { adaptLeaseFromSupabase } from '../../../../logic/processors/leases/adap
 
 /**
  * Fetch lease details for Schedule Dashboard
+ * Host, Guest, Listing are column names storing IDs, not FK relationships.
+ * We fetch them separately to avoid PostgREST relationship errors.
+ *
  * @param {string} leaseId - Lease ID
  * @returns {Promise<Object>} Normalized lease object
  */
 export async function fetchLeaseById(leaseId) {
-  const { data, error } = await supabase
+  // Step 1: Fetch lease with stays only
+  const { data: lease, error } = await supabase
     .from('bookings_leases')
     .select(`
       *,
-      host:Host(*),
-      guest:Guest(*),
-      listing:Listing(*),
       stays:bookings_stays(*)
     `)
     .eq('_id', leaseId)
@@ -30,7 +31,37 @@ export async function fetchLeaseById(leaseId) {
     throw error;
   }
 
-  return adaptLeaseFromSupabase(data);
+  // Step 2: Fetch host user if Host column exists
+  if (lease?.Host) {
+    const { data: host } = await supabase
+      .from('User')
+      .select('*')
+      .eq('_id', lease.Host)
+      .single();
+    lease.host = host;
+  }
+
+  // Step 3: Fetch guest user if Guest column exists
+  if (lease?.Guest) {
+    const { data: guest } = await supabase
+      .from('User')
+      .select('*')
+      .eq('_id', lease.Guest)
+      .single();
+    lease.guest = guest;
+  }
+
+  // Step 4: Fetch listing if Listing column exists
+  if (lease?.Listing) {
+    const { data: listing } = await supabase
+      .from('Listing')
+      .select('*')
+      .eq('_id', lease.Listing)
+      .single();
+    lease.listing = listing;
+  }
+
+  return adaptLeaseFromSupabase(lease);
 }
 
 /**

@@ -34,8 +34,10 @@ import {
 } from './data/mockData.js';
 import {
   createDateChangeRequest,
+  fetchDateChangeRequestsForLease,
   updateDateChangeRequestStatus,
 } from '../../../lib/api/dateChangeRequests.js';
+import { supabase } from '../../../lib/supabase.js';
 import { usePerspective } from './hooks/usePerspective.js';
 import { useUIState } from './hooks/useUIState.js';
 import { useRequestFlow } from './hooks/useRequestFlow.js';
