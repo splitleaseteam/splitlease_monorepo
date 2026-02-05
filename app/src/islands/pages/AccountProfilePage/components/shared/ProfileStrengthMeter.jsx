@@ -6,11 +6,17 @@
  */
 
 import React from 'react';
+import { Info } from 'lucide-react';
 
-export default function ProfileStrengthMeter({ percentage = 0, onClick }) {
+export default function ProfileStrengthMeter({
+  percentage = 0,
+  onClick,
+  onInfoClick
+}) {
   // Ensure percentage is within bounds
   const clampedPercentage = Math.max(0, Math.min(100, percentage));
   const isClickable = typeof onClick === 'function';
+  const isInfoClickable = typeof onInfoClick === 'function';
 
   return (
     <div
@@ -25,7 +31,22 @@ export default function ProfileStrengthMeter({ percentage = 0, onClick }) {
         }
       } : undefined}
     >
-      <div className="profile-strength-label">Profile Strength</div>
+      <div className="profile-strength-label">
+        <span>Profile Strength</span>
+        {isInfoClickable && (
+          <button
+            type="button"
+            className="profile-strength-info-btn"
+            onClick={(event) => {
+              event.stopPropagation();
+              onInfoClick();
+            }}
+            aria-label="Toggle verification details"
+          >
+            <Info size={14} />
+          </button>
+        )}
+      </div>
       <div className="profile-strength-bar">
         <div className="profile-strength-track">
           <div
