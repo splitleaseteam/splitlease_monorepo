@@ -5,8 +5,8 @@
  * TODO: Replace stubs with real Supabase/Edge Function calls
  */
 
-import { supabase } from 'lib/supabase.js';
-import { adaptLeaseFromSupabase } from 'logic/processors/leases/adaptLeaseFromSupabase.js';
+import { supabase } from '../../../../lib/supabase.js';
+import { adaptLeaseFromSupabase } from '../../../../logic/processors/leases/adaptLeaseFromSupabase.js';
 
 /**
  * Fetch lease details for Schedule Dashboard

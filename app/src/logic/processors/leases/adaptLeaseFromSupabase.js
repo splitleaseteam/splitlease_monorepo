@@ -257,7 +257,7 @@ function adaptPaymentRecordFromSupabase(payment) {
 /**
  * Adapt date change request from Supabase
  */
-function adaptDateChangeRequestFromSupabase(dcr) {
+export function adaptDateChangeRequestFromSupabase(dcr) {
   if (!dcr) return null;
 
   return {

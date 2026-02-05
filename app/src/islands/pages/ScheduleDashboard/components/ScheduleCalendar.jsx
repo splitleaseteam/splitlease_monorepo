@@ -160,8 +160,32 @@ export default function ScheduleCalendar({
   priceOverlays = null, // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
   roommatePriceOverlays = null, // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
   roommateName = null, // Roommate's first name for tooltip
-  isLoading = false // Loading state for skeleton UI
+  isLoading = false, // Loading state for skeleton UI
+  pendingDateChangeRequests = [] // Array of pending date change requests
 }) {
+  // Build set of dates affected by pending date change requests
+  const pendingChangeDates = useMemo(() => {
+    const dates = new Set();
+    pendingDateChangeRequests.forEach(request => {
+      // Add old dates (dates being changed from)
+      if (request.listOfOldDates) {
+        request.listOfOldDates.forEach(d => dates.add(toDateString(d)));
+      }
+      // Add new dates (dates being changed to)
+      if (request.listOfNewDates) {
+        request.listOfNewDates.forEach(d => dates.add(toDateString(d)));
+      }
+    });
+    return dates;
+  }, [pendingDateChangeRequests]);
+
+  /**
+   * Check if a date has a pending date change request
+   */
+  const isPendingDateChange = (date) => {
+    if (!date) return false;
+    return pendingChangeDates.has(toDateString(date));
+  };
   // Show loading skeleton while data is being fetched
   if (isLoading) {
     return (
@@ -444,6 +468,9 @@ export default function ScheduleCalendar({
                 // Check for shared night (co-occupancy)
                 const isShared = date && isInDateArray(date, sharedNights);
 
+                // Check for pending date change request affecting this date
+                const hasPendingDateChange = date && isPendingDateChange(date);
+
                 return (
                   <button
                     key={`${weekIndex}-${index}`}
@@ -459,6 +486,7 @@ export default function ScheduleCalendar({
                       ${hasTransaction && !isLowAmount && transaction.direction === 'outgoing' ? 'schedule-calendar__day--transaction-outgoing' : ''}
                       ${priceOverlay ? 'schedule-calendar__day--has-price' : ''}
                       ${isShared ? 'schedule-calendar__day--shared' : ''}
+                      ${hasPendingDateChange ? 'schedule-calendar__day--pending-change' : ''}
                     `.trim().replace(/\s+/g, ' ')}
                     onClick={() => handleDayClick(date)}
                     disabled={!clickable}
@@ -469,6 +497,9 @@ export default function ScheduleCalendar({
                     <span className="schedule-calendar__day-number">
                       {date ? date.getDate() : ''}
                     </span>
+                    {hasPendingDateChange && (
+                      <span className="schedule-calendar__day-change-indicator" title="Pending date change request" />
+                    )}
                     {hasTransaction && (
                       <span className="schedule-calendar__day-transaction">
                         {transactionAmount}
@@ -522,6 +553,13 @@ export default function ScheduleCalendar({
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--pending" />
             <span>Pending</span>
           </div>
+          {pendingDateChangeRequests.length > 0 && (
+            <div className="schedule-calendar__legend-item schedule-calendar__legend-item--badge">
+              <span className="schedule-calendar__pending-badge">
+                {pendingDateChangeRequests.length} pending request{pendingDateChangeRequests.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
         </div>
         <button
           type="button"
@@ -584,5 +622,17 @@ ScheduleCalendar.propTypes = {
     tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
   })),
   roommateName: PropTypes.string,
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  pendingDateChangeRequests: PropTypes.arrayOf(PropTypes.shape({
+    _id: PropTypes.string,
+    listOfOldDates: PropTypes.arrayOf(PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date)
+    ])),
+    listOfNewDates: PropTypes.arrayOf(PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date)
+    ])),
+    status: PropTypes.string
+  }))
 };

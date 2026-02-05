@@ -27,12 +27,15 @@ import {
   calculatePriceForDate,
 } from './helpers/priceCalculations.js';
 import {
-  MOCK_LEASE,
   MOCK_CURRENT_USER,
   MOCK_ROOMMATE,
   MOCK_FLEXIBILITY_METRICS,
   MOCK_USER_FLEXIBILITY_SCORE,
 } from './data/mockData.js';
+import {
+  createDateChangeRequest,
+  updateDateChangeRequestStatus,
+} from '../../../lib/api/dateChangeRequests.js';
 import { usePerspective } from './hooks/usePerspective.js';
 import { useUIState } from './hooks/useUIState.js';
 import { useRequestFlow } from './hooks/useRequestFlow.js';
@@ -40,8 +43,11 @@ import { usePricingStrategy } from './hooks/usePricingStrategy.js';
 import { useScheduleState } from './state/useScheduleState.js';
 
 // API imports for real data fetching
-import { fetchLeaseDetails } from '../../../lib/api/guestLeases.js';
+import { fetchLeaseById } from './api/scheduleDashboardApi.js';
 import { supabase } from '../../../lib/supabase.js';
+
+// Toast for user feedback
+import { useToast } from '../../../islands/shared/Toast.jsx';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -128,6 +134,7 @@ export function useScheduleDashboardLogic() {
   const ui = useUIState();
   const request = useRequestFlow();
   const pricing = usePricingStrategy();
+  const { showToast } = useToast();
   const scheduleState = useScheduleState({
     currentUserId: currentUserData._id,
     roommateId: roommateData._id
@@ -146,6 +153,9 @@ export function useScheduleDashboardLogic() {
   const [roommate, setRoommate] = useState(null);
   const [selectedNight, setSelectedNight] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
+
+  // Pending date change requests state
+  const [pendingDateChangeRequests, setPendingDateChangeRequests] = useState([]);
 
   // NOTE: Pricing strategy state (pricingStrategy, isSavingPreferences) now in usePricingStrategy hook
 
@@ -464,61 +474,34 @@ export function useScheduleDashboardLogic() {
       return;
     }
 
-    // Async function to fetch real lease data
+    let isMounted = true;
+
     async function loadLeaseData() {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Try to fetch real lease data
-        const leaseData = await fetchLeaseDetails(leaseId);
+        const leaseData = await fetchLeaseById(leaseId);
+        if (!isMounted) return;
 
-        if (leaseData) {
-          console.log('[ScheduleDashboard] Loaded real lease data:', leaseData);
-
-          // Set lease data
-          setLease({
-            _id: leaseData._id,
-            propertyName: leaseData.listing?.name || leaseData.listing?.title || 'Property',
-            propertyAddress: leaseData.listing?.address || '',
-            startDate: leaseData.startDate,
-            endDate: leaseData.endDate,
-            nightlyRate: leaseData.nightlyRate || 150
-          });
-
-          // Extract roommate from lease (the other guest sharing the lease)
-          // If lease has a roommate/co-guest, use that; otherwise fall back to mock
-          if (leaseData.roommate) {
-            setRoommate({
-              _id: leaseData.roommate._id || leaseData.roommate.id,
-              firstName: leaseData.roommate.firstName,
-              lastName: leaseData.roommate.lastName,
-              avatarUrl: leaseData.roommate.profilePhoto || leaseData.roommate.avatarUrl,
-              email: leaseData.roommate.email,
-              pricingStrategy: leaseData.roommate.pricingStrategy || MOCK_ROOMMATE.pricingStrategy
-            });
-          } else {
-            // Fall back to mock roommate for dev/testing
-            console.log('[ScheduleDashboard] No roommate in lease data, using mock');
-            setRoommate(roommateData);
-          }
-
-          setIsLoading(false);
-          return;
-        }
+        setLease(leaseData);
+        setRoommate(leaseData?.getRoommate ? leaseData.getRoommate(currentUserId) : null);
       } catch (err) {
-        console.warn('[ScheduleDashboard] Failed to fetch real lease data, using mock:', err.message);
+        if (!isMounted) return;
+        setError(err?.message || 'Failed to load lease');
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-
-      // Fall back to mock data for development
-      console.log('[ScheduleDashboard] Using mock data for development');
-      setLease(MOCK_LEASE);
-      setRoommate(roommateData);
-      setIsLoading(false);
     }
 
     loadLeaseData();
-  }, [leaseId, roommateData]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [leaseId, currentUserId]);
 
   // -------------------------------------------------------------------------
   // ADJACENCY DETECTION
@@ -1024,6 +1007,49 @@ export function useScheduleDashboardLogic() {
   }, [ui]);
 
   /**
+   * Handle creating a date change request
+   * @param {Object} payload - Request payload with listOfOldDates, listOfNewDates, reason
+   */
+  const handleCreateDateChangeRequest = useCallback(async (payload) => {
+    try {
+      request.setIsSubmitting(true);
+
+      await createDateChangeRequest({
+        leaseId: lease?._id,
+        ...payload
+      });
+
+      // Show success toast
+      showToast({
+        title: 'Request Sent',
+        content: 'Your date change request has been submitted.',
+        type: 'success'
+      });
+
+      // Refresh pending requests
+      // TODO: Implement refreshDateChangeRequests when API is ready
+      // For now, just close the panel
+      setSelectedNight(null);
+      ui.closeBuyOut();
+
+      return true;
+    } catch (err) {
+      console.error('Failed to create date change request:', err);
+
+      // Show error toast
+      showToast({
+        title: 'Error',
+        content: err.message || 'Failed to submit date change request.',
+        type: 'error'
+      });
+
+      throw err;
+    } finally {
+      request.setIsSubmitting(false);
+    }
+  }, [lease, request, showToast, ui]);
+
+  /**
    * Handle month navigation
    */
   const handleMonthChange = useCallback((newMonth) => {
@@ -1077,6 +1103,13 @@ export function useScheduleDashboardLogic() {
     setIsLoading(true);
     setError(null);
     window.location.reload();
+  }, []);
+
+  // Note: handleCreateDateChangeRequest with toast support is defined above
+
+  const handleUpdateDateChangeRequestStatus = useCallback(async (requestId, status) => {
+    // TODO: Implement proper API call
+    console.log('Updating date change request status:', requestId, status);
   }, []);
 
   // -------------------------------------------------------------------------
@@ -1150,6 +1183,9 @@ export function useScheduleDashboardLogic() {
     activeTransactionId: ui.activeTransactionId,
     transactionsByDate,
 
+    // Date Change Requests
+    pendingDateChangeRequests,
+
     // Pricing Strategy (3-Tier Model)
     pricingStrategy: pricing.pricingStrategy,
     isBuyoutSettingsOpen: ui.isBuyoutSettingsOpen,
@@ -1181,6 +1217,8 @@ export function useScheduleDashboardLogic() {
     handleSelectTransaction: ui.handleSelectTransaction,
     handleMonthChange,
     handleRefresh,
+    handleCreateDateChangeRequest,
+    handleUpdateDateChangeRequestStatus,
     handleToggleBuyOut: ui.handleToggleBuyOut,
     handleToggleChat: ui.handleToggleChat,
     handleOpenFlexibilityModal: ui.handleOpenFlexibilityModal,

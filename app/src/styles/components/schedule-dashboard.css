@@ -463,6 +463,50 @@
   border-color: #2563EB;
 }
 
+/* Pending date change request indicator */
+.schedule-calendar__day--pending-change {
+  position: relative;
+}
+
+.schedule-calendar__day--pending-change::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white;
+}
+
+/* Inline date change indicator element */
+.schedule-calendar__day-change-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white;
+}
+
+/* Pending requests badge in legend */
+.schedule-calendar__pending-badge {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #F59E0B;
+}
+
+.schedule-calendar__legend-item--badge {
+  margin-left: 8px;
+}
+
 .schedule-calendar__day--adjacent::after {
   content: '';
   position: absolute;
