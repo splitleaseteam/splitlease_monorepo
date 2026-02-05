@@ -26,11 +26,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \".claude\\hooks\\git_auto_commit.py\"",
-            "timeout": 60
-          },
-          {
-            "type": "command",
             "command": "python \".claude\\hooks\\slack_notifier.py\"",
             "timeout": 30,
             "async": true
