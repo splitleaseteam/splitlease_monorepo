@@ -24,8 +24,16 @@ function getTabTitle(tabId) {
  * @param {string} props.activeTab - Currently active tab id
  * @param {string} [props.userName] - User's display name (optional)
  * @param {string} [props.listingAddress] - Listing address for context (optional)
+ * @param {number} [props.roommateFlexibilityScore] - Roommate's flexibility score (1-10)
+ * @param {function} [props.onOpenFlexibilityModal] - Handler to open flexibility modal
  */
-export function MobileHeader({ activeTab, userName, listingAddress }) {
+export function MobileHeader({
+  activeTab,
+  userName,
+  listingAddress,
+  roommateFlexibilityScore,
+  onOpenFlexibilityModal
+}) {
   const title = getTabTitle(activeTab);
 
   return (
@@ -37,11 +45,21 @@ export function MobileHeader({ activeTab, userName, listingAddress }) {
         )}
       </div>
       {userName && (
-        <div className="mobile-header__user">
+        <button
+          type="button"
+          className="mobile-header__user"
+          onClick={onOpenFlexibilityModal}
+          aria-label={`View ${userName}'s flexibility score: ${roommateFlexibilityScore}/10`}
+        >
           <span className="mobile-header__avatar" aria-hidden="true">
             {userName.charAt(0).toUpperCase()}
           </span>
-        </div>
+          {typeof roommateFlexibilityScore === 'number' && (
+            <span className="mobile-header__flex-badge" aria-hidden="true">
+              {roommateFlexibilityScore}
+            </span>
+          )}
+        </button>
       )}
     </header>
   );

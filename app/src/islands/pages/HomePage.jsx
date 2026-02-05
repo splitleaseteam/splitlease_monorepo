@@ -751,6 +751,7 @@ export default function HomePage() {
 
     root.render(
       <SearchScheduleSelector
+        enablePersistence={true}
         onSelectionChange={(days) => {
           console.log('Selected days on home page:', days);
           setSelectedDays(days.map(d => d.index));

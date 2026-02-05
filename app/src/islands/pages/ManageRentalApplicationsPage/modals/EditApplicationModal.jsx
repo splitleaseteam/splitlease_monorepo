@@ -105,6 +105,18 @@ export default function EditApplicationModal({
         });
         break;
 
+      case 'occupants':
+        setFormData({
+          occupants: application['occupants list'] || []
+        });
+        break;
+
+      case 'references':
+        setFormData({
+          references: application.references || []
+        });
+        break;
+
       default:
         setFormData({});
     }
@@ -161,7 +173,14 @@ export default function EditApplicationModal({
       return;
     }
 
-    onSave(formData);
+    // Remap field names to database column names before saving
+    const remappedData = { ...formData };
+    if (editSection === 'occupants' && remappedData.occupants) {
+      remappedData['occupants list'] = remappedData.occupants;
+      delete remappedData.occupants;
+    }
+
+    onSave(remappedData);
   }, [editSection, formData, onSave]);
 
   // Handle escape key
@@ -499,6 +518,131 @@ export default function EditApplicationModal({
                 />
               </div>
             </div>
+          </>
+        );
+
+      case 'occupants':
+        return (
+          <>
+            <div className="edit-hint">
+              Edit occupant names and relationships. Maximum 6 occupants.
+            </div>
+            {formData.occupants && formData.occupants.length > 0 ? (
+              <div className="occupants-edit-list">
+                {formData.occupants.map((occupant, index) => (
+                  <div key={occupant.id || index} className="occupant-edit-item">
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label htmlFor={`occupant-name-${index}`}>Name</label>
+                        <input
+                          type="text"
+                          id={`occupant-name-${index}`}
+                          value={occupant.name || ''}
+                          onChange={(e) => {
+                            const newOccupants = [...formData.occupants];
+                            newOccupants[index] = { ...newOccupants[index], name: e.target.value };
+                            setFormData({ ...formData, occupants: newOccupants });
+                          }}
+                          placeholder="Full name"
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label htmlFor={`occupant-relationship-${index}`}>Relationship</label>
+                        <input
+                          type="text"
+                          id={`occupant-relationship-${index}`}
+                          value={occupant.relationship || ''}
+                          onChange={(e) => {
+                            const newOccupants = [...formData.occupants];
+                            newOccupants[index] = { ...newOccupants[index], relationship: e.target.value };
+                            setFormData({ ...formData, occupants: newOccupants });
+                          }}
+                          placeholder="Relationship"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-data">No occupants to edit</p>
+            )}
+          </>
+        );
+
+      case 'references':
+        return (
+          <>
+            <div className="edit-hint">
+              Edit reference contact information.
+            </div>
+            {formData.references && formData.references.length > 0 ? (
+              <div className="references-edit-list">
+                {formData.references.map((ref, index) => (
+                  <div key={ref.id || index} className="reference-edit-item">
+                    <h4>Reference {index + 1}</h4>
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label htmlFor={`ref-name-${index}`}>Name</label>
+                        <input
+                          type="text"
+                          id={`ref-name-${index}`}
+                          value={ref.name || ''}
+                          onChange={(e) => {
+                            const newRefs = [...formData.references];
+                            newRefs[index] = { ...newRefs[index], name: e.target.value };
+                            setFormData({ ...formData, references: newRefs });
+                          }}
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label htmlFor={`ref-relationship-${index}`}>Relationship</label>
+                        <input
+                          type="text"
+                          id={`ref-relationship-${index}`}
+                          value={ref.relationship || ''}
+                          onChange={(e) => {
+                            const newRefs = [...formData.references];
+                            newRefs[index] = { ...newRefs[index], relationship: e.target.value };
+                            setFormData({ ...formData, references: newRefs });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label htmlFor={`ref-phone-${index}`}>Phone</label>
+                        <input
+                          type="tel"
+                          id={`ref-phone-${index}`}
+                          value={ref.phone || ''}
+                          onChange={(e) => {
+                            const newRefs = [...formData.references];
+                            newRefs[index] = { ...newRefs[index], phone: e.target.value };
+                            setFormData({ ...formData, references: newRefs });
+                          }}
+                        />
+                      </div>
+                      <div className="form-field">
+                        <label htmlFor={`ref-email-${index}`}>Email</label>
+                        <input
+                          type="email"
+                          id={`ref-email-${index}`}
+                          value={ref.email || ''}
+                          onChange={(e) => {
+                            const newRefs = [...formData.references];
+                            newRefs[index] = { ...newRefs[index], email: e.target.value };
+                            setFormData({ ...formData, references: newRefs });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-data">No references to edit</p>
+            )}
           </>
         );
 

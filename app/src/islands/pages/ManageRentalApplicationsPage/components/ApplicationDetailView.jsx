@@ -176,7 +176,11 @@ export default function ApplicationDetailView({
   }
 
   const personalInfo = application.personal_info || {};
-  const currentAddress = application.current_address || {};
+  // Note: 'permanent address' is JSONB { address: string }
+  const permanentAddress = application['permanent address'];
+  const currentAddressString = typeof permanentAddress === 'string'
+    ? permanentAddress
+    : (permanentAddress?.address || '');
   const emergencyContact = application.emergency_contact || {};
   const accessibility = application.accessibility || {};
 
@@ -193,7 +197,7 @@ export default function ApplicationDetailView({
 
         <div className="application-detail__title">
           <h2>
-            {personalInfo.firstName} {personalInfo.lastName || application.guest?.full_name || 'Application'}
+            {application.applicant_name || personalInfo.name || 'Application'}
           </h2>
           <span className="application-id">{application.unique_id || application.id}</span>
         </div>
@@ -236,12 +240,10 @@ export default function ApplicationDetailView({
         <section className="detail-section">
           <SectionHeader title="Personal Information" onEdit={onEdit} section="personal" />
           <div className="detail-grid">
-            <DetailField label="First Name" value={personalInfo.firstName} />
-            <DetailField label="Last Name" value={personalInfo.lastName} />
-            <DetailField label="Email" value={personalInfo.email || application.guest?.email} />
-            <DetailField label="Phone" value={formatPhone(personalInfo.phone)} />
-            <DetailField label="Date of Birth" value={formatDate(personalInfo.dateOfBirth)} />
-            <DetailField label="SSN (Last 4)" value={personalInfo.ssnLast4 ? `***-**-${personalInfo.ssnLast4}` : '-'} />
+            <DetailField label="Full Name" value={application.name || personalInfo.name} fullWidth />
+            <DetailField label="Email" value={application.email || personalInfo.email} />
+            <DetailField label="Phone" value={formatPhone(application['phone number'] || personalInfo.phone)} />
+            <DetailField label="Date of Birth" value={formatDate(application.DOB || personalInfo.dateOfBirth)} />
           </div>
         </section>
 
@@ -249,15 +251,10 @@ export default function ApplicationDetailView({
         <section className="detail-section">
           <SectionHeader title="Current Address" onEdit={onEdit} section="address" />
           <div className="detail-grid">
-            <DetailField label="Street Address" value={currentAddress.street} fullWidth />
-            <DetailField label="Unit/Apt" value={currentAddress.unit} />
-            <DetailField label="City" value={currentAddress.city} />
-            <DetailField label="State" value={currentAddress.state} />
-            <DetailField label="ZIP Code" value={currentAddress.zip} />
-            <DetailField label="Move-in Date" value={formatDate(currentAddress.moveInDate)} />
-            <DetailField label="Monthly Rent" value={formatCurrency(currentAddress.monthlyRent)} />
-            <DetailField label="Landlord Name" value={currentAddress.landlordName} />
-            <DetailField label="Landlord Phone" value={formatPhone(currentAddress.landlordPhone)} />
+            <DetailField label="Address" value={currentAddressString} fullWidth />
+            <DetailField label="Unit/Apt" value={application['apartment number']} />
+            <DetailField label="Length Resided" value={application['length resided']} />
+            <BooleanField label="Currently Renting" value={application.renting} />
           </div>
         </section>
 
@@ -265,55 +262,57 @@ export default function ApplicationDetailView({
         <section className="detail-section">
           <SectionHeader title="Employment & Income" onEdit={onEdit} section="employment" />
           <div className="detail-grid">
-            <DetailField label="Monthly Income" value={formatCurrency(application.monthly_income)} />
-            <DetailField label="Additional Income" value={formatCurrency(application.additional_income)} />
-            <DetailField label="Total Monthly Income" value={formatCurrency(application.total_monthly_income)} />
+            <DetailField label="Employment Status" value={application['employment status']} />
+            <DetailField label="Monthly Income" value={formatCurrency(application['Monthly Income'])} />
           </div>
 
-          {/* Employment History */}
-          {application.employment && application.employment.length > 0 && (
+          {/* Employed fields */}
+          {(application['employment status'] === 'full-time' || application['employment status'] === 'part-time') && (
             <div className="detail-subsection">
-              <h4>Employment History</h4>
-              {application.employment.map((job, index) => (
-                <div key={job.id || index} className="employment-item">
-                  <div className="detail-grid">
-                    <DetailField label="Employer" value={job.employer_name} />
-                    <DetailField label="Position" value={job.position} />
-                    <DetailField label="Start Date" value={formatDate(job.start_date)} />
-                    <DetailField label="End Date" value={job.is_current ? 'Current' : formatDate(job.end_date)} />
-                    <DetailField label="Monthly Income" value={formatCurrency(job.monthly_income)} />
-                    <DetailField label="Supervisor" value={job.supervisor_name} />
-                  </div>
-                </div>
-              ))}
+              <h4>Employer Details</h4>
+              <div className="detail-grid">
+                <DetailField label="Employer Name" value={application['employer name']} />
+                <DetailField label="Job Title" value={application['job title']} />
+                <DetailField label="Employer Phone" value={formatPhone(application['employer phone number'])} />
+              </div>
+            </div>
+          )}
+
+          {/* Self-employed fields */}
+          {(application['employment status'] === 'business-owner' || application['employment status'] === 'self-employed') && (
+            <div className="detail-subsection">
+              <h4>Business Details</h4>
+              <div className="detail-grid">
+                <DetailField label="Business Name" value={application['business legal name']} />
+                <DetailField label="Year Established" value={application['year business was created?']} />
+                <DetailField label="State Registered" value={application['state business registered']} />
+              </div>
             </div>
           )}
         </section>
 
-        {/* Background Check Info */}
+        {/* Special Requirements */}
         <section className="detail-section">
-          <SectionHeader title="Background Information" onEdit={onEdit} section="background" />
+          <SectionHeader title="Special Requirements" onEdit={onEdit} section="requirements" />
           <div className="detail-grid detail-grid--booleans">
-            <BooleanField label="Prior Eviction" value={application.has_eviction} />
-            <BooleanField label="Prior Felony" value={application.has_felony} />
-            <BooleanField label="Prior Bankruptcy" value={application.has_bankruptcy} />
+            <BooleanField label="Has Pets" value={application.pets} />
+            <BooleanField label="Smoker" value={application.smoking} />
+            <BooleanField label="Needs Parking" value={application.parking} />
           </div>
         </section>
 
         {/* Occupants */}
         <section className="detail-section">
           <SectionHeader title="Occupants" onEdit={onEdit} section="occupants" />
-          {application.occupants && application.occupants.length > 0 ? (
+          {application['occupants list'] && application['occupants list'].length > 0 ? (
             <div className="occupants-list">
-              {application.occupants.map((occupant, index) => (
+              {application['occupants list'].map((occupant, index) => (
                 <div key={occupant.id || index} className="occupant-item">
                   <span className="occupant-name">
-                    {occupant.first_name} {occupant.last_name}
-                    {occupant.is_applicant && <span className="badge badge--primary">Applicant</span>}
+                    {occupant.name || '-'}
                   </span>
                   <span className="occupant-details">
                     {occupant.relationship && <span>{occupant.relationship}</span>}
-                    {occupant.date_of_birth && <span>{formatDate(occupant.date_of_birth)}</span>}
                   </span>
                 </div>
               ))}

@@ -819,6 +819,85 @@ main.main-content:has(.messaging-page) {
   color: var(--secondary-purple);
 }
 
+/* Virtual Meeting Button - Compact style matching action buttons */
+.thread-header__vm-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--min-touch-target);
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  background: var(--bg-white);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.thread-header__vm-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.thread-header__vm-btn:hover {
+  background: var(--bg-gray-100);
+  color: var(--text-primary);
+}
+
+.thread-header__vm-btn:focus-visible {
+  outline: var(--focus-outline-width) solid var(--secondary-purple);
+  outline-offset: var(--focus-outline-offset);
+}
+
+/* VM Button States */
+.thread-header__vm-btn--confirmed {
+  background: #E8F5E9;
+  border-color: #4CAF50;
+  color: #2E7D32;
+}
+
+.thread-header__vm-btn--confirmed:hover {
+  background: #C8E6C9;
+}
+
+.thread-header__vm-btn--warning {
+  background: #FFF3E0;
+  border-color: #FF9800;
+  color: #E65100;
+}
+
+.thread-header__vm-btn--warning:hover {
+  background: #FFE0B2;
+}
+
+.thread-header__vm-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.thread-header__vm-btn--disabled:hover {
+  background: var(--bg-white);
+  color: var(--text-secondary);
+}
+
+/* Hide text on smaller screens, show icon only */
+@media (max-width: 768px) {
+  .thread-header__vm-btn {
+    padding: 0;
+    width: var(--min-touch-target);
+    border-radius: 50%;
+  }
+
+  .thread-header__vm-btn span {
+    display: none;
+  }
+}
+
 /* ==========================================================================
    Message Thread - Upwork Style
    ========================================================================== */

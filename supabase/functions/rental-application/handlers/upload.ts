@@ -145,7 +145,7 @@ export async function handleUpload(
     throw new Error(`Failed to upload file: ${uploadError.message}`);
   }
 
-  console.log(`[RentalApp:upload] File uploaded successfully:`, uploadData.path);
+  console.log(`[RentalApp:upload] File uploaded successfully:`, _uploadData.path);
 
   // ================================================
   // GENERATE SIGNED URL (valid for 1 year)

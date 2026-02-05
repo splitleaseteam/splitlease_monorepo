@@ -193,31 +193,24 @@ export default function AvailabilitySection() {
 
   // Handle date click
   const handleDateClick = useCallback((dayInfo) => {
-    console.log('📅 Date clicked:', dayInfo, 'isOverflow:', !dayInfo.isCurrentMonth);
-
     // Don't allow clicking on past dates or dates without valid Date objects
     if (dayInfo.isPast || !dayInfo.date) {
-      console.log('📅 Click ignored: past date or missing date object');
       return;
     }
 
     const dateKey = formatDateKey(dayInfo.date);
-    console.log('📅 Date key:', dateKey, 'Mode:', dateSelectionMode);
 
     if (dateSelectionMode === 'individual') {
       // Individual mode: toggle the clicked date
-      console.log('📅 Individual mode: toggling date', dateKey);
       toggleBlockedDate(dateKey);
     } else {
       // Range mode: wait for two clicks
       if (!rangeStart) {
         // First click: set the start of the range
-        console.log('📅 Range mode: setting start date', dayInfo.date);
         setRangeStart(dayInfo.date);
       } else {
         // Second click: block all dates in the range
         const rangeDates = getDatesBetween(rangeStart, dayInfo.date);
-        console.log('📅 Range mode: blocking dates', rangeDates);
         addBlockedDates(rangeDates);
         // Reset range start for next selection
         setRangeStart(null);

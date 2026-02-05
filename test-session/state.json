@@ -1,119 +1,103 @@
 {
-  "sessionId": "e2e-proposal-counteroffer-20260202",
-  "startedAt": "2026-02-02T00:00:00.000Z",
-  "endedAt": "2026-02-02T11:00:00.000Z",
+  "sessionId": "e2e-pricing-verification-20260203",
+  "startedAt": "2026-02-03T00:00:00.000Z",
+  "endedAt": "2026-02-03T14:30:00.000Z",
   "status": "completed",
   "progress": {
-    "currentIteration": 4,
+    "currentIteration": 1,
     "currentPhase": "completed",
-    "currentStep": "all-tests-passing"
+    "currentStep": "report-generated"
   },
   "metrics": {
-    "stepsCompleted": 30,
+    "stepsCompleted": 15,
     "stepsFailed": 0,
-    "fixAttempts": 6,
-    "dataResets": 1,
+    "fixAttempts": 0,
+    "dataResets": 0,
     "screenshotsTaken": 20
   },
   "bugs": {
     "found": [
       {
         "id": "BUG-001",
-        "description": "Proposal workflow blocker - status transitions not allowing host actions",
-        "status": "FIXED"
-      },
-      {
-        "id": "BUG-002",
-        "description": "Parameter typo: supabase instead of _supabase",
-        "status": "FIXED"
-      },
-      {
-        "id": "BUG-003",
-        "description": "Missing CTAs preventing message creation",
-        "status": "FIXED"
-      },
-      {
-        "id": "BUG-004",
-        "description": "UI buttons not showing for Awaiting Rental App",
-        "status": "FIXED"
-      },
-      {
-        "id": "BUG-005",
-        "description": "RPC function column mismatch",
-        "status": "FIXED_BY_USER"
-      },
-      {
-        "id": "BUG-006",
-        "description": "Status normalization breaking button matching",
-        "status": "FIXED"
+        "category": "display-inconsistency",
+        "description": "Host preview shows totals assuming continuous hosting, while guest view calculates based on schedule pattern (2-on-2-off). Per-night pricing is correct with ~8% markup.",
+        "severity": "medium",
+        "status": "DOCUMENTED"
       }
     ],
     "pending": [],
-    "fixed": [
+    "fixed": [],
+    "deferred": [
       {
         "id": "BUG-001",
-        "commit": "7a39f1a94",
-        "file": "supabase/functions/proposal/lib/status.ts"
-      },
-      {
-        "id": "BUG-002",
-        "commit": "7a39f1a94",
-        "file": "supabase/functions/proposal/actions/update.ts"
-      },
-      {
-        "id": "BUG-003",
-        "commit": "database",
-        "description": "CTAs inserted via Supabase MCP"
-      },
-      {
-        "id": "BUG-004",
-        "commit": "d9a236238",
-        "file": "app/src/islands/pages/HostProposalsPage/ActionButtonsRow.jsx"
-      },
-      {
-        "id": "BUG-006",
-        "commit": "42c3472fc",
-        "file": "app/src/islands/pages/HostProposalsPage/useHostProposalsPageLogic.js"
+        "reason": "UX/communication issue - requires product decision on how to align displays"
       }
-    ],
-    "deferred": []
+    ]
   },
   "testCredentials": {
     "host": {
-      "email": "host_test_1770049063660@example.com",
-      "password": "TestHost123!"
+      "email": "splitleaserod+rodjohn@gmail.com"
     },
     "guest": {
-      "email": "guest_test_1770049457612@example.com",
-      "password": "TestGuest123!"
+      "email": "splitleasefrederick+frederickros@gmail.com"
     }
   },
   "testData": {
     "listings": [
       {
-        "id": "1770049277028x47966089987932344",
-        "title": "Cozy Studio in Manhattan - Test Listing A",
-        "price": 150
+        "id": "1770159292555x84785333838911712",
+        "title": "Charming 1-Bedroom in Trendy Manhattan - WEEKLY",
+        "pricingType": "weekly",
+        "weeklyHostRate": 1400
       },
       {
-        "id": "1770049404893x91412297566369040",
-        "title": "Spacious Brooklyn Loft - Test Listing B",
-        "price": 200
+        "id": "1770159059956x68069167691952992",
+        "title": "Charming Brownstone Steps from Central Park - NIGHTLY",
+        "pricingType": "nightly",
+        "nightlyRate5Nights": 139
+      },
+      {
+        "id": "1770159488384x35093957137090224",
+        "title": "Sunny One-Bedroom In Heart of Manhattan - MONTHLY",
+        "pricingType": "monthly",
+        "monthlyHostRate": 4800
       }
     ],
-    "proposals": [
-      {
-        "id": "1770049694673x84502900247355872",
-        "flow": "counteroffer",
-        "messageCount": 3,
-        "result": "PASS"
+    "proposals": [],
+    "pricingResults": {
+      "weekly": {
+        "listingId": "1770159292555x84785333838911712",
+        "hostCompensationPerNight": 350,
+        "guestNightlyPrice": 378,
+        "markup": "8%",
+        "hostTotalShown": 18200,
+        "guestTotalShown": 10584,
+        "verified": true,
+        "perNightCorrect": true,
+        "totalConsistent": false
       },
-      {
-        "id": "1770050561455x12931805482580172",
-        "flow": "direct-acceptance",
-        "messageCount": 2,
-        "result": "PASS"
+      "nightly": {
+        "listingId": "1770159059956x68069167691952992",
+        "hostCompensationPerNight": 146,
+        "guestNightlyPrice": 157.68,
+        "markup": "8%",
+        "hostTotalShown": 9035,
+        "guestTotalShown": 8199,
+        "verified": true,
+        "perNightCorrect": true,
+        "totalConsistent": false
+      },
+      "monthly": {
+        "listingId": "1770159488384x35093957137090224",
+        "hostCompensationPerNight": 276.32,
+        "guestNightlyPrice": 298.43,
+        "markup": "8%",
+        "hostTotalShown": 15600,
+        "guestTotalShown": 15518,
+        "verified": true,
+        "perNightCorrect": true,
+        "totalConsistent": true
       }
-    ]
+    }
   }
 }

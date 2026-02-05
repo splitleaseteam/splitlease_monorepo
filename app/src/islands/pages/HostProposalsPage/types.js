@@ -234,31 +234,6 @@ export const DAYS = [
 ];
 
 /**
- * Get active days between check-in and check-out
- * @param {DayOfWeek} checkInDay - Check-in day
- * @param {DayOfWeek} checkOutDay - Check-out day
- * @returns {DayOfWeek[]} Array of active days
- */
-export function getActiveDays(checkInDay, checkOutDay) {
-  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const checkInIndex = dayNames.indexOf(checkInDay);
-  const checkOutIndex = dayNames.indexOf(checkOutDay);
-
-  if (checkInIndex === -1 || checkOutIndex === -1) return [];
-
-  const activeDays = [];
-  let current = checkInIndex;
-
-  // Handle wrapping around the week
-  while (current !== checkOutIndex) {
-    activeDays.push(dayNames[current]);
-    current = (current + 1) % 7;
-  }
-
-  return activeDays;
-}
-
-/**
  * Convert night indices to day names for highlighting
  * Database uses 0-based indexing: 0=Sunday, 1=Monday, ..., 6=Saturday
  *

@@ -529,6 +529,7 @@ export async function createSplitBotMessage(
 
 /**
  * Update thread's last message info after sending a message
+ * Uses Bubble.io column naming convention: "~Last Message" and "~Date Last Message"
  */
 export async function updateThreadLastMessage(
   supabase: SupabaseClient,
@@ -540,8 +541,8 @@ export async function updateThreadLastMessage(
   const { error } = await supabase
     .from('thread')
     .update({
-      last_message_preview: messageBody.substring(0, 100), // Truncate for preview
-      last_message_at: now,
+      "~Last Message": messageBody.substring(0, 100), // Truncate for preview
+      "~Date Last Message": now,
       "Modified Date": now,
       updated_at: now,
     })
@@ -551,4 +552,77 @@ export async function updateThreadLastMessage(
     console.error('[messagingHelpers] Failed to update thread last message:', error);
     // Non-blocking - don't throw
   }
+}
+
+// ============================================
+// THREAD PREVIEW OPERATIONS
+// ============================================
+
+export interface LastVisibleMessageResult {
+  threadId: string;
+  messageBody: string;
+  createdDate: string;
+}
+
+/**
+ * Get the last visible message for multiple threads based on user role
+ * This computes the correct preview for each user based on visibility flags
+ *
+ * @param supabase - Supabase client
+ * @param threadIds - Array of thread IDs to fetch last messages for
+ * @param userBubbleId - The Bubble ID of the viewing user
+ * @param threadUserRoles - Map of threadId -> 'host' | 'guest' indicating user's role in each thread
+ * @returns Map of threadId -> last visible message body
+ */
+export async function getLastVisibleMessagesForThreads(
+  supabase: SupabaseClient,
+  threadIds: string[],
+  threadUserRoles: Map<string, 'host' | 'guest'>
+): Promise<Map<string, string>> {
+  if (threadIds.length === 0) {
+    return new Map();
+  }
+
+  // Fetch all recent messages for these threads with visibility info
+  // We fetch the most recent messages per thread, then filter by visibility
+  const { data: messages, error } = await supabase
+    .from('_message')
+    .select('thread_id, "Message Body", "Created Date", "is Visible to Host", "is Visible to Guest"')
+    .in('thread_id', threadIds)
+    .order('"Created Date"', { ascending: false });
+
+  if (error) {
+    console.error('[messagingHelpers] Failed to fetch messages for preview:', error);
+    return new Map();
+  }
+
+  if (!messages || messages.length === 0) {
+    return new Map();
+  }
+
+  // Group messages by thread and find the most recent visible one for each user
+  const resultMap = new Map<string, string>();
+
+  for (const threadId of threadIds) {
+    const role = threadUserRoles.get(threadId);
+    if (!role) continue;
+
+    // Find the most recent message visible to this user in this thread
+    const visibleMessage = messages.find(msg => {
+      if (msg.thread_id !== threadId) return false;
+
+      // Check visibility based on user's role in this thread
+      if (role === 'host') {
+        return msg['is Visible to Host'] === true;
+      } else {
+        return msg['is Visible to Guest'] === true;
+      }
+    });
+
+    if (visibleMessage && visibleMessage['Message Body']) {
+      resultMap.set(threadId, visibleMessage['Message Body'].substring(0, 100));
+    }
+  }
+
+  return resultMap;
 }

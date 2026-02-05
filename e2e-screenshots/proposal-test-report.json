@@ -1,0 +1,944 @@
+{
+  "timestamp": "2026-02-04T13:38:45.787Z",
+  "credentials": {
+    "email": "splitleasefrederick+frederickros@gmail.com"
+  },
+  "results": [
+    {
+      "listingId": "1770159292555x84785333838911712",
+      "listingType": "Weekly",
+      "screenshots": [
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\1-Weekly-listing.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\1-Weekly-form.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\1-Weekly-pricing.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\1-Weekly-confirmation.png"
+      ],
+      "pricingData": {
+        "listingPage": {
+          "dollarAmounts": [
+            "$378",
+            "$3,024",
+            "$10,584",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$378/night",
+            "$378/night"
+          ],
+          "total": [
+            "Total\n$10,584"
+          ]
+        },
+        "formPage": {
+          "priceElements": [
+            {
+              "text": "Price per night$378.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$378.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Actual weeks of occupancy(2on/2off schedule)x 7 weeks",
+              "className": "price-row"
+            },
+            {
+              "text": "Actual weeks of occupancy(2on/2off schedule)",
+              "className": "price-label"
+            },
+            {
+              "text": "x 7 weeks",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$10,584.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$10,584.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$3,024.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,024.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $800.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $800.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks+ $10.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "+ $10.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$3,834.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,834.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$378",
+            "$3,024",
+            "$10,584",
+            "$378.00",
+            "$10,584.00",
+            "$3,024.00",
+            "$800.00",
+            "$10.00",
+            "$3,834.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$378/night",
+            "$378/night"
+          ],
+          "total": [
+            "Total\n$10,584"
+          ]
+        },
+        "beforeSubmit": {
+          "priceElements": [
+            {
+              "text": "Price per night$378.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$378.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Actual weeks of occupancy(2on/2off schedule)x 7 weeks",
+              "className": "price-row"
+            },
+            {
+              "text": "Actual weeks of occupancy(2on/2off schedule)",
+              "className": "price-label"
+            },
+            {
+              "text": "x 7 weeks",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$10,584.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$10,584.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$3,024.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,024.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $800.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $800.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks+ $10.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "+ $10.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$3,834.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,834.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$378",
+            "$3,024",
+            "$10,584",
+            "$378.00",
+            "$10,584.00",
+            "$3,024.00",
+            "$800.00",
+            "$10.00",
+            "$3,834.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$378/night",
+            "$378/night"
+          ],
+          "total": [
+            "Total\n$10,584"
+          ]
+        },
+        "confirmation": {
+          "priceElements": [
+            {
+              "text": "Price per night$378.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$378.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Actual weeks of occupancy(2on/2off schedule)x 7 weeks",
+              "className": "price-row"
+            },
+            {
+              "text": "Actual weeks of occupancy(2on/2off schedule)",
+              "className": "price-label"
+            },
+            {
+              "text": "x 7 weeks",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$10,584.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$10,584.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$3,024.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,024.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $800.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $800.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks+ $10.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "+ $10.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$3,834.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,834.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$378",
+            "$3,024",
+            "$10,584",
+            "$378.00",
+            "$10,584.00",
+            "$3,024.00",
+            "$800.00",
+            "$10.00",
+            "$3,834.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$378/night",
+            "$378/night"
+          ],
+          "total": [
+            "Total\n$10,584"
+          ]
+        }
+      },
+      "proposalId": null,
+      "success": true,
+      "errors": []
+    },
+    {
+      "listingId": "1770159059956x68069167691952992",
+      "listingType": "Nightly",
+      "screenshots": [
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\2-Nightly-listing.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\2-Nightly-form.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\2-Nightly-pricing.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\2-Nightly-confirmation.png"
+      ],
+      "pricingData": {
+        "listingPage": {
+          "dollarAmounts": [
+            "$157.68",
+            "$2,523",
+            "$8,199",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$157.68/night",
+            "$157.68/night"
+          ],
+          "total": [
+            "Total\n$8,199"
+          ]
+        },
+        "formPage": {
+          "priceElements": [
+            {
+              "text": "Price per night$157.68",
+              "className": "price-row"
+            },
+            {
+              "text": "$157.68",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$8,199.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$8,199.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$2,523.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$2,523.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $500.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $500.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wksNo cleaning fee",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$3,023.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,023.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$157.68",
+            "$2,523",
+            "$8,199",
+            "$8,199.00",
+            "$2,523.00",
+            "$500.00",
+            "$3,023.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$157.68/night",
+            "$157.68/night"
+          ],
+          "total": [
+            "Total\n$8,199"
+          ]
+        },
+        "beforeSubmit": {
+          "priceElements": [
+            {
+              "text": "Price per night$157.68",
+              "className": "price-row"
+            },
+            {
+              "text": "$157.68",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$8,199.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$8,199.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$2,523.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$2,523.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $500.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $500.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wksNo cleaning fee",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$3,023.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,023.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$157.68",
+            "$2,523",
+            "$8,199",
+            "$8,199.00",
+            "$2,523.00",
+            "$500.00",
+            "$3,023.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$157.68/night",
+            "$157.68/night"
+          ],
+          "total": [
+            "Total\n$8,199"
+          ]
+        },
+        "confirmation": {
+          "priceElements": [
+            {
+              "text": "Price per night$157.68",
+              "className": "price-row"
+            },
+            {
+              "text": "$157.68",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$8,199.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$8,199.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$2,523.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$2,523.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $500.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $500.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wksNo cleaning fee",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$3,023.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$3,023.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$157.68",
+            "$2,523",
+            "$8,199",
+            "$8,199.00",
+            "$2,523.00",
+            "$500.00",
+            "$3,023.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$157.68/night",
+            "$157.68/night"
+          ],
+          "total": [
+            "Total\n$8,199"
+          ]
+        }
+      },
+      "proposalId": null,
+      "success": true,
+      "errors": []
+    },
+    {
+      "listingId": "1770159488384x35093957137090224",
+      "listingType": "Monthly",
+      "screenshots": [
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\3-Monthly-listing.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\3-Monthly-form.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\3-Monthly-pricing.png",
+        "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e-screenshots\\3-Monthly-confirmation.png"
+      ],
+      "pricingData": {
+        "listingPage": {
+          "dollarAmounts": [
+            "$298.42",
+            "$4,775",
+            "$15,518",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$298.42/night",
+            "$298.42/night"
+          ],
+          "total": [
+            "Total\n$15,518"
+          ]
+        },
+        "formPage": {
+          "priceElements": [
+            {
+              "text": "Price per night$298.42",
+              "className": "price-row"
+            },
+            {
+              "text": "$298.42",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$15,518.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$15,518.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$4,775.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$4,775.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $1,000.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $1,000.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks+ $20.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "+ $20.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$5,795.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$5,795.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$298.42",
+            "$4,775",
+            "$15,518",
+            "$15,518.00",
+            "$4,775.00",
+            "$1,000.00",
+            "$20.00",
+            "$5,795.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$298.42/night",
+            "$298.42/night"
+          ],
+          "total": [
+            "Total\n$15,518"
+          ]
+        },
+        "beforeSubmit": {
+          "priceElements": [
+            {
+              "text": "Price per night$298.42",
+              "className": "price-row"
+            },
+            {
+              "text": "$298.42",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$15,518.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$15,518.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$4,775.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$4,775.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $1,000.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $1,000.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks+ $20.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "+ $20.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$5,795.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$5,795.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$298.42",
+            "$4,775",
+            "$15,518",
+            "$15,518.00",
+            "$4,775.00",
+            "$1,000.00",
+            "$20.00",
+            "$5,795.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$298.42/night",
+            "$298.42/night"
+          ],
+          "total": [
+            "Total\n$15,518"
+          ]
+        },
+        "confirmation": {
+          "priceElements": [
+            {
+              "text": "Price per night$298.42",
+              "className": "price-row"
+            },
+            {
+              "text": "$298.42",
+              "className": "price-value"
+            },
+            {
+              "text": "Number of nights per weekx 52",
+              "className": "price-row"
+            },
+            {
+              "text": "x 52",
+              "className": "price-value"
+            },
+            {
+              "text": "Total price for reservation*excluding Maintenance Fee and Damage Deposit$15,518.00",
+              "className": "price-row"
+            },
+            {
+              "text": "$15,518.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price per 4 weeks$4,775.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Price per 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$4,775.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Refundable* Damage Deposit*see terms of use+ $1,000.00",
+              "className": "price-row"
+            },
+            {
+              "text": "+ $1,000.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks+ $20.00",
+              "className": "price-row"
+            },
+            {
+              "text": "Maintenance Fee / 4 wks",
+              "className": "price-label"
+            },
+            {
+              "text": "+ $20.00",
+              "className": "price-value"
+            },
+            {
+              "text": "Price for the 1st 4 weeksincl. Damage Deposit + Maintenance Fees$5,795.00",
+              "className": "price-row price-highlight"
+            },
+            {
+              "text": "Price for the 1st 4 weeks",
+              "className": "price-label"
+            },
+            {
+              "text": "$5,795.00",
+              "className": "price-value"
+            }
+          ],
+          "dollarAmounts": [
+            "$298.42",
+            "$4,775",
+            "$15,518",
+            "$15,518.00",
+            "$4,775.00",
+            "$1,000.00",
+            "$20.00",
+            "$5,795.00",
+            "$50,",
+            "$50"
+          ],
+          "perNight": [
+            "$298.42/night",
+            "$298.42/night"
+          ],
+          "total": [
+            "Total\n$15,518"
+          ]
+        }
+      },
+      "proposalId": null,
+      "success": true,
+      "errors": []
+    }
+  ]
+}

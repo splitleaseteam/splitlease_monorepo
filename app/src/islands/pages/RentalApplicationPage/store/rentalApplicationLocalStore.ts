@@ -9,11 +9,22 @@
  * - Data validation before submission
  */
 
-// Storage keys
-const STORAGE_KEYS = {
+// Storage key prefix - actual keys are user-scoped: rentalApplicationDraft_{userId}
+const STORAGE_KEY_PREFIX = {
   DRAFT: 'rentalApplicationDraft',
   LAST_SAVED: 'rentalApplicationLastSaved',
 } as const;
+
+/**
+ * Get user-scoped storage keys
+ * This prevents data leaks between users on the same browser
+ */
+function getStorageKeys(userId: string) {
+  return {
+    DRAFT: `${STORAGE_KEY_PREFIX.DRAFT}_${userId}`,
+    LAST_SAVED: `${STORAGE_KEY_PREFIX.LAST_SAVED}_${userId}`,
+  };
+}
 
 // Occupant type
 export interface Occupant {
@@ -150,6 +161,7 @@ class RentalApplicationLocalStore {
   private listeners: Set<(state: StoreState) => void>;
   private autoSaveTimer: ReturnType<typeof setTimeout> | null;
   private readonly AUTO_SAVE_DELAY = 1000; // 1 second debounce
+  private currentUserId: string | null = null;
 
   constructor() {
     this.state = {
@@ -165,14 +177,39 @@ class RentalApplicationLocalStore {
 
   /**
    * Initialize the store - load from localStorage if available
+   * @param userId - Required user ID to scope localStorage keys (prevents data leaks between users)
    */
-  initialize(): StoreState {
+  initialize(userId: string): StoreState {
+    // If userId changes, reset the store to prevent cross-user data contamination
+    if (this.currentUserId && this.currentUserId !== userId) {
+      console.log(`[RentalAppStore] User changed from ${this.currentUserId} to ${userId}, resetting store`);
+      this.resetInternal();
+    }
+
+    this.currentUserId = userId;
+
+    if (!userId) {
+      console.warn('[RentalAppStore] No userId provided, returning empty state');
+      this.notifyListeners();
+      return this.state;
+    }
+
     try {
-      const savedDraft = localStorage.getItem(STORAGE_KEYS.DRAFT);
-      const lastSaved = localStorage.getItem(STORAGE_KEYS.LAST_SAVED);
+      const storageKeys = getStorageKeys(userId);
+      const savedDraft = localStorage.getItem(storageKeys.DRAFT);
+      const lastSaved = localStorage.getItem(storageKeys.LAST_SAVED);
 
       if (savedDraft) {
         const parsed = JSON.parse(savedDraft);
+
+        // Validate that the draft belongs to this user (defense in depth)
+        if (parsed.userId && parsed.userId !== userId) {
+          console.warn('[RentalAppStore] Draft userId mismatch, ignoring stale data');
+          localStorage.removeItem(storageKeys.DRAFT);
+          localStorage.removeItem(storageKeys.LAST_SAVED);
+          this.notifyListeners();
+          return this.state;
+        }
 
         // Restore form data
         if (parsed.formData) {
@@ -190,7 +227,7 @@ class RentalApplicationLocalStore {
         }
 
         this.state.lastSaved = lastSaved ? new Date(lastSaved) : null;
-        console.log('[RentalAppStore] Loaded draft from localStorage');
+        console.log(`[RentalAppStore] Loaded draft from localStorage for user ${userId}`);
       }
 
       this.notifyListeners();
@@ -321,21 +358,29 @@ class RentalApplicationLocalStore {
 
   /**
    * Manually save draft to localStorage
+   * Requires initialize() to have been called with a userId first
    */
   saveDraft(): boolean {
+    if (!this.currentUserId) {
+      console.warn('[RentalAppStore] Cannot save draft: no userId set. Call initialize(userId) first.');
+      return false;
+    }
+
     try {
+      const storageKeys = getStorageKeys(this.currentUserId);
       const dataToSave = {
+        userId: this.currentUserId, // Store userId for validation on load
         formData: this.state.formData,
         occupants: this.state.occupants,
         verificationStatus: this.state.verificationStatus,
       };
 
-      localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(dataToSave));
-      localStorage.setItem(STORAGE_KEYS.LAST_SAVED, new Date().toISOString());
+      localStorage.setItem(storageKeys.DRAFT, JSON.stringify(dataToSave));
+      localStorage.setItem(storageKeys.LAST_SAVED, new Date().toISOString());
 
       this.state.lastSaved = new Date();
       this.state.isDirty = false;
-      console.log('[RentalAppStore] Draft saved to localStorage');
+      console.log(`[RentalAppStore] Draft saved to localStorage for user ${this.currentUserId}`);
       this.notifyListeners();
       return true;
     } catch (error) {
@@ -346,9 +391,10 @@ class RentalApplicationLocalStore {
   }
 
   /**
-   * Reset store to default state and clear localStorage
+   * Internal reset - resets state without clearing localStorage
+   * Used when user changes to prevent loading stale data
    */
-  reset(): void {
+  private resetInternal(): void {
     this.state = {
       formData: { ...DEFAULT_FORM_DATA },
       occupants: [],
@@ -356,11 +402,24 @@ class RentalApplicationLocalStore {
       lastSaved: null,
       isDirty: false,
     };
+  }
 
-    localStorage.removeItem(STORAGE_KEYS.DRAFT);
-    localStorage.removeItem(STORAGE_KEYS.LAST_SAVED);
+  /**
+   * Reset store to default state and clear localStorage for current user
+   */
+  reset(): void {
+    this.resetInternal();
 
-    console.log('[RentalAppStore] Store reset to default state');
+    // Clear localStorage for current user if userId is set
+    if (this.currentUserId) {
+      const storageKeys = getStorageKeys(this.currentUserId);
+      localStorage.removeItem(storageKeys.DRAFT);
+      localStorage.removeItem(storageKeys.LAST_SAVED);
+      console.log(`[RentalAppStore] Store reset and localStorage cleared for user ${this.currentUserId}`);
+    } else {
+      console.log('[RentalAppStore] Store reset to default state (no userId to clear localStorage)');
+    }
+
     this.notifyListeners();
   }
 

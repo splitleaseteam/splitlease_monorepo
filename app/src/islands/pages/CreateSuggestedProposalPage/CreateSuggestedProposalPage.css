@@ -1236,3 +1236,59 @@
     transform: rotate(360deg);
   }
 }
+
+/* ============================================
+   LISTING STATUS WARNING BADGES
+   ============================================ */
+
+.csp-search-result-item--warning {
+  background-color: #FFFBEB;
+  border-left: 3px solid #F59E0B;
+}
+
+.csp-search-result-item--warning:hover {
+  background-color: #FEF3C7;
+}
+
+.csp-listing-warnings {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.csp-warning-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.csp-warning-badge--inactive {
+  background-color: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #F59E0B;
+}
+
+.csp-warning-badge--unapproved {
+  background-color: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #F87171;
+}
+
+.csp-badge-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+.csp-selected-item-card--warning {
+  background-color: #FFFBEB;
+  border-left: 4px solid #F59E0B;
+}

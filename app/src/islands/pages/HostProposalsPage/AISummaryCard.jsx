@@ -3,6 +3,7 @@
  *
  * Displays an AI-generated summary of the guest for new proposals.
  * Features a gradient purple background and CPU icon.
+ * Supports collapse/expand functionality with state persisted to localStorage.
  *
  * Only renders if:
  * - Summary text exists
@@ -10,8 +11,10 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
-import { Cpu } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Cpu, ChevronDown, ChevronUp } from 'lucide-react';
+
+const STORAGE_KEY = 'aiSummaryCollapsed';
 
 /**
  * Get summary text from proposal
@@ -79,7 +82,9 @@ function shouldShowAISummary(proposal) {
     : (proposal?.status?.id || proposal?.status?._id || '');
 
   // Match statuses that start with common pending prefixes
-  // Handles variations like "proposal_submitted_by_guest_-_awaiting_rental_application"
+  // Database uses Title Case like "Proposal Submitted by guest - Awaiting Rental Application"
+  // Convert to lowercase for case-insensitive matching
+  const statusLower = status.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
   const showStatusPrefixes = [
     'proposal_submitted',
     'host_review',
@@ -88,30 +93,80 @@ function shouldShowAISummary(proposal) {
     'new'
   ];
 
-  return showStatusPrefixes.some(prefix => status.startsWith(prefix));
+  return showStatusPrefixes.some(prefix => statusLower.startsWith(prefix));
+}
+
+/**
+ * Read collapsed state from localStorage
+ * @returns {boolean} True if collapsed, false if expanded
+ */
+function getInitialCollapsedState() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === 'true';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Save collapsed state to localStorage
+ * @param {boolean} isCollapsed - The collapsed state to save
+ */
+function saveCollapsedState(isCollapsed) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(isCollapsed));
+  } catch {
+    // Silently fail if localStorage is unavailable
+  }
 }
 
 /**
  * AISummaryCard displays AI-generated guest summary
+ * Supports collapse/expand with persisted state
  *
  * @param {Object} props
  * @param {Object} props.proposal - The proposal object
  */
 export function AISummaryCard({ proposal }) {
   const summary = getSummaryText(proposal);
+  const [isCollapsed, setIsCollapsed] = useState(getInitialCollapsedState);
+
+  const handleToggle = useCallback(() => {
+    setIsCollapsed(prev => {
+      const newState = !prev;
+      saveCollapsedState(newState);
+      return newState;
+    });
+  }, []);
 
   if (!shouldShowAISummary(proposal)) {
     return null;
   }
 
+  const ChevronIcon = isCollapsed ? ChevronDown : ChevronUp;
+
   return (
-    <div className="hp7-ai-summary-card">
+    <div className={`hp7-ai-summary-card ${isCollapsed ? 'hp7-ai-summary-collapsed' : ''}`}>
       <div className="hp7-ai-summary-icon">
         <Cpu size={12} />
       </div>
       <div className="hp7-ai-summary-content">
-        <div className="hp7-ai-summary-title">AI Summary</div>
-        <div className="hp7-ai-summary-text">{parseFormattedText(summary)}</div>
+        <button
+          type="button"
+          className="hp7-ai-summary-header"
+          onClick={handleToggle}
+          aria-expanded={!isCollapsed}
+          aria-controls="ai-summary-content"
+        >
+          <span className="hp7-ai-summary-title">AI Summary</span>
+          <ChevronIcon size={16} className="hp7-ai-summary-chevron" />
+        </button>
+        {!isCollapsed && (
+          <div id="ai-summary-content" className="hp7-ai-summary-text">
+            {parseFormattedText(summary)}
+          </div>
+        )}
       </div>
     </div>
   );

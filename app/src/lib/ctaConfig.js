@@ -44,15 +44,15 @@ export const CTA_ROUTES = {
   // --- Proposal CTAs (Host) ---
   'view_proposal_host': {
     actionType: 'navigate',
-    destination: '/host-proposals?proposalId={{proposal_id}}'
+    destination: '/host-proposals?listingId={{listing_id}}&proposalId={{proposal_id}}'
   },
   'view_rental_application': {
     actionType: 'navigate',
-    destination: '/host-proposals?proposalId={{proposal_id}}&showApplication=true'
+    destination: '/host-proposals?listingId={{listing_id}}&proposalId={{proposal_id}}&showApplication=true'
   },
   'host_accepted_proposal_host_view': {
     actionType: 'navigate',
-    destination: '/host-proposals?proposalId={{proposal_id}}'
+    destination: '/host-proposals?listingId={{listing_id}}&proposalId={{proposal_id}}'
   },
 
   // --- Document Review ---
@@ -80,7 +80,7 @@ export const CTA_ROUTES = {
   },
   'lease_docs_signed_host_view': {
     actionType: 'navigate',
-    destination: '/host-proposals?proposalId={{proposal_id}}'
+    destination: '/host-proposals?listingId={{listing_id}}&proposalId={{proposal_id}}'
   },
 
   // --- Active Lease CTAs ---

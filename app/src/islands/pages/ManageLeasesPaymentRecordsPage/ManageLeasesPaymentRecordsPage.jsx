@@ -31,6 +31,7 @@ import PaymentRecordsSection from './components/PaymentRecordsSection/PaymentRec
 import StaysSection from './components/StaysSection/StaysSection.jsx';
 import DocumentChangeSection from './components/DocumentChangeSection/DocumentChangeSection.jsx';
 import CancellationSection from './components/CancellationSection/CancellationSection.jsx';
+import LeaseReadinessModal from '../../shared/LeaseReadinessModal.jsx';
 import './manage-leases.css';
 
 export default function ManageLeasesPaymentRecordsPage() {
@@ -163,6 +164,16 @@ export default function ManageLeasesPaymentRecordsPage() {
           <div className="mlpr-loading-spinner" />
         </div>
       )}
+
+      {/* Lease Readiness Modal - Pre-flight check before document generation */}
+      <LeaseReadinessModal
+        isOpen={logic.showReadinessModal}
+        onClose={() => logic.setShowReadinessModal(false)}
+        readinessReport={logic.readinessReport}
+        lease={logic.selectedLease}
+        onGenerate={logic.handleGenerateSelectedDocs}
+        isGenerating={logic.isGeneratingDocs}
+      />
     </div>
   );
 }

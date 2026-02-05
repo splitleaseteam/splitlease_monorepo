@@ -256,9 +256,8 @@ export default function PhotosSection() {
               <div className="listing-dashboard-photos__type">
                 <select
                   value={photo.photoType || 'Other'}
-                  onChange={(e) => {
+                  onChange={() => {
                     // TODO: Handle photo type change
-                    console.log('Photo type changed:', photo.id, e.target.value);
                   }}
                 >
                   {PHOTO_TYPES.map((type) => (

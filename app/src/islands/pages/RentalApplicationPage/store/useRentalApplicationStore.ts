@@ -3,9 +3,12 @@
  *
  * Provides reactive access to the store with automatic re-renders on state changes.
  * Follows the useListingStore pattern from SelfListingPage.
+ *
+ * IMPORTANT: userId is required to prevent data leaks between users.
+ * The store uses user-scoped localStorage keys (rentalApplicationDraft_{userId}).
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   rentalApplicationLocalStore,
   type StoreState,
@@ -13,6 +16,10 @@ import {
   type Occupant,
   type VerificationStatus,
 } from './rentalApplicationLocalStore';
+
+interface UseRentalApplicationStoreProps {
+  userId: string;
+}
 
 interface UseRentalApplicationStoreReturn {
   // State
@@ -50,15 +57,23 @@ interface UseRentalApplicationStoreReturn {
 
 /**
  * Hook for accessing and updating the rental application local store
+ * @param userId - Required user ID to scope localStorage keys (prevents data leaks between users)
  */
-export function useRentalApplicationStore(): UseRentalApplicationStoreReturn {
+export function useRentalApplicationStore({ userId }: UseRentalApplicationStoreProps): UseRentalApplicationStoreReturn {
   const [state, setState] = useState<StoreState>(() => rentalApplicationLocalStore.getState());
+  const previousUserIdRef = useRef<string | null>(null);
 
-  // Subscribe to store updates
+  // Subscribe to store updates and initialize with userId
   useEffect(() => {
-    // Initialize the store (loads from localStorage)
-    const initialState = rentalApplicationLocalStore.initialize();
+    if (!userId) {
+      console.warn('[useRentalApplicationStore] No userId provided - store will not load localStorage data');
+      return;
+    }
+
+    // Initialize the store with userId (loads from user-scoped localStorage)
+    const initialState = rentalApplicationLocalStore.initialize(userId);
     setState(initialState);
+    previousUserIdRef.current = userId;
 
     // Subscribe to future updates
     const unsubscribe = rentalApplicationLocalStore.subscribe((newState) => {
@@ -66,7 +81,7 @@ export function useRentalApplicationStore(): UseRentalApplicationStoreReturn {
     });
 
     return unsubscribe;
-  }, []);
+  }, [userId]);
 
   // Memoized update functions
   const updateFormData = useCallback((data: Partial<RentalApplicationFormData>) => {
