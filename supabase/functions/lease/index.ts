@@ -213,7 +213,7 @@ async function authenticateFromHeaders(
 
     return { id: appUser._id, email: user.email ?? '' };
   } catch (_err) {
-    console.error('[lease:auth] Exception:', (err as Error).message);
+    console.error('[lease:auth] Exception:', (_err as Error).message);
     return null;
   }
 }

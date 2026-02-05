@@ -39,6 +39,10 @@ import { useRequestFlow } from './hooks/useRequestFlow.js';
 import { usePricingStrategy } from './hooks/usePricingStrategy.js';
 import { useScheduleState } from './state/useScheduleState.js';
 
+// API imports for real data fetching
+import { fetchLeaseDetails } from '../../../lib/api/guestLeases.js';
+import { supabase } from '../../../lib/supabase.js';
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -460,9 +464,60 @@ export function useScheduleDashboardLogic() {
       return;
     }
 
-    setLease(MOCK_LEASE);
-    setRoommate(roommateData);
-    setIsLoading(false);
+    // Async function to fetch real lease data
+    async function loadLeaseData() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Try to fetch real lease data
+        const leaseData = await fetchLeaseDetails(leaseId);
+
+        if (leaseData) {
+          console.log('[ScheduleDashboard] Loaded real lease data:', leaseData);
+
+          // Set lease data
+          setLease({
+            _id: leaseData._id,
+            propertyName: leaseData.listing?.name || leaseData.listing?.title || 'Property',
+            propertyAddress: leaseData.listing?.address || '',
+            startDate: leaseData.startDate,
+            endDate: leaseData.endDate,
+            nightlyRate: leaseData.nightlyRate || 150
+          });
+
+          // Extract roommate from lease (the other guest sharing the lease)
+          // If lease has a roommate/co-guest, use that; otherwise fall back to mock
+          if (leaseData.roommate) {
+            setRoommate({
+              _id: leaseData.roommate._id || leaseData.roommate.id,
+              firstName: leaseData.roommate.firstName,
+              lastName: leaseData.roommate.lastName,
+              avatarUrl: leaseData.roommate.profilePhoto || leaseData.roommate.avatarUrl,
+              email: leaseData.roommate.email,
+              pricingStrategy: leaseData.roommate.pricingStrategy || MOCK_ROOMMATE.pricingStrategy
+            });
+          } else {
+            // Fall back to mock roommate for dev/testing
+            console.log('[ScheduleDashboard] No roommate in lease data, using mock');
+            setRoommate(roommateData);
+          }
+
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('[ScheduleDashboard] Failed to fetch real lease data, using mock:', err.message);
+      }
+
+      // Fall back to mock data for development
+      console.log('[ScheduleDashboard] Using mock data for development');
+      setLease(MOCK_LEASE);
+      setRoommate(roommateData);
+      setIsLoading(false);
+    }
+
+    loadLeaseData();
   }, [leaseId, roommateData]);
 
   // -------------------------------------------------------------------------

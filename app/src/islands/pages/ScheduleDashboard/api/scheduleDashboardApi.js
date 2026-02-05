@@ -5,6 +5,64 @@
  * TODO: Replace stubs with real Supabase/Edge Function calls
  */
 
+import { supabase } from 'lib/supabase.js';
+import { adaptLeaseFromSupabase } from 'logic/processors/leases/adaptLeaseFromSupabase.js';
+
+/**
+ * Fetch lease details for Schedule Dashboard
+ * @param {string} leaseId - Lease ID
+ * @returns {Promise<Object>} Normalized lease object
+ */
+export async function fetchLeaseById(leaseId) {
+  const { data, error } = await supabase
+    .from('bookings_leases')
+    .select(`
+      *,
+      host:Host(*),
+      guest:Guest(*),
+      listing:Listing(*),
+      stays:bookings_stays(*)
+    `)
+    .eq('_id', leaseId)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return adaptLeaseFromSupabase(data);
+}
+
+/**
+ * Split nights between current user and roommate
+ * @param {Object} lease - Adapted lease data
+ * @param {string} currentUserId - Current user ID
+ * @returns {{ userNights: string[], roommateNights: string[] }}
+ */
+export function splitNightsByUser(lease, currentUserId) {
+  const allDates = lease?.bookedDates || [];
+  const stays = lease?.stays || [];
+
+  const userNights = [];
+  const roommateNights = [];
+
+  stays.forEach((stay) => {
+    const isUserStay = stay?.assignedTo === currentUserId;
+    const nightsInStay = stay?.dates || [];
+    const nights = allDates.length > 0
+      ? nightsInStay.filter((night) => allDates.includes(night))
+      : nightsInStay;
+
+    if (isUserStay) {
+      userNights.push(...nights);
+    } else {
+      roommateNights.push(...nights);
+    }
+  });
+
+  return { userNights, roommateNights };
+}
+
 // ============================================================================
 // PERSPECTIVE-NEUTRAL CALENDAR DATA
 // ============================================================================

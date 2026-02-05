@@ -100,6 +100,13 @@ export function adaptLeaseFromSupabase(row) {
     guest: row.guest ? adaptUserFromSupabase(row.guest) : null,
     host: row.host ? adaptUserFromSupabase(row.host) : null,
     listing: row.listing ? adaptListingFromSupabase(row.listing) : null,
+    propertyName: row.listing?.Name || row.listing?.['Listing Title'] || row.listing?.name || null,
+    propertyAddress: row.listing?.Address || row.listing?.address || null,
+    getRoommate(currentUserId) {
+      if (this.host?._id === currentUserId) return this.guest;
+      if (this.guest?._id === currentUserId) return this.host;
+      return this.coTenant || this.host || this.guest;
+    },
     proposal: row.proposal ? {
       id: row.proposal._id,
       checkInDay: parseInt(row.proposal['check in day']) ?? null,
@@ -208,6 +215,7 @@ function adaptStayFromSupabase(stay) {
     _id: stay._id,
     id: stay._id,
     status: stay['Stay Status'] || 'unknown',
+    assignedTo: stay['Assigned to'] || stay.assignedTo || stay.assigned_to || null,
     checkIn: parseDate(stay['Check In (night)']),
     checkOut: parseDate(stay['Check-out day']),
     lastNight: parseDate(stay['Last Night (night)']),

@@ -159,8 +159,49 @@ export default function ScheduleCalendar({
   onSelectTransaction,
   priceOverlays = null, // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
   roommatePriceOverlays = null, // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
-  roommateName = null // Roommate's first name for tooltip
+  roommateName = null, // Roommate's first name for tooltip
+  isLoading = false // Loading state for skeleton UI
 }) {
+  // Show loading skeleton while data is being fetched
+  if (isLoading) {
+    return (
+      <div className="schedule-calendar schedule-calendar--loading">
+        <div className="schedule-calendar__header">
+          <div className="schedule-calendar__skeleton-nav" />
+          <div className="schedule-calendar__skeleton-legend" />
+          <div className="schedule-calendar__skeleton-nav" />
+        </div>
+        <div className="schedule-calendar__dual-container">
+          <div className="schedule-calendar__month-panel schedule-calendar__month-panel--skeleton">
+            <div className="schedule-calendar__skeleton-title" />
+            <div className="schedule-calendar__skeleton-weekdays">
+              {DAYS_OF_WEEK.map(day => (
+                <div key={day} className="schedule-calendar__skeleton-weekday" />
+              ))}
+            </div>
+            <div className="schedule-calendar__skeleton-grid">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} className="schedule-calendar__skeleton-day" />
+              ))}
+            </div>
+          </div>
+          <div className="schedule-calendar__month-panel schedule-calendar__month-panel--skeleton">
+            <div className="schedule-calendar__skeleton-title" />
+            <div className="schedule-calendar__skeleton-weekdays">
+              {DAYS_OF_WEEK.map(day => (
+                <div key={`s2-${day}`} className="schedule-calendar__skeleton-weekday" />
+              ))}
+            </div>
+            <div className="schedule-calendar__skeleton-grid">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} className="schedule-calendar__skeleton-day" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   // Default to current date if no month provided
   const currentMonth = currentMonthProp || new Date();
 
@@ -466,6 +507,14 @@ export default function ScheduleCalendar({
         </button>
         <div className="schedule-calendar__legend">
           <div className="schedule-calendar__legend-item">
+            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--mine" />
+            <span>Your Nights</span>
+          </div>
+          <div className="schedule-calendar__legend-item">
+            <span className="schedule-calendar__legend-color schedule-calendar__legend-color--roommate" />
+            <span>{roommateName ? `${roommateName}'s Nights` : "Roommate's Nights"}</span>
+          </div>
+          <div className="schedule-calendar__legend-item">
             <span className="schedule-calendar__legend-color schedule-calendar__legend-color--adjacent" />
             <span>Recommended</span>
           </div>
@@ -534,5 +583,6 @@ ScheduleCalendar.propTypes = {
     price: PropTypes.number.isRequired,
     tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
   })),
-  roommateName: PropTypes.string
+  roommateName: PropTypes.string,
+  isLoading: PropTypes.bool
 };
