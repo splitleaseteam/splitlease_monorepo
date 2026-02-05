@@ -367,10 +367,6 @@ export function useAccountProfilePageLogic() {
     return isOwnProfile;
   }, [isOwnProfile, previewMode]);
 
-  const isPublicView = useMemo(() => {
-    return !isEditorView;
-  }, [isEditorView]);
-
   /**
    * Determine if profile belongs to a host user
    */
@@ -441,15 +437,6 @@ export function useAccountProfilePageLogic() {
     };
     return generateNextActions(profileInfo, verifications, milestones);
   }, [profileData, formData, verifications, milestones]);
-
-  /**
-   * Display name for sidebar
-   */
-  const displayName = useMemo(() => {
-    const first = formData.firstName || profileData?.['Name - First'] || '';
-    const last = formData.lastName || profileData?.['Name - Last'] || '';
-    return `${first} ${last}`.trim() || 'Your Name';
-  }, [formData.firstName, formData.lastName, profileData]);
 
   /**
    * Display job title for sidebar
@@ -1184,65 +1171,10 @@ export function useAccountProfilePageLogic() {
   }, [isEditorView, profileUserId, formData, validateForm, fetchProfileData]);
 
   /**
-   * Cancel changes and reset form
-   */
-  const handleCancel = useCallback(() => {
-    if (profileData) {
-      // Database columns use Bubble.io naming conventions
-      // Date of Birth stored as timestamp, convert to YYYY-MM-DD
-      const dobTimestamp = profileData['Date of Birth'];
-      const dateOfBirth = dobTimestamp ? dobTimestamp.split('T')[0] : '';
-
-      // Parse transportation medium - stored as JSON string in text column
-      const rawTransport = profileData['transportation medium'];
-      let transportationTypes = [];
-      const validValues = ['car', 'public_transit', 'bicycle', 'walking', 'rideshare', 'other'];
-
-      if (rawTransport && typeof rawTransport === 'string') {
-        try {
-          const parsed = JSON.parse(rawTransport);
-          if (Array.isArray(parsed)) {
-            transportationTypes = parsed.filter(val => validValues.includes(val));
-          }
-        } catch {
-          if (validValues.includes(rawTransport)) {
-            transportationTypes = [rawTransport];
-          }
-        }
-      } else if (Array.isArray(rawTransport)) {
-        transportationTypes = rawTransport.filter(val => validValues.includes(val));
-      }
-
-      setFormData({
-        firstName: profileData['Name - First'] || '',
-        lastName: profileData['Name - Last'] || '',
-        jobTitle: profileData._jobTitle || '', // Job title stored in linked rental application
-        dateOfBirth,
-        bio: profileData['About Me / Bio'] || '',
-        needForSpace: profileData['need for Space'] || '',
-        specialNeeds: profileData['special needs'] || '',
-        selectedDays: dayNamesToIndices(profileData['Recent Days Selected'] || []),
-        transportationTypes,
-        goodGuestReasons: profileData['Reasons to Host me'] || [],
-        storageItems: profileData['About - Commonly Stored Items'] || []
-      });
-      setFormErrors({});
-      setIsDirty(false);
-    }
-  }, [profileData]);
-
-  /**
    * Toggle preview mode to show public view of own profile
    */
   const handlePreviewProfile = useCallback(() => {
     setPreviewMode(prev => !prev);
-  }, []);
-
-  /**
-   * Exit preview mode and return to editor view
-   */
-  const handleExitPreview = useCallback(() => {
-    setPreviewMode(false);
   }, []);
 
   // ============================================================================
@@ -1635,19 +1567,13 @@ export function useAccountProfilePageLogic() {
 
     // View mode
     isEditorView,
-    isPublicView,
-    isAuthenticated,
-    isOwnProfile,
     previewMode,
-    handleExitPreview,
 
     // Profile data
     profileData,
     profileUserId,
-    loggedInUserId,
 
     // Computed display values
-    displayName,
     displayJobTitle,
     verifications,
     profileStrength,
@@ -1670,9 +1596,8 @@ export function useAccountProfilePageLogic() {
     handleChipToggle,
     handleTransportToggle,
 
-    // Save/Cancel
+    // Save
     handleSave,
-    handleCancel,
     handlePreviewProfile,
 
     // Verification handlers
