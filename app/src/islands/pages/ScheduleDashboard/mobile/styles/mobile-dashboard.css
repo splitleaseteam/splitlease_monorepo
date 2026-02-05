@@ -549,11 +549,13 @@
   color: var(--schedule-success, #3B82F6);
 }
 
+.mobile-day-cell--cotenant,
 .mobile-day-cell--roommate {
   background: rgba(109, 49, 194, 0.1);
   border-color: var(--schedule-primary-light, #6D31C2);
 }
 
+.mobile-day-cell--cotenant .mobile-day-cell__num,
 .mobile-day-cell--roommate .mobile-day-cell__num {
   color: var(--schedule-primary-light, #6D31C2);
 }

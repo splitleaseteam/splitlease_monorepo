@@ -17,7 +17,7 @@ export function useCalendarState() {
   // NIGHT ARRAYS (String arrays of date strings)
   // -------------------------------------------------------------------------
   const [userNights, setUserNights] = useState([]);
-  const [roommateNights, setRoommateNights] = useState([]);
+  const [coTenantNights, setCoTenantNights] = useState([]);
   const [pendingNights, setPendingNights] = useState([]);
   const [blockedNights, setBlockedNights] = useState([]);
   const [sharedNights, setSharedNights] = useState([]);
@@ -65,7 +65,8 @@ export function useCalendarState() {
   return {
     // Night Arrays
     userNights,
-    roommateNights,
+    coTenantNights,
+    roommateNights: coTenantNights,
     pendingNights,
     blockedNights,
     sharedNights,
@@ -83,7 +84,8 @@ export function useCalendarState() {
 
     // Direct setters (for cross-hook coordination)
     setUserNights,
-    setRoommateNights,
+    setCoTenantNights,
+    setRoommateNights: setCoTenantNights,
     setPendingNights,
     setBlockedNights,
     setSharedNights,

@@ -118,6 +118,7 @@
   color: #7b1fa2;
 }
 
+.month-day-cell--cotenant .month-day-cell__price,
 .month-day-cell--roommate .month-day-cell__price {
   color: #1976d2;
 }
@@ -129,7 +130,9 @@
 /* Day cell states */
 .month-day-cell--mine { background: #f3e5f5; }
 .month-day-cell--mine .month-day-cell__dot { background: #7b1fa2; }
+.month-day-cell--cotenant,
 .month-day-cell--roommate { background: #e3f2fd; }
+.month-day-cell--cotenant .month-day-cell__dot,
 .month-day-cell--roommate .month-day-cell__dot { background: #1976d2; }
 .month-day-cell--pending {
   background: white;
@@ -167,6 +170,7 @@
 }
 
 .month-day-cell--mine:not(.month-day-cell--outside):hover { background: #e1bee7; }
+.month-day-cell--cotenant:not(.month-day-cell--outside):hover,
 .month-day-cell--roommate:not(.month-day-cell--outside):hover { background: #bbdefb; }
 .month-day-cell--pending:not(.month-day-cell--outside):hover { background: #ffe0b2; }
 .month-day-cell--today .month-day-cell__num {
@@ -202,6 +206,7 @@
 }
 
 .mobile-month-calendar__legend-dot--mine { background: #7b1fa2; }
+.mobile-month-calendar__legend-dot--cotenant,
 .mobile-month-calendar__legend-dot--roommate { background: #1976d2; }
 .mobile-month-calendar__legend-dot--pending { background: #f57c00; }
 

@@ -147,7 +147,8 @@ export function useScheduleDashboardLogic() {
   // CORE DATA
   // -------------------------------------------------------------------------
   const [lease, setLease] = useState(null);
-  const [roommate, setRoommate] = useState(null);
+  const [coTenant, setCoTenant] = useState(null);
+  const roommate = coTenant;
   const [dateChangeRequests, setDateChangeRequests] = useState([]);
   const [selectedNight, setSelectedNight] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
@@ -470,7 +471,7 @@ export function useScheduleDashboardLogic() {
         if (!isMounted) return;
 
         setLease(leaseData);
-        setRoommate(leaseData?.getRoommate ? leaseData.getRoommate(currentUserId) : null);
+        setCoTenant(leaseData?.getCoTenant ? leaseData.getCoTenant(currentUserId) : null);
       } catch (err) {
         if (!isMounted) return;
         setError(err?.message || 'Failed to load lease');
@@ -1140,7 +1141,8 @@ export function useScheduleDashboardLogic() {
 
     // Core Data
     lease,
-    roommate,
+    coTenant,
+    roommate: coTenant,
     dateChangeRequests,
 
     // Perspective (Dev Scaffolding)
@@ -1149,6 +1151,7 @@ export function useScheduleDashboardLogic() {
 
     // Calendar (using string dates)
     userNights: scheduleState.userNights,
+    coTenantNights: scheduleState.roommateNights,
     roommateNights: scheduleState.roommateNights,
     pendingNights: scheduleState.pendingNights,
     blockedNights: scheduleState.blockedNights,

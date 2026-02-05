@@ -276,6 +276,7 @@
   font-size: 0.9rem;
 }
 
+.lease-info-bar__cotenant,
 .lease-info-bar__roommate,
 .lease-info-bar__period {
   text-align: right;
@@ -420,11 +421,13 @@
   color: white;
 }
 
+.schedule-calendar__day--cotenant,
 .schedule-calendar__day--roommate {
   background: white;
   border: 2px solid var(--schedule-border);
 }
 
+.schedule-calendar__day--cotenant:hover,
 .schedule-calendar__day--roommate:hover {
   border-color: var(--schedule-primary);
   background: var(--schedule-bg);
@@ -613,6 +616,7 @@
   background: #3B82F6;
 }
 
+.schedule-calendar__legend-color--cotenant,
 .schedule-calendar__legend-color--roommate {
   background: white;
   border: 2px solid var(--schedule-border);
@@ -629,13 +633,15 @@
 }
 
 /* ============================================================================
-   ROOMMATE PROFILE CARD
+   CO-TENANT PROFILE CARD (alias: roommate-profile-card for backward compatibility)
    ============================================================================ */
 
+.cotenant-profile-card,
 .roommate-profile-card {
   padding: 1rem;
 }
 
+.cotenant-profile-card__heading,
 .roommate-profile-card__heading {
   font-size: 0.875rem;
   font-weight: 600;
@@ -645,6 +651,7 @@
   letter-spacing: 0.5px;
 }
 
+.cotenant-profile-card__header,
 .roommate-profile-card__header {
   display: flex;
   align-items: center;
@@ -652,6 +659,7 @@
   margin-bottom: 1rem;
 }
 
+.cotenant-profile-card__avatar,
 .roommate-profile-card__avatar {
   width: 40px;
   height: 40px;
@@ -664,18 +672,21 @@
   flex-shrink: 0;
 }
 
+.cotenant-profile-card__avatar img,
 .roommate-profile-card__avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+.cotenant-profile-card__initials,
 .roommate-profile-card__initials {
   color: white;
   font-size: 1rem;
   font-weight: 600;
 }
 
+.cotenant-profile-card__info,
 .roommate-profile-card__info {
   display: flex;
   justify-content: space-between;
@@ -683,6 +694,7 @@
   flex: 1;
 }
 
+.cotenant-profile-card__name,
 .roommate-profile-card__name {
   display: block;
   font-size: 1rem;
@@ -690,11 +702,13 @@
   color: var(--schedule-text);
 }
 
+.cotenant-profile-card__role,
 .roommate-profile-card__role {
   font-size: 0.75rem;
   color: var(--schedule-text-muted);
 }
 
+.cotenant-profile-card__score,
 .roommate-profile-card__score {
   font-size: 0.875rem;
   font-weight: 600;
@@ -744,6 +758,7 @@
 }
 
 /* Response Patterns */
+.cotenant-profile-card__patterns,
 .roommate-profile-card__patterns {
   display: flex;
   align-items: center;
@@ -754,10 +769,12 @@
   margin-bottom: 1rem;
 }
 
+.cotenant-profile-card__pattern-icon,
 .roommate-profile-card__pattern-icon {
   font-size: 1.25rem;
 }
 
+.cotenant-profile-card__pattern-text,
 .roommate-profile-card__pattern-text {
   font-size: 0.875rem;
   color: var(--schedule-text-muted);
@@ -2842,6 +2859,7 @@
     text-align: left;
   }
 
+  .lease-info-bar__cotenant,
   .lease-info-bar__roommate,
   .lease-info-bar__period {
     text-align: left;
@@ -3099,6 +3117,7 @@
   text-align: center;
 }
 
+.flexibility-modal__metrics-header-cotenant,
 .flexibility-modal__metrics-header-roommate {
   text-align: center;
 }
@@ -3142,6 +3161,7 @@
   color: var(--schedule-text);
 }
 
+.flexibility-modal__metric-value--cotenant,
 .flexibility-modal__metric-value--roommate {
   color: var(--schedule-text-muted);
 }
@@ -3373,7 +3393,7 @@
   margin-top: 1px;
 }
 
-/* Price overlay tooltip styling for adjacent roommate prices */
+/* Price overlay tooltip styling for adjacent co-tenant prices */
 .schedule-calendar__price-bar[title] {
   cursor: help;
   opacity: 0.85;
@@ -3429,6 +3449,7 @@
 }
 
 /* In pricing mode, hide borders/styling on non-user days */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--cotenant,
 .schedule-dashboard__calendar--pricing .schedule-calendar__day--roommate,
 .schedule-dashboard__calendar--pricing .schedule-calendar__day--available,
 .schedule-dashboard__calendar--pricing .schedule-calendar__day--pending,
@@ -5860,6 +5881,7 @@
   color: var(--schedule-text);
 }
 
+.reservation-header__cotenant,
 .reservation-header__roommate {
   display: flex;
   align-items: center;
