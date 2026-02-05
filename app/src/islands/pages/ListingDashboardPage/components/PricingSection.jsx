@@ -1,6 +1,7 @@
 import HostScheduleSelector from '../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import NightlyPricingLegend from './NightlyPricingLegend';
 import { useListingDashboard } from '../context/ListingDashboardContext';
+import { formatCurrency } from '../../../../lib/formatters';
 
 // Weekly pattern labels for display
 const WEEKLY_PATTERN_LABELS = {
@@ -18,16 +19,6 @@ export default function PricingSection() {
   const isNightly = (listing?.leaseStyle || 'Nightly').toLowerCase() === 'nightly';
   const isMonthly = (listing?.leaseStyle || '').toLowerCase() === 'monthly';
   const isWeekly = (listing?.leaseStyle || '').toLowerCase() === 'weekly';
-
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return (
     <div id="pricing" className="listing-dashboard-section">

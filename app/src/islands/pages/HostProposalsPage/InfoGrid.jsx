@@ -13,23 +13,8 @@
  * Part of the Host Proposals V7 redesign.
  */
 import React from 'react';
+import { formatFullDate } from './formatters.js';
 import { getCheckInOutFromDays } from './types.js';
-
-/**
- * Format date for display
- * @param {string|Date} date - The date to format
- * @returns {string} Formatted date string like "Jan 15, 2026"
- */
-function formatDate(date) {
-  if (!date) return 'TBD';
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return 'TBD';
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-}
 
 /**
  * Format schedule range from days selected
@@ -154,16 +139,16 @@ export function InfoGrid({ proposal }) {
         <div className="hp7-info-label">Move-in</div>
         <div className="hp7-info-value">
           {moveInChanged && (
-            <span className="hp7-strikethrough">{formatDate(originalMoveIn)}</span>
+            <span className="hp7-strikethrough">{formatFullDate(originalMoveIn) || 'TBD'}</span>
           )}
           <span className={moveInChanged ? 'hp7-changed-value' : ''}>
-            {formatDate(moveIn)}
+            {formatFullDate(moveIn) || 'TBD'}
           </span>
         </div>
       </div>
       <div className="hp7-info-item">
         <div className="hp7-info-label">Move-out</div>
-        <div className="hp7-info-value">{formatDate(moveOut)}</div>
+        <div className="hp7-info-value">{formatFullDate(moveOut) || 'TBD'}</div>
       </div>
       <div className="hp7-info-item">
         <div className="hp7-info-label">Duration</div>

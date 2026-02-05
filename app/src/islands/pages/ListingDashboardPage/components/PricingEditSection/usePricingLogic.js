@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { formatCurrency } from '../../../../lib/formatters';
 
 /**
  * usePricingLogic - Custom hook to manage all pricing logic for PricingEditSection
@@ -134,11 +135,6 @@ export function usePricingLogic(listing, isOwner = true) {
     ]);
   }, []);
 
-  // Calculate nightly rate from weekly compensation
-  const calculateNightlyRate = (weeklyComp, nightCount) => {
-    if (!weeklyComp || nightCount === 0) return 0;
-    return Math.round(weeklyComp / nightCount);
-  };
 
   // Validate form based on rental type
   const isFormValid = useCallback(() => {
@@ -259,15 +255,6 @@ export function usePricingLogic(listing, isOwner = true) {
     setActiveInfoTooltip(activeInfoTooltip === tooltipId ? null : tooltipId);
   };
 
-  // Format currency for display
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   return {
     // State

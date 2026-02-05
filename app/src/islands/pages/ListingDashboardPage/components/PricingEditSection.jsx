@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import HostScheduleSelector from '../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import InformationalText from '../../../shared/InformationalText';
 import { logger } from '../../../../lib/logger';
+import { formatCurrency, calculateNightlyRate } from '../../../../lib/formatters';
 import LeaseStyleSelector from './PricingEditSection/LeaseStyleSelector';
 import NightlyPricingForm from './PricingEditSection/NightlyPricingForm';
 import WeeklyPricingForm from './PricingEditSection/WeeklyPricingForm';
@@ -207,16 +208,13 @@ export default function PricingEditSection({
 
   // Handle back button click - show confirmation if changes exist
   const handleBackClick = useCallback(() => {
-    console.log('🔙 Go Back clicked:', { hasChanges, onCloseExists: typeof onClose === 'function' });
     if (hasChanges) {
-      console.log('📋 Showing confirmation modal');
       setShowConfirmModal(true);
     } else {
-      console.log('✅ No changes, calling onClose()');
       if (typeof onClose === 'function') {
         onClose();
       } else {
-        console.error('❌ onClose is not a function:', onClose);
+        logger.error('onClose is not a function:', onClose);
       }
     }
   }, [hasChanges, onClose]);
@@ -232,12 +230,6 @@ export default function PricingEditSection({
       'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
     ]);
   }, []);
-
-  // Calculate nightly rate from weekly compensation
-  const calculateNightlyRate = (weeklyComp, nightCount) => {
-    if (!weeklyComp || nightCount === 0) return 0;
-    return Math.round(weeklyComp / nightCount);
-  };
 
   // Validate form based on rental type
   const isFormValid = useCallback(() => {
@@ -365,12 +357,6 @@ export default function PricingEditSection({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   return (
