@@ -76,6 +76,9 @@ trees/
 # Claude hooks logs
 logs/
 
+# Claude query logs (may contain webhook URLs)
+.claude/query-logs/
+
 # Commit counter (local state tracking)
 .claude/commit_count.txt
 

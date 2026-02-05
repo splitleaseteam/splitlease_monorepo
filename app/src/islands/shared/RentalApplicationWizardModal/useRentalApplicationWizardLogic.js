@@ -146,9 +146,15 @@ async function transitionSLProposalsOnRentalAppSubmit(userId) {
 
 export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicationStatus = 'not_started', userProfileData = null }) {
   // ============================================================================
-  // STORE INTEGRATION (reuse existing localStorage store)
+  // USER IDENTIFICATION (required for user-scoped localStorage)
   // ============================================================================
-  const store = useRentalApplicationStore();
+  const userId = getSessionId();
+
+  // ============================================================================
+  // STORE INTEGRATION (reuse existing localStorage store)
+  // User-scoped to prevent data leaks between users on same browser
+  // ============================================================================
+  const store = useRentalApplicationStore({ userId });
   const {
     formData,
     occupants,
@@ -539,8 +545,8 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
   // ============================================================================
   // STEP COMPLETION TRACKING
   // ============================================================================
-  // Pure function to check step completion - considers visited state for optional steps
-  const checkStepComplete = useCallback((stepNumber, visitedStepsArray) => {
+  // Pure function to check step completion - considers visited/passed state for optional steps
+  const checkStepComplete = useCallback((stepNumber, visitedStepsArray, currentStepNumber) => {
     let stepFields = [...STEP_FIELDS[stepNumber]];
 
     // Add conditional employment fields for step 4
@@ -549,11 +555,13 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
       stepFields = [...stepFields, ...conditionalFields];
     }
 
-    // For optional steps (3=Occupants, 5=Details, 6=Documents): only show as complete
-    // if user has actually visited them. This prevents showing checkmarks for steps
-    // the user hasn't navigated to yet on a new application.
+    // For optional steps (3=Occupants, 5=Details, 6=Documents):
+    // - Mark as complete if the user has visited them, OR
+    // - Mark as complete if the user has progressed past them (reached a higher step)
+    // This prevents showing incomplete checkmarks for steps the user has passed through
     if (stepFields.length === 0) {
-      return visitedStepsArray.includes(stepNumber);
+      // Optional step is complete if visited OR if user has passed it (current step is higher)
+      return visitedStepsArray.includes(stepNumber) || currentStepNumber > stepNumber;
     }
 
     // Check all required fields have values
@@ -563,7 +571,7 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
     });
   }, [formData]);
 
-  // Update completed steps when form data or visited steps change
+  // Update completed steps when form data, visited steps, or current step changes
   useEffect(() => {
     // For submitted applications, ALL steps are complete by definition.
     // Skip this effect entirely - state was already initialized with ALL_STEPS_COMPLETE.
@@ -574,7 +582,8 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
 
     const newCompleted = [];
     for (let step = 1; step <= TOTAL_STEPS; step++) {
-      if (checkStepComplete(step, visitedSteps)) {
+      // Pass currentStep so optional steps past the current position are marked complete
+      if (checkStepComplete(step, visitedSteps, currentStep)) {
         newCompleted.push(step);
       }
     }
@@ -584,7 +593,7 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
         prev.every((v, i) => v === newCompleted[i]);
       return isSame ? prev : newCompleted;
     });
-  }, [formData, visitedSteps, checkStepComplete, applicationStatus]);
+  }, [formData, visitedSteps, currentStep, checkStepComplete, applicationStatus]);
 
   // Public API for checking step completion (can use completedSteps cache)
   const isStepComplete = useCallback((stepNumber) => {

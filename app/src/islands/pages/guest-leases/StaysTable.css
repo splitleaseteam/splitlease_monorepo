@@ -43,6 +43,20 @@
   transition: background var(--transition-fast);
 }
 
+.stays-table__row--clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.stays-table__row--clickable:hover {
+  background-color: rgba(90, 45, 130, 0.04);
+}
+
+.stays-table__row--clickable:focus-visible {
+  outline: 2px solid var(--primary-purple);
+  outline-offset: 2px;
+}
+
 .stays-table__row:hover {
   background: var(--border-color);
 }

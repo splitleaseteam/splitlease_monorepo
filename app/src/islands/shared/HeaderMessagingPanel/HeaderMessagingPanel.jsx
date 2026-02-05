@@ -37,6 +37,7 @@ import './HeaderMessagingPanel.css';
  * @param {string} props.userBubbleId - User's Bubble ID
  * @param {string} props.userName - User's first name
  * @param {string} props.userAvatar - User's avatar URL
+ * @param {function} [props.onUnreadCountChange] - Callback to refresh header unread count
  */
 export default function HeaderMessagingPanel({
   isOpen,
@@ -44,6 +45,7 @@ export default function HeaderMessagingPanel({
   userBubbleId,
   userName,
   userAvatar,
+  onUnreadCountChange,
 }) {
   const panelRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -84,6 +86,7 @@ export default function HeaderMessagingPanel({
     userName,
     userAvatar,
     onClose,
+    onUnreadCountChange,
   });
 
   // ============================================================================

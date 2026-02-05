@@ -90,7 +90,7 @@ export function formatPrice(amount, showCents = false) {
  * @param {object} listing - Listing object
  * @param {number} nightsPerWeek - Nights selected per week
  * @param {number} reservationWeeks - Total reservation span in weeks
- * @returns {object} Complete pricing breakdown
+ * @returns {object} Complete pricing breakdown including host compensation
  */
 export function calculatePricingBreakdown(listing, nightsPerWeek, reservationWeeks) {
   const nightlyPrice = getNightlyPriceForNights(listing, nightsPerWeek);
@@ -99,7 +99,9 @@ export function calculatePricingBreakdown(listing, nightsPerWeek, reservationWee
     return {
       nightlyPrice: null,
       fourWeekRent: null,
+      hostFourWeekCompensation: null,
       reservationTotal: null,
+      hostTotalCompensation: null,
       cleaningFee: listing['cleaning_fee'] || 0,
       damageDeposit: listing['damage_deposit'] || 0,
       valid: false
@@ -109,10 +111,16 @@ export function calculatePricingBreakdown(listing, nightsPerWeek, reservationWee
   const fourWeekRent = calculate4WeekRent(nightlyPrice, nightsPerWeek);
   const reservationTotal = calculateReservationTotal(fourWeekRent, reservationWeeks);
 
+  // Calculate host compensation (what host receives, without platform fee)
+  const hostFourWeekCompensation = calculateHostFourWeekCompensation(listing, nightsPerWeek);
+  const hostTotalCompensation = hostFourWeekCompensation * (reservationWeeks / 4);
+
   return {
     nightlyPrice,
     fourWeekRent,
+    hostFourWeekCompensation,
     reservationTotal,
+    hostTotalCompensation,
     cleaningFee: listing['cleaning_fee'] || 0,
     damageDeposit: listing['damage_deposit'] || 0,
     grandTotal: reservationTotal + (listing['cleaning_fee'] || 0),
@@ -127,6 +135,101 @@ export function calculatePricingBreakdown(listing, nightsPerWeek, reservationWee
  */
 export function isValidForPricing(daysSelected) {
   return daysSelected >= 2 && daysSelected <= 7;
+}
+
+/**
+ * Get host nightly rate based on rental type and nights selected
+ * Matches Bubble legacy calculation: G: Host Display Price / G: number to save 4 week compensation
+ * @param {object} listing - Listing object with rental type and rate fields
+ * @param {number} nightsSelected - Number of nights per week (1-7)
+ * @returns {number|null} Host nightly rate
+ */
+export function getHostNightlyRate(listing, nightsSelected) {
+  if (!listing || !nightsSelected) return null;
+
+  const rentalType = listing['rental type'];
+
+  // Nightly rental: use specific nightly host rate
+  if (rentalType === 'Nightly') {
+    const rateMap = {
+      1: listing['nightly_rate_1_night'],
+      2: listing['nightly_rate_2_nights'],
+      3: listing['nightly_rate_3_nights'],
+      4: listing['nightly_rate_4_nights'],
+      5: listing['nightly_rate_5_nights'],
+      // Note: 7 nights uses 5-night rate per Bubble logic
+      7: listing['nightly_rate_5_nights']
+    };
+    return rateMap[nightsSelected] || listing['nightly_rate_4_nights'] || null;
+  }
+
+  // Weekly rental: convert weekly rate to nightly
+  if (rentalType === 'Weekly') {
+    const weeklyRate = listing['weekly_host_rate'];
+    if (!weeklyRate || !nightsSelected) return null;
+    // Weekly rate divided by nights gives per-night host compensation
+    return weeklyRate / nightsSelected;
+  }
+
+  // Monthly rental: convert monthly rate to nightly
+  if (rentalType === 'Monthly') {
+    const monthlyRate = listing['monthly_host_rate'];
+    if (!monthlyRate || !nightsSelected) return null;
+    // Monthly rate divided by avg days (30.4) gives daily, then scale for selected nights
+    // Per Bubble: monthly listings use flat monthly_host_rate for 4-week compensation
+    // So nightly = monthly_host_rate / (nightsSelected * 4)
+    return monthlyRate / (nightsSelected * 4);
+  }
+
+  return null;
+}
+
+/**
+ * Calculate host 4-week compensation
+ * Matches Bubble legacy calculation: nightly_host_rate * nights * 4_weeks
+ * @param {object} listing - Listing object with rental type and rate fields
+ * @param {number} nightsPerWeek - Number of nights per week (1-7)
+ * @returns {number} Host 4-week compensation amount
+ */
+export function calculateHostFourWeekCompensation(listing, nightsPerWeek) {
+  if (!listing || !nightsPerWeek) return 0;
+
+  const rentalType = listing['rental type'];
+
+  // Monthly rental: flat monthly rate
+  // Per Bubble: "Parent group's Listing's 💰Monthly Host Rate"
+  if (rentalType === 'Monthly') {
+    return listing['monthly_host_rate'] || 0;
+  }
+
+  // Weekly rental: weekly rate * weeks in 4-week period
+  // Per Bubble: "Weekly Host Rate * Weeks offered's num weeks during 4 calendar weeks"
+  // For standard schedules, this is typically 4 weeks or 2 weeks (2on/2off)
+  if (rentalType === 'Weekly') {
+    const weeklyRate = listing['weekly_host_rate'] || 0;
+    // Default to 4 weeks if not specified
+    const weeksIn4CalendarWeeks = listing['weeks_offered_num_weeks_during_4_calendar_weeks'] || 4;
+    return weeklyRate * weeksIn4CalendarWeeks;
+  }
+
+  // Nightly rental: nightly_host_rate * nights * 4_weeks
+  // Per Bubble formulas:
+  // - 2 nights: rate * 8 (2 * 4)
+  // - 3 nights: rate * 12 (3 * 4)
+  // - 4 nights: rate * 16 (4 * 4)
+  // - 5 nights: rate * 20 (5 * 4)
+  // - 7 nights: rate_5_nights * 28 (7 * 4, but uses 5-night rate!)
+  const rateMap = {
+    1: listing['nightly_rate_1_night'],
+    2: listing['nightly_rate_2_nights'],
+    3: listing['nightly_rate_3_nights'],
+    4: listing['nightly_rate_4_nights'],
+    5: listing['nightly_rate_5_nights'],
+    7: listing['nightly_rate_5_nights']  // Special: 7 nights uses 5-night rate
+  };
+
+  const hostNightlyRate = rateMap[nightsPerWeek] || listing['nightly_rate_4_nights'] || 0;
+  return hostNightlyRate * nightsPerWeek * 4;
 }
 
 /**

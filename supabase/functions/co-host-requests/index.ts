@@ -389,7 +389,7 @@ async function handleList(
   // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
-  const { data, error, _count } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('[co-host-requests] List error:', error);

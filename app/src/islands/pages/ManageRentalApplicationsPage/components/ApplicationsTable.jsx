@@ -61,9 +61,19 @@ function formatStatus(status) {
 
 // Get applicant name from application
 function getApplicantName(app) {
+  // Check applicant_name from transformed data
+  if (app.applicant_name) {
+    return app.applicant_name;
+  }
+  // Check personal_info.name (single field from database)
+  if (app.personal_info?.name) {
+    return app.personal_info.name;
+  }
+  // Fallback to firstName/lastName if they exist
   if (app.personal_info?.firstName && app.personal_info?.lastName) {
     return `${app.personal_info.firstName} ${app.personal_info.lastName}`;
   }
+  // Check guest info
   if (app.guest?.full_name) {
     return app.guest.full_name;
   }

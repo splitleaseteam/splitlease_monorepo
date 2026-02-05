@@ -25,7 +25,7 @@ import GoogleMap from '../shared/GoogleMap.jsx';
 import InformationalText from '../shared/InformationalText.jsx';
 import ContactHostMessaging from '../shared/ContactHostMessaging.jsx';
 import AiSignupMarketReport from '../shared/AiSignupMarketReport/AiSignupMarketReport.jsx';
-import AuthAwareSearchScheduleSelector from '../shared/AuthAwareSearchScheduleSelector.jsx';
+import SearchScheduleSelector from '../shared/SearchScheduleSelector.jsx';
 import SignUpLoginModal from '../shared/SignUpLoginModal.jsx';
 import LoggedInAvatar from '../shared/LoggedInAvatar/LoggedInAvatar.jsx';
 import CreateProposalFlowV2, { clearProposalDraft } from '../shared/CreateProposalFlowV2.jsx';
@@ -547,24 +547,25 @@ export default function SearchPage() {
     const roots = [];
 
     const selectorProps = {
+      enablePersistence: true,
       onSelectionChange: (days) => {
         logger.debug('Schedule selector changed:', days);
         const nightsCount = countSelectedNights(days);
         setSelectedNightsCount(nightsCount);
       },
-      onError: (error) => logger.error('AuthAwareSearchScheduleSelector error:', error),
+      onError: (error) => logger.error('SearchScheduleSelector error:', error),
       weekPattern: weekPattern
     };
 
     if (mountPointDesktop) {
       const rootDesktop = createRoot(mountPointDesktop);
-      rootDesktop.render(<AuthAwareSearchScheduleSelector {...selectorProps} />);
+      rootDesktop.render(<SearchScheduleSelector {...selectorProps} />);
       roots.push(rootDesktop);
     }
 
     if (mountPointMobile) {
       const rootMobile = createRoot(mountPointMobile);
-      rootMobile.render(<AuthAwareSearchScheduleSelector {...selectorProps} />);
+      rootMobile.render(<SearchScheduleSelector {...selectorProps} />);
       roots.push(rootMobile);
     }
 

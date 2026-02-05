@@ -758,7 +758,7 @@ export default function ViewSplitLeasePage() {
         checkOut: checkOutDay,
         proposalPrice: proposalData.pricePerNight,
         fourWeekRent: proposalData.pricePerFourWeeks,
-        hostCompensation: proposalData.pricePerFourWeeks, // Same as 4-week rent for now
+        hostCompensation: proposalData.hostFourWeekCompensation || proposalData.pricePerFourWeeks,
         needForSpace: proposalData.needForSpace || '',
         aboutMe: proposalData.aboutYourself || '',
         estimatedBookingTotal: proposalData.totalPrice,
@@ -766,7 +766,7 @@ export default function ViewSplitLeasePage() {
         specialNeeds: proposalData.hasUniqueRequirements ? proposalData.uniqueRequirements : '',
         moveInRangeText: proposalData.moveInRange || '',
         flexibleMoveIn: !!proposalData.moveInRange,
-        fourWeekCompensation: proposalData.pricePerFourWeeks,
+        fourWeekCompensation: proposalData.hostFourWeekCompensation || proposalData.pricePerFourWeeks,
         // Custom schedule description (user's freeform schedule request)
         customScheduleDescription: customScheduleDescription || ''
       };

@@ -305,7 +305,7 @@ async function handleList(
   // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
-  const { data: listings, error, _count } = await query;
+  const { data: listings, error, count } = await query;
 
   if (error) {
     console.error('[pricing-admin] List error:', error);

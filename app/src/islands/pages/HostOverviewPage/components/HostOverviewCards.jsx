@@ -37,10 +37,11 @@ function formatCurrency(amount) {
 
 // Listing Card - For host's managed listings
 // New horizontal design with thumbnail, title, actions, and proposals badge
-export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals, onCardClick, onCreateHouseManual, isMobile = false }) {
+export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals, onLeases, onCardClick, onCreateHouseManual, isMobile = false }) {
   const listingName = listing.name || listing.Name || 'Unnamed Listing';
   const borough = listing.location?.borough || listing['Location - Borough'] || 'Location not specified';
   const proposalsCount = listing.proposalsCount || listing['Proposals Count'] || 0;
+  const leasesCount = listing.leasesCount || 0;
 
   // Extract photo URLs from the photos field - only need the cover photo (first image)
   const photosField = listing.photos || listing['Features - Photos'] || [];
@@ -59,6 +60,14 @@ export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals,
     e.stopPropagation();
     if (onProposals) {
       onProposals(listing);
+    }
+  };
+
+  // Handle leases button click
+  const handleLeasesClick = (e) => {
+    e.stopPropagation();
+    if (onLeases) {
+      onLeases(listing);
     }
   };
 
@@ -142,7 +151,7 @@ export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals,
           </button>
         </div>
 
-        {/* Right side: Proposals badge and Create House Manual */}
+        {/* Right side: Proposals badge, Leases badge, and Create House Manual */}
         <div className="listing-card__actions-right">
           <button
             className="listing-card__proposals-btn"
@@ -151,6 +160,15 @@ export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals,
             Proposals
             {proposalsCount > 0 && (
               <span className="listing-card__proposals-count">{proposalsCount}</span>
+            )}
+          </button>
+          <button
+            className="listing-card__leases-btn"
+            onClick={handleLeasesClick}
+          >
+            Leases
+            {leasesCount > 0 && (
+              <span className="listing-card__leases-count">{leasesCount}</span>
             )}
           </button>
           {onCreateHouseManual && (

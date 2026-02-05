@@ -95,6 +95,13 @@ export interface ListingWithRates {
   /** Rate for 7 nights stay */
   nightly_rate_7_nights?: number | string | null;
 
+  /** Weekly host rate (for Weekly rental type) */
+  weekly_host_rate?: number | string | null;
+  /** Monthly host rate (for Monthly rental type) */
+  monthly_host_rate?: number | string | null;
+  /** Rental type determines which rate fields to use */
+  'rental type'?: 'Nightly' | 'Monthly' | 'Weekly';
+
   /** Additional listing properties */
   [key: string]: unknown;
 }

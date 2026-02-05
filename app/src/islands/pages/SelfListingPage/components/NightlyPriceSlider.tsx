@@ -45,37 +45,66 @@ export const NightlyPriceSlider: React.FC<NightlyPriceSliderProps> = ({
   }, [onPricesChange]);
 
   const N = 7;
-  const DECAY_MIN = 0.7;
-  const DECAY_MAX = 1.0;
+
+  // Platform pricing constants (must match priceCalculations.js)
+  const SITE_MARKUP = 0.17;
+  const UNUSED_NIGHTS_DISCOUNT_MULTIPLIER = 0.03;
+  const FULL_TIME_DISCOUNT = 0.13;
 
   const fmt0 = (n: number) => n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   const fmtShort = (n: number) => '$' + Math.round(n);
   const roundUp = (n: number) => Math.ceil(n);
-  const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
 
-  const solveDecay = useCallback((p1: number, p5: number): number => {
-    if (p1 <= 0) return 1.0;
-    if (p5 >= p1) return 1.0;
-    const ratio = p5 / p1;
-    const d = Math.pow(ratio, 0.25);
-    return clamp(d, DECAY_MIN, DECAY_MAX);
+  /**
+   * Calculate the platform multiplier for a given night count
+   * This is what the platform applies to host rates to get guest prices
+   * Formula: 1 + siteMarkup - unusedDiscount - fullTimeDiscount
+   */
+  const getPlatformMultiplier = useCallback((nightsCount: number): number => {
+    const unusedNights = 7 - nightsCount;
+    const unusedDiscount = unusedNights * UNUSED_NIGHTS_DISCOUNT_MULTIPLIER;
+    const fullTimeDiscount = nightsCount === 7 ? FULL_TIME_DISCOUNT : 0;
+    return 1 + SITE_MARKUP - unusedDiscount - fullTimeDiscount;
   }, []);
 
-  // Calculate nightly prices based on base rate and discount
+  /**
+   * Calculate host rates that produce desired guest prices after platform markup
+   *
+   * Strategy:
+   * 1. Host sets desired GUEST price curve (base rate with long stay discount)
+   * 2. We reverse-calculate HOST rates by dividing by platform multiplier
+   * 3. This ensures guest prices ALWAYS decrease as nights increase
+   */
   const calculatePrices = useCallback(() => {
-    const p5Target = baseRate * (1 - (discountPercent / 100));
-    const decay = solveDecay(baseRate, p5Target);
-
-    const prices: number[] = [roundUp(baseRate)];
-    for (let i = 1; i < N; i++) {
-      prices.push(roundUp(prices[i - 1] * decay));
+    // Calculate desired guest prices (what host wants guests to see)
+    // Apply host's long stay discount progressively
+    const desiredGuestPrices: number[] = [];
+    for (let nights = 1; nights <= N; nights++) {
+      // Progressive discount: night 1 = 0%, night 7 = full discount
+      const progressiveFactor = (nights - 1) / (N - 1);
+      const nightDiscount = progressiveFactor * (discountPercent / 100);
+      const guestPrice = baseRate * (1 - nightDiscount);
+      desiredGuestPrices.push(guestPrice);
     }
 
-    nightlyPricesRef.current = prices;
+    // Reverse-calculate host rates: hostRate = guestPrice / platformMultiplier
+    const hostRates: number[] = [];
+    for (let nights = 1; nights <= N; nights++) {
+      const multiplier = getPlatformMultiplier(nights);
+      const hostRate = desiredGuestPrices[nights - 1] / multiplier;
+      hostRates.push(roundUp(hostRate));
+    }
+
+    nightlyPricesRef.current = hostRates;
+
+    // Calculate decay (for backward compatibility)
+    const decay = hostRates.length > 1 && hostRates[0] > 0
+      ? hostRates[hostRates.length - 1] / hostRates[0]
+      : 1;
 
     // Broadcast changes
     if (onPricesChangeRef.current) {
-      const roundedNightly = prices.map(v => Math.round(v));
+      const roundedNightly = hostRates.map(v => Math.round(v));
       onPricesChangeRef.current({
         p1: roundedNightly[0],
         n1: roundedNightly[0],
@@ -90,23 +119,29 @@ export const NightlyPriceSlider: React.FC<NightlyPriceSliderProps> = ({
       });
     }
 
-    return { prices, decay };
-  }, [baseRate, discountPercent, solveDecay]);
+    return { prices: hostRates, decay, desiredGuestPrices };
+  }, [baseRate, discountPercent, getPlatformMultiplier]);
 
   // Recalculate whenever base rate or discount changes
   useEffect(() => {
     calculatePrices();
   }, [calculatePrices]);
 
-  // Calculate derived values
-  // prices[N-1] = price per night for an N-night stay
-  // Total for N nights = N * prices[N-1]
-  const prices = nightlyPricesRef.current;
-  const fiveNightPricePerNight = prices[4]; // Price per night for 5-night stay
-  const fiveNightTotal = 5 * fiveNightPricePerNight;
-  const avgPrice = fiveNightPricePerNight; // For 5-night stay, avg = per night price
+  // Calculate GUEST prices for display (what guests actually pay)
+  // Host rates are stored but we show guest prices to the host
+  const hostRates = nightlyPricesRef.current;
+  const guestPrices: number[] = hostRates.map((hostRate, idx) => {
+    const nights = idx + 1;
+    const multiplier = getPlatformMultiplier(nights);
+    return Math.round(hostRate * multiplier);
+  });
+
+  // Calculate derived values using GUEST prices
+  const fiveNightGuestPrice = guestPrices[4]; // Guest price per night for 5-night stay
+  const fiveNightTotal = 5 * fiveNightGuestPrice;
+  const avgPrice = fiveNightGuestPrice; // For 5-night stay
   const monthlyEstimate = fiveNightTotal * 4;
-  const sevenNightTotal = 7 * prices[6]; // 7 nights × price per night for 7-night stay
+  const sevenNightTotal = 7 * guestPrices[6]; // 7 nights × guest price per night
 
   // Handle base rate input change
   const handleBaseRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,23 +200,23 @@ export const NightlyPriceSlider: React.FC<NightlyPriceSliderProps> = ({
         </p>
       </div>
 
-      {/* Color Palette Display */}
+      {/* Color Palette Display - Shows GUEST prices (what guests will pay) */}
       <div className="nights-display-wrapper">
         <div className="nights-display-header">Price per consecutive night</div>
         <div className="palette-container">
           <div className="palette-row">
             {[1, 2, 3, 4, 5, 6, 7].map(night => (
               <div key={night} className={`palette-swatch n${night}`}>
-                <span className="swatch-number">Night {night}</span>
-                <span className="swatch-price">{fmtShort(prices[night - 1])}</span>
-                <span className="swatch-label">per night</span>
+                <span className="swatch-number">NIGHT {night}</span>
+                <span className="swatch-price">{fmtShort(guestPrices[night - 1])}</span>
+                <span className="swatch-label">PER NIGHT</span>
               </div>
             ))}
           </div>
         </div>
         <div className="formula-row">
-          {prices.map((pricePerNight, idx) => {
-            // Total for N nights = N * (price per night for that stay length)
+          {guestPrices.map((pricePerNight, idx) => {
+            // Total for N nights = N * (guest price per night for that stay length)
             const nightCount = idx + 1;
             const total = nightCount * pricePerNight;
             return <div key={idx} className="formula-item">{fmtShort(total)}</div>;

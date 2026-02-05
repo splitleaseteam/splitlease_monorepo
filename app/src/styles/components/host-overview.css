@@ -714,6 +714,42 @@
   font-weight: 600;
 }
 
+/* Leases Button with Badge */
+.listing-card__leases-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ho-spacing-sm);
+  background-color: #e6f7f5;
+  color: #0d9488;
+  border: 1px solid #99e0db;
+  border-radius: var(--ho-radius-pill);
+  padding: var(--ho-spacing-sm) var(--ho-spacing-lg);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--ho-transition-normal);
+}
+
+.listing-card__leases-btn:hover {
+  background-color: #ccf0ed;
+  border-color: #0d9488;
+}
+
+/* Leases Count Badge */
+.listing-card__leases-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background-color: #0d9488;
+  color: white;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 /* Create House Manual Link */
 .listing-card__house-manual-link {
   background: none;
@@ -1510,7 +1546,8 @@
     width: 100%;
   }
 
-  .listing-card__proposals-btn {
+  .listing-card__proposals-btn,
+  .listing-card__leases-btn {
     flex: 1;
     justify-content: center;
   }

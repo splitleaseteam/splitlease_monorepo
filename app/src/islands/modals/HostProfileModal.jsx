@@ -24,10 +24,12 @@ export default function HostProfileModal({ host, listing, onClose }) {
     ? (host['Profile Photo'].startsWith('//') ? `https:${host['Profile Photo']}` : host['Profile Photo'])
     : null;
 
-  // Get listing location
-  const listingLocation = [listing?.hoodName || listing?.['Location - Hood'], listing?.boroughName || listing?.['Location - Borough']]
-    .filter(Boolean)
-    .join(', ');
+  // Get listing location - prefer neighborhood + borough, default to borough only, fallback to 'New York'
+  const neighborhood = listing?.hoodName || listing?.['Location - Hood'] || '';
+  const borough = listing?.boroughName || listing?.['Location - Borough'] || '';
+  const listingLocation = neighborhood && borough
+    ? `${neighborhood}, ${borough}`
+    : borough || neighborhood || 'New York';
 
   // Get listing photo
   const listingPhotoUrl = listing?.featuredPhotoUrl || listing?.['Features - Photos']?.[0] || null;
@@ -70,7 +72,7 @@ export default function HostProfileModal({ host, listing, onClose }) {
               <img src={photoUrl} alt={displayName} className="hpm-host-photo" />
             ) : (
               <div className="hpm-host-photo-placeholder">
-                {hostFirstName.charAt(0) || 'H'}
+                {(hostFirstName.charAt(0) || 'H').toUpperCase()}
               </div>
             )}
 

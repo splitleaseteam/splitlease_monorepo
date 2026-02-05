@@ -4,6 +4,36 @@
 
 import { getFirstPhoto, getLastPhoto, getAddressString, getDefaultPhoto } from '../suggestedProposalService.js';
 
+/**
+ * Extract host name from listing data (joined with account_host and user)
+ */
+function getHostName(listing) {
+  // Try joined user data first
+  if (listing.account_host?.user?.['Name - Full']) {
+    return listing.account_host.user['Name - Full'];
+  }
+  // Fallback to denormalized field
+  if (listing['host name']) {
+    return listing['host name'];
+  }
+  return null;
+}
+
+/**
+ * Extract host email from listing data (joined with account_host and user)
+ */
+function getHostEmail(listing) {
+  // Try joined user data first
+  if (listing.account_host?.user?.['email as text']) {
+    return listing.account_host.user['email as text'];
+  }
+  // Fallback to denormalized field
+  if (listing['Host email']) {
+    return listing['Host email'];
+  }
+  return null;
+}
+
 export default function ListingSearch({
   searchTerm,
   searchResults,
@@ -58,67 +88,90 @@ export default function ListingSearch({
             ) : searchResults.length === 0 ? (
               <div className="csp-no-results">No listings found</div>
             ) : (
-              searchResults.map(listing => (
-                <div
-                  key={listing._id}
-                  className="csp-search-result-item"
-                  onClick={() => onSelect(listing)}
-                >
-                  <img
-                    src={getFirstPhoto(listing) || getDefaultPhoto()}
-                    alt={listing.Name || 'Listing'}
-                    className="csp-thumbnail"
-                    onError={(e) => { e.target.src = getDefaultPhoto(); }}
-                  />
-                  <div className="csp-search-result-info">
-                    <h4>
-                      {listing['host name'] || 'Unknown Host'} - {listing.Name || 'Unnamed Listing'} - {listing['rental type'] || 'Standard'} - {listing['Maximum Weeks'] ? `${listing['Maximum Weeks']} weeks` : 'Every week'}
-                    </h4>
-                    <p className="csp-listing-details-row">unique id: {listing._id}</p>
-                    <p className="csp-listing-details-row">host email: {listing['Host email'] || ''}</p>
+              searchResults.map(listing => {
+                const isInactive = !listing.Active;
+                const isUnapproved = !listing.Approved;
+                const hasWarnings = isInactive || isUnapproved;
+
+                return (
+                  <div
+                    key={listing._id}
+                    className={`csp-search-result-item ${hasWarnings ? 'csp-search-result-item--warning' : ''}`}
+                    onClick={() => onSelect(listing)}
+                  >
+                    <img
+                      src={getFirstPhoto(listing) || getDefaultPhoto()}
+                      alt={listing.Name || 'Listing'}
+                      className="csp-thumbnail"
+                      onError={(e) => { e.target.src = getDefaultPhoto(); }}
+                    />
+                    <div className="csp-search-result-info">
+                      <h4>
+                        {getHostName(listing) || getHostEmail(listing) || 'Unknown Host'} - {listing.Name || 'Unnamed Listing'} - {listing['rental type'] || 'Standard'} - {listing['Maximum Weeks'] ? `${listing['Maximum Weeks']} weeks` : 'Every week'}
+                      </h4>
+                      <p className="csp-listing-details-row">unique id: {listing._id}</p>
+                      <p className="csp-listing-details-row">host email: {getHostEmail(listing) || 'Not available'}</p>
+                      {hasWarnings && (
+                        <div className="csp-listing-warnings">
+                          {isInactive && <span className="csp-warning-badge csp-warning-badge--inactive">Inactive</span>}
+                          {isUnapproved && <span className="csp-warning-badge csp-warning-badge--unapproved">Unapproved</span>}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
       </div>
 
       {/* Selected Listing Card */}
-      {selectedListing && (
-        <div className="csp-selected-item-card">
-          <div className="csp-item-photos">
-            <img
-              src={getFirstPhoto(selectedListing, listingPhotos) || getDefaultPhoto()}
-              alt="Listing"
-              className="csp-item-photo"
-              onError={(e) => { e.target.src = getDefaultPhoto(); }}
-            />
-            <img
-              src={getLastPhoto(selectedListing, listingPhotos) || getDefaultPhoto()}
-              alt="Listing"
-              className="csp-item-photo"
-              onError={(e) => { e.target.src = getDefaultPhoto(); }}
-            />
+      {selectedListing && (() => {
+        const isInactive = !selectedListing.Active;
+        const isUnapproved = !selectedListing.Approved;
+        const hasWarnings = isInactive || isUnapproved;
+        const hostDisplay = getHostName(selectedListing) || getHostEmail(selectedListing) || 'Unknown';
+
+        return (
+          <div className={`csp-selected-item-card ${hasWarnings ? 'csp-selected-item-card--warning' : ''}`}>
+            <div className="csp-item-photos">
+              <img
+                src={getFirstPhoto(selectedListing, listingPhotos) || getDefaultPhoto()}
+                alt="Listing"
+                className="csp-item-photo"
+                onError={(e) => { e.target.src = getDefaultPhoto(); }}
+              />
+              <img
+                src={getLastPhoto(selectedListing, listingPhotos) || getDefaultPhoto()}
+                alt="Listing"
+                className="csp-item-photo"
+                onError={(e) => { e.target.src = getDefaultPhoto(); }}
+              />
+            </div>
+            <div className="csp-item-details">
+              <h3>{selectedListing.Name || 'Unnamed Listing'}</h3>
+              <p className="csp-item-subtitle">{getAddressString(selectedListing)}</p>
+              <p className="csp-item-meta">Host: {hostDisplay}</p>
+              <div className="csp-badge-row">
+                <span className="csp-badge">{selectedListing['rental type'] || 'Standard'}</span>
+                {isInactive && <span className="csp-warning-badge csp-warning-badge--inactive">Inactive</span>}
+                {isUnapproved && <span className="csp-warning-badge csp-warning-badge--unapproved">Unapproved</span>}
+              </div>
+            </div>
+            <button
+              className="csp-btn-remove"
+              onClick={onClear}
+              title="Remove selection"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
-          <div className="csp-item-details">
-            <h3>{selectedListing.Name || 'Unnamed Listing'}</h3>
-            <p className="csp-item-subtitle">{getAddressString(selectedListing)}</p>
-            <p className="csp-item-meta">Host: {selectedListing['host name'] || 'Unknown'}</p>
-            <span className="csp-badge">{selectedListing['rental type'] || 'Standard'}</span>
-          </div>
-          <button
-            className="csp-btn-remove"
-            onClick={onClear}
-            title="Remove selection"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-      )}
+        );
+      })()}
     </section>
   );
 }
