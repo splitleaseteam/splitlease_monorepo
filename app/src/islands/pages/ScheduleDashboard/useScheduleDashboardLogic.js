@@ -6,7 +6,7 @@
  *
  * Responsibilities:
  * - Extract leaseId from URL
- * - Fetch lease, roommate, and calendar data
+ * - Fetch lease, co-tenant, and calendar data
  * - Manage calendar state (month navigation, night selection)
  * - Calculate flexibility score and net flow
  * - Handle buy out and swap actions
@@ -60,7 +60,7 @@ function getLeaseIdFromUrl() {
 }
 
 /**
- * Calculate flexibility score based on roommate's history
+ * Calculate flexibility score based on co-tenant's history
  * Returns 1-10 score
  */
 function calculateFlexibilityScore(transactions) {
@@ -115,13 +115,13 @@ export function useScheduleDashboardLogic() {
   const perspectiveUserId = usePerspective();
   const isSwappedPerspective = perspectiveUserId !== 'current-user';
 
-  // Determine who is "me" and who is "roommate" based on perspective
+  // Determine who is "me" and who is "co-tenant" based on perspective
   const [currentUserData, roommateData] = useMemo(() => {
     if (isSwappedPerspective) {
-      // Viewing as Sarah → Sarah is "current user", Alex is "roommate"
+    // Viewing as Sarah → Sarah is "current user", Alex is "co-tenant"
       return [MOCK_ROOMMATE, MOCK_CURRENT_USER];
     }
-    // Default: Alex is "current user", Sarah is "roommate"
+    // Default: Alex is "current user", Sarah is "co-tenant"
     return [MOCK_CURRENT_USER, MOCK_ROOMMATE];
   }, [isSwappedPerspective]);
 
@@ -134,6 +134,7 @@ export function useScheduleDashboardLogic() {
   const { showToast } = useToast();
   const scheduleState = useScheduleState({
     currentUserId: currentUserData._id,
+    coTenantId: roommateData._id,
     roommateId: roommateData._id
   });
 
@@ -149,6 +150,10 @@ export function useScheduleDashboardLogic() {
   const [lease, setLease] = useState(null);
   const [coTenant, setCoTenant] = useState(null);
   const roommate = coTenant;
+  const coTenantNights = scheduleState.coTenantNights || scheduleState.roommateNights || [];
+  const roommateNights = coTenantNights;
+  const coTenantStrategy = coTenant?.pricingStrategy;
+  const roommateStrategy = coTenantStrategy;
   const [dateChangeRequests, setDateChangeRequests] = useState([]);
   const [selectedNight, setSelectedNight] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
@@ -204,17 +209,16 @@ export function useScheduleDashboardLogic() {
   // Flexibility metrics breakdown for comparison
   const flexibilityMetrics = MOCK_FLEXIBILITY_METRICS;
 
-  // Base price for selected night - USE ROOMMATE'S STRATEGY when buying out
+  // Base price for selected night - USE CO-TENANT'S STRATEGY when buying out
   const basePrice = useMemo(() => {
     if (!selectedNight) return null;
 
-    // If buying a roommate's night, use THEIR pricing strategy
-    if (scheduleState.roommateNights?.includes(selectedNight)) {
-      // Calculate price using roommate's pricing strategy
-      if (roommate?.pricingStrategy) {
-        const roommateStrategy = roommate.pricingStrategy;
-        const baseCost = roommateStrategy.baseRate;
-        const noticeMultipliers = roommateStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
+    // If buying a co-tenant's night, use THEIR pricing strategy
+    if (coTenantNights.includes(selectedNight)) {
+      // Calculate price using co-tenant's pricing strategy
+      if (coTenantStrategy) {
+        const baseCost = coTenantStrategy.baseRate;
+        const noticeMultipliers = coTenantStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
 
         const date = new Date(selectedNight + 'T12:00:00');
         if (!Number.isNaN(date.getTime())) {
@@ -223,27 +227,27 @@ export function useScheduleDashboardLogic() {
           const dayOfWeek = date.getDay();
           const daysDiff = Math.floor((date - today) / (1000 * 60 * 60 * 24));
 
-          // Tier 2: Notice multiplier (from roommate's settings)
+          // Tier 2: Notice multiplier (from co-tenant's settings)
           const noticeThreshold = getNoticeThresholdForDate(daysDiff);
           const noticeMultiplier = noticeMultipliers[noticeThreshold] ?? 1.0;
 
-          // Tier 3: Edge multiplier (from roommate's settings)
-          const edgeMultiplier = EDGE_MULTIPLIERS[roommateStrategy.edgePreference]?.[dayOfWeek] || 1.0;
+          // Tier 3: Edge multiplier (from co-tenant's settings)
+          const edgeMultiplier = EDGE_MULTIPLIERS[coTenantStrategy.edgePreference]?.[dayOfWeek] || 1.0;
 
-          // Calculate final price using ROOMMATE's formula
+          // Calculate final price using CO-TENANT's formula
           return Math.round(baseCost * noticeMultiplier * edgeMultiplier);
         }
       }
 
-      // Fallback to roommate's base rate if available
-      if (roommate?.pricingStrategy?.baseRate) {
-        return roommate.pricingStrategy.baseRate;
+      // Fallback to co-tenant's base rate if available
+      if (roommateStrategy?.baseRate) {
+        return roommateStrategy.baseRate;
       }
     }
 
     // Fallback to lease rate
     return lease?.nightlyRate || null;
-  }, [selectedNight, scheduleState.roommateNights, roommate, lease]);
+  }, [selectedNight, coTenantNights, coTenantStrategy, lease]);
 
   // Computed suggested prices for visualization (next 14 days) - 3-Tier Model
   const computedSuggestedPrices = useMemo(() => {
@@ -340,24 +344,23 @@ export function useScheduleDashboardLogic() {
   }, [scheduleState.userNights, pricing.pricingStrategy]);
 
   // =========================================================================
-  // ROOMMATE PRICE OVERLAYS (for Date Changes view)
-  // Uses ROOMMATE's pricing strategy, NOT the current user's
+  // CO-TENANT PRICE OVERLAYS (for Date Changes view)
+  // Uses CO-TENANT's pricing strategy, NOT the current user's
   // =========================================================================
   const roommatePriceOverlays = useMemo(() => {
-    // Only compute if we have roommate nights and roommate has pricing strategy
-    if (!scheduleState.roommateNights || scheduleState.roommateNights.length === 0) return null;
-    if (!roommate?.pricingStrategy) return null;
+    // Only compute if we have co-tenant nights and co-tenant has pricing strategy
+    if (coTenantNights.length === 0) return null;
+    if (!coTenantStrategy) return null;
 
     const overlays = {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Use ROOMMATE's pricing strategy (NOT user's)
-    const roommateStrategy = roommate.pricingStrategy;
-    const baseCost = roommateStrategy.baseRate;
-    const noticeMultipliers = roommateStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
+    // Use CO-TENANT's pricing strategy (NOT user's)
+    const baseCost = coTenantStrategy.baseRate;
+    const noticeMultipliers = coTenantStrategy.noticeMultipliers || DEFAULT_NOTICE_MULTIPLIERS;
 
-    for (const nightStr of scheduleState.roommateNights) {
+    for (const nightStr of coTenantNights) {
       const date = new Date(nightStr + 'T12:00:00');
       if (Number.isNaN(date.getTime())) continue;
 
@@ -367,14 +370,14 @@ export function useScheduleDashboardLogic() {
       // Skip past dates
       if (daysDiff < 0) continue;
 
-      // Tier 2: Notice multiplier (from roommate's settings)
+      // Tier 2: Notice multiplier (from co-tenant's settings)
       const noticeThreshold = getNoticeThresholdForDate(daysDiff);
       const noticeMultiplier = noticeMultipliers[noticeThreshold] ?? 1.0;
 
-      // Tier 3: Edge multiplier (from roommate's settings)
-      const edgeMultiplier = EDGE_MULTIPLIERS[roommateStrategy.edgePreference]?.[dayOfWeek] || 1.0;
+      // Tier 3: Edge multiplier (from co-tenant's settings)
+      const edgeMultiplier = EDGE_MULTIPLIERS[coTenantStrategy.edgePreference]?.[dayOfWeek] || 1.0;
 
-      // Calculate final price using ROOMMATE's formula
+      // Calculate final price using CO-TENANT's formula
       const price = Math.round(baseCost * noticeMultiplier * edgeMultiplier);
 
       // Determine tier for styling
@@ -394,7 +397,7 @@ export function useScheduleDashboardLogic() {
     }
 
     return Object.keys(overlays).length > 0 ? overlays : null;
-  }, [scheduleState.roommateNights, roommate?.pricingStrategy]);
+  }, [coTenantNights, coTenantStrategy]);
 
   // Computed price examples for Live Preview section - 3-Tier Model
   // Shows example prices for Mon/Wed/Fri at 14 days notice (standard threshold)
@@ -521,8 +524,8 @@ export function useScheduleDashboardLogic() {
    * Sets default request type based on adjacency to user's nights
    */
   const handleSelectNight = useCallback((dateString) => {
-    // Validate it's a roommate night (not user's own or blocked)
-    if (scheduleState.roommateNights.includes(dateString) && !scheduleState.pendingNights.includes(dateString)) {
+    // Validate it's a co-tenant night (not user's own or blocked)
+    if (coTenantNights.includes(dateString) && !scheduleState.pendingNights.includes(dateString)) {
       if (isNightLocked(dateString)) {
         throw new Error('This night is part of another pending request.');
       }
@@ -539,7 +542,7 @@ export function useScheduleDashboardLogic() {
       // Open the request panel
       ui.setIsBuyOutOpen(true);
     }
-  }, [scheduleState.roommateNights, scheduleState.pendingNights, isNightLocked, isNightContiguous, ui, request]);
+  }, [coTenantNights, scheduleState.pendingNights, isNightLocked, isNightContiguous, ui, request]);
 
   /**
    * Handle buy out request
@@ -548,7 +551,7 @@ export function useScheduleDashboardLogic() {
   const handleBuyOut = useCallback(async (totalPrice) => {
     if (!selectedNight || request.isSubmitting) return;
 
-    if (!scheduleState.roommateNights.includes(selectedNight)) {
+    if (!coTenantNights.includes(selectedNight)) {
       throw new Error("You don't own this night.");
     }
 
@@ -573,7 +576,7 @@ export function useScheduleDashboardLogic() {
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: coTenant?._id,
         status: 'pending'
       };
 
@@ -608,16 +611,16 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [selectedNight, request.isSubmitting, scheduleState.roommateNights, scheduleState.actions, isNightLocked, currentUserId, roommate, basePrice, request]);
+  }, [selectedNight, request.isSubmitting, coTenantNights, scheduleState.actions, isNightLocked, currentUserId, coTenant, basePrice, request]);
 
   /**
-   * Handle share request - request to co-occupy a night with roommate
+   * Handle share request - request to co-occupy a night with co-tenant
    * @param {number} totalPrice - Total price including fees
    */
   const handleShareRequest = useCallback(async (totalPrice) => {
     if (!selectedNight || request.isSubmitting) return;
 
-    if (!scheduleState.roommateNights.includes(selectedNight)) {
+    if (!coTenantNights.includes(selectedNight)) {
       throw new Error("You don't own this night.");
     }
 
@@ -642,7 +645,7 @@ export function useScheduleDashboardLogic() {
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: coTenant?._id,
         status: 'pending'
       };
 
@@ -677,7 +680,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [selectedNight, request.isSubmitting, scheduleState.roommateNights, scheduleState.actions, isNightLocked, currentUserId, roommate, basePrice, request]);
+  }, [selectedNight, request.isSubmitting, coTenantNights, scheduleState.actions, isNightLocked, currentUserId, coTenant, basePrice, request]);
 
   /**
    * Handle request type change (toggle between buyout, share, swap)
@@ -704,7 +707,7 @@ export function useScheduleDashboardLogic() {
     if (!selectedNight) return;
     request.setIsSwapMode(true);
     request.setIsCounterMode(false);
-    // Keep selectedNight as the "requested" night (roommate's night)
+    // Keep selectedNight as the "requested" night (co-tenant's night)
     console.log('Entering swap mode for:', selectedNight);
   }, [selectedNight, request]);
 
@@ -722,10 +725,10 @@ export function useScheduleDashboardLogic() {
   }, [scheduleState.userNights, scheduleState.pendingNights, isNightLocked, request]);
 
   const handleSelectCounterNight = useCallback((nightString) => {
-    if (scheduleState.roommateNights.includes(nightString) && !scheduleState.pendingNights.includes(nightString)) {
+    if (coTenantNights.includes(nightString) && !scheduleState.pendingNights.includes(nightString)) {
       request.setCounterTargetNight(nightString);
     }
-  }, [scheduleState.roommateNights, scheduleState.pendingNights, request]);
+  }, [coTenantNights, scheduleState.pendingNights, request]);
 
   /**
    * Handle submitting a swap request
@@ -733,7 +736,7 @@ export function useScheduleDashboardLogic() {
   const handleSubmitSwapRequest = useCallback(async () => {
     if (!selectedNight || !request.swapOfferNight || request.isSubmitting) return;
 
-    if (!scheduleState.roommateNights.includes(selectedNight)) {
+    if (!coTenantNights.includes(selectedNight)) {
       throw new Error("You don't own this night.");
     }
 
@@ -767,7 +770,7 @@ export function useScheduleDashboardLogic() {
         nights: [requestedDate, offeredDate],
         amount: 0,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: coTenant?._id,
         status: 'pending'
       };
 
@@ -802,7 +805,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [selectedNight, request.swapOfferNight, request.isSubmitting, scheduleState.roommateNights, scheduleState.userNights, scheduleState.actions, isNightLocked, currentUserId, roommate, request]);
+  }, [selectedNight, request.swapOfferNight, request.isSubmitting, coTenantNights, scheduleState.userNights, scheduleState.actions, isNightLocked, currentUserId, coTenant, request]);
 
   /**
    * Handle canceling swap mode - return to buyout mode
@@ -929,7 +932,7 @@ export function useScheduleDashboardLogic() {
         nights: [giveDate, receiveDate],
         amount: 0,
         payerId: currentUserId,
-        payeeId: roommate?._id,
+        payeeId: coTenant?._id,
         status: 'pending'
       };
 
@@ -969,7 +972,7 @@ export function useScheduleDashboardLogic() {
     } finally {
       request.setIsSubmitting(false);
     }
-  }, [request.counteringRequestId, request.counterOriginalNight, request.counterTargetNight, request.isSubmitting, roommate, handleDeclineRequest, request, scheduleState.actions]);
+  }, [request.counteringRequestId, request.counterOriginalNight, request.counterTargetNight, request.isSubmitting, coTenant, handleDeclineRequest, request, scheduleState.actions]);
 
   const handleCancelRequest = useCallback(async (transactionId) => {
     const transaction = scheduleState.transactions.find((t) => t.id === transactionId);
@@ -1151,8 +1154,8 @@ export function useScheduleDashboardLogic() {
 
     // Calendar (using string dates)
     userNights: scheduleState.userNights,
-    coTenantNights: scheduleState.roommateNights,
-    roommateNights: scheduleState.roommateNights,
+    coTenantNights: coTenantNights,
+    roommateNights: coTenantNights,
     pendingNights: scheduleState.pendingNights,
     blockedNights: scheduleState.blockedNights,
     currentMonth,

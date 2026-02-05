@@ -47,7 +47,7 @@ export const MOCK_CURRENT_USER = {
   }
 };
 
-export const MOCK_ROOMMATE = {
+export const MOCK_CO_TENANT = {
   _id: 'user-456',
   firstName: 'Sarah',
   lastName: 'Chen',
@@ -67,6 +67,9 @@ export const MOCK_ROOMMATE = {
   }
 };
 
+/** @deprecated Use MOCK_CO_TENANT instead */
+export const MOCK_ROOMMATE = MOCK_CO_TENANT;
+
 // Mock flexibility metrics for breakdown comparison
 export const MOCK_FLEXIBILITY_METRICS = {
   user: {
@@ -75,12 +78,14 @@ export const MOCK_FLEXIBILITY_METRICS = {
     nightsOffered: 12,
     cancellations: 0
   },
-  roommate: {
+  coTenant: {
     responseTime: '2 hours',
     approvalRate: '92%',
     nightsOffered: 5,
     cancellations: 1
-  }
+  },
+  /** @deprecated Use coTenant instead */
+  get roommate() { return this.coTenant; }
 };
 
 // Mock user's own flexibility score

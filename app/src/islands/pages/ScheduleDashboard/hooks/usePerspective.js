@@ -16,7 +16,7 @@ const PERSPECTIVE_MAP = {
   'user-456': 'user-456',   // Direct ID also works
   'alex': 'current-user',   // Alex Morgan (explicit)
   'current-user': 'current-user',
-  // Add more as needed for additional roommates
+  // Add more as needed for additional co-tenants
 };
 
 /**

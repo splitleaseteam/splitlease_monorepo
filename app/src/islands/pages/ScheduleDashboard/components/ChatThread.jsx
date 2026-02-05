@@ -1,11 +1,13 @@
 /**
  * Chat Thread Component
  *
- * Inline messaging with roommate:
+ * Inline messaging with co-tenant:
  * - Message history (scrollable)
  * - Quick response chips
  * - Message input
  * - Inline transaction confirmations
+ *
+ * Note: Supports both 'coTenantName' and 'roommateName' props for backward compatibility.
  */
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
@@ -133,7 +135,8 @@ function TransactionNotice({ message }) {
 export default function ChatThread({
   messages = [],
   currentUserId,
-  roommateName,
+  coTenantName,
+  roommateName, // @deprecated Use coTenantName
   lease,
   guestName,
   hostName,
@@ -145,6 +148,9 @@ export default function ChatThread({
   activeTransactionId,
   onClearActiveTransaction
 }) {
+  // Resolve prop with backward compatibility
+  const resolvedCoTenantName = coTenantName ?? roommateName;
+
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
   const messageRefs = useRef({});
@@ -152,13 +158,13 @@ export default function ChatThread({
   // Compute counterparty label based on lease type
   const counterpartyLabel = useMemo(() => {
     if (!lease || lease.isCoTenant) {
-      return roommateName || 'Co-tenant';
+      return resolvedCoTenantName || 'Co-tenant';
     }
     if (lease.userRole === 'guest') {
       return hostName ? `Host (${hostName})` : 'Host';
     }
     return guestName ? `Guest (${guestName})` : 'Guest';
-  }, [lease, roommateName, guestName, hostName]);
+  }, [lease, resolvedCoTenantName, guestName, hostName]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -284,7 +290,8 @@ ChatThread.propTypes = {
     requestData: PropTypes.object,
   })),
   currentUserId: PropTypes.string,
-  roommateName: PropTypes.string,
+  coTenantName: PropTypes.string,
+  roommateName: PropTypes.string, // @deprecated Use coTenantName
   lease: PropTypes.shape({
     isCoTenant: PropTypes.bool,
     userRole: PropTypes.oneOf(['guest', 'host']),

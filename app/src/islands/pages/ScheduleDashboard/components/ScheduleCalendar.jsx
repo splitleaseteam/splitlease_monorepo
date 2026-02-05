@@ -8,7 +8,9 @@
  * - Yellow: Pending request
  * - Red strikethrough: Blocked/unavailable
  *
- * Click co-tenant's night to select for Buy Out Panel.
+ * Click a co-tenant's night to select for Buy Out Panel.
+ *
+ * Note: Supports both 'coTenant' and 'roommate' prop naming for backward compatibility.
  */
 
 import React, { useMemo } from 'react';
@@ -115,25 +117,25 @@ function buildCalendarGrid(year, month) {
  * Find adjacent nights - nights immediately before or after user's stay blocks
  * A night is adjacent if it's immediately before/after a consecutive block of user's nights
  */
-function findAdjacentNights(userNights, roommateNights) {
+function findAdjacentNights(userNights, coTenantNights) {
   if (!userNights || userNights.length === 0) return [];
-  if (!roommateNights || roommateNights.length === 0) return [];
+  if (!coTenantNights || coTenantNights.length === 0) return [];
 
   const adjacent = new Set();
 
   // Convert to Date objects for easier manipulation
   const userDates = userNights.map(d => parseDate(d)).sort((a, b) => a - b);
-  const roommateSet = new Set(roommateNights.map(d => toDateString(d)));
+  const coTenantSet = new Set(coTenantNights.map(d => toDateString(d)));
 
-  // For each user night, check if the day before or after is roommate's night
+  // For each user night, check if the day before or after is co-tenant's night
   for (const userDate of userDates) {
     const dayBefore = toDateString(addDays(userDate, -1));
     const dayAfter = toDateString(addDays(userDate, 1));
 
-    if (roommateSet.has(dayBefore)) {
+    if (coTenantSet.has(dayBefore)) {
       adjacent.add(dayBefore);
     }
-    if (roommateSet.has(dayAfter)) {
+    if (coTenantSet.has(dayAfter)) {
       adjacent.add(dayAfter);
     }
   }
@@ -161,8 +163,10 @@ export default function ScheduleCalendar({
   transactionsByDate = {},
   onSelectTransaction,
   priceOverlays = null, // { 'YYYY-MM-DD': { price: 175, tier: 'within' | 'near' | 'limit' } }
-  roommatePriceOverlays = null, // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - roommate's nights
-  roommateName = null, // Roommate's first name for tooltip
+  coTenantPriceOverlays = null, // { 'YYYY-MM-DD': { price: 165, tier: 'within' | 'near' | 'limit' } } - co-tenant's nights
+  roommatePriceOverlays = null, // @deprecated Use coTenantPriceOverlays
+  coTenantName = null, // Co-tenant's first name for tooltip
+  roommateName = null, // @deprecated Use coTenantName
   isLoading = false, // Loading state for skeleton UI
   pendingDateChangeRequests = [], // Array of pending date change requests
   // Lease type props for conditional labels
@@ -170,9 +174,11 @@ export default function ScheduleCalendar({
   guestName = null, // Guest's first name (for host view)
   hostName = null // Host's first name (for guest view)
 }) {
-  const resolvedCoTenant = coTenant || roommate;
+  // Resolve props with backward compatibility
+  const resolvedCoTenant = coTenant ?? roommate;
   const resolvedCoTenantNights = coTenantNights.length > 0 ? coTenantNights : roommateNights;
-  const resolvedCoTenantName = roommateName || resolvedCoTenant?.firstName || null;
+  const resolvedCoTenantPriceOverlays = coTenantPriceOverlays ?? roommatePriceOverlays;
+  const resolvedCoTenantName = coTenantName ?? roommateName ?? resolvedCoTenant?.firstName ?? null;
 
   // Build set of dates affected by pending date change requests
   const pendingChangeDates = useMemo(() => {
@@ -301,7 +307,7 @@ export default function ScheduleCalendar({
   /**
    * Get price overlay for a specific date
    * - For user's nights: use priceOverlays (from user's strategy)
-   * - For roommate's nights: use roommatePriceOverlays (adjacent only)
+   * - For co-tenant's nights: use coTenantPriceOverlays (adjacent only)
    */
   const getPriceOverlay = (date, status) => {
     if (!date) return null;
@@ -312,9 +318,9 @@ export default function ScheduleCalendar({
       return priceOverlays[dateStr] || null;
     }
 
-    // Roommate's nights - show roommate's price (NEW - in Date Changes mode)
-    if (status === 'adjacent' && roommatePriceOverlays) {
-      return roommatePriceOverlays[dateStr] || null;
+    // Co-tenant's nights - show co-tenant's price (in Date Changes mode)
+    if (status === 'adjacent' && resolvedCoTenantPriceOverlays) {
+      return resolvedCoTenantPriceOverlays[dateStr] || null;
     }
 
     return null;
@@ -705,11 +711,16 @@ ScheduleCalendar.propTypes = {
     price: PropTypes.number.isRequired,
     tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
   })),
-  roommatePriceOverlays: PropTypes.objectOf(PropTypes.shape({
+  coTenantPriceOverlays: PropTypes.objectOf(PropTypes.shape({
     price: PropTypes.number.isRequired,
     tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
   })),
-  roommateName: PropTypes.string,
+  roommatePriceOverlays: PropTypes.objectOf(PropTypes.shape({ // @deprecated Use coTenantPriceOverlays
+    price: PropTypes.number.isRequired,
+    tier: PropTypes.oneOf(['within', 'near', 'limit']).isRequired
+  })),
+  coTenantName: PropTypes.string,
+  roommateName: PropTypes.string, // @deprecated Use coTenantName
   isLoading: PropTypes.bool,
   pendingDateChangeRequests: PropTypes.arrayOf(PropTypes.shape({
     _id: PropTypes.string,

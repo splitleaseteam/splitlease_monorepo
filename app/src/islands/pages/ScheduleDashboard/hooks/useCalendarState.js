@@ -66,7 +66,7 @@ export function useCalendarState() {
     // Night Arrays
     userNights,
     coTenantNights,
-    roommateNights: coTenantNights,
+    roommateNights: coTenantNights, // @deprecated - use coTenantNights
     pendingNights,
     blockedNights,
     sharedNights,
@@ -85,7 +85,7 @@ export function useCalendarState() {
     // Direct setters (for cross-hook coordination)
     setUserNights,
     setCoTenantNights,
-    setRoommateNights: setCoTenantNights,
+    setRoommateNights: setCoTenantNights, // @deprecated - use setCoTenantNights
     setPendingNights,
     setBlockedNights,
     setSharedNights,
