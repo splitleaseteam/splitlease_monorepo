@@ -12,7 +12,8 @@ import React, { useState } from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
-import ScheduleCard from './cards/ScheduleCard.jsx';
+import SearchScheduleSelector from '../../../shared/SearchScheduleSelector.jsx';
+import TrustVerificationCard from './cards/TrustVerificationCard.jsx';
 import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin } from 'lucide-react';
 
 // ============================================================================
@@ -139,12 +140,33 @@ export default function ProfileSidebar({
         </div>
       )}
 
-      {/* Schedule Card - Editor View, Guest-only */}
+      {/* Schedule Selector - Editor View, Guest-only */}
       {isEditorView && !isHostUser && (
-        <ScheduleCard
-          selectedDays={selectedDays}
-          onDayToggle={onDayToggle}
+        <SearchScheduleSelector
+          initialSelection={selectedDays}
+          onSelectionChange={onDayToggle}
+          enablePersistence={true}
+          updateUrl={false}
         />
+      )}
+
+      {/* Trust & Verification - Editor View */}
+      {isEditorView && (
+        <div className="sidebar-verification-section">
+          <TrustVerificationCard
+            verifications={verifications}
+            emailAddress={emailAddress}
+            phoneNumber={phoneNumber}
+            onVerifyEmail={onVerifyEmail}
+            onVerifyPhone={onVerifyPhone}
+            onVerifyGovId={onVerifyGovId}
+            onConnectLinkedIn={onConnectLinkedIn}
+            onEditPhone={onEditPhone}
+            isVerifyingEmail={isVerifyingEmail}
+            verificationEmailSent={verificationEmailSent}
+            embedded={true}
+          />
+        </div>
       )}
 
       {/* Public View: Member Since */}
