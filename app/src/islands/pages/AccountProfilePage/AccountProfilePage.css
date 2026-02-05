@@ -320,6 +320,28 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-strength-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--sl-border-subtle);
+  background: transparent;
+  color: var(--sl-text-tertiary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.profile-strength-info-btn:hover {
+  color: var(--sl-text-secondary);
+  border-color: var(--sl-text-tertiary);
 }
 
 .profile-strength-bar {
@@ -382,11 +404,20 @@
   border-top: 1px solid var(--sl-border-subtle);
 }
 
+.sidebar-verifications-compact {
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--sl-border-subtle);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
 .sidebar-verification-item {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 0;
+  font-size: 14px;
 }
 
 .sidebar-verification-item--actionable {

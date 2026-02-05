@@ -62,16 +62,6 @@ export default function EditorView({
         showDateOfBirthField={showDateOfBirthField}
         errors={formErrors}
         onFieldChange={onFieldChange}
-        emailAddress={profileData?.email || profileData?.['Email'] || ''}
-        phoneNumber={profileData?.['Phone Number (as text)'] || ''}
-        verifications={verifications}
-        onVerifyEmail={onVerifyEmail}
-        onVerifyPhone={onVerifyPhone}
-        onVerifyGovId={onVerifyGovId}
-        onConnectLinkedIn={onConnectLinkedIn}
-        onEditPhone={onEditPhone}
-        isVerifyingEmail={isVerifyingEmail}
-        verificationEmailSent={verificationEmailSent}
       />
 
       {/* About You - Always shown */}

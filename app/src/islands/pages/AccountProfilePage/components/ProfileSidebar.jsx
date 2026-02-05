@@ -8,7 +8,7 @@
  * Public View: Stats, verification badges, member since date
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
@@ -58,6 +58,7 @@ export default function ProfileSidebar({
   memberSince
 }) {
   const fullName = `${firstName} ${lastName}`.trim() || 'Your Name';
+  const [showVerifications, setShowVerifications] = useState(false);
 
   // Format member since date
   const formatMemberSince = (dateStr) => {
@@ -110,6 +111,7 @@ export default function ProfileSidebar({
         <ProfileStrengthMeter
           percentage={profileStrength}
           onClick={onStrengthClick}
+          onInfoClick={() => setShowVerifications((prev) => !prev)}
         />
       )}
 
@@ -128,27 +130,29 @@ export default function ProfileSidebar({
       )}
 
       {/* Verification List */}
-      <div className="sidebar-verifications">
-        {verificationOrder.map((key) => {
-          const isVerified = verifications?.[key] === true;
-          const Icon = isVerified ? Check : X;
-          const handler = verificationHandlers[key];
-          const isActionable = !isVerified && typeof handler === 'function' && isEditorView;
-          const ItemTag = isActionable ? 'button' : 'div';
+      {showVerifications && (
+        <div className="sidebar-verifications-compact">
+          {verificationOrder.map((key) => {
+            const isVerified = verifications?.[key] === true;
+            const Icon = isVerified ? Check : X;
+            const handler = verificationHandlers[key];
+            const isActionable = !isVerified && typeof handler === 'function' && isEditorView;
+            const ItemTag = isActionable ? 'button' : 'div';
 
-          return (
-            <ItemTag
-              key={key}
-              type={isActionable ? 'button' : undefined}
-              className={`sidebar-verification-item ${isVerified ? 'verified' : 'unverified'}${isActionable ? ' sidebar-verification-item--actionable' : ''}`}
-              onClick={isActionable ? handler : undefined}
-            >
-              <Icon size={16} />
-              <span className="sidebar-verification-text">{VERIFICATION_LABELS[key]}</span>
-            </ItemTag>
-          );
-        })}
-      </div>
+            return (
+              <ItemTag
+                key={key}
+                type={isActionable ? 'button' : undefined}
+                className={`sidebar-verification-item ${isVerified ? 'verified' : 'unverified'}${isActionable ? ' sidebar-verification-item--actionable' : ''}`}
+                onClick={isActionable ? handler : undefined}
+              >
+                <Icon size={16} />
+                <span className="sidebar-verification-text">{VERIFICATION_LABELS[key]}</span>
+              </ItemTag>
+            );
+          })}
+        </div>
+      )}
 
       {/* Public View: Member Since */}
       {!isEditorView && memberSinceFormatted && (
