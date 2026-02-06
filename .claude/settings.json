@@ -17,6 +17,7 @@
     "deny": [
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
+      "Bash(git rebase:*)",
       "Bash(rm -rf:*)"
     ]
   },
@@ -24,11 +25,6 @@
     "Stop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "python \".claude\\hooks\\git_auto_commit.py\"",
-            "timeout": 60
-          },
           {
             "type": "command",
             "command": "python \".claude\\hooks\\slack_notifier.py\"",
