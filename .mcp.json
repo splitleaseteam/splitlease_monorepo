@@ -15,7 +15,9 @@
         "/c",
         "npx",
         "-y",
-        "@playwright/mcp"
+        "@playwright/mcp",
+        "--screenshot-dir",
+        "C:\\Users\\Split Lease\\splitleaseteam\\Pictures"
       ]
     }
   }

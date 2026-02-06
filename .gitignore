@@ -1,3 +1,7 @@
+# BMad Method (agent framework — local only)
+_bmad/
+.agent/
+
 # Environment variables
 .env
 .env.local
@@ -32,6 +36,11 @@ dist/
 *.db
 *.sqlite
 *.sqlite3
+
+# SQL files (scratch/temp) — migrations are tracked separately
+/*.sql
+/scripts/*.sql
+/test-session/*.sql
 !app/server/db/backup.db
 supabase-migrations/
 
@@ -72,6 +81,9 @@ logs/
 
 # Commit counter (local state tracking)
 .claude/commit_count.txt
+
+# Claude query logs (conversation logs)
+.claude/query-logs/
 
 # Agent output directories (root level only, not .claude/agents/)
 /agents/
@@ -131,6 +143,13 @@ ZEP - scripts/
 
 # ADW orchestrator (deprecated)
 adws/
+
+# BMAD method (local only)
+_bmad/
+.agent/
+.cursor/
+.gemini/
+.windsurf/
 
 # Ralph plans (deprecated)
 ralph-plans/

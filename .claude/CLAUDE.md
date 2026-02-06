@@ -260,6 +260,37 @@ await updateListing(id, changedFields);
 
 See: `.claude/plans/Documents/20251217091827-edit-listing-409-regression-report.md`
 
+### Git Push Protocol (MANDATORY)
+
+All team members use the same GitHub account. Branch protection is enabled on `main` (force pushes blocked server-side). Follow this protocol for every push:
+
+```bash
+# Standard push sequence — ALWAYS follow this order
+git fetch origin main
+git merge origin/main          # NEVER rebase
+# [resolve conflicts if any]
+git push origin main           # Will succeed as fast-forward
+```
+
+**If push is rejected** (non-fast-forward):
+```bash
+git fetch origin main
+git merge origin/main
+# [resolve conflicts]
+git add <files> && git commit
+git push origin main
+```
+
+**PROHIBITED commands** (blocked by hooks + settings + GitHub):
+- `git push --force` / `git push -f` — rewrites remote history
+- `git push --force-with-lease` — still rewrites history
+- `git rebase` / `git pull --rebase` — reorders commits, causes regressions
+- Deleting the `main` branch
+
+**Machine attribution**: Every commit automatically includes a `Machine: <hostname>` trailer via the `commit-msg` hook. This is required since all pushes come from the same GitHub account.
+
+**Required git config on all machines**: `pull.rebase = false`
+
 ---
 
 ## Plans Directory
