@@ -6,6 +6,10 @@ dist/
 .DS_Store
 ../input
 
+# Build check reports
+lint-report.txt
+knip-report.txt
+
 # Test results and coverage
 .vitest-results.json
 test-results.html

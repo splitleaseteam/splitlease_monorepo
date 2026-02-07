@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "(bun run lint || true) && bun run knip:report && vite --port 3000",
+    "check": "node scripts/build-checks.js",
+    "dev": "bun run check && vite --port 3000",
     "dev:test": "(bun run lint || true) && vite --port 8010 --strictPort",
     "dev:test:restart": "bun run dev:test:stop && bun run dev:test",
     "dev:test:stop": "node scripts/kill-port.cjs 8010",
@@ -15,7 +16,7 @@
     "lint:fix": "eslint src/ --fix",
     "prebuild": "bun run generate-routes",
     "preview": "vite preview --port 3000",
-    "build": "(bun run lint || true) && bun run knip:report && vite build",
+    "build": "bun run check && vite build",
     "build:dev": "(bun run lint || true) && vite build --mode development",
     "deploy": "node scripts/check-branch.js --require-main && wrangler pages deploy dist --project-name splitlease",
     "deploy:dev": "node scripts/check-branch.js --block-main && bun run build:dev && wrangler pages deploy dist --project-name splitlease --branch development",
