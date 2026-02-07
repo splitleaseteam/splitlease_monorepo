@@ -1,9 +1,0 @@
-$ eslint src/ LeaseAppDataLocalTemplint-output.txt
-
-Oops! Something went wrong! :(
-
-ESLint: 9.39.2
-
-No files matching the pattern "LeaseAppDataLocalTemplint-output.txt" were found.
-Please check for typing mistakes in the pattern.
-
