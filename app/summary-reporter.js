@@ -2,18 +2,16 @@ import { DefaultReporter } from 'vitest/reporters';
 import { getTests, getFullName } from '@vitest/runner/utils';
 
 export default class SummaryReporter extends DefaultReporter {
-  // Silence per-file output
-  onTestModuleEnd() {}
-
-  // Silence per-test failure output during run
-  onTestCaseResult() {}
-  onTestSuiteResult() {}
-
-  // Silence console.log forwarding from tests
-  onUserConsoleLog() {}
+  // Gate all output — only allow logging during the final summary
+  _printingEnabled = false;
+  log(...args) {
+    if (this._printingEnabled) super.log(...args);
+  }
 
   // Print a concise failed test list + summary table
   reportSummary(files, errors) {
+    this._printingEnabled = true;
+
     const failedTests = getTests(files).filter(t => t.result?.state === 'fail');
 
     if (failedTests.length > 0) {
@@ -26,5 +24,6 @@ export default class SummaryReporter extends DefaultReporter {
     }
 
     this.reportTestSummary(files, errors);
+    this._printingEnabled = false;
   }
 }

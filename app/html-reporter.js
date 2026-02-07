@@ -6,7 +6,12 @@ import { pathToFileURL } from 'node:url';
 
 export default class HtmlReporter extends DefaultReporter {
   // Silence all console output — SummaryReporter handles that
-  onInit(ctx) { this.ctx = ctx; }
+  onInit(ctx) {
+    const origPrintBanner = ctx.logger.printBanner;
+    ctx.logger.printBanner = () => {};
+    super.onInit(ctx);
+    ctx.logger.printBanner = origPrintBanner;
+  }
   log() {}
   reportSummary(files, errors) {
     this.generateHtmlReport(files, errors);
