@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import SummaryReporter from './summary-reporter.js';
+import HtmlReporter from './html-reporter.js';
 
 export default defineConfig({
   plugins: [react()],
@@ -8,6 +10,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.js'],
     include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    onConsoleLog() { return false; },
 
     // SYSTEM ENFORCEMENT: Fail on coverage threshold violations
     coverage: {
@@ -26,8 +29,8 @@ export default defineConfig({
     // SYSTEM ENFORCEMENT: Empty test suites FAIL
     passWithNoTests: false,  // CRITICAL: Prevents fake passing tests
 
-    // JSON reporter for CI verification
-    reporters: ['default', 'json'],
+    // Summary-only console output + JSON for CI verification
+    reporters: [new SummaryReporter(), new HtmlReporter(), 'json'],
     outputFile: {
       json: '.vitest-results.json',
     },

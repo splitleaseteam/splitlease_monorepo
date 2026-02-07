@@ -241,3 +241,22 @@ htmlcov/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+
+# ============================================================================
+# Root-level catch-all: ignore any new files/folders not explicitly whitelisted
+# ============================================================================
+/*
+!/app/
+!/pythonanywhere/
+!/supabase/
+!/README.md
+!/package.json
+!/package-lock.json
+!/bun.lock
+!/build.sh
+!/knip.json
+!/.gitignore
+!/.gitattributes
+!/.mcp.json
+!/.node-version
+!/.pages.toml

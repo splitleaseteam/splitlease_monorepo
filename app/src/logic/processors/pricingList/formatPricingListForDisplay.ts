@@ -64,8 +64,8 @@ export function formatPricingListForDisplay(
 
   // Format starting price
   const startingPrice = pricingList.startingNightlyPrice ?? (pricingList as Partial<SupabasePricingRow>)['Starting Nightly Price'];
-  const startingAt = startingPrice !== null && startingPrice !== undefined
-    ? `$${Math.round(startingPrice)}/night`
+  const startingAt = startingPrice != null && !isNaN(startingPrice as number)
+    ? `$${Math.round(startingPrice as number)}/night`
     : 'Price varies';
 
   // Format markup percentage
@@ -79,7 +79,7 @@ export function formatPricingListForDisplay(
   return {
     priceTiers,
     startingAt,
-    startingPrice: startingPrice !== null ? Math.round(startingPrice) : null,
+    startingPrice: startingPrice != null && !isNaN(startingPrice as number) ? Math.round(startingPrice as number) : null,
     markupDisplay,
     discountDisplay,
     fullTimePrice: formatPrice(nightlyPrices[6]), // 7-night price

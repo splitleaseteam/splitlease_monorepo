@@ -161,16 +161,16 @@ describe('notificationCategories', () => {
   // getDefaultPreferences Tests
   // ============================================================================
   describe('getDefaultPreferences', () => {
-    it('should return all categories with empty arrays', () => {
+    it('should return all categories with sensible defaults', () => {
       const defaults = getDefaultPreferences();
 
       // Should have 11 keys (one for each category)
       expect(Object.keys(defaults)).toHaveLength(11);
 
-      // Each value should be an empty array
+      // Each value should be a non-empty array of channels
       Object.values(defaults).forEach((value) => {
         expect(Array.isArray(value)).toBe(true);
-        expect(value).toHaveLength(0);
+        expect(value.length).toBeGreaterThan(0);
       });
     });
 

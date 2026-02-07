@@ -336,9 +336,12 @@ describe('Notification Preferences Integration', () => {
       // Verify default structure
       const defaults = getDefaultPreferences();
 
-      // All categories should have empty arrays by default
+      // Most categories default to Email + SMS; Promotional defaults to Email only
       NOTIFICATION_CATEGORIES.forEach((category) => {
-        expect(defaults[category.dbColumn]).toEqual([]);
+        const expected = category.id === 'promotional'
+          ? ['Email']
+          : ['Email', 'SMS'];
+        expect(defaults[category.dbColumn]).toEqual(expected);
       });
 
       // Should have 11 categories
@@ -556,9 +559,9 @@ describe('Notification Preferences Integration', () => {
     });
 
     it('should handle promotional category special default', () => {
-      // Promotional SMS is off by default per Bubble behavior
+      // Promotional defaults to Email only (SMS opt-in)
       const defaults = getDefaultPreferences();
-      expect(defaults.Promotional).toEqual([]);
+      expect(defaults.Promotional).toEqual(['Email']);
     });
   });
 

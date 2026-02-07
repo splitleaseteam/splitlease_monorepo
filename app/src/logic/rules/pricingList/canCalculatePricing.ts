@@ -100,9 +100,5 @@ export function canCalculatePricing({ listing }: CalculationPrerequisites): bool
  * @returns True if value is a valid positive number.
  */
 function isValidRate(value: unknown): boolean {
-  if (value === null || value === undefined) {
-    return false;
-  }
-  const num = Number(value);
-  return typeof num === 'number' && !isNaN(num) && num > 0;
+  return typeof value === 'number' && !isNaN(value) && value > 0;
 }
