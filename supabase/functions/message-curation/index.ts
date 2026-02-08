@@ -285,8 +285,8 @@ async function handleGetThreads(
 
     filteredData = enrichedThreads.filter((thread: Record<string, unknown>) => {
       const listing = thread.listing as Record<string, unknown> | null;
-      const _guest = thread.guest as Record<string, unknown> | null;
-      const _host = thread.host as Record<string, unknown> | null;
+      const guest = thread.guest as Record<string, unknown> | null;
+      const host = thread.host as Record<string, unknown> | null;
 
       const listingName = (listing?.['Name'] as string || '').toLowerCase();
       const guestEmail = (guest?.email as string || '').toLowerCase();
@@ -334,7 +334,7 @@ async function handleGetThreadMessages(
   }
 
   // Step 1: Fetch thread (without relationship joins - FKs don't exist)
-  const { data: _threadData, error: threadError } = await supabase
+  const { data: threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
       _id,
@@ -474,7 +474,7 @@ async function handleGetMessage(
   }
 
   // Step 2: Fetch thread
-  const { data: _threadData, error: threadError } = await supabase
+  const { data: threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
       _id,
@@ -791,8 +791,8 @@ async function handleSendSplitBotMessage(
  * Format thread for API response
  */
 function formatThread(thread: Record<string, unknown>) {
-  const _guest = thread.guest as Record<string, unknown> | null;
-  const _host = thread.host as Record<string, unknown> | null;
+  const guest = thread.guest as Record<string, unknown> | null;
+  const host = thread.host as Record<string, unknown> | null;
   const listing = thread.listing as Record<string, unknown> | null;
 
   return {

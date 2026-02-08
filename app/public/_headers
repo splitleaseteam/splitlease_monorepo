@@ -153,6 +153,22 @@
 /list-with-us-v2
   Content-Type: text/html; charset=utf-8
 
+# Simulation pages - serve as HTML (uses _internal pattern)
+/simulation-hostside-demo
+  Content-Type: text/html; charset=utf-8
+/host-usability-test
+  Content-Type: text/html; charset=utf-8
+/simulation-guestside-demo
+  Content-Type: text/html; charset=utf-8
+/usability-test
+  Content-Type: text/html; charset=utf-8
+/simulation-guest-mobile
+  Content-Type: text/html; charset=utf-8
+/simulation-host-mobile
+  Content-Type: text/html; charset=utf-8
+/host-simulation
+  Content-Type: text/html; charset=utf-8
+
 # Underscore-prefixed internal pages - serve as HTML
 # These are admin/internal tools accessed via /_page-name URLs
 /_*

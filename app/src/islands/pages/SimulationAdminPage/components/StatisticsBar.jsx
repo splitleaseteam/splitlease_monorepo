@@ -18,36 +18,39 @@ export default function StatisticsBar({
     return null;
   }
 
-  // Calculate max count for scaling bars
-  const maxCount = Math.max(...stats.map(s => s.count), 1);
+  // Calculate max count for scaling bars (with null safety)
+  const maxCount = Math.max(...stats.map(s => s.count ?? 0), 1);
 
   return (
     <div className="statistics-bar">
       <div className="statistics-bar__header">
         <h2 className="statistics-bar__title">Tester Distribution</h2>
         <span className="statistics-bar__total">
-          {totalCount} total tester{totalCount !== 1 ? 's' : ''}
+          {totalCount ?? 0} total tester{totalCount !== 1 ? 's' : ''}
         </span>
       </div>
 
       <div className="statistics-bar__grid">
-        {stats.map((stat) => (
-          <div key={stat.step} className="statistics-bar__item">
-            <div className="statistics-bar__item-header">
-              <span className="statistics-bar__item-label">{stat.label}</span>
-              <span className="statistics-bar__item-count">{stat.count}</span>
+        {stats.map((stat) => {
+          const count = stat.count ?? 0;
+          return (
+            <div key={stat.step} className="statistics-bar__item">
+              <div className="statistics-bar__item-header">
+                <span className="statistics-bar__item-label">{stat.label}</span>
+                <span className="statistics-bar__item-count">{count}</span>
+              </div>
+              <div className="statistics-bar__item-bar-container">
+                <div
+                  className={`statistics-bar__item-bar statistics-bar__item-bar--${getStepColor(stat.step)}`}
+                  style={{
+                    width: `${(count / maxCount) * 100}%`,
+                    minWidth: count > 0 ? '4px' : '0',
+                  }}
+                />
+              </div>
             </div>
-            <div className="statistics-bar__item-bar-container">
-              <div
-                className={`statistics-bar__item-bar statistics-bar__item-bar--${getStepColor(stat.step)}`}
-                style={{
-                  width: `${(stat.count / maxCount) * 100}%`,
-                  minWidth: stat.count > 0 ? '4px' : '0',
-                }}
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="statistics-bar__legend">

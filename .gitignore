@@ -260,3 +260,4 @@ ehthumbs.db
 !/.mcp.json
 !/.node-version
 !/.pages.toml
+app/.env

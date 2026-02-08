@@ -217,7 +217,7 @@ The component implements intelligent routing based on user data:
 
 - **Virtual Meetings**:
   - HOST: → `/host-overview`
-  - GUEST: → `/guest-dashboard`
+  - GUEST: → `/guest-proposals`
 
 - **My Leases**:
   - HOST: → `/host-leases`

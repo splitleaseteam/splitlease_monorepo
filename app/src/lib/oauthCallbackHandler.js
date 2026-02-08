@@ -36,7 +36,9 @@ let oauthCallbackResult = null;
  * @returns {boolean}
  */
 function hasOAuthTokensInUrl() {
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  // Strip all leading # characters to handle ##access_token double-hash bug
+  const hashString = window.location.hash.replace(/^#+/, '');
+  const hashParams = new URLSearchParams(hashString);
   const hasAccessToken = hashParams.get('access_token');
   const urlParams = new URLSearchParams(window.location.search);
   const hasCode = urlParams.get('code');

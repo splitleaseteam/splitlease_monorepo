@@ -41,7 +41,7 @@ export async function sendMagicLinkViaSms({ email, phoneNumber, redirectTo }) {
         payload: {
           email,
           phoneNumber,
-          redirectTo: redirectTo || window.location.href
+          redirectTo: redirectTo || (window.location.origin + window.location.pathname + window.location.search)
         }
       }
     });
