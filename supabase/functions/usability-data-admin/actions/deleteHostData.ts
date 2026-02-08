@@ -41,7 +41,7 @@ export async function handleDeleteHostData(
   console.log('[usability-data-admin] Deleted proposals:', proposalsDeleted);
 
   // Delete message threads where host is a participant
-  const { data: _threadData, error: threadError } = await supabase
+  const { data: threadData, error: threadError } = await supabase
     .from('message_threads')
     .delete()
     .eq('host_id', hostId)
