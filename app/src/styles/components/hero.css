@@ -239,7 +239,8 @@
     font-weight: 600;
 }
 
-#checkinDay, #checkoutDay {
+#checkinDay,
+#checkoutDay {
     color: var(--bg-purple);
     font-weight: 600;
 }
@@ -255,6 +256,12 @@
     border: 4px solid white;
     transition: transform 0.3s ease;
     z-index: 1;
+    /* GPU acceleration hints to reduce CPU usage */
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* CSS containment for better paint performance */
+    contain: layout style paint;
 }
 
 .floating-avatar:hover {
@@ -276,7 +283,7 @@
     height: 120px;
     top: 12%;
     left: 10%;
-    animation: hero-float-1 7s ease-in-out infinite;
+    animation: hero-float-1 14s ease-in-out infinite;
 }
 
 .avatar-2 {
@@ -284,7 +291,7 @@
     height: 90px;
     top: 55%;
     right: 8%;
-    animation: hero-float-2 8s ease-in-out infinite;
+    animation: hero-float-2 16s ease-in-out infinite;
 }
 
 .avatar-3 {
@@ -292,7 +299,7 @@
     height: 110px;
     bottom: 18%;
     left: 12%;
-    animation: hero-float-3 6.5s ease-in-out infinite;
+    animation: hero-float-3 13s ease-in-out infinite;
 }
 
 .avatar-4 {
@@ -300,7 +307,7 @@
     height: 80px;
     top: 30%;
     right: 6%;
-    animation: hero-float-4 9s ease-in-out infinite;
+    animation: hero-float-4 18s ease-in-out infinite;
 }
 
 .avatar-5 {
@@ -308,7 +315,7 @@
     height: 100px;
     top: 18%;
     left: 28%;
-    animation: hero-float-5 7.5s ease-in-out infinite;
+    animation: hero-float-5 15s ease-in-out infinite;
     opacity: 0.85;
 }
 
@@ -317,38 +324,80 @@
     height: 85px;
     bottom: 30%;
     right: 15%;
-    animation: hero-float-6 8.5s ease-in-out infinite;
+    animation: hero-float-6 17s ease-in-out infinite;
     opacity: 0.9;
 }
 
 @keyframes hero-float-1 {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(-18px) translateX(12px); }
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(12px, -18px, 0);
+    }
 }
 
 @keyframes hero-float-2 {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(20px) translateX(-10px); }
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(-10px, 20px, 0);
+    }
 }
 
 @keyframes hero-float-3 {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(-22px) translateX(-8px); }
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(-8px, -22px, 0);
+    }
 }
 
 @keyframes hero-float-4 {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(15px) translateX(15px); }
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(15px, 15px, 0);
+    }
 }
 
 @keyframes hero-float-5 {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(-12px) translateX(-14px); }
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(-14px, -12px, 0);
+    }
 }
 
 @keyframes hero-float-6 {
-    0%, 100% { transform: translateY(0px) translateX(0px); }
-    50% { transform: translateY(18px) translateX(8px); }
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(8px, 18px, 0);
+    }
 }
 
 /* ========================================
@@ -358,7 +407,7 @@
     position: absolute;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 4px 16px rgba(49, 19, 93, 0.15), 0 2px 6px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 16px rgba(49, 19, 93, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
     padding: 8px 14px;
     display: flex;
     align-items: center;
@@ -381,7 +430,7 @@
 
 .notification-badge.clickable:hover {
     transform: translateX(-50%) translateY(-2px) scale(1.02) !important;
-    box-shadow: 0 6px 20px rgba(49, 19, 93, 0.2), 0 3px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 20px rgba(49, 19, 93, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .notification-badge svg {
@@ -428,6 +477,7 @@
         opacity: 0;
         transform: translateX(-50%) translateY(10px) scale(0.9);
     }
+
     100% {
         opacity: 1;
         transform: translateX(-50%) translateY(0) scale(1);

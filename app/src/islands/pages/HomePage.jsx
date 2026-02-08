@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
@@ -24,6 +24,7 @@ const AB_TEST_ENABLED = true;
 const POPUP_PERCENTAGE = 0.5; // 50% see popup, 50% see drawer
 const MOBILE_BREAKPOINT = 768; // px - below this, always show drawer
 
+
 function getMarketReportVariant() {
   if (!AB_TEST_ENABLED) return 'drawer';
 
@@ -42,13 +43,56 @@ function getMarketReportVariant() {
 }
 
 // ============================================================================
+// SHARED: Load Lottie player script only once (prevents duplicate injection)
+// ============================================================================
+let _lottieScriptPromise = null;
+
+function ensureLottieScript() {
+  if (_lottieScriptPromise) return _lottieScriptPromise;
+  const existing = document.querySelector('script[src*="lottie-player"]');
+  if (existing) {
+    _lottieScriptPromise = Promise.resolve();
+    return _lottieScriptPromise;
+  }
+  _lottieScriptPromise = new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js';
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = resolve;
+    document.body.appendChild(script);
+  });
+  return _lottieScriptPromise;
+}
+
+// ============================================================================
 // INTERNAL COMPONENT: Hero Section
 // ============================================================================
 
 function Hero({ onExploreRentals, onMoreDetails }) {
+  const heroRef = useRef(null);
+
+  // Pause floating avatar animations when hero section is off-screen
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const avatars = hero.querySelectorAll('.floating-avatar');
+        avatars.forEach(avatar => {
+          avatar.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+        });
+      },
+      { rootMargin: '50px 0px' }
+    );
+
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section className="hero-section">
+    <section className="hero-section" ref={heroRef}>
       {/* Floating Avatars */}
 
       {/* Avatar 1 (top-left): With location badge */}
@@ -56,8 +100,8 @@ function Hero({ onExploreRentals, onMoreDetails }) {
         <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=400&fit=crop" alt="Modern NYC apartment living room" />
         <span className="notification-badge location visible">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
           </svg>
           Midtown, Manhattan
         </span>
@@ -78,8 +122,8 @@ function Hero({ onExploreRentals, onMoreDetails }) {
         <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&h=400&fit=crop" alt="Bright kitchen and dining area" />
         <span className="notification-badge location visible">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
           </svg>
           Williamsburg, Brooklyn
         </span>
@@ -181,6 +225,7 @@ function ValuePropositions() {
 // ============================================================================
 
 function ScheduleSection() {
+  const sectionRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const schedules = [
@@ -208,22 +253,35 @@ function ScheduleSection() {
     window.location.href = `/search?days-selected=${schedules[activeIndex].days}`;
   };
 
-  // Load Lottie player script
+  // Load Lottie player script once (shared across all components)
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js';
-    script.async = true;
-    document.body.appendChild(script);
+    ensureLottieScript();
+  }, []);
 
-    return () => {
-      if (script.parentNode) {
-        document.body.removeChild(script);
-      }
-    };
+  // Pause/resume Lottie animation based on section visibility
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const player = section.querySelector('lottie-player');
+        if (!player) return;
+        if (entry.isIntersecting) {
+          if (typeof player.play === 'function') player.play();
+        } else {
+          if (typeof player.pause === 'function') player.pause();
+        }
+      },
+      { rootMargin: '50px 0px' }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <section className="schedule-section">
+    <section className="schedule-section" ref={sectionRef}>
       <div className="schedule-section-container">
         <div className="schedule-section-header">
           <p className="schedule-section-eyebrow">Stop playing room roulette!</p>
@@ -278,10 +336,10 @@ function SupportSection() {
     {
       icon: (
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#31135D" strokeWidth="1.5">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="10" r="1" fill="#31135D"/>
-          <circle cx="8" cy="10" r="1" fill="#31135D"/>
-          <circle cx="16" cy="10" r="1" fill="#31135D"/>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="10" r="1" fill="#31135D" />
+          <circle cx="8" cy="10" r="1" fill="#31135D" />
+          <circle cx="16" cy="10" r="1" fill="#31135D" />
         </svg>
       ),
       title: 'Live Chat',
@@ -291,9 +349,9 @@ function SupportSection() {
     {
       icon: (
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#31135D" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-          <circle cx="12" cy="17" r="0.5" fill="#31135D"/>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+          <circle cx="12" cy="17" r="0.5" fill="#31135D" />
         </svg>
       ),
       title: 'FAQs',
@@ -303,10 +361,10 @@ function SupportSection() {
     {
       icon: (
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#31135D" strokeWidth="1.5">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          <line x1="8" y1="6" x2="16" y2="6"/>
-          <line x1="8" y1="10" x2="14" y2="10"/>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          <line x1="8" y1="6" x2="16" y2="6" />
+          <line x1="8" y1="10" x2="14" y2="10" />
         </svg>
       ),
       title: 'Help Center',
@@ -337,7 +395,7 @@ function SupportSection() {
                 <p>{option.description}</p>
               </div>
               <svg className="support-alt-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </a>
           ))}
@@ -547,8 +605,8 @@ function FeaturedSpacesSection() {
                   <h3 className="space-title">{listing.title}</h3>
                   <div className="space-location">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#6B7280" strokeWidth="2"/>
-                      <circle cx="12" cy="9" r="2.5" stroke="#6B7280" strokeWidth="2"/>
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#6B7280" strokeWidth="2" />
+                      <circle cx="12" cy="9" r="2.5" stroke="#6B7280" strokeWidth="2" />
                     </svg>
                     {listing.location}
                   </div>
@@ -577,7 +635,7 @@ function FeaturedSpacesSection() {
           <a href={SEARCH_URL} className="spaces-cta-button">
             Browse All NYC Spaces
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </a>
         </div>
@@ -696,18 +754,21 @@ export default function HomePage() {
   // Internal routing state for password reset fallback
   const [RecoveryComponent, setRecoveryComponent] = useState(null);
 
+  // Memoize A/B test variant to avoid re-computation on each render
+  const marketReportVariant = useMemo(() => getMarketReportVariant(), []);
+
   // SAFETY NET: Check for password reset redirect
   // If user lands on home page (or via server rewrite) with recovery token
   useEffect(() => {
     const hash = window.location.hash;
     if (hash && hash.includes('type=recovery')) {
       console.log('Detected password reset token.');
-      
+
       // If we are at the root, redirect to the specific page to keep URLs clean
       if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-         console.log('Redirecting from root to /reset-password...');
-         window.location.href = `/reset-password${hash}`;
-         return;
+        console.log('Redirecting from root to /reset-password...');
+        window.location.href = `/reset-password${hash}`;
+        return;
       }
 
       // If we are NOT at root (e.g. /reset-password), but HomePage loaded,
@@ -820,7 +881,7 @@ export default function HomePage() {
 
       {!isLoggedIn && (
         <>
-          {getMarketReportVariant() === 'popup' && !isPopupDismissed ? (
+          {marketReportVariant === 'popup' && !isPopupDismissed ? (
             <MarketReportPopup
               isVisible={true}
               onRequestClick={handleOpenAIResearchModal}
