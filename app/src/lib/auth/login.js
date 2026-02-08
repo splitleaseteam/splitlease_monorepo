@@ -255,7 +255,8 @@ export async function initiateLinkedInOAuthLogin() {
       provider: 'linkedin_oidc',
       options: {
         // Stay on current page after OAuth (no redirect to profile)
-        redirectTo: window.location.href,
+        // Use origin + pathname + search to avoid trailing # in URL which causes ##access_token double-hash bug
+        redirectTo: window.location.origin + window.location.pathname + window.location.search,
         scopes: 'openid profile email',
       }
     });

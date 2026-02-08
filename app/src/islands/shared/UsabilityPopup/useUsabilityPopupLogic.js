@@ -151,7 +151,8 @@ export function useUsabilityPopupLogic({ userData, onSuccess, onError }) {
       const result = await sendMagicLinkViaSms({
         email: userData.email,
         phoneNumber: e164Phone,
-        redirectTo: window.location.href // Keep user on same page
+        // Use origin + pathname + search to avoid trailing # which causes double-hash bug
+        redirectTo: window.location.origin + window.location.pathname + window.location.search
       });
 
       logger.debug('[UsabilityPopup] Magic link sent successfully');
