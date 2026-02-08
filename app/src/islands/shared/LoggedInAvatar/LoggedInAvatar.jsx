@@ -258,7 +258,7 @@ export default function LoggedInAvatar({
         label: 'Virtual Meetings',
         icon: '/assets/icons/video-purple.svg',
         path: effectiveUserType === NORMALIZED_USER_TYPES.GUEST
-          ? '/guest-dashboard'
+          ? '/guest-proposals'
           : '/host-overview',
         badgeCount: effectiveVirtualMeetingsCount,
         badgeColor: 'purple',
