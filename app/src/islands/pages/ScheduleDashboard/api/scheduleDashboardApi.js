@@ -5,103 +5,6 @@
  * TODO: Replace stubs with real Supabase/Edge Function calls
  */
 
-import { supabase } from '../../../../lib/supabase.js';
-import { adaptLeaseFromSupabase } from '../../../../logic/processors/leases/adaptLeaseFromSupabase.js';
-
-/**
- * Fetch lease details for Schedule Dashboard
- * Host, Guest, Listing are column names storing IDs, not FK relationships.
- * We fetch them separately to avoid PostgREST relationship errors.
- *
- * @param {string} leaseId - Lease ID
- * @returns {Promise<Object>} Normalized lease object
- */
-export async function fetchLeaseById(leaseId) {
-  // Step 1: Fetch lease without any joins (FKs may not be defined)
-  const { data: lease, error } = await supabase
-    .from('bookings_leases')
-    .select('*')
-    .eq('_id', leaseId)
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  // Step 1.5: Fetch stays separately (FK not defined in Supabase)
-  const { data: stays } = await supabase
-    .from('bookings_stays')
-    .select('*')
-    .eq('Lease', leaseId);
-  lease.stays = stays || [];
-
-  // Step 2: Fetch host user if Host column exists
-  if (lease?.Host) {
-    const { data: host } = await supabase
-      .from('user')
-      .select('*')
-      .eq('_id', lease.Host)
-      .single();
-    lease.host = host;
-  }
-
-  // Step 3: Fetch guest user if Guest column exists
-  if (lease?.Guest) {
-    const { data: guest } = await supabase
-      .from('user')
-      .select('*')
-      .eq('_id', lease.Guest)
-      .single();
-    lease.guest = guest;
-  }
-
-  // Step 4: Fetch listing if Listing column exists
-  if (lease?.Listing) {
-    const { data: listing } = await supabase
-      .from('listing')
-      .select('*')
-      .eq('_id', lease.Listing)
-      .single();
-    lease.listing = listing;
-  }
-
-  return adaptLeaseFromSupabase(lease);
-}
-
-/**
- * Split nights between current user and co-tenant
- * @param {Object} lease - Adapted lease data
- * @param {string} currentUserId - Current user ID
- * @returns {{ userNights: string[], coTenantNights: string[], roommateNights: string[] }}
- */
-export function splitNightsByUser(lease, currentUserId) {
-  const allDates = lease?.bookedDates || [];
-  const stays = lease?.stays || [];
-
-  const userNights = [];
-  const coTenantNights = [];
-
-  stays.forEach((stay) => {
-    const isUserStay = stay?.assignedTo === currentUserId;
-    const nightsInStay = stay?.dates || [];
-    const nights = allDates.length > 0
-      ? nightsInStay.filter((night) => allDates.includes(night))
-      : nightsInStay;
-
-    if (isUserStay) {
-      userNights.push(...nights);
-    } else {
-      coTenantNights.push(...nights);
-    }
-  });
-
-  return {
-    userNights,
-    coTenantNights,
-    roommateNights: coTenantNights // @deprecated - use coTenantNights
-  };
-}
-
 // ============================================================================
 // PERSPECTIVE-NEUTRAL CALENDAR DATA
 // ============================================================================
@@ -137,6 +40,50 @@ const CALENDAR_DATA = {
   ]
 };
 
+// ============================================================================
+// MOCK LEASE DATA
+// ============================================================================
+const MOCK_LEASE = {
+  _id: 'mock-lease-001',
+  agreementNumber: 'SL-2026-DEMO',
+  status: 'active',
+  leaseType: 'co_tenant',
+  startDate: '2026-02-01',
+  endDate: '2026-03-31',
+  nightlyRate: 150,
+  host: {
+    _id: 'current-user',
+    firstName: 'Alex',
+    lastName: 'Demo',
+    email: 'alex@example.com'
+  },
+  guest: {
+    _id: 'user-456',
+    firstName: 'Sarah',
+    lastName: 'Demo',
+    email: 'sarah@example.com'
+  },
+  listing: {
+    _id: 'listing-001',
+    name: 'Chelsea Studio',
+    neighborhood: 'Chelsea, Manhattan',
+    address: '123 W 23rd St, New York, NY 10011',
+    imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
+  },
+  stays: []
+};
+
+/**
+ * Fetch lease details for Schedule Dashboard (MOCK)
+ * @param {string} leaseId - Lease ID
+ * @returns {Promise<Object>} Normalized lease object
+ */
+export async function fetchLeaseById(leaseId) {
+  console.log('[API Stub] fetchLeaseById:', { leaseId });
+  // Return mock lease data for development
+  return { ...MOCK_LEASE, _id: leaseId };
+}
+
 /**
  * Fetch nights for a specific user by their ID
  * @param {string} leaseId - The lease ID
@@ -164,29 +111,18 @@ export async function fetchUserNights(leaseId, userId) {
 }
 
 /**
- * Fetch co-tenant's nights for this lease (uses coTenantId to look up correct data)
+ * Fetch roommate's nights for this lease (uses roommateId to look up correct data)
  * @param {string} leaseId - The lease ID
- * @param {string} coTenantId - The co-tenant's user ID
- * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
- */
-export async function fetchCoTenantNights(leaseId, coTenantId) {
-  // TODO: Replace with real API call
-  // Query calendar_stays where user_id = coTenantId AND lease_id = leaseId
-  console.log('[API Stub] fetchCoTenantNights:', { leaseId, coTenantId });
-
-  // Return nights for the specified co-tenant (perspective-aware)
-  return CALENDAR_DATA[coTenantId] || [];
-}
-
-/**
- * @deprecated Use fetchCoTenantNights instead.
- * Fetch co-tenant's nights for this lease (legacy alias)
- * @param {string} leaseId - The lease ID
- * @param {string} roommateId - The co-tenant's user ID
+ * @param {string} roommateId - The roommate's user ID
  * @returns {Promise<string[]>} Array of date strings (YYYY-MM-DD)
  */
 export async function fetchRoommateNights(leaseId, roommateId) {
-  return fetchCoTenantNights(leaseId, roommateId);
+  // TODO: Replace with real API call
+  // Query calendar_stays where user_id = roommateId AND lease_id = leaseId
+  console.log('[API Stub] fetchRoommateNights:', { leaseId, roommateId });
+
+  // Return nights for the specified roommate (perspective-aware)
+  return CALENDAR_DATA[roommateId] || [];
 }
 
 /**
@@ -196,7 +132,7 @@ export async function fetchRoommateNights(leaseId, roommateId) {
  */
 export async function fetchPendingRequests(leaseId) {
   // TODO: Replace with real API call
-  // Query datechangerequest where lease_id = leaseId AND status = 'pending'
+  // Query date_change_requests where lease_id = leaseId AND status = 'pending'
   console.log('[API Stub] fetchPendingRequests:', { leaseId });
 
   // Mock data - one pending request for Valentine's Day
@@ -235,7 +171,7 @@ export async function fetchChatMessages(leaseId) {
  */
 export async function fetchTransactions(leaseId) {
   // TODO: Replace with real API call
-  // Query datechangerequest where lease_id = leaseId
+  // Query date_change_requests where lease_id = leaseId
   // Include related payment_records for amounts
   // Order by created_at DESC
   console.log('[API Stub] fetchTransactions:', { leaseId });
