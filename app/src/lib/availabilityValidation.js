@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Availability Validation Utilities
  * CRITICAL: Validates contiguous night selection for weekly schedule
  * Handles blackout dates, availability checking, and schedule validation
@@ -11,7 +11,7 @@ import { DAY_NAMES } from './constants.js';
 
 /**
  * Check if selected days form a contiguous block
- * CRITICAL FUNCTION: Must be consecutive days (Mon-Fri ✓, Mon+Wed ✗)
+ * CRITICAL FUNCTION: Must be consecutive days (Mon-Fri âœ“, Mon+Wed âœ—)
  * Based on Bubble implementation that handles week wrap-around cases
  *
  * @param {number[]} selectedDays - Array of day indices (0=Sunday, 1=Monday, ... 6=Saturday)
@@ -177,13 +177,13 @@ export function validateScheduleSelection(selectedDays, listing) {
   }
 
   // Check against minimum nights
-  if (listing['Minimum Nights'] && selectedDays.length < listing['Minimum Nights']) {
-    result.warnings.push(`Host prefers at least ${listing['Minimum Nights']} nights per week`);
+  if (listing.minimum_nights_per_stay && selectedDays.length < listing.minimum_nights_per_stay) {
+    result.warnings.push(`Host prefers at least ${listing.minimum_nights_per_stay} nights per week`);
   }
 
   // Check against maximum nights
-  if (listing['Maximum Nights'] && selectedDays.length > listing['Maximum Nights']) {
-    result.warnings.push(`Host prefers at most ${listing['Maximum Nights']} nights per week`);
+  if (listing.maximum_nights_per_stay && selectedDays.length > listing.maximum_nights_per_stay) {
+    result.warnings.push(`Host prefers at most ${listing.maximum_nights_per_stay} nights per week`);
   }
 
   // Check against Days Not Available
@@ -282,14 +282,14 @@ export function validateMoveInDate(moveInDate, listing, selectedDays) {
   }
 
   // Check if date is within available range
-  if (!isDateInRange(moveInDate, listing['First Available'], listing['Last Available'])) {
+  if (!isDateInRange(moveInDate, listing.first_available_date, listing['Last Available'])) {
     result.valid = false;
     result.errors.push('Move-in date is outside available range');
     return result;
   }
 
   // Check if date is blocked
-  if (isDateBlocked(moveInDate, listing['Dates - Blocked'])) {
+  if (isDateBlocked(moveInDate, listing.blocked_specific_dates_json)) {
     result.valid = false;
     result.errors.push('Selected move-in date is not available');
     return result;

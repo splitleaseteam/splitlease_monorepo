@@ -80,7 +80,7 @@ export default function MessageDisplay({
         <div className="message-display__field">
           <label className="message-display__label">Listing</label>
           <div className="message-display__value">
-            {thread.listing.name}
+            {thread.listing.listing_title}
           </div>
         </div>
       )}

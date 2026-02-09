@@ -38,7 +38,7 @@ export default function ListingsSection({
   }
 
   function getListingName(listing) {
-    return listing.name || listing['Listing Name'] || 'Unnamed Listing';
+    return listing.listing_title || listing['Listing Name'] || 'Unnamed Listing';
   }
 
   function getListingHood(listing) {

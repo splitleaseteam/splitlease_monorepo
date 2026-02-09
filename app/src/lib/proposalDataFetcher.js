@@ -43,7 +43,7 @@ export function getUserIdFromUrl() {
 
 /**
  * Fetch user data from Supabase by user ID
- * @param {string} userId - The user's _id
+ * @param {string} userId - The user's id
  * @returns {Promise<object|null>} User data or null if not found
  */
 export async function fetchUserById(userId) {
@@ -51,19 +51,19 @@ export async function fetchUserById(userId) {
     const { data, error } = await supabase
       .from('user')
       .select(`
-        _id,
-        "Name - First",
-        "Name - Full",
-        "Profile Photo",
-        "About Me / Bio",
-        "email as text",
-        "Phone Number (as text)",
+        id,
+        first_name,
+        last_name,
+        profile_photo_url,
+        bio_text,
+        email,
+        phone_number,
         "Verify - Linked In ID",
         "Verify - Phone",
         "is email confirmed",
         "user verified?"
       `)
-      .eq('_id', userId)
+      .eq('id', userId)
       .single();
 
     if (error) {
@@ -80,21 +80,21 @@ export async function fetchUserById(userId) {
 
 /**
  * Fetch all proposals for a guest user
- * Queries directly by Guest field instead of relying on "Proposals List" array
+ * Queries directly by guest_user_id field instead of relying on "Proposals List" array
  * to ensure data integrity and avoid missing proposals due to sync issues
  *
- * @param {string} userId - The user's _id
+ * @param {string} userId - The user's id
  * @returns {Promise<Array>} Array of proposal objects
  */
 export async function fetchProposalsByGuest(userId) {
   try {
-    // Query proposals directly by Guest field
+    // Query proposals directly by guest_user_id field
     const { data: proposalsData, error: proposalsError } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select('*')
-      .eq('Guest', userId)
-      .or('Deleted.is.null,Deleted.eq.false')
-      .order('Created Date', { ascending: false });
+      .eq('guest_user_id', userId)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('bubble_created_at', { ascending: false });
 
     if (proposalsError) {
       console.error('Error fetching proposals:', proposalsError);
@@ -114,7 +114,7 @@ export async function fetchProposalsByGuest(userId) {
  * Fetch move-in date and reservation span from user's most recent proposal
  * for pre-populating new proposal creation flows.
  *
- * @param {string} userId - The user's _id
+ * @param {string} userId - The user's id
  * @returns {Promise<{moveInDate: string|null, reservationSpanWeeks: number|null}|null>}
  *          Returns object with last proposal defaults, or null if no previous proposal exists
  */
@@ -126,11 +126,11 @@ export async function fetchLastProposalDefaults(userId) {
 
   try {
     const { data, error } = await supabase
-      .from('proposal')
-      .select('"Move in range start", "Reservation Span (Weeks)"')
-      .eq('Guest', userId)
-      .or('Deleted.is.null,Deleted.eq.false')
-      .order('Created Date', { ascending: false })
+      .from('booking_proposal')
+      .select('move_in_range_start_date, reservation_span_in_weeks')
+      .eq('guest_user_id', userId)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('bubble_created_at', { ascending: false })
       .limit(1)
       .single();
 
@@ -140,13 +140,13 @@ export async function fetchLastProposalDefaults(userId) {
     }
 
     console.log('Found last proposal defaults:', {
-      moveInDate: data['Move in range start'],
-      reservationSpanWeeks: data['Reservation Span (Weeks)']
+      moveInDate: data.move_in_range_start_date,
+      reservationSpanWeeks: data.reservation_span_in_weeks
     });
 
     return {
-      moveInDate: data['Move in range start'] || null,
-      reservationSpanWeeks: data['Reservation Span (Weeks)'] || null
+      moveInDate: data.move_in_range_start_date || null,
+      reservationSpanWeeks: data.reservation_span_in_weeks || null
     };
   } catch (err) {
     console.warn('Error fetching last proposal defaults:', err);
@@ -170,11 +170,12 @@ export async function loadProposalDetails(proposal) {
     const enrichedProposal = { ...proposal };
 
     // Load listing
-    if (proposal.Listing) {
+    const listingId = proposal.listing_id;
+    if (listingId) {
       const { data: listingData, error: listingError } = await supabase
         .from('listing')
         .select('*')
-        .eq('_id', proposal.Listing)
+        .eq('id', listingId)
         .single();
 
       if (!listingError && listingData) {
@@ -182,24 +183,25 @@ export async function loadProposalDetails(proposal) {
       }
     }
 
-    // Load guest user (from proposal's Guest field)
-    if (proposal.Guest) {
+    // Load guest user (from proposal's guest_user_id field)
+    const guestUserId = proposal.guest_user_id;
+    if (guestUserId) {
       const { data: guestData, error: guestError } = await supabase
         .from('user')
         .select(`
-          _id,
-          "Name - First",
-          "Name - Full",
-          "Profile Photo",
-          "About Me / Bio",
-          "email as text",
-          "Phone Number (as text)",
+          id,
+          first_name,
+          last_name,
+          profile_photo_url,
+          bio_text,
+          email,
+          phone_number,
           "Verify - Linked In ID",
           "Verify - Phone",
           "is email confirmed",
           "user verified?"
         `)
-        .eq('_id', proposal.Guest)
+        .eq('id', guestUserId)
         .single();
 
       if (!guestError && guestData) {
@@ -207,24 +209,24 @@ export async function loadProposalDetails(proposal) {
       }
     }
 
-    // Load host user (from listing creator)
-    if (enrichedProposal._listing?.['Created By']) {
+    // Load host user (from listing's host_user_id)
+    if (enrichedProposal._listing?.host_user_id) {
       const { data: hostData, error: hostError } = await supabase
         .from('user')
         .select(`
-          _id,
-          "Name - First",
-          "Name - Full",
-          "Profile Photo",
-          "About Me / Bio",
-          "email as text",
-          "Phone Number (as text)",
+          id,
+          first_name,
+          last_name,
+          profile_photo_url,
+          bio_text,
+          email,
+          phone_number,
           "Verify - Linked In ID",
           "Verify - Phone",
           "is email confirmed",
           "user verified?"
         `)
-        .eq('_id', enrichedProposal._listing['Created By'])
+        .eq('id', enrichedProposal._listing.host_user_id)
         .single();
 
       if (!hostError && hostData) {
@@ -233,12 +235,13 @@ export async function loadProposalDetails(proposal) {
     }
 
     // Load house rules
-    if (proposal['House Rules'] && Array.isArray(proposal['House Rules']) && proposal['House Rules'].length > 0) {
+    const houseRulesIds = proposal.house_rules_reference_ids_json;
+    if (houseRulesIds && Array.isArray(houseRulesIds) && houseRulesIds.length > 0) {
       const { data: rulesData, error: rulesError } = await supabase
         .schema('reference_table')
         .from('zat_features_houserule')
         .select('_id, Name, Icon')
-        .in('_id', proposal['House Rules']);
+        .in('_id', houseRulesIds);
 
       if (!rulesError && rulesData) {
         enrichedProposal._houseRules = rulesData;
@@ -246,11 +249,12 @@ export async function loadProposalDetails(proposal) {
     }
 
     // Load virtual meeting
-    if (proposal['virtual meeting']) {
+    const virtualMeetingId = proposal.virtual_meeting_record_id;
+    if (virtualMeetingId) {
       const { data: vmData, error: vmError } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .select('*')
-        .eq('_id', proposal['virtual meeting'])
+        .eq('_id', virtualMeetingId)
         .single();
 
       if (!vmError && vmData) {

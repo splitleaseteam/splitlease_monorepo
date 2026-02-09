@@ -267,8 +267,8 @@ describe('Pricing Boundary Conditions', () => {
     it('should handle zero cleaning fee', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 0
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 0
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -280,8 +280,8 @@ describe('Pricing Boundary Conditions', () => {
     it('should handle zero damage deposit', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'damage_deposit': 0
+          'nightly_rate_for_4_night_stay': 100,
+          'damage_deposit_amount': 0
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -292,8 +292,8 @@ describe('Pricing Boundary Conditions', () => {
     it('should handle maximum realistic cleaning fee', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 500
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 500
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -304,8 +304,8 @@ describe('Pricing Boundary Conditions', () => {
     it('should handle maximum realistic damage deposit', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'damage_deposit': 10000
+          'nightly_rate_for_4_night_stay': 100,
+          'damage_deposit_amount': 10000
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -316,8 +316,8 @@ describe('Pricing Boundary Conditions', () => {
     it('should reject negative cleaning fee', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': -50
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': -50
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -327,8 +327,8 @@ describe('Pricing Boundary Conditions', () => {
     it('should reject negative damage deposit', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'damage_deposit': -500
+          'nightly_rate_for_4_night_stay': 100,
+          'damage_deposit_amount': -500
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -380,7 +380,7 @@ describe('Pricing Boundary Conditions', () => {
   describe('price override boundaries', () => {
     it('should use override when present', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
+        'nightly_rate_for_4_night_stay': 100,
         'price_override': 150
       };
 
@@ -394,7 +394,7 @@ describe('Pricing Boundary Conditions', () => {
 
     it('should ignore override when zero (falsy)', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
+        'nightly_rate_for_4_night_stay': 100,
         'price_override': 0
       };
 
@@ -408,7 +408,7 @@ describe('Pricing Boundary Conditions', () => {
 
     it('should reject negative override', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
+        'nightly_rate_for_4_night_stay': 100,
         'price_override': -50
       };
 
@@ -420,7 +420,7 @@ describe('Pricing Boundary Conditions', () => {
 
     it('should reject NaN override', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
+        'nightly_rate_for_4_night_stay': 100,
         'price_override': 'invalid'
       };
 
@@ -437,7 +437,7 @@ describe('Pricing Boundary Conditions', () => {
   describe('pricing list array boundaries', () => {
     it('should reject nightsSelected of 1 (below minimum)', () => {
       const listing = {
-        'nightly_rate_1_night': 200
+        'nightly_rate_for_1_night_stay': 200
       };
 
       // Nights selected 1 is below the valid range (2-7)
@@ -449,7 +449,7 @@ describe('Pricing Boundary Conditions', () => {
 
     it('should handle last element (index 6 = 7 nights)', () => {
       const listing = {
-        'nightly_rate_7_nights': 75
+        'nightly_rate_for_7_night_stay': 75
       };
 
       const result = getNightlyRateByFrequency({
@@ -462,12 +462,12 @@ describe('Pricing Boundary Conditions', () => {
 
     it('should map all night counts to correct fields', () => {
       const listing = {
-        'nightly_rate_2_nights': 150,
-        'nightly_rate_3_nights': 140,
-        'nightly_rate_4_nights': 130,
-        'nightly_rate_5_nights': 120,
-        'nightly_rate_6_nights': 110,
-        'nightly_rate_7_nights': 100
+        'nightly_rate_for_2_night_stay': 150,
+        'nightly_rate_for_3_night_stay': 140,
+        'nightly_rate_for_4_night_stay': 130,
+        'nightly_rate_for_5_night_stay': 120,
+        'nightly_rate_for_6_night_stay': 110,
+        'nightly_rate_for_7_night_stay': 100
       };
 
       expect(getNightlyRateByFrequency({ listing, nightsSelected: 2 })).toBe(150);
@@ -547,9 +547,9 @@ describe('Pricing Boundary Conditions', () => {
     it('should handle minimum values combination', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_2_nights': 1,
-          'cleaning_fee': 0,
-          'damage_deposit': 0
+          'nightly_rate_for_2_night_stay': 1,
+          'cleaning_fee_amount': 0,
+          'damage_deposit_amount': 0
         },
         nightsPerWeek: 2,
         reservationWeeks: 1
@@ -563,9 +563,9 @@ describe('Pricing Boundary Conditions', () => {
     it('should handle maximum values combination', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_7_nights': 10000,
-          'cleaning_fee': 500,
-          'damage_deposit': 10000
+          'nightly_rate_for_7_night_stay': 10000,
+          'cleaning_fee_amount': 500,
+          'damage_deposit_amount': 10000
         },
         nightsPerWeek: 7,
         reservationWeeks: 52
@@ -578,11 +578,11 @@ describe('Pricing Boundary Conditions', () => {
 
     it('should handle boundary at discount threshold', () => {
       const listing6 = {
-        'nightly_rate_6_nights': 100
+        'nightly_rate_for_6_night_stay': 100
       };
 
       const listing7 = {
-        'nightly_rate_7_nights': 100
+        'nightly_rate_for_7_night_stay': 100
       };
 
       const price6 = calculateGuestFacingPrice({

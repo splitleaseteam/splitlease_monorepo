@@ -183,7 +183,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       }
 
       // Create the document
-      const baseHostName = selectedHost.Name || selectedHost['Name - Full'] || selectedHost.name || '';
+      const baseHostName = selectedHost.Name || (selectedHost.first_name && selectedHost.last_name ? `${selectedHost.first_name} ${selectedHost.last_name}` : null) || selectedHost.name || '';
       const hostName = baseHostName ? `${baseHostName} Full` : '';
 
       const result = await callDocumentApi('create', {

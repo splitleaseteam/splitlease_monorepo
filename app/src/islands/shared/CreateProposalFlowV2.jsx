@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CreateProposalFlowV2 - Shared Island Component
  * Complete proposal creation flow with user details, move-in, and days selection
  * Architecture: ESM + React Islands pattern
@@ -104,7 +104,7 @@ export const clearProposalDraft = (listingId) => {
   if (!listingId) return;
   try {
     localStorage.removeItem(`${PROPOSAL_DRAFT_KEY_PREFIX}${listingId}`);
-    console.log('🗑️ Cleared proposal draft from localStorage for listing:', listingId);
+    console.log('ðŸ—‘ï¸ Cleared proposal draft from localStorage for listing:', listingId);
   } catch (e) {
     console.warn('Failed to clear proposal draft:', e);
   }
@@ -185,7 +185,7 @@ export default function CreateProposalFlowV2({
 
   // Log initial data received from parent
   useEffect(() => {
-    console.log('📋 CreateProposalFlowV2 initialized with data from View page:', {
+    console.log('ðŸ“‹ CreateProposalFlowV2 initialized with data from View page:', {
       moveInDate,
       daysSelected,
       nightsSelected,
@@ -201,7 +201,7 @@ export default function CreateProposalFlowV2({
     });
 
     // Debug: Log the exact isFirstProposal value and type
-    console.log('🔍 isFirstProposal debug:', {
+    console.log('ðŸ” isFirstProposal debug:', {
       value: isFirstProposal,
       type: typeof isFirstProposal,
       strictEquals0: isFirstProposal === 0,
@@ -210,18 +210,18 @@ export default function CreateProposalFlowV2({
     });
 
     if (hasSavedDraft) {
-      console.log('📂 Loaded saved proposal draft from localStorage:', savedDraft);
+      console.log('ðŸ“‚ Loaded saved proposal draft from localStorage:', savedDraft);
     }
 
     if (existingUserData) {
-      console.log('👤 User profile data available for prefilling:', {
+      console.log('ðŸ‘¤ User profile data available for prefilling:', {
         needForSpace: existingUserData.needForSpace ? 'present' : 'empty',
         aboutYourself: existingUserData.aboutYourself ? 'present' : 'empty',
         hasUniqueRequirements: existingUserData.hasUniqueRequirements
       });
     }
 
-    console.log(`📍 Starting flow: ${useSequentialFlow
+    console.log(`ðŸ“ Starting flow: ${useSequentialFlow
       ? `Sequential flow (${useFullFlow ? 'full' : 'short'}) [${activeFlow.join(' -> ')}], starting at step 1 (section ${activeFlow[0]})`
       : '1 (Review - returning user, hub-and-spoke model)'
     }`);
@@ -296,8 +296,8 @@ export default function CreateProposalFlowV2({
   // Calculate first 4 weeks total from pricing breakdown
   const calculateFirstFourWeeks = (breakdown) => {
     const fourWeekRent = breakdown?.fourWeekRent || 0;
-    const damageDeposit = listing?.['damage_deposit'] || 0;
-    const maintenanceFee = listing?.['cleaning_fee'] || 0;
+    const damageDeposit = listing?.damage_deposit_amount || 0;
+    const maintenanceFee = listing?.cleaning_fee_amount || 0;
     return fourWeekRent + damageDeposit + maintenanceFee;
   };
 
@@ -332,8 +332,8 @@ export default function CreateProposalFlowV2({
     totalPrice: pricingBreakdown?.reservationTotal || 0,
     pricePerFourWeeks: pricingBreakdown?.fourWeekRent || 0,
     hostFourWeekCompensation: pricingBreakdown?.hostFourWeekCompensation || 0,
-    damageDeposit: listing?.['damage_deposit'] || 0,
-    maintenanceFee: listing?.['cleaning_fee'] || 0,
+    damageDeposit: listing?.damage_deposit_amount || 0,
+    maintenanceFee: listing?.cleaning_fee_amount || 0,
     firstFourWeeksTotal: calculateFirstFourWeeks(pricingBreakdown),
 
     // Listing reference
@@ -344,7 +344,7 @@ export default function CreateProposalFlowV2({
   // Update pricing when internal pricing breakdown changes (from ListingScheduleSelector)
   useEffect(() => {
     if (internalPricingBreakdown && internalPricingBreakdown.valid) {
-      console.log('💰 Updating proposal data with pricing from ListingScheduleSelector:', internalPricingBreakdown);
+      console.log('ðŸ’° Updating proposal data with pricing from ListingScheduleSelector:', internalPricingBreakdown);
 
       // Calculate derived values
       const nightsPerWeek = internalDaysSelected.length - 1; // nights = days - 1
@@ -377,7 +377,7 @@ export default function CreateProposalFlowV2({
     // Only save if there's actual content to save
     if (userDetailsToSave.needForSpace || userDetailsToSave.aboutYourself) {
       saveProposalDraft(listingId, userDetailsToSave);
-      console.log('💾 Saved proposal draft to localStorage');
+      console.log('ðŸ’¾ Saved proposal draft to localStorage');
     }
   }, [
     listingId,
@@ -392,21 +392,21 @@ export default function CreateProposalFlowV2({
     if (!listing) return null;
     return {
       id: listing._id,
-      minimumNights: listing['Minimum Nights'] || 2,
-      maximumNights: listing['Maximum Nights'] || 7,
-      'rental type': listing['rental type'] || 'Nightly',
-      'Weeks offered': listing['Weeks offered'] || 'Every week',
-      unit_markup: listing['unit_markup'] || 0,
-      nightly_rate_2_nights: listing['nightly_rate_2_nights'],
-      nightly_rate_3_nights: listing['nightly_rate_3_nights'],
-      nightly_rate_4_nights: listing['nightly_rate_4_nights'],
-      nightly_rate_5_nights: listing['nightly_rate_5_nights'],
-      nightly_rate_7_nights: listing['nightly_rate_7_nights'],
-      weekly_host_rate: listing['weekly_host_rate'],
-      monthly_host_rate: listing['monthly_host_rate'],
+      minimumNights: listing.minimum_nights_per_stay || 2,
+      maximumNights: listing.maximum_nights_per_stay || 7,
+      'rental type': listing.rental_type || 'Nightly',
+      'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
+      unit_markup: listing.unit_markup_percentage || 0,
+      nightly_rate_2_nights: listing.nightly_rate_for_2_night_stay,
+      nightly_rate_3_nights: listing.nightly_rate_for_3_night_stay,
+      nightly_rate_4_nights: listing.nightly_rate_for_4_night_stay,
+      nightly_rate_5_nights: listing.nightly_rate_for_5_night_stay,
+      nightly_rate_7_nights: listing.nightly_rate_for_7_night_stay,
+      weekly_host_rate: listing.weekly_rate_paid_to_host,
+      monthly_host_rate: listing.monthly_rate_paid_to_host,
       price_override: listing['price_override'],
-      cleaning_fee: listing['cleaning_fee'],
-      damage_deposit: listing['damage_deposit']
+      cleaning_fee: listing.cleaning_fee_amount,
+      damage_deposit: listing.damage_deposit_amount
     };
   }, [listing]);
 
@@ -417,7 +417,7 @@ export default function CreateProposalFlowV2({
       return;
     }
 
-    console.log('📊 Recalculating prices due to reservationSpan change:', proposalData.reservationSpan);
+    console.log('ðŸ“Š Recalculating prices due to reservationSpan change:', proposalData.reservationSpan);
 
     // Calculate nights from selected days
     const selectedNights = calculateNightsFromDays(internalDaysSelected);
@@ -434,7 +434,7 @@ export default function CreateProposalFlowV2({
       zatConfig
     );
 
-    console.log('💰 New price breakdown after reservationSpan change:', newPriceBreakdown);
+    console.log('ðŸ’° New price breakdown after reservationSpan change:', newPriceBreakdown);
 
     // Update internal pricing state (this triggers the existing useEffect to update proposalData)
     setInternalPricingBreakdown(newPriceBreakdown);
@@ -443,7 +443,7 @@ export default function CreateProposalFlowV2({
   const updateProposalData = (field, value) => {
     // Handle full pricing breakdown object from DaysSelectionSection
     if (field === 'pricingBreakdown' && value && typeof value === 'object') {
-      console.log('💰 Received full pricing breakdown from DaysSelectionSection:', value);
+      console.log('ðŸ’° Received full pricing breakdown from DaysSelectionSection:', value);
       setInternalPricingBreakdown(value);
       return;
     }
@@ -451,7 +451,7 @@ export default function CreateProposalFlowV2({
     // Handle special cases for pricing fields - these should come from ListingScheduleSelector
     if (field === 'pricePerNight' || field === 'pricePerFourWeeks' || field === 'totalPrice') {
       // Update both internal state and proposal data for pricing fields
-      console.log(`💰 Pricing field '${field}' updated to:`, value);
+      console.log(`ðŸ’° Pricing field '${field}' updated to:`, value);
 
       // If we receive a full pricing breakdown, update internal state
       if (field === 'pricePerNight' && typeof value === 'object') {
@@ -489,19 +489,19 @@ export default function CreateProposalFlowV2({
   const handleEditUserDetails = () => {
     setCurrentSection(2);
     setIsEditingFromReview(true);
-    console.log('📝 Edit: Jumping to User Details (section 2) from Review');
+    console.log('ðŸ“ Edit: Jumping to User Details (section 2) from Review');
   };
 
   const handleEditMoveIn = () => {
     setCurrentSection(3);
     setIsEditingFromReview(true);
-    console.log('📝 Edit: Jumping to Move-in (section 3) from Review');
+    console.log('ðŸ“ Edit: Jumping to Move-in (section 3) from Review');
   };
 
   const handleEditDays = () => {
     setCurrentSection(4);
     setIsEditingFromReview(true);
-    console.log('📝 Edit: Jumping to Days Selection (section 4) from Review');
+    console.log('ðŸ“ Edit: Jumping to Days Selection (section 4) from Review');
   };
 
   // Navigation - handles both sequential flow and hub-and-spoke editing from Review
@@ -517,7 +517,7 @@ export default function CreateProposalFlowV2({
       if (reviewIndex !== -1) {
         setFlowStepIndex(reviewIndex);
       }
-      console.log('📍 Edit complete: Returning to Review section');
+      console.log('ðŸ“ Edit complete: Returning to Review section');
       return;
     }
 
@@ -527,13 +527,13 @@ export default function CreateProposalFlowV2({
       if (nextIndex < activeFlow.length) {
         setFlowStepIndex(nextIndex);
         setCurrentSection(activeFlow[nextIndex]);
-        console.log(`📍 Sequential flow (${useFullFlow ? 'full' : 'short'}): Moving to step ${nextIndex + 1} (section ${activeFlow[nextIndex]})`);
+        console.log(`ðŸ“ Sequential flow (${useFullFlow ? 'full' : 'short'}): Moving to step ${nextIndex + 1} (section ${activeFlow[nextIndex]})`);
       }
       // If at last step (Review), handleSubmit will be called instead
     } else {
       // Hub-and-spoke for returning users on ViewSplitLeasePage: always return to Review
       setCurrentSection(1);
-      console.log('📍 Returning user (hub-and-spoke): Back to Review section');
+      console.log('ðŸ“ Returning user (hub-and-spoke): Back to Review section');
     }
   };
 
@@ -546,7 +546,7 @@ export default function CreateProposalFlowV2({
       if (reviewIndex !== -1) {
         setFlowStepIndex(reviewIndex);
       }
-      console.log('📍 Edit cancelled: Returning to Review section');
+      console.log('ðŸ“ Edit cancelled: Returning to Review section');
       return;
     }
 
@@ -556,14 +556,14 @@ export default function CreateProposalFlowV2({
         const prevIndex = flowStepIndex - 1;
         setFlowStepIndex(prevIndex);
         setCurrentSection(activeFlow[prevIndex]);
-        console.log(`📍 Sequential flow (${useFullFlow ? 'full' : 'short'}): Going back to step ${prevIndex + 1} (section ${activeFlow[prevIndex]})`);
+        console.log(`ðŸ“ Sequential flow (${useFullFlow ? 'full' : 'short'}): Going back to step ${prevIndex + 1} (section ${activeFlow[prevIndex]})`);
       }
       // If at first step (User Details), no back navigation available
     } else {
       // Hub-and-spoke for returning users on ViewSplitLeasePage: from any edit section, return to Review
       if (currentSection !== 1) {
         setCurrentSection(1);
-        console.log('📍 Returning user (hub-and-spoke): Back to Review section');
+        console.log('ðŸ“ Returning user (hub-and-spoke): Back to Review section');
       }
     }
   };
@@ -717,7 +717,7 @@ export default function CreateProposalFlowV2({
               {getSectionTitle()}
             </div>
             <button className="close-button" onClick={onClose}>
-              ✕
+              âœ•
             </button>
           </div>
           {getSectionSubtitle() && (

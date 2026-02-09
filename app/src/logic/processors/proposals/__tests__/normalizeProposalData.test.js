@@ -232,8 +232,8 @@ describe('normalizeProposalData', () => {
         'damage deposit': 500
       };
       const result = normalizeProposalData(proposal);
-      expect(result.cleaning_fee).toBe(100);
-      expect(result.damage_deposit).toBe(500);
+      expect(result.cleaning_fee_amount).toBe(100);
+      expect(result.damage_deposit_amount).toBe(500);
     });
 
     it('should return 0 for missing pricing fields', () => {
@@ -244,8 +244,8 @@ describe('normalizeProposalData', () => {
       expect(result.host_compensation).toBe(0);
       expect(result.four_week_rent).toBe(0);
       expect(result.four_week_compensation).toBe(0);
-      expect(result.cleaning_fee).toBe(0);
-      expect(result.damage_deposit).toBe(0);
+      expect(result.cleaning_fee_amount).toBe(0);
+      expect(result.damage_deposit_amount).toBe(0);
     });
   });
 

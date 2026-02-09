@@ -58,8 +58,8 @@ export default function VirtualMeetingModal({
         const { data: newVM, error: createError } = await supabase
           .from('virtualmeetingschedulesandlinks')
           .insert({
-            proposal: proposal._id,
-            guest: proposal['Guest'],
+            proposal: proposal.id || proposal._id,
+            guest: proposal.guest_user_id || proposal['Guest'],
             host: proposal._listing?.['Created By'],
             'requested by': currentUser._id,
             'booked date': bookedDateTime,
@@ -74,12 +74,12 @@ export default function VirtualMeetingModal({
 
         // Update proposal to link VM
         const { error: updateError } = await supabase
-          .from('proposal')
+          .from('booking_proposal')
           .update({
-            'virtual meeting': newVM._id,
+            virtual_meeting_record_id: newVM._id,
             'Modified Date': new Date().toISOString(),
           })
-          .eq('_id', proposal._id);
+          .eq('id', proposal.id || proposal._id);
 
         if (updateError) throw updateError;
       }
@@ -160,12 +160,12 @@ export default function VirtualMeetingModal({
 
       // Update proposal to unlink VM
       const { error: updateError } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .update({
-          'virtual meeting': null,
+          virtual_meeting_record_id: null,
           'Modified Date': new Date().toISOString(),
         })
-        .eq('_id', proposal._id);
+        .eq('id', proposal.id || proposal._id);
 
       if (updateError) throw updateError;
 
@@ -255,7 +255,7 @@ export default function VirtualMeetingModal({
                   <div>
                     <span className="text-sm text-gray-600">Requested By:</span>
                     <p className="font-medium text-gray-900">
-                      {virtualMeeting?.['requested by'] === proposal['Guest'] ? 'Guest' : 'Host'}
+                      {virtualMeeting?.['requested by'] === (proposal.guest_user_id || proposal['Guest']) ? 'Guest' : 'Host'}
                     </p>
                   </div>
                 </div>

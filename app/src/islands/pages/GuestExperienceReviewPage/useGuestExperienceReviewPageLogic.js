@@ -269,14 +269,14 @@ export function useGuestExperienceReviewPageLogic() {
           // Fetch user's first name from user table
           const { data: userData, error } = await supabase
             .from('user')
-            .select('"Name - First"')
+            .select('first_name')
             .eq('email', user.email?.toLowerCase())
             .maybeSingle();
 
           if (error) {
             console.error('[GuestExperienceReview] Failed to fetch user data:', error);
-          } else if (userData?.['Name - First']) {
-            setFormData(prev => ({ ...prev, name: userData['Name - First'] }));
+          } else if (userData?.first_name) {
+            setFormData(prev => ({ ...prev, name: userData.first_name }));
           }
         }
       } catch (error) {

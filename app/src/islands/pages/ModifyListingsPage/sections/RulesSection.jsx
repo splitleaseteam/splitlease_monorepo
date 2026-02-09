@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RulesSection - Rules and availability section
  *
  * @param {object} props - Component props
@@ -29,28 +29,28 @@ export default function RulesSection({
   };
 
   const handleHouseRulesChange = (selectedValues) => {
-    onUpdate({ 'Features - House Rules': selectedValues });
+    onUpdate({ 'house_rule_reference_ids_json': selectedValues });
   };
 
   const handleAddBlockedDate = () => {
     if (!newBlockedDate) return;
-    const currentBlocked = listing['Dates - Blocked'] || [];
+    const currentBlocked = listing.blocked_specific_dates_json || [];
     if (!currentBlocked.includes(newBlockedDate)) {
-      onUpdate({ 'Dates - Blocked': [...currentBlocked, newBlockedDate].sort() });
+      onUpdate({ 'blocked_specific_dates_json': [...currentBlocked, newBlockedDate].sort() });
     }
     setNewBlockedDate('');
   };
 
   const handleRemoveBlockedDate = (dateToRemove) => {
-    const currentBlocked = listing['Dates - Blocked'] || [];
-    onUpdate({ 'Dates - Blocked': currentBlocked.filter(d => d !== dateToRemove) });
+    const currentBlocked = listing.blocked_specific_dates_json || [];
+    onUpdate({ 'blocked_specific_dates_json': currentBlocked.filter(d => d !== dateToRemove) });
   };
 
   // Format house rules for checkbox group
   const formatHouseRuleOptions = (rules) => {
     return rules.map(rule => ({
       value: rule._id || rule.value,
-      label: rule.name || rule.Name || rule.label
+      label: rule.name || rule.label
     }));
   };
 
@@ -59,7 +59,7 @@ export default function RulesSection({
     ? cancellationPolicyOptions.map(p => ({ value: p.id, label: p.display }))
     : cancellationPolicies;
 
-  const blockedDates = listing['Dates - Blocked'] || [];
+  const blockedDates = listing.blocked_specific_dates_json || [];
 
   return (
     <SectionContainer
@@ -72,8 +72,8 @@ export default function RulesSection({
         {/* Cancellation Policy */}
         <FormDropdown
           label="Cancellation Policy"
-          name="Cancellation Policy"
-          value={listing['Cancellation Policy']}
+          name="cancellation_policy"
+          value={listing.cancellation_policy}
           onChange={handleChange}
           options={policyOptions}
           placeholder="Select policy..."
@@ -82,8 +82,8 @@ export default function RulesSection({
         {/* Preferred Gender */}
         <FormDropdown
           label="Preferred Gender"
-          name="Preferred Gender"
-          value={listing['Preferred Gender']}
+          name="preferred_guest_gender"
+          value={listing.preferred_guest_gender}
           onChange={handleChange}
           options={genderOptions}
         />
@@ -91,8 +91,8 @@ export default function RulesSection({
         {/* Number of Guests */}
         <FormDropdown
           label="Maximum Guests"
-          name="Features - Qty Guests"
-          value={listing['Features - Qty Guests']}
+          name="max_guest_count"
+          value={listing.max_guest_count}
           onChange={handleChange}
           options={guestCounts}
         />
@@ -100,8 +100,8 @@ export default function RulesSection({
         {/* Check-in Time */}
         <FormDropdown
           label="Check-in Time"
-          name="NEW Date Check-in Time"
-          value={listing['NEW Date Check-in Time']}
+          name="checkin_time_of_day"
+          value={listing.checkin_time_of_day}
           onChange={handleChange}
           options={checkInTimes}
         />
@@ -109,8 +109,8 @@ export default function RulesSection({
         {/* Check-out Time */}
         <FormDropdown
           label="Check-out Time"
-          name="NEW Date Check-out Time"
-          value={listing['NEW Date Check-out Time']}
+          name="checkout_time_of_day"
+          value={listing.checkout_time_of_day}
           onChange={handleChange}
           options={checkOutTimes}
         />
@@ -118,8 +118,8 @@ export default function RulesSection({
         {/* Minimum Duration */}
         <FormDropdown
           label="Minimum Stay (Months)"
-          name="Minimum Months"
-          value={listing['Minimum Months']}
+          name="minimum_months_per_stay"
+          value={listing.minimum_months_per_stay}
           onChange={handleChange}
           options={durationMonths}
           placeholder="Select..."
@@ -128,8 +128,8 @@ export default function RulesSection({
         {/* Maximum Duration */}
         <FormDropdown
           label="Maximum Stay (Months)"
-          name="Maximum Months"
-          value={listing['Maximum Months']}
+          name="maximum_months_per_stay"
+          value={listing.maximum_months_per_stay}
           onChange={handleChange}
           options={durationMonths}
           placeholder="Select..."
@@ -143,7 +143,7 @@ export default function RulesSection({
           <FormCheckboxGroup
             name="houseRules"
             options={formatHouseRuleOptions(houseRules)}
-            selectedValues={listing['Features - House Rules'] || []}
+            selectedValues={listing.house_rule_reference_ids_json || []}
             onChange={handleHouseRulesChange}
             columns={3}
           />
@@ -151,7 +151,7 @@ export default function RulesSection({
           <p style={styles.loadingText}>Loading house rules...</p>
         )}
         <p style={styles.selectedCount}>
-          {(listing['Features - House Rules'] || []).length} rules selected
+          {(listing.house_rule_reference_ids_json || []).length} rules selected
         </p>
       </div>
 

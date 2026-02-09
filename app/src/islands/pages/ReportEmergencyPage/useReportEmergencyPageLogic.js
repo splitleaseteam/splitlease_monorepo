@@ -66,7 +66,7 @@ export function useReportEmergencyPageLogic() {
           }));
 
           // Load user's active proposals for booking selection
-          await loadUserProposals(authResult.user._id);
+          await loadUserProposals(authResult.user.userId || authResult.user._id);
         }
       } catch (authError) {
         console.error('[ReportEmergencyPage] Auth check failed:', authError);
@@ -88,23 +88,22 @@ export function useReportEmergencyPageLogic() {
       const { supabase } = await import('../../../lib/supabase.js');
 
       const { data, error } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .select(`
-          _id,
-          agreementNumber,
-          status,
-          moveIn,
-          moveOut,
+          id,
+          agreement_number,
+          proposal_workflow_status,
+          move_in_range_start_date,
+          move_in_range_end_date,
           listing:listing_id (
-            _id,
-            name,
-            streetAddress,
-            city
+            id,
+            listing_title,
+            address_with_lat_lng_json
           )
         `)
-        .eq('user', userId)
-        .in('status', ['accepted', 'move_in', 'active'])
-        .order('moveIn', { ascending: false });
+        .eq('guest_user_id', userId)
+        .in('proposal_workflow_status', ['accepted', 'move_in', 'active'])
+        .order('move_in_range_start_date', { ascending: false });
 
       if (error) {
         console.error('[ReportEmergencyPage] Error loading proposals:', error);
@@ -285,7 +284,7 @@ export function useReportEmergencyPageLogic() {
 
       // If authenticated, include user ID
       if (isAuthenticated && currentUser) {
-        emergencyData.reported_by_user_id = currentUser._id;
+        emergencyData.reported_by_user_id = currentUser.userId || currentUser._id;
       }
 
       // Submit to Edge Function

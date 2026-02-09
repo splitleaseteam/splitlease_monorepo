@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AddressSection - Space Snapshot section for address and property basics
  *
  * @param {object} props - Component props
@@ -30,11 +30,11 @@ export default function AddressSection({
 
   // Reset manual inputs state when listing changes or address is validated
   useEffect(() => {
-    const address = listing['Location - Address'] || {};
+    const address = listing.address_with_lat_lng_json || {};
     if (address.validated) {
       setShowManualInputs(false);
     }
-  }, [listing._id, listing['Location - Address']?.validated]);
+  }, [listing._id, listing.address_with_lat_lng_json?.validated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,9 +43,9 @@ export default function AddressSection({
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
-    const currentAddress = listing['Location - Address'] || {};
+    const currentAddress = listing.address_with_lat_lng_json || {};
     onUpdate({
-      'Location - Address': {
+      'address_with_lat_lng_json': {
         ...currentAddress,
         [name]: value
       }
@@ -54,12 +54,12 @@ export default function AddressSection({
 
   const handleVerifyClick = () => {
     if (onVerifyAddress) {
-      const address = listing['Location - Address']?.address || '';
+      const address = listing.address_with_lat_lng_json?.address || '';
       onVerifyAddress(address);
     }
   };
 
-  const address = listing['Location - Address'] || {};
+  const address = listing.address_with_lat_lng_json || {};
 
   // Debug logging to understand validated state
   console.log('[AddressSection] Current address state:', {
@@ -71,11 +71,11 @@ export default function AddressSection({
   });
 
   // Prefill values for manual inputs
-  const cityValue = listing['Location - City'] || '';
-  const boroughValue = listing.boroughName || listing['Location - Borough'] || '';
-  const stateValue = listing['Location - State'] || '';
-  const zipValue = listing['Location - Zip Code'] || '';
-  const neighborhoodValue = listing.neighborhoodName || listing['Location - Hood'] || '';
+  const cityValue = listing.city || '';
+  const boroughValue = listing.boroughName || listing.borough || '';
+  const stateValue = listing.state || '';
+  const zipValue = listing.zip_code || '';
+  const neighborhoodValue = listing.neighborhoodName || listing.primary_neighborhood_reference_id || '';
 
   return (
     <SectionContainer
@@ -89,8 +89,8 @@ export default function AddressSection({
         <div style={styles.fullWidth}>
           <FormInput
             label="Listing Name"
-            name="Name"
-            value={listing['Name']}
+            name="listing_title"
+            value={listing.listing_title}
             onChange={handleChange}
             maxLength={35}
             placeholder="e.g., Cozy Studio in Brooklyn"
@@ -126,7 +126,7 @@ export default function AddressSection({
               onClick={() => setShowManualInputs(!showManualInputs)}
               style={styles.toggleButton}
             >
-              {showManualInputs ? '− Hide manual inputs' : '+ Show manual inputs'}
+              {showManualInputs ? 'âˆ’ Hide manual inputs' : '+ Show manual inputs'}
             </button>
           </div>
         )}
@@ -153,7 +153,7 @@ export default function AddressSection({
             {/* City and Borough */}
             <FormInput
               label="City"
-              name="Location - City"
+              name="city"
               value={cityValue}
               onChange={handleChange}
               placeholder="New York"
@@ -169,14 +169,14 @@ export default function AddressSection({
             {/* State and Zip */}
             <FormInput
               label="State"
-              name="Location - State"
+              name="state"
               value={stateValue}
               onChange={handleChange}
               placeholder="New York"
             />
             <FormInput
               label="Zip Code"
-              name="Location - Zip Code"
+              name="zip_code"
               value={zipValue}
               onChange={handleChange}
               placeholder="11201"
@@ -186,7 +186,7 @@ export default function AddressSection({
             <div style={styles.fullWidth}>
               <FormInput
                 label="Neighborhood (manual input)"
-                name="neighborhood (manual input by user)"
+                name="neighborhood_name_entered_by_host"
                 value={neighborhoodValue}
                 onChange={handleChange}
                 placeholder="Park Slope"
@@ -198,8 +198,8 @@ export default function AddressSection({
         {/* Type of Space */}
         <FormDropdown
           label="Type of Space"
-          name="Features - Type of Space"
-          value={listing['Features - Type of Space']}
+          name="space_type"
+          value={listing.space_type}
           onChange={handleChange}
           options={spaceTypes}
           placeholder="Select type..."
@@ -208,8 +208,8 @@ export default function AddressSection({
         {/* Bedrooms */}
         <FormDropdown
           label="Bedrooms"
-          name="Features - Qty Bedrooms"
-          value={listing['Features - Qty Bedrooms']}
+          name="bedroom_count"
+          value={listing.bedroom_count}
           onChange={handleChange}
           options={bedrooms}
           placeholder="Select..."
@@ -218,8 +218,8 @@ export default function AddressSection({
         {/* Beds */}
         <FormDropdown
           label="Beds"
-          name="Features - Qty Beds"
-          value={listing['Features - Qty Beds']}
+          name="bed_count"
+          value={listing.bed_count}
           onChange={handleChange}
           options={beds}
           placeholder="Select..."
@@ -228,8 +228,8 @@ export default function AddressSection({
         {/* Bathrooms */}
         <FormDropdown
           label="Bathrooms"
-          name="Features - Qty Bathrooms"
-          value={listing['Features - Qty Bathrooms']}
+          name="bathroom_count"
+          value={listing.bathroom_count}
           onChange={handleChange}
           options={bathrooms}
           placeholder="Select..."
@@ -238,8 +238,8 @@ export default function AddressSection({
         {/* Kitchen Type */}
         <FormDropdown
           label="Kitchen Type"
-          name="Kitchen Type"
-          value={listing['Kitchen Type']}
+          name="kitchen_type"
+          value={listing.kitchen_type}
           onChange={handleChange}
           options={kitchenTypes}
           placeholder="Select..."
@@ -248,8 +248,8 @@ export default function AddressSection({
         {/* Parking Type */}
         <FormDropdown
           label="Parking Type"
-          name="Features - Parking type"
-          value={listing['Features - Parking type']}
+          name="parking_type"
+          value={listing.parking_type}
           onChange={handleChange}
           options={parkingTypes}
           placeholder="Select..."

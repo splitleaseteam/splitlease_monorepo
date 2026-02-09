@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ReviewsSection - Reviews and safety features section
  *
  * @param {object} props - Component props
@@ -24,14 +24,14 @@ export default function ReviewsSection({
   };
 
   const handleSafetyFeaturesChange = (selectedValues) => {
-    onUpdate({ 'Features - Safety': selectedValues });
+    onUpdate({ 'safety_feature_reference_ids_json': selectedValues });
   };
 
   // Format safety features for checkbox group
   const formatSafetyOptions = (features) => {
     return features.map(feature => ({
       value: feature._id || feature.value,
-      label: feature.name || feature.Name || feature.label
+      label: feature.name || feature.label
     }));
   };
 
@@ -52,7 +52,7 @@ export default function ReviewsSection({
           <FormCheckboxGroup
             name="safetyFeatures"
             options={formatSafetyOptions(safetyFeatures)}
-            selectedValues={listing['Features - Safety'] || []}
+            selectedValues={listing.safety_feature_reference_ids_json || []}
             onChange={handleSafetyFeaturesChange}
             columns={3}
           />
@@ -60,7 +60,7 @@ export default function ReviewsSection({
           <p style={styles.loadingText}>Loading safety features...</p>
         )}
         <p style={styles.selectedCount}>
-          {(listing['Features - Safety'] || []).length} features selected
+          {(listing.safety_feature_reference_ids_json || []).length} features selected
         </p>
       </div>
 
@@ -71,8 +71,8 @@ export default function ReviewsSection({
           {/* Square Footage */}
           <FormInput
             label="Square Footage"
-            name="Features - SQFT Area"
-            value={listing['Features - SQFT Area']}
+            name="square_feet"
+            value={listing.square_feet}
             onChange={handleChange}
             type="number"
             placeholder="e.g., 800"
@@ -82,8 +82,8 @@ export default function ReviewsSection({
           {/* First Day Available */}
           <FormDatePicker
             label="First Day Available"
-            name=" First Available"
-            value={listing[' First Available']}
+            name="first_available_date"
+            value={listing.first_available_date}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
             helpText="When can guests start booking?"
@@ -113,15 +113,15 @@ export default function ReviewsSection({
         <div style={styles.summaryGrid}>
           <SummaryItem
             label="Safety Features"
-            value={`${(listing['Features - Safety'] || []).length} selected`}
+            value={`${(listing.safety_feature_reference_ids_json || []).length} selected`}
           />
           <SummaryItem
             label="Square Footage"
-            value={listing['Features - SQFT Area'] ? `${listing['Features - SQFT Area']} sq ft` : 'Not specified'}
+            value={listing.square_feet ? `${listing.square_feet} sq ft` : 'Not specified'}
           />
           <SummaryItem
             label="First Available"
-            value={listing[' First Available'] ? formatDate(listing[' First Available']) : 'Not set'}
+            value={listing.first_available_date ? formatDate(listing.first_available_date) : 'Not set'}
           />
           <SummaryItem
             label="External Reviews"

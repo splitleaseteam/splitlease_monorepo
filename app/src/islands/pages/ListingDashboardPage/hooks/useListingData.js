@@ -117,40 +117,40 @@ async function fetchLookupTables() {
 function transformListingData(dbListing, photos = [], lookups = {}) {
   if (!dbListing) return null;
 
-  const listingId = dbListing._id;
+  const listingId = dbListing.id;
 
   // Parse location address
   let locationAddress = {};
   try {
-    if (typeof dbListing['Location - Address'] === 'string') {
-      locationAddress = JSON.parse(dbListing['Location - Address']);
-    } else if (dbListing['Location - Address']) {
-      locationAddress = dbListing['Location - Address'];
+    if (typeof dbListing.address_with_lat_lng_json === 'string') {
+      locationAddress = JSON.parse(dbListing.address_with_lat_lng_json);
+    } else if (dbListing.address_with_lat_lng_json) {
+      locationAddress = dbListing.address_with_lat_lng_json;
     }
   } catch (e) {
     logger.warn('Failed to parse location address:', e);
   }
 
   // Transform amenities
-  const inUnitAmenities = safeParseJsonArray(dbListing['Features - Amenities In-Unit']).map((id) => ({
+  const inUnitAmenities = safeParseJsonArray(dbListing.in_unit_amenity_reference_ids_json).map((id) => ({
     id: id,
     name: lookups.amenities?.[id]?.name || id,
     icon: lookups.amenities?.[id]?.icon || null,
   }));
 
-  const buildingAmenities = safeParseJsonArray(dbListing['Features - Amenities In-Building']).map((id) => ({
+  const buildingAmenities = safeParseJsonArray(dbListing.in_building_amenity_reference_ids_json).map((id) => ({
     id: id,
     name: lookups.amenities?.[id]?.name || id,
     icon: lookups.amenities?.[id]?.icon || null,
   }));
 
-  const safetyFeatures = safeParseJsonArray(dbListing['Features - Safety']).map((id) => ({
+  const safetyFeatures = safeParseJsonArray(dbListing.safety_feature_reference_ids_json).map((id) => ({
     id: id,
     name: lookups.safetyFeatures?.[id]?.name || id,
     icon: lookups.safetyFeatures?.[id]?.icon || null,
   }));
 
-  const houseRules = safeParseJsonArray(dbListing['Features - House Rules']).map((id) => ({
+  const houseRules = safeParseJsonArray(dbListing.house_rule_reference_ids_json).map((id) => ({
     id: id,
     name: lookups.houseRules?.[id]?.name || id,
     icon: lookups.houseRules?.[id]?.icon || null,
@@ -165,14 +165,14 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
   }));
 
   // Parse available days
-  const availableDays = safeParseJsonArray(dbListing['Days Available (List of Days)']).map(day => {
+  const availableDays = safeParseJsonArray(dbListing.available_days_as_day_numbers_json).map(day => {
     const numDay = typeof day === 'number' ? day : parseInt(day, 10);
     return numDay;
   });
 
   // Convert day indices to night IDs
   const NIGHT_IDS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const nightsAvailable = safeParseJsonArray(dbListing['Days Available (List of Days)']).map(day => {
+  const nightsAvailable = safeParseJsonArray(dbListing.available_days_as_day_numbers_json).map(day => {
     const numDay = typeof day === 'number' ? day : parseInt(day, 10);
     return NIGHT_IDS[numDay];
   }).filter(Boolean);
@@ -182,85 +182,85 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
     _id: listingId,
 
     // Property Info
-    title: dbListing.Name || 'Untitled Listing',
-    description: dbListing.Description || '',
-    descriptionNeighborhood: dbListing['Description - Neighborhood'] || '',
+    title: dbListing.listing_title || 'Untitled Listing',
+    description: dbListing.listing_description || '',
+    descriptionNeighborhood: dbListing.neighborhood_description_by_host || '',
 
-    // Raw DB fields for compatibility
-    Name: dbListing.Name || '',
-    Description: dbListing.Description || '',
-    'Description - Neighborhood': dbListing['Description - Neighborhood'] || '',
-    'Location - City': dbListing['Location - City'] || '',
-    'Location - State': dbListing['Location - State'] || '',
-    'Location - Zip Code': dbListing['Location - Zip Code'] || '',
-    'Location - Borough': dbListing['Location - Borough'] || '',
-    'Location - Hood': dbListing['Location - Hood'] || '',
-    'Features - Type of Space': dbListing['Features - Type of Space'] || '',
-    'Features - Qty Bedrooms': dbListing['Features - Qty Bedrooms'] || 0,
-    'Features - Qty Bathrooms': dbListing['Features - Qty Bathrooms'] || 0,
-    'Features - Qty Beds': dbListing['Features - Qty Beds'] || 0,
-    'Features - Qty Guests': dbListing['Features - Qty Guests'] || 1,
-    'Features - SQFT Area': dbListing['Features - SQFT Area'] || 0,
-    'Features - SQFT of Room': dbListing['Features - SQFT of Room'] || 0,
-    'Kitchen Type': dbListing['Kitchen Type'] || '',
-    'Features - Parking type': dbListing['Features - Parking type'] || '',
-    'Features - Secure Storage Option': dbListing['Features - Secure Storage Option'] || '',
-    'Features - House Rules': dbListing['Features - House Rules'] || [],
-    'Features - Photos': dbListing['Features - Photos'] || [],
-    'Features - Amenities In-Unit': dbListing['Features - Amenities In-Unit'] || [],
-    'Features - Amenities In-Building': dbListing['Features - Amenities In-Building'] || [],
-    'Features - Safety': dbListing['Features - Safety'] || [],
-    'First Available': dbListing[' First Available'] || '',
-    'Minimum Nights': dbListing['Minimum Nights'] || 2,
-    'Maximum Nights': dbListing['Maximum Nights'] || 7,
-    'Cancellation Policy': dbListing['Cancellation Policy'] || '',
+    // Raw DB fields for compatibility (using new column names)
+    Name: dbListing.listing_title || '',
+    Description: dbListing.listing_description || '',
+    'Description - Neighborhood': dbListing.neighborhood_description_by_host || '',
+    'Location - City': dbListing.city || '',
+    'Location - State': dbListing.state || '',
+    'Location - Zip Code': dbListing.zip_code || '',
+    'Location - Borough': dbListing.borough || '',
+    'Location - Hood': dbListing.primary_neighborhood_reference_id || '',
+    'Features - Type of Space': dbListing.space_type || '',
+    'Features - Qty Bedrooms': dbListing.bedroom_count || 0,
+    'Features - Qty Bathrooms': dbListing.bathroom_count || 0,
+    'Features - Qty Beds': dbListing.bed_count || 0,
+    'Features - Qty Guests': dbListing.max_guest_count || 1,
+    'Features - SQFT Area': dbListing.square_feet || 0,
+    'Features - SQFT of Room': dbListing.square_feet || 0,
+    'Kitchen Type': dbListing.kitchen_type || '',
+    'Features - Parking type': dbListing.parking_type || '',
+    'Features - Secure Storage Option': dbListing.secure_storage_option || '',
+    'Features - House Rules': dbListing.house_rule_reference_ids_json || [],
+    'Features - Photos': dbListing.photos_with_urls_captions_and_sort_order_json || [],
+    'Features - Amenities In-Unit': dbListing.in_unit_amenity_reference_ids_json || [],
+    'Features - Amenities In-Building': dbListing.in_building_amenity_reference_ids_json || [],
+    'Features - Safety': dbListing.safety_feature_reference_ids_json || [],
+    'First Available': dbListing.first_available_date || '',
+    'Minimum Nights': dbListing.minimum_nights_per_stay || 2,
+    'Maximum Nights': dbListing.maximum_nights_per_stay || 7,
+    'Cancellation Policy': dbListing.cancellation_policy || '',
 
     // Location
     location: {
       id: listingId,
       address: locationAddress.address || dbListing['Not Found - Location - Address '] || '',
-      hoodsDisplay: dbListing['Location - Hood'] || '',
-      boroughDisplay: getBoroughForZipCode(dbListing['Location - Zip Code']) || '',
-      city: dbListing['Location - City'] || '',
-      state: dbListing['Location - State'] || '',
-      zipCode: dbListing['Location - Zip Code'] || '',
+      hoodsDisplay: dbListing.primary_neighborhood_reference_id || '',
+      boroughDisplay: getBoroughForZipCode(dbListing.zip_code) || '',
+      city: dbListing.city || '',
+      state: dbListing.state || '',
+      zipCode: dbListing.zip_code || '',
       latitude: locationAddress.lat || null,
       longitude: locationAddress.lng || null,
     },
 
     // Status
-    status: dbListing.Active ? 'Online' : 'Offline',
-    isOnline: dbListing.Active || false,
-    isApproved: dbListing.Approved || false,
-    isComplete: dbListing.Complete || false,
-    createdAt: dbListing['Created Date'] ? new Date(dbListing['Created Date']) : null,
-    activeSince: dbListing['Created Date'] ? new Date(dbListing['Created Date']) : null,
-    updatedAt: dbListing['Modified Date'] ? new Date(dbListing['Modified Date']) : null,
+    status: dbListing.is_active ? 'Online' : 'Offline',
+    isOnline: dbListing.is_active || false,
+    isApproved: dbListing.is_approved || false,
+    isComplete: dbListing.is_listing_profile_complete || false,
+    createdAt: dbListing.bubble_created_at ? new Date(dbListing.bubble_created_at) : null,
+    activeSince: dbListing.bubble_created_at ? new Date(dbListing.bubble_created_at) : null,
+    updatedAt: dbListing.bubble_updated_at ? new Date(dbListing.bubble_updated_at) : null,
 
     // Property Details
     features: {
       id: listingId,
       typeOfSpace: {
-        id: dbListing['Features - Type of Space'],
-        label: lookups.listingTypes?.[dbListing['Features - Type of Space']]?.name || dbListing['Features - Type of Space'] || 'N/A',
+        id: dbListing.space_type,
+        label: lookups.listingTypes?.[dbListing.space_type]?.name || dbListing.space_type || 'N/A',
       },
       parkingType: {
-        id: dbListing['Features - Parking type'],
-        label: lookups.parkingOptions?.[dbListing['Features - Parking type']]?.name || dbListing['Features - Parking type'] || 'No parking',
+        id: dbListing.parking_type,
+        label: lookups.parkingOptions?.[dbListing.parking_type]?.name || dbListing.parking_type || 'No parking',
       },
       kitchenType: {
-        id: dbListing['Kitchen Type'],
-        display: dbListing['Kitchen Type'] || 'No kitchen',
+        id: dbListing.kitchen_type,
+        display: dbListing.kitchen_type || 'No kitchen',
       },
       storageType: {
-        id: dbListing['Features - Secure Storage Option'],
-        label: lookups.storageOptions?.[dbListing['Features - Secure Storage Option']]?.name || dbListing['Features - Secure Storage Option'] || 'No storage',
+        id: dbListing.secure_storage_option,
+        label: lookups.storageOptions?.[dbListing.secure_storage_option]?.name || dbListing.secure_storage_option || 'No storage',
       },
-      qtyGuests: dbListing['Features - Qty Guests'] || 1,
-      bedrooms: dbListing['Features - Qty Bedrooms'] || 0,
-      bathrooms: dbListing['Features - Qty Bathrooms'] || 0,
-      squareFootage: dbListing['Features - SQFT Area'] || 0,
-      squareFootageRoom: dbListing['Features - SQFT of Room'] || 0,
+      qtyGuests: dbListing.max_guest_count || 1,
+      bedrooms: dbListing.bedroom_count || 0,
+      bathrooms: dbListing.bathroom_count || 0,
+      squareFootage: dbListing.square_feet || 0,
+      squareFootageRoom: dbListing.square_feet || 0,
     },
 
     // Amenities
@@ -271,51 +271,51 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
 
     // Guest Preferences
     preferredGender: {
-      id: dbListing['Preferred Gender'],
-      display: dbListing['Preferred Gender'] || 'Any',
+      id: dbListing.preferred_guest_gender,
+      display: dbListing.preferred_guest_gender || 'Any',
     },
-    maxGuests: dbListing['Features - Qty Guests'] || 2,
+    maxGuests: dbListing.max_guest_count || 2,
 
     // Pricing and Lease Style
-    leaseStyle: dbListing['rental type'] || 'Nightly',
-    nightsPerWeekMin: dbListing['Minimum Nights'] || 2,
-    nightsPerWeekMax: dbListing['Maximum Nights'] || 7,
+    leaseStyle: dbListing.rental_type || 'Nightly',
+    nightsPerWeekMin: dbListing.minimum_nights_per_stay || 2,
+    nightsPerWeekMax: dbListing.maximum_nights_per_stay || 7,
     availableDays,
     nightsAvailable,
 
     pricing: {
-      1: dbListing['nightly_rate_1_night'] || 0,
-      2: dbListing['nightly_rate_2_nights'] || 0,
-      3: dbListing['nightly_rate_3_nights'] || 0,
-      4: dbListing['nightly_rate_4_nights'] || 0,
-      5: dbListing['nightly_rate_5_nights'] || 0,
-      6: dbListing['nightly_rate_5_nights'] || 0,
-      7: dbListing['nightly_rate_7_nights'] || 0,
+      1: dbListing.nightly_rate_for_1_night_stay || 0,
+      2: dbListing.nightly_rate_for_2_night_stay || 0,
+      3: dbListing.nightly_rate_for_3_night_stay || 0,
+      4: dbListing.nightly_rate_for_4_night_stay || 0,
+      5: dbListing.nightly_rate_for_5_night_stay || 0,
+      6: dbListing.nightly_rate_for_5_night_stay || 0,
+      7: dbListing.nightly_rate_for_7_night_stay || 0,
     },
 
     weeklyCompensation: {
-      1: (dbListing['nightly_rate_1_night'] || 0) * 1,
-      2: (dbListing['nightly_rate_2_nights'] || 0) * 2,
-      3: (dbListing['nightly_rate_3_nights'] || 0) * 3,
-      4: (dbListing['nightly_rate_4_nights'] || 0) * 4,
-      5: (dbListing['nightly_rate_5_nights'] || 0) * 5,
-      6: (dbListing['nightly_rate_5_nights'] || 0) * 6,
-      7: (dbListing['nightly_rate_7_nights'] || 0) * 7,
+      1: (dbListing.nightly_rate_for_1_night_stay || 0) * 1,
+      2: (dbListing.nightly_rate_for_2_night_stay || 0) * 2,
+      3: (dbListing.nightly_rate_for_3_night_stay || 0) * 3,
+      4: (dbListing.nightly_rate_for_4_night_stay || 0) * 4,
+      5: (dbListing.nightly_rate_for_5_night_stay || 0) * 5,
+      6: (dbListing.nightly_rate_for_5_night_stay || 0) * 6,
+      7: (dbListing.nightly_rate_for_7_night_stay || 0) * 7,
     },
 
-    damageDeposit: dbListing['damage_deposit'] || 0,
-    maintenanceFee: dbListing['cleaning_fee'] || 0,
-    monthlyHostRate: dbListing['monthly_host_rate'] || 0,
-    weeklyHostRate: dbListing['weekly_host_rate'] || 0,
-    weeksOffered: dbListing['Weeks offered'] || '',
+    damageDeposit: dbListing.damage_deposit_amount || 0,
+    maintenanceFee: dbListing.cleaning_fee_amount || 0,
+    monthlyHostRate: dbListing.monthly_rate_paid_to_host || 0,
+    weeklyHostRate: dbListing.weekly_rate_paid_to_host || 0,
+    weeksOffered: dbListing.weeks_offered_schedule_text || '',
 
     // Availability
-    leaseTermMin: dbListing['Minimum Weeks'] || 6,
-    leaseTermMax: dbListing['Maximum Weeks'] || 52,
-    earliestAvailableDate: dbListing[' First Available'] ? new Date(dbListing[' First Available']) : new Date(),
-    checkInTime: dbListing['NEW Date Check-in Time'] || '1:00 pm',
-    checkOutTime: dbListing['NEW Date Check-out Time'] || '1:00 pm',
-    blockedDates: safeParseJsonArray(dbListing['Dates - Blocked']).map(dateStr => {
+    leaseTermMin: dbListing.minimum_weeks_per_stay || 6,
+    leaseTermMax: dbListing.maximum_weeks_per_stay || 52,
+    earliestAvailableDate: dbListing.first_available_date ? new Date(dbListing.first_available_date) : new Date(),
+    checkInTime: dbListing.checkin_time_of_day || '1:00 pm',
+    checkOutTime: dbListing.checkout_time_of_day || '1:00 pm',
+    blockedDates: safeParseJsonArray(dbListing.blocked_specific_dates_json).map(dateStr => {
       if (typeof dateStr === 'string') {
         return dateStr.split('T')[0];
       }
@@ -323,14 +323,14 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
     }),
 
     // Cancellation Policy
-    cancellationPolicy: dbListing['Cancellation Policy'] || 'Standard',
-    cancellationPolicyAdditionalRestrictions: dbListing['Cancellation Policy - Additional Restrictions'] || '',
+    cancellationPolicy: dbListing.cancellation_policy || 'Standard',
+    cancellationPolicyAdditionalRestrictions: '',
 
     // Photos
     photos: transformedPhotos,
 
     // Virtual Tour
-    virtualTourUrl: dbListing['video tour'] || null,
+    virtualTourUrl: null,
   };
 }
 
@@ -365,7 +365,7 @@ export function useListingData(listingId) {
       const listingResult = await supabase
         .from('listing')
         .select('*')
-        .eq('_id', listingId)
+        .eq('id', listingId)
         .maybeSingle();
 
       if (listingResult.error) {
@@ -378,21 +378,20 @@ export function useListingData(listingId) {
         throw new Error('Listing not found');
       }
 
-      logger.debug('✅ Found listing:', listingData._id);
+      logger.debug('✅ Found listing:', listingData.id);
 
       // Fetch lookup tables and related data in parallel
-      const [lookups, photosResult, proposalsResult, leasesResult, meetingsResult, reviewsResult] = await Promise.all([
+      const [lookups, proposalsResult, leasesResult, meetingsResult, reviewsResult] = await Promise.all([
         fetchLookupTables(),
-        supabase.from('listing_photo').select('*').eq('Listing', listingId).eq('Active', true).order('SortOrder', { ascending: true }),
-        supabase.from('proposal').select('*', { count: 'exact', head: true }).eq('Listing', listingId),
-        supabase.from('bookings_leases').select('*', { count: 'exact', head: true }).eq('Listing', listingId),
+        supabase.from('booking_proposal').select('*', { count: 'exact', head: true }).eq('listing_id', listingId),
+        supabase.from('booking_lease').select('*', { count: 'exact', head: true }).eq('listing_id', listingId),
         supabase.from('virtualmeetingschedulesandlinks').select('*', { count: 'exact', head: true }).eq('Listing', listingId),
         supabase.from('external_reviews').select('*', { count: 'exact', head: true }).eq('listing_id', listingId),
       ]);
 
-      // Extract photos
+      // Extract photos from embedded JSONB column
       let photos = [];
-      const inlinePhotos = safeParseJsonArray(listingData['Features - Photos']);
+      const inlinePhotos = safeParseJsonArray(listingData.photos_with_urls_captions_and_sort_order_json);
 
       if (inlinePhotos.length > 0) {
         const firstItem = inlinePhotos[0];
@@ -409,18 +408,13 @@ export function useListingData(listingId) {
             URL: photoUrl,
             toggleMainPhoto: isObjectArray ? (photo.toggleMainPhoto ?? photo.isCover ?? (index === 0)) : (index === 0),
             Type: isObjectArray ? (photo.type || photo.Type || 'Other') : 'Other',
-            SortOrder: isObjectArray ? (photo.SortOrder ?? photo.sortOrder ?? index) : index,
+            SortOrder: isObjectArray ? (photo.SortOrder ?? photo.sortOrder ?? photo.sort_order ?? index) : index,
             Active: true,
           };
         });
-        logger.debug('📷 Embedded photos from Features - Photos:', photos.length);
+        logger.debug('Embedded photos from listing JSONB column:', photos.length);
       } else {
-        const { data: photosData, error: photosError } = photosResult;
-        if (photosError) {
-          logger.warn('⚠️ Failed to fetch photos:', photosError);
-        }
-        photos = photosData || [];
-        logger.debug('📷 Photos from listing_photo table:', photos.length);
+        logger.debug('No photos found in listing JSONB column');
       }
 
       const { count: proposalsCount, error: proposalsError } = proposalsResult;
@@ -461,7 +455,7 @@ export function useListingData(listingId) {
           .from('co_hostrequest')
           .select('*')
           .eq('Listing', listingId)
-          .order('"Created Date"', { ascending: false })
+          .order('bubble_created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
@@ -491,7 +485,7 @@ export function useListingData(listingId) {
     logger.debug('📝 Updating listing:', listingId, updates);
 
     const fieldMapping = {
-      'First Available': ' First Available',
+      'First Available': 'first_available_date',
     };
 
     const dbUpdates = {};
@@ -500,13 +494,13 @@ export function useListingData(listingId) {
       dbUpdates[dbColumnName] = value;
     }
 
-    logger.debug(`📋 Updating listing table with _id=${listingId}`);
+    logger.debug(`📋 Updating listing table with id=${listingId}`);
     logger.debug('📋 DB updates:', dbUpdates);
 
     const { error: updateError } = await supabase
       .from('listing')
       .update(dbUpdates)
-      .eq('_id', listingId);
+      .eq('id', listingId);
 
     if (updateError) {
       logger.error('❌ Error updating listing:', updateError);
@@ -517,12 +511,12 @@ export function useListingData(listingId) {
     const { data, error: fetchError } = await supabase
       .from('listing')
       .select('*')
-      .eq('_id', listingId)
+      .eq('id', listingId)
       .maybeSingle();
 
     if (fetchError) {
       logger.warn('⚠️ Update succeeded but failed to fetch updated data:', fetchError);
-      return { _id: listingId, ...dbUpdates };
+      return { id: listingId, ...dbUpdates };
     }
 
     logger.debug('✅ Listing updated:', data);

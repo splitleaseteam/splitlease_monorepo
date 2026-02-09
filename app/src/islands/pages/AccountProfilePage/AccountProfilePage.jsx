@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AccountProfilePage.jsx
  *
  * Main page component for the Account Profile dual-view system.
@@ -108,13 +108,13 @@ export default function AccountProfilePage() {
   }
 
   // Sidebar props based on view mode
-  // Database columns use 'Name - First', 'Name - Last' naming convention
+  // Database columns use first_name, last_name naming convention
   const sidebarProps = {
     isEditorView: logic.isEditorView,
     coverPhotoUrl: logic.profileData?.['Cover Photo'] || null,
-    avatarUrl: logic.profileData?.['Profile Photo'] || null,
-    firstName: logic.formData.firstName || logic.profileData?.['Name - First'] || '',
-    lastName: logic.formData.lastName || logic.profileData?.['Name - Last'] || '',
+    avatarUrl: logic.profileData?.profile_photo_url || null,
+    firstName: logic.formData.firstName || logic.profileData?.first_name || '',
+    lastName: logic.formData.lastName || logic.profileData?.last_name || '',
     jobTitle: logic.displayJobTitle,
     profileStrength: logic.profileStrength,
     verifications: logic.verifications,
@@ -127,7 +127,7 @@ export default function AccountProfilePage() {
     onConnectLinkedIn: logic.isEditorView ? logic.handleConnectLinkedIn : null,
     onEditPhone: logic.isEditorView ? logic.handleEditPhone : null,
     emailAddress: logic.profileData?.email || logic.profileData?.['Email'] || '',
-    phoneNumber: logic.profileData?.['Phone Number (as text)'] || '',
+    phoneNumber: logic.profileData?.phone_number || '',
     isVerifyingEmail: logic.isVerifyingEmail,
     verificationEmailSent: logic.verificationEmailSent,
     // Schedule props (guest-only)
@@ -143,7 +143,7 @@ export default function AccountProfilePage() {
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,
-    memberSince: logic.profileData?.['Created Date'] || logic.profileData?.['_created_date']
+    memberSince: logic.profileData?.bubble_created_at || logic.profileData?.['_created_date']
   };
 
   return (
@@ -238,7 +238,7 @@ export default function AccountProfilePage() {
 
         <EditPhoneNumberModal
           isOpen={logic.showPhoneEditModal}
-          currentPhoneNumber={logic.profileData?.['Phone Number (as text)'] || ''}
+          currentPhoneNumber={logic.profileData?.phone_number || ''}
           onSave={async (newPhone) => {
             // Phone save is handled by the modal
             logic.handleClosePhoneEditModal();
@@ -256,7 +256,7 @@ export default function AccountProfilePage() {
             totalRewards: logic.profileData?.['Total Rewards'] || 0
           }}
           userType={logic.isHostUser ? 'host' : 'guest'}
-          referrerName={logic.profileData?.['Name - First'] || logic.profileData?.firstName || ''}
+          referrerName={logic.profileData?.first_name || logic.profileData?.firstName || ''}
         />
 
         <ImproveProfileModal
@@ -278,9 +278,9 @@ export default function AccountProfilePage() {
             applicationStatus={logic.rentalApplicationStatus}
             userProfileData={{
               email: logic.profileData?.email || logic.profileData?.['Email'] || '',
-              firstName: logic.profileData?.['Name - First'] || '',
-              lastName: logic.profileData?.['Name - Last'] || '',
-              phone: logic.profileData?.['Phone Number (as text)'] || '',
+              firstName: logic.profileData?.first_name || '',
+              lastName: logic.profileData?.last_name || '',
+              phone: logic.profileData?.phone_number || '',
               dob: logic.profileData?.['Date of Birth'] || '',
             }}
           />

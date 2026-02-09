@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Save Pricing Workflow
  *
  * Main orchestrator for calculating and persisting pricing list data.
@@ -124,7 +124,7 @@ export async function savePricingWorkflow({
     slope,
 
     // Metadata
-    rentalType: (listing['rental type'] as string) || 'Nightly',
+    rentalType: (listing.rental_type as string) || 'Nightly',
     modifiedDate: new Date().toISOString(),
     numberSelectedNights: [],
     unusedNights: hostCompensation.map(() => null)

@@ -10,7 +10,7 @@
  *
  * @param {object} params - Named parameters.
  * @param {any} params.field - JSONB field value from Supabase.
- * @param {string} params.fieldName - Name of field for error messages (e.g., "Features - Amenities").
+ * @param {string} params.fieldName - Name of field for error messages (e.g., "in_unit_amenity_reference_ids_json").
  * @returns {Array} Parsed and validated array.
  *
  * @throws {Error} If field is null/undefined (data missing).
@@ -22,20 +22,20 @@
  * // Already an array
  * const result = parseJsonArrayField({
  *   field: ['amenity1', 'amenity2'],
- *   fieldName: 'Features - Amenities'
+ *   fieldName: 'in_unit_amenity_reference_ids_json'
  * })
  * // => ['amenity1', 'amenity2']
  *
  * // JSON-encoded string (double-encoded)
  * const result = parseJsonArrayField({
  *   field: '["amenity1","amenity2"]',
- *   fieldName: 'Features - Amenities'
+ *   fieldName: 'in_unit_amenity_reference_ids_json'
  * })
  * // => ['amenity1', 'amenity2']
  *
  * // Null field throws error
- * parseJsonArrayField({ field: null, fieldName: 'Features - Amenities' })
- * // => Error: parseJsonArrayField: Features - Amenities is null or undefined
+ * parseJsonArrayField({ field: null, fieldName: 'in_unit_amenity_reference_ids_json' })
+ * // => Error: parseJsonArrayField: in_unit_amenity_reference_ids_json is null or undefined
  */
 export function parseJsonArrayField({ field, fieldName }) {
   // No Fallback: Validate fieldName is provided

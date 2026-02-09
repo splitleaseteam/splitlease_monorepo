@@ -178,7 +178,7 @@ export default function ViewSplitLeasePage() {
             {/* Photo Gallery */}
             <PhotoGallery
                 photos={listing.photos || []}
-                listingName={listing.Name}
+                listingName={listing.listing_title}
                 onPhotoClick={handlePhotoClick}
                 currentIndex={currentPhotoIndex}
                 isModalOpen={showPhotoModal}
@@ -200,7 +200,7 @@ export default function ViewSplitLeasePage() {
                     />
 
                     <DescriptionSection
-                        description={listing.Description}
+                        description={listing.listing_description}
                         isExpanded={expandedSections.description}
                         onToggle={() => toggleSection('description')}
                     />
@@ -215,7 +215,7 @@ export default function ViewSplitLeasePage() {
                     <div id="map-section">
                         <MapSection
                             coordinates={listing.coordinates}
-                            listingName={listing.Name}
+                            listingName={listing.listing_title}
                             neighborhood={listing.neighborhoodName}
                             shouldLoad={shouldLoadMap}
                             onLoadMap={handleLoadMap}
@@ -298,7 +298,7 @@ export default function ViewSplitLeasePage() {
             {showSuccessModal && (
                 <ProposalSuccessModal
                     proposalId={successProposalId}
-                    listingName={listing.Name}
+                    listingName={listing.listing_title}
                     hasSubmittedRentalApp={false}
                     onClose={handleCloseSuccessModal}
                 />

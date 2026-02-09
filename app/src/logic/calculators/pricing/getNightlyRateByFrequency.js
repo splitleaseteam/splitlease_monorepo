@@ -20,7 +20,7 @@ import { PRICING_FIELDS, NIGHTLY_RATE_BY_COUNT } from '../../../data/fieldMappin
  *
  * @example
  * const rate = getNightlyRateByFrequency({
- *   listing: { nightly_rate_4_nights: 100 },
+ *   listing: { nightly_rate_for_4_night_stay: 100 },
  *   nightsSelected: 4
  * })
  * // => 100

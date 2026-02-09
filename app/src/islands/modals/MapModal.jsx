@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MapModal Component - UI ONLY VERSION (No Google Maps Integration)
  *
  * Shows listing location with a placeholder for map
@@ -14,9 +14,9 @@
 
 export default function MapModal({ listing, address, onClose }) {
   // Get location info from listing
-  const locationAddress = address || listing?.['Location - Address'] || 'Address not available';
-  const locationHood = listing?.['Location - Hood'] || '';
-  const locationBorough = listing?.['Location - Borough'] || '';
+  const locationAddress = address || listing?.address_with_lat_lng_json || 'Address not available';
+  const locationHood = listing?.primary_neighborhood_reference_id || '';
+  const locationBorough = listing?.borough || '';
   const listingName = listing?.Name || 'Listing Location';
 
   return (
@@ -131,16 +131,16 @@ export default function MapModal({ listing, address, onClose }) {
             {/* Additional Info */}
             {listing && (
               <div className="mt-3 grid grid-cols-2 gap-3">
-                {listing['Location - Hood'] && (
+                {listing.primary_neighborhood_reference_id && (
                   <div className="p-3 bg-purple-50 rounded-lg">
                     <p className="text-xs text-purple-700 font-medium mb-1">Neighborhood</p>
-                    <p className="text-sm text-gray-900">{listing['Location - Hood']}</p>
+                    <p className="text-sm text-gray-900">{listing.primary_neighborhood_reference_id}</p>
                   </div>
                 )}
-                {listing['Location - Borough'] && (
+                {listing.borough && (
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <p className="text-xs text-blue-700 font-medium mb-1">Borough</p>
-                    <p className="text-sm text-gray-900">{listing['Location - Borough']}</p>
+                    <p className="text-sm text-gray-900">{listing.borough}</p>
                   </div>
                 )}
               </div>

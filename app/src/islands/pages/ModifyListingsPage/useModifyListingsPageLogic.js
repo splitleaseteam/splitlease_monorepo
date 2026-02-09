@@ -23,11 +23,11 @@ import {
 
 /**
  * @typedef {object} Listing
- * @property {string} _id - Listing ID
- * @property {string} Name - Listing name
+ * @property {string} id - Listing ID
+ * @property {string} listing_title - Listing name
  * @property {string} Description - Listing description
- * @property {boolean} Approved - Approval status
- * @property {boolean} Active - Active status
+ * @property {boolean} is_approved - Approval status
+ * @property {boolean} is_active - Active status
  * ... other properties
  */
 
@@ -61,15 +61,15 @@ const SEARCH_DEBOUNCE_MS = 300; // 300ms debounce for search
 
 // Standard fields to select for listing search (mirrors CreateSuggestedProposal)
 const LISTING_SELECT_FIELDS = `
-  _id,
-  Name,
-  "Location - Address",
-  Active,
-  Approved,
-  "Host email",
-  "host name",
-  "rental type",
-  "Modified Date"
+  id,
+  listing_title,
+  address_with_lat_lng_json,
+  is_active,
+  is_approved,
+  host_email,
+  host_display_name,
+  rental_type,
+  modified_at
 `;
 
 /**
@@ -278,8 +278,8 @@ export default function useModifyListingsPageLogic() {
       setListing(data);
       setOriginalListing(structuredClone(data));
       hasChangesRef.current = false;
-      currentListingIdRef.current = data._id; // Track current listing ID
-      setLastSaved(data['Modified Date'] ? new Date(data['Modified Date']) : null);
+      currentListingIdRef.current = data._id || data.id; // Track current listing ID
+      setLastSaved(data.bubble_updated_at ? new Date(data.bubble_updated_at) : null);
 
       // Update URL
       const params = new URLSearchParams(window.location.search);
@@ -304,8 +304,8 @@ export default function useModifyListingsPageLogic() {
       const { data, error: fetchError } = await supabase
         .from('listing')
         .select(LISTING_SELECT_FIELDS)
-        .eq('Deleted', false)
-        .order('"Modified Date"', { ascending: false })
+        .eq('is_deleted', false)
+        .order('bubble_updated_at', { ascending: false })
         .limit(20);
 
       if (fetchError) throw fetchError;
@@ -336,9 +336,9 @@ export default function useModifyListingsPageLogic() {
       const { data, error: searchError } = await supabase
         .from('listing')
         .select(LISTING_SELECT_FIELDS)
-        .eq('Deleted', false)
-        .or(`Name.ilike.%${query}%,_id.ilike.%${query}%,"host name".ilike.%${query}%,"Host email".ilike.%${query}%,"rental type".ilike.%${query}%`)
-        .order('"Modified Date"', { ascending: false })
+        .eq('is_deleted', false)
+        .or(`listing_title.ilike.%${query}%,id.ilike.%${query}%,host_display_name.ilike.%${query}%,host_email.ilike.%${query}%,rental_type.ilike.%${query}%`)
+        .order('bubble_updated_at', { ascending: false })
         .limit(20);
 
       if (searchError) throw searchError;
@@ -437,7 +437,7 @@ export default function useModifyListingsPageLogic() {
     try {
       console.log('[ModifyListings] Saving changed fields:', Object.keys(changedFields));
 
-      await updateListing(listing._id, changedFields);
+      await updateListing(listing._id || listing.id, changedFields);
 
       // Update original to match current
       setOriginalListing(structuredClone(listing));
@@ -485,10 +485,10 @@ export default function useModifyListingsPageLogic() {
     if (!listing) return;
 
     try {
-      const photos = listing['Features - Photos'] || [];
+      const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
       const index = photos.length;
 
-      const result = await uploadPhoto({ file }, listing._id, index);
+      const result = await uploadPhoto({ file }, listing._id || listing.id, index);
 
       const newPhoto = {
         id: `photo_${Date.now()}`,
@@ -501,7 +501,7 @@ export default function useModifyListingsPageLogic() {
       };
 
       updateListingData({
-        'Features - Photos': [...photos, newPhoto]
+        'photos_with_urls_captions_and_sort_order_json': [...photos, newPhoto]
       });
 
       showAlert('success', 'Photo uploaded');
@@ -518,7 +518,7 @@ export default function useModifyListingsPageLogic() {
   async function handleDeletePhoto(photoId) {
     if (!listing) return;
 
-    const photos = listing['Features - Photos'] || [];
+    const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
     const photo = photos.find(p => p.id === photoId);
 
     if (photo?.storagePath) {
@@ -533,7 +533,7 @@ export default function useModifyListingsPageLogic() {
         toggleMainPhoto: i === 0
       }));
 
-    updateListingData({ 'Features - Photos': updatedPhotos });
+    updateListingData({ 'photos_with_urls_captions_and_sort_order_json': updatedPhotos });
     showAlert('success', 'Photo deleted');
   }
 
@@ -575,23 +575,23 @@ export default function useModifyListingsPageLogic() {
 
     return {
       address: {
-        isComplete: Boolean(listing.Name && (listing['Location - Address']?.address || listing['street_address'])),
+        isComplete: Boolean(listing.listing_title && (listing.address_with_lat_lng_json?.address || listing['street_address'])),
         hasChanges: false
       },
       features: {
-        isComplete: Boolean(listing.Description),
+        isComplete: Boolean(listing.listing_description),
         hasChanges: false
       },
       leaseStyles: {
-        isComplete: Boolean(listing['rental type']),
+        isComplete: Boolean(listing.rental_type),
         hasChanges: false
       },
       photos: {
-        isComplete: (listing['Features - Photos'] || []).length >= 3,
+        isComplete: (listing.photos_with_urls_captions_and_sort_order_json || []).length >= 3,
         hasChanges: false
       },
       rules: {
-        isComplete: Boolean(listing['Cancellation Policy']),
+        isComplete: Boolean(listing.cancellation_policy),
         hasChanges: false
       },
       reviews: {
@@ -606,7 +606,7 @@ export default function useModifyListingsPageLogic() {
    * @param {object} result - Search result item
    */
   function selectSearchResult(result) {
-    setListingId(result._id);
+    setListingId(result.id || result._id);
     setSearchQuery('');
     setSearchResults([]);
   }

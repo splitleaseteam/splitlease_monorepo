@@ -46,7 +46,7 @@ export function ListingTabs({
         const listingId = listing.id || listing._id;
         const isActive = listingId === selectedListingId;
         const count = leaseCountsByListing[listingId] ?? 0;
-        const listingName = listing.title || listing.name || 'Unnamed Listing';
+        const listingName = listing.title || listing.listing_title || 'Unnamed Listing';
         const thumbnail = getListingThumbnail(listing);
 
         return (

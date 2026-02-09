@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Preview Split Lease Page - Host Preview Mode
  * Based on ViewSplitLeasePage but designed for hosts to preview their listing
  * - No proposal creation functionality (booking widget is display-only)
@@ -258,7 +258,7 @@ function ErrorState({ message }) {
       maxWidth: '600px',
       margin: '0 auto'
     }}>
-      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚠️</div>
+      <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>âš ï¸</div>
       <h2 style={{
         fontSize: '2rem',
         fontWeight: '700',
@@ -606,7 +606,7 @@ export default function PreviewSplitLeasePage() {
           if (userData) {
             // Success path: Use validated user data
             setLoggedInUserData(userData);
-            console.log('[PreviewSplitLeasePage] User data loaded:', userData['Name - First'] || userData.firstName);
+            console.log('[PreviewSplitLeasePage] User data loaded:', userData.first_name || userData.firstName);
           } else {
             // Step 3: Fallback to Supabase session metadata
             const { data: { session } } = await supabase.auth.getSession();
@@ -614,10 +614,9 @@ export default function PreviewSplitLeasePage() {
             if (session?.user) {
               // Session valid but profile fetch failed - use session metadata
               const fallbackUser = {
-                _id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                id: session.user.id,
-                'Name - First': session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-                'Name - Last': session.user.user_metadata?.last_name || '',
+                id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
+                first_name: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
+                last_name: session.user.user_metadata?.last_name || '',
                 email: session.user.email,
                 firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
                 lastName: session.user.user_metadata?.last_name || ''
@@ -625,11 +624,11 @@ export default function PreviewSplitLeasePage() {
               setLoggedInUserData(fallbackUser);
               console.log('[PreviewSplitLeasePage] Using fallback session data:', fallbackUser.firstName);
             } else {
-              console.log('⚠️ PreviewSplitLeasePage: Session valid but no user data, continuing in read-only mode');
+              console.log('âš ï¸ PreviewSplitLeasePage: Session valid but no user data, continuing in read-only mode');
             }
           }
         } else {
-          console.log('⚠️ PreviewSplitLeasePage: User not authenticated, continuing in read-only mode');
+          console.log('âš ï¸ PreviewSplitLeasePage: User not authenticated, continuing in read-only mode');
         }
 
         // Fetch ZAT price configuration
@@ -688,8 +687,8 @@ export default function PreviewSplitLeasePage() {
 
   // Update document title
   useEffect(() => {
-    if (listing?.Name) {
-      document.title = `Preview: ${listing.Name} | Split Lease`;
+    if (listing?.listing_title) {
+      document.title = `Preview: ${listing.listing_title} | Split Lease`;
     }
   }, [listing]);
 
@@ -711,36 +710,36 @@ export default function PreviewSplitLeasePage() {
 
   const scheduleSelectorListing = useMemo(() => listing ? {
     id: listing._id,
-    firstAvailable: new Date(listing[' First Available']),
+    firstAvailable: new Date(listing.first_available_date),
     lastAvailable: new Date(listing['Last Available']),
     numberOfNightsAvailable: listing['# of nights available'] || 7,
-    active: listing.Active,
+    active: listing.is_active,
     approved: listing.Approved,
-    datesBlocked: listing['Dates - Blocked'] || [],
-    complete: listing.Complete,
+    datesBlocked: listing.blocked_specific_dates_json || [],
+    complete: listing.is_listing_profile_complete,
     confirmedAvailability: listing.confirmedAvailability,
-    checkInTime: listing['NEW Date Check-in Time'] || '3:00 pm',
-    checkOutTime: listing['NEW Date Check-out Time'] || '11:00 am',
+    checkInTime: listing.checkin_time_of_day || '3:00 pm',
+    checkOutTime: listing.checkout_time_of_day || '11:00 am',
     nightsAvailableList: [],
     nightsAvailableNumbers: listing['Nights Available (numbers)'] || [0, 1, 2, 3, 4, 5, 6],
     nightsNotAvailable: [],
-    minimumNights: listing['Minimum Nights'] || 2,
-    maximumNights: listing['Maximum Nights'] || 7,
-    daysAvailable: convertDayNamesToNumbers(listing['Days Available (List of Days)']),
+    minimumNights: listing.minimum_nights_per_stay || 2,
+    maximumNights: listing.maximum_nights_per_stay || 7,
+    daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
     daysNotAvailable: [],
-    'rental type': listing['rental type'] || 'Nightly',
-    'Weeks offered': listing['Weeks offered'] || 'Every week',
-    'unit_markup': listing['unit_markup'] || 0,
-    'nightly_rate_2_nights': listing['nightly_rate_2_nights'],
-    'nightly_rate_3_nights': listing['nightly_rate_3_nights'],
-    'nightly_rate_4_nights': listing['nightly_rate_4_nights'],
-    'nightly_rate_5_nights': listing['nightly_rate_5_nights'],
-    'nightly_rate_7_nights': listing['nightly_rate_7_nights'],
-    'weekly_host_rate': listing['weekly_host_rate'],
-    'monthly_host_rate': listing['monthly_host_rate'],
+    'rental type': listing.rental_type || 'Nightly',
+    'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
+    'unit_markup': listing.unit_markup_percentage || 0,
+    'nightly_rate_2_nights': listing.nightly_rate_for_2_night_stay,
+    'nightly_rate_3_nights': listing.nightly_rate_for_3_night_stay,
+    'nightly_rate_4_nights': listing.nightly_rate_for_4_night_stay,
+    'nightly_rate_5_nights': listing.nightly_rate_for_5_night_stay,
+    'nightly_rate_7_nights': listing.nightly_rate_for_7_night_stay,
+    'weekly_host_rate': listing.weekly_rate_paid_to_host,
+    'monthly_host_rate': listing.monthly_rate_paid_to_host,
     'price_override': listing['price_override'],
-    'cleaning_fee': listing['cleaning_fee'],
-    'damage_deposit': listing['damage_deposit']
+    'cleaning_fee': listing.cleaning_fee_amount,
+    'damage_deposit': listing.damage_deposit_amount
   } : null, [listing]);
 
   // Initialize default days
@@ -763,15 +762,15 @@ export default function PreviewSplitLeasePage() {
     if (!listing || !listing.coordinates) return [];
     return [{
       id: listing._id,
-      title: listing.Name,
+      title: listing.listing_title,
       coordinates: listing.coordinates,
       price: {
         starting: listing['Standarized Minimum Nightly Price (Filter)'] || 0
       },
       location: listing.resolvedBorough,
       type: listing.resolvedTypeOfSpace,
-      bedrooms: listing['Features - Qty Bedrooms'] || 0,
-      bathrooms: listing['Features - Qty Bathrooms'] || 0,
+      bedrooms: listing.bedroom_count || 0,
+      bathrooms: listing.bathroom_count || 0,
       images: listing.photos?.map(p => p.Photo) || [],
       borough: listing.resolvedBorough
     }];
@@ -829,10 +828,10 @@ export default function PreviewSplitLeasePage() {
     // Transform Features - Photos back to the photos format used by the UI
     // The DB returns raw JSON array but the page expects {Photo, ...} objects
     let transformedPhotos = null;
-    if (updatedListing['Features - Photos']) {
-      const rawPhotos = typeof updatedListing['Features - Photos'] === 'string'
-        ? JSON.parse(updatedListing['Features - Photos'])
-        : updatedListing['Features - Photos'];
+    if (updatedListing.photos_with_urls_captions_and_sort_order_json) {
+      const rawPhotos = typeof updatedListing.photos_with_urls_captions_and_sort_order_json === 'string'
+        ? JSON.parse(updatedListing.photos_with_urls_captions_and_sort_order_json)
+        : updatedListing.photos_with_urls_captions_and_sort_order_json;
 
       if (Array.isArray(rawPhotos)) {
         transformedPhotos = rawPhotos.map((photo, index) => {
@@ -870,7 +869,7 @@ export default function PreviewSplitLeasePage() {
   };
 
   const handleUpdateListing = async (id, updates) => {
-    console.log('📝 Updating listing:', id, updates);
+    console.log('ðŸ“ Updating listing:', id, updates);
 
     // Map UI field names to database column names (handles quirky column names with leading spaces)
     const fieldMapping = {
@@ -884,17 +883,17 @@ export default function PreviewSplitLeasePage() {
       dbUpdates[dbColumnName] = value;
     }
 
-    console.log('📋 DB updates:', dbUpdates);
+    console.log('ðŸ“‹ DB updates:', dbUpdates);
 
     // Perform the update
     const { error: updateError } = await supabase
       .from('listing')
       .update(dbUpdates)
-      .eq('_id', id);
+      .eq('id', id);
 
     if (updateError) {
-      console.error('❌ Error updating listing:', updateError);
-      console.error('❌ Error details:', updateError.code, updateError.message, updateError.details, updateError.hint);
+      console.error('âŒ Error updating listing:', updateError);
+      console.error('âŒ Error details:', updateError.code, updateError.message, updateError.details, updateError.hint);
       throw updateError;
     }
 
@@ -902,15 +901,15 @@ export default function PreviewSplitLeasePage() {
     const { data, error: fetchError } = await supabase
       .from('listing')
       .select('*')
-      .eq('_id', id)
+      .eq('id', id)
       .maybeSingle();
 
     if (fetchError) {
-      console.warn('⚠️ Update succeeded but failed to fetch updated data:', fetchError);
+      console.warn('âš ï¸ Update succeeded but failed to fetch updated data:', fetchError);
       return { _id: id, ...dbUpdates };
     }
 
-    console.log('✅ Listing updated:', data);
+    console.log('âœ… Listing updated:', data);
     return data;
   };
 
@@ -995,7 +994,7 @@ export default function PreviewSplitLeasePage() {
             {listing.photos && listing.photos.length > 0 ? (
               <PhotoGallery
                 photos={listing.photos}
-                listingName={listing.Name}
+                listingName={listing.listing_title}
                 onPhotoClick={handlePhotoClick}
                 onEdit={handleOpenEditModal}
               />
@@ -1027,7 +1026,7 @@ export default function PreviewSplitLeasePage() {
                 color: COLORS.TEXT_DARK,
                 margin: 0
               }}>
-                {listing.Name}
+                {listing.listing_title}
               </h1>
               <EditSectionButton onClick={() => handleOpenEditModal('name')} />
             </div>
@@ -1056,7 +1055,7 @@ export default function PreviewSplitLeasePage() {
               )}
               {listing.resolvedTypeOfSpace && (
                 <span>
-                  {listing.resolvedTypeOfSpace} - {listing['Features - Qty Guests']} guests max
+                  {listing.resolvedTypeOfSpace} - {listing.max_guest_count} guests max
                 </span>
               )}
             </div>
@@ -1073,36 +1072,36 @@ export default function PreviewSplitLeasePage() {
             <div style={{ position: 'absolute', top: '-30px', right: '0' }}>
               <EditSectionButton onClick={() => handleOpenEditModal('details')} label="Edit Details" />
             </div>
-            {listing['Kitchen Type'] && (
+            {listing.kitchen_type && (
               <div style={{ textAlign: 'center', padding: '1rem', background: COLORS.BG_LIGHT, borderRadius: '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '2rem' }}>
                   <img src="/assets/images/fridge.svg" alt="Kitchen" style={{ width: '2rem', height: '2rem' }} />
                 </div>
-                <div>{listing['Kitchen Type']}</div>
+                <div>{listing.kitchen_type}</div>
               </div>
             )}
-            {listing['Features - Qty Bathrooms'] !== null && (
+            {listing.bathroom_count !== null && (
               <div style={{ textAlign: 'center', padding: '1rem', background: COLORS.BG_LIGHT, borderRadius: '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '2rem' }}>
                   <img src="/assets/images/bath.svg" alt="Bathroom" style={{ width: '2rem', height: '2rem' }} />
                 </div>
-                <div>{listing['Features - Qty Bathrooms']} Bathroom(s)</div>
+                <div>{listing.bathroom_count} Bathroom(s)</div>
               </div>
             )}
-            {listing['Features - Qty Bedrooms'] !== null && (
+            {listing.bedroom_count !== null && (
               <div style={{ textAlign: 'center', padding: '1rem', background: COLORS.BG_LIGHT, borderRadius: '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '2rem' }}>
                   <img src="/assets/images/sleeping.svg" alt="Bedroom" style={{ width: '2rem', height: '2rem' }} />
                 </div>
-                <div>{listing['Features - Qty Bedrooms'] === 0 ? 'Studio' : `${listing['Features - Qty Bedrooms']} Bedroom${listing['Features - Qty Bedrooms'] === 1 ? '' : 's'}`}</div>
+                <div>{listing.bedroom_count === 0 ? 'Studio' : `${listing.bedroom_count} Bedroom${listing.bedroom_count === 1 ? '' : 's'}`}</div>
               </div>
             )}
-            {listing['Features - Qty Beds'] !== null && (
+            {listing.bed_count !== null && (
               <div style={{ textAlign: 'center', padding: '1rem', background: COLORS.BG_LIGHT, borderRadius: '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '2rem' }}>
                   <img src="/assets/images/bed.svg" alt="Bed" style={{ width: '2rem', height: '2rem' }} />
                 </div>
-                <div>{listing['Features - Qty Beds']} Bed(s)</div>
+                <div>{listing.bed_count} Bed(s)</div>
               </div>
             )}
           </section>
@@ -1120,11 +1119,11 @@ export default function PreviewSplitLeasePage() {
               whiteSpace: 'pre-wrap'
             }}>
               {expandedSections.description
-                ? listing.Description
-                : listing.Description?.slice(0, 360)}
-              {listing.Description?.length > 360 && !expandedSections.description && '...'}
+                ? listing.listing_description
+                : listing.listing_description?.slice(0, 360)}
+              {listing.listing_description?.length > 360 && !expandedSections.description && '...'}
             </p>
-            {listing.Description?.length > 360 && (
+            {listing.listing_description?.length > 360 && (
               <button
                 onClick={() => toggleSection('description')}
                 style={{
@@ -1190,7 +1189,7 @@ export default function PreviewSplitLeasePage() {
           )}
 
           {/* Neighborhood Description */}
-          {listing['Description - Neighborhood'] && (
+          {listing.neighborhood_description_by_host && (
             <section style={{ marginBottom: '1.5rem' }}>
               <SectionHeader
                 title="Neighborhood"
@@ -1203,12 +1202,12 @@ export default function PreviewSplitLeasePage() {
                 whiteSpace: 'pre-wrap'
               }}>
                 {expandedSections.neighborhood
-                  ? listing['Description - Neighborhood']
-                  : listing['Description - Neighborhood']?.slice(0, 500)}
-                {listing['Description - Neighborhood']?.length > 500 &&
+                  ? listing.neighborhood_description_by_host
+                  : listing.neighborhood_description_by_host?.slice(0, 500)}
+                {listing.neighborhood_description_by_host?.length > 500 &&
                  !expandedSections.neighborhood && '...'}
               </p>
-              {listing['Description - Neighborhood']?.length > 500 && (
+              {listing.neighborhood_description_by_host?.length > 500 && (
                 <button
                   onClick={() => toggleSection('neighborhood')}
                   style={{
@@ -1228,7 +1227,7 @@ export default function PreviewSplitLeasePage() {
           )}
 
           {/* Commute Section */}
-          {(listing.parkingOption || listing['Time to Station (commute)']) && (
+          {(listing.parkingOption || listing.commute_time_to_nearest_transit) && (
             <section ref={commuteSectionRef} style={{ marginBottom: '1.5rem' }}>
               <SectionHeader
                 title="Commute"
@@ -1262,7 +1261,7 @@ export default function PreviewSplitLeasePage() {
                     </div>
                   </div>
                 )}
-                {listing['Time to Station (commute)'] && (
+                {listing.commute_time_to_nearest_transit && (
                   <div style={{ display: 'flex', alignItems: 'start', gap: '1rem' }}>
                     <svg
                       width="24"
@@ -1280,7 +1279,7 @@ export default function PreviewSplitLeasePage() {
                       <path d="M3 12h18"></path>
                     </svg>
                     <div>
-                      <div style={{ fontWeight: '600' }}>{listing['Time to Station (commute)']} to Metro</div>
+                      <div style={{ fontWeight: '600' }}>{listing.commute_time_to_nearest_transit} to Metro</div>
                       <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.875rem' }}>
                         Quick walk to nearest station
                       </div>
@@ -1543,7 +1542,7 @@ export default function PreviewSplitLeasePage() {
             border: '1px solid #e9d5ff'
           }}>
             {/* Show Weekly or Monthly rate if rental type is Weekly/Monthly */}
-            {listing?.['rental type'] === 'Weekly' && listing?.['weekly_host_rate'] ? (
+            {listing?.rental_type === 'Weekly' && listing?.weekly_rate_paid_to_host ? (
               <>
                 <div style={{
                   fontSize: '32px',
@@ -1555,7 +1554,7 @@ export default function PreviewSplitLeasePage() {
                   letterSpacing: '-1px',
                   display: 'inline-block'
                 }}>
-                  ${listing['weekly_host_rate']}
+                  ${listing.weekly_rate_paid_to_host}
                   <span style={{
                     fontSize: '16px',
                     color: '#6B7280',
@@ -1568,7 +1567,7 @@ export default function PreviewSplitLeasePage() {
                   Your weekly host rate
                 </div>
               </>
-            ) : listing?.['rental type'] === 'Monthly' && listing?.['monthly_host_rate'] ? (
+            ) : listing?.rental_type === 'Monthly' && listing?.monthly_rate_paid_to_host ? (
               <>
                 <div style={{
                   fontSize: '32px',
@@ -1580,7 +1579,7 @@ export default function PreviewSplitLeasePage() {
                   letterSpacing: '-1px',
                   display: 'inline-block'
                 }}>
-                  ${listing['monthly_host_rate']}
+                  ${listing.monthly_rate_paid_to_host}
                   <span style={{
                     fontSize: '16px',
                     color: '#6B7280',
@@ -1608,7 +1607,7 @@ export default function PreviewSplitLeasePage() {
                   {(() => {
                     // Get the host rate based on nights selected
                     const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
-                    const rate = listing?.[rateKey] || listing?.['nightly_rate_4_nights'];
+                    const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
                     return rate ? `$${rate}` : 'Select Days';
                   })()}
                   <span style={{
@@ -1722,7 +1721,7 @@ export default function PreviewSplitLeasePage() {
             </div>
             <SchedulePatternHighlight
               reservationSpan={reservationSpan}
-              weeksOffered={listing?.['Weeks offered']}
+              weeksOffered={listing?.weeks_offered_schedule_text}
             />
           </div>
 
@@ -1744,13 +1743,13 @@ export default function PreviewSplitLeasePage() {
               <span style={{ color: '#111827', fontWeight: '500' }}>4-Week Compensation</span>
               <span style={{ color: '#111827', fontWeight: '700', fontSize: '16px' }}>
                 {(() => {
-                  if (listing?.['rental type'] === 'Weekly' && listing?.['weekly_host_rate']) {
-                    return formatPrice(listing['weekly_host_rate'] * 4);
-                  } else if (listing?.['rental type'] === 'Monthly' && listing?.['monthly_host_rate']) {
-                    return formatPrice(listing['monthly_host_rate']);
+                  if (listing?.rental_type === 'Weekly' && listing?.weekly_rate_paid_to_host) {
+                    return formatPrice(listing.weekly_rate_paid_to_host * 4);
+                  } else if (listing?.rental_type === 'Monthly' && listing?.monthly_rate_paid_to_host) {
+                    return formatPrice(listing.monthly_rate_paid_to_host);
                   } else {
                     const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
-                    const rate = listing?.[rateKey] || listing?.['nightly_rate_4_nights'];
+                    const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
                     return rate ? formatPrice(rate * nightsSelected * 4) : 'Select Days';
                   }
                 })()}
@@ -1781,13 +1780,13 @@ export default function PreviewSplitLeasePage() {
               backgroundClip: 'text'
             }}>
               {(() => {
-                if (listing?.['rental type'] === 'Weekly' && listing?.['weekly_host_rate']) {
-                  return formatPrice(listing['weekly_host_rate'] * reservationSpan);
-                } else if (listing?.['rental type'] === 'Monthly' && listing?.['monthly_host_rate']) {
-                  return formatPrice(listing['monthly_host_rate'] * (reservationSpan / 4));
+                if (listing?.rental_type === 'Weekly' && listing?.weekly_rate_paid_to_host) {
+                  return formatPrice(listing.weekly_rate_paid_to_host * reservationSpan);
+                } else if (listing?.rental_type === 'Monthly' && listing?.monthly_rate_paid_to_host) {
+                  return formatPrice(listing.monthly_rate_paid_to_host * (reservationSpan / 4));
                 } else {
                   const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
-                  const rate = listing?.[rateKey] || listing?.['nightly_rate_4_nights'];
+                  const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
                   return rate ? formatPrice(rate * nightsSelected * reservationSpan) : 'Select Days';
                 }
               })()}
@@ -1864,7 +1863,7 @@ export default function PreviewSplitLeasePage() {
 
           <img
             src={listing.photos[currentPhotoIndex]?.Photo}
-            alt={`${listing.Name} - photo ${currentPhotoIndex + 1}`}
+            alt={`${listing.listing_title} - photo ${currentPhotoIndex + 1}`}
             style={{
               maxWidth: isMobile ? '95vw' : '90vw',
               maxHeight: isMobile ? '75vh' : '80vh',

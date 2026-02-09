@@ -49,7 +49,7 @@ export function useNotificationSettings(userId) {
 
       if (data) {
         // User has existing preferences
-        setRecordId(data._id);
+        setRecordId(data.id || data._id);
         setPreferences(data);
       } else {
         // No preferences found - user will need to have a record created
@@ -103,7 +103,7 @@ export function useNotificationSettings(userId) {
           [dbColumn]: newArray,
           updated_at: new Date().toISOString()
         })
-        .eq('_id', recordId);
+        .eq('id', recordId);
 
       if (updateError) {
         throw updateError;

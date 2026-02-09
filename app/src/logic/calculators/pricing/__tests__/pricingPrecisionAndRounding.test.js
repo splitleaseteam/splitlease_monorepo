@@ -234,7 +234,7 @@ describe('Floating Point Precision and Rounding', () => {
     it('should convert string decimals correctly', () => {
       const result = getNightlyRateByFrequency({
         listing: {
-          'nightly_rate_4_nights': '99.99'
+          'nightly_rate_for_4_night_stay': '99.99'
         },
         nightsSelected: 4
       });
@@ -244,7 +244,7 @@ describe('Floating Point Precision and Rounding', () => {
     it('should convert string with many decimals', () => {
       const result = getNightlyRateByFrequency({
         listing: {
-          'nightly_rate_4_nights': '100.123456789'
+          'nightly_rate_for_4_night_stay': '100.123456789'
         },
         nightsSelected: 4
       });
@@ -254,7 +254,7 @@ describe('Floating Point Precision and Rounding', () => {
     it('should convert scientific notation strings', () => {
       const result = getNightlyRateByFrequency({
         listing: {
-          'nightly_rate_4_nights': '1e2'
+          'nightly_rate_for_4_night_stay': '1e2'
         },
         nightsSelected: 4
       });

@@ -100,7 +100,7 @@ export default function ListingRow({
     <div className="lo-listing-row">
       {/* Column 1: Listing Details */}
       <div className="lo-listing-col lo-listing-details">
-        <h3 className="lo-listing-name">{listing.name}</h3>
+        <h3 className="lo-listing-name">{listing.listing_title}</h3>
         <p className="lo-listing-host">Host: {listing.host.name}</p>
         <p className="lo-listing-contact">{listing.host.phone}</p>
         <p className="lo-listing-contact">{listing.host.email}</p>
@@ -147,7 +147,7 @@ export default function ListingRow({
           <span>Active</span>
           <input
             type="checkbox"
-            checked={listing.active}
+            checked={listing.is_active}
             onChange={(e) => onToggleActive(listing.id, e.target.checked)}
           />
         </label>

@@ -558,7 +558,7 @@ export default function ExpandableProposalCard({
   // Extract data
   const listing = proposal?.listing;
   const host = listing?.host;
-  const status = proposal?.Status;
+  const status = proposal?.proposal_workflow_status || proposal?.Status;
   const statusConfig = getStatusConfig(status);
   const buttonConfig = getButtonConfigForProposal(proposal);
 
@@ -689,9 +689,9 @@ export default function ExpandableProposalCard({
     try {
       const nextStatus = getNextStatusAfterConfirmation(proposal);
       const { error } = await supabase
-        .from('proposal')
-        .update({ Status: nextStatus, 'Modified Date': new Date().toISOString() })
-        .eq('_id', proposal._id);
+        .from('booking_proposal')
+        .update({ proposal_workflow_status: nextStatus, 'Modified Date': new Date().toISOString() })
+        .eq('id', proposal.id || proposal._id);
       if (error) throw new Error(error.message);
       showToast({ title: 'Proposal confirmed!', type: 'success' });
       window.location.reload();

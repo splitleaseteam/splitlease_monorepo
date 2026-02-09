@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Host Overview Page Logic Hook
  *
  * Contains all business logic for the Host Overview page:
@@ -120,12 +120,12 @@ export function useHostOverviewPageLogic() {
       const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
       if (userData) {
         setUser({
-          id: userData.userId || userData._id || userData.id,
-          firstName: userData['Name - First'] || userData.firstName || 'Host',
-          lastName: userData['Name - Last'] || userData.lastName || '',
+          id: userData.userId || userData.id,
+          firstName: userData.firstName || 'Host',
+          lastName: userData.lastName || '',
           email: userData.email || '',
-          // After migration, user._id serves as host reference directly
-          accountHostId: userData.accountHostId || userData.userId || userData._id
+          // After migration, user.id serves as host reference directly
+          accountHostId: userData.accountHostId || userData.userId || userData.id
         });
         return userData;
       }
@@ -179,7 +179,7 @@ export function useHostOverviewPageLogic() {
 
       // 2. Fetch from listing table where Host User = hostAccountId or Created By = hostAccountId
       // Using RPC function to handle column names with special characters
-      // IMPORTANT: hostAccountId is the Bubble-format user._id, which is what listings use
+      // IMPORTANT: hostAccountId is the user.id, which is what listings use for host_user_id
       if (hostAccountId) {
         fetchPromises.push(
           supabase
@@ -195,14 +195,13 @@ export function useHostOverviewPageLogic() {
         );
       }
 
-      // 3. Fetch listing IDs from user.Listings array
-      // IMPORTANT: user table uses Bubble-format _id (hostAccountId)
+      // 3. Fetch listing IDs from user.listings_json array (with Listings fallback for legacy data)
       if (hostAccountId) {
         fetchPromises.push(
           supabase
             .from('user')
-            .select('Listings')
-            .eq('_id', hostAccountId)
+            .select('listings_json')
+            .eq('id', hostAccountId)
             .maybeSingle()
             .then(result => ({ type: 'user_listings', ...result }))
             .catch(err => {
@@ -218,30 +217,29 @@ export function useHostOverviewPageLogic() {
       const bubbleResult = results.find(r => r?.type === 'bubble');
       const bubbleListings = bubbleResult?.data?.response?.results || [];
       const mappedBubbleListings = bubbleListings.map(listing => ({
-        id: listing._id,
-        _id: listing._id,
-        name: listing.Name || listing.name || 'Unnamed Listing',
-        Name: listing.Name,
-        complete: listing.Complete || listing.complete,
+        id: listing._id || listing.id,
+        name: listing.listing_title || listing.name || 'Unnamed Listing',
+        listing_title: listing.listing_title,
+        complete: listing.is_listing_profile_complete || listing.complete,
         source: 'bubble',
         location: {
-          borough: listing['Location - Borough']?.Display || listing.borough || ''
+          borough: listing.borough?.Display || listing.borough || ''
         },
         leasesCount: listing['Leases Count'] || 0,
         proposalsCount: listing['Proposals Count'] || 0,
-        photos: listing['Features - Photos'] || [],
+        photos: listing.photos_with_urls_captions_and_sort_order_json || [],
         // Pricing fields
-        rental_type: listing['rental type'] || 'Nightly',
-        monthly_rate: listing['monthly_host_rate'],
-        weekly_rate: listing['weekly_host_rate'],
+        rental_type: listing.rental_type || 'Nightly',
+        monthly_rate: listing.monthly_rate_paid_to_host,
+        weekly_rate: listing.weekly_rate_paid_to_host,
         // Nightly rates for each night count
-        nightly_rate_2: listing['nightly_rate_2_nights'],
-        nightly_rate_3: listing['nightly_rate_3_nights'],
-        nightly_rate_4: listing['nightly_rate_4_nights'],
-        nightly_rate_5: listing['nightly_rate_5_nights'],
-        nightly_rate_7: listing['nightly_rate_7_nights'],
-        cleaning_fee: listing['cleaning_fee'],
-        damage_deposit: listing['damage_deposit']
+        nightly_rate_2: listing.nightly_rate_for_2_night_stay,
+        nightly_rate_3: listing.nightly_rate_for_3_night_stay,
+        nightly_rate_4: listing.nightly_rate_for_4_night_stay,
+        nightly_rate_5: listing.nightly_rate_for_5_night_stay,
+        nightly_rate_7: listing.nightly_rate_for_7_night_stay,
+        cleaning_fee_amount: listing.cleaning_fee_amount,
+        damage_deposit_amount: listing.damage_deposit_amount
       }));
 
       // Process listings from RPC
@@ -250,25 +248,24 @@ export function useHostOverviewPageLogic() {
       if (rpcResult?.data && !rpcResult.error) {
         rpcListings = rpcResult.data.map(listing => {
           // Try FK lookup first, fall back to extracting from address string
-          const boroughFromFK = getBoroughName(listing['Location - Borough']);
-          const boroughFromAddress = extractBoroughFromAddress(listing['Location - Address']);
+          const boroughFromFK = getBoroughName(listing.borough);
+          const boroughFromAddress = extractBoroughFromAddress(listing.address_with_lat_lng_json);
           const borough = boroughFromFK || boroughFromAddress || '';
 
           return {
             id: listing.id,
-            _id: listing._id,
-            name: listing.Name || 'Unnamed Listing',
-            Name: listing.Name,
-            complete: listing.Complete || false,
+            name: listing.listing_title || 'Unnamed Listing',
+            listing_title: listing.listing_title,
+            complete: listing.is_listing_profile_complete || false,
             source: listing.source || 'listing',
               location: {
               borough,
-              city: listing['Location - City'] || '',
-              state: listing['Location - State'] || ''
+              city: listing.city || '',
+              state: listing.state || ''
             },
             leasesCount: 0,
             proposalsCount: 0,
-            photos: listing['Features - Photos'] || [],
+            photos: listing.photos_with_urls_captions_and_sort_order_json || [],
             // Pricing fields from RPC
             rental_type: listing.rental_type,
             monthly_rate: listing.monthly_rate,
@@ -280,16 +277,16 @@ export function useHostOverviewPageLogic() {
             nightly_rate_5: listing.rate_5_nights,
             nightly_rate_7: listing.rate_7_nights,
             rate_5_nights: listing.rate_5_nights,
-            cleaning_fee: listing.cleaning_fee,
-            damage_deposit: listing.damage_deposit,
+            cleaning_fee_amount: listing.cleaning_fee,
+            damage_deposit_amount: listing.damage_deposit,
             pricing_list: listing.pricing_list
           };
         });
       }
 
-      // Check if we need to fetch additional listings from user.Listings
+      // Check if we need to fetch additional listings from user.listings_json
       const userListingsResult = results.find(r => r?.type === 'user_listings');
-      const linkedListingIds = userListingsResult?.data?.Listings || [];
+      const linkedListingIds = userListingsResult?.data?.listings_json || userListingsResult?.data?.Listings || [];
 
       // Fetch any linked listings that aren't already in our results
       const existingIds = new Set([
@@ -304,44 +301,42 @@ export function useHostOverviewPageLogic() {
         const { data: missingListings } = await supabase
           .from('listing')
           .select('*')
-          .in('_id', missingIds)
-          .eq('Deleted', false);
+          .in('id', missingIds)
+          .eq('is_deleted', false);
 
         if (missingListings) {
           const mappedMissing = missingListings.map(listing => {
             // Try FK lookup first, fall back to extracting from address string
-            const boroughFromFK = getBoroughName(listing['Location - Borough']);
-            const boroughFromAddress = extractBoroughFromAddress(listing['Location - Address']);
+            const boroughFromFK = getBoroughName(listing.borough);
+            const boroughFromAddress = extractBoroughFromAddress(listing.address_with_lat_lng_json);
             const borough = boroughFromFK || boroughFromAddress || '';
 
             return {
-              id: listing._id,
-              _id: listing._id,
-              name: listing.Name || 'Unnamed Listing',
-              Name: listing.Name,
-              complete: listing.Complete || false,
+              id: listing.id,
+              name: listing.listing_title || 'Unnamed Listing',
+              complete: listing.is_listing_profile_complete || false,
               source: 'listing',
               location: {
                 borough,
-                city: listing['Location - City'] || '',
-                state: listing['Location - State'] || ''
+                city: listing.city || '',
+                state: listing.state || ''
               },
               leasesCount: 0,
               proposalsCount: 0,
-              photos: listing['Features - Photos'] || [],
+              photos: listing.photos_with_urls_captions_and_sort_order_json || [],
               // Pricing fields (using original column names from direct query)
-              rental_type: listing['rental type'],
-              monthly_rate: listing['monthly_host_rate'],
-              weekly_rate: listing['weekly_host_rate'],
+              rental_type: listing.rental_type,
+              monthly_rate: listing.monthly_rate_paid_to_host,
+              weekly_rate: listing.weekly_rate_paid_to_host,
               // Individual nightly rates
-              nightly_rate_2: listing['nightly_rate_2_nights'],
-              nightly_rate_3: listing['nightly_rate_3_nights'],
-              nightly_rate_4: listing['nightly_rate_4_nights'],
-              nightly_rate_5: listing['nightly_rate_5_nights'],
-              nightly_rate_7: listing['nightly_rate_7_nights'],
-              rate_5_nights: listing['nightly_rate_5_nights'],
-              cleaning_fee: listing['cleaning_fee'],
-              damage_deposit: listing['damage_deposit'],
+              nightly_rate_2: listing.nightly_rate_for_2_night_stay,
+              nightly_rate_3: listing.nightly_rate_for_3_night_stay,
+              nightly_rate_4: listing.nightly_rate_for_4_night_stay,
+              nightly_rate_5: listing.nightly_rate_for_5_night_stay,
+              nightly_rate_7: listing.nightly_rate_for_7_night_stay,
+              rate_5_nights: listing.nightly_rate_for_5_night_stay,
+              cleaning_fee_amount: listing.cleaning_fee_amount,
+              damage_deposit_amount: listing.damage_deposit_amount,
               pricing_list: listing.pricing_list
             };
           });
@@ -367,29 +362,29 @@ export function useHostOverviewPageLogic() {
 
         // Fetch proposals grouped by listing
         const { data: proposalData } = await supabase
-          .from('proposal')
-          .select('Listing')
-          .in('Listing', listingIds);
+          .from('booking_proposal')
+          .select('listing_id')
+          .in('listing_id', listingIds);
 
         // Fetch leases grouped by listing
         const { data: leaseData } = await supabase
-          .from('bookings_leases')
-          .select('Listing')
-          .in('Listing', listingIds);
+          .from('booking_lease')
+          .select('listing_id')
+          .in('listing_id', listingIds);
 
         // Count proposals per listing
         const proposalCounts = {};
         (proposalData || []).forEach(p => {
-          if (p.Listing) {
-            proposalCounts[p.Listing] = (proposalCounts[p.Listing] || 0) + 1;
+          if (p.listing_id) {
+            proposalCounts[p.listing_id] = (proposalCounts[p.listing_id] || 0) + 1;
           }
         });
 
         // Count leases per listing
         const leaseCounts = {};
         (leaseData || []).forEach(l => {
-          if (l.Listing) {
-            leaseCounts[l.Listing] = (leaseCounts[l.Listing] || 0) + 1;
+          if (l.listing_id) {
+            leaseCounts[l.listing_id] = (leaseCounts[l.listing_id] || 0) + 1;
           }
         });
 
@@ -432,13 +427,12 @@ export function useHostOverviewPageLogic() {
 
       const listings = data?.response?.results || [];
       return listings.map(listing => ({
-        id: listing._id,
-        _id: listing._id,
-        name: listing.Name || listing.name || 'Unnamed Listing',
-        Name: listing.Name,
-        complete: listing.Complete || listing.complete,
+        id: listing._id || listing.id,
+        name: listing.listing_title || listing.name || 'Unnamed Listing',
+        listing_title: listing.listing_title,
+        complete: listing.is_listing_profile_complete || listing.complete,
         location: {
-          borough: listing['Location - Borough']?.Display || listing.borough || ''
+          borough: listing.borough?.Display || listing.borough || ''
         }
       }));
     } catch (err) {
@@ -467,12 +461,11 @@ export function useHostOverviewPageLogic() {
 
       const manuals = data?.response?.results || [];
       return manuals.map(manual => ({
-        id: manual._id,
-        _id: manual._id,
+        id: manual._id || manual.id,
         display: manual.Display || manual.display || 'House Manual',
         Display: manual.Display,
         audience: manual.Audience?.Display || manual.audience || 'Guests',
-        createdOn: manual['Created Date'] || manual.createdOn
+        createdOn: manual.bubble_created_at || manual.createdOn
       }));
     } catch (err) {
       console.error('Error fetching house manuals:', err);
@@ -496,8 +489,7 @@ export function useHostOverviewPageLogic() {
       if (fetchError) throw fetchError;
 
       return (data || []).map(meeting => ({
-        id: meeting._id,
-        _id: meeting._id,
+        id: meeting._id || meeting.id,
         guest: {
           firstName: meeting['guest name'] || 'Guest'
         },
@@ -544,11 +536,11 @@ export function useHostOverviewPageLogic() {
         // Success path: Use validated user data
         // Note: validateTokenAndFetchUser returns { userId, accountHostId, ... }
         finalUser = {
-          id: userData.userId || userData.accountHostId || userData._id || userData.id,
-          firstName: userData['Name - First'] || userData.firstName || 'Host',
-          lastName: userData['Name - Last'] || userData.lastName || '',
+          id: userData.userId || userData.accountHostId || userData.id,
+          firstName: userData.firstName || 'Host',
+          lastName: userData.lastName || '',
           email: userData.email || '',
-          accountHostId: userData.accountHostId || userData.userId || userData._id
+          accountHostId: userData.accountHostId || userData.userId || userData.id
         };
         setUser(finalUser);
         console.log('[HostOverview] User data loaded:', finalUser.firstName);
@@ -583,7 +575,7 @@ export function useHostOverviewPageLogic() {
 
       setAuthState({ isChecking: false, shouldRedirect: false });
 
-      // After migration, user._id serves as host reference directly
+      // After migration, user.id serves as host reference directly
       const hostAccountId = finalUser.accountHostId || finalUser.id;
       const userId = finalUser.id;
 
@@ -700,7 +692,7 @@ export function useHostOverviewPageLogic() {
 
       if (createError) throw createError;
 
-      const newManualId = data?.id || data?._id;
+      const newManualId = data?.id;
 
       if (newManualId) {
         showToast('Success', 'House manual created! Redirecting...', 'success');
@@ -718,42 +710,42 @@ export function useHostOverviewPageLogic() {
   }, [user, showToast, loadData]);
 
   const handleEditListing = useCallback((listing) => {
-    showToast('Opening Listing', `Opening ${listing.name || listing.Name}...`, 'information');
+    showToast('Opening Listing', `Opening ${listing.name || listing.listing_title}...`, 'information');
     // Navigate to listing dashboard or edit page
-    window.location.href = `/listing-dashboard?id=${listing.id || listing._id}`;
+    window.location.href = `/listing-dashboard?id=${listing.id}`;
   }, [showToast]);
 
   const handlePreviewListing = useCallback((listing) => {
-    showToast('Preview', `Previewing ${listing.name || listing.Name}...`, 'information');
+    showToast('Preview', `Previewing ${listing.name || listing.listing_title}...`, 'information');
     // Open listing preview in new tab
-    window.open(`/preview-split-lease/${listing.id || listing._id}`, '_blank');
+    window.open(`/preview-split-lease/${listing.id}`, '_blank');
   }, [showToast]);
 
   const handleViewProposals = useCallback((listing) => {
     // Navigate to host-proposals page with listing pre-selected
-    window.location.href = `/host-proposals?listingId=${listing.id || listing._id}`;
+    window.location.href = `/host-proposals?listingId=${listing.id}`;
   }, []);
 
   const handleViewLeases = useCallback((listing) => {
     // Navigate to host-leases page with listing pre-selected
-    window.location.href = `/host-leases?listingId=${listing.id || listing._id}`;
+    window.location.href = `/host-leases?listingId=${listing.id}`;
   }, []);
 
   const handleListingCardClick = useCallback((listing) => {
     // Navigate to listing dashboard (same as Manage button but for card click)
-    window.location.href = `/listing-dashboard?id=${listing.id || listing._id}`;
+    window.location.href = `/listing-dashboard?id=${listing.id}`;
   }, []);
 
   const handleSeeDetails = useCallback((listing) => {
-    showToast('Details', `Viewing details for ${listing.name || listing.Name}...`, 'information');
+    showToast('Details', `Viewing details for ${listing.name || listing.listing_title}...`, 'information');
     // Navigate to claim listing details
-    window.location.href = `/view-split-lease/${listing.id || listing._id}?claim=true`;
+    window.location.href = `/view-split-lease/${listing.id}?claim=true`;
   }, [showToast]);
 
   const handleEditManual = useCallback((manual) => {
     showToast('Opening Manual', `Opening ${manual.display || manual.Display}...`, 'information');
     // Navigate to house manual edit page
-    window.location.href = `/host-house-manual/${manual.id || manual._id}`;
+    window.location.href = `/host-house-manual/${manual.id}`;
   }, [showToast]);
 
   const handleViewVisits = useCallback((manual) => {
@@ -783,8 +775,8 @@ export function useHostOverviewPageLogic() {
     if (!itemToDelete) return;
 
     try {
-      const itemId = itemToDelete.id || itemToDelete._id;
-      const itemName = itemToDelete.name || itemToDelete.Name || itemToDelete.display || itemToDelete.Display || 'item';
+      const itemId = itemToDelete.id;
+      const itemName = itemToDelete.name || itemToDelete.listing_title || itemToDelete.display || 'item';
 
       if (deleteType === 'listing') {
         // Delete listing via listing edge function
@@ -802,7 +794,7 @@ export function useHostOverviewPageLogic() {
           throw new Error(error.message || 'Failed to delete listing');
         }
 
-        setMyListings(prev => prev.filter(l => (l.id || l._id) !== itemId));
+        setMyListings(prev => prev.filter(l => l.id !== itemId));
         showToast('Success', `${itemName} deleted successfully`, 'success');
       } else if (deleteType === 'claim') {
         // Remove from claim list (don't actually delete the listing)
@@ -816,7 +808,7 @@ export function useHostOverviewPageLogic() {
           }
         });
 
-        setListingsToClaim(prev => prev.filter(l => (l.id || l._id) !== itemId));
+        setListingsToClaim(prev => prev.filter(l => l.id !== itemId));
         showToast('Success', `${itemName} removed from claim list`, 'success');
       } else if (deleteType === 'manual') {
         // Delete house manual
@@ -827,7 +819,7 @@ export function useHostOverviewPageLogic() {
           }
         });
 
-        setHouseManuals(prev => prev.filter(m => (m.id || m._id) !== itemId));
+        setHouseManuals(prev => prev.filter(m => m.id !== itemId));
         showToast('Success', `${itemName} deleted successfully`, 'success');
       }
 

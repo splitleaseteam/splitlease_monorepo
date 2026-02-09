@@ -56,12 +56,12 @@ export async function requestVirtualMeeting(proposalId, guestId) {
 
   // Update proposal to link virtual meeting
   await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
-      'virtual meeting': data._id,
-      'Modified Date': new Date().toISOString()
+      'virtual_meeting_record_id': data._id,
+      'bubble_updated_at': new Date().toISOString()
     })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   console.log('[virtualMeetingWorkflow] Virtual meeting requested:', data._id);
   return data;

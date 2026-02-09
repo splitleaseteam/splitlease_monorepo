@@ -1,4 +1,4 @@
-/**
+﻿/**
  * QR Code Dashboard Service Layer
  *
  * Handles CRUD operations for QR codes via Supabase.
@@ -36,8 +36,8 @@ export const adaptQRCodeFromDB = (row) => {
     houseManualId: row['House Manual'] || null,
     hostId: row['Host'] || null,
     guestId: row['Guest'] || null,
-    createdAt: row['Created Date'] ? new Date(row['Created Date']) : null,
-    updatedAt: row['Modified Date'] ? new Date(row['Modified Date']) : null,
+    createdAt: row.bubble_created_at ? new Date(row.bubble_created_at) : null,
+    updatedAt: row.bubble_updated_at ? new Date(row.bubble_updated_at) : null,
     isScanned: row['QR codes scanned?'] || false
   };
 };
@@ -76,13 +76,13 @@ export const adaptHouseManualFromDB = (row) => {
   if (!row) return null;
 
   return {
-    id: row._id,
-    name: row['House manual Name'] || 'Untitled Manual',
-    listingId: row['Listing'] || null,
-    hostId: row['Host'] || null,
-    qrCodes: row['QR Codes'] || [],
-    createdAt: row['Created Date'] ? new Date(row['Created Date']) : null,
-    updatedAt: row['Modified Date'] ? new Date(row['Modified Date']) : null
+    id: row.id,
+    name: row.manual_title || 'Untitled Manual',
+    listingId: row.listing_id || null,
+    hostId: row.host_user_id || null,
+    qrCodes: row.qr_code_urls_json || [],
+    createdAt: row.bubble_created_at ? new Date(row.bubble_created_at) : null,
+    updatedAt: row.bubble_updated_at ? new Date(row.bubble_updated_at) : null
   };
 };
 
@@ -140,9 +140,9 @@ export async function fetchHouseManual(houseManualId) {
     }
 
     const { data, error } = await supabase
-      .from('housemanual')
-      .select('_id, "House manual Name", "Listing", "Host", "QR Codes", "Created Date", "Modified Date"')
-      .eq('_id', houseManualId)
+      .from('house_manual')
+      .select('id, manual_title, listing_id, host_user_id, qr_code_urls_json, bubble_created_at, bubble_updated_at')
+      .eq('id', houseManualId)
       .single();
 
     if (error) {
@@ -177,7 +177,7 @@ export async function createQRCode(qrCode, houseManualId, hostId) {
     }
 
     const row = adaptQRCodeToDB(qrCode, houseManualId, hostId);
-    row['Created Date'] = new Date().toISOString();
+    row.bubble_created_at = new Date().toISOString();
     row['Created By'] = hostId || null;
 
     const { data, error } = await supabase

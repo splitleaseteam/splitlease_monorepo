@@ -98,8 +98,8 @@ export interface RuleObject {
  */
 export interface HostObject {
   userId: string;
-  'Name - First': string;
-  'Name - Last'?: string;
+  first_name: string;
+  last_name?: string;
   Photo?: string;
   Verified?: boolean;
 }

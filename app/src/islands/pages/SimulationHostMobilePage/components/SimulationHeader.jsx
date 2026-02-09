@@ -5,7 +5,7 @@
 
 export default function SimulationHeader({ currentUser, currentDateTime }) {
   const userName = currentUser?.firstName ||
-    currentUser?.['Name - First'] ||
+    currentUser?.first_name ||
     currentUser?.email?.split('@')[0] ||
     'Host';
 

@@ -13,26 +13,26 @@ export default function HostProfileModal({ host, listing, onClose }) {
   if (!host) return null;
 
   // Get host display name (initials or first name)
-  const hostFirstName = host['Name - First'] || '';
-  const hostLastInitial = host['Name - Last']?.charAt(0) || '';
+  const hostFirstName = host.first_name || '';
+  const hostLastInitial = host.last_name?.charAt(0) || '';
   const displayName = hostLastInitial
     ? `${hostFirstName.charAt(0)}. ${hostLastInitial}. ${hostFirstName.charAt(hostFirstName.length - 1) || ''}`.replace(/\. \. /g, '. ')
     : hostFirstName;
 
   // Get photo URL
-  const photoUrl = host['Profile Photo']
-    ? (host['Profile Photo'].startsWith('//') ? `https:${host['Profile Photo']}` : host['Profile Photo'])
+  const photoUrl = host.profile_photo_url
+    ? (host.profile_photo_url.startsWith('//') ? `https:${host.profile_photo_url}` : host.profile_photo_url)
     : null;
 
   // Get listing location - prefer neighborhood + borough, default to borough only, fallback to 'New York'
-  const neighborhood = listing?.hoodName || listing?.['Location - Hood'] || '';
-  const borough = listing?.boroughName || listing?.['Location - Borough'] || '';
+  const neighborhood = listing?.hoodName || listing?.primary_neighborhood_reference_id || '';
+  const borough = listing?.boroughName || listing?.borough || '';
   const listingLocation = neighborhood && borough
     ? `${neighborhood}, ${borough}`
     : borough || neighborhood || 'New York';
 
   // Get listing photo
-  const listingPhotoUrl = listing?.featuredPhotoUrl || listing?.['Features - Photos']?.[0] || null;
+  const listingPhotoUrl = listing?.featuredPhotoUrl || listing?.photos_with_urls_captions_and_sort_order_json?.[0] || null;
 
   // Verification items data
   const verificationItems = [
@@ -107,7 +107,7 @@ export default function HostProfileModal({ host, listing, onClose }) {
               </div>
               <div className="hpm-listing-card">
                 {listingPhotoUrl ? (
-                  <img src={listingPhotoUrl} alt={listing.Name} className="hpm-listing-photo" />
+                  <img src={listingPhotoUrl} alt={listing.listing_title} className="hpm-listing-photo" />
                 ) : (
                   <div className="hpm-listing-photo-placeholder" />
                 )}
@@ -118,7 +118,7 @@ export default function HostProfileModal({ host, listing, onClose }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {listing.Name}
+                    {listing.listing_title}
                   </a>
                   <div className="hpm-listing-location">
                     <MapPin size={14} strokeWidth={2} />

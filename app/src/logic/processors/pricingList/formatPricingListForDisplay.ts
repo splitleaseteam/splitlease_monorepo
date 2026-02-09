@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Format a pricing list for UI display.
  *
  * Transforms raw pricing data into display-friendly format with
@@ -83,7 +83,7 @@ export function formatPricingListForDisplay(
     markupDisplay,
     discountDisplay,
     fullTimePrice: formatPrice(nightlyPrices[6]), // 7-night price
-    rentalType: (pricingList.rentalType ?? (pricingList as Partial<SupabasePricingRow>)['rental type'] ?? 'Nightly') as 'Nightly' | 'Monthly' | 'Weekly'
+    rentalType: (pricingList.rentalType ?? (pricingList as Partial<SupabasePricingRow>).rental_type ?? 'Nightly') as 'Nightly' | 'Monthly' | 'Weekly'
   };
 }
 

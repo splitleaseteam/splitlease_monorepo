@@ -4,7 +4,7 @@
  * Handles the mapping between Bubble.io's column naming conventions
  * (spaces, mixed case) and our frontend's camelCase conventions.
  *
- * @param {Object} row - Raw row from bookings_leases table
+ * @param {Object} row - Raw row from booking_lease table
  * @returns {Object} Adapted lease object for frontend use
  */
 
@@ -45,7 +45,7 @@ function parseDate(dateStr) {
 
 /**
  * Derive lease type from row data
- * @param {Object} row - Raw bookings_leases row with joins
+ * @param {Object} row - Raw booking_lease row with joins
  * @returns {string} Lease type identifier
  */
 function deriveLeaseType(row) {
@@ -72,9 +72,9 @@ function deriveLeaseType(row) {
 function getCounterparty(lease, currentUserId) {
   if (!lease) return null;
   if (lease.leaseType === 'co_tenant') {
-    return lease.host?._id === currentUserId ? lease.guest : lease.host;
+    return (lease.host?.id || lease.host?._id) === currentUserId ? lease.guest : lease.host;
   }
-  return lease.guest?._id === currentUserId ? lease.host : lease.guest;
+  return (lease.guest?.id || lease.guest?._id) === currentUserId ? lease.host : lease.guest;
 }
 
 /**
@@ -88,8 +88,8 @@ function getCoTenantForLease(lease, currentUserId) {
   if (!lease) return null;
 
   // Compare as strings to handle ID format differences
-  const hostId = String(lease.host?._id || '');
-  const guestId = String(lease.guest?._id || '');
+  const hostId = String(lease.host?.id || lease.host?._id || '');
+  const guestId = String(lease.guest?.id || lease.guest?._id || '');
   const userId = String(currentUserId || '');
 
   if (hostId && hostId === userId) return lease.guest;
@@ -114,12 +114,12 @@ function getUserRole(lease, currentUserId) {
   if (lease.leaseType === 'co_tenant') {
     return 'co_tenant';
   }
-  return lease.guest?._id === currentUserId ? 'guest' : 'host';
+  return (lease.guest?.id || lease.guest?._id) === currentUserId ? 'guest' : 'host';
 }
 
 /**
  * Adapt a single lease record from Supabase format
- * @param {Object} row - Raw bookings_leases row with joins
+ * @param {Object} row - Raw booking_lease row with joins
  * @returns {Object} Frontend-friendly lease object
  */
 export function adaptLeaseFromSupabase(row) {
@@ -129,41 +129,41 @@ export function adaptLeaseFromSupabase(row) {
 
   return {
     // Core identifiers
-    _id: row._id,
-    id: row._id,
+    _id: row.id || row._id,
+    id: row.id || row._id,
     bubbleId: row.bubble_id,
-    agreementNumber: row['Agreement Number'] || null,
-    proposalId: row.Proposal || null,
+    agreementNumber: row.agreement_number || row['Agreement Number'] || null,
+    proposalId: row.proposal_id || row.Proposal || null,
     leaseType,
     isCoTenant: leaseType === 'co_tenant',
     isGuestHost: leaseType === 'guest_host',
 
     // Direct ID references (for DateChangeRequestManager compatibility)
-    hostId: row.Host || row.host?._id || null,
-    guestId: row.Guest || row.guest?._id || null,
-    listingId: row.Listing || row.listing?._id || null,
+    hostId: row.host_user_id || row.host?.id || row.host?._id || null,
+    guestId: row.guest_user_id || row.guest?.id || row.guest?._id || null,
+    listingId: row.listing_id || row.listing?.id || row.listing?._id || null,
 
     // Bubble-style field aliases (for backward compatibility)
-    Host: row.Host || row.host?._id || null,
-    Guest: row.Guest || row.guest?._id || null,
-    Listing: row.Listing || row.listing?._id || null,
+    Host: row.host_user_id || row.host?.id || row.host?._id || null,
+    Guest: row.guest_user_id || row.guest?.id || row.guest?._id || null,
+    Listing: row.listing_id || row.listing?.id || row.listing?._id || null,
 
     // Status
     status: mapLeaseStatus(row['Lease Status']),
     leaseSigned: row['Lease signed?'] || false,
 
     // Dates
-    startDate: parseDate(row['Reservation Period : Start']),
-    endDate: parseDate(row['Reservation Period : End']),
-    createdAt: parseDate(row['Created Date']),
-    modifiedAt: parseDate(row['Modified Date']),
+    startDate: parseDate(row.reservation_start_date || row['Reservation Period : Start']),
+    endDate: parseDate(row.reservation_end_date || row['Reservation Period : End']),
+    createdAt: parseDate(row.bubble_created_at),
+    modifiedAt: parseDate(row.bubble_updated_at),
     firstPaymentDate: parseDate(row['First Payment Date']),
 
     // Date aliases (for DateChangeRequestManager compatibility)
-    reservationStart: parseDate(row['Reservation Period : Start']),
-    reservationEnd: parseDate(row['Reservation Period : End']),
-    'Reservation Period : Start': row['Reservation Period : Start'] || null,
-    'Reservation Period : End': row['Reservation Period : End'] || null,
+    reservationStart: parseDate(row.reservation_start_date || row['Reservation Period : Start']),
+    reservationEnd: parseDate(row.reservation_end_date || row['Reservation Period : End']),
+    'Reservation Period : Start': row.reservation_start_date || row['Reservation Period : Start'] || null,
+    'Reservation Period : End': row.reservation_end_date || row['Reservation Period : End'] || null,
 
     // Financial
     totalRent: parseFloat(row['Total Rent']) || 0,
@@ -179,7 +179,7 @@ export function adaptLeaseFromSupabase(row) {
     guest: row.guest ? adaptUserFromSupabase(row.guest) : null,
     host: row.host ? adaptUserFromSupabase(row.host) : null,
     listing: row.listing ? adaptListingFromSupabase(row.listing) : null,
-    propertyName: row.listing?.Name || row.listing?.['Listing Title'] || row.listing?.name || null,
+    propertyName: row.listing?.listing_title || row.listing?.Name || row.listing?.name || null,
     propertyAddress: row.listing?.Address || row.listing?.address || null,
 
     /**
@@ -208,14 +208,14 @@ export function adaptLeaseFromSupabase(row) {
       return getUserRole(this, currentUserId);
     },
     proposal: row.proposal ? {
-      id: row.proposal._id,
-      checkInDay: parseInt(row.proposal['check in day']) ?? null,
-      checkOutDay: parseInt(row.proposal['check out day']) ?? null,
+      id: row.proposal.id || row.proposal._id,
+      checkInDay: parseInt(row.proposal.checkin_day_of_week_number || row.proposal['check in day']) ?? null,
+      checkOutDay: parseInt(row.proposal.checkout_day_of_week_number || row.proposal['check out day']) ?? null,
     } : null,
 
     // Weekly schedule (from proposal)
-    checkInDay: row.proposal ? parseInt(row.proposal['check in day']) ?? null : null,
-    checkOutDay: row.proposal ? parseInt(row.proposal['check out day']) ?? null : null,
+    checkInDay: row.proposal ? parseInt(row.proposal.checkin_day_of_week_number || row.proposal['check in day']) ?? null : null,
+    checkOutDay: row.proposal ? parseInt(row.proposal.checkout_day_of_week_number || row.proposal['check out day']) ?? null : null,
 
     // Stays (from join or JSONB)
     stays: Array.isArray(row.stays)
@@ -246,7 +246,7 @@ export function adaptLeaseFromSupabase(row) {
     // Other fields
     thread: row.Thread || null,
     checkInCode: row['Check-in Code'] || null,
-    cancellationPolicy: row['Cancellation Policy'] || null,
+    cancellationPolicy: row.cancellation_policy || null,
     hostPayoutSchedule: row['Host Payout Schedule'] || null,
     wereDocumentsGenerated: row['were documents generated?'] || false,
 
@@ -274,14 +274,16 @@ function adaptUserFromSupabase(user) {
   if (!user) return null;
 
   return {
-    _id: user._id,
-    id: user._id,
-    email: user.email || user.Email || null,
-    firstName: user['Name - First'] || user['First Name'] || user.first_name || null,
-    lastName: user['Name - Last'] || user['Last Name'] || user.last_name || null,
-    fullName: user['Name - Full'] || null,
-    phone: user['Phone Number'] || user.Phone || user.phone || null,
-    avatarUrl: user['Profile Photo'] || user.avatar_url || null,
+    _id: user.id,
+    id: user.id,
+    email: user.email || null,
+    firstName: user.first_name || null,
+    lastName: user.last_name || null,
+    fullName: user.first_name && user.last_name
+      ? `${user.first_name} ${user.last_name}`
+      : null,
+    phone: user.phone_number || user.phone || null,
+    avatarUrl: user.profile_photo_url || user.avatar_url || null,
     isVerified: user['user verified?'] || false,
   };
 }
@@ -293,14 +295,14 @@ function adaptListingFromSupabase(listing) {
   if (!listing) return null;
 
   return {
-    _id: listing._id,
-    id: listing._id,
-    name: listing.Name || listing['Listing Title'] || listing.name || 'Unnamed Listing',
-    address: listing.Address || listing.address || null,
-    neighborhood: listing.Neighborhood || listing.neighborhood || null,
-    city: listing.City || listing.city || null,
-    state: listing.State || listing.state || null,
-    zipCode: listing['Zip Code'] || listing.zip_code || null,
+    _id: listing.id || listing._id,
+    id: listing.id || listing._id,
+    name: listing.listing_title || listing.name || 'Unnamed Listing',
+    address: listing.address_with_lat_lng_json || listing.address || null,
+    neighborhood: listing.primary_neighborhood_reference_id || listing.neighborhood || null,
+    city: listing.city || null,
+    state: listing.state || null,
+    zipCode: listing.zip_code || null,
     imageUrl: listing['Cover Photo'] || listing['Primary Image'] || listing.image_url || null,
   };
 }
@@ -374,7 +376,7 @@ export function adaptDateChangeRequestFromSupabase(dcr) {
     listOfOldDates: parseJsonbArray(dcr['Original Date']),
     listOfNewDates: parseJsonbArray(dcr['Requested Date']),
     priceAdjustment: dcr['Price Adjustment'],
-    dateAdded: parseDate(dcr['Created Date']),
+    dateAdded: parseDate(dcr.bubble_created_at),
     visibleToGuest: dcr['visible to guest'] ?? true,
   };
 }

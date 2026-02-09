@@ -141,7 +141,7 @@ export default function EmergencyDetails({
               <>
                 <div className="info-item">
                   <label>Property</label>
-                  <span>{emergency.listing.name || 'N/A'}</span>
+                  <span>{emergency.listing.listing_title || 'N/A'}</span>
                 </div>
                 <div className="info-item">
                   <label>Address</label>

@@ -53,18 +53,15 @@ export async function fetchLeaseDataForProposal(proposalId) {
   try {
     // Fetch the lease for this proposal
     const { data: lease, error } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .select(`
-        _id,
-        Proposal,
-        "Reservation Period : Start",
-        "Reservation Period : End",
-        "Move In Date",
-        "Move-out",
-        "Agreement Number",
-        "Lease Status"
+        id,
+        reservation_start_date,
+        reservation_end_date,
+        agreement_number,
+        lease_type
       `)
-      .eq('Proposal', proposalId)
+      .eq('id', proposalId)
       .single();
 
     if (error || !lease) {
@@ -74,37 +71,37 @@ export async function fetchLeaseDataForProposal(proposalId) {
 
     // Fetch stays for this lease
     const { data: stays, error: staysError } = await supabase
-      .from('bookings_stays')
+      .from('lease_weekly_stay')
       .select(`
-        _id,
-        "Week Number",
-        "Check In (night)",
-        "Last Night (night)",
-        "Stay Status",
-        "Dates - List of dates in this period"
+        id,
+        week_number_in_lease,
+        checkin_night_date,
+        last_night_date,
+        stay_status,
+        dates_in_this_stay_period_json
       `)
-      .eq('Lease', lease._id)
-      .order('"Week Number"', { ascending: true });
+      .eq('lease_id', lease.id)
+      .order('week_number_in_lease', { ascending: true });
 
     if (staysError) {
-      console.warn('Error fetching stays for lease:', lease._id, staysError);
+      console.warn('Error fetching stays for lease:', lease.id, staysError);
     }
 
     // Normalize the lease data
     return {
-      id: lease._id,
-      proposalId: lease.Proposal,
-      startDate: lease['Reservation Period : Start'] || lease['Move In Date'],
-      endDate: lease['Reservation Period : End'] || lease['Move-out'],
-      agreementNumber: lease['Agreement Number'],
-      status: lease['Lease Status'],
+      id: lease.id,
+      proposalId: proposalId,
+      startDate: lease.reservation_start_date,
+      endDate: lease.reservation_end_date,
+      agreementNumber: lease.agreement_number,
+      status: lease.lease_type,
       stays: (stays || []).map(stay => ({
-        id: stay._id,
-        weekNumber: stay['Week Number'],
-        checkInNight: stay['Check In (night)'],
-        lastNight: stay['Last Night (night)'],
-        status: stay['Stay Status'],
-        dates: parseDatesArray(stay['Dates - List of dates in this period'])
+        id: stay.id,
+        weekNumber: stay.week_number_in_lease,
+        checkInNight: stay.checkin_night_date,
+        lastNight: stay.last_night_date,
+        status: stay.stay_status,
+        dates: parseDatesArray(stay.dates_in_this_stay_period_json)
       }))
     };
   } catch (err) {

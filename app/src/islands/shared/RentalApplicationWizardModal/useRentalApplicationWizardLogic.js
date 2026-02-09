@@ -106,10 +106,10 @@ async function transitionSLProposalsOnRentalAppSubmit(userId) {
   try {
     // Find proposals in "Awaiting Rental Application" status
     const { data: proposals, error: fetchError } = await supabase
-      .from('proposal')
-      .select('_id, Status')
-      .eq('Guest', userId)
-      .eq('Status', PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key);
+      .from('booking_proposal')
+      .select('id, proposal_workflow_status')
+      .eq('guest_user_id', userId)
+      .eq('proposal_workflow_status', PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key);
 
     if (fetchError) {
       console.error('[RentalAppWizard] Error fetching proposals for transition:', fetchError);
@@ -122,16 +122,16 @@ async function transitionSLProposalsOnRentalAppSubmit(userId) {
     }
 
     // Transition each proposal to "Host Review"
-    const proposalIds = proposals.map(p => p._id);
+    const proposalIds = proposals.map(p => p.id);
     console.log(`[RentalAppWizard] Transitioning ${proposalIds.length} SL proposal(s) to Host Review`);
 
     const { error: updateError } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .update({
-        Status: PROPOSAL_STATUSES.HOST_REVIEW.key,
-        'Modified Date': new Date().toISOString()
+        proposal_workflow_status: PROPOSAL_STATUSES.HOST_REVIEW.key,
+        bubble_updated_at: new Date().toISOString()
       })
-      .in('_id', proposalIds);
+      .in('id', proposalIds);
 
     if (updateError) {
       console.error('[RentalAppWizard] Error transitioning proposals:', updateError);
@@ -462,8 +462,8 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
 
     // Map rental app field names to user table column names
     const fieldMapping = {
-      phone: 'Phone Number (as text)',
-      dob: 'Date of Birth',
+      phone: 'phone_number',
+      dob: 'date_of_birth',
     };
 
     const dbColumnName = fieldMapping[fieldName];
@@ -474,13 +474,13 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
     try {
       const updateData = {
         [dbColumnName]: value,
-        'Modified Date': new Date().toISOString(),
+        bubble_updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
         .from('user')
         .update(updateData)
-        .eq('_id', userId);
+        .eq('id', userId);
 
       if (error) {
         console.error('[RentalAppWizard] Failed to sync field to user table:', error);

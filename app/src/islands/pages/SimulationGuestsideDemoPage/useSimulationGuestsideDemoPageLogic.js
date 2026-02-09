@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Simulation Guestside Demo Page Logic Hook
  *
  * Follows the Hollow Component Pattern:
@@ -14,7 +14,7 @@
  *
  * Features:
  * - URL parameter persistence for reload resilience
- * - Progress tracking via user."Usability Step"
+ * - Progress tracking via user.usability_step
  * - Full email notifications (not suppressed)
  * - Local payment simulation
  */
@@ -211,8 +211,8 @@ export function useSimulationGuestsideDemoPageLogic() {
       // Check if user is already a usability tester with progress
       const { data: userData, error } = await supabase
         .from('user')
-        .select('"is usability tester", "Usability Step"')
-        .eq('_id', userId)
+        .select('is_usability_tester, usability_step')
+        .eq('id', userId)
         .single();
 
       if (error) {
@@ -220,8 +220,8 @@ export function useSimulationGuestsideDemoPageLogic() {
         return;
       }
 
-      if (userData?.['is usability tester'] && userData?.['Usability Step']) {
-        const usabilityStep = userData['Usability Step'];
+      if (userData?.is_usability_tester && userData?.usability_step) {
+        const usabilityStep = userData.usability_step;
         console.log('[SimulationGuestsideDemo] Restoring progress from step:', usabilityStep);
 
         // Map database step to current step
@@ -296,10 +296,10 @@ export function useSimulationGuestsideDemoPageLogic() {
       const { error: userError } = await supabase
         .from('user')
         .update({
-          'is usability tester': true,
-          'Usability Step': USER_STEP_VALUES.A
+          is_usability_tester: true,
+          usability_step: USER_STEP_VALUES.A
         })
-        .eq('_id', userId);
+        .eq('id', userId);
 
       if (userError) throw userError;
 
@@ -312,8 +312,8 @@ export function useSimulationGuestsideDemoPageLogic() {
             isUsabilityTest: true,
             autofillData: {
               // Basic autofill data for testing
-              firstName: currentUser.firstName || currentUser['Name - First'] || 'Test',
-              lastName: currentUser.lastName || currentUser['Name - Last'] || 'User',
+              firstName: currentUser.firstName || currentUser.first_name || 'Test',
+              lastName: currentUser.lastName || currentUser.last_name || 'User',
               email: currentUser.email,
               phone: '555-555-5555',
               occupation: 'Software Engineer',
@@ -355,11 +355,11 @@ export function useSimulationGuestsideDemoPageLogic() {
     setSimulationState(prev => ({ ...prev, isLoading: true, stepInProgress: 'B' }));
 
     try {
-      // 1. Get test listing for Host #1 (marked with isForUsability)
+      // 1. Get test listing for Host #1 (marked with is_usability_test_listing)
       const { data: testListings, error: listingError } = await supabase
         .from('listing')
-        .select('_id, "Host User", "Name", "Cover Photo"')
-        .eq('isForUsability', true)
+        .select('id, host_user_id, listing_title, cover_photo_url')
+        .eq('is_usability_test_listing', true)
         .limit(3);
 
       if (listingError) throw listingError;
@@ -369,7 +369,7 @@ export function useSimulationGuestsideDemoPageLogic() {
       }
 
       const testListing = testListings[0];
-      console.log('[SimulationGuestsideDemo] Using test listing:', testListing._id);
+      console.log('[SimulationGuestsideDemo] Using test listing:', testListing.id);
 
       // 2. Create test proposal via Edge Function
       const { data: proposalResult, error: proposalError } = await supabase.functions.invoke('proposal', {
@@ -377,8 +377,8 @@ export function useSimulationGuestsideDemoPageLogic() {
           action: 'createTestProposal',
           payload: {
             guestId: userId,
-            listingId: testListing._id,
-            hostId: testListing['Host User'],
+            listingId: testListing.id,
+            hostId: testListing.host_user_id,
             isUsabilityTest: true,
             proposalData: {
               moveInStart: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 week from now
@@ -404,7 +404,7 @@ export function useSimulationGuestsideDemoPageLogic() {
           .from('virtualmeetingschedulesandlinks')
           .insert({
             proposal: proposalId,
-            'requested by': testListing['Host User'],
+            'requested by': testListing.host_user_id,
             'suggested dates and times': [
               new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
               new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
@@ -420,9 +420,9 @@ export function useSimulationGuestsideDemoPageLogic() {
         } else if (vmData) {
           // Link VM to proposal
           await supabase
-            .from('proposal')
+            .from('booking_proposal')
             .update({ 'virtual meeting': vmData._id })
-            .eq('_id', proposalId);
+            .eq('id', proposalId);
         }
       } catch (vmErr) {
         console.warn('[SimulationGuestsideDemo] VM scheduling warning:', vmErr);
@@ -432,8 +432,8 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 4. Update user step
       await supabase
         .from('user')
-        .update({ 'Usability Step': USER_STEP_VALUES.B })
-        .eq('_id', userId);
+        .update({ usability_step: USER_STEP_VALUES.B })
+        .eq('id', userId);
 
       // 5. Update state
       setSimulationState(prev => ({
@@ -442,7 +442,7 @@ export function useSimulationGuestsideDemoPageLogic() {
         stepInProgress: null,
         currentStep: 'C',
         completedSteps: [...prev.completedSteps, 'B'],
-        testListingIds: testListings.map(l => l._id),
+        testListingIds: testListings.map(l => l.id),
         testProposalId: proposalId
       }));
 
@@ -493,8 +493,8 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 2. Update user step
       await supabase
         .from('user')
-        .update({ 'Usability Step': USER_STEP_VALUES.C })
-        .eq('_id', userId);
+        .update({ usability_step: USER_STEP_VALUES.C })
+        .eq('id', userId);
 
       // 3. Update state
       setSimulationState(prev => ({
@@ -567,8 +567,8 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 3. Update user step
       await supabase
         .from('user')
-        .update({ 'Usability Step': USER_STEP_VALUES.C })
-        .eq('_id', userId);
+        .update({ usability_step: USER_STEP_VALUES.C })
+        .eq('id', userId);
 
       // 4. Update state
       setSimulationState(prev => ({
@@ -604,16 +604,16 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 1. Create lease record directly in database for simulation
       // In production, this would go through a lease management Edge Function
       const { data: lease, error: leaseError } = await supabase
-        .from('bookings_leases')
+        .from('booking_lease')
         .insert({
-          proposal: simulationState.testProposalId,
-          'Guest User': userId,
-          'Lease Status': 'Drafting',
+          proposal_id: simulationState.testProposalId,
+          guest_user_id: userId,
+          lease_type: 'Drafting',
           'Lease signed?': false,
           'is_usability_test': true,
-          'Created Date': new Date().toISOString()
+          bubble_created_at: new Date().toISOString()
         })
-        .select('_id')
+        .select('id')
         .single();
 
       if (leaseError) {
@@ -621,22 +621,22 @@ export function useSimulationGuestsideDemoPageLogic() {
         // Continue with simulation even if lease table doesn't exist
       }
 
-      const leaseId = lease?._id;
+      const leaseId = lease?.id;
 
       // 2. Update proposal status - simulating lease documents being drafted
       await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .update({
-          Status: 'Lease Documents Sent for Review',
-          'Modified Date': new Date().toISOString()
+          proposal_workflow_status: 'Lease Documents Sent for Review',
+          bubble_updated_at: new Date().toISOString()
         })
-        .eq('_id', simulationState.testProposalId);
+        .eq('id', simulationState.testProposalId);
 
       // 3. Update user step
       await supabase
         .from('user')
-        .update({ 'Usability Step': USER_STEP_VALUES.D })
-        .eq('_id', userId);
+        .update({ usability_step: USER_STEP_VALUES.D })
+        .eq('id', userId);
 
       // 4. Update state
       setSimulationState(prev => ({
@@ -673,16 +673,16 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 1. Simulate lease signing
       if (simulationState.testLeaseId) {
         await supabase
-          .from('bookings_leases')
+          .from('booking_lease')
           .update({ 'Lease signed?': true })
-          .eq('_id', simulationState.testLeaseId);
+          .eq('id', simulationState.testLeaseId);
       }
 
       // 2. Update proposal status for signing
       await supabase
-        .from('proposal')
-        .update({ Status: 'Lease Documents Signed / Awaiting Initial payment' })
-        .eq('_id', simulationState.testProposalId);
+        .from('booking_proposal')
+        .update({ proposal_workflow_status: 'Lease Documents Signed / Awaiting Initial payment' })
+        .eq('id', simulationState.testProposalId);
 
       // 3. Simulate payment (local simulation as per requirements)
       // Note: In production, this would integrate with Stripe.
@@ -703,22 +703,22 @@ export function useSimulationGuestsideDemoPageLogic() {
 
       // 4. Activate lease
       await supabase
-        .from('proposal')
-        .update({ Status: 'Initial Payment Submitted / Lease activated' })
-        .eq('_id', simulationState.testProposalId);
+        .from('booking_proposal')
+        .update({ proposal_workflow_status: 'Initial Payment Submitted / Lease activated' })
+        .eq('id', simulationState.testProposalId);
 
       if (simulationState.testLeaseId) {
         await supabase
-          .from('bookings_leases')
-          .update({ 'Lease Status': 'Active' })
-          .eq('_id', simulationState.testLeaseId);
+          .from('booking_lease')
+          .update({ lease_type: 'Active' })
+          .eq('id', simulationState.testLeaseId);
       }
 
       // 5. Update user step
       await supabase
         .from('user')
-        .update({ 'Usability Step': USER_STEP_VALUES.complete })
-        .eq('_id', userId);
+        .update({ usability_step: USER_STEP_VALUES.complete })
+        .eq('id', userId);
 
       // 6. Update state
       setSimulationState(prev => ({
@@ -753,10 +753,10 @@ export function useSimulationGuestsideDemoPageLogic() {
       await supabase
         .from('user')
         .update({
-          'is usability tester': false,
-          'Usability Step': null
+          is_usability_tester: false,
+          usability_step: null
         })
-        .eq('_id', userId);
+        .eq('id', userId);
 
       // Clear URL params and state
       window.history.replaceState({}, '', window.location.pathname);

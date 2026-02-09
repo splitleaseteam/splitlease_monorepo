@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Integration tests for adaptPricingListForSupabase processor.
  *
  * Tests field name mapping from camelCase to Bubble-style,
@@ -81,9 +81,9 @@ describe('adaptPricingListForSupabase - Integration Tests', () => {
 
       const result = adaptPricingListForSupabase(pricingList);
 
-      expect(result['rental type']).toBe('Nightly');
+      expect(result.rental_type).toBe('Nightly');
       expect(result['Number Selected Nights']).toEqual([true, true, true, true, true, true, true]);
-      expect(result['Modified Date']).toBe('2025-01-15T10:30:00Z');
+      expect(result.bubble_updated_at).toBe('2025-01-15T10:30:00Z');
     });
   });
 

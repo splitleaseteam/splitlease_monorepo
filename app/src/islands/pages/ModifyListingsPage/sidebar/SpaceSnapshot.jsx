@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SpaceSnapshot - Quick view of property details
  *
  * @param {object} props - Component props
@@ -10,32 +10,32 @@ export default function SpaceSnapshot({ listing }) {
     {
       icon: BedIcon,
       label: 'Bedrooms',
-      value: listing['Features - Qty Bedrooms'] ?? '-'
+      value: listing.bedroom_count ?? '-'
     },
     {
       icon: BedIcon,
       label: 'Beds',
-      value: listing['Features - Qty Beds'] ?? '-'
+      value: listing.bed_count ?? '-'
     },
     {
       icon: BathIcon,
       label: 'Bathrooms',
-      value: listing['Features - Qty Baths'] ?? '-'
+      value: listing.bathroom_count ?? '-'
     },
     {
       icon: KitchenIcon,
       label: 'Kitchen',
-      value: listing['Features - Kitchen Type'] || '-'
+      value: listing.kitchen_type || '-'
     },
     {
       icon: CarIcon,
       label: 'Parking',
-      value: listing['Features - Parking'] || '-'
+      value: listing.parking_type || '-'
     },
     {
       icon: SquareIcon,
       label: 'Square Feet',
-      value: listing['Features - SQFT Area'] ? `${listing['Features - SQFT Area']} sq ft` : '-'
+      value: listing.square_feet ? `${listing.square_feet} sq ft` : '-'
     }
   ];
 
@@ -46,10 +46,10 @@ export default function SpaceSnapshot({ listing }) {
       {/* Property Name */}
       <div style={styles.nameSection}>
         <span style={styles.propertyName}>
-          {listing['Name'] || 'Untitled Listing'}
+          {listing.listing_title || 'Untitled Listing'}
         </span>
         <span style={styles.spaceType}>
-          {listing['Type of Space'] || 'Space type not set'}
+          {listing.space_type || 'Space type not set'}
         </span>
       </div>
 
@@ -58,13 +58,13 @@ export default function SpaceSnapshot({ listing }) {
         <LocationIcon style={styles.locationIcon} />
         <div style={styles.addressText}>
           <span style={styles.streetAddress}>
-            {listing['Location - Address']?.address || listing['street_address'] || 'Address not set'}
+            {listing.address_with_lat_lng_json?.address || listing['street_address'] || 'Address not set'}
           </span>
           <span style={styles.cityState}>
             {[
-              listing['Address - City'],
-              listing['Address - State'],
-              listing['Address - Zip']
+              listing.city,
+              listing.state,
+              listing.zip_code
             ].filter(Boolean).join(', ') || 'City, State not set'}
           </span>
         </div>

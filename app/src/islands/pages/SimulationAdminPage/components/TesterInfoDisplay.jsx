@@ -7,7 +7,7 @@ export default function TesterInfoDisplay({
   isProcessing,
 }) {
   const aiCredits = tester.aiCredits ?? tester['AI Credits'] ?? tester.ai_credits ?? 'N/A';
-  const firstName = tester.firstName || tester['Name - First'] || tester.nameFirst || '';
+  const firstName = tester.firstName || tester.first_name || tester.nameFirst || '';
   const testerType = tester.typeDisplay || tester.userType || tester['Type'] || 'N/A';
   const usabilityStep = tester.usabilityStep ?? tester.usability_step ?? 'N/A';
 

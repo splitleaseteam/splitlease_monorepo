@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Calculate borough match score for a candidate listing.
  *
  * @intent Score geographic proximity between candidate and proposal listings.
@@ -35,13 +35,12 @@ export function calculateBoroughScore({ candidateListing, proposal }) {
   // Extract borough names from both objects, checking multiple possible field names
   const candidateBorough =
     candidateListing.boroughName ||
-    candidateListing['Location - Borough'] ||
+    candidateListing.borough ||
     null;
 
   const proposalBorough =
     proposal.listing?.boroughName ||
     proposal.listing?.borough ||
-    proposal.listing?.['Location - Borough'] ||
     null;
 
   if (!candidateBorough || !proposalBorough) {

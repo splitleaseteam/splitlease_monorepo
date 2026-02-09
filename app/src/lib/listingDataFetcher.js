@@ -53,104 +53,99 @@ function parseJsonField(field) {
 
 /**
  * Fetch complete listing data with all enrichments
- * @param {string} listingId - The listing _id
+ * @param {string} listingId - The listing id
  * @returns {Promise<object>} Enriched listing object
  */
 export async function fetchListingComplete(listingId) {
   try {
     // Fetch from listing table
-    console.log('🔍 fetchListingComplete: Fetching listing with _id=' + listingId);
+    console.log('🔍 fetchListingComplete: Fetching listing with id=' + listingId);
 
     const { data: listingData, error: listingError } = await supabase
       .from('listing')
       .select(`
-        _id,
-        Name,
-        Description,
-        "Description - Neighborhood",
-        "Features - Qty Bedrooms",
-        "Features - Qty Bathrooms",
-        "Features - Qty Beds",
-        "Features - Qty Guests",
-        "Features - SQFT Area",
-        "Kitchen Type",
-        "Features - Type of Space",
-        "Features - Amenities In-Unit",
-        "Features - Amenities In-Building",
-        "Features - Safety",
-        "Features - House Rules",
-        "Features - Parking type",
-        "Features - Secure Storage Option",
-        "Features - Trial Periods Allowed",
-        "Features - Photos",
-        "Location - Address",
-        "Location - slightly different address",
-        "Location - City",
-        "Location - State",
-        "Location - Zip Code",
-        "Location - Hood",
-        "Location - Borough",
-        "neighborhood (manual input by user)",
-        "Time to Station (commute)",
-        "Map HTML Web",
-        "nightly_rate_1_night",
-        "nightly_rate_2_nights",
-        "nightly_rate_3_nights",
-        "nightly_rate_4_nights",
-        "nightly_rate_5_nights",
-        "nightly_rate_7_nights",
-        "weekly_host_rate",
-        "monthly_host_rate",
-        "damage_deposit",
-        "cleaning_fee",
-        "price_override",
-        "Days Available (List of Days)",
-        "Nights Available (List of Nights) ",
-        "Days Not Available",
-        "Nights Not Available",
-        "Dates - Blocked",
-        " First Available",
-        "Last Available",
-        "Minimum Nights",
-        "Maximum Nights",
-        "Minimum Weeks",
-        "Maximum Weeks",
-        "Minimum Months",
-        "Maximum Months",
-        "Weeks offered",
-        "rental type",
-        "unit_markup",
-        "NEW Date Check-in Time",
-        "NEW Date Check-out Time",
-        "Host User",
-        "host name",
-        "host restrictions",
-        "Cancellation Policy",
-        "video tour",
-        "Reviews",
-        Active,
-        Complete,
-        Deleted,
-        "Preferred Gender",
-        "allow alternating roommates?"
+        id,
+        listing_title,
+        listing_description,
+        neighborhood_description_by_host,
+        bedroom_count,
+        bathroom_count,
+        bed_count,
+        max_guest_count,
+        square_feet,
+        kitchen_type,
+        space_type,
+        in_unit_amenity_reference_ids_json,
+        in_building_amenity_reference_ids_json,
+        safety_feature_reference_ids_json,
+        house_rule_reference_ids_json,
+        parking_type,
+        secure_storage_option,
+        is_trial_period_allowed,
+        photos_with_urls_captions_and_sort_order_json,
+        address_with_lat_lng_json,
+        map_pin_offset_address_json,
+        city,
+        state,
+        zip_code,
+        primary_neighborhood_reference_id,
+        borough,
+        neighborhood_name_entered_by_host,
+        commute_time_to_nearest_transit,
+        map_embed_html_for_web,
+        nightly_rate_for_1_night_stay,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay,
+        weekly_rate_paid_to_host,
+        monthly_rate_paid_to_host,
+        damage_deposit_amount,
+        cleaning_fee_amount,
+        available_days_as_day_numbers_json,
+        available_nights_as_day_numbers_json,
+        unavailable_days_json,
+        unavailable_nights_json,
+        blocked_specific_dates_json,
+        first_available_date,
+        minimum_nights_per_stay,
+        maximum_nights_per_stay,
+        minimum_weeks_per_stay,
+        maximum_weeks_per_stay,
+        minimum_months_per_stay,
+        maximum_months_per_stay,
+        weeks_offered_schedule_text,
+        rental_type,
+        unit_markup_percentage,
+        checkin_time_of_day,
+        checkout_time_of_day,
+        host_user_id,
+        host_display_name,
+        cancellation_policy,
+        is_active,
+        is_listing_profile_complete,
+        is_deleted,
+        preferred_guest_gender,
+        allows_alternating_roommates
       `)
-      .eq('_id', listingId)
+      .eq('id', listingId)
       .single();
 
     if (listingError) throw listingError;
     if (!listingData) throw new Error('Listing not found');
 
     // Check if listing is soft-deleted
-    if (listingData.Deleted === true) {
+    if (listingData.is_deleted === true) {
       throw new Error('Listing has been deleted');
     }
 
-    console.log('✅ Found listing:', listingData._id);
+    console.log('✅ Found listing:', listingData.id);
 
-    // 2. Fetch photos - check if embedded in Features - Photos or in listing_photo table
+    // 2. Fetch photos - check if embedded in photos_with_urls_captions_and_sort_order_json
     let sortedPhotos = [];
-    const embeddedPhotos = parseJsonField(listingData['Features - Photos']);
-    console.log('📷 Raw Features - Photos:', listingData['Features - Photos']);
+    const embeddedPhotos = parseJsonField(listingData.photos_with_urls_captions_and_sort_order_json);
+    console.log('📷 Raw photos_with_urls_captions_and_sort_order_json:', listingData.photos_with_urls_captions_and_sort_order_json);
     console.log('📷 Parsed embeddedPhotos:', embeddedPhotos);
     console.log('📷 embeddedPhotos.length:', embeddedPhotos.length);
     console.log('📷 embeddedPhotos[0] type:', typeof embeddedPhotos[0]);
@@ -171,7 +166,7 @@ export async function fetchListingComplete(listingId) {
         SortOrder: photo.SortOrder ?? photo.sortOrder ?? photo.displayOrder ?? index,
         Caption: photo.caption || photo.Caption || ''
       }));
-      console.log('📷 Embedded photos from Features - Photos:', sortedPhotos.length);
+      console.log('📷 Embedded photos from photos_with_urls_captions_and_sort_order_json:', sortedPhotos.length);
     } else if (embeddedPhotos.length > 0 && typeof embeddedPhotos[0] === 'string') {
       // Photos are embedded as string URLs (legacy format)
       sortedPhotos = embeddedPhotos.map((url, index) => ({
@@ -182,18 +177,11 @@ export async function fetchListingComplete(listingId) {
         SortOrder: index,
         Caption: ''
       }));
-      console.log('📷 Embedded string URLs from Features - Photos:', sortedPhotos.length);
+      console.log('📷 Embedded string URLs from photos_with_urls_captions_and_sort_order_json:', sortedPhotos.length);
     } else {
-      // Legacy: fetch from listing_photo table
-      const { data: photosData, error: photosError } = await supabase
-        .from('listing_photo')
-        .select('_id, Photo, "Photo (thumbnail)", SortOrder, toggleMainPhoto, Caption')
-        .eq('Listing', listingId)
-        .order('SortOrder', { ascending: true, nullsLast: true });
-
-      if (photosError) console.error('Photos fetch error:', photosError);
-      sortedPhotos = photosData || [];
-      console.log('📷 Photos from listing_photo table:', sortedPhotos.length);
+      // No embedded photos found
+      sortedPhotos = [];
+      console.log('📷 No embedded photos found');
     }
 
     // Sort photos (main photo first, then by SortOrder, then by _id)
@@ -209,108 +197,95 @@ export async function fetchListingComplete(listingId) {
     });
 
     // 4. Resolve geographic data
-    const resolvedNeighborhood = listingData['Location - Hood']
-      ? getNeighborhoodName(listingData['Location - Hood'])
+    const resolvedNeighborhood = listingData.primary_neighborhood_reference_id
+      ? getNeighborhoodName(listingData.primary_neighborhood_reference_id)
       : null;
 
-    const resolvedBorough = listingData['Location - Borough']
-      ? getBoroughName(listingData['Location - Borough'])
+    const resolvedBorough = listingData.borough
+      ? getBoroughName(listingData.borough)
       : null;
 
     // 5. Resolve property type
-    const resolvedTypeOfSpace = listingData['Features - Type of Space']
-      ? getPropertyTypeLabel(listingData['Features - Type of Space'])
+    const resolvedTypeOfSpace = listingData.space_type
+      ? getPropertyTypeLabel(listingData.space_type)
       : null;
 
     // 6. Resolve amenities (JSONB arrays) - with double-encoding fix
-    const amenitiesInUnit = listingData['Features - Amenities In-Unit']
-      ? getAmenities(parseJsonField(listingData['Features - Amenities In-Unit']))
+    const amenitiesInUnit = listingData.in_unit_amenity_reference_ids_json
+      ? getAmenities(parseJsonField(listingData.in_unit_amenity_reference_ids_json))
       : [];
 
-    const amenitiesInBuilding = listingData['Features - Amenities In-Building']
-      ? getAmenities(parseJsonField(listingData['Features - Amenities In-Building']))
+    const amenitiesInBuilding = listingData.in_building_amenity_reference_ids_json
+      ? getAmenities(parseJsonField(listingData.in_building_amenity_reference_ids_json))
       : [];
 
-    const safetyFeatures = listingData['Features - Safety']
-      ? getSafetyFeatures(parseJsonField(listingData['Features - Safety']))
+    const safetyFeatures = listingData.safety_feature_reference_ids_json
+      ? getSafetyFeatures(parseJsonField(listingData.safety_feature_reference_ids_json))
       : [];
 
-    const houseRules = listingData['Features - House Rules']
-      ? getHouseRules(parseJsonField(listingData['Features - House Rules']))
+    const houseRules = listingData.house_rule_reference_ids_json
+      ? getHouseRules(parseJsonField(listingData.house_rule_reference_ids_json))
       : [];
 
     // 7. Resolve parking option
-    const parkingOption = listingData['Features - Parking type']
-      ? getParkingOption(listingData['Features - Parking type'])
+    const parkingOption = listingData.parking_type
+      ? getParkingOption(listingData.parking_type)
       : null;
 
     // 7a. Resolve cancellation policy
-    const cancellationPolicy = listingData['Cancellation Policy']
-      ? getCancellationPolicy(listingData['Cancellation Policy'])
+    const cancellationPolicy = listingData.cancellation_policy
+      ? getCancellationPolicy(listingData.cancellation_policy)
       : null;
 
     // 7b. Resolve storage option
-    const storageOption = listingData['Features - Secure Storage Option']
-      ? getStorageOption(listingData['Features - Secure Storage Option'])
+    const storageOption = listingData.secure_storage_option
+      ? getStorageOption(listingData.secure_storage_option)
       : null;
 
     // 8. Fetch host data - query user table
-    // listing["Host User"] now contains user._id directly (after migration)
+    // listing.host_user_id now contains user.id directly (after migration)
     let hostData = null;
-    if (listingData['Host User']) {
+    if (listingData.host_user_id) {
       const { data: userData, error: userError } = await supabase
         .from('user')
-        .select('_id, "Name - First", "Name - Last", "Profile Photo", "email as text"')
-        .eq('_id', listingData['Host User'])
+        .select('id, first_name, last_name, profile_photo_url, email')
+        .eq('id', listingData.host_user_id)
         .maybeSingle();
 
       if (userError) {
-        console.error('User fetch error (by _id):', userError);
+        console.error('User fetch error (by id):', userError);
       }
 
       if (userData) {
         hostData = {
-          _id: userData._id,
-          userId: userData._id,  // Alias for consumers expecting userId
-          'Name - First': userData['Name - First'],
-          'Name - Last': userData['Name - Last'],
-          'Profile Photo': userData['Profile Photo'],
-          Email: userData['email as text']
+          id: userData.id,
+          userId: userData.id,  // Alias for consumers expecting userId
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          profile_photo_url: userData.profile_photo_url,
+          Email: userData.email
         };
-        console.log('📍 Host found via user._id lookup');
+        console.log('📍 Host found via user.id lookup');
       }
     }
 
-    // 9. Fetch reviews if any - with double-encoding fix
+    // 9. Reviews
+    // NOTE: reviews_json column was removed from listing table (doesn't exist in DB).
+    // Review fetching is now handled separately if needed via the mainreview table.
     let reviewsData = [];
-    const reviewIds = parseJsonField(listingData.Reviews);
-    if (reviewIds.length > 0) {
-      const { data: reviews, error: reviewsError } = await supabase
-        .from('mainreview')
-        .select('_id, Comment, "Overall Score", Reviewer, "Created Date", "Is Published?"')
-        .in('_id', reviewIds)
-        .eq('Is Published?', true)
-        .order('"Created Date"', { ascending: false });
 
-      if (reviewsError) {
-        console.error('Reviews fetch error:', reviewsError);
-      } else {
-        reviewsData = reviews || [];
-      }
-    }
-
-    // 10. Extract coordinates from "Location - slightly different address" JSONB field
-    // Fallback to "Location - Address" if slightly different is not available
+    // 10. Extract coordinates from map_pin_offset_address_json JSONB field
+    // Fallback to address_with_lat_lng_json if offset is not available
     let coordinates = null;
-    let locationSlightlyDifferent = listingData['Location - slightly different address'];
-    let locationAddress = listingData['Location - Address'];
+    let locationSlightlyDifferent = listingData.map_pin_offset_address_json;
+    let locationAddress = listingData.address_with_lat_lng_json;
 
     // Parse slightly different address if it's a string
     if (typeof locationSlightlyDifferent === 'string') {
       try {
         locationSlightlyDifferent = JSON.parse(locationSlightlyDifferent);
       } catch (error) {
-        console.error('Failed to parse Location - slightly different address:', error);
+        console.error('Failed to parse map_pin_offset_address_json:', error);
         locationSlightlyDifferent = null;
       }
     }
@@ -320,7 +295,7 @@ export async function fetchListingComplete(listingId) {
       try {
         locationAddress = JSON.parse(locationAddress);
       } catch (error) {
-        console.error('Failed to parse Location - Address:', error);
+        console.error('Failed to parse address_with_lat_lng_json:', error);
         locationAddress = null;
       }
     }
@@ -332,7 +307,7 @@ export async function fetchListingComplete(listingId) {
         lng: locationSlightlyDifferent.lng,
         address: locationSlightlyDifferent.address || null
       };
-      console.log('📍 Using "Location - slightly different address" for coordinates:', coordinates);
+      console.log('📍 Using map_pin_offset_address_json for coordinates:', coordinates);
     } else if (locationAddress?.lat && locationAddress?.lng) {
       // Generate slightly offset coordinates from the main address
       // Offset by ~50-100 meters (approximately 0.0005 to 0.001 degrees)
@@ -345,7 +320,7 @@ export async function fetchListingComplete(listingId) {
         address: locationAddress.address || null,
         isGenerated: true
       };
-      console.log('📍 Generated slightly different coordinates from "Location - Address":', {
+      console.log('📍 Generated slightly different coordinates from address_with_lat_lng_json:', {
         original: { lat: locationAddress.lat, lng: locationAddress.lng },
         offset: { lat: latOffset, lng: lngOffset },
         generated: coordinates
@@ -446,18 +421,13 @@ export function getListingIdFromUrl() {
  */
 export function getNightlyPrice(listing, nightsSelected) {
   const priceMap = {
-    1: listing['nightly_rate_1_night'],
-    2: listing['nightly_rate_2_nights'],
-    3: listing['nightly_rate_3_nights'],
-    4: listing['nightly_rate_4_nights'],
-    5: listing['nightly_rate_5_nights'],
-    7: listing['nightly_rate_7_nights']
+    1: listing.nightly_rate_for_1_night_stay,
+    2: listing.nightly_rate_for_2_night_stay,
+    3: listing.nightly_rate_for_3_night_stay,
+    4: listing.nightly_rate_for_4_night_stay,
+    5: listing.nightly_rate_for_5_night_stay,
+    7: listing.nightly_rate_for_7_night_stay
   };
-
-  // Use price override if available
-  if (listing['price_override']) {
-    return listing['price_override'];
-  }
 
   // Return price for exact nights match
   if (priceMap[nightsSelected]) {
@@ -470,8 +440,8 @@ export function getNightlyPrice(listing, nightsSelected) {
 
 /**
  * Fetch basic listing data by ID (minimal data for quick loading)
- * @param {string} listingId - The listing _id
- * @returns {Promise<object>} Basic listing object with Name and other essential fields
+ * @param {string} listingId - The listing id
+ * @returns {Promise<object>} Basic listing object with listing_title and other essential fields
  */
 export async function fetchListingBasic(listingId) {
   console.log('📊 fetchListingBasic: Starting fetch for listing ID:', listingId);
@@ -481,8 +451,8 @@ export async function fetchListingBasic(listingId) {
     console.log('📊 Calling Supabase...');
     const { data: listingData, error: listingError } = await supabase
       .from('listing')
-      .select('_id, Name, Description, Active, Deleted')
-      .eq('_id', listingId)
+      .select('id, listing_title, listing_description, is_active, is_deleted')
+      .eq('id', listingId)
       .single();
 
     console.log('📊 Supabase response - data:', listingData);
@@ -498,12 +468,12 @@ export async function fetchListingBasic(listingId) {
     }
 
     // Check if listing is soft-deleted
-    if (listingData.Deleted === true) {
+    if (listingData.is_deleted === true) {
       throw new Error('Listing has been deleted');
     }
 
     console.log('✅ fetchListingBasic: Successfully fetched listing');
-    console.log('✅ Listing Name:', listingData.Name);
+    console.log('✅ Listing title:', listingData.listing_title);
     return listingData;
   } catch (error) {
     console.error('❌ Error in fetchListingBasic:', error);

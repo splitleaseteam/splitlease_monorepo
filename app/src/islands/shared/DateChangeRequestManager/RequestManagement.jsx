@@ -72,7 +72,7 @@ export default function RequestManagement({
    */
   const getRequesterName = () => {
     const requester = request.requester;
-    return requester?.['Name - First'] || requester?.firstName || requester?.name || 'User';
+    return requester?.first_name || requester?.firstName || requester?.name || 'User';
   };
 
   /**

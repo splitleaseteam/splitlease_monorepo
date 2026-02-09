@@ -1,4 +1,4 @@
-import { getNightlyRateByFrequency } from './getNightlyRateByFrequency.js'
+﻿import { getNightlyRateByFrequency } from './getNightlyRateByFrequency.js'
 import { calculateFourWeekRent } from './calculateFourWeekRent.js'
 import { calculateReservationTotal } from './calculateReservationTotal.js'
 import { validateNumber } from '../../validators/pricingValidators.js'
@@ -21,7 +21,7 @@ import { validateNumber } from '../../validators/pricingValidators.js'
  *
  * @example
  * const breakdown = calculatePricingBreakdown({
- *   listing: { nightly_rate_4_nights: 100, cleaning_fee: 50 },
+ *   listing: { nightly_rate_for_4_night_stay: 100, cleaning_fee_amount: 50 },
  *   nightsPerWeek: 4,
  *   reservationWeeks: 13
  * })
@@ -58,12 +58,12 @@ export function calculatePricingBreakdown({ listing, nightsPerWeek, reservationW
 
   // Extract fees (with explicit validation)
   const cleaningFee = extractFee(
-    listing['cleaning_fee'],
+    listing.cleaning_fee_amount,
     'Cleaning Fee'
   )
 
   const damageDeposit = extractFee(
-    listing['damage_deposit'],
+    listing.damage_deposit_amount,
     'Damage Deposit'
   )
 

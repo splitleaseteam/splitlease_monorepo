@@ -71,7 +71,7 @@ export default function LeaseDetailsSection({ lease }) {
               {listing.imageUrl ? (
                 <img
                   src={listing.imageUrl}
-                  alt={listing.name}
+                  alt={listing.listing_title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
@@ -89,7 +89,7 @@ export default function LeaseDetailsSection({ lease }) {
             </div>
             <div>
               <p style={{ fontWeight: 600, margin: 0, fontSize: '0.875rem' }}>
-                {listing.name || 'Unnamed Listing'}
+                {listing.listing_title || 'Unnamed Listing'}
               </p>
               <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0', fontSize: '0.75rem' }}>
                 {[listing.address, listing.neighborhood, listing.city]

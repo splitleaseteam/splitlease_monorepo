@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Data Transformation Utilities for Guest Proposals
  * Transforms Bubble.io data structure to cleaner, more usable format
  *
@@ -19,12 +19,14 @@ export function transformUserData(rawUser) {
   if (!rawUser) return null;
 
   return {
-    id: rawUser._id,
-    firstName: rawUser['Name - First'],
-    lastName: rawUser['Name - Last'],
-    fullName: rawUser['Name - Full'],
-    profilePhoto: rawUser['Profile Photo'],
-    proposalsList: rawUser['Proposals List']
+    id: rawUser.id,
+    firstName: rawUser.first_name,
+    lastName: rawUser.last_name,
+    fullName: rawUser.first_name && rawUser.last_name
+      ? `${rawUser.first_name} ${rawUser.last_name}`
+      : null,
+    profilePhoto: rawUser.profile_photo_url,
+    proposalsList: rawUser.listings_json
   };
 }
 
@@ -38,7 +40,7 @@ export function transformListingData(rawListing) {
   if (!rawListing) return null;
 
   // Extract address from JSONB structure
-  const addressData = rawListing['Location - Address'];
+  const addressData = rawListing.address_with_lat_lng_json;
   const addressString = typeof addressData === 'object' && addressData?.address
     ? addressData.address
     : (typeof addressData === 'string' ? addressData : null);
@@ -49,18 +51,18 @@ export function transformListingData(rawListing) {
     description: rawListing.Description,
     address: addressString,
     addressData: addressData, // Keep full JSONB for map coordinates
-    borough: rawListing['Location - Borough'],
-    hood: rawListing['Location - Hood'],
+    borough: rawListing.borough,
+    hood: rawListing.primary_neighborhood_reference_id,
     boroughName: rawListing.boroughName, // Resolved name from lookup table
     hoodName: rawListing.hoodName, // Resolved name from lookup table
-    city: rawListing['Location - City'],
-    state: rawListing['Location - State'],
-    zipCode: rawListing['Location - Zip Code'],
-    photos: rawListing['Features - Photos'],
+    city: rawListing.city,
+    state: rawListing.state,
+    zipCode: rawListing.zip_code,
+    photos: rawListing.photos_with_urls_captions_and_sort_order_json,
     featuredPhotoUrl: rawListing.featuredPhotoUrl, // Featured photo from listing_photo table
     houseRules: rawListing.houseRules || [], // Use resolved house rules from query layer
-    checkInTime: rawListing['NEW Date Check-in Time'],
-    checkOutTime: rawListing['NEW Date Check-out Time']
+    checkInTime: rawListing.checkin_time_of_day,
+    checkOutTime: rawListing.checkout_time_of_day
   };
 }
 
@@ -74,12 +76,14 @@ export function transformHostData(rawHost) {
   if (!rawHost) return null;
 
   return {
-    id: rawHost._id,
-    firstName: rawHost['Name - First'],
-    lastName: rawHost['Name - Last'],
-    fullName: rawHost['Name - Full'],
-    profilePhoto: rawHost['Profile Photo'],
-    bio: rawHost['About Me / Bio'],
+    id: rawHost.id,
+    firstName: rawHost.first_name,
+    lastName: rawHost.last_name,
+    fullName: rawHost.first_name && rawHost.last_name
+      ? `${rawHost.first_name} ${rawHost.last_name}`
+      : null,
+    profilePhoto: rawHost.profile_photo_url,
+    bio: rawHost.bio_text,
     linkedInVerified: rawHost['Verify - Linked In ID'],
     phoneVerified: rawHost['Verify - Phone'],
     userVerified: rawHost['user verified?']
@@ -96,12 +100,14 @@ export function transformGuestData(rawGuest) {
   if (!rawGuest) return null;
 
   return {
-    id: rawGuest._id,
-    firstName: rawGuest['Name - First'],
-    lastName: rawGuest['Name - Last'],
-    fullName: rawGuest['Name - Full'],
-    profilePhoto: rawGuest['Profile Photo'],
-    bio: rawGuest['About Me / Bio'],
+    id: rawGuest.id,
+    firstName: rawGuest.first_name,
+    lastName: rawGuest.last_name,
+    fullName: rawGuest.first_name && rawGuest.last_name
+      ? `${rawGuest.first_name} ${rawGuest.last_name}`
+      : null,
+    profilePhoto: rawGuest.profile_photo_url,
+    bio: rawGuest.bio_text,
     linkedInVerified: rawGuest['Verify - Linked In ID'],
     phoneVerified: rawGuest['Verify - Phone'],
     userVerified: rawGuest['user verified?']
@@ -126,7 +132,7 @@ export function transformVirtualMeetingData(rawVirtualMeeting) {
     requestedBy: rawVirtualMeeting['requested by'],
     suggestedTimeslots: rawVirtualMeeting['suggested dates and times'], // JSONB array of ISO datetimes
     guestName: rawVirtualMeeting['guest name'],
-    hostName: rawVirtualMeeting['host name'],
+    hostName: rawVirtualMeeting.host_display_name,
     proposalId: rawVirtualMeeting.proposal
   };
 }
@@ -168,8 +174,8 @@ export function transformProposalData(rawProposal) {
     hcReservationWeeks: rawProposal['hc reservation span (weeks)'],
     hcTotalPrice: rawProposal['hc total price'],
     hcNightlyPrice: rawProposal['hc nightly price'],
-    createdDate: rawProposal['Created Date'],
-    modifiedDate: rawProposal['Modified Date'],
+    createdDate: rawProposal.bubble_created_at,
+    modifiedDate: rawProposal.bubble_updated_at,
     aboutYourself: rawProposal.about_yourself,
     specialNeeds: rawProposal.special_needs,
     reasonForCancellation: rawProposal['reason for cancellation'],

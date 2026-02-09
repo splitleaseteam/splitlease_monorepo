@@ -80,7 +80,7 @@ function DescriptionModalContent({ listing }) {
   return (
     <div className="lo-modal-description">
       <h4>Description</h4>
-      <p>{listing.description || 'No description provided.'}</p>
+      <p>{listing.listing_description || 'No description provided.'}</p>
       <h4>Features</h4>
       <div className="lo-features-list">
         {listing.features.length > 0 ? (

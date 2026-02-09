@@ -158,11 +158,10 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         supabase
           .from('user')
           .select(`
-            _id,
-            "Type - User Current",
-            "Favorited Listings"
+            id,
+            current_user_role
           `)
-          .eq('_id', userId)
+          .eq('id', userId)
           .single(),
 
         // 2. Fetch listings for this user using the same RPC as HostOverview
@@ -170,21 +169,8 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         supabase
           .rpc('get_host_listings', { host_user_id: userId }),
 
-        // 3. Count visits for this user (as guest)
-        // NOTE: visit table may not exist in Supabase yet (legacy Bubble table)
-        // Gracefully handle 400 errors by defaulting to count = 0
-        supabase
-          .from('visit')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Guest', userId)
-          .then(result => {
-            // If table doesn't exist or query fails, return count = 0
-            if (result.error) {
-              console.warn('[useLoggedInAvatarData] visit table query failed (table may not exist):', result.error.message);
-              return { count: 0, error: null }; // Override error with safe default
-            }
-            return result;
-          }),
+        // 3. Visits table removed - always return 0
+        Promise.resolve({ count: 0, error: null }),
 
         // 4. Count virtual meetings for this user
         // NOTE: virtualmeetingschedulesandlinks table may not exist in Supabase yet (legacy Bubble table)
@@ -204,51 +190,50 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
         // 5. Count leases for this user (as guest or host)
         supabase
-          .from('bookings_leases')
-          .select('_id', { count: 'exact', head: true })
-          .or(`Guest.eq.${userId},"Created By".eq.${userId}`),
+          .from('booking_lease')
+          .select('id', { count: 'exact', head: true })
+          .or(`guest_user_id.eq.${userId},created_by_user_id.eq.${userId}`),
 
         // 6. Count unread messages
-        //    Uses _message table with "Unread Users" JSONB array containing user IDs
-        //    Column name has space, must be quoted for PostgREST filter
+        //    Uses thread_message table with "unread_by_user_ids_json" JSONB array containing user IDs
         supabase
-          .from('_message')
-          .select('_id', { count: 'exact', head: true })
-          .filter('"Unread Users"', 'cs', JSON.stringify([userId])),
+          .from('thread_message')
+          .select('id', { count: 'exact', head: true })
+          .filter('unread_by_user_ids_json', 'cs', JSON.stringify([userId])),
 
         // 7. Check for proposals suggested by Split Lease
         //    These are proposals created by SL agent on behalf of the guest
         //    Fetch the most recent one's ID for deep-linking from the menu
         supabase
-          .from('proposal')
-          .select('_id, "Created Date"')
-          .eq('Guest', userId)
-          .in('Status', SUGGESTED_PROPOSAL_STATUSES)
-          .or('"Deleted".is.null,"Deleted".eq.false')
-          .order('Created Date', { ascending: false })
+          .from('booking_proposal')
+          .select('id, bubble_created_at')
+          .eq('guest_user_id', userId)
+          .in('proposal_workflow_status', SUGGESTED_PROPOSAL_STATUSES)
+          .or('is_deleted.is.null,is_deleted.eq.false')
+          .order('bubble_created_at', { ascending: false })
           .limit(10),
 
         // 8. Get favorites and proposals counts from junction tables (Phase 5b migration)
         supabase.rpc('get_user_junction_counts', { p_user_id: userId }),
 
         // 9. Count proposals where user is the GUEST (proposals they submitted)
-        //    Excludes: Deleted=true and Status='Proposal Cancelled by Guest'
+        //    Excludes: is_deleted=true and proposal_workflow_status='Proposal Cancelled by Guest'
         //    Includes: Cancelled by Host/Split Lease (guest may want to manually delete)
         supabase
-          .from('proposal')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Guest', userId)
-          .or('"Deleted".is.null,"Deleted".eq.false')
-          .neq('Status', 'Proposal Cancelled by Guest'),
+          .from('booking_proposal')
+          .select('id', { count: 'exact', head: true })
+          .eq('guest_user_id', userId)
+          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('proposal_workflow_status', 'Proposal Cancelled by Guest'),
 
         // 10. Count proposals where user is the HOST (proposals received on their listings)
-        //     Excludes: Deleted=true and Status='Proposal Cancelled by Guest'
+        //     Excludes: is_deleted=true and proposal_workflow_status='Proposal Cancelled by Guest'
         supabase
-          .from('proposal')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Host User', userId)
-          .or('"Deleted".is.null,"Deleted".eq.false')
-          .neq('Status', 'Proposal Cancelled by Guest'),
+          .from('booking_proposal')
+          .select('id', { count: 'exact', head: true })
+          .eq('host_user_id', userId)
+          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('proposal_workflow_status', 'Proposal Cancelled by Guest'),
 
         // 11. Count message threads where user is a participant (host or guest)
         //     Uses RPC function because PostgREST .or() doesn't handle column names
@@ -259,11 +244,11 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         //     This powers the host notification badge in the messaging icon
         //     Pending statuses that require host review:
         supabase
-          .from('proposal')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Host User', userId)
-          .or('"Deleted".is.null,"Deleted".eq.false')
-          .in('Status', [
+          .from('booking_proposal')
+          .select('id', { count: 'exact', head: true })
+          .eq('host_user_id', userId)
+          .or('is_deleted.is.null,is_deleted.eq.false')
+          .in('proposal_workflow_status', [
             'Proposal Pending',
             'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
             'Proposal Submitted for guest by Split Lease - Pending Confirmation',
@@ -280,7 +265,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
       // Get normalized user type
       // First try from legacy user table, then fallback to Supabase Auth session
-      let rawUserType = userData?.['Type - User Current'] || '';
+      let rawUserType = userData?.current_user_role || '';
 
       // If no user type from legacy table, check Supabase Auth session
       // This handles users who signed up via native Supabase Auth (not legacy Bubble)
@@ -336,16 +321,15 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         console.warn('[useLoggedInAvatarData] Junction counts RPC failed:', junctionCountsResult.error);
       }
 
-      // Get favorites count from user table JSONB field (not junction table)
-      const favoritedListings = userData?.['Favorited Listings'] || [];
-      const favoritesCount = Array.isArray(favoritedListings) ? favoritedListings.length : 0;
+      // Get favorites count from junction tables RPC (favorites now stored on listing table)
+      const favoritesCount = Number(junctionCounts.favorites_count) || 0;
 
       // Get house manuals count if user is a host
       // NOTE: House manuals now queried directly from user table (account_host deprecated)
       let houseManualsCount = 0;
       if (normalizedType === NORMALIZED_USER_TYPES.HOST || normalizedType === NORMALIZED_USER_TYPES.TRIAL_HOST) {
         // Check if userData has House manuals directly (migrated from account_host)
-        const houseManuals = userData?.['House manuals'];
+        const houseManuals = userData?.['house_manual_ids_json'];
         houseManualsCount = Array.isArray(houseManuals) ? houseManuals.length : 0;
       }
 
@@ -355,9 +339,9 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       if (listingsResult.error) {
         console.warn('[useLoggedInAvatarData] Listings query error:', listingsResult.error);
       }
-      const uniqueListingIds = [...new Set(rawListings.map(l => l._id || l.id))];
+      const uniqueListingIds = [...new Set(rawListings.map(l => l.id))];
       const listingsCount = uniqueListingIds.length;
-      const firstListingId = listingsCount === 1 ? (rawListings[0]?._id || rawListings[0]?.id) : null;
+      const firstListingId = listingsCount === 1 ? rawListings[0]?.id : null;
       console.log('[useLoggedInAvatarData] Listings count:', listingsCount, 'raw:', rawListings.length);
       console.log('[useLoggedInAvatarData] Proposals counts:', {
         userType: normalizedType,
@@ -389,7 +373,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       // Process suggested proposals - extract count and most recent ID
       const suggestedProposals = suggestedProposalsResult.data || [];
       const suggestedProposalsCount = suggestedProposals.length;
-      const lastSuggestedProposalId = suggestedProposals.length > 0 ? suggestedProposals[0]._id : null;
+      const lastSuggestedProposalId = suggestedProposals.length > 0 ? suggestedProposals[0].id : null;
 
       if (suggestedProposalsResult.error) {
         console.warn('[useLoggedInAvatarData] Suggested proposals query failed:', suggestedProposalsResult.error);
@@ -442,9 +426,9 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
     if (!userId) return;
 
     const { count, error } = await supabase
-      .from('_message')
-      .select('_id', { count: 'exact', head: true })
-      .filter('"Unread Users"', 'cs', JSON.stringify([userId]));
+      .from('thread_message')
+      .select('id', { count: 'exact', head: true })
+      .filter('unread_by_user_ids_json', 'cs', JSON.stringify([userId]));
 
     if (!error && count !== null) {
       setData(prev => {
@@ -466,7 +450,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
     console.log('[useLoggedInAvatarData] Setting up realtime subscription for messages');
 
-    // Subscribe to _message table changes
+    // Subscribe to thread_message table changes
     const channel = supabase
       .channel('header-unread-messages')
       .on(
@@ -474,7 +458,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         {
           event: '*', // Listen to INSERT, UPDATE, DELETE
           schema: 'public',
-          table: '_message',
+          table: 'thread_message',
         },
         (payload) => {
           console.log('[useLoggedInAvatarData] Message change detected:', payload.eventType);

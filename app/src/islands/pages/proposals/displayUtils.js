@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Display Utilities for Proposal Cards
  *
  * Pure functions for formatting proposal data for display.
@@ -151,7 +151,7 @@ export function getListingPhoto(listing) {
   if (!listing) return null;
 
   return listing.featuredPhotoUrl ||
-    listing['Features - Photos']?.[0] ||
+    listing.photos_with_urls_captions_and_sort_order_json?.[0] ||
     null;
 }
 
@@ -163,9 +163,9 @@ export function getListingPhoto(listing) {
 export function getHostDisplayName(host) {
   if (!host) return 'Host';
 
-  // Bubble.io uses 'Name - First' and 'Name - Full' field names
-  return host['Name - First'] ||
-    host['Name - Full'] ||
+  // User table uses first_name and last_name columns
+  return host.first_name ||
+    (host.first_name && host.last_name ? `${host.first_name} ${host.last_name}` : null) ||
     host.firstName ||
     host.name ||
     'Host';
@@ -179,11 +179,11 @@ export function getHostDisplayName(host) {
 export function getHostProfilePhoto(host) {
   if (!host) return null;
 
-  return host['Profile Photo'] || null;
+  return host.profile_photo_url || null;
 }
 
 /**
- * Build meta text for collapsed card (e.g., "5 days · 12 weeks")
+ * Build meta text for collapsed card (e.g., "5 days Â· 12 weeks")
  * @param {Array} daysSelected - Array of selected day indices
  * @param {string|number} weeks - Number of weeks
  * @returns {string} Meta text
@@ -191,7 +191,7 @@ export function getHostProfilePhoto(host) {
 export function buildMetaText(daysSelected, weeks) {
   const daysCount = Array.isArray(daysSelected) ? daysSelected.length : 0;
   if (weeks) {
-    return `${daysCount} day${daysCount !== 1 ? 's' : ''} · ${weeks} weeks`;
+    return `${daysCount} day${daysCount !== 1 ? 's' : ''} Â· ${weeks} weeks`;
   }
   return `${daysCount} day${daysCount !== 1 ? 's' : ''}`;
 }
@@ -402,7 +402,7 @@ export function generateGuestNarrativeText(proposal) {
     scheduleText = `The schedule is every day of each week. That's ${nightsPerWeek} nights per week.`;
   } else if (dayRangeText) {
     const weekendSuffix = weekendsFree ? ', with weekends free' : '';
-    scheduleText = `The schedule is ${dayRangeText} each week — checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
+    scheduleText = `The schedule is ${dayRangeText} each week â€” checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
   } else {
     scheduleText = `That's ${nightsPerWeek} nights per week.`;
   }
@@ -422,8 +422,8 @@ export function generateGuestNarrativeText(proposal) {
   const host = listing?.host || {};
   const listingName = listing?.Name || 'Listing';
   const location = [listing?.hoodName, listing?.boroughName].filter(Boolean).join(', ') || 'New York';
-  const hostFirstName = host?.['Name - First'] || host?.['Name - Full']?.split(' ')[0] || 'Host';
-  const hostPhoto = host?.['Profile Photo'] || null;
+  const hostFirstName = host?.first_name || 'Host';
+  const hostPhoto = host?.profile_photo_url || null;
 
   const listingContext = {
     listingName,

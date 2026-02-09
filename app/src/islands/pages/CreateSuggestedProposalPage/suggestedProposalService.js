@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Suggested Proposal Service
  *
  * API calls for the Create Suggested Proposal page.
@@ -28,44 +28,45 @@ const BOROUGH_LOOKUP = {
 // Standard fields to select for listing queries
 // Includes join with account_host and user to fetch host information
 const LISTING_SELECT_FIELDS = `
-  _id,
-  "Name",
+  id,
+  listing_title,
   "Description",
-  "Active",
-  "Approved",
-  "Host User",
+  is_active,
+  is_approved,
+  host_user_id,
   "Host email",
-  "host name",
+  host_display_name,
   "Host / Landlord",
-  "Location - Address",
-  "Location - City",
-  "Location - State",
-  "Location - Borough",
-  "Location - Hood",
-  "Location - Zip Code",
-  "Features - Photos",
-  "Features - Qty Bedrooms",
-  "Features - Qty Bathrooms",
-  "Features - Qty Beds",
-  "Features - Type of Space",
-  "rental type",
-  "Nights Available (List of Nights) ",
-  "Days Available (List of Days)",
-  "Minimum Nights",
-  "Maximum Weeks",
-  "monthly_host_rate",
-  "weekly_host_rate",
-  "nightly_rate_2_nights",
-  "nightly_rate_3_nights",
-  "nightly_rate_4_nights",
-  "nightly_rate_5_nights",
-  "nightly_rate_6_nights",
-  "nightly_rate_7_nights",
-  "cleaning_fee",
-  "damage_deposit",
+  address_with_lat_lng_json,
+  city,
+  state,
+  borough,
+  primary_neighborhood_reference_id,
+  zip_code,
+  photos_with_urls_captions_and_sort_order_json,
+  bedroom_count,
+  bathroom_count,
+  bed_count,
+  space_type,
+  rental_type,
+  available_nights_as_day_numbers_json,
+  available_days_as_day_numbers_json,
+  minimum_nights_per_stay,
+  maximum_weeks_per_stay,
+  monthly_rate_paid_to_host,
+  weekly_rate_paid_to_host,
+  nightly_rate_for_2_night_stay,
+  nightly_rate_for_3_night_stay,
+  nightly_rate_for_4_night_stay,
+  nightly_rate_for_5_night_stay,
+  nightly_rate_for_6_night_stay,
+  nightly_rate_for_7_night_stay,
+  cleaning_fee_amount,
+  damage_deposit_amount,
   account_host!inner(
     user!inner(
-      "Name - Full",
+      first_name,
+      last_name,
       "email as text"
     )
   )
@@ -77,23 +78,23 @@ const LISTING_SELECT_FIELDS = `
  * @returns {boolean} True if listing has valid pricing
  */
 function hasValidPricing(listing) {
-  const rentalType = listing['rental type'];
+  const rentalType = listing.rental_type;
   if (!rentalType) return false;
 
   if (rentalType === 'Monthly') {
-    return !!listing['monthly_host_rate'] && listing['monthly_host_rate'] > 0;
+    return !!listing.monthly_rate_paid_to_host && listing.monthly_rate_paid_to_host > 0;
   }
   if (rentalType === 'Weekly') {
-    return !!listing['weekly_host_rate'] && listing['weekly_host_rate'] > 0;
+    return !!listing.weekly_rate_paid_to_host && listing.weekly_rate_paid_to_host > 0;
   }
   // Nightly - check if any nightly rate is set
   return !!(
-    listing['nightly_rate_2_nights'] ||
-    listing['nightly_rate_3_nights'] ||
-    listing['nightly_rate_4_nights'] ||
-    listing['nightly_rate_5_nights'] ||
-    listing['nightly_rate_6_nights'] ||
-    listing['nightly_rate_7_nights']
+    listing.nightly_rate_for_2_night_stay ||
+    listing.nightly_rate_for_3_night_stay ||
+    listing.nightly_rate_for_4_night_stay ||
+    listing.nightly_rate_for_5_night_stay ||
+    listing.nightly_rate_for_6_night_stay ||
+    listing.nightly_rate_for_7_night_stay
   );
 }
 
@@ -106,9 +107,9 @@ export async function getDefaultListings() {
     const { data, error } = await supabase
       .from('listing')
       .select(LISTING_SELECT_FIELDS)
-      .eq('Deleted', false)
-      .not('rental type', 'is', null)
-      .order('Modified Date', { ascending: false })
+      .eq('is_deleted', false)
+      .not('rental_type', 'is', null)
+      .order('bubble_updated_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;
@@ -131,8 +132,8 @@ export async function searchListings(searchTerm) {
     const { data, error } = await supabase
       .from('listing')
       .select(LISTING_SELECT_FIELDS)
-      .eq('Deleted', false)
-      .or(`Name.ilike.%${searchTerm}%,host name.ilike.%${searchTerm}%,Host email.ilike.%${searchTerm}%,_id.ilike.%${searchTerm}%,rental type.ilike.%${searchTerm}%`)
+      .eq('is_deleted', false)
+      .or(`listing_title.ilike.%${searchTerm}%,host_display_name.ilike.%${searchTerm}%,host_email.ilike.%${searchTerm}%,id.ilike.%${searchTerm}%,rental_type.ilike.%${searchTerm}%`)
       .limit(20);
 
     if (error) throw error;
@@ -144,19 +145,44 @@ export async function searchListings(searchTerm) {
 }
 
 /**
- * Get photos for a listing
+ * Get photos for a listing from the embedded JSONB column
  */
 export async function getListingPhotos(listingId) {
   try {
-    const { data, error } = await supabase
-      .from('listing_photo')
-      .select('*')
-      .eq('Listing', listingId)
-      .eq('Active', true)
-      .order('SortOrder', { ascending: true });
+    const { data: listing, error } = await supabase
+      .from('listing')
+      .select('photos_with_urls_captions_and_sort_order_json')
+      .eq('id', listingId)
+      .single();
 
     if (error) throw error;
-    return { data: data || [], error: null };
+
+    let photos = listing?.photos_with_urls_captions_and_sort_order_json;
+    // Handle double-encoded JSON string
+    if (typeof photos === 'string') {
+      try {
+        photos = JSON.parse(photos);
+      } catch {
+        photos = [];
+      }
+    }
+
+    if (!Array.isArray(photos)) {
+      return { data: [], error: null };
+    }
+
+    // Sort by sort_order and transform to match old listing_photo shape
+    const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    const transformed = sorted.map((photo, index) => ({
+      _id: photo.id || `photo_${index}`,
+      Photo: typeof photo === 'string' ? photo : (photo.url || ''),
+      'Photo (thumbnail)': typeof photo === 'string' ? photo : (photo.url || ''),
+      caption: photo.caption || '',
+      SortOrder: photo.sort_order ?? index,
+      Active: true,
+    }));
+
+    return { data: transformed, error: null };
   } catch (error) {
     console.error('[suggestedProposalService] getListingPhotos error:', error);
     return { data: [], error: error.message };
@@ -169,19 +195,17 @@ export async function getListingPhotos(listingId) {
 
 // Standard fields to select for user/guest queries
 const USER_SELECT_FIELDS = `
-  _id,
-  "Name - First",
-  "Name - Last",
-  "Name - Full",
+  id,
+  first_name,
+  last_name,
   email,
-  "email as text",
-  "Phone Number (as text)",
-  "Profile Photo",
-  "About Me / Bio",
-  "need for Space",
-  "special needs",
-  "Type - User Current",
-  "Created Date"
+  phone_number,
+  profile_photo_url,
+  bio_text,
+  stated_need_for_space_text,
+  stated_special_needs_text,
+  current_user_role,
+  bubble_created_at
 `;
 
 /**
@@ -193,8 +217,8 @@ export async function getDefaultGuests() {
     const { data, error } = await supabase
       .from('user')
       .select(USER_SELECT_FIELDS)
-      .ilike('"Type - User Current"', '%Guest%')
-      .order('"Created Date"', { ascending: false })
+      .ilike('current_user_role', '%Guest%')
+      .order('bubble_created_at', { ascending: false })
       .limit(20);
 
     if (error) throw error;
@@ -214,9 +238,9 @@ export async function searchGuests(searchTerm) {
     const { data, error } = await supabase
       .from('user')
       .select(USER_SELECT_FIELDS)
-      .ilike('"Type - User Current"', '%Guest%')
-      .or(`"Name - Full".ilike.%${searchTerm}%,"Name - First".ilike.%${searchTerm}%,"Name - Last".ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,"Phone Number (as text)".ilike.%${searchTerm}%,_id.ilike.%${searchTerm}%`)
-      .order('"Created Date"', { ascending: false })
+      .ilike('current_user_role', '%Guest%')
+      .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone_number.ilike.%${searchTerm}%,id.ilike.%${searchTerm}%`)
+      .order('bubble_created_at', { ascending: false })
       .limit(20);
 
     if (error) throw error;
@@ -234,19 +258,19 @@ export async function searchGuests(searchTerm) {
 export async function getUserProposalsForListing(userId, listingId) {
   try {
     const { data, error } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select(`
-        _id,
-        Status,
-        "Days Selected",
-        "Reservation Span (Weeks)",
-        "Move in range start",
-        "Created Date"
+        id,
+        proposal_workflow_status,
+        guest_selected_days_numbers_json,
+        reservation_span_in_weeks,
+        move_in_range_start_date,
+        bubble_created_at
       `)
-      .eq('Guest', userId)
-      .eq('Listing', listingId)
-      .neq('Deleted', true)
-      .order('"Created Date"', { ascending: false });
+      .eq('guest_user_id', userId)
+      .eq('listing_id', listingId)
+      .neq('is_deleted', true)
+      .order('bubble_created_at', { ascending: false });
 
     if (error) throw error;
     return { data: data || [], error: null };
@@ -298,10 +322,10 @@ export async function getUserMostRecentProposal(userId) {
 
     // Map to the format expected by the hook
     const mappedData = {
-      _id: prefillData._id,
-      'Days Selected': prefillData.daysSelected,
-      'Reservation Span (Weeks)': prefillData.reservationSpanWeeks,
-      'Move in range start': prefillData.moveInRangeStart,
+      id: prefillData._id,
+      guest_selected_days_numbers_json: prefillData.daysSelected,
+      reservation_span_in_weeks: prefillData.reservationSpanWeeks,
+      move_in_range_start_date: prefillData.moveInRangeStart,
     };
 
     console.log('[PREFILL DEBUG] Mapped prefill data:', mappedData);
@@ -446,13 +470,13 @@ function extractPhotoUrl(photo) {
  * Get the first photo URL from a listing
  */
 export function getFirstPhoto(listing, photos = []) {
-  // First try photos from listing_photo table
+  // First try photos array passed in
   if (photos.length > 0) {
     return photos[0]?.Photo || photos[0]?.['Photo (thumbnail)'] || '';
   }
 
-  // Fallback to Features - Photos from listing
-  const featurePhotos = listing?.['Features - Photos'];
+  // Read from listing's embedded photos JSONB column
+  const featurePhotos = listing?.photos_with_urls_captions_and_sort_order_json;
   if (Array.isArray(featurePhotos) && featurePhotos.length > 0) {
     return extractPhotoUrl(featurePhotos[0]);
   }
@@ -476,7 +500,7 @@ export function getLastPhoto(listing, photos = []) {
     return photos[photos.length - 1]?.Photo || photos[photos.length - 1]?.['Photo (thumbnail)'] || '';
   }
 
-  const featurePhotos = listing?.['Features - Photos'];
+  const featurePhotos = listing?.photos_with_urls_captions_and_sort_order_json;
   if (Array.isArray(featurePhotos) && featurePhotos.length > 0) {
     return extractPhotoUrl(featurePhotos[featurePhotos.length - 1]);
   }
@@ -508,8 +532,8 @@ export function getBoroughName(boroughId) {
 export function getAddressString(listing) {
   if (!listing) return '';
 
-  const boroughName = getBoroughName(listing['Location - Borough']);
-  const locationAddress = listing['Location - Address'];
+  const boroughName = getBoroughName(listing.borough);
+  const locationAddress = listing.address_with_lat_lng_json;
 
   // Primary: Borough + full address from JSON
   if (typeof locationAddress === 'object' && locationAddress !== null && locationAddress.address) {
@@ -521,8 +545,8 @@ export function getAddressString(listing) {
   // Fallback: Borough + State + Zip
   return [
     boroughName,
-    listing['Location - State'],
-    listing['Location - Zip Code']
+    listing.state,
+    listing.zip_code
   ].filter(Boolean).join(', ');
 }
 

@@ -1436,7 +1436,7 @@ export default function SignUpLoginModal({
       // Step 1: Check if user exists (using Supabase directly)
       const { data: userData, error: userError } = await supabase
         .from('user')
-        .select('_id, "Name - First", email, "Phone Number (as text)"')
+        .select('id, first_name, email, phone_number')
         .eq('email', email.toLowerCase().trim())
         .maybeSingle();
 
@@ -1500,7 +1500,7 @@ export default function SignUpLoginModal({
       }
 
       const magicLink = magicLinkData.data.action_link;
-      const firstName = userData['Name - First'] || 'there';
+      const firstName = userData.first_name || 'there';
 
       // Step 4: Send magic link email using send-email edge function
       console.log('[handleMagicLink] Sending magic link email');
@@ -1545,7 +1545,7 @@ export default function SignUpLoginModal({
       }
 
       // Step 5: Send SMS if user has a phone number
-      const rawPhone = userData['Phone Number (as text)'];
+      const rawPhone = userData.phone_number;
       if (rawPhone && rawPhone.trim()) {
         console.log('[handleMagicLink] User has phone number, sending SMS');
 

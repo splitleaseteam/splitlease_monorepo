@@ -14,14 +14,14 @@ import { useToast } from '../shared/Toast';
  *
  * Database fields used (from public.user table):
  * - `user verified?` - boolean verification status
- * - `Profile Photo` - profile photo URL
+ * - `profile_photo_url` - profile photo URL
  * - `Selfie with ID` - selfie with ID URL
  * - `ID front` - front of ID URL
  * - `ID Back` - back of ID URL
  * - `profile completeness` - percentage (0-100)
  * - `Tasks Completed` - JSON array of completed tasks
- * - `Phone Number (as text)` - user phone number
- * - `Name - Full` - user full name
+ * - `phone_number` - user phone number
+ * - `first_name` / `last_name` - user name fields
  * - `email` - user email
  */
 

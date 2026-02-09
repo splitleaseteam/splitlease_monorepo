@@ -85,20 +85,22 @@ export async function validateTokenWorkflow({
   let userType = cachedUserType
 
   if (!userType || userType === '') {
-    userType = userData['Type - User Current'] || null
+    userType = userData.current_user_role || null
   }
 
   // Handle protocol-relative URLs for profile photos
-  let profilePhoto = userData['Profile Photo']
+  let profilePhoto = userData.profile_photo_url
   if (profilePhoto && profilePhoto.startsWith('//')) {
     profilePhoto = 'https:' + profilePhoto
   }
 
   // Return user data object
   return {
-    userId: userData._id,
-    firstName: userData['Name - First'] || null,
-    fullName: userData['Name - Full'] || null,
+    userId: userData.id,
+    firstName: userData.first_name || null,
+    fullName: userData.first_name && userData.last_name
+      ? `${userData.first_name} ${userData.last_name}`
+      : null,
     profilePhoto: profilePhoto || null,
     userType: userType
   }

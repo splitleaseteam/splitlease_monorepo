@@ -44,8 +44,8 @@ export async function acceptProposalWorkflow({
 
   // Step 1: Check if acceptance is allowed
   const canAccept = canAcceptProposal({
-    proposalStatus: proposal.status,
-    deleted: proposal.deleted
+    proposalStatus: proposal.proposal_workflow_status || proposal.status,
+    deleted: proposal.is_deleted
   })
 
   if (!canAccept) {
@@ -59,12 +59,12 @@ export async function acceptProposalWorkflow({
   // Step 2: Update proposal status to "Accepted"
   try {
     const { error } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .update({
-        'Status': PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
-        'Modified Date': new Date().toISOString()
+        'proposal_workflow_status': PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
+        'bubble_updated_at': new Date().toISOString()
       })
-      .eq('_id', proposal.id)
+      .eq('id', proposal.id)
 
     if (error) {
       throw error

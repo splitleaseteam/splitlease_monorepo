@@ -309,7 +309,7 @@ function filterProposalsWithActiveVM(proposals) {
     }
 
     // Status must not be in excluded list
-    const status = proposal.Status?.trim();
+    const status = (proposal.proposal_workflow_status || proposal.Status)?.trim();
     if (excludedStatuses.includes(status)) {
       return false;
     }
@@ -373,7 +373,7 @@ function VirtualMeetingCard({ proposal, currentUserId, onOpenVMModal, isExpanded
   const vmStateInfo = getVMStateInfo(normalizedVM, currentUserId);
 
   // Get host name for display (just first name for compact view)
-  const hostName = host?.['Name - First'] || host?.['Name - Full']?.split(' ')[0] || 'Host';
+  const hostName = host?.first_name || 'Host';
 
   // Get suggested dates/times
   const suggestedDates = parseSuggestedDates(vm?.['suggested dates and times']);

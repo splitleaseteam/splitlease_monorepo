@@ -102,7 +102,7 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
   }, []);
 
   // Parse Days Selected from JSON string
-  let parsedDaysSelected = proposal?.['Days Selected'] || [];
+  let parsedDaysSelected = proposal?.guest_selected_days_numbers_json || proposal?.['Days Selected'] || [];
   if (typeof parsedDaysSelected === 'string') {
     try {
       parsedDaysSelected = JSON.parse(parsedDaysSelected);
@@ -116,18 +116,18 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
   }
 
   const [formData, setFormData] = useState({
-    moveInStart: proposal?.['Move in range start'] ? new Date(proposal['Move in range start']) : new Date(),
-    moveInEnd: proposal?.['Move in range end'] ? new Date(proposal['Move in range end']) : new Date(),
-    reservationWeeks: proposal?.['Reservation Span (Weeks)'] || 4,
+    moveInStart: proposal?.move_in_range_start_date || proposal?.['Move in range start'] ? new Date(proposal?.move_in_range_start_date || proposal['Move in range start']) : new Date(),
+    moveInEnd: proposal?.move_in_range_end_date || proposal?.['Move in range end'] ? new Date(proposal?.move_in_range_end_date || proposal['Move in range end']) : new Date(),
+    reservationWeeks: proposal?.reservation_span_in_weeks || proposal?.['Reservation Span (Weeks)'] || 4,
     daysSelected: parsedDaysSelected,
-    nightsPerWeek: proposal?.['nights per week (num)'] || 1,
-    checkInDay: proposal?.['check in day'] || 'Sunday',
-    checkOutDay: proposal?.['check out day'] || 'Sunday',
+    nightsPerWeek: proposal?.nights_per_week_count || proposal?.['nights per week (num)'] || 1,
+    checkInDay: proposal?.checkin_day_of_week_number || proposal?.['check in day'] || 'Sunday',
+    checkOutDay: proposal?.checkout_day_of_week_number || proposal?.['check out day'] || 'Sunday',
   });
   const [errors, setErrors] = useState({});
 
   // Check if editing is allowed
-  const isEditable = ['Awaiting Host Review', 'Under Review', 'Proposal Submitted'].includes(proposal?.Status);
+  const isEditable = ['Awaiting Host Review', 'Under Review', 'Proposal Submitted'].includes(proposal?.proposal_workflow_status || proposal?.Status);
 
   // Calculate reservation weeks from date range
   useEffect(() => {
@@ -209,22 +209,22 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
     try {
       // Update proposal in database
       const { error } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .update({
-          'Move in range start': formData.moveInStart.toISOString(),
-          'Move in range end': formData.moveInEnd.toISOString(),
-          'Reservation Span (Weeks)': formData.reservationWeeks,
-          'Days Selected': formData.daysSelected,
-          'nights per week (num)': formData.nightsPerWeek,
-          'check in day': formData.checkInDay,
-          'check out day': formData.checkOutDay,
-          'Total Price for Reservation (guest)': calculatedPrice?.total || 0,
-          'proposal nightly price': calculatedPrice?.nightlyRate || 0,
-          'cleaning fee': calculatedPrice?.cleaningFee || 0,
-          'damage deposit': calculatedPrice?.damageDeposit || 0,
+          move_in_range_start_date: formData.moveInStart.toISOString(),
+          move_in_range_end_date: formData.moveInEnd.toISOString(),
+          reservation_span_in_weeks: formData.reservationWeeks,
+          guest_selected_days_numbers_json: formData.daysSelected,
+          nights_per_week_count: formData.nightsPerWeek,
+          checkin_day_of_week_number: formData.checkInDay,
+          checkout_day_of_week_number: formData.checkOutDay,
+          total_reservation_price_for_guest: calculatedPrice?.total || 0,
+          calculated_nightly_price: calculatedPrice?.nightlyRate || 0,
+          cleaning_fee_amount: calculatedPrice?.cleaningFee || 0,
+          damage_deposit_amount: calculatedPrice?.damageDeposit || 0,
           'Modified Date': new Date().toISOString(),
         })
-        .eq('_id', proposal._id);
+        .eq('id', proposal.id || proposal._id);
 
       if (error) throw error;
 

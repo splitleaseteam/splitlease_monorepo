@@ -18,8 +18,8 @@ export default function GuestSearch({
   onClear,
   onClearSearch
 }) {
-  const guestName = selectedGuest?.['Name - Full'] || selectedGuest?.['Name - First'] || 'Unknown';
-  const guestFirstName = selectedGuest?.['Name - First'] || guestName;
+  const guestName = (selectedGuest?.first_name && selectedGuest?.last_name ? `${selectedGuest.first_name} ${selectedGuest.last_name}` : null) || selectedGuest?.first_name || 'Unknown';
+  const guestFirstName = selectedGuest?.first_name || guestName;
 
   return (
     <section className="csp-step-section">
@@ -70,15 +70,15 @@ export default function GuestSearch({
                   onClick={() => onSelect(guest)}
                 >
                   <img
-                    src={guest['Profile Photo'] || getDefaultPhoto()}
-                    alt={guest['Name - Full'] || 'Guest'}
+                    src={guest.profile_photo_url || getDefaultPhoto()}
+                    alt={(guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || 'Guest'}
                     className="csp-thumbnail csp-user-thumbnail"
                     onError={(e) => { e.target.src = getDefaultPhoto(); }}
                   />
                   <div className="csp-search-result-info">
-                    <h4>{guest['Name - Full'] || guest['Name - First'] || 'Unknown'}</h4>
+                    <h4>{(guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.first_name || 'Unknown'}</h4>
                     <p>{guest.email || ''}</p>
-                    <p>{guest['Phone Number (as text)'] || ''}</p>
+                    <p>{guest.phone_number || ''}</p>
                     <p className="csp-listing-details-row">unique id: {guest._id}</p>
                   </div>
                 </div>
@@ -105,7 +105,7 @@ export default function GuestSearch({
 
           <div className="csp-user-avatar">
             <img
-              src={selectedGuest['Profile Photo'] || getDefaultPhoto()}
+              src={selectedGuest.profile_photo_url || getDefaultPhoto()}
               alt={guestName}
               onError={(e) => { e.target.src = getDefaultPhoto(); }}
             />
@@ -113,9 +113,9 @@ export default function GuestSearch({
           <div className="csp-item-details">
             <h3>{guestName}</h3>
             <p className="csp-item-subtitle">{selectedGuest.email || ''}</p>
-            <p className="csp-item-meta">{selectedGuest['Phone Number (as text)'] || ''}</p>
-            {selectedGuest['Type - User Current'] && (
-              <span className="csp-badge">{selectedGuest['Type - User Current']}</span>
+            <p className="csp-item-meta">{selectedGuest.phone_number || ''}</p>
+            {selectedGuest.current_user_role && (
+              <span className="csp-badge">{selectedGuest.current_user_role}</span>
             )}
           </div>
 

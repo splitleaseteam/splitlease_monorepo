@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Section 5: Pricing List Grid
  *
  * Displays a 7-row table showing all pricing arrays from the pricing_list database.
@@ -114,7 +114,7 @@ export default function Section5PricingListGrid({
           </div>
           <div className="summary-item">
             <span className="summary-label">Rental Type:</span>
-            <span className="summary-value">{listing?.['rental type'] || pricingList.rentalType || '-'}</span>
+            <span className="summary-value">{listing?.rental_type || pricingList.rentalType || '-'}</span>
           </div>
         </div>
       )}

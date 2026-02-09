@@ -171,7 +171,7 @@ export default function PreviewSplitLeasePage() {
             <div className={styles.editableSection}>
                 <PhotoGallery
                     photos={listing.photos}
-                    listingName={listing.Name}
+                    listingName={listing.listing_title}
                     onPhotoClick={handlePhotoClick}
                     currentIndex={currentPhotoIndex}
                     isModalOpen={showPhotoModal}
@@ -208,7 +208,7 @@ export default function PreviewSplitLeasePage() {
 
                     <div className={styles.editableSection}>
                         <DescriptionSection
-                            description={listing.Description}
+                            description={listing.listing_description}
                             isExpanded={expandedSections.description}
                             onToggle={() => toggleSection('description')}
                         />
@@ -232,7 +232,7 @@ export default function PreviewSplitLeasePage() {
                     <div id="map-section" className={styles.editableSection}>
                         <MapSection
                             coordinates={listing.coordinates}
-                            listingName={listing.Name}
+                            listingName={listing.listing_title}
                             neighborhood={listing.neighborhoodName}
                             shouldLoad={shouldLoadMap}
                             onLoadMap={handleLoadMap}

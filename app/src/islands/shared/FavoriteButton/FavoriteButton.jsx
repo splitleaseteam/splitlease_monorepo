@@ -5,7 +5,7 @@
  * Manages its own state for immediate visual feedback while staying
  * in sync with the parent's state via the initialFavorited prop.
  *
- * Uses direct Supabase updates to the user table's "Favorited Listings" JSONB field.
+ * Uses direct Supabase updates to the listing table's user_ids_who_favorited_json JSONB field.
  *
  * Usage:
  *   <FavoriteButton
@@ -71,42 +71,42 @@ const FavoriteButton = ({
     // Reset animation
     setTimeout(() => setIsAnimating(false), 300);
 
-    // Sync with Supabase user table directly
+    // Sync with Supabase listing table directly
     setIsLoading(true);
     try {
-      // Fetch current favorites from user table
-      const { data: userData, error: fetchError } = await supabase
-        .from('user')
-        .select('"Favorited Listings"')
-        .eq('_id', userId)
+      // Fetch current favorited user IDs from listing table
+      const { data: listingData, error: fetchError } = await supabase
+        .from('listing')
+        .select('user_ids_who_favorited_json')
+        .eq('id', listingId)
         .single();
 
       if (fetchError) {
         throw fetchError;
       }
 
-      // Get current favorites array (or empty array if null)
-      const currentFavorites = userData?.['Favorited Listings'] || [];
+      // Get current favorited users array (or empty array if null)
+      const currentFavoritedBy = listingData?.user_ids_who_favorited_json || [];
 
-      // Add or remove the listing ID
-      let newFavorites;
+      // Add or remove the user ID
+      let newFavoritedBy;
       if (newFavoritedState) {
-        // Add to favorites (avoid duplicates)
-        if (!currentFavorites.includes(listingId)) {
-          newFavorites = [...currentFavorites, listingId];
+        // Add user to favorites (avoid duplicates)
+        if (!currentFavoritedBy.includes(userId)) {
+          newFavoritedBy = [...currentFavoritedBy, userId];
         } else {
-          newFavorites = currentFavorites;
+          newFavoritedBy = currentFavoritedBy;
         }
       } else {
-        // Remove from favorites
-        newFavorites = currentFavorites.filter(id => id !== listingId);
+        // Remove user from favorites
+        newFavoritedBy = currentFavoritedBy.filter(id => id !== userId);
       }
 
-      // Update user table with new favorites array
+      // Update listing table with new favorited users array
       const { error: updateError } = await supabase
-        .from('user')
-        .update({ 'Favorited Listings': newFavorites })
-        .eq('_id', userId);
+        .from('listing')
+        .update({ user_ids_who_favorited_json: newFavoritedBy })
+        .eq('id', listingId);
 
       if (updateError) {
         throw updateError;

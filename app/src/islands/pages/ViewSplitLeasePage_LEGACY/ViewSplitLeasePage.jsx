@@ -1,4 +1,4 @@
-/**
+﻿/**
  * View Split Lease Page - Complete Rebuild
  * Matches original Bubble.io design with 100% fidelity
  * Architecture: ESM + React Islands pattern
@@ -56,7 +56,7 @@ function getInitialScheduleFromUrl() {
   const daysParam = urlParams.get('days-selected');
 
   if (!daysParam) {
-    logger.debug('📅 ViewSplitLeasePage: No days-selected URL param, using empty initial selection');
+    logger.debug('ðŸ“… ViewSplitLeasePage: No days-selected URL param, using empty initial selection');
     return [];
   }
 
@@ -68,7 +68,7 @@ function getInitialScheduleFromUrl() {
     if (validDays.length > 0) {
       // Convert to Day objects using createDay
       const dayObjects = validDays.map(dayIndex => createDay(dayIndex, true));
-      logger.debug('📅 ViewSplitLeasePage: Loaded schedule from URL:', {
+      logger.debug('ðŸ“… ViewSplitLeasePage: Loaded schedule from URL:', {
         urlParam: daysParam,
         dayIndices: validDays,
         dayObjects: dayObjects.map(d => d.name)
@@ -76,7 +76,7 @@ function getInitialScheduleFromUrl() {
       return dayObjects;
     }
   } catch (e) {
-    logger.warn('⚠️ ViewSplitLeasePage: Failed to parse days-selected URL parameter:', e);
+    logger.warn('âš ï¸ ViewSplitLeasePage: Failed to parse days-selected URL parameter:', e);
   }
 
   return [];
@@ -95,7 +95,7 @@ function getInitialReservationSpanFromUrl() {
 
   const parsed = parseInt(spanParam, 10);
   if (!isNaN(parsed) && parsed > 0) {
-    logger.debug('📅 ViewSplitLeasePage: Loaded reservation span from URL:', parsed);
+    logger.debug('ðŸ“… ViewSplitLeasePage: Loaded reservation span from URL:', parsed);
     return parsed;
   }
 
@@ -115,7 +115,7 @@ function getInitialMoveInFromUrl() {
 
   // Basic validation: YYYY-MM-DD format
   if (/^\d{4}-\d{2}-\d{2}$/.test(moveInParam)) {
-    logger.debug('📅 ViewSplitLeasePage: Loaded move-in date from URL:', moveInParam);
+    logger.debug('ðŸ“… ViewSplitLeasePage: Loaded move-in date from URL:', moveInParam);
     return moveInParam;
   }
 
@@ -131,13 +131,13 @@ async function fetchInformationalTexts() {
   const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    logger.error('❌ Missing Supabase environment variables');
+    logger.error('âŒ Missing Supabase environment variables');
     return {};
   }
 
   try {
-    logger.debug('🔍 Fetching informational texts from Supabase...');
-    logger.debug('🌐 Using Supabase URL:', SUPABASE_URL);
+    logger.debug('ðŸ” Fetching informational texts from Supabase...');
+    logger.debug('ðŸŒ Using Supabase URL:', SUPABASE_URL);
 
     // Use select=* to get all columns (safer with special characters in column names)
     const response = await fetch(
@@ -151,24 +151,24 @@ async function fetchInformationalTexts() {
       }
     );
 
-    logger.debug('📡 Response status:', response.status, response.statusText);
+    logger.debug('ðŸ“¡ Response status:', response.status, response.statusText);
 
     if (!response.ok) {
       const errorText = await response.text();
-      logger.error('❌ Failed to fetch informational texts:', response.statusText, errorText);
+      logger.error('âŒ Failed to fetch informational texts:', response.statusText, errorText);
       return {};
     }
 
     const data = await response.json();
-    logger.debug('📦 Raw data received:', data?.length, 'items');
-    logger.debug('📦 First item structure:', data?.[0] ? Object.keys(data[0]) : 'No items');
+    logger.debug('ðŸ“¦ Raw data received:', data?.length, 'items');
+    logger.debug('ðŸ“¦ First item structure:', data?.[0] ? Object.keys(data[0]) : 'No items');
 
     // Create a lookup object by tag-title
     const textsByTag = {};
     data.forEach((item, index) => {
       const tag = item['Information Tag-Title'];
       if (!tag) {
-        logger.warn(`⚠️ Item ${index} has no Information Tag-Title:`, item);
+        logger.warn(`âš ï¸ Item ${index} has no Information Tag-Title:`, item);
         return;
       }
 
@@ -185,7 +185,7 @@ async function fetchInformationalTexts() {
       if (tag === 'aligned schedule with move-in' ||
           tag === 'move-in flexibility' ||
           tag === 'Reservation Span') {
-        logger.debug(`✅ Found "${tag}":`, {
+        logger.debug(`âœ… Found "${tag}":`, {
           desktop: item['Desktop copy']?.substring(0, 50) + '...',
           mobile: item['Mobile copy']?.substring(0, 50) + '...',
           showMore: item['show more available?']
@@ -193,8 +193,8 @@ async function fetchInformationalTexts() {
       }
     });
 
-    logger.debug('📚 Fetched informational texts:', Object.keys(textsByTag).length, 'total');
-    logger.debug('🎯 Required tags present:', {
+    logger.debug('ðŸ“š Fetched informational texts:', Object.keys(textsByTag).length, 'total');
+    logger.debug('ðŸŽ¯ Required tags present:', {
       'aligned schedule with move-in': !!textsByTag['aligned schedule with move-in'],
       'move-in flexibility': !!textsByTag['move-in flexibility'],
       'Reservation Span': !!textsByTag['Reservation Span']
@@ -202,7 +202,7 @@ async function fetchInformationalTexts() {
 
     return textsByTag;
   } catch (error) {
-    logger.error('❌ Error fetching informational texts:', error);
+    logger.error('âŒ Error fetching informational texts:', error);
     return {};
   }
 }
@@ -330,7 +330,7 @@ function LoadingState() {
 function ErrorState({ message }) {
   return (
     <div className={styles.errorStateContainer}>
-      <div className={styles.errorIcon}>⚠️</div>
+      <div className={styles.errorIcon}>âš ï¸</div>
       <h2 className={styles.errorTitle}>
         Property Not Found
       </h2>
@@ -623,14 +623,14 @@ export default function ViewSplitLeasePage() {
           const dayNumbers = selectedDayObjects.map(day => day.dayOfWeek);
           const smartDate = calculateSmartMoveInDate(dayNumbers);
           setMoveInDate(smartDate);
-          logger.debug('📅 ViewSplitLeasePage: URL move-in date was before minimum, using smart date:', smartDate);
+          logger.debug('ðŸ“… ViewSplitLeasePage: URL move-in date was before minimum, using smart date:', smartDate);
         }
       } else {
         // No URL date provided, calculate smart default
         const dayNumbers = selectedDayObjects.map(day => day.dayOfWeek);
         const smartDate = calculateSmartMoveInDate(dayNumbers);
         setMoveInDate(smartDate);
-        logger.debug('📅 ViewSplitLeasePage: Set initial move-in date from URL selection:', smartDate);
+        logger.debug('ðŸ“… ViewSplitLeasePage: Set initial move-in date from URL selection:', smartDate);
       }
     }
   }, []); // Run only once on mount - empty deps to prevent recalculation on state changes
@@ -654,8 +654,8 @@ export default function ViewSplitLeasePage() {
 
   // Debug: Log when activeInfoTooltip changes
   useEffect(() => {
-    logger.debug('🎯 activeInfoTooltip changed to:', activeInfoTooltip);
-    logger.debug('🔗 Refs status:', {
+    logger.debug('ðŸŽ¯ activeInfoTooltip changed to:', activeInfoTooltip);
+    logger.debug('ðŸ”— Refs status:', {
       moveInInfoRef: !!moveInInfoRef.current,
       reservationSpanInfoRef: !!reservationSpanInfoRef.current,
       flexibilityInfoRef: !!flexibilityInfoRef.current
@@ -665,8 +665,8 @@ export default function ViewSplitLeasePage() {
   // Debug: Log when informationalTexts are loaded
   useEffect(() => {
     if (Object.keys(informationalTexts).length > 0) {
-      logger.debug('📚 informationalTexts loaded with', Object.keys(informationalTexts).length, 'entries');
-      logger.debug('🎯 Specific tags:', {
+      logger.debug('ðŸ“š informationalTexts loaded with', Object.keys(informationalTexts).length, 'entries');
+      logger.debug('ðŸŽ¯ Specific tags:', {
         'aligned schedule with move-in': informationalTexts['aligned schedule with move-in'],
         'move-in flexibility': informationalTexts['move-in flexibility'],
         'Reservation Span': informationalTexts['Reservation Span']
@@ -704,7 +704,7 @@ export default function ViewSplitLeasePage() {
           const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
           if (userData) {
             setLoggedInUserData(userData);
-            logger.debug('👤 ViewSplitLeasePage: User data loaded:', userData.firstName);
+            logger.debug('ðŸ‘¤ ViewSplitLeasePage: User data loaded:', userData.firstName);
           }
         }
 
@@ -724,14 +724,14 @@ export default function ViewSplitLeasePage() {
 
         // Fetch complete listing data
         const listingData = await fetchListingComplete(listingId);
-        logger.debug('📋 ViewSplitLeasePage: Listing data fetched:', {
+        logger.debug('ðŸ“‹ ViewSplitLeasePage: Listing data fetched:', {
           id: listingData._id,
-          name: listingData.Name,
+          name: listingData.listing_title,
           amenitiesInUnit: listingData.amenitiesInUnit,
           safetyFeatures: listingData.safetyFeatures,
           houseRules: listingData.houseRules,
           coordinates: listingData.coordinates,
-          slightlyDifferentAddress: listingData['Location - slightly different address'],
+          slightlyDifferentAddress: listingData.map_pin_offset_address_json,
           hasAmenitiesInUnit: listingData.amenitiesInUnit?.length > 0,
           hasSafetyFeatures: listingData.safetyFeatures?.length > 0,
           hasHouseRules: listingData.houseRules?.length > 0,
@@ -798,13 +798,13 @@ export default function ViewSplitLeasePage() {
     // Automatically center and zoom the map when it loads for the first time
     // This replicates the behavior of clicking "Located in" link, but without scrolling
     if (shouldLoadMap && mapRef.current && listing && !hasAutoZoomedRef.current) {
-      logger.debug('🗺️ ViewSplitLeasePage: Auto-zooming map on initial load');
+      logger.debug('ðŸ—ºï¸ ViewSplitLeasePage: Auto-zooming map on initial load');
 
       // Wait for map to fully initialize before calling zoomToListing
       // Same 600ms timeout as handleLocationClick
       setTimeout(() => {
         if (mapRef.current && listing) {
-          logger.debug('🗺️ ViewSplitLeasePage: Calling zoomToListing for initial auto-zoom');
+          logger.debug('ðŸ—ºï¸ ViewSplitLeasePage: Calling zoomToListing for initial auto-zoom');
           mapRef.current.zoomToListing(listing._id);
           hasAutoZoomedRef.current = true;
         }
@@ -818,8 +818,8 @@ export default function ViewSplitLeasePage() {
 
   useEffect(() => {
     // Update the browser tab title with the listing name
-    if (listing?.Name) {
-      document.title = `${listing.Name} | Split Lease`;
+    if (listing?.listing_title) {
+      document.title = `${listing.listing_title} | Split Lease`;
     }
   }, [listing]);
 
@@ -836,16 +836,16 @@ export default function ViewSplitLeasePage() {
       }
 
       try {
-        logger.debug('🔍 ViewSplitLeasePage: Checking for existing proposals for listing:', listing._id);
+        logger.debug('ðŸ” ViewSplitLeasePage: Checking for existing proposals for listing:', listing._id);
 
         const { data: existingProposals, error } = await supabase
-          .from('proposal')
-          .select('_id, "Status", "Created Date"')
-          .eq('"Guest"', loggedInUserData.userId)
-          .eq('"Listing"', listing._id)
-          .neq('"Status"', 'Proposal Cancelled by Guest')
+          .from('booking_proposal')
+          .select('id, proposal_workflow_status, bubble_created_at')
+          .eq('guest_user_id', loggedInUserData.userId)
+          .eq('listing_id', listing.id || listing._id)
+          .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
           .or('"Deleted".is.null,"Deleted".eq.false')
-          .order('"Created Date"', { ascending: false })
+          .order('bubble_created_at', { ascending: false })
           .limit(1);
 
         if (error) {
@@ -855,10 +855,10 @@ export default function ViewSplitLeasePage() {
         }
 
         if (existingProposals && existingProposals.length > 0) {
-          logger.debug('📋 ViewSplitLeasePage: User already has a proposal for this listing:', existingProposals[0]);
+          logger.debug('ðŸ“‹ ViewSplitLeasePage: User already has a proposal for this listing:', existingProposals[0]);
           setExistingProposalForListing(existingProposals[0]);
         } else {
-          logger.debug('✅ ViewSplitLeasePage: No existing proposal found for this listing');
+          logger.debug('âœ… ViewSplitLeasePage: No existing proposal found for this listing');
           setExistingProposalForListing(null);
         }
       } catch (err) {
@@ -878,17 +878,17 @@ export default function ViewSplitLeasePage() {
         return;
       }
       try {
-        const { data: userData, error } = await supabase
-          .from('user')
-          .select('"Favorited Listings"')
-          .eq('_id', loggedInUserData.userId)
+        const { data: listingData, error } = await supabase
+          .from('listing')
+          .select('user_ids_who_favorited_json')
+          .eq('id', listing.id || listing._id)
           .single();
         if (error) {
           setIsFavorited(false);
           return;
         }
-        const favorites = userData?.['Favorited Listings'] || [];
-        setIsFavorited(favorites.includes(listing._id));
+        const favoritedUserIds = listingData?.user_ids_who_favorited_json || [];
+        setIsFavorited(favoritedUserIds.includes(loggedInUserData.userId));
       } catch {
         setIsFavorited(false);
       }
@@ -917,37 +917,37 @@ export default function ViewSplitLeasePage() {
   // Memoize to prevent unnecessary re-renders and map resets
   const scheduleSelectorListing = useMemo(() => listing ? {
     id: listing._id,
-    firstAvailable: new Date(listing[' First Available']),
+    firstAvailable: new Date(listing.first_available_date),
     lastAvailable: new Date(listing['Last Available']),
     numberOfNightsAvailable: listing['# of nights available'] || 7,
-    active: listing.Active,
+    active: listing.is_active,
     approved: listing.Approved,
-    datesBlocked: listing['Dates - Blocked'] || [],
-    complete: listing.Complete,
+    datesBlocked: listing.blocked_specific_dates_json || [],
+    complete: listing.is_listing_profile_complete,
     confirmedAvailability: listing.confirmedAvailability,
-    checkInTime: listing['NEW Date Check-in Time'] || '3:00 pm',
-    checkOutTime: listing['NEW Date Check-out Time'] || '11:00 am',
+    checkInTime: listing.checkin_time_of_day || '3:00 pm',
+    checkOutTime: listing.checkout_time_of_day || '11:00 am',
     nightsAvailableList: [],
     nightsAvailableNumbers: listing['Nights Available (numbers)'] || [0, 1, 2, 3, 4, 5, 6],
     nightsNotAvailable: [],
-    minimumNights: listing['Minimum Nights'] || 2,
-    maximumNights: listing['Maximum Nights'] || 7,
-    daysAvailable: convertDayNamesToNumbers(listing['Days Available (List of Days)']),
+    minimumNights: listing.minimum_nights_per_stay || 2,
+    maximumNights: listing.maximum_nights_per_stay || 7,
+    daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
     daysNotAvailable: [],
     // Pricing fields for calculation
-    'rental type': listing['rental type'] || 'Nightly',
-    'Weeks offered': listing['Weeks offered'] || 'Every week',
-    'unit_markup': listing['unit_markup'] || 0,
-    'nightly_rate_2_nights': listing['nightly_rate_2_nights'],
-    'nightly_rate_3_nights': listing['nightly_rate_3_nights'],
-    'nightly_rate_4_nights': listing['nightly_rate_4_nights'],
-    'nightly_rate_5_nights': listing['nightly_rate_5_nights'],
-    'nightly_rate_7_nights': listing['nightly_rate_7_nights'],
-    'weekly_host_rate': listing['weekly_host_rate'],
-    'monthly_host_rate': listing['monthly_host_rate'],
+    'rental type': listing.rental_type || 'Nightly',
+    'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
+    'unit_markup': listing.unit_markup_percentage || 0,
+    'nightly_rate_2_nights': listing.nightly_rate_for_2_night_stay,
+    'nightly_rate_3_nights': listing.nightly_rate_for_3_night_stay,
+    'nightly_rate_4_nights': listing.nightly_rate_for_4_night_stay,
+    'nightly_rate_5_nights': listing.nightly_rate_for_5_night_stay,
+    'nightly_rate_7_nights': listing.nightly_rate_for_7_night_stay,
+    'weekly_host_rate': listing.weekly_rate_paid_to_host,
+    'monthly_host_rate': listing.monthly_rate_paid_to_host,
     'price_override': listing['price_override'],
-    'cleaning_fee': listing['cleaning_fee'],
-    'damage_deposit': listing['damage_deposit']
+    'cleaning_fee': listing.cleaning_fee_amount,
+    'damage_deposit': listing.damage_deposit_amount
   } : null, [listing]);
 
   // Initialize with Monday-Friday (1-5) as default
@@ -975,15 +975,15 @@ export default function ViewSplitLeasePage() {
     if (!listing || !listing.coordinates) return [];
     return [{
       id: listing._id,
-      title: listing.Name,
+      title: listing.listing_title,
       coordinates: listing.coordinates,
       price: {
         starting: listing['Standarized Minimum Nightly Price (Filter)'] || 0
       },
       location: listing.resolvedBorough,
       type: listing.resolvedTypeOfSpace,
-      bedrooms: listing['Features - Qty Bedrooms'] || 0,
-      bathrooms: listing['Features - Qty Bathrooms'] || 0,
+      bedrooms: listing.bedroom_count || 0,
+      bathrooms: listing.bathroom_count || 0,
       images: listing.photos?.map(p => p.Photo) || [],
       borough: listing.resolvedBorough
     }];
@@ -1063,7 +1063,7 @@ export default function ViewSplitLeasePage() {
         throw new Error('User ID not found. Please log in again.');
       }
 
-      logger.debug('📤 Submitting proposal to Edge Function...');
+      logger.debug('ðŸ“¤ Submitting proposal to Edge Function...');
       logger.debug('   Guest ID:', guestId);
       logger.debug('   Listing ID:', proposalData.listingId);
 
@@ -1097,7 +1097,7 @@ export default function ViewSplitLeasePage() {
           checkOutDayJs = sortedJsDays[gapIndex - 1];
 
           // Reorder days to be in actual sequence (check-in to check-out)
-          // e.g., [0, 6] with gap at index 1 → reorder to [6, 0] (Fri, Sat, Sun)
+          // e.g., [0, 6] with gap at index 1 â†’ reorder to [6, 0] (Fri, Sat, Sun)
           const reorderedDays = [...sortedJsDays.slice(gapIndex), ...sortedJsDays.slice(0, gapIndex)];
 
           // Nights = all days except the last one (checkout day)
@@ -1156,8 +1156,8 @@ export default function ViewSplitLeasePage() {
         customScheduleDescription: customScheduleDescription || ''
       };
 
-      logger.debug('📋 Edge Function payload:', edgeFunctionPayload);
-      logger.debug('📋 Payload field types:', {
+      logger.debug('ðŸ“‹ Edge Function payload:', edgeFunctionPayload);
+      logger.debug('ðŸ“‹ Payload field types:', {
         guestId: typeof edgeFunctionPayload.guestId,
         listingId: typeof edgeFunctionPayload.listingId,
         moveInStartRange: typeof edgeFunctionPayload.moveInStartRange,
@@ -1181,9 +1181,9 @@ export default function ViewSplitLeasePage() {
       });
 
       if (error) {
-        logger.error('❌ Edge Function error:', error);
-        logger.error('❌ Error properties:', Object.keys(error));
-        logger.error('❌ Error context:', error.context);
+        logger.error('âŒ Edge Function error:', error);
+        logger.error('âŒ Error properties:', Object.keys(error));
+        logger.error('âŒ Error context:', error.context);
 
         // Extract actual error message from response context if available
         let errorMessage = error.message || 'Failed to submit proposal';
@@ -1193,7 +1193,7 @@ export default function ViewSplitLeasePage() {
           if (error.context && typeof error.context.json === 'function') {
             // context is a Response object
             const errorBody = await error.context.json();
-            logger.error('❌ Edge Function error body (from json()):', errorBody);
+            logger.error('âŒ Edge Function error body (from json()):', errorBody);
             if (errorBody?.error) {
               errorMessage = errorBody.error;
             }
@@ -1202,24 +1202,24 @@ export default function ViewSplitLeasePage() {
             const errorBody = typeof error.context.body === 'string'
               ? JSON.parse(error.context.body)
               : error.context.body;
-            logger.error('❌ Edge Function error body (from body):', errorBody);
+            logger.error('âŒ Edge Function error body (from body):', errorBody);
             if (errorBody?.error) {
               errorMessage = errorBody.error;
             }
           }
         } catch (e) {
-          logger.error('❌ Could not parse error body:', e);
+          logger.error('âŒ Could not parse error body:', e);
         }
 
         throw new Error(errorMessage);
       }
 
       if (!data?.success) {
-        logger.error('❌ Proposal submission failed:', data?.error);
+        logger.error('âŒ Proposal submission failed:', data?.error);
         throw new Error(data?.error || 'Failed to submit proposal');
       }
 
-      logger.debug('✅ Proposal submitted successfully:', data);
+      logger.debug('âœ… Proposal submitted successfully:', data);
       logger.debug('   Proposal ID:', data.data?.proposalId);
 
       // Clear the localStorage draft on successful submission
@@ -1244,18 +1244,18 @@ export default function ViewSplitLeasePage() {
       // Create messaging thread for the proposal (non-blocking)
       // DEBUG: Added diagnostic logging to investigate missing SplitBot messages regression
       try {
-        console.log('🔍 [DEBUG] Starting messages Edge Function call...');
-        console.log('🔍 [DEBUG] Proposal ID:', newProposalId);
-        console.log('🔍 [DEBUG] Guest ID:', guestId);
+        console.log('ðŸ” [DEBUG] Starting messages Edge Function call...');
+        console.log('ðŸ” [DEBUG] Proposal ID:', newProposalId);
+        console.log('ðŸ” [DEBUG] Guest ID:', guestId);
 
-        logger.debug('💬 Creating proposal messaging thread...');
+        logger.debug('ðŸ’¬ Creating proposal messaging thread...');
         // Use the actual status returned from the Edge Function
         const actualProposalStatus = data.data?.status || 'Host Review';
         const actualHostId = data.data?.hostId || listing.host?.userId;
         // Extract AI-generated host summary from proposal response
         const aiHostSummary = data.data?.aiHostSummary || null;
 
-        console.log('🔍 [DEBUG] Thread params prepared:', {
+        console.log('ðŸ” [DEBUG] Thread params prepared:', {
           proposalId: newProposalId,
           guestId: guestId,
           hostId: actualHostId,
@@ -1273,7 +1273,7 @@ export default function ViewSplitLeasePage() {
           hasAiHostSummary: !!aiHostSummary
         });
 
-        console.log('🔍 [DEBUG] About to call supabase.functions.invoke("messages")...');
+        console.log('ðŸ” [DEBUG] About to call supabase.functions.invoke("messages")...');
 
         const threadResponse = await supabase.functions.invoke('messages', {
           body: {
@@ -1290,7 +1290,7 @@ export default function ViewSplitLeasePage() {
           }
         });
 
-        console.log('🔍 [DEBUG] messages Edge Function returned:', {
+        console.log('ðŸ” [DEBUG] messages Edge Function returned:', {
           hasError: !!threadResponse.error,
           hasData: !!threadResponse.data,
           error: threadResponse.error,
@@ -1298,23 +1298,23 @@ export default function ViewSplitLeasePage() {
         });
 
         if (threadResponse.error) {
-          console.error('🔍 [DEBUG] Thread creation FAILED:', threadResponse.error);
-          logger.warn('⚠️ Thread creation failed (non-blocking):', threadResponse.error);
+          console.error('ðŸ” [DEBUG] Thread creation FAILED:', threadResponse.error);
+          logger.warn('âš ï¸ Thread creation failed (non-blocking):', threadResponse.error);
         } else {
-          console.log('🔍 [DEBUG] Thread creation SUCCEEDED:', threadResponse.data);
-          logger.debug('✅ Proposal thread created:', threadResponse.data);
+          console.log('ðŸ” [DEBUG] Thread creation SUCCEEDED:', threadResponse.data);
+          logger.debug('âœ… Proposal thread created:', threadResponse.data);
         }
       } catch (threadError) {
         // Non-blocking - don't fail the proposal if thread creation fails
-        console.error('🔍 [DEBUG] Thread creation EXCEPTION:', threadError);
-        console.error('🔍 [DEBUG] Exception name:', threadError?.name);
-        console.error('🔍 [DEBUG] Exception message:', threadError?.message);
-        console.error('🔍 [DEBUG] Exception stack:', threadError?.stack);
-        logger.warn('⚠️ Thread creation error (non-blocking):', threadError);
+        console.error('ðŸ” [DEBUG] Thread creation EXCEPTION:', threadError);
+        console.error('ðŸ” [DEBUG] Exception name:', threadError?.name);
+        console.error('ðŸ” [DEBUG] Exception message:', threadError?.message);
+        console.error('ðŸ” [DEBUG] Exception stack:', threadError?.stack);
+        logger.warn('âš ï¸ Thread creation error (non-blocking):', threadError);
       }
 
     } catch (error) {
-      logger.error('❌ Error submitting proposal:', error);
+      logger.error('âŒ Error submitting proposal:', error);
 
       // Provide user-friendly error messages for common failure cases
       let userMessage = error.message || 'Failed to submit proposal. Please try again.';
@@ -1342,13 +1342,13 @@ export default function ViewSplitLeasePage() {
 
   // Handle proposal submission - checks auth first
   const handleProposalSubmit = async (proposalData) => {
-    logger.debug('📋 Proposal submission initiated:', proposalData);
+    logger.debug('ðŸ“‹ Proposal submission initiated:', proposalData);
 
     // Check if user is logged in
     const isLoggedIn = await checkAuthStatus();
 
     if (!isLoggedIn) {
-      logger.debug('🔐 User not logged in, showing auth modal');
+      logger.debug('ðŸ” User not logged in, showing auth modal');
       // Store the proposal data for later submission
       setPendingProposalData(proposalData);
       // Close the proposal modal
@@ -1359,13 +1359,13 @@ export default function ViewSplitLeasePage() {
     }
 
     // User is logged in, proceed with submission
-    logger.debug('✅ User is logged in, submitting proposal');
+    logger.debug('âœ… User is logged in, submitting proposal');
     await submitProposal(proposalData);
   };
 
   // Handle successful authentication
   const handleAuthSuccess = async (authResult) => {
-    logger.debug('🎉 Auth success:', authResult);
+    logger.debug('ðŸŽ‰ Auth success:', authResult);
 
     // Close the auth modal
     setShowAuthModal(false);
@@ -1376,15 +1376,15 @@ export default function ViewSplitLeasePage() {
       const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
       if (userData) {
         setLoggedInUserData(userData);
-        logger.debug('👤 User data updated after auth:', userData.firstName);
+        logger.debug('ðŸ‘¤ User data updated after auth:', userData.firstName);
       }
     } catch (err) {
-      logger.error('❌ Error fetching user data after auth:', err);
+      logger.error('âŒ Error fetching user data after auth:', err);
     }
 
     // If there's a pending proposal, submit it now
     if (pendingProposalData) {
-      logger.debug('📤 Submitting pending proposal after auth');
+      logger.debug('ðŸ“¤ Submitting pending proposal after auth');
       // Small delay to ensure auth state is fully updated
       setTimeout(async () => {
         await submitProposal(pendingProposalData);
@@ -1520,7 +1520,7 @@ export default function ViewSplitLeasePage() {
           {/* Photo Gallery - Magazine Editorial Style */}
           <section className={styles.section}>
             {listing.photos && listing.photos.length > 0 ? (
-              <PhotoGallery photos={listing.photos} listingName={listing.Name} onPhotoClick={handlePhotoClick} isMobile={isMobile} />
+              <PhotoGallery photos={listing.photos} listingName={listing.listing_title} onPhotoClick={handlePhotoClick} isMobile={isMobile} />
             ) : (
               <div className={styles.noImagesPlaceholder}>
                 No images available
@@ -1531,7 +1531,7 @@ export default function ViewSplitLeasePage() {
           {/* Listing Header */}
           <section className={styles.section}>
             <h1 className={styles.listingTitle}>
-              {listing.Name}
+              {listing.listing_title}
             </h1>
             <div className={styles.listingMeta}>
               {listing.resolvedNeighborhood && listing.resolvedBorough && (
@@ -1541,7 +1541,7 @@ export default function ViewSplitLeasePage() {
               )}
               {listing.resolvedTypeOfSpace && (
                 <span>
-                  {listing.resolvedTypeOfSpace} - {listing['Features - Qty Guests']} guests max
+                  {listing.resolvedTypeOfSpace} - {listing.max_guest_count} guests max
                 </span>
               )}
             </div>
@@ -1549,36 +1549,36 @@ export default function ViewSplitLeasePage() {
 
           {/* Features Grid */}
           <section className={styles.featuresGrid}>
-            {listing['Kitchen Type'] && (
+            {listing.kitchen_type && (
               <div className={styles.featureCard}>
                 <div className={styles.featureIconWrapper}>
                   <img src="/assets/images/fridge.svg" alt="Kitchen" className={styles.featureIcon} />
                 </div>
-                <div className={styles.featureText}>{listing['Kitchen Type']}</div>
+                <div className={styles.featureText}>{listing.kitchen_type}</div>
               </div>
             )}
-            {listing['Features - Qty Bathrooms'] !== null && (
+            {listing.bathroom_count !== null && (
               <div className={styles.featureCard}>
                 <div className={styles.featureIconWrapper}>
                   <img src="/assets/images/bath.svg" alt="Bathroom" className={styles.featureIcon} />
                 </div>
-                <div className={styles.featureText}>{listing['Features - Qty Bathrooms']} Bathroom(s)</div>
+                <div className={styles.featureText}>{listing.bathroom_count} Bathroom(s)</div>
               </div>
             )}
-            {listing['Features - Qty Bedrooms'] !== null && (
+            {listing.bedroom_count !== null && (
               <div className={styles.featureCard}>
                 <div className={styles.featureIconWrapper}>
                   <img src="/assets/images/sleeping.svg" alt="Bedroom" className={styles.featureIcon} />
                 </div>
-                <div className={styles.featureText}>{listing['Features - Qty Bedrooms'] === 0 ? 'Studio' : `${listing['Features - Qty Bedrooms']} Bedroom${listing['Features - Qty Bedrooms'] === 1 ? '' : 's'}`}</div>
+                <div className={styles.featureText}>{listing.bedroom_count === 0 ? 'Studio' : `${listing.bedroom_count} Bedroom${listing.bedroom_count === 1 ? '' : 's'}`}</div>
               </div>
             )}
-            {listing['Features - Qty Beds'] !== null && (
+            {listing.bed_count !== null && (
               <div className={styles.featureCard}>
                 <div className={styles.featureIconWrapper}>
                   <img src="/assets/images/bed.svg" alt="Bed" className={styles.featureIcon} />
                 </div>
-                <div className={styles.featureText}>{listing['Features - Qty Beds']} Bed(s)</div>
+                <div className={styles.featureText}>{listing.bed_count} Bed(s)</div>
               </div>
             )}
           </section>
@@ -1590,11 +1590,11 @@ export default function ViewSplitLeasePage() {
             </h2>
             <p className={styles.descriptionText}>
               {expandedSections.description
-                ? listing.Description
-                : listing.Description?.slice(0, 360)}
-              {listing.Description?.length > 360 && !expandedSections.description && '...'}
+                ? listing.listing_description
+                : listing.listing_description?.slice(0, 360)}
+              {listing.listing_description?.length > 360 && !expandedSections.description && '...'}
             </p>
-            {listing.Description?.length > 360 && (
+            {listing.listing_description?.length > 360 && (
               <button onClick={() => toggleSection('description')} className={styles.readMoreButton}>
                 {expandedSections.description ? 'Read Less' : 'Read More'}
               </button>
@@ -1639,19 +1639,19 @@ export default function ViewSplitLeasePage() {
           )}
 
           {/* Neighborhood Description */}
-          {listing['Description - Neighborhood'] && (
+          {listing.neighborhood_description_by_host && (
             <section className={styles.sectionSmall}>
               <h2 className={styles.sectionTitle}>
                 Neighborhood
               </h2>
               <p className={styles.descriptionText}>
                 {expandedSections.neighborhood
-                  ? listing['Description - Neighborhood']
-                  : listing['Description - Neighborhood']?.slice(0, 500)}
-                {listing['Description - Neighborhood']?.length > 500 &&
+                  ? listing.neighborhood_description_by_host
+                  : listing.neighborhood_description_by_host?.slice(0, 500)}
+                {listing.neighborhood_description_by_host?.length > 500 &&
                  !expandedSections.neighborhood && '...'}
               </p>
-              {listing['Description - Neighborhood']?.length > 500 && (
+              {listing.neighborhood_description_by_host?.length > 500 && (
                 <button onClick={() => toggleSection('neighborhood')} className={styles.readMoreButton}>
                   {expandedSections.neighborhood ? 'Read Less' : 'Read More'}
                 </button>
@@ -1660,7 +1660,7 @@ export default function ViewSplitLeasePage() {
           )}
 
           {/* Commute Section */}
-          {(listing.parkingOption || listing['Time to Station (commute)']) && (
+          {(listing.parkingOption || listing.commute_time_to_nearest_transit) && (
             <section ref={commuteSectionRef} className={styles.sectionSmall}>
               <h2 className={styles.sectionTitle}>
                 Commute
@@ -1691,7 +1691,7 @@ export default function ViewSplitLeasePage() {
                     </div>
                   </div>
                 )}
-                {listing['Time to Station (commute)'] && (
+                {listing.commute_time_to_nearest_transit && (
                   <div className={styles.infoCardRow}>
                     <svg
                       width="24"
@@ -1709,7 +1709,7 @@ export default function ViewSplitLeasePage() {
                       <path d="M3 12h18"></path>
                     </svg>
                     <div>
-                      <div className={styles.infoCardTitle}>{listing['Time to Station (commute)']} to Metro</div>
+                      <div className={styles.infoCardTitle}>{listing.commute_time_to_nearest_transit} to Metro</div>
                       <div className={styles.infoCardSubtextSmall}>
                         Quick walk to nearest station
                       </div>
@@ -1811,16 +1811,16 @@ export default function ViewSplitLeasePage() {
                 Meet Your Host
               </h2>
               <div className={styles.hostCard}>
-                {listing.host['Profile Photo'] && (
+                {listing.host.profile_photo_url && (
                   <img
-                    src={listing.host['Profile Photo']}
-                    alt={listing.host['Name - First']}
+                    src={listing.host.profile_photo_url}
+                    alt={listing.host.first_name}
                     className={styles.hostPhoto}
                   />
                 )}
                 <div className={styles.hostInfo}>
                   <div className={styles.hostName}>
-                    {listing.host['Name - First']} {listing.host['Name - Last']?.charAt(0)}.
+                    {listing.host.first_name} {listing.host.last_name?.charAt(0)}.
                   </div>
                   <div className={styles.hostLabel}>Host</div>
                 </div>
@@ -2134,7 +2134,7 @@ export default function ViewSplitLeasePage() {
             {/* Schedule Pattern Highlight - shows actual weeks for alternating patterns */}
             <SchedulePatternHighlight
               reservationSpan={reservationSpan}
-              weeksOffered={listing?.['Weeks offered']}
+              weeksOffered={listing?.weeks_offered_schedule_text}
             />
           </div>
 
@@ -2208,7 +2208,7 @@ export default function ViewSplitLeasePage() {
               onClick={() => setShowTutorialModal(false)}
               className={styles.tutorialModalClose}
             >
-              ×
+              Ã—
             </button>
 
             <h2 className={styles.tutorialModalTitle}>
@@ -2221,7 +2221,7 @@ export default function ViewSplitLeasePage() {
             </p>
 
             <div className={styles.tutorialModalHighlight}>
-              <div className={styles.tutorialModalIcon}>🏢</div>
+              <div className={styles.tutorialModalIcon}>ðŸ¢</div>
               <div className={styles.tutorialModalDescription}>
                 Stay 2-5 nights a week, save up to 50% off of a comparable Airbnb
               </div>
@@ -2255,12 +2255,12 @@ export default function ViewSplitLeasePage() {
             onClick={() => setShowPhotoModal(false)}
             className={styles.photoModalCloseTop}
           >
-            ×
+            Ã—
           </button>
 
           <img
             src={listing.photos[currentPhotoIndex]?.Photo}
-            alt={`${listing.Name} - photo ${currentPhotoIndex + 1}`}
+            alt={`${listing.listing_title} - photo ${currentPhotoIndex + 1}`}
             className={styles.photoModalImage}
             onClick={(e) => e.stopPropagation()}
           />
@@ -2273,7 +2273,7 @@ export default function ViewSplitLeasePage() {
               }}
               className={styles.photoModalNavButton}
             >
-              ← Previous
+              â† Previous
             </button>
 
             <span className={styles.photoModalCounter}>
@@ -2287,7 +2287,7 @@ export default function ViewSplitLeasePage() {
               }}
               className={styles.photoModalNavButton}
             >
-              Next →
+              Next â†’
             </button>
           </div>
 
@@ -2362,10 +2362,10 @@ export default function ViewSplitLeasePage() {
           onClose={() => setShowContactHostModal(false)}
           listing={{
             id: listing._id,
-            title: listing.Name,
+            title: listing.listing_title,
             host: {
               userId: listing.host?.userId,  // User's Bubble ID for messaging
-              name: listing.host ? `${listing.host['Name - First']} ${listing.host['Name - Last']?.charAt(0)}.` : 'Host'
+              name: listing.host ? `${listing.host.first_name} ${listing.host.last_name?.charAt(0)}.` : 'Host'
             }
           }}
           onLoginRequired={() => {
@@ -2377,7 +2377,7 @@ export default function ViewSplitLeasePage() {
 
       {/* Informational Text Tooltips */}
       {(() => {
-        logger.debug('📚 Rendering InformationalText components:', {
+        logger.debug('ðŸ“š Rendering InformationalText components:', {
           hasAlignedSchedule: !!informationalTexts['aligned schedule with move-in'],
           hasMoveInFlexibility: !!informationalTexts['move-in flexibility'],
           hasReservationSpan: !!informationalTexts['Reservation Span'],
@@ -2518,7 +2518,7 @@ export default function ViewSplitLeasePage() {
                     onClick={() => setMobileBookingExpanded(false)}
                     className={styles.mobileBookingCloseButton}
                   >
-                    ×
+                    Ã—
                   </button>
                 </div>
 
@@ -2600,7 +2600,7 @@ export default function ViewSplitLeasePage() {
                     <span className={styles.mobileBookingPriceBreakdownValue}>
                       {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent
                         ? formatPrice(pricingBreakdown.fourWeekRent)
-                        : '—'}
+                        : 'â€”'}
                     </span>
                   </div>
                   <div className={styles.mobileBookingTotalRow}>
@@ -2610,7 +2610,7 @@ export default function ViewSplitLeasePage() {
                     <span className={styles.mobileBookingTotalValue}>
                       {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal
                         ? formatPrice(pricingBreakdown.reservationTotal)
-                        : '—'}
+                        : 'â€”'}
                     </span>
                   </div>
                 </div>

@@ -35,23 +35,22 @@ export async function fetchDocumentData(leaseId) {
 
   // Step 1: Fetch lease with FK references
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select(`
-      _id,
-      "Agreement Number",
-      "Reservation Period : Start",
-      "Reservation Period : End",
-      "Payment Records Guest-SL",
-      "Payment Records SL-Hosts",
-      Proposal,
-      Listing,
-      Guest,
-      Host,
-      "Total Rent",
-      "current week number",
-      "total week count"
+      id,
+      agreement_number,
+      reservation_start_date,
+      reservation_end_date,
+      guest_to_platform_payment_records_json,
+      platform_to_host_payment_records_json,
+      listing_id,
+      guest_user_id,
+      host_user_id,
+      total_guest_rent_amount,
+      current_week_number,
+      total_week_count
     `)
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .single();
 
   if (leaseError) {
@@ -59,33 +58,33 @@ export async function fetchDocumentData(leaseId) {
     throw new Error(`Failed to fetch lease: ${leaseError.message}`);
   }
 
-  console.log('[fetchDocumentData] Lease found:', lease['Agreement Number']);
+  console.log('[fetchDocumentData] Lease found:', lease.agreement_number);
 
   // Step 2: Fetch proposal (financial data)
   let proposal = null;
-  if (lease.Proposal) {
+  if (lease.proposal_id) {
     const { data: proposalData, error: proposalError } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select(`
-        _id,
-        "hc move in date",
-        "Move-out",
-        "rental type",
-        "4 week rent",
-        "hc 4 week rent",
-        "damage deposit",
-        "hc damage deposit",
-        "cleaning fee",
-        "hc cleaning fee",
-        "Reservation Span",
-        "Reservation Span (Weeks)",
-        "hc reservation span (weeks)",
-        "week selection",
-        "hc weeks schedule",
-        "House Rules",
-        "hc house rules"
+        id,
+        host_proposed_move_in_date,
+        planned_move_out_date,
+        rental_type,
+        four_week_rent_amount,
+        host_proposed_four_week_rent,
+        damage_deposit_amount,
+        host_proposed_damage_deposit,
+        cleaning_fee_amount,
+        host_proposed_cleaning_fee,
+        reservation_span_text,
+        reservation_span_in_weeks,
+        host_proposed_reservation_span_weeks,
+        week_pattern_selection,
+        host_proposed_week_pattern,
+        house_rules_reference_ids_json,
+        host_proposed_house_rules_json
       `)
-      .eq('_id', lease.Proposal)
+      .eq('id', lease.proposal_id)
       .single();
 
     if (proposalError) {
@@ -98,74 +97,70 @@ export async function fetchDocumentData(leaseId) {
 
   // Step 3: Fetch listing
   let listing = null;
-  if (lease.Listing) {
+  if (lease.listing_id) {
     const { data: listingData, error: listingError } = await supabase
       .from('listing')
       .select(`
-        _id,
-        Name,
-        Description,
-        "Description - Neighborhood",
-        "Location - Address",
-        "Location - Borough",
-        "Location - City",
-        "Location - State",
-        "Location - Zip Code",
-        "Location - Hood",
-        "Features - Type of Space",
-        "Features - Qty Guests",
-        "Features - Qty Bedrooms",
-        "Features - Qty Bathrooms",
-        "Features - Qty Beds",
-        "Features - SQFT Area",
-        "Features - House Rules",
-        "Features - Photos",
-        "Kitchen Type",
-        "host restrictions",
-        "Cancellation Policy",
+        id,
+        listing_title,
+        listing_description,
+        neighborhood_description_by_host,
+        address_with_lat_lng_json,
+        borough,
+        city,
+        state,
+        zip_code,
+        primary_neighborhood_reference_id,
+        space_type,
+        max_guest_count,
+        bedroom_count,
+        bathroom_count,
+        bed_count,
+        square_feet,
+        house_rule_reference_ids_json,
+        photos_with_urls_captions_and_sort_order_json,
+        kitchen_type,
+        host_restrictions,
+        cancellation_policy,
         "Cancellation Policy - Additional Restrictions"
       `)
-      .eq('_id', lease.Listing)
+      .eq('id', lease.listing_id)
       .single();
 
     if (listingError) {
       console.warn('[fetchDocumentData] Listing fetch failed:', listingError.message);
     } else {
       listing = listingData;
-      console.log('[fetchDocumentData] Listing found:', listing.Name);
+      console.log('[fetchDocumentData] Listing found:', listing.listing_title);
     }
   }
 
   // Step 4: Fetch users (guest and host) in parallel
   const [guestResult, hostResult] = await Promise.all([
-    lease.Guest
+    lease.guest_user_id
       ? supabase
           .from('user')
           .select(`
-            _id,
-            "Name - First",
-            "Name - Last",
-            "Name - Full",
+            id,
+            first_name,
+            last_name,
             email,
-            "email as text",
-            "Phone Number (as text)"
+            phone_number
           `)
-          .eq('_id', lease.Guest)
+          .eq('id', lease.guest_user_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
-    lease.Host
+    lease.host_user_id
       ? supabase
           .from('user')
           .select(`
-            _id,
-            "Name - First",
-            "Name - Last",
-            "Name - Full",
+            id,
+            first_name,
+            last_name,
             email,
-            "email as text",
-            "Phone Number (as text)"
+            phone_number
           `)
-          .eq('_id', lease.Host)
+          .eq('id', lease.host_user_id)
           .single()
       : Promise.resolve({ data: null, error: null })
   ]);
@@ -176,13 +171,13 @@ export async function fetchDocumentData(leaseId) {
   if (guestResult.error) {
     console.warn('[fetchDocumentData] Guest fetch failed:', guestResult.error.message);
   } else if (guest) {
-    console.log('[fetchDocumentData] Guest found:', guest['Name - Full'] || guest['Name - First']);
+    console.log('[fetchDocumentData] Guest found:', guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : guest.first_name);
   }
 
   if (hostResult.error) {
     console.warn('[fetchDocumentData] Host fetch failed:', hostResult.error.message);
   } else if (host) {
-    console.log('[fetchDocumentData] Host found:', host['Name - Full'] || host['Name - First']);
+    console.log('[fetchDocumentData] Host found:', host.first_name && host.last_name ? `${host.first_name} ${host.last_name}` : host.first_name);
   }
 
   // Step 5: Fetch payment records
@@ -231,28 +226,24 @@ export async function fetchDocumentData(leaseId) {
   console.log(`[fetchDocumentData] Found ${guestPayments.length} guest payment records`);
   console.log(`[fetchDocumentData] Found ${hostPayments.length} host payment records`);
 
-  // Step 6: Fetch listing photos
+  // Step 6: Extract listing photos from embedded JSON column
   let listingPhotos = [];
-  if (listing?.['Features - Photos']) {
-    const photos = listing['Features - Photos'];
+  if (listing?.photos_with_urls_captions_and_sort_order_json) {
+    let photos = listing.photos_with_urls_captions_and_sort_order_json;
+    // Handle double-encoded JSON string
+    if (typeof photos === 'string') {
+      try {
+        photos = JSON.parse(photos);
+      } catch {
+        photos = [];
+      }
+    }
     if (Array.isArray(photos)) {
-      listingPhotos = photos.slice(0, 3).map(photo =>
+      // Sort by sort_order if available
+      const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      listingPhotos = sorted.slice(0, 3).map(photo =>
         typeof photo === 'string' ? photo : (photo?.url || photo?.Photo || '')
       ).filter(Boolean);
-    }
-  }
-
-  // Fallback: Try listing_photo table
-  if (listingPhotos.length === 0 && lease.Listing) {
-    const { data: photosData } = await supabase
-      .from('listing_photo')
-      .select('Photo')
-      .eq('Listing', lease.Listing)
-      .order('SortOrder', { ascending: true, nullsLast: true })
-      .limit(3);
-
-    if (photosData && photosData.length > 0) {
-      listingPhotos = photosData.map(p => p.Photo).filter(Boolean);
     }
   }
 

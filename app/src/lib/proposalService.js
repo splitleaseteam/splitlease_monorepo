@@ -197,9 +197,9 @@ export async function fetchProposal(proposalId) {
 
   try {
     const { data, error } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select('*')
-      .eq('_id', proposalId)
+      .eq('id', proposalId)
       .single()
 
     if (error) {
@@ -262,23 +262,23 @@ export function transformListingForProposal(listing) {
   if (!listing) return null
 
   return {
-    _id: listing.id || listing._id,
-    Name: listing.title || listing.Name,
-    'Minimum Nights': 2,
-    'Maximum Nights': 7,
-    'rental type': listing.rentalType || listing['rental type'] || 'Nightly',
-    'Weeks offered': listing.weeksOffered || listing.weeks_offered || listing['Weeks offered'] || 'Every week',
+    id: listing.id,
+    listing_title: listing.title || listing.listing_title,
+    minimum_nights_per_stay: 2,
+    maximum_nights_per_stay: 7,
+    rental_type: listing.rentalType || listing.rental_type || 'Nightly',
+    weeks_offered_schedule_text: listing.weeksOffered || listing.weeks_offered || listing.weeks_offered_schedule_text || 'Every week',
     // Monetary fields with Number() coercion for safety
-    'unit_markup': Number(listing['unit_markup']) || 0,
-    'nightly_rate_2_nights': Number(listing['Price 2 nights selected']) || null,
-    'nightly_rate_3_nights': Number(listing['Price 3 nights selected']) || null,
-    'nightly_rate_4_nights': Number(listing['Price 4 nights selected']) || null,
-    'nightly_rate_5_nights': Number(listing['Price 5 nights selected']) || null,
-    'nightly_rate_7_nights': Number(listing['Price 7 nights selected']) || null,
-    'cleaning_fee': Number(listing['cleaning_fee']) || 0,
-    'damage_deposit': Number(listing['damage_deposit']) || 0,
-    'monthly_host_rate': Number(listing['monthly_host_rate']) || null,
-    'weekly_host_rate': Number(listing['weekly_host_rate']) || null,
+    unit_markup_percentage: Number(listing.unit_markup_percentage) || 0,
+    nightly_rate_for_2_night_stay: Number(listing.nightly_rate_for_2_night_stay) || null,
+    nightly_rate_for_3_night_stay: Number(listing.nightly_rate_for_3_night_stay) || null,
+    nightly_rate_for_4_night_stay: Number(listing.nightly_rate_for_4_night_stay) || null,
+    nightly_rate_for_5_night_stay: Number(listing.nightly_rate_for_5_night_stay) || null,
+    nightly_rate_for_7_night_stay: Number(listing.nightly_rate_for_7_night_stay) || null,
+    cleaning_fee_amount: Number(listing.cleaning_fee_amount) || 0,
+    damage_deposit_amount: Number(listing.damage_deposit_amount) || 0,
+    monthly_rate_paid_to_host: Number(listing.monthly_rate_paid_to_host) || null,
+    weekly_rate_paid_to_host: Number(listing.weekly_rate_paid_to_host) || null,
     host: listing.host
   }
 }

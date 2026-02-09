@@ -13,12 +13,12 @@
  * @param {Object} proposal - Proposal object
  */
 export function navigateToListing(proposal) {
-  if (!proposal?.listing?.id && !proposal?.listingId && !proposal?.Listing) {
+  if (!proposal?.listing?.id && !proposal?.listingId && !proposal?.listing_id) {
     console.error('[navigationWorkflow] No listing ID found for navigation');
     return;
   }
 
-  const listingId = proposal.listing?.id || proposal.listingId || proposal.Listing;
+  const listingId = proposal.listing?.id || proposal.listingId || proposal.listing_id;
   const url = `/view-split-lease/${listingId}`;
 
   console.log('[navigationWorkflow] Navigating to listing:', url);

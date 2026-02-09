@@ -16,9 +16,9 @@ describe('calculatePricingBreakdown', () => {
     it('should calculate full breakdown for standard 4-night, 13-week stay', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 50,
-          'damage_deposit': 500
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 50,
+          'damage_deposit_amount': 500
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -36,9 +36,9 @@ describe('calculatePricingBreakdown', () => {
     it('should calculate breakdown for 7-night, 52-week stay (full-time, full year)', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_7_nights': 80,
-          'cleaning_fee': 100,
-          'damage_deposit': 1000
+          'nightly_rate_for_7_night_stay': 80,
+          'cleaning_fee_amount': 100,
+          'damage_deposit_amount': 1000
         },
         nightsPerWeek: 7,
         reservationWeeks: 52
@@ -56,9 +56,9 @@ describe('calculatePricingBreakdown', () => {
     it('should calculate breakdown for minimum stay (2 nights, 4 weeks)', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_2_nights': 150,
-          'cleaning_fee': 25,
-          'damage_deposit': 200
+          'nightly_rate_for_2_night_stay': 150,
+          'cleaning_fee_amount': 25,
+          'damage_deposit_amount': 200
         },
         nightsPerWeek: 2,
         reservationWeeks: 4
@@ -80,9 +80,9 @@ describe('calculatePricingBreakdown', () => {
     it('should default cleaning fee to 0 when null', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': null,
-          'damage_deposit': 500
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': null,
+          'damage_deposit_amount': 500
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -95,8 +95,8 @@ describe('calculatePricingBreakdown', () => {
     it('should default cleaning fee to 0 when undefined', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'damage_deposit': 500
+          'nightly_rate_for_4_night_stay': 100,
+          'damage_deposit_amount': 500
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -109,9 +109,9 @@ describe('calculatePricingBreakdown', () => {
     it('should default damage deposit to 0 when null', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 50,
-          'damage_deposit': null
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 50,
+          'damage_deposit_amount': null
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -124,8 +124,8 @@ describe('calculatePricingBreakdown', () => {
     it('should default damage deposit to 0 when undefined', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 50
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 50
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -138,7 +138,7 @@ describe('calculatePricingBreakdown', () => {
     it('should handle all optional fees missing', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100
+          'nightly_rate_for_4_night_stay': 100
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -191,7 +191,7 @@ describe('calculatePricingBreakdown', () => {
     it('should throw error for missing nightly rate', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'cleaning_fee': 50
+          'cleaning_fee_amount': 50
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -205,7 +205,7 @@ describe('calculatePricingBreakdown', () => {
   describe('error handling - parameter validation', () => {
     it('should throw error for null nightsPerWeek', () => {
       expect(() => calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: null,
         reservationWeeks: 13
       })).toThrow();
@@ -213,7 +213,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should throw error for undefined nightsPerWeek', () => {
       expect(() => calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: undefined,
         reservationWeeks: 13
       })).toThrow();
@@ -221,7 +221,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should throw error for non-number nightsPerWeek', () => {
       expect(() => calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: 'four',
         reservationWeeks: 13
       })).toThrow();
@@ -229,7 +229,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should throw error for null reservationWeeks', () => {
       expect(() => calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: 4,
         reservationWeeks: null
       })).toThrow();
@@ -237,7 +237,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should throw error for undefined reservationWeeks', () => {
       expect(() => calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: 4,
         reservationWeeks: undefined
       })).toThrow();
@@ -245,7 +245,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should throw error for non-number reservationWeeks', () => {
       expect(() => calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: 4,
         reservationWeeks: 'thirteen'
       })).toThrow();
@@ -259,8 +259,8 @@ describe('calculatePricingBreakdown', () => {
     it('should throw error for NaN cleaning fee', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 'fifty'
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 'fifty'
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -270,8 +270,8 @@ describe('calculatePricingBreakdown', () => {
     it('should throw error for negative cleaning fee', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': -50
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': -50
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -281,8 +281,8 @@ describe('calculatePricingBreakdown', () => {
     it('should throw error for NaN damage deposit', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'damage_deposit': 'five hundred'
+          'nightly_rate_for_4_night_stay': 100,
+          'damage_deposit_amount': 'five hundred'
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -292,8 +292,8 @@ describe('calculatePricingBreakdown', () => {
     it('should throw error for negative damage deposit', () => {
       expect(() => calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'damage_deposit': -500
+          'nightly_rate_for_4_night_stay': 100,
+          'damage_deposit_amount': -500
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -308,9 +308,9 @@ describe('calculatePricingBreakdown', () => {
     it('should return all expected properties', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 50,
-          'damage_deposit': 500
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 50,
+          'damage_deposit_amount': 500
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -328,9 +328,9 @@ describe('calculatePricingBreakdown', () => {
     it('should return correct types for all properties', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 50,
-          'damage_deposit': 500
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 50,
+          'damage_deposit_amount': 500
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -352,7 +352,7 @@ describe('calculatePricingBreakdown', () => {
   describe('edge cases', () => {
     it('should handle minimum nights (2)', () => {
       const result = calculatePricingBreakdown({
-        listing: { 'nightly_rate_2_nights': 100 },
+        listing: { 'nightly_rate_for_2_night_stay': 100 },
         nightsPerWeek: 2,
         reservationWeeks: 4
       });
@@ -364,7 +364,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should handle maximum nights (7)', () => {
       const result = calculatePricingBreakdown({
-        listing: { 'nightly_rate_7_nights': 100 },
+        listing: { 'nightly_rate_for_7_night_stay': 100 },
         nightsPerWeek: 7,
         reservationWeeks: 4
       });
@@ -376,7 +376,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should handle single week reservation', () => {
       const result = calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: 4,
         reservationWeeks: 1
       });
@@ -386,7 +386,7 @@ describe('calculatePricingBreakdown', () => {
 
     it('should handle large reservation (52 weeks)', () => {
       const result = calculatePricingBreakdown({
-        listing: { 'nightly_rate_4_nights': 100 },
+        listing: { 'nightly_rate_for_4_night_stay': 100 },
         nightsPerWeek: 4,
         reservationWeeks: 52
       });
@@ -397,8 +397,8 @@ describe('calculatePricingBreakdown', () => {
     it('should handle decimal/float prices', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 99.99,
-          'cleaning_fee': 49.99
+          'nightly_rate_for_4_night_stay': 99.99,
+          'cleaning_fee_amount': 49.99
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -411,8 +411,8 @@ describe('calculatePricingBreakdown', () => {
     it('should handle zero cleaning fee explicitly', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': 0
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': 0
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -425,9 +425,9 @@ describe('calculatePricingBreakdown', () => {
     it('should handle string numbers for fees', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 100,
-          'cleaning_fee': '50',
-          'damage_deposit': '500'
+          'nightly_rate_for_4_night_stay': 100,
+          'cleaning_fee_amount': '50',
+          'damage_deposit_amount': '500'
         },
         nightsPerWeek: 4,
         reservationWeeks: 4
@@ -445,9 +445,9 @@ describe('calculatePricingBreakdown', () => {
     it('should calculate typical Mon-Thu 3-month stay', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_4_nights': 125,
-          'cleaning_fee': 75,
-          'damage_deposit': 750
+          'nightly_rate_for_4_night_stay': 125,
+          'cleaning_fee_amount': 75,
+          'damage_deposit_amount': 750
         },
         nightsPerWeek: 4,
         reservationWeeks: 13
@@ -462,9 +462,9 @@ describe('calculatePricingBreakdown', () => {
     it('should calculate weekend getaway 1-month stay', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_2_nights': 200,
-          'cleaning_fee': 40,
-          'damage_deposit': 300
+          'nightly_rate_for_2_night_stay': 200,
+          'cleaning_fee_amount': 40,
+          'damage_deposit_amount': 300
         },
         nightsPerWeek: 2,
         reservationWeeks: 4
@@ -479,9 +479,9 @@ describe('calculatePricingBreakdown', () => {
     it('should calculate full-time year-long stay', () => {
       const result = calculatePricingBreakdown({
         listing: {
-          'nightly_rate_7_nights': 70,
-          'cleaning_fee': 150,
-          'damage_deposit': 1500
+          'nightly_rate_for_7_night_stay': 70,
+          'cleaning_fee_amount': 150,
+          'damage_deposit_amount': 1500
         },
         nightsPerWeek: 7,
         reservationWeeks: 52

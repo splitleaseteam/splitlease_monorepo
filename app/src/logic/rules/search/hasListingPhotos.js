@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Check if a listing has photos.
  *
  * @intent Validate that a listing has at least one photo for search display.
@@ -23,7 +23,7 @@ export function hasListingPhotos({ listing }) {
     throw new Error('hasListingPhotos: listing cannot be null or undefined')
   }
 
-  const photos = listing['Features - Photos']
+  const photos = listing.photos_with_urls_captions_and_sort_order_json
 
   // Check for null, undefined, or empty array
   if (!photos) {

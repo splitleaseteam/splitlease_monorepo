@@ -1,11 +1,11 @@
-/**
+﻿/**
  * User Proposal Query Functions
- * Implements user."Proposals List" approach per user requirement
+ * Implements direct booking_proposal query approach per user requirement
  *
  * Data flow:
  * 1. Get user ID from authenticated session (NOT from URL)
- * 2. Fetch user data with "Proposals List" array
- * 3. Extract proposal IDs from the array
+ * 2. Fetch user data
+ * 3. Extract proposal IDs by querying booking_proposal table
  * 4. Fetch proposals by those specific IDs
  * 5. Fetch related listings and hosts (nested fetches)
  * 6. Return user + proposals + selected proposal
@@ -25,14 +25,13 @@ export async function fetchUserWithProposalList(userId) {
   const { data, error } = await supabase
     .from('user')
     .select(`
-      _id,
-      "Name - First",
-      "Name - Last",
-      "Name - Full",
-      "Profile Photo",
-      "email as text"
+      id,
+      first_name,
+      last_name,
+      profile_photo_url,
+      email
     `)
-    .eq('_id', userId)
+    .eq('id', userId)
     .maybeSingle();
 
   if (error) {
@@ -45,7 +44,7 @@ export async function fetchUserWithProposalList(userId) {
     throw new Error(`User with ID ${userId} not found. Please check the URL.`);
   }
 
-  console.log('fetchUserWithProposalList: User fetched:', data['Name - First'] || data['Name - Full']);
+  console.log('fetchUserWithProposalList: User fetched:', data.first_name || `${data.first_name} ${data.last_name}`);
   return data;
 }
 
@@ -57,20 +56,20 @@ export async function fetchUserWithProposalList(userId) {
  * @returns {Promise<Array<string>>} Array of proposal IDs
  */
 export async function extractProposalIds(userId) {
-  // Query proposals directly by Guest field
+  // Query proposals directly by guest_user_id field
   const { data, error } = await supabase
-    .from('proposal')
-    .select('_id')
-    .eq('Guest', userId)
-    .or('"Deleted".is.null,"Deleted".eq.false')
-    .neq('Status', 'Proposal Cancelled by Guest');
+    .from('booking_proposal')
+    .select('id')
+    .eq('guest_user_id', userId)
+    .or('is_deleted.is.null,is_deleted.eq.false')
+    .neq('proposal_workflow_status', 'Proposal Cancelled by Guest');
 
   if (error) {
     console.error('extractProposalIds: Error fetching proposal IDs:', error);
     return [];
   }
 
-  const proposalIds = (data || []).map(p => p._id);
+  const proposalIds = (data || []).map(p => p.id);
   console.log(`extractProposalIds: Found ${proposalIds.length} proposal IDs for guest ${userId}`);
   return proposalIds;
 }
@@ -91,49 +90,47 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Step 1: Fetch all proposals by IDs
   // Filter out deleted proposals and cancelled-by-guest at database level for efficiency
   const { data: proposals, error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select(`
-      _id,
-      "Status",
-      "Deleted",
-      "Guest",
-      "Listing",
-      "Days Selected",
-      "Nights Selected (Nights list)",
-      "Reservation Span (Weeks)",
-      "nights per week (num)",
-      "check in day",
-      "check out day",
-      "Move in range start",
-      "Move in range end",
-      "Total Price for Reservation (guest)",
-      "proposal nightly price",
-      "cleaning fee",
-      "damage deposit",
-      "counter offer happened",
-      "hc days selected",
-      "hc check in day",
-      "hc check out day",
-      "hc nights per week",
-      "hc reservation span (weeks)",
-      "hc total price",
-      "hc nightly price",
-      "Created Date",
-      "Modified Date",
-      "about_yourself",
-      "special_needs",
-      "reason for cancellation",
-      "rental application",
-      "virtual meeting",
-      "Is Finalized",
-      "House Rules",
+      id,
+      proposal_workflow_status,
+      is_deleted,
+      guest_user_id,
+      listing_id,
+      guest_selected_days_numbers_json,
+      guest_selected_nights_numbers_json,
+      reservation_span_in_weeks,
+      nights_per_week_count,
+      checkin_day_of_week_number,
+      checkout_day_of_week_number,
+      move_in_range_start_date,
+      move_in_range_end_date,
+      total_reservation_price_for_guest,
+      calculated_nightly_price,
+      cleaning_fee_amount,
+      damage_deposit_amount,
+      has_host_counter_offer,
+      host_proposed_selected_days_json,
+      host_proposed_checkin_day,
+      host_proposed_checkout_day,
+      host_proposed_nights_per_week,
+      host_proposed_reservation_span_weeks,
+      host_proposed_total_guest_price,
+      host_proposed_nightly_price,
+      bubble_created_at,
+      bubble_updated_at,
+      guest_about_yourself_text,
+      rental_application_id,
+      virtual_meeting_record_id,
+      is_finalized,
+      house_rules_reference_ids_json,
       "remindersByGuest (number)",
       "guest documents review finalized?"
     `)
-    .in('_id', proposalIds)
-    .or('"Deleted".is.null,"Deleted".eq.false')
-    .neq('Status', 'Proposal Cancelled by Guest')
-    .order('Created Date', { ascending: false });
+    .in('id', proposalIds)
+    .or('is_deleted.is.null,is_deleted.eq.false')
+    .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
+    .order('bubble_created_at', { ascending: false });
 
   if (proposalError) {
     console.error('fetchProposalsByIds: Error fetching proposals:', proposalError);
@@ -144,11 +141,11 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   const validProposals = (proposals || []).filter(p => {
     if (!p) return false;
 
-    // Exclude deleted proposals (Deleted = true or "true")
-    if (p.Deleted === true || p.Deleted === 'true') return false;
+    // Exclude deleted proposals (is_deleted = true or "true")
+    if (p.is_deleted === true || p.is_deleted === 'true') return false;
 
     // Exclude proposals cancelled by guest
-    if (p.Status === 'Proposal Cancelled by Guest') return false;
+    if (p.proposal_workflow_status === 'Proposal Cancelled by Guest') return false;
 
     return true;
   });
@@ -166,7 +163,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   }
 
   // Step 2: Extract unique listing IDs from proposals
-  const listingIds = [...new Set(validProposals.map(p => p.Listing).filter(Boolean))];
+  const listingIds = [...new Set(validProposals.map(p => p.listing_id).filter(Boolean))];
 
   if (listingIds.length === 0) {
     console.warn('fetchProposalsByIds: No listings found for proposals');
@@ -179,39 +176,37 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   const { data: listings, error: listingError } = await supabase
     .from('listing')
     .select(`
-      _id,
-      "Name",
-      "Description",
-      "Location - Address",
-      "Location - slightly different address",
-      "Location - Borough",
-      "Location - Hood",
-      "Features - Photos",
-      "Features - House Rules",
-      "NEW Date Check-in Time",
-      "NEW Date Check-out Time",
-      "Host User",
+      id,
+      listing_title,
+      listing_description,
+      address_with_lat_lng_json,
+      map_pin_offset_address_json,
+      borough,
+      primary_neighborhood_reference_id,
+      photos_with_urls_captions_and_sort_order_json,
+      house_rule_reference_ids_json,
+      checkin_time_of_day,
+      checkout_time_of_day,
+      host_user_id,
       "House manual"
     `)
-    .in('_id', listingIds);
+    .in('id', listingIds);
 
   if (listingError) {
     console.error('fetchProposalsByIds: Error fetching listings:', listingError);
     return validProposals.map(p => ({ ...p, listing: null }));
   }
 
-  // Step 3.25: Extract featured photos from embedded format or fetch from listing_photo
+  // Step 3.25: Extract featured photos from embedded photos_with_urls_captions_and_sort_order_json
   console.log(`fetchProposalsByIds: Extracting featured photos for ${listingIds.length} listings`);
 
-  // First, try to extract photos from embedded Features - Photos field (new format)
   const embeddedPhotoMap = new Map();
-  const listingsNeedingPhotoFetch = [];
 
   (listings || []).forEach(listing => {
-    const photosField = listing['Features - Photos'];
+    const photosField = listing.photos_with_urls_captions_and_sort_order_json;
     let photos = [];
 
-    // Parse JSON if needed
+    // Parse JSON if needed (may be double-encoded as string)
     if (Array.isArray(photosField)) {
       photos = photosField;
     } else if (typeof photosField === 'string') {
@@ -222,53 +217,36 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       }
     }
 
-    // Check if first photo is an object (new embedded format)
-    if (photos.length > 0 && typeof photos[0] === 'object' && photos[0] !== null) {
-      // Find main photo or use first one
-      const mainPhoto = photos.find(p => p.toggleMainPhoto) || photos[0];
-      let photoUrl = mainPhoto.url || mainPhoto.Photo || '';
-      if (photoUrl.startsWith('//')) photoUrl = 'https:' + photoUrl;
-      if (photoUrl) embeddedPhotoMap.set(listing._id, photoUrl);
-    } else {
-      // Legacy format - need to fetch from listing_photo table
-      listingsNeedingPhotoFetch.push(listing._id);
+    if (Array.isArray(photos) && photos.length > 0) {
+      // Sort by sort_order and find main photo or use first one
+      const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      const firstPhoto = sorted[0];
+
+      if (typeof firstPhoto === 'object' && firstPhoto !== null) {
+        const mainPhoto = sorted.find(p => p.toggleMainPhoto) || firstPhoto;
+        let photoUrl = mainPhoto.url || mainPhoto.Photo || '';
+        if (photoUrl.startsWith('//')) photoUrl = 'https:' + photoUrl;
+        if (photoUrl) embeddedPhotoMap.set(listing.id, photoUrl);
+      } else if (typeof firstPhoto === 'string') {
+        let photoUrl = firstPhoto;
+        if (photoUrl.startsWith('//')) photoUrl = 'https:' + photoUrl;
+        if (photoUrl) embeddedPhotoMap.set(listing.id, photoUrl);
+      }
     }
   });
 
-  console.log(`fetchProposalsByIds: Found ${embeddedPhotoMap.size} embedded photos, ${listingsNeedingPhotoFetch.length} need fetch`);
-
-  // Only fetch from listing_photo table for listings without embedded photos
-  let featuredPhotos = [];
-  if (listingsNeedingPhotoFetch.length > 0) {
-    const { data: fetchedPhotos, error: photoError } = await supabase
-      .from('listing_photo')
-      .select(`
-        _id,
-        "Listing",
-        "Photo"
-      `)
-      .in('"Listing"', listingsNeedingPhotoFetch)
-      .eq('"toggleMainPhoto"', true)
-      .eq('"Active"', true);
-
-    if (photoError) {
-      console.error('fetchProposalsByIds: Error fetching featured photos:', photoError);
-    } else {
-      featuredPhotos = fetchedPhotos || [];
-      console.log(`fetchProposalsByIds: Fetched ${featuredPhotos.length} photos from listing_photo table`);
-    }
-  }
+  console.log(`fetchProposalsByIds: Found ${embeddedPhotoMap.size} embedded photos`);
 
   // Step 3.5: Fetch borough, neighborhood, and house rules names from lookup tables
-  const boroughIds = [...new Set((listings || []).map(l => l['Location - Borough']).filter(Boolean))];
-  const hoodIds = [...new Set((listings || []).map(l => l['Location - Hood']).filter(Boolean))];
+  const boroughIds = [...new Set((listings || []).map(l => l.borough).filter(Boolean))];
+  const hoodIds = [...new Set((listings || []).map(l => l.primary_neighborhood_reference_id).filter(Boolean))];
 
   // Collect all house rule IDs from all proposals
   // House Rules field is stored as a JSON string array: "[\"id1\", \"id2\"]"
   const allHouseRuleIds = [...new Set(
     validProposals
       .flatMap(p => {
-        const houseRulesRaw = p['House Rules'];
+        const houseRulesRaw = p.house_rules_reference_ids_json;
         if (!houseRulesRaw) return [];
         // Parse JSON string if needed
         if (typeof houseRulesRaw === 'string') {
@@ -335,8 +313,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   }
 
   // Step 4: Extract unique host user IDs from listings
-  // After migration, "Host User" contains user._id directly
-  const hostUserIds = [...new Set((listings || []).map(l => l['Host User']).filter(Boolean))];
+  // After migration, host_user_id contains user.id directly
+  const hostUserIds = [...new Set((listings || []).map(l => l.host_user_id).filter(Boolean))];
 
   console.log(`fetchProposalsByIds: Fetching ${hostUserIds.length} unique hosts`);
 
@@ -345,17 +323,16 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     const { data: hostsData, error: hostError } = await supabase
       .from('user')
       .select(`
-        _id,
-        "Name - First",
-        "Name - Last",
-        "Name - Full",
-        "Profile Photo",
-        "About Me / Bio",
+        id,
+        first_name,
+        last_name,
+        profile_photo_url,
+        bio_text,
         "Verify - Linked In ID",
         "Verify - Phone",
         "user verified?"
       `)
-      .in('_id', hostUserIds);
+      .in('id', hostUserIds);
 
     if (hostError) {
       console.error('fetchProposalsByIds: Error fetching hosts:', hostError);
@@ -366,7 +343,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   }
 
   // Step 5.5: Extract unique guest IDs from proposals and fetch guest user data
-  const guestIds = [...new Set(validProposals.map(p => p.Guest).filter(Boolean))];
+  const guestIds = [...new Set(validProposals.map(p => p.guest_user_id).filter(Boolean))];
 
   console.log(`fetchProposalsByIds: Fetching ${guestIds.length} unique guests`);
 
@@ -375,18 +352,17 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     const { data: guestsData, error: guestError } = await supabase
       .from('user')
       .select(`
-        _id,
-        "Name - First",
-        "Name - Last",
-        "Name - Full",
-        "Profile Photo",
-        "About Me / Bio",
+        id,
+        first_name,
+        last_name,
+        profile_photo_url,
+        bio_text,
         "Verify - Linked In ID",
         "Verify - Phone",
         "user verified?",
         "ID documents submitted?"
       `)
-      .in('_id', guestIds);
+      .in('id', guestIds);
 
     if (guestError) {
       console.error('fetchProposalsByIds: Error fetching guests:', guestError);
@@ -426,7 +402,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Step 6: Fetch virtual meetings for all proposals
   console.log(`fetchProposalsByIds: Fetching virtual meetings for ${validProposals.length} proposals`);
 
-  const proposalIdsForVM = validProposals.map(p => p._id).filter(Boolean);
+  const proposalIdsForVM = validProposals.map(p => p.id).filter(Boolean);
   let virtualMeetings = [];
 
   if (proposalIdsForVM.length > 0) {
@@ -461,7 +437,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // IMPORTANT: Filter by "To Account" to ensure users only see summaries intended for them
   // - Guests see summaries where "To Account" = guest ID (why this listing was suggested)
   // - Hosts see summaries where "To Account" = host ID (proposal terms summary)
-  const proposalIdsForSummaries = validProposals.map(p => p._id);
+  const proposalIdsForSummaries = validProposals.map(p => p.id);
   let negotiationSummaries = [];
 
   if (proposalIdsForSummaries.length > 0) {
@@ -497,8 +473,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   });
 
   // Step 6.6: Fetch SplitBot counteroffer summary messages
-  // These are created when a host submits a counteroffer - stored in _message table
-  // Link: proposal._id -> thread."Proposal" -> _message."Associated Thread/Conversation"
+  // These are created when a host submits a counteroffer - stored in thread_message table
+  // Link: proposal.id -> thread."Proposal" -> thread_message."Associated Thread/Conversation"
   console.log(`fetchProposalsByIds: Fetching counteroffer summaries for ${proposalIdsForSummaries.length} proposals`);
 
   const counterofferSummaryMap = new Map();
@@ -523,18 +499,18 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
       // Fetch SplitBot counteroffer messages
       const { data: counterofferMsgs, error: counterofferError } = await supabase
-        .from('_message')
+        .from('thread_message')
         .select(`
-          _id,
-          "Message Body",
+          id,
+          message_body_text,
           "Call to Action",
           thread_id,
-          "Created Date"
+          bubble_created_at
         `)
         .in('thread_id', threadIds)
-        .eq('"is Split Bot"', true)
+        .eq('is_from_split_bot', true)
         .eq('"Call to Action"', 'Respond to Counter Offer')
-        .order('"Created Date"', { ascending: false });
+        .order('bubble_created_at', { ascending: false });
 
       console.log('[DEBUG] Message query result:', { counterofferMsgs, counterofferError, count: counterofferMsgs?.length });
       if (counterofferError) {
@@ -549,7 +525,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
           const proposalId = threadToProposalMap.get(threadId);
           console.log(`[DEBUG] Mapping: threadId=${threadId} -> proposalId=${proposalId}`);
           if (proposalId && !counterofferSummaryMap.has(proposalId)) {
-            counterofferSummaryMap.set(proposalId, msg['Message Body']);
+            counterofferSummaryMap.set(proposalId, msg['message_body_text']);
           }
         });
       } else {
@@ -563,47 +539,44 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   console.log('[DEBUG] Final counterofferSummaryMap:', [...counterofferSummaryMap.entries()].map(([k, v]) => [k, v?.substring(0, 50)]));
 
   // Step 7: Create lookup maps for efficient joining
-  const listingMap = new Map((listings || []).map(l => [l._id, l]));
-  // Key hosts by their _id (Host User column now contains user._id directly)
-  const hostMap = new Map(hosts.map(h => [h._id, h]));
-  // Key guests by their _id field
-  const guestMap = new Map(guests.map(g => [g._id, g]));
+  const listingMap = new Map((listings || []).map(l => [l.id, l]));
+  // Key hosts by their id (Host User column now contains user.id directly)
+  const hostMap = new Map(hosts.map(h => [h.id, h]));
+  // Key guests by their id field
+  const guestMap = new Map(guests.map(g => [g.id, g]));
   // Key boroughs and hoods by their _id
   const boroughMap = new Map(boroughs.map(b => [b._id, b['Display Borough']]));
   const hoodMap = new Map(hoods.map(h => [h._id, h['Display']]));
-  // Key featured photos by their Listing ID (merge embedded + fetched photos)
-  const featuredPhotoMap = new Map([
-    ...embeddedPhotoMap.entries(),
-    ...(featuredPhotos || []).map(p => [p.Listing, p.Photo])
-  ]);
+  // Key featured photos by their Listing ID
+  const featuredPhotoMap = embeddedPhotoMap;
   // Key house rules by their _id to get names
   const houseRulesMap = new Map(houseRules.map(r => [r._id, r.Name]));
 
   // Step 8: Manually join the data
   const enrichedProposals = validProposals.map((proposal) => {
-    const listing = listingMap.get(proposal.Listing);
-    // Lookup host by Host User ID from listing (contains user._id directly)
-    const host = listing ? hostMap.get(listing['Host User']) : null;
-    // Lookup guest by proposal's Guest field
-    const guest = guestMap.get(proposal.Guest);
+    const listing = listingMap.get(proposal.listing_id);
+    // Lookup host by host_user_id from listing (contains user.id directly)
+    const host = listing ? hostMap.get(listing.host_user_id) : null;
+    // Lookup guest by proposal's guest_user_id field
+    const guest = guestMap.get(proposal.guest_user_id);
     // Lookup borough and hood names
-    const boroughName = listing ? boroughMap.get(listing['Location - Borough']) : null;
-    const hoodName = listing ? hoodMap.get(listing['Location - Hood']) : null;
+    const boroughName = listing ? boroughMap.get(listing.borough) : null;
+    const hoodName = listing ? hoodMap.get(listing.primary_neighborhood_reference_id) : null;
     // Lookup featured photo URL
-    const featuredPhotoUrl = listing ? featuredPhotoMap.get(listing._id) : null;
+    const featuredPhotoUrl = listing ? featuredPhotoMap.get(listing.id) : null;
     // Lookup virtual meeting
-    const virtualMeeting = vmMap.get(proposal._id) || null;
+    const virtualMeeting = vmMap.get(proposal.id) || null;
     // Lookup rental application
     const rentalApplication = rentalAppMap.get(proposal['rental application']) || null;
     // Lookup negotiation summaries
-    const negotiationSummaries = summaryMap.get(proposal._id) || [];
+    const negotiationSummaries = summaryMap.get(proposal.id) || [];
     // Lookup counteroffer summary (SplitBot message)
-    const counterofferSummary = counterofferSummaryMap.get(proposal._id) || null;
+    const counterofferSummary = counterofferSummaryMap.get(proposal.id) || null;
 
     // Resolve house rules IDs to names (from proposal, not listing)
     // House Rules field is stored as a JSON string array: "[\"id1\", \"id2\"]"
     let proposalHouseRuleIds = [];
-    const houseRulesRaw = proposal['House Rules'];
+    const houseRulesRaw = proposal.house_rules_reference_ids_json;
     if (houseRulesRaw) {
       if (typeof houseRulesRaw === 'string') {
         try {
@@ -691,7 +664,7 @@ export async function fetchUserProposalsFromUrl() {
   let selectedProposal = null;
 
   if (preselectedId) {
-    selectedProposal = proposals.find(p => p._id === preselectedId);
+    selectedProposal = proposals.find(p => p.id === preselectedId);
     if (!selectedProposal) {
       console.warn(`fetchUserProposalsFromUrl: Preselected proposal ${preselectedId} not found, defaulting to first`);
       selectedProposal = proposals[0] || null;

@@ -134,8 +134,8 @@ export function useSearchPageAuth() {
         const [userResult, countsResult] = await Promise.all([
           supabase
             .from('user')
-            .select('"About Me / Bio", "need for Space", "special needs", "Favorited Listings"')
-            .eq('_id', authUserId)
+            .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
+            .eq('id', authUserId)
             .single(),
           supabase.rpc('get_user_junction_counts', { p_user_id: authUserId })
         ])
@@ -143,19 +143,10 @@ export function useSearchPageAuth() {
         const userRecord = userResult.data
         const error = userResult.error
 
-        // Process favorites from JSONB field
-        const favorites = userRecord?.['Favorited Listings'] || []
-        if (Array.isArray(favorites) && favorites.length > 0) {
-          // Validate Bubble ID format (digits + 'x' + digits)
-          const validFavorites = favorites.filter(
-            id => typeof id === 'string' && /^\d+x\d+$/.test(id)
-          )
-          setFavoritedListingIds(new Set(validFavorites))
-          setFavoritesCount(validFavorites.length)
-        } else {
-          setFavoritesCount(0)
-          setFavoritedListingIds(new Set())
-        }
+        // Process favorites from junction table counts (favorites now stored on listing table)
+        // Favorites count will come from junction RPC below
+        setFavoritesCount(0)
+        setFavoritedListingIds(new Set())
 
         // Process proposal count from junction RPC
         const junctionCounts = countsResult.data?.[0] || {}
@@ -170,9 +161,9 @@ export function useSearchPageAuth() {
 
           setLoggedInUserData({
             userId: authUserId,
-            aboutMe: userRecord['About Me / Bio'] || '',
-            needForSpace: userRecord['need for Space'] || '',
-            specialNeeds: userRecord['special needs'] || '',
+            aboutMe: userRecord.bio_text || '',
+            needForSpace: userRecord.stated_need_for_space_text || '',
+            specialNeeds: userRecord.stated_special_needs_text || '',
             proposalCount
           })
 
@@ -189,7 +180,7 @@ export function useSearchPageAuth() {
               const proposals = await fetchProposalsByGuest(authUserId)
               const proposalsMap = new Map()
               proposals.forEach(proposal => {
-                const listingId = proposal.Listing
+                const listingId = proposal.listing_id
                 if (listingId && !proposalsMap.has(listingId)) {
                   proposalsMap.set(listingId, proposal)
                 }

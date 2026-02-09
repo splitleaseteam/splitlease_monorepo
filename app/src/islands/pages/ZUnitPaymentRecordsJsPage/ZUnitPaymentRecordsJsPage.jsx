@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Z-Unit Payment Records JS Test Page
  *
  * Internal test page for payment records management and validation.
@@ -115,7 +115,7 @@ function LeaseSelector({
               <div className="zupr-info-grid">
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Rental Type:</span>
-                  <span className="zupr-info-value">{proposalData['rental type'] || '-'}</span>
+                  <span className="zupr-info-value">{proposalData.rental_type || '-'}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Week Pattern:</span>

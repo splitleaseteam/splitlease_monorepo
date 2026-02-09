@@ -86,18 +86,18 @@ function ListingRow({
   };
 
   return (
-    <tr className={`listings-table__row ${isSelected ? 'listings-table__row--selected' : ''} ${!listing.active ? 'listings-table__row--inactive' : ''}`}>
+    <tr className={`listings-table__row ${isSelected ? 'listings-table__row--selected' : ''} ${!listing.is_active ? 'listings-table__row--inactive' : ''}`}>
       <td className="listings-table__td listings-table__td--checkbox">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect(listing.id)}
-          aria-label={`Select ${listing.name}`}
+          aria-label={`Select ${listing.listing_title}`}
         />
       </td>
       <td className="listings-table__td listings-table__td--name">
         <div className="listings-table__name-cell">
-          <span className="listings-table__name">{listing.name}</span>
+          <span className="listings-table__name">{listing.listing_title}</span>
           <span className="listings-table__host">{listing.hostName}</span>
         </div>
       </td>
@@ -129,11 +129,11 @@ function ListingRow({
       </td>
       <td className="listings-table__td listings-table__td--center">
         <button
-          className={`listings-table__status-btn ${listing.active ? 'listings-table__status-btn--active' : 'listings-table__status-btn--inactive'}`}
-          onClick={() => onToggleActive(listing.id, !listing.active)}
-          title={listing.active ? 'Click to deactivate' : 'Click to activate'}
+          className={`listings-table__status-btn ${listing.is_active ? 'listings-table__status-btn--active' : 'listings-table__status-btn--inactive'}`}
+          onClick={() => onToggleActive(listing.id, !listing.is_active)}
+          title={listing.is_active ? 'Click to deactivate' : 'Click to activate'}
         >
-          {listing.active ? 'Active' : 'Inactive'}
+          {listing.is_active ? 'Active' : 'Inactive'}
         </button>
       </td>
       <td className="listings-table__td listings-table__td--actions">

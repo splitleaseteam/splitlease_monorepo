@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Can Generate Documents Rule
  *
  * Validates that a lease has all required data for document generation.
@@ -65,7 +65,7 @@ export function canGenerateDocuments({
   if (!guest) {
     warnings.push('Guest record not found - guest name will be empty');
   } else {
-    const hasGuestName = guest['Name - Full'] || guest['Name - First'] || guest['Name - Last'];
+    const hasGuestName = guest.first_name || guest.last_name;
     if (!hasGuestName) {
       warnings.push('Guest name fields are empty');
     }
@@ -75,7 +75,7 @@ export function canGenerateDocuments({
   if (!host) {
     errors.push('Host record is required for document generation');
   } else {
-    const hasHostName = host['Name - Full'] || host['Name - First'] || host['Name - Last'];
+    const hasHostName = host.first_name || host.last_name;
     if (!hasHostName) {
       warnings.push('Host name fields are empty');
     }
@@ -85,9 +85,9 @@ export function canGenerateDocuments({
   if (!listing) {
     errors.push('Listing record is required for document generation');
   } else {
-    const hasAddress = listing['Location - Address'] ||
-      listing['Location - City'] ||
-      listing['Location - Hood'];
+    const hasAddress = listing.address_with_lat_lng_json ||
+      listing.city ||
+      listing.primary_neighborhood_reference_id;
     if (!hasAddress) {
       warnings.push('Listing address not found - location fields may be empty');
     }

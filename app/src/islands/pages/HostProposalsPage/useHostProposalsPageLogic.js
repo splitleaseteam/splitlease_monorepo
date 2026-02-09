@@ -38,8 +38,8 @@ function normalizeListing(listing) {
     ...listing,
     // Keep original fields for backwards compatibility
     // Add normalized aliases for V7 components
-    title: listing.Name || listing.title || listing.name || 'Unnamed Listing',
-    name: listing.Name || listing.title || listing.name || 'Unnamed Listing',
+    title: listing.listing_title || listing.title || listing.listing_title || 'Unnamed Listing',
+    name: listing.listing_title || listing.title || listing.listing_title || 'Unnamed Listing',
     thumbnail: listing['Cover Photo'] || listing.thumbnail || listing.cover_photo || null,
     neighborhood: listing.Neighborhood || listing.neighborhood || null,
     address: listing['Full Address'] || listing.address || listing.full_address || null,
@@ -57,28 +57,28 @@ function normalizeListing(listing) {
 function normalizeGuest(guest) {
   if (!guest) return null;
 
-  // Determine verification status from Bubble fields
-  // "user verified?" is the main verification flag
+  // Determine verification status from database fields
+  // is_user_verified is the main verification flag
   // "Selfie with ID" indicates ID verification was completed
   // "Verify - Linked In ID" indicates work/LinkedIn verification
-  const isUserVerified = guest['user verified?'] || guest.id_verified || false;
+  const isUserVerified = guest.is_user_verified || guest.id_verified || false;
   const hasIdVerification = !!(guest['Selfie with ID'] || guest.id_verified);
   const hasWorkVerification = !!(guest['Verify - Linked In ID'] || guest.work_verified);
 
   return {
     ...guest,
     // Add normalized aliases for V7 components
-    name: guest['Name - Full'] || guest.name || guest.full_name || 'Guest',
-    full_name: guest['Name - Full'] || guest.full_name || guest.name || 'Guest',
-    first_name: guest['Name - First'] || guest.first_name || guest.firstName || 'Guest',
-    profilePhoto: guest['Profile Photo'] || guest.profilePhoto || guest.profile_photo || null,
-    avatar: guest['Profile Photo'] || guest.profilePhoto || guest.avatar || null,
-    bio: guest['About Me / Bio'] || guest.Bio || guest.bio || guest.about || null,
+    name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.name || guest.full_name || 'Guest',
+    full_name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.full_name || guest.name || 'Guest',
+    first_name: guest.first_name || guest.firstName || 'Guest',
+    profilePhoto: guest.profile_photo_url || guest.profilePhoto || guest.profile_photo || null,
+    avatar: guest.profile_photo_url || guest.profilePhoto || guest.avatar || null,
+    bio: guest.bio_text || guest.Bio || guest.bio || guest.about || null,
     id_verified: hasIdVerification || isUserVerified,
     work_verified: hasWorkVerification,
     is_verified: isUserVerified,
-    review_count: guest['Review Count'] || guest.review_count || 0,
-    created_at: guest['Created Date'] || guest.created_at || null
+    review_count: guest.review_count || 0,
+    created_at: guest.bubble_created_at || guest.created_at || null
   };
 }
 
@@ -93,7 +93,7 @@ function normalizeProposal(proposal, normalizedGuest = null) {
 
   // Status - preserve original Bubble format (DO NOT normalize to snake_case)
   // ActionButtonsRow expects exact Bubble status strings for matching
-  const rawStatus = proposal.Status || proposal.status || '';
+  const rawStatus = proposal.proposal_workflow_status || proposal.status || '';
   const status = typeof rawStatus === 'string' ? rawStatus : rawStatus;
 
   return {
@@ -105,44 +105,44 @@ function normalizeProposal(proposal, normalizedGuest = null) {
     guest: normalizedGuest || normalizeGuest(proposal.guest),
 
     // Dates
-    start_date: proposal['Move in range start'] || proposal.start_date || null,
-    end_date: proposal['Move-out'] || proposal.end_date || null,
-    move_in_range_start: proposal['Move in range start'] || proposal.move_in_range_start || null,
-    move_in_range_end: proposal['Move in range end'] || proposal.move_in_range_end || null,
-    created_at: proposal['Created Date'] || proposal.created_at || null,
+    start_date: proposal.move_in_range_start_date || proposal.start_date || null,
+    end_date: proposal.planned_move_out_date || proposal.end_date || null,
+    move_in_range_start: proposal.move_in_range_start_date || proposal.move_in_range_start || null,
+    move_in_range_end: proposal.move_in_range_end_date || proposal.move_in_range_end || null,
+    created_at: proposal.bubble_created_at || proposal.created_at || null,
 
     // Days/Schedule
-    days_selected: proposal['Days Selected'] || proposal.days_selected || [],
-    days_per_week: proposal['Days Selected'] || proposal.days_per_week || [],
-    nights_selected: proposal['Nights Selected (Nights list)'] || proposal.nights_selected || [],
-    nights_per_week: proposal['nights per week (num)'] || proposal.nights_per_week || 0,
-    check_in_day: proposal['check in day'] || proposal.check_in_day || null,
-    check_out_day: proposal['check out day'] || proposal.check_out_day || null,
+    days_selected: proposal.guest_selected_days_numbers_json || proposal.days_selected || [],
+    days_per_week: proposal.guest_selected_days_numbers_json || proposal.days_per_week || [],
+    nights_selected: proposal.guest_selected_nights_numbers_json || proposal.nights_selected || [],
+    nights_per_week: proposal.nights_per_week_count || proposal.nights_per_week || 0,
+    check_in_day: proposal.checkin_day_of_week_number || proposal.check_in_day || null,
+    check_out_day: proposal.checkout_day_of_week_number || proposal.check_out_day || null,
 
     // Duration
-    duration_weeks: proposal['Reservation Span (Weeks)'] || proposal.duration_weeks || proposal.total_weeks || 0,
-    duration_months: proposal['Reservation Span'] || proposal.duration_months || 0,
+    duration_weeks: proposal.reservation_span_in_weeks || proposal.duration_weeks || proposal.total_weeks || 0,
+    duration_months: proposal.reservation_span_text || proposal.duration_months || 0,
 
     // Pricing - prioritize host compensation fields
-    nightly_rate: proposal['proposal nightly price'] || proposal.nightly_rate || 0,
-    total_price: proposal['Total Compensation (proposal - host)'] || proposal['host compensation'] || proposal.total_price || 0,
-    host_compensation: proposal['host compensation'] || proposal['Total Compensation (proposal - host)'] || proposal.host_compensation || 0,
-    four_week_rent: proposal['4 week rent'] || proposal.four_week_rent || 0,
-    four_week_compensation: proposal['4 week compensation'] || proposal.four_week_compensation || 0,
-    cleaning_fee: proposal['cleaning fee'] || proposal.cleaning_fee || 0,
-    damage_deposit: proposal['damage deposit'] || proposal.damage_deposit || 0,
+    nightly_rate: proposal.calculated_nightly_price || proposal.nightly_rate || 0,
+    total_price: proposal.total_compensation_for_host || proposal.host_compensation_per_period || proposal.total_price || 0,
+    host_compensation: proposal.host_compensation_per_period || proposal.total_compensation_for_host || proposal.host_compensation || 0,
+    four_week_rent: proposal.four_week_rent_amount || proposal.four_week_rent || 0,
+    four_week_compensation: proposal.four_week_host_compensation || proposal.four_week_compensation || 0,
+    cleaning_fee_amount: proposal.cleaning_fee_amount || proposal.cleaning_fee || 0,
+    damage_deposit_amount: proposal.damage_deposit_amount || proposal.damage_deposit || 0,
 
     // Guest info/message
-    comment: proposal.Comment || proposal.comment || null,
-    need_for_space: proposal['need for space'] || proposal.need_for_space || null,
-    about_yourself: proposal.about_yourself || null,
+    comment: proposal.guest_introduction_message || proposal.comment || null,
+    need_for_space: proposal.guest_stated_need_for_space || proposal.need_for_space || null,
+    about_yourself: proposal.guest_about_yourself_text || null,
 
     // Guest counteroffer detection
     last_modified_by: proposal['last_modified_by'] || proposal.last_modified_by || null,
     has_guest_counteroffer: proposal.has_guest_counteroffer || false,
 
     // Rental type (Monthly, Weekly, Nightly)
-    rental_type: proposal['rental type'] || proposal.rental_type || 'nightly'
+    rental_type: proposal.rental_type || 'nightly'
   };
 }
 
@@ -251,7 +251,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             if (userType && isHost({ userType })) {
               finalUserData = {
                 userId: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                _id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
+                id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
                 firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
                 email: session.user.email,
                 userType: userType
@@ -304,7 +304,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         });
 
         // Load host data
-        await loadHostData(finalUserData.userId || finalUserData._id);
+        await loadHostData(finalUserData.userId || finalUserData.id);
 
       } catch (err) {
         console.error('Auth check failed:', err);
@@ -354,14 +354,14 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       if (listingsResult.length > 0) {
         // Fetch proposal counts for all listings to determine sort order
-        const listingIds = listingsResult.map(l => l._id || l.id);
+        const listingIds = listingsResult.map(l => l.id);
 
         // Get proposal counts and most recent proposal date for each listing
         const { data: proposalStats, error: statsError } = await supabase
-          .from('proposal')
-          .select('Listing, "Created Date"')
-          .in('Listing', listingIds)
-          .or('"Deleted".is.null,"Deleted".eq.false');
+          .from('booking_proposal')
+          .select('listing_id, bubble_created_at')
+          .in('listing_id', listingIds)
+          .or('is_deleted.is.null,is_deleted.eq.false');
 
         if (statsError) {
           console.warn('[useHostProposalsPageLogic] Could not fetch proposal stats:', statsError);
@@ -371,13 +371,13 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         const statsMap = {};
         const countsMap = {}; // Simple count map for UI
         (proposalStats || []).forEach(p => {
-          const listingId = p.Listing;
+          const listingId = p.listing_id;
           if (!statsMap[listingId]) {
             statsMap[listingId] = { count: 0, mostRecent: null };
           }
           statsMap[listingId].count++;
           countsMap[listingId] = (countsMap[listingId] || 0) + 1;
-          const createdDate = new Date(p['Created Date']);
+          const createdDate = new Date(p.bubble_created_at);
           if (!statsMap[listingId].mostRecent || createdDate > statsMap[listingId].mostRecent) {
             statsMap[listingId].mostRecent = createdDate;
           }
@@ -388,8 +388,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
         // Sort listings: most recent proposal first, then by proposal count
         const sortedListings = [...listingsResult].sort((a, b) => {
-          const aId = a._id || a.id;
-          const bId = b._id || b.id;
+          const aId = a.id;
+          const bId = b.id;
           const aStats = statsMap[aId] || { count: 0, mostRecent: null };
           const bStats = statsMap[bId] || { count: 0, mostRecent: null };
 
@@ -420,7 +420,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         let listingToSelect = normalizedListings[0];
         if (preselectedListingId) {
           const matchedListing = normalizedListings.find(l =>
-            (l._id || l.id) === preselectedListingId
+            l.id === preselectedListingId
           );
           if (matchedListing) {
             listingToSelect = matchedListing;
@@ -431,7 +431,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
         // Fetch proposals for the selected listing
         // Pass userId explicitly since user state may not be set yet (async state update)
-        const proposalsResult = await fetchProposalsForListing(listingToSelect._id || listingToSelect.id, userId);
+        const proposalsResult = await fetchProposalsForListing(listingToSelect.id, userId);
         setProposals(proposalsResult);
       } else {
         setListings([]);
@@ -449,12 +449,12 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   /**
    * Fetch host's listings using RPC function
    *
-   * Uses get_host_listings RPC to handle column names with special characters
-   * (like "Host User") that cause issues with PostgREST .or() filters.
+   * Uses get_host_listings RPC to handle host listing lookups
+   * (matches on host_user_id and created_by_user_id).
    *
    * Pattern: RPC handles finding listings where:
-   * - "Host User" = user._id, OR
-   * - "Created By" = user._id
+   * - host_user_id = user.id, OR
+   * - created_by_user_id = user.id
    */
   const fetchHostListings = async (userId) => {
     try {
@@ -485,54 +485,54 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     try {
 
       const { data: proposals, error } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .select(`
-          _id,
-          "Status",
-          "Guest",
-          "Host User",
-          "Listing",
-          "Move in range start",
-          "Move in range end",
-          "Move-out",
-          "Reservation Span",
-          "Reservation Span (Weeks)",
-          "nights per week (num)",
-          "Nights Selected (Nights list)",
-          "Days Selected",
-          "check in day",
-          "check out day",
-          "hc nights selected",
-          "hc days selected",
-          "proposal nightly price",
-          "4 week rent",
-          "Total Price for Reservation (guest)",
-          "Total Compensation (proposal - host)",
-          "host compensation",
-          "4 week compensation",
-          "cleaning fee",
-          "damage deposit",
-          "Guest email",
-          "need for space",
-          "about_yourself",
-          "Comment",
-          "Created Date",
-          "Modified Date",
-          "virtual meeting",
-          "counter offer happened",
-          "hc reservation span (weeks)",
-          "hc nightly price",
-          "hc total price",
-          "hc move in date",
-          "hc check in day",
-          "hc check out day",
-          "hc nights per week",
-          "hc house rules",
-          "rental type"
+          id,
+          proposal_workflow_status,
+          guest_user_id,
+          host_user_id,
+          listing_id,
+          move_in_range_start_date,
+          move_in_range_end_date,
+          planned_move_out_date,
+          reservation_span_text,
+          reservation_span_in_weeks,
+          nights_per_week_count,
+          guest_selected_nights_numbers_json,
+          guest_selected_days_numbers_json,
+          checkin_day_of_week_number,
+          checkout_day_of_week_number,
+          host_proposed_selected_nights_json,
+          host_proposed_selected_days_json,
+          calculated_nightly_price,
+          four_week_rent_amount,
+          total_reservation_price_for_guest,
+          total_compensation_for_host,
+          host_compensation_per_period,
+          four_week_host_compensation,
+          cleaning_fee_amount,
+          damage_deposit_amount,
+          guest_email_address,
+          guest_stated_need_for_space,
+          guest_about_yourself_text,
+          guest_introduction_message,
+          bubble_created_at,
+          bubble_updated_at,
+          virtual_meeting_record_id,
+          has_host_counter_offer,
+          host_proposed_reservation_span_weeks,
+          host_proposed_nightly_price,
+          host_proposed_total_guest_price,
+          host_proposed_move_in_date,
+          host_proposed_checkin_day,
+          host_proposed_checkout_day,
+          host_proposed_nights_per_week,
+          host_proposed_house_rules_json,
+          rental_type
         `)
-        .eq('Listing', listingId)
-        .neq('Deleted', true)
-        .order('Created Date', { ascending: false });
+        .eq('listing_id', listingId)
+        .neq('is_deleted', true)
+        .order('bubble_created_at', { ascending: false });
 
       if (error) {
         console.error('[useHostProposalsPageLogic] Error fetching proposals:', error);
@@ -542,14 +542,14 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Enrich proposals with guest data
       if (proposals && proposals.length > 0) {
-        const guestIds = [...new Set(proposals.map(p => p.Guest).filter(Boolean))];
+        const guestIds = [...new Set(proposals.map(p => p.guest_user_id).filter(Boolean))];
 
         if (guestIds.length > 0) {
 
           const { data: guests, error: guestError } = await supabase
             .from('user')
-            .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo", "About Me / Bio", "user verified?", "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", "Created Date"')
-            .in('_id', guestIds);
+            .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", review_count, bubble_created_at')
+            .in('id', guestIds);
 
           if (guestError) {
             console.error('[useHostProposalsPageLogic] Error fetching guests:', guestError);
@@ -557,19 +557,19 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
 
           const guestMap = {};
-          guests?.forEach(g => { guestMap[g._id] = g; });
+          guests?.forEach(g => { guestMap[g.id] = g; });
 
           // Attach normalized guest data to each proposal
           proposals.forEach(p => {
-            if (p.Guest && guestMap[p.Guest]) {
-              const normalized = normalizeGuest(guestMap[p.Guest]);
+            if (p.guest_user_id && guestMap[p.guest_user_id]) {
+              const normalized = normalizeGuest(guestMap[p.guest_user_id]);
               p.guest = normalized;
             }
           });
         }
 
         // Enrich proposals with virtual meeting data
-        const vmIds = [...new Set(proposals.map(p => p['virtual meeting']).filter(Boolean))];
+        const vmIds = [...new Set(proposals.map(p => p.virtual_meeting_record_id).filter(Boolean))];
 
         if (vmIds.length > 0) {
           const { data: virtualMeetings } = await supabase
@@ -590,8 +590,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
           // Attach virtual meeting data to each proposal (normalize field names)
           proposals.forEach(p => {
-            if (p['virtual meeting'] && vmMap[p['virtual meeting']]) {
-              const rawVm = vmMap[p['virtual meeting']];
+            if (p.virtual_meeting_record_id && vmMap[p.virtual_meeting_record_id]) {
+              const rawVm = vmMap[p.virtual_meeting_record_id];
               // Normalize field names for consistency with virtualMeetingRules.js
               p.virtualMeeting = {
                 _id: rawVm._id,
@@ -607,9 +607,9 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         }
 
         // Enrich proposals with negotiation summaries (host-directed)
-        const proposalIds = proposals.map(p => p._id);
+        const proposalIds = proposals.map(p => p.id);
         // Use override if provided (needed when called before user state is set), otherwise fall back to user state
-        const hostUserId = hostUserIdOverride || user?._id || user?.userId;
+        const hostUserId = hostUserIdOverride || user?.userId || user?.id;
 
         if (proposalIds.length > 0 && hostUserId) {
           const { data: summariesData, error: summariesError } = await supabase
@@ -617,7 +617,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             .select('*')
             .in('"Proposal associated"', proposalIds)
             .eq('"To Account"', hostUserId)
-            .order('"Created Date"', { ascending: false });
+            .order('bubble_created_at', { ascending: false });
 
           if (summariesError) {
             console.error('[useHostProposalsPageLogic] Error fetching negotiation summaries:', summariesError);
@@ -633,7 +633,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
             // Attach summaries to proposals
             proposals.forEach(p => {
-              p.negotiationSummaries = summaryMap[p._id] || [];
+              p.negotiationSummaries = summaryMap[p.id] || [];
             });
 
           }
@@ -662,7 +662,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     let listing = listingOrId;
     if (typeof listingOrId === 'string') {
       // Find the listing from the current listings array
-      listing = listings.find(l => (l._id || l.id) === listingOrId);
+      listing = listings.find(l => l.id === listingOrId);
       if (!listing) {
         console.warn('[useHostProposalsPageLogic] Listing not found:', listingOrId);
         return;
@@ -673,7 +673,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     setIsLoading(true);
 
     try {
-      const proposalsResult = await fetchProposalsForListing(listing._id || listing.id);
+      const proposalsResult = await fetchProposalsForListing(listing.id);
       setProposals(proposalsResult);
     } catch (err) {
       console.error('Failed to load proposals for listing:', err);
@@ -713,7 +713,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         body: {
           action: 'update',
           payload: {
-            proposalId: proposal._id || proposal.id,
+            proposalId: proposal.id,
             status: 'Deleted'
           }
         }
@@ -722,7 +722,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       if (error) throw error;
 
       // Remove from local state
-      setProposals(prev => prev.filter(p => (p._id || p.id) !== (proposal._id || proposal.id)));
+      setProposals(prev => prev.filter(p => p.id !== proposal.id));
 
     } catch (err) {
       console.error('Failed to delete proposal:', err);
@@ -751,7 +751,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Execute the acceptance workflow
       const result = await hostAcceptProposalWorkflow({
-        proposalId: proposal._id || proposal.id,
+        proposalId: proposal.id,
         proposal
       });
 
@@ -760,8 +760,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       // This gives instant feedback while the server refresh catches up
       const acceptedStatus = 'Proposal or Counteroffer Accepted / Drafting Lease Documents';
       setProposals(prev => prev.map(p =>
-        (p._id === proposal._id || p.id === proposal.id)
-          ? { ...p, Status: acceptedStatus }
+        p.id === proposal.id
+          ? { ...p, status: acceptedStatus, proposal_workflow_status: acceptedStatus }
           : p
       ));
 
@@ -771,7 +771,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Refresh proposals from server to get the authoritative state
       if (selectedListing) {
-        const proposalsResult = await fetchProposalsForListing(selectedListing._id || selectedListing.id);
+        const proposalsResult = await fetchProposalsForListing(selectedListing.id);
         setProposals(proposalsResult);
       }
 
@@ -884,17 +884,17 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
 
       // Get original values from proposal for fields not being changed
-      const originalWeeks = originalProposal['Reservation Span (Weeks)'] || originalProposal.duration_weeks || 0;
-      const originalCheckIn = originalProposal['check in day'] ?? originalProposal.check_in_day;
-      const originalCheckOut = originalProposal['check out day'] ?? originalProposal.check_out_day;
-      const originalNights = originalProposal['Nights Selected (Nights list)'] || originalProposal.nights_selected || [];
-      const originalDays = originalProposal['Days Selected'] || originalProposal.days_selected || [];
-      const originalMoveIn = originalProposal['Move in range start'] || originalProposal.move_in_range_start;
-      const originalNightlyPrice = originalProposal['proposal nightly price'] || originalProposal.nightly_rate || 0;
-      const originalCleaningFee = originalProposal['cleaning fee'] || originalProposal.cleaning_fee || 0;
-      const originalDamageDeposit = originalProposal['damage deposit'] || originalProposal.damage_deposit || 0;
-      const originalTotalPrice = originalProposal['Total Price for Reservation (guest)'] || originalProposal.total_price || 0;
-      const originalFourWeekRent = originalProposal['4 week rent'] || originalProposal.four_week_rent || 0;
+      const originalWeeks = originalProposal.reservation_span_in_weeks || originalProposal.duration_weeks || 0;
+      const originalCheckIn = originalProposal.checkin_day_of_week_number ?? originalProposal.check_in_day;
+      const originalCheckOut = originalProposal.checkout_day_of_week_number ?? originalProposal.check_out_day;
+      const originalNights = originalProposal.guest_selected_nights_numbers_json || originalProposal.nights_selected || [];
+      const originalDays = originalProposal.guest_selected_days_numbers_json || originalProposal.days_selected || [];
+      const originalMoveIn = originalProposal.move_in_range_start_date || originalProposal.move_in_range_start;
+      const originalNightlyPrice = originalProposal.calculated_nightly_price || originalProposal.nightly_rate || 0;
+      const originalCleaningFee = originalProposal.cleaning_fee_amount || originalProposal.cleaning_fee || 0;
+      const originalDamageDeposit = originalProposal.damage_deposit_amount || originalProposal.damage_deposit || 0;
+      const originalTotalPrice = originalProposal.total_reservation_price_for_guest || originalProposal.total_price || 0;
+      const originalFourWeekRent = originalProposal.four_week_rent_amount || originalProposal.four_week_rent || 0;
 
       // Convert day/night values to indices
       const convertedCheckIn = checkIn !== undefined ? dayNameToIndex(checkIn) : null;
@@ -917,13 +917,13 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       const hcNightlyPrice = parseFloat(originalNightlyPrice) || 0;
 
       // Calculate derived financial fields based on counteroffer terms
-      // Total price = nightly rate × nights per week × total weeks
+      // Total price = nightly rate Ã— nights per week Ã— total weeks
       const hcTotalPrice = hcNightlyPrice * hcNightsPerWeek * hcReservationSpanWeeks;
-      // Four week rent = nightly rate × nights per week × 4
+      // Four week rent = nightly rate Ã— nights per week Ã— 4
       const hcFourWeekRent = hcNightlyPrice * hcNightsPerWeek * 4;
 
       const payload = {
-        proposal_id: originalProposal._id || originalProposal.id,
+        proposal_id: originalProposal.id,
         status: 'Host Counteroffer Submitted / Awaiting Guest Review',
 
         // Schedule fields - use new value if provided, otherwise copy original
@@ -944,7 +944,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
         // House rules - convert to array of IDs
         hc_house_rules: Array.isArray(newHouseRules)
-          ? newHouseRules.map(rule => rule.id || rule._id || rule).filter(Boolean)
+          ? newHouseRules.map(rule => rule.id || rule).filter(Boolean)
           : []
       };
 
@@ -982,7 +982,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Refresh proposals
       if (selectedListing) {
-        const proposalsResult = await fetchProposalsForListing(selectedListing._id || selectedListing.id);
+        const proposalsResult = await fetchProposalsForListing(selectedListing.id);
         setProposals(proposalsResult);
       }
 
@@ -1010,7 +1010,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         body: {
           action: 'update',
           payload: {
-            proposal_id: proposal._id || proposal.id,
+            proposal_id: proposal.id,
             status: 'Proposal Rejected by Host',
             reason_for_cancellation: reason
           }
@@ -1021,7 +1021,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
       // Refresh proposals
       if (selectedListing) {
-        const proposalsResult = await fetchProposalsForListing(selectedListing._id || selectedListing.id);
+        const proposalsResult = await fetchProposalsForListing(selectedListing.id);
         setProposals(proposalsResult);
       }
 
@@ -1058,11 +1058,11 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    * Handle send message
    */
   const handleSendMessage = useCallback(async (proposal) => {
-    const guest = proposal.guest || proposal.Guest || proposal['Created By'] || {};
-    const guestName = guest.firstName || guest['First Name'] || 'Guest';
+    const guest = proposal.guest || {};
+    const guestName = guest.firstName || guest.first_name || 'Guest';
 
     // Get proposal ID
-    const proposalId = proposal._id || proposal.id;
+    const proposalId = proposal.id;
     if (!proposalId) {
       showToast({ title: 'Error', content: 'Unable to find proposal ID', type: 'error' });
       return;
@@ -1107,7 +1107,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
     if (!proposal) return;
 
     const vm = proposal.virtualMeeting;
-    const currentUserId = user?._id || user?.userId;
+    const currentUserId = user?.userId || user?.id;
 
     let view = 'request'; // Default: no VM exists, show request view
 
@@ -1158,7 +1158,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   const handleVirtualMeetingSuccess = useCallback(async () => {
     // Refresh proposals to get updated VM data
     if (selectedListing) {
-      const proposalsResult = await fetchProposalsForListing(selectedListing._id || selectedListing.id);
+      const proposalsResult = await fetchProposalsForListing(selectedListing.id);
       setProposals(proposalsResult);
     }
     handleCloseVirtualMeetingModal();
@@ -1169,8 +1169,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    * Sends a reminder to the guest to submit their rental application
    */
   const handleRequestRentalApp = useCallback((proposal) => {
-    const guest = proposal.guest || proposal.Guest || proposal['Created By'] || {};
-    const guestName = guest.firstName || guest['First Name'] || 'Guest';
+    const guest = proposal.guest || {};
+    const guestName = guest.firstName || guest.first_name || 'Guest';
     showToast({ title: 'Request Sent!', content: `Rental application request sent to ${guestName}! They will be notified to complete their application.`, type: 'success' });
     // TODO: Call API to send rental app request notification to guest
   }, []);
@@ -1180,7 +1180,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    */
   const handleEditListing = useCallback(() => {
     if (selectedListing) {
-      window.location.href = `/listing-dashboard?id=${selectedListing._id || selectedListing.id}`;
+      window.location.href = `/listing-dashboard?id=${selectedListing.id}`;
     }
   }, [selectedListing]);
 

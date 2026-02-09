@@ -161,8 +161,8 @@ export function useGuestSimulationLogic() {
       // Update user record in Supabase
       const { error: updateError } = await supabase
         .from('user')
-        .update({ 'is usability tester': true })
-        .eq('_id', userId);
+        .update({ is_usability_tester: true })
+        .eq('id', userId);
 
       if (updateError) {
         throw new Error(updateError.message);
@@ -218,9 +218,9 @@ export function useGuestSimulationLogic() {
       // Find usability test listings
       const { data: listings, error: listingError } = await supabase
         .from('listing')
-        .select('_id, Title, "Neighborhood (Text)"')
-        .eq('isForUsability', true)
-        .eq('Active', true)
+        .select('id, listing_title, primary_neighborhood_reference_id')
+        .eq('is_usability_test_listing', true)
+        .eq('is_active', true)
         .limit(2);
 
       if (listingError) {
@@ -228,27 +228,27 @@ export function useGuestSimulationLogic() {
       }
 
       if (!listings || listings.length < 2) {
-        throw new Error('Not enough usability test listings found. Need at least 2 listings with isForUsability = true.');
+        throw new Error('Not enough usability test listings found. Need at least 2 listings with is_usability_test_listing = true.');
       }
 
       // Create 2 test proposals
       const proposalPromises = listings.slice(0, 2).map(async (listing, index) => {
         const proposalData = {
-          guest: userId,
-          listing: listing._id,
-          Status: 'Suggested',
-          'Days of Week Count': 7,
-          check_in_day_index: 0, // Sunday
-          check_out_day_index: 6, // Saturday
-          'Reservation Length (weeks)': 4,
-          'Price Per Night (GC Guest pays)': 150 + (index * 25),
-          isForUsability: true
+          guest_user_id: userId,
+          listing_id: listing.id,
+          proposal_workflow_status: 'Suggested',
+          nights_per_week_count: 7,
+          checkin_day_of_week_number: 0, // Sunday
+          checkout_day_of_week_number: 6, // Saturday
+          reservation_span_in_weeks: 4,
+          calculated_nightly_price: 150 + (index * 25),
+          is_usability_test_listing: true
         };
 
         const { data, error: proposalError } = await supabase
-          .from('proposal')
+          .from('booking_proposal')
           .insert(proposalData)
-          .select('_id, Status, listing')
+          .select('id, proposal_workflow_status, listing_id')
           .single();
 
         if (proposalError) {
@@ -266,7 +266,7 @@ export function useGuestSimulationLogic() {
         proposals: createdProposals,
         stepBResult: {
           success: true,
-          message: `Created proposals ${createdProposals.map(p => p._id).join(', ')} at ${timestamp}`
+          message: `Created proposals ${createdProposals.map(p => p.id).join(', ')} at ${timestamp}`
         }
       }));
 
@@ -313,7 +313,7 @@ export function useGuestSimulationLogic() {
 
       // Apply counter-offer fields to first proposal
       const counterOfferData = {
-        Status: 'Host Counter-Offered',
+        proposal_workflow_status: 'Host Counter-Offered',
         'hc_Days of Week Count': 5,
         hc_check_in_day_index: 1, // Monday
         hc_check_out_day_index: 5, // Friday
@@ -322,9 +322,9 @@ export function useGuestSimulationLogic() {
       };
 
       const { error: updateError } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .update(counterOfferData)
-        .eq('_id', firstProposal._id);
+        .eq('id', firstProposal.id);
 
       if (updateError) {
         throw new Error(updateError.message);
@@ -335,7 +335,7 @@ export function useGuestSimulationLogic() {
         ...prev,
         stepCResult: {
           success: true,
-          message: `Counteroffer applied to proposal ${firstProposal._id} at ${timestamp}`
+          message: `Counteroffer applied to proposal ${firstProposal.id} at ${timestamp}`
         }
       }));
 
@@ -389,9 +389,9 @@ export function useGuestSimulationLogic() {
       };
 
       const { error: updateError } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .update(meetingData)
-        .eq('_id', firstProposal._id);
+        .eq('id', firstProposal.id);
 
       if (updateError) {
         throw new Error(updateError.message);
@@ -448,12 +448,12 @@ export function useGuestSimulationLogic() {
       }
 
       // Accept all proposals
-      const proposalIds = proposals.map(p => p._id);
+      const proposalIds = proposals.map(p => p.id);
 
       const { error: updateError } = await supabase
-        .from('proposal')
-        .update({ Status: 'Accepted' })
-        .in('_id', proposalIds);
+        .from('booking_proposal')
+        .update({ proposal_workflow_status: 'Accepted' })
+        .in('id', proposalIds);
 
       if (updateError) {
         throw new Error(updateError.message);

@@ -40,9 +40,9 @@ export default function PublicView({
   onListingClick
 }) {
   // Extract data from profile
-  const bio = profileData?.['About Me / Bio'] || '';
-  const needForSpace = profileData?.['need for Space'] || '';
-  const specialNeeds = profileData?.['special needs'] || '';
+  const bio = profileData?.bio_text || '';
+  const needForSpace = profileData?.stated_need_for_space_text || '';
+  const specialNeeds = profileData?.stated_special_needs_text || '';
   const selectedDays = dayNamesToIndices(profileData?.['Recent Days Selected'] || []);
 
   // Parse transportation medium - stored as JSON string in text column
@@ -67,7 +67,7 @@ export default function PublicView({
 
   const goodGuestReasons = profileData?.['Good Guest Reasons'] || [];
   const storageItems = profileData?.['storage'] || [];
-  const firstName = profileData?.['Name - First'] || 'this guest';
+  const firstName = profileData?.first_name || 'this guest';
 
   // Transportation options for display
   const transportationOptions = [

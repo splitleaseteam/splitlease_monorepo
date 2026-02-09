@@ -111,8 +111,8 @@ export const PAGE_SIZE = 50;
  * @returns {string} One of LISTING_STATUS values
  */
 export function computeListingStatus(listing) {
-  if (listing.Deleted) return LISTING_STATUS.ARCHIVED;
-  if (listing.Complete) return LISTING_STATUS.COMPLETED;
+  if (listing.is_deleted) return LISTING_STATUS.ARCHIVED;
+  if (listing.is_listing_profile_complete) return LISTING_STATUS.COMPLETED;
   if (listing.pending) return LISTING_STATUS.DRAFT;
   return LISTING_STATUS.IN_PROGRESS;
 }
@@ -123,7 +123,7 @@ export function computeListingStatus(listing) {
  * @returns {string} One of AVAILABILITY_STATUS values
  */
 export function computeAvailability(listing) {
-  if (!listing.Active) return AVAILABILITY_STATUS.UNAVAILABLE;
+  if (!listing.is_active) return AVAILABILITY_STATUS.UNAVAILABLE;
   if (!listing.Approved) return AVAILABILITY_STATUS.PENDING;
   return AVAILABILITY_STATUS.AVAILABLE;
 }

@@ -493,7 +493,7 @@ export default function SearchScheduleSelector({
         const { data, error } = await supabase
           .from('user')
           .select('"Recent Days Selected"')
-          .eq('_id', sessionId)
+          .eq('id', sessionId)
           .maybeSingle();
 
         console.log('📅 SearchScheduleSelector [persistence]: Supabase response:', { data, error });
@@ -566,7 +566,7 @@ export default function SearchScheduleSelector({
         const { error } = await supabase
           .from('user')
           .update({ 'Recent Days Selected': dayNames })
-          .eq('_id', userId);
+          .eq('id', userId);
 
         if (error) {
           console.error('📅 SearchScheduleSelector [persistence]: Failed to save:', error);

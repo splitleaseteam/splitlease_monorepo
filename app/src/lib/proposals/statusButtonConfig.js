@@ -7,7 +7,7 @@
  * Table: os_proposal_status
  * Columns used:
  * - name: Status key (snake_case)
- * - display: Full status text that matches proposal.Status field
+ * - display: Full status text that matches proposal.proposal_workflow_status field
  * - guest_action_1: Button label for Guest Action 1
  * - guest_action_2: Button label for Guest Action 2
  * - sort_order: Workflow progression order (used for visibility logic)
@@ -65,7 +65,7 @@ export async function fetchStatusConfigurations() {
       // Cache the data
       statusConfigCache = data || [];
 
-      // Also create a lookup map by display value (matches proposal.Status)
+      // Also create a lookup map by display value (matches proposal.proposal_workflow_status)
       statusConfigByDisplayCache = new Map(
         (data || []).map(config => [typeof config.display === 'string' ? config.display.trim() : config.display, config])
       );
@@ -85,9 +85,9 @@ export async function fetchStatusConfigurations() {
 }
 
 /**
- * Get status configuration by the display value (matches proposal.Status)
+ * Get status configuration by the display value (matches proposal.proposal_workflow_status)
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {Object|null} Status configuration or null if not found
  */
 export function getStatusConfigByDisplay(statusDisplay) {
@@ -108,7 +108,7 @@ export function getStatusConfigByDisplay(statusDisplay) {
 /**
  * Get Guest Action 1 button label for a status
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {string|null} Button label or null if invisible/not found
  */
 export function getGuestAction1Label(statusDisplay) {
@@ -124,7 +124,7 @@ export function getGuestAction1Label(statusDisplay) {
 /**
  * Get Guest Action 2 button label for a status
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {string|null} Button label or null if invisible/not found
  */
 export function getGuestAction2Label(statusDisplay) {
@@ -141,7 +141,7 @@ export function getGuestAction2Label(statusDisplay) {
  * Get sort order (usual order) for a status
  * Used for visibility logic (e.g., show house manual when order > 5)
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {number} Sort order, or -99 if not found
  */
 export function getStatusSortOrder(statusDisplay) {
@@ -155,7 +155,7 @@ export function getStatusSortOrder(statusDisplay) {
  * Check if a status is a terminal/cancelled state
  * Terminal states have sort_order = -1
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {boolean} True if terminal state
  */
 export function isTerminalStatusFromConfig(statusDisplay) {
@@ -166,7 +166,7 @@ export function isTerminalStatusFromConfig(statusDisplay) {
 /**
  * Check if a status is a suggested proposal (created by Split Lease)
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {boolean} True if suggested by Split Lease
  */
 export function isSuggestedProposalFromConfig(statusDisplay) {
@@ -202,7 +202,7 @@ export function needsRentalAppFromConfig(proposal) {
  * Check if Virtual Meeting button should be hidden for a status
  * Hidden for: rejected, cancelled, activated, and SL-suggested awaiting statuses
  *
- * @param {string} statusDisplay - The status display text from proposal.Status
+ * @param {string} statusDisplay - The status display text from proposal.proposal_workflow_status
  * @returns {boolean} True if VM button should be hidden
  */
 export function shouldHideVirtualMeetingButton(statusDisplay) {
@@ -243,8 +243,8 @@ export function getButtonConfigForProposal(proposal) {
     };
   }
 
-  // Normalize status (trim whitespace from Bubble data)
-  const rawStatus = proposal.Status;
+  // Normalize status (trim whitespace)
+  const rawStatus = proposal.proposal_workflow_status || proposal.status;
   const status = typeof rawStatus === 'string' ? rawStatus.trim() : rawStatus;
   const config = getStatusConfigByDisplay(status);
   const sortOrder = config?.sort_order ?? -99;

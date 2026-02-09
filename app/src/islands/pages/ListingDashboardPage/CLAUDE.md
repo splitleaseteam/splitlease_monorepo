@@ -301,8 +301,8 @@
 [FOREIGN_KEY]: Listing (_id)
 [COUNT_USE]: Proposals badge in navigation
 
-### bookings_leases
-[FOREIGN_KEY]: Listing (_id)
+### booking_lease
+[FOREIGN_KEY]: listing_id
 [COUNT_USE]: Leases badge in navigation
 
 ### virtualmeetingschedulesandlinks

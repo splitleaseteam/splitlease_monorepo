@@ -67,9 +67,9 @@ import { isValidSortOption } from '../../logic/rules/search/isValidSortOption.js
 function extractPhotoIdsFromListings(listings) {
   const photoIds = new Set()
   listings.forEach((listing) => {
-    const photosField = listing['Features - Photos']
+    const photosField = listing.photos_with_urls_captions_and_sort_order_json
     // parseJsonArray expects { field, fieldName } object, not raw value
-    const parsed = parseJsonArray({ field: photosField, fieldName: 'Features - Photos' })
+    const parsed = parseJsonArray({ field: photosField, fieldName: 'photos_with_urls_captions_and_sort_order_json' })
     parsed.forEach((id) => photoIds.add(id))
   })
   return Array.from(photoIds)
@@ -170,9 +170,9 @@ export function useSearchPageLogic() {
    */
   const transformListing = useCallback((dbListing, images, hostData, pricingList) => {
     // Resolve human-readable names from database IDs
-    const neighborhoodName = getNeighborhoodName(dbListing['Location - Hood'])
-    const boroughName = getBoroughName(dbListing['Location - Borough'])
-    const propertyType = getPropertyTypeLabel(dbListing['Features - Type of Space'])
+    const neighborhoodName = getNeighborhoodName(dbListing.primary_neighborhood_reference_id)
+    const boroughName = getBoroughName(dbListing.borough)
+    const propertyType = getPropertyTypeLabel(dbListing.space_type)
 
     // Build location string
     const locationParts = []
@@ -182,9 +182,9 @@ export function useSearchPageLogic() {
 
     // Logic Core: Extract coordinates with priority logic
     const coordinatesResult = extractListingCoordinates({
-      locationSlightlyDifferent: dbListing['Location - slightly different address'],
-      locationAddress: dbListing['Location - Address'],
-      listingId: dbListing._id
+      locationSlightlyDifferent: dbListing.map_pin_offset_address_json,
+      locationAddress: dbListing.address_with_lat_lng_json,
+      listingId: dbListing.id
     })
 
     // Helper to safely coerce to number (handles string numbers from Supabase)
@@ -194,11 +194,11 @@ export function useSearchPageLogic() {
       return isNaN(num) ? fallback : num
     }
 
-    const startingNightlyPrice = pricingList?.startingNightlyPrice ?? toNumber(dbListing['Standarized Minimum Nightly Price (Filter)'], 0)
+    const startingNightlyPrice = pricingList?.startingNightlyPrice ?? toNumber(dbListing.standardized_min_nightly_price_for_search_filter, 0)
 
     return {
-      id: dbListing._id,
-      title: dbListing.Name || 'Unnamed Listing',
+      id: dbListing.id,
+      title: dbListing.listing_title || 'Unnamed Listing',
       location: location,
       neighborhood: neighborhoodName || '',
       borough: boroughName || '',
@@ -207,30 +207,30 @@ export function useSearchPageLogic() {
         : null,
       price: {
         starting: startingNightlyPrice,
-        full: toNumber(dbListing['nightly_rate_7_nights'], 0)
+        full: toNumber(dbListing.nightly_rate_for_7_night_stay, 0)
       },
       'Starting nightly price': startingNightlyPrice,
-      'Price 2 nights selected': toNumber(dbListing['nightly_rate_2_nights']),
-      'Price 3 nights selected': toNumber(dbListing['nightly_rate_3_nights']),
-      'Price 4 nights selected': toNumber(dbListing['nightly_rate_4_nights']),
-      'Price 5 nights selected': toNumber(dbListing['nightly_rate_5_nights']),
-      'Price 6 nights selected': null,
-      'Price 7 nights selected': toNumber(dbListing['nightly_rate_7_nights']),
+      'nightly_rate_for_2_night_stay': toNumber(dbListing.nightly_rate_for_2_night_stay),
+      'nightly_rate_for_3_night_stay': toNumber(dbListing.nightly_rate_for_3_night_stay),
+      'nightly_rate_for_4_night_stay': toNumber(dbListing.nightly_rate_for_4_night_stay),
+      'nightly_rate_for_5_night_stay': toNumber(dbListing.nightly_rate_for_5_night_stay),
+      'nightly_rate_for_6_night_stay': null,
+      'nightly_rate_for_7_night_stay': toNumber(dbListing.nightly_rate_for_7_night_stay),
       // 7 REQUIRED FIELDS (Golden Rule B) - with numeric coercion
-      'rental type': dbListing['rental type'] || 'Nightly',
-      rentalType: dbListing['rental type'] || 'Nightly',
-      'monthly_host_rate': toNumber(dbListing['monthly_host_rate']),
-      'weekly_host_rate': toNumber(dbListing['weekly_host_rate']),
-      'cleaning_fee': toNumber(dbListing['cleaning_fee'], 0),
-      'damage_deposit': toNumber(dbListing['damage_deposit'], 0),
-      'unit_markup': toNumber(dbListing['unit_markup'], 0),
-      'Weeks offered': dbListing['Weeks offered'] || 'Every week',
-      weeksOffered: dbListing['Weeks offered'] || 'Every week',
+      'rental type': dbListing.rental_type || 'Nightly',
+      rentalType: dbListing.rental_type || 'Nightly',
+      'monthly_rate_paid_to_host': toNumber(dbListing.monthly_rate_paid_to_host),
+      'weekly_rate_paid_to_host': toNumber(dbListing.weekly_rate_paid_to_host),
+      'cleaning_fee_amount': toNumber(dbListing.cleaning_fee_amount, 0),
+      'damage_deposit_amount': toNumber(dbListing.damage_deposit_amount, 0),
+      'unit_markup_percentage': toNumber(dbListing.unit_markup_percentage, 0),
+      'Weeks offered': dbListing.weeks_offered_schedule_text || 'Every week',
+      weeksOffered: dbListing.weeks_offered_schedule_text || 'Every week',
       type: propertyType,
-      squareFeet: dbListing['Features - SQFT Area'] || null,
-      maxGuests: dbListing['Features - Qty Guests'] || 1,
-      bedrooms: dbListing['Features - Qty Bedrooms'] || 0,
-      bathrooms: dbListing['Features - Qty Bathrooms'] || 0,
+      squareFeet: dbListing.square_feet || null,
+      maxGuests: dbListing.max_guest_count || 1,
+      bedrooms: dbListing.bedroom_count || 0,
+      bathrooms: dbListing.bathroom_count || 0,
       amenities: parseAmenities(dbListing),
       host: hostData || {
         name: null,
@@ -239,9 +239,9 @@ export function useSearchPageLogic() {
       },
       pricingList: pricingList || null,
       images: images || [],
-      description: `${(dbListing['Features - Qty Bedrooms'] || 0) === 0 ? 'Studio' : `${dbListing['Features - Qty Bedrooms']} bedroom`} • ${dbListing['Features - Qty Bathrooms'] || 0} bathroom`,
-      weeks_offered: dbListing['Weeks offered'] || 'Every week',
-      days_available: parseJsonArray({ field: dbListing['Days Available (List of Days)'], fieldName: 'Days Available' }),
+      description: `${(dbListing.bedroom_count || 0) === 0 ? 'Studio' : `${dbListing.bedroom_count} bedroom`} • ${dbListing.bathroom_count || 0} bathroom`,
+      weeks_offered: dbListing.weeks_offered_schedule_text || 'Every week',
+      days_available: parseJsonArray({ field: dbListing.available_days_as_day_numbers_json, fieldName: 'Days Available' }),
       isNew: false
     }
   }, [])
@@ -286,11 +286,11 @@ export function useSearchPageLogic() {
       const { data, error } = await supabase
         .from('listing')
         .select('*')
-        .eq('Active', true)
-        .eq('Deleted', false)
-        .eq('isForUsability', false)
+        .eq('is_active', true)
+        .eq('is_deleted', false)
+        .eq('is_usability_test_listing', false)
         .or(
-          '"Location - Address".not.is.null,"Location - slightly different address".not.is.null'
+          'address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null'
         )
 
       if (error) throw error
@@ -306,18 +306,18 @@ export function useSearchPageLogic() {
       // Extract photos per listing
       const resolvedPhotos = {}
       data.forEach((listing) => {
-        resolvedPhotos[listing._id] = extractPhotos(
-          listing['Features - Photos'],
+        resolvedPhotos[listing.id] = extractPhotos(
+          listing.photos_with_urls_captions_and_sort_order_json,
           photoMap,
-          listing._id
+          listing.id
         )
       })
 
       // Batch fetch host data
       const hostIds = new Set()
       data.forEach((listing) => {
-        if (listing['Host User']) {
-          hostIds.add(listing['Host User'])
+        if (listing.host_user_id) {
+          hostIds.add(listing.host_user_id)
         }
       })
 
@@ -326,16 +326,16 @@ export function useSearchPageLogic() {
       // Map host data to listings
       const resolvedHosts = {}
       data.forEach((listing) => {
-        const hostId = listing['Host User']
-        resolvedHosts[listing._id] = hostMap[hostId] || null
+        const hostId = listing.host_user_id
+        resolvedHosts[listing.id] = hostMap[hostId] || null
       })
 
       // Transform listings using Logic Core
       const transformedListings = data.map((listing) =>
         transformListing(
           listing,
-          resolvedPhotos[listing._id],
-          resolvedHosts[listing._id],
+          resolvedPhotos[listing.id],
+          resolvedHosts[listing.id],
           pricingListMap[listing.pricing_list] || null
         )
       )
@@ -392,11 +392,11 @@ export function useSearchPageLogic() {
       let query = supabase
         .from('listing')
         .select('*')
-        .eq('"Complete"', true)
-        .or('"Active".eq.true,"Active".is.null')
-        .eq('Deleted', false)
+        .eq('is_listing_profile_complete', true)
+        .or('is_active.eq.true,is_active.is.null')
+        .eq('is_deleted', false)
         .or(
-          '"Location - Address".not.is.null,"Location - slightly different address".not.is.null'
+          'address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null'
         )
 
       // Apply borough filter only when boroughs are selected (empty = show all)
@@ -405,7 +405,7 @@ export function useSearchPageLogic() {
           .map(value => boroughs.find(b => b.value === value)?.id)
           .filter(Boolean)
         if (selectedBoroughIds.length > 0) {
-          query = query.in('"Location - Borough"', selectedBoroughIds)
+          query = query.in('borough', selectedBoroughIds)
         }
       }
 
@@ -413,7 +413,7 @@ export function useSearchPageLogic() {
       if (weekPattern !== 'every-week') {
         const weekPatternText = WEEK_PATTERNS[weekPattern]
         if (weekPatternText) {
-          query = query.eq('"Weeks offered"', weekPatternText)
+          query = query.eq('weeks_offered_schedule_text', weekPatternText)
         }
       }
 
@@ -422,14 +422,14 @@ export function useSearchPageLogic() {
         const priceRange = PRICE_TIERS[priceTier]
         if (priceRange) {
           query = query
-            .gte('"Standarized Minimum Nightly Price (Filter)"', priceRange.min)
-            .lte('"Standarized Minimum Nightly Price (Filter)"', priceRange.max)
+            .gte('standardized_min_nightly_price_for_search_filter', priceRange.min)
+            .lte('standardized_min_nightly_price_for_search_filter', priceRange.max)
         }
       }
 
       // Apply neighborhood filter
       if (selectedNeighborhoods.length > 0) {
-        query = query.in('"Location - Hood"', selectedNeighborhoods)
+        query = query.in('primary_neighborhood_reference_id', selectedNeighborhoods)
       }
 
       // Apply sorting
@@ -449,18 +449,18 @@ export function useSearchPageLogic() {
       // Extract photos per listing
       const resolvedPhotos = {}
       data.forEach((listing) => {
-        resolvedPhotos[listing._id] = extractPhotos(
-          listing['Features - Photos'],
+        resolvedPhotos[listing.id] = extractPhotos(
+          listing.photos_with_urls_captions_and_sort_order_json,
           photoMap,
-          listing._id
+          listing.id
         )
       })
 
       // Batch fetch host data
       const hostIds = new Set()
       data.forEach((listing) => {
-        if (listing['Host User']) {
-          hostIds.add(listing['Host User'])
+        if (listing.host_user_id) {
+          hostIds.add(listing.host_user_id)
         }
       })
 
@@ -469,8 +469,8 @@ export function useSearchPageLogic() {
       // Map host data to listings
       const resolvedHosts = {}
       data.forEach((listing) => {
-        const hostId = listing['Host User']
-        resolvedHosts[listing._id] = hostMap[hostId] || null
+        const hostId = listing.host_user_id
+        resolvedHosts[listing.id] = hostMap[hostId] || null
       })
 
       const pricingListMap = await fetchPricingListMap(data)
@@ -479,8 +479,8 @@ export function useSearchPageLogic() {
       const transformedListings = data.map((listing) =>
         transformListing(
           listing,
-          resolvedPhotos[listing._id],
-          resolvedHosts[listing._id],
+          resolvedPhotos[listing.id],
+          resolvedHosts[listing.id],
           pricingListMap[listing.pricing_list] || null
         )
       )
@@ -537,11 +537,11 @@ export function useSearchPageLogic() {
       const query = supabase
         .from('listing')
         .select('*')
-        .eq('"Complete"', true)
-        .or('"Active".eq.true,"Active".is.null')
-        .or('"Location - Address".not.is.null,"Location - slightly different address".not.is.null')
-        .not('"Features - Photos"', 'is', null)
-        .order('"Modified Date"', { ascending: false })
+        .eq('is_listing_profile_complete', true)
+        .or('is_active.eq.true,is_active.is.null')
+        .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
+        .not('photos_with_urls_captions_and_sort_order_json', 'is', null)
+        .order('bubble_updated_at', { ascending: false })
 
       const { data, error } = await query
 
@@ -553,7 +553,7 @@ export function useSearchPageLogic() {
       // New format has embedded objects with URLs, no fetch needed
       const legacyPhotoIds = new Set()
       data.forEach(listing => {
-        const photosField = listing['Features - Photos']
+        const photosField = listing.photos_with_urls_captions_and_sort_order_json
         let photos = []
 
         if (Array.isArray(photosField)) {
@@ -585,18 +585,18 @@ export function useSearchPageLogic() {
       // Extract photos per listing (handles both embedded objects and legacy IDs)
       const resolvedPhotos = {}
       data.forEach(listing => {
-        resolvedPhotos[listing._id] = extractPhotos(
-          listing['Features - Photos'],
+        resolvedPhotos[listing.id] = extractPhotos(
+          listing.photos_with_urls_captions_and_sort_order_json,
           photoMap,
-          listing._id
+          listing.id
         )
       })
 
       // Batch fetch host data for all listings
       const hostIds = new Set()
       data.forEach(listing => {
-        if (listing['Host User']) {
-          hostIds.add(listing['Host User'])
+        if (listing.host_user_id) {
+          hostIds.add(listing.host_user_id)
         }
       })
 
@@ -605,8 +605,8 @@ export function useSearchPageLogic() {
       // Map host data to listings
       const resolvedHosts = {}
       data.forEach(listing => {
-        const hostId = listing['Host User']
-        resolvedHosts[listing._id] = hostMap[hostId] || null
+        const hostId = listing.host_user_id
+        resolvedHosts[listing.id] = hostMap[hostId] || null
       })
 
       const pricingListMap = await fetchPricingListMap(data)
@@ -615,8 +615,8 @@ export function useSearchPageLogic() {
       const transformedListings = data.map(listing =>
         transformListing(
           listing,
-          resolvedPhotos[listing._id],
-          resolvedHosts[listing._id],
+          resolvedPhotos[listing.id],
+          resolvedHosts[listing.id],
           pricingListMap[listing.pricing_list] || null
         )
       )

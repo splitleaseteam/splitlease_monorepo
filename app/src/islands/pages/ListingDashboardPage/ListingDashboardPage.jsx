@@ -210,7 +210,7 @@ function ListingDashboardContent() {
           listing={{
             _id: listing.id,
             Name: listing.title,
-            Description: listing.description,
+            Description: listing.listing_description,
             'Description - Neighborhood': listing.descriptionNeighborhood,
             'Location - Address': { address: listing.location?.address },
             'Location - City': listing.location?.city,
@@ -286,7 +286,7 @@ function ListingDashboardContent() {
         onClose={() => setShowReferralModal(false)}
         referralCode={currentUser?.userId || currentUser?._id || currentUser?.id || 'user'}
         userType="host"
-        referrerName={currentUser?.['Name - First'] || currentUser?.firstName || currentUser?.name || ''}
+        referrerName={currentUser?.first_name || currentUser?.firstName || currentUser?.name || ''}
       />
     </>
   );

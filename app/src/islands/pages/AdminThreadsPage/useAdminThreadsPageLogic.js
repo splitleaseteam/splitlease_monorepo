@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useAdminThreadsPageLogic - All business logic for AdminThreadsPage
  *
  * This hook follows the Hollow Component pattern - ALL logic lives here,
@@ -54,8 +54,8 @@ function adaptThread(rawThread) {
   return {
     id: rawThread._id,
     subject: rawThread['Thread Subject'] || 'No Subject',
-    createdDate: rawThread['Created Date'],
-    modifiedDate: rawThread['Modified Date'],
+    createdDate: rawThread.bubble_created_at,
+    modifiedDate: rawThread.bubble_updated_at,
     lastMessageDate: rawThread['last_message_at'],
     callToAction: rawThread['Call to Action'],
     proposalId: rawThread.Proposal,
@@ -66,19 +66,19 @@ function adaptThread(rawThread) {
     // Host user
     host: rawThread.hostUser ? {
       id: rawThread.hostUser._id,
-      name: rawThread.hostUser['Name - Full'] || 'Unknown Host',
+      name: rawThread.hostUser.first_name && rawThread.hostUser.last_name ? `${rawThread.hostUser.first_name} ${rawThread.hostUser.last_name}` : 'Unknown Host',
       email: rawThread.hostUser.email,
-      phone: rawThread.hostUser['Phone Number (as text)'],
-      photo: rawThread.hostUser['Profile Photo'],
+      phone: rawThread.hostUser.phone_number,
+      photo: rawThread.hostUser.profile_photo_url,
     } : null,
 
     // Guest user
     guest: rawThread.guestUser ? {
       id: rawThread.guestUser._id,
-      name: rawThread.guestUser['Name - Full'] || 'Unknown Guest',
+      name: rawThread.guestUser.first_name && rawThread.guestUser.last_name ? `${rawThread.guestUser.first_name} ${rawThread.guestUser.last_name}` : 'Unknown Guest',
       email: rawThread.guestUser.email,
-      phone: rawThread.guestUser['Phone Number (as text)'],
-      photo: rawThread.guestUser['Profile Photo'],
+      phone: rawThread.guestUser.phone_number,
+      photo: rawThread.guestUser.profile_photo_url,
     } : null,
 
     // Messages (adapted if present)
@@ -100,7 +100,7 @@ function adaptMessage(rawMessage, rawThread) {
   return {
     id: rawMessage._id,
     body: rawMessage['Message Body'] || '',
-    createdDate: rawMessage['Created Date'],
+    createdDate: rawMessage.bubble_created_at,
     senderType: deriveSenderType(rawMessage, hostUserId, guestUserId),
     isSplitBot: rawMessage['is Split Bot'] || false,
     isVisibleToHost: rawMessage['is Visible to Host'] ?? true,

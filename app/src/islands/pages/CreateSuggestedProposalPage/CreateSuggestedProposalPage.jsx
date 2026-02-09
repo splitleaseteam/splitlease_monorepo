@@ -195,7 +195,7 @@ export default function CreateSuggestedProposalPage() {
               {/* Step 3: Guest Info Form (visible after guest confirmed) */}
               {currentStep >= 3 && (
                 <GuestInfoForm
-                  guestName={selectedGuest?.['Name - First'] || selectedGuest?.['Name - Full'] || 'Guest'}
+                  guestName={selectedGuest?.first_name || (selectedGuest?.first_name && selectedGuest?.last_name ? `${selectedGuest.first_name} ${selectedGuest.last_name}` : null) || 'Guest'}
                   aboutMe={aboutMe}
                   needForSpace={needForSpace}
                   specialNeeds={specialNeeds}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ModifyListingsPage - Admin tool for modifying listings
  *
  * Follows the Hollow Component Pattern - all business logic is in
@@ -72,7 +72,7 @@ export default function ModifyListingsPage() {
                 className="modify-listings-page__clear-search-btn"
                 aria-label="Clear search"
               >
-                ×
+                Ã—
               </button>
             )}
             {logic.isSearching && <div className="modify-listings-page__mini-spinner" />}
@@ -89,20 +89,20 @@ export default function ModifyListingsPage() {
                 >
                   <div className="modify-listings-page__search-result-main">
                     <span className="modify-listings-page__search-result-name">
-                      {result.Name || 'Unnamed Listing'}
+                      {result.listing_title || 'Unnamed Listing'}
                     </span>
                     <span className="modify-listings-page__search-result-address">
-                      {result['Location - Address']?.address || 'No address'}
+                      {result.address_with_lat_lng_json?.address || 'No address'}
                     </span>
                   </div>
                   <div className="modify-listings-page__search-result-status">
                     <StatusBadge
-                      label={result.Approved ? 'Approved' : 'Pending'}
-                      type={result.Approved ? 'success' : 'warning'}
+                      label={result.is_approved ? 'Approved' : 'Pending'}
+                      type={result.is_approved ? 'success' : 'warning'}
                     />
                     <StatusBadge
-                      label={result.Active ? 'Active' : 'Inactive'}
-                      type={result.Active ? 'success' : 'neutral'}
+                      label={result.is_active ? 'Active' : 'Inactive'}
+                      type={result.is_active ? 'success' : 'neutral'}
                     />
                   </div>
                 </button>
@@ -176,7 +176,7 @@ export default function ModifyListingsPage() {
     <div className="modify-listings-page">
       <AdminHeader />
       <Header
-        listingName={logic.listing?.Name}
+        listingName={logic.listing?.listing_title}
         hasChanges={logic.hasUnsavedChanges}
         onSave={logic.saveChanges}
         onClear={logic.clearListing}

@@ -120,13 +120,14 @@ export const PRICE_TIERS = {
 };
 
 // Price field mappings for nights-based pricing
+// Maps number of nights to the corresponding DB column name on the listing table
 export const PRICE_FIELD_MAP = {
-  2: 'Price 2 nights selected',
-  3: 'Price 3 nights selected',
-  4: 'Price 4 nights selected',
-  5: 'Price 5 nights selected',
-  6: 'Price 6 nights selected',
-  7: 'Price 7 nights selected'
+  2: 'nightly_rate_for_2_night_stay',
+  3: 'nightly_rate_for_3_night_stay',
+  4: 'nightly_rate_for_4_night_stay',
+  5: 'nightly_rate_for_5_night_stay',
+  6: 'nightly_rate_for_6_night_stay',
+  7: 'nightly_rate_for_7_night_stay'
 };
 
 // ============================================================================
@@ -135,25 +136,25 @@ export const PRICE_FIELD_MAP = {
 
 export const SORT_OPTIONS = {
   'recommended': {
-    field: '"Modified Date"',
+    field: 'bubble_updated_at',
     ascending: false,
     label: 'Recommended',
     description: 'Our curated recommendations'
   },
   'price-low': {
-    field: '"Standarized Minimum Nightly Price (Filter)"',
+    field: 'standardized_min_nightly_price_for_search_filter',
     ascending: true,
     label: 'Price: Low to High',
     description: 'Lowest price first'
   },
   'most-viewed': {
-    field: '"Metrics - Click Counter"',
+    field: 'total_click_count',
     ascending: false,
     label: 'Most Popular',
     description: 'Most popular listings'
   },
   'recent': {
-    field: '"Created Date"',
+    field: 'bubble_created_at',
     ascending: false,
     label: 'Newest',
     description: 'Newest listings first'

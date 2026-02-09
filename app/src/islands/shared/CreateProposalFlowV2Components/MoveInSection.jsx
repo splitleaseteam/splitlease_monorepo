@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MoveInSection - Adjust move-in date and reservation length
  */
 
@@ -84,7 +84,7 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
         <label className="form-label">
           Approx Move-in
           <span className="helper-icon" title="Your move in date depends on this listing's availability. Let us know if you have any move-in flexibility">
-            ℹ️
+            â„¹ï¸
           </span>
         </label>
         <div className="helper-text">
@@ -122,7 +122,7 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
           Reservation Length
         </label>
         <div className="select-wrapper">
-          <span className="select-icon">🕐</span>
+          <span className="select-icon">ðŸ•</span>
           <select
             id="reservationSpan"
             className="form-select"
@@ -140,7 +140,7 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
 
       {/* Alternating Schedule Notice */}
       {(() => {
-        const weeksOffered = listing?.['Weeks offered'] || listing?.weeks_offered;
+        const weeksOffered = listing?.weeks_offered_schedule_text || listing?.weeks_offered;
         const scheduleInfo = getWeeksOfferedDescription(weeksOffered);
         if (scheduleInfo) {
           return (
@@ -153,7 +153,7 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
               marginBottom: '16px'
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ fontSize: '20px' }}>📅</span>
+                <span style={{ fontSize: '20px' }}>ðŸ“…</span>
                 <div>
                   <div style={{ fontWeight: '600', color: '#856404', marginBottom: '4px' }}>
                     Alternating Schedule: {scheduleInfo.label}
@@ -173,11 +173,11 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
         return null;
       })()}
 
-      {listing?.['Dates - Blocked'] && Array.isArray(listing['Dates - Blocked']) && listing['Dates - Blocked'].length > 0 && (
+      {listing?.blocked_specific_dates_json && Array.isArray(listing.blocked_specific_dates_json) && listing.blocked_specific_dates_json.length > 0 && (
         <div className="blocked-dates-notice">
           <h4>Desired Nights Restricted by Host</h4>
           <ul>
-            {listing['Dates - Blocked'].slice(0, 5).map((date, index) => (
+            {listing.blocked_specific_dates_json.slice(0, 5).map((date, index) => (
               <li key={index}>- {new Date(date).toLocaleDateString()}</li>
             ))}
           </ul>

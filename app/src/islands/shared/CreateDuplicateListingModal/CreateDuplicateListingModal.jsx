@@ -67,7 +67,7 @@ export default function CreateDuplicateListingModal({
   // Reset state when modal opens
   useEffect(() => {
     if (isVisible) {
-      console.log('🏠 CreateDuplicateListingModal: Modal opened');
+      console.log('ðŸ  CreateDuplicateListingModal: Modal opened');
       setViewMode('create');
       setListingName('');
       setSelectedListingId('');
@@ -79,7 +79,7 @@ export default function CreateDuplicateListingModal({
     if (viewMode === 'copy' && selectedListingId) {
       const selectedListing = existingListings.find(l => l._id === selectedListingId);
       if (selectedListing) {
-        setListingName(`${selectedListing.Name} copy`);
+        setListingName(`${selectedListing.listing_title} copy`);
       }
     }
   }, [viewMode, selectedListingId, existingListings]);
@@ -94,7 +94,7 @@ export default function CreateDuplicateListingModal({
       return;
     }
 
-    console.log('🏠 CreateDuplicateListingModal: Starting new listing flow');
+    console.log('ðŸ  CreateDuplicateListingModal: Starting new listing flow');
     console.log('Listing name:', listingName.trim());
 
     // Store the listing name in localStorage for the self-listing page to use
@@ -107,7 +107,7 @@ export default function CreateDuplicateListingModal({
     showToast('Redirecting to listing form...', 'success', 2000);
 
     // Redirect to self-listing page
-    console.log('🔄 Redirecting to self-listing page');
+    console.log('ðŸ”„ Redirecting to self-listing page');
     setTimeout(() => {
       window.location.href = `/self-listing.html`;
     }, 500);
@@ -146,8 +146,8 @@ export default function CreateDuplicateListingModal({
 
       // Remove fields that shouldn't be duplicated
       delete duplicateData._id;
-      delete duplicateData['Created Date'];
-      delete duplicateData['Modified Date'];
+      delete duplicateData.bubble_created_at;
+      delete duplicateData.bubble_updated_at;
 
       const { data: newListing, error } = await supabase
         .from('zat_listings')
@@ -208,7 +208,7 @@ export default function CreateDuplicateListingModal({
         .update({
           tasksCompleted: supabase.raw(`array_append(tasksCompleted, '${task}')`),
         })
-        .eq('_id', userId);
+        .eq('id', userId);
 
       if (error) throw error;
     } catch (error) {
@@ -299,7 +299,7 @@ export default function CreateDuplicateListingModal({
                 <option value="">-- Select a listing --</option>
                 {existingListings.map(listing => (
                   <option key={listing._id} value={listing._id}>
-                    {listing.Name}
+                    {listing.listing_title}
                   </option>
                 ))}
               </select>

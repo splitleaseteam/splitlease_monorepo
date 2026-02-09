@@ -18,7 +18,7 @@ describe('calculatePriceScore', () => {
   describe('within 10% (20 points)', () => {
     it('should return 20 for exact price match', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(20);
@@ -26,7 +26,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 20 for 5% difference (candidate higher)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 105 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 105 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(20);
@@ -34,7 +34,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 20 for 5% difference (candidate lower)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 95 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 95 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(20);
@@ -42,7 +42,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 20 for exactly 10% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 110 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 110 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(20);
@@ -55,7 +55,7 @@ describe('calculatePriceScore', () => {
   describe('within 20% (15 points)', () => {
     it('should return 15 for 15% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 115 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 115 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(15);
@@ -63,7 +63,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 15 for exactly 20% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 120 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 120 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(15);
@@ -71,7 +71,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 15 for 11% difference (just over 10%)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 111 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 111 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(15);
@@ -84,7 +84,7 @@ describe('calculatePriceScore', () => {
   describe('within 30% (10 points)', () => {
     it('should return 10 for 25% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 125 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 125 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(10);
@@ -92,7 +92,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 10 for exactly 30% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 130 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 130 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(10);
@@ -100,7 +100,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 10 for 21% difference (just over 20%)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 121 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 121 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(10);
@@ -113,7 +113,7 @@ describe('calculatePriceScore', () => {
   describe('within 50% (5 points)', () => {
     it('should return 5 for 40% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 140 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 140 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(5);
@@ -121,7 +121,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 5 for exactly 50% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 150 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 150 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(5);
@@ -129,7 +129,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 5 for 31% difference (just over 30%)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 131 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 131 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(5);
@@ -142,7 +142,7 @@ describe('calculatePriceScore', () => {
   describe('over 50% (0 points)', () => {
     it('should return 0 for 51% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 151 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 151 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -150,7 +150,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for 100% difference (double price)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 200 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 200 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -158,7 +158,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for 75% difference', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 175 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 175 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -171,7 +171,7 @@ describe('calculatePriceScore', () => {
   describe('different night frequencies', () => {
     it('should use correct rate for 2 nights', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_2_nights': 100 },
+        candidateListing: { 'nightly_rate_for_2_night_stay': 100 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 2 }
       });
       expect(result).toBe(20);
@@ -179,7 +179,7 @@ describe('calculatePriceScore', () => {
 
     it('should use correct rate for 3 nights', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_3_nights': 90 },
+        candidateListing: { 'nightly_rate_for_3_night_stay': 90 },
         proposal: { nightlyPrice: 95, nightsPerWeek: 3 }
       });
       expect(result).toBe(20); // ~5% difference
@@ -187,7 +187,7 @@ describe('calculatePriceScore', () => {
 
     it('should use correct rate for 5 nights', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_5_nights': 80 },
+        candidateListing: { 'nightly_rate_for_5_night_stay': 80 },
         proposal: { nightlyPrice: 80, nightsPerWeek: 5 }
       });
       expect(result).toBe(20);
@@ -195,7 +195,7 @@ describe('calculatePriceScore', () => {
 
     it('should use correct rate for 6 nights', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_6_nights': 70 },
+        candidateListing: { 'nightly_rate_for_6_night_stay': 70 },
         proposal: { nightlyPrice: 70, nightsPerWeek: 6 }
       });
       expect(result).toBe(20);
@@ -203,7 +203,7 @@ describe('calculatePriceScore', () => {
 
     it('should use correct rate for 7 nights (full-time)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_7_nights': 60 },
+        candidateListing: { 'nightly_rate_for_7_night_stay': 60 },
         proposal: { nightlyPrice: 60, nightsPerWeek: 7 }
       });
       expect(result).toBe(20);
@@ -211,7 +211,7 @@ describe('calculatePriceScore', () => {
 
     it('should default to 4 nights when nightsPerWeek not specified', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: { nightlyPrice: 100 }
       });
       expect(result).toBe(20);
@@ -219,7 +219,7 @@ describe('calculatePriceScore', () => {
 
     it('should use daysSelected.length when nightsPerWeek not specified', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_5_nights': 100 },
+        candidateListing: { 'nightly_rate_for_5_night_stay': 100 },
         proposal: { nightlyPrice: 100, daysSelected: [1, 2, 3, 4, 5] }
       });
       expect(result).toBe(20);
@@ -248,7 +248,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for null proposal', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: null
       });
       expect(result).toBe(0);
@@ -256,7 +256,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for undefined proposal', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: undefined
       });
       expect(result).toBe(0);
@@ -264,7 +264,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for missing nightlyPrice', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: { nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -272,7 +272,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for nightlyPrice of 0', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: { nightlyPrice: 0, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -280,7 +280,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 for negative nightlyPrice', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100 },
         proposal: { nightlyPrice: -50, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -288,7 +288,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 when candidate has no rate for frequency', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_3_nights': 100 },
+        candidateListing: { 'nightly_rate_for_3_night_stay': 100 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -296,7 +296,7 @@ describe('calculatePriceScore', () => {
 
     it('should return 0 when candidate rate is 0', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 0 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 0 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(0);
@@ -309,7 +309,7 @@ describe('calculatePriceScore', () => {
   describe('edge cases', () => {
     it('should handle very low prices', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 10 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 10 },
         proposal: { nightlyPrice: 10, nightsPerWeek: 4 }
       });
       expect(result).toBe(20);
@@ -317,7 +317,7 @@ describe('calculatePriceScore', () => {
 
     it('should handle very high prices', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 5000 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 5000 },
         proposal: { nightlyPrice: 5000, nightsPerWeek: 4 }
       });
       expect(result).toBe(20);
@@ -325,7 +325,7 @@ describe('calculatePriceScore', () => {
 
     it('should handle decimal prices', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 100.50 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 100.50 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(20); // ~0.5% difference
@@ -334,7 +334,7 @@ describe('calculatePriceScore', () => {
     it('should handle price override in listing', () => {
       const result = calculatePriceScore({
         candidateListing: {
-          'nightly_rate_4_nights': 100,
+          'nightly_rate_for_4_night_stay': 100,
           'price_override': 90  // Correct field name with emoji prefix
         },
         proposal: { nightlyPrice: 90, nightsPerWeek: 4 }
@@ -350,7 +350,7 @@ describe('calculatePriceScore', () => {
   describe('real-world scenarios', () => {
     it('should score budget-conscious guest (looking for lower price)', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 90 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 90 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(20); // 10% lower = within threshold
@@ -358,7 +358,7 @@ describe('calculatePriceScore', () => {
 
     it('should score premium listing vs budget guest', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 200 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 200 },
         proposal: { nightlyPrice: 100, nightsPerWeek: 4 }
       });
       expect(result).toBe(0); // 100% difference
@@ -366,7 +366,7 @@ describe('calculatePriceScore', () => {
 
     it('should handle typical weekday stay match', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_4_nights': 120 },
+        candidateListing: { 'nightly_rate_for_4_night_stay': 120 },
         proposal: { nightlyPrice: 115, nightsPerWeek: 4 }
       });
       expect(result).toBe(20); // ~4% difference
@@ -374,7 +374,7 @@ describe('calculatePriceScore', () => {
 
     it('should handle full-time stay match', () => {
       const result = calculatePriceScore({
-        candidateListing: { 'nightly_rate_7_nights': 80 },
+        candidateListing: { 'nightly_rate_for_7_night_stay': 80 },
         proposal: { nightlyPrice: 85, nightsPerWeek: 7 }
       });
       expect(result).toBe(20); // ~6% difference

@@ -106,7 +106,7 @@ export default function ProposalItem({ proposal, onStatusChange, onAction }) {
               <div className="pm-listing-photos">
                 <img
                   src={listing.coverPhoto}
-                  alt={listing.name || 'Listing'}
+                  alt={listing.listing_title || 'Listing'}
                   className="pm-listing-photo"
                 />
               </div>

@@ -2,6 +2,8 @@
  * Centralized mapping between database field names and domain property names.
  * Single source of truth for all listing field references.
  *
+ * Updated to match new snake_case Supabase column names.
+ *
  * @module data/fieldMappings
  */
 
@@ -10,17 +12,17 @@
 // =============================================================================
 
 export const PRICING_FIELDS = {
-  NIGHTLY_RATE_1: 'nightly_rate_1_night',
-  NIGHTLY_RATE_2: 'nightly_rate_2_nights',
-  NIGHTLY_RATE_3: 'nightly_rate_3_nights',
-  NIGHTLY_RATE_4: 'nightly_rate_4_nights',
-  NIGHTLY_RATE_5: 'nightly_rate_5_nights',
-  NIGHTLY_RATE_6: 'nightly_rate_6_nights',
-  NIGHTLY_RATE_7: 'nightly_rate_7_nights',
-  DAMAGE_DEPOSIT: 'damage_deposit',
-  CLEANING_FEE: 'cleaning_fee',
-  MONTHLY_RATE: 'monthly_host_rate',
-  WEEKLY_RATE: 'weekly_host_rate',
+  NIGHTLY_RATE_1: 'nightly_rate_for_1_night_stay',
+  NIGHTLY_RATE_2: 'nightly_rate_for_2_night_stay',
+  NIGHTLY_RATE_3: 'nightly_rate_for_3_night_stay',
+  NIGHTLY_RATE_4: 'nightly_rate_for_4_night_stay',
+  NIGHTLY_RATE_5: 'nightly_rate_for_5_night_stay',
+  NIGHTLY_RATE_6: 'nightly_rate_for_6_night_stay',
+  NIGHTLY_RATE_7: 'nightly_rate_for_7_night_stay',
+  DAMAGE_DEPOSIT: 'damage_deposit_amount',
+  CLEANING_FEE: 'cleaning_fee_amount',
+  MONTHLY_RATE: 'monthly_rate_paid_to_host',
+  WEEKLY_RATE: 'weekly_rate_paid_to_host',
   PRICE_OVERRIDE: 'price_override',
 };
 
@@ -38,40 +40,40 @@ export const NIGHTLY_RATE_BY_COUNT = {
 };
 
 // =============================================================================
-// AVAILABILITY FIELDS (legacy names with spaces)
+// AVAILABILITY FIELDS (snake_case - new schema)
 // =============================================================================
 
 export const AVAILABILITY_FIELDS = {
-  DAYS_AVAILABLE: 'Days Available (List of Days)',
-  BLOCKED_DATES: 'Dates - Blocked',
-  FIRST_AVAILABLE: ' First Available', // Leading space is intentional (legacy)
-  CHECK_IN_TIME: 'NEW Date Check-in Time',
-  CHECK_OUT_TIME: 'NEW Date Check-out Time',
-  MIN_WEEKS: 'Minimum Weeks',
-  MAX_WEEKS: 'Maximum Weeks',
-  MIN_NIGHTS: 'Minimum Nights',
-  MAX_NIGHTS: 'Maximum Nights',
+  DAYS_AVAILABLE: 'available_days_as_day_numbers_json',
+  BLOCKED_DATES: 'blocked_specific_dates_json',
+  FIRST_AVAILABLE: 'first_available_date',
+  CHECK_IN_TIME: 'checkin_time_of_day',
+  CHECK_OUT_TIME: 'checkout_time_of_day',
+  MIN_WEEKS: 'minimum_weeks_per_stay',
+  MAX_WEEKS: 'maximum_weeks_per_stay',
+  MIN_NIGHTS: 'minimum_nights_per_stay',
+  MAX_NIGHTS: 'maximum_nights_per_stay',
 };
 
 // =============================================================================
-// FEATURE FIELDS (stored as JSON arrays)
+// FEATURE FIELDS (snake_case - new schema)
 // =============================================================================
 
 export const FEATURE_FIELDS = {
-  AMENITIES_IN_UNIT: 'Features - Amenities In-Unit',
-  AMENITIES_IN_BUILDING: 'Features - Amenities In-Building',
-  SAFETY: 'Features - Safety',
-  HOUSE_RULES: 'Features - House Rules',
-  PHOTOS: 'Features - Photos',
-  TYPE_OF_SPACE: 'Features - Type of Space',
-  BEDROOMS: 'Features - Qty Bedrooms',
-  BATHROOMS: 'Features - Qty Bathrooms',
-  BEDS: 'Features - Qty Beds',
-  GUESTS: 'Features - Qty Guests',
-  SQFT: 'Features - SQFT Area',
-  SQFT_ROOM: 'Features - SQFT of Room',
-  PARKING: 'Features - Parking type',
-  STORAGE: 'Features - Secure Storage Option',
+  AMENITIES_IN_UNIT: 'in_unit_amenity_reference_ids_json',
+  AMENITIES_IN_BUILDING: 'in_building_amenity_reference_ids_json',
+  SAFETY: 'safety_feature_reference_ids_json',
+  HOUSE_RULES: 'house_rule_reference_ids_json',
+  PHOTOS: 'photos_with_urls_captions_and_sort_order_json',
+  TYPE_OF_SPACE: 'space_type',
+  BEDROOMS: 'bedroom_count',
+  BATHROOMS: 'bathroom_count',
+  BEDS: 'bed_count',
+  GUESTS: 'max_guest_count',
+  SQFT: 'square_feet',
+  SQFT_ROOM: 'square_feet_room',
+  PARKING: 'parking_type',
+  STORAGE: 'secure_storage_option',
 };
 
 // =============================================================================
@@ -79,10 +81,10 @@ export const FEATURE_FIELDS = {
 // =============================================================================
 
 export const LEASE_FIELDS = {
-  RENTAL_TYPE: 'rental type',
-  WEEKS_OFFERED: 'Weeks offered',
-  CANCELLATION_POLICY: 'Cancellation Policy',
-  CANCELLATION_RESTRICTIONS: 'Cancellation Policy - Additional Restrictions',
+  RENTAL_TYPE: 'rental_type',
+  WEEKS_OFFERED: 'weeks_offered_schedule_text',
+  CANCELLATION_POLICY: 'cancellation_policy',
+  CANCELLATION_RESTRICTIONS: 'cancellation_policy_additional_restrictions',
 };
 
 // =============================================================================
@@ -90,12 +92,12 @@ export const LEASE_FIELDS = {
 // =============================================================================
 
 export const LOCATION_FIELDS = {
-  ADDRESS: 'Location - Address',
-  CITY: 'Location - City',
-  STATE: 'Location - State',
-  ZIP_CODE: 'Location - Zip Code',
-  BOROUGH: 'Location - Borough',
-  HOOD: 'Location - Hood',
+  ADDRESS: 'address_with_lat_lng_json',
+  CITY: 'city',
+  STATE: 'state',
+  ZIP_CODE: 'zip_code',
+  BOROUGH: 'borough',
+  HOOD: 'primary_neighborhood_reference_id',
 };
 
 // =============================================================================
@@ -103,13 +105,13 @@ export const LOCATION_FIELDS = {
 // =============================================================================
 
 export const IDENTITY_FIELDS = {
-  ID: '_id',
-  NAME: 'Name',
-  DESCRIPTION: 'Description',
-  DESCRIPTION_NEIGHBORHOOD: 'Description - Neighborhood',
-  ACTIVE: 'Active',
-  APPROVED: 'Approved',
-  COMPLETE: 'Complete',
-  CREATED_DATE: 'Created Date',
-  MODIFIED_DATE: 'Modified Date',
+  ID: 'id',
+  NAME: 'listing_title',
+  DESCRIPTION: 'listing_description',
+  DESCRIPTION_NEIGHBORHOOD: 'neighborhood_description_by_host',
+  ACTIVE: 'is_active',
+  APPROVED: 'is_approved',
+  COMPLETE: 'is_listing_profile_complete',
+  CREATED_DATE: 'bubble_created_at',
+  MODIFIED_DATE: 'bubble_updated_at',
 };

@@ -12,8 +12,8 @@ export function normalizeListingData(listing) {
   if (!listing) return null;
   return {
     ...listing,
-    title: listing.Name || listing.title || listing.name || 'Unnamed Listing',
-    name: listing.Name || listing.title || listing.name || 'Unnamed Listing',
+    title: listing.listing_title || listing.title || listing.name || 'Unnamed Listing',
+    name: listing.listing_title || listing.title || listing.name || 'Unnamed Listing',
     thumbnail: listing['Cover Photo'] || listing.thumbnail || listing.cover_photo || null,
     neighborhood: listing.Neighborhood || listing.neighborhood || null,
     address: listing['Full Address'] || listing.address || listing.full_address || null,

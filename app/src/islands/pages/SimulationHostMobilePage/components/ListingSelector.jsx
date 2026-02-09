@@ -20,7 +20,7 @@ export default function ListingSelector({ listings, selectedListing, onSelect })
       <div className="simulation-host-listing-selector__grid">
         {listings.map((listing) => {
           const isSelected = selectedListing?._id === listing._id;
-          const name = listing.Name || listing['Name'] || 'Unnamed Listing';
+          const name = listing.listing_title || listing['Name'] || 'Unnamed Listing';
           const address = listing['Primary Address'] || '';
 
           return (

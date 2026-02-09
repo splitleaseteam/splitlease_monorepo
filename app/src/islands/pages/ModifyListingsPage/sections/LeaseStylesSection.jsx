@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LeaseStylesSection - Lease styles and pricing section
  *
  * @param {object} props - Component props
@@ -33,18 +33,18 @@ export default function LeaseStylesSection({
   };
 
   const handleDayToggle = (dayIndex) => {
-    const currentDays = listing['Days Available (List of Days)'] || [];
+    const currentDays = listing.available_days_as_day_numbers_json || [];
     let newDays;
     if (currentDays.includes(dayIndex)) {
       newDays = currentDays.filter(d => d !== dayIndex);
     } else {
       newDays = [...currentDays, dayIndex].sort((a, b) => a - b);
     }
-    onUpdate({ 'Days Available (List of Days)': newDays });
+    onUpdate({ 'available_days_as_day_numbers_json': newDays });
   };
 
-  const rentalType = listing['rental type'] || 'Monthly';
-  const selectedDays = listing['Days Available (List of Days)'] || [];
+  const rentalType = listing.rental_type || 'Monthly';
+  const selectedDays = listing.available_days_as_day_numbers_json || [];
 
   return (
     <SectionContainer
@@ -61,7 +61,7 @@ export default function LeaseStylesSection({
             <label key={type.value} style={styles.radioLabel}>
               <input
                 type="radio"
-                name="rental type"
+                name="rental_type"
                 value={type.value}
                 checked={rentalType === type.value}
                 onChange={handleChange}
@@ -101,8 +101,8 @@ export default function LeaseStylesSection({
       <div style={styles.section}>
         <FormDropdown
           label="Weekly Pattern"
-          name="Weeks offered"
-          value={listing['Weeks offered']}
+          name="weeks_offered_schedule_text"
+          value={listing.weeks_offered_schedule_text}
           onChange={handleChange}
           options={weeklyPatterns}
           placeholder="Select pattern..."
@@ -117,8 +117,8 @@ export default function LeaseStylesSection({
           {/* Damage Deposit */}
           <FormInput
             label="Damage Deposit ($)"
-            name="damage_deposit"
-            value={listing['damage_deposit']}
+            name="damage_deposit_amount"
+            value={listing.damage_deposit_amount}
             onChange={handleChange}
             type="number"
             placeholder="500"
@@ -128,8 +128,8 @@ export default function LeaseStylesSection({
           {/* Maintenance Fee */}
           <FormInput
             label="Cleaning/Maintenance Fee ($)"
-            name="cleaning_fee"
-            value={listing['cleaning_fee']}
+            name="cleaning_fee_amount"
+            value={listing.cleaning_fee_amount}
             onChange={handleChange}
             type="number"
             placeholder="0"
@@ -139,8 +139,8 @@ export default function LeaseStylesSection({
           {(rentalType === 'Monthly' || rentalType === 'Weekly') && (
             <FormInput
               label="Monthly Host Rate ($)"
-              name="monthly_host_rate"
-              value={listing['monthly_host_rate']}
+              name="monthly_rate_paid_to_host"
+              value={listing.monthly_rate_paid_to_host}
               onChange={handleChange}
               type="number"
               placeholder="2000"
@@ -152,8 +152,8 @@ export default function LeaseStylesSection({
           {rentalType === 'Weekly' && (
             <FormInput
               label="Weekly Host Rate ($)"
-              name="weekly_host_rate"
-              value={listing['weekly_host_rate']}
+              name="weekly_rate_paid_to_host"
+              value={listing.weekly_rate_paid_to_host}
               onChange={handleChange}
               type="number"
               placeholder="600"
@@ -171,8 +171,8 @@ export default function LeaseStylesSection({
                 <FormInput
                   key={nights}
                   label={`${nights} night${nights > 1 ? 's' : ''} ($)`}
-                  name={`nightly_rate_${nights}_night${nights > 1 ? 's' : ''}`}
-                  value={listing[`nightly_rate_${nights}_night${nights > 1 ? 's' : ''}`]}
+                  name={`nightly_rate_for_${nights}_night_stay`}
+                  value={listing[`nightly_rate_for_${nights}_night_stay`]}
                   onChange={handleChange}
                   type="number"
                   placeholder="0"

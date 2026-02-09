@@ -167,40 +167,40 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     if (!listing || formDataInitializedRef.current) return;
 
     // Auto-populate borough from zip code if missing
-    const zipCode = listing['Location - Zip Code'];
-    let borough = listing['Location - Borough'];
+    const zipCode = listing.zip_code;
+    let borough = listing.borough;
     if (!borough && zipCode) {
       borough = getBoroughForZipCode(zipCode);
     }
 
     setFormData({
-      Name: listing.Name,
-      Description: listing.Description,
-      'Description - Neighborhood': listing['Description - Neighborhood'],
-      'Location - City': listing['Location - City'],
-      'Location - State': listing['Location - State'],
-      'Location - Zip Code': zipCode,
-      'Location - Borough': borough,
-      'Location - Hood': listing['Location - Hood'],
-      'Features - Type of Space': listing['Features - Type of Space'],
-      'Features - Qty Bedrooms': listing['Features - Qty Bedrooms'],
-      'Features - Qty Bathrooms': listing['Features - Qty Bathrooms'],
-      'Features - Qty Beds': listing['Features - Qty Beds'],
-      'Features - Qty Guests': listing['Features - Qty Guests'],
-      'Features - SQFT Area': listing['Features - SQFT Area'],
-      'Features - SQFT of Room': listing['Features - SQFT of Room'],
-      'Kitchen Type': listing['Kitchen Type'],
-      'Features - Parking type': listing['Features - Parking type'],
-      'Features - Secure Storage Option': listing['Features - Secure Storage Option'],
-      'Features - House Rules': listing['Features - House Rules'],
-      'Features - Photos': listing['Features - Photos'],
-      'Features - Amenities In-Unit': listing['Features - Amenities In-Unit'],
-      'Features - Amenities In-Building': listing['Features - Amenities In-Building'],
-      'Features - Safety': listing['Features - Safety'],
-      'First Available': listing['First Available'],
-      'Minimum Nights': listing['Minimum Nights'],
-      'Maximum Nights': listing['Maximum Nights'],
-      'Cancellation Policy': listing['Cancellation Policy'] || ''
+      listing_title: listing.listing_title,
+      listing_description: listing.listing_description,
+      neighborhood_description_by_host: listing.neighborhood_description_by_host,
+      city: listing.city,
+      state: listing.state,
+      zip_code: zipCode,
+      borough: borough,
+      primary_neighborhood_reference_id: listing.primary_neighborhood_reference_id,
+      space_type: listing.space_type,
+      bedroom_count: listing.bedroom_count,
+      bathroom_count: listing.bathroom_count,
+      bed_count: listing.bed_count,
+      max_guest_count: listing.max_guest_count,
+      square_feet: listing.square_feet,
+      square_feet_of_room: listing.square_feet_of_room,
+      kitchen_type: listing.kitchen_type,
+      parking_type: listing.parking_type,
+      secure_storage_option: listing.secure_storage_option,
+      house_rule_reference_ids_json: listing.house_rule_reference_ids_json,
+      photos_with_urls_captions_and_sort_order_json: listing.photos_with_urls_captions_and_sort_order_json,
+      in_unit_amenity_reference_ids_json: listing.in_unit_amenity_reference_ids_json,
+      in_building_amenity_reference_ids_json: listing.in_building_amenity_reference_ids_json,
+      safety_feature_reference_ids_json: listing.safety_feature_reference_ids_json,
+      first_available_date: listing.first_available_date,
+      minimum_nights_per_stay: listing.minimum_nights_per_stay,
+      maximum_nights_per_stay: listing.maximum_nights_per_stay,
+      cancellation_policy: listing.cancellation_policy || ''
     });
     formDataInitializedRef.current = true;
   }, [listing]);
@@ -218,7 +218,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     if (listing && formDataInitializedRef.current) {
       // Try to get full address from Location - Address JSONB field first
       let fullAddress = '';
-      const locationAddress = listing['Location - Address'];
+      const locationAddress = listing.address_with_lat_lng_json;
 
       if (locationAddress) {
         // Parse if it's a JSON string
@@ -241,9 +241,9 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
 
       // Fallback: build display string from individual fields if no full address
       if (!fullAddress) {
-        const city = listing['Location - City'] || '';
-        const state = listing['Location - State'] || '';
-        const zip = listing['Location - Zip Code'] || '';
+        const city = listing.city || '';
+        const state = listing.state || '';
+        const zip = listing.zip_code || '';
 
         const parts = [];
         if (city) parts.push(city);
@@ -256,8 +256,8 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       setAddressInputValue(fullAddress);
 
       // If we have a valid zip code in service area, mark as valid
-      const zip = listing['Location - Zip Code'] || '';
-      const state = listing['Location - State'] || '';
+      const zip = listing.zip_code || '';
+      const state = listing.state || '';
       if (zip && isValidServiceArea(zip, state, '')) {
         setIsAddressValid(true);
       }
@@ -407,11 +407,11 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
           // Update form data with parsed values
           setFormData(prev => ({
             ...prev,
-            'Location - City': city,
-            'Location - State': state,
-            'Location - Zip Code': zip,
-            'Location - Borough': borough,
-            'Location - Hood': neighborhood
+            city: city,
+            state: state,
+            zip_code: zip,
+            borough: borough,
+            primary_neighborhood_reference_id: neighborhood
           }));
 
           // Update address input value to show formatted address
@@ -479,7 +479,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     const currentArray = (formData[field]) || [];
 
     // Enforce maximum of 12 house rules
-    if (field === 'Features - House Rules' && isChecked && currentArray.length >= 12) {
+    if (field === 'house_rule_reference_ids_json' && isChecked && currentArray.length >= 12) {
       showToast('Maximum reached', 'You can select up to 12 house rules', 'info');
       return;
     }
@@ -498,7 +498,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     // Autosave to database but don't trigger parent refresh (avoids scroll jump)
     // Parent will refresh listing when modal is closed
     try {
-      await updateListing(listing._id, { [field]: newArray });
+      await updateListing(listing.id, { [field]: newArray });
       showToast(item, `${itemType} ${isChecked ? 'added' : 'removed'}!`);
     } catch (error) {
       console.error('Autosave error:', error);
@@ -537,44 +537,44 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
 
       // Convert borough display name to FK ID if borough was changed
       // The database expects a foreign key ID, not the display name
-      if (changedFields['Location - Borough']) {
-        const boroughName = changedFields['Location - Borough'];
+      if (changedFields.borough) {
+        const boroughName = changedFields.borough;
         const boroughId = await getBoroughIdByName(boroughName);
         if (boroughId) {
-          changedFields['Location - Borough'] = boroughId;
-          console.log('📍 Converted borough name to ID:', boroughName, '->', boroughId);
+          changedFields.borough = boroughId;
+          console.log('ðŸ“ Converted borough name to ID:', boroughName, '->', boroughId);
         } else {
           // If we can't find the borough ID, don't save this field to avoid FK errors
-          console.warn('⚠️ Could not find borough ID for:', boroughName, '- skipping borough update');
-          delete changedFields['Location - Borough'];
+          console.warn('âš ï¸ Could not find borough ID for:', boroughName, '- skipping borough update');
+          delete changedFields.borough;
         }
       }
 
       // Convert city name to FK ID if city was changed (city is derived from borough)
       // The database expects a foreign key ID, not the city name string
-      if (changedFields['Location - City'] || changedFields['Location - Borough']) {
+      if (changedFields.city || changedFields.borough) {
         // Determine the current borough name (from form data, since changedFields may have converted ID)
-        const currentBoroughName = formData['Location - Borough'] || listing['Location - Borough'];
+        const currentBoroughName = formData.borough || listing.borough;
 
         // Derive city name from borough
-        const cityName = getCityForBorough(currentBoroughName) || formData['Location - City'];
+        const cityName = getCityForBorough(currentBoroughName) || formData.city;
 
         if (cityName) {
           const cityId = await getCityIdByName(cityName);
           if (cityId) {
-            changedFields['Location - City'] = cityId;
-            console.log('🏙️ Converted city name to ID:', cityName, '->', cityId);
+            changedFields.city = cityId;
+            console.log('ðŸ™ï¸ Converted city name to ID:', cityName, '->', cityId);
           } else {
             // If we can't find the city ID, show warning but allow save without city field
-            console.warn('⚠️ Could not find city ID for:', cityName, '- removing city from update');
-            delete changedFields['Location - City'];
+            console.warn('âš ï¸ Could not find city ID for:', cityName, '- removing city from update');
+            delete changedFields.city;
             showToast('City lookup failed', `Could not find city "${cityName}" in database`, 'warning');
           }
         }
       }
 
-      console.log('📝 Saving only changed fields:', Object.keys(changedFields));
-      const updatedListing = await updateListing(listing._id, changedFields);
+      console.log('ðŸ“ Saving only changed fields:', Object.keys(changedFields));
+      const updatedListing = await updateListing(listing.id, changedFields);
       showToast('Changes saved!', 'Your listing has been updated');
       onSave(updatedListing);
       setTimeout(onClose, 2000);
@@ -600,15 +600,15 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
         return;
       }
 
-      const selectedRules = Array.isArray(formData['Features - House Rules'])
-        ? formData['Features - House Rules']
+      const selectedRules = Array.isArray(formData.house_rule_reference_ids_json)
+        ? formData.house_rule_reference_ids_json
         : [];
       const newRules = [...new Set([...selectedRules, ...commonRules])];
-      setFormData(prev => ({ ...prev, 'Features - House Rules': newRules }));
+      setFormData(prev => ({ ...prev, house_rule_reference_ids_json: newRules }));
 
       // Save to database but don't trigger parent refresh (avoids scroll jump)
       // Parent will refresh listing when modal is closed
-      await updateListing(listing._id, { 'Features - House Rules': newRules });
+      await updateListing(listing.id, { house_rule_reference_ids_json: newRules });
       showToast('Common rules loaded!', `${commonRules.length} rules added`);
     } catch (e) {
       console.error('[loadCommonRules] Error:', e);
@@ -628,15 +628,15 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
         return;
       }
 
-      const currentFeatures = Array.isArray(formData['Features - Safety'])
-        ? formData['Features - Safety']
+      const currentFeatures = Array.isArray(formData.safety_feature_reference_ids_json)
+        ? formData.safety_feature_reference_ids_json
         : [];
       const newFeatures = [...new Set([...currentFeatures, ...commonFeatures])];
-      setFormData(prev => ({ ...prev, 'Features - Safety': newFeatures }));
+      setFormData(prev => ({ ...prev, safety_feature_reference_ids_json: newFeatures }));
 
       // Save to database but don't trigger parent refresh (avoids scroll jump)
       // Parent will refresh listing when modal is closed
-      await updateListing(listing._id, { 'Features - Safety': newFeatures });
+      await updateListing(listing.id, { safety_feature_reference_ids_json: newFeatures });
       showToast('Common safety features loaded!', `${commonFeatures.length} features added`);
     } catch (e) {
       console.error('[loadCommonSafetyFeatures] Error:', e);
@@ -656,15 +656,15 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
         return;
       }
 
-      const currentAmenities = Array.isArray(formData['Features - Amenities In-Unit'])
-        ? formData['Features - Amenities In-Unit']
+      const currentAmenities = Array.isArray(formData.in_unit_amenity_reference_ids_json)
+        ? formData.in_unit_amenity_reference_ids_json
         : [];
       const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
-      setFormData(prev => ({ ...prev, 'Features - Amenities In-Unit': newAmenities }));
+      setFormData(prev => ({ ...prev, in_unit_amenity_reference_ids_json: newAmenities }));
 
       // Save to database but don't trigger parent refresh (avoids scroll jump)
       // Parent will refresh listing when modal is closed
-      await updateListing(listing._id, { 'Features - Amenities In-Unit': newAmenities });
+      await updateListing(listing.id, { in_unit_amenity_reference_ids_json: newAmenities });
       showToast('Common in-unit amenities loaded!', `${commonAmenities.length} amenities added`);
     } catch (e) {
       console.error('[loadCommonInUnitAmenities] Error:', e);
@@ -684,15 +684,15 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
         return;
       }
 
-      const currentAmenities = Array.isArray(formData['Features - Amenities In-Building'])
-        ? formData['Features - Amenities In-Building']
+      const currentAmenities = Array.isArray(formData.in_building_amenity_reference_ids_json)
+        ? formData.in_building_amenity_reference_ids_json
         : [];
       const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
-      setFormData(prev => ({ ...prev, 'Features - Amenities In-Building': newAmenities }));
+      setFormData(prev => ({ ...prev, in_building_amenity_reference_ids_json: newAmenities }));
 
       // Save to database but don't trigger parent refresh (avoids scroll jump)
       // Parent will refresh listing when modal is closed
-      await updateListing(listing._id, { 'Features - Amenities In-Building': newAmenities });
+      await updateListing(listing.id, { in_building_amenity_reference_ids_json: newAmenities });
       showToast('Common building amenities loaded!', `${commonAmenities.length} amenities added`);
     } catch (e) {
       console.error('[loadCommonBuildingAmenities] Error:', e);
@@ -704,7 +704,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
 
   const loadNeighborhoodTemplate = useCallback(async () => {
     // Get ZIP code from form data or listing
-    const zipCode = formData['Location - Zip Code'] || listing?.['Location - Zip Code'];
+    const zipCode = formData.zip_code || listing?.zip_code;
 
     if (!zipCode) {
       showToast('Missing ZIP code', 'Please add a ZIP code first to load the neighborhood template', 'error');
@@ -715,16 +715,16 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     try {
       // Build address data for AI fallback
       const addressData = {
-        fullAddress: `${formData['Location - City'] || listing?.['Location - City'] || ''}, ${formData['Location - State'] || listing?.['Location - State'] || ''}`,
-        city: formData['Location - City'] || listing?.['Location - City'] || '',
-        state: formData['Location - State'] || listing?.['Location - State'] || '',
+        fullAddress: `${formData.city || listing?.city || ''}, ${formData.state || listing?.state || ''}`,
+        city: formData.city || listing?.city || '',
+        state: formData.state || listing?.state || '',
         zip: zipCode,
       };
 
       const result = await getNeighborhoodDescriptionWithFallback(zipCode, addressData);
 
       if (result && result.description) {
-        handleInputChange('Description - Neighborhood', result.description);
+        handleInputChange('neighborhood_description_by_host', result.description);
 
         if (result.source === 'ai') {
           showToast('Description generated!', 'AI-generated neighborhood description based on address');
@@ -747,17 +747,17 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
    */
   const extractListingDataForAI = useCallback(() => {
     return {
-      listingName: formData.Name || listing?.Name || '',
-      address: `${formData['Location - City'] || listing?.['Location - City'] || ''}, ${formData['Location - State'] || listing?.['Location - State'] || ''}`,
-      neighborhood: formData['Location - Hood'] || listing?.['Location - Hood'] || formData['Location - Borough'] || listing?.['Location - Borough'] || '',
-      borough: formData['Location - Borough'] || listing?.['Location - Borough'] || '',
-      typeOfSpace: formData['Features - Type of Space'] || listing?.['Features - Type of Space'] || '',
-      bedrooms: formData['Features - Qty Bedrooms'] ?? listing?.['Features - Qty Bedrooms'] ?? 0,
-      beds: formData['Features - Qty Beds'] ?? listing?.['Features - Qty Beds'] ?? 0,
-      bathrooms: formData['Features - Qty Bathrooms'] ?? listing?.['Features - Qty Bathrooms'] ?? 0,
-      kitchenType: formData['Kitchen Type'] || listing?.['Kitchen Type'] || '',
-      amenitiesInsideUnit: formData['Features - Amenities In-Unit'] || listing?.['Features - Amenities In-Unit'] || [],
-      amenitiesOutsideUnit: formData['Features - Amenities In-Building'] || listing?.['Features - Amenities In-Building'] || [],
+      listingName: formData.listing_title || listing?.listing_title || '',
+      address: `${formData.city || listing?.city || ''}, ${formData.state || listing?.state || ''}`,
+      neighborhood: formData.primary_neighborhood_reference_id || listing?.primary_neighborhood_reference_id || formData.borough || listing?.borough || '',
+      borough: formData.borough || listing?.borough || '',
+      typeOfSpace: formData.space_type || listing?.space_type || '',
+      bedrooms: formData.bedroom_count ?? listing?.bedroom_count ?? 0,
+      beds: formData.bed_count ?? listing?.bed_count ?? 0,
+      bathrooms: formData.bathroom_count ?? listing?.bathroom_count ?? 0,
+      kitchenType: formData.kitchen_type || listing?.kitchen_type || '',
+      amenitiesInsideUnit: formData.in_unit_amenity_reference_ids_json || listing?.in_unit_amenity_reference_ids_json || [],
+      amenitiesOutsideUnit: formData.in_building_amenity_reference_ids_json || listing?.in_building_amenity_reference_ids_json || [],
     };
   }, [formData, listing]);
 
@@ -778,7 +778,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       const generatedTitle = await generateListingTitle(listingData);
 
       if (generatedTitle) {
-        handleInputChange('Name', generatedTitle);
+        handleInputChange('listing_title', generatedTitle);
         showToast('Title generated!', 'AI title applied successfully');
       } else {
         showToast('Could not generate title', 'Please try again', 'error');
@@ -804,7 +804,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       const generatedDescription = await generateListingDescription(listingData);
 
       if (generatedDescription) {
-        handleInputChange('Description', generatedDescription);
+        handleInputChange('listing_description', generatedDescription);
         showToast('Description generated!', 'AI description applied successfully');
       } else {
         showToast('Could not generate description', 'Please try again', 'error');
@@ -821,10 +821,10 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
   const addPhotoUrl = useCallback(() => {
     const url = prompt('Enter image URL:');
     if (url) {
-      const photos = Array.isArray(formData['Features - Photos'])
-        ? formData['Features - Photos']
+      const photos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
+        ? formData.photos_with_urls_captions_and_sort_order_json
         : [];
-      handleInputChange('Features - Photos', [...photos, url]);
+      handleInputChange('photos_with_urls_captions_and_sort_order_json', [...photos, url]);
     }
   }, [formData, handleInputChange]);
 
@@ -836,8 +836,8 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     if (!files || files.length === 0) return;
 
     setIsUploadingPhotos(true);
-    const currentPhotos = Array.isArray(formData['Features - Photos'])
-      ? formData['Features - Photos']
+    const currentPhotos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
+      ? formData.photos_with_urls_captions_and_sort_order_json
       : [];
 
     try {
@@ -845,15 +845,15 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const photoObj = { file, url: URL.createObjectURL(file) };
-        const result = await uploadPhoto(photoObj, listing._id, currentPhotos.length + i);
+        const result = await uploadPhoto(photoObj, listing.id, currentPhotos.length + i);
         uploadedUrls.push(result.url);
       }
 
       const newPhotos = [...currentPhotos, ...uploadedUrls];
-      handleInputChange('Features - Photos', newPhotos);
+      handleInputChange('photos_with_urls_captions_and_sort_order_json', newPhotos);
 
       // Autosave to database
-      const updated = await updateListing(listing._id, { 'Features - Photos': newPhotos });
+      const updated = await updateListing(listing.id, { photos_with_urls_captions_and_sort_order_json: newPhotos });
       onSave(updated);
       showToast(`${uploadedUrls.length} photo(s) uploaded!`, 'Photos saved successfully');
     } catch (error) {
@@ -870,23 +870,23 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
    * Remove a photo from the list
    */
   const removePhoto = useCallback(async (index) => {
-    const currentPhotos = Array.isArray(formData['Features - Photos'])
-      ? formData['Features - Photos']
+    const currentPhotos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
+      ? formData.photos_with_urls_captions_and_sort_order_json
       : [];
     const newPhotos = currentPhotos.filter((_, i) => i !== index);
 
-    handleInputChange('Features - Photos', newPhotos);
+    handleInputChange('photos_with_urls_captions_and_sort_order_json', newPhotos);
 
     // Autosave to database
     try {
-      const updated = await updateListing(listing._id, { 'Features - Photos': newPhotos });
+      const updated = await updateListing(listing.id, { photos_with_urls_captions_and_sort_order_json: newPhotos });
       onSave(updated);
       showToast('Photo removed', 'Changes saved');
     } catch (error) {
       console.error('[removePhoto] Error:', error);
       showToast('Error removing photo', 'Please try again', 'error');
       // Revert on error
-      handleInputChange('Features - Photos', currentPhotos);
+      handleInputChange('photos_with_urls_captions_and_sort_order_json', currentPhotos);
     }
   }, [formData, listing, handleInputChange, updateListing, onSave, showToast]);
 
@@ -914,28 +914,30 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       return;
     }
 
-    const currentPhotos = Array.isArray(formData['Features - Photos'])
-      ? formData['Features - Photos']
+    const currentPhotos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
+      ? formData.photos_with_urls_captions_and_sort_order_json
       : [];
     const updated = [...currentPhotos];
     const [draggedItem] = updated.splice(draggedPhotoIndex, 1);
     updated.splice(dropIndex, 0, draggedItem);
 
-    handleInputChange('Features - Photos', updated);
+    handleInputChange('photos_with_urls_captions_and_sort_order_json', updated);
     setDraggedPhotoIndex(null);
     setDragOverPhotoIndex(null);
 
     // Autosave to database
     try {
-      const result = await updateListing(listing._id, { 'Features - Photos': updated });
+      const result = await updateListing(listing.id, { photos_with_urls_captions_and_sort_order_json: updated });
       onSave(result);
       showToast('Photos reordered', 'Changes saved');
     } catch (error) {
       console.error('[handlePhotoDrop] Error:', error);
       showToast('Error reordering photos', 'Please try again', 'error');
-      handleInputChange('Features - Photos', currentPhotos);
+      handleInputChange('photos_with_urls_captions_and_sort_order_json', currentPhotos);
     }
   }, [formData, draggedPhotoIndex, listing, handleInputChange, updateListing, onSave, showToast]);
+
+  // Note: formData keys now use new snake_case column names that match the database directly
 
   const handlePhotoDragEnd = useCallback(() => {
     setDraggedPhotoIndex(null);
@@ -970,24 +972,24 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
   }, [editSection]);
 
   // Derived state for form arrays
-  const inUnitAmenities = Array.isArray(formData['Features - Amenities In-Unit'])
-    ? formData['Features - Amenities In-Unit']
+  const inUnitAmenities = Array.isArray(formData.in_unit_amenity_reference_ids_json)
+    ? formData.in_unit_amenity_reference_ids_json
     : [];
 
-  const buildingAmenities = Array.isArray(formData['Features - Amenities In-Building'])
-    ? formData['Features - Amenities In-Building']
+  const buildingAmenities = Array.isArray(formData.in_building_amenity_reference_ids_json)
+    ? formData.in_building_amenity_reference_ids_json
     : [];
 
-  const selectedRules = Array.isArray(formData['Features - House Rules'])
-    ? formData['Features - House Rules']
+  const selectedRules = Array.isArray(formData.house_rule_reference_ids_json)
+    ? formData.house_rule_reference_ids_json
     : [];
 
-  const safetyFeatures = Array.isArray(formData['Features - Safety'])
-    ? formData['Features - Safety']
+  const safetyFeatures = Array.isArray(formData.safety_feature_reference_ids_json)
+    ? formData.safety_feature_reference_ids_json
     : [];
 
-  const photos = Array.isArray(formData['Features - Photos'])
-    ? formData['Features - Photos']
+  const photos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
+    ? formData.photos_with_urls_captions_and_sort_order_json
     : [];
 
   return {

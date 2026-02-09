@@ -287,32 +287,32 @@ export function useGuestMenuData(userId, isAuthenticated) {
       const [proposalsResult, suggestedResult, userResult, leasesResult] = await Promise.all([
         // Count user's proposals (as guest)
         supabase
-          .from('proposal')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Guest', userId)
-          .or('"Deleted".is.null,"Deleted".eq.false')
-          .neq('Status', 'Proposal Cancelled by Guest'),
+          .from('booking_proposal')
+          .select('id', { count: 'exact', head: true })
+          .eq('guest_user_id', userId)
+          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('proposal_workflow_status', 'Proposal Cancelled by Guest'),
 
         // Count suggested proposals
         supabase
-          .from('proposal')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Guest', userId)
-          .in('Status', SUGGESTED_PROPOSAL_STATUSES)
-          .or('"Deleted".is.null,"Deleted".eq.false'),
+          .from('booking_proposal')
+          .select('id', { count: 'exact', head: true })
+          .eq('guest_user_id', userId)
+          .in('proposal_workflow_status', SUGGESTED_PROPOSAL_STATUSES)
+          .or('is_deleted.is.null,is_deleted.eq.false'),
 
         // Check if user has rental application (check for rental_application_id or rental app fields)
         supabase
           .from('user')
-          .select('_id, "Rental Application"')
-          .eq('_id', userId)
+          .select('id, rental_application_id')
+          .eq('id', userId)
           .single(),
 
         // Count leases where user is guest
         supabase
-          .from('bookings_leases')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Guest', userId)
+          .from('booking_lease')
+          .select('id', { count: 'exact', head: true })
+          .eq('guest_user_id', userId)
       ]);
 
       const proposalsCount = proposalsResult.count || 0;
@@ -320,7 +320,7 @@ export function useGuestMenuData(userId, isAuthenticated) {
       const leasesCount = leasesResult.count || 0;
 
       // Check if user has a rental application
-      const hasRentalApp = !!(userResult.data?.['Rental Application']);
+      const hasRentalApp = !!(userResult.data?.rental_application_id);
 
       // Determine state based on counts (priority order matters)
       if (leasesCount > 0) {

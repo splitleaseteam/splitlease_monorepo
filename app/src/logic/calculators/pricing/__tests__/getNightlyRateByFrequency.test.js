@@ -13,13 +13,13 @@ describe('getNightlyRateByFrequency', () => {
   // Test Data Fixtures
   // ============================================================================
   const fullListing = {
-    'nightly_rate_1_night': 150,
-    'nightly_rate_2_nights': 140,
-    'nightly_rate_3_nights': 130,
-    'nightly_rate_4_nights': 120,
-    'nightly_rate_5_nights': 110,
-    'nightly_rate_6_nights': 100,
-    'nightly_rate_7_nights': 90
+    'nightly_rate_for_1_night_stay': 150,
+    'nightly_rate_for_2_night_stay': 140,
+    'nightly_rate_for_3_night_stay': 130,
+    'nightly_rate_for_4_night_stay': 120,
+    'nightly_rate_for_5_night_stay': 110,
+    'nightly_rate_for_6_night_stay': 100,
+    'nightly_rate_for_7_night_stay': 90
   };
 
   const listingWithOverride = {
@@ -28,7 +28,7 @@ describe('getNightlyRateByFrequency', () => {
   };
 
   const sparseListingWith4Nights = {
-    'nightly_rate_4_nights': 100
+    'nightly_rate_for_4_night_stay': 100
   };
 
   // ============================================================================
@@ -162,7 +162,7 @@ describe('getNightlyRateByFrequency', () => {
   describe('edge cases', () => {
     it('should handle decimal rate values', () => {
       const listing = {
-        'nightly_rate_4_nights': 99.99
+        'nightly_rate_for_4_night_stay': 99.99
       };
       const result = getNightlyRateByFrequency({
         listing,
@@ -173,7 +173,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should handle very large rate values', () => {
       const listing = {
-        'nightly_rate_4_nights': 10000
+        'nightly_rate_for_4_night_stay': 10000
       };
       const result = getNightlyRateByFrequency({
         listing,
@@ -186,7 +186,7 @@ describe('getNightlyRateByFrequency', () => {
       // Note: Zero is falsy in JavaScript, so the check (!listing[fieldName])
       // treats 0 as missing - this is intentional as $0/night is invalid
       const listing = {
-        'nightly_rate_4_nights': 0
+        'nightly_rate_for_4_night_stay': 0
       };
       expect(() => getNightlyRateByFrequency({
         listing,
@@ -196,7 +196,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should convert numeric string rate to number', () => {
       const listing = {
-        'nightly_rate_4_nights': '100'
+        'nightly_rate_for_4_night_stay': '100'
       };
       const result = getNightlyRateByFrequency({
         listing,
@@ -322,7 +322,7 @@ describe('getNightlyRateByFrequency', () => {
   describe('error handling - missing price fields', () => {
     it('should throw error when price field for selected nights is missing', () => {
       const incompleteListing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
         // Missing other night rates
       };
       expect(() => getNightlyRateByFrequency({
@@ -340,7 +340,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should throw error when price field exists but is null', () => {
       const listing = {
-        'nightly_rate_4_nights': null
+        'nightly_rate_for_4_night_stay': null
       };
       expect(() => getNightlyRateByFrequency({
         listing,
@@ -350,7 +350,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should throw error when price field exists but is undefined', () => {
       const listing = {
-        'nightly_rate_4_nights': undefined
+        'nightly_rate_for_4_night_stay': undefined
       };
       expect(() => getNightlyRateByFrequency({
         listing,
@@ -360,7 +360,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should throw error for negative rate in listing', () => {
       const listing = {
-        'nightly_rate_4_nights': -50
+        'nightly_rate_for_4_night_stay': -50
       };
       expect(() => getNightlyRateByFrequency({
         listing,
@@ -370,7 +370,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should throw error for NaN rate in listing', () => {
       const listing = {
-        'nightly_rate_4_nights': 'invalid'
+        'nightly_rate_for_4_night_stay': 'invalid'
       };
       expect(() => getNightlyRateByFrequency({
         listing,
@@ -404,8 +404,8 @@ describe('getNightlyRateByFrequency', () => {
   // Price Field Mapping Tests
   // ============================================================================
   describe('price field mapping', () => {
-    it('should map nightsSelected 2 to "nightly_rate_2_nights"', () => {
-      const listing = { 'nightly_rate_2_nights': 999 };
+    it('should map nightsSelected 2 to "nightly_rate_for_2_night_stay"', () => {
+      const listing = { 'nightly_rate_for_2_night_stay': 999 };
       const result = getNightlyRateByFrequency({
         listing,
         nightsSelected: 2
@@ -413,8 +413,8 @@ describe('getNightlyRateByFrequency', () => {
       expect(result).toBe(999);
     });
 
-    it('should map nightsSelected 3 to "nightly_rate_3_nights"', () => {
-      const listing = { 'nightly_rate_3_nights': 888 };
+    it('should map nightsSelected 3 to "nightly_rate_for_3_night_stay"', () => {
+      const listing = { 'nightly_rate_for_3_night_stay': 888 };
       const result = getNightlyRateByFrequency({
         listing,
         nightsSelected: 3
@@ -422,8 +422,8 @@ describe('getNightlyRateByFrequency', () => {
       expect(result).toBe(888);
     });
 
-    it('should map nightsSelected 4 to "nightly_rate_4_nights"', () => {
-      const listing = { 'nightly_rate_4_nights': 777 };
+    it('should map nightsSelected 4 to "nightly_rate_for_4_night_stay"', () => {
+      const listing = { 'nightly_rate_for_4_night_stay': 777 };
       const result = getNightlyRateByFrequency({
         listing,
         nightsSelected: 4
@@ -431,8 +431,8 @@ describe('getNightlyRateByFrequency', () => {
       expect(result).toBe(777);
     });
 
-    it('should map nightsSelected 5 to "nightly_rate_5_nights"', () => {
-      const listing = { 'nightly_rate_5_nights': 666 };
+    it('should map nightsSelected 5 to "nightly_rate_for_5_night_stay"', () => {
+      const listing = { 'nightly_rate_for_5_night_stay': 666 };
       const result = getNightlyRateByFrequency({
         listing,
         nightsSelected: 5
@@ -440,8 +440,8 @@ describe('getNightlyRateByFrequency', () => {
       expect(result).toBe(666);
     });
 
-    it('should map nightsSelected 6 to "nightly_rate_6_nights"', () => {
-      const listing = { 'nightly_rate_6_nights': 555 };
+    it('should map nightsSelected 6 to "nightly_rate_for_6_night_stay"', () => {
+      const listing = { 'nightly_rate_for_6_night_stay': 555 };
       const result = getNightlyRateByFrequency({
         listing,
         nightsSelected: 6
@@ -449,8 +449,8 @@ describe('getNightlyRateByFrequency', () => {
       expect(result).toBe(555);
     });
 
-    it('should map nightsSelected 7 to "nightly_rate_7_nights"', () => {
-      const listing = { 'nightly_rate_7_nights': 444 };
+    it('should map nightsSelected 7 to "nightly_rate_for_7_night_stay"', () => {
+      const listing = { 'nightly_rate_for_7_night_stay': 444 };
       const result = getNightlyRateByFrequency({
         listing,
         nightsSelected: 7
@@ -479,7 +479,7 @@ describe('getNightlyRateByFrequency', () => {
 
     it('should prioritize price override over tiered rates', () => {
       const cheapListing = {
-        'nightly_rate_7_nights': 50,
+        'nightly_rate_for_7_night_stay': 50,
         'price_override': 200
       };
       const result = getNightlyRateByFrequency({

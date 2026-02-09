@@ -21,9 +21,9 @@ import {
 } from '../../../logic/calculators/pricingList/index.ts';
 import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CONSTANTS
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DAY_NAMES = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_FULL_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -37,9 +37,9 @@ const GUEST_PATTERN_OPTIONS = [
 
 const DEFAULT_RESERVATION_SPAN = 13;
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // INITIAL STATE DEFINITIONS
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const INITIAL_HOST_RATES = {
   hostCompStyle: '',
@@ -84,9 +84,9 @@ const INITIAL_PRICING_OUTPUT = {
   nightly: { baseRate: 0, withMarkup: 0, fullTimeDiscount: 0 }
 };
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HELPER: Map "Weeks offered" to Guest Pattern dropdown value
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Maps listing's "Weeks offered" field to guest pattern dropdown value
@@ -126,20 +126,20 @@ function mapWeeksOfferedToGuestPattern(weeksOffered) {
   return 'every-week';
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAIN HOOK
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function useZPricingUnitTestPageLogic() {
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: GLOBAL CONFIGURATION
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [zatConfig, setZatConfig] = useState(null);
   const [zatConfigLoading, setZatConfigLoading] = useState(true);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: LISTINGS
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [listings, setListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(true);
   const [listingsError, setListingsError] = useState(null);
@@ -148,41 +148,41 @@ export function useZPricingUnitTestPageLogic() {
   const [selectedListing, setSelectedListing] = useState(null);
   const [selectedListingLoading, setSelectedListingLoading] = useState(false);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: PRICING LIST (from database)
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [pricingList, setPricingList] = useState(null);
   const [pricingListLoading, setPricingListLoading] = useState(false);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: CONFIGURATION
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [reservationSpan, setReservationSpan] = useState(DEFAULT_RESERVATION_SPAN);
   const [guestPattern, setGuestPattern] = useState('every-week');
   const [hostRates, setHostRates] = useState(INITIAL_HOST_RATES);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: SCHEDULE SELECTOR (from ListingScheduleSelector)
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [selectedDays, setSelectedDays] = useState([]);
   const [priceBreakdown, setPriceBreakdown] = useState(null);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: OUTPUTS
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [pricingOutput, setPricingOutput] = useState(INITIAL_PRICING_OUTPUT);
   const [validationFlags, setValidationFlags] = useState(INITIAL_VALIDATION_FLAGS);
   const [comparisonResults, setComparisonResults] = useState(INITIAL_COMPARISON_RESULTS);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // STATE: UI
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const [alertMessage, setAlertMessage] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DERIVED VALUES
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const nightsCount = useMemo(() => {
     return selectedDays.length > 0 ? selectedDays.length - 1 : 0;
   }, [selectedDays]);
@@ -191,9 +191,9 @@ export function useZPricingUnitTestPageLogic() {
     if (!searchQuery.trim()) return listings;
     const query = searchQuery.toLowerCase();
     return listings.filter(listing =>
-      listing._id?.toLowerCase().includes(query) ||
-      listing.Name?.toLowerCase().includes(query) ||
-      listing['Host email']?.toLowerCase().includes(query)
+      listing.id?.toLowerCase().includes(query) ||
+      listing.listing_title?.toLowerCase().includes(query) ||
+      listing.host_email?.toLowerCase().includes(query)
     );
   }, [listings, searchQuery]);
 
@@ -206,9 +206,9 @@ export function useZPricingUnitTestPageLogic() {
     return (reservationSpan / 4.33).toFixed(1);
   }, [reservationSpan]);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // EFFECTS: DATA LOADING
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   // Load ZAT config on mount
   useEffect(() => {
@@ -244,9 +244,9 @@ export function useZPricingUnitTestPageLogic() {
     }
   }, [selectedListing, pricingList, zatConfig, hostRates]);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // DATA LOADERS
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   async function loadZatConfig() {
     try {
@@ -276,34 +276,34 @@ export function useZPricingUnitTestPageLogic() {
       const { data, error } = await supabase
         .from('listing')
         .select(`
-          _id,
-          "Name",
-          "rental type",
-          "Weeks offered",
-          "nightly_rate_2_nights",
-          "nightly_rate_3_nights",
-          "nightly_rate_4_nights",
-          "nightly_rate_5_nights",
-          "weekly_host_rate",
-          "monthly_host_rate",
-          "damage_deposit",
-          "cleaning_fee",
-          "unit_markup",
-          "Minimum Nights",
-          "Maximum Nights",
-          "Minimum Weeks",
-          "Maximum Weeks",
+          id,
+          listing_title,
+          rental_type,
+          weeks_offered_schedule_text,
+          nightly_rate_for_2_night_stay,
+          nightly_rate_for_3_night_stay,
+          nightly_rate_for_4_night_stay,
+          nightly_rate_for_5_night_stay,
+          weekly_rate_paid_to_host,
+          monthly_rate_paid_to_host,
+          damage_deposit_amount,
+          cleaning_fee_amount,
+          unit_markup_percentage,
+          minimum_nights_per_stay,
+          maximum_nights_per_stay,
+          minimum_weeks_per_stay,
+          maximum_weeks_per_stay,
           "# of nights available",
-          "Nights Available (List of Nights) ",
-          "Days Available (List of Days)",
+          available_nights_as_day_numbers_json,
+          available_days_as_day_numbers_json,
           pricing_list,
-          "Active",
-          "Complete",
-          "Approved",
-          "Host email"
+          is_active,
+          is_listing_profile_complete,
+          is_approved,
+          host_email
         `)
-        .eq('Deleted', false)
-        .order('Modified Date', { ascending: false })
+        .eq('is_deleted', false)
+        .order('bubble_updated_at', { ascending: false })
         .limit(500);
 
       if (error) throw error;
@@ -329,7 +329,7 @@ export function useZPricingUnitTestPageLogic() {
       const { data: listing, error: listingError } = await supabase
         .from('listing')
         .select('pricing_list')
-        .eq('_id', listingId)
+        .eq('id', listingId)
         .single();
 
       if (listingError) throw listingError;
@@ -375,32 +375,32 @@ export function useZPricingUnitTestPageLogic() {
       const { data, error } = await supabase
         .from('listing')
         .select(`
-          _id,
-          "Name",
-          "rental type",
-          "Weeks offered",
-          "nightly_rate_2_nights",
-          "nightly_rate_3_nights",
-          "nightly_rate_4_nights",
-          "nightly_rate_5_nights",
-          "weekly_host_rate",
-          "monthly_host_rate",
-          "damage_deposit",
-          "cleaning_fee",
-          "unit_markup",
-          "Minimum Nights",
-          "Maximum Nights",
-          "Minimum Weeks",
-          "Maximum Weeks",
+          id,
+          listing_title,
+          rental_type,
+          weeks_offered_schedule_text,
+          nightly_rate_for_2_night_stay,
+          nightly_rate_for_3_night_stay,
+          nightly_rate_for_4_night_stay,
+          nightly_rate_for_5_night_stay,
+          weekly_rate_paid_to_host,
+          monthly_rate_paid_to_host,
+          damage_deposit_amount,
+          cleaning_fee_amount,
+          unit_markup_percentage,
+          minimum_nights_per_stay,
+          maximum_nights_per_stay,
+          minimum_weeks_per_stay,
+          maximum_weeks_per_stay,
           "# of nights available",
-          "Nights Available (List of Nights) ",
-          "Days Available (List of Days)",
+          available_nights_as_day_numbers_json,
+          available_days_as_day_numbers_json,
           pricing_list,
-          "Active",
-          "Complete",
-          "Approved"
+          is_active,
+          is_listing_profile_complete,
+          is_approved
         `)
-        .eq('_id', listingId)
+        .eq('id', listingId)
         .single();
 
       if (error) throw error;
@@ -423,26 +423,26 @@ export function useZPricingUnitTestPageLogic() {
       return;
     }
 
-    const weeksOffered = listing['Weeks offered'] || 'Every week';
+    const weeksOffered = listing.weeks_offered_schedule_text || 'Every week';
 
     setHostRates({
-      hostCompStyle: listing['rental type'] || '',
-      weeksOffered: listing['Weeks offered'] || 'Every week',
-      rate2Night: parseFloat(listing['nightly_rate_2_nights']) || 0,
-      rate3Night: parseFloat(listing['nightly_rate_3_nights']) || 0,
-      rate4Night: parseFloat(listing['nightly_rate_4_nights']) || 0,
-      rate5Night: parseFloat(listing['nightly_rate_5_nights']) || 0,
-      weeklyRate: parseFloat(listing['weekly_host_rate']) || 0,
-      monthlyRate: parseFloat(listing['monthly_host_rate']) || 0,
-      damageDeposit: parseFloat(listing['damage_deposit']) || 0,
-      cleaningDeposit: parseFloat(listing['cleaning_fee']) || 0,
-      unitMarkup: parseFloat(listing['unit_markup']) || 0,
-      minNights: listing['Minimum Nights'],
-      maxNights: listing['Maximum Nights'],
-      minWeeks: listing['Minimum Weeks'],
-      maxWeeks: listing['Maximum Weeks'],
+      hostCompStyle: listing.rental_type || '',
+      weeksOffered: listing.weeks_offered_schedule_text || 'Every week',
+      rate2Night: parseFloat(listing.nightly_rate_for_2_night_stay) || 0,
+      rate3Night: parseFloat(listing.nightly_rate_for_3_night_stay) || 0,
+      rate4Night: parseFloat(listing.nightly_rate_for_4_night_stay) || 0,
+      rate5Night: parseFloat(listing.nightly_rate_for_5_night_stay) || 0,
+      weeklyRate: parseFloat(listing.weekly_rate_paid_to_host) || 0,
+      monthlyRate: parseFloat(listing.monthly_rate_paid_to_host) || 0,
+      damageDeposit: parseFloat(listing.damage_deposit_amount) || 0,
+      cleaningDeposit: parseFloat(listing.cleaning_fee_amount) || 0,
+      unitMarkup: parseFloat(listing.unit_markup_percentage) || 0,
+      minNights: listing.minimum_nights_per_stay,
+      maxNights: listing.maximum_nights_per_stay,
+      minWeeks: listing.minimum_weeks_per_stay,
+      maxWeeks: listing.maximum_weeks_per_stay,
       nightsPerWeek: listing['# of nights available'] || 7,
-      nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) '])
+      nightsAvailable: parseArrayField(listing.available_nights_as_day_numbers_json)
     });
 
     // Auto-populate Guest Pattern dropdown based on listing's Weeks Offered
@@ -450,9 +450,9 @@ export function useZPricingUnitTestPageLogic() {
     setGuestPattern(mappedPattern);
   }
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // WORKFLOW HANDLERS (All 16 from Bubble)
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   // Workflow 1: Data check click
   const handleDataCheckClick = useCallback((nightCount) => {
@@ -472,7 +472,7 @@ export function useZPricingUnitTestPageLogic() {
 
   // Workflow 3: Run Price List
   const handleUpdatePricingList = useCallback(async () => {
-    if (!selectedListing?._id) return;
+    if (!selectedListing?.id) return;
 
     try {
       setIsUpdating(true);
@@ -485,9 +485,9 @@ export function useZPricingUnitTestPageLogic() {
         body: JSON.stringify({
           action: 'create',
           payload: {
-            listing_id: selectedListing._id,
+            listing_id: selectedListing.id,
             user_id: 'admin-test',
-            unit_markup: selectedListing['unit_markup'] || 0
+            unit_markup_percentage: selectedListing.unit_markup_percentage || 0
           }
         })
       });
@@ -501,7 +501,7 @@ export function useZPricingUnitTestPageLogic() {
       console.log('[Workflow 3] Pricing list response:', result);
 
       // Reload pricing list
-      await loadPricingList(selectedListing._id);
+      await loadPricingList(selectedListing.id);
       setAlertMessage('Pricing list updated successfully');
       setTimeout(() => setAlertMessage(null), 3000);
     } catch (error) {
@@ -515,7 +515,7 @@ export function useZPricingUnitTestPageLogic() {
 
   // Workflow 4/5: Run Starting Nightly Price
   const handleUpdateStartingNightly = useCallback(async () => {
-    if (!selectedListing?._id) return;
+    if (!selectedListing?.id) return;
 
     try {
       setIsUpdating(true);
@@ -528,9 +528,9 @@ export function useZPricingUnitTestPageLogic() {
         body: JSON.stringify({
           action: 'recalculate',
           payload: {
-            listing_id: selectedListing._id,
+            listing_id: selectedListing.id,
             user_id: 'admin-test',
-            unit_markup: selectedListing['unit_markup'] || 0
+            unit_markup_percentage: selectedListing.unit_markup_percentage || 0
           }
         })
       });
@@ -543,7 +543,7 @@ export function useZPricingUnitTestPageLogic() {
       const result = await response.json();
       console.log('[Workflow 4/5] Starting nightly response:', result);
 
-      await loadPricingList(selectedListing._id);
+      await loadPricingList(selectedListing.id);
       setAlertMessage('Starting nightly price updated');
       setTimeout(() => setAlertMessage(null), 3000);
     } catch (error) {
@@ -635,9 +635,9 @@ export function useZPricingUnitTestPageLogic() {
     setTimeout(() => setAlertMessage(null), 3000);
   }, []);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // OTHER HANDLERS
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   const handleListingChange = useCallback(async (listingId) => {
     setSelectedListingId(listingId);
@@ -668,9 +668,9 @@ export function useZPricingUnitTestPageLogic() {
     setPricingOutput(INITIAL_PRICING_OUTPUT);
   }, [handleClearSearch]);
 
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // RETURN VALUE
-  // ═══════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   return {
     // Constants
     DAY_NAMES,
@@ -747,9 +747,9 @@ export function useZPricingUnitTestPageLogic() {
   };
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HELPER FUNCTIONS
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildScheduleListing(listing) {
   // For the unit test page, override day availability constraints
@@ -757,42 +757,42 @@ function buildScheduleListing(listing) {
   const ALL_DAYS_AVAILABLE = [0, 1, 2, 3, 4, 5, 6]; // Sun-Sat
 
   return {
-    id: listing._id,
-    name: listing.Name || 'Untitled',
+    id: listing.id,
+    name: listing.listing_title || 'Untitled',
     // Rental type fields - match calculatePrice expectations
-    rentalType: listing['rental type'] || 'Nightly',
-    'rental type': listing['rental type'] || 'Nightly',
-    weeksOffered: listing['Weeks offered'] || 'Every week',
-    'Weeks offered': listing['Weeks offered'] || 'Every week',
+    rentalType: listing.rental_type || 'Nightly',
+    rental_type: listing.rental_type || 'Nightly',
+    weeksOffered: listing.weeks_offered_schedule_text || 'Every week',
+    weeks_offered_schedule_text: listing.weeks_offered_schedule_text || 'Every week',
     // Markup and fees - provide both formats for calculatePrice
-    unitMarkup: listing['unit_markup'] || 0,
-    unit_markup: listing['unit_markup'] || 0,
-    cleaningFee: listing['cleaning_fee'] || 0,
-    cleaning_fee: listing['cleaning_fee'] || 0,
-    damageDeposit: listing['damage_deposit'] || 0,
-    damage_deposit: listing['damage_deposit'] || 0,
+    unitMarkup: listing.unit_markup_percentage || 0,
+    unit_markup_percentage: listing.unit_markup_percentage || 0,
+    cleaningFee: listing.cleaning_fee_amount || 0,
+    cleaning_fee_amount: listing.cleaning_fee_amount || 0,
+    damageDeposit: listing.damage_deposit_amount || 0,
+    damage_deposit_amount: listing.damage_deposit_amount || 0,
     // Weekly/Monthly rates - provide both formats
-    weeklyHostRate: listing['weekly_host_rate'] || 0,
-    weekly_host_rate: listing['weekly_host_rate'] || 0,
-    monthlyHostRate: listing['monthly_host_rate'] || 0,
-    monthly_host_rate: listing['monthly_host_rate'] || 0,
+    weeklyHostRate: listing.weekly_rate_paid_to_host || 0,
+    weekly_rate_paid_to_host: listing.weekly_rate_paid_to_host || 0,
+    monthlyHostRate: listing.monthly_rate_paid_to_host || 0,
+    monthly_rate_paid_to_host: listing.monthly_rate_paid_to_host || 0,
     // Nightly rates - use snake_case format that calculatePrice expects
-    nightly_rate_1_night: listing['nightly_rate_1_night'] || 0,
-    nightly_rate_2_nights: listing['nightly_rate_2_nights'] || 0,
-    nightly_rate_3_nights: listing['nightly_rate_3_nights'] || 0,
-    nightly_rate_4_nights: listing['nightly_rate_4_nights'] || 0,
-    nightly_rate_5_nights: listing['nightly_rate_5_nights'] || 0,
-    nightly_rate_7_nights: listing['nightly_rate_7_nights'] || 0,
+    nightly_rate_for_1_night_stay: listing.nightly_rate_for_1_night_stay || 0,
+    nightly_rate_for_2_night_stay: listing.nightly_rate_for_2_night_stay || 0,
+    nightly_rate_for_3_night_stay: listing.nightly_rate_for_3_night_stay || 0,
+    nightly_rate_for_4_night_stay: listing.nightly_rate_for_4_night_stay || 0,
+    nightly_rate_for_5_night_stay: listing.nightly_rate_for_5_night_stay || 0,
+    nightly_rate_for_7_night_stay: listing.nightly_rate_for_7_night_stay || 0,
     // Override: Allow selecting from 1 to 7 nights for testing
     minimumNights: 1,
     maximumNights: 7,
-    minimumWeeks: listing['Minimum Weeks'] || 1,
-    maximumWeeks: listing['Maximum Weeks'] || 52,
+    minimumWeeks: listing.minimum_weeks_per_stay || 1,
+    maximumWeeks: listing.maximum_weeks_per_stay || 52,
     // Override: Full week available for testing
     nightsPerWeek: 7,
     // Override: All days selectable for testing any scenario
     daysAvailable: ALL_DAYS_AVAILABLE,
-    nightsAvailable: parseArrayField(listing['Nights Available (List of Nights) ']) || []
+    nightsAvailable: parseArrayField(listing.available_nights_as_day_numbers_json) || []
   };
 }
 
@@ -811,14 +811,14 @@ function parseArrayField(value) {
 function runValidationChecks(listing, pricingList, hostRates) {
   // Debug logging
   console.log('[runValidationChecks] Input values:', {
-    listingId: listing?._id,
-    rentalType: listing?.['rental type'],
+    listingId: listing?.id,
+    rentalType: listing?.rental_type,
     pricingListNull: pricingList === null,
     pricingListNightlyPrice: pricingList?.nightlyPrice,
     pricingListStartingNightly: pricingList?.startingNightlyPrice,
-    listingActive: listing?.Active,
-    listingComplete: listing?.Complete,
-    listingApproved: listing?.Approved
+    listingActive: listing?.is_active,
+    listingComplete: listing?.is_listing_profile_complete,
+    listingApproved: listing?.is_approved
   });
 
   // Check 1: Price exists
@@ -826,14 +826,14 @@ function runValidationChecks(listing, pricingList, hostRates) {
     (pricingList.nightlyPrice?.some(p => p > 0) || pricingList.startingNightlyPrice > 0);
 
   // Check 2: Rental type selected
-  const rentalTypeSelected = listing['rental type'] !== null &&
-    listing['rental type'] !== undefined &&
-    listing['rental type'] !== '';
+  const rentalTypeSelected = listing.rental_type !== null &&
+    listing.rental_type !== undefined &&
+    listing.rental_type !== '';
 
   // Check 3: Appears in search (Active, Complete, Approved)
-  const appearsInSearch = listing.Active === true &&
-    listing.Complete === true &&
-    listing.Approved === true;
+  const appearsInSearch = listing.is_active === true &&
+    listing.is_listing_profile_complete === true &&
+    listing.is_approved === true;
 
   // Check 4: Discounts are positive
   const discountsPositive = !pricingList?.unusedNightsDiscount ||
@@ -867,7 +867,7 @@ function runValidationChecks(listing, pricingList, hostRates) {
 }
 
 function runPricingCalculations(listing, zatConfig, nightsCount, hostRates) {
-  const _rentalType = listing['rental type'] || 'Nightly';
+  const _rentalType = listing.rental_type || 'Nightly';
   const effectiveNights = nightsCount > 0 ? nightsCount : 3;
 
   console.log('[runPricingCalculations] Input values:', {
@@ -998,23 +998,23 @@ function runComparisonChecks(priceBreakdown, selectedDays, listing, reservationS
   // Create a listing object with the host rates for formula calculation
   const formulaListing = listing ? {
     ...listing,
-    rentalType: listing['rental type'] || listing.rentalType,
+    rentalType: listing.rental_type || listing.rentalType,
     weeklyHostRate: hostRates.weeklyRate,
     monthlyHostRate: hostRates.monthlyRate,
     unitMarkup: (hostRates.unitMarkup || 0) * 100, // Convert back to percentage
     cleaningFee: hostRates.cleaningDeposit,
     damageDeposit: hostRates.damageDeposit,
     weeksOffered: hostRates.weeksOffered,
-    'weekly_host_rate': hostRates.weeklyRate,
-    'monthly_host_rate': hostRates.monthlyRate,
-    'nightly_rate_2_nights': hostRates.rate2Night,
-    'nightly_rate_3_nights': hostRates.rate3Night,
-    'nightly_rate_4_nights': hostRates.rate4Night,
-    'nightly_rate_5_nights': hostRates.rate5Night,
-    'unit_markup': (hostRates.unitMarkup || 0) * 100,
-    'cleaning_fee': hostRates.cleaningDeposit,
-    'damage_deposit': hostRates.damageDeposit,
-    'Weeks offered': hostRates.weeksOffered
+    'weekly_rate_paid_to_host': hostRates.weeklyRate,
+    'monthly_rate_paid_to_host': hostRates.monthlyRate,
+    'nightly_rate_for_2_night_stay': hostRates.rate2Night,
+    'nightly_rate_for_3_night_stay': hostRates.rate3Night,
+    'nightly_rate_for_4_night_stay': hostRates.rate4Night,
+    'nightly_rate_for_5_night_stay': hostRates.rate5Night,
+    'unit_markup_percentage': (hostRates.unitMarkup || 0) * 100,
+    'cleaning_fee_amount': hostRates.cleaningDeposit,
+    'damage_deposit_amount': hostRates.damageDeposit,
+    weeks_offered_schedule_text: hostRates.weeksOffered
   } : null;
 
   // Calculate using our formula implementation
@@ -1027,9 +1027,9 @@ function runComparisonChecks(priceBreakdown, selectedDays, listing, reservationS
   const formulaInitialPayment = formulaResult.initialPayment || 0;
   const formulaTotalReservation = formulaResult.reservationTotal || 0;
 
-  // ═══════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // PRICING LIST VALUES: Calculate from the pricing_list database structure
-  // ═══════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const pricingListValues = calculatePricingListValues(
     pricingList,
     nightsCount,
@@ -1044,7 +1044,7 @@ function runComparisonChecks(priceBreakdown, selectedDays, listing, reservationS
     formula: { formulaNightlyPrice, formulaFourWeekRent, formulaInitialPayment, formulaTotalReservation },
     pricingList: pricingListValues,
     selectedNightsCount: nightsCount,
-    rentalType: listing?.['rental type']
+    rentalType: listing?.rental_type
   });
 
   const tolerance = 1; // Allow $1 tolerance for rounding differences

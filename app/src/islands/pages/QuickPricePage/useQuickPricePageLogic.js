@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useQuickPricePageLogic - All business logic for QuickPricePage
  *
  * This hook follows the Hollow Component pattern - ALL logic lives here,
@@ -49,24 +49,24 @@ function adaptListingFromSupabase(raw) {
 
   return {
     id: raw._id,
-    name: raw['Name'] || 'Untitled Listing',
-    active: raw['Active'] ?? false,
-    rentalType: raw['rental type'] || '',
-    borough: raw['Location - Borough'] || '',
-    neighborhood: raw['Location - Hood'] || '',
+    name: raw.listing_title || 'Untitled Listing',
+    active: raw.is_active ?? false,
+    rentalType: raw.rental_type || '',
+    borough: raw.borough || '',
+    neighborhood: raw.primary_neighborhood_reference_id || '',
 
     // Pricing fields (these columns have emoji prefixes in the database)
-    unitMarkup: raw['unit_markup'],
-    weeklyHostRate: raw['weekly_host_rate'],
-    monthlyHostRate: raw['monthly_host_rate'],
-    nightlyRate2: raw['nightly_rate_2_nights'],
-    nightlyRate3: raw['nightly_rate_3_nights'],
-    nightlyRate4: raw['nightly_rate_4_nights'],
-    nightlyRate5: raw['nightly_rate_5_nights'],
-    nightlyRate6: raw['nightly_rate_6_nights'],
-    nightlyRate7: raw['nightly_rate_7_nights'],
-    cleaningCost: raw['cleaning_fee'],
-    damageDeposit: raw['damage_deposit'],
+    unitMarkup: raw.unit_markup_percentage,
+    weeklyHostRate: raw.weekly_rate_paid_to_host,
+    monthlyHostRate: raw.monthly_rate_paid_to_host,
+    nightlyRate2: raw.nightly_rate_for_2_night_stay,
+    nightlyRate3: raw.nightly_rate_for_3_night_stay,
+    nightlyRate4: raw.nightly_rate_for_4_night_stay,
+    nightlyRate5: raw.nightly_rate_for_5_night_stay,
+    nightlyRate6: raw.nightly_rate_for_6_night_stay,
+    nightlyRate7: raw.nightly_rate_for_7_night_stay,
+    cleaningCost: raw.cleaning_fee_amount,
+    damageDeposit: raw.damage_deposit_amount,
     priceOverride: raw['price_override'],
     extraCharges: raw['extra_charges'],
 
@@ -76,8 +76,8 @@ function adaptListingFromSupabase(raw) {
     hostName: `${host.name_first || ''} ${host.name_last || ''}`.trim() || 'Unknown Host',
 
     // Dates
-    createdAt: raw['Created Date'] ? new Date(raw['Created Date']) : null,
-    modifiedAt: raw['Modified Date'] ? new Date(raw['Modified Date']) : null,
+    createdAt: raw.bubble_created_at ? new Date(raw.bubble_created_at) : null,
+    modifiedAt: raw.bubble_updated_at ? new Date(raw.bubble_updated_at) : null,
   };
 }
 
@@ -186,7 +186,7 @@ export function useQuickPricePageLogic({ showToast }) {
         modifiedAt: 'Modified Date',
         name: 'Name',
         priceOverride: 'price_override',
-        weeklyHostRate: 'weekly_host_rate',
+        weeklyHostRate: 'weekly_rate_paid_to_host',
       };
 
       const data = await callEdgeFunction('list', {
@@ -323,17 +323,17 @@ export function useQuickPricePageLogic({ showToast }) {
 
     // Map frontend field names to database field names
     const fieldMap = {
-      unitMarkup: 'unit_markup',
-      weeklyHostRate: 'weekly_host_rate',
-      monthlyHostRate: 'monthly_host_rate',
-      nightlyRate2: 'nightly_rate_2_nights',
-      nightlyRate3: 'nightly_rate_3_nights',
-      nightlyRate4: 'nightly_rate_4_nights',
-      nightlyRate5: 'nightly_rate_5_nights',
-      nightlyRate6: 'nightly_rate_6_nights',
-      nightlyRate7: 'nightly_rate_7_nights',
-      cleaningCost: 'cleaning_fee',
-      damageDeposit: 'damage_deposit',
+      unitMarkup: 'unit_markup_percentage',
+      weeklyHostRate: 'weekly_rate_paid_to_host',
+      monthlyHostRate: 'monthly_rate_paid_to_host',
+      nightlyRate2: 'nightly_rate_for_2_night_stay',
+      nightlyRate3: 'nightly_rate_for_3_night_stay',
+      nightlyRate4: 'nightly_rate_for_4_night_stay',
+      nightlyRate5: 'nightly_rate_for_5_night_stay',
+      nightlyRate6: 'nightly_rate_for_6_night_stay',
+      nightlyRate7: 'nightly_rate_for_7_night_stay',
+      cleaningCost: 'cleaning_fee_amount',
+      damageDeposit: 'damage_deposit_amount',
       priceOverride: 'price_override',
       extraCharges: 'extra_charges',
     };

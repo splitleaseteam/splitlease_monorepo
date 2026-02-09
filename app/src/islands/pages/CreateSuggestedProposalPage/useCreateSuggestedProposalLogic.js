@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useCreateSuggestedProposalLogic
  *
  * All business logic for the Create Suggested Proposal page.
@@ -106,12 +106,12 @@ function calculatePricing(listing, nightsPerWeek, weeks) {
   // Get nightly rate from listing (check various field names)
   const nightlyPrice =
     listing[`nightly_rate_${nightsPerWeek}_nights`] ||
-    listing['nightly_rate_4_nights'] ||
+    listing.nightly_rate_for_4_night_stay ||
     listing['nightly price'] ||
     0;
 
-  const cleaningFee = listing['cleaning_fee'] || 0;
-  const damageDeposit = listing['damage_deposit'] || 0;
+  const cleaningFee = listing.cleaning_fee_amount || 0;
+  const damageDeposit = listing.damage_deposit_amount || 0;
 
   const totalNights = nightsPerWeek * weeks;
   const fourWeekRent = nightlyPrice * nightsPerWeek * 4;
@@ -367,7 +367,7 @@ export function useCreateSuggestedProposalLogic() {
     setListingSearchResults([]);
 
     // Fetch photos
-    const { data: photos } = await getListingPhotos(listing._id);
+    const { data: photos } = await getListingPhotos(listing.id);
     setListingPhotos(photos || []);
 
     // Move to step 2
@@ -466,7 +466,7 @@ export function useCreateSuggestedProposalLogic() {
 
   const handleGuestSelect = useCallback(async (guest) => {
     console.log('[PREFILL DEBUG] handleGuestSelect called with full guest object:', guest);
-    console.log('[PREFILL DEBUG] Guest _id:', guest._id);
+    console.log('[PREFILL DEBUG] Guest id:', guest.id);
     console.log('[PREFILL DEBUG] Guest email:', guest.email);
 
     setSelectedGuest(guest);
@@ -476,26 +476,26 @@ export function useCreateSuggestedProposalLogic() {
 
     // Check for existing proposals on THIS listing (for warning display)
     if (selectedListing) {
-      const { data: listingProposals } = await getUserProposalsForListing(guest._id, selectedListing._id);
+      const { data: listingProposals } = await getUserProposalsForListing(guest.id, selectedListing.id);
       setExistingProposalsCount(listingProposals?.length || 0);
     }
 
     // Prefill from guest's most recent proposal across ALL listings
-    console.log('[PREFILL DEBUG] About to call getUserMostRecentProposal for guest:', guest._id);
-    const { data: mostRecentProposal, error: prefillError } = await getUserMostRecentProposal(guest._id);
+    console.log('[PREFILL DEBUG] About to call getUserMostRecentProposal for guest:', guest.id);
+    const { data: mostRecentProposal, error: prefillError } = await getUserMostRecentProposal(guest.id);
     console.log('[PREFILL DEBUG] Result:', { mostRecentProposal, prefillError });
 
     if (mostRecentProposal) {
-      console.log('[PREFILL DEBUG] Prefilling from proposal:', mostRecentProposal._id);
+      console.log('[PREFILL DEBUG] Prefilling from proposal:', mostRecentProposal.id);
 
       // Prefill days selected (0-indexed, no conversion needed)
-      const daysSelected = mostRecentProposal['Days Selected'];
+      const daysSelected = mostRecentProposal.guest_selected_days_numbers_json;
       if (Array.isArray(daysSelected) && daysSelected.length > 0) {
         setSelectedDays(daysSelected);
       }
 
       // Prefill reservation span
-      const weeksValue = mostRecentProposal['Reservation Span (Weeks)'];
+      const weeksValue = mostRecentProposal.reservation_span_in_weeks;
       if (weeksValue && weeksValue > 0) {
         const { reservationSpan: spanValue, customWeeks: customValue } = mapWeeksToReservationSpan(weeksValue);
         setReservationSpan(spanValue);
@@ -505,7 +505,7 @@ export function useCreateSuggestedProposalLogic() {
       }
 
       // Prefill move-in date (ensure not in the past)
-      const moveInStart = mostRecentProposal['Move in range start'];
+      const moveInStart = mostRecentProposal.move_in_range_start_date;
       if (moveInStart) {
         const proposalDate = new Date(moveInStart);
         const tomorrow = new Date();
@@ -521,14 +521,14 @@ export function useCreateSuggestedProposalLogic() {
     }
 
     // Pre-fill guest profile fields if available
-    if (guest['About Me / Bio']) {
-      setAboutMe(guest['About Me / Bio']);
+    if (guest.bio_text) {
+      setAboutMe(guest.bio_text);
     }
-    if (guest['need for Space']) {
-      setNeedForSpace(guest['need for Space']);
+    if (guest.stated_need_for_space_text) {
+      setNeedForSpace(guest.stated_need_for_space_text);
     }
-    if (guest['special needs']) {
-      setSpecialNeeds(guest['special needs']);
+    if (guest.stated_special_needs_text) {
+      setSpecialNeeds(guest.stated_special_needs_text);
     }
   }, [selectedListing]);
 
@@ -668,8 +668,8 @@ export function useCreateSuggestedProposalLogic() {
 
       const proposalData = {
         // References (required by edge function)
-        listingId: selectedListing._id,
-        guestId: selectedGuest._id,
+        listingId: selectedListing.id,
+        guestId: selectedGuest.id,
 
         // Schedule (0-indexed: 0=Sunday, 6=Saturday)
         daysSelected: selectedDays,

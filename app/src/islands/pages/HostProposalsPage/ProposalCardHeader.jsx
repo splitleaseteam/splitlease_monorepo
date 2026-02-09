@@ -99,8 +99,8 @@ function formatDuration(proposal) {
  */
 function formatTotalHostCompensation(proposal) {
   // Use '4 week compensation' as the source of truth
-  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
-  const weeks = proposal?.duration_weeks || proposal?.['Reservation Span (Weeks)'] || proposal?.weeks || 0;
+  const host4WeekCompensation = proposal?.four_week_host_compensation || 0;
+  const weeks = proposal?.duration_weeks || proposal?.reservation_span_in_weeks || proposal?.weeks || 0;
 
   // Calculate total: 4 week compensation × (total weeks / 4)
   const fourWeekPeriods = weeks / 4;

@@ -297,7 +297,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
         
         logger.debug(`[useViewSplitLeaseLogic] Initialized in ${mode} mode:`, {
           listingId,
-          listingName: listingData.Name
+          listingName: listingData.listing_title
         });
         
       } catch (err) {
@@ -329,35 +329,43 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
         // Fetch user profile data
         const { data: userRecord, error: userError } = await supabase
           .from('user')
-          .select('"About Me / Bio", "need for Space", "special needs", "Favorited Listings"')
-          .eq('_id', authUserId)
+          .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
+          .eq('id', authUserId)
           .single();
-        
+
         if (userError) throw userError;
-        
+
         // Set user data
         if (userRecord) {
           setLoggedInUserData({
             userId: authUserId,
-            aboutMe: userRecord['About Me / Bio'] || '',
-            needForSpace: userRecord['need for Space'] || '',
-            specialNeeds: userRecord['special needs'] || ''
+            aboutMe: userRecord.bio_text || '',
+            needForSpace: userRecord.stated_need_for_space_text || '',
+            specialNeeds: userRecord.stated_special_needs_text || ''
           });
-          
-          // Check if this listing is favorited
-          const favorites = userRecord['Favorited Listings'] || [];
-          if (listing && Array.isArray(favorites)) {
-            setIsFavorited(favorites.includes(listing._id));
+
+          // Check if this listing is favorited (now stored on listing table)
+          if (listing) {
+            const { data: listingFavData } = await supabase
+              .from('listing')
+              .select('user_ids_who_favorited_json')
+              .eq('id', listing.id || listing._id)
+              .single();
+
+            const favoritedUserIds = listingFavData?.user_ids_who_favorited_json || [];
+            if (Array.isArray(favoritedUserIds)) {
+              setIsFavorited(favoritedUserIds.includes(authUserId));
+            }
           }
         }
-        
+
         // Check for existing proposal
         if (listing) {
           const { data: proposals, error: proposalError } = await supabase
-            .from('proposal')
-            .select('_id')
-            .eq('Guest', authUserId)
-            .eq('Listing', listing._id)
+            .from('booking_proposal')
+            .select('id')
+            .eq('guest_user_id', authUserId)
+            .eq('listing_id', listing.id || listing._id)
             .limit(1);
           
           if (!proposalError && proposals && proposals.length > 0) {
@@ -547,25 +555,25 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       // Optimistic update
       setIsFavorited(newFavoriteState);
       
-      // Get current favorites from database
-      const { data: userData, error: fetchError } = await supabase
-        .from('user')
-        .select('"Favorited Listings"')
-        .eq('_id', authUserId)
+      // Get current favorited user IDs from listing
+      const { data: listingData, error: fetchError } = await supabase
+        .from('listing')
+        .select('user_ids_who_favorited_json')
+        .eq('id', listing.id || listing._id)
         .single();
-      
+
       if (fetchError) throw fetchError;
-      
-      const currentFavorites = userData['Favorited Listings'] || [];
-      const newFavorites = newFavoriteState
-        ? [...currentFavorites, listing._id]
-        : currentFavorites.filter(id => id !== listing._id);
-      
-      // Update favorites in database
+
+      const currentFavoritedUsers = listingData?.user_ids_who_favorited_json || [];
+      const newFavoritedUsers = newFavoriteState
+        ? [...currentFavoritedUsers, authUserId]
+        : currentFavoritedUsers.filter(id => id !== authUserId);
+
+      // Update favorited users on listing
       const { error: updateError } = await supabase
-        .from('user')
-        .update({ 'Favorited Listings': newFavorites })
-        .eq('_id', authUserId);
+        .from('listing')
+        .update({ user_ids_who_favorited_json: newFavoritedUsers })
+        .eq('id', listing.id || listing._id);
       
       if (updateError) throw updateError;
       

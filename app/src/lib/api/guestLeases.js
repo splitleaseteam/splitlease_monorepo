@@ -100,14 +100,14 @@ export async function fetchGuestLeases(userIdOverride = null) {
 
     // Query leases directly from Supabase (RLS should allow this with anon key)
     const { data: leases, error } = await supabase
-      .from('lease')
+      .from('booking_lease')
       .select(`
         *,
-        listing:Listing(*),
-        guest:Guest(*),
-        host:Host(*)
+        listing:listing_id(*),
+        guest:guest_user_id(*),
+        host:host_user_id(*)
       `)
-      .eq('Guest', userId)
+      .eq('guest_user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error || !leases || leases.length === 0) {

@@ -29,12 +29,12 @@ function ListingSearchItem({ listing, onSelect }) {
         {listing.coverPhoto && (
           <img
             src={listing.coverPhoto}
-            alt={listing.name}
+            alt={listing.listing_title}
             className="pm-search-result-photo"
           />
         )}
         <div className="pm-search-result-details">
-          <p className="pm-search-result-name">{listing.name}</p>
+          <p className="pm-search-result-name">{listing.listing_title}</p>
           <p className="pm-search-result-secondary">{listing.address}</p>
           <p className="pm-search-result-id">ID: {listing._id}</p>
           {listing.host && (
@@ -137,40 +137,40 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
       const { data, error } = await supabase
         .from('listing')
         .select(`
-          _id,
-          Name,
+          id,
+          listing_title,
           "Full Address",
-          "rental type",
-          "Cover Photo",
-          "Host User"
+          rental_type,
+          cover_photo_url,
+          host_user_id
         `)
-        .or(`Name.ilike.%${query}%,_id.ilike.%${query}%`)
+        .or(`listing_title.ilike.%${query}%,id.ilike.%${query}%`)
         .limit(20);
 
       if (error) throw error;
 
       // Fetch host info for each listing
-      const hostIds = [...new Set(data?.map(l => l['Host User']).filter(Boolean))];
+      const hostIds = [...new Set(data?.map(l => l.host_user_id).filter(Boolean))];
       const hostMap = {};
 
       if (hostIds.length > 0) {
         const { data: hosts } = await supabase
           .from('user')
-          .select('_id, "Name - Full", email')
-          .in('_id', hostIds);
+          .select('id, first_name, last_name, email')
+          .in('id', hostIds);
 
         hosts?.forEach(h => {
-          hostMap[h._id] = { fullName: h['Name - Full'], email: h.email };
+          hostMap[h.id] = { fullName: h.first_name && h.last_name ? `${h.first_name} ${h.last_name}` : (h.first_name || ''), email: h.email };
         });
       }
 
       const normalizedResults = data?.map(l => ({
-        _id: l._id,
-        name: l.Name || 'Unnamed Listing',
+        _id: l.id,
+        name: l.listing_title || 'Unnamed Listing',
         address: l['Full Address'] || '',
-        rentalType: l['rental type'] || '',
-        coverPhoto: l['Cover Photo'] || null,
-        host: hostMap[l['Host User']] || null
+        rentalType: l.rental_type || '',
+        coverPhoto: l.cover_photo_url || null,
+        host: hostMap[l.host_user_id] || null
       })) || [];
 
       setListingResults(normalizedResults);
@@ -196,33 +196,32 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
       const { data, error } = await supabase
         .from('user')
         .select(`
-          _id,
-          "Name - Full",
-          "Name - First",
-          "Name - Last",
+          id,
+          first_name,
+          last_name,
           email,
-          "Phone Number (as text)",
-          "Profile Photo",
-          "About Me / Bio",
-          "need for space",
-          "special needs"
+          phone_number,
+          profile_photo_url,
+          bio_text,
+          stated_need_for_space_text,
+          stated_special_needs_text
         `)
-        .or(`"Name - Full".ilike.%${query}%,email.ilike.%${query}%,"Phone Number (as text)".ilike.%${query}%`)
+        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,phone_number.ilike.%${query}%`)
         .limit(20);
 
       if (error) throw error;
 
       const normalizedResults = data?.map(g => ({
-        _id: g._id,
-        fullName: g['Name - Full'] || '',
-        firstName: g['Name - First'] || '',
-        lastName: g['Name - Last'] || '',
+        _id: g.id,
+        fullName: g.first_name && g.last_name ? `${g.first_name} ${g.last_name}` : '',
+        firstName: g.first_name || '',
+        lastName: g.last_name || '',
         email: g.email || '',
-        phoneNumber: g['Phone Number (as text)'] || '',
-        profilePhoto: g['Profile Photo'] || null,
-        aboutMe: g['About Me / Bio'] || '',
-        needForSpace: g['need for space'] || '',
-        specialNeeds: g['special needs'] || ''
+        phoneNumber: g.phone_number || '',
+        profilePhoto: g.profile_photo_url || null,
+        aboutMe: g.bio_text || '',
+        needForSpace: g.stated_need_for_space_text || '',
+        specialNeeds: g.stated_special_needs_text || ''
       })) || [];
 
       setGuestResults(normalizedResults);

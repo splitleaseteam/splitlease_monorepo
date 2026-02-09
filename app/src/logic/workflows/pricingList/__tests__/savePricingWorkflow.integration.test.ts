@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Integration Tests: Save Pricing Workflow
  *
  * Tests the complete pricing calculation and persistence workflow.
@@ -247,7 +247,7 @@ describe('Save Pricing Workflow Integration Tests', () => {
 
       // Verify processor extracted rates correctly
       expect(result.pricingList.hostCompensation[1]).toBe(
-        mockValidListing['nightly_rate_2_nights']
+        mockValidListing.nightly_rate_for_2_night_stay
       );
     });
 
@@ -483,7 +483,7 @@ describe('Save Pricing Workflow Integration Tests', () => {
       });
 
       // Verify data flow: listing rates -> host compensation -> nightly prices
-      const hostRate = mockValidListing['nightly_rate_2_nights'];
+      const hostRate = mockValidListing.nightly_rate_for_2_night_stay;
       const hostComp = result.pricingList.hostCompensation[1];
       const nightlyPrice = result.pricingList.nightlyPrice[1];
 

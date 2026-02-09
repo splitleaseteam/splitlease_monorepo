@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FeaturesSection - Features section for description and amenities
  *
  * @param {object} props - Component props
@@ -25,18 +25,18 @@ export default function FeaturesSection({
   };
 
   const handleAmenitiesInUnitChange = (selectedValues) => {
-    onUpdate({ 'Features - Amenities In-Unit': selectedValues });
+    onUpdate({ 'in_unit_amenity_reference_ids_json': selectedValues });
   };
 
   const handleAmenitiesInBuildingChange = (selectedValues) => {
-    onUpdate({ 'Features - Amenities In-Building': selectedValues });
+    onUpdate({ 'in_building_amenity_reference_ids_json': selectedValues });
   };
 
   // Format amenities for checkbox group
   const formatAmenityOptions = (amenities) => {
     return amenities.map(amenity => ({
       value: amenity._id || amenity.value,
-      label: amenity.name || amenity.Name || amenity.label
+      label: amenity.name || amenity.label
     }));
   };
 
@@ -62,8 +62,8 @@ export default function FeaturesSection({
       {/* Neighborhood Description */}
       <FormTextArea
         label="Neighborhood Description"
-        name="Description - Neighborhood"
-        value={listing['Description - Neighborhood']}
+        name="neighborhood_description_by_host"
+        value={listing.neighborhood_description_by_host}
         onChange={handleChange}
         rows={4}
         maxLength={1000}
@@ -77,7 +77,7 @@ export default function FeaturesSection({
           <FormCheckboxGroup
             name="amenitiesInUnit"
             options={formatAmenityOptions(amenitiesInUnit)}
-            selectedValues={listing['Features - Amenities In-Unit'] || []}
+            selectedValues={listing.in_unit_amenity_reference_ids_json || []}
             onChange={handleAmenitiesInUnitChange}
             columns={3}
           />
@@ -93,7 +93,7 @@ export default function FeaturesSection({
           <FormCheckboxGroup
             name="amenitiesInBuilding"
             options={formatAmenityOptions(amenitiesInBuilding)}
-            selectedValues={listing['Features - Amenities In-Building'] || []}
+            selectedValues={listing.in_building_amenity_reference_ids_json || []}
             onChange={handleAmenitiesInBuildingChange}
             columns={3}
           />
@@ -107,13 +107,13 @@ export default function FeaturesSection({
         <div style={styles.summaryItem}>
           <span style={styles.summaryLabel}>In-Unit Amenities:</span>
           <span style={styles.summaryValue}>
-            {(listing['Features - Amenities In-Unit'] || []).length} selected
+            {(listing.in_unit_amenity_reference_ids_json || []).length} selected
           </span>
         </div>
         <div style={styles.summaryItem}>
           <span style={styles.summaryLabel}>Building Amenities:</span>
           <span style={styles.summaryValue}>
-            {(listing['Features - Amenities In-Building'] || []).length} selected
+            {(listing.in_building_amenity_reference_ids_json || []).length} selected
           </span>
         </div>
       </div>

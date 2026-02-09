@@ -8,15 +8,15 @@
  * @returns {object} Clean, validated user object.
  *
  * @throws {Error} If rawUser is null/undefined.
- * @throws {Error} If critical _id field is missing.
+ * @throws {Error} If critical id field is missing.
  *
  * @example
  * const user = processUserData({
- *   _id: '123',
- *   'Name - Full': 'Jane Doe',
- *   'Name - First': 'Jane',
- *   'Profile Photo': 'https://...',
- *   'About Me / Bio': 'Software engineer...',
+ *   id: '123',
+ *   first_name: 'Jane',
+ *   last_name: 'Doe',
+ *   profile_photo_url: 'https://...',
+ *   bio_text: 'Software engineer...',
  *   'user verified?': true
  * })
  */
@@ -25,20 +25,22 @@ export function processUserData(rawUser) {
     throw new Error('processUserData: User data is required');
   }
 
-  if (!rawUser._id) {
-    throw new Error('processUserData: User ID (_id) is required');
+  if (!rawUser.id) {
+    throw new Error('processUserData: User ID (id) is required');
   }
 
   return {
-    id: rawUser._id,
-    firstName: rawUser['Name - First'] || null,
-    lastName: rawUser['Name - Last'] || null,
-    fullName: rawUser['Name - Full'] || null,
-    profilePhoto: rawUser['Profile Photo'] || null,
-    bio: rawUser['About Me / Bio'] || null,
+    id: rawUser.id,
+    firstName: rawUser.first_name || null,
+    lastName: rawUser.last_name || null,
+    fullName: rawUser.first_name && rawUser.last_name
+      ? `${rawUser.first_name} ${rawUser.last_name}`
+      : null,
+    profilePhoto: rawUser.profile_photo_url || null,
+    bio: rawUser.bio_text || null,
     linkedInVerified: rawUser['Verify - Linked In ID'] || false,
     phoneVerified: rawUser['Verify - Phone'] || false,
     userVerified: rawUser['user verified?'] || false,
-    proposalsList: rawUser['Proposals List'] || []
+    proposalsList: rawUser.listings_json || []
   };
 }

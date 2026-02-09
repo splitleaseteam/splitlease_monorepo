@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ManageInformationalTextsPage - Admin tool for managing informational text content
  *
  * Hollow component pattern: All logic is in useManageInformationalTextsPageLogic.js
@@ -228,7 +228,7 @@ function EntryCard({ entry, onEdit, onDelete }) {
         {entry.showMore && <span style={styles.badge}>Show More</span>}
         {entry.hasLink && <span style={styles.badge}>Has Link</span>}
         <span style={styles.metaText}>
-          Updated: {new Date(entry.modifiedDate || entry['Modified Date']).toLocaleDateString()}
+          Updated: {new Date(entry.modifiedDate || entry.bubble_updated_at).toLocaleDateString()}
         </span>
       </div>
     </div>

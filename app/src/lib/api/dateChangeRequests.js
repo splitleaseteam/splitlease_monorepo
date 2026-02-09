@@ -113,7 +113,7 @@ export async function fetchDateChangeRequestsForLease(leaseId) {
       const { data: user } = await supabase
         .from('user')
         .select('*')
-        .eq('_id', request['Requested by'])
+        .eq('id', request['Requested by'])
         .single();
       request.requestedByUser = user;
     }

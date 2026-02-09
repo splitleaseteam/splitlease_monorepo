@@ -1,7 +1,7 @@
-/**
+﻿/**
  * Extract host rate fields from a listing object.
  *
- * Pulls the 💰 host rate fields from a listing and normalizes
+ * Pulls the ðŸ’° host rate fields from a listing and normalizes
  * them into a structured format for pricing calculations.
  *
  * Supports all three rental types:
@@ -50,12 +50,12 @@ export function extractHostRatesFromListing(
     throw new Error('extractHostRatesFromListing: listing is required');
   }
 
-  const rentalType = listing['rental type'] || 'Nightly';
+  const rentalType = listing.rental_type || 'Nightly';
 
   // For Weekly rental type: Convert weekly_host_rate to synthetic nightly rates
   // Formula: weeklyRate / numberOfNights (mirrors Edge Function lines 105-118)
   if (rentalType === 'Weekly') {
-    const weeklyRate = normalizeRate(listing['weekly_host_rate']);
+    const weeklyRate = normalizeRate(listing.weekly_rate_paid_to_host);
     if (weeklyRate !== null) {
       return {
         rate1Night: roundToTwoDecimals(weeklyRate / 1),
@@ -76,7 +76,7 @@ export function extractHostRatesFromListing(
   // For Monthly rental type: Convert monthly_host_rate to synthetic nightly rates
   // Formula: (monthlyRate / avgDaysPerMonth) * 7 / numberOfNights (mirrors Edge Function lines 123-139)
   if (rentalType === 'Monthly') {
-    const monthlyRate = normalizeRate(listing['monthly_host_rate']);
+    const monthlyRate = normalizeRate(listing.monthly_rate_paid_to_host);
     if (monthlyRate !== null) {
       // Weekly equivalent = (monthlyRate / 30.4) * 7
       const weeklyEquivalent = (monthlyRate / AVG_DAYS_PER_MONTH) * 7;
@@ -98,13 +98,13 @@ export function extractHostRatesFromListing(
 
   // For Nightly rental type (or fallback): use individual nightly rates
   return {
-    rate1Night: normalizeRate(listing['nightly_rate_1_night']),
-    rate2Nights: normalizeRate(listing['nightly_rate_2_nights']),
-    rate3Nights: normalizeRate(listing['nightly_rate_3_nights']),
-    rate4Nights: normalizeRate(listing['nightly_rate_4_nights']),
-    rate5Nights: normalizeRate(listing['nightly_rate_5_nights']),
-    rate6Nights: normalizeRate(listing['nightly_rate_6_nights']),
-    rate7Nights: normalizeRate(listing['nightly_rate_7_nights']),
+    rate1Night: normalizeRate(listing.nightly_rate_for_1_night_stay),
+    rate2Nights: normalizeRate(listing.nightly_rate_for_2_night_stay),
+    rate3Nights: normalizeRate(listing.nightly_rate_for_3_night_stay),
+    rate4Nights: normalizeRate(listing.nightly_rate_for_4_night_stay),
+    rate5Nights: normalizeRate(listing.nightly_rate_for_5_night_stay),
+    rate6Nights: normalizeRate(listing.nightly_rate_for_6_night_stay),
+    rate7Nights: normalizeRate(listing.nightly_rate_for_7_night_stay),
 
     // Also extract related pricing fields
     cleaningFee: normalizeRate(listing.cleaning_fee),

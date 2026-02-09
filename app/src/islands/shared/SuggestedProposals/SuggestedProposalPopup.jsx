@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SuggestedProposalPopup
  *
  * Main popup component displaying a suggested proposal with:
@@ -91,12 +91,12 @@ export default function SuggestedProposalPopup({
 
   // Extract data using native Supabase field names
   const listing = proposal._listing || {};
-  const photos = listing['Features - Photos'] || [];
-  const listingName = listing['Name'] || 'Unnamed Listing';
+  const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
+  const listingName = listing.listing_title || 'Unnamed Listing';
 
   // Location - Address is JSONB: { address: string, lat: number, lng: number }
   // May also be stored as a string that needs parsing
-  const rawAddressData = listing['Location - Address'];
+  const rawAddressData = listing.address_with_lat_lng_json;
   const addressData = typeof rawAddressData === 'string'
     ? (() => { try { return JSON.parse(rawAddressData); } catch { return null; } })()
     : rawAddressData;
@@ -108,15 +108,15 @@ export default function SuggestedProposalPopup({
   // Fall back to Location - Coordinates if available
   const geoPoint = (addressData?.lat && addressData?.lng)
     ? { lat: addressData.lat, lng: addressData.lng }
-    : listing['Location - Coordinates'] || null;
+    : null;
 
   // Get neighborhood/borough for location display (more useful than full address)
   // Resolve borough FK ID to display label
-  const rawBorough = listing['Location - Borough'] || '';
+  const rawBorough = listing.borough || '';
   const borough = BOROUGH_ID_TO_LABEL[rawBorough] || (isBubbleFkId(rawBorough) ? '' : rawBorough);
 
   // For neighborhood, skip if it's an unresolved FK ID (no static mapping available)
-  const rawNeighborhood = listing['Location - Hood'] || listing['neighborhood (manual input by user)'] || '';
+  const rawNeighborhood = listing.primary_neighborhood_reference_id || listing.neighborhood_name_entered_by_host || '';
   const neighborhood = isBubbleFkId(rawNeighborhood) ? '' : rawNeighborhood;
 
   // Negotiation summary (AI explanation)
@@ -254,7 +254,7 @@ export default function SuggestedProposalPopup({
               <div className="sp-popup-dates">
                 <span className="sp-popup-date-label">Move-in:</span>
                 <span className="sp-popup-date-value">{startDate}</span>
-                <span className="sp-popup-date-separator">·</span>
+                <span className="sp-popup-date-separator">Â·</span>
                 <span className="sp-popup-date-label">Duration:</span>
                 <span className="sp-popup-date-value">
                   {durationMonths} month{durationMonths !== 1 ? 's' : ''}

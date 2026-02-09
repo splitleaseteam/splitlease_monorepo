@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import SearchScheduleSelector from '../shared/SearchScheduleSelector.jsx';
@@ -81,27 +81,27 @@ export default function WhySplitLeasePage() {
       let query = supabase
         .from('listing')
         .select(`
-          _id,
-          "Name",
-          "Location - Borough",
-          "Location - Hood",
-          "Location - Address",
-          "Features - Photos",
-          "Features - Qty Bedrooms",
-          "Features - Qty Bathrooms",
-          "Features - Amenities In-Unit",
-          "Days Available (List of Days)",
-          "Standarized Minimum Nightly Price (Filter)"
+          id,
+          listing_title,
+          borough,
+          primary_neighborhood_reference_id,
+          address_with_lat_lng_json,
+          photos_with_urls_captions_and_sort_order_json,
+          bedroom_count,
+          bathroom_count,
+          in_unit_amenity_reference_ids_json,
+          available_days_as_day_numbers_json,
+          standardized_min_nightly_price_for_search_filter
         `)
-        .eq('"Complete"', true)
-        .or('"Active".eq.true,"Active".is.null')
-        .or('"Location - Address".not.is.null,"Location - slightly different address".not.is.null');
+        .eq('is_listing_profile_complete', true)
+        .or('is_active.eq.true,is_active.is.null')
+        .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null');
 
       // Apply borough filter if not "all"
       if (selectedBorough !== 'all') {
         const borough = boroughs.find(b => b.value === selectedBorough);
         if (borough) {
-          query = query.eq('"Location - Borough"', borough.id);
+          query = query.eq('borough', borough.id);
         }
       }
 
@@ -122,7 +122,7 @@ export default function WhySplitLeasePage() {
       // New format has embedded objects with URLs, no fetch needed
       const legacyPhotoIds = [];
       listings.forEach(listing => {
-        const photos = parseJsonArray(listing['Features - Photos']);
+        const photos = parseJsonArray(listing.photos_with_urls_captions_and_sort_order_json);
         if (photos && photos.length > 0) {
           const firstPhoto = photos[0];
           // Only collect if it's a string ID (legacy format)
@@ -139,7 +139,7 @@ export default function WhySplitLeasePage() {
 
       // Transform listings
       const transformedListings = listings.map(listing => {
-        const photos = parseJsonArray(listing['Features - Photos']);
+        const photos = parseJsonArray(listing.photos_with_urls_captions_and_sort_order_json);
         const firstPhoto = photos?.[0];
 
         // Handle both embedded objects (new format) and legacy IDs
@@ -154,22 +154,22 @@ export default function WhySplitLeasePage() {
           photoUrl = photoMap[firstPhoto];
         }
 
-        const neighborhoodName = getNeighborhoodName(listing['Location - Hood']);
-        const boroughName = getBoroughName(listing['Location - Borough']);
+        const neighborhoodName = getNeighborhoodName(listing.primary_neighborhood_reference_id);
+        const boroughName = getBoroughName(listing.borough);
         const location = [neighborhoodName, boroughName].filter(Boolean).join(', ') || 'New York, NY';
 
         // Parse available days
-        const availableDays = parseJsonArray(listing['Days Available (List of Days)']) || [];
+        const availableDays = parseJsonArray(listing.available_days_as_day_numbers_json) || [];
 
         return {
-          id: listing._id,
-          title: listing['Name'] || 'NYC Space',
+          id: listing.id,
+          title: listing.listing_title || 'NYC Space',
           location,
           image: photoUrl,
-          bedrooms: listing['Features - Qty Bedrooms'] || 0,
-          bathrooms: listing['Features - Qty Bathrooms'] || 0,
+          bedrooms: listing.bedroom_count || 0,
+          bathrooms: listing.bathroom_count || 0,
           availableDays,
-          price: listing['Standarized Minimum Nightly Price (Filter)'] || 0
+          price: listing.standardized_min_nightly_price_for_search_filter || 0
         };
       });
 
@@ -217,8 +217,8 @@ export default function WhySplitLeasePage() {
       toast.warning('Please select at least one night per week');
       return;
     }
-    // Convert 0-based indices to 1-based for URL (0→1, 1→2, etc.)
-    // 0=Sunday → 1, 1=Monday → 2, etc.
+    // Convert 0-based indices to 1-based for URL (0â†’1, 1â†’2, etc.)
+    // 0=Sunday â†’ 1, 1=Monday â†’ 2, etc.
     const oneBased = currentSelection.map(idx => idx + 1);
     const daysParam = oneBased.join(',');
     window.location.href = `${SEARCH_URL}?days-selected=${daysParam}`;
@@ -359,7 +359,7 @@ export default function WhySplitLeasePage() {
           </div>
 
           <div className="schedule-selector-wrapper">
-            <div className="selector-label">Select your NYC nights →</div>
+            <div className="selector-label">Select your NYC nights â†’</div>
 
             <SearchScheduleSelector
               enablePersistence={true}
@@ -405,7 +405,7 @@ export default function WhySplitLeasePage() {
             <div className="step-card">
               <div className="step-number">3</div>
               <h3 className="step-title">Move In & Leave Your Stuff</h3>
-              <p className="step-description">Get your keys and make it yours. Leave your clothes, work gear, and toiletries—no more packing every trip. Adjust your nights anytime—plans change, we get it.</p>
+              <p className="step-description">Get your keys and make it yours. Leave your clothes, work gear, and toiletriesâ€”no more packing every trip. Adjust your nights anytimeâ€”plans change, we get it.</p>
             </div>
           </div>
         </div>
@@ -581,13 +581,13 @@ export default function WhySplitLeasePage() {
             </div>
 
             <div className="split-result">
-              <div className="split-result-text">✓ Same Space. Different Days. Everyone Wins.</div>
+              <div className="split-result-text">âœ“ Same Space. Different Days. Everyone Wins.</div>
               <div className="split-result-subtext">Hosts earn consistent income. Guests pay 40-60% less than hotels or traditional rentals.</div>
             </div>
           </div>
 
           <p className="different-description">
-            <strong>Why this works:</strong> You're not a tourist bouncing between Airbnbs. You need a consistent space—and a place to <strong>permanently store your belongings.</strong> Split Lease matches you with others who share your schedule. Flexible, consistent, affordable.
+            <strong>Why this works:</strong> You're not a tourist bouncing between Airbnbs. You need a consistent spaceâ€”and a place to <strong>permanently store your belongings.</strong> Split Lease matches you with others who share your schedule. Flexible, consistent, affordable.
           </p>
         </div>
       </section>
@@ -616,7 +616,7 @@ export default function WhySplitLeasePage() {
                 12 nights @ $300/night<br />
                 Inconsistent locations<br />
                 No workspace guarantee<br />
-                <strong>✗ Pack/unpack every time</strong>
+                <strong>âœ— Pack/unpack every time</strong>
               </div>
             </div>
 
@@ -628,13 +628,13 @@ export default function WhySplitLeasePage() {
                 12 nights in same space<br />
                 Consistent location<br />
                 Workspace included<br />
-                <strong>✓ Storage: Leave all your belongings</strong>
+                <strong>âœ“ Storage: Leave all your belongings</strong>
               </div>
               <a
                 href={`${SEARCH_URL}?borough=manhattan&pricetier=under-200&days-selected=2,3,4`}
                 className="pricing-savings-badge pricing-savings-badge-clickable"
               >
-                Save $2,200/month →
+                Save $2,200/month â†’
               </a>
             </div>
 
@@ -652,7 +652,7 @@ export default function WhySplitLeasePage() {
           </div>
 
           <div className="pricing-explanation-text">
-            <strong>The math is simple:</strong> Hotels charge premium rates because they need to cover empty nights. Full-time leases make you pay for nights you're not there. Split Lease matches you with space that fits your exact schedule—and because multiple guests share different days, everyone pays less while hosts earn consistent income. It's housing designed for how multi-local people actually live.
+            <strong>The math is simple:</strong> Hotels charge premium rates because they need to cover empty nights. Full-time leases make you pay for nights you're not there. Split Lease matches you with space that fits your exact scheduleâ€”and because multiple guests share different days, everyone pays less while hosts earn consistent income. It's housing designed for how multi-local people actually live.
           </div>
         </div>
       </section>
@@ -668,7 +668,7 @@ export default function WhySplitLeasePage() {
             <div className="testimonials-eyebrow">Success Stories</div>
             <h2 className="testimonials-title">Real stories from NYC multi-locals</h2>
             <p className="testimonials-description">
-              See how people are saving thousands with consistent NYC housing through Split Lease—whatever brings them back to the city.
+              See how people are saving thousands with consistent NYC housing through Split Leaseâ€”whatever brings them back to the city.
             </p>
             <a href="/guest-success" className="testimonials-cta">View all stories</a>
           </div>
@@ -678,7 +678,7 @@ export default function WhySplitLeasePage() {
               <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=300&fit=crop" alt="Priya Sharma" className="testimonial-image" />
               <div className="testimonial-content">
                 <h3 className="testimonial-name">Priya Sharma</h3>
-                <p className="testimonial-role">Senior Product Designer · 12 nights/month in NYC</p>
+                <p className="testimonial-role">Senior Product Designer Â· 12 nights/month in NYC</p>
                 <p className="testimonial-quote">
                   "I work with NYC clients regularly and needed a consistent place to stay. Split Lease gave me the consistency I needed without the commitment I didn't. Saved $24K last year and never had a booking nightmare."
                 </p>
@@ -695,9 +695,9 @@ export default function WhySplitLeasePage() {
               <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop" alt="Marcus Chen" className="testimonial-image" />
               <div className="testimonial-content">
                 <h3 className="testimonial-name">Marcus Chen</h3>
-                <p className="testimonial-role">Strategy Consultant · 8 nights/month in NYC</p>
+                <p className="testimonial-role">Strategy Consultant Â· 8 nights/month in NYC</p>
                 <p className="testimonial-quote">
-                  "Every week I'm in NYC for client meetings. Split Lease is my second home—literally. Same apartment, same key, zero hassle. It's transformed how I work and live."
+                  "Every week I'm in NYC for client meetings. Split Lease is my second homeâ€”literally. Same apartment, same key, zero hassle. It's transformed how I work and live."
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story
@@ -712,9 +712,9 @@ export default function WhySplitLeasePage() {
               <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=300&fit=crop" alt="David Martinez" className="testimonial-image" />
               <div className="testimonial-content">
                 <h3 className="testimonial-name">David Martinez</h3>
-                <p className="testimonial-role">Father · Every weekend in NYC</p>
+                <p className="testimonial-role">Father Â· Every weekend in NYC</p>
                 <p className="testimonial-quote">
-                  "I live in Boston but have custody every weekend. Split Lease gave me a consistent place for my kids—their clothes, toys, and favorite books are always there. They call it 'Dad's NYC home.' Worth every penny for that stability."
+                  "I live in Boston but have custody every weekend. Split Lease gave me a consistent place for my kidsâ€”their clothes, toys, and favorite books are always there. They call it 'Dad's NYC home.' Worth every penny for that stability."
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story
@@ -729,9 +729,9 @@ export default function WhySplitLeasePage() {
               <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=300&fit=crop" alt="Sarah Kim" className="testimonial-image" />
               <div className="testimonial-content">
                 <h3 className="testimonial-name">Sarah Kim</h3>
-                <p className="testimonial-role">MBA Student · 3 nights/week in NYC</p>
+                <p className="testimonial-role">MBA Student Â· 3 nights/week in NYC</p>
                 <p className="testimonial-quote">
-                  "My program has me in NYC every Tuesday-Thursday. Split Lease saved me from drowning in hotel costs or commuting 4 hours daily. I can focus on my studies, not logistics. My textbooks and study materials stay there—it's my second dorm."
+                  "My program has me in NYC every Tuesday-Thursday. Split Lease saved me from drowning in hotel costs or commuting 4 hours daily. I can focus on my studies, not logistics. My textbooks and study materials stay thereâ€”it's my second dorm."
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story

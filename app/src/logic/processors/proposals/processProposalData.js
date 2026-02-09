@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Proposal Data Processor
  *
  * PILLAR III: Data Processors (The "Truth" Layer)
@@ -27,7 +27,7 @@ export function processListingData(rawListing) {
   }
 
   // Extract address from JSONB structure
-  const addressData = rawListing['Location - Address'];
+  const addressData = rawListing.address_with_lat_lng_json;
   const addressString = typeof addressData === 'object' && addressData?.address
     ? addressData.address
     : (typeof addressData === 'string' ? addressData : null);
@@ -38,16 +38,16 @@ export function processListingData(rawListing) {
     description: rawListing.Description || null,
     address: addressString,
     addressData: addressData, // Keep full JSONB for map coordinates
-    borough: rawListing['Location - Borough'] || null,
-    hood: rawListing['Location - Hood'] || null,
+    borough: rawListing.borough || null,
+    hood: rawListing.primary_neighborhood_reference_id || null,
     boroughName: rawListing.boroughName || null, // Resolved name from lookup table
     hoodName: rawListing.hoodName || null, // Resolved name from lookup table
-    photos: rawListing['Features - Photos'] || [],
+    photos: rawListing.photos_with_urls_captions_and_sort_order_json || [],
     featuredPhotoUrl: rawListing.featuredPhotoUrl || null,
     houseRules: rawListing.houseRules || [],
-    checkInTime: rawListing['NEW Date Check-in Time'] || null,
-    checkOutTime: rawListing['NEW Date Check-out Time'] || null,
-    hostUserId: rawListing['Host User'] || null
+    checkInTime: rawListing.checkin_time_of_day || null,
+    checkOutTime: rawListing.checkout_time_of_day || null,
+    hostUserId: rawListing.host_user_id || null
   };
 }
 
@@ -63,17 +63,19 @@ export function processHostData(rawHost) {
   }
 
   return {
-    id: rawHost._id,
-    firstName: rawHost['Name - First'] || null,
-    lastName: rawHost['Name - Last'] || null,
-    fullName: rawHost['Name - Full'] || null,
-    profilePhoto: rawHost['Profile Photo'] || null,
-    bio: rawHost['About Me / Bio'] || null,
+    id: rawHost.id,
+    firstName: rawHost.first_name || null,
+    lastName: rawHost.last_name || null,
+    fullName: rawHost.first_name && rawHost.last_name
+      ? `${rawHost.first_name} ${rawHost.last_name}`
+      : null,
+    profilePhoto: rawHost.profile_photo_url || null,
+    bio: rawHost.bio_text || null,
     linkedInVerified: rawHost['Verify - Linked In ID'] || false,
     phoneVerified: rawHost['Verify - Phone'] || false,
     userVerified: rawHost['user verified?'] || false,
-    // hostUserId same as user._id after migration (Host User column contains user._id directly)
-    hostUserId: rawHost._id || null
+    // hostUserId same as user.id after migration (Host User column contains user.id directly)
+    hostUserId: rawHost.id || null
   };
 }
 
@@ -97,7 +99,7 @@ export function processVirtualMeetingData(rawVirtualMeeting) {
     requestedBy: rawVirtualMeeting['requested by'] || null,
     suggestedTimeslots: rawVirtualMeeting['suggested dates and times'] || [],
     guestName: rawVirtualMeeting['guest name'] || null,
-    hostName: rawVirtualMeeting['host name'] || null,
+    hostName: rawVirtualMeeting.host_display_name || null,
     proposalId: rawVirtualMeeting.proposal || null,
     uniqueId: rawVirtualMeeting.unique_id || null
   };
@@ -163,8 +165,8 @@ export function processProposalData(rawProposal) {
     hcHouseRules: rawProposal['hc house rules'] || null,
 
     // Metadata
-    createdDate: rawProposal['Created Date'] || null,
-    modifiedDate: rawProposal['Modified Date'] || null,
+    createdDate: rawProposal.bubble_created_at || null,
+    modifiedDate: rawProposal.bubble_updated_at || null,
     aboutYourself: rawProposal.about_yourself || null,
     specialNeeds: rawProposal.special_needs || null,
     reasonForCancellation: rawProposal['reason for cancellation'] || null,

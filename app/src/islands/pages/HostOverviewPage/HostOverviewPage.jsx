@@ -287,7 +287,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
         title={`Delete ${deleteType === 'manual' ? 'House Manual' : deleteType === 'claim' ? 'Claim' : 'Listing'}`}
-        itemName={itemToDelete?.name || itemToDelete?.Name || itemToDelete?.display || itemToDelete?.Display || ''}
+        itemName={itemToDelete?.name || itemToDelete?.listing_title || itemToDelete?.display || itemToDelete?.Display || ''}
         warning={deleteType === 'listing' ? 'Deleting a listing with active leases may affect your guests.' : ''}
         confirmText="Delete"
         cancelText="Cancel"

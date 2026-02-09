@@ -49,7 +49,7 @@ export async function createPricingList(listingId, options = {}) {
       payload: {
         listing_id: listingId,
         user_id: options.userId,
-        unit_markup: options.unitMarkup,
+        unit_markup_percentage: options.unitMarkup,
       },
     }),
   });
@@ -129,7 +129,7 @@ export async function updatePricingList(listingId, options = {}) {
       action: 'update',
       payload: {
         listing_id: listingId,
-        unit_markup: options.unitMarkup,
+        unit_markup_percentage: options.unitMarkup,
       },
     }),
   });

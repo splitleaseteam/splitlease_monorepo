@@ -9,12 +9,12 @@ import { getFirstPhoto, getLastPhoto, getAddressString, getDefaultPhoto } from '
  */
 function getHostName(listing) {
   // Try joined user data first
-  if (listing.account_host?.user?.['Name - Full']) {
-    return listing.account_host.user['Name - Full'];
+  if (listing.account_host?.user?.first_name && listing.account_host?.user?.last_name) {
+    return `${listing.account_host.user.first_name} ${listing.account_host.user.last_name}`;
   }
   // Fallback to denormalized field
-  if (listing['host name']) {
-    return listing['host name'];
+  if (listing.host_display_name) {
+    return listing.host_display_name;
   }
   return null;
 }
@@ -24,8 +24,8 @@ function getHostName(listing) {
  */
 function getHostEmail(listing) {
   // Try joined user data first
-  if (listing.account_host?.user?.['email as text']) {
-    return listing.account_host.user['email as text'];
+  if (listing.account_host?.user?.email) {
+    return listing.account_host.user.email;
   }
   // Fallback to denormalized field
   if (listing['Host email']) {
@@ -89,7 +89,7 @@ export default function ListingSearch({
               <div className="csp-no-results">No listings found</div>
             ) : (
               searchResults.map(listing => {
-                const isInactive = !listing.Active;
+                const isInactive = !listing.is_active;
                 const isUnapproved = !listing.Approved;
                 const hasWarnings = isInactive || isUnapproved;
 
@@ -101,13 +101,13 @@ export default function ListingSearch({
                   >
                     <img
                       src={getFirstPhoto(listing) || getDefaultPhoto()}
-                      alt={listing.Name || 'Listing'}
+                      alt={listing.listing_title || 'Listing'}
                       className="csp-thumbnail"
                       onError={(e) => { e.target.src = getDefaultPhoto(); }}
                     />
                     <div className="csp-search-result-info">
                       <h4>
-                        {getHostName(listing) || getHostEmail(listing) || 'Unknown Host'} - {listing.Name || 'Unnamed Listing'} - {listing['rental type'] || 'Standard'} - {listing['Maximum Weeks'] ? `${listing['Maximum Weeks']} weeks` : 'Every week'}
+                        {getHostName(listing) || getHostEmail(listing) || 'Unknown Host'} - {listing.listing_title || 'Unnamed Listing'} - {listing.rental_type || 'Standard'} - {listing.maximum_weeks_per_stay ? `${listing.maximum_weeks_per_stay} weeks` : 'Every week'}
                       </h4>
                       <p className="csp-listing-details-row">unique id: {listing._id}</p>
                       <p className="csp-listing-details-row">host email: {getHostEmail(listing) || 'Not available'}</p>
@@ -128,8 +128,8 @@ export default function ListingSearch({
 
       {/* Selected Listing Card */}
       {selectedListing && (() => {
-        const isInactive = !selectedListing.Active;
-        const isUnapproved = !selectedListing.Approved;
+        const isInactive = !selectedListing.is_active;
+        const isUnapproved = !selectedListing.is_approved;
         const hasWarnings = isInactive || isUnapproved;
         const hostDisplay = getHostName(selectedListing) || getHostEmail(selectedListing) || 'Unknown';
 
@@ -150,11 +150,11 @@ export default function ListingSearch({
               />
             </div>
             <div className="csp-item-details">
-              <h3>{selectedListing.Name || 'Unnamed Listing'}</h3>
+              <h3>{selectedListing.listing_title || 'Unnamed Listing'}</h3>
               <p className="csp-item-subtitle">{getAddressString(selectedListing)}</p>
               <p className="csp-item-meta">Host: {hostDisplay}</p>
               <div className="csp-badge-row">
-                <span className="csp-badge">{selectedListing['rental type'] || 'Standard'}</span>
+                <span className="csp-badge">{selectedListing.rental_type || 'Standard'}</span>
                 {isInactive && <span className="csp-warning-badge csp-warning-badge--inactive">Inactive</span>}
                 {isUnapproved && <span className="csp-warning-badge csp-warning-badge--unapproved">Unapproved</span>}
               </div>

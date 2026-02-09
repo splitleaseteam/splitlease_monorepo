@@ -27,13 +27,13 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should produce consistent nightly prices for known inputs', async () => {
       const standardListing = {
         id: 'regression-test-1',
-        'nightly_rate_1_night': null,
-        'nightly_rate_2_nights': 100,
-        'nightly_rate_3_nights': 95,
-        'nightly_rate_4_nights': 90,
-        'nightly_rate_5_nights': 85,
-        'nightly_rate_6_nights': 80,
-        'nightly_rate_7_nights': 75,
+        'nightly_rate_for_1_night_stay': null,
+        'nightly_rate_for_2_night_stay': 100,
+        'nightly_rate_for_3_night_stay': 95,
+        'nightly_rate_for_4_night_stay': 90,
+        'nightly_rate_for_5_night_stay': 85,
+        'nightly_rate_for_6_night_stay': 80,
+        'nightly_rate_for_7_night_stay': 75,
         'rental type': 'Nightly'
       };
 
@@ -62,7 +62,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should calculate consistent combined markup', async () => {
       const listing = {
         id: 'markup-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -83,7 +83,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should maintain consistent full-time discount rate', async () => {
       const listing = {
         id: 'discount-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -103,7 +103,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should maintain correct array length (7 elements)', async () => {
       const listing = {
         id: 'array-length-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -121,13 +121,13 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should correctly map array indices to night counts', async () => {
       const listing = {
         id: 'index-map-test',
-        'nightly_rate_1_night': null,
-        'nightly_rate_2_nights': 100,
-        'nightly_rate_3_nights': 95,
-        'nightly_rate_4_nights': 90,
-        'nightly_rate_5_nights': 85,
-        'nightly_rate_6_nights': 80,
-        'nightly_rate_7_nights': 75,
+        'nightly_rate_for_1_night_stay': null,
+        'nightly_rate_for_2_night_stay': 100,
+        'nightly_rate_for_3_night_stay': 95,
+        'nightly_rate_for_4_night_stay': 90,
+        'nightly_rate_for_5_night_stay': 85,
+        'nightly_rate_for_6_night_stay': 80,
+        'nightly_rate_for_7_night_stay': 75,
         'rental type': 'Nightly'
       };
 
@@ -149,11 +149,11 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle null values at correct indices', async () => {
       const listing = {
         id: 'null-index-test',
-        'nightly_rate_1_night': null,
-        'nightly_rate_2_nights': null,
-        'nightly_rate_3_nights': 100,
-        'nightly_rate_4_nights': null,
-        'nightly_rate_5_nights': 95,
+        'nightly_rate_for_1_night_stay': null,
+        'nightly_rate_for_2_night_stay': null,
+        'nightly_rate_for_3_night_stay': 100,
+        'nightly_rate_for_4_night_stay': null,
+        'nightly_rate_for_5_night_stay': 95,
         'rental type': 'Nightly'
       };
 
@@ -218,12 +218,12 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should calculate consistent starting nightly price', async () => {
       const listing = {
         id: 'starting-price-test',
-        'nightly_rate_2_nights': 100,
-        'nightly_rate_3_nights': 95,
-        'nightly_rate_4_nights': 90,
-        'nightly_rate_5_nights': 85,
-        'nightly_rate_6_nights': 80,
-        'nightly_rate_7_nights': 75,
+        'nightly_rate_for_2_night_stay': 100,
+        'nightly_rate_for_3_night_stay': 95,
+        'nightly_rate_for_4_night_stay': 90,
+        'nightly_rate_for_5_night_stay': 85,
+        'nightly_rate_for_6_night_stay': 80,
+        'nightly_rate_for_7_night_stay': 75,
         'rental type': 'Nightly'
       };
 
@@ -242,12 +242,12 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should calculate consistent slope values', async () => {
       const listing = {
         id: 'slope-test',
-        'nightly_rate_2_nights': 100,
-        'nightly_rate_3_nights': 95,
-        'nightly_rate_4_nights': 90,
-        'nightly_rate_5_nights': 85,
-        'nightly_rate_6_nights': 80,
-        'nightly_rate_7_nights': 75,
+        'nightly_rate_for_2_night_stay': 100,
+        'nightly_rate_for_3_night_stay': 95,
+        'nightly_rate_for_4_night_stay': 90,
+        'nightly_rate_for_5_night_stay': 85,
+        'nightly_rate_for_6_night_stay': 80,
+        'nightly_rate_for_7_night_stay': 75,
         'rental type': 'Nightly'
       };
 
@@ -269,7 +269,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should produce same results on repeated calculations', async () => {
       const listing = {
         id: 'repeat-calc-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -292,7 +292,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle force recalculation correctly', async () => {
       const listing = {
         id: 'force-recalc-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -321,7 +321,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle single valid rate consistently', async () => {
       const listing = {
         id: 'single-rate-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -338,7 +338,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle maximum valid rate consistently', async () => {
       const listing = {
         id: 'max-rate-test',
-        'nightly_rate_7_nights': 75,
+        'nightly_rate_for_7_night_stay': 75,
         'rental type': 'Nightly'
       };
 
@@ -354,7 +354,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle zero markup consistently', async () => {
       const listing = {
         id: 'zero-markup-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -371,7 +371,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle high markup consistently', async () => {
       const listing = {
         id: 'high-markup-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -395,7 +395,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should maintain consistent decimal precision', async () => {
       const listing = {
         id: 'precision-test',
-        'nightly_rate_2_nights': 100.33,
+        'nightly_rate_for_2_night_stay': 100.33,
         'rental type': 'Nightly'
       };
 
@@ -412,9 +412,9 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should not accumulate floating point errors', async () => {
       const listing = {
         id: 'float-test',
-        'nightly_rate_2_nights': 100.1,
-        'nightly_rate_3_nights': 95.2,
-        'nightly_rate_4_nights': 90.3,
+        'nightly_rate_for_2_night_stay': 100.1,
+        'nightly_rate_for_3_night_stay': 95.2,
+        'nightly_rate_for_4_night_stay': 90.3,
         'rental type': 'Nightly'
       };
 
@@ -441,7 +441,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should maintain consistent pricing list structure', async () => {
       const listing = {
         id: 'structure-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -469,7 +469,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should maintain consistent result structure', async () => {
       const listing = {
         id: 'result-structure-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -509,7 +509,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should preserve rental type from listing', async () => {
       const nightlyListing = {
         id: 'nightly-type-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -524,7 +524,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should default to Nightly when rental type missing', async () => {
       const listing = {
         id: 'default-type-test',
-        'nightly_rate_2_nights': 100
+        'nightly_rate_for_2_night_stay': 100
         // No 'rental type' field
       };
 
@@ -544,7 +544,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should generate valid ISO timestamps', async () => {
       const listing = {
         id: 'timestamp-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -562,7 +562,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should preserve userId in createdBy field', async () => {
       const listing = {
         id: 'userid-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -580,7 +580,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should set createdBy to null when userId not provided', async () => {
       const listing = {
         id: 'no-userid-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -611,9 +611,9 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       // For now, we test with standard structure
       const standardListing = {
         id: 'legacy-123',
-        'nightly_rate_1_night': null,
-        'nightly_rate_2_nights': 100,
-        'nightly_rate_3_nights': 95,
+        'nightly_rate_for_1_night_stay': null,
+        'nightly_rate_for_2_night_stay': 100,
+        'nightly_rate_for_3_night_stay': 95,
         'rental type': 'Nightly'
       };
 
@@ -630,9 +630,9 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       // Listing with null foreign key values (common in legacy data)
       const listingWithNullFKs = {
         id: 'null-fk-test',
-        'nightly_rate_2_nights': 100,
-        'cleaning_fee': null,
-        'damage_deposit': null,
+        'nightly_rate_for_2_night_stay': 100,
+        'cleaning_fee_amount': null,
+        'damage_deposit_amount': null,
         'price_override': null,
         'rental type': 'Nightly'
       };

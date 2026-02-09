@@ -97,7 +97,7 @@ async function fetchInBatches(table, selectColumns, ids, batchSize = 10) {
     const { data, error } = await anonSupabase
       .from(table)
       .select(selectColumns)
-      .in('_id', batchIds);
+      .in('id', batchIds);
 
     if (error) {
       console.warn(`[ProposalManage] Batch fetch error for ${table}:`, error);
@@ -144,16 +144,16 @@ function normalizeGuest(guest) {
   if (!guest) return null;
 
   return {
-    _id: guest._id,
-    firstName: guest['Name - First'] || guest.firstName || '',
-    lastName: guest['Name - Last'] || guest.lastName || '',
-    fullName: guest['Name - Full'] || guest.fullName || '',
+    _id: guest.id,
+    firstName: guest.first_name || guest.firstName || '',
+    lastName: guest.last_name || guest.lastName || '',
+    fullName: guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : (guest.fullName || ''),
     email: guest.email || '',
-    phoneNumber: guest['Phone Number (as text)'] || guest['Phone Number'] || guest.phoneNumber || '',
-    profilePhoto: guest['Profile Photo'] || guest.profilePhoto || null,
-    aboutMe: guest['About Me / Bio'] || guest.aboutMe || '',
-    isUsabilityTester: guest['is usability tester'] || guest.isUsabilityTester || false,
-    isVerified: guest['user verified?'] || false
+    phoneNumber: guest.phone_number || guest.phoneNumber || '',
+    profilePhoto: guest.profile_photo_url || guest.profilePhoto || null,
+    aboutMe: guest.bio_text || guest.aboutMe || '',
+    isUsabilityTester: guest.is_usability_tester || guest.isUsabilityTester || false,
+    isVerified: guest.is_user_verified || false
   };
 }
 
@@ -166,21 +166,21 @@ function normalizeHost(host) {
   if (!host) return null;
 
   return {
-    _id: host._id,
-    firstName: host['Name - First'] || host.firstName || '',
-    lastName: host['Name - Last'] || host.lastName || '',
-    fullName: host['Name - Full'] || host.fullName || '',
+    _id: host.id,
+    firstName: host.first_name || host.firstName || '',
+    lastName: host.last_name || host.lastName || '',
+    fullName: host.first_name && host.last_name ? `${host.first_name} ${host.last_name}` : (host.fullName || ''),
     email: host.email || '',
-    phoneNumber: host['Phone Number (as text)'] || host['Phone Number'] || host.phoneNumber || '',
-    profilePhoto: host['Profile Photo'] || host.profilePhoto || null,
-    isUsabilityTester: host['is usability tester'] || host.isUsabilityTester || false
+    phoneNumber: host.phone_number || host.phoneNumber || '',
+    profilePhoto: host.profile_photo_url || host.profilePhoto || null,
+    isUsabilityTester: host.is_usability_tester || host.isUsabilityTester || false
   };
 }
 
 /**
- * Extract address string from Location - Address field
+ * Extract address string from address_with_lat_lng_json field
  * The field can be a string or a JSONB object with an 'address' property
- * @param {string|Object} locationAddress - Location address field value
+ * @param {string|Object} locationAddress - address_with_lat_lng_json field value
  * @returns {string} Address string or empty string
  */
 function extractAddressString(locationAddress) {
@@ -198,7 +198,7 @@ function extractAddressString(locationAddress) {
 }
 
 /**
- * Extract cover photo URL from Features - Photos array
+ * Extract cover photo URL from photos_with_urls_captions_and_sort_order_json array
  * @param {Array} photos - Array of photo objects from listing
  * @returns {string|null} Cover photo URL or null
  */
@@ -225,14 +225,14 @@ function normalizeListing(listing) {
   if (!listing) return null;
 
   return {
-    _id: listing._id,
-    name: listing.Name || listing.name || 'Unnamed Listing',
-    address: extractAddressString(listing['Location - Address']) || listing['Full Address'] || listing.address || '',
-    rentalType: listing['rental type'] || listing.rentalType || '',
-    coverPhoto: extractCoverPhotoUrl(listing['Features - Photos']) || listing['Cover Photo'] || listing.coverPhoto || null,
-    damageDeposit: listing['damage_deposit'] || listing['Damage Deposit'] || listing.damageDeposit || 0,
-    cleaningCost: listing['cleaning_fee'] || listing['Cleaning Cost / Maintenance Fee'] || listing.cleaningCost || 0,
-    houseRules: listing['House Rules'] || listing.houseRules || []
+    _id: listing.id,
+    name: listing.listing_title || 'Unnamed Listing',
+    address: extractAddressString(listing.address_with_lat_lng_json) || listing.address || '',
+    rentalType: listing.rental_type || listing.rentalType || '',
+    coverPhoto: extractCoverPhotoUrl(listing.photos_with_urls_captions_and_sort_order_json) || listing.coverPhoto || null,
+    damageDeposit: listing.damage_deposit_amount || listing.damageDeposit || 0,
+    cleaningCost: listing.cleaning_fee_amount || listing.cleaningCost || 0,
+    houseRules: listing.houseRules || []
   };
 }
 
@@ -248,7 +248,7 @@ function normalizeProposal(proposal, guest, host, listing) {
   if (!proposal) return null;
 
   // Parse days selected - handle both array and JSON string formats
-  let daysSelected = proposal['Days Selected'] || proposal.daysSelected || [];
+  let daysSelected = proposal.guest_selected_days_numbers_json || proposal.daysSelected || [];
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
@@ -268,10 +268,10 @@ function normalizeProposal(proposal, guest, host, listing) {
   }
 
   return {
-    _id: proposal._id,
-    status: proposal.Status || proposal.status || '',
-    createdDate: proposal['Created Date'] || proposal.createdDate || null,
-    modifiedDate: proposal['Modified Date'] || proposal.modifiedDate || null,
+    _id: proposal.id,
+    status: proposal.proposal_workflow_status || proposal.status || '',
+    createdDate: proposal.bubble_created_at || proposal.createdDate || null,
+    modifiedDate: proposal.bubble_updated_at || proposal.modifiedDate || null,
 
     guest,
     host,
@@ -279,28 +279,28 @@ function normalizeProposal(proposal, guest, host, listing) {
 
     // Pricing
     pricing: {
-      nightlyPrice: proposal['proposal nightly price'] || proposal.nightlyPrice || 0,
-      totalReservationPrice: proposal['Total Price for Reservation (guest)'] || proposal.totalReservationPrice || 0,
-      hostCompensation: proposal['host compensation'] || proposal.hostCompensation || 0,
-      totalCompensation: proposal['Total Compensation (proposal - host)'] || proposal.totalCompensation || 0,
-      pricePerFourWeeks: proposal['4 week rent'] || proposal.pricePerFourWeeks || 0,
-      fourWeekCompensation: proposal['4 week compensation'] || proposal.fourWeekCompensation || 0
+      nightlyPrice: proposal.calculated_nightly_price || proposal.nightlyPrice || 0,
+      totalReservationPrice: proposal.total_reservation_price_for_guest || proposal.totalReservationPrice || 0,
+      hostCompensation: proposal.host_compensation_per_period || proposal.hostCompensation || 0,
+      totalCompensation: proposal.total_compensation_for_host || proposal.totalCompensation || 0,
+      pricePerFourWeeks: proposal.four_week_rent_amount || proposal.pricePerFourWeeks || 0,
+      fourWeekCompensation: proposal.four_week_host_compensation || proposal.fourWeekCompensation || 0
     },
 
     // Reservation details
     reservation: {
-      moveInDate: proposal['Move in range start'] || proposal.moveInDate || null,
-      checkInDate: proposal['check in day'] || proposal.checkInDate || null,
-      checkOutDate: proposal['check out day'] || proposal.checkOutDate || null,
-      reservationSpanWeeks: proposal['Reservation Span (Weeks)'] || proposal.reservationSpanWeeks || 0,
+      moveInDate: proposal.move_in_range_start_date || proposal.moveInDate || null,
+      checkInDate: proposal.checkin_day_of_week_number || proposal.checkInDate || null,
+      checkOutDate: proposal.checkout_day_of_week_number || proposal.checkOutDate || null,
+      reservationSpanWeeks: proposal.reservation_span_in_weeks || proposal.reservationSpanWeeks || 0,
       weeklySchedule,
       daysSelected
     },
 
     // Guest info
-    guestAbout: proposal.about_yourself || '',
-    guestNeedForSpace: proposal['need for space'] || '',
-    comment: proposal.Comment || ''
+    guestAbout: proposal.guest_about_yourself_text || '',
+    guestNeedForSpace: proposal.guest_stated_need_for_space || '',
+    comment: proposal.guest_introduction_message || ''
   };
 }
 
@@ -400,64 +400,64 @@ export function useProposalManagePageLogic() {
       // The anon role has unrestricted SELECT access for internal admin pages
       console.log('[ProposalManage] Building Supabase query for proposals (using anon client)...');
       let query = anonSupabase
-        .from('proposal')
+        .from('booking_proposal')
         .select(`
-          _id,
-          "Status",
-          "Guest",
-          "Host User",
-          "Listing",
-          "Move in range start",
-          "Move in range end",
-          "Move-out",
-          "Reservation Span",
-          "Reservation Span (Weeks)",
-          "nights per week (num)",
-          "Nights Selected (Nights list)",
-          "Days Selected",
-          "check in day",
-          "check out day",
-          "proposal nightly price",
-          "4 week rent",
-          "Total Price for Reservation (guest)",
-          "Total Compensation (proposal - host)",
-          "host compensation",
-          "4 week compensation",
-          "cleaning fee",
-          "damage deposit",
-          "need for space",
-          "about_yourself",
-          "Comment",
-          "Created Date",
-          "Modified Date"
+          id,
+          proposal_workflow_status,
+          guest_user_id,
+          host_user_id,
+          listing_id,
+          move_in_range_start_date,
+          move_in_range_end_date,
+          planned_move_out_date,
+          reservation_span_text,
+          reservation_span_in_weeks,
+          nights_per_week_count,
+          guest_selected_nights_numbers_json,
+          guest_selected_days_numbers_json,
+          checkin_day_of_week_number,
+          checkout_day_of_week_number,
+          calculated_nightly_price,
+          four_week_rent_amount,
+          total_reservation_price_for_guest,
+          total_compensation_for_host,
+          host_compensation_per_period,
+          four_week_host_compensation,
+          cleaning_fee_amount,
+          damage_deposit_amount,
+          guest_stated_need_for_space,
+          guest_about_yourself_text,
+          guest_introduction_message,
+          bubble_created_at,
+          bubble_updated_at
         `, { count: 'exact' })
-        .or('Deleted.is.null,Deleted.eq.false');
+        .or('is_deleted.is.null,is_deleted.eq.false');
 
       // Apply filters
       if (filters.proposalId) {
-        query = query.ilike('_id', `%${filters.proposalId}%`);
+        query = query.ilike('id', `%${filters.proposalId}%`);
       }
 
       if (filters.status) {
-        query = query.eq('Status', filters.status);
+        query = query.eq('proposal_workflow_status', filters.status);
       }
 
       if (filters.startDate) {
         const startDateStr = filters.startDate instanceof Date
           ? filters.startDate.toISOString()
           : filters.startDate;
-        query = query.gte('"Modified Date"', startDateStr);
+        query = query.gte('bubble_updated_at', startDateStr);
       }
 
       if (filters.endDate) {
         const endDateStr = filters.endDate instanceof Date
           ? filters.endDate.toISOString()
           : filters.endDate;
-        query = query.lte('"Modified Date"', endDateStr);
+        query = query.lte('bubble_updated_at', endDateStr);
       }
 
       // Sort
-      query = query.order('Modified Date', { ascending: filters.sortDirection === 'asc' });
+      query = query.order('bubble_updated_at', { ascending: filters.sortDirection === 'asc' });
 
       // Limit results
       query = query.limit(100);
@@ -469,7 +469,7 @@ export function useProposalManagePageLogic() {
         dataLength: proposalsData?.length || 0,
         count,
         error: proposalsError,
-        firstProposal: proposalsData?.[0] ? { _id: proposalsData[0]._id, Status: proposalsData[0].Status } : null
+        firstProposal: proposalsData?.[0] ? { id: proposalsData[0].id, proposal_workflow_status: proposalsData[0].proposal_workflow_status } : null
       });
 
       if (proposalsError) {
@@ -479,9 +479,9 @@ export function useProposalManagePageLogic() {
 
       // Fetch related data (guests, hosts, listings)
       // Use batched fetching to avoid PostgREST URL length limits with large .in() filters
-      const guestIds = [...new Set(proposalsData?.map(p => p.Guest).filter(Boolean))];
-      const hostIds = [...new Set(proposalsData?.map(p => p['Host User']).filter(Boolean))];
-      const listingIds = [...new Set(proposalsData?.map(p => p.Listing).filter(Boolean))];
+      const guestIds = [...new Set(proposalsData?.map(p => p.guest_user_id).filter(Boolean))];
+      const hostIds = [...new Set(proposalsData?.map(p => p.host_user_id).filter(Boolean))];
+      const listingIds = [...new Set(proposalsData?.map(p => p.listing_id).filter(Boolean))];
 
       console.log(`[ProposalManage] Fetching related data: ${guestIds.length} guests, ${hostIds.length} hosts, ${listingIds.length} listings`);
 
@@ -489,38 +489,38 @@ export function useProposalManagePageLogic() {
       const [guests, hosts, listings] = await Promise.all([
         fetchInBatches(
           'user',
-          '_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo", "About Me / Bio", "user verified?", "is usability tester"',
+          'id, first_name, last_name, email, phone_number, profile_photo_url, bio_text, is_user_verified, is_usability_tester',
           guestIds
         ),
         fetchInBatches(
           'user',
-          '_id, "Name - Full", "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo", "is usability tester"',
+          'id, first_name, last_name, email, phone_number, profile_photo_url, is_usability_tester',
           hostIds
         ),
         fetchInBatches(
           'listing',
-          '_id, Name, "Location - Address", "rental type", "Features - Photos", "damage_deposit", "cleaning_fee"',
+          'id, listing_title, address_with_lat_lng_json, rental_type, photos_with_urls_captions_and_sort_order_json, damage_deposit_amount, cleaning_fee_amount',
           listingIds
         )
       ]);
 
       // Build lookup maps
       const guestMap = {};
-      guests.forEach(g => { guestMap[g._id] = normalizeGuest(g); });
+      guests.forEach(g => { guestMap[g.id] = normalizeGuest(g); });
 
       const hostMap = {};
-      hosts.forEach(h => { hostMap[h._id] = normalizeHost(h); });
+      hosts.forEach(h => { hostMap[h.id] = normalizeHost(h); });
 
       const listingMap = {};
-      listings.forEach(l => { listingMap[l._id] = normalizeListing(l); });
+      listings.forEach(l => { listingMap[l.id] = normalizeListing(l); });
 
       console.log(`[ProposalManage] Loaded: ${guests.length} guests, ${hosts.length} hosts, ${listings.length} listings`);
 
       // Normalize and combine data
       const normalizedProposals = proposalsData?.map(p => {
-        const guest = guestMap[p.Guest] || null;
-        const host = hostMap[p['Host User']] || null;
-        const listing = listingMap[p.Listing] || null;
+        const guest = guestMap[p.guest_user_id] || null;
+        const host = hostMap[p.host_user_id] || null;
+        const listing = listingMap[p.listing_id] || null;
         return normalizeProposal(p, guest, host, listing);
       }) || [];
 
@@ -553,7 +553,7 @@ export function useProposalManagePageLogic() {
         const searchLower = filters.listingSearch.toLowerCase();
         filteredProposals = filteredProposals.filter(p =>
           p.listing?.name?.toLowerCase().includes(searchLower) ||
-          p.listing?._id?.toLowerCase().includes(searchLower) ||
+          (p.listing?._id || '').toLowerCase().includes(searchLower) ||
           p.listing?.rentalType?.toLowerCase().includes(searchLower)
         );
       }
@@ -612,7 +612,7 @@ export function useProposalManagePageLogic() {
       // Optimistic update
       setProposals(prev =>
         prev.map(p =>
-          p._id === proposalId
+          (p._id || p.id) === proposalId
             ? { ...p, status: newStatus, modifiedDate: new Date().toISOString() }
             : p
         )
@@ -640,12 +640,12 @@ export function useProposalManagePageLogic() {
   const handleAction = useCallback(async (action, proposal) => {
     switch (action) {
       case 'viewListing':
-        window.open(`/view-split-lease?id=${proposal.listing?._id}`, '_blank');
+        window.open(`/view-split-lease?id=${proposal.listing?._id || ''}`, '_blank');
         break;
 
       case 'viewLease':
         // Navigate to lease management page with proposal ID pre-filled in search
-        window.open(`/_manage-leases-payment-records?search=${proposal._id}`, '_blank');
+        window.open(`/_manage-leases-payment-records?search=${proposal._id || proposal.id}`, '_blank');
         break;
 
       case 'modifyAsHost':
@@ -677,9 +677,9 @@ export function useProposalManagePageLogic() {
         break;
 
       case 'cancelProposal':
-        if (window.confirm(`Are you sure you want to cancel proposal ${proposal._id}?`)) {
+        if (window.confirm(`Are you sure you want to cancel proposal ${proposal._id || proposal.id}?`)) {
           try {
-            await handleStatusChange(proposal._id, 'Proposal Cancelled by Split Lease');
+            await handleStatusChange(proposal._id || proposal.id, 'Proposal Cancelled by Split Lease');
           } catch (err) {
             alert('Failed to cancel proposal');
           }
@@ -712,8 +712,8 @@ export function useProposalManagePageLogic() {
     try {
       // Call Edge Function to create proposal using soft headers pattern
       const result = await callProposalEdgeFunction('create_suggested', {
-        guestId: proposalData.selectedGuest._id,
-        listingId: proposalData.selectedListing._id,
+        guestId: proposalData.selectedGuest._id || proposalData.selectedGuest.id,
+        listingId: proposalData.selectedListing._id || proposalData.selectedListing.id,
         moveInStartRange: proposalData.moveInDate,
         daysSelected: proposalData.weeklySchedule
           .map((active, i) => active ? i : null)

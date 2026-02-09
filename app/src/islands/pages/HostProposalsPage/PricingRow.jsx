@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PricingRow Component (V7 Design)
  *
  * Pricing breakdown and total earnings display:
@@ -6,9 +6,9 @@
  * - Right: "Your Earnings" label + large total
  *
  * Shows compensation in the appropriate unit based on rental type:
- * - Monthly: "$4,500/mo × 5 months"
- * - Weekly: "$1,125/wk × 20 weeks"
- * - Nightly: "$375/night × 3 × 20 wks"
+ * - Monthly: "$4,500/mo Ã— 5 months"
+ * - Weekly: "$1,125/wk Ã— 20 weeks"
+ * - Nightly: "$375/night Ã— 3 Ã— 20 wks"
  *
  * Part of the Host Proposals V7 redesign.
  */
@@ -29,7 +29,7 @@ export function PricingRow({ proposal, isDeclined = false }) {
     proposal?.counter_offer_happened;
 
   // Get rental type to determine how to display compensation
-  const rentalType = (proposal?.['rental type'] || proposal?.rental_type || 'nightly').toLowerCase();
+  const rentalType = (proposal?.rental_type || proposal?.rental_type || 'nightly').toLowerCase();
   const isMonthly = rentalType === 'monthly';
   const isWeekly = rentalType === 'weekly';
 
@@ -37,27 +37,27 @@ export function PricingRow({ proposal, isDeclined = false }) {
   // The database "Total Compensation (proposal - host)" field can be incorrect
   // (e.g., using full monthly rate instead of prorated for partial-week schedules)
   // The '4 week compensation' field is calculated correctly from the pricing_list
-  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
+  const host4WeekCompensation = proposal?.four_week_host_compensation || 0;
 
-  const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks || 0;
+  const originalWeeks = proposal?.reservation_span_in_weeks || proposal?.reservation_span_weeks || 0;
   const durationMonths = proposal?.['duration in months'] || Math.round(originalWeeks / 4);
 
-  let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
+  let originalNights = proposal?.guest_selected_nights_numbers_json || [];
   if (typeof originalNights === 'string') {
     try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
   }
   const originalNightsPerWeek = originalNights.length;
 
   // HC values (host counteroffer)
-  const hcWeeks = proposal?.['hc reservation span (weeks)'];
-  let hcNights = proposal?.['hc nights selected'] || [];
+  const hcWeeks = proposal?.host_proposed_reservation_span_weeks;
+  let hcNights = proposal?.host_proposed_selected_nights_json || [];
   if (typeof hcNights === 'string') {
     try { hcNights = JSON.parse(hcNights); } catch { hcNights = []; }
   }
   const hcNightsPerWeek = hcNights.length > 0 ? hcNights.length : null;
 
   // Display values
-  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
+  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.guest_selected_nights_numbers_json || originalNights);
   const nightsPerWeek = nightsSelected.length;
   const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
 
@@ -119,7 +119,7 @@ export function PricingRow({ proposal, isDeclined = false }) {
             {/* For nightly rentals, show nights per week */}
             {!isMonthly && !isWeekly && rateValue > 0 && nightsPerWeek > 0 && (
               <>
-                <span>×</span>
+                <span>Ã—</span>
                 {nightsChanged && (
                   <span className="hp7-strikethrough">{originalNightsPerWeek}</span>
                 )}
@@ -132,7 +132,7 @@ export function PricingRow({ proposal, isDeclined = false }) {
             {/* Period count (months, weeks) */}
             {periodCount > 0 && (
               <>
-                <span>×</span>
+                <span>Ã—</span>
                 {weeksChanged && (
                   <span className="hp7-strikethrough">{isMonthly ? Math.round(originalWeeks / 4) : originalWeeks} {periodUnit}</span>
                 )}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Adapt a pricing list from frontend format to Supabase format.
  *
  * Transforms camelCase properties to Bubble-style column names
@@ -101,13 +101,13 @@ export function adaptPricingListForSupabase(
 
   // Metadata fields
   if (pricingList.rentalType !== undefined) {
-    adapted['rental type'] = pricingList.rentalType;
+    adapted.rental_type = pricingList.rentalType;
   }
   if (pricingList.numberSelectedNights !== undefined) {
     adapted['Number Selected Nights'] = pricingList.numberSelectedNights;
   }
   if (pricingList.modifiedDate !== undefined) {
-    adapted['Modified Date'] = pricingList.modifiedDate;
+    adapted.bubble_updated_at = pricingList.modifiedDate;
   }
 
   return adapted;

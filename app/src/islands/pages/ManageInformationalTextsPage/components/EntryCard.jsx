@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EntryCard - Individual entry card for Manage Informational Texts
  */
 import '../ManageInformationalTextsPage.css';
@@ -33,7 +33,7 @@ export function EntryCard({ entry, onEdit, onDelete }) {
         {entry.showMore && <span className="mit-badge">Show More</span>}
         {entry.hasLink && <span className="mit-badge">Has Link</span>}
         <span className="mit-meta-text">
-          Updated: {new Date(entry.modifiedDate || entry['Modified Date']).toLocaleDateString()}
+          Updated: {new Date(entry.modifiedDate || entry.bubble_updated_at).toLocaleDateString()}
         </span>
       </div>
     </div>

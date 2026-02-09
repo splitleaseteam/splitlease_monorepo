@@ -31,11 +31,12 @@ export default function UserIdentityCard({ title, user }) {
     { label: 'Selfie with ID', url: user.selfieUrl || user['Selfie with ID'] },
     { label: 'ID Front', url: user.frontIdUrl || user['ID front'] },
     { label: 'ID Back', url: user.backIdUrl || user['ID Back'] },
-    { label: 'Profile Photo', url: user.avatarUrl || user['Profile Photo'] },
+    { label: 'Profile Photo', url: user.avatarUrl || user.profile_photo_url },
   ];
 
   const isVerified = user.isVerified || user.identityVerified || user['user verified?'];
-  const fullName = user.fullName || user['Name - Full'] ||
+  const fullName = user.fullName ||
+                   (user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : null) ||
                    `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
                    'Unknown';
 

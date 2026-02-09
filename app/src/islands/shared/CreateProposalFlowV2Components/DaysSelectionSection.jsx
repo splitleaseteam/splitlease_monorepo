@@ -139,37 +139,37 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
 
     return {
       id: listing._id,
-      firstAvailable: new Date(listing[' First Available'] || Date.now()),
+      firstAvailable: new Date(listing.first_available_date || Date.now()),
       lastAvailable: new Date(listing['Last Available'] || Date.now()),
       numberOfNightsAvailable: listing['# of nights available'] || 7,
-      active: listing.Active,
+      active: listing.is_active,
       approved: listing.Approved,
-      datesBlocked: Array.isArray(listing['Dates - Blocked']) ? listing['Dates - Blocked'] : [],
-      complete: listing.Complete,
+      datesBlocked: Array.isArray(listing.blocked_specific_dates_json) ? listing.blocked_specific_dates_json : [],
+      complete: listing.is_listing_profile_complete,
       confirmedAvailability: listing.confirmedAvailability,
-      checkInTime: listing['NEW Date Check-in Time'] || '3:00 pm',
-      checkOutTime: listing['NEW Date Check-out Time'] || '11:00 am',
+      checkInTime: listing.checkin_time_of_day || '3:00 pm',
+      checkOutTime: listing.checkout_time_of_day || '11:00 am',
       nightsAvailableList: [],
       nightsAvailableNumbers: listing['Nights Available (numbers)'] || [0, 1, 2, 3, 4, 5, 6],
       nightsNotAvailable: [],
-      minimumNights: listing['Minimum Nights'] || 2,
-      maximumNights: listing['Maximum Nights'] || 7,
-      daysAvailable: convertDayNamesToNumbers(listing['Days Available (List of Days)']),
+      minimumNights: listing.minimum_nights_per_stay || 2,
+      maximumNights: listing.maximum_nights_per_stay || 7,
+      daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
       daysNotAvailable: [],
       // Pricing fields for calculation
-      'rental type': listing['rental type'] || 'Nightly',
-      'Weeks offered': listing['Weeks offered'] || 'Every week',
-      unit_markup: listing['unit_markup'] || 0,
-      nightly_rate_2_nights: listing['nightly_rate_2_nights'],
-      nightly_rate_3_nights: listing['nightly_rate_3_nights'],
-      nightly_rate_4_nights: listing['nightly_rate_4_nights'],
-      nightly_rate_5_nights: listing['nightly_rate_5_nights'],
-      nightly_rate_7_nights: listing['nightly_rate_7_nights'],
-      weekly_host_rate: listing['weekly_host_rate'],
-      monthly_host_rate: listing['monthly_host_rate'],
+      'rental type': listing.rental_type || 'Nightly',
+      'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
+      unit_markup: listing.unit_markup_percentage || 0,
+      nightly_rate_2_nights: listing.nightly_rate_for_2_night_stay,
+      nightly_rate_3_nights: listing.nightly_rate_for_3_night_stay,
+      nightly_rate_4_nights: listing.nightly_rate_for_4_night_stay,
+      nightly_rate_5_nights: listing.nightly_rate_for_5_night_stay,
+      nightly_rate_7_nights: listing.nightly_rate_for_7_night_stay,
+      weekly_host_rate: listing.weekly_rate_paid_to_host,
+      monthly_host_rate: listing.monthly_rate_paid_to_host,
       price_override: listing['price_override'],
-      cleaning_fee: listing['cleaning_fee'],
-      damage_deposit: listing['damage_deposit']
+      cleaning_fee: listing.cleaning_fee_amount,
+      damage_deposit: listing.damage_deposit_amount
     };
   }, [listing]);
 
@@ -243,7 +243,7 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
 
       {/* Alternating Schedule Notice */}
       {(() => {
-        const weeksOffered = listing?.['Weeks offered'] || listing?.weeks_offered;
+        const weeksOffered = listing?.weeks_offered_schedule_text || listing?.weeks_offered;
         const scheduleInfo = getWeeksOfferedDescription(weeksOffered);
         if (scheduleInfo) {
           return (
@@ -255,9 +255,9 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
               marginTop: '16px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '16px' }}>📅</span>
+                <span style={{ fontSize: '16px' }}>ðŸ“…</span>
                 <div style={{ fontSize: '13px', color: '#004085' }}>
-                  <strong>Schedule:</strong> {scheduleInfo.label} — {scheduleInfo.explanation}
+                  <strong>Schedule:</strong> {scheduleInfo.label} â€” {scheduleInfo.explanation}
                 </div>
               </div>
             </div>

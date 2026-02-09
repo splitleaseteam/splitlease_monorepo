@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PhotosSection - Photo management section
  *
  * @param {object} props - Component props
@@ -24,7 +24,7 @@ export default function PhotosSection({
   const [uploadingCount, setUploadingCount] = useState(0);
   const fileInputRef = useRef(null);
 
-  const photos = listing['Features - Photos'] || [];
+  const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
 
   const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -76,12 +76,12 @@ export default function PhotosSection({
     }));
     // Re-sort by SortOrder
     updatedPhotos.sort((a, b) => (a.SortOrder || 0) - (b.SortOrder || 0));
-    onUpdate({ 'Features - Photos': updatedPhotos });
+    onUpdate({ 'photos_with_urls_captions_and_sort_order_json': updatedPhotos });
   };
 
   const handleDeleteAllPhotos = () => {
     if (window.confirm('Are you sure you want to delete all photos?')) {
-      onUpdate({ 'Features - Photos': [] });
+      onUpdate({ 'photos_with_urls_captions_and_sort_order_json': [] });
     }
   };
 

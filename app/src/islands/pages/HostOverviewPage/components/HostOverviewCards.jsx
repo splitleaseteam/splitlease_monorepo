@@ -38,13 +38,13 @@ function formatCurrency(amount) {
 // Listing Card - For host's managed listings
 // New horizontal design with thumbnail, title, actions, and proposals badge
 export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals, onLeases, onCardClick, onCreateHouseManual, isMobile = false }) {
-  const listingName = listing.name || listing.Name || 'Unnamed Listing';
-  const borough = listing.location?.borough || listing['Location - Borough'] || 'Location not specified';
+  const listingName = listing.name || listing.listing_title || 'Unnamed Listing';
+  const borough = listing.location?.borough || listing.borough || 'Location not specified';
   const proposalsCount = listing.proposalsCount || listing['Proposals Count'] || 0;
   const leasesCount = listing.leasesCount || 0;
 
   // Extract photo URLs from the photos field - only need the cover photo (first image)
-  const photosField = listing.photos || listing['Features - Photos'] || [];
+  const photosField = listing.photos || listing.photos_with_urls_captions_and_sort_order_json || [];
   const photoUrls = extractPhotos(photosField, {}, listing.id || listing._id);
   const coverPhoto = photoUrls.length > 0 ? photoUrls[0] : null;
 
@@ -187,9 +187,9 @@ export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals,
 
 // Claim Listing Card - For unclaimed listings
 export function ClaimListingCard({ listing, onSeeDetails, onDelete }) {
-  const listingName = listing.name || listing.Name || 'Unnamed Listing';
-  const borough = listing.location?.borough || listing['Location - Borough'] || 'Location not specified';
-  const isComplete = listing.complete || listing.Complete;
+  const listingName = listing.name || listing.listing_title || 'Unnamed Listing';
+  const borough = listing.location?.borough || listing.borough || 'Location not specified';
+  const isComplete = listing.complete || listing.is_listing_profile_complete;
 
   return (
     <Card className="claim-listing-card">
@@ -231,7 +231,7 @@ export function ClaimListingCard({ listing, onSeeDetails, onDelete }) {
 export function HouseManualCard({ manual, onEdit, onDelete, onViewVisits, isMobile = false }) {
   const manualName = manual.display || manual.Display || 'House Manual';
   const audience = manual.audience || manual.Audience?.Display || 'Not specified';
-  const createdDate = manual.createdOn || manual['Created Date'];
+  const createdDate = manual.createdOn || manual.bubble_created_at;
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown date';

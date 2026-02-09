@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { logger } from '../../../lib/logger';
 import { useListingAuth } from './hooks/useListingAuth';
 import { useListingData } from './hooks/useListingData';
@@ -150,11 +150,11 @@ export default function useListingDashboardPageLogic() {
   // Cancellation policy handlers
   const handleCancellationPolicyChange = useCallback(async (policyId) => {
     if (!listingId) {
-      logger.error('❌ No listing ID found for cancellation policy update');
+      logger.error('âŒ No listing ID found for cancellation policy update');
       return;
     }
 
-    logger.debug('📋 Updating cancellation policy to:', policyId);
+    logger.debug('ðŸ“‹ Updating cancellation policy to:', policyId);
 
     try {
       await data.updateListing({ 'Cancellation Policy': policyId });
@@ -165,19 +165,19 @@ export default function useListingDashboardPageLogic() {
         'Cancellation Policy': policyId,
       }));
 
-      logger.debug('✅ Cancellation policy saved successfully');
+      logger.debug('âœ… Cancellation policy saved successfully');
     } catch (error) {
-      logger.error('❌ Failed to save cancellation policy:', error);
+      logger.error('âŒ Failed to save cancellation policy:', error);
     }
   }, [listingId, data]);
 
   const handleCancellationRestrictionsChange = useCallback(async (restrictionsText) => {
     if (!listingId) {
-      logger.error('❌ No listing ID found for cancellation restrictions update');
+      logger.error('âŒ No listing ID found for cancellation restrictions update');
       return;
     }
 
-    logger.debug('📋 Updating cancellation restrictions:', restrictionsText);
+    logger.debug('ðŸ“‹ Updating cancellation restrictions:', restrictionsText);
 
     try {
       await data.updateListing({ 'Cancellation Policy - Additional Restrictions': restrictionsText });
@@ -188,9 +188,9 @@ export default function useListingDashboardPageLogic() {
         'Cancellation Policy - Additional Restrictions': restrictionsText,
       }));
 
-      logger.debug('✅ Cancellation restrictions saved successfully');
+      logger.debug('âœ… Cancellation restrictions saved successfully');
     } catch (error) {
-      logger.error('❌ Failed to save cancellation restrictions:', error);
+      logger.error('âŒ Failed to save cancellation restrictions:', error);
     }
   }, [listingId, data]);
 
@@ -204,7 +204,7 @@ export default function useListingDashboardPageLogic() {
   }, []);
 
   const handleCohostRequestSubmitted = useCallback((requestData) => {
-    logger.debug('✅ Co-host request submitted:', requestData);
+    logger.debug('âœ… Co-host request submitted:', requestData);
     if (requestData) {
       data.setExistingCohostRequest({
         _id: requestData.requestId || requestData._id,
@@ -227,7 +227,7 @@ export default function useListingDashboardPageLogic() {
   const handleSubmitImportReviews = useCallback(async (formData) => {
     setIsImportingReviews(true);
     try {
-      logger.debug('📥 Submitting import reviews request:', formData);
+      logger.debug('ðŸ“¥ Submitting import reviews request:', formData);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/slack`,
@@ -242,7 +242,7 @@ export default function useListingDashboardPageLogic() {
             payload: {
               name: auth.currentUser?.firstName || auth.currentUser?.name || 'Host',
               email: formData.emailAddress,
-              inquiry: `📥 **Import Reviews Request**\n\n**Listing ID:** ${formData.listingId || 'N/A'}\n**Reviews URL:** ${formData.reviewsUrl}\n**Requested by:** ${formData.emailAddress}\n\nPlease import reviews from the above URL for this listing.`
+              inquiry: `ðŸ“¥ **Import Reviews Request**\n\n**Listing ID:** ${formData.listingId || 'N/A'}\n**Reviews URL:** ${formData.reviewsUrl}\n**Requested by:** ${formData.emailAddress}\n\nPlease import reviews from the above URL for this listing.`
             }
           }),
         }
@@ -253,11 +253,11 @@ export default function useListingDashboardPageLogic() {
         throw new Error(errorData.error || 'Failed to submit request');
       }
 
-      logger.debug('✅ Import reviews request submitted successfully');
+      logger.debug('âœ… Import reviews request submitted successfully');
       alert('Your request has been submitted! Our team will import your reviews within 24-48 hours.');
       setShowImportReviews(false);
     } catch (err) {
-      logger.error('❌ Error submitting import reviews request:', err);
+      logger.error('âŒ Error submitting import reviews request:', err);
       alert('Failed to submit request. Please try again later.');
     } finally {
       setIsImportingReviews(false);
@@ -295,9 +295,9 @@ export default function useListingDashboardPageLogic() {
           updates.Description = updatedData.Description;
         }
 
-        if (updatedData['Description - Neighborhood'] !== undefined) {
-          updates.descriptionNeighborhood = updatedData['Description - Neighborhood'];
-          updates['Description - Neighborhood'] = updatedData['Description - Neighborhood'];
+        if (updatedData.neighborhood_description_by_host !== undefined) {
+          updates.descriptionNeighborhood = updatedData.neighborhood_description_by_host;
+          updates.neighborhood_description_by_host = updatedData.neighborhood_description_by_host;
         }
 
         return updates;
@@ -355,11 +355,11 @@ export default function useListingDashboardPageLogic() {
 
   const handleBlockedDatesChange = useCallback(async (newBlockedDates) => {
     if (!listingId) {
-      logger.error('❌ No listing ID found for blocked dates update');
+      logger.error('âŒ No listing ID found for blocked dates update');
       return;
     }
 
-    logger.debug('📅 Saving blocked dates:', newBlockedDates);
+    logger.debug('ðŸ“… Saving blocked dates:', newBlockedDates);
 
     try {
       await data.updateListing({ 'Dates - Blocked': JSON.stringify(newBlockedDates) });
@@ -369,9 +369,9 @@ export default function useListingDashboardPageLogic() {
         blockedDates: newBlockedDates,
       }));
 
-      logger.debug('✅ Blocked dates saved successfully');
+      logger.debug('âœ… Blocked dates saved successfully');
     } catch (error) {
-      logger.error('❌ Failed to save blocked dates:', error);
+      logger.error('âŒ Failed to save blocked dates:', error);
     }
   }, [listingId, data]);
 

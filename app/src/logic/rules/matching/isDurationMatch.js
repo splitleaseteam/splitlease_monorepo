@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Check if listing's minimum nights closely matches proposal duration.
  *
  * @intent Determine if listing and proposal have compatible duration expectations.
@@ -36,7 +36,7 @@ export function isDurationMatch({ listing, proposal, tolerance = 1 }) {
     return false;
   }
 
-  const listingMinNights = listing['Minimum Nights'];
+  const listingMinNights = listing.minimum_nights_per_stay;
   const proposalNights =
     proposal.nightsPerWeek ||
     proposal.daysSelected?.length ||

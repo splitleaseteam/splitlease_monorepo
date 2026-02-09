@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Date Change Request API Service Layer
  * Handles all backend API calls via Supabase Edge Functions
  */
@@ -61,11 +61,11 @@ export const transformFromDb = (row) => {
     expirationDate: row['expiration date'],
     visibleToGuest: row['visible to the guest?'],
     visibleToHost: row['visible to the host?'],
-    createdAt: row['Created Date'],
+    createdAt: row.bubble_created_at,
     answerDate: row['answer date'],
     answerToRequest: row['Answer to Request'],
     createdBy: row['Created By'],
-    modifiedDate: row['Modified Date'],
+    modifiedDate: row.bubble_updated_at,
     stayAssociated1: row['Stay Associated 1'],
     stayAssociated2: row['Stay Associated 2'],
     listOfNewDates: row['LIST of NEW Dates in the stay'],
@@ -433,21 +433,21 @@ export async function applyHardBlock(leaseId, userId) {
 export async function getLeaseWithDates(leaseId) {
   try {
     const { data, error } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .select(`
-        _id,
-        "Agreement Number",
-        "Reservation Period : Start",
-        "Reservation Period : End",
+        id,
+        agreement_number,
+        reservation_start_date,
+        reservation_end_date,
         "List of Booked Dates",
-        "Guest",
-        "Host",
-        "Listing",
-        "Lease Status",
+        guest_user_id,
+        host_user_id,
+        listing_id,
+        lease_type,
         "total week count",
         "current week number"
       `)
-      .eq('_id', leaseId)
+      .eq('id', leaseId)
       .single();
 
     if (error) throw error;
@@ -455,15 +455,15 @@ export async function getLeaseWithDates(leaseId) {
     return {
       status: 'success',
       data: {
-        id: data['_id'],
-        agreementNumber: data['Agreement Number'],
-        reservationStart: data['Reservation Period : Start'],
-        reservationEnd: data['Reservation Period : End'],
+        id: data.id,
+        agreementNumber: data.agreement_number,
+        reservationStart: data.reservation_start_date,
+        reservationEnd: data.reservation_end_date,
         bookedDates: data['List of Booked Dates'] || [],
-        guestId: data['Guest'],
-        hostId: data['Host'],
-        listingId: data['Listing'],
-        status: data['Lease Status'],
+        guestId: data.guest_user_id,
+        hostId: data.host_user_id,
+        listingId: data.listing_id,
+        status: data.lease_type,
         totalWeeks: data['total week count'],
         currentWeek: data['current week number'],
       },
@@ -487,11 +487,11 @@ export async function getLeaseWithDates(leaseId) {
 export async function getRoommateBookedDates(listingId, currentLeaseId) {
   try {
     const { data, error } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .select('"List of Booked Dates"')
-      .eq('Listing', listingId)
-      .eq('Lease Status', 'Active')
-      .neq('_id', currentLeaseId);
+      .eq('listing_id', listingId)
+      .eq('lease_type', 'Active')
+      .neq('id', currentLeaseId);
 
     if (error) throw error;
 

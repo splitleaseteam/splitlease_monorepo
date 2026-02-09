@@ -226,7 +226,7 @@ export default function RightPanel({
               {listingData.listingType || 'Flexible'}
             </span>
           </div>
-          <h4 className="panel-listing-card__name">{listingData.name}</h4>
+          <h4 className="panel-listing-card__name">{listingData.listing_title}</h4>
           <p className="panel-listing-card__location">{listingData.address}</p>
           <div className="panel-listing-card__info-grid">
             <div className="panel-listing-card__info-item">

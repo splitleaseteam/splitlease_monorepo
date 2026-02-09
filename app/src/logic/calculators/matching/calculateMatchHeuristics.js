@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Calculate detailed heuristics for a match (boolean flags).
  *
  * @intent Provide granular boolean indicators for each matching criterion.
@@ -45,13 +45,13 @@ export function calculateMatchHeuristics({ candidateListing, proposal, hostData 
   // Extract boroughs
   const candidateBorough =
     candidateListing?.boroughName ||
-    candidateListing?.['Location - Borough'] ||
+    candidateListing?.borough ||
     null;
 
   const proposalBorough =
     proposal?.listing?.boroughName ||
     proposal?.listing?.borough ||
-    proposal?.listing?.['Location - Borough'] ||
+    proposal?.listing?.borough ||
     null;
 
   // Calculate price proximity

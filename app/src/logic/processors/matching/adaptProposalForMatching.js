@@ -53,7 +53,7 @@ export function adaptProposalForMatching(rawProposal) {
   const listingBorough =
     listingData.boroughName ||
     listingData.borough ||
-    listingData['Location - Borough'] ||
+    listingData.borough ||
     rawProposal['listing_borough'] ||
     null;
 
@@ -87,7 +87,7 @@ export function adaptProposalForMatching(rawProposal) {
       borough: listingBorough,
       'Location - Borough': listingBorough,
       hoodName: listingData.hoodName || listingData.hood || null,
-      name: listingData.name || listingData.Name || null
+      name: listingData.listing_title || listingData.listing_title || null
     },
 
     // Guest info

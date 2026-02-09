@@ -96,8 +96,8 @@ export default function LeaseCard({
         {lease.listing && (
           <div className="lease-card__row">
             <span className="lease-card__label">Listing</span>
-            <span className="lease-card__value lease-card__value--truncate" title={lease.listing.name}>
-              {lease.listing.name || 'Unnamed Listing'}
+            <span className="lease-card__value lease-card__value--truncate" title={lease.listing.listing_title}>
+              {lease.listing.listing_title || 'Unnamed Listing'}
             </span>
           </div>
         )}

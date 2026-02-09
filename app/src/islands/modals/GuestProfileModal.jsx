@@ -18,13 +18,13 @@ export default function GuestProfileModal({ guest, onClose }) {
   console.log('GuestProfileModal rendering with guest:', guest);
 
   // Get guest display name
-  const firstName = guest.firstName || guest['Name - First'] || guest.first_name || guest.name || '';
-  const lastName = guest.lastName || guest['Name - Last'] || guest.last_name || '';
+  const firstName = guest.firstName || guest.first_name || guest.name || '';
+  const lastName = guest.lastName || guest.last_name || '';
   const fullName = `${firstName} ${lastName}`.trim() || 'Guest';
   const displayName = firstName || fullName;
 
   // Get photo URL
-  const photoUrl = guest.profilePhoto || guest.avatar || guest['Profile Photo'] || guest['Profile Picture'];
+  const photoUrl = guest.profilePhoto || guest.avatar || guest.profile_photo_url;
   const avatarUrl = photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E9E0F7&color=6D31C2&rounded=true&size=200`;
 
   // Get bio

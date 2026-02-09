@@ -100,7 +100,7 @@ export function useHeaderMessagingPanelLogic({
         const { data: listingData, error: listingError } = await supabase
           .from('listing')
           .select('*')
-          .eq('_id', listingId)
+          .eq('id', listingId)
           .single();
 
         if (listingError) {
@@ -108,7 +108,7 @@ export function useHeaderMessagingPanelLogic({
           return;
         }
 
-        console.log('[HeaderMessagingPanel] Listing data fetched:', listingData?.Name);
+        console.log('[HeaderMessagingPanel] Listing data fetched:', listingData?.listing_title);
 
         // Set up default days (Mon-Fri, weekdays)
         const initialDays = [1, 2, 3, 4, 5].map(dayIndex => createDay(dayIndex, true));
@@ -133,35 +133,34 @@ export function useHeaderMessagingPanelLogic({
 
         // Transform listing data for the modal
         const transformedListing = {
-          _id: listingData._id,
-          id: listingData._id,
-          Name: listingData.Name || 'Unnamed Listing',
-          title: listingData.Name || 'Unnamed Listing',
+          id: listingData.id,
+          Name: listingData.listing_title || 'Unnamed Listing',
+          title: listingData.listing_title || 'Unnamed Listing',
           'Primary Photo': listingData['Primary Photo'],
           host: null,
           // Pricing fields
-          nightly_rate_2_nights: listingData['nightly_rate_2_nights'],
-          nightly_rate_3_nights: listingData['nightly_rate_3_nights'],
-          nightly_rate_4_nights: listingData['nightly_rate_4_nights'],
-          nightly_rate_5_nights: listingData['nightly_rate_5_nights'],
-          nightly_rate_7_nights: listingData['nightly_rate_7_nights'],
-          weekly_host_rate: listingData['weekly_host_rate'],
-          monthly_host_rate: listingData['monthly_host_rate'],
+          nightly_rate_for_2_night_stay: listingData.nightly_rate_for_2_night_stay,
+          nightly_rate_for_3_night_stay: listingData.nightly_rate_for_3_night_stay,
+          nightly_rate_for_4_night_stay: listingData.nightly_rate_for_4_night_stay,
+          nightly_rate_for_5_night_stay: listingData.nightly_rate_for_5_night_stay,
+          nightly_rate_for_7_night_stay: listingData.nightly_rate_for_7_night_stay,
+          weekly_rate_paid_to_host: listingData.weekly_rate_paid_to_host,
+          monthly_rate_paid_to_host: listingData.monthly_rate_paid_to_host,
           price_override: listingData['price_override'],
-          cleaning_fee: listingData['cleaning_fee'],
-          damage_deposit: listingData['damage_deposit'],
-          unit_markup: listingData['unit_markup'],
-          'rental type': listingData['rental type'],
-          'Weeks offered': listingData['Weeks offered'],
+          cleaning_fee_amount: listingData.cleaning_fee_amount,
+          damage_deposit_amount: listingData.damage_deposit_amount,
+          unit_markup_percentage: listingData.unit_markup_percentage,
+          rental_type: listingData.rental_type,
+          weeks_offered_schedule_text: listingData.weeks_offered_schedule_text,
           // Availability fields
-          ' First Available': listingData[' First Available'],
+          ' First Available': listingData.first_available_date,
           'Last Available': listingData['Last Available'],
           '# of nights available': listingData['# of nights available'],
-          'Dates - Blocked': listingData['Dates - Blocked'],
+          'Dates - Blocked': listingData.blocked_specific_dates_json,
           'Nights Available (numbers)': listingData['Nights Available (numbers)'],
-          'Minimum Nights': listingData['Minimum Nights'],
-          'Maximum Nights': listingData['Maximum Nights'],
-          'Days Available (List of Days)': listingData['Days Available (List of Days)']
+          'Minimum Nights': listingData.minimum_nights_per_stay,
+          'Maximum Nights': listingData.maximum_nights_per_stay,
+          'Days Available (List of Days)': listingData.available_days_as_day_numbers_json
         };
 
         // Set proposal modal data
@@ -252,7 +251,7 @@ export function useHeaderMessagingPanelLogic({
           ? '20 weeks (approx. 5 months)'
           : `${reservationSpanWeeks} weeks`;
 
-      const listingId = proposalModalData?.listing?._id || proposalModalData?.listing?.id;
+      const listingId = proposalModalData?.listing?.id;
       const payload = {
         guestId: guestId,
         listingId: listingId,
@@ -378,7 +377,7 @@ export function useHeaderMessagingPanelLogic({
       {
         event: 'INSERT',
         schema: 'public',
-        table: '_message',
+        table: 'thread_message',
       },
       (payload) => {
         const newRow = payload.new;
@@ -393,24 +392,24 @@ export function useHeaderMessagingPanelLogic({
 
         // Add message to state (avoid duplicates)
         setMessages((prev) => {
-          if (prev.some((m) => m._id === newRow._id)) return prev;
+          if (prev.some((m) => m._id === newRow.id)) return prev;
 
           const transformedMessage = {
-            _id: newRow._id,
-            message_body: newRow['Message Body'],
-            sender_name: newRow['is Split Bot']
+            _id: newRow.id,
+            message_body: newRow['message_body_text'],
+            sender_name: newRow['is_from_split_bot']
               ? 'Split Bot'
               : isOwnMessage
                 ? 'You'
                 : selectedThread.contact_name || 'User',
             sender_avatar: isOwnMessage ? userAvatar : undefined,
-            sender_type: newRow['is Split Bot']
+            sender_type: newRow['is_from_split_bot']
               ? 'splitbot'
               : newRow['originator_user_id'] === newRow['host_user_id']
                 ? 'host'
                 : 'guest',
             is_outgoing: isOwnMessage,
-            timestamp: new Date(newRow['Created Date']).toLocaleString('en-US', {
+            timestamp: new Date(newRow['bubble_created_at']).toLocaleString('en-US', {
               month: 'short',
               day: 'numeric',
               hour: 'numeric',
@@ -532,7 +531,7 @@ export function useHeaderMessagingPanelLogic({
         const guestId = thread['guest_user_id'];
         const contactId = hostId === bubbleId ? guestId : hostId;
         if (contactId) contactIds.add(contactId);
-        if (thread['Listing']) listingIds.add(thread['Listing']);
+        if (thread['listing_id']) listingIds.add(thread['listing_id']);
       });
 
       // Batch fetch contact user data
@@ -540,20 +539,20 @@ export function useHeaderMessagingPanelLogic({
       if (contactIds.size > 0) {
         const { data: contacts } = await supabase
           .from('user')
-          .select('_id, "Name - First", "Name - Last", "Profile Photo"')
-          .in('_id', Array.from(contactIds));
+          .select('id, first_name, last_name, profile_photo_url')
+          .in('id', Array.from(contactIds));
 
         if (contacts) {
           contactMap = contacts.reduce((acc, contact) => {
             // Format name as "FirstName L." (first name + last initial)
-            const firstName = contact['Name - First'] || '';
-            const lastName = contact['Name - Last'] || '';
+            const firstName = contact.first_name || '';
+            const lastName = contact.last_name || '';
             const lastInitial = lastName ? ` ${lastName.charAt(0)}.` : '';
             const displayName = firstName ? `${firstName}${lastInitial}` : 'Unknown User';
 
-            acc[contact._id] = {
+            acc[contact.id] = {
               name: displayName,
-              avatar: contact['Profile Photo'],
+              avatar: contact.profile_photo_url,
             };
             return acc;
           }, {});
@@ -565,27 +564,27 @@ export function useHeaderMessagingPanelLogic({
       if (listingIds.size > 0) {
         const { data: listings } = await supabase
           .from('listing')
-          .select('_id, Name')
-          .in('_id', Array.from(listingIds));
+          .select('id, listing_title')
+          .in('id', Array.from(listingIds));
 
         if (listings) {
           listingMap = listings.reduce((acc, listing) => {
-            acc[listing._id] = listing.Name || 'Unnamed Property';
+            acc[listing.id] = listing.listing_title || 'Unnamed Property';
             return acc;
           }, {});
         }
       }
 
       // Fetch unread message counts per thread for this user
-      // Uses JSONB containment operator to check if user is in Unread Users array
+      // Uses JSONB containment operator to check if user is in unread_by_user_ids_json array
       const threadIds = threadsData.map((t) => t._id);
       let unreadCountMap = {};
       if (threadIds.length > 0) {
         const { data: unreadData } = await supabase
-          .from('_message')
+          .from('thread_message')
           .select('"thread_id"')
           .in('"thread_id"', threadIds)
-          .filter('"Unread Users"', 'cs', JSON.stringify([bubbleId]));
+          .filter('unread_by_user_ids_json', 'cs', JSON.stringify([bubbleId]));
 
         if (unreadData) {
           // Count occurrences of each thread ID
@@ -610,10 +609,10 @@ export function useHeaderMessagingPanelLogic({
 
         // Fetch recent messages for all threads with visibility info
         const { data: messagesData } = await supabase
-          .from('_message')
-          .select('"thread_id", "Message Body", "Created Date", "is Visible to Host", "is Visible to Guest"')
+          .from('thread_message')
+          .select('"thread_id", message_body_text, bubble_created_at, "is Visible to Host", "is Visible to Guest"')
           .in('"thread_id"', threadIds)
-          .order('"Created Date"', { ascending: false });
+          .order('bubble_created_at', { ascending: false });
 
         if (messagesData && messagesData.length > 0) {
           // For each thread, find the most recent message visible to the user
@@ -626,8 +625,8 @@ export function useHeaderMessagingPanelLogic({
                 : msg['is Visible to Guest'] === true;
             });
 
-            if (visibleMessage && visibleMessage['Message Body']) {
-              visiblePreviewMap[threadId] = visibleMessage['Message Body'].substring(0, 100);
+            if (visibleMessage && visibleMessage['message_body_text']) {
+              visiblePreviewMap[threadId] = visibleMessage['message_body_text'].substring(0, 100);
             }
           }
         }
@@ -641,8 +640,8 @@ export function useHeaderMessagingPanelLogic({
         const contact = contactId ? contactMap[contactId] : null;
 
         // Format the last modified time
-        const modifiedDate = thread['Modified Date']
-          ? new Date(thread['Modified Date'])
+        const modifiedDate = thread.bubble_updated_at
+          ? new Date(thread.bubble_updated_at)
           : new Date();
         const now = new Date();
         const diffMs = now.getTime() - modifiedDate.getTime();
@@ -671,7 +670,7 @@ export function useHeaderMessagingPanelLogic({
           'guest_user_id': guestId,
           contact_name: contact?.name || 'Split Lease',
           contact_avatar: contact?.avatar,
-          property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
+          property_name: thread['listing_id'] ? listingMap[thread['listing_id']] : undefined,
           // Use visibility-aware preview if available, fall back to static ~Last Message
           last_message_preview: visiblePreviewMap[thread._id] || thread['~Last Message'] || 'No messages yet',
           last_message_time: lastMessageTime,

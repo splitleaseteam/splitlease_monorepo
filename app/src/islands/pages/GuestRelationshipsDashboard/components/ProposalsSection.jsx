@@ -56,7 +56,7 @@ export default function ProposalsSection({
       <div className="grd-proposal-card">
         <div className="grd-proposal-image">
           {photos[0]?.url ? (
-            <img src={photos[0].url} alt={listing.name || 'Listing'} />
+            <img src={photos[0].url} alt={listing.listing_title || 'Listing'} />
           ) : (
             <div className="grd-placeholder-image">
               <Home size={32} />
@@ -65,7 +65,7 @@ export default function ProposalsSection({
         </div>
         <div className="grd-proposal-details">
           <h4 className="grd-proposal-listing-name">
-            {listing.name || 'Unknown Listing'}
+            {listing.listing_title || 'Unknown Listing'}
           </h4>
           <div className="grd-proposal-info-grid">
             <div className="grd-proposal-info-item">
@@ -162,7 +162,7 @@ export default function ProposalsSection({
               <option value="">Select a listing...</option>
               {availableListings.map(listing => (
                 <option key={listing._id || listing.id} value={listing._id || listing.id}>
-                  {listing.name || listing['Listing Name']} - {listing.location?.hood || listing['Hood - Text'] || 'NYC'}
+                  {listing.listing_title || listing['Listing Name']} - {listing.location?.hood || listing['Hood - Text'] || 'NYC'}
                 </option>
               ))}
             </select>

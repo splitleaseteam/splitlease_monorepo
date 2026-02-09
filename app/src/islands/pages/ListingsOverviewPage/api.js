@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Listings Overview API Layer
  *
  * Direct Supabase queries for the Listings Overview page.
@@ -17,7 +17,7 @@ import { PAGE_SIZE } from './constants.js';
 
 /**
  * NYC Boroughs - Static data mapped to Bubble.io IDs from the database.
- * These IDs match the values stored in listing."Location - Borough".
+ * These IDs match the values stored in listing.borough.
  *
  * Mapping derived from actual database records:
  * - Manhattan: 149 listings
@@ -76,85 +76,85 @@ export async function getListings({ filters, page = 1, pageSize = PAGE_SIZE }) {
   // so we fetch listings first, then resolve names in a second query.
 
   // Note: Column names from Bubble migration include emoji prefixes for pricing
-  // Host phone is not on listing table - it's on the user table (via "Host User" FK)
+  // Host phone is not on listing table - it's on the user table (via host_user_id FK)
   let query = supabase
     .from('listing')
     .select(`
-      _id,
-      "Name",
+      id,
+      listing_title,
       "Description",
-      "Host User",
+      host_user_id,
       "Host email",
-      "host name",
-      "Location - Borough",
-      "Location - Hood",
-      "nightly_rate_1_night",
-      "nightly_rate_3_nights",
-      "price_override",
-      "Active",
-      "Approved",
-      "Complete",
-      "pending",
-      "Deleted",
-      "isForUsability",
-      "Showcase",
-      "Features - Photos",
-      "Features - Amenities In-Unit",
+      host_display_name,
+      borough,
+      primary_neighborhood_reference_id,
+      nightly_rate_for_1_night_stay,
+      nightly_rate_for_3_night_stay,
+      price_override,
+      is_active,
+      is_approved,
+      is_listing_profile_complete,
+      pending,
+      is_deleted,
+      is_usability_test_listing,
+      is_showcase,
+      photos_with_urls_captions_and_sort_order_json,
+      in_unit_amenity_reference_ids_json,
       "Errors",
-      "Modified Date",
-      "Created Date",
+      bubble_updated_at,
+      bubble_created_at,
       "Listing Code OP"
     `, { count: 'exact' });
 
   // Exclude deleted listings by default
-  query = query.or('"Deleted".is.null,"Deleted".eq.false');
+  query = query.or('is_deleted.is.null,is_deleted.eq.false');
 
   // Apply filters
   if (filters.showOnlyAvailable) {
-    query = query.eq('"Active"', true).eq('"Approved"', true);
+    query = query.eq('is_active', true).eq('is_approved', true);
   }
 
   if (filters.completedListings && !filters.notFinishedListings) {
-    query = query.eq('"Complete"', true);
+    query = query.eq('is_listing_profile_complete', true);
   } else if (filters.notFinishedListings && !filters.completedListings) {
-    query = query.or('"Complete".is.null,"Complete".eq.false');
+    query = query.or('is_listing_profile_complete.is.null,is_listing_profile_complete.eq.false');
   }
 
   if (filters.selectedBorough) {
-    query = query.eq('"Location - Borough"', filters.selectedBorough);
+    query = query.eq('borough', filters.selectedBorough);
   }
 
   if (filters.selectedNeighborhood) {
-    query = query.eq('"Location - Hood"', filters.selectedNeighborhood);
+    query = query.eq('primary_neighborhood_reference_id', filters.selectedNeighborhood);
   }
 
   if (filters.searchQuery) {
     const searchTerm = `%${filters.searchQuery}%`;
-    query = query.or(`"Name".ilike.${searchTerm},"Host email".ilike.${searchTerm},"host name".ilike.${searchTerm},"Listing Code OP".ilike.${searchTerm}`);
+    query = query.or(`listing_title.ilike.${searchTerm},"Host email".ilike.${searchTerm},host_display_name.ilike.${searchTerm},"Listing Code OP".ilike.${searchTerm}`);
   }
 
   if (filters.showAllFilter === 'active') {
-    query = query.eq('"Active"', true);
+    query = query.eq('is_active', true);
   } else if (filters.showAllFilter === 'inactive') {
-    query = query.or('"Active".is.null,"Active".eq.false');
+    query = query.or('is_active.is.null,is_active.eq.false');
   } else if (filters.showAllFilter === 'showcase') {
-    query = query.eq('"Showcase"', true);
+    query = query.eq('is_showcase', true);
   } else if (filters.showAllFilter === 'usability') {
-    query = query.eq('"isForUsability"', true);
+    query = query.eq('is_usability_test_listing', true);
   }
 
   if (filters.startDate) {
-    query = query.gte('"Modified Date"', filters.startDate.toISOString());
+    query = query.gte('bubble_updated_at', filters.startDate.toISOString());
   }
 
   if (filters.endDate) {
-    query = query.lte('"Modified Date"', filters.endDate.toISOString());
+    query = query.lte('bubble_updated_at', filters.endDate.toISOString());
   }
 
   // Pagination
   const from = (page - 1) * pageSize;
   query = query
-    .order('"Modified Date"', { ascending: false })
+    .order('bubble_updated_at', { ascending: false })
     .range(from, from + pageSize - 1);
 
   const { data, error, count } = await query;
@@ -182,8 +182,8 @@ export function resolveLocationNames(listings, boroughs, neighborhoods) {
 
   return listings.map(listing => ({
     ...listing,
-    boroughName: boroughMap.get(listing['Location - Borough']) || 'Unknown',
-    neighborhoodName: neighborhoodMap.get(listing['Location - Hood']) || 'Unknown',
+    boroughName: boroughMap.get(listing.borough) || 'Unknown',
+    neighborhoodName: neighborhoodMap.get(listing.primary_neighborhood_reference_id) || 'Unknown',
   }));
 }
 
@@ -202,13 +202,13 @@ export async function updateListing(id, changes) {
   // Add timestamp
   const updatePayload = {
     ...changes,
-    'Modified Date': new Date().toISOString(),
+    bubble_updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabase
     .from('listing')
     .update(updatePayload)
-    .eq('_id', id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -225,7 +225,7 @@ export async function updateListing(id, changes) {
 }
 
 /**
- * Soft delete a listing by setting Deleted = true.
+ * Soft delete a listing by setting is_deleted = true.
  *
  * @param {string} id - Listing ID
  * @returns {Promise<{success: boolean, error: Error|null}>}
@@ -234,10 +234,10 @@ export async function deleteListing(id) {
   const { error } = await supabase
     .from('listing')
     .update({
-      Deleted: true,
-      'Modified Date': new Date().toISOString(),
+      is_deleted: true,
+      bubble_updated_at: new Date().toISOString(),
     })
-    .eq('_id', id);
+    .eq('id', id);
 
   if (error) {
     console.error('[ListingsOverview] Failed to delete listing:', error);
@@ -263,7 +263,7 @@ export async function addError(listingId, errorCode) {
   const { data: listing, error: fetchError } = await supabase
     .from('listing')
     .select('"Errors"')
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (fetchError) {
@@ -285,9 +285,9 @@ export async function addError(listingId, errorCode) {
     .from('listing')
     .update({
       Errors: updatedErrors,
-      'Modified Date': new Date().toISOString(),
+      bubble_updated_at: new Date().toISOString(),
     })
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .select()
     .single();
 
@@ -310,9 +310,9 @@ export async function clearErrors(listingId) {
     .from('listing')
     .update({
       Errors: [],
-      'Modified Date': new Date().toISOString(),
+      bubble_updated_at: new Date().toISOString(),
     })
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .select()
     .single();
 
@@ -343,8 +343,8 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
     // Fetch current prices (note: column names have emoji prefixes from Bubble)
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
-      .select('"nightly_rate_1_night", "nightly_rate_3_nights"')
-      .eq('_id', id)
+      .select('"nightly_rate_for_1_night_stay", "nightly_rate_for_3_night_stay"')
+      .eq('id', id)
       .single();
 
     if (fetchError) {
@@ -352,8 +352,8 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
       continue;
     }
 
-    const currentNightly = listing['nightly_rate_1_night'] || 0;
-    const current3Night = listing['nightly_rate_3_nights'] || 0;
+    const currentNightly = listing.nightly_rate_for_1_night_stay || 0;
+    const current3Night = listing.nightly_rate_for_3_night_stay || 0;
 
     // Calculate new prices
     const newNightly = Math.round(currentNightly * multiplier * 100) / 100;
@@ -363,11 +363,11 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
     const { error: updateError } = await supabase
       .from('listing')
       .update({
-        'nightly_rate_1_night': newNightly,
-        'nightly_rate_3_nights': new3Night,
-        'Modified Date': new Date().toISOString(),
+        'nightly_rate_for_1_night_stay': newNightly,
+        'nightly_rate_for_3_night_stay': new3Night,
+        bubble_updated_at: new Date().toISOString(),
       })
-      .eq('_id', id);
+      .eq('id', id);
 
     if (updateError) {
       results.push({ id, success: false, error: updateError.message });

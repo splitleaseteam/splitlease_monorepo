@@ -112,7 +112,7 @@ const MapView = ({
       // Use same price field pattern as Search page GoogleMap.jsx
       const popupHtml = `
         <div class="map-popup">
-          <h4>${listing.name}</h4>
+          <h4>${listing.listing_title}</h4>
           <p>${listing.location?.borough || ''}, ${listing.location?.hood || ''}</p>
           <p class="map-popup-price">$${listing.price?.starting || listing['Starting nightly price'] || 0}/night</p>
           <p class="map-popup-features">

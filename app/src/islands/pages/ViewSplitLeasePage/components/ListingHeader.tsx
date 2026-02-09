@@ -45,8 +45,8 @@ const ListingHeader = memo(function ListingHeader({
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: listing.Name,
-                    text: `Check out this listing: ${listing.Name}`,
+                    title: listing.listing_title,
+                    text: `Check out this listing: ${listing.listing_title}`,
                     url: url
                 });
             } catch (err) {
@@ -67,7 +67,7 @@ const ListingHeader = memo(function ListingHeader({
     return (
         <header className={styles.listingHeaderContainer}>
             {/* Title */}
-            <h1 className={styles.listingTitle}>{listing.Name}</h1>
+            <h1 className={styles.listingTitle}>{listing.listing_title}</h1>
 
             {/* Meta Row */}
             <div className={styles.metaRow}>
@@ -118,24 +118,24 @@ const ListingHeader = memo(function ListingHeader({
             {/* Property Type & Specs */}
             <div className={styles.specsRow}>
                 <span className={styles.specItem}>
-                    <strong>{listing['Features - Type of Space'] || 'Entire Place'}</strong>
+                    <strong>{listing.space_type || 'Entire Place'}</strong>
                 </span>
-                <span className={styles.specDivider}>•</span>
+                <span className={styles.specDivider}>â€¢</span>
                 <span className={styles.specItem}>
-                    <strong>{listing['Features - Qty Guests'] || 1}</strong> {listing['Features - Qty Guests'] === 1 ? 'guest' : 'guests'}
+                    <strong>{listing.max_guest_count || 1}</strong> {listing.max_guest_count === 1 ? 'guest' : 'guests'}
                 </span>
-                <span className={styles.specDivider}>•</span>
+                <span className={styles.specDivider}>â€¢</span>
                 <span className={styles.specItem}>
                     <strong>
-                        {listing['Features - Qty Bedrooms'] === 0
+                        {listing.bedroom_count === 0
                             ? 'Studio'
-                            : `${listing['Features - Qty Bedrooms']} ${listing['Features - Qty Bedrooms'] === 1 ? 'bedroom' : 'bedrooms'}`
+                            : `${listing.bedroom_count} ${listing.bedroom_count === 1 ? 'bedroom' : 'bedrooms'}`
                         }
                     </strong>
                 </span>
-                <span className={styles.specDivider}>•</span>
+                <span className={styles.specDivider}>â€¢</span>
                 <span className={styles.specItem}>
-                    <strong>{listing['Features - Qty Bathrooms'] || 1}</strong> {listing['Features - Qty Bathrooms'] === 1 ? 'bath' : 'baths'}
+                    <strong>{listing.bathroom_count || 1}</strong> {listing.bathroom_count === 1 ? 'bath' : 'baths'}
                 </span>
             </div>
 

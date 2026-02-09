@@ -28,7 +28,7 @@ export function canCancelProposal(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   // Can't cancel if already cancelled or rejected
   if (
@@ -65,7 +65,7 @@ export function canModifyProposal(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   // Can only modify if in initial submission stage
   return status === PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key;
@@ -82,7 +82,7 @@ export function hasReviewableCounteroffer(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   return (
     status === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key &&
@@ -121,7 +121,7 @@ export function canSubmitRentalApplication(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   return status === PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key;
 }
@@ -137,7 +137,7 @@ export function canReviewDocuments(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
   const actions = getActionsForStatus(status);
 
   return actions.includes('review_documents');
@@ -154,7 +154,7 @@ export function canRequestVirtualMeeting(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   // Can't request VM if proposal is terminal
   if (isTerminalStatus(status)) {
@@ -176,7 +176,7 @@ export function canSendMessage(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
   const actions = getActionsForStatus(status);
 
   return actions.includes('send_message');
@@ -193,7 +193,7 @@ export function isProposalActive(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   return !isTerminalStatus(status);
 }
@@ -209,7 +209,7 @@ export function isProposalCancelled(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   return (
     status === PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key ||
@@ -228,7 +228,7 @@ export function isProposalRejected(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   return status === PROPOSAL_STATUSES.REJECTED_BY_HOST.key;
 }
@@ -244,7 +244,7 @@ export function isLeaseActivated(proposal) {
     return false;
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   return isCompletedStatus(status);
 }
@@ -278,7 +278,7 @@ export function getCancelButtonText(proposal) {
     return 'Cancel Proposal';
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   // Special text for counteroffer scenario
   if (status === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key) {
@@ -359,7 +359,7 @@ export { isSuggestedProposal as isSLSuggestedProposal };
  */
 export function canConfirmSuggestedProposal(proposal) {
   if (!proposal) return false;
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   // Can confirm if in "Pending Confirmation" status
   return status === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key;

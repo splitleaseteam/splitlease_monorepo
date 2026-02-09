@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ProposalSummary - Summary of all proposal details before submission
  */
 
@@ -25,7 +25,7 @@ export default function ProposalSummary({
     return null;
   }
 
-  const guestName = selectedGuest['Name - Full'] || selectedGuest['Name - First'] || 'Unknown';
+  const guestName = (selectedGuest.first_name && selectedGuest.last_name ? `${selectedGuest.first_name} ${selectedGuest.last_name}` : null) || selectedGuest.first_name || 'Unknown';
   const daysDisplay = selectedDays.length > 0
     ? selectedDays.map(d => getDayName(d)).join(', ')
     : '-';
@@ -40,7 +40,7 @@ export default function ProposalSummary({
           <h4>Guest Information</h4>
           <div className="csp-summary-item">
             <img
-              src={selectedGuest['Profile Photo'] || getDefaultPhoto()}
+              src={selectedGuest.profile_photo_url || getDefaultPhoto()}
               alt={guestName}
               className="csp-summary-avatar"
               onError={(e) => { e.target.src = getDefaultPhoto(); }}
@@ -48,7 +48,7 @@ export default function ProposalSummary({
             <div>
               <p className="csp-summary-name">{guestName}</p>
               <p className="csp-summary-detail">{selectedGuest.email || ''}</p>
-              <p className="csp-summary-detail">{selectedGuest['Phone Number (as text)'] || ''}</p>
+              <p className="csp-summary-detail">{selectedGuest.phone_number || ''}</p>
             </div>
           </div>
         </div>
@@ -56,9 +56,9 @@ export default function ProposalSummary({
         {/* Listing Information */}
         <div className="csp-summary-section">
           <h4>Listing Information</h4>
-          <p className="csp-summary-name">{selectedListing.Name || 'Unnamed Listing'}</p>
+          <p className="csp-summary-name">{selectedListing.listing_title || 'Unnamed Listing'}</p>
           <p className="csp-summary-detail">{getAddressString(selectedListing)}</p>
-          <p className="csp-summary-detail">Host: {selectedListing['host name'] || ''}</p>
+          <p className="csp-summary-detail">Host: {selectedListing.host_display_name || ''}</p>
         </div>
 
         {/* Schedule */}

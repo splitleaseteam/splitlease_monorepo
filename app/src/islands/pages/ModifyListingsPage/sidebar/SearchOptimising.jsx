@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SearchOptimising - Display search ranking and listing metadata
  *
  * @param {object} props - Component props
@@ -29,12 +29,12 @@ export default function SearchOptimising({ listing }) {
     },
     {
       label: 'Created Date',
-      value: formatDate(listing['Created Date']),
+      value: formatDate(listing.bubble_created_at),
       description: 'When listing was created'
     },
     {
       label: 'Modified Date',
-      value: formatDate(listing['Modified Date']),
+      value: formatDate(listing.bubble_updated_at),
       description: 'Last update'
     }
   ];

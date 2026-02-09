@@ -49,8 +49,8 @@ function getStatusLabel(status) {
   const normalizedStatus = status.trim();
 
   // Suggested proposals: distinguish guest action vs host action
-  if (normalizedStatus.includes('Split Lease - Pending Confirmation')) return 'SL Suggestion · Review';
-  if (normalizedStatus.includes('Split Lease - Awaiting Rental Application')) return 'SL Suggestion · Apply';
+  if (normalizedStatus.includes('Split Lease - Pending Confirmation')) return 'SL Suggestion Â· Review';
+  if (normalizedStatus.includes('Split Lease - Awaiting Rental Application')) return 'SL Suggestion Â· Apply';
 
   if (normalizedStatus.includes('Counteroffer')) return 'Review Counteroffer';
   if (normalizedStatus.includes('Accepted')) return 'Accepted';
@@ -91,12 +91,12 @@ export default function ProposalSelector({ proposals, selectedId, onSelect, coun
 
           // Get photo URL
           const photoUrl = listing.featuredPhotoUrl ||
-            listing['Features - Photos']?.[0] ||
+            listing.photos_with_urls_captions_and_sort_order_json?.[0] ||
             null;
 
-          // Build meta string (e.g., "Mon-Fri · 12 weeks")
+          // Build meta string (e.g., "Mon-Fri Â· 12 weeks")
           const daysCount = Array.isArray(daysSelected) ? daysSelected.length : 0;
-          const metaText = weeks ? `${daysCount} days · ${weeks} weeks` : `${daysCount} days`;
+          const metaText = weeks ? `${daysCount} days Â· ${weeks} weeks` : `${daysCount} days`;
 
           const isActive = proposal.id === selectedId;
           const statusClass = getStatusBadgeClass(status);
@@ -122,7 +122,7 @@ export default function ProposalSelector({ proposals, selectedId, onSelect, coun
               )}
 
               <div className="proposal-info">
-                <div className="proposal-name">{listing.Name || proposal.label}</div>
+                <div className="proposal-name">{listing.listing_title || proposal.label}</div>
                 <div className="proposal-meta">{metaText}</div>
               </div>
 

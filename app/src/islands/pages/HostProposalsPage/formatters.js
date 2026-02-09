@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Formatting utilities for Host Proposals Page
  */
 
@@ -141,7 +141,7 @@ export function generateNarrativeText(proposal) {
 
   // Use '4 week compensation' as the source of truth for host compensation
   // The database "Total Compensation (proposal - host)" field can be incorrect
-  const host4WeekCompensation = proposal?.['4 week compensation'] || 0;
+  const host4WeekCompensation = proposal?.four_week_host_compensation || 0;
 
   // Calculate total host compensation from 4 week compensation
   const fourWeekPeriods = durationWeeks / 4;
@@ -151,7 +151,7 @@ export function generateNarrativeText(proposal) {
   const hostNightlyRate = nightsPerWeek > 0 ? host4WeekCompensation / (4 * nightsPerWeek) : 0;
 
   // Get rental type to determine how to display compensation
-  const rentalType = (proposal?.['rental type'] || proposal?.rental_type || 'nightly').toLowerCase();
+  const rentalType = (proposal?.rental_type || proposal?.rental_type || 'nightly').toLowerCase();
   const isMonthly = rentalType === 'monthly';
   const isWeekly = rentalType === 'weekly';
 
@@ -211,7 +211,7 @@ export function generateNarrativeText(proposal) {
     scheduleText = `The schedule is every day of each week. That's ${nightsPerWeek} nights per week.`;
   } else {
     const weekendSuffix = weekendsFree ? ', with weekends free' : '';
-    scheduleText = `The schedule is ${dayRangeText} each week — checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
+    scheduleText = `The schedule is ${dayRangeText} each week â€” checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
   }
   const schedule = { text: scheduleText, dayRangeText, nightsPerWeek };
 
@@ -257,7 +257,7 @@ export function generateNarrativeText(proposal) {
     guestContextText += ` is a ${bio.toLowerCase()}`;
   }
   if (credentialParts.length > 0) {
-    guestContextText += ` — ${credentialParts.join(', ')}`;
+    guestContextText += ` â€” ${credentialParts.join(', ')}`;
   }
   guestContextText += '.';
 

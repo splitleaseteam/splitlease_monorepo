@@ -21,9 +21,9 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('complete pricing flow - listing to total', () => {
     it('should calculate full flow: listing → nightly rate → guest price → total', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
-        'cleaning_fee': 50,
-        'damage_deposit': 500
+        'nightly_rate_for_4_night_stay': 100,
+        'cleaning_fee_amount': 50,
+        'damage_deposit_amount': 500
       };
 
       // Step 1: Get nightly rate
@@ -63,7 +63,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate flow with guest-facing pricing', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       // Get host rate
@@ -89,7 +89,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate flow with full-time discount', () => {
       const listing = {
-        'nightly_rate_7_nights': 100
+        'nightly_rate_for_7_night_stay': 100
       };
 
       // Get host rate for 7 nights
@@ -121,8 +121,8 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('error propagation through calculator chains', () => {
     it('should propagate error from missing nightly rate field', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
-        // Missing nightly_rate_3_nights
+        'nightly_rate_for_4_night_stay': 100
+        // Missing nightly_rate_for_3_night_stay
       };
 
       expect(() => {
@@ -137,7 +137,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should propagate error from invalid frequency', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       expect(() => {
@@ -172,9 +172,9 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('legacy data integration scenarios', () => {
     it('should handle listing with string numeric rates', () => {
       const listing = {
-        'nightly_rate_4_nights': '100',
-        'cleaning_fee': '50',
-        'damage_deposit': '500'
+        'nightly_rate_for_4_night_stay': '100',
+        'cleaning_fee_amount': '50',
+        'damage_deposit_amount': '500'
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -191,9 +191,9 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should handle listing with null optional fees', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
-        'cleaning_fee': null,
-        'damage_deposit': null
+        'nightly_rate_for_4_night_stay': 100,
+        'cleaning_fee_amount': null,
+        'damage_deposit_amount': null
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -209,7 +209,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should handle listing with missing optional fee fields', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
         // No cleaning_fee or damage_deposit fields
       };
 
@@ -225,7 +225,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should reject listing with invalid string rates', () => {
       const listing = {
-        'nightly_rate_4_nights': 'invalid'
+        'nightly_rate_for_4_night_stay': 'invalid'
       };
 
       expect(() => getNightlyRateByFrequency({
@@ -241,8 +241,8 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('multi-night pricing scenarios', () => {
     it('should calculate 2-night weekend pricing', () => {
       const listing = {
-        'nightly_rate_2_nights': 150,
-        'cleaning_fee': 40
+        'nightly_rate_for_2_night_stay': 150,
+        'cleaning_fee_amount': 40
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -259,8 +259,8 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 3-night midweek pricing', () => {
       const listing = {
-        'nightly_rate_3_nights': 120,
-        'cleaning_fee': 45
+        'nightly_rate_for_3_night_stay': 120,
+        'cleaning_fee_amount': 45
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -276,7 +276,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 5-night pricing', () => {
       const listing = {
-        'nightly_rate_5_nights': 90
+        'nightly_rate_for_5_night_stay': 90
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -292,7 +292,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 6-night pricing', () => {
       const listing = {
-        'nightly_rate_6_nights': 85
+        'nightly_rate_for_6_night_stay': 85
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -308,7 +308,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 7-night full-time pricing', () => {
       const listing = {
-        'nightly_rate_7_nights': 75
+        'nightly_rate_for_7_night_stay': 75
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -329,14 +329,14 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('price override integration', () => {
     it('should use price override instead of tiered rates', () => {
       const listing = {
-        'nightly_rate_2_nights': 150,
-        'nightly_rate_3_nights': 140,
-        'nightly_rate_4_nights': 130,
-        'nightly_rate_5_nights': 120,
-        'nightly_rate_6_nights': 110,
-        'nightly_rate_7_nights': 100,
+        'nightly_rate_for_2_night_stay': 150,
+        'nightly_rate_for_3_night_stay': 140,
+        'nightly_rate_for_4_night_stay': 130,
+        'nightly_rate_for_5_night_stay': 120,
+        'nightly_rate_for_6_night_stay': 110,
+        'nightly_rate_for_7_night_stay': 100,
         'price_override': 200,
-        'cleaning_fee': 50
+        'cleaning_fee_amount': 50
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -354,8 +354,8 @@ describe('Pricing Calculator Integration Tests', () => {
     it('should handle price override with null fees', () => {
       const listing = {
         'price_override': 175,
-        'cleaning_fee': null,
-        'damage_deposit': null
+        'cleaning_fee_amount': null,
+        'damage_deposit_amount': null
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -394,7 +394,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should treat zero price override as falsy and use tiered rate', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
+        'nightly_rate_for_4_night_stay': 100,
         'price_override': 0
       };
 
@@ -414,7 +414,7 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('variable duration stay calculations', () => {
     it('should calculate 1-month stay (4 weeks)', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -428,7 +428,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 3-month stay (13 weeks)', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -442,7 +442,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 6-month stay (26 weeks)', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -456,7 +456,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate 12-month stay (52 weeks)', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -470,7 +470,7 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate custom duration (17 weeks)', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -489,8 +489,8 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('fee impact on total pricing', () => {
     it('should calculate high cleaning fee impact', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
-        'cleaning_fee': 200
+        'nightly_rate_for_4_night_stay': 100,
+        'cleaning_fee_amount': 200
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -506,8 +506,8 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate high damage deposit impact', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
-        'damage_deposit': 2000
+        'nightly_rate_for_4_night_stay': 100,
+        'damage_deposit_amount': 2000
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -523,9 +523,9 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate both fees impact', () => {
       const listing = {
-        'nightly_rate_4_nights': 100,
-        'cleaning_fee': 150,
-        'damage_deposit': 1500
+        'nightly_rate_for_4_night_stay': 100,
+        'cleaning_fee_amount': 150,
+        'damage_deposit_amount': 1500
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -547,7 +547,7 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('cross-calculator consistency checks', () => {
     it('should maintain consistency between individual and breakdown calculations', () => {
       const listing = {
-        'nightly_rate_4_nights': 100
+        'nightly_rate_for_4_night_stay': 100
       };
 
       // Individual calculations
@@ -569,9 +569,9 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should handle same listing with different night counts correctly', () => {
       const listing = {
-        'nightly_rate_2_nights': 150,
-        'nightly_rate_4_nights': 100,
-        'nightly_rate_7_nights': 75
+        'nightly_rate_for_2_night_stay': 150,
+        'nightly_rate_for_4_night_stay': 100,
+        'nightly_rate_for_7_night_stay': 75
       };
 
       const twoNightRate = getNightlyRateByFrequency({ listing, nightsSelected: 2 });
@@ -594,9 +594,9 @@ describe('Pricing Calculator Integration Tests', () => {
   describe('real-world NYC pricing scenarios', () => {
     it('should calculate budget studio in outer borough', () => {
       const listing = {
-        'nightly_rate_4_nights': 60,
-        'cleaning_fee': 40,
-        'damage_deposit': 300
+        'nightly_rate_for_4_night_stay': 60,
+        'cleaning_fee_amount': 40,
+        'damage_deposit_amount': 300
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -614,9 +614,9 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate mid-range 1-bedroom in Manhattan', () => {
       const listing = {
-        'nightly_rate_4_nights': 175,
-        'cleaning_fee': 100,
-        'damage_deposit': 750
+        'nightly_rate_for_4_night_stay': 175,
+        'cleaning_fee_amount': 100,
+        'damage_deposit_amount': 750
       };
 
       const breakdown = calculatePricingBreakdown({
@@ -634,9 +634,9 @@ describe('Pricing Calculator Integration Tests', () => {
 
     it('should calculate luxury 2-bedroom in prime Manhattan', () => {
       const listing = {
-        'nightly_rate_7_nights': 350,
-        'cleaning_fee': 200,
-        'damage_deposit': 2000
+        'nightly_rate_for_7_night_stay': 350,
+        'cleaning_fee_amount': 200,
+        'damage_deposit_amount': 2000
       };
 
       const breakdown = calculatePricingBreakdown({

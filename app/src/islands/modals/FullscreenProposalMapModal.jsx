@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FullscreenProposalMapModal Component - v2.0 PROTOCOL REDESIGN
  *
  * A fullscreen map modal that displays all user proposals with price pin markers.
@@ -42,10 +42,10 @@ function getProposalCoordinates(proposal) {
   if (!listing) return null;
 
   // Try 'Location - slightly different address' first (privacy-adjusted)
-  let locationData = listing['Location - slightly different address'];
+  let locationData = listing.map_pin_offset_address_json;
   if (!locationData) {
     // Fallback to main address
-    locationData = listing['Location - Address'];
+    locationData = listing.address_with_lat_lng_json;
   }
 
   if (!locationData) return null;
@@ -74,10 +74,10 @@ function getProposalCoordinates(proposal) {
  * Uses counteroffer price if applicable, otherwise original proposal price
  */
 function getProposalPrice(proposal) {
-  const isCounteroffer = proposal['counter offer happened'];
+  const isCounteroffer = proposal.has_host_counter_offer || proposal['counter offer happened'];
   return isCounteroffer
     ? proposal['hc nightly price']
-    : proposal['proposal nightly price'] || 0;
+    : proposal.calculated_nightly_price || proposal['proposal nightly price'] || 0;
 }
 
 /**
@@ -85,7 +85,7 @@ function getProposalPrice(proposal) {
  */
 function filterActiveProposals(proposals) {
   return proposals.filter(proposal => {
-    const status = proposal.Status;
+    const status = proposal.proposal_workflow_status || proposal.Status;
     // Filter out terminal statuses (cancelled, rejected, expired)
     return !isTerminalStatus(status);
   });
@@ -103,11 +103,11 @@ function transformProposalsForMap(proposals, currentProposalId) {
       }
 
       return {
-        id: proposal._id,
+        id: proposal.id || proposal._id,
         coordinates,
         price: getProposalPrice(proposal),
         listingName: proposal.listing?.Name || 'Listing',
-        isHighlighted: proposal._id === currentProposalId
+        isHighlighted: (proposal.id || proposal._id) === currentProposalId
       };
     })
     .filter(Boolean);
@@ -156,7 +156,7 @@ export default function FullscreenProposalMapModal({
    */
   const handlePinClick = useCallback((proposalId) => {
     // Find the proposal name for feedback
-    const proposal = activeProposals.find(p => p._id === proposalId);
+    const proposal = activeProposals.find(p => (p.id || p._id) === proposalId);
     const listingName = proposal?.listing?.Name || 'Proposal';
 
     if (onProposalSelect) {
@@ -167,7 +167,7 @@ export default function FullscreenProposalMapModal({
     // Show brief toast notification using protocol colors
     const toast = document.createElement('div');
     toast.className = 'proposal-selected-toast';
-    toast.innerHTML = `<span>✓</span> Viewing: ${listingName}`;
+    toast.innerHTML = `<span>âœ“</span> Viewing: ${listingName}`;
     toast.style.cssText = `
       position: fixed;
       bottom: var(--protocol-space-lg, 24px);
@@ -267,17 +267,17 @@ export default function FullscreenProposalMapModal({
     if (!isOpen) return;
 
     const initMap = () => {
-      console.log('🗺️ FullscreenProposalMapModal: Initializing map...');
+      console.log('ðŸ—ºï¸ FullscreenProposalMapModal: Initializing map...');
 
       if (!mapRef.current) {
-        console.warn('⚠️ FullscreenProposalMapModal: mapRef not available');
+        console.warn('âš ï¸ FullscreenProposalMapModal: mapRef not available');
         setIsLoading(false);
         return;
       }
 
       // Don't recreate map if it already exists
       if (googleMapRef.current) {
-        console.log('✅ FullscreenProposalMapModal: Map already exists, skipping init');
+        console.log('âœ… FullscreenProposalMapModal: Map already exists, skipping init');
         setIsLoading(false);
         return;
       }
@@ -308,16 +308,16 @@ export default function FullscreenProposalMapModal({
       googleMapRef.current = map;
       setMapLoaded(true);
       setIsLoading(false);
-      console.log('✅ FullscreenProposalMapModal: Map initialized successfully');
+      console.log('âœ… FullscreenProposalMapModal: Map initialized successfully');
     };
 
     // Check that both google.maps exists AND ControlPosition is available (indicates full load)
     // This is the same pattern used in GoogleMap.jsx
     if (window.google && window.google.maps && window.google.maps.ControlPosition) {
-      console.log('✅ FullscreenProposalMapModal: Google Maps API already loaded');
+      console.log('âœ… FullscreenProposalMapModal: Google Maps API already loaded');
       initMap();
     } else {
-      console.log('⏳ FullscreenProposalMapModal: Waiting for Google Maps API to load...');
+      console.log('â³ FullscreenProposalMapModal: Waiting for Google Maps API to load...');
       setIsLoading(true);
       window.addEventListener('google-maps-loaded', initMap);
       return () => window.removeEventListener('google-maps-loaded', initMap);
@@ -417,7 +417,7 @@ export default function FullscreenProposalMapModal({
 
   // Get dropdown options for proposal selector
   const proposalOptions = activeProposals.map(p => ({
-    id: p._id,
+    id: p.id || p._id,
     label: p.listing?.Name || 'Listing'
   }));
 

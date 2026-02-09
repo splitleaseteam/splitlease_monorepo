@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ReviewSection - Review and confirm proposal details
  */
 
@@ -94,7 +94,7 @@ export default function ReviewSection({ data, listing, onEditUserDetails, onEdit
 
       {/* Alternating Schedule Notice */}
       {(() => {
-        const weeksOffered = listing?.['Weeks offered'] || listing?.weeks_offered;
+        const weeksOffered = listing?.weeks_offered_schedule_text || listing?.weeks_offered;
         const scheduleInfo = getWeeksOfferedDescription(weeksOffered);
         if (scheduleInfo) {
           const actualWeeks = Math.ceil(scheduleInfo.actualWeeksPer4 * (data.reservationSpan / 4));
@@ -108,7 +108,7 @@ export default function ReviewSection({ data, listing, onEditUserDetails, onEdit
               marginBottom: '12px'
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ fontSize: '18px' }}>📅</span>
+                <span style={{ fontSize: '18px' }}>ðŸ“…</span>
                 <div>
                   <div style={{ fontWeight: '600', color: '#856404', fontSize: '14px' }}>
                     Alternating Schedule: {scheduleInfo.label}
@@ -140,7 +140,7 @@ export default function ReviewSection({ data, listing, onEditUserDetails, onEdit
 
         {/* Show actual weeks breakdown for alternating schedules */}
         {(() => {
-          const weeksOffered = listing?.['Weeks offered'] || listing?.weeks_offered;
+          const weeksOffered = listing?.weeks_offered_schedule_text || listing?.weeks_offered;
           const scheduleInfo = getWeeksOfferedDescription(weeksOffered);
           if (scheduleInfo) {
             const actualWeeks = Math.ceil(scheduleInfo.actualWeeksPer4 * (data.reservationSpan / 4));

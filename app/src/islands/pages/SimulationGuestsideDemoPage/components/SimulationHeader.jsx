@@ -8,7 +8,7 @@ import { User, Calendar } from 'lucide-react';
 
 export function SimulationHeader({ currentUser, currentDateTime }) {
   const firstName = currentUser?.firstName ||
-    currentUser?.['Name - First'] ||
+    currentUser?.first_name ||
     currentUser?.email?.split('@')[0] ||
     'Guest';
 

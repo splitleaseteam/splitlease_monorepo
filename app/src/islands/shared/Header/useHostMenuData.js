@@ -270,17 +270,17 @@ export function useHostMenuData(userId, isAuthenticated) {
 
         // Count proposals received on user's listings
         supabase
-          .from('proposal')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Host User', userId)
-          .or('"Deleted".is.null,"Deleted".eq.false')
-          .neq('Status', 'Proposal Cancelled by Guest'),
+          .from('booking_proposal')
+          .select('id', { count: 'exact', head: true })
+          .eq('host_user_id', userId)
+          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('proposal_workflow_status', 'Proposal Cancelled by Guest'),
 
         // Count leases where user is host
         supabase
-          .from('bookings_leases')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Created By', userId)
+          .from('booking_lease')
+          .select('id', { count: 'exact', head: true })
+          .eq('created_by_user_id', userId)
       ]);
 
       const listingsCount = listingsResult.data?.length || 0;

@@ -110,9 +110,9 @@ export function useZScheduleTestPageLogic() {
 
       const { data, error } = await supabase
         .from('listing')
-        .select('_id, Name, "rental type", "Weeks offered"')
-        .eq('Deleted', false)
-        .order('Name', { ascending: true })
+        .select('id, listing_title, rental_type, weeks_offered_schedule_text')
+        .eq('is_deleted', false)
+        .order('listing_title', { ascending: true })
         .limit(500);
 
       if (error) throw error;
@@ -145,32 +145,31 @@ export function useZScheduleTestPageLogic() {
       const { data, error } = await supabase
         .from('listing')
         .select(`
-          _id,
-          Name,
-          "rental type",
-          "Weeks offered",
-          "nightly_rate_2_nights",
-          "nightly_rate_3_nights",
-          "nightly_rate_4_nights",
-          "nightly_rate_5_nights",
-          "weekly_host_rate",
-          "monthly_host_rate",
-          "damage_deposit",
-          "cleaning_fee",
-          "unit_markup",
-          "Nights_Available",
-          "Nights Available (numbers)",
-          "Days Available (List of Days)",
-          "Minimum Nights",
-          "Maximum Nights",
-          " First Available",
+          id,
+          listing_title,
+          rental_type,
+          weeks_offered_schedule_text,
+          nightly_rate_for_2_night_stay,
+          nightly_rate_for_3_night_stay,
+          nightly_rate_for_4_night_stay,
+          nightly_rate_for_5_night_stay,
+          weekly_rate_paid_to_host,
+          monthly_rate_paid_to_host,
+          damage_deposit_amount,
+          cleaning_fee_amount,
+          unit_markup_percentage,
+          available_nights_as_day_numbers_json,
+          available_days_as_day_numbers_json,
+          minimum_nights_per_stay,
+          maximum_nights_per_stay,
+          first_available_date,
           "Last Available",
-          "Dates - Blocked",
-          Active,
-          Complete,
-          Approved
+          blocked_specific_dates_json,
+          is_active,
+          is_listing_profile_complete,
+          is_approved
         `)
-        .eq('_id', listingId)
+        .eq('id', listingId)
         .single();
 
       if (error) throw error;
@@ -290,22 +289,22 @@ function buildScheduleListing(listing) {
   }
 
   return {
-    id: listing._id,
-    name: listing.Name || 'Untitled',
-    rentalType: listing['rental type'] || 'Nightly',
-    weeksOffered: listing['Weeks offered'] || 'Every week',
-    unitMarkup: listing['unit_markup'] || 0,
-    cleaningFee: listing['cleaning_fee'] || 0,
-    damageDeposit: listing['damage_deposit'] || 0,
-    weeklyHostRate: listing['weekly_host_rate'] || 0,
-    monthlyHostRate: listing['monthly_host_rate'] || 0,
-    rate2Night: listing['nightly_rate_2_nights'] || 0,
-    rate3Night: listing['nightly_rate_3_nights'] || 0,
-    rate4Night: listing['nightly_rate_4_nights'] || 0,
-    rate5Night: listing['nightly_rate_5_nights'] || 0,
-    minimumNights: listing['Minimum Nights'] || 0,
-    maximumNights: listing['Maximum Nights'] || 7,
-    nightsAvailable: listing['Nights_Available'] || listing['Nights Available (numbers)'] || [],
-    daysAvailable: convertDayNamesToNumbers(listing['Days Available (List of Days)'])
+    id: listing.id,
+    name: listing.listing_title || 'Untitled',
+    rentalType: listing.rental_type || 'Nightly',
+    weeksOffered: listing.weeks_offered_schedule_text || 'Every week',
+    unitMarkup: listing.unit_markup_percentage || 0,
+    cleaningFee: listing.cleaning_fee_amount || 0,
+    damageDeposit: listing.damage_deposit_amount || 0,
+    weeklyHostRate: listing.weekly_rate_paid_to_host || 0,
+    monthlyHostRate: listing.monthly_rate_paid_to_host || 0,
+    rate2Night: listing.nightly_rate_for_2_night_stay || 0,
+    rate3Night: listing.nightly_rate_for_3_night_stay || 0,
+    rate4Night: listing.nightly_rate_for_4_night_stay || 0,
+    rate5Night: listing.nightly_rate_for_5_night_stay || 0,
+    minimumNights: listing.minimum_nights_per_stay || 0,
+    maximumNights: listing.maximum_nights_per_stay || 7,
+    nightsAvailable: listing.available_nights_as_day_numbers_json || [],
+    daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json)
   };
 }

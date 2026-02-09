@@ -15,7 +15,7 @@ export function computeProposalButtonStates({ proposal, virtualMeeting, guest, l
     };
   }
 
-  const rawStatus = proposal.Status || proposal.status;
+  const rawStatus = proposal.proposal_workflow_status || proposal.status;
   const status = typeof rawStatus === 'string' ? rawStatus.trim() : rawStatus;
   const config = getStatusConfig(status);
   const vm = virtualMeeting;

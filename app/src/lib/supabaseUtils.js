@@ -30,46 +30,8 @@ export { parseJsonArrayFieldOptional as parseJsonArray };
  * @returns {Promise<Object>} Map of photo ID to photo URL
  */
 export async function fetchPhotoUrls(photoIds) {
-  logger.debug('fetchPhotoUrls called', { count: photoIds?.length || 0 });
-
-  if (!photoIds || photoIds.length === 0) {
-    return {};
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('listing_photo')
-      .select('_id, Photo')
-      .in('_id', photoIds);
-
-    if (error) {
-      logger.error('Error fetching photos:', error);
-      return {};
-    }
-
-    if (!data || data.length === 0) {
-      return {};
-    }
-
-    // Create a map of photo ID to URL
-    const photoMap = {};
-    data.forEach(photo => {
-      if (photo.Photo) {
-        // Add https: protocol if URL starts with //
-        let photoUrl = photo.Photo;
-        if (photoUrl.startsWith('//')) {
-          photoUrl = 'https:' + photoUrl;
-        }
-        photoMap[photo._id] = photoUrl;
-      }
-    });
-
-    logger.debug('Fetched photo URLs', { count: Object.keys(photoMap).length });
-    return photoMap;
-  } catch (error) {
-    logger.error('Error in fetchPhotoUrls:', error);
-    return {};
-  }
+  console.warn('fetchPhotoUrls: listing_photo table was removed. Returning empty object.');
+  return {};
 }
 
 /**
@@ -86,28 +48,28 @@ export async function fetchHostData(hostIds) {
   const hostMap = {};
 
   try {
-    // hostIds are user._id values (Host User column contains user._id directly)
+    // hostIds are user.id values (Host User column contains user.id directly)
     const { data: userData, error: userError } = await supabase
       .from('user')
-      .select('_id, "Name - Full", "Profile Photo"')
-      .in('_id', hostIds);
+      .select('id, first_name, last_name, profile_photo_url')
+      .in('id', hostIds);
 
     if (userError) {
-      logger.error('Error fetching user data by _id:', userError);
+      logger.error('Error fetching user data by id:', userError);
     }
 
-    // Process users found by _id
+    // Process users found by id
     if (userData && userData.length > 0) {
       userData.forEach(user => {
-        let profilePhoto = user['Profile Photo'];
+        let profilePhoto = user.profile_photo_url;
         if (profilePhoto && profilePhoto.startsWith('//')) {
           profilePhoto = 'https:' + profilePhoto;
         }
-        hostMap[user._id] = {
-          name: user['Name - Full'] || null,
+        hostMap[user.id] = {
+          name: [user.first_name, user.last_name].filter(Boolean).join(' ') || null,
           image: profilePhoto || null,
           verified: false,
-          userId: user._id
+          userId: user.id
         };
       });
     }
@@ -217,8 +179,8 @@ export function parseAmenities(dbListing) {
   const amenities = [];
   const foundAmenities = new Set(); // Track which amenities we've already added
 
-  // Check Features field (if it exists as a string or array)
-  const features = dbListing['Features'];
+  // Check features field (if it exists as a string or array)
+  const features = dbListing['features'];
   if (features) {
     const featureText = typeof features === 'string' ? features.toLowerCase() : '';
 
@@ -230,8 +192,8 @@ export function parseAmenities(dbListing) {
     }
   }
 
-  // Check Kitchen Type field - if it's "Full Kitchen", add kitchen amenity
-  const kitchenType = dbListing['Kitchen Type'];
+  // Check kitchen_type field - if it's "Full Kitchen", add kitchen amenity
+  const kitchenType = dbListing.kitchen_type;
   if (kitchenType && kitchenType.toLowerCase().includes('kitchen') && !foundAmenities.has('Kitchen')) {
     amenities.push(amenitiesMap['kitchen']);
     foundAmenities.add('Kitchen');

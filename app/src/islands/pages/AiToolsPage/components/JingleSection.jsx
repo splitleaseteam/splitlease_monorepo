@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Jingle Section Component
  * AI Tools Page - Jingle Creation
  *
@@ -148,7 +148,7 @@ export default function JingleSection({
                       {jingle['Melody Preferences'] || 'Custom'}
                     </span>
                     <span className="item-date">
-                      {new Date(jingle['Created Date']).toLocaleDateString()}
+                      {new Date(jingle.bubble_created_at).toLocaleDateString()}
                     </span>
                   </div>
 

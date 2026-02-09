@@ -57,7 +57,7 @@ export default function PriceEditModal({
         </div>
 
         <div className="price-edit-modal__listing-info">
-          <span className="price-edit-modal__listing-name">{listing.name}</span>
+          <span className="price-edit-modal__listing-name">{listing.listing_title}</span>
           <span className="price-edit-modal__listing-location">
             {listing.borough}{listing.neighborhood ? `, ${listing.neighborhood}` : ''}
           </span>

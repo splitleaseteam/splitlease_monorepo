@@ -1,15 +1,15 @@
-/**
+﻿/**
  * Build Document Payloads
  *
  * Constructs API payloads for all 4 lease document types using actual
  * Supabase column names from the database schema.
  *
  * Database Tables Used:
- * - bookings_leases: `Agreement Number`, `Guest`, `Host`, `Listing`, `Proposal`
+ * - booking_lease: `Agreement Number`, `Guest`, `Host`, `Listing`, `Proposal`
  * - proposal: `hc move in date`, `Move-out`, `4 week rent`, `cleaning fee`, `damage deposit`
  * - paymentrecords: `Payment #`, `Scheduled Date`, `Rent`, `Total Paid by Guest`, `Total Paid to Host`
  * - listing: `Name`, `Description`, `Location - Address`, `Features - Photos`
- * - user: `Name - First`, `Name - Last`, `email`, `Phone Number (as text)`
+ * - user: `first_name`, `last_name`, `email`, `phone_number`
  *
  * @module logic/processors/documents/buildDocumentPayload
  */
@@ -28,7 +28,7 @@ import {
  * Build Host Payout Schedule payload
  *
  * @param {object} params - Build parameters
- * @param {object} params.lease - Raw lease record from bookings_leases
+ * @param {object} params.lease - Raw lease record from booking_lease
  * @param {object} params.host - Raw host user record
  * @param {object} params.listing - Raw listing record
  * @param {Array} params.hostPayments - Array of host payment records
@@ -41,12 +41,12 @@ export function buildHostPayoutPayload({ lease, host, listing, hostPayments }) {
   const payload = {
     'Agreement Number': agreementNumber,
     'Host Name': formatFullName(
-      host?.['Name - First'],
-      host?.['Name - Last'],
-      host?.['Name - Full']
+      host?.first_name,
+      host?.last_name,
+      host?.first_name && host?.last_name ? `${host.first_name} ${host.last_name}` : null
     ),
-    'Host Email': host?.email || host?.['email as text'] || '',
-    'Host Phone': formatPhone(host?.['Phone Number (as text)'] || ''),
+    'Host Email': host?.email || '',
+    'Host Phone': formatPhone(host?.phone_number || ''),
     'Address': extractAddress(listing),
     'Payout Number': `${agreementNumber}-PO`,
     'Maintenance Fee': hostPayments?.[0]?.['Maintenance Fee']
@@ -95,11 +95,11 @@ export function buildSupplementalPayload({ lease, proposal, host, listing, listi
     'Check in Date': formatDateForDocument(moveInDate),
     'Check Out Date': formatDateForDocument(moveOutDate),
     'Number of weeks': String(numberOfWeeks || 0),
-    'Guests Allowed': String(listing?.['Features - Qty Guests'] || 1),
+    'Guests Allowed': String(listing?.max_guest_count || 1),
     'Host Name': formatFullName(
-      host?.['Name - First'],
-      host?.['Name - Last'],
-      host?.['Name - Full']
+      host?.first_name,
+      host?.last_name,
+      host?.first_name && host?.last_name ? `${host.first_name} ${host.last_name}` : null
     ),
     'Listing Title': listing?.Name || listing?.title || '',
     'Listing Description': listing?.Description || '',
@@ -155,7 +155,7 @@ export function buildPeriodicTenancyPayload({
   // Get house rules from proposal or listing
   const houseRules = proposal?.['hc house rules'] ||
     proposal?.['House Rules'] ||
-    listing?.['Features - House Rules'] ||
+    listing?.house_rule_reference_ids_json ||
     [];
 
   const payload = {
@@ -165,16 +165,16 @@ export function buildPeriodicTenancyPayload({
     'Check In Day': getDayName(moveInDate),
     'Check Out Day': getDayName(moveOutDate),
     'Number of weeks': String(numberOfWeeks || 0),
-    'Guests Allowed': String(listing?.['Features - Qty Guests'] || 1),
+    'Guests Allowed': String(listing?.max_guest_count || 1),
     'Host name': formatFullName(
-      host?.['Name - First'],
-      host?.['Name - Last'],
-      host?.['Name - Full']
+      host?.first_name,
+      host?.last_name,
+      host?.first_name && host?.last_name ? `${host.first_name} ${host.last_name}` : null
     ),
     'Guest name': formatFullName(
-      guest?.['Name - First'],
-      guest?.['Name - Last'],
-      guest?.['Name - Full']
+      guest?.first_name,
+      guest?.last_name,
+      guest?.first_name && guest?.last_name ? `${guest.first_name} ${guest.last_name}` : null
     ),
     'Supplemental Number': `${agreementNumber}-SA`,
     'Authorization Card Number': `${agreementNumber}-CC`,
@@ -267,14 +267,14 @@ export function buildCreditCardAuthPayload({
   return {
     'Agreement Number': agreementNumber,
     'Host Name': formatFullName(
-      host?.['Name - First'],
-      host?.['Name - Last'],
-      host?.['Name - Full']
+      host?.first_name,
+      host?.last_name,
+      host?.first_name && host?.last_name ? `${host.first_name} ${host.last_name}` : null
     ),
     'Guest Name': formatFullName(
-      guest?.['Name - First'],
-      guest?.['Name - Last'],
-      guest?.['Name - Full']
+      guest?.first_name,
+      guest?.last_name,
+      guest?.first_name && guest?.last_name ? `${guest.first_name} ${guest.last_name}` : null
     ),
     'Four Week Rent': formatCurrency(fourWeekRent),
     'Maintenance Fee': formatCurrency(maintenanceFee),
@@ -363,7 +363,7 @@ function extractAddress(listing) {
   if (!listing) return '';
 
   // Try JSONB Location - Address field first
-  const locationAddress = listing['Location - Address'];
+  const locationAddress = listing.address_with_lat_lng_json;
   if (locationAddress) {
     if (typeof locationAddress === 'string') {
       return locationAddress;
@@ -382,10 +382,10 @@ function extractAddress(listing) {
 
   // Try individual location fields
   const parts = [
-    listing['Location - City'],
-    listing['Location - Borough'],
-    listing['Location - State'],
-    listing['Location - Zip Code']
+    listing.city,
+    listing.borough,
+    listing.state,
+    listing.zip_code
   ].filter(Boolean);
 
   if (parts.length > 0) {
@@ -393,7 +393,7 @@ function extractAddress(listing) {
   }
 
   // Fallback to hood
-  return listing['Location - Hood'] || '';
+  return listing.primary_neighborhood_reference_id || '';
 }
 
 /**
@@ -410,7 +410,7 @@ function buildTypeOfSpace(listing) {
 
   // Type of Space Label
   // Database may store: string label, JSONB object with label, or Bubble ID reference
-  const spaceType = listing['Features - Type of Space'];
+  const spaceType = listing.space_type;
   if (spaceType) {
     let label = null;
 
@@ -431,13 +431,13 @@ function buildTypeOfSpace(listing) {
   }
 
   // SQFT Area
-  const sqft = listing['Features - SQFT Area'] || listing['Features - SQFT of Room'];
+  const sqft = listing.square_feet || listing['Features - SQFT of Room'];
   if (sqft) {
     parts.push(`(${Number(sqft).toLocaleString()} SQFT) -`);
   }
 
   // Qty Guests
-  const guests = listing['Features - Qty Guests'];
+  const guests = listing.max_guest_count;
   if (guests) {
     parts.push(`${guests} guest(s) max`);
   }
@@ -458,7 +458,7 @@ function buildSpaceDetails(listing) {
   const parts = [];
 
   // Bedrooms
-  const bedrooms = listing['Features - Qty Bedrooms'];
+  const bedrooms = listing.bedroom_count;
   if (bedrooms === 0) {
     parts.push('Studio');
   } else if (bedrooms && bedrooms > 0) {
@@ -466,14 +466,14 @@ function buildSpaceDetails(listing) {
   }
 
   // Beds
-  const beds = listing['Features - Qty Beds'];
+  const beds = listing.bed_count;
   if (beds) {
     const bedText = beds > 1 ? `${beds} bed(s) -` : `${beds} bed -`;
     parts.push(bedText);
   }
 
   // Bathrooms - format without decimal for whole numbers (1 instead of 1.0)
-  const bathrooms = listing['Features - Qty Bathrooms'];
+  const bathrooms = listing.bathroom_count;
   if (bathrooms && bathrooms >= 1) {
     const bathroomNum = Number(bathrooms);
     const bathroomDisplay = Number.isInteger(bathroomNum) ? String(bathroomNum) : bathroomNum.toFixed(1);
@@ -481,7 +481,7 @@ function buildSpaceDetails(listing) {
   }
 
   // Kitchen Type
-  const kitchenType = listing['Kitchen Type'];
+  const kitchenType = listing.kitchen_type;
   if (kitchenType) {
     const display = typeof kitchenType === 'string' ? kitchenType : kitchenType?.Display || kitchenType?.display;
     if (display) {

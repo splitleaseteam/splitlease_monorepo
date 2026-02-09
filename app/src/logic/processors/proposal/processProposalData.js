@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Process raw proposal data from Supabase into a clean, validated proposal object.
  *
  * @intent Transform raw proposal rows from Supabase into consistent, UI-ready format.
@@ -137,8 +137,8 @@ export function processProposalData({ rawProposal, listing = null, guest = null,
     cancellationReason: rawProposal['reason for cancellation'] || null,
 
     // Timestamps
-    createdDate: rawProposal['Created Date'],
-    modifiedDate: rawProposal['Modified Date'],
+    createdDate: rawProposal.bubble_created_at,
+    modifiedDate: rawProposal.bubble_updated_at,
 
     // Enriched data (if provided)
     _listing: listing,

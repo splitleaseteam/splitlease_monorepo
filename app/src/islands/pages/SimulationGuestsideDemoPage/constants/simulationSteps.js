@@ -125,7 +125,7 @@ export const DEFAULT_COUNTEROFFER = {
  */
 export const TEST_DATA_CLEANUP = {
   retentionHours: 72, // 72 hours as specified in requirements
-  cleanupFields: ['proposal', 'bookings_leases', 'virtualmeetingschedulesandlinks']
+  cleanupFields: ['proposal', 'booking_lease', 'virtualmeetingschedulesandlinks']
 };
 
 /**

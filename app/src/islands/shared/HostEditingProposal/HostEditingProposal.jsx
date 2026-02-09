@@ -81,7 +81,7 @@ export function HostEditingProposal({
   // Get guest and listing info - handle both Bubble and Supabase field formats
   const guest = proposal?.guest || proposal?.Guest || proposal?._guest || proposal?.['Created By'] || {}
   const listing = proposal?.listing || proposal?._listing || {}
-  const guestName = guest?.firstName || guest?.['Name - First'] || guest?.['First Name'] || guest?.first_name || 'Guest'
+  const guestName = guest?.first_name || guest?.firstName || guest?.['First Name'] || 'Guest'
   const listingTitle = listing?.title || listing?.Name || 'Listing'
 
   // Form state - holds edited values
@@ -130,47 +130,47 @@ export function HostEditingProposal({
   // Initialize values based on proposal status (for counteroffer values)
   useEffect(() => {
     if (isFirstOpen && proposal) {
-      const status = proposal?.status || proposal?.Status
+      const status = proposal?.proposal_workflow_status || proposal?.status
       const statusInfo = PROPOSAL_STATUSES[status] || { usualOrder: 0 }
       const useCounterOfferValues = statusInfo.usualOrder >= 3
 
       if (useCounterOfferValues) {
-        const hcMoveInDate = proposal?.hcMoveInDate || proposal?.['hc Move-in Date']
+        const hcMoveInDate = proposal?.host_proposed_move_in_date || proposal?.hcMoveInDate
         if (hcMoveInDate) {
           setEditedMoveInDate(new Date(hcMoveInDate))
         }
 
-        const hcReservationSpan = proposal?.hcReservationSpan || proposal?.['hc Reservation Span']
+        const hcReservationSpan = proposal?.host_proposed_reservation_span_weeks || proposal?.hcReservationSpan
         if (hcReservationSpan) {
           setEditedReservationSpan(hcReservationSpan)
         }
 
-        const hcWeeks = proposal?.hcReservationSpanWeeks || proposal?.['hc Reservation Span Weeks']
+        const hcWeeks = proposal?.host_proposed_reservation_span_weeks || proposal?.hcReservationSpanWeeks
         if (hcWeeks) {
           setEditedWeeks(hcWeeks)
         }
 
-        const hcCheckInDay = proposal?.hcCheckInDay || proposal?.['hc Check-in Day']
+        const hcCheckInDay = proposal?.hcCheckInDay
         if (hcCheckInDay) {
           setEditedCheckInDay(hcCheckInDay)
         }
 
-        const hcCheckOutDay = proposal?.hcCheckOutDay || proposal?.['hc Check-out Day']
+        const hcCheckOutDay = proposal?.hcCheckOutDay
         if (hcCheckOutDay) {
           setEditedCheckOutDay(hcCheckOutDay)
         }
 
-        const hcNightsSelected = proposal?.hcNightsSelected || proposal?.['hc Nights Selected']
+        const hcNightsSelected = proposal?.host_proposed_selected_nights_json || proposal?.hcNightsSelected
         if (hcNightsSelected) {
           setEditedNightsSelected(hcNightsSelected)
         }
 
-        const hcDaysSelected = proposal?.hcDaysSelected || proposal?.['hc Days Selected']
+        const hcDaysSelected = proposal?.host_proposed_selected_days_json || proposal?.hcDaysSelected
         if (hcDaysSelected) {
           setEditedDaysSelected(hcDaysSelected)
         }
 
-        const hcHouseRules = proposal?.hcHouseRules || proposal?.['hc House Rules']
+        const hcHouseRules = proposal?.host_proposed_house_rules_json || proposal?.hcHouseRules
         if (hcHouseRules) {
           setEditedHouseRules(hcHouseRules)
         }
@@ -201,14 +201,14 @@ export function HostEditingProposal({
     return dateChanged || weeksChanged || scheduleChanged || rulesChanged
   }, [proposal, listing, availableHouseRules, editedMoveInDate, editedWeeks, editedCheckInDay, editedCheckOutDay, editedHouseRules, houseRulesInitialized])
 
-  // Calculate host compensation using '4 week compensation' as the source of truth
-  // The database "Total Compensation (proposal - host)" field can be incorrect
+  // Calculate host compensation using four_week_host_compensation as the source of truth
+  // The database total_compensation_for_host field can be incorrect
   const originalNightsPerWeek = extractNightsSelected(proposal).length
   const originalWeeksValue = extractReservationSpanWeeks(proposal)
   const originalTotalNights = originalNightsPerWeek * originalWeeksValue
 
-  // Use '4 week compensation' from proposal - this is calculated from the pricing_list
-  const host4WeekCompensation = getProposalValue(proposal, '4 week compensation', 0)
+  // Use four_week_host_compensation from proposal - this is calculated from the pricing_list
+  const host4WeekCompensation = getProposalValue(proposal, 'four_week_host_compensation', 0)
 
   // Derive nightly host rate from 4 week compensation
   const nightlyCompensation = originalNightsPerWeek > 0

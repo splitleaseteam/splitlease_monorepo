@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import HostScheduleSelector from '../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import InformationalText from '../../../shared/InformationalText';
 import { logger } from '../../../../lib/logger';
@@ -266,14 +266,14 @@ export default function PricingEditSection({
     const originalLeaseStyle = listing?.leaseStyle || 'Nightly';
 
     if (selectedRentalType !== originalLeaseStyle) {
-      changes.push(`Lease style: ${originalLeaseStyle} → ${selectedRentalType}`);
+      changes.push(`Lease style: ${originalLeaseStyle} â†’ ${selectedRentalType}`);
     }
 
     if (damageDeposit !== (listing?.damageDeposit || 500)) {
-      changes.push(`Damage deposit: $${listing?.damageDeposit || 500} → $${damageDeposit}`);
+      changes.push(`Damage deposit: $${listing?.damageDeposit || 500} â†’ $${damageDeposit}`);
     }
     if (maintenanceFee !== (listing?.maintenanceFee || 125)) {
-      changes.push(`Maintenance fee: $${listing?.maintenanceFee || 125} → $${maintenanceFee}`);
+      changes.push(`Maintenance fee: $${listing?.maintenanceFee || 125} â†’ $${maintenanceFee}`);
     }
 
     if (selectedRentalType === 'Nightly') {
@@ -323,26 +323,26 @@ export default function PricingEditSection({
       if (selectedRentalType === 'Nightly') {
         const nightMap = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
         const dayIndices = selectedNights.map((n) => nightMap[n]).sort((a, b) => a - b);
-        updates['Days Available (List of Days)'] = JSON.stringify(dayIndices);
+        updates.available_days_as_day_numbers_json = JSON.stringify(dayIndices);
 
-        updates['nightly_rate_2_nights'] = calculateNightlyRate(nightlyPricing[2], 2);
-        updates['nightly_rate_3_nights'] = calculateNightlyRate(nightlyPricing[3], 3);
-        updates['nightly_rate_4_nights'] = calculateNightlyRate(nightlyPricing[4], 4);
-        updates['nightly_rate_5_nights'] = calculateNightlyRate(nightlyPricing[5], 5);
-        updates['nightly_rate_6_nights'] = calculateNightlyRate(nightlyPricing[5], 6);
-        updates['nightly_rate_7_nights'] = calculateNightlyRate(nightlyPricing[5], 7);
+        updates.nightly_rate_for_2_night_stay = calculateNightlyRate(nightlyPricing[2], 2);
+        updates.nightly_rate_for_3_night_stay = calculateNightlyRate(nightlyPricing[3], 3);
+        updates.nightly_rate_for_4_night_stay = calculateNightlyRate(nightlyPricing[4], 4);
+        updates.nightly_rate_for_5_night_stay = calculateNightlyRate(nightlyPricing[5], 5);
+        updates.nightly_rate_for_6_night_stay = calculateNightlyRate(nightlyPricing[5], 6);
+        updates.nightly_rate_for_7_night_stay = calculateNightlyRate(nightlyPricing[5], 7);
       } else if (selectedRentalType === 'Weekly') {
-        updates['Weeks offered'] = weeksOffered;
-        updates['weekly_host_rate'] = weeklyRate;
+        updates.weeks_offered_schedule_text = weeksOffered;
+        updates.weekly_rate_paid_to_host = weeklyRate;
       } else if (selectedRentalType === 'Monthly') {
-        updates['monthly_host_rate'] = monthlyRate;
+        updates.monthly_rate_paid_to_host = monthlyRate;
       }
 
       await onSave(updates);
 
       window.showToast?.({
         title: 'Pricing Updated!',
-        content: changeSummary.length > 0 ? changeSummary.join(' • ') : 'Pricing settings saved',
+        content: changeSummary.length > 0 ? changeSummary.join(' â€¢ ') : 'Pricing settings saved',
         type: 'success'
       });
 

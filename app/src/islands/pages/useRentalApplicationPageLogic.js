@@ -577,7 +577,7 @@ export function useRentalApplicationPageLogic() {
         const { data: userData, error } = await supabase
           .from('user')
           .select('*')
-          .eq('_id', userId)
+          .eq('id', userId)
           .single();
 
         if (error) {
@@ -592,13 +592,13 @@ export function useRentalApplicationPageLogic() {
 
         console.log('[RentalApplication] User data fetched:', userData);
 
-        // Check both email columns - some users have email in 'email', others in 'email as text'
-        const userEmail = userData['email'] || userData['email as text'] || '';
+        // Get user email
+        const userEmail = userData.email || '';
 
-        // Build full name from first + last if full name not available
-        let fullName = userData['Name - Full'] || '';
-        if (!fullName && (userData['Name - First'] || userData['Name - Last'])) {
-          fullName = [userData['Name - First'], userData['Name - Last']]
+        // Build full name from first + last
+        let fullName = '';
+        if (userData.first_name || userData.last_name) {
+          fullName = [userData.first_name, userData.last_name]
             .filter(Boolean)
             .join(' ');
         }
@@ -620,7 +620,7 @@ export function useRentalApplicationPageLogic() {
         const updates = {};
         if (!formData.fullName && fullName) updates.fullName = fullName;
         if (!formData.email && userEmail) updates.email = userEmail;
-        if (!formData.phone && userData['Phone Number (as text)']) updates.phone = userData['Phone Number (as text)'];
+        if (!formData.phone && userData.phone_number) updates.phone = userData.phone_number;
         if (!formData.dob && dob) updates.dob = dob;
 
         if (Object.keys(updates).length > 0) {
@@ -682,8 +682,8 @@ export function useRentalApplicationPageLogic() {
         // Fetch user record to check for existing rental application
         const { data: userData, error: userError } = await supabase
           .from('user')
-          .select('_id, "Rental Application"')
-          .eq('_id', userId)
+          .select('id, "Rental Application"')
+          .eq('id', userId)
           .single();
 
         if (userError || !userData) {

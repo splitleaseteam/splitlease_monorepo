@@ -1,4 +1,4 @@
-/**
+﻿/**
  * End-to-End Integration Tests: Pricing Workflow
  *
  * Tests the complete pricing system from listing to display.
@@ -56,15 +56,15 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
   describe('Complete New Listing Flow', () => {
     const newListing = {
       id: 'new-listing-123',
-      'nightly_rate_1_night': null,
-      'nightly_rate_2_nights': 120,
-      'nightly_rate_3_nights': 115,
-      'nightly_rate_4_nights': 110,
-      'nightly_rate_5_nights': 105,
-      'nightly_rate_6_nights': 100,
-      'nightly_rate_7_nights': 95,
-      'cleaning_fee': 60,
-      'damage_deposit': 250,
+      'nightly_rate_for_1_night_stay': null,
+      'nightly_rate_for_2_night_stay': 120,
+      'nightly_rate_for_3_night_stay': 115,
+      'nightly_rate_for_4_night_stay': 110,
+      'nightly_rate_for_5_night_stay': 105,
+      'nightly_rate_for_6_night_stay': 100,
+      'nightly_rate_for_7_night_stay': 95,
+      'cleaning_fee_amount': 60,
+      'damage_deposit_amount': 250,
       'price_override': null,
       'rental type': 'Nightly'
     };
@@ -143,12 +143,12 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
   describe('Listing Update Flow', () => {
     const existingListing = {
       id: 'existing-listing-1',
-      'nightly_rate_2_nights': 100,
-      'nightly_rate_3_nights': 95,
-      'nightly_rate_4_nights': 90,
-      'nightly_rate_5_nights': 85,
-      'nightly_rate_6_nights': 80,
-      'nightly_rate_7_nights': 75,
+      'nightly_rate_for_2_night_stay': 100,
+      'nightly_rate_for_3_night_stay': 95,
+      'nightly_rate_for_4_night_stay': 90,
+      'nightly_rate_for_5_night_stay': 85,
+      'nightly_rate_for_6_night_stay': 80,
+      'nightly_rate_for_7_night_stay': 75,
       'rental type': 'Nightly'
     };
 
@@ -165,8 +165,8 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
     it('should handle host updating rates', async () => {
       const updatedListing = {
         ...existingListing,
-        'nightly_rate_2_nights': 130, // Increased from 100
-        'nightly_rate_3_nights': 125  // Increased from 95
+        'nightly_rate_for_2_night_stay': 130, // Increased from 100
+        'nightly_rate_for_3_night_stay': 125  // Increased from 95
       };
 
       // Recalculate with updated rates
@@ -205,9 +205,9 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
   describe('Four-Layer Architecture Integration', () => {
     const testListing = {
       id: 'layer-test-1',
-      'nightly_rate_2_nights': 100,
-      'nightly_rate_3_nights': 95,
-      'nightly_rate_4_nights': 90,
+      'nightly_rate_for_2_night_stay': 100,
+      'nightly_rate_for_3_night_stay': 95,
+      'nightly_rate_for_4_night_stay': 90,
       'rental type': 'Nightly'
     };
 
@@ -242,7 +242,7 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
       });
 
       // Verify data flow: listing -> processor -> calculator -> workflow
-      const originalRate = testListing['nightly_rate_2_nights'];
+      const originalRate = testListing.nightly_rate_for_2_night_stay;
       const hostCompensation = result.pricingList.hostCompensation[1];
       const nightlyPrice = result.pricingList.nightlyPrice[1];
 
@@ -257,12 +257,12 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
   describe('Display Data Preparation', () => {
     const displayListing = {
       id: 'display-test-1',
-      'nightly_rate_2_nights': 150,
-      'nightly_rate_3_nights': 140,
-      'nightly_rate_4_nights': 130,
-      'nightly_rate_5_nights': 120,
-      'nightly_rate_6_nights': 110,
-      'nightly_rate_7_nights': 100,
+      'nightly_rate_for_2_night_stay': 150,
+      'nightly_rate_for_3_night_stay': 140,
+      'nightly_rate_for_4_night_stay': 130,
+      'nightly_rate_for_5_night_stay': 120,
+      'nightly_rate_for_6_night_stay': 110,
+      'nightly_rate_for_7_night_stay': 100,
       'rental type': 'Nightly'
     };
 
@@ -324,7 +324,7 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
 
       const validListing = {
         id: 'valid-1',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -347,12 +347,12 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
       const listings = [
         {
           id: 'listing-a',
-          'nightly_rate_2_nights': 100,
+          'nightly_rate_for_2_night_stay': 100,
           'rental type': 'Nightly'
         },
         {
           id: 'listing-b',
-          'nightly_rate_2_nights': 150,
+          'nightly_rate_for_2_night_stay': 150,
           'rental type': 'Nightly'
         }
       ];
@@ -378,9 +378,9 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
     it('should handle admin price parameter update', async () => {
       // Simulating site-wide pricing parameter change
       const allListings = [
-        { id: 'l1', 'nightly_rate_2_nights': 100, 'rental type': 'Nightly' },
-        { id: 'l2', 'nightly_rate_2_nights': 120, 'rental type': 'Nightly' },
-        { id: 'l3', 'nightly_rate_2_nights': 140, 'rental type': 'Nightly' }
+        { id: 'l1', 'nightly_rate_for_2_night_stay': 100, 'rental type': 'Nightly' },
+        { id: 'l2', 'nightly_rate_for_2_night_stay': 120, 'rental type': 'Nightly' },
+        { id: 'l3', 'nightly_rate_for_2_night_stay': 140, 'rental type': 'Nightly' }
       ];
 
       // Force recalculate all listings
@@ -405,8 +405,8 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
       // Guest views listing
       const listing = {
         id: 'bookable-listing',
-        'nightly_rate_2_nights': 100,
-        'nightly_rate_3_nights': 95,
+        'nightly_rate_for_2_night_stay': 100,
+        'nightly_rate_for_3_night_stay': 95,
         'rental_rate_4_nights': 90,
         'rental type': 'Nightly'
       };
@@ -434,7 +434,7 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
     it('should integrate with Edge Function persistence', async () => {
       const listing = {
         id: 'persist-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -470,7 +470,7 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
 
       const listing = {
         id: 'retry-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 
@@ -495,7 +495,7 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
     it('should handle bulk pricing updates efficiently', async () => {
       const listings = Array.from({ length: 50 }, (_, i) => ({
         id: `bulk-${i}`,
-        'nightly_rate_2_nights': 100 + i,
+        'nightly_rate_for_2_night_stay': 100 + i,
         'rental type': 'Nightly'
       }));
 
@@ -519,7 +519,7 @@ describe('End-to-End Pricing Workflow Integration Tests', () => {
     it('should not create unnecessary calculations when skipped', async () => {
       const listing = {
         id: 'skip-test',
-        'nightly_rate_2_nights': 100,
+        'nightly_rate_for_2_night_stay': 100,
         'rental type': 'Nightly'
       };
 

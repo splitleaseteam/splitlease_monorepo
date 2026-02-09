@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
@@ -445,20 +445,20 @@ function FeaturedSpacesSection() {
       const query = supabase
         .from('listing')
         .select(`
-          _id,
-          "Name",
-          "Location - Borough",
-          "Location - Hood",
-          "Location - Address",
-          "Features - Photos",
-          "Features - Qty Bedrooms",
-          "Features - Qty Bathrooms",
-          "Days Available (List of Days)"
+          id,
+          listing_title,
+          borough,
+          primary_neighborhood_reference_id,
+          address_with_lat_lng_json,
+          photos_with_urls_captions_and_sort_order_json,
+          bedroom_count,
+          bathroom_count,
+          available_days_as_day_numbers_json
         `)
-        .eq('"Complete"', true)
-        .or('"Active".eq.true,"Active".is.null')
-        .or('"Location - Address".not.is.null,"Location - slightly different address".not.is.null')
-        .not('"Features - Photos"', 'is', null)
+        .eq('is_listing_profile_complete', true)
+        .or('is_active.eq.true,is_active.is.null')
+        .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
+        .not('photos_with_urls_captions_and_sort_order_json', 'is', null)
         .limit(20);
 
       const { data: listings, error } = await query;
@@ -473,7 +473,7 @@ function FeaturedSpacesSection() {
 
       const legacyPhotoIds = [];
       listings.forEach(listing => {
-        const photos = parseJsonArray(listing['Features - Photos']);
+        const photos = parseJsonArray(listing.photos_with_urls_captions_and_sort_order_json);
         if (photos && photos.length > 0) {
           const firstPhoto = photos[0];
           if (typeof firstPhoto === 'string') {
@@ -488,7 +488,7 @@ function FeaturedSpacesSection() {
 
       // Helper to extract photo URL from a listing
       const extractPhotoUrl = (listing) => {
-        const photos = parseJsonArray(listing['Features - Photos']);
+        const photos = parseJsonArray(listing.photos_with_urls_captions_and_sort_order_json);
         const firstPhoto = photos?.[0];
 
         if (typeof firstPhoto === 'object' && firstPhoto !== null) {
@@ -528,19 +528,19 @@ function FeaturedSpacesSection() {
       ];
 
       const transformedListings = selectedListings.map(({ listing, photoUrl }, index) => {
-        const neighborhoodName = getNeighborhoodName(listing['Location - Hood']);
-        const boroughName = getBoroughName(listing['Location - Borough']);
+        const neighborhoodName = getNeighborhoodName(listing.primary_neighborhood_reference_id);
+        const boroughName = getBoroughName(listing.borough);
         const location = [neighborhoodName, boroughName].filter(Boolean).join(', ') || 'New York, NY';
 
-        const availableDays = parseJsonArray(listing['Days Available (List of Days)']) || [];
+        const availableDays = parseJsonArray(listing.available_days_as_day_numbers_json) || [];
 
         return {
-          id: listing._id,
-          title: listing['Name'] || 'NYC Space',
+          id: listing.id,
+          title: listing.listing_title || 'NYC Space',
           location,
           image: photoUrl || fallbackImages[index % fallbackImages.length],
-          bedrooms: listing['Features - Qty Bedrooms'] || 0,
-          bathrooms: listing['Features - Qty Bathrooms'] || 0,
+          bedrooms: listing.bedroom_count || 0,
+          bathrooms: listing.bathroom_count || 0,
           availableDays,
         };
       });

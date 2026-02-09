@@ -112,7 +112,7 @@ export function useMessagingPageLogic() {
         const { data: listingData, error: listingError } = await supabase
           .from('listing')
           .select('*')
-          .eq('_id', listingId)
+          .eq('id', listingId)
           .single();
 
         if (listingError) {
@@ -120,7 +120,7 @@ export function useMessagingPageLogic() {
           return;
         }
 
-        console.log('[MessagingPage] Listing data fetched:', listingData?.Name);
+        console.log('[MessagingPage] Listing data fetched:', listingData?.listing_title);
 
         // Set up default days (Mon-Fri, weekdays)
         const initialDays = [1, 2, 3, 4, 5].map(dayIndex => createDay(dayIndex, true));
@@ -147,33 +147,33 @@ export function useMessagingPageLogic() {
         const transformedListing = {
           _id: listingData._id,
           id: listingData._id,
-          Name: listingData.Name || 'Unnamed Listing',
-          title: listingData.Name || 'Unnamed Listing',
+          Name: listingData.listing_title || 'Unnamed Listing',
+          title: listingData.listing_title || 'Unnamed Listing',
           'Primary Photo': listingData['Primary Photo'],
           host: null, // Host info not needed for proposal submission
           // Pricing fields
-          'nightly_rate_2_nights': listingData['nightly_rate_2_nights'],
-          'nightly_rate_3_nights': listingData['nightly_rate_3_nights'],
-          'nightly_rate_4_nights': listingData['nightly_rate_4_nights'],
-          'nightly_rate_5_nights': listingData['nightly_rate_5_nights'],
-          'nightly_rate_7_nights': listingData['nightly_rate_7_nights'],
-          'weekly_host_rate': listingData['weekly_host_rate'],
-          'monthly_host_rate': listingData['monthly_host_rate'],
+          'nightly_rate_for_2_night_stay': listingData.nightly_rate_for_2_night_stay,
+          'nightly_rate_for_3_night_stay': listingData.nightly_rate_for_3_night_stay,
+          'nightly_rate_for_4_night_stay': listingData.nightly_rate_for_4_night_stay,
+          'nightly_rate_for_5_night_stay': listingData.nightly_rate_for_5_night_stay,
+          'nightly_rate_for_7_night_stay': listingData.nightly_rate_for_7_night_stay,
+          'weekly_rate_paid_to_host': listingData.weekly_rate_paid_to_host,
+          'monthly_rate_paid_to_host': listingData.monthly_rate_paid_to_host,
           'price_override': listingData['price_override'],
-          'cleaning_fee': listingData['cleaning_fee'],
-          'damage_deposit': listingData['damage_deposit'],
-          'unit_markup': listingData['unit_markup'],
-          'rental type': listingData['rental type'],
-          'Weeks offered': listingData['Weeks offered'],
+          'cleaning_fee_amount': listingData.cleaning_fee_amount,
+          'damage_deposit_amount': listingData.damage_deposit_amount,
+          'unit_markup_percentage': listingData.unit_markup_percentage,
+          'rental type': listingData.rental_type,
+          'Weeks offered': listingData.weeks_offered_schedule_text,
           // Availability fields
-          ' First Available': listingData[' First Available'],
+          ' First Available': listingData.first_available_date,
           'Last Available': listingData['Last Available'],
           '# of nights available': listingData['# of nights available'],
-          'Dates - Blocked': listingData['Dates - Blocked'],
+          'Dates - Blocked': listingData.blocked_specific_dates_json,
           'Nights Available (numbers)': listingData['Nights Available (numbers)'],
-          'Minimum Nights': listingData['Minimum Nights'],
-          'Maximum Nights': listingData['Maximum Nights'],
-          'Days Available (List of Days)': listingData['Days Available (List of Days)']
+          'Minimum Nights': listingData.minimum_nights_per_stay,
+          'Maximum Nights': listingData.maximum_nights_per_stay,
+          'Days Available (List of Days)': listingData.available_days_as_day_numbers_json
         };
 
         // Set proposal modal data
@@ -372,7 +372,7 @@ export function useMessagingPageLogic() {
 
     const channel = supabase.channel(channelName);
 
-    // Listen for new messages via Postgres Changes (INSERT events on _message table)
+    // Listen for new messages via Postgres Changes (INSERT events on thread_message table)
     // NOTE: Filter removed due to column name with special characters not working with Realtime
     // Client-side filtering is done instead
     channel.on(
@@ -380,7 +380,7 @@ export function useMessagingPageLogic() {
       {
         event: 'INSERT',
         schema: 'public',
-        table: '_message'
+        table: 'thread_message'
       },
       (payload) => {
         console.log('[Realtime] postgres_changes event received:', payload);
@@ -401,18 +401,18 @@ export function useMessagingPageLogic() {
 
         // Add message to state (avoid duplicates)
         setMessages(prev => {
-          if (prev.some(m => m._id === newRow._id)) return prev;
+          if (prev.some(m => m._id === newRow.id)) return prev;
 
           // Transform database row to UI format
           const transformedMessage = {
-            _id: newRow._id,
-            message_body: newRow['Message Body'],
-            sender_name: newRow['is Split Bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
+            _id: newRow.id,
+            message_body: newRow['message_body_text'],
+            sender_name: newRow['is_from_split_bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
             sender_avatar: isOwnMessage ? user?.profilePhoto : undefined,
-            sender_type: newRow['is Split Bot'] ? 'splitbot' :
+            sender_type: newRow['is_from_split_bot'] ? 'splitbot' :
               (newRow.originator_user_id === newRow.host_user_id ? 'host' : 'guest'),
             is_outgoing: isOwnMessage,
-            timestamp: new Date(newRow['Created Date']).toLocaleString('en-US', {
+            timestamp: new Date(newRow['bubble_created_at']).toLocaleString('en-US', {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
             }),
             call_to_action: newRow['Call to Action'] ? {
@@ -461,7 +461,7 @@ export function useMessagingPageLogic() {
           online_at: new Date().toISOString(),
         });
       } else if (status === 'CHANNEL_ERROR') {
-        console.error('[Realtime] Channel error - check RLS policies on _message table');
+        console.error('[Realtime] Channel error - check RLS policies on thread_message table');
       } else if (status === 'TIMED_OUT') {
         console.error('[Realtime] Subscription timed out');
       }
@@ -802,18 +802,18 @@ export function useMessagingPageLogic() {
   async function fetchProposalDetails(proposalId) {
     try {
       const { data, error } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .select(`
-          _id,
-          "Status",
-          "Created Date",
+          id,
+          proposal_workflow_status,
+          bubble_created_at,
           "Start Date",
           "End Date",
           "Days per Week",
           "Total Monthly Price",
-          "Modified Date"
+          bubble_updated_at
         `)
-        .eq('_id', proposalId)
+        .eq('id', proposalId)
         .single();
 
       if (error) {
@@ -823,14 +823,14 @@ export function useMessagingPageLogic() {
 
       // Transform to UI format
       return {
-        id: data._id,
-        status: data['Status'] || 'pending',
-        createdAt: data['Created Date'],
+        id: data.id,
+        status: data.proposal_workflow_status || 'pending',
+        createdAt: data.bubble_created_at,
         startDate: data['Start Date'],
         endDate: data['End Date'],
         daysPerWeek: data['Days per Week'],
         totalMonthlyPrice: data['Total Monthly Price'],
-        modifiedDate: data['Modified Date'],
+        modifiedDate: data.bubble_updated_at,
       };
     } catch (err) {
       console.error('[RightPanel] Error fetching proposal:', err);
@@ -846,17 +846,17 @@ export function useMessagingPageLogic() {
       const { data, error } = await supabase
         .from('listing')
         .select(`
-          _id,
-          "Name",
-          "Primary Photo",
+          id,
+          listing_title,
+          cover_photo_url,
           "Neighborhood",
           "City",
           "Street Address",
           "State",
-          "Monthly Rate",
-          "Listing Type"
+          monthly_rate_paid_to_host,
+          rental_type
         `)
-        .eq('_id', listingId)
+        .eq('id', listingId)
         .single();
 
       if (error) {
@@ -873,12 +873,12 @@ export function useMessagingPageLogic() {
 
       // Transform to UI format
       return {
-        id: data._id,
-        name: data['Name'] || 'Unnamed Listing',
-        primaryImage: data['Primary Photo'],
+        id: data.id,
+        name: data.listing_title || 'Unnamed Listing',
+        primaryImage: data.cover_photo_url,
         address: addressParts.join(', ') || 'Location not specified',
-        monthlyRate: data['Monthly Rate'],
-        listingType: data['Listing Type'] || 'Flexible',
+        monthlyRate: data.monthly_rate_paid_to_host,
+        listingType: data.rental_type || 'Flexible',
       };
     } catch (err) {
       console.error('[RightPanel] Error fetching listing:', err);

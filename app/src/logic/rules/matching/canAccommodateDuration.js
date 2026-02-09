@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Check if listing can accommodate proposal's duration requirements.
  *
  * @intent Determine if listing's minimum nights constraint allows proposal booking.
@@ -30,7 +30,7 @@ export function canAccommodateDuration({ listing, proposal, tolerance = 1 }) {
     return false;
   }
 
-  const listingMinNights = listing['Minimum Nights'];
+  const listingMinNights = listing.minimum_nights_per_stay;
   const proposalNights =
     proposal.nightsPerWeek ||
     proposal.daysSelected?.length ||

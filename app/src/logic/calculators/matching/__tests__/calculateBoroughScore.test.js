@@ -165,9 +165,9 @@ describe('calculateBoroughScore', () => {
   // Alternative Field Names
   // ============================================================================
   describe('alternative field names', () => {
-    it('should handle "Location - Borough" field in candidateListing', () => {
+    it('should handle "borough" field in candidateListing', () => {
       const result = calculateBoroughScore({
-        candidateListing: { 'Location - Borough': 'Manhattan' },
+        candidateListing: { borough: 'Manhattan' },
         proposal: { listing: { boroughName: 'Manhattan' } }
       });
       expect(result).toBe(25);
@@ -181,17 +181,17 @@ describe('calculateBoroughScore', () => {
       expect(result).toBe(25);
     });
 
-    it('should handle "Location - Borough" field in proposal.listing', () => {
+    it('should handle "borough" field in both candidateListing and proposal.listing', () => {
       const result = calculateBoroughScore({
-        candidateListing: { boroughName: 'Queens' },
-        proposal: { listing: { 'Location - Borough': 'Queens' } }
+        candidateListing: { borough: 'Queens' },
+        proposal: { listing: { borough: 'Queens' } }
       });
       expect(result).toBe(25);
     });
 
-    it('should prioritize boroughName over Location - Borough', () => {
+    it('should prioritize boroughName over borough', () => {
       const result = calculateBoroughScore({
-        candidateListing: { boroughName: 'Manhattan', 'Location - Borough': 'Brooklyn' },
+        candidateListing: { boroughName: 'Manhattan', borough: 'Brooklyn' },
         proposal: { listing: { boroughName: 'Manhattan' } }
       });
       expect(result).toBe(25);
@@ -346,10 +346,10 @@ describe('calculateBoroughScore', () => {
       expect(result).toBe(0);
     });
 
-    it('should handle Bubble API field format', () => {
+    it('should handle Supabase column name format', () => {
       const result = calculateBoroughScore({
-        candidateListing: { 'Location - Borough': 'Queens' },
-        proposal: { listing: { 'Location - Borough': 'Queens' } }
+        candidateListing: { borough: 'Queens' },
+        proposal: { listing: { borough: 'Queens' } }
       });
       expect(result).toBe(25);
     });

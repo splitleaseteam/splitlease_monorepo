@@ -30,11 +30,11 @@ function normalizeListing(listing) {
   if (!listing) return null;
   return {
     ...listing,
-    id: listing._id || listing.id,
-    title: listing.Name || listing.title || listing.name || 'Unnamed Listing',
-    name: listing.Name || listing.title || listing.name || 'Unnamed Listing',
-    thumbnail: listing['Cover Photo'] || listing.thumbnail || listing.cover_photo || null,
-    neighborhood: listing.Neighborhood || listing.neighborhood || null,
+    id: listing.id || listing._id,
+    title: listing.listing_title || listing.title || 'Unnamed Listing',
+    name: listing.listing_title || listing.title || 'Unnamed Listing',
+    thumbnail: listing.thumbnail || listing.cover_photo || null,
+    neighborhood: listing.neighborhood || null,
   };
 }
 
@@ -47,13 +47,13 @@ function normalizeGuest(guest) {
   if (!guest) return null;
   return {
     ...guest,
-    id: guest._id,
-    name: guest['Name - Full'] || guest.name || 'Guest',
-    firstName: guest['Name - First'] || guest.firstName || 'Guest',
+    id: guest.id || guest._id,
+    name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.name || 'Guest',
+    firstName: guest.first_name || guest.firstName || 'Guest',
     email: guest.email || null,
-    phone: guest['Phone Number'] || guest.phone || null,
-    profilePhoto: guest['Profile Photo'] || guest.profilePhoto || null,
-    isVerified: guest['user verified?'] || false,
+    phone: guest.phone_number || guest.phone || null,
+    profilePhoto: guest.profile_photo_url || guest.profilePhoto || null,
+    isVerified: guest.is_user_verified || false,
     hasIdVerification: !!(guest['Selfie with ID']),
     hasWorkVerification: !!(guest['Verify - Linked In ID']),
   };
@@ -88,8 +88,8 @@ function normalizeLease(lease) {
     supplementalAgreement: lease['supplemental agreement'],
     hostPayoutSchedule: lease['Host Payout Schedule'] || null,
     periodicTenancyAgreement: lease['Periodic Tenancy Agreement'] || null,
-    createdDate: lease['Created Date'],
-    modifiedDate: lease['Modified Date'],
+    createdDate: lease.bubble_created_at,
+    modifiedDate: lease.bubble_updated_at,
     // Related data
     stays: (lease.stays || []).map(normalizeStay),
     paymentRecords: (lease.paymentRecords || []).map(normalizePaymentRecord),
@@ -160,7 +160,7 @@ function normalizeDateChangeRequest(dcr) {
     originalDate: dcr['Original Date'],
     requestedDate: dcr['Requested Date'],
     priceAdjustment: dcr['Price Adjustment'],
-    createdDate: dcr['Created Date'],
+    createdDate: dcr.bubble_created_at,
   };
 }
 
@@ -249,7 +249,7 @@ export function useHostLeasesPageLogic() {
             if (userType && isHost({ userType })) {
               finalUserData = {
                 userId: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                _id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
+                id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
                 firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
                 email: session.user.email,
                 userType: userType
@@ -302,7 +302,7 @@ export function useHostLeasesPageLogic() {
         });
 
         // Load host data
-        await loadHostData(finalUserData.userId || finalUserData._id);
+        await loadHostData(finalUserData.userId || finalUserData.id);
 
       } catch (err) {
         console.error('Auth check failed:', err);
@@ -480,7 +480,7 @@ export function useHostLeasesPageLogic() {
     setExpandedSections({}); // Reset expanded sections
 
     try {
-      const userId = user?.userId || user?._id;
+      const userId = user?.userId || user?.id;
       const leasesResult = await fetchHostLeases(userId, listing.id);
       setLeases(leasesResult);
     } catch (err) {
@@ -568,7 +568,7 @@ export function useHostLeasesPageLogic() {
       showToast({ title: 'Success', content: 'Date change request accepted.', type: 'success' });
 
       // Refresh leases
-      const userId = user?.userId || user?._id;
+      const userId = user?.userId || user?.id;
       const leasesResult = await fetchHostLeases(userId, selectedListing?.id);
       setLeases(leasesResult);
 
@@ -603,7 +603,7 @@ export function useHostLeasesPageLogic() {
       showToast({ title: 'Done', content: 'Date change request declined.', type: 'info' });
 
       // Refresh leases
-      const userId = user?.userId || user?._id;
+      const userId = user?.userId || user?.id;
       const leasesResult = await fetchHostLeases(userId, selectedListing?.id);
       setLeases(leasesResult);
 
@@ -649,7 +649,7 @@ export function useHostLeasesPageLogic() {
     try {
       console.log('[useHostLeasesPageLogic] Submitting guest review:', reviewData);
 
-      const userId = user?.userId || user?._id;
+      const userId = user?.userId || user?.id;
       const stayId = reviewTargetStay.id;
 
       // Find the lease that contains this stay to get the guest ID
@@ -696,12 +696,11 @@ export function useHostLeasesPageLogic() {
 
       // Update the stay to link the review
       const { error: stayError } = await supabase
-        .from('bookings_stays')
+        .from('lease_weekly_stay')
         .update({
-          'Review Submitted by Host': reviewId,
-          'Modified Date': new Date().toISOString(),
+          bubble_updated_at: new Date().toISOString(),
         })
-        .eq('_id', stayId);
+        .eq('id', stayId);
 
       if (stayError) {
         console.error('[useHostLeasesPageLogic] Error updating stay:', stayError);
@@ -778,7 +777,7 @@ export function useHostLeasesPageLogic() {
    */
   const handleRetry = useCallback(() => {
     if (user) {
-      loadHostData(user.userId || user._id);
+      loadHostData(user.userId || user.id);
     }
   }, [user]);
 

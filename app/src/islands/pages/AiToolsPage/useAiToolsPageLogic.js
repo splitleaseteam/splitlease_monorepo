@@ -75,9 +75,9 @@ export function useAiToolsPageLogic() {
   const fetchHouseManuals = useCallback(async () => {
     try {
       const { data, error: fetchError } = await supabase
-        .from('housemanual')
-        .select('_id, "House manual Name", Host, Listing')
-        .order('"Created Date"', { ascending: false });
+        .from('house_manual')
+        .select('id, manual_title, host_user_id, listing_id')
+        .order('bubble_created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
       return data || [];
@@ -87,22 +87,9 @@ export function useAiToolsPageLogic() {
     }
   }, []);
 
+  // visit table has been removed - return empty array
   const fetchVisitsForManual = useCallback(async (houseManualId) => {
-    if (!houseManualId) return [];
-
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('visit')
-        .select('_id, Guest, "house manual", audience')
-        .eq('house manual', houseManualId)
-        .order('"Created Date"', { ascending: false });
-
-      if (fetchError) throw fetchError;
-      return data || [];
-    } catch (err) {
-      console.error('[AiTools] Error fetching visits:', err);
-      return [];
-    }
+    return [];
   }, []);
 
   const fetchDeepfakes = useCallback(async (houseManualId) => {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ListingPreview - Preview card showing how listing appears to guests
  *
  * @param {object} props - Component props
@@ -11,13 +11,13 @@ export default function ListingPreview({ listing }) {
   const viewUrl = listingId ? `/view-split-lease/${listingId}` : null;
 
   // Get main photo
-  const photos = listing['Features - Photos'] || [];
+  const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
   const mainPhoto = photos.find(p => p.toggleMainPhoto) || photos[0];
   const photoUrl = mainPhoto?.url || mainPhoto?.Photo || '/assets/images/placeholder-listing.png';
 
   // Get price display
-  const monthlyRate = listing['monthly_host_rate'];
-  const weeklyRate = listing['weekly_host_rate'];
+  const monthlyRate = listing.monthly_rate_paid_to_host;
+  const weeklyRate = listing.weekly_rate_paid_to_host;
   const priceDisplay = monthlyRate
     ? `$${monthlyRate.toLocaleString()}/mo`
     : weeklyRate
@@ -25,8 +25,8 @@ export default function ListingPreview({ listing }) {
       : 'Price not set';
 
   // Get location display
-  const neighborhood = listing['Address - Neighborhood'] || listing['Address - City'] || 'Location not set';
-  const borough = listing['Address - Borough'] || '';
+  const neighborhood = listing.primary_neighborhood_reference_id || listing.city || 'Location not set';
+  const borough = listing.borough || '';
 
   return (
     <div style={styles.container}>
@@ -38,13 +38,13 @@ export default function ListingPreview({ listing }) {
         <div style={styles.photoContainer}>
           <img
             src={photoUrl}
-            alt={listing['Name'] || 'Listing preview'}
+            alt={listing.listing_title || 'Listing preview'}
             style={styles.photo}
             onError={(e) => {
               e.target.src = '/assets/images/placeholder-listing.png';
             }}
           />
-          {listing['Showcase'] && (
+          {listing.is_showcase && (
             <span style={styles.showcaseBadge}>Featured</span>
           )}
         </div>
@@ -53,7 +53,7 @@ export default function ListingPreview({ listing }) {
         <div style={styles.info}>
           <span style={styles.price}>{priceDisplay}</span>
           <span style={styles.name}>
-            {listing['Name'] || 'Untitled Listing'}
+            {listing.listing_title || 'Untitled Listing'}
           </span>
           <span style={styles.location}>
             {neighborhood}{borough ? `, ${borough}` : ''}
@@ -62,17 +62,17 @@ export default function ListingPreview({ listing }) {
           {/* Quick Stats */}
           <div style={styles.stats}>
             <span style={styles.stat}>
-              {listing['Features - Qty Bedrooms'] ?? 0} bed
+              {listing.bedroom_count ?? 0} bed
             </span>
-            <span style={styles.statDivider}>·</span>
+            <span style={styles.statDivider}>Â·</span>
             <span style={styles.stat}>
-              {listing['Features - Qty Baths'] ?? 0} bath
+              {listing.bathroom_count ?? 0} bath
             </span>
-            {listing['Features - Qty Guests'] && (
+            {listing.max_guest_count && (
               <>
-                <span style={styles.statDivider}>·</span>
+                <span style={styles.statDivider}>Â·</span>
                 <span style={styles.stat}>
-                  {listing['Features - Qty Guests']} guests
+                  {listing.max_guest_count} guests
                 </span>
               </>
             )}
@@ -115,11 +115,11 @@ export default function ListingPreview({ listing }) {
         />
         <StatusPill
           label="Approved"
-          isActive={listing['Approved']}
+          isActive={listing.is_approved}
         />
         <StatusPill
           label="Active"
-          isActive={listing['Active']}
+          isActive={listing.is_active}
         />
       </div>
     </div>

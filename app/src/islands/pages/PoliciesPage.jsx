@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { FileText, ExternalLink } from 'lucide-react';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
@@ -41,8 +41,8 @@ function transformSupabaseDocument(supabaseDoc) {
     pdfUrl: supabaseDoc['PDF Version'],
     visible_on_policies_page: supabaseDoc.Active,
     visible_on_logged_out: supabaseDoc['visible on logged out?'],
-    createdDate: supabaseDoc['Created Date'],
-    modifiedDate: supabaseDoc['Modified Date'],
+    createdDate: supabaseDoc.bubble_created_at,
+    modifiedDate: supabaseDoc.bubble_updated_at,
     createdBy: supabaseDoc['Created By']
   };
 }
@@ -78,7 +78,7 @@ export default function PoliciesPage() {
     async function fetchPolicies() {
       try {
         setLoading(true);
-        console.log('📡 Fetching policies from Supabase...');
+        console.log('ðŸ“¡ Fetching policies from Supabase...');
 
         const { data, error } = await supabase
           .schema('reference_table')
@@ -88,11 +88,11 @@ export default function PoliciesPage() {
           .order('Name', { ascending: true });
 
         if (error) {
-          console.error('❌ Supabase error:', error);
+          console.error('âŒ Supabase error:', error);
           throw error;
         }
 
-        console.log('✅ Fetched policies:', data);
+        console.log('âœ… Fetched policies:', data);
         const transformedPolicies = data.map(transformSupabaseDocument);
         setPolicies(transformedPolicies);
 

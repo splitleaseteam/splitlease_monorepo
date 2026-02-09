@@ -132,6 +132,6 @@ export function filterValidSimulationProposals(proposals) {
     }
 
     // Must have essential fields
-    return proposal._id || proposal.id;
+    return proposal.id || proposal._id;
   });
 }

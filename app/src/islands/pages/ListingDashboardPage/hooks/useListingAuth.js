@@ -38,7 +38,7 @@ export function useListingAuth() {
           // Success path: Use validated user data
           setCurrentUser(userData);
           setAuthState({ isChecking: false, shouldRedirect: false });
-          logger.debug('[useListingAuth] User data loaded:', userData['Name - First'] || userData.firstName);
+          logger.debug('[useListingAuth] User data loaded:', userData.first_name || userData.firstName);
         } else {
           // Step 3: Fallback to Supabase session metadata
           const { data: { session } } = await supabase.auth.getSession();
@@ -46,10 +46,9 @@ export function useListingAuth() {
           if (session?.user) {
             // Session valid but profile fetch failed - use session metadata
             const fallbackUser = {
-              _id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-              id: session.user.id,
-              'Name - First': session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-              'Name - Last': session.user.user_metadata?.last_name || '',
+              id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
+              first_name: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
+              last_name: session.user.user_metadata?.last_name || '',
               email: session.user.email,
               firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
               lastName: session.user.user_metadata?.last_name || ''

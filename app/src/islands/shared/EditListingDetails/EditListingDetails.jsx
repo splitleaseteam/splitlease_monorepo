@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Edit Listing Details - Shared Island Component
  * Modal component for editing various aspects of a listing
  * Follows the Hollow Component Pattern - UI only, logic in hook
@@ -127,8 +127,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             type="text"
             className="eld-form-input"
             placeholder="Enter listing name..."
-            value={formData.Name || ''}
-            onChange={(e) => handleInputChange('Name', e.target.value)}
+            value={formData.listing_title || ''}
+            onChange={(e) => handleInputChange('listing_title', e.target.value)}
           />
         </div>
 
@@ -201,8 +201,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                   type="text"
                   className="eld-form-input"
                   placeholder="City"
-                  value={formData['Location - City'] || ''}
-                  onChange={(e) => handleInputChange('Location - City', e.target.value)}
+                  value={formData.city || ''}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
                 />
               </div>
               <div className="eld-form-field">
@@ -211,8 +211,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                   type="text"
                   className="eld-form-input"
                   placeholder="State (e.g., NY, NJ)"
-                  value={formData['Location - State'] || ''}
-                  onChange={(e) => handleInputChange('Location - State', e.target.value)}
+                  value={formData.state || ''}
+                  onChange={(e) => handleInputChange('state', e.target.value)}
                 />
               </div>
             </div>
@@ -223,16 +223,16 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                   type="text"
                   className="eld-form-input"
                   placeholder="Zip Code"
-                  value={formData['Location - Zip Code'] || ''}
-                  onChange={(e) => handleInputChange('Location - Zip Code', e.target.value)}
+                  value={formData.zip_code || ''}
+                  onChange={(e) => handleInputChange('zip_code', e.target.value)}
                 />
               </div>
               <div className="eld-form-field">
                 <label className="eld-form-label">Borough/Area</label>
                 <select
                   className="eld-form-input eld-form-select"
-                  value={formData['Location - Borough'] || ''}
-                  onChange={(e) => handleInputChange('Location - Borough', e.target.value)}
+                  value={formData.borough || ''}
+                  onChange={(e) => handleInputChange('borough', e.target.value)}
                 >
                   <option value="">Select Borough/Area</option>
                   {BOROUGH_OPTIONS.map(option => (
@@ -287,8 +287,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
               type="text"
               className="eld-form-input"
               placeholder="Enter a catchy title for your listing..."
-              value={formData.Name || ''}
-              onChange={(e) => handleInputChange('Name', e.target.value)}
+              value={formData.listing_title || ''}
+              onChange={(e) => handleInputChange('listing_title', e.target.value)}
             />
           </div>
           <p className="eld-form-helper">
@@ -332,8 +332,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             <textarea
               className="eld-form-textarea"
               placeholder="Describe your listing in detail..."
-              value={formData.Description || ''}
-              onChange={(e) => handleInputChange('Description', e.target.value)}
+              value={formData.listing_description || ''}
+              onChange={(e) => handleInputChange('listing_description', e.target.value)}
               rows={8}
             />
           </div>
@@ -380,8 +380,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
           <textarea
             className="eld-form-textarea"
             placeholder="Describe the neighborhood, nearby attractions, transportation..."
-            value={formData['Description - Neighborhood'] || ''}
-            onChange={(e) => handleInputChange('Description - Neighborhood', e.target.value)}
+            value={formData.neighborhood_description_by_host || ''}
+            onChange={(e) => handleInputChange('neighborhood_description_by_host', e.target.value)}
             rows={6}
           />
         </div>
@@ -430,7 +430,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                   type="checkbox"
                   checked={inUnitAmenities.includes(amenity)}
                   onChange={(e) => handleCheckboxAutosave(
-                    'Features - Amenities In-Unit',
+                    'in_unit_amenity_reference_ids_json',
                     amenity,
                     e.target.checked,
                     'Amenity'
@@ -481,7 +481,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                   type="checkbox"
                   checked={buildingAmenities.includes(amenity)}
                   onChange={(e) => handleCheckboxAutosave(
-                    'Features - Amenities In-Building',
+                    'in_building_amenity_reference_ids_json',
                     amenity,
                     e.target.checked,
                     'Amenity'
@@ -535,7 +535,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                 type="checkbox"
                 checked={selectedRules.includes(rule)}
                 onChange={(e) => handleCheckboxAutosave(
-                  'Features - House Rules',
+                  'house_rule_reference_ids_json',
                   rule,
                   e.target.checked,
                   'House Rule'
@@ -552,8 +552,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             <select
               ref={fieldRefs.maxGuests}
               className="eld-form-select"
-              value={formData['Features - Qty Guests'] ?? ''}
-              onChange={(e) => handleInputChange('Features - Qty Guests', e.target.value ? parseInt(e.target.value) : null)}
+              value={formData.max_guest_count ?? ''}
+              onChange={(e) => handleInputChange('max_guest_count', e.target.value ? parseInt(e.target.value) : null)}
             >
               <option value="">Select</option>
               {GUEST_OPTIONS.map(n => (
@@ -596,8 +596,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                 type="number"
                 className="eld-form-input"
                 placeholder="SQFT"
-                value={formData['Features - SQFT of Room'] ?? ''}
-                onChange={(e) => handleInputChange('Features - SQFT of Room', e.target.value ? parseInt(e.target.value) : null)}
+                value={formData.square_feet_of_room ?? ''}
+                onChange={(e) => handleInputChange('square_feet_of_room', e.target.value ? parseInt(e.target.value) : null)}
               />
             </div>
             <div className="eld-form-field">
@@ -607,8 +607,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                 type="number"
                 className="eld-form-input"
                 placeholder="SQFT"
-                value={formData['Features - SQFT Area'] ?? ''}
-                onChange={(e) => handleInputChange('Features - SQFT Area', e.target.value ? parseInt(e.target.value) : null)}
+                value={formData.square_feet ?? ''}
+                onChange={(e) => handleInputChange('square_feet', e.target.value ? parseInt(e.target.value) : null)}
               />
             </div>
           </div>
@@ -617,8 +617,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             <select
               ref={fieldRefs.storage}
               className="eld-form-select"
-              value={formData['Features - Secure Storage Option'] || ''}
-              onChange={(e) => handleInputChange('Features - Secure Storage Option', e.target.value)}
+              value={formData.secure_storage_option || ''}
+              onChange={(e) => handleInputChange('secure_storage_option', e.target.value)}
             >
               <option value="">Select storage type</option>
               {STORAGE_TYPES.map(opt => (
@@ -631,8 +631,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             <select
               ref={fieldRefs.parking}
               className="eld-form-select"
-              value={formData['Features - Parking type'] || ''}
-              onChange={(e) => handleInputChange('Features - Parking type', e.target.value)}
+              value={formData.parking_type || ''}
+              onChange={(e) => handleInputChange('parking_type', e.target.value)}
             >
               <option value="">Select parking</option>
               {getAllParkingOptions().map(opt => (
@@ -681,7 +681,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                   type="checkbox"
                   checked={safetyFeatures.includes(feature)}
                   onChange={(e) => handleCheckboxAutosave(
-                    'Features - Safety',
+                    'safety_feature_reference_ids_json',
                     feature,
                     e.target.checked,
                     'Safety feature'
@@ -722,8 +722,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             <select
               ref={fieldRefs.spaceType}
               className="eld-form-select"
-              value={formData['Features - Type of Space'] || ''}
-              onChange={(e) => handleInputChange('Features - Type of Space', e.target.value)}
+              value={formData.space_type || ''}
+              onChange={(e) => handleInputChange('space_type', e.target.value)}
             >
               <option value="">Select type</option>
               {SPACE_TYPES.map(opt => (
@@ -737,8 +737,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
               <select
                 ref={fieldRefs.bedrooms}
                 className="eld-form-select"
-                value={formData['Features - Qty Bedrooms'] ?? ''}
-                onChange={(e) => handleInputChange('Features - Qty Bedrooms', e.target.value !== '' ? parseInt(e.target.value) : null)}
+                value={formData.bedroom_count ?? ''}
+                onChange={(e) => handleInputChange('bedroom_count', e.target.value !== '' ? parseInt(e.target.value) : null)}
               >
                 <option value="">Select</option>
                 {BEDROOM_OPTIONS.map(opt => (
@@ -751,8 +751,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
               <select
                 ref={fieldRefs.beds}
                 className="eld-form-select"
-                value={formData['Features - Qty Beds'] ?? ''}
-                onChange={(e) => handleInputChange('Features - Qty Beds', e.target.value ? parseInt(e.target.value) : null)}
+                value={formData.bed_count ?? ''}
+                onChange={(e) => handleInputChange('bed_count', e.target.value ? parseInt(e.target.value) : null)}
               >
                 <option value="">Select</option>
                 {BED_OPTIONS.map(n => (
@@ -765,8 +765,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
               <select
                 ref={fieldRefs.bathrooms}
                 className="eld-form-select"
-                value={formData['Features - Qty Bathrooms'] ?? ''}
-                onChange={(e) => handleInputChange('Features - Qty Bathrooms', e.target.value ? parseFloat(e.target.value) : null)}
+                value={formData.bathroom_count ?? ''}
+                onChange={(e) => handleInputChange('bathroom_count', e.target.value ? parseFloat(e.target.value) : null)}
               >
                 <option value="">Select</option>
                 {BATHROOM_OPTIONS.map(n => (
@@ -780,8 +780,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             <select
               ref={fieldRefs.kitchen}
               className="eld-form-select"
-              value={formData['Kitchen Type'] || ''}
-              onChange={(e) => handleInputChange('Kitchen Type', e.target.value)}
+              value={formData.kitchen_type || ''}
+              onChange={(e) => handleInputChange('kitchen_type', e.target.value)}
             >
               <option value="">Select kitchen style</option>
               {KITCHEN_TYPES.map(opt => (
@@ -822,8 +822,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             ref={fieldRefs.firstAvailable}
             type="date"
             className="eld-form-input"
-            value={formData['First Available'] || ''}
-            onChange={(e) => handleInputChange('First Available', e.target.value)}
+            value={formData.first_available_date || ''}
+            onChange={(e) => handleInputChange('first_available_date', e.target.value)}
           />
         </div>
         <div className="eld-form-grid">
@@ -834,8 +834,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
               type="number"
               className="eld-form-input"
               placeholder="Min"
-              value={formData['Minimum Nights'] ?? ''}
-              onChange={(e) => handleInputChange('Minimum Nights', e.target.value ? parseInt(e.target.value) : null)}
+              value={formData.minimum_nights_per_stay ?? ''}
+              onChange={(e) => handleInputChange('minimum_nights_per_stay', e.target.value ? parseInt(e.target.value) : null)}
             />
           </div>
           <div className="eld-form-field">
@@ -845,8 +845,8 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
               type="number"
               className="eld-form-input"
               placeholder="Max"
-              value={formData['Maximum Nights'] ?? ''}
-              onChange={(e) => handleInputChange('Maximum Nights', e.target.value ? parseInt(e.target.value) : null)}
+              value={formData.maximum_nights_per_stay ?? ''}
+              onChange={(e) => handleInputChange('maximum_nights_per_stay', e.target.value ? parseInt(e.target.value) : null)}
             />
           </div>
         </div>
@@ -855,7 +855,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
           <select
             ref={fieldRefs.cancellation}
             className="eld-form-select"
-            value={formData['Cancellation Policy'] || ''}
+            value={formData.cancellation_policy || ''}
             onChange={(e) => handleInputChange('Cancellation Policy', e.target.value)}
           >
             <option value="">Select policy</option>

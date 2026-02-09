@@ -1,4 +1,4 @@
-import { isDateInRange } from '../../rules/scheduling/isDateInRange.js'
+﻿import { isDateInRange } from '../../rules/scheduling/isDateInRange.js'
 import { isDateBlocked } from '../../rules/scheduling/isDateBlocked.js'
 import { calculateCheckInOutDays } from '../../calculators/scheduling/calculateCheckInOutDays.js'
 
@@ -69,7 +69,7 @@ export function validateMoveInDateWorkflow({ moveInDate, listing, selectedDayInd
   // Check if date is within available range
   const inRange = isDateInRange({
     date: moveInDate,
-    firstAvailable: listing.firstAvailable || listing['First Available'],
+    firstAvailable: listing.firstAvailable || listing.first_available_date,
     lastAvailable: listing.lastAvailable || listing['Last Available']
   })
 
@@ -77,13 +77,13 @@ export function validateMoveInDateWorkflow({ moveInDate, listing, selectedDayInd
     return {
       valid: false,
       errorCode: 'MOVE_IN_DATE_OUTSIDE_RANGE',
-      firstAvailable: listing.firstAvailable || listing['First Available'],
+      firstAvailable: listing.firstAvailable || listing.first_available_date,
       lastAvailable: listing.lastAvailable || listing['Last Available']
     }
   }
 
   // Check if date is blocked
-  const blockedDates = listing.blockedDates || listing['Dates - Blocked'] || []
+  const blockedDates = listing.blockedDates || listing.blocked_specific_dates_json || []
   const isBlocked = isDateBlocked({
     date: moveInDate,
     blockedDates

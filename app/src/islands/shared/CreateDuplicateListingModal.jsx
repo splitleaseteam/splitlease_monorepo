@@ -46,7 +46,7 @@ export default function CreateDuplicateListingModal({
     if (viewMode === 'copy' && selectedListingId) {
       const selectedListing = existingListings.find(l => l._id === selectedListingId);
       if (selectedListing) {
-        setListingName(`${selectedListing.Name} copy`);
+        setListingName(`${selectedListing.listing_title} copy`);
       }
     }
   }, [viewMode, selectedListingId, existingListings]);
@@ -68,16 +68,16 @@ export default function CreateDuplicateListingModal({
       const { data: newListing, error } = await supabase
         .from('zat_listings')
         .insert({
-          Name: listingName.trim(),
-          active: false,
+          listing_title: listingName.trim(),
+          is_active: false,
           'Default Extension Setting': false,
-          'damage_deposit': 500,
+          'damage_deposit_amount': 500,
           'Host / Landlord': currentUser?.['Account - Host / Landlord']?._id || null,
-          'HOST name': currentUser?.['Name - Full'] || currentUser?.firstName || '',
+          'HOST name': currentUser?.first_name && currentUser?.last_name ? `${currentUser.first_name} ${currentUser.last_name}` : (currentUser?.firstName || ''),
           'Host email': currentUser?.email || '',
           'Operator Last Updated AUT': new Date().toISOString(),
-          isForUsability: currentUser?.['is usability tester'] || false,
-          'Features - Qty Beds': 1,
+          is_usability_test_listing: currentUser?.['is usability tester'] || false,
+          bed_count: 1,
           // Nights and Days Available will be set to all options via separate inserts if needed
         })
         .select()
@@ -146,8 +146,8 @@ export default function CreateDuplicateListingModal({
 
       // Remove fields that shouldn't be duplicated
       delete duplicateData._id;
-      delete duplicateData['Created Date'];
-      delete duplicateData['Modified Date'];
+      delete duplicateData.bubble_created_at;
+      delete duplicateData.bubble_updated_at;
 
       const { data: newListing, error } = await supabase
         .from('zat_listings')
@@ -208,7 +208,7 @@ export default function CreateDuplicateListingModal({
         .update({
           tasksCompleted: supabase.raw(`array_append(tasksCompleted, '${task}')`),
         })
-        .eq('_id', userId);
+        .eq('id', userId);
 
       if (error) throw error;
     } catch (error) {
@@ -236,7 +236,7 @@ export default function CreateDuplicateListingModal({
   }, [isVisible]);
 
   // Determine header icon and title based on view mode
-  const headerIcon = viewMode === 'create' ? '🏠' : '📋';
+  const headerIcon = viewMode === 'create' ? 'ðŸ ' : 'ðŸ“‹';
   const headerTitle = viewMode === 'create' ? 'Create New Listing' : 'Copy Existing Listing';
   const headerSubtitle = viewMode === 'create'
     ? 'Enter the title guests will see when browsing.'
@@ -254,7 +254,7 @@ export default function CreateDuplicateListingModal({
             onClick={handleClose}
             aria-label="Close modal"
           >
-            ×
+            Ã—
           </button>
           <div className="create-listing-header-top">
             <span className="create-listing-icon">{headerIcon}</span>
@@ -278,7 +278,7 @@ export default function CreateDuplicateListingModal({
               <option value="">-- Select a listing --</option>
               {existingListings.map(listing => (
                 <option key={listing._id} value={listing._id}>
-                  {listing.Name}
+                  {listing.listing_title}
                 </option>
               ))}
             </select>

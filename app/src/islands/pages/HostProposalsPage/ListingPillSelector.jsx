@@ -47,7 +47,7 @@ export function ListingPillSelector({
         const listingId = listing._id || listing.id;
         const isActive = listingId === selectedListingId;
         const count = proposalCounts[listingId] ?? 0;
-        const listingName = listing.title || listing.name || 'Unnamed Listing';
+        const listingName = listing.title || listing.listing_title || 'Unnamed Listing';
         const thumbnail = getListingThumbnail(listing);
 
         return (

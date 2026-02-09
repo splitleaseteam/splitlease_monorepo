@@ -238,7 +238,7 @@ export default function VirtualMeetingManager({
    * Get current user's first name for referral modal
    */
   const getCurrentUserName = () => {
-    return currentUser?.['Name - First'] || currentUser?.firstName || currentUser?.name || '';
+    return currentUser?.first_name || currentUser?.firstName || currentUser?.name || '';
   };
 
   /**

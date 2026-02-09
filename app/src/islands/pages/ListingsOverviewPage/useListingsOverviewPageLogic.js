@@ -70,43 +70,43 @@ function ensureArray(value) {
  */
 function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
   // Ensure photos and features are always arrays (Bubble data may vary)
-  const photos = ensureArray(row['Features - Photos']);
-  const features = ensureArray(row['Features - Amenities In-Unit']);
+  const photos = ensureArray(row.photos_with_urls_captions_and_sort_order_json);
+  const features = ensureArray(row.in_unit_amenity_reference_ids_json);
   const errors = ensureArray(row.Errors);
 
   return {
     id: row._id,
     uniqueId: row['Listing Code OP'] || row._id?.slice(-8) || 'N/A',
-    name: row.Name || 'Untitled Listing',
+    name: row.listing_title || 'Untitled Listing',
     description: row.Description || '',
     host: {
-      id: row['Host User'],
+      id: row.host_user_id,
       email: row['Host email'] || '',
-      name: row['host name'] || '',
+      name: row.host_display_name || '',
       phone: '', // Phone is on user table, not listing table
     },
     location: {
-      borough: row['Location - Borough'],
+      borough: row.borough,
       displayBorough: boroughName || 'Unknown',
-      neighborhood: row['Location - Hood'],
+      neighborhood: row.primary_neighborhood_reference_id,
       displayNeighborhood: neighborhoodName || 'Unknown',
     },
     pricing: {
-      nightly: row['nightly_rate_1_night'] || 0,
+      nightly: row.nightly_rate_for_1_night_stay || 0,
       override: row['price_override'],
-      calculated3Night: row['nightly_rate_3_nights'] || 0,
+      calculated3Night: row.nightly_rate_for_3_night_stay || 0,
     },
     status: computeListingStatus(row),
     availability: computeAvailability(row),
-    usability: row.isForUsability || false,
-    active: row.Active || false,
-    showcase: row.Showcase || false,
+    usability: row.is_usability_test_listing || false,
+    active: row.is_active || false,
+    showcase: row.is_showcase || false,
     photos,
     photoCount: photos.length,
     features,
     errors,
-    modifiedAt: row['Modified Date'] ? new Date(row['Modified Date']) : null,
-    createdAt: row['Created Date'] ? new Date(row['Created Date']) : null,
+    modifiedAt: row.bubble_updated_at ? new Date(row.bubble_updated_at) : null,
+    createdAt: row.bubble_created_at ? new Date(row.bubble_created_at) : null,
     // Keep raw data for updates
     _raw: row,
   };
@@ -302,7 +302,7 @@ export function useListingsOverviewPageLogic() {
   // ============================================================================
 
   const handleToggleUsability = useCallback(async (id, value) => {
-    const { error: updateError } = await updateListing(id, { isForUsability: value });
+    const { error: updateError } = await updateListing(id, { is_usability_test_listing: value });
     if (!updateError) {
       setListings(prev =>
         prev.map(l => (l.id === id ? { ...l, usability: value } : l))
@@ -399,7 +399,7 @@ export function useListingsOverviewPageLogic() {
   const handleSeeDescription = useCallback((listing) => {
     setModalContent({
       isOpen: true,
-      title: listing.name,
+      title: listing.listing_title,
       content: {
         type: 'description',
         listing,
@@ -410,7 +410,7 @@ export function useListingsOverviewPageLogic() {
   const handleSeePrices = useCallback((listing) => {
     setModalContent({
       isOpen: true,
-      title: `Pricing - ${listing.name}`,
+      title: `Pricing - ${listing.listing_title}`,
       content: {
         type: 'pricing',
         listing,
@@ -421,7 +421,7 @@ export function useListingsOverviewPageLogic() {
   const handleSeeErrors = useCallback((listing) => {
     setModalContent({
       isOpen: true,
-      title: `Errors - ${listing.name}`,
+      title: `Errors - ${listing.listing_title}`,
       content: {
         type: 'errors',
         listing,

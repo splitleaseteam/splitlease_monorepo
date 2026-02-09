@@ -1,4 +1,4 @@
-/**
+﻿/**
  * parseProposalData.js
  *
  * Utility functions to parse proposal data with multi-format field name support.
@@ -110,9 +110,9 @@ export function extractHouseRules(proposal, listing, availableHouseRules = []) {
   // Try proposal first, then listing
   const rawRules = proposal?.houseRules ||
                    proposal?.['House Rules'] ||
-                   proposal?.['Features - House Rules'] ||
+                   proposal?.house_rule_reference_ids_json ||
                    listing?.houseRules ||
-                   listing?.['Features - House Rules'] ||
+                   listing?.house_rule_reference_ids_json ||
                    []
 
   if (!Array.isArray(rawRules) || rawRules.length === 0) {

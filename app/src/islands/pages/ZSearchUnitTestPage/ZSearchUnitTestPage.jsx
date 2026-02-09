@@ -60,7 +60,7 @@ function ListingCard({ listing }) {
   return (
     <div className="zsut-listing-card">
       <div className="zsut-listing-header">
-        <h3 className="zsut-listing-name">{listing.name}</h3>
+        <h3 className="zsut-listing-name">{listing.listing_title}</h3>
         <span className="zsut-listing-price">${listing.nightlyPrice}/night</span>
       </div>
       <div className="zsut-listing-location">

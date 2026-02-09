@@ -111,11 +111,11 @@ function ListingItem({ listing, onClick }) {
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      aria-label={`View listing: ${listing.Name || 'Unnamed listing'}`}
+      aria-label={`View listing: ${listing.listing_title || 'Unnamed listing'}`}
     >
       <div className="listing-item-photo">
         {photoUrl ? (
-          <img src={photoUrl} alt={listing.Name || 'Listing photo'} loading="lazy" />
+          <img src={photoUrl} alt={listing.listing_title || 'Listing photo'} loading="lazy" />
         ) : (
           <div className="listing-item-photo-placeholder">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -127,7 +127,7 @@ function ListingItem({ listing, onClick }) {
         )}
       </div>
       <div className="listing-item-details">
-        <h4 className="listing-item-name">{listing.Name || 'Unnamed Listing'}</h4>
+        <h4 className="listing-item-name">{listing.listing_title || 'Unnamed Listing'}</h4>
         <p className="listing-item-location">{location}</p>
         <div className="listing-item-meta">
           <span>{bedsText}, {bathsText}</span>

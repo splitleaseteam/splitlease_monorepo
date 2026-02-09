@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ProposalDetailsModal Component
  *
  * Slide-in modal showing full proposal details with actions.
@@ -93,7 +93,7 @@ export default function ProposalDetailsModal({
 
   // Get status info - use unified status system for proper matching
   // Database stores full Bubble status strings like "Proposal Submitted by guest - Awaiting Rental Application"
-  const statusRaw = proposal.Status || proposal.status || '';
+  const statusRaw = proposal.proposal_workflow_status || proposal.Status || proposal.status || '';
   const statusKey = typeof statusRaw === 'string' ? statusRaw : (statusRaw?.id || statusRaw?._id || '');
   const statusConfig = getStatusConfig(statusKey);
   const statusInfo = getStatusTagInfo(statusRaw);
@@ -113,11 +113,11 @@ export default function ProposalDetailsModal({
   const rentalAppSubmitted = rentalApplication?.submitted === 'yes' || rentalApplication?.submitted === true;
 
   // Get guest info
-  const guest = proposal.guest || proposal.Guest || proposal['Created By'] || {};
-  const guestName = guest.firstName || guest['Name - First'] || guest['First Name'] || guest.first_name || 'Guest';
-  const guestLastName = guest.lastName || guest['Name - Last'] || guest['Last Name'] || guest.last_name || '';
+  const guest = proposal.guest || proposal.guest_user_id || proposal.Guest || proposal.created_by_user_id || proposal['Created By'] || {};
+  const guestName = guest.firstName || guest.first_name || 'Guest';
+  const guestLastName = guest.lastName || guest.last_name || '';
   const guestBio = guest.bio || guest.Bio || '';
-  const guestAvatar = guest.avatar || guest.Avatar || guest['Profile Photo'] || guest['Profile Picture'];
+  const guestAvatar = guest.avatar || guest.Avatar || guest.profile_photo_url;
   const avatarUrl = guestAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName)}&background=random&size=60`;
 
   // Verification statuses
@@ -129,32 +129,32 @@ export default function ProposalDetailsModal({
   // Get schedule info
   // Use Nights Selected for the day indicator (shows which nights guest stays)
   // Use Days Selected for check-in/check-out text (matches guest-facing display)
-  const nightsSelectedRaw = proposal['hc nights selected'] || proposal['Nights Selected (Nights list)'] || proposal.nightsSelected || proposal['Nights Selected'];
-  const daysSelectedRaw = proposal['hc days selected'] || proposal['Days Selected'] || proposal.daysSelected;
+  const nightsSelectedRaw = proposal.host_proposed_selected_nights_json || proposal.guest_selected_nights_numbers_json || proposal['Nights Selected (Nights list)'] || proposal.nightsSelected || proposal['Nights Selected'];
+  const daysSelectedRaw = proposal.host_proposed_selected_days_json || proposal.guest_selected_days_numbers_json || proposal['Days Selected'] || proposal.daysSelected;
 
   // Get check-in/check-out from Days Selected (matches guest-facing display)
   const { checkInDay, checkOutDay } = getCheckInOutFromDays(daysSelectedRaw);
   const checkInTime = proposal.checkInTime || proposal['Check In Time'] || '2:00 pm';
   const checkOutTime = proposal.checkOutTime || proposal['Check Out Time'] || '11:00 am';
-  const moveInRangeStart = proposal.moveInRangeStart || proposal['Move in range start'] || proposal['Move In Range Start'];
-  const moveInRangeEnd = proposal.moveInRangeEnd || proposal['Move in range end'] || proposal['Move In Range End'];
-  const reservationSpanWeeks = proposal.reservationSpanWeeks || proposal['Reservation Span (Weeks)'] || proposal['Reservation Span (weeks)'] || 0;
+  const moveInRangeStart = proposal.moveInRangeStart || proposal.move_in_range_start_date || proposal['Move in range start'] || proposal['Move In Range Start'];
+  const moveInRangeEnd = proposal.moveInRangeEnd || proposal.move_in_range_end_date || proposal['Move in range end'] || proposal['Move In Range End'];
+  const reservationSpanWeeks = proposal.reservationSpanWeeks || proposal.reservation_span_in_weeks || proposal['Reservation Span (Weeks)'] || proposal['Reservation Span (weeks)'] || 0;
 
   // Get pricing info
   // "host compensation" is the per-night HOST rate (from listing pricing tiers)
   // "Total Compensation (proposal - host)" is the total = per-night rate * nights * weeks
-  const hostCompensation = proposal.hostCompensation || proposal['host compensation'] || proposal['Host Compensation'] || 0;
-  const totalCompensation = proposal.totalCompensation || proposal['Total Compensation (proposal - host)'] || proposal['Total Compensation'] || 0;
+  const hostCompensation = proposal.hostCompensation || proposal.host_compensation_per_period || proposal['Host Compensation'] || 0;
+  const totalCompensation = proposal.totalCompensation || proposal.total_compensation_for_host || proposal['Total Compensation'] || 0;
   // Use hostCompensation for per-night display - this is the HOST's rate
   // NOTE: "proposal nightly price" is the GUEST-facing rate, not host compensation
   const compensationPerNight = hostCompensation;
-  const maintenanceFee = proposal.maintenanceFee || proposal['cleaning fee'] || proposal['Maintenance Fee'] || 0;
-  const damageDeposit = proposal.damageDeposit || proposal['damage deposit'] || proposal['Damage Deposit'] || 0;
-  const counterOfferHappened = proposal.counterOfferHappened || proposal['Counter Offer Happened'] || false;
+  const maintenanceFee = proposal.maintenanceFee || proposal.cleaning_fee_amount || proposal['cleaning fee'] || proposal['Maintenance Fee'] || 0;
+  const damageDeposit = proposal.damageDeposit || proposal.damage_deposit_amount || proposal['damage deposit'] || proposal['Damage Deposit'] || 0;
+  const counterOfferHappened = proposal.counterOfferHappened || proposal.has_host_counter_offer || proposal['Counter Offer Happened'] || false;
   const reasonForCancellation = proposal.reasonForCancellation || proposal['Reason For Cancellation'] || '';
 
   // Get rental type for dynamic compensation label (nightly/weekly/monthly)
-  const rentalType = (proposal.rentalType || proposal['rental type'] || proposal['Rental Type'] || 'nightly').toLowerCase();
+  const rentalType = (proposal.rentalType || proposal.rental_type || proposal['Rental Type'] || 'nightly').toString().toLowerCase();
 
   // Custom schedule description - guest's free-form text describing preferred schedule
   const customScheduleDescription = proposal.custom_schedule_description || proposal.customScheduleDescription || '';
@@ -385,7 +385,7 @@ export default function ProposalDetailsModal({
             <div className="modal-schedule">
               <span className="schedule-text">
                 {checkInDay} to {checkOutDay} (check-out)
-                {counterOfferHappened && ' · Proposed by You'}
+                {counterOfferHappened && ' Â· Proposed by You'}
               </span>
               <DayIndicator activeDays={activeDays} size="medium" />
             </div>
@@ -627,7 +627,7 @@ export default function ProposalDetailsModal({
             </button>
             {statusExpanded && (
               <div className="section-content status-content">
-                {/* Progress Tracker - Order: Proposal Submitted → Rental App → Host Review → Lease Docs → Initial Payment */}
+                {/* Progress Tracker - Order: Proposal Submitted â†’ Rental App â†’ Host Review â†’ Lease Docs â†’ Initial Payment */}
                 {/* Matches guest proposals page design: fully connected dots and lines */}
                 <div className="progress-tracker">
                   {/* Row 1: Circles and connecting lines (no gaps) */}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useManageLeasesPageLogic - All business logic for ManageLeasesPaymentRecordsPage
  *
  * HOLLOW COMPONENT PATTERN: ALL logic lives here
@@ -484,40 +484,34 @@ export function useManageLeasesPageLogic({ showToast }) {
 
   /**
    * Fetch listing photos for document generation
-   * Photos are stored in 'Features - Photos' (JSONB) or listing_photo table
+   * Photos are stored in the listing's photos_with_urls_captions_and_sort_order_json column
    */
   async function fetchListingPhotos(listingId) {
     if (!listingId) return [];
 
     try {
-      // First try to get photos from listing's 'Features - Photos' column
       const { data: listingData } = await supabase
         .from('listing')
-        .select('"Features - Photos"')
-        .eq('_id', listingId)
+        .select('photos_with_urls_captions_and_sort_order_json')
+        .eq('id', listingId)
         .single();
 
-      // Parse embedded photos if available
-      if (listingData?.['Features - Photos']) {
-        const embeddedPhotos = listingData['Features - Photos'];
-        if (Array.isArray(embeddedPhotos) && embeddedPhotos.length > 0) {
-          // Could be array of URLs or array of objects with url property
-          return embeddedPhotos.slice(0, 3).map(photo =>
-            typeof photo === 'string' ? photo : (photo?.url || photo?.Photo || '')
-          ).filter(Boolean);
+      let photos = listingData?.photos_with_urls_captions_and_sort_order_json;
+      // Handle double-encoded JSON string
+      if (typeof photos === 'string') {
+        try {
+          photos = JSON.parse(photos);
+        } catch {
+          photos = [];
         }
       }
 
-      // Fallback: fetch from listing_photo table
-      const { data: photosData } = await supabase
-        .from('listing_photo')
-        .select('Photo')
-        .eq('Listing', listingId)
-        .order('SortOrder', { ascending: true, nullsLast: true })
-        .limit(3);
-
-      if (photosData && photosData.length > 0) {
-        return photosData.map(p => p.Photo).filter(Boolean);
+      if (Array.isArray(photos) && photos.length > 0) {
+        // Sort by sort_order if available, then take first 3
+        const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        return sorted.slice(0, 3).map(photo =>
+          typeof photo === 'string' ? photo : (photo?.url || photo?.Photo || '')
+        ).filter(Boolean);
       }
 
       return [];
@@ -547,51 +541,51 @@ export function useManageLeasesPageLogic({ showToast }) {
 
       // Fetch lease details
       const { data: leaseData } = await supabase
-        .from('bookings_leases')
+        .from('booking_lease')
         .select('*')
-        .eq('_id', leaseId)
+        .eq('id', leaseId)
         .single();
 
       // Fetch proposal if linked
       let proposalData = null;
-      if (leaseData?.Proposal) {
+      if (leaseData?.proposal_id) {
         const { data: proposal } = await supabase
-          .from('proposal')
+          .from('booking_proposal')
           .select('*')
-          .eq('_id', leaseData.Proposal)
+          .eq('id', leaseData.proposal_id)
           .single();
         proposalData = proposal;
       }
 
       // Fetch listing if linked
       let listingData = null;
-      if (leaseData?.Listing) {
+      if (leaseData?.listing_id) {
         const { data: listing } = await supabase
           .from('listing')
           .select('*')
-          .eq('_id', leaseData.Listing)
+          .eq('id', leaseData.listing_id)
           .single();
         listingData = listing;
       }
 
       // Fetch guest user if linked
       let guestData = null;
-      if (leaseData?.Guest) {
+      if (leaseData?.guest_user_id) {
         const { data: guest } = await supabase
           .from('user')
           .select('*')
-          .eq('_id', leaseData.Guest)
+          .eq('id', leaseData.guest_user_id)
           .single();
         guestData = guest;
       }
 
       // Fetch host user if linked
       let hostData = null;
-      if (leaseData?.Host) {
+      if (leaseData?.host_user_id) {
         const { data: host } = await supabase
           .from('user')
           .select('*')
-          .eq('_id', leaseData.Host)
+          .eq('id', leaseData.host_user_id)
           .single();
         hostData = host;
       }
@@ -606,16 +600,24 @@ export function useManageLeasesPageLogic({ showToast }) {
       const guestPaymentsData = (allPaymentsData || []).filter(r => r['Payment from guest?'] === true);
       const hostPaymentsData = (allPaymentsData || []).filter(r => r['Payment to Host?'] === true);
 
-      // Fetch listing photos
+      // Extract listing photos from embedded JSON column
       let listingPhotosData = [];
-      if (listingData?._id) {
-        const { data: photos } = await supabase
-          .from('listing_photo')
-          .select('Photo')
-          .eq('Listing', listingData._id)
-          .order('SortOrder', { ascending: true, nullsLast: true })
-          .limit(3);
-        listingPhotosData = (photos || []).map(p => p.Photo).filter(Boolean);
+      if (listingData?.photos_with_urls_captions_and_sort_order_json) {
+        let photos = listingData.photos_with_urls_captions_and_sort_order_json;
+        // Handle double-encoded JSON string
+        if (typeof photos === 'string') {
+          try {
+            photos = JSON.parse(photos);
+          } catch {
+            photos = [];
+          }
+        }
+        if (Array.isArray(photos)) {
+          const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          listingPhotosData = sorted.slice(0, 3).map(photo =>
+            typeof photo === 'string' ? photo : (photo?.url || photo?.Photo || '')
+          ).filter(Boolean);
+        }
       }
 
       // Build data object for readiness check
@@ -729,12 +731,12 @@ export function useManageLeasesPageLogic({ showToast }) {
 
         if (docResult?.success) {
           successes.push(displayName);
-          console.info(`✅ ${displayName}: SUCCESS`, docResult.driveUrl ? `- ${docResult.driveUrl}` : '');
+          console.info(`âœ… ${displayName}: SUCCESS`, docResult.driveUrl ? `- ${docResult.driveUrl}` : '');
         } else {
           failures.push(displayName);
           const error = docResult?.error || 'Unknown error';
           errorMessages.push(`${displayName}: ${error}`);
-          console.error(`❌ ${displayName}: FAILED -`, error);
+          console.error(`âŒ ${displayName}: FAILED -`, error);
         }
       });
 

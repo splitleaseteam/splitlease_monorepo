@@ -26,7 +26,7 @@ export async function fetchSuggestedProposals(userId) {
     const { data: userData, error: userError } = await supabase
       .from('user')
       .select('"Proposals List"')
-      .eq('_id', userId)
+      .eq('id', userId)
       .single();
 
     if (userError) {
@@ -43,11 +43,11 @@ export async function fetchSuggestedProposals(userId) {
 
     // Step 2: Fetch all proposals
     const { data: proposalsData, error: proposalsError } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select('*')
-      .in('_id', proposalIds)
-      .or('Deleted.is.null,Deleted.eq.false')
-      .order('Created Date', { ascending: false });
+      .in('id', proposalIds)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('bubble_created_at', { ascending: false });
 
     if (proposalsError) {
       console.error('Error fetching proposals:', proposalsError);
@@ -56,7 +56,7 @@ export async function fetchSuggestedProposals(userId) {
 
     // Step 3: Filter to only suggested proposals
     const suggestedProposals = (proposalsData || []).filter(
-      p => isSuggestedProposal(p.Status)
+      p => isSuggestedProposal(p.proposal_workflow_status)
     );
 
     console.log(`Found ${suggestedProposals.length} suggested proposals out of ${proposalsData?.length || 0} total`);
@@ -73,13 +73,13 @@ export async function fetchSuggestedProposals(userId) {
     // Step 5: Fetch negotiation summaries if available
     // Note: Column name uses Bubble convention with space and capital P
     // IMPORTANT: Filter by "To Account" to only show summaries intended for this user
-    const proposalIdsForSummaries = enrichedProposals.map(p => p._id);
+    const proposalIdsForSummaries = enrichedProposals.map(p => p.id || p._id);
     const { data: summariesData } = await supabase
       .from('negotiationsummary')
       .select('*')
       .in('"Proposal associated"', proposalIdsForSummaries)
       .eq('"To Account"', userId)
-      .order('"Created Date"', { ascending: false });
+      .order('bubble_created_at', { ascending: false });
 
     // Attach summaries to proposals
     if (summariesData && summariesData.length > 0) {
@@ -93,7 +93,8 @@ export async function fetchSuggestedProposals(userId) {
       });
 
       enrichedProposals.forEach(proposal => {
-        proposal._negotiationSummaries = summaryMap[proposal._id] || [];
+        const pId = proposal.id || proposal._id;
+        proposal._negotiationSummaries = summaryMap[pId] || [];
       });
     }
 
@@ -122,12 +123,12 @@ export async function markProposalInterested(proposalId) {
     // Update proposal status to indicate guest interest
     // This moves it from "Suggested" to "Awaiting Rental Application"
     const { error } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .update({
-        Status: 'Proposal Submitted by guest - Awaiting Rental Application',
-        'Modified Date': new Date().toISOString()
+        proposal_workflow_status: 'Proposal Submitted by guest - Awaiting Rental Application',
+        bubble_updated_at: new Date().toISOString()
       })
-      .eq('_id', proposalId);
+      .eq('id', proposalId);
 
     if (error) {
       console.error('Error marking proposal interested:', error);
@@ -161,8 +162,8 @@ export async function dismissProposal(proposalId, feedback = null) {
   try {
     // Build update payload
     const updatePayload = {
-      Deleted: true,
-      'Modified Date': new Date().toISOString()
+      is_deleted: true,
+      bubble_updated_at: new Date().toISOString()
     };
 
     // Store feedback if provided (using Guest Comments field)
@@ -172,9 +173,9 @@ export async function dismissProposal(proposalId, feedback = null) {
 
     // Soft delete the proposal
     const { error } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .update(updatePayload)
-      .eq('_id', proposalId);
+      .eq('id', proposalId);
 
     if (error) {
       console.error('Error dismissing proposal:', error);
@@ -204,7 +205,7 @@ export async function fetchPendingConfirmationCount(userId) {
     const { data: userData, error: userError } = await supabase
       .from('user')
       .select('"Proposals List"')
-      .eq('_id', userId)
+      .eq('id', userId)
       .single();
 
     if (userError || !userData?.['Proposals List']) {
@@ -218,10 +219,10 @@ export async function fetchPendingConfirmationCount(userId) {
 
     // Step 2: Count proposals with pending confirmation status
     const { data: proposalsData, error: proposalsError } = await supabase
-      .from('proposal')
-      .select('_id, Status')
-      .in('_id', proposalIds)
-      .or('Deleted.is.null,Deleted.eq.false');
+      .from('booking_proposal')
+      .select('id, proposal_workflow_status')
+      .in('id', proposalIds)
+      .or('is_deleted.is.null,is_deleted.eq.false');
 
     if (proposalsError || !proposalsData) {
       return 0;
@@ -229,7 +230,7 @@ export async function fetchPendingConfirmationCount(userId) {
 
     // Step 3: Filter to only pending confirmation proposals
     const pendingCount = proposalsData.filter(
-      p => isPendingConfirmationProposal(p.Status)
+      p => isPendingConfirmationProposal(p.proposal_workflow_status)
     ).length;
 
     return pendingCount;
@@ -256,7 +257,7 @@ export async function fetchPendingConfirmationProposals(userId) {
     const { data: userData, error: userError } = await supabase
       .from('user')
       .select('"Proposals List"')
-      .eq('_id', userId)
+      .eq('id', userId)
       .single();
 
     if (userError) {
@@ -271,11 +272,11 @@ export async function fetchPendingConfirmationProposals(userId) {
 
     // Step 2: Fetch all proposals
     const { data: proposalsData, error: proposalsError } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select('*')
-      .in('_id', proposalIds)
-      .or('Deleted.is.null,Deleted.eq.false')
-      .order('Created Date', { ascending: false });
+      .in('id', proposalIds)
+      .or('is_deleted.is.null,is_deleted.eq.false')
+      .order('bubble_created_at', { ascending: false });
 
     if (proposalsError) {
       console.error('Error fetching proposals:', proposalsError);
@@ -284,7 +285,7 @@ export async function fetchPendingConfirmationProposals(userId) {
 
     // Step 3: Filter to only pending confirmation proposals
     const pendingProposals = (proposalsData || []).filter(
-      p => isPendingConfirmationProposal(p.Status)
+      p => isPendingConfirmationProposal(p.proposal_workflow_status)
     );
 
     if (pendingProposals.length === 0) {
@@ -299,13 +300,13 @@ export async function fetchPendingConfirmationProposals(userId) {
     // Step 5: Fetch negotiation summaries if available
     // Note: Column name uses Bubble convention with space and capital P
     // IMPORTANT: Filter by "To Account" to only show summaries intended for this user
-    const proposalIdsForSummaries = enrichedProposals.map(p => p._id);
+    const proposalIdsForSummaries = enrichedProposals.map(p => p.id || p._id);
     const { data: summariesData } = await supabase
       .from('negotiationsummary')
       .select('*')
       .in('"Proposal associated"', proposalIdsForSummaries)
       .eq('"To Account"', userId)
-      .order('"Created Date"', { ascending: false });
+      .order('bubble_created_at', { ascending: false });
 
     // Attach summaries to proposals
     if (summariesData && summariesData.length > 0) {
@@ -319,7 +320,8 @@ export async function fetchPendingConfirmationProposals(userId) {
       });
 
       enrichedProposals.forEach(proposal => {
-        proposal._negotiationSummaries = summaryMap[proposal._id] || [];
+        const pId = proposal.id || proposal._id;
+        proposal._negotiationSummaries = summaryMap[pId] || [];
       });
     }
 
@@ -341,9 +343,9 @@ export async function getSuggestedProposal(proposalId) {
 
   try {
     const { data, error } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .select('*')
-      .eq('_id', proposalId)
+      .eq('id', proposalId)
       .single();
 
     if (error || !data) {
@@ -352,8 +354,8 @@ export async function getSuggestedProposal(proposalId) {
     }
 
     // Verify it's a suggested proposal
-    if (!isSuggestedProposal(data.Status)) {
-      console.warn('Proposal is not a suggested proposal:', data.Status);
+    if (!isSuggestedProposal(data.proposal_workflow_status)) {
+      console.warn('Proposal is not a suggested proposal:', data.proposal_workflow_status);
       return null;
     }
 

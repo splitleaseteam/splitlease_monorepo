@@ -31,7 +31,7 @@
  *
  * const enrichedProposal = await loadProposalDetailsWorkflow({
  *   supabase,
- *   rawProposal: { _id: 'abc123', Listing: 'xyz', Guest: '456' },
+ *   rawProposal: { id: 'abc123', listing_id: 'xyz', guest_user_id: '456' },
  *   processProposalData,
  *   processUserData,
  *   processListingData
@@ -55,11 +55,12 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 1: Fetch listing data
   let processedListing = null
-  if (rawProposal.Listing) {
+  const listingId = rawProposal.listing_id || rawProposal.Listing
+  if (listingId) {
     const { data: listingData, error: listingError } = await supabase
       .from('listing')
       .select('*')
-      .eq('_id', rawProposal.Listing)
+      .eq('id', listingId)
       .single()
 
     if (!listingError && listingData) {
@@ -80,23 +81,24 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 2: Fetch guest user data
   let processedGuest = null
-  if (rawProposal.Guest) {
+  const guestUserId = rawProposal.guest_user_id || rawProposal.Guest
+  if (guestUserId) {
     const { data: guestData, error: guestError } = await supabase
       .from('user')
       .select(`
-        _id,
-        "Name - First",
-        "Name - Full",
-        "Profile Photo",
-        "About Me / Bio",
-        "email as text",
-        "Phone Number (as text)",
+        id,
+        first_name,
+        last_name,
+        profile_photo_url,
+        bio_text,
+        email,
+        phone_number,
         "Verify - Linked In ID",
         "Verify - Phone",
         "is email confirmed",
         "user verified?"
       `)
-      .eq('_id', rawProposal.Guest)
+      .eq('id', guestUserId)
       .single()
 
     if (!guestError && guestData) {
@@ -113,25 +115,26 @@ export async function loadProposalDetailsWorkflow({
     }
   }
 
-  // Step 3: Fetch host user data (from listing creator)
+  // Step 3: Fetch host user data (from proposal or listing creator)
   let processedHost = null
-  if (processedListing && processedListing['Created By']) {
+  const hostUserId = rawProposal.host_user_id || rawProposal['Host User'] || (processedListing && (processedListing.host_user_id || processedListing['Created By']))
+  if (hostUserId) {
     const { data: hostData, error: hostError } = await supabase
       .from('user')
       .select(`
-        _id,
-        "Name - First",
-        "Name - Full",
-        "Profile Photo",
-        "About Me / Bio",
-        "email as text",
-        "Phone Number (as text)",
+        id,
+        first_name,
+        last_name,
+        profile_photo_url,
+        bio_text,
+        email,
+        phone_number,
         "Verify - Linked In ID",
         "Verify - Phone",
         "is email confirmed",
         "user verified?"
       `)
-      .eq('_id', processedListing['Created By'])
+      .eq('id', hostUserId)
       .single()
 
     if (!hostError && hostData) {
@@ -150,16 +153,17 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 4: Fetch house rules (if any)
   let houseRules = null
+  const houseRulesArray = rawProposal.house_rules_json || rawProposal['House Rules']
   if (
-    rawProposal['House Rules'] &&
-    Array.isArray(rawProposal['House Rules']) &&
-    rawProposal['House Rules'].length > 0
+    houseRulesArray &&
+    Array.isArray(houseRulesArray) &&
+    houseRulesArray.length > 0
   ) {
     const { data: rulesData, error: rulesError } = await supabase
       .schema('reference_table')
       .from('zat_features_houserule')
       .select('_id, Name, Icon')
-      .in('_id', rawProposal['House Rules'])
+      .in('_id', houseRulesArray)
 
     if (!rulesError && rulesData) {
       houseRules = rulesData
@@ -168,11 +172,12 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 5: Fetch virtual meeting data (if any)
   let virtualMeeting = null
-  if (rawProposal['virtual meeting']) {
+  const virtualMeetingId = rawProposal.virtual_meeting_record_id || rawProposal['virtual meeting']
+  if (virtualMeetingId) {
     const { data: vmData, error: vmError } = await supabase
       .from('virtualmeetingschedulesandlinks')
       .select('*')
-      .eq('_id', rawProposal['virtual meeting'])
+      .eq('_id', virtualMeetingId)
       .single()
 
     if (!vmError && vmData) {

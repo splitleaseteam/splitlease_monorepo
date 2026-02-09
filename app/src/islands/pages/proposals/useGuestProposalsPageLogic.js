@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Guest Proposals Page Logic Hook (V7)
  *
  * Follows the Hollow Component Pattern:
@@ -81,7 +81,7 @@ export function useGuestProposalsPageLogic() {
    */
   useEffect(() => {
     async function checkAuth() {
-      console.log('🔐 Guest Proposals: Checking authentication...');
+      console.log('ðŸ” Guest Proposals: Checking authentication...');
 
       // Clean any legacy user ID from URL first
       cleanLegacyUserIdFromUrl();
@@ -90,7 +90,7 @@ export function useGuestProposalsPageLogic() {
       const isAuthenticated = await checkAuthStatus();
 
       if (!isAuthenticated) {
-        console.log('❌ Guest Proposals: User not authenticated, redirecting to home');
+        console.log('âŒ Guest Proposals: User not authenticated, redirecting to home');
         setAuthState({
           isChecking: false,
           isAuthenticated: false,
@@ -115,7 +115,7 @@ export function useGuestProposalsPageLogic() {
         // Success path: Use validated user data
         userType = userData.userType;
         isGuest = userType === 'Guest' || userType?.includes('Guest');
-        console.log('✅ Guest Proposals: User data loaded, userType:', userType);
+        console.log('âœ… Guest Proposals: User data loaded, userType:', userType);
       } else {
         // ========================================================================
         // GOLD STANDARD AUTH PATTERN - Step 3: Fallback to Supabase session metadata
@@ -126,11 +126,11 @@ export function useGuestProposalsPageLogic() {
           // Session valid but profile fetch failed - use session metadata
           userType = session.user.user_metadata?.user_type || getUserType() || null;
           isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-          console.log('⚠️ Guest Proposals: Using fallback session data, userType:', userType);
+          console.log('âš ï¸ Guest Proposals: Using fallback session data, userType:', userType);
 
           // If we can't determine userType from session, redirect
           if (!userType) {
-            console.log('❌ Guest Proposals: Cannot determine user type from session, redirecting');
+            console.log('âŒ Guest Proposals: Cannot determine user type from session, redirecting');
             setAuthState({
               isChecking: false,
               isAuthenticated: true,
@@ -143,7 +143,7 @@ export function useGuestProposalsPageLogic() {
           }
         } else {
           // No valid session - redirect
-          console.log('❌ Guest Proposals: No valid session, redirecting to home');
+          console.log('âŒ Guest Proposals: No valid session, redirecting to home');
           setAuthState({
             isChecking: false,
             isAuthenticated: false,
@@ -160,7 +160,7 @@ export function useGuestProposalsPageLogic() {
       // Database has inconsistent values: 'Guest' OR 'A Guest (I would like to rent a space)'
 
       if (!isGuest) {
-        console.log('❌ Guest Proposals: User is not a Guest (type:', userType, '), redirecting to home');
+        console.log('âŒ Guest Proposals: User is not a Guest (type:', userType, '), redirecting to home');
         setAuthState({
           isChecking: false,
           isAuthenticated: true,
@@ -173,7 +173,7 @@ export function useGuestProposalsPageLogic() {
         return;
       }
 
-      console.log('✅ Guest Proposals: User authenticated as Guest');
+      console.log('âœ… Guest Proposals: User authenticated as Guest');
       setAuthState({
         isChecking: false,
         isAuthenticated: true,
@@ -257,12 +257,12 @@ export function useGuestProposalsPageLogic() {
     }
 
     // Verify the proposal exists in the user's proposals
-    const proposalExists = proposals.some(p => p._id === proposalIdFromUrl);
+    const proposalExists = proposals.some(p => p.id === proposalIdFromUrl);
     if (proposalExists) {
-      console.log('📂 Auto-expanding proposal from URL:', proposalIdFromUrl);
+      console.log('ðŸ“‚ Auto-expanding proposal from URL:', proposalIdFromUrl);
       setExpandedProposalId(proposalIdFromUrl);
     } else {
-      console.warn('⚠️ Proposal ID from URL not found in user proposals:', proposalIdFromUrl);
+      console.warn('âš ï¸ Proposal ID from URL not found in user proposals:', proposalIdFromUrl);
     }
     hasProcessedUrlExpand.current = true;
   }, [proposals, isLoading]);
@@ -276,7 +276,7 @@ export function useGuestProposalsPageLogic() {
    * @param {string} proposalId - The ID of the selected proposal
    */
   const handleProposalSelect = useCallback((proposalId) => {
-    const proposal = proposals.find(p => p._id === proposalId);
+    const proposal = proposals.find(p => p.id === proposalId);
     if (proposal) {
       setSelectedProposal(proposal);
 
@@ -316,11 +316,11 @@ export function useGuestProposalsPageLogic() {
   const handleProposalDeleted = useCallback((proposalId) => {
     // Remove deleted proposal from local state and update selected proposal atomically
     setProposals(prevProposals => {
-      const remaining = prevProposals.filter(p => p._id !== proposalId);
+      const remaining = prevProposals.filter(p => p.id !== proposalId);
 
       // If the deleted proposal was selected, select the first remaining one
       setSelectedProposal(prev => {
-        if (prev?._id === proposalId) {
+        if (prev?.id === proposalId) {
           return remaining.length > 0 ? remaining[0] : null;
         }
         return prev;
@@ -353,14 +353,14 @@ export function useGuestProposalsPageLogic() {
    * Get status configuration for selected proposal
    */
   const statusConfig = selectedProposal
-    ? getStatusConfig(selectedProposal.Status)
+    ? getStatusConfig(selectedProposal.proposal_workflow_status)
     : null;
 
   /**
    * Get current stage from status
    */
   const currentStage = selectedProposal
-    ? getStageFromStatus(selectedProposal.Status)
+    ? getStageFromStatus(selectedProposal.proposal_workflow_status)
     : null;
 
   /**
@@ -374,7 +374,7 @@ export function useGuestProposalsPageLogic() {
    * Get dropdown options for proposal selector
    */
   const proposalOptions = proposals.map(p => ({
-    id: p._id,
+    id: p.id,
     label: getProposalDisplayText(transformProposalData(p))
   }));
 
@@ -404,7 +404,7 @@ export function useGuestProposalsPageLogic() {
     const userCreated = [];
 
     proposals.forEach(proposal => {
-      const status = proposal.Status || '';
+      const status = proposal.proposal_workflow_status || '';
 
       // SL-suggested = has "Split Lease" in status AND pending confirmation
       // Once confirmed, it moves to "Your Proposals"
@@ -419,8 +419,8 @@ export function useGuestProposalsPageLogic() {
 
     // Sort function: non-terminal first, then by date descending
     const sortProposals = (a, b) => {
-      const aTerminal = isTerminalStatus(a.Status);
-      const bTerminal = isTerminalStatus(b.Status);
+      const aTerminal = isTerminalStatus(a.proposal_workflow_status);
+      const bTerminal = isTerminalStatus(b.proposal_workflow_status);
 
       // Non-terminal comes first
       if (aTerminal !== bTerminal) {
@@ -428,8 +428,8 @@ export function useGuestProposalsPageLogic() {
       }
 
       // Then by creation date (newest first)
-      const aDate = new Date(a['Created Date'] || a.createdAt || 0);
-      const bDate = new Date(b['Created Date'] || b.createdAt || 0);
+      const aDate = new Date(a.bubble_created_at || a.createdAt || 0);
+      const bDate = new Date(b.bubble_created_at || b.createdAt || 0);
       return bDate - aDate;
     };
 

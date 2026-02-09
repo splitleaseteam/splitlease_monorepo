@@ -94,7 +94,7 @@ const ListingCard = ({
         {!imageError && mainPhotoUrl ? (
           <img
             src={mainPhotoUrl}
-            alt={listing.name}
+            alt={listing.listing_title}
             className="listing-photo"
             onError={handleImageError}
           />
@@ -178,7 +178,7 @@ const ListingCard = ({
 
         {/* Listing Name */}
         <h3 className="listing-name-enhanced" onClick={handleCardClick}>
-          {listing.name}
+          {listing.listing_title}
         </h3>
 
         {/* Guest Capacity */}

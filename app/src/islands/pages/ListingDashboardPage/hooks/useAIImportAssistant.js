@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import { logger } from '../../../../lib/logger';
 import { generateListingDescription, generateListingTitle, generateNeighborhoodDescription } from '../../../../lib/aiService';
 import { getCommonHouseRules } from '../../../shared/EditListingDetails/services/houseRulesService';
@@ -40,7 +40,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
     setIsAIComplete(false);
     setAiGeneratedData({});
     setShowAIImportAssistant(true);
-    logger.debug('🤖 AI Import Assistant opened');
+    logger.debug('ðŸ¤– AI Import Assistant opened');
   }, []);
 
   const handleCloseAIImportAssistant = useCallback(() => {
@@ -48,8 +48,8 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
   }, []);
 
   const handleAIImportComplete = useCallback((generatedData) => {
-    logger.debug('✅ AI Import complete, updating local state instantly...');
-    logger.debug('📋 Generated data:', generatedData);
+    logger.debug('âœ… AI Import complete, updating local state instantly...');
+    logger.debug('ðŸ“‹ Generated data:', generatedData);
 
     const changedFields = new Set();
 
@@ -72,7 +72,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
 
       if (generatedData.neighborhood && generatedData.neighborhood !== prev.descriptionNeighborhood) {
         updates.descriptionNeighborhood = generatedData.neighborhood;
-        updates['Description - Neighborhood'] = generatedData.neighborhood;
+        updates.neighborhood_description_by_host = generatedData.neighborhood;
         changedFields.add('neighborhood');
       }
 
@@ -90,7 +90,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
     });
 
     setHighlightedFields(changedFields);
-    logger.debug('✨ Highlighting changed fields:', [...changedFields]);
+    logger.debug('âœ¨ Highlighting changed fields:', [...changedFields]);
 
     setTimeout(() => {
       setHighlightedFields(new Set());
@@ -105,7 +105,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
 
   const handleStartAIGeneration = useCallback(async () => {
     if (!listing) {
-      logger.error('❌ No listing data available for AI generation');
+      logger.error('âŒ No listing data available for AI generation');
       return;
     }
 
@@ -119,8 +119,8 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
     let enrichedNeighborhood = listing.location?.hoodsDisplay || '';
 
     try {
-      logger.debug('🤖 Starting AI Import Assistant generation...');
-      logger.debug('📋 Step 1: Loading common features and data first...');
+      logger.debug('ðŸ¤– Starting AI Import Assistant generation...');
+      logger.debug('ðŸ“‹ Step 1: Loading common features and data first...');
 
       // PHASE 1: Load all data first
 
@@ -138,7 +138,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
         setAiGenerationStatus(prev => ({ ...prev, inUnitAmenities: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error loading in-unit amenities:', err);
+        logger.error('âŒ Error loading in-unit amenities:', err);
         setAiGenerationStatus(prev => ({ ...prev, inUnitAmenities: 'complete' }));
       }
 
@@ -156,7 +156,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
         setAiGenerationStatus(prev => ({ ...prev, buildingAmenities: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error loading building amenities:', err);
+        logger.error('âŒ Error loading building amenities:', err);
         setAiGenerationStatus(prev => ({ ...prev, buildingAmenities: 'complete' }));
       }
 
@@ -167,26 +167,26 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
 
         const hoodName = listing.location?.hoodsDisplay;
         if (hoodName) {
-          logger.debug('🏘️ Trying neighborhood lookup by name:', hoodName);
+          logger.debug('ðŸ˜ï¸ Trying neighborhood lookup by name:', hoodName);
           neighborhoodResult = await getNeighborhoodByName(hoodName);
           if (neighborhoodResult?.description) {
-            logger.debug('✅ Found neighborhood by name:', hoodName);
+            logger.debug('âœ… Found neighborhood by name:', hoodName);
           }
         }
 
         if (!neighborhoodResult?.description) {
           const zipCode = listing.location?.zipCode;
           if (zipCode) {
-            logger.debug('🏘️ Trying neighborhood lookup by ZIP:', zipCode);
+            logger.debug('ðŸ˜ï¸ Trying neighborhood lookup by ZIP:', zipCode);
             neighborhoodResult = await getNeighborhoodByZipCode(zipCode);
             if (neighborhoodResult?.description) {
-              logger.debug('✅ Found neighborhood by ZIP:', zipCode);
+              logger.debug('âœ… Found neighborhood by ZIP:', zipCode);
             }
           }
         }
 
         if (!neighborhoodResult?.description) {
-          logger.debug('🏘️ No database match, trying AI generation...');
+          logger.debug('ðŸ˜ï¸ No database match, trying AI generation...');
           const addressData = {
             fullAddress: listing.location?.address || '',
             city: listing.location?.city || '',
@@ -201,7 +201,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
                 description: aiDescription,
                 neighborhoodName: hoodName || '',
               };
-              logger.debug('✅ Generated neighborhood via AI');
+              logger.debug('âœ… Generated neighborhood via AI');
             }
           }
         }
@@ -212,12 +212,12 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
           enrichedNeighborhood = neighborhoodResult.neighborhoodName || enrichedNeighborhood;
           await updateListing({ 'Description - Neighborhood': neighborhoodResult.description });
         } else {
-          logger.warn('⚠️ No neighborhood description found via any method');
+          logger.warn('âš ï¸ No neighborhood description found via any method');
         }
 
         setAiGenerationStatus(prev => ({ ...prev, neighborhood: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error loading neighborhood:', err);
+        logger.error('âŒ Error loading neighborhood:', err);
         setAiGenerationStatus(prev => ({ ...prev, neighborhood: 'complete' }));
       }
 
@@ -234,7 +234,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
         setAiGenerationStatus(prev => ({ ...prev, houseRules: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error loading house rules:', err);
+        logger.error('âŒ Error loading house rules:', err);
         setAiGenerationStatus(prev => ({ ...prev, houseRules: 'complete' }));
       }
 
@@ -251,13 +251,13 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
         setAiGenerationStatus(prev => ({ ...prev, safetyFeatures: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error loading safety features:', err);
+        logger.error('âŒ Error loading safety features:', err);
         setAiGenerationStatus(prev => ({ ...prev, safetyFeatures: 'complete' }));
       }
 
       // PHASE 2: Generate AI content with enriched data
 
-      logger.debug('📋 Step 2: Generating AI content with enriched data...');
+      logger.debug('ðŸ“‹ Step 2: Generating AI content with enriched data...');
 
       const enrichedListingData = {
         listingName: listing.title || '',
@@ -272,7 +272,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         amenitiesOutsideUnit: enrichedAmenities.building,
       };
 
-      logger.debug('🤖 Generating AI content with enriched data:', enrichedListingData);
+      logger.debug('ðŸ¤– Generating AI content with enriched data:', enrichedListingData);
 
       // 6. Generate Description
       setAiGenerationStatus(prev => ({ ...prev, description: 'loading' }));
@@ -284,7 +284,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
         setAiGenerationStatus(prev => ({ ...prev, description: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error generating description:', err);
+        logger.error('âŒ Error generating description:', err);
         setAiGenerationStatus(prev => ({ ...prev, description: 'complete' }));
       }
 
@@ -298,15 +298,15 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
         setAiGenerationStatus(prev => ({ ...prev, name: 'complete' }));
       } catch (err) {
-        logger.error('❌ Error generating name:', err);
+        logger.error('âŒ Error generating name:', err);
         setAiGenerationStatus(prev => ({ ...prev, name: 'complete' }));
       }
 
-      logger.debug('✅ AI Import Assistant generation complete:', generatedResults);
+      logger.debug('âœ… AI Import Assistant generation complete:', generatedResults);
       setAiGeneratedData(generatedResults);
       setIsAIComplete(true);
     } catch (err) {
-      logger.error('❌ AI generation error:', err);
+      logger.error('âŒ AI generation error:', err);
     } finally {
       setIsAIGenerating(false);
     }

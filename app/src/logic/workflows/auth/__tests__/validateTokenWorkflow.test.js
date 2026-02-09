@@ -13,11 +13,11 @@ describe('validateTokenWorkflow', () => {
   const createMockSupabaseFetchUserFn = (userData) => vi.fn().mockResolvedValue(userData);
 
   const mockUserData = {
-    _id: 'user_123',
-    'Name - First': 'John',
-    'Name - Full': 'John Doe',
-    'Profile Photo': 'https://example.com/photo.jpg',
-    'Type - User Current': 'A Guest (I would like to rent a space)'
+    id: 'user_123',
+    first_name: 'John',
+    last_name: 'Doe',
+    profile_photo_url: 'https://example.com/photo.jpg',
+    current_user_role: 'A Guest (I would like to rent a space)'
   };
 
   // ============================================================================
@@ -129,7 +129,7 @@ describe('validateTokenWorkflow', () => {
       const bubbleValidateFn = createMockBubbleValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         ...mockUserData,
-        'Profile Photo': 'https://example.com/photo.jpg'
+        profile_photo_url: 'https://example.com/photo.jpg'
       });
 
       const result = await validateTokenWorkflow({
@@ -146,7 +146,7 @@ describe('validateTokenWorkflow', () => {
       const bubbleValidateFn = createMockBubbleValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         ...mockUserData,
-        'Profile Photo': '//example.com/photo.jpg'
+        profile_photo_url: '//example.com/photo.jpg'
       });
 
       const result = await validateTokenWorkflow({
@@ -163,7 +163,7 @@ describe('validateTokenWorkflow', () => {
       const bubbleValidateFn = createMockBubbleValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         ...mockUserData,
-        'Profile Photo': null
+        profile_photo_url: null
       });
 
       const result = await validateTokenWorkflow({
@@ -179,7 +179,7 @@ describe('validateTokenWorkflow', () => {
     it('should handle undefined profile photo', async () => {
       const bubbleValidateFn = createMockBubbleValidateFn(true);
       const userDataNoPhoto = { ...mockUserData };
-      delete userDataNoPhoto['Profile Photo'];
+      delete userDataNoPhoto.profile_photo_url;
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(userDataNoPhoto);
 
       const result = await validateTokenWorkflow({
@@ -391,7 +391,7 @@ describe('validateTokenWorkflow', () => {
     it('should handle missing name fields', async () => {
       const bubbleValidateFn = createMockBubbleValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
-        _id: 'user_123'
+        id: 'user_123'
       });
 
       const result = await validateTokenWorkflow({
@@ -429,10 +429,10 @@ describe('validateTokenWorkflow', () => {
     it('should handle new user without cached type', async () => {
       const bubbleValidateFn = createMockBubbleValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
-        _id: 'new_user_123',
-        'Name - First': 'Jane',
-        'Name - Full': 'Jane Smith',
-        'Type - User Current': 'A Host (I have a space available to rent)'
+        id: 'new_user_123',
+        first_name: 'Jane',
+        last_name: 'Smith',
+        current_user_role: 'A Host (I have a space available to rent)'
       });
 
       const result = await validateTokenWorkflow({

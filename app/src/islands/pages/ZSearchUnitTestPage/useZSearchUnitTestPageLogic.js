@@ -159,50 +159,50 @@ export function useZSearchUnitTestPageLogic() {
       let query = supabase
         .from('listing')
         .select('*', { count: 'exact' })
-        .eq('"Location - Borough"', borough.id);
+        .eq('borough', borough.id);
 
       // Apply attribute filters
       if (filters.showActive) {
-        query = query.eq('Active', true);
+        query = query.eq('is_active', true);
       }
       if (filters.showApproved) {
-        query = query.eq('Approved', true);
+        query = query.eq('is_approved', true);
       }
       if (filters.showComplete) {
-        query = query.eq('"Complete"', true);
+        query = query.eq('is_listing_profile_complete', true);
       }
       if (!filters.showDefault) {
-        query = query.eq('isForUsability', false);
+        query = query.eq('is_usability_test_listing', false);
       }
 
       // Neighborhood filter
       if (filters.selectedNeighborhood) {
-        query = query.eq('"Location - Hood"', filters.selectedNeighborhood);
+        query = query.eq('primary_neighborhood_reference_id', filters.selectedNeighborhood);
       }
 
       // Week pattern filter
       if (filters.weekPattern !== 'every-week') {
         const patternText = WEEK_PATTERNS[filters.weekPattern];
         if (patternText) {
-          query = query.eq('"Weeks offered"', patternText);
+          query = query.eq('weeks_offered_schedule_text', patternText);
         }
       }
 
       // Price filter
       if (filters.priceMin !== null) {
-        query = query.gte('"Standarized Minimum Nightly Price (Filter)"', filters.priceMin);
+        query = query.gte('standardized_min_nightly_price_for_search_filter', filters.priceMin);
       }
       if (filters.priceMax !== null) {
-        query = query.lte('"Standarized Minimum Nightly Price (Filter)"', filters.priceMax);
+        query = query.lte('standardized_min_nightly_price_for_search_filter', filters.priceMax);
       }
 
       // Apply sorting
       const sortConfig = {
-        'recommended': { field: '"Modified Date"', ascending: false },
-        'price-low': { field: '"Standarized Minimum Nightly Price (Filter)"', ascending: true },
-        'price-high': { field: '"Standarized Minimum Nightly Price (Filter)"', ascending: false },
-        'newest': { field: '"Created Date"', ascending: false }
-      }[filters.sortBy] || { field: '"Modified Date"', ascending: false };
+        'recommended': { field: 'bubble_updated_at', ascending: false },
+        'price-low': { field: 'standardized_min_nightly_price_for_search_filter', ascending: true },
+        'price-high': { field: 'standardized_min_nightly_price_for_search_filter', ascending: false },
+        'newest': { field: 'bubble_created_at', ascending: false }
+      }[filters.sortBy] || { field: 'bubble_updated_at', ascending: false };
 
       query = query.order(sortConfig.field, { ascending: sortConfig.ascending });
 
@@ -217,19 +217,19 @@ export function useZSearchUnitTestPageLogic() {
 
       // Transform listings for display
       const transformedListings = filteredByAvailability.map(listing => ({
-        id: listing._id,
-        name: listing.Name || 'Untitled Listing',
-        borough: getBoroughName(listing['Location - Borough']),
-        neighborhood: getNeighborhoodName(listing['Location - Hood']),
-        nightlyPrice: listing['Standarized Minimum Nightly Price (Filter)'] || 0,
-        daysAvailable: listing['Days Available (List of Days)'] || [],
-        nightsAvailable: listing['Nights_Available'] || [],
-        weeksOffered: listing['Weeks offered'] || 'Every week',
-        isActive: listing.Active || false,
-        isComplete: listing.Complete || false,
-        isApproved: listing.Approved || false,
-        modifiedDate: listing['Modified Date'],
-        createdDate: listing['Created Date']
+        id: listing.id,
+        name: listing.listing_title || 'Untitled Listing',
+        borough: getBoroughName(listing.borough),
+        neighborhood: getNeighborhoodName(listing.primary_neighborhood_reference_id),
+        nightlyPrice: listing.standardized_min_nightly_price_for_search_filter || 0,
+        daysAvailable: listing.available_days_as_day_numbers_json || [],
+        nightsAvailable: listing.available_nights_as_day_numbers_json || [],
+        weeksOffered: listing.weeks_offered_schedule_text || 'Every week',
+        isActive: listing.is_active || false,
+        isComplete: listing.is_listing_profile_complete || false,
+        isApproved: listing.is_approved || false,
+        modifiedDate: listing.bubble_updated_at,
+        createdDate: listing.bubble_created_at
       }));
 
       setListings(transformedListings);
@@ -365,13 +365,13 @@ function filterListingsByAvailability(listings, selectedDays) {
 
   return listings.filter(listing => {
     // Parse days available
-    const daysAvailable = parseArrayField(listing['Days Available (List of Days)']);
+    const daysAvailable = parseArrayField(listing.available_days_as_day_numbers_json);
 
     // Parse days not available
     const daysNotAvailable = parseArrayField(listing['Days_Not_Available']);
 
     // Parse nights available
-    const nightsAvailable = parseArrayField(listing['Nights_Available']);
+    const nightsAvailable = parseArrayField(listing.available_nights_as_day_numbers_json);
 
     // Parse nights not available
     const nightsNotAvailable = parseArrayField(listing['Nights_Not_Available']);

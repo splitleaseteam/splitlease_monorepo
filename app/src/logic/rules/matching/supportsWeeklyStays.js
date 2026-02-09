@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Check if listing supports weekly (7-night) stays.
  *
  * @intent Determine if listing can accommodate full-week bookings.
@@ -32,7 +32,7 @@ export function supportsWeeklyStays({ listing }) {
     return false;
   }
 
-  const minimumNights = listing['Minimum Nights'];
+  const minimumNights = listing.minimum_nights_per_stay;
   const availableDays = listing['Schedule days available'];
 
   // Check minimum nights constraint

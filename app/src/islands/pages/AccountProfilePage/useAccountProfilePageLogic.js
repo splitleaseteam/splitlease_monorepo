@@ -384,7 +384,7 @@ export function useAccountProfilePageLogic() {
     return {
       email: profileData['is email confirmed'] === true,
       phone: profileData['Verify - Phone'] === true,
-      govId: profileData['user verified?'] === true,
+      govId: profileData.is_user_verified === true,
       linkedin: !!profileData['Verify - Linked In ID']
     };
   }, [profileData]);
@@ -408,10 +408,10 @@ export function useAccountProfilePageLogic() {
    */
   const profileStrength = useMemo(() => {
     const profileInfo = {
-      profilePhoto: profileData?.['Profile Photo'],
-      bio: formData.bio || profileData?.['About Me / Bio'],
-      firstName: formData.firstName || profileData?.['Name - First'],
-      lastName: formData.lastName || profileData?.['Name - Last'],
+      profilePhoto: profileData?.profile_photo_url,
+      bio: formData.bio || profileData?.bio_text,
+      firstName: formData.firstName || profileData?.first_name,
+      lastName: formData.lastName || profileData?.last_name,
       jobTitle: formData.jobTitle || profileData?.['Job Title'],
       goodGuestReasons: formData.goodGuestReasons || profileData?.['Reasons to Host me'] || [],
       storageItems: formData.storageItems || profileData?.['About - Commonly Stored Items'] || [],
@@ -426,10 +426,10 @@ export function useAccountProfilePageLogic() {
    */
   const nextActions = useMemo(() => {
     const profileInfo = {
-      profilePhoto: profileData?.['Profile Photo'],
-      bio: formData.bio || profileData?.['About Me / Bio'],
-      firstName: formData.firstName || profileData?.['Name - First'],
-      lastName: formData.lastName || profileData?.['Name - Last'],
+      profilePhoto: profileData?.profile_photo_url,
+      bio: formData.bio || profileData?.bio_text,
+      firstName: formData.firstName || profileData?.first_name,
+      lastName: formData.lastName || profileData?.last_name,
       jobTitle: formData.jobTitle || profileData?.['Job Title'],
       goodGuestReasons: formData.goodGuestReasons || profileData?.['Reasons to Host me'] || [],
       storageItems: formData.storageItems || profileData?.['About - Commonly Stored Items'] || [],
@@ -505,7 +505,7 @@ export function useAccountProfilePageLogic() {
       const { data: userData, error: userError } = await supabase
         .from('user')
         .select('*')
-        .eq('_id', userId)
+        .eq('id', userId)
         .single();
 
       if (userError) {
@@ -571,13 +571,13 @@ export function useAccountProfilePageLogic() {
       }
 
       setFormData({
-        firstName: userData['Name - First'] || '',
-        lastName: userData['Name - Last'] || '',
+        firstName: userData.first_name || '',
+        lastName: userData.last_name || '',
         jobTitle,
         dateOfBirth,
-        bio: userData['About Me / Bio'] || '',
-        needForSpace: userData['need for Space'] || '',
-        specialNeeds: userData['special needs'] || '',
+        bio: userData.bio_text || '',
+        needForSpace: userData.stated_need_for_space_text || '',
+        specialNeeds: userData.stated_special_needs_text || '',
         selectedDays: dayNamesToIndices(userData['Recent Days Selected'] || []),
         transportationTypes,
         goodGuestReasons: userData['Reasons to Host me'] || [],
@@ -599,27 +599,25 @@ export function useAccountProfilePageLogic() {
     if (!userId) return;
     setLoadingListings(true);
     try {
-      // Use RPC function to fetch listings (handles "Host User" column name)
+      // Use RPC function to fetch listings (handles host_user_id lookups)
       const { data, error } = await supabase
         .rpc('get_host_listings', { host_user_id: userId });
 
       if (error) throw error;
 
       // Map RPC results to the format expected by ListingsCard component
-      // RPC returns: _id, Name, Complete, "Location - Borough", hood, bedrooms, bathrooms,
-      //              "Features - Photos" (JSONB array), min_nightly, rental_type, monthly_rate, weekly_rate, etc.
+      // RPC returns: id, listing_title, is_listing_profile_complete, borough, hood, bedrooms, bathrooms,
+      //              photos_with_urls_captions_and_sort_order_json (JSONB array), min_nightly, rental_type, monthly_rate, weekly_rate, etc.
       const mappedListings = (data || [])
-        .filter(listing => listing.Complete === true) // Only show complete listings
+        .filter(listing => listing.is_listing_profile_complete === true) // Only show complete listings
         .map(listing => {
           return {
-            // Use 'id' (Bubble-style ID) for routing, not '_id' (internal Supabase ID)
-            // id format: 1764973043780x52847445415716824 (for URLs)
-            // _id format: self_1764973043425_nkzixvohd (internal, don't use for routing)
-            _id: listing.id || listing._id, // Prefer Bubble-style 'id' for routing
-            id: listing.id, // Keep original Bubble ID explicitly
-            Name: listing.Name || 'Unnamed Listing',
+            // listing.id is the primary identifier used for routing and URLs
+            _id: listing.id,
+            id: listing.id,
+            Name: listing.listing_title || 'Unnamed Listing',
             // Map location fields to match ListingsCard expectations
-            'Borough/Region': listing['Location - Borough'] || '',
+            'Borough/Region': listing.borough || '',
             hood: listing.hood || '',
             // Bedroom/bathroom counts (now returned by updated RPC)
             'Qty of Bedrooms': listing.bedrooms || 0,
@@ -629,9 +627,9 @@ export function useAccountProfilePageLogic() {
             min_nightly: listing.min_nightly || 0,
             weekly_rate: listing.weekly_rate || 0,
             monthly_rate: listing.monthly_rate || 0,
-            Complete: listing.Complete,
+            Complete: listing.is_listing_profile_complete,
             // Pass raw JSONB photo array - ListingsCard handles extraction
-            listing_photo: listing['Features - Photos'] || [],
+            listing_photo: listing.photos_with_urls_captions_and_sort_order_json || [],
             // Rental type for proper price label (Nightly/Weekly/Monthly)
             rental_type: listing.rental_type || 'Nightly',
             source: listing.source || 'listing'
@@ -833,7 +831,7 @@ export function useAccountProfilePageLogic() {
         const { error: updateError } = await supabase
           .from('user')
           .update({ 'is email confirmed': true })
-          .eq('_id', profileUserId);
+          .eq('id', profileUserId);
 
         if (updateError) {
           console.error('[email-verification] Error updating verification status:', updateError);
@@ -995,7 +993,7 @@ export function useAccountProfilePageLogic() {
           [dbColumn]: newItems,
           'Modified Date': new Date().toISOString()
         })
-        .eq('_id', profileUserId);
+        .eq('id', profileUserId);
 
       if (updateError) {
         console.error('[handleChipToggle] Autosave error:', updateError);
@@ -1106,13 +1104,12 @@ export function useAccountProfilePageLogic() {
       // Database columns use Bubble.io naming conventions
       // Note: 'Job Title' column does not exist - removed from update
       const updateData = {
-        'Name - First': firstName,
-        'Name - Last': lastName,
-        'Name - Full': fullName,
+        first_name: firstName,
+        last_name: lastName,
         'Date of Birth': dateOfBirthISO,
-        'About Me / Bio': formData.bio.trim(),
-        'need for Space': formData.needForSpace.trim(),
-        'special needs': formData.specialNeeds.trim(),
+        bio_text: formData.bio.trim(),
+        stated_need_for_space_text: formData.needForSpace.trim(),
+        stated_special_needs_text: formData.specialNeeds.trim(),
         'Recent Days Selected': indicesToDayNames(formData.selectedDays),
         'transportation medium': formData.transportationTypes.length > 0
           ? JSON.stringify(formData.transportationTypes)
@@ -1125,7 +1122,7 @@ export function useAccountProfilePageLogic() {
       const { error: updateError } = await supabase
         .from('user')
         .update(updateData)
-        .eq('_id', profileUserId);
+        .eq('id', profileUserId);
 
       if (updateError) {
         console.error('[handleSave] Update error:', updateError);
@@ -1235,7 +1232,7 @@ export function useAccountProfilePageLogic() {
       }
 
       const magicLink = magicLinkData.data.action_link;
-      const firstName = profileData?.['Name - First'] || 'there';
+      const firstName = profileData?.first_name || 'there';
 
       // Step 3: Send verification email using send-email edge function
       const bodyText = `Hi ${firstName}. Please click the link below to verify your email address on Split Lease. This helps us ensure your account is secure and builds trust with other members of our community.`;
@@ -1500,10 +1497,10 @@ export function useAccountProfilePageLogic() {
       const { error: updateError } = await supabase
         .from('user')
         .update({
-          'Profile Photo': publicUrl,
+          profile_photo_url: publicUrl,
           'Modified Date': new Date().toISOString()
         })
-        .eq('_id', profileUserId);
+        .eq('id', profileUserId);
 
       if (updateError) {
         throw updateError;
@@ -1512,11 +1509,11 @@ export function useAccountProfilePageLogic() {
       // Update local state
       setProfileData(prev => ({
         ...prev,
-        'Profile Photo': publicUrl
+        profile_photo_url: publicUrl
       }));
 
     } catch (err) {
-      console.error('❌ Error uploading avatar:', err);
+      console.error('âŒ Error uploading avatar:', err);
       setError(err.message || 'Failed to upload profile photo');
     } finally {
       setSaving(false);

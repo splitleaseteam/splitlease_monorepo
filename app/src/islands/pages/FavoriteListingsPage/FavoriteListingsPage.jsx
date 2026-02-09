@@ -321,9 +321,9 @@ const FavoriteListingsPage = () => {
 
   // Transform raw listing data to match SearchPage format
   const transformListing = useCallback((dbListing, images, hostData) => {
-    const neighborhoodName = getNeighborhoodName(dbListing['Location - Hood']);
-    const boroughName = getBoroughName(dbListing['Location - Borough']);
-    const propertyType = getPropertyTypeLabel(dbListing['Features - Type of Space']);
+    const neighborhoodName = getNeighborhoodName(dbListing.primary_neighborhood_reference_id);
+    const boroughName = getBoroughName(dbListing.borough);
+    const propertyType = getPropertyTypeLabel(dbListing.space_type);
 
     const locationParts = [];
     if (neighborhoodName) locationParts.push(neighborhoodName);
@@ -331,8 +331,8 @@ const FavoriteListingsPage = () => {
     const location = locationParts.join(', ') || 'New York, NY';
 
     // Extract coordinates
-    let locationAddress = dbListing['Location - Address'];
-    let locationSlightlyDifferent = dbListing['Location - slightly different address'];
+    let locationAddress = dbListing.address_with_lat_lng_json;
+    let locationSlightlyDifferent = dbListing.map_pin_offset_address_json;
 
     if (typeof locationSlightlyDifferent === 'string') {
       try {
@@ -355,64 +355,64 @@ const FavoriteListingsPage = () => {
 
     return {
       id: dbListing._id,
-      title: dbListing.Name || 'Unnamed Listing',
+      title: dbListing.listing_title || 'Unnamed Listing',
       location: location,
       neighborhood: neighborhoodName || '',
       borough: boroughName || '',
       coordinates,
       price: {
         starting: dbListing['Standarized Minimum Nightly Price (Filter)'] || 0,
-        full: dbListing['nightly_rate_7_nights'] || 0
+        full: dbListing.nightly_rate_for_7_night_stay || 0
       },
       'Starting nightly price': dbListing['Standarized Minimum Nightly Price (Filter)'] || 0,
-      'Price 2 nights selected': dbListing['nightly_rate_2_nights'] || null,
-      'Price 3 nights selected': dbListing['nightly_rate_3_nights'] || null,
-      'Price 4 nights selected': dbListing['nightly_rate_4_nights'] || null,
-      'Price 5 nights selected': dbListing['nightly_rate_5_nights'] || null,
+      'Price 2 nights selected': dbListing.nightly_rate_for_2_night_stay || null,
+      'Price 3 nights selected': dbListing.nightly_rate_for_3_night_stay || null,
+      'Price 4 nights selected': dbListing.nightly_rate_for_4_night_stay || null,
+      'Price 5 nights selected': dbListing.nightly_rate_for_5_night_stay || null,
       'Price 6 nights selected': null,
-      'Price 7 nights selected': dbListing['nightly_rate_7_nights'] || null,
+      'Price 7 nights selected': dbListing.nightly_rate_for_7_night_stay || null,
       type: propertyType,
-      squareFeet: dbListing['Features - SQFT Area'] || null,
-      maxGuests: dbListing['Features - Qty Guests'] || 1,
-      bedrooms: dbListing['Features - Qty Bedrooms'] || 0,
-      bathrooms: dbListing['Features - Qty Bathrooms'] || 0,
+      squareFeet: dbListing.square_feet || null,
+      maxGuests: dbListing.max_guest_count || 1,
+      bedrooms: dbListing.bedroom_count || 0,
+      bathrooms: dbListing.bathroom_count || 0,
       amenities: parseAmenities(dbListing),
       host: hostData || { name: null, image: null, verified: false },
       images: images || [],
-      description: `${(dbListing['Features - Qty Bedrooms'] || 0) === 0 ? 'Studio' : `${dbListing['Features - Qty Bedrooms']} bedroom`} • ${dbListing['Features - Qty Bathrooms'] || 0} bathroom`,
-      weeks_offered: dbListing['Weeks offered'] || 'Every week',
+      description: `${(dbListing.bedroom_count || 0) === 0 ? 'Studio' : `${dbListing.bedroom_count} bedroom`} • ${dbListing.bathroom_count || 0} bathroom`,
+      weeks_offered: dbListing.weeks_offered_schedule_text || 'Every week',
       isNew: false,
 
       // Pricing fields for CreateProposalFlowV2 / DaysSelectionSection
-      'nightly_rate_2_nights': dbListing['nightly_rate_2_nights'],
-      'nightly_rate_3_nights': dbListing['nightly_rate_3_nights'],
-      'nightly_rate_4_nights': dbListing['nightly_rate_4_nights'],
-      'nightly_rate_5_nights': dbListing['nightly_rate_5_nights'],
-      'nightly_rate_7_nights': dbListing['nightly_rate_7_nights'],
-      'weekly_host_rate': dbListing['weekly_host_rate'],
-      'monthly_host_rate': dbListing['monthly_host_rate'],
+      'nightly_rate_2_nights': dbListing.nightly_rate_for_2_night_stay,
+      'nightly_rate_3_nights': dbListing.nightly_rate_for_3_night_stay,
+      'nightly_rate_4_nights': dbListing.nightly_rate_for_4_night_stay,
+      'nightly_rate_5_nights': dbListing.nightly_rate_for_5_night_stay,
+      'nightly_rate_7_nights': dbListing.nightly_rate_for_7_night_stay,
+      'weekly_host_rate': dbListing.weekly_rate_paid_to_host,
+      'monthly_host_rate': dbListing.monthly_rate_paid_to_host,
       'price_override': dbListing['price_override'],
-      'cleaning_fee': dbListing['cleaning_fee'],
-      'damage_deposit': dbListing['damage_deposit'],
-      'unit_markup': dbListing['unit_markup'],
-      'rental type': dbListing['rental type'],
-      'Weeks offered': dbListing['Weeks offered'],
+      'cleaning_fee': dbListing.cleaning_fee_amount,
+      'damage_deposit': dbListing.damage_deposit_amount,
+      'unit_markup': dbListing.unit_markup_percentage,
+      'rental type': dbListing.rental_type,
+      'Weeks offered': dbListing.weeks_offered_schedule_text,
 
       // Availability fields for schedule selector
-      ' First Available': dbListing[' First Available'],
+      ' First Available': dbListing.first_available_date,
       'Last Available': dbListing['Last Available'],
       '# of nights available': dbListing['# of nights available'],
-      'Active': dbListing['Active'],
+      'Active': dbListing.is_active,
       'Approved': dbListing['Approved'],
-      'Dates - Blocked': dbListing['Dates - Blocked'],
-      'Complete': dbListing['Complete'],
+      'Dates - Blocked': dbListing.blocked_specific_dates_json,
+      'Complete': dbListing.is_listing_profile_complete,
       'confirmedAvailability': dbListing['confirmedAvailability'],
-      'NEW Date Check-in Time': dbListing['NEW Date Check-in Time'],
-      'NEW Date Check-out Time': dbListing['NEW Date Check-out Time'],
+      'NEW Date Check-in Time': dbListing.checkin_time_of_day,
+      'NEW Date Check-out Time': dbListing.checkout_time_of_day,
       'Nights Available (numbers)': dbListing['Nights Available (numbers)'],
-      'Minimum Nights': dbListing['Minimum Nights'],
-      'Maximum Nights': dbListing['Maximum Nights'],
-      'Days Available (List of Days)': dbListing['Days Available (List of Days)']
+      'Minimum Nights': dbListing.minimum_nights_per_stay,
+      'Maximum Nights': dbListing.maximum_nights_per_stay,
+      'Days Available (List of Days)': dbListing.available_days_as_day_numbers_json
     };
   }, []);
 
@@ -475,8 +475,8 @@ const FavoriteListingsPage = () => {
           const [profileResult, countsResult] = await Promise.all([
             supabase
               .from('user')
-              .select('"About Me / Bio", "need for Space", "special needs"')
-              .eq('_id', authUserId)
+              .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
+              .eq('id', authUserId)
               .single(),
             supabase.rpc('get_user_junction_counts', { p_user_id: authUserId })
           ]);
@@ -485,9 +485,9 @@ const FavoriteListingsPage = () => {
             const junctionCounts = countsResult.data?.[0] || {};
             const proposalCount = Number(junctionCounts.proposals_count) || 0;
             setLoggedInUserData({
-              aboutMe: profileResult.data['About Me / Bio'] || '',
-              needForSpace: profileResult.data['need for Space'] || '',
-              specialNeeds: profileResult.data['special needs'] || '',
+              aboutMe: profileResult.data.bio_text || '',
+              needForSpace: profileResult.data.stated_need_for_space_text || '',
+              specialNeeds: profileResult.data.stated_special_needs_text || '',
               proposalCount: proposalCount
             });
 
@@ -502,7 +502,7 @@ const FavoriteListingsPage = () => {
           console.warn('Failed to fetch user proposal data:', e);
         }
 
-        // Fetch user's favorited listing IDs from user table
+        // Fetch user's favorited listing IDs (queries listing table for user_ids_who_favorited_json)
         let favoritedIds = [];
         try {
           favoritedIds = await getFavoritedListingIds(authUserId);
@@ -516,8 +516,8 @@ const FavoriteListingsPage = () => {
         // Ensure we have an array
         favoritedIds = Array.isArray(favoritedIds) ? favoritedIds : [];
 
-        // Filter to valid Bubble listing IDs
-        favoritedIds = favoritedIds.filter(id => typeof id === 'string' && /^\d+x\d+$/.test(id));
+        // Filter to valid listing IDs (non-empty strings)
+        favoritedIds = favoritedIds.filter(id => typeof id === 'string' && id.length > 0);
         setFavoritedListingIds(new Set(favoritedIds));
 
         if (favoritedIds.length === 0) {
@@ -530,8 +530,8 @@ const FavoriteListingsPage = () => {
         const { data: listingsData, error: listingsError } = await supabase
           .from('listing')
           .select('*')
-          .in('_id', favoritedIds)
-          .eq('Deleted', false);
+          .in('id', favoritedIds)
+          .eq('is_deleted', false);
 
         if (listingsError) {
           console.error('Error fetching listings:', listingsError);
@@ -544,7 +544,7 @@ const FavoriteListingsPage = () => {
         // New format has embedded objects with URLs, no fetch needed
         const legacyPhotoIds = new Set();
         listingsData.forEach(listing => {
-          const photosField = listing['Features - Photos'];
+          const photosField = listing.photos_with_urls_captions_and_sort_order_json;
           let photos = [];
 
           if (Array.isArray(photosField)) {
@@ -576,7 +576,7 @@ const FavoriteListingsPage = () => {
         const resolvedPhotos = {};
         listingsData.forEach(listing => {
           resolvedPhotos[listing._id] = extractPhotos(
-            listing['Features - Photos'],
+            listing.photos_with_urls_captions_and_sort_order_json,
             photoMap,
             listing._id
           );
@@ -585,8 +585,8 @@ const FavoriteListingsPage = () => {
         // Batch fetch host data
         const hostIds = new Set();
         listingsData.forEach(listing => {
-          if (listing['Host User']) {
-            hostIds.add(listing['Host User']);
+          if (listing.host_user_id) {
+            hostIds.add(listing.host_user_id);
           }
         });
 
@@ -595,7 +595,7 @@ const FavoriteListingsPage = () => {
         // Transform listings
         const transformedListings = listingsData
           .map(listing => {
-            const hostId = listing['Host User'];
+            const hostId = listing.host_user_id;
             return transformListing(listing, resolvedPhotos[listing._id], hostMap[hostId] || null);
           })
           .filter(listing => listing.coordinates && listing.coordinates.lat && listing.coordinates.lng)
@@ -612,7 +612,7 @@ const FavoriteListingsPage = () => {
           // Create a map of listing ID to proposal (only include non-terminal proposals)
           const proposalsMap = new Map();
           proposals.forEach(proposal => {
-            const listingId = proposal.Listing;
+            const listingId = proposal.listing_id;
             if (listingId) {
               // If multiple proposals exist for same listing, keep the most recent one
               // (proposals are already sorted by Created Date descending)
@@ -954,8 +954,8 @@ const FavoriteListingsPage = () => {
         const [profileResult, countsResult] = await Promise.all([
           supabase
             .from('user')
-            .select('"About Me / Bio", "need for Space", "special needs"')
-            .eq('_id', sessionId)
+            .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
+            .eq('id', sessionId)
             .single(),
           supabase.rpc('get_user_junction_counts', { p_user_id: sessionId })
         ]);
@@ -964,9 +964,9 @@ const FavoriteListingsPage = () => {
           const junctionCounts = countsResult.data?.[0] || {};
           const proposalCount = Number(junctionCounts.proposals_count) || 0;
           setLoggedInUserData({
-            aboutMe: profileResult.data['About Me / Bio'] || '',
-            needForSpace: profileResult.data['need for Space'] || '',
-            specialNeeds: profileResult.data['special needs'] || '',
+            aboutMe: profileResult.data.bio_text || '',
+            needForSpace: profileResult.data.stated_need_for_space_text || '',
+            specialNeeds: profileResult.data.stated_special_needs_text || '',
             proposalCount: proposalCount
           });
         }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Lease Readiness Checks
  *
  * Defines validation rules for each document type and checks
@@ -34,7 +34,7 @@ export const HOST_PAYOUT_REQUIREMENTS = {
     {
       key: 'host',
       label: 'Host user linked',
-      check: (data) => !!data.host?._id,
+      check: (data) => !!data.host?.id || !!data.host?._id,
       source: 'user',
     },
   ],
@@ -42,19 +42,19 @@ export const HOST_PAYOUT_REQUIREMENTS = {
     {
       key: 'hostEmail',
       label: 'Host email',
-      check: (data) => !!data.host?.email || !!data.host?.['email as text'],
+      check: (data) => !!data.host?.email,
       source: 'user',
     },
     {
       key: 'hostPhone',
       label: 'Host phone number',
-      check: (data) => !!data.host?.['Phone Number (as text)'],
+      check: (data) => !!data.host?.phone_number,
       source: 'user',
     },
     {
       key: 'listingAddress',
       label: 'Listing address',
-      check: (data) => !!data.listing?.['Location - Address'] || !!data.listing?.['Location - City'],
+      check: (data) => !!data.listing?.address_with_lat_lng_json || !!data.listing?.city,
       source: 'listing',
     },
   ],
@@ -197,7 +197,7 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
       check: (data) => {
         const rules = data.proposal?.['hc house rules'] ||
           data.proposal?.['House Rules'] ||
-          data.listing?.['Features - House Rules'];
+          data.listing?.house_rule_reference_ids_json;
         return !!rules && (Array.isArray(rules) ? rules.length > 0 : true);
       },
       source: 'listing',
@@ -439,18 +439,18 @@ export function formatReadinessReport(readinessReport, lease) {
   const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
   const leaseId = lease?._id || 'Unknown';
 
-  lines.push(`📋 Lease Readiness Report`);
+  lines.push(`ðŸ“‹ Lease Readiness Report`);
   lines.push(`Agreement: ${agreementNumber} (${leaseId})`);
   lines.push(`Status: ${readinessReport.summary.status}`);
   lines.push(`Documents Ready: ${readinessReport.readyCount}/${readinessReport.totalCount}`);
   lines.push('');
 
   if (readinessReport.allBlockingIssues.length > 0) {
-    lines.push('❌ BLOCKING ISSUES:');
+    lines.push('âŒ BLOCKING ISSUES:');
     for (const issue of readinessReport.allBlockingIssues) {
-      lines.push(`  • ${issue.label} (${issue.source})`);
+      lines.push(`  â€¢ ${issue.label} (${issue.source})`);
       if (issue.suggestion) {
-        lines.push(`    → ${issue.suggestion}`);
+        lines.push(`    â†’ ${issue.suggestion}`);
       }
       lines.push(`    Affects: ${issue.affectedDocuments.join(', ')}`);
     }
@@ -458,9 +458,9 @@ export function formatReadinessReport(readinessReport, lease) {
   }
 
   // Per-document status
-  lines.push('📄 DOCUMENT STATUS:');
+  lines.push('ðŸ“„ DOCUMENT STATUS:');
   for (const doc of readinessReport.documents) {
-    const icon = doc.canGenerate ? '✅' : '❌';
+    const icon = doc.canGenerate ? 'âœ…' : 'âŒ';
     lines.push(`  ${icon} ${doc.documentName}`);
     if (!doc.canGenerate && doc.blockingIssues.length > 0) {
       for (const issue of doc.blockingIssues) {
@@ -484,7 +484,7 @@ export function formatReadinessForSlack(readinessReport, lease) {
   const leaseId = lease?._id || 'Unknown';
 
   const missingFields = readinessReport.allBlockingIssues
-    .map(issue => `• ${issue.label} (${issue.source})`)
+    .map(issue => `â€¢ ${issue.label} (${issue.source})`)
     .join('\n');
 
   const affectedDocs = readinessReport.documentsNotReady
@@ -495,13 +495,13 @@ export function formatReadinessForSlack(readinessReport, lease) {
     .join(', ');
 
   return {
-    text: `⚠️ Document Generation Blocked`,
+    text: `âš ï¸ Document Generation Blocked`,
     blocks: [
       {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: '⚠️ Document Generation Blocked',
+          text: 'âš ï¸ Document Generation Blocked',
         },
       },
       {

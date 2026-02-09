@@ -258,7 +258,7 @@ export const ComplexContent = {
               }}
             >
               <div>
-                <p style={{ margin: 0, fontWeight: 500, color: '#374151' }}>{listing.name}</p>
+                <p style={{ margin: 0, fontWeight: 500, color: '#374151' }}>{listing.listing_title}</p>
                 <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#6b7280' }}>{listing.price}</p>
               </div>
               <span

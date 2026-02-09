@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Z-Unit Payment Records JS Page Logic Hook
  *
  * All business logic for the ZUnitPaymentRecordsJsPage.
@@ -123,24 +123,23 @@ export function useZUnitPaymentRecordsJsPageLogic() {
 
       try {
         const { data, error } = await supabase
-          .from('bookings_leases')
+          .from('booking_lease')
           .select(`
-            _id,
-            "Agreement Number",
-            "Lease Status",
-            "Reservation Period : Start",
-            "Reservation Period : End",
-            "Total Rent",
-            "Total Compensation",
-            Listing,
-            Proposal,
-            Guest,
-            Host,
-            "Payment Records Guest-SL",
-            "Payment Records SL-Hosts"
+            id,
+            agreement_number,
+            lease_type,
+            reservation_start_date,
+            reservation_end_date,
+            total_guest_rent_amount,
+            total_host_compensation_amount,
+            listing_id,
+            guest_user_id,
+            host_user_id,
+            guest_to_platform_payment_records_json,
+            platform_to_host_payment_records_json
           `)
-          .not('Proposal', 'is', null)
-          .order('"Agreement Number"', { ascending: false })
+          .not('proposal_id', 'is', null)
+          .order('agreement_number', { ascending: false })
           .limit(100);
 
         if (error) throw error;
@@ -166,23 +165,23 @@ export function useZUnitPaymentRecordsJsPageLogic() {
 
     try {
       const { data, error } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .select(`
-          _id,
-          "Days Selected",
-          "Nights Selected",
-          "Reservation Span (Weeks)",
-          "Reservation Span (Months)",
-          "rental type",
-          "4 week rent",
+          id,
+          guest_selected_days_numbers_json,
+          guest_selected_nights_numbers_json,
+          reservation_span_in_weeks,
+          stay_duration_in_months,
+          rental_type,
+          four_week_rent_amount,
           "Rent per Month",
-          "Move in range start",
-          "Move in range end",
+          move_in_range_start_date,
+          move_in_range_end_date,
           "Week Pattern",
           "Maintenance Fee",
-          "Damage Deposit"
+          damage_deposit_amount
         `)
-        .eq('_id', proposalId)
+        .eq('id', proposalId)
         .single();
 
       if (error) throw error;
@@ -213,7 +212,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
             "Date payment received",
             "rent",
             "maintenance_fee",
-            "damage_deposit",
+            "damage_deposit_amount",
             "total",
             "Bank Transaction Number",
             "receipt_status"
@@ -229,7 +228,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
               actualDate: record['Date payment received'],
               rent: parseFloat(record['rent']) || 0,
               maintenanceFee: parseFloat(record['maintenance_fee']) || 0,
-              damageDeposit: parseFloat(record['damage_deposit']) || 0,
+              damageDeposit: parseFloat(record.damage_deposit_amount) || 0,
               total: parseFloat(record['total']) || 0,
               bankTransactionNumber: record['Bank Transaction Number'] || null,
               receiptStatus: record['receipt_status'] || 'pending',
@@ -251,9 +250,9 @@ export function useZUnitPaymentRecordsJsPageLogic() {
             "Payment #",
             "Scheduled Date",
             "Date payment received",
-            "💰Rent",
-            "💰Maintenance Fee",
-            "💰Total",
+            "ðŸ’°Rent",
+            "ðŸ’°Maintenance Fee",
+            "ðŸ’°Total",
             "Bank Transaction Number",
             "receipt_status"
           `)
@@ -266,9 +265,9 @@ export function useZUnitPaymentRecordsJsPageLogic() {
               paymentNumber: record['Payment #'] || 0,
               scheduledDate: record['Scheduled Date'],
               actualDate: record['Date payment received'],
-              rent: parseFloat(record['💰Rent']) || 0,
-              maintenanceFee: parseFloat(record['💰Maintenance Fee']) || 0,
-              total: parseFloat(record['💰Total']) || 0,
+              rent: parseFloat(record['ðŸ’°Rent']) || 0,
+              maintenanceFee: parseFloat(record['ðŸ’°Maintenance Fee']) || 0,
+              total: parseFloat(record['ðŸ’°Total']) || 0,
               bankTransactionNumber: record['Bank Transaction Number'] || null,
               payoutStatus: record['receipt_status'] || 'pending',
             });
@@ -288,15 +287,15 @@ export function useZUnitPaymentRecordsJsPageLogic() {
       return { guestSchedule: [], hostSchedule: [] };
     }
 
-    const rentalType = proposal['rental type'];
-    const moveInDate = proposal['Move in range start'];
-    const reservationSpanWeeks = parseFloat(proposal['Reservation Span (Weeks)']) || 0;
-    const reservationSpanMonths = parseFloat(proposal['Reservation Span (Months)']) || 0;
+    const rentalType = proposal.rental_type;
+    const moveInDate = proposal.move_in_range_start_date;
+    const reservationSpanWeeks = parseFloat(proposal.reservation_span_in_weeks) || 0;
+    const reservationSpanMonths = parseFloat(proposal.stay_duration_in_months) || 0;
     const weekPattern = proposal['Week Pattern'] || 'Every week';
-    const fourWeekRent = parseFloat(proposal['4 week rent']) || 0;
+    const fourWeekRent = parseFloat(proposal.four_week_rent_amount) || 0;
     const rentPerMonth = parseFloat(proposal['Rent per Month']) || 0;
     const maintenanceFee = parseFloat(proposal['Maintenance Fee']) || 0;
-    const damageDeposit = parseFloat(proposal['Damage Deposit']) || 0;
+    const damageDeposit = parseFloat(proposal.damage_deposit_amount) || 0;
 
     let guestSchedule = [];
     let hostSchedule = [];
@@ -383,7 +382,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
 
     try {
       // Find the lease from the loaded list
-      const lease = leases.find(l => l._id === leaseId);
+      const lease = leases.find(l => l.id === leaseId);
       if (!lease) {
         throw new Error('Lease not found');
       }
@@ -391,18 +390,18 @@ export function useZUnitPaymentRecordsJsPageLogic() {
       setSelectedLease(lease);
 
       // Update calendar to reservation start date if available
-      const startDate = parseDateField(lease['Reservation Period : Start']);
+      const startDate = parseDateField(lease.reservation_start_date);
       if (startDate) {
         setCalendarYear(startDate.getFullYear());
         setCalendarMonth(startDate.getMonth());
       }
 
       // Fetch proposal data
-      const proposal = await fetchProposalData(lease.Proposal);
+      const proposal = await fetchProposalData(lease.proposal_id);
 
       // Fetch Bubble native payment records
-      const guestPaymentIds = parseArrayField(lease['Payment Records Guest-SL']);
-      const hostPaymentIds = parseArrayField(lease['Payment Records SL-Hosts']);
+      const guestPaymentIds = parseArrayField(lease.guest_to_platform_payment_records_json);
+      const hostPaymentIds = parseArrayField(lease.platform_to_host_payment_records_json);
       const { guestNative, hostNative } = await fetchBubbleNativePayments(guestPaymentIds, hostPaymentIds);
 
       // Calculate JS payment schedules
@@ -448,8 +447,8 @@ export function useZUnitPaymentRecordsJsPageLogic() {
         body: JSON.stringify({
           action: 'generate',
           payload: {
-            leaseId: selectedLease._id,
-            proposalId: proposalData._id
+            leaseId: selectedLease.id,
+            proposalId: proposalData.id
           }
         })
       });
@@ -494,8 +493,8 @@ export function useZUnitPaymentRecordsJsPageLogic() {
         body: JSON.stringify({
           action: 'generate',
           payload: {
-            leaseId: selectedLease._id,
-            proposalId: proposalData._id
+            leaseId: selectedLease.id,
+            proposalId: proposalData.id
           }
         })
       });
@@ -578,8 +577,8 @@ export function useZUnitPaymentRecordsJsPageLogic() {
     }
 
     // Days of the month
-    const reservationStart = parseDateField(selectedLease?.['Reservation Period : Start']);
-    const reservationEnd = parseDateField(selectedLease?.['Reservation Period : End']);
+    const reservationStart = parseDateField(selectedLease?.reservation_start_date);
+    const reservationEnd = parseDateField(selectedLease?.reservation_end_date);
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(calendarYear, calendarMonth, day);

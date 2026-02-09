@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AmenityIcons
  *
  * Displays property amenities: bedrooms, bathrooms, beds, guests, space type.
@@ -82,13 +82,13 @@ const SPACE_TYPE_ID_TO_LABEL = {
  * @param {Object} props.listing - Listing object with amenity fields
  */
 export default function AmenityIcons({ listing = {} }) {
-  const bedrooms = listing['Features - Qty Bedrooms'] || 0;
-  const bathrooms = listing['Features - Qty Bathrooms'] || 0;
-  const guests = listing['Features - Qty Guests'] || 0;
+  const bedrooms = listing.bedroom_count || 0;
+  const bathrooms = listing.bathroom_count || 0;
+  const guests = listing.max_guest_count || 0;
 
   // Resolve space type ID to display label
   // IDs look like '1569530331984x152755544104023800' - if we can't map it, use a generic fallback
-  const spaceTypeId = listing['Features - Type of Space'];
+  const spaceTypeId = listing.space_type;
   const isValidSpaceTypeLabel = spaceTypeId && !spaceTypeId.includes('x') && spaceTypeId.length < 20;
   const spaceType = SPACE_TYPE_ID_TO_LABEL[spaceTypeId]
     || (isValidSpaceTypeLabel ? spaceTypeId : null)

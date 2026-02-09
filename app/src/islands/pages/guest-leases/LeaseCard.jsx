@@ -110,7 +110,7 @@ export default function LeaseCard({
           {/* Listing Image */}
           <div className="lease-card__image">
             {listing?.imageUrl ? (
-              <img src={listing.imageUrl} alt={listing.name || 'Listing'} />
+              <img src={listing.imageUrl} alt={listing.listing_title || 'Listing'} />
             ) : (
               <div className="lease-card__image-placeholder">
                 <Home size={24} />

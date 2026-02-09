@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useCompareTermsModalLogic Hook
  *
  * Hollow Component pattern - all business logic for CompareTermsModal
@@ -235,9 +235,9 @@ export function useCompareTermsModalLogic({
   const listingInfo = useMemo(() => {
     const listing = proposal?.listing;
     return {
-      name: listing?.Name || 'Property',
-      checkInTime: listing?.['Check in time'] || listing?.['NEW Date Check-in Time'] || '2:00 PM',
-      checkOutTime: listing?.['Check Out time'] || listing?.['NEW Date Check-out Time'] || '11:00 AM'
+      name: listing?.listing_title || listing?.Name || 'Property',
+      checkInTime: listing?.checkin_time_of_day || '2:00 PM',
+      checkOutTime: listing?.checkout_time_of_day || '11:00 AM'
     };
   }, [proposal]);
 
@@ -245,7 +245,8 @@ export function useCompareTermsModalLogic({
    * Handle Accept Counteroffer - 7-Step Workflow
    */
   const handleAcceptCounteroffer = useCallback(async () => {
-    if (!proposal?._id) {
+    const proposalId = proposal?.id || proposal?._id;
+    if (!proposalId) {
       setError('Proposal ID is missing');
       return;
     }
@@ -256,7 +257,7 @@ export function useCompareTermsModalLogic({
     try {
       // Step 2-3: Calculate lease numbering format
       const { count: leaseCount, error: countError } = await supabase
-        .from('bookings_leases')
+        .from('booking_lease')
         .select('*', { count: 'exact', head: true });
 
       if (countError) {
@@ -271,7 +272,7 @@ export function useCompareTermsModalLogic({
       const fourWeekCompensation = originalNightsPerWeek * 4 * originalNightlyPrice;
 
       // Step 5: Update proposal status via workflow
-      await acceptCounteroffer(proposal._id);
+      await acceptCounteroffer(proposalId);
 
       // Step 6: Calculate 4-week rent (from COUNTEROFFER terms)
       const counterofferNightsPerWeek = proposal['hc nights per week'] || originalNightsPerWeek;
@@ -280,7 +281,7 @@ export function useCompareTermsModalLogic({
 
       // Step 7: Call lease creation Edge Function
       console.log('[useCompareTermsModalLogic] Creating lease with parameters:', {
-        proposalId: proposal._id,
+        proposalId: proposalId,
         numberOfZeros,
         fourWeekRent,
         isCounteroffer: 'yes',
@@ -299,7 +300,7 @@ export function useCompareTermsModalLogic({
             body: JSON.stringify({
               action: 'create',
               payload: {
-                proposalId: proposal._id,
+                proposalId: proposalId,
                 isCounteroffer: 'yes',
                 fourWeekRent,
                 fourWeekCompensation,
@@ -348,7 +349,7 @@ export function useCompareTermsModalLogic({
             body: JSON.stringify({
               action: 'send_splitbot_message',
               payload: {
-                proposalId: proposal._id, // Edge Function will look up thread by proposal
+                proposalId: proposalId, // Edge Function will look up thread by proposal
                 ctaName: 'counteroffer_accepted',
                 recipientRole: 'both',
                 customMessageBody: 'Great news! The counteroffer has been accepted. Split Lease will now draft the lease documents. Please allow up to 48 hours for completion.',
@@ -369,12 +370,12 @@ export function useCompareTermsModalLogic({
       }
 
       // Show success state (will display success message in modal)
-      console.log('[useCompareTermsModalLogic] ✅ Acceptance complete, showing success modal');
+      console.log('[useCompareTermsModalLogic] âœ… Acceptance complete, showing success modal');
       setAcceptanceSuccess(true);
       // NOTE: Do NOT reload here - user must click "Got it!" to acknowledge
 
     } catch (err) {
-      console.error('[useCompareTermsModalLogic] ❌ Error accepting counteroffer:', err);
+      console.error('[useCompareTermsModalLogic] âŒ Error accepting counteroffer:', err);
       setError(err.message || 'Failed to accept counteroffer. Please try again.');
     } finally {
       setIsAccepting(false);
@@ -396,13 +397,14 @@ export function useCompareTermsModalLogic({
    * Handle Cancel Modal Confirm
    */
   const handleCancelConfirm = useCallback(async (reason) => {
-    if (!proposal?._id) return;
+    const cancelProposalId = proposal?.id || proposal?._id;
+    if (!cancelProposalId) return;
 
     setIsCancelling(true);
     setError(null);
 
     try {
-      await declineCounteroffer(proposal._id, reason);
+      await declineCounteroffer(cancelProposalId, reason);
       setShowCancelModal(false);
       onClose();
       // Reload to update UI

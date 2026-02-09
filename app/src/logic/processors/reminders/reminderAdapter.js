@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Reminder data adapters.
  * Transform data between form, API, and database formats.
  */
@@ -71,8 +71,8 @@ export function adaptReminderFromDatabase({ dbRow }) {
     openedAt: dbRow.opened_at,
     sendgridMessageId: dbRow.sendgrid_message_id,
     twilioMessageSid: dbRow.twilio_message_sid,
-    createdAt: dbRow['Created Date'],
-    modifiedAt: dbRow['Modified Date'],
+    createdAt: dbRow.bubble_created_at,
+    modifiedAt: dbRow.bubble_updated_at,
   };
 }
 

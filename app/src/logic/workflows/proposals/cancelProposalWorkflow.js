@@ -38,7 +38,7 @@ export function determineCancellationCondition(proposal) {
     };
   }
 
-  const status = proposal.status || proposal.Status;
+  const status = proposal.proposal_workflow_status || proposal.status;
 
   // Condition 3 & 6: Already cancelled or rejected - just inform user
   if (
@@ -100,8 +100,8 @@ export async function executeCancelProposal(proposalId, reason = null) {
   const now = new Date().toISOString();
 
   const updateData = {
-    'Status': PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key,
-    'Modified Date': now
+    'proposal_workflow_status': PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key,
+    'bubble_updated_at': now
   };
 
   // Add reason if provided
@@ -112,9 +112,9 @@ export async function executeCancelProposal(proposalId, reason = null) {
   console.log('[cancelProposalWorkflow] Cancelling proposal:', proposalId);
 
   const { data, error } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update(updateData)
-    .eq('_id', proposalId)
+    .eq('id', proposalId)
     .select()
     .single();
 
@@ -159,12 +159,12 @@ export async function executeDeleteProposal(proposalId) {
   console.log('[cancelProposalWorkflow] Soft-deleting proposal:', proposalId);
 
   const { error } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
-      'Deleted': true,
-      'Modified Date': now
+      'is_deleted': true,
+      'bubble_updated_at': now
     })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (error) {
     console.error('[cancelProposalWorkflow] Error deleting proposal:', error);

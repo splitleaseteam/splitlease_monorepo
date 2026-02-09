@@ -310,9 +310,9 @@ export function useSimulationHostMobilePageLogic() {
     try {
       const { data: listings, error } = await supabase
         .from('listing')
-        .select('_id, "Name", "Cover Photo", "Primary Address", "Listing Status"')
-        .eq('Host User', hostUserId)
-        .eq('Listing Status', 'Published')
+        .select('id, listing_title, cover_photo_url, address_with_lat_lng_json, listing_workflow_status')
+        .eq('host_user_id', hostUserId)
+        .eq('listing_workflow_status', 'Published')
         .limit(10);
 
       if (error) {
@@ -470,7 +470,7 @@ export function useSimulationHostMobilePageLogic() {
       const proposalResult = await simulationService.createTestProposals(
         simulationId,
         guestResult.guestId,
-        selectedListing._id,
+        selectedListing.id,
         simulationState.hostId,
         selectedRentalType
       );

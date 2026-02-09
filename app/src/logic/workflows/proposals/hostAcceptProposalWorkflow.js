@@ -32,7 +32,7 @@ export async function hostAcceptProposalWorkflow({ proposalId, proposal }) {
 
   // Step 1: Calculate lease numbering format
   const { count: leaseCount, error: countError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('*', { count: 'exact', head: true });
 
   if (countError) {

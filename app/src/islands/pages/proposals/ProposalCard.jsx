@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Proposal Card Component
  *
  * Displays detailed information about a selected proposal in a two-column layout:
@@ -265,7 +265,7 @@ function getEffectiveReservationSpan(proposal) {
  * Banner is shown when usualOrder >= 3 OR status is "Proposal Submitted by guest - Awaiting Rental Application"
  *
  * Cascading Override Pattern: If a status matches multiple configs, the more specific one wins.
- * Order of checks: specific status key lookup → usualOrder-based defaults
+ * Order of checks: specific status key lookup â†’ usualOrder-based defaults
  *
  * Based on Bubble documentation: Guest Proposals page Proposal Status Bar Conditionals
  */
@@ -280,14 +280,14 @@ const STATUS_BANNERS = {
   // Suggested proposals by Split Lease agent
   'Proposal Submitted for guest by Split Lease - Awaiting Rental Application': {
     type: 'suggested',
-    text: '💡 Suggested Proposal — Complete Your Application\nYou confirmed this suggestion. Please submit your rental application to proceed.',
+    text: 'ðŸ’¡ Suggested Proposal â€” Complete Your Application\nYou confirmed this suggestion. Please submit your rental application to proceed.',
     bgColor: '#F3E8FF',
     borderColor: '#4B0082',
     textColor: '#4B0082'
   },
   'Proposal Submitted for guest by Split Lease - Pending Confirmation': {
     type: 'suggested',
-    text: '⚡ Pending Your Acceptance\nA Split Lease Agent suggested this listing for you. Review and confirm to proceed.',
+    text: 'âš¡ Pending Your Acceptance\nA Split Lease Agent suggested this listing for you. Review and confirm to proceed.',
     bgColor: '#FEF3C7',
     borderColor: '#D97706',
     textColor: '#92400E'
@@ -398,20 +398,20 @@ function getDefaultBannerConfig(status, usualOrder) {
  */
 function getStatusIcon(config) {
   if (config.type === 'cancelled' || config.type === 'rejected' || config.type === 'cancelled_by_guest') {
-    return '✕';
+    return 'âœ•';
   }
   if (config.type === 'accepted') {
-    return '✓';
+    return 'âœ“';
   }
   if (config.type === 'suggested') {
-    return '💡';
+    return 'ðŸ’¡';
   }
   // Default icons based on color
   if (config.bgColor === '#FBECEC' || config.borderColor === '#CC0000') {
     return '!';
   }
   if (config.bgColor === '#ecfdf5' || config.bgColor?.includes('ecfdf5')) {
-    return '✓';
+    return 'âœ“';
   }
   return 'i';
 }
@@ -496,7 +496,7 @@ function StatusBanner({ status, cancelReason, isCounteroffer }) {
       <span className="status-icon">{icon}</span>
       <div className="status-text">
         <strong>{strongText}</strong>
-        {detailText && ` — ${detailText}`}
+        {detailText && ` â€” ${detailText}`}
       </div>
     </div>
   );
@@ -785,7 +785,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   // VM button configuration - memoized based on virtualMeeting state
   const virtualMeeting = proposal?.virtualMeeting;
   const currentUserId = proposal?.Guest;
-  const status = proposal?.Status;
+  const status = proposal?.proposal_workflow_status || proposal?.Status;
 
   const vmConfig = useMemo(() => {
     // Conditional 7-8: Check status-based hiding first
@@ -881,15 +881,15 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   const host = listing?.host;
 
   // Extract location for map modal
-  // Priority: 'Location - slightly different address' (privacy) → 'Location - Address' (fallback)
+  // Priority: 'Location - slightly different address' (privacy) â†’ 'Location - Address' (fallback)
   const getListingAddress = () => {
     if (!listing) return null;
 
     // Try 'Location - slightly different address' first (privacy-adjusted)
-    let locationData = listing['Location - slightly different address'];
+    let locationData = listing.map_pin_offset_address_json;
     if (!locationData) {
       // Fallback to main address
-      locationData = listing['Location - Address'];
+      locationData = listing.address_with_lat_lng_json;
     }
 
     if (!locationData) return null;
@@ -917,11 +917,11 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     .join(', ') || 'New York';
 
   const photoUrl = listing?.featuredPhotoUrl ||
-    (listing?.['Features - Photos']?.[0]) ||
+    (listing?.photos_with_urls_captions_and_sort_order_json?.[0]) ||
     null;
 
-  const hostName = host?.['Name - First'] || host?.['Name - Full'] || 'Host';
-  const _hostPhoto = host?.['Profile Photo'];
+  const hostName = host?.first_name || 'Host';
+  const _hostPhoto = host?.profile_photo_url;
 
   // Schedule info
   // Handle double-encoded JSONB: "Days Selected" may come as a JSON string that needs parsing
@@ -1069,12 +1069,12 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
       const nextStatus = getNextStatusAfterConfirmation(proposal);
 
       const { error } = await supabase
-        .from('proposal')
+        .from('booking_proposal')
         .update({
-          Status: nextStatus,
+          proposal_workflow_status: nextStatus,
           'Modified Date': new Date().toISOString()
         })
-        .eq('_id', proposal._id);
+        .eq('id', proposal.id || proposal._id);
 
       if (error) {
         console.error('[ProposalCard] Error confirming proposal:', error);
@@ -1264,7 +1264,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
                   title="Some selected nights are no longer available"
                   style={{ color: 'var(--gp-danger)', marginLeft: '8px' }}
                 >
-                  ⚠
+                  âš 
                 </span>
               )}
             </div>
@@ -1276,9 +1276,9 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
         <div className="pricing-row">
           <div className="pricing-breakdown">
             <span>{formatPrice(nightlyPrice)}/night</span>
-            <span>×</span>
+            <span>Ã—</span>
             <span>{nightsPerWeek} nights</span>
-            <span>×</span>
+            <span>Ã—</span>
             <span>{reservationWeeks} weeks</span>
             {cleaningFee > 0 && (
               <>

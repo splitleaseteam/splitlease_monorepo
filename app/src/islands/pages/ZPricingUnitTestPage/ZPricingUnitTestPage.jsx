@@ -20,9 +20,9 @@ import Section7DataValidation from './components/Section7DataValidation.jsx';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader.jsx';
 import './ZPricingUnitTestPage.css';
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HELPER COMPONENTS
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LoadingSpinner() {
   return (
@@ -52,9 +52,9 @@ function formatPercentage(value) {
   return `${(value * 100).toFixed(1)}%`;
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ZPricingUnitTestPage() {
   const logic = useZPricingUnitTestPageLogic();
@@ -98,9 +98,9 @@ export default function ZPricingUnitTestPage() {
           <p>Compare pricing calculations from workflows, database, and direct formulas.</p>
         </header>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {/* ROW 1: Sections 1 & 2 */}
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <div className="zput-row">
           {/* Section 1: Listing Search and Selection */}
           <div className="zput-card zput-card--narrow">
@@ -123,7 +123,7 @@ export default function ZPricingUnitTestPage() {
                     onClick={logic.handleClearSearch}
                     title="Clear search"
                   >
-                    ×
+                    Ã—
                   </button>
                 )}
               </div>
@@ -138,9 +138,9 @@ export default function ZPricingUnitTestPage() {
               >
                 <option value="">-- Select a listing --</option>
                 {logic.filteredListings.map(listing => {
-                  const name = listing.Name || listing._id;
-                  const rentalType = listing['rental type'] || listing.rentalType || '?';
-                  const pattern = listing['Weeks offered'] || listing.weeksOffered || 'Every week';
+                  const name = listing.listing_title || listing._id;
+                  const rentalType = listing.rental_type || listing.rentalType || '?';
+                  const pattern = listing.weeks_offered_schedule_text || listing.weeksOffered || 'Every week';
                   const email = listing['Host email'] || '-';
                   return (
                     <option key={listing._id} value={listing._id}>
@@ -154,8 +154,8 @@ export default function ZPricingUnitTestPage() {
             {logic.selectedListing && (
               <div className="zput-listing-info">
                 <p><strong>ID:</strong> {logic.selectedListing._id}</p>
-                <p><strong>Name:</strong> {logic.selectedListing.Name}</p>
-                <p><strong>Type:</strong> {logic.selectedListing['rental type'] || 'Not set'}</p>
+                <p><strong>Name:</strong> {logic.selectedListing.listing_title}</p>
+                <p><strong>Type:</strong> {logic.selectedListing.rental_type || 'Not set'}</p>
               </div>
             )}
 
@@ -183,7 +183,7 @@ export default function ZPricingUnitTestPage() {
                   value={logic.reservationSpan}
                   onChange={(e) => logic.handleSetReservationSpan(e.target.value)}
                 />
-                <span className="zput-hint">≈ {logic.monthsInSpan} months</span>
+                <span className="zput-hint">â‰ˆ {logic.monthsInSpan} months</span>
               </div>
               <div className="zput-config-field">
                 <label className="zput-label">Guest Pattern</label>
@@ -218,9 +218,9 @@ export default function ZPricingUnitTestPage() {
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {/* ROW 2: Section 3 (Combined Host + Prorated) | Section 4 (Workflow Check) */}
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <div className="zput-row">
           {/* Section 3: Host Prices + Prorated (Combined) */}
           <div className="zput-card zput-card--wide">
@@ -311,9 +311,9 @@ export default function ZPricingUnitTestPage() {
           />
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {/* ROW 3: Section 5 (Pricing List Grid - full width) */}
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <div className="zput-row zput-row--full">
           <Section5PricingListGrid
             pricingList={logic.pricingList}
@@ -324,9 +324,9 @@ export default function ZPricingUnitTestPage() {
           />
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {/* ROW 4: Section 6 (Validation) | Section 7 (Guidelines) | Section 8 (ZAT Config) */}
-        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <div className="zput-row zput-row--three-col">
           <Section7DataValidation
             validationFlags={logic.validationFlags}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Check if a listing has required fields for pricing calculation.
  *
  * Validates that the listing has appropriate host rate(s) defined
@@ -60,17 +60,17 @@ export function canCalculatePricing({ listing }: CalculationPrerequisites): bool
   }
 
   const listingRecord = listing as Record<string, unknown>;
-  const rentalType = listingRecord['rental type'] || 'Nightly';
+  const rentalType = listingRecord.rental_type || 'Nightly';
 
   // For Weekly rental type: check for weekly_host_rate
   if (rentalType === 'Weekly') {
-    const weeklyRate = listingRecord['weekly_host_rate'];
+    const weeklyRate = listingRecord.weekly_rate_paid_to_host;
     return isValidRate(weeklyRate);
   }
 
   // For Monthly rental type: check for monthly_host_rate
   if (rentalType === 'Monthly') {
-    const monthlyRate = listingRecord['monthly_host_rate'];
+    const monthlyRate = listingRecord.monthly_rate_paid_to_host;
     return isValidRate(monthlyRate);
   }
 

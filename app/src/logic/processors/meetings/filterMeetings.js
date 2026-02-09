@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Meeting Filter Processor
  * Pure functions for filtering and processing meeting data
  *
@@ -88,17 +88,17 @@ export function extractUniqueHosts(meetings) {
   meetings.forEach(meeting => {
     // Use enriched host object or flat fields
     const hasHostObject = meeting.host && (meeting.host.id || meeting.host._id);
-    const hasHostFlat = meeting['host name'] || meeting['host email'];
+    const hasHostFlat = meeting.host_display_name || meeting['host email'];
 
     if (!hasHostObject && !hasHostFlat) return;
 
-    const hostId = meeting.host?.id || meeting.host?._id || meeting['host email'] || meeting['host name'];
+    const hostId = meeting.host?.id || meeting.host?._id || meeting['host email'] || meeting.host_display_name;
     if (!hostId || hostMap.has(hostId)) return;
 
     const hostNameFromObject = getFullName(meeting.host);
     const hostName = hostNameFromObject !== 'Unknown'
       ? hostNameFromObject
-      : meeting['host name'] || 'Unknown';
+      : meeting.host_display_name || 'Unknown';
 
     hostMap.set(hostId, {
       id: hostId,
@@ -189,7 +189,7 @@ export function formatMeetingForDisplay(meeting) {
   const hostFromObject = getFullName(meeting.host);
   const hostName = hostFromObject !== 'Unknown'
     ? hostFromObject
-    : meeting['host name'] || 'Unknown';
+    : meeting.host_display_name || 'Unknown';
   const hostEmail = meeting.host?.email || meeting['host email'] || '';
 
   return {

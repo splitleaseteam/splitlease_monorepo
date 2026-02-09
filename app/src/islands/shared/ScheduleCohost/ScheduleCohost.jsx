@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Schedule Co-Host Component
  * Modal for scheduling meetings with Split Lease specialists
  * Features a calendar date picker with time slot selection
@@ -84,10 +84,10 @@ const COHOST_STAGES = [
 
 // Toast types with colors (from workflow spec)
 const TOAST_TYPES = {
-  success: { color: '#22C55E', icon: '✓' },
-  error: { color: '#EF4444', icon: '✕' },
-  warning: { color: '#F6DA3B', icon: '⚠' },
-  information: { color: '#3B82F6', icon: 'ℹ' },
+  success: { color: '#22C55E', icon: 'âœ“' },
+  error: { color: '#EF4444', icon: 'âœ•' },
+  warning: { color: '#F6DA3B', icon: 'âš ' },
+  information: { color: '#3B82F6', icon: 'â„¹' },
 };
 
 /**
@@ -125,7 +125,7 @@ function Toast({ toast, onClose }) {
         onClick={() => onClose(toast.id)}
         type="button"
       >
-        ×
+        Ã—
       </button>
       <div
         className="schedule-cohost-toast-progress"
@@ -258,13 +258,13 @@ function StarRating({ value, onChange, disabled }) {
             aria-label={`Rate ${star} out of 5 stars`}
           >
             {/* Background star (unfilled) */}
-            <span className="schedule-cohost-star-bg">★</span>
+            <span className="schedule-cohost-star-bg">â˜…</span>
             {/* Filled portion */}
             <span
               className="schedule-cohost-star-fill"
               style={{ width: `${fillPercent}%` }}
             >
-              ★
+              â˜…
             </span>
           </div>
         );
@@ -819,7 +819,7 @@ export default function ScheduleCohost({
                             onClick={() => handleTimeSlotClick(slot)}
                             aria-label={`Remove ${slot.displayTime}`}
                           >
-                            ×
+                            Ã—
                           </button>
                         </div>
                       ))}
@@ -843,7 +843,7 @@ export default function ScheduleCohost({
                     >
                       {subject}
                       {selectedSubjects.includes(subject) && (
-                        <span className="schedule-cohost-subject-remove">×</span>
+                        <span className="schedule-cohost-subject-remove">Ã—</span>
                       )}
                     </button>
                   ))}
@@ -1002,8 +1002,8 @@ export default function ScheduleCohost({
 
             {/* Metadata - Creation date and ID */}
             <div className="schedule-cohost-metadata-centered">
-              {(coHostRequest.createdDate || coHostRequest['Created Date']) && (
-                <p>Created: {formatDateForDisplay(new Date(coHostRequest.createdDate || coHostRequest['Created Date']))}</p>
+              {(coHostRequest.createdDate || coHostRequest.bubble_created_at) && (
+                <p>Created: {formatDateForDisplay(new Date(coHostRequest.createdDate || coHostRequest.bubble_created_at))}</p>
               )}
               {(coHostRequest.id || coHostRequest._id) && (
                 <p>Unique ID: {coHostRequest.id || coHostRequest._id}</p>

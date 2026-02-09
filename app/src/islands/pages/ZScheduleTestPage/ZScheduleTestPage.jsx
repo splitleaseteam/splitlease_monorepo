@@ -106,17 +106,17 @@ export default function ZScheduleTestPage() {
               <option value="">Select listing</option>
               {listings.map((listing) => (
                 <option key={listing._id} value={listing._id}>
-                  {listing.Name || listing._id}
+                  {listing.listing_title || listing._id}
                 </option>
               ))}
             </select>
             {selectedListing && (
               <div className="zst-meta">
-                <p><span>Name</span>{selectedListing.Name || 'Untitled'}</p>
-                <p><span>Rental Type</span>{selectedListing['rental type'] || 'Nightly'}</p>
-                <p><span>Weeks Offered</span>{selectedListing['Weeks offered'] || 'Every week'}</p>
-                <p><span>Min Nights</span>{selectedListing['Minimum Nights'] ?? 'n/a'}</p>
-                <p><span>Max Nights</span>{selectedListing['Maximum Nights'] ?? 'n/a'}</p>
+                <p><span>Name</span>{selectedListing.listing_title || 'Untitled'}</p>
+                <p><span>Rental Type</span>{selectedListing.rental_type || 'Nightly'}</p>
+                <p><span>Weeks Offered</span>{selectedListing.weeks_offered_schedule_text || 'Every week'}</p>
+                <p><span>Min Nights</span>{selectedListing.minimum_nights_per_stay ?? 'n/a'}</p>
+                <p><span>Max Nights</span>{selectedListing.maximum_nights_per_stay ?? 'n/a'}</p>
               </div>
             )}
           </div>

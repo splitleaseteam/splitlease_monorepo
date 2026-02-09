@@ -24,8 +24,8 @@ declare global {
 }
 if (typeof window !== 'undefined') {
   window.__VSL_v9 = Date.now();
-  console.log('🔄🔄🔄 ViewSplitLeasePage v9 LOADED - NUCLEAR CACHE BUST - ' + window.__VSL_v9);
-  console.log('🔄🔄🔄 DEBUG: Module successfully re-evaluated at:', new Date().toISOString());
+  console.log('ðŸ”„ðŸ”„ðŸ”„ ViewSplitLeasePage v9 LOADED - NUCLEAR CACHE BUST - ' + window.__VSL_v9);
+  console.log('ðŸ”„ðŸ”„ðŸ”„ DEBUG: Module successfully re-evaluated at:', new Date().toISOString());
 }
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
@@ -101,7 +101,7 @@ function getInitialScheduleFromUrl() {
       return dayObjects;
     }
   } catch (e) {
-    console.warn('⚠️ ViewSplitLeasePage: Failed to parse days-selected URL parameter:', e);
+    console.warn('âš ï¸ ViewSplitLeasePage: Failed to parse days-selected URL parameter:', e);
   }
 
   return [];
@@ -294,9 +294,9 @@ export default function ViewSplitLeasePage() {
   // ============================================================================
 
   useEffect(() => {
-    console.log('🔥🔥🔥 ViewSplitLeasePage v9 COMPONENT RENDERING - useEffect running');
-    console.log('🔥 isMobile state:', isMobile);
-    console.log('🔥 listing state:', listing);
+    console.log('ðŸ”¥ðŸ”¥ðŸ”¥ ViewSplitLeasePage v9 COMPONENT RENDERING - useEffect running');
+    console.log('ðŸ”¥ isMobile state:', isMobile);
+    console.log('ðŸ”¥ listing state:', listing);
 
     async function initialize() {
       try {
@@ -331,7 +331,7 @@ export default function ViewSplitLeasePage() {
         const listingData = await fetchListingComplete(listingId);
         logger.debug('ViewSplitLeasePage: Listing data fetched:', {
           id: listingData._id,
-          name: listingData.Name
+          name: listingData.listing_title
         });
         setListing(listingData);
         setLoading(false);
@@ -415,7 +415,7 @@ export default function ViewSplitLeasePage() {
   useEffect(() => {
     // Update the browser tab title with the listing name
     if (listing?.Name) {
-      document.title = `${listing.Name} | Split Lease`;
+      document.title = `${listing.listing_title} | Split Lease`;
     }
   }, [listing]);
 
@@ -435,13 +435,13 @@ export default function ViewSplitLeasePage() {
         logger.debug('ViewSplitLeasePage: Checking for existing proposals for listing:', listing._id);
 
         const { data: existingProposals, error } = await supabase
-          .from('proposal')
-          .select('_id, "Status", "Created Date"')
-          .eq('"Guest"', loggedInUserData.userId)
-          .eq('"Listing"', listing._id)
-          .neq('"Status"', 'Proposal Cancelled by Guest')
+          .from('booking_proposal')
+          .select('id, proposal_workflow_status, bubble_created_at')
+          .eq('guest_user_id', loggedInUserData.userId)
+          .eq('listing_id', listing.id || listing._id)
+          .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
           .or('"Deleted".is.null,"Deleted".eq.false')
-          .order('"Created Date"', { ascending: false })
+          .order('bubble_created_at', { ascending: false })
           .limit(1);
 
         if (error) {
@@ -479,20 +479,20 @@ export default function ViewSplitLeasePage() {
       }
 
       try {
-        const { data: userData, error } = await supabase
-          .from('user')
-          .select('"Favorited Listings"')
-          .eq('_id', loggedInUserData.userId)
+        const { data: listingData, error } = await supabase
+          .from('listing')
+          .select('user_ids_who_favorited_json')
+          .eq('id', listing.id || listing._id)
           .single();
 
         if (error) {
-          logger.debug('ViewSplitLeasePage: Error fetching user favorites:', error);
+          logger.debug('ViewSplitLeasePage: Error fetching listing favorites:', error);
           setIsFavorited(false);
           return;
         }
 
-        const favorites = userData?.['Favorited Listings'] || [];
-        const isFav = favorites.includes(listing._id);
+        const favoritedUserIds = listingData?.user_ids_who_favorited_json || [];
+        const isFav = favoritedUserIds.includes(loggedInUserData.userId);
         logger.debug('ViewSplitLeasePage: Listing favorited status:', isFav);
         setIsFavorited(isFav);
       } catch (err) {
@@ -525,37 +525,37 @@ export default function ViewSplitLeasePage() {
   // Memoize to prevent unnecessary re-renders and map resets
   const scheduleSelectorListing = useMemo(() => listing ? {
     id: listing._id,
-    firstAvailable: new Date(listing[' First Available']),
+    firstAvailable: new Date(listing.first_available_date),
     lastAvailable: new Date(listing['Last Available']),
     numberOfNightsAvailable: listing['# of nights available'] || 7,
-    active: listing.Active,
+    active: listing.is_active,
     approved: listing.Approved,
-    datesBlocked: listing['Dates - Blocked'] || [],
-    complete: listing.Complete,
+    datesBlocked: listing.blocked_specific_dates_json || [],
+    complete: listing.is_listing_profile_complete,
     confirmedAvailability: listing.confirmedAvailability,
-    checkInTime: listing['NEW Date Check-in Time'] || '3:00 pm',
-    checkOutTime: listing['NEW Date Check-out Time'] || '11:00 am',
+    checkInTime: listing.checkin_time_of_day || '3:00 pm',
+    checkOutTime: listing.checkout_time_of_day || '11:00 am',
     nightsAvailableList: [],
     nightsAvailableNumbers: listing['Nights Available (numbers)'] || [0, 1, 2, 3, 4, 5, 6],
     nightsNotAvailable: [],
-    minimumNights: listing['Minimum Nights'] || 2,
-    maximumNights: listing['Maximum Nights'] || 7,
-    daysAvailable: convertDayNamesToNumbers(listing['Days Available (List of Days)']),
+    minimumNights: listing.minimum_nights_per_stay || 2,
+    maximumNights: listing.maximum_nights_per_stay || 7,
+    daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
     daysNotAvailable: [],
     // Pricing fields for calculation
-    'rental type': listing['rental type'] || 'Nightly',
-    'Weeks offered': listing['Weeks offered'] || 'Every week',
-    'unit_markup': listing['unit_markup'] || 0,
-    'nightly_rate_2_nights': listing['nightly_rate_2_nights'],
-    'nightly_rate_3_nights': listing['nightly_rate_3_nights'],
-    'nightly_rate_4_nights': listing['nightly_rate_4_nights'],
-    'nightly_rate_5_nights': listing['nightly_rate_5_nights'],
-    'nightly_rate_7_nights': listing['nightly_rate_7_nights'],
-    'weekly_host_rate': listing['weekly_host_rate'],
-    'monthly_host_rate': listing['monthly_host_rate'],
+    'rental type': listing.rental_type || 'Nightly',
+    'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
+    'unit_markup': listing.unit_markup_percentage || 0,
+    'nightly_rate_2_nights': listing.nightly_rate_for_2_night_stay,
+    'nightly_rate_3_nights': listing.nightly_rate_for_3_night_stay,
+    'nightly_rate_4_nights': listing.nightly_rate_for_4_night_stay,
+    'nightly_rate_5_nights': listing.nightly_rate_for_5_night_stay,
+    'nightly_rate_7_nights': listing.nightly_rate_for_7_night_stay,
+    'weekly_host_rate': listing.weekly_rate_paid_to_host,
+    'monthly_host_rate': listing.monthly_rate_paid_to_host,
     'price_override': listing['price_override'],
-    'cleaning_fee': listing['cleaning_fee'],
-    'damage_deposit': listing['damage_deposit']
+    'cleaning_fee': listing.cleaning_fee_amount,
+    'damage_deposit': listing.damage_deposit_amount
   } : null, [listing]);
 
   // Initialize with Monday-Friday (1-5) as default
@@ -583,15 +583,15 @@ export default function ViewSplitLeasePage() {
     if (!listing || !listing.coordinates) return [];
     return [{
       id: listing._id,
-      title: listing.Name,
+      title: listing.listing_title,
       coordinates: listing.coordinates,
       price: {
         starting: listing['Standarized Minimum Nightly Price (Filter)'] || 0
       },
       location: listing.resolvedBorough,
       type: listing.resolvedTypeOfSpace,
-      bedrooms: listing['Features - Qty Bedrooms'] || 0,
-      bathrooms: listing['Features - Qty Bathrooms'] || 0,
+      bedrooms: listing.bedroom_count || 0,
+      bathrooms: listing.bathroom_count || 0,
       images: listing.photos?.map(p => p.Photo) || [],
       borough: listing.resolvedBorough
     }];
@@ -712,7 +712,7 @@ export default function ViewSplitLeasePage() {
           checkOutDayJs = sortedJsDays[gapIndex - 1];
 
           // Reorder days to be in actual sequence (check-in to check-out)
-          // e.g., [0, 6] with gap at index 1 → reorder to [6, 0] (Fri, Sat, Sun)
+          // e.g., [0, 6] with gap at index 1 â†’ reorder to [6, 0] (Fri, Sat, Sun)
           const reorderedDays = [...sortedJsDays.slice(gapIndex), ...sortedJsDays.slice(0, gapIndex)];
 
           // Nights = all days except the last one (checkout day)
@@ -787,9 +787,9 @@ export default function ViewSplitLeasePage() {
       });
 
       if (error) {
-        console.error('❌ Edge Function error:', error);
-        console.error('❌ Error properties:', Object.keys(error));
-        console.error('❌ Error context:', error.context);
+        console.error('âŒ Edge Function error:', error);
+        console.error('âŒ Error properties:', Object.keys(error));
+        console.error('âŒ Error context:', error.context);
 
         // Extract actual error message from response context if available
         let errorMessage = error.message || 'Failed to submit proposal';
@@ -799,7 +799,7 @@ export default function ViewSplitLeasePage() {
           if (error.context && typeof error.context.json === 'function') {
             // context is a Response object
             const errorBody = await error.context.json();
-            console.error('❌ Edge Function error body (from json()):', errorBody);
+            console.error('âŒ Edge Function error body (from json()):', errorBody);
             if (errorBody?.error) {
               errorMessage = errorBody.error;
             }
@@ -808,20 +808,20 @@ export default function ViewSplitLeasePage() {
             const errorBody = typeof error.context.body === 'string'
               ? JSON.parse(error.context.body)
               : error.context.body;
-            console.error('❌ Edge Function error body (from body):', errorBody);
+            console.error('âŒ Edge Function error body (from body):', errorBody);
             if (errorBody?.error) {
               errorMessage = errorBody.error;
             }
           }
         } catch (e) {
-          console.error('❌ Could not parse error body:', e);
+          console.error('âŒ Could not parse error body:', e);
         }
 
         throw new Error(errorMessage);
       }
 
       if (!data?.success) {
-        console.error('❌ Proposal submission failed:', data?.error);
+        console.error('âŒ Proposal submission failed:', data?.error);
         throw new Error(data?.error || 'Failed to submit proposal');
       }
 
@@ -850,7 +850,7 @@ export default function ViewSplitLeasePage() {
       // This ensures reliable message delivery regardless of frontend state/timing
 
     } catch (error) {
-      console.error('❌ Error submitting proposal:', error);
+      console.error('âŒ Error submitting proposal:', error);
       showToast(error.message || 'Failed to submit proposal. Please try again.', 'error');
     } finally {
       setIsSubmittingProposal(false);
@@ -895,7 +895,7 @@ export default function ViewSplitLeasePage() {
         logger.debug('User data updated after auth:', userData.firstName);
       }
     } catch (err) {
-      console.error('❌ Error fetching user data after auth:', err);
+      console.error('âŒ Error fetching user data after auth:', err);
     }
 
     // If there's a pending proposal, submit it now
@@ -1024,7 +1024,7 @@ export default function ViewSplitLeasePage() {
             {listing.photos && listing.photos.length > 0 ? (
               <PhotoGallery
                 photos={listing.photos}
-                listingName={listing.Name}
+                listingName={listing.listing_title}
                 onPhotoClick={handlePhotoClick}
                 currentIndex={currentPhotoIndex}
                 isModalOpen={showPhotoModal}
@@ -1055,7 +1055,7 @@ export default function ViewSplitLeasePage() {
               marginBottom: isMobile ? '0.75rem' : '1rem',
               color: COLORS.TEXT_DARK
             }}>
-              {listing.Name}
+              {listing.listing_title}
             </h1>
             <div style={{
               display: 'flex',
@@ -1083,7 +1083,7 @@ export default function ViewSplitLeasePage() {
               )}
               {listing.resolvedTypeOfSpace && (
                 <span>
-                  {listing.resolvedTypeOfSpace} - {listing['Features - Qty Guests']} guests max
+                  {listing.resolvedTypeOfSpace} - {listing.max_guest_count} guests max
                 </span>
               )}
             </div>
@@ -1096,36 +1096,36 @@ export default function ViewSplitLeasePage() {
             gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(150px, 1fr))',
             gap: isMobile ? '0.5rem' : '1rem'
           }}>
-            {listing['Kitchen Type'] && (
+            {listing.kitchen_type && (
               <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
                   <img src="/assets/images/fridge.svg" alt="Kitchen" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
                 </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing['Kitchen Type']}</div>
+                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.kitchen_type}</div>
               </div>
             )}
-            {listing['Features - Qty Bathrooms'] !== null && (
+            {listing.bathroom_count !== null && (
               <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
                   <img src="/assets/images/bath.svg" alt="Bathroom" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
                 </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing['Features - Qty Bathrooms']} Bathroom(s)</div>
+                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.bathroom_count} Bathroom(s)</div>
               </div>
             )}
-            {listing['Features - Qty Bedrooms'] !== null && (
+            {listing.bedroom_count !== null && (
               <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
                   <img src="/assets/images/sleeping.svg" alt="Bedroom" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
                 </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing['Features - Qty Bedrooms'] === 0 ? 'Studio' : `${listing['Features - Qty Bedrooms']} Bedroom${listing['Features - Qty Bedrooms'] === 1 ? '' : 's'}`}</div>
+                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.bedroom_count === 0 ? 'Studio' : `${listing.bedroom_count} Bedroom${listing.bedroom_count === 1 ? '' : 's'}`}</div>
               </div>
             )}
-            {listing['Features - Qty Beds'] !== null && (
+            {listing.bed_count !== null && (
               <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
                 <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
                   <img src="/assets/images/bed.svg" alt="Bed" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
                 </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing['Features - Qty Beds']} Bed(s)</div>
+                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.bed_count} Bed(s)</div>
               </div>
             )}
           </section>
@@ -1146,11 +1146,11 @@ export default function ViewSplitLeasePage() {
               whiteSpace: 'pre-wrap'
             }}>
               {expandedSections.description
-                ? listing.Description
-                : listing.Description?.slice(0, 360)}
-              {listing.Description?.length > 360 && !expandedSections.description && '...'}
+                ? listing.listing_description
+                : listing.listing_description?.slice(0, 360)}
+              {listing.listing_description?.length > 360 && !expandedSections.description && '...'}
             </p>
-            {listing.Description?.length > 360 && (
+            {listing.listing_description?.length > 360 && (
               <button
                 onClick={() => toggleSection('description')}
                 style={{
@@ -1219,7 +1219,7 @@ export default function ViewSplitLeasePage() {
           )}
 
           {/* Neighborhood Description */}
-          {listing['Description - Neighborhood'] && (
+          {listing.neighborhood_description_by_host && (
             <section style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
               <h2 style={{
                 fontSize: isMobile ? '1rem' : '1.125rem',
@@ -1235,12 +1235,12 @@ export default function ViewSplitLeasePage() {
                 whiteSpace: 'pre-wrap'
               }}>
                 {expandedSections.neighborhood
-                  ? listing['Description - Neighborhood']
-                  : listing['Description - Neighborhood']?.slice(0, 500)}
-                {listing['Description - Neighborhood']?.length > 500 &&
+                  ? listing.neighborhood_description_by_host
+                  : listing.neighborhood_description_by_host?.slice(0, 500)}
+                {listing.neighborhood_description_by_host?.length > 500 &&
                  !expandedSections.neighborhood && '...'}
               </p>
-              {listing['Description - Neighborhood']?.length > 500 && (
+              {listing.neighborhood_description_by_host?.length > 500 && (
                 <button
                   onClick={() => toggleSection('neighborhood')}
                   style={{
@@ -1260,7 +1260,7 @@ export default function ViewSplitLeasePage() {
           )}
 
           {/* Commute Section */}
-          {(listing.parkingOption || listing['Time to Station (commute)']) && (
+          {(listing.parkingOption || listing.commute_time_to_nearest_transit) && (
             <section ref={commuteSectionRef} style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
               <h2 style={{
                 fontSize: isMobile ? '1rem' : '1.125rem',
@@ -1296,7 +1296,7 @@ export default function ViewSplitLeasePage() {
                     </div>
                   </div>
                 )}
-                {listing['Time to Station (commute)'] && (
+                {listing.commute_time_to_nearest_transit && (
                   <div style={{ display: 'flex', alignItems: 'start', gap: '1rem' }}>
                     <svg
                       width="24"
@@ -1314,7 +1314,7 @@ export default function ViewSplitLeasePage() {
                       <path d="M3 12h18"></path>
                     </svg>
                     <div>
-                      <div style={{ fontWeight: '600' }}>{listing['Time to Station (commute)']} to Metro</div>
+                      <div style={{ fontWeight: '600' }}>{listing.commute_time_to_nearest_transit} to Metro</div>
                       <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.875rem' }}>
                         Quick walk to nearest station
                       </div>
@@ -1489,10 +1489,10 @@ export default function ViewSplitLeasePage() {
                 background: COLORS.BG_LIGHT,
                 borderRadius: isMobile ? '8px' : '10px'
               }}>
-                {listing.host['Profile Photo'] && (
+                {listing.host.profile_photo_url && (
                   <img
-                    src={listing.host['Profile Photo']}
-                    alt={listing.host['Name - First']}
+                    src={listing.host.profile_photo_url}
+                    alt={listing.host.first_name}
                     style={{
                       width: isMobile ? '40px' : '48px',
                       height: isMobile ? '40px' : '48px',
@@ -1503,7 +1503,7 @@ export default function ViewSplitLeasePage() {
                 )}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: isMobile ? '0.875rem' : '0.9375rem', fontWeight: '600', marginBottom: '0.125rem' }}>
-                    {listing.host['Name - First']} {listing.host['Name - Last']?.charAt(0)}.
+                    {listing.host.first_name} {listing.host.last_name?.charAt(0)}.
                   </div>
                   <div style={{ color: COLORS.TEXT_LIGHT, fontSize: isMobile ? '0.75rem' : '0.8125rem' }}>Host</div>
                 </div>
@@ -1631,7 +1631,7 @@ export default function ViewSplitLeasePage() {
                 {listing.cancellationPolicy.bestCaseText && (
                   <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{ fontWeight: '600', color: '#16a34a', marginBottom: '0.25rem' }}>
-                      ✓ Best Case
+                      âœ“ Best Case
                     </div>
                     <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem', lineHeight: '1.6' }}>
                       {listing.cancellationPolicy.bestCaseText}
@@ -1643,7 +1643,7 @@ export default function ViewSplitLeasePage() {
                 {listing.cancellationPolicy.mediumCaseText && (
                   <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{ fontWeight: '600', color: '#ea580c', marginBottom: '0.25rem' }}>
-                      ⚠ Medium Case
+                      âš  Medium Case
                     </div>
                     <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem', lineHeight: '1.6' }}>
                       {listing.cancellationPolicy.mediumCaseText}
@@ -1655,7 +1655,7 @@ export default function ViewSplitLeasePage() {
                 {listing.cancellationPolicy.worstCaseText && (
                   <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{ fontWeight: '600', color: '#dc2626', marginBottom: '0.25rem' }}>
-                      ✕ Worst Case
+                      âœ• Worst Case
                     </div>
                     <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem', lineHeight: '1.6' }}>
                       {listing.cancellationPolicy.worstCaseText}
@@ -1693,7 +1693,7 @@ export default function ViewSplitLeasePage() {
                     onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
                     onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
                   >
-                    View full cancellation policy →
+                    View full cancellation policy â†’
                   </a>
                 </div>
               </div>
@@ -1932,7 +1932,7 @@ export default function ViewSplitLeasePage() {
           {/* Custom schedule section - decoupled from scheduleSelectorListing to ensure visibility */}
           {(() => {
             const shouldRender = !isMobile && listing;
-            logger.debug(`🎯 Custom Schedule Conditional Check: isMobile=${isMobile}, listing=${!!listing}, shouldRender=${shouldRender}`);
+            logger.debug(`ðŸŽ¯ Custom Schedule Conditional Check: isMobile=${isMobile}, listing=${!!listing}, shouldRender=${shouldRender}`);
             return shouldRender;
           })() && (
             <div style={{
@@ -1949,7 +1949,7 @@ export default function ViewSplitLeasePage() {
               }}>
                 <span>This listing is </span>
                 <strong style={{ color: '#31135d' }}>
-                  {listing?.['Weeks offered'] || 'Every week'}
+                  {listing?.weeks_offered_schedule_text || 'Every week'}
                 </strong>
                 <span>. </span>
                 <button
@@ -2108,7 +2108,7 @@ export default function ViewSplitLeasePage() {
             {/* Schedule Pattern Highlight - shows actual weeks for alternating patterns */}
             <SchedulePatternHighlight
               reservationSpan={reservationSpan}
-              weeksOffered={listing?.['Weeks offered']}
+              weeksOffered={listing?.weeks_offered_schedule_text}
             />
           </div>
 
@@ -2283,7 +2283,7 @@ export default function ViewSplitLeasePage() {
                 color: COLORS.TEXT_LIGHT
               }}
             >
-              ×
+              Ã—
             </button>
 
             <h2 style={{
@@ -2311,7 +2311,7 @@ export default function ViewSplitLeasePage() {
               marginBottom: '1.5rem',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🏢</div>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>ðŸ¢</div>
               <div style={{ fontSize: '0.875rem', color: COLORS.TEXT_DARK }}>
                 Stay 2-5 nights a week, save up to 50% off of a comparable Airbnb
               </div>
@@ -2389,12 +2389,12 @@ export default function ViewSplitLeasePage() {
               zIndex: 1002
             }}
           >
-            ×
+            Ã—
           </button>
 
           <img
             src={listing.photos[currentPhotoIndex]?.Photo}
-            alt={`${listing.Name} - photo ${currentPhotoIndex + 1}`}
+            alt={`${listing.listing_title} - photo ${currentPhotoIndex + 1}`}
             style={{
               maxWidth: isMobile ? '95vw' : '90vw',
               maxHeight: isMobile ? '75vh' : '80vh',
@@ -2432,7 +2432,7 @@ export default function ViewSplitLeasePage() {
                 whiteSpace: 'nowrap'
               }}
             >
-              ← Previous
+              â† Previous
             </button>
 
             <span style={{
@@ -2462,7 +2462,7 @@ export default function ViewSplitLeasePage() {
                 whiteSpace: 'nowrap'
               }}
             >
-              Next →
+              Next â†’
             </button>
           </div>
 
@@ -2552,10 +2552,10 @@ export default function ViewSplitLeasePage() {
           onClose={() => setShowContactHostModal(false)}
           listing={{
             id: listing._id,
-            title: listing.Name,
+            title: listing.listing_title,
             host: {
               userId: listing.host?.userId,  // User's Bubble ID for messaging
-              name: listing.host ? `${listing.host['Name - First']} ${listing.host['Name - Last']?.charAt(0)}.` : 'Host'
+              name: listing.host ? `${listing.host.first_name} ${listing.host.last_name?.charAt(0)}.` : 'Host'
             }
           }}
           onLoginRequired={() => {
@@ -2733,7 +2733,7 @@ export default function ViewSplitLeasePage() {
                       padding: '4px'
                     }}
                   >
-                    ×
+                    Ã—
                   </button>
                 </div>
 
@@ -2846,7 +2846,7 @@ export default function ViewSplitLeasePage() {
                 {/* Custom schedule section - decoupled from scheduleSelectorListing to ensure visibility (Mobile) */}
                 {(() => {
                   const shouldRender = !!listing;
-                  logger.debug(`🎯 Custom Schedule Conditional Check (MOBILE): listing=${!!listing}, shouldRender=${shouldRender}`);
+                  logger.debug(`ðŸŽ¯ Custom Schedule Conditional Check (MOBILE): listing=${!!listing}, shouldRender=${shouldRender}`);
                   return shouldRender;
                 })() && (
                   <div style={{
@@ -2863,7 +2863,7 @@ export default function ViewSplitLeasePage() {
                     }}>
                       <span>This listing is </span>
                       <strong style={{ color: '#31135d' }}>
-                        {listing?.['Weeks offered'] || 'Every week'}
+                        {listing?.weeks_offered_schedule_text || 'Every week'}
                       </strong>
                       <span>. </span>
                       <button
@@ -2977,7 +2977,7 @@ export default function ViewSplitLeasePage() {
                     <span style={{ color: '#111827', fontWeight: '700' }}>
                       {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent
                         ? formatPrice(pricingBreakdown.fourWeekRent)
-                        : '—'}
+                        : 'â€”'}
                     </span>
                   </div>
                   <div style={{
@@ -2997,7 +2997,7 @@ export default function ViewSplitLeasePage() {
                     }}>
                       {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal
                         ? formatPrice(pricingBreakdown.reservationTotal)
-                        : '—'}
+                        : 'â€”'}
                     </span>
                   </div>
                 </div>

@@ -2,7 +2,7 @@
  * Tests for extractListingCoordinates
  *
  * Extract coordinates from listing's JSONB location fields.
- * Priority: "Location - slightly different address" (privacy) → "Location - Address" (main).
+ * Priority: map_pin_offset_address_json (privacy) → address_with_lat_lng_json (main).
  * Coordinates must fall within NYC metro area bounds.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';

@@ -20,16 +20,16 @@ export default function StatusSection({
 
   const toggleFields = [
     {
-      name: 'Approved',
+      name: 'is_approved',
       label: 'Approved',
       description: 'Listing is approved for display',
-      checked: Boolean(listing['Approved'])
+      checked: Boolean(listing.is_approved)
     },
     {
-      name: 'Active',
+      name: 'is_active',
       label: 'Active',
       description: 'Listing is currently active',
-      checked: Boolean(listing['Active'])
+      checked: Boolean(listing.is_active)
     },
     {
       name: 'availability confirmed',
@@ -41,7 +41,7 @@ export default function StatusSection({
       name: 'Showcase',
       label: 'Showcase',
       description: 'Featured in showcase listings',
-      checked: Boolean(listing['Showcase'])
+      checked: Boolean(listing.is_showcase)
     },
     {
       name: 'Claimable',
@@ -73,7 +73,7 @@ export default function StatusSection({
       <div style={styles.summary}>
         <StatusIndicator
           label="Visibility"
-          status={listing['Approved'] && listing['Active'] ? 'visible' : 'hidden'}
+          status={listing.is_approved && listing.is_active ? 'visible' : 'hidden'}
         />
         <StatusIndicator
           label="Booking"
