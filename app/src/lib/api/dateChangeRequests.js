@@ -97,14 +97,29 @@ export async function handleDateChangeResponse(requestId, action, lease) {
 }
 
 export async function fetchDateChangeRequestsForLease(leaseId) {
+  // Step 1: Fetch date change requests without join (FK may not be defined)
   const { data, error } = await supabase
     .from('datechangerequest')
-    .select('*, requestedByUser:User(*)')
+    .select('*')
     .eq('Lease', leaseId)
     .order('Created Date', { ascending: false });
 
   if (error) throw error;
-  return (data || []).map(adaptDateChangeRequestFromSupabase);
+
+  // Step 2: Fetch requestedBy users separately
+  const requests = data || [];
+  for (const request of requests) {
+    if (request['Requested by']) {
+      const { data: user } = await supabase
+        .from('user')
+        .select('*')
+        .eq('_id', request['Requested by'])
+        .single();
+      request.requestedByUser = user;
+    }
+  }
+
+  return requests.map(adaptDateChangeRequestFromSupabase);
 }
 
 export async function createDateChangeRequest(payload) {
