@@ -597,7 +597,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
 
   const normalizedStatus = typeof status === 'string' ? status.trim() : status;
   const hasRentalApp = proposal['rental application'];
-  const guestDocsFinalized = proposal['guest documents review finalized?'];
+  const guestDocsFinalized = proposal.is_finalized;
 
   // Stage 1: Proposal Submitted - Always purple (completed) once proposal exists
   if (stageIndex === 0) {

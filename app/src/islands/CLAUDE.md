@@ -165,7 +165,7 @@ export function useSearchPageLogic() {
 [PURPOSE]: Site-wide navigation bar with authentication state awareness
 [FEATURES]: Logo, nav links, auth buttons (login/signup when logged out, avatar when logged in)
 [MODALS]: Contains SignUpLoginModal for inline authentication
-[AUTH_STATE]: Reads from auth.js, displays user type (Host/Guest)
+[AUTH_STATE]: Reads from auth/index.js, displays user type (Host/Guest)
 
 ### Footer.jsx
 [PURPOSE]: Site-wide footer with links and company information

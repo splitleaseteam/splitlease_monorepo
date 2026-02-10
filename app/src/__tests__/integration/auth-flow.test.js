@@ -19,7 +19,7 @@ import {
   getAuthToken,
   getSessionId,
   getUserType
-} from '../../lib/auth.js';
+} from '../../lib/auth/index.js';
 
 // Mock Supabase client
 vi.mock('../../lib/supabase.js', () => ({

@@ -13,7 +13,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getSessionId, checkAuthStatus, validateTokenAndFetchUser, checkUrlForAuthError, clearAuthErrorFromUrl } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
+import { checkUrlForAuthError, clearAuthErrorFromUrl } from '../../../lib/auth/index.js';
 import { isHost } from '../../../logic/rules/users/isHost.js';
 import { submitIdentityVerification } from '../../../lib/api/identityVerificationService.js';
 
@@ -278,6 +279,16 @@ function indicesToDayNames(indices) {
 // ============================================================================
 
 export function useAccountProfilePageLogic() {
+  // ============================================================================
+  // AUTH (via useAuthenticatedUser hook)
+  // ============================================================================
+  const {
+    user: authUser,
+    userId: authUserId,
+    loading: authLoading,
+    isAuthenticated: hookIsAuthenticated
+  } = useAuthenticatedUser();
+
   // ============================================================================
   // STATE
   // ============================================================================
@@ -651,6 +662,9 @@ export function useAccountProfilePageLogic() {
   // ============================================================================
 
   useEffect(() => {
+    // Wait for auth hook to finish loading
+    if (authLoading) return;
+
     async function initialize() {
       try {
         // FIRST: Check for auth errors in URL hash (e.g., expired magic link)
@@ -677,25 +691,11 @@ export function useAccountProfilePageLogic() {
           throw new Error(errorMessage);
         }
 
-        // Check authentication status FIRST to potentially use as fallback
-        // We need the validated user ID (Bubble _id) for accurate comparison
-        // getSessionId() may return Supabase UUID instead of Bubble _id due to
-        // timing issues with Supabase Auth session sync
-        const isAuth = await checkAuthStatus();
-        setIsAuthenticated(isAuth);
+        // Use auth state from the useAuthenticatedUser hook
+        setIsAuthenticated(hookIsAuthenticated);
 
-        // Get logged-in user ID from validated user data (Bubble _id)
-        // This ensures we compare the correct ID format with the URL ID
-        let validatedUserId = null;
-        if (isAuth) {
-          const validatedUser = await validateTokenAndFetchUser({ clearOnFailure: false });
-          if (validatedUser?.userId) {
-            validatedUserId = validatedUser.userId;
-          } else {
-            // Fallback to session ID if validation fails (shouldn't happen if isAuth is true)
-            validatedUserId = getSessionId();
-          }
-        }
+        // Get logged-in user ID from the hook (Bubble _id)
+        const validatedUserId = authUserId || null;
         setLoggedInUserId(validatedUserId);
 
         // Extract profile user ID from URL, or fall back to logged-in user's ID
@@ -733,7 +733,7 @@ export function useAccountProfilePageLogic() {
     }
 
     initialize();
-  }, [fetchReferenceData, fetchProfileData, fetchHostListings]);
+  }, [authLoading, hookIsAuthenticated, authUserId, fetchReferenceData, fetchProfileData, fetchHostListings]);
 
   // ============================================================================
   // RENTAL APPLICATION STATUS (Guest-only)

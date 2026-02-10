@@ -7,6 +7,7 @@
  */
 
 import { supabase } from '../supabase.js';
+import { logger } from '../logger.js';
 import {
   setAuthToken as setSecureAuthToken,
   setSessionId as setSecureSessionId,
@@ -33,7 +34,7 @@ import { setUserType } from './session.js';
  * @returns {Promise<Object>} Result with success status or error
  */
 export async function initiateGoogleOAuth(userType) {
-  console.log('[Auth] Initiating Google OAuth with userType:', userType);
+  logger.info('[Auth] Initiating Google OAuth with userType:', userType);
 
   // Store user type before redirect
   setGoogleOAuthUserType(userType);
@@ -67,7 +68,7 @@ export async function initiateGoogleOAuth(userType) {
  * @returns {Promise<Object>} Result with user data or error
  */
 export async function handleGoogleOAuthCallback() {
-  console.log('[Auth] Handling Google OAuth callback');
+  logger.info('[Auth] Handling Google OAuth callback');
 
   // Get the session from OAuth callback
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -102,8 +103,8 @@ export async function handleGoogleOAuthCallback() {
     supabaseUserId: user.id,
   };
 
-  console.log('[Auth] Google data:', googleData);
-  console.log('[Auth] Stored userType:', userType);
+  logger.info('[Auth] Google data:', googleData);
+  logger.info('[Auth] Stored userType:', userType);
 
   // Call Edge Function to create/link user record
   try {
@@ -142,10 +143,10 @@ export async function handleGoogleOAuthCallback() {
     clearGoogleOAuthUserType();
 
     // DEBUG: Log what we received from Edge Function
-    console.log('[Auth] Edge Function response:', JSON.stringify(data.data, null, 2));
-    console.log('[Auth] user_id from Edge Function:', data.data.user_id);
-    console.log('[Auth] supabase_user_id:', data.data.supabase_user_id);
-    console.log('[Auth] Supabase session user.id:', session.user.id);
+    logger.info('[Auth] Edge Function response:', JSON.stringify(data.data, null, 2));
+    logger.info('[Auth] user_id from Edge Function:', data.data.user_id);
+    logger.info('[Auth] supabase_user_id:', data.data.supabase_user_id);
+    logger.info('[Auth] Supabase session user.id:', session.user.id);
 
     // Store session data
     setSecureAuthToken(session.access_token);
@@ -178,7 +179,7 @@ export async function handleGoogleOAuthCallback() {
  * @returns {Promise<Object>} Result with success status or error
  */
 export async function initiateGoogleOAuthLogin() {
-  console.log('[Auth] Initiating Google OAuth Login');
+  logger.info('[Auth] Initiating Google OAuth Login');
 
   // Clear any existing signup flow flags to prevent conflicts
   clearGoogleOAuthUserType();
@@ -217,11 +218,11 @@ export async function initiateGoogleOAuthLogin() {
  * @returns {Promise<Object>} Result with user data or error (userNotFound: true if account doesn't exist)
  */
 export async function handleGoogleOAuthLoginCallback() {
-  console.log('[Auth] Handling Google OAuth Login callback');
+  logger.info('[Auth] Handling Google OAuth Login callback');
 
   // Verify this is a login flow
   if (!getGoogleOAuthLoginFlow()) {
-    console.log('[Auth] Not a login flow callback, skipping');
+    logger.info('[Auth] Not a login flow callback, skipping');
     return { success: false, error: 'Not a login flow' };
   }
 
@@ -252,7 +253,7 @@ export async function handleGoogleOAuthLoginCallback() {
     const email = user.email;
     const supabaseUserId = user.id;
 
-    console.log('[Auth] Google OAuth login data:', { email, supabaseUserId });
+    logger.info('[Auth] Google OAuth login data:', { email, supabaseUserId });
 
     // Call Edge Function to verify user exists
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-user`, {
@@ -281,7 +282,7 @@ export async function handleGoogleOAuthLoginCallback() {
     if (!response.ok || !data.success) {
       // Check if user was not found
       if (data.data?.userNotFound) {
-        console.log('[Auth] User not found for OAuth login:', email);
+        logger.info('[Auth] User not found for OAuth login:', email);
         return {
           success: false,
           userNotFound: true,
@@ -311,7 +312,7 @@ export async function handleGoogleOAuthLoginCallback() {
       localStorage.setItem('splitlease_supabase_user_id', supabase_user_id);
     }
 
-    console.log('[Auth] Google OAuth login successful');
+    logger.info('[Auth] Google OAuth login successful');
     return {
       success: true,
       data: data.data
@@ -319,7 +320,7 @@ export async function handleGoogleOAuthLoginCallback() {
 
   } catch (err) {
     clearGoogleOAuthLoginFlow();
-    console.error('[Auth] Google OAuth login callback error:', err);
+    logger.error('[Auth] Google OAuth login callback error:', err);
     return { success: false, error: err.message };
   }
 }

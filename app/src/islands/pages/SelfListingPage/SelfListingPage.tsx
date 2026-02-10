@@ -12,7 +12,7 @@ import Header from '../../shared/Header';
 import SignUpLoginModal from '../../shared/SignUpLoginModal';
 import Toast, { useToast } from '../../shared/Toast';
 import { getListingById } from '../../../lib/bubbleAPI';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth/tokenValidation.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { createListing } from '../../../lib/listingService';
 import { isGuest } from '../../../logic/rules/users/isGuest.js';
 import './styles/SelfListingPage.css';
@@ -219,6 +219,9 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, listingId, listingN
 export const SelfListingPage: React.FC = () => {
   console.log('🏠 SelfListingPage: Component mounting');
 
+  // Auth hook - no role enforcement here (logged-out users allowed, guests redirected below)
+  const { user: authUser, loading: authLoading, isAuthenticated } = useAuthenticatedUser();
+
   // Use the local store for all form data management
   const {
     formData,
@@ -270,39 +273,29 @@ export const SelfListingPage: React.FC = () => {
   // This page is accessible to: logged-out users OR host users
   // Guest users should be redirected to the index page
   useEffect(() => {
-    const checkAccess = async () => {
-      console.log('🔐 SelfListingPage: Checking access control...');
+    if (authLoading) return; // Wait for auth hook to finish
 
-      const loggedIn = await checkAuthStatus();
-
-      if (!loggedIn) {
-        // Logged out users can access - allow
-        console.log('✅ SelfListingPage: User is logged out - access allowed');
-        setIsCheckingAccess(false);
-        return;
-      }
-
-      // User is logged in - check their type
-      // CRITICAL: Use clearOnFailure: false to preserve session if Edge Function fails
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-      const userType = userData?.userType;
-
-      console.log('🔐 SelfListingPage: User type:', userType);
-
-      if (isGuest({ userType })) {
-        // Guest users should not access this page - redirect to index
-        console.log('❌ SelfListingPage: Guest user detected - redirecting to index');
-        window.location.href = '/';
-        return;
-      }
-
-      // Host users (or any other type) can access
-      console.log('✅ SelfListingPage: Host user - access allowed');
+    if (!isAuthenticated) {
+      // Logged out users can access - allow
+      console.log('[SelfListingPage] User is logged out - access allowed');
       setIsCheckingAccess(false);
-    };
+      return;
+    }
 
-    checkAccess();
-  }, []);
+    const userType = authUser?.userType;
+    console.log('[SelfListingPage] User type:', userType);
+
+    if (isGuest({ userType })) {
+      // Guest users should not access this page - redirect to index
+      console.log('[SelfListingPage] Guest user detected - redirecting to index');
+      window.location.href = '/';
+      return;
+    }
+
+    // Host users (or any other type) can access
+    console.log('[SelfListingPage] Host user - access allowed');
+    setIsCheckingAccess(false);
+  }, [authLoading, isAuthenticated, authUser]);
 
   // Sync current section with store
   useEffect(() => {
@@ -607,18 +600,17 @@ export const SelfListingPage: React.FC = () => {
   const handleSubmit = async () => {
     console.log('[SelfListingPage] Submit clicked, checking auth status...');
 
-    // Check current auth status
-    const loggedIn = await checkAuthStatus();
-    setIsLoggedIn(loggedIn);
-
-    if (!loggedIn) {
+    // Use auth state from the hook instead of re-checking
+    if (!isAuthenticated) {
       // User is not logged in - show auth modal
       console.log('[SelfListingPage] User not logged in, showing auth modal');
+      setIsLoggedIn(false);
       setPendingSubmit(true);
       setShowAuthModal(true);
       return;
     }
 
+    setIsLoggedIn(true);
     // User is logged in - proceed with submission
     console.log('[SelfListingPage] User is logged in, proceeding with submission');
     proceedWithSubmit();

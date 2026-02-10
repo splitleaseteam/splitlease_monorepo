@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { validateTokenAndFetchUser } from '../../../lib/auth/index.js';
 import DesktopHeader from './components/DesktopHeader.jsx';
 import MobileHeader from './components/MobileHeader.jsx';
 import { getCurrentPage } from './config/navigationConfig.js';

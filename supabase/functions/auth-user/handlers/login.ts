@@ -158,7 +158,7 @@ export async function handleLogin(
           console.log('[login] ✅ Login notification email sent');
         }
       }
-    } catch (_err) {
+    } catch (err) {
       console.error('[login] Login notification email error:', err);
       // Non-blocking: Continue with login even if email fails
     }

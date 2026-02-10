@@ -11,10 +11,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getUserType } from '../../../lib/auth.js';
-import { getUserId } from '../../../lib/secureStorage.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
-import { isHost } from '../../../logic/rules/users/isHost.js';
 import { showToast } from '../../shared/Toast.jsx';
 
 // ============================================================================
@@ -169,19 +167,34 @@ function normalizeDateChangeRequest(dcr) {
  */
 export function useHostLeasesPageLogic() {
   // ============================================================================
-  // AUTH STATE
+  // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false,
+  const {
+    user: authUser,
+    userId: authUserId,
+    loading: authLoading,
+    isAuthenticated
+  } = useAuthenticatedUser({ requiredRole: 'host', redirectOnFail: '/' });
+
+  // Map hook user to the shape this component expects
+  const user = authUser ? {
+    userId: authUser.id,
+    id: authUser.id,
+    firstName: authUser.firstName,
+    email: authUser.email,
+    userType: authUser.userType
+  } : null;
+
+  const authState = {
+    isChecking: authLoading,
+    isAuthenticated,
     shouldRedirect: false,
-    userType: null
-  });
+    userType: authUser?.userType || null
+  };
 
   // ============================================================================
   // DATA STATE
   // ============================================================================
-  const [user, setUser] = useState(null);
   const [listings, setListings] = useState([]);
   const [selectedListing, setSelectedListing] = useState(null);
   const [leases, setLeases] = useState([]);
@@ -212,112 +225,13 @@ export function useHostLeasesPageLogic() {
   const [leaseCountsByListing, setLeaseCountsByListing] = useState({});
 
   // ============================================================================
-  // AUTH CHECK
+  // LOAD DATA AFTER AUTH
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            shouldRedirect: true,
-            userType: null
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        let userType = null;
-        let finalUserData = null;
-
-        if (userData) {
-          userType = userData['User Type'] || userData.userType;
-          finalUserData = userData;
-          console.log('[HostLeases] User data loaded, userType:', userType);
-        } else {
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            userType = session.user.user_metadata?.user_type || getUserType() || null;
-            console.log('[HostLeases] Using fallback session data, userType:', userType);
-
-            if (userType && isHost({ userType })) {
-              finalUserData = {
-                userId: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-                email: session.user.email,
-                userType: userType
-              };
-            }
-
-            if (!userType) {
-              console.log('[HostLeases] Cannot determine user type from session, redirecting');
-              setAuthState({
-                isChecking: false,
-                isAuthenticated: true,
-                shouldRedirect: true,
-                userType: null
-              });
-              window.location.href = '/';
-              return;
-            }
-          } else {
-            console.log('[HostLeases] No valid session, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              shouldRedirect: true,
-              userType: null
-            });
-            window.location.href = '/';
-            return;
-          }
-        }
-
-        // Check if user is a host
-        if (!isHost({ userType })) {
-          console.warn('[HostLeases] User is not a Host, redirecting...');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            shouldRedirect: true,
-            userType: userType
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        setUser(finalUserData);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          shouldRedirect: false,
-          userType: userType
-        });
-
-        // Load host data
-        await loadHostData(finalUserData.userId || finalUserData.id);
-
-      } catch (err) {
-        console.error('Auth check failed:', err);
-        setError('Authentication failed. Please log in again.');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          shouldRedirect: true,
-          userType: null
-        });
-      }
+    if (!authLoading && isAuthenticated && authUserId) {
+      loadHostData(authUserId);
     }
-
-    checkAuth();
-  }, []);
+  }, [authLoading, isAuthenticated, authUserId]);
 
   // ============================================================================
   // DATA LOADING

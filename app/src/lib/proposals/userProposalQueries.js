@@ -124,8 +124,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       virtual_meeting_record_id,
       is_finalized,
       house_rules_reference_ids_json,
-      "remindersByGuest (number)",
-      "guest documents review finalized?"
+      reminder_count_sent_by_guest
     `)
     .in('id', proposalIds)
     .or('is_deleted.is.null,is_deleted.eq.false')
@@ -487,15 +486,11 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       .select('_id, "Proposal"')
       .in('Proposal', proposalIdsForSummaries);
 
-    console.log('[DEBUG] Thread query result:', { threadsData, threadsError, count: threadsData?.length });
     if (threadsError) {
       console.error('fetchProposalsByIds: Error fetching threads:', threadsError);
     } else if (threadsData && threadsData.length > 0) {
-      console.log('[DEBUG] First thread object keys:', Object.keys(threadsData[0]));
-      console.log('[DEBUG] First thread:', JSON.stringify(threadsData[0]));
       const threadIds = threadsData.map(t => t._id);
       const threadToProposalMap = new Map(threadsData.map(t => [t._id, t.Proposal]));
-      console.log('[DEBUG] threadToProposalMap entries:', [...threadToProposalMap.entries()]);
 
       // Fetch SplitBot counteroffer messages
       const { data: counterofferMsgs, error: counterofferError } = await supabase
@@ -512,31 +507,20 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
         .eq('"Call to Action"', 'Respond to Counter Offer')
         .order('bubble_created_at', { ascending: false });
 
-      console.log('[DEBUG] Message query result:', { counterofferMsgs, counterofferError, count: counterofferMsgs?.length });
       if (counterofferError) {
         console.error('fetchProposalsByIds: Error fetching counteroffer messages:', counterofferError);
       } else if (counterofferMsgs && counterofferMsgs.length > 0) {
-        console.log(`fetchProposalsByIds: Fetched ${counterofferMsgs.length} counteroffer summary messages`);
-        console.log('[DEBUG] First message:', JSON.stringify(counterofferMsgs[0]));
-
         // Map messages to their proposals (take only the most recent per proposal)
         counterofferMsgs.forEach(msg => {
           const threadId = msg.thread_id;
           const proposalId = threadToProposalMap.get(threadId);
-          console.log(`[DEBUG] Mapping: threadId=${threadId} -> proposalId=${proposalId}`);
           if (proposalId && !counterofferSummaryMap.has(proposalId)) {
             counterofferSummaryMap.set(proposalId, msg['message_body_text']);
           }
         });
-      } else {
-        console.log('[DEBUG] No counteroffer messages found or empty result');
       }
-    } else {
-      console.log('[DEBUG] No threads found for proposals');
     }
   }
-
-  console.log('[DEBUG] Final counterofferSummaryMap:', [...counterofferSummaryMap.entries()].map(([k, v]) => [k, v?.substring(0, 50)]));
 
   // Step 7: Create lookup maps for efficient joining
   const listingMap = new Map((listings || []).map(l => [l.id, l]));

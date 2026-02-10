@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import { useToast } from '../../shared/Toast';
 import { loadReviewsOverviewWorkflow, loadReviewCountsWorkflow } from '../../../logic/workflows/reviews/loadReviewsOverviewWorkflow.js';
@@ -83,16 +83,31 @@ async function createReview(payload) {
 export function useReviewsOverviewPageLogic() {
   const { showToast } = useToast();
 
-  // Auth state
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false,
+  // ============================================================================
+  // AUTH (via useAuthenticatedUser hook)
+  // ============================================================================
+  const {
+    user: authUser,
+    userId: authUserId,
+    loading: authLoading,
+    isAuthenticated
+  } = useAuthenticatedUser({ redirectOnFail: '/' });
+
+  // Map hook user to the shape this component expects
+  const user = authUser ? {
+    _id: authUser.id,
+    email: authUser.email,
+    firstName: authUser.firstName,
+    lastName: authUser.fullName ? authUser.fullName.split(' ').slice(1).join(' ') : '',
+    userType: authUser.userType
+  } : null;
+
+  const authState = {
+    isChecking: authLoading,
+    isAuthenticated,
     shouldRedirect: false,
     redirectReason: null
-  });
-
-  // User state
-  const [user, setUser] = useState(null);
+  };
 
   // Tab state
   const [activeTab, setActiveTab] = useState('pending');
@@ -122,66 +137,6 @@ export function useReviewsOverviewPageLogic() {
     isOpen: false,
     review: null
   });
-
-  // ============================================================================
-  // AUTHENTICATION CHECK
-  // ============================================================================
-
-  useEffect(() => {
-    async function checkAuth() {
-      console.log('🔐 Reviews Overview: Checking authentication...');
-
-      const isAuthenticated = await checkAuthStatus();
-
-      if (!isAuthenticated) {
-        console.log('❌ Reviews Overview: User not authenticated, redirecting');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_AUTHENTICATED'
-        });
-        window.location.href = '/';
-        return;
-      }
-
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-      if (userData) {
-        console.log('✅ Reviews Overview: User authenticated:', userData.userType);
-        setUser(userData);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          shouldRedirect: false,
-          redirectReason: null
-        });
-      } else {
-        // Fallback to session
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          setUser({
-            _id: session.user.id,
-            email: session.user.email,
-            firstName: session.user.user_metadata?.first_name || 'User',
-            lastName: session.user.user_metadata?.last_name || '',
-            userType: session.user.user_metadata?.user_type
-          });
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            shouldRedirect: false,
-            redirectReason: null
-          });
-        } else {
-          window.location.href = '/';
-        }
-      }
-    }
-
-    checkAuth();
-  }, []);
 
   // ============================================================================
   // LOAD ALL COUNTS ON MOUNT

@@ -59,11 +59,11 @@ export function computeProposalButtonStates({ proposal, virtualMeeting, guest, l
 
   if (ga1Button.visible) {
     // Reminder limit check
-    if (config.guestAction1 === 'Remind Split Lease' && (proposal['remindersByGuest (number)'] || 0) > 3) {
+    if (config.guestAction1 === 'Remind Split Lease' && (proposal.reminder_count_sent_by_guest || 0) > 3) {
       ga1Button.visible = false;
     }
     // Lease docs finalized check
-    if (status === PROPOSAL_STATUS.LEASE_DOCUMENTS_SENT && !proposal['guest documents review finalized?']) {
+    if (status === PROPOSAL_STATUS.LEASE_DOCUMENTS_SENT && !proposal.is_finalized) {
       ga1Button.visible = false;
     }
   }

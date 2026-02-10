@@ -20,7 +20,7 @@ import SignUpLoginModal from '../../shared/SignUpLoginModal.jsx';
 import Toast, { useToast } from '../../shared/Toast.jsx';
 import { HostScheduleSelector } from '../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { createListing, saveDraft, getListingById } from '../../../lib/listingService.js';
 import { isGuest } from '../../../logic/rules/users/isGuest.js';
 import { supabase } from '../../../lib/supabase.js';
@@ -152,6 +152,9 @@ const WEEKLY_PATTERNS = [
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function SelfListingPageV2() {
+  // Auth hook - no role enforcement here (logged-out users allowed, guests redirected below)
+  const { user: authUser, loading: authLoading, isAuthenticated } = useAuthenticatedUser();
+
   // State
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
@@ -332,39 +335,29 @@ export function SelfListingPageV2() {
   // This page is accessible to: logged-out users OR host users
   // Guest users should be redirected to the index page
   useEffect(() => {
-    const checkAccess = async () => {
-      console.log('🔐 SelfListingPageV2: Checking access control...');
+    if (authLoading) return; // Wait for auth hook to finish
 
-      const loggedIn = await checkAuthStatus();
-
-      if (!loggedIn) {
-        // Logged out users can access - allow
-        console.log('✅ SelfListingPageV2: User is logged out - access allowed');
-        setIsCheckingAccess(false);
-        return;
-      }
-
-      // User is logged in - check their type
-      // CRITICAL: Use clearOnFailure: false to preserve session if Edge Function fails
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-      const userType = userData?.userType;
-
-      console.log('🔐 SelfListingPageV2: User type:', userType);
-
-      if (isGuest({ userType })) {
-        // Guest users should not access this page - redirect to index
-        console.log('❌ SelfListingPageV2: Guest user detected - redirecting to index');
-        window.location.href = '/';
-        return;
-      }
-
-      // Host users (or any other type) can access
-      console.log('✅ SelfListingPageV2: Host user - access allowed');
+    if (!isAuthenticated) {
+      // Logged out users can access - allow
+      console.log('[SelfListingPageV2] User is logged out - access allowed');
       setIsCheckingAccess(false);
-    };
+      return;
+    }
 
-    checkAccess();
-  }, []);
+    const userType = authUser?.userType;
+    console.log('[SelfListingPageV2] User type:', userType);
+
+    if (isGuest({ userType })) {
+      // Guest users should not access this page - redirect to index
+      console.log('[SelfListingPageV2] Guest user detected - redirecting to index');
+      window.location.href = '/';
+      return;
+    }
+
+    // Host users (or any other type) can access
+    console.log('[SelfListingPageV2] Host user - access allowed');
+    setIsCheckingAccess(false);
+  }, [authLoading, isAuthenticated, authUser]);
 
   // Load draft and step from localStorage
   // IMPORTANT: Always prioritize LAST_* keys for steps 1-2 (hostType, marketStrategy)
@@ -422,27 +415,15 @@ export function SelfListingPageV2() {
     }));
   }, [formData, currentStep]);
 
-  // Check auth status on mount and fetch user phone if logged in
+  // Sync auth hook state to local isLoggedIn + phone number
   useEffect(() => {
-    const initAuth = async () => {
-      const loggedIn = await checkAuthStatus();
-      setIsLoggedIn(loggedIn);
-
-      if (loggedIn) {
-        try {
-          // CRITICAL: Use clearOnFailure: false to preserve session if Edge Function fails
-          const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-          if (userData?.phoneNumber) {
-            setUserPhoneNumber(userData.phoneNumber);
-            setPhoneNumber(userData.phoneNumber);
-          }
-        } catch (err) {
-          console.log('Could not fetch user data for phone number');
-        }
-      }
-    };
-    initAuth();
-  }, []);
+    if (authLoading) return;
+    setIsLoggedIn(isAuthenticated);
+    if (authUser?.phoneNumber) {
+      setUserPhoneNumber(authUser.phoneNumber);
+      setPhoneNumber(authUser.phoneNumber);
+    }
+  }, [authLoading, isAuthenticated, authUser]);
 
   // Handle URL parameters for continuing from another device or editing existing listing
   useEffect(() => {
@@ -1043,20 +1024,8 @@ export function SelfListingPageV2() {
     // IMMEDIATELY disable the button to prevent double-clicks
     setIsSubmitting(true);
 
-    // Try to get user data from Edge Function first
-    // CRITICAL: Use clearOnFailure: false to preserve session if Edge Function fails
-    const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-    // If Edge Function failed (userData is null), fall back to checking Supabase session directly
-    // This handles the case where Edge Function returns 500 but user has valid Supabase session
-    let loggedIn = !!userData;
-    if (!loggedIn) {
-      loggedIn = await checkAuthStatus();
-      console.log('[SelfListingPageV2] Edge Function failed, checking Supabase session:', loggedIn);
-    }
-    setIsLoggedIn(loggedIn);
-
-    if (!loggedIn) {
+    // Use auth state from the hook instead of re-checking
+    if (!isAuthenticated) {
       console.log('[SelfListingPageV2] User not logged in, showing auth modal');
       setIsSubmitting(false); // RE-ENABLE button so user can try again after login
       setShowAuthModal(true);

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase.js';
+import { logger } from '../logger.js';
 import { getAuthToken } from './tokenValidation.js';
 import { clearAuthData } from './session.js';
 
@@ -25,7 +26,7 @@ export async function logoutUser() {
   const token = getAuthToken();
 
   if (!token) {
-    console.log('❌ No token found for logout');
+    logger.info('❌ No token found for logout');
     // Clear any remaining auth data even if no token
     clearAuthData();
     return {
@@ -34,15 +35,15 @@ export async function logoutUser() {
     };
   }
 
-  console.log('🔓 Attempting logout via Edge Function...');
+  logger.info('🔓 Attempting logout via Edge Function...');
 
   // Sign out from Supabase Auth client explicitly
   // This ensures the client-side session is cleared from localStorage
   try {
     await supabase.auth.signOut();
-    console.log('✅ Signed out from Supabase Auth client');
+    logger.info('✅ Signed out from Supabase Auth client');
   } catch (err) {
-    console.warn('⚠️ Error signing out from Supabase Auth client:', err);
+    logger.warn('⚠️ Error signing out from Supabase Auth client:', err);
     // Continue with legacy logout...
   }
 
@@ -61,21 +62,21 @@ export async function logoutUser() {
     clearAuthData();
 
     if (error || !data.success) {
-      console.log('⚠️ Logout API returned error, but local data cleared');
+      logger.info('⚠️ Logout API returned error, but local data cleared');
       return {
         success: true,
         message: 'Logged out locally'
       };
     }
 
-    console.log('✅ Logout successful');
+    logger.info('✅ Logout successful');
     return {
       success: true,
       message: data.data.message || 'Logout successful'
     };
 
   } catch (error) {
-    console.error('❌ Logout error:', error);
+    logger.error('❌ Logout error:', error);
     // Auth data already cleared above
     clearAuthData();
     return {

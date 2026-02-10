@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Lottie from 'lottie-react';
-import { signupUser } from '../../../lib/auth.js';
+import { signupUser } from '../../../lib/auth/index.js';
 import Toast, { useToast } from '../Toast.jsx';
 
 /**

@@ -7,7 +7,7 @@ import {
   getUserId,
   getFirstName,
   getUserType
-} from '../lib/auth.js';
+} from '../lib/auth/index.js';
 import { isGuest } from '../logic/rules/users/isGuest.js';
 import { isHost } from '../logic/rules/users/isHost.js';
 
@@ -25,27 +25,42 @@ import { isHost } from '../logic/rules/users/isHost.js';
  * @param {Object} options
  * @param {boolean} options.requireGuest  - Redirect if user is not a Guest
  * @param {boolean} options.requireHost   - Redirect if user is not a Host
+ * @param {'guest'|'host'|'any'} options.requiredRole - Convenience alias for requireGuest/requireHost
  * @param {string|null} options.redirectOnFail - URL to redirect on auth/role failure (null = no redirect)
- * @returns {{ user: object|null, userId: string|null, loading: boolean, error: Error|null, isAuthenticated: boolean }}
+ * @returns {{ user: object|null, userId: string|null, loading: boolean, error: Error|null, isAuthenticated: boolean, redirectReason: string|null }}
  */
-export function useAuthenticatedUser({ requireGuest = false, requireHost = false, redirectOnFail = null } = {}) {
+export function useAuthenticatedUser({
+  requireGuest = false,
+  requireHost = false,
+  requiredRole,
+  redirectOnFail = null
+} = {}) {
+  // Map requiredRole convenience option to boolean flags
+  if (requiredRole === 'guest') requireGuest = true;
+  if (requiredRole === 'host') requireHost = true;
+
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [redirectReason, setRedirectReason] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
 
     const authenticate = async () => {
       try {
+        console.log('[useAuthenticatedUser] Starting auth check...', { requireGuest, requireHost, redirectOnFail });
         // ==================================================================
         // Step 0: Lightweight auth check (cookies, tokens, session existence)
         // ==================================================================
         const hasAuth = await checkAuthStatus();
+        console.log('[useAuthenticatedUser] Step 0 checkAuthStatus:', hasAuth);
 
         if (!hasAuth) {
           if (cancelled) return;
+          console.log('[useAuthenticatedUser] FAIL: Not authenticated, redirecting to', redirectOnFail);
+          setRedirectReason('NOT_AUTHENTICATED');
           if (redirectOnFail) { window.location.href = redirectOnFail; return; }
           setUser(null);
           setUserId(null);
@@ -58,13 +73,17 @@ export function useAuthenticatedUser({ requireGuest = false, requireHost = false
         // ==================================================================
         const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
         const sessionId = getSessionId();
+        console.log('[useAuthenticatedUser] Step 1 validateTokenAndFetchUser:', userData ? 'got user' : 'null', 'sessionId:', sessionId);
 
         if (userData) {
           const finalUserId = sessionId || userData.userId;
           const userType = userData.userType || getUserType() || '';
+          console.log('[useAuthenticatedUser] Step 1 userType:', JSON.stringify(userType), 'roleCheck:', passesRoleCheck(userType, requireGuest, requireHost));
 
           if (!passesRoleCheck(userType, requireGuest, requireHost)) {
             if (cancelled) return;
+            console.log('[useAuthenticatedUser] FAIL: Role check failed. userType:', JSON.stringify(userType), 'requireGuest:', requireGuest, 'requireHost:', requireHost);
+            setRedirectReason(requireHost ? 'NOT_HOST' : 'NOT_GUEST');
             if (redirectOnFail) { window.location.href = redirectOnFail; return; }
             setUser(null);
             setUserId(null);
@@ -96,12 +115,15 @@ export function useAuthenticatedUser({ requireGuest = false, requireHost = false
         // ==================================================================
         const { data: { session } } = await supabase.auth.getSession();
 
+        console.log('[useAuthenticatedUser] Step 2 Supabase session:', session ? 'found' : 'null');
         if (session?.user) {
           const finalUserId = session.user.user_metadata?.user_id || getUserId() || session.user.id;
           const userType = session.user.user_metadata?.user_type || getUserType() || '';
+          console.log('[useAuthenticatedUser] Step 2 userType:', JSON.stringify(userType), 'metadata:', JSON.stringify(session.user.user_metadata));
 
           if (!passesRoleCheck(userType, requireGuest, requireHost)) {
             if (cancelled) return;
+            setRedirectReason(requireHost ? 'NOT_HOST' : 'NOT_GUEST');
             if (redirectOnFail) { window.location.href = redirectOnFail; return; }
             setUser(null);
             setUserId(null);
@@ -132,6 +154,8 @@ export function useAuthenticatedUser({ requireGuest = false, requireHost = false
         // Step 3: No auth found
         // ==================================================================
         if (cancelled) return;
+        console.log('[useAuthenticatedUser] FAIL: Step 3 - no auth found at all');
+        setRedirectReason('TOKEN_INVALID');
         if (redirectOnFail) { window.location.href = redirectOnFail; return; }
         setUser(null);
         setUserId(null);
@@ -139,6 +163,7 @@ export function useAuthenticatedUser({ requireGuest = false, requireHost = false
       } catch (err) {
         console.error('[useAuthenticatedUser] Authentication error:', err);
         if (cancelled) return;
+        setRedirectReason('AUTH_ERROR');
         setError(err);
         setUser(null);
         setUserId(null);
@@ -150,7 +175,7 @@ export function useAuthenticatedUser({ requireGuest = false, requireHost = false
     return () => { cancelled = true; };
   }, []);
 
-  return { user, userId, loading, error, isAuthenticated: !!user };
+  return { user, userId, loading, error, isAuthenticated: !!user, redirectReason };
 }
 
 function passesRoleCheck(userType, requireGuest, requireHost) {

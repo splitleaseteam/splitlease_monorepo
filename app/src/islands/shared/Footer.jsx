@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SIGNUP_LOGIN_URL, SEARCH_URL } from '../../lib/constants.js';
 import { supabase } from '../../lib/supabase.js';
-import { checkAuthStatus, getUserType } from '../../lib/auth.js';
+import { useAuthenticatedUser } from '../../hooks/useAuthenticatedUser.js';
 import { normalizeUserType, NORMALIZED_USER_TYPES } from './LoggedInAvatar/useLoggedInAvatarData.js';
 import CreateDuplicateListingModal from './CreateDuplicateListingModal/CreateDuplicateListingModal.jsx';
 import ImportListingModal from './ImportListingModal/ImportListingModal.jsx';
@@ -15,22 +15,9 @@ export default function Footer() {
   const [showCreateListingModal, setShowCreateListingModal] = useState(false);
   const [showImportListingModal, setShowImportListingModal] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userType, setUserType] = useState(null); // 'Host' or 'Guest'
+  const { isAuthenticated: isLoggedIn, user } = useAuthenticatedUser();
+  const userType = user?.userType ?? null;
   const { toasts, showToast, removeToast } = useToast();
-
-  // Check auth status and user type on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const loggedIn = await checkAuthStatus();
-      setIsLoggedIn(loggedIn);
-      if (loggedIn) {
-        const type = getUserType();
-        setUserType(type);
-      }
-    };
-    checkAuth();
-  }, []);
 
   // Chrome mobile scroll fix - ensure scroll is enabled after mount
   // This acts as a safety net in case any modal effects set overflow incorrectly

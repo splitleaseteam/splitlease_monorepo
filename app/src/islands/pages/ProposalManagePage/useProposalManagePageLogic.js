@@ -18,7 +18,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 
 // ============================================================================
@@ -312,6 +312,9 @@ function normalizeProposal(proposal, guest, host, listing) {
  * Hook for Proposal Management Page business logic
  */
 export function useProposalManagePageLogic() {
+  // Auth hook - any role (internal admin page)
+  const { user: authUser, loading: authLoading, isAuthenticated: hookIsAuthenticated } = useAuthenticatedUser({ requiredRole: 'any' });
+
   // ============================================================================
   // AUTH STATE
   // ============================================================================
@@ -353,15 +356,16 @@ export function useProposalManagePageLogic() {
   // AUTH CHECK (Optional - no redirect for internal pages)
   // ============================================================================
   useEffect(() => {
+    if (authLoading) return;
     // No redirect if not authenticated - this is an internal page accessible without login
     // Always set authorized for internal pages
     setAuthState({
       isChecking: false,
-      isAuthenticated: true,
+      isAuthenticated: hookIsAuthenticated,
       isAdmin: true,
       shouldRedirect: false
     });
-  }, []);
+  }, [authLoading, hookIsAuthenticated]);
 
   // ============================================================================
   // LOAD PROPOSALS WHEN FILTERS CHANGE

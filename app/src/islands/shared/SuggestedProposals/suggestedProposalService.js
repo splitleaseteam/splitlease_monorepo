@@ -22,30 +22,12 @@ export async function fetchSuggestedProposals(userId) {
   }
 
   try {
-    // Step 1: Fetch user's proposals list
-    const { data: userData, error: userError } = await supabase
-      .from('user')
-      .select('"Proposals List"')
-      .eq('id', userId)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user proposals list:', userError);
-      return [];
-    }
-
-    const proposalIds = userData?.['Proposals List'];
-
-    if (!proposalIds || !Array.isArray(proposalIds) || proposalIds.length === 0) {
-      console.log('No proposals found in user\'s Proposals List');
-      return [];
-    }
-
-    // Step 2: Fetch all proposals
+    // Fetch suggested proposals directly by guest_user_id
+    // (Previously queried "Proposals List" column on user table, which doesn't exist)
     const { data: proposalsData, error: proposalsError } = await supabase
       .from('booking_proposal')
       .select('*')
-      .in('id', proposalIds)
+      .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false')
       .order('bubble_created_at', { ascending: false });
 
@@ -54,7 +36,7 @@ export async function fetchSuggestedProposals(userId) {
       return [];
     }
 
-    // Step 3: Filter to only suggested proposals
+    // Filter to only suggested proposals
     const suggestedProposals = (proposalsData || []).filter(
       p => isSuggestedProposal(p.proposal_workflow_status)
     );
@@ -201,34 +183,17 @@ export async function fetchPendingConfirmationCount(userId) {
   if (!userId) return 0;
 
   try {
-    // Step 1: Fetch user's proposals list
-    const { data: userData, error: userError } = await supabase
-      .from('user')
-      .select('"Proposals List"')
-      .eq('id', userId)
-      .single();
-
-    if (userError || !userData?.['Proposals List']) {
-      return 0;
-    }
-
-    const proposalIds = userData['Proposals List'];
-    if (!Array.isArray(proposalIds) || proposalIds.length === 0) {
-      return 0;
-    }
-
-    // Step 2: Count proposals with pending confirmation status
+    // Fetch proposals directly by guest_user_id and filter for pending confirmation
     const { data: proposalsData, error: proposalsError } = await supabase
       .from('booking_proposal')
       .select('id, proposal_workflow_status')
-      .in('id', proposalIds)
+      .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false');
 
     if (proposalsError || !proposalsData) {
       return 0;
     }
 
-    // Step 3: Filter to only pending confirmation proposals
     const pendingCount = proposalsData.filter(
       p => isPendingConfirmationProposal(p.proposal_workflow_status)
     ).length;
@@ -253,28 +218,11 @@ export async function fetchPendingConfirmationProposals(userId) {
   }
 
   try {
-    // Step 1: Fetch user's proposals list
-    const { data: userData, error: userError } = await supabase
-      .from('user')
-      .select('"Proposals List"')
-      .eq('id', userId)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user proposals list:', userError);
-      return [];
-    }
-
-    const proposalIds = userData?.['Proposals List'];
-    if (!proposalIds || !Array.isArray(proposalIds) || proposalIds.length === 0) {
-      return [];
-    }
-
-    // Step 2: Fetch all proposals
+    // Fetch proposals directly by guest_user_id
     const { data: proposalsData, error: proposalsError } = await supabase
       .from('booking_proposal')
       .select('*')
-      .in('id', proposalIds)
+      .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false')
       .order('bubble_created_at', { ascending: false });
 
@@ -283,7 +231,7 @@ export async function fetchPendingConfirmationProposals(userId) {
       return [];
     }
 
-    // Step 3: Filter to only pending confirmation proposals
+    // Filter to only pending confirmation proposals
     const pendingProposals = (proposalsData || []).filter(
       p => isPendingConfirmationProposal(p.proposal_workflow_status)
     );

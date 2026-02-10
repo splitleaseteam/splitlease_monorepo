@@ -14,7 +14,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { signupUser, saveAuthTokens } from '../../../lib/auth.js';
+import { signupUser } from '../../../lib/auth/index.js';
 import { validateForm, getFieldError } from './validation.js';
 
 /**
@@ -116,15 +116,7 @@ export function useSignUpTrialHostLogic() {
       console.log('[SignUpTrialHost] Signup result:', result);
 
       if (result.success) {
-        // Save tokens if provided
-        if (result.access_token && result.refresh_token) {
-          await saveAuthTokens(
-            result.access_token,
-            result.refresh_token,
-            result.user_id
-          );
-        }
-
+        // Tokens are stored internally by signupUser() — no additional save needed
         setIsSuccess(true);
 
         // Redirect to house manual after short delay for user feedback

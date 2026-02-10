@@ -25,7 +25,7 @@ import {
 import {
   handleLinkedInOAuthLoginCallback,
   handleGoogleOAuthLoginCallback
-} from './auth.js';
+} from './auth/index.js';
 
 // Track if we've already processed an OAuth callback in this page load
 let oauthCallbackProcessed = false;

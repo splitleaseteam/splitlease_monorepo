@@ -2,12 +2,10 @@
  * Split Lease Authentication - Barrel Export
  *
  * Re-exports all auth functions from focused subdirectory modules.
- * Consumers can gradually migrate from:
- *   import { checkAuthStatus } from '../lib/auth.js'
- * to:
+ * This is the single source of truth for all auth imports:
  *   import { checkAuthStatus } from '../lib/auth/index.js'
  *
- * Every exported function/constant from the monolithic auth.js is mapped below.
+ * Module inventory:
  *
  * Module inventory:
  *   cookies.js         - Cookie parsing, username from cookies

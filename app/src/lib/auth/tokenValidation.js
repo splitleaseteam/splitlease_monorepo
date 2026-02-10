@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase.js';
+import { logger } from '../logger.js';
 import { checkSplitLeaseCookies } from './cookies.js';
 import {
   getAuthToken as getSecureAuthToken,
@@ -26,6 +27,11 @@ import {
 // ============================================================================
 
 let isUserLoggedInState = false;
+
+// Deduplication: share a single in-flight validateTokenAndFetchUser call
+// Multiple callers (Header, useAuthenticatedUser, onAuthStateChange) all hit
+// this on page load — without dedup, each triggers an independent Edge Function call.
+let _inflight = null;
 
 /**
  * Get current logged-in state
@@ -105,20 +111,20 @@ export function setSessionId(sessionId) {
  * @returns {Promise<boolean>} True if user is authenticated, false otherwise
  */
 export async function checkAuthStatus() {
-  console.log('🔍 Checking authentication status...');
+  logger.info('🔍 Checking authentication status...');
 
   // Try to migrate from legacy storage first
   const migrated = await migrateFromLegacyStorage();
   if (migrated) {
-    console.log('✅ Migrated from legacy storage');
+    logger.info('✅ Migrated from legacy storage');
   }
 
   // First check cross-domain cookies from .split.lease (for compatibility)
   const splitLeaseAuth = checkSplitLeaseCookies();
 
   if (splitLeaseAuth.isLoggedIn) {
-    console.log('✅ User authenticated via Split Lease cookies');
-    console.log('   Username:', splitLeaseAuth.username);
+    logger.info('✅ User authenticated via Split Lease cookies');
+    logger.info('   Username:', splitLeaseAuth.username);
     isUserLoggedInState = true;
     setAuthState(true);
     return true;
@@ -134,20 +140,20 @@ export async function checkAuthStatus() {
     // If no session on first check, wait briefly for Supabase to initialize
     // This handles the race condition on page load
     if (!session && !error) {
-      console.log('🔄 No immediate Supabase session, waiting briefly for initialization...');
+      logger.info('🔄 No immediate Supabase session, waiting briefly for initialization...');
       await new Promise(resolve => setTimeout(resolve, 200));
       const retryResult = await supabase.auth.getSession();
       session = retryResult.data?.session;
       error = retryResult.error;
       if (session) {
-        console.log('✅ Found Supabase session after brief wait');
+        logger.info('✅ Found Supabase session after brief wait');
       }
     }
 
     if (session && !error) {
-      console.log('✅ User authenticated via Supabase Auth session');
-      console.log('   User ID:', session.user?.id);
-      console.log('   Email:', session.user?.email);
+      logger.info('✅ User authenticated via Supabase Auth session');
+      logger.info('   User ID:', session.user?.id);
+      logger.info('   Email:', session.user?.email);
 
       // Sync Supabase session to our storage for consistency
       const userId = session.user?.user_metadata?.user_id || session.user?.id;
@@ -166,7 +172,7 @@ export async function checkAuthStatus() {
       return true;
     }
   } catch (err) {
-    console.log('⚠️ Supabase session check failed:', err.message);
+    logger.info('⚠️ Supabase session check failed:', err.message);
     // Continue to check legacy auth
   }
 
@@ -178,13 +184,13 @@ export async function checkAuthStatus() {
     const hasTokens = await hasValidTokens();
 
     if (hasTokens) {
-      console.log('✅ User authenticated via secure storage (legacy)');
+      logger.info('✅ User authenticated via secure storage (legacy)');
       isUserLoggedInState = true;
       return true;
     }
   }
 
-  console.log('❌ User not authenticated');
+  logger.info('❌ User not authenticated');
   isUserLoggedInState = false;
   setAuthState(false);
   return false;
@@ -206,181 +212,184 @@ export async function checkAuthStatus() {
  * @returns {Promise<Object|null>} User data object with firstName, fullName, email, profilePhoto, userType, etc. or null if invalid
  */
 export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) {
-  let token = getAuthToken();
-  let userId = getSessionId();
+  // Dedup: if a validation is already in-flight, return the same promise.
+  // This prevents 5+ redundant Edge Function calls on page load when
+  // Header, useAuthenticatedUser, and onAuthStateChange all call simultaneously.
+  if (_inflight) {
+    return _inflight;
+  }
 
-  // If no legacy token/userId, check for Supabase Auth session and sync it
-  if (!token || !userId) {
-    console.log('[Auth] No legacy token found, checking for Supabase Auth session...');
+  const run = async () => {
+    let token = getAuthToken();
+    let userId = getSessionId();
+
+    // If no legacy token/userId, check for Supabase Auth session and sync it
+    if (!token || !userId) {
+      logger.info('[Auth] No legacy token found, checking for Supabase Auth session...');
+
+      try {
+        let { data: { session }, error } = await supabase.auth.getSession();
+
+        // CRITICAL: Supabase client may not have loaded session from localStorage yet
+        // Wait briefly for initialization if no session found
+        if (!session && !error) {
+          logger.info('[Auth] 🔄 No immediate session, waiting briefly for Supabase initialization...');
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const retryResult = await supabase.auth.getSession();
+          session = retryResult.data?.session;
+          error = retryResult.error;
+          if (session) {
+            logger.info('[Auth] ✅ Found Supabase session after brief wait');
+          }
+        }
+
+        if (session && !error) {
+          logger.info('[Auth] ✅ Found Supabase Auth session, syncing to secure storage');
+          token = session.access_token;
+          userId = session.user?.user_metadata?.user_id || session.user?.id;
+
+          // Sync to secure storage for consistency
+          setSecureAuthToken(token);
+          if (userId) {
+            setSecureSessionId(userId);
+            setAuthState(true, userId);
+          }
+          const userType = session.user?.user_metadata?.user_type;
+          if (userType) {
+            setSecureUserType(userType);
+          }
+        }
+      } catch (err) {
+        logger.info('[Auth] Error checking Supabase session:', err.message);
+      }
+    }
+
+    if (!token || !userId) {
+      logger.info('[Auth] No token or user ID found - user not logged in');
+      return null;
+    }
+
+    logger.info('🔍 Validating token and fetching user data via Edge Function...');
 
     try {
-      let { data: { session }, error } = await supabase.auth.getSession();
-
-      // CRITICAL: Supabase client may not have loaded session from localStorage yet
-      // Wait briefly for initialization if no session found
-      if (!session && !error) {
-        console.log('[Auth] 🔄 No immediate session, waiting briefly for Supabase initialization...');
-        await new Promise(resolve => setTimeout(resolve, 200));
-        const retryResult = await supabase.auth.getSession();
-        session = retryResult.data?.session;
-        error = retryResult.error;
-        if (session) {
-          console.log('[Auth] ✅ Found Supabase session after brief wait');
-        }
-      }
-
-      if (session && !error) {
-        console.log('[Auth] ✅ Found Supabase Auth session, syncing to secure storage');
-        token = session.access_token;
-        userId = session.user?.user_metadata?.user_id || session.user?.id;
-
-        // Sync to secure storage for consistency
-        setSecureAuthToken(token);
-        if (userId) {
-          setSecureSessionId(userId);
-          setAuthState(true, userId);
-        }
-        const userType = session.user?.user_metadata?.user_type;
-        if (userType) {
-          setSecureUserType(userType);
-        }
-      }
-    } catch (err) {
-      console.log('[Auth] Error checking Supabase session:', err.message);
-    }
-  }
-
-  if (!token || !userId) {
-    console.log('[Auth] No token or user ID found - user not logged in');
-    return null;
-  }
-
-  console.log('🔍 Validating token and fetching user data via Edge Function...');
-
-  try {
-    const { data, error } = await supabase.functions.invoke('auth-user', {
-      body: {
-        action: 'validate',
-        payload: {
-          token,
-          user_id: userId
-        }
-      }
-    });
-
-    if (error) {
-      console.error('❌ Edge Function error:', error);
-      console.error('   Error context:', error.context);
-
-      // Extract detailed error for logging
-      // In newer Supabase JS versions, error.context is the Response object
-      if (error.context && typeof error.context.json === 'function') {
-        try {
-          const errorBody = await error.context.json();
-          console.error('   Error body from Response:', errorBody);
-          if (errorBody?.error) {
-            console.error('   Detailed error from response:', errorBody.error);
+      const { data, error } = await supabase.functions.invoke('auth-user', {
+        body: {
+          action: 'validate',
+          payload: {
+            token,
+            user_id: userId
           }
-         
-        } catch (_parseErr) {
-          void 0; // Silent - just for logging
         }
-      } else if (error.context?.body) {
-        // Fallback for older Supabase JS versions
-        try {
-          const errorBody = typeof error.context.body === 'string'
-            ? JSON.parse(error.context.body)
-            : error.context.body;
-          if (errorBody?.error) {
-            console.error('   Detailed error from response:', errorBody.error);
+      });
+
+      if (error) {
+        logger.error('❌ Edge Function error:', error);
+        logger.error('   Error context:', error.context);
+
+        // Extract detailed error for logging
+        // In newer Supabase JS versions, error.context is the Response object
+        if (error.context && typeof error.context.json === 'function') {
+          try {
+            const errorBody = await error.context.json();
+            logger.error('   Error body from Response:', errorBody);
+            if (errorBody?.error) {
+              logger.error('   Detailed error from response:', errorBody.error);
+            }
+          } catch (_parseErr) {
+            void 0; // Silent - just for logging
           }
-         
-        } catch (_parseErr) {
-          void 0; // Silent - just for logging
+        } else if (error.context?.body) {
+          // Fallback for older Supabase JS versions
+          try {
+            const errorBody = typeof error.context.body === 'string'
+              ? JSON.parse(error.context.body)
+              : error.context.body;
+            if (errorBody?.error) {
+              logger.error('   Detailed error from response:', errorBody.error);
+            }
+          } catch (_parseErr) {
+            void 0; // Silent - just for logging
+          }
         }
+
+        // Only clear auth data if clearOnFailure is true
+        // This allows callers to preserve fresh sessions even when validation fails
+        if (clearOnFailure) {
+          clearAllAuthData();
+        }
+        isUserLoggedInState = false;
+        return null;
       }
 
-      // Only clear auth data if clearOnFailure is true
-      // This allows callers to preserve fresh sessions even when validation fails
-      if (clearOnFailure) {
-        clearAllAuthData();
+      if (!data.success) {
+        logger.info('❌ Token validation failed');
+        logger.info('   Reason:', data.error || 'Unknown');
+        // Only clear auth data if clearOnFailure is true
+        if (clearOnFailure) {
+          logger.info('   Clearing auth data...');
+          clearAllAuthData();
+        } else {
+          logger.info('   Preserving session (clearOnFailure=false)');
+        }
+        isUserLoggedInState = false;
+        return null;
       }
-      isUserLoggedInState = false;
-      return null;
-    }
 
-    if (!data.success) {
-      console.log('❌ Token validation failed');
-      console.log('   Reason:', data.error || 'Unknown');
-      // Only clear auth data if clearOnFailure is true
-      if (clearOnFailure) {
-        console.log('   Clearing auth data...');
-        clearAllAuthData();
+      // Extract user data from Edge Function response
+      const userData = data.data;
+
+      // Always prefer fresh userType from API; fall back to cache only if API didn't provide one
+      let userType = userData.userType || getSecureUserType() || null;
+      if (userData.userType) {
+        setSecureUserType(userData.userType);
+        logger.info('✅ User type from API:', userData.userType);
       } else {
-        console.log('   Preserving session (clearOnFailure=false)');
+        logger.info('⚠️ No userType from API, using cached:', userType);
+      }
+
+      const userDataObject = {
+        userId: userData.userId,
+        firstName: userData.firstName || null,
+        fullName: userData.fullName || null,
+        email: userData.email || null,
+        profilePhoto: userData.profilePhoto || null,
+        userType: userType,
+        accountHostId: userData.accountHostId || userData._id || null,
+        aboutMe: userData.aboutMe || null,
+        needForSpace: userData.needForSpace || null,
+        specialNeeds: userData.specialNeeds || null,
+        proposalCount: userData.proposalCount ?? 0,
+        hasSubmittedRentalApp: userData.hasSubmittedRentalApp ?? false,
+        isUsabilityTester: userData.isUsabilityTester ?? false
+      };
+
+      // Cache firstName and avatarUrl for optimistic UI on page load
+      if (userDataObject.firstName) {
+        setSecureFirstName(userDataObject.firstName);
+      }
+      if (userDataObject.profilePhoto) {
+        setSecureAvatarUrl(userDataObject.profilePhoto);
+      }
+
+      logger.info('✅ User data validated:', userDataObject.firstName, '- Type:', userDataObject.userType);
+      logger.info('📊 User proposalCount from Edge Function:', userData.proposalCount, '→ stored as:', userDataObject.proposalCount);
+      isUserLoggedInState = true;
+
+      return userDataObject;
+
+    } catch (error) {
+      logger.error('❌ Token validation error:', error);
+      // Only clear auth data if clearOnFailure is true
+      if (clearOnFailure) {
+        clearAllAuthData();
       }
       isUserLoggedInState = false;
       return null;
     }
+  }; // end of run()
 
-    // Extract user data from Edge Function response
-    const userData = data.data;
-
-    // Cache user type if provided
-    let userType = getSecureUserType();
-    if (!userType || userType === '') {
-      userType = userData.userType || null;
-      if (userType) {
-        setSecureUserType(userType);
-        console.log('✅ User type fetched and cached:', userType);
-      }
-    } else {
-      console.log('✅ User type loaded from cache:', userType);
-    }
-
-    const userDataObject = {
-      userId: userData.userId,
-      firstName: userData.firstName || null,
-      fullName: userData.fullName || null,
-      email: userData.email || null,
-      profilePhoto: userData.profilePhoto || null,
-      userType: userType,
-      // Host account ID for fetching host-specific data (listings, etc.)
-      // Note: After migration, user._id is used directly as host reference
-      accountHostId: userData.accountHostId || userData._id || null,
-      // User profile fields for proposal prefilling
-      aboutMe: userData.aboutMe || null,
-      needForSpace: userData.needForSpace || null,
-      specialNeeds: userData.specialNeeds || null,
-      // Proposal count for determining first proposal flow
-      proposalCount: userData.proposalCount ?? 0,
-      // Rental application submission status for hiding CTA in success modal
-      hasSubmittedRentalApp: userData.hasSubmittedRentalApp ?? false
-    };
-
-    // Cache firstName and avatarUrl for optimistic UI on page load
-    if (userDataObject.firstName) {
-      setSecureFirstName(userDataObject.firstName);
-    }
-    if (userDataObject.profilePhoto) {
-      setSecureAvatarUrl(userDataObject.profilePhoto);
-    }
-
-    console.log('✅ User data validated:', userDataObject.firstName, '- Type:', userDataObject.userType);
-    console.log('📊 User proposalCount from Edge Function:', userData.proposalCount, '→ stored as:', userDataObject.proposalCount);
-    isUserLoggedInState = true;
-
-    return userDataObject;
-
-  } catch (error) {
-    console.error('❌ Token validation error:', error);
-    // Only clear auth data if clearOnFailure is true
-    if (clearOnFailure) {
-      clearAllAuthData();
-    }
-    isUserLoggedInState = false;
-    return null;
-  }
+  _inflight = run().finally(() => { _inflight = null; });
+  return _inflight;
 }
 
 /**

@@ -31,7 +31,7 @@ import React from 'react';
 import Header from '../Header.jsx';
 import Footer from '../Footer.jsx';
 import { PageLoadingState } from '../primitives/PageLoadingState.jsx';
-import { useAuthenticatedPage } from '../../../hooks/useAuthenticatedPage.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 
 /**
  * @param {Object} props
@@ -51,13 +51,24 @@ export function AuthenticatedPageShell({
   className,
   children,
 }) {
-  const { authState, user } = useAuthenticatedPage({
+  const { user: rawUser, loading, isAuthenticated } = useAuthenticatedUser({
     requiredRole,
-    redirectUrl,
+    redirectOnFail: redirectUrl,
   });
 
-  // Auth still checking or redirect in progress -- show loading shell
-  if (authState.isChecking || authState.shouldRedirect) {
+  // Map to the user shape consumers expect
+  const user = rawUser
+    ? {
+        id: rawUser.id,
+        firstName: rawUser.firstName || '',
+        email: rawUser.email || '',
+        userType: rawUser.userType || '',
+        avatarUrl: rawUser.profilePhoto || null,
+      }
+    : null;
+
+  // Auth still checking or not authenticated -- show loading shell
+  if (loading || !isAuthenticated) {
     return (
       <>
         <Header />
@@ -79,7 +90,7 @@ export function AuthenticatedPageShell({
         <h1 className="sr-only">{title}</h1>
         <div className={className}>
           {typeof children === 'function'
-            ? children({ user, authState })
+            ? children({ user })
             : children}
         </div>
       </main>

@@ -54,7 +54,8 @@ All business logic lives in `logic/` using four layers with strict naming conven
 
 Shared utilities in `lib/` organized by concern:
 
-**Core API Clients**: `supabase.js`, `bubbleAPI.js`, `auth.js`, `secureStorage.js`
+**Core API Clients**: `supabase.js`, `bubbleAPI.js`, `auth/index.js` (modular barrel), `secureStorage.js`
+**Auth Hook**: `hooks/useAuthenticatedUser.js` — single hook for all protected pages (role gating, redirect, user object)
 **Data Access**: `dataLookups.js`, `proposalDataFetcher.js`, `listingDataFetcher.js`, `listingService.js`
 **Constants**: `constants.js` (single source of truth for all config)
 **Utilities**: `dayUtils.js`, `mapUtils.js`, `sanitize.js`, `urlParams.js`, `navigation.js`, `photoUpload.js`
@@ -173,7 +174,7 @@ const listing = await bubbleAPI.getListing(listingId);
 
 ```javascript
 import { calculateFourWeekRent } from 'logic/calculators/pricing/calculateFourWeekRent.js';
-import { checkAuthStatus } from 'lib/auth.js';
+import { checkAuthStatus } from 'lib/auth/index.js';
 import Button from 'islands/shared/Button.jsx';
 ```
 
@@ -183,7 +184,7 @@ import Button from 'islands/shared/Button.jsx';
 
 ### Authentication Flow
 [ENTRY]: User submits login form
-[STEP_1]: lib/auth.js → loginUser()
+[STEP_1]: lib/auth/index.js → loginUser()
 [STEP_2]: Supabase Edge Function auth-user
 [STEP_3]: Bubble API validates credentials
 [STEP_4]: Token stored via lib/secureStorage.js
@@ -247,7 +248,7 @@ import Button from 'islands/shared/Button.jsx';
 ### Must Read Before Changes
 [FILE]: routes.config.js - Route definitions
 [FILE]: lib/constants.js - All configuration
-[FILE]: lib/auth.js - Authentication system
+[FILE]: lib/auth/index.js - Authentication system
 [FILE]: logic/processors/external/adaptDays*.js - Day conversion
 
 ### Don't Modify

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase.js';
+import { logger } from '../logger.js';
 import { SIGNUP_LOGIN_URL, ACCOUNT_PROFILE_URL } from '../constants.js';
 import {
   setAuthToken as setSecureAuthToken,
@@ -34,30 +35,30 @@ import { setUserType } from './session.js';
  * @returns {Promise<Object>} Response object with status, token, user_id, or error
  */
 export async function loginUser(email, password) {
-  console.log('🔐 Attempting login via Edge Function for:', email);
+  logger.info('🔐 Attempting login via Edge Function for:', email);
 
   try {
     // CRITICAL: Use direct fetch to bypass Supabase client session handling
     // The Supabase client's functions.invoke can hang indefinitely when there's a stale
     // session because it tries to refresh the token before making requests. Since auth-user
     // has verify_jwt=false, we don't need any auth token. Using direct fetch bypasses this.
-    console.log('🔄 Using direct fetch to bypass Supabase client session handling...');
+    logger.info('🔄 Using direct fetch to bypass Supabase client session handling...');
 
     // Clear localStorage directly to avoid signOut() hanging
     try {
       const storageKey = `sb-${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`;
       if (storageKey && storageKey !== 'sb-undefined-auth-token') {
         localStorage.removeItem(storageKey);
-        console.log('✅ Cleared auth token from localStorage');
+        logger.info('✅ Cleared auth token from localStorage');
       }
     } catch (clearErr) {
-      console.warn('⚠️ Could not clear localStorage:', clearErr);
+      logger.warn('⚠️ Could not clear localStorage:', clearErr);
     }
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    console.log('📡 Calling auth-user edge function via direct fetch...');
+    logger.info('📡 Calling auth-user edge function via direct fetch...');
     const response = await fetch(`${supabaseUrl}/functions/v1/auth-user`, {
       method: 'POST',
       headers: {
@@ -75,12 +76,12 @@ export async function loginUser(email, password) {
     });
 
     const data = await response.json();
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response data:', data);
+    logger.info('📡 Response status:', response.status);
+    logger.info('📡 Response data:', data);
 
     // Handle HTTP errors
     if (!response.ok) {
-      console.error('❌ Edge Function HTTP error:', response.status);
+      logger.error('❌ Edge Function HTTP error:', response.status);
       const errorMessage = data?.error || `HTTP ${response.status}: Failed to authenticate`;
       return {
         success: false,
@@ -89,7 +90,7 @@ export async function loginUser(email, password) {
     }
 
     if (!data.success) {
-      console.error('❌ Login failed:', data.error);
+      logger.error('❌ Login failed:', data.error);
       return {
         success: false,
         error: data.error || 'Login failed. Please try again.'
@@ -117,10 +118,10 @@ export async function loginUser(email, password) {
       });
 
       if (sessionError) {
-        console.error('❌ Failed to set Supabase session:', sessionError.message);
+        logger.error('❌ Failed to set Supabase session:', sessionError.message);
         // Continue anyway - tokens are still valid, just not in client state
       } else {
-        console.log('✅ Supabase session set successfully');
+        logger.info('✅ Supabase session set successfully');
       }
 
       // CRITICAL: Verify the session is actually persisted before proceeding
@@ -130,16 +131,16 @@ export async function loginUser(email, password) {
       while (verifyAttempts < maxVerifyAttempts) {
         const { data: { session: verifiedSession } } = await supabase.auth.getSession();
         if (verifiedSession && verifiedSession.access_token === access_token) {
-          console.log('✅ Session verified and persisted');
+          logger.info('✅ Session verified and persisted');
           break;
         }
         verifyAttempts++;
-        console.log(`⏳ Waiting for session to persist (attempt ${verifyAttempts}/${maxVerifyAttempts})...`);
+        logger.info(`⏳ Waiting for session to persist (attempt ${verifyAttempts}/${maxVerifyAttempts})...`);
         await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms
       }
 
       if (verifyAttempts >= maxVerifyAttempts) {
-        console.warn('⚠️ Session may not be fully persisted, but continuing...');
+        logger.warn('⚠️ Session may not be fully persisted, but continuing...');
       }
     }
 
@@ -158,11 +159,11 @@ export async function loginUser(email, password) {
     // Update login state
     setIsUserLoggedIn(true);
 
-    console.log('✅ Login successful (Supabase Auth)');
-    console.log('   User ID (_id):', user_id);
-    console.log('   Supabase Auth ID:', supabase_user_id);
-    console.log('   User Type:', user_type);
-    console.log('   Session expires in:', expires_in, 'seconds');
+    logger.info('✅ Login successful (Supabase Auth)');
+    logger.info('   User ID (_id):', user_id);
+    logger.info('   Supabase Auth ID:', supabase_user_id);
+    logger.info('   User Type:', user_type);
+    logger.info('   Session expires in:', expires_in, 'seconds');
 
     // Store Supabase user ID for reference
     if (supabase_user_id) {
@@ -180,7 +181,7 @@ export async function loginUser(email, password) {
     };
 
   } catch (error) {
-    console.error('❌ Login error:', error);
+    logger.error('❌ Login error:', error);
     return {
       success: false,
       error: 'Network error. Please check your connection and try again.'
@@ -217,13 +218,13 @@ export function redirectToLogin(returnUrl = null) {
  */
 export async function redirectToAccountProfile(isUserLoggedIn) {
   if (!isUserLoggedIn) {
-    console.warn('User is not logged in, cannot redirect to account profile');
+    logger.warn('User is not logged in, cannot redirect to account profile');
     return false;
   }
 
   const userId = getSessionId();
   if (!userId) {
-    console.error('No user ID found in session, cannot redirect to account profile');
+    logger.error('No user ID found in session, cannot redirect to account profile');
     return false;
   }
 
@@ -242,7 +243,7 @@ export async function redirectToAccountProfile(isUserLoggedIn) {
  * @returns {Promise<Object>} Result with success status or error
  */
 export async function initiateLinkedInOAuthLogin() {
-  console.log('[Auth] Initiating LinkedIn OAuth Login');
+  logger.info('[Auth] Initiating LinkedIn OAuth Login');
 
   // Clear any existing signup flow flags to prevent conflicts
   clearLinkedInOAuthUserType();
@@ -281,11 +282,11 @@ export async function initiateLinkedInOAuthLogin() {
  * @returns {Promise<Object>} Result with user data or error (userNotFound: true if account doesn't exist)
  */
 export async function handleLinkedInOAuthLoginCallback() {
-  console.log('[Auth] Handling LinkedIn OAuth Login callback');
+  logger.info('[Auth] Handling LinkedIn OAuth Login callback');
 
   // Verify this is a login flow
   if (!getLinkedInOAuthLoginFlow()) {
-    console.log('[Auth] Not a login flow callback, skipping');
+    logger.info('[Auth] Not a login flow callback, skipping');
     return { success: false, error: 'Not a login flow' };
   }
 
@@ -314,7 +315,7 @@ export async function handleLinkedInOAuthLoginCallback() {
     const email = user.email;
     const supabaseUserId = user.id;
 
-    console.log('[Auth] LinkedIn OAuth login data:', { email, supabaseUserId });
+    logger.info('[Auth] LinkedIn OAuth login data:', { email, supabaseUserId });
 
     // Call Edge Function to verify user exists
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-user`, {
@@ -343,7 +344,7 @@ export async function handleLinkedInOAuthLoginCallback() {
     if (!response.ok || !data.success) {
       // Check if user was not found
       if (data.data?.userNotFound) {
-        console.log('[Auth] User not found for OAuth login:', email);
+        logger.info('[Auth] User not found for OAuth login:', email);
         return {
           success: false,
           userNotFound: true,
@@ -373,7 +374,7 @@ export async function handleLinkedInOAuthLoginCallback() {
       localStorage.setItem('splitlease_supabase_user_id', supabase_user_id);
     }
 
-    console.log('[Auth] LinkedIn OAuth login successful');
+    logger.info('[Auth] LinkedIn OAuth login successful');
     return {
       success: true,
       data: data.data
@@ -381,7 +382,7 @@ export async function handleLinkedInOAuthLoginCallback() {
 
   } catch (err) {
     clearLinkedInOAuthLoginFlow();
-    console.error('[Auth] LinkedIn OAuth login callback error:', err);
+    logger.error('[Auth] LinkedIn OAuth login callback error:', err);
     return { success: false, error: err.message };
   }
 }

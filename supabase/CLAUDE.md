@@ -43,6 +43,7 @@ All shared code lives in `functions/_shared/`:
 | `slack.ts` | ErrorCollector class + sendToSlack() — ONE REQUEST = ONE LOG, channels: database/acquisition/general |
 | `errors.ts` | Custom error classes with HTTP status mapping (Validation=400, Auth=401, Bubble=variable, Supabase=500) |
 | `validation.ts` | Input validation: email, phone, required fields, action routing |
+| `userTypeMapping.ts` | Shared user type display mapping (Host/Guest/Trial Host → display strings) |
 | `cors.ts` | CORS headers for all edge functions |
 | `openai.ts` | OpenAI wrapper: complete() and stream() (SSE) |
 | `types.ts` | General TypeScript interfaces |

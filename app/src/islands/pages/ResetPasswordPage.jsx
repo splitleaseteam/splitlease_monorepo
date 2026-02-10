@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase.js';
-import { updatePassword } from '../../lib/auth.js';
+import { updatePassword } from '../../lib/auth/index.js';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import '../../styles/reset-password.css';

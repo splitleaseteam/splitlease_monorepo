@@ -32,7 +32,7 @@ import CreateProposalFlowV2, { clearProposalDraft } from '../shared/CreatePropos
 import { isGuest } from '../../logic/rules/users/isGuest.js';
 import { isHost } from '../../logic/rules/users/isHost.js';
 import { logger } from '../../lib/logger.js';
-import { checkAuthStatus, logoutUser } from '../../lib/auth.js';
+import { checkAuthStatus, logoutUser } from '../../lib/auth/index.js';
 import { LISTING_CONFIG } from '../../lib/constants.js';
 import { createDay } from '../../lib/scheduleSelector/dayHelpers.js';
 import { calculateNextAvailableCheckIn } from '../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';

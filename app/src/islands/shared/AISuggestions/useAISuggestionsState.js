@@ -9,7 +9,7 @@
 
 import { useReducer, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
-import { getAuthToken } from '../../../lib/auth';
+import { getAuthToken } from '../../../lib/auth/index.js';
 
 /**
  * @typedef {'pending' | 'accepted' | 'ignored' | 'combined'} SuggestionDecision

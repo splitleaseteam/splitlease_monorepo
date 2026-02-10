@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../../shared/Toast';
-import { checkAuthStatus } from '../../../lib/auth';
+import { checkAuthStatus } from '../../../lib/auth/index.js';
 import { supabase } from '../../../lib/supabase';
 
 /**

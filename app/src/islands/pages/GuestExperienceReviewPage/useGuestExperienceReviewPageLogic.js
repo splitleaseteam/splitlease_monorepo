@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getUserId } from '../../../lib/auth.js';
+import { getUserId } from '../../../lib/auth/index.js';
 import { useToast } from '../../shared/Toast';
 
 /**

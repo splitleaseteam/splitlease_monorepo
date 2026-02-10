@@ -4,7 +4,7 @@
  *
  * Flow:
  * 1. Get token and user_id from payload
- * 2. Fetch user data from Supabase database by _id (validates user exists)
+ * 2. Fetch user data from Supabase database by id (validates user exists)
  * 3. Return user profile data
  *
  * Note: Token validation against Bubble is skipped because:
@@ -14,8 +14,6 @@
  *
  * NO FALLBACK - If user not found, operation fails
  *
- * @param bubbleAuthBaseUrl - Base URL for Bubble auth API (unused, kept for signature compatibility)
- * @param bubbleApiKey - API key for Bubble (unused)
  * @param supabaseUrl - Supabase project URL
  * @param supabaseServiceKey - Service role key for bypassing RLS
  * @param payload - Request payload {token, user_id}
@@ -27,8 +25,6 @@ import { BubbleApiError, SupabaseSyncError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 export async function handleValidate(
-  _bubbleAuthBaseUrl: string,
-  _bubbleApiKey: string,
   supabaseUrl: string,
   supabaseServiceKey: string,
   payload: any
@@ -39,7 +35,7 @@ export async function handleValidate(
   validateRequiredFields(payload, ['token', 'user_id']);
   const { token, user_id } = payload;
 
-  console.log(`[validate] Validating session for user (_id): ${user_id}`);
+  console.log(`[validate] Validating session for user (id): ${user_id}`);
 
   try {
     // Token validation against Bubble Data API is skipped because:
@@ -60,28 +56,27 @@ export async function handleValidate(
       }
     });
 
-    // Query by _id first (the primary key stored in browser after login/signup)
+    // Query by id first (the primary key stored in browser after login/signup)
     // If that fails, get email from token and query by email
     let userData = null;
     let userError = null;
 
-    // Note: "Account - Host / Landlord" column was removed - user._id is now used directly as host reference
-    const userSelectFields = '_id, bubble_id, "Name - First", "Name - Full", "Profile Photo", "Type - User Current", "email as text", "email", "About Me / Bio", "need for Space", "special needs", "Proposals List", "Rental Application", "is usability tester", "Phone Number (as text)"';
+    const userSelectFields = 'id, bubble_legacy_id, first_name, last_name, profile_photo_url, current_user_role, email, bio_text, stated_need_for_space_text, stated_special_needs_text, rental_application_form_id, is_usability_tester, phone_number';
 
-    // First attempt: query by _id (Bubble-style ID)
-    console.log(`[validate] Attempting to find user by _id: ${user_id}`);
+    // First attempt: query by id
+    console.log(`[validate] Attempting to find user by id: ${user_id}`);
     const { data: userDataById, error: errorById } = await supabase
       .from('user')
       .select(userSelectFields)
-      .eq('_id', user_id)
+      .eq('id', user_id)
       .maybeSingle();
 
     if (userDataById) {
       userData = userDataById;
-      console.log(`[validate] User found by _id`);
+      console.log(`[validate] User found by id`);
     } else {
       // Second attempt: use token to get email from Supabase Auth, then query by email
-      console.log(`[validate] User not found by _id, trying to get email from token...`);
+      console.log(`[validate] User not found by id, trying to get email from token...`);
 
       // Verify the token and get user info from Supabase Auth
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
@@ -92,7 +87,6 @@ export async function handleValidate(
       } else if (authUser?.email) {
         console.log(`[validate] Got email from token: ${authUser.email}, querying by email...`);
 
-        // Query by email
         const { data: userDataByEmail, error: errorByEmail } = await supabase
           .from('user')
           .select(userSelectFields)
@@ -102,20 +96,8 @@ export async function handleValidate(
         if (userDataByEmail) {
           userData = userDataByEmail;
           console.log(`[validate] User found by email`);
-        } else if (!userDataByEmail) {
-          // Try 'email as text' column as fallback
-          const { data: userDataByEmailText, error: errorByEmailText } = await supabase
-            .from('user')
-            .select(userSelectFields)
-            .eq('email as text', authUser.email)
-            .maybeSingle();
-
-          if (userDataByEmailText) {
-            userData = userDataByEmailText;
-            console.log(`[validate] User found by 'email as text'`);
-          } else {
-            userError = errorByEmail || errorByEmailText || errorById;
-          }
+        } else {
+          userError = errorByEmail || errorById;
         }
       } else {
         console.error(`[validate] No email found in auth user`);
@@ -129,13 +111,13 @@ export async function handleValidate(
     }
 
     if (!userData) {
-      console.error(`[validate] User not found in Supabase by _id or email: ${user_id}`);
-      throw new SupabaseSyncError(`User not found with _id or email: ${user_id}`);
+      console.error(`[validate] User not found in Supabase by id or email: ${user_id}`);
+      throw new SupabaseSyncError(`User not found with id or email: ${user_id}`);
     }
 
     // Step 2: Check rental application submission status
     let hasSubmittedRentalApp = false;
-    const rentalAppId = userData['Rental Application'];
+    const rentalAppId = userData.rental_application_form_id;
 
     if (rentalAppId) {
       console.log(`[validate] User has rental application: ${rentalAppId}, checking submission status...`);
@@ -155,44 +137,54 @@ export async function handleValidate(
       console.log(`[validate] User has no rental application`);
     }
 
+    // Step 2b: Get proposal count from booking_proposal table
+    let proposalCount = 0;
+    const { count, error: proposalCountError } = await supabase
+      .from('booking_proposal')
+      .select('id', { count: 'exact', head: true })
+      .eq('guest_user_id', userData.id);
+
+    if (proposalCountError) {
+      console.warn(`[validate] Failed to count proposals: ${proposalCountError.message}`);
+    } else {
+      proposalCount = count ?? 0;
+    }
+
     // Step 3: Format user data
-    console.log(`[validate] User found: ${userData['Name - First']}`);
+    console.log(`[validate] User found: ${userData.first_name}`);
 
     // Handle protocol-relative URLs for profile photos
-    let profilePhoto = userData['Profile Photo'];
+    let profilePhoto = userData.profile_photo_url;
     if (profilePhoto && profilePhoto.startsWith('//')) {
       profilePhoto = 'https:' + profilePhoto;
     }
 
-    // Use 'email' column first (more commonly populated), fall back to 'email as text'
-    const userEmail = userData['email'] || userData['email as text'] || null;
+    // Construct full name from parts
+    const fullName = [userData.first_name, userData.last_name].filter(Boolean).join(' ') || null;
 
-    // Get proposal count from user's "Proposals List" array
-    const proposalsList = userData['Proposals List'];
-    const proposalCount = Array.isArray(proposalsList) ? proposalsList.length : 0;
     console.log(`[validate] User has ${proposalCount} proposal(s)`);
 
     const userDataObject = {
-      userId: userData._id,
-      firstName: userData['Name - First'] || null,
-      fullName: userData['Name - Full'] || null,
-      email: userEmail,
+      userId: userData.id,
+      firstName: userData.first_name || null,
+      fullName: fullName,
+      email: userData.email || null,
       profilePhoto: profilePhoto || null,
-      userType: userData['Type - User Current'] || null,
+      userType: userData.current_user_role || null,
       // accountHostId is now the same as userId (user IS their own host account)
-      accountHostId: userData._id,
+      accountHostId: userData.id,
       // User profile fields for proposal prefilling
-      aboutMe: userData['About Me / Bio'] || null,
-      needForSpace: userData['need for Space'] || null,
-      specialNeeds: userData['special needs'] || null,
+      aboutMe: userData.bio_text || null,
+      needForSpace: userData.stated_need_for_space_text || null,
+      specialNeeds: userData.stated_special_needs_text || null,
       // Proposal count for showing/hiding Create Proposal CTA on search page
       proposalCount: proposalCount,
       // Rental application submission status for hiding CTA in success modal
       hasSubmittedRentalApp: hasSubmittedRentalApp,
       // Usability testing flag - determines who sees mobile testing popup
-      isUsabilityTester: userData['is usability tester'] ?? false,
+      isUsabilityTester: userData.is_usability_tester ?? false,
       // Phone number for SMS magic link pre-fill
-      phoneNumber: userData['Phone Number (as text)'] || null
+      phoneNumber: userData.phone_number || null
     };
 
     console.log(`[validate] ✅ Validation complete`);

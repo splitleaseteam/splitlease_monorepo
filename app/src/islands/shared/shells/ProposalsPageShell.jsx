@@ -17,7 +17,7 @@ import Footer from '../Footer.jsx';
 import { PageLoadingState } from '../primitives/PageLoadingState.jsx';
 import { PageErrorState } from '../primitives/PageErrorState.jsx';
 import { PageEmptyState } from '../primitives/PageEmptyState.jsx';
-import { useAuthenticatedPage } from '../../../hooks/useAuthenticatedPage.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 
 /**
  * @param {Object} props
@@ -47,10 +47,24 @@ export function ProposalsPageShell({
   headerContent,
   renderContent,
 }) {
-  const { authState, user } = useAuthenticatedPage({ requiredRole: role });
+  const { user: rawUser, loading, isAuthenticated } = useAuthenticatedUser({
+    requiredRole: role,
+    redirectOnFail: '/',
+  });
 
-  // Auth checking or redirect in progress
-  if (authState.isChecking || authState.shouldRedirect) {
+  // Map to the user shape consumers expect
+  const user = rawUser
+    ? {
+        id: rawUser.id,
+        firstName: rawUser.firstName || '',
+        email: rawUser.email || '',
+        userType: rawUser.userType || '',
+        avatarUrl: rawUser.profilePhoto || null,
+      }
+    : null;
+
+  // Auth checking or not authenticated
+  if (loading || !isAuthenticated) {
     return (
       <>
         <Header />

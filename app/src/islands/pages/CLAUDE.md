@@ -524,7 +524,7 @@ window.history.replaceState({}, '', `?${params.toString()}`);
 - `shared/ListingScheduleSelector.jsx` - Day selection UI
 
 ### Libraries
-- `lib/auth.js` - Authentication utilities
+- `lib/auth/index.js` - Authentication utilities
 - `lib/supabase.js` - Supabase client
 - `lib/constants.js` - Application constants
 - `lib/urlParams.js` - URL parameter helpers

@@ -21,7 +21,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase.js';
-import { checkAuthStatus, getSessionId, getAuthToken } from '../../lib/auth.js';
+import { checkAuthStatus, getSessionId, getAuthToken } from '../../lib/auth/index.js';
 import { useRentalApplicationStore } from './RentalApplicationPage/store/index.ts';
 import { mapDatabaseToFormData } from './RentalApplicationPage/utils/rentalApplicationFieldMapper.ts';
 

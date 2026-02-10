@@ -9,7 +9,7 @@
  */
 
 import { useEffect } from 'react';
-import { getSessionId } from '../../lib/auth.js';
+import { getSessionId } from '../../lib/auth/index.js';
 
 export default function RentalApplicationPage() {
   useEffect(() => {

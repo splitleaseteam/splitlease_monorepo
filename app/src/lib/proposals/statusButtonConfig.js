@@ -250,8 +250,8 @@ export function getButtonConfigForProposal(proposal) {
   const sortOrder = config?.sort_order ?? -99;
 
   // Extract proposal-specific data
-  const remindersByGuest = proposal['remindersByGuest (number)'] || 0;
-  const guestDocsFinalized = proposal['guest documents review finalized?'] === true;
+  const remindersByGuest = proposal.reminder_count_sent_by_guest || 0;
+  const guestDocsFinalized = proposal.is_finalized === true;
   const idDocsSubmitted = proposal.guest?.['ID documents submitted?'] === true;
   const hasHouseManual = proposal.listing?.hasHouseManual === true;
   const isCounteroffer = status === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key;

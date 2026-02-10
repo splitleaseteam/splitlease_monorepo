@@ -21,7 +21,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import * as simulationService from '../../../lib/simulationHostService.js';
 import {
@@ -105,19 +105,26 @@ function clearPersistedState() {
  */
 export function useSimulationHostMobilePageLogic() {
   // ============================================================================
-  // AUTH STATE
+  // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false,
-    isHost: false,
-    shouldRedirect: false
+  const { user, userId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    requiredRole: 'host',
+    redirectOnFail: '/'
   });
 
+  // Map hook returns to local variables the component expects
+  const currentUser = user ? { ...user, userId: user.id, _id: user.id } : null;
+  const isHost = isAuthenticated; // role check is handled by the hook (requiredRole: 'host')
+  const authState = {
+    isChecking: authLoading,
+    isAuthenticated,
+    isHost,
+    shouldRedirect: false
+  };
+
   // ============================================================================
-  // USER STATE
+  // HOST LISTINGS STATE
   // ============================================================================
-  const [currentUser, setCurrentUser] = useState(null);
   const [hostListings, setHostListings] = useState([]);
   const [selectedListing, setSelectedListing] = useState(null);
 
@@ -157,8 +164,6 @@ export function useSimulationHostMobilePageLogic() {
   // ============================================================================
   // DERIVED STATE
   // ============================================================================
-  const isAuthenticated = authState.isAuthenticated;
-  const isHost = authState.isHost;
   const currentStep = simulationState.currentStep;
   const completedSteps = simulationState.completedSteps;
   const isLoading = simulationState.isLoading;
@@ -213,93 +218,12 @@ export function useSimulationHostMobilePageLogic() {
   ]);
 
   // ============================================================================
-  // AUTH CHECK
+  // LOAD HOST LISTINGS WHEN AUTH COMPLETES
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      console.log('[SimulationHostMobile] Checking authentication...');
-
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isHost: false,
-            shouldRedirect: false
-          });
-          return;
-        }
-
-        // Deep validation with user data fetch
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (userData) {
-          setCurrentUser(userData);
-
-          // Check if user is a host
-          const userType = userData.userType || '';
-          const isHost = userType.includes('Host') || userType.includes('Landlord');
-
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isHost,
-            shouldRedirect: false
-          });
-
-          if (isHost) {
-            // Load host's listings
-            await loadHostListings(userData._id || userData.userId);
-          }
-        } else {
-          // Fallback to session data
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            const userMetadata = session.user.user_metadata || {};
-            setCurrentUser({
-              userId: userMetadata.user_id || session.user.id,
-              _id: userMetadata.user_id || session.user.id,
-              firstName: userMetadata.first_name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email,
-              userType: userMetadata.user_type || ''
-            });
-
-            const isHost = (userMetadata.user_type || '').includes('Host');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              isHost,
-              shouldRedirect: false
-            });
-
-            if (isHost && userMetadata.user_id) {
-              await loadHostListings(userMetadata.user_id);
-            }
-          } else {
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              isHost: false,
-              shouldRedirect: false
-            });
-          }
-        }
-      } catch (err) {
-        console.error('[SimulationHostMobile] Auth check failed:', err);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isHost: false,
-          shouldRedirect: false
-        });
-      }
-    }
-
-    checkAuth();
-  }, []);
+    if (authLoading || !userId) return;
+    loadHostListings(userId);
+  }, [authLoading, userId]);
 
   // ============================================================================
   // LOAD HOST LISTINGS

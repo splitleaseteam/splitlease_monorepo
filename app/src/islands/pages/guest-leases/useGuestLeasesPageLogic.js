@@ -26,7 +26,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { validateTokenAndFetchUser, getUserType } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import {
   fetchGuestLeases,
@@ -47,20 +47,45 @@ export function useGuestLeasesPageLogic() {
   const { showToast } = useToast();
 
   // ============================================================================
+  // AUTH (via useAuthenticatedUser hook)
+  // ============================================================================
+  const {
+    user: authUser,
+    userId: authUserId,
+    loading: authLoading,
+    isAuthenticated,
+    redirectReason
+  } = useAuthenticatedUser({ requiredRole: 'guest', redirectOnFail: '/' });
+
+  // DEV MODE: Skip auth for design testing (?dev=true in URL)
+  const isDevMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dev') === 'true';
+
+  // Map hook user to the shape this component expects
+  const user = isDevMode
+    ? { _id: 'dev-user-123', email: 'splitleasetesting@test.com', firstName: 'Test', lastName: 'Guest', userType: 'Guest' }
+    : authUser
+      ? {
+          _id: authUser.id,
+          email: authUser.email,
+          firstName: authUser.firstName,
+          lastName: authUser.fullName ? authUser.fullName.split(' ').slice(1).join(' ') : '',
+          userType: authUser.userType
+        }
+      : null;
+
+  const authState = {
+    isChecking: isDevMode ? false : authLoading,
+    isAuthenticated: isDevMode ? true : isAuthenticated,
+    isGuest: isDevMode ? true : (authUser?.userType === 'Guest' || authUser?.userType?.includes?.('Guest')),
+    shouldRedirect: false,
+    redirectReason: redirectReason || null
+  };
+
+  // ============================================================================
   // STATE
   // ============================================================================
 
-  // Auth state
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false,
-    isGuest: false,
-    shouldRedirect: false,
-    redirectReason: null
-  });
-
   // Data state
-  const [user, setUser] = useState(null);
   const [leases, setLeases] = useState([]);
 
   // UI state - Lease card expansion
@@ -73,192 +98,80 @@ export function useGuestLeasesPageLogic() {
     stay: null
   });
 
-  // UI state - Date change modal
-  const [dateChangeModal, setDateChangeModal] = useState({
-    isOpen: false,
-    lease: null
-  });
-
   // Loading and error state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // ============================================================================
-  // AUTHENTICATION CHECK
-  // ============================================================================
-
-  /**
-   * Check authentication status and user type
-   * Redirects if not authenticated or not a Guest
-   *
-   * Uses optimistic pattern matching Header component:
-   * 1. Trust cached auth/session if it exists
-   * 2. Validate in background (non-blocking)
-   * 3. Only redirect if truly unauthenticated
-   */
-  useEffect(() => {
-    async function checkAuth() {
-      console.log('🔐 Guest Leases: Checking authentication...');
-
-      // DEV MODE: Skip auth for design testing (?dev=true in URL)
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('dev') === 'true') {
-        console.log('🔧 Guest Leases: DEV MODE - Skipping auth with mock data');
-
-        const mockLeases = [
-          {
-            _id: 'lease-001',
-            agreementNumber: 'SL-2026-001',
-            status: 'active',
-            startDate: '2026-01-15',
-            endDate: '2026-06-15',
-            currentWeekNumber: 3,
-            totalWeekCount: 22,
-            listing: {
-              _id: 'listing-001',
-              name: 'Sunny Chelsea Studio',
-              neighborhood: 'Chelsea, Manhattan',
-              address: '234 W 23rd St, New York, NY 10011',
-              imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
-            },
-            host: {
-              _id: 'host-001',
-              firstName: 'Sarah',
-              lastName: 'Miller',
-              email: 'sarah.miller@example.com'
-            },
-            stays: [
-              { _id: 'stay-001', weekNumber: 1, checkIn: '2026-01-15', checkOut: '2026-01-22', status: 'completed', reviewSubmittedByGuest: true, reviewSubmittedByHost: { rating: 5, comment: 'Great guest!' } },
-              { _id: 'stay-002', weekNumber: 2, checkIn: '2026-01-22', checkOut: '2026-01-29', status: 'completed', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
-              { _id: 'stay-003', weekNumber: 3, checkIn: '2026-01-29', checkOut: '2026-02-05', status: 'in_progress', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
-              { _id: 'stay-004', weekNumber: 4, checkIn: '2026-02-05', checkOut: '2026-02-12', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
-              { _id: 'stay-005', weekNumber: 5, checkIn: '2026-02-12', checkOut: '2026-02-19', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null }
-            ],
-            dateChangeRequests: [
-              { _id: 'dcr-001', requestedBy: 'host-001', originalDate: '2026-02-12', newDate: '2026-02-14', reason: 'Personal conflict', status: 'pending' }
-            ],
-            paymentRecords: [
-              { _id: 'pay-001', date: '2026-01-10', amount: 850, status: 'paid', description: 'Week 1 rent', receiptUrl: '#' },
-              { _id: 'pay-002', date: '2026-01-17', amount: 850, status: 'paid', description: 'Week 2 rent', receiptUrl: '#' },
-              { _id: 'pay-003', date: '2026-01-24', amount: 850, status: 'pending', description: 'Week 3 rent', receiptUrl: null }
-            ],
-            periodicTenancyAgreement: '#',
-            supplementalAgreement: '#',
-            creditCardAuthorizationForm: null
-          }
-        ];
-
-        setUser({ _id: 'dev-user-123', email: 'splitleasetesting@test.com', firstName: 'Test', lastName: 'Guest', userType: 'Guest' });
-        setLeases(mockLeases);
-        setExpandedLeaseId('lease-001');
-        setIsLoading(false);
-        setAuthState({ isChecking: false, isAuthenticated: true, isGuest: true, shouldRedirect: false, redirectReason: null });
-        return;
-      }
-
-      try {
-        // Check for Supabase session (primary auth method)
-        let { data: { session } } = await supabase.auth.getSession();
-
-        // If no session on first try, wait briefly for initialization
-        if (!session) {
-          console.log('🔄 Guest Leases: Waiting for Supabase session initialization...');
-          await new Promise(resolve => setTimeout(resolve, 200));
-          const retryResult = await supabase.auth.getSession();
-          session = retryResult.data?.session;
-        }
-
-        // Background validation to get user data (non-blocking)
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        let userType = null;
-        let isGuest = false;
-
-        if (userData) {
-          // Success: Use validated user data
-          userType = userData.userType;
-          isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-          console.log('✅ Guest Leases: User data loaded, userType:', userType);
-          setUser(userData);
-        } else if (session?.user) {
-          // Fallback: Use session metadata
-          userType = session.user.user_metadata?.user_type || getUserType();
-          isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-          console.log('⚠️ Guest Leases: Using session metadata, userType:', userType);
-
-          setUser({
-            _id: session.user.user_metadata?.user_id || session.user.id,
-            email: session.user.email,
-            firstName: session.user.user_metadata?.first_name || 'Guest',
-            lastName: session.user.user_metadata?.last_name || '',
-            userType
-          });
-        } else {
-          // No session or user data - redirect to home
-          console.log('❌ Guest Leases: Not authenticated, redirecting');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isGuest: false,
-            shouldRedirect: true,
-            redirectReason: 'NOT_AUTHENTICATED'
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        // Check if user is a Guest
-        if (!isGuest) {
-          console.log('❌ Guest Leases: User is not a Guest, redirecting to host-leases');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            isGuest: false,
-            shouldRedirect: true,
-            redirectReason: 'NOT_GUEST'
-          });
-          window.location.href = '/host-leases';
-          return;
-        }
-
-        // Auth successful
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          isGuest: true,
-          shouldRedirect: false,
-          redirectReason: null
-        });
-      } catch (err) {
-        console.error('❌ Guest Leases: Auth check error:', err);
-        window.location.href = '/';
-      }
-    }
-
-    checkAuth();
-  }, []);
 
   // ============================================================================
   // DATA FETCHING
   // ============================================================================
 
   /**
+   * DEV MODE: Set mock data for design testing
+   */
+  useEffect(() => {
+    if (!isDevMode) return;
+
+    const mockLeases = [
+      {
+        _id: 'lease-001',
+        agreementNumber: 'SL-2026-001',
+        status: 'active',
+        startDate: '2026-01-15',
+        endDate: '2026-06-15',
+        currentWeekNumber: 3,
+        totalWeekCount: 22,
+        listing: {
+          _id: 'listing-001',
+          name: 'Sunny Chelsea Studio',
+          neighborhood: 'Chelsea, Manhattan',
+          address: '234 W 23rd St, New York, NY 10011',
+          imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
+        },
+        host: {
+          _id: 'host-001',
+          firstName: 'Sarah',
+          lastName: 'Miller',
+          email: 'sarah.miller@example.com'
+        },
+        stays: [
+          { _id: 'stay-001', weekNumber: 1, checkIn: '2026-01-15', checkOut: '2026-01-22', status: 'completed', reviewSubmittedByGuest: true, reviewSubmittedByHost: { rating: 5, comment: 'Great guest!' } },
+          { _id: 'stay-002', weekNumber: 2, checkIn: '2026-01-22', checkOut: '2026-01-29', status: 'completed', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+          { _id: 'stay-003', weekNumber: 3, checkIn: '2026-01-29', checkOut: '2026-02-05', status: 'in_progress', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+          { _id: 'stay-004', weekNumber: 4, checkIn: '2026-02-05', checkOut: '2026-02-12', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+          { _id: 'stay-005', weekNumber: 5, checkIn: '2026-02-12', checkOut: '2026-02-19', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null }
+        ],
+        dateChangeRequests: [
+          { _id: 'dcr-001', requestedBy: 'host-001', originalDate: '2026-02-12', newDate: '2026-02-14', reason: 'Personal conflict', status: 'pending' }
+        ],
+        paymentRecords: [
+          { _id: 'pay-001', date: '2026-01-10', amount: 850, status: 'paid', description: 'Week 1 rent', receiptUrl: '#' },
+          { _id: 'pay-002', date: '2026-01-17', amount: 850, status: 'paid', description: 'Week 2 rent', receiptUrl: '#' },
+          { _id: 'pay-003', date: '2026-01-24', amount: 850, status: 'pending', description: 'Week 3 rent', receiptUrl: null }
+        ],
+        periodicTenancyAgreement: '#',
+        supplementalAgreement: '#',
+        creditCardAuthorizationForm: null
+      }
+    ];
+
+    setLeases(mockLeases);
+    setExpandedLeaseId('lease-001');
+    setIsLoading(false);
+  }, [isDevMode]);
+
+  /**
    * Fetch leases when auth is complete
+   * IMPORTANT: Dependencies use primitives (authLoading, isAuthenticated, authUserId)
+   * instead of objects (authState, user) to prevent infinite re-render loops.
    */
   useEffect(() => {
     async function loadLeases() {
-      if (authState.isChecking || authState.shouldRedirect || !user) {
+      if (authLoading || !isAuthenticated || !authUserId || isDevMode) {
         return;
       }
 
-      // DEV MODE: Skip fetching - mock data already set
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('dev') === 'true') {
-        console.log('🔧 Guest Leases: DEV MODE - Skipping data fetch');
-        return;
-      }
-
-      console.log('📦 Guest Leases: Fetching leases for user:', user._id);
+      console.log('Guest Leases: Fetching leases for user:', authUserId);
       setIsLoading(true);
       setError(null);
 
@@ -267,7 +180,7 @@ export function useGuestLeasesPageLogic() {
 
         if (leasesData && Array.isArray(leasesData)) {
           setLeases(leasesData);
-          console.log(`✅ Guest Leases: Loaded ${leasesData.length} leases`);
+          console.log(`Guest Leases: Loaded ${leasesData.length} leases`);
 
           // Auto-expand first lease if available
           if (leasesData.length > 0 && !expandedLeaseId) {
@@ -277,11 +190,11 @@ export function useGuestLeasesPageLogic() {
           setLeases([]);
         }
       } catch (err) {
-        console.error('❌ Guest Leases: Error fetching leases:', err);
+        console.error('Guest Leases: Error fetching leases:', err);
 
         // Handle session expiration - show error instead of redirecting
         if (err.message === 'SESSION_EXPIRED') {
-          console.log('⚠️ Guest Leases: Session expired');
+          console.log('Guest Leases: Session expired');
           setError('Your session has expired. Please refresh the page to log in again.');
         } else {
           setError(err.message || 'Failed to load leases. Please try again.');
@@ -292,7 +205,7 @@ export function useGuestLeasesPageLogic() {
     }
 
     loadLeases();
-  }, [authState.isChecking, authState.shouldRedirect, user]);
+  }, [authLoading, isAuthenticated, authUserId, isDevMode]);
 
   // ============================================================================
   // HANDLERS - LEASE CARD
@@ -609,25 +522,10 @@ export function useGuestLeasesPageLogic() {
   }, [showToast, handleRetry]);
 
   /**
-   * Open date change request modal
+   * Navigate to Schedule Dashboard for date change requests
    */
   const handleRequestDateChange = useCallback((lease) => {
-    console.log('📅 Guest Leases: Opening date change modal for lease:', lease?._id);
-    setDateChangeModal({
-      isOpen: true,
-      lease
-    });
-  }, []);
-
-  /**
-   * Close date change request modal
-   */
-  const handleCloseDateChangeModal = useCallback(() => {
-    console.log('📅 Guest Leases: Closing date change modal');
-    setDateChangeModal({
-      isOpen: false,
-      lease: null
-    });
+    window.location.href = `/schedule/${lease._id}`;
   }, []);
 
   // ============================================================================
@@ -882,11 +780,9 @@ export function useGuestLeasesPageLogic() {
     handleSeeReview,
 
     // Handlers - Date changes
-    dateChangeModal,
     handleDateChangeApprove,
     handleDateChangeReject,
     handleRequestDateChange,
-    handleCloseDateChangeModal,
 
     // Handlers - Documents
     handleDownloadDocument,

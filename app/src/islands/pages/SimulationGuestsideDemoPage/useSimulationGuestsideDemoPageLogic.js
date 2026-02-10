@@ -20,7 +20,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import {
   SIMULATION_STEPS,
@@ -65,18 +65,20 @@ function updateURLParams(state) {
  */
 export function useSimulationGuestsideDemoPageLogic() {
   // ============================================================================
-  // AUTH STATE
+  // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false,
-    shouldRedirect: false
+  const { user, userId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    requiredRole: 'guest',
+    redirectOnFail: '/'
   });
 
-  // ============================================================================
-  // USER STATE
-  // ============================================================================
-  const [currentUser, setCurrentUser] = useState(null);
+  // Map hook returns to local variables the component expects
+  const authState = {
+    isChecking: authLoading,
+    isAuthenticated,
+    shouldRedirect: false
+  };
+  const currentUser = user ? { ...user, userId: user.id, _id: user.id } : null;
 
   // ============================================================================
   // SIMULATION STATE
@@ -107,7 +109,6 @@ export function useSimulationGuestsideDemoPageLogic() {
   // ============================================================================
   // DERIVED STATE
   // ============================================================================
-  const isAuthenticated = authState.isAuthenticated;
   const currentStep = simulationState.currentStep;
   const selectedPath = simulationState.selectedPath;
   const completedSteps = simulationState.completedSteps;
@@ -135,71 +136,12 @@ export function useSimulationGuestsideDemoPageLogic() {
   }, [simulationState.currentStep, simulationState.selectedPath, simulationState.usabilityCode]);
 
   // ============================================================================
-  // AUTH CHECK
+  // RESTORE PROGRESS WHEN AUTH COMPLETES
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
-
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            shouldRedirect: false // Stay on page, show login prompt
-          });
-          return;
-        }
-
-        // Deep validation with user data fetch
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (userData) {
-          setCurrentUser(userData);
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true,
-            shouldRedirect: false
-          });
-
-          // Restore progress from user's Usability Step if available
-          await restoreProgressFromDatabase(userData);
-        } else {
-          // Fallback to session data
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            setCurrentUser({
-              userId: session.user.user_metadata?.user_id || session.user.id,
-              _id: session.user.user_metadata?.user_id || session.user.id,
-              firstName: session.user.user_metadata?.first_name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email
-            });
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              shouldRedirect: false
-            });
-          } else {
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              shouldRedirect: false
-            });
-          }
-        }
-      } catch (err) {
-        console.error('[SimulationGuestsideDemo] Auth check failed:', err);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          shouldRedirect: false
-        });
-      }
-    }
-
-    checkAuth();
-  }, []);
+    if (authLoading || !currentUser) return;
+    restoreProgressFromDatabase(currentUser);
+  }, [authLoading, currentUser]);
 
   // ============================================================================
   // RESTORE PROGRESS FROM DATABASE

@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, getUserType } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import * as simulationService from '../../../lib/simulationGuestService.js';
 import { canProgressToStep, getNextStepId } from '../../../logic/rules/simulation/canProgressToStep.js';
@@ -43,15 +43,20 @@ const INITIAL_STEP_STATUSES = {
  */
 export function useSimulationGuestMobilePageLogic() {
   // ============================================================================
-  // AUTH STATE
+  // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-
-  const [authState, setAuthState] = useState({
-    isLoading: true,
-    isAuthenticated: false,
-    user: null,
-    userType: null
+  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    requiredRole: 'guest',
+    redirectOnFail: '/'
   });
+
+  // Map hook returns to the authState shape the component expects
+  const authState = {
+    isLoading: authLoading,
+    isAuthenticated,
+    user: authUser ? { ...authUser, _id: authUser.id, userId: authUser.id } : null,
+    userType: authUser?.userType || null
+  };
 
   // ============================================================================
   // SIMULATION STATE
@@ -78,87 +83,8 @@ export function useSimulationGuestMobilePageLogic() {
   const [error, setError] = useState(null);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
-  // ============================================================================
-  // AUTH CHECK ON MOUNT
-  // ============================================================================
-
-  useEffect(() => {
-    async function checkAuth() {
-      console.log('🔐 Simulation Guest: Checking authentication...');
-
-      try {
-        // Step 1: Lightweight auth check
-        const hasAuth = await checkAuthStatus();
-
-        if (!hasAuth) {
-          console.log('❌ User not authenticated, redirecting to home');
-          setAuthState(prev => ({
-            ...prev,
-            isLoading: false,
-            isAuthenticated: false
-          }));
-          window.location.href = '/';
-          return;
-        }
-
-        // Step 2: Validate token and fetch user data
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        let userType = null;
-        let effectiveUser = userData;
-
-        if (userData) {
-          userType = userData.userType;
-          console.log('✅ User data loaded, userType:', userType);
-        } else {
-          // Fallback: Check Supabase session
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            userType = session.user.user_metadata?.user_type || getUserType();
-            console.log('⚠️ Using fallback session data, userType:', userType);
-
-            effectiveUser = {
-              _id: session.user.user_metadata?.user_id || session.user.id,
-              email: session.user.email,
-              firstName: session.user.user_metadata?.first_name || 'User'
-            };
-          } else {
-            console.log('❌ No valid session, redirecting');
-            window.location.href = '/';
-            return;
-          }
-        }
-
-        // Check if user is a Guest (required for this simulation)
-        const isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-
-        if (!isGuest) {
-          console.log('❌ User is not a Guest, redirecting to home');
-          window.location.href = '/';
-          return;
-        }
-
-        setAuthState({
-          isLoading: false,
-          isAuthenticated: true,
-          user: effectiveUser,
-          userType
-        });
-
-      } catch (err) {
-        console.error('Auth check failed:', err);
-        setAuthState(prev => ({
-          ...prev,
-          isLoading: false,
-          isAuthenticated: false
-        }));
-        window.location.href = '/';
-      }
-    }
-
-    checkAuth();
-  }, []);
+  // Auth check is handled by useAuthenticatedUser hook above.
+  // The hook handles redirect on failure (redirectOnFail: '/') and role validation (requiredRole: 'guest').
 
   // ============================================================================
   // DATETIME UPDATE INTERVAL

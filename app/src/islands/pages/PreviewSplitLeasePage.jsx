@@ -13,8 +13,7 @@ import ListingScheduleSelector from '../shared/ListingScheduleSelector.jsx';
 import GoogleMap from '../shared/GoogleMap.jsx';
 import { EditListingDetails } from '../shared/EditListingDetails/EditListingDetails.jsx';
 import { initializeLookups } from '../../lib/dataLookups.js';
-import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getAvatarUrl } from '../../lib/auth.js';
-import { getUserId } from '../../lib/secureStorage.js';
+import { useAuthenticatedUser } from '../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../lib/supabase.js';
 import { fetchListingComplete, getListingIdFromUrl, fetchZatPriceConfiguration } from '../../lib/listingDataFetcher.js';
 import {
@@ -536,6 +535,9 @@ function HostPreviewBanner() {
 // ============================================================================
 
 export default function PreviewSplitLeasePage() {
+  // Auth hook - host role required for preview page
+  const { user: authUser, loading: authLoading } = useAuthenticatedUser({ requiredRole: 'host' });
+
   // Core state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -589,47 +591,28 @@ export default function PreviewSplitLeasePage() {
   // INITIALIZATION
   // ============================================================================
 
+  // Sync auth hook user data to loggedInUserData when auth resolves
+  useEffect(() => {
+    if (authLoading) return;
+    if (authUser) {
+      setLoggedInUserData({
+        id: authUser.id,
+        first_name: authUser.firstName,
+        last_name: '',
+        email: authUser.email,
+        firstName: authUser.firstName,
+        lastName: '',
+      });
+      console.log('[PreviewSplitLeasePage] User data loaded from hook:', authUser.firstName);
+    } else {
+      console.log('[PreviewSplitLeasePage] No authenticated user, continuing in read-only mode');
+    }
+  }, [authUser, authLoading]);
+
   useEffect(() => {
     async function initialize() {
       try {
         await initializeLookups();
-
-        // ========================================================================
-        // GOLD STANDARD AUTH PATTERN - Check auth status (non-blocking for preview)
-        // Preview page should work even if auth check fails in new tab
-        // ========================================================================
-        const isLoggedIn = await checkAuthStatus();
-        if (isLoggedIn) {
-          // Step 2: Deep validation with clearOnFailure: false
-          const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-          if (userData) {
-            // Success path: Use validated user data
-            setLoggedInUserData(userData);
-            console.log('[PreviewSplitLeasePage] User data loaded:', userData.first_name || userData.firstName);
-          } else {
-            // Step 3: Fallback to Supabase session metadata
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (session?.user) {
-              // Session valid but profile fetch failed - use session metadata
-              const fallbackUser = {
-                id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                first_name: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-                last_name: session.user.user_metadata?.last_name || '',
-                email: session.user.email,
-                firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-                lastName: session.user.user_metadata?.last_name || ''
-              };
-              setLoggedInUserData(fallbackUser);
-              console.log('[PreviewSplitLeasePage] Using fallback session data:', fallbackUser.firstName);
-            } else {
-              console.log('âš ï¸ PreviewSplitLeasePage: Session valid but no user data, continuing in read-only mode');
-            }
-          }
-        } else {
-          console.log('âš ï¸ PreviewSplitLeasePage: User not authenticated, continuing in read-only mode');
-        }
 
         // Fetch ZAT price configuration
         const zatConfigData = await fetchZatPriceConfiguration();

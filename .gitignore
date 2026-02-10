@@ -32,6 +32,9 @@ yarn-error.log*
 dist/
 .npm
 
+# Vite
+app/.vite/
+
 # Database
 *.db
 *.sqlite

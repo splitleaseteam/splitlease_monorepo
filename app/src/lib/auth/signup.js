@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase.js';
+import { logger } from '../logger.js';
 import {
   setAuthToken as setSecureAuthToken,
   setSessionId as setSecureSessionId,
@@ -39,7 +40,7 @@ import { setUserType } from './session.js';
  * @returns {Promise<Object>} Response object with status, user_id, or error
  */
 export async function signupUser(email, password, retype, additionalData = null) {
-  console.log('📝 Attempting signup via Supabase Auth for:', email);
+  logger.info('📝 Attempting signup via Supabase Auth for:', email);
 
   // Client-side validation
   if (!email || !password || !retype) {
@@ -73,7 +74,7 @@ export async function signupUser(email, password, retype, additionalData = null)
   // Add additional signup data if provided
   if (additionalData) {
     payload.additionalData = additionalData;
-    console.log('📝 Additional signup data:', additionalData);
+    logger.info('📝 Additional signup data:', additionalData);
   }
 
   try {
@@ -81,23 +82,23 @@ export async function signupUser(email, password, retype, additionalData = null)
     // The Supabase client's functions.invoke can hang indefinitely when there's a stale
     // session because it tries to refresh the token before making requests. Since auth-user
     // has verify_jwt=false, we don't need any auth token. Using direct fetch bypasses this.
-    console.log('🔄 Using direct fetch to bypass Supabase client session handling...');
+    logger.info('🔄 Using direct fetch to bypass Supabase client session handling...');
 
     // Clear localStorage directly to avoid signOut() hanging
     try {
       const storageKey = `sb-${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`;
       if (storageKey && storageKey !== 'sb-undefined-auth-token') {
         localStorage.removeItem(storageKey);
-        console.log('✅ Cleared auth token from localStorage');
+        logger.info('✅ Cleared auth token from localStorage');
       }
     } catch (clearErr) {
-      console.warn('⚠️ Could not clear localStorage:', clearErr);
+      logger.warn('⚠️ Could not clear localStorage:', clearErr);
     }
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    console.log('📡 Calling auth-user edge function via direct fetch...');
+    logger.info('📡 Calling auth-user edge function via direct fetch...');
     const response = await fetch(`${supabaseUrl}/functions/v1/auth-user`, {
       method: 'POST',
       headers: {
@@ -112,12 +113,12 @@ export async function signupUser(email, password, retype, additionalData = null)
     });
 
     const data = await response.json();
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response data:', data);
+    logger.info('📡 Response status:', response.status);
+    logger.info('📡 Response data:', data);
 
     // Handle HTTP errors
     if (!response.ok) {
-      console.error('❌ Edge Function HTTP error:', response.status);
+      logger.error('❌ Edge Function HTTP error:', response.status);
       const errorMessage = data?.error || `HTTP ${response.status}: Failed to create account`;
       return {
         success: false,
@@ -127,14 +128,14 @@ export async function signupUser(email, password, retype, additionalData = null)
 
     // Handle error in response body
     if (!data.success) {
-      console.error('❌ Signup failed:', data.error);
+      logger.error('❌ Signup failed:', data.error);
       return {
         success: false,
         error: data.error || 'Signup failed. Please try again.'
       };
     }
 
-    console.log('✅ Edge Function returned successfully');
+    logger.info('✅ Edge Function returned successfully');
 
     // Extract Supabase session data
     const {
@@ -148,15 +149,15 @@ export async function signupUser(email, password, retype, additionalData = null)
       user_type
     } = data.data;
 
-    console.log('📋 Extracted session data:');
-    console.log('   access_token:', access_token ? `${access_token.substring(0, 20)}...` : 'MISSING');
-    console.log('   refresh_token:', refresh_token ? `${refresh_token.substring(0, 20)}...` : 'MISSING');
-    console.log('   user_id:', user_id);
-    console.log('   user_type:', user_type);
+    logger.info('📋 Extracted session data:');
+    logger.info('   access_token:', access_token ? `${access_token.substring(0, 20)}...` : 'MISSING');
+    logger.info('   refresh_token:', refresh_token ? `${refresh_token.substring(0, 20)}...` : 'MISSING');
+    logger.info('   user_id:', user_id);
+    logger.info('   user_type:', user_type);
 
     // Set Supabase session using the client
     // This stores the session in localStorage and enables authenticated requests
-    console.log('🔐 About to call setSession...');
+    logger.info('🔐 About to call setSession...');
     let sessionError = null;
     try {
       const result = await supabase.auth.setSession({
@@ -164,17 +165,17 @@ export async function signupUser(email, password, retype, additionalData = null)
         refresh_token
       });
       sessionError = result.error;
-      console.log('🔐 setSession completed, error:', sessionError);
+      logger.info('🔐 setSession completed, error:', sessionError);
     } catch (setSessionErr) {
-      console.error('🔐 setSession threw an exception:', setSessionErr);
+      logger.error('🔐 setSession threw an exception:', setSessionErr);
       sessionError = setSessionErr;
     }
 
     if (sessionError) {
-      console.error('❌ Failed to set Supabase session:', sessionError.message);
+      logger.error('❌ Failed to set Supabase session:', sessionError.message);
       // Continue anyway - tokens are still valid, just not in client state
     } else {
-      console.log('✅ Supabase session set successfully');
+      logger.info('✅ Supabase session set successfully');
     }
 
     // CRITICAL: Verify the session is actually persisted before proceeding
@@ -184,16 +185,16 @@ export async function signupUser(email, password, retype, additionalData = null)
     while (verifyAttempts < maxVerifyAttempts) {
       const { data: { session: verifiedSession } } = await supabase.auth.getSession();
       if (verifiedSession && verifiedSession.access_token === access_token) {
-        console.log('✅ Session verified and persisted');
+        logger.info('✅ Session verified and persisted');
         break;
       }
       verifyAttempts++;
-      console.log(`⏳ Waiting for session to persist (attempt ${verifyAttempts}/${maxVerifyAttempts})...`);
+      logger.info(`⏳ Waiting for session to persist (attempt ${verifyAttempts}/${maxVerifyAttempts})...`);
       await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms
     }
 
     if (verifyAttempts >= maxVerifyAttempts) {
-      console.warn('⚠️ Session may not be fully persisted, but continuing...');
+      logger.warn('⚠️ Session may not be fully persisted, but continuing...');
     }
 
     // Store access_token as auth token for backward compatibility with existing code
@@ -211,13 +212,13 @@ export async function signupUser(email, password, retype, additionalData = null)
     // Update login state
     setIsUserLoggedIn(true);
 
-    console.log('✅ Signup successful (Supabase Auth)');
-    console.log('   User ID (_id):', user_id);
-    console.log('   Supabase Auth ID:', supabase_user_id);
-    console.log('   Host Account ID:', host_account_id);
-    console.log('   Guest Account ID:', guest_account_id);
-    console.log('   User Type:', user_type);
-    console.log('   Session expires in:', expires_in, 'seconds');
+    logger.info('✅ Signup successful (Supabase Auth)');
+    logger.info('   User ID (_id):', user_id);
+    logger.info('   Supabase Auth ID:', supabase_user_id);
+    logger.info('   Host Account ID:', host_account_id);
+    logger.info('   Guest Account ID:', guest_account_id);
+    logger.info('   User Type:', user_type);
+    logger.info('   Session expires in:', expires_in, 'seconds');
 
     // Store Supabase user ID for reference
     if (supabase_user_id) {
@@ -235,7 +236,7 @@ export async function signupUser(email, password, retype, additionalData = null)
     };
 
   } catch (error) {
-    console.error('❌ Signup error:', error);
+    logger.error('❌ Signup error:', error);
     return {
       success: false,
       error: 'Network error. Please check your connection and try again.'
@@ -255,7 +256,7 @@ export async function signupUser(email, password, retype, additionalData = null)
  * @returns {Promise<Object>} Result with success status or error
  */
 export async function initiateLinkedInOAuth(userType) {
-  console.log('[Auth] Initiating LinkedIn OAuth with userType:', userType);
+  logger.info('[Auth] Initiating LinkedIn OAuth with userType:', userType);
 
   // Store user type before redirect
   setLinkedInOAuthUserType(userType);
@@ -289,7 +290,7 @@ export async function initiateLinkedInOAuth(userType) {
  * @returns {Promise<Object>} Result with user data or error
  */
 export async function handleLinkedInOAuthCallback() {
-  console.log('[Auth] Handling LinkedIn OAuth callback');
+  logger.info('[Auth] Handling LinkedIn OAuth callback');
 
   // Get the session from OAuth callback
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -322,8 +323,8 @@ export async function handleLinkedInOAuthCallback() {
     supabaseUserId: user.id,
   };
 
-  console.log('[Auth] LinkedIn data:', linkedInData);
-  console.log('[Auth] Stored userType:', userType);
+  logger.info('[Auth] LinkedIn data:', linkedInData);
+  logger.info('[Auth] Stored userType:', userType);
 
   // Call Edge Function to create/link user record
   try {

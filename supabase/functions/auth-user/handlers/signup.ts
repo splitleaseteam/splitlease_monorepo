@@ -30,8 +30,9 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { BubbleApiError } from '../../_shared/errors.ts';
-import { validateRequiredFields } from '../../_shared/validation.ts';
+import { validateRequiredFields, validateEmail } from '../../_shared/validation.ts';
 import { enqueueSignupSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
+import { mapUserTypeToDisplay } from '../../_shared/userTypeMapping.ts';
 import {
   sendWelcomeEmail,
   sendInternalSignupNotification,
@@ -50,20 +51,6 @@ interface SignupAdditionalData {
   userType?: 'Host' | 'Guest';
   birthDate?: string; // ISO format: YYYY-MM-DD
   phoneNumber?: string;
-}
-
-/**
- * Map simple user type values to reference_table.os_user_type.display values
- * The foreign key constraint fk_user_type_current requires exact match to display column
- */
-function _mapUserTypeToDisplay(userType: string): string {
-  const mapping: Record<string, string> = {
-    'Host': 'A Host (I have a space available to rent)',
-    'Guest': 'A Guest (I would like to rent a space)',
-    'host': 'A Host (I have a space available to rent)',
-    'guest': 'A Guest (I would like to rent a space)',
-  };
-  return mapping[userType] || 'A Guest (I would like to rent a space)';
 }
 
 export async function handleSignup(
@@ -90,18 +77,7 @@ export async function handleSignup(
   }: SignupAdditionalData = additionalData || {};
 
   // Map userType string to os_user_type.display for foreign key constraint
-  // Foreign key references os_user_type(display) which contains full descriptive strings
-  const userTypeDisplayMap: Record<string, string> = {
-    'Host': 'A Host (I have a space available to rent)',
-    'host': 'A Host (I have a space available to rent)',
-    'Guest': 'A Guest (I would like to rent a space)',
-    'guest': 'A Guest (I would like to rent a space)',
-    'Split Lease': 'Split Lease',
-    'split_lease': 'Split Lease',
-    'Trial Host': 'Trial Host',
-    'trial_host': 'Trial Host'
-  };
-  const userTypeDisplay = userTypeDisplayMap[userType] ?? 'A Guest (I would like to rent a space)'; // Default to Guest
+  const userTypeDisplay = mapUserTypeToDisplay(userType);
 
   console.log(`[signup] Registering new user: ${email}`);
   console.log(`[signup] Additional data: firstName=${firstName}, lastName=${lastName}, userType=${userType} -> display="${userTypeDisplay}"`);
@@ -116,8 +92,9 @@ export async function handleSignup(
   }
 
   // Email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  try {
+    validateEmail(email);
+  } catch {
     throw new BubbleApiError('Please enter a valid email address.', 400);
   }
 
@@ -386,7 +363,7 @@ export async function handleSignup(
       } else {
         console.log('[signup] ✅ Welcome email sent');
       }
-    } catch (_err) {
+    } catch (err) {
       console.error('[signup] Welcome email error:', err);
       // Non-blocking: Continue with signup even if email fails
     }
@@ -401,7 +378,7 @@ export async function handleSignup(
       } else {
         console.log('[signup] ✅ Internal notification sent');
       }
-    } catch (_err) {
+    } catch (err) {
       console.error('[signup] Internal notification error:', err);
     }
 

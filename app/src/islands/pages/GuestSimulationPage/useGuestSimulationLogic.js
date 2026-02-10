@@ -23,7 +23,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { loginUser, getSessionId } from '../../../lib/auth.js';
+import { loginUser, getSessionId } from '../../../lib/auth/index.js';
 import { supabase } from '../../../lib/supabase.js';
 import { showToast } from '../../shared/Toast.jsx';
 

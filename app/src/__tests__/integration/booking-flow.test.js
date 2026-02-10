@@ -454,7 +454,7 @@ describe('Booking Flow Integration Tests', () => {
   describe('Complete Booking Flow', () => {
     it('should complete full booking flow successfully', async () => {
       const { supabase } = await import('../../lib/supabase.js');
-      const { checkAuthStatus, validateTokenAndFetchUser } = await import('../../lib/auth.js');
+      const { checkAuthStatus, validateTokenAndFetchUser } = await import('../../lib/auth/index.js');
 
       // Step 1: Check authentication
       const isAuthenticated = await checkAuthStatus();
@@ -516,7 +516,7 @@ describe('Booking Flow Integration Tests', () => {
   // ========================================
   describe('Error Handling', () => {
     it('should handle authentication failure gracefully', async () => {
-      const { checkAuthStatus } = await import('../../lib/auth.js');
+      const { checkAuthStatus } = await import('../../lib/auth/index.js');
       checkAuthStatus.mockResolvedValueOnce(false);
 
       const isAuthenticated = await checkAuthStatus();

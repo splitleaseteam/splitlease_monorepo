@@ -8,7 +8,7 @@ import './styles/main.css';
 
 // Import config to set window.ENV before Google Maps loads
 import './lib/config.js';
-import { checkAuthStatus } from './lib/auth.js';
+import { checkAuthStatus } from './lib/auth/index.js';
 
 // Import CSS for the host-overview page
 import './styles/components/host-overview.css';

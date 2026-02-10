@@ -19,7 +19,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase.js'
 import { logger } from '../../lib/logger.js'
-import { getUserId, getFirstName, getAvatarUrl } from '../../lib/auth.js'
+import { getUserId, getFirstName, getAvatarUrl } from '../../lib/auth/index.js'
 import { getUserType as getStoredUserType, getAuthState } from '../../lib/secureStorage.js'
 import { useAuthenticatedUser } from '../../hooks/useAuthenticatedUser.js'
 import { fetchProposalsByGuest, fetchLastProposalDefaults } from '../../lib/proposalDataFetcher.js'

@@ -18,6 +18,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { BubbleApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 import { enqueueSignupSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
+import { mapUserTypeToDisplay } from '../../_shared/userTypeMapping.ts';
 
 interface OAuthSignupPayload {
   email: string;
@@ -29,16 +30,6 @@ interface OAuthSignupPayload {
   access_token: string;
   refresh_token: string;
   profilePhoto?: string | null; // Optional - LinkedIn profile picture URL
-}
-
-function mapUserTypeToDisplay(userType: string): string {
-  const mapping: Record<string, string> = {
-    'Host': 'A Host (I have a space available to rent)',
-    'Guest': 'A Guest (I would like to rent a space)',
-    'host': 'A Host (I have a space available to rent)',
-    'guest': 'A Guest (I would like to rent a space)',
-  };
-  return mapping[userType] || 'A Guest (I would like to rent a space)';
 }
 
 export async function handleOAuthSignup(

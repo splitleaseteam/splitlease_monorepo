@@ -5,7 +5,7 @@ import Footer from '../shared/Footer.jsx';
 import SearchScheduleSelector from '../shared/SearchScheduleSelector.jsx';
 import AiSignupMarketReport from '../shared/AiSignupMarketReport/AiSignupMarketReport.jsx';
 import LocalJourneySection from './LocalJourneySection.jsx';
-import { checkAuthStatus } from '../../lib/auth.js';
+import { useAuthenticatedUser } from '../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../lib/supabase.js';
 import { fetchPhotoUrls, parseJsonArray } from '../../lib/supabaseUtils.js';
 import { getNeighborhoodName, getBoroughName, initializeLookups } from '../../lib/dataLookups.js';
@@ -748,7 +748,7 @@ export default function HomePage() {
   // State management
   const [isAIResearchModalOpen, setIsAIResearchModalOpen] = useState(false);
   const [selectedDays, setSelectedDays] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated: isLoggedIn } = useAuthenticatedUser();
   const [isPopupDismissed, setIsPopupDismissed] = useState(false); // A/B test: when true, show drawer instead of popup
 
   // Internal routing state for password reset fallback
@@ -783,15 +783,7 @@ export default function HomePage() {
     }
   }, []);
 
-  // Check authentication status on mount
-  // NOTE: Must be BEFORE early return to comply with Rules of Hooks
-  useEffect(() => {
-    const checkAuth = async () => {
-      const loggedIn = await checkAuthStatus();
-      setIsLoggedIn(loggedIn);
-    };
-    checkAuth();
-  }, []);
+  // Auth status is now provided by useAuthenticatedUser() hook above
 
   // Mount SearchScheduleSelector component in hero section
   // NOTE: Must be BEFORE early return to comply with Rules of Hooks

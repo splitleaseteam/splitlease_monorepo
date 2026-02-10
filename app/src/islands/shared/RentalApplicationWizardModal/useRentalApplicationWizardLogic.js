@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getSessionId } from '../../../lib/auth.js';
+import { getSessionId } from '../../../lib/auth/index.js';
 import { PROPOSAL_STATUSES } from '../../../logic/constants/proposalStatuses.js';
 import { useRentalApplicationStore } from '../../pages/RentalApplicationPage/store/index.ts';
 import { mapDatabaseToFormData } from '../../pages/RentalApplicationPage/utils/rentalApplicationFieldMapper.ts';

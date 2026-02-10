@@ -21,7 +21,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { generateSimulatedProposals, updateSimulatedProposalByGuest } from '../../../logic/simulators/generateSimulatedProposals.js';
 import { generateSimulatedGuests } from '../../../logic/simulators/generateSimulatedGuests.js';
 import {
@@ -90,17 +90,19 @@ function clearProgress() {
  */
 export function useSimulationHostsideDemoPageLogic() {
   // ============================================================================
-  // AUTH STATE
+  // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false
+  const { user, userId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    requiredRole: 'host',
+    redirectOnFail: '/'
   });
 
-  // ============================================================================
-  // USER STATE
-  // ============================================================================
-  const [currentUser, setCurrentUser] = useState(null);
+  // Map hook returns to local variables the component expects
+  const authState = {
+    isChecking: authLoading,
+    isAuthenticated
+  };
+  const currentUser = user ? { ...user, userId: user.id, _id: user.id } : null;
 
   // ============================================================================
   // SIMULATION STATE
@@ -134,7 +136,6 @@ export function useSimulationHostsideDemoPageLogic() {
   // ============================================================================
   // DERIVED STATE
   // ============================================================================
-  const isAuthenticated = authState.isAuthenticated;
   const currentStep = simulationState.currentStep;
   const stepClicked = simulationState.stepClicked;
   const simulatedProposals = simulationState.simulatedProposals;
@@ -160,62 +161,24 @@ export function useSimulationHostsideDemoPageLogic() {
   }, []);
 
   // ============================================================================
-  // AUTH CHECK
+  // RESTORE PROGRESS WHEN AUTH COMPLETES
   // ============================================================================
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
+    if (authLoading || !userId) return;
 
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false
-          });
-          return;
-        }
+    const savedProgress = loadSavedProgress(userId);
 
-        // Deep validation with user data fetch
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (userData) {
-          setCurrentUser(userData);
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: true
-          });
-
-          // Restore progress from localStorage
-          const userId = userData.userId || userData._id;
-          const savedProgress = loadSavedProgress(userId);
-
-          if (savedProgress) {
-            console.log('[SimulationHostsideDemo] Restoring saved progress:', savedProgress);
-            setSimulationState(prev => ({
-              ...prev,
-              currentStep: savedProgress.currentStep || 0,
-              stepClicked: savedProgress.stepClicked || prev.stepClicked,
-              simulatedGuests: savedProgress.simulatedGuests || [],
-              simulatedProposals: savedProgress.simulatedProposals || []
-            }));
-          }
-        } else {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false
-          });
-        }
-      } catch (err) {
-        console.error('[SimulationHostsideDemo] Auth check failed:', err);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false
-        });
-      }
+    if (savedProgress) {
+      console.log('[SimulationHostsideDemo] Restoring saved progress:', savedProgress);
+      setSimulationState(prev => ({
+        ...prev,
+        currentStep: savedProgress.currentStep || 0,
+        stepClicked: savedProgress.stepClicked || prev.stepClicked,
+        simulatedGuests: savedProgress.simulatedGuests || [],
+        simulatedProposals: savedProgress.simulatedProposals || []
+      }));
     }
-
-    checkAuth();
-  }, []);
+  }, [authLoading, userId]);
 
   // ============================================================================
   // TOAST HELPER

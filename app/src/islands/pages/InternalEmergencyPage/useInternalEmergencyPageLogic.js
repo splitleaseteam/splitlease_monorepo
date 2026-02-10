@@ -22,7 +22,7 @@ import {
   sendSMS,
   sendEmail,
 } from '../../../lib/emergencyService.js';
-import { checkAuthStatus } from '../../../lib/auth.js';
+import { checkAuthStatus } from '../../../lib/auth/index.js';
 
 export function useInternalEmergencyPageLogic() {
   // ============================================================================

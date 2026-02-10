@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus } from '../../../lib/auth.js';
+import { checkAuthStatus } from '../../../lib/auth/index.js';
 import { createEmergency, uploadEmergencyPhoto } from '../../../lib/emergencyService.js';
 
 const INITIAL_FORM_DATA = {

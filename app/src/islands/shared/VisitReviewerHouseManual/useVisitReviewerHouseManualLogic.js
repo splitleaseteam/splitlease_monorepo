@@ -14,7 +14,7 @@ import visitReviewerService from './visitReviewerService.js';
 import { adaptHouseManualForViewer, groupSectionsByCategory } from '../../../logic/processors/houseManual/adaptHouseManualForViewer.js';
 import { canAccessManual, canSubmitReview } from '../../../logic/rules/houseManual/canAccessManual.js';
 import { isTokenExpired, validateTokenStatus } from '../../../logic/rules/houseManual/isManualExpired.js';
-import { checkAuthStatus, getUserId } from '../../../lib/auth.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 
 /**
  * @typedef {Object} ReviewFormData
@@ -66,9 +66,8 @@ export default function useVisitReviewerHouseManualLogic({
   const [error, setError] = useState(null);
   const [accessDeniedReason, setAccessDeniedReason] = useState(null);
 
-  // Auth state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  // Auth state (from useAuthenticatedUser hook)
+  const { isAuthenticated, userId: currentUserId } = useAuthenticatedUser();
 
   // Review form state
   const [reviewFormData, setReviewFormData] = useState(createInitialReviewFormData);
@@ -87,21 +86,6 @@ export default function useVisitReviewerHouseManualLogic({
   // ─────────────────────────────────────────────────────────────
   // Effects
   // ─────────────────────────────────────────────────────────────
-
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const isAuth = await checkAuthStatus();
-      setIsAuthenticated(isAuth);
-
-      if (isAuth) {
-        const userId = getUserId();
-        setCurrentUserId(userId);
-      }
-    };
-
-    checkAuth();
-  }, []);
 
   // Load house manual data when auth is ready
   useEffect(() => {

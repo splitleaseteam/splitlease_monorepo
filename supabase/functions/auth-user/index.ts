@@ -264,8 +264,8 @@ function executeHandler(
       return handler(payload);
 
     case 'validate':
-      // Validate uses Supabase only (Bubble params passed for signature compatibility but unused)
-      return handler('', '', supabaseUrl, supabaseServiceKey, payload);
+      // Validate uses Supabase only
+      return handler(supabaseUrl, supabaseServiceKey, payload);
 
     case 'request_password_reset':
       // Password reset uses Supabase Auth natively

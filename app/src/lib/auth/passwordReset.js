@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '../supabase.js';
+import { logger } from '../logger.js';
 import {
   setAuthToken as setSecureAuthToken,
   setSessionId as setSecureSessionId,
@@ -26,7 +27,7 @@ import { setIsUserLoggedIn } from './tokenValidation.js';
  * @returns {Promise<Object>} Response object with success status and message
  */
 export async function requestPasswordReset(email) {
-  console.log('🔐 Requesting password reset for:', email);
+  logger.info('🔐 Requesting password reset for:', email);
 
   if (!email) {
     return {
@@ -47,7 +48,7 @@ export async function requestPasswordReset(email) {
     });
 
     if (error) {
-      console.error('❌ Password reset request failed:', error);
+      logger.error('❌ Password reset request failed:', error);
       // Don't expose error details - always show generic message
       return {
         success: true, // Return success even on error to prevent email enumeration
@@ -55,14 +56,14 @@ export async function requestPasswordReset(email) {
       };
     }
 
-    console.log('✅ Password reset request processed');
+    logger.info('✅ Password reset request processed');
     return {
       success: true,
       message: data?.data?.message || 'If an account with that email exists, a password reset link has been sent.'
     };
 
   } catch (error) {
-    console.error('❌ Password reset error:', error);
+    logger.error('❌ Password reset error:', error);
     return {
       success: true, // Return success even on error to prevent email enumeration
       message: 'If an account with that email exists, a password reset link has been sent.'
@@ -83,7 +84,7 @@ export async function requestPasswordReset(email) {
  * @returns {Promise<Object>} Response object with success status
  */
 export async function updatePassword(newPassword) {
-  console.log('🔐 Updating password...');
+  logger.info('🔐 Updating password...');
 
   if (!newPassword) {
     return {
@@ -103,7 +104,7 @@ export async function updatePassword(newPassword) {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
   if (sessionError || !session) {
-    console.error('❌ No active session for password update');
+    logger.error('❌ No active session for password update');
     return {
       success: false,
       error: 'Invalid or expired reset link. Please request a new password reset.'
@@ -122,7 +123,7 @@ export async function updatePassword(newPassword) {
     });
 
     if (error) {
-      console.error('❌ Password update failed:', error);
+      logger.error('❌ Password update failed:', error);
 
       // Extract detailed error from response body if available
       let errorMessage = 'Failed to update password. Please try again.';
@@ -131,7 +132,7 @@ export async function updatePassword(newPassword) {
       if (error.context && typeof error.context.json === 'function') {
         try {
           const errorBody = await error.context.json();
-          console.error('   Error body from Response:', errorBody);
+          logger.error('   Error body from Response:', errorBody);
           if (errorBody?.error) {
             errorMessage = errorBody.error;
           }
@@ -167,7 +168,7 @@ export async function updatePassword(newPassword) {
       };
     }
 
-    console.log('✅ Password updated successfully');
+    logger.info('✅ Password updated successfully');
 
     // Keep user logged in by syncing the Supabase session to secure storage
     // The user has proven account ownership by accessing their email
@@ -187,9 +188,9 @@ export async function updatePassword(newPassword) {
     // Update login state
     setIsUserLoggedIn(true);
 
-    console.log('✅ User session preserved after password update');
-    console.log('   User ID:', userId);
-    console.log('   User Type:', userType);
+    logger.info('✅ User session preserved after password update');
+    logger.info('   User ID:', userId);
+    logger.info('   User Type:', userType);
 
     return {
       success: true,
@@ -197,7 +198,7 @@ export async function updatePassword(newPassword) {
     };
 
   } catch (error) {
-    console.error('❌ Password update error:', error);
+    logger.error('❌ Password update error:', error);
     return {
       success: false,
       error: 'Network error. Please check your connection and try again.'

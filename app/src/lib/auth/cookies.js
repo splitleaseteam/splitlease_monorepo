@@ -3,6 +3,8 @@
  * Handles browser cookie parsing and Bubble app cookie checks
  */
 
+import { logger } from '../logger.js';
+
 // ============================================================================
 // Cookie Parsing Utilities
 // ============================================================================
@@ -44,10 +46,10 @@ export function checkSplitLeaseCookies() {
   const username = getUsernameFromCookies();
 
   // Log the authentication status to console
-  console.log('🔐 Split Lease Cookie Auth Check:');
-  console.log('   Logged In:', isLoggedIn);
-  console.log('   Username:', username || 'not set');
-  console.log('   Raw Cookies:', { loggedInCookie, usernameCookie });
+  logger.info('🔐 Split Lease Cookie Auth Check:');
+  logger.info('   Logged In:', isLoggedIn);
+  logger.info('   Username:', username || 'not set');
+  logger.info('   Raw Cookies:', { loggedInCookie, usernameCookie });
 
   return { isLoggedIn, username };
 }

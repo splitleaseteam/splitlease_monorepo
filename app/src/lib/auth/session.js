@@ -4,6 +4,7 @@
  */
 
 import { SESSION_VALIDATION } from '../constants.js';
+import { logger } from '../logger.js';
 import {
   getAuthState,
   clearAllAuthData,
@@ -81,7 +82,7 @@ export function clearAuthData() {
   // Use secure storage clear (handles both secure tokens and state)
   clearAllAuthData();
 
-  console.log('🗑️ Authentication data cleared (secure storage and cookies)');
+  logger.info('🗑️ Authentication data cleared (secure storage and cookies)');
 }
 
 // ============================================================================

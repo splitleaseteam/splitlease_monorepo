@@ -34,7 +34,7 @@ import {
   initiateGoogleOAuth,
   handleGoogleOAuthCallback,
   initiateGoogleOAuthLogin
-} from '../../lib/auth.js';
+} from '../../lib/auth/index.js';
 import { getLinkedInOAuthUserType, getGoogleOAuthUserType } from '../../lib/secureStorage.js';
 import { supabase } from '../../lib/supabase.js';
 import Toast, { useToast } from './Toast.jsx';

@@ -31,7 +31,7 @@ import { calculatePricingBreakdown } from '../../../../lib/priceCalculations';
 // @ts-ignore - JS module without type declarations
 import { validateScheduleSelection } from '../../../../lib/availabilityValidation';
 // @ts-ignore - JS module without type declarations
-import { checkAuthStatus } from '../../../../lib/auth';
+import { checkAuthStatus } from '../../../../lib/auth/index.js';
 // @ts-ignore - JS module without type declarations
 import { createProposal } from '../../../../lib/proposalService';
 // @ts-ignore - JS module without type declarations
