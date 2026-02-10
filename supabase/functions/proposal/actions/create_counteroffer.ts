@@ -18,7 +18,7 @@ import {
   calculateActualActiveWeeks,
 } from "../lib/calculations.ts";
 import { calculatePricingList } from "../../pricing-list/utils/pricingCalculator.ts";
-import { createSplitBotMessage, generateBubbleId } from "../../_shared/messagingHelpers.ts";
+import { createSplitBotMessage, generatePlatformId } from "../../_shared/messagingHelpers.ts";
 import {
   generateCounterOfferSummary,
   formatDaysAsRange,
@@ -28,12 +28,12 @@ import {
 interface CreateCounterofferPayload {
   proposalId: string;
   counterofferData: {
-    'hc nightly price'?: number;
-    'hc nights per week'?: number;
-    'hc check in day'?: number;
-    'hc check out day'?: number;
-    'hc move in start'?: string; // Maps to 'hc move in date' column
-    // Note: 'hc move out' column does not exist in schema
+    'host_counter_offer_nightly_price'?: number;
+    'host_counter_offer_nights_per_week'?: number;
+    'host_counter_offer_check_in_day'?: number;
+    'host_counter_offer_check_out_day'?: number;
+    'host_counter_offer_move_in_start'?: string; // Maps to 'host_counter_offer_move_in_date' column
+    // Note: 'host_counter_offer_move_out' column does not exist in schema
   };
   isUsabilityTest?: boolean;
   // Note: hostPersona removed - 'counteroffer_by_persona' column does not exist
@@ -114,12 +114,12 @@ export async function handleCreateCounteroffer(
       const reservationSpan = proposal["Reservation Span"] || "other";
 
       const nightsPerWeek =
-        counterofferData['hc nights per week'] ||
-        proposal["hc nights per week"] ||
+        counterofferData['host_counter_offer_nights_per_week'] ||
+        proposal["host_counter_offer_nights_per_week"] ||
         proposal["nights per week (num)"] ||
         0;
       const reservationWeeks =
-        proposal["hc reservation span (weeks)"] ||
+        proposal["host_counter_offer_reservation_span_weeks"] ||
         proposal["Reservation Span (Weeks)"] ||
         0;
 
@@ -207,33 +207,33 @@ export async function handleCreateCounteroffer(
               ? (hostCompPerPeriod * 4) / weeklySchedulePeriod
               : (hostCompPerNight * nightsPerWeek * 4) / weeklySchedulePeriod;
 
-        updateData['hc nightly price'] = roundToTwoDecimals(guestNightlyPrice);
-        updateData['hc total price'] = roundToTwoDecimals(totalGuestPrice);
-        updateData['hc 4 week rent'] = roundToTwoDecimals(fourWeekRent);
-        updateData['hc 4 week compensation'] = roundToTwoDecimals(fourWeekCompensation);
-        updateData['hc host compensation (per period)'] = roundToTwoDecimals(hostCompPerPeriod);
-        updateData['hc total host compensation'] = roundToTwoDecimals(totalHostCompensation);
-        updateData['hc duration in months'] = roundToTwoDecimals(durationMonths);
+        updateData['host_counter_offer_nightly_price'] = roundToTwoDecimals(guestNightlyPrice);
+        updateData['host_counter_offer_total_price'] = roundToTwoDecimals(totalGuestPrice);
+        updateData['host_counter_offer_4_week_rent'] = roundToTwoDecimals(fourWeekRent);
+        updateData['host_counter_offer_4_week_compensation'] = roundToTwoDecimals(fourWeekCompensation);
+        updateData['host_counter_offer_host_compensation_per_period'] = roundToTwoDecimals(hostCompPerPeriod);
+        updateData['host_counter_offer_total_host_compensation'] = roundToTwoDecimals(totalHostCompensation);
+        updateData['host_counter_offer_duration_in_months'] = roundToTwoDecimals(durationMonths);
       }
     }
   }
 
   // Apply counteroffer fields (all verified to exist)
-  if (counterofferData['hc nightly price'] !== undefined) {
-    updateData['hc nightly price'] = counterofferData['hc nightly price'];
+  if (counterofferData['host_counter_offer_nightly_price'] !== undefined) {
+    updateData['host_counter_offer_nightly_price'] = counterofferData['host_counter_offer_nightly_price'];
   }
-  if (counterofferData['hc nights per week'] !== undefined) {
-    updateData['hc nights per week'] = counterofferData['hc nights per week'];
+  if (counterofferData['host_counter_offer_nights_per_week'] !== undefined) {
+    updateData['host_counter_offer_nights_per_week'] = counterofferData['host_counter_offer_nights_per_week'];
   }
-  if (counterofferData['hc check in day'] !== undefined) {
-    updateData['hc check in day'] = counterofferData['hc check in day'];
+  if (counterofferData['host_counter_offer_check_in_day'] !== undefined) {
+    updateData['host_counter_offer_check_in_day'] = counterofferData['host_counter_offer_check_in_day'];
   }
-  if (counterofferData['hc check out day'] !== undefined) {
-    updateData['hc check out day'] = counterofferData['hc check out day'];
+  if (counterofferData['host_counter_offer_check_out_day'] !== undefined) {
+    updateData['host_counter_offer_check_out_day'] = counterofferData['host_counter_offer_check_out_day'];
   }
-  if (counterofferData['hc move in start']) {
+  if (counterofferData['host_counter_offer_move_in_start']) {
     // Map to actual column name
-    updateData['hc move in date'] = counterofferData['hc move in start'];
+    updateData['host_counter_offer_move_in_date'] = counterofferData['host_counter_offer_move_in_start'];
   }
 
   const { error: updateError } = await supabase
@@ -263,20 +263,20 @@ export async function handleCreateCounteroffer(
       const originalTotalPrice = proposal['Total Price for Reservation (guest)'] || 0;
 
       // Extract counteroffer values (from updateData which has the computed values)
-      const counterWeeks = proposal['hc reservation span (weeks)'] || proposal['Reservation Span (Weeks)'] || 0;
+      const counterWeeks = proposal['host_counter_offer_reservation_span_weeks'] || proposal['Reservation Span (Weeks)'] || 0;
       const counterMoveIn = formatDateForDisplay(
-        (updateData['hc move in date'] as string) ||
-        proposal['hc move in date'] ||
+        (updateData['host_counter_offer_move_in_date'] as string) ||
+        proposal['host_counter_offer_move_in_date'] ||
         proposal['Move in range start'] ||
         ''
       );
       const counterDays = formatDaysAsRange(
-        proposal['hc days selected'] ||
+        proposal['host_counter_offer_days_selected'] ||
         proposal['Days Selected'] ||
         []
       );
-      const counterNightlyPrice = (updateData['hc nightly price'] as number) || proposal['hc nightly price'] || 0;
-      const counterTotalPrice = (updateData['hc total price'] as number) || proposal['hc total price'] || 0;
+      const counterNightlyPrice = (updateData['host_counter_offer_nightly_price'] as number) || proposal['host_counter_offer_nightly_price'] || 0;
+      const counterTotalPrice = (updateData['host_counter_offer_total_price'] as number) || proposal['host_counter_offer_total_price'] || 0;
 
       // Call AI Gateway with 8-second timeout
       const summaryPromise = generateCounterOfferSummary(supabase, {
@@ -306,7 +306,7 @@ export async function handleCreateCounteroffer(
 
         // Persist AI summary to negotiationsummary table
         try {
-          const summaryId = await generateBubbleId(supabase);
+          const summaryId = await generatePlatformId(supabase);
           const summaryNow = new Date().toISOString();
 
           const { error: summaryInsertError } = await supabase
@@ -421,7 +421,7 @@ export async function handleCreateCounteroffer(
       const listingName = listing?.['Name'] || 'Proposal Thread';
 
       // Generate new thread ID
-      const { data: newId } = await supabase.rpc('generate_bubble_id');
+      const { data: newId } = await supabase.rpc('generate_unique_id');
       threadId = newId || `${Date.now()}x${Math.floor(Math.random() * 1e17).toString().padStart(17, '0')}`;
 
       const now = new Date().toISOString();

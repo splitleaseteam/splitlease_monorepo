@@ -116,7 +116,7 @@ serve(async (req: Request) => {
         let isNew = false;
 
         if (!pricingListId) {
-          const { data: newId } = await supabase.rpc('generate_bubble_id');
+          const { data: newId } = await supabase.rpc('generate_unique_id');
           pricingListId = newId;
           isNew = true;
         }

@@ -14,8 +14,8 @@ import { AuthenticationError, ValidationError as _ValidationError } from '../../
 interface AdminThread {
   id: string;
   thread_subject_text: string;
-  bubble_created_at: string;
-  bubble_updated_at: string;
+  original_created_at: string;
+  original_updated_at: string;
   last_message_sent_at: string;
   proposal_id: string;
   listing_id: string;
@@ -24,7 +24,7 @@ interface AdminThread {
   host_user_id: string;
   guest_user_id: string;
   hostUser: {
-    bubble_legacy_id: string;
+    legacy_platform_id: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -32,7 +32,7 @@ interface AdminThread {
     profile_photo_url: string;
   } | null;
   guestUser: {
-    bubble_legacy_id: string;
+    legacy_platform_id: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -42,7 +42,7 @@ interface AdminThread {
   threadMessages?: Array<{
     id: string;
     message_body_text: string;
-    bubble_created_at: string;
+    original_created_at: string;
     is_from_split_bot: boolean;
     is_visible_to_host: boolean;
     is_visible_to_guest: boolean;
@@ -70,7 +70,7 @@ async function verifyAdminRole(
   // Look up user by email to check admin flag
   const { data: userData, error } = await supabaseAdmin
     .from('user')
-    .select('bubble_legacy_id, is_admin')
+    .select('legacy_platform_id, is_admin')
     .ilike('email', user.email)
     .maybeSingle();
 
@@ -128,8 +128,8 @@ export async function handleAdminGetAllThreads(
     .select(`
       id,
       thread_subject_text,
-      bubble_created_at,
-      bubble_updated_at,
+      original_created_at,
+      original_updated_at,
       last_message_sent_at,
       proposal_id,
       listing_id,
@@ -138,7 +138,7 @@ export async function handleAdminGetAllThreads(
       host_user_id,
       guest_user_id
     `)
-    .order('bubble_updated_at', { ascending: false })
+    .order('original_updated_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   const { data: threads, error: threadsError } = await query;
@@ -167,15 +167,15 @@ export async function handleAdminGetAllThreads(
   if (userIds.size > 0) {
     const { data: users, error: usersError } = await supabaseAdmin
       .from('user')
-      .select('bubble_legacy_id, first_name, last_name, email, phone_number, profile_photo_url')
-      .in('bubble_legacy_id', Array.from(userIds));
+      .select('legacy_platform_id, first_name, last_name, email, phone_number, profile_photo_url')
+      .in('legacy_platform_id', Array.from(userIds));
 
     if (usersError) {
       console.error('[adminGetAllThreads] Users query failed:', usersError.message);
       // Don't throw - continue with partial data
     } else if (users) {
       userMap = users.reduce((acc, user) => {
-        acc[user.bubble_legacy_id] = user as AdminThread['hostUser'];
+        acc[user.legacy_platform_id] = user as AdminThread['hostUser'];
         return acc;
       }, {} as Record<string, AdminThread['hostUser']>);
     }
@@ -192,7 +192,7 @@ export async function handleAdminGetAllThreads(
         id,
         thread_id,
         message_body_text,
-        bubble_created_at,
+        original_created_at,
         is_from_split_bot,
         is_visible_to_host,
         is_visible_to_guest,
@@ -201,7 +201,7 @@ export async function handleAdminGetAllThreads(
         call_to_action_button_label
       `)
       .in('thread_id', threadIds)
-      .order('bubble_created_at', { ascending: true });
+      .order('original_created_at', { ascending: true });
 
     if (messagesError) {
       console.error('[adminGetAllThreads] Messages query failed:', messagesError.message);

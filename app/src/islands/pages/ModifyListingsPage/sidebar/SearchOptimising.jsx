@@ -29,12 +29,12 @@ export default function SearchOptimising({ listing }) {
     },
     {
       label: 'Created Date',
-      value: formatDate(listing.bubble_created_at),
+      value: formatDate(listing.original_created_at),
       description: 'When listing was created'
     },
     {
       label: 'Modified Date',
-      value: formatDate(listing.bubble_updated_at),
+      value: formatDate(listing.original_updated_at),
       description: 'Last update'
     }
   ];

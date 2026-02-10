@@ -107,7 +107,7 @@ export function adaptPricingListForSupabase(
     adapted['Number Selected Nights'] = pricingList.numberSelectedNights;
   }
   if (pricingList.modifiedDate !== undefined) {
-    adapted.bubble_updated_at = pricingList.modifiedDate;
+    adapted.original_updated_at = pricingList.modifiedDate;
   }
 
   return adapted;

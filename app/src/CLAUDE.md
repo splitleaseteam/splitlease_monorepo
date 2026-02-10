@@ -9,7 +9,7 @@
 [PATTERN]: Islands Architecture - Each JSX entry point creates independent React root
 [FLOW]: HTML file → JSX entry point → Page component → Business logic hook
 [STATE_MANAGEMENT]: Local state (useState), URL parameters, localStorage
-[API_STRATEGY]: Supabase Edge Functions (proxies to Bubble API)
+[API_STRATEGY]: Supabase Edge Functions (direct database access)
 [ROUTING]: Route registry in routes.config.js
 [ENTRY_POINTS]: 29 total (see routes.config.js for full list)
 
@@ -46,7 +46,7 @@ All business logic lives in `logic/` using four layers with strict naming conven
 
 **Subdirectories** follow domain grouping: `pricing/`, `scheduling/`, `proposals/`, `auth/`, `search/`, `users/`, `external/`, `display/`, `listing/`, `booking/`
 
-[CRITICAL]: `logic/processors/external/` handles day conversion at API boundaries (see CRITICAL_PATTERNS)
+[NOTE]: Database stores days as 0-indexed (matching JavaScript). No conversion needed at API boundaries.
 
 ---
 
@@ -54,7 +54,7 @@ All business logic lives in `logic/` using four layers with strict naming conven
 
 Shared utilities in `lib/` organized by concern:
 
-**Core API Clients**: `supabase.js`, `bubbleAPI.js`, `auth/index.js` (modular barrel), `secureStorage.js`
+**Core API Clients**: `supabase.js`, `auth/index.js` (modular barrel), `secureStorage.js`
 **Auth Hook**: `hooks/useAuthenticatedUser.js` — single hook for all protected pages (role gating, redirect, user object)
 **Data Access**: `dataLookups.js`, `proposalDataFetcher.js`, `listingDataFetcher.js`, `listingService.js`
 **Constants**: `constants.js` (single source of truth for all config)
@@ -70,19 +70,16 @@ Shared utilities in `lib/` organized by concern:
 
 ### Day Indexing Convention
 [INTERNAL]: JavaScript 0-6 (Sunday=0, Monday=1, ..., Saturday=6)
-[BUBBLE_API]: Bubble 1-7 (Sunday=1, Monday=2, ..., Saturday=7)
-[CONVERSION]: ALWAYS use adaptDaysFromBubble/adaptDaysToBubble at boundaries
-[LOCATION]: logic/processors/external/
+[DATABASE]: Supabase stores 0-indexed natively (matching JavaScript)
+[CONVERSION]: No conversion needed — frontend and database use the same 0-based indexing
+[UTILITIES]: lib/dayUtils.js provides validation and name lookup helpers
 
 ```javascript
-import { adaptDaysFromBubble } from 'logic/processors/external/adaptDaysFromBubble.js';
-import { adaptDaysToBubble } from 'logic/processors/external/adaptDaysToBubble.js';
+import { isValidDaysArray, getDayName, getShortDayName } from 'lib/dayUtils.js';
 
-// Receiving from Bubble API
-const jsDays = adaptDaysFromBubble({ bubbleDays: [2, 3, 4, 5, 6] }); // → [1, 2, 3, 4, 5]
-
-// Sending to Bubble API
-const bubbleDays = adaptDaysToBubble({ jsDays: [1, 2, 3, 4, 5] }); // → [2, 3, 4, 5, 6]
+isValidDaysArray([1, 2, 3, 4, 5]); // → true (Mon-Fri)
+getDayName(0); // → 'Sunday'
+getShortDayName(3); // → 'Wed'
 ```
 
 ### Hollow Component Pattern
@@ -115,14 +112,14 @@ const token = getSecureItem('splitlease_auth_token');
 removeSecureItem('splitlease_auth_token');
 ```
 
-### API Proxy Pattern
-[DESCRIPTION]: All Bubble API calls go through Supabase Edge Functions
-[REASON]: Keep API keys server-side
-[NEVER]: Call Bubble API directly from frontend
+### Supabase API Pattern
+[DESCRIPTION]: All data access goes through Supabase client or Edge Functions
+[CLIENT]: Direct Supabase queries for simple reads (listings, lookups)
+[EDGE_FUNCTIONS]: For operations requiring server-side logic (auth, proposals, messaging)
 
 ```javascript
-import { bubbleAPI } from 'lib/bubbleAPI.js';
-const listing = await bubbleAPI.getListing(listingId);
+import { supabase } from 'lib/supabase.js';
+const { data } = await supabase.from('listing').select('*').eq('id', listingId);
 ```
 
 ---
@@ -185,10 +182,9 @@ import Button from 'islands/shared/Button.jsx';
 ### Authentication Flow
 [ENTRY]: User submits login form
 [STEP_1]: lib/auth/index.js → loginUser()
-[STEP_2]: Supabase Edge Function auth-user
-[STEP_3]: Bubble API validates credentials
-[STEP_4]: Token stored via lib/secureStorage.js
-[STEP_5]: User type stored (Host/Guest)
+[STEP_2]: Supabase Edge Function auth-user → Supabase Auth
+[STEP_3]: JWT token stored via lib/secureStorage.js
+[STEP_4]: User type stored (Host/Guest)
 [EXIT]: Redirect to dashboard
 
 ### Proposal Creation Flow
@@ -198,7 +194,7 @@ import Button from 'islands/shared/Button.jsx';
 [STEP_3]: logic/calculators/pricing calculates prices
 [STEP_4]: logic/rules/proposals validates proposal
 [STEP_5]: logic/workflows/proposals orchestrates submission
-[STEP_6]: Supabase Edge Function → Bubble API
+[STEP_6]: Supabase Edge Function → database insert
 [EXIT]: Redirect to guest-proposals page
 
 ### Listing Search Flow
@@ -230,16 +226,16 @@ import Button from 'islands/shared/Button.jsx';
 5. Export from layer's index.js
 
 ### When Adding API Call
-1. Add function to lib/bubbleAPI.js or lib/supabase.js
-2. Use Edge Function proxy for Bubble API
+1. Add function to lib/supabase.js or relevant data fetcher
+2. Use Edge Functions for operations requiring server-side logic
 3. Add error handling
-4. Use secure storage for tokens
+4. Use secure storage for auth tokens
 
-### When Converting Days
-1. Identify system boundary (Bubble API ↔ Internal)
-2. Use adaptDaysFromBubble when receiving from Bubble
-3. Use adaptDaysToBubble when sending to Bubble
-4. NEVER mix 0-based and 1-based in same function
+### When Working With Days
+1. Database and JavaScript both use 0-indexed days (Sun=0 through Sat=6)
+2. No conversion needed at API boundaries
+3. Use lib/dayUtils.js for validation and name lookups
+4. NEVER use 1-based day indexing anywhere
 
 ---
 
@@ -249,7 +245,7 @@ import Button from 'islands/shared/Button.jsx';
 [FILE]: routes.config.js - Route definitions
 [FILE]: lib/constants.js - All configuration
 [FILE]: lib/auth/index.js - Authentication system
-[FILE]: logic/processors/external/adaptDays*.js - Day conversion
+[FILE]: lib/dayUtils.js - Day indexing utilities
 
 ### Don't Modify
 [DIR]: routes/ - Auto-generated
@@ -264,5 +260,5 @@ import Button from 'islands/shared/Button.jsx';
 
 ---
 
-**VERSION**: 7.0
+**VERSION**: 8.0
 **LAST_UPDATED**: 2026-02-10

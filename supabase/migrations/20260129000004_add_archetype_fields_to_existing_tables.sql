@@ -4,12 +4,12 @@
 
 -- Add archetype fields to datechangerequest table (NOT date_change_requests)
 ALTER TABLE public.datechangerequest
-  ADD COLUMN IF NOT EXISTS transaction_type TEXT CHECK (transaction_type IN ('buyout', 'crash', 'swap')),
+  ADD COLUMN IF NOT EXISTS transaction_type TEXT CHECK (transaction_type IN ('full_week', 'shared_night', 'alternating')),
   ADD COLUMN IF NOT EXISTS base_price DECIMAL(10, 2),
   ADD COLUMN IF NOT EXISTS proposed_price DECIMAL(10, 2),
   ADD COLUMN IF NOT EXISTS urgency_multiplier DECIMAL(3, 2) DEFAULT 1.0,
   ADD COLUMN IF NOT EXISTS market_demand DECIMAL(3, 2) DEFAULT 1.0,
-  ADD COLUMN IF NOT EXISTS recommended_option TEXT CHECK (recommended_option IN ('buyout', 'crash', 'swap')),
+  ADD COLUMN IF NOT EXISTS recommended_option TEXT CHECK (recommended_option IN ('full_week', 'shared_night', 'alternating')),
   ADD COLUMN IF NOT EXISTS user_followed_recommendation BOOLEAN,
   ADD COLUMN IF NOT EXISTS requester_archetype TEXT,
   ADD COLUMN IF NOT EXISTS receiver_archetype TEXT;
@@ -21,7 +21,7 @@ CREATE INDEX IF NOT EXISTS idx_datechangerequest_recommended
   ON public.datechangerequest(recommended_option);
 
 -- Add comments
-COMMENT ON COLUMN public.datechangerequest.transaction_type IS 'Type of transaction: buyout, crash, or swap';
+COMMENT ON COLUMN public.datechangerequest.transaction_type IS 'Type of transaction: full_week, shared_night, or alternating';
 COMMENT ON COLUMN public.datechangerequest.urgency_multiplier IS 'Urgency pricing multiplier applied';
 COMMENT ON COLUMN public.datechangerequest.recommended_option IS 'What option the system recommended';
 COMMENT ON COLUMN public.datechangerequest.user_followed_recommendation IS 'Whether user selected the recommended option';

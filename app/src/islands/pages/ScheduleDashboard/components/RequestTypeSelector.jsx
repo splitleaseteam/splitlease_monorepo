@@ -2,7 +2,7 @@
  * Request Type Selector Component
  *
  * Shows different request types based on lease type:
- * - Co-tenant leases: Buy Out, Swap, Co-Occupy
+ * - Co-tenant leases: Full Week, Alternating, Co-Occupy
  * - Guest-host leases (guest): Change Dates, Cancel Booking
  * - Guest-host leases (host): Offer Dates, Block Dates
  */
@@ -106,14 +106,14 @@ const ICONS = {
 
 const CO_TENANT_REQUEST_TYPES = [
   {
-    id: 'buyout',
-    label: 'Buy Out Night',
+    id: 'full_week',
+    label: 'Full Week Night',
     icon: 'DollarSign',
     description: 'Purchase a night from your co-tenant',
   },
   {
-    id: 'swap',
-    label: 'Swap Nights',
+    id: 'alternating',
+    label: 'Alternating Nights',
     icon: 'ArrowRightLeft',
     description: 'Exchange nights with your co-tenant',
   },

@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         }
 
         // Find the thread for this proposal
-        // Note: Bubble column names with special chars need quoted in .eq()
+        // Note: Legacy column names with special chars need quoted in .eq()
         const { data: thread, error: threadError } = await supabase
           .from("thread")
           .select('_id, guest_user_id')
@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
         result.threadId = thread._id;
 
         // Find the first SplitBot message in this thread (the AI summary)
-        // Note: Bubble column names with special chars need quoted in .eq()
+        // Note: Legacy column names with special chars need quoted in .eq()
         const { data: splitBotMessage, error: messageError } = await supabase
           .from("_message")
           .select('_id, "Message Body", "Created Date"')
@@ -166,8 +166,8 @@ Deno.serve(async (req) => {
 
         // Insert into negotiationsummary (unless dry run)
         if (!dryRun) {
-          // Generate Bubble-compatible ID
-          const { data: newId, error: idError } = await supabase.rpc("generate_bubble_id");
+          // Generate unique ID
+          const { data: newId, error: idError } = await supabase.rpc("generate_unique_id");
           if (idError) {
             throw new Error(`Failed to generate ID: ${idError.message}`);
           }

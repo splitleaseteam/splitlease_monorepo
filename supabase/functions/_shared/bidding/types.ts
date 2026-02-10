@@ -9,7 +9,7 @@
 export type SessionStatus = 'pending' | 'active' | 'completed' | 'expired' | 'cancelled';
 
 // User archetype (required for bidding eligibility)
-export type UserArchetype = 'big_spender' | 'budget_conscious' | 'balanced';
+export type BiddingArchetype = 'big_spender' | 'budget_conscious' | 'balanced';
 
 // Bidding session interface
 export interface BiddingSession {
@@ -40,7 +40,7 @@ export interface BiddingParticipant {
   sessionId: string;
   userId: string;
   userName?: string;
-  userArchetype: UserArchetype;
+  userArchetype: BiddingArchetype;
   currentBidAmount?: number;
   maxAutoBidAmount?: number;
   lastBidAt?: Date;
@@ -183,7 +183,7 @@ export interface DatabaseBiddingParticipant {
   session_id: string;
   user_id: string;
   user_name?: string;
-  user_archetype: UserArchetype;
+  user_archetype: BiddingArchetype;
   current_bid_amount?: string;
   max_auto_bid_amount?: string;
   last_bid_at?: string;

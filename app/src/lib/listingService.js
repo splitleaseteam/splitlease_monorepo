@@ -2,7 +2,7 @@
  * Listing Service - Direct Supabase Operations for listing table
  *
  * Handles CRUD operations for self-listing form submissions.
- * Creates listings directly in the `listing` table using generate_bubble_id() RPC.
+ * Creates listings directly in the `listing` table using generate_unique_id() RPC.
  *
  * NO FALLBACK: If operation fails, we fail. No workarounds.
  */
@@ -103,7 +103,7 @@ async function getGeoIdsByZipCode(zipCode) {
  *
  * Flow:
  * 1. Get current user ID from secure storage
- * 2. Generate Bubble-compatible id via RPC
+ * 2. Generate unique id via RPC
  * 3. Upload photos to Supabase Storage
  * 4. Insert directly into listing table with id as primary key
  * 5. Link listing to user's listings_json array using id
@@ -148,8 +148,8 @@ export async function createListing(formData) {
 
   logger.debug('[ListingService] User ID (for created_by_user_id and host_user_id):', userId);
 
-  // Step 1: Generate Bubble-compatible id via RPC
-  const { data: generatedId, error: rpcError } = await supabase.rpc('generate_bubble_id');
+  // Step 1: Generate unique id via RPC
+  const { data: generatedId, error: rpcError } = await supabase.rpc('generate_unique_id');
 
   if (rpcError || !generatedId) {
     logger.error('[ListingService] ❌ Failed to generate listing ID:', rpcError);
@@ -668,7 +668,7 @@ function mapStateToDisplayName(stateInput) {
  *
  * @param {object} formData - Form data from SelfListingPage
  * @param {string|null} userId - The current user's id (for created_by_user_id)
- * @param {string} generatedId - The Bubble-compatible id from generate_bubble_id()
+ * @param {string} generatedId - The unique id from generate_unique_id()
  * @param {string|null} hostAccountId - The user.id (for host_user_id FK)
  * @param {string|null} boroughId - The borough FK ID (from geo lookup)
  * @param {string|null} hoodId - The hood/neighborhood FK ID (from geo lookup)
@@ -695,8 +695,8 @@ function mapFormDataToListingTable(formData, userId, generatedId, hostAccountId 
     // User/Host reference - host_user_id contains user.id directly
     created_by_user_id: userId || null,
     host_user_id: hostAccountId || null, // user.id
-    bubble_created_at: now,
-    bubble_updated_at: now,
+    original_created_at: now,
+    original_updated_at: now,
 
     // Section 1: Space Snapshot
     listing_title: formData.spaceSnapshot?.listingName || null,
@@ -875,7 +875,7 @@ export async function updateListing(listingId, formData) {
     logger.debug('[ListingService] Using mapped SelfListingPage format');
   }
 
-  listingData.bubble_updated_at = new Date().toISOString();
+  listingData.original_updated_at = new Date().toISOString();
 
   const { data, error } = await supabase
     .from('listing')

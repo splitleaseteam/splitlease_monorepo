@@ -70,7 +70,7 @@ const LEO_DICAPRIO_GUEST = {
   full_name: 'Leo Di Caprio',
   first_name: 'Leo(Mockup)',
   bio: "Hello, esteemed hosts! My name's Leo—no, not the Teenage Mutant Ninja Turtle—and I'm not just your average Joe with a beach house. I'm the King of the World... of the split lease universe, that is. When I'm not busy avoiding Oscars or fighting off icebergs, I love sharing my eco-friendly, ultra-luxe cabins (complete with a bear-proof security system, thanks to a memorable method-acting experience).",
-  profilePhoto: 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1709562069663x256748772822352760/leo%20dicaprio%20image.jpg',
+  profilePhoto: '/assets/images/leo-dicaprio-mock.jpg',
   id_verified: true,
   work_verified: true,
   review_count: 0,
@@ -513,7 +513,7 @@ export default function HostProposalsPage() {
       {isEditingProposal && selectedProposal && (
         showRejectOnOpen ? (
           // Reject-only mode: render HostEditingProposal without overlay/container
-          // (it will only render the CancelProposalModal via portal)
+          // (it will only render the EndProposalModal via portal)
           <HostEditingProposal
             proposal={selectedProposal}
             availableHouseRules={allHouseRules}

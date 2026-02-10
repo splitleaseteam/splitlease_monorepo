@@ -451,7 +451,7 @@ export function useHostOverviewPageLogic() {
         display: manual.Display || manual.display || 'House Manual',
         Display: manual.Display,
         audience: manual.Audience?.Display || manual.audience || 'Guests',
-        createdOn: manual.bubble_created_at || manual.createdOn
+        createdOn: manual.original_created_at || manual.createdOn
       }));
     } catch (err) {
       console.error('Error fetching house manuals:', err);

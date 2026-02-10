@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Proposal Card Component
  *
  * Displays detailed information about a selected proposal in a two-column layout:
@@ -17,14 +17,14 @@
 
 import { useState, useMemo } from 'react';
 import { formatPrice, formatDate } from '../../../lib/proposals/dataTransformers.js';
-import { getStatusConfig, isTerminalStatus, isCompletedStatus, shouldShowStatusBanner, getUsualOrder } from '../../../logic/constants/proposalStatuses.js';
+import { PROPOSAL_STATUSES, getStatusConfig, isTerminalStatus, isCompletedStatus, shouldShowStatusBanner, getUsualOrder } from '../../../logic/constants/proposalStatuses.js';
 import { shouldHideVirtualMeetingButton } from '../../../lib/proposals/statusButtonConfig.js';
 import { navigateToMessaging } from '../../../logic/workflows/proposals/navigationWorkflow.js';
 import { executeDeleteProposal } from '../../../logic/workflows/proposals/cancelProposalWorkflow.js';
 import { goToRentalApplication, getListingUrlWithProposalContext } from '../../../lib/navigation.js';
 import HostProfileModal from '../../modals/HostProfileModal.jsx';
 import GuestEditingProposalModal from '../../modals/GuestEditingProposalModal.jsx';
-import CancelProposalModal from '../../modals/CancelProposalModal.jsx';
+import EndProposalModal from '../../modals/EndProposalModal.jsx';
 import NotInterestedModal from '../../shared/SuggestedProposals/components/NotInterestedModal.jsx';
 import VirtualMeetingManager from '../../shared/VirtualMeetingManager/VirtualMeetingManager.jsx';
 import FullscreenProposalMapModal from '../../modals/FullscreenProposalMapModal.jsx';
@@ -91,8 +91,8 @@ function _convertDayValueToName(dayValue) {
  */
 function getCheckInOutRange(proposal) {
   // Priority 1: Use explicit check-in/check-out day fields if available
-  const checkInDay = proposal['check in day'] || proposal['hc check in day'];
-  const checkOutDay = proposal['check out day'] || proposal['hc check out day'];
+  const checkInDay = proposal['check in day'] || proposal['host_counter_offer_check_in_day'];
+  const checkOutDay = proposal['check out day'] || proposal['host_counter_offer_check_out_day'];
 
   if (checkInDay != null && checkOutDay != null) {
     const checkInIndex = typeof checkInDay === 'number' ? checkInDay : parseInt(checkInDay, 10);
@@ -106,7 +106,7 @@ function getCheckInOutRange(proposal) {
   }
 
   // Priority 2: Derive from Days Selected array
-  let daysSelected = proposal['Days Selected'] || proposal.hcDaysSelected || [];
+  let daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
 
   // Parse if it's a JSON string
   if (typeof daysSelected === 'string') {
@@ -212,7 +212,7 @@ function getAllDaysWithSelection(daysSelected) {
  * @returns {number[]} Array of 0-indexed day numbers
  */
 function parseDaysSelectedForContext(proposal) {
-  let days = proposal['Days Selected'] || proposal.hcDaysSelected || [];
+  let days = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
 
   // Parse if JSON string
   if (typeof days === 'string') {
@@ -252,7 +252,7 @@ function parseDaysSelectedForContext(proposal) {
 function getEffectiveReservationSpan(proposal) {
   const isCounteroffer = proposal['counter offer happened'];
   return isCounteroffer
-    ? proposal['hc reservation span (weeks)']
+    ? proposal['host_counter_offer_reservation_span_weeks']
     : proposal['Reservation Span (Weeks)'];
 }
 
@@ -265,47 +265,47 @@ function getEffectiveReservationSpan(proposal) {
  * Banner is shown when usualOrder >= 3 OR status is "Proposal Submitted by guest - Awaiting Rental Application"
  *
  * Cascading Override Pattern: If a status matches multiple configs, the more specific one wins.
- * Order of checks: specific status key lookup â†’ usualOrder-based defaults
+ * Order of checks: specific status key lookup → usualOrder-based defaults
  *
  * Based on Bubble documentation: Guest Proposals page Proposal Status Bar Conditionals
  */
 const STATUS_BANNERS = {
   // Specific status configurations (highest priority)
-  'Proposal Submitted by guest - Awaiting Rental Application': {
+  [PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key]: {
     text: 'Please complete your rental application.\nThe host will be able to act on your proposal only after your application is submitted.',
     bgColor: '#FBECEC',
     borderColor: '#CC0000',
     textColor: '#CC0000'
   },
   // Suggested proposals by Split Lease agent
-  'Proposal Submitted for guest by Split Lease - Awaiting Rental Application': {
+  [PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key]: {
     type: 'suggested',
-    text: 'ðŸ’¡ Suggested Proposal â€” Complete Your Application\nYou confirmed this suggestion. Please submit your rental application to proceed.',
+    text: '�'� Suggested Proposal �" Complete Your Application\nYou confirmed this suggestion. Please submit your rental application to proceed.',
     bgColor: '#F3E8FF',
     borderColor: '#4B0082',
     textColor: '#4B0082'
   },
-  'Proposal Submitted for guest by Split Lease - Pending Confirmation': {
+  [PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key]: {
     type: 'suggested',
-    text: 'âš¡ Pending Your Acceptance\nA Split Lease Agent suggested this listing for you. Review and confirm to proceed.',
+    text: '⚡ Pending Your Acceptance\nA Split Lease Agent suggested this listing for you. Review and confirm to proceed.',
     bgColor: '#FEF3C7',
     borderColor: '#D97706',
     textColor: '#92400E'
   },
-  'Rental Application Submitted': {
+  [PROPOSAL_STATUSES.RENTAL_APP_SUBMITTED.key]: {
     text: 'Application Submitted!\nAwaiting host review.',
     bgColor: '#EBF5FF',
     borderColor: '#3B82F6',
     textColor: '#1D4ED8'
   },
-  'Host Counteroffer Submitted / Awaiting Guest Review': {
+  [PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key]: {
     text: 'Host has submitted a counteroffer.\nReview the new terms below.',
     bgColor: '#FEF3C7',
     borderColor: '#F59E0B',
     textColor: '#92400E'
   },
   // usualOrder >= 3: Accepted states - text varies based on counteroffer
-  'Proposal or Counteroffer Accepted / Drafting Lease Documents': {
+  [PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key]: {
     type: 'accepted',
     text: 'Proposal Accepted!\nSplit Lease is Drafting Lease Documents',
     // Alternative text when counteroffer: 'Host terms Accepted!\nLease Documents being prepared.'
@@ -313,63 +313,63 @@ const STATUS_BANNERS = {
     borderColor: '#1E561A',
     textColor: '#1BA54E'
   },
-  'Reviewing Documents': {
+  [PROPOSAL_STATUSES.REVIEWING_DOCUMENTS.key]: {
     text: 'Documents Ready for Review',
     bgColor: '#EBF5FF',
     borderColor: '#3B82F6',
     textColor: '#1D4ED8'
   },
-  'Lease Documents Sent for Review': {
+  [PROPOSAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key]: {
     text: 'Lease Documents Draft prepared.\nPlease review and comment.',
     bgColor: '#E1FFE1',
     borderColor: '#1E561A',
     textColor: '#1BA54E'
   },
-  'Lease Documents Sent for Signatures': {
+  [PROPOSAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key]: {
     text: 'Check your email for legally submitted documents.',
     bgColor: '#E1FFE1',
     borderColor: '#1E561A',
     textColor: '#1BA54E'
   },
-  'Lease Documents Signed / Awaiting Initial payment': {
+  [PROPOSAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key]: {
     text: 'Lease Documents signed.\nSubmit payment to activate your lease.',
     bgColor: '#E1FFE1',
     borderColor: '#1E561A',
     textColor: '#1BA54E'
   },
   // Legacy key format
-  'Lease Signed / Awaiting Initial Payment': {
+  [PROPOSAL_STATUSES.LEASE_SIGNED_AWAITING_INITIAL_PAYMENT.key]: {
     text: 'Lease Signed!\nSubmit initial payment to activate.',
     bgColor: '#E1FFE1',
     borderColor: '#1E561A',
     textColor: '#1BA54E'
   },
-  'Initial Payment Submitted / Lease activated': {
+  [PROPOSAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key]: {
     text: 'Your lease agreement is now officially signed.\nFor details, please visit the lease section of your account.',
     bgColor: '#E1FFE1',
     borderColor: '#1E561A',
     textColor: '#1BA54E'
   },
   // Terminal states
-  'Proposal Cancelled by Split Lease': {
+  [PROPOSAL_STATUSES.CANCELLED_BY_SPLITLEASE.key]: {
     type: 'cancelled',
     bgColor: '#FBECEC',
     borderColor: '#D34337',
     textColor: '#CC0000'
   },
-  'Proposal Cancelled by Guest': {
+  [PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key]: {
     type: 'cancelled_by_guest',
     bgColor: '#F3F4F6',
     borderColor: '#9CA3AF',
     textColor: '#6B7280'
   },
-  'Proposal Rejected by Host': {
+  [PROPOSAL_STATUSES.REJECTED_BY_HOST.key]: {
     type: 'rejected',
     bgColor: '#FBECEC',
     borderColor: '#D34337',
     textColor: '#CC0000'
   },
-  'Expired': {
+  [PROPOSAL_STATUSES.EXPIRED.key]: {
     text: 'This proposal has expired.',
     bgColor: '#F3F4F6',
     borderColor: '#9CA3AF',
@@ -398,20 +398,20 @@ function getDefaultBannerConfig(status, usualOrder) {
  */
 function getStatusIcon(config) {
   if (config.type === 'cancelled' || config.type === 'rejected' || config.type === 'cancelled_by_guest') {
-    return 'âœ•';
+    return '✕';
   }
   if (config.type === 'accepted') {
-    return 'âœ“';
+    return '✓';
   }
   if (config.type === 'suggested') {
-    return 'ðŸ’¡';
+    return '💡';
   }
   // Default icons based on color
   if (config.bgColor === '#FBECEC' || config.borderColor === '#CC0000') {
     return '!';
   }
   if (config.bgColor === '#ecfdf5' || config.bgColor?.includes('ecfdf5')) {
-    return 'âœ“';
+    return '✓';
   }
   return 'i';
 }
@@ -496,7 +496,7 @@ function StatusBanner({ status, cancelReason, isCounteroffer }) {
       <span className="status-icon">{icon}</span>
       <div className="status-text">
         <strong>{strongText}</strong>
-        {detailText && ` â€” ${detailText}`}
+        {detailText && ` — ${detailText}`}
       </div>
     </div>
   );
@@ -607,17 +607,17 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   // Stage 2: Rental App Submitted
   if (stageIndex === 1) {
     // Green when awaiting rental app - these statuses mean rental app is NOT yet submitted
-    if (normalizedStatus === 'Proposal Submitted by guest - Awaiting Rental Application' ||
-        normalizedStatus === 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application' ||
-        normalizedStatus === 'Proposal Submitted for guest by Split Lease - Pending Confirmation' ||
-        normalizedStatus === 'Pending' ||
-        normalizedStatus === 'Pending Confirmation') {
+    if (normalizedStatus === PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key.trim() ||
+        normalizedStatus === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key.trim() ||
+        normalizedStatus === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key.trim() ||
+        normalizedStatus === PROPOSAL_STATUSES.PENDING.key.trim() ||
+        normalizedStatus === PROPOSAL_STATUSES.PENDING_CONFIRMATION.key.trim()) {
       return PROGRESS_COLORS.green;
     }
     // Purple when rental app has been submitted (status moved past awaiting rental app)
     if (hasRentalApp ||
-        normalizedStatus === 'Rental Application Submitted' ||
-        normalizedStatus === 'Host Review' ||
+        normalizedStatus === PROPOSAL_STATUSES.RENTAL_APP_SUBMITTED.key.trim() ||
+        normalizedStatus === PROPOSAL_STATUSES.HOST_REVIEW.key.trim() ||
         normalizedStatus.includes('Counteroffer') ||
         normalizedStatus.includes('Accepted') ||
         normalizedStatus.includes('Lease Documents') ||
@@ -631,11 +631,11 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   // Stage 3: Host Review
   if (stageIndex === 2) {
     // Green when actively in host review with rental app submitted
-    if (normalizedStatus === 'Host Review' && hasRentalApp) {
+    if (normalizedStatus === PROPOSAL_STATUSES.HOST_REVIEW.key.trim() && hasRentalApp) {
       return PROGRESS_COLORS.green;
     }
     // Green when counteroffer awaiting review
-    if (normalizedStatus === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+    if (normalizedStatus === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key.trim()) {
       return PROGRESS_COLORS.green;
     }
     // Purple when host review is complete (proposal accepted or further along)
@@ -653,7 +653,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   // Stage 4: Review Documents
   if (stageIndex === 3) {
     // Green when lease documents sent for review
-    if (normalizedStatus === 'Lease Documents Sent for Review') {
+    if (normalizedStatus === PROPOSAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key.trim()) {
       return PROGRESS_COLORS.green;
     }
     // Light purple when guest documents review finalized (waiting state)
@@ -670,7 +670,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   // Stage 5: Lease Documents
   if (stageIndex === 4) {
     // Green when sent for signatures
-    if (normalizedStatus === 'Lease Documents Sent for Signatures') {
+    if (normalizedStatus === PROPOSAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key.trim()) {
       return PROGRESS_COLORS.green;
     }
     // Purple when past this stage
@@ -683,8 +683,8 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   // Stage 6: Initial Payment
   if (stageIndex === 5) {
     // Green when awaiting initial payment
-    if (normalizedStatus === 'Lease Documents Signed / Awaiting Initial payment' ||
-        normalizedStatus === 'Lease Signed / Awaiting Initial Payment') {
+    if (normalizedStatus === PROPOSAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key.trim() ||
+        normalizedStatus === PROPOSAL_STATUSES.LEASE_SIGNED_AWAITING_INITIAL_PAYMENT.key.trim()) {
       return PROGRESS_COLORS.green;
     }
     // Purple when lease activated
@@ -881,7 +881,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   const host = listing?.host;
 
   // Extract location for map modal
-  // Priority: 'Location - slightly different address' (privacy) â†’ 'Location - Address' (fallback)
+  // Priority: 'Location - slightly different address' (privacy) → 'Location - Address' (fallback)
   const getListingAddress = () => {
     if (!listing) return null;
 
@@ -925,7 +925,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
   // Schedule info
   // Handle double-encoded JSONB: "Days Selected" may come as a JSON string that needs parsing
-  let daysSelected = proposal['Days Selected'] || proposal.hcDaysSelected || [];
+  let daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
@@ -936,16 +936,16 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   }
   const allDays = getAllDaysWithSelection(daysSelected);
   const nightsPerWeek = proposal['nights per week (num)'] || daysSelected.length;
-  const reservationWeeks = proposal['Reservation Span (Weeks)'] || proposal['hc reservation span (weeks)'] || 4;
+  const reservationWeeks = proposal['Reservation Span (Weeks)'] || proposal['host_counter_offer_reservation_span_weeks'] || 4;
   const checkInOutRange = getCheckInOutRange(proposal);
 
   // Pricing
   const isCounteroffer = proposal['counter offer happened'];
   const nightlyPrice = isCounteroffer
-    ? proposal['hc nightly price']
+    ? proposal['host_counter_offer_nightly_price']
     : proposal['proposal nightly price'];
   const totalPrice = isCounteroffer
-    ? proposal['hc total price']
+    ? proposal['host_counter_offer_total_price']
     : proposal['Total Price for Reservation (guest)'];
   // Original price (before counteroffer) for strikethrough display
   const originalTotalPrice = isCounteroffer
@@ -1264,7 +1264,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
                   title="Some selected nights are no longer available"
                   style={{ color: 'var(--gp-danger)', marginLeft: '8px' }}
                 >
-                  âš 
+                  ⚠
                 </span>
               )}
             </div>
@@ -1276,9 +1276,9 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
         <div className="pricing-row">
           <div className="pricing-breakdown">
             <span>{formatPrice(nightlyPrice)}/night</span>
-            <span>Ã—</span>
+            <span>×</span>
             <span>{nightsPerWeek} nights</span>
-            <span>Ã—</span>
+            <span>×</span>
             <span>{reservationWeeks} weeks</span>
             {cleaningFee > 0 && (
               <>
@@ -1460,7 +1460,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
       )}
 
       {/* Cancel Proposal Modal */}
-      <CancelProposalModal
+      <EndProposalModal
         isOpen={showCancelModal}
         proposal={proposal}
         buttonText="Cancel Proposal"

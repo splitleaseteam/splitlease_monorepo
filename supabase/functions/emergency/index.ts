@@ -309,7 +309,7 @@ async function handleGetAll(
 
   const { assignedTo, includeHidden = false, limit = 100, offset = 0 } = payload;
 
-  // Query from Bubble export table 'emergencyreports'
+  // Query from 'emergencyreports' table
   let query = supabase
     .from('emergencyreports')
     .select('*')
@@ -328,7 +328,7 @@ async function handleGetAll(
 
   console.log('[emergency:getAll] Found', data?.length || 0, 'emergencies');
 
-  // Transform Bubble column names to normalized format
+  // Transform legacy column names to normalized format
   return (data || []).map(row => ({
     id: row._id,
     proposal_id: row['Reservation'],
@@ -367,7 +367,7 @@ async function handleGetById(
 
   if (error) throw new Error(`Failed to fetch emergency: ${error.message}`);
 
-  // Transform Bubble column names to normalized format
+  // Transform legacy column names to normalized format
   return {
     id: row._id,
     proposal_id: row['Reservation'],
@@ -401,14 +401,13 @@ async function handleCreate(
   if (!emergency_type) throw new Error('Emergency type is required');
   if (!description) throw new Error('Description is required');
 
-  // Generate Bubble-style ID
-  const bubbleId = `${Date.now()}x${Math.floor(Math.random() * 1000000000000000000)}`;
+  // Generate unique ID
+  const recordId = `${Date.now()}x${Math.floor(Math.random() * 1000000000000000000)}`;
 
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .insert({
-      _id: bubbleId,
-      bubble_id: bubbleId,
+      _id: recordId,
       'Reservation': proposal_id || null,
       'reported by': reported_by_user_id || 'no_user',
       'Type of emergency reported': emergency_type,
@@ -452,7 +451,7 @@ async function handleUpdate(
 
   if (!id) throw new Error('Emergency ID is required');
 
-  // Map normalized field names to Bubble column names
+  // Map normalized field names to legacy column names
   const fieldsToUpdate: Record<string, unknown> = {};
   if (emergency_type !== undefined) fieldsToUpdate['Type of emergency reported'] = emergency_type;
   if (description !== undefined) fieldsToUpdate['Description of emergency'] = description;
@@ -501,7 +500,7 @@ async function handleAssignEmergency(
   if (userError || !assignedUser) throw new Error(`Assigned user not found: ${assignedToUserId}`);
   if (!assignedUser['Toggle - Is Admin']) throw new Error('Assigned user must be an admin');
 
-  // Map to Bubble column names
+  // Map to legacy column names
   const updateData: Record<string, unknown> = {
     'Team Member Assigned': assignedToUserId,
   };
@@ -546,7 +545,7 @@ async function handleUpdateStatus(
     throw new Error(`Invalid status: ${status}. Valid statuses: ${VALID_STATUSES.join(', ')}`);
   }
 
-  // Bubble table doesn't have a status column - use pending to mark resolved/closed
+  // Table doesn't have a status column - use pending to mark resolved/closed
   const updateData: Record<string, unknown> = {};
   if (status === 'RESOLVED' || status === 'CLOSED') {
     updateData.pending = true; // Mark as resolved/hidden

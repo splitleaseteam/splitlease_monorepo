@@ -187,7 +187,7 @@ Submit → prepareListingSubmission → listingService → Supabase listing tabl
 
 ### URL-Based Editing
 [TRIGGER]: ?listing_id=XXX in URL
-[BEHAVIOR]: Fetches listing from Bubble API, preloads listingName into form
+[BEHAVIOR]: Fetches listing from Supabase, preloads listingName into form
 [USE_CASE]: Edit existing listing or duplicate listing
 
 ### Pending Listing Name
@@ -221,7 +221,7 @@ Submit → prepareListingSubmission → listingService → Supabase listing tabl
 [RETURNS]: { id, ...listing data }
 [DESTINATION]: Supabase listing table
 
-### bubbleAPI
+### listingService
 [FUNCTION]: getListingById(listingId)
 [USAGE]: Fetches existing listing data for editing
 

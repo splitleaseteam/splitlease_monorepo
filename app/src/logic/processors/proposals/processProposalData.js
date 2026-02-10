@@ -151,22 +151,22 @@ export function processProposalData(rawProposal) {
     cleaningFee: rawProposal['cleaning fee'] || 0,
     damageDeposit: rawProposal['damage deposit'] || 0,
 
-    // Counteroffer fields (hc = host-changed)
+    // Counteroffer fields (host counter offer)
     counterOfferHappened: rawProposal['counter offer happened'] || false,
-    hcDaysSelected: rawProposal['hc days selected'] || null,
-    hcReservationWeeks: rawProposal['hc reservation span (weeks)'] || null,
-    hcNightsPerWeek: rawProposal['hc nights per week'] || null,
-    hcCheckInDay: rawProposal['hc check in day'] || null,
-    hcCheckOutDay: rawProposal['hc check out day'] || null,
-    hcTotalPrice: rawProposal['hc total price'] || null,
-    hcNightlyPrice: rawProposal['hc nightly price'] || null,
-    hcCleaningFee: rawProposal['hc cleaning fee'] || null,
-    hcDamageDeposit: rawProposal['hc damage deposit'] || null,
-    hcHouseRules: rawProposal['hc house rules'] || null,
+    hostCounterOfferDaysSelected: rawProposal['host_counter_offer_days_selected'] || null,
+    hostCounterOfferReservationWeeks: rawProposal['host_counter_offer_reservation_span_weeks'] || null,
+    hostCounterOfferNightsPerWeek: rawProposal['host_counter_offer_nights_per_week'] || null,
+    hostCounterOfferCheckInDay: rawProposal['host_counter_offer_check_in_day'] || null,
+    hostCounterOfferCheckOutDay: rawProposal['host_counter_offer_check_out_day'] || null,
+    hostCounterOfferTotalPrice: rawProposal['host_counter_offer_total_price'] || null,
+    hostCounterOfferNightlyPrice: rawProposal['host_counter_offer_nightly_price'] || null,
+    hostCounterOfferCleaningFee: rawProposal['host_counter_offer_cleaning_fee'] || null,
+    hostCounterOfferDamageDeposit: rawProposal['host_counter_offer_damage_deposit'] || null,
+    hostCounterOfferHouseRules: rawProposal['host_counter_offer_house_rules'] || null,
 
     // Metadata
-    createdDate: rawProposal.bubble_created_at || null,
-    modifiedDate: rawProposal.bubble_updated_at || null,
+    createdDate: rawProposal.original_created_at || null,
+    modifiedDate: rawProposal.original_updated_at || null,
     aboutYourself: rawProposal.about_yourself || null,
     specialNeeds: rawProposal.special_needs || null,
     reasonForCancellation: rawProposal['reason for cancellation'] || null,
@@ -263,15 +263,15 @@ export function getEffectiveTerms(proposal) {
   // If counteroffer happened and has values, use those
   if (proposal.counterOfferHappened) {
     return {
-      daysSelected: proposal.hcDaysSelected || proposal.daysSelected,
-      reservationWeeks: proposal.hcReservationWeeks || proposal.reservationWeeks,
-      nightsPerWeek: proposal.hcNightsPerWeek || proposal.nightsPerWeek,
-      checkInDay: proposal.hcCheckInDay || proposal.checkInDay,
-      checkOutDay: proposal.hcCheckOutDay || proposal.checkOutDay,
-      totalPrice: proposal.hcTotalPrice || proposal.totalPrice,
-      nightlyPrice: proposal.hcNightlyPrice || proposal.nightlyPrice,
-      cleaningFee: proposal.hcCleaningFee || proposal.cleaningFee,
-      damageDeposit: proposal.hcDamageDeposit || proposal.damageDeposit,
+      daysSelected: proposal.hostCounterOfferDaysSelected || proposal.daysSelected,
+      reservationWeeks: proposal.hostCounterOfferReservationWeeks || proposal.reservationWeeks,
+      nightsPerWeek: proposal.hostCounterOfferNightsPerWeek || proposal.nightsPerWeek,
+      checkInDay: proposal.hostCounterOfferCheckInDay || proposal.checkInDay,
+      checkOutDay: proposal.hostCounterOfferCheckOutDay || proposal.checkOutDay,
+      totalPrice: proposal.hostCounterOfferTotalPrice || proposal.totalPrice,
+      nightlyPrice: proposal.hostCounterOfferNightlyPrice || proposal.nightlyPrice,
+      cleaningFee: proposal.hostCounterOfferCleaningFee || proposal.cleaningFee,
+      damageDeposit: proposal.hostCounterOfferDamageDeposit || proposal.damageDeposit,
       isCounteroffer: true
     };
   }

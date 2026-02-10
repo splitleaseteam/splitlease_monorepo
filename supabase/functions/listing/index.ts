@@ -34,7 +34,6 @@ import {
   routeToHandler,
   isPublicAction,
   getSupabaseConfig,
-  getBubbleConfig,
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,
@@ -74,57 +73,25 @@ const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Config for actions that need both Supabase and Bubble
+ * Config for listing actions
  */
-interface FullListingConfig {
-  readonly supabaseUrl: string;
-  readonly supabaseServiceKey: string;
-  readonly bubbleBaseUrl: string;
-  readonly bubbleApiKey: string;
-}
-
-/**
- * Config for actions that only need Supabase (no Bubble dependency)
- */
-interface SupabaseOnlyConfig {
+interface ListingConfig {
   readonly supabaseUrl: string;
   readonly supabaseServiceKey: string;
 }
 
-// Actions that only need Supabase config (no Bubble API calls)
-const SUPABASE_ONLY_ACTIONS: ReadonlySet<string> = new Set(["delete"]);
-
 /**
- * Get configuration based on action requirements
- * - delete: Only needs Supabase
- * - All others: Need both Supabase and Bubble
+ * Get configuration for listing actions
  */
-const getConfigForAction = (action: string): Result<FullListingConfig | SupabaseOnlyConfig, Error> => {
+const getConfigForAction = (_action: string): Result<ListingConfig, Error> => {
   const supabaseResult = getSupabaseConfig();
   if (!supabaseResult.ok) {
     return supabaseResult;
   }
 
-  // For Supabase-only actions, skip Bubble config requirement
-  if (SUPABASE_ONLY_ACTIONS.has(action)) {
-    console.log(`[listing] Action '${action}' only requires Supabase config`);
-    return ok({
-      supabaseUrl: supabaseResult.value.supabaseUrl,
-      supabaseServiceKey: supabaseResult.value.supabaseServiceKey,
-    });
-  }
-
-  // For other actions, require both Supabase and Bubble
-  const bubbleResult = getBubbleConfig();
-  if (!bubbleResult.ok) {
-    return bubbleResult;
-  }
-
   return ok({
     supabaseUrl: supabaseResult.value.supabaseUrl,
     supabaseServiceKey: supabaseResult.value.supabaseServiceKey,
-    bubbleBaseUrl: bubbleResult.value.bubbleBaseUrl,
-    bubbleApiKey: bubbleResult.value.bubbleApiKey,
   });
 };
 
@@ -242,7 +209,7 @@ function executeHandler(
   handler: (...args: unknown[]) => Promise<unknown>,
   action: Action,
   payload: Record<string, unknown>,
-  _config: FullListingConfig | SupabaseOnlyConfig
+  _config: ListingConfig
 ): Promise<unknown> {
   switch (action) {
     case "create":

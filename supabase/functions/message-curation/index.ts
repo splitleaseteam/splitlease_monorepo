@@ -738,8 +738,8 @@ async function handleSendSplitBotMessage(
     throw new Error(`Thread not found: ${threadError.message}`);
   }
 
-  // Generate a unique message ID (Bubble-style format)
-  const { data: newIdData, error: idError } = await supabase.rpc('generate_bubble_id');
+  // Generate a unique message ID
+  const { data: newIdData, error: idError } = await supabase.rpc('generate_unique_id');
   if (idError || !newIdData) {
     throw new Error('Failed to generate message ID');
   }

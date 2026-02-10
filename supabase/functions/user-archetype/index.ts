@@ -11,8 +11,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import {
-  getUserArchetypeSignals,
-  detectUserArchetype,
+  getBehaviorArchetypeSignals,
+  detectBehaviorArchetype,
   getArchetypeLabel,
   getArchetypeDescription
 } from '../_shared/archetype-detection.ts';
@@ -125,8 +125,8 @@ async function handleGet(req: Request, supabaseClient: any) {
   }
 
   // Calculate fresh archetype
-  const signals = await getUserArchetypeSignals(supabaseClient, userId);
-  const archetype = detectUserArchetype(signals);
+  const signals = await getBehaviorArchetypeSignals(supabaseClient, userId);
+  const archetype = detectBehaviorArchetype(signals);
   archetype.userId = userId;
 
   // Cache the result
@@ -200,8 +200,8 @@ async function handleRecalculate(req: Request, supabaseClient: any) {
   }
 
   // Recalculate archetype
-  const signals = await getUserArchetypeSignals(supabaseClient, targetUserId);
-  const archetype = detectUserArchetype(signals);
+  const signals = await getBehaviorArchetypeSignals(supabaseClient, targetUserId);
+  const archetype = detectBehaviorArchetype(signals);
   archetype.userId = targetUserId;
 
   // Update cache

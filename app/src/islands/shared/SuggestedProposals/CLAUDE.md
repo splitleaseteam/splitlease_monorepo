@@ -75,7 +75,7 @@ const address = addressData?.address || '';
 const geoPoint = { lat: addressData?.lat, lng: addressData?.lng };
 ```
 
-**Features - Type of Space**: Contains Bubble-format FK IDs like `1569530331984x152755544104023800`.
+**Features - Type of Space**: Contains legacy FK IDs like `1569530331984x152755544104023800`.
 Use `SPACE_TYPE_ID_TO_LABEL` mapping in AmenityIcons.jsx to resolve to human-readable labels.
 
 ## Status Filtering

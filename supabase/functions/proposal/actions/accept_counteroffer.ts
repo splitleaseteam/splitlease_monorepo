@@ -31,7 +31,7 @@ export async function handleAcceptCounteroffer(
   // Fetch proposal to get counteroffer terms and user IDs
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('*, "hc nightly price", "hc nights per week", "hc check in day", "hc check out day", Guest, "Host User"')
+    .select('*, "host_counter_offer_nightly_price", "host_counter_offer_nights_per_week", "host_counter_offer_check_in_day", "host_counter_offer_check_out_day", Guest, "Host User"')
     .eq('_id', proposalId)
     .single();
 
@@ -65,17 +65,17 @@ export async function handleAcceptCounteroffer(
   };
 
   // Apply counteroffer values as the final agreed terms
-  if (proposal['hc nightly price']) {
-    updateData['proposal nightly price'] = proposal['hc nightly price'];
+  if (proposal['host_counter_offer_nightly_price']) {
+    updateData['proposal nightly price'] = proposal['host_counter_offer_nightly_price'];
   }
-  if (proposal['hc nights per week']) {
-    updateData['nights per week (num)'] = proposal['hc nights per week'];
+  if (proposal['host_counter_offer_nights_per_week']) {
+    updateData['nights per week (num)'] = proposal['host_counter_offer_nights_per_week'];
   }
-  if (proposal['hc check in day'] !== undefined) {
-    updateData['check in day'] = proposal['hc check in day'];
+  if (proposal['host_counter_offer_check_in_day'] !== undefined) {
+    updateData['check in day'] = proposal['host_counter_offer_check_in_day'];
   }
-  if (proposal['hc check out day'] !== undefined) {
-    updateData['check out day'] = proposal['hc check out day'];
+  if (proposal['host_counter_offer_check_out_day'] !== undefined) {
+    updateData['check out day'] = proposal['host_counter_offer_check_out_day'];
   }
 
   const { error: updateError } = await supabase
@@ -167,7 +167,7 @@ export async function handleAcceptCounteroffer(
       const listingName = listing?.['Name'] || 'Proposal Thread';
 
       // Generate new thread ID
-      const { data: newId } = await supabase.rpc('generate_bubble_id');
+      const { data: newId } = await supabase.rpc('generate_unique_id');
       threadId = newId || `${Date.now()}x${Math.floor(Math.random() * 1e17).toString().padStart(17, '0')}`;
 
       const now = new Date().toISOString();

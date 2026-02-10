@@ -177,27 +177,7 @@ export const getSupabaseConfig = (): Result<SupabaseConfig, Error> => {
   });
 };
 
-/**
- * Bubble API configuration
- */
-export interface BubbleConfig {
-  readonly bubbleBaseUrl: string;
-  readonly bubbleApiKey: string;
-}
-
-/**
- * Get Bubble configuration from environment
- */
-export const getBubbleConfig = (): Result<BubbleConfig, Error> => {
-  const bubbleBaseUrl = Deno.env.get('BUBBLE_API_BASE_URL');
-  const bubbleApiKey = Deno.env.get('BUBBLE_API_KEY');
-
-  if (!bubbleBaseUrl || !bubbleApiKey) {
-    return err(new Error('Missing required Bubble environment variables'));
-  }
-
-  return ok({ bubbleBaseUrl, bubbleApiKey });
-};
+// BubbleConfig removed — Bubble API integration has been decommissioned
 
 // ─────────────────────────────────────────────────────────────
 // Response Formatting (Pure)
@@ -268,7 +248,7 @@ export const resultToResponse = <T>(result: Result<T, Error>): Response =>
 export interface AuthenticatedUser {
   readonly id: string;
   readonly email: string;
-  readonly bubbleId?: string; // Bubble-style ID from user_metadata (set during signup)
+  readonly legacyPlatformId?: string; // Legacy platform ID from user_metadata (set during signup)
 }
 
 /**

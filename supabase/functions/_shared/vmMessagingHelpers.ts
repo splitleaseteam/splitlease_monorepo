@@ -2,7 +2,7 @@
  * VM Messaging Helpers
  * Orchestrates multi-channel messaging (in-app, email, SMS) for virtual meeting events
  *
- * Mirrors Bubble workflow: L2-sms-in-app-email-message! SPLIT BOT Virtual Meeting Management
+ * Mirrors legacy workflow: L2-sms-in-app-email-message! SPLIT BOT Virtual Meeting Management
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -226,7 +226,7 @@ async function sendSms(
 /**
  * Send notifications when a virtual meeting is REQUESTED
  *
- * Mirrors Bubble Steps 9-12 from CORE-create-virtual-meeting-request
+ * Mirrors legacy Steps 9-12 from CORE-create-virtual-meeting-request
  */
 export async function sendVMRequestMessages(
   supabase: SupabaseClient,
@@ -438,7 +438,7 @@ export async function sendVMRequestMessages(
 /**
  * Send notifications when a virtual meeting is ACCEPTED
  *
- * Mirrors Bubble Steps 4-14 from Virtual Meeting Accept Workflow
+ * Mirrors legacy Steps 4-14 from Virtual Meeting Accept Workflow
  */
 export async function sendVMAcceptMessages(
   supabase: SupabaseClient,

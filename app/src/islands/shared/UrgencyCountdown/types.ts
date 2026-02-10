@@ -102,7 +102,7 @@ export type UrgencyVariant = 'default' | 'compact' | 'prominent' | 'minimal';
 /**
  * Transaction type for context-specific messaging
  */
-export type TransactionType = 'buyout' | 'crash' | 'swap';
+export type TransactionType = 'full_week' | 'shared_night' | 'alternating';
 
 /**
  * Time update interval in milliseconds

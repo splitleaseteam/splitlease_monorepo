@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Build Document Payloads
  *
  * Constructs API payloads for all 4 lease document types using actual
@@ -82,12 +82,12 @@ export function buildSupplementalPayload({ lease, proposal, host, listing, listi
   const agreementNumber = lease['Agreement Number'] || '';
 
   // Get dates from proposal (not lease)
-  const moveInDate = proposal?.['hc move in date'] || lease?.['Reservation Period : Start'];
+  const moveInDate = proposal?.['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
   const moveOutDate = proposal?.['Move-out'] || lease?.['Reservation Period : End'];
 
   // Calculate weeks
   const numberOfWeeks = proposal?.['Reservation Span (Weeks)'] ||
-    proposal?.['hc reservation span (weeks)'] ||
+    proposal?.['host_counter_offer_reservation_span_weeks'] ||
     calculateWeeksBetween(moveInDate, moveOutDate);
 
   return {
@@ -138,22 +138,22 @@ export function buildPeriodicTenancyPayload({
   const agreementNumber = lease['Agreement Number'] || '';
 
   // Get dates from proposal
-  const moveInDate = proposal?.['hc move in date'] || lease?.['Reservation Period : Start'];
+  const moveInDate = proposal?.['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
   const moveOutDate = proposal?.['Move-out'] || lease?.['Reservation Period : End'];
 
   // Calculate weeks
   const numberOfWeeks = proposal?.['Reservation Span (Weeks)'] ||
-    proposal?.['hc reservation span (weeks)'] ||
+    proposal?.['host_counter_offer_reservation_span_weeks'] ||
     calculateWeeksBetween(moveInDate, moveOutDate);
 
   // Get damage deposit from first guest payment or proposal
   const damageDeposit = guestPayments[0]?.['Damage Deposit'] ||
-    proposal?.['hc damage deposit'] ||
+    proposal?.['host_counter_offer_damage_deposit'] ||
     proposal?.['damage deposit'] ||
     0;
 
   // Get house rules from proposal or listing
-  const houseRules = proposal?.['hc house rules'] ||
+  const houseRules = proposal?.['host_counter_offer_house_rules'] ||
     proposal?.['House Rules'] ||
     listing?.house_rule_reference_ids_json ||
     [];
@@ -231,17 +231,17 @@ export function buildCreditCardAuthPayload({
   const agreementNumber = lease['Agreement Number'] || '';
 
   // Get financial values from proposal (use hc variants if available)
-  const fourWeekRent = proposal?.['hc 4 week rent'] || proposal?.['4 week rent'] || 0;
-  const maintenanceFee = proposal?.['hc cleaning fee'] || proposal?.['cleaning fee'] || 0;
-  const damageDeposit = proposal?.['hc damage deposit'] || proposal?.['damage deposit'] || 0;
+  const fourWeekRent = proposal?.['host_counter_offer_4_week_rent'] || proposal?.['4 week rent'] || 0;
+  const maintenanceFee = proposal?.['host_counter_offer_cleaning_fee'] || proposal?.['cleaning fee'] || 0;
+  const damageDeposit = proposal?.['host_counter_offer_damage_deposit'] || proposal?.['damage deposit'] || 0;
 
   // Get dates for week calculation
-  const moveInDate = proposal?.['hc move in date'] || lease?.['Reservation Period : Start'];
+  const moveInDate = proposal?.['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
   const moveOutDate = proposal?.['Move-out'] || lease?.['Reservation Period : End'];
 
   // Calculate total weeks
   const totalWeeks = proposal?.['Reservation Span (Weeks)'] ||
-    proposal?.['hc reservation span (weeks)'] ||
+    proposal?.['host_counter_offer_reservation_span_weeks'] ||
     calculateWeeksBetween(moveInDate, moveOutDate);
 
   // Determine proration from payment records

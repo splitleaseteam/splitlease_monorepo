@@ -9,7 +9,7 @@ import { validateTokenWorkflow } from '../validateTokenWorkflow.js';
 
 describe('validateTokenWorkflow', () => {
   // Mock functions
-  const createMockBubbleValidateFn = (isValid) => vi.fn().mockResolvedValue(isValid);
+  const createMockValidateFn = (isValid) => vi.fn().mockResolvedValue(isValid);
   const createMockSupabaseFetchUserFn = (userData) => vi.fn().mockResolvedValue(userData);
 
   const mockUserData = {
@@ -25,13 +25,13 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('valid token and user', () => {
     it('should return user data for valid token', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn,
         cachedUserType: null
       });
@@ -42,28 +42,28 @@ describe('validateTokenWorkflow', () => {
       expect(result.fullName).toBe('John Doe');
     });
 
-    it('should call bubbleValidateFn with token and userId', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+    it('should call validateFn with token and userId', async () => {
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       await validateTokenWorkflow({
         token: 'my_token',
         userId: 'my_user',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
-      expect(bubbleValidateFn).toHaveBeenCalledWith('my_token', 'my_user');
+      expect(validateFn).toHaveBeenCalledWith('my_token', 'my_user');
     });
 
     it('should call supabaseFetchUserFn with userId', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       await validateTokenWorkflow({
         token: 'my_token',
         userId: 'my_user',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -76,13 +76,13 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('cached user type', () => {
     it('should use cachedUserType when provided', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn,
         cachedUserType: 'A Host (I have a space available to rent)'
       });
@@ -91,13 +91,13 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should fetch userType from userData when cachedUserType is null', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn,
         cachedUserType: null
       });
@@ -106,13 +106,13 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should fetch userType from userData when cachedUserType is empty string', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn,
         cachedUserType: ''
       });
@@ -126,7 +126,7 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('profile photo URL handling', () => {
     it('should preserve https:// URL', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         ...mockUserData,
         profile_photo_url: 'https://example.com/photo.jpg'
@@ -135,7 +135,7 @@ describe('validateTokenWorkflow', () => {
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -143,7 +143,7 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should add https: prefix to protocol-relative URL', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         ...mockUserData,
         profile_photo_url: '//example.com/photo.jpg'
@@ -152,7 +152,7 @@ describe('validateTokenWorkflow', () => {
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -160,7 +160,7 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should handle null profile photo', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         ...mockUserData,
         profile_photo_url: null
@@ -169,7 +169,7 @@ describe('validateTokenWorkflow', () => {
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -177,7 +177,7 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should handle undefined profile photo', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const userDataNoPhoto = { ...mockUserData };
       delete userDataNoPhoto.profile_photo_url;
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(userDataNoPhoto);
@@ -185,7 +185,7 @@ describe('validateTokenWorkflow', () => {
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -198,13 +198,13 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('invalid token (returns null)', () => {
     it('should return null when token validation fails', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(false);
+      const validateFn = createMockValidateFn(false);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'invalid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -212,13 +212,13 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should not call supabaseFetchUserFn when token is invalid', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(false);
+      const validateFn = createMockValidateFn(false);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       await validateTokenWorkflow({
         token: 'invalid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -231,13 +231,13 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('user not found (returns null)', () => {
     it('should return null when user not found in Supabase', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(null);
 
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'nonexistent_user',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -249,14 +249,14 @@ describe('validateTokenWorkflow', () => {
   // Error Handling - Required Parameters
   // ============================================================================
   describe('error handling - required parameters', () => {
-    const bubbleValidateFn = createMockBubbleValidateFn(true);
+    const validateFn = createMockValidateFn(true);
     const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
     it('should throw error for null token', async () => {
       await expect(validateTokenWorkflow({
         token: null,
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('token is required and must be a string');
     });
@@ -265,7 +265,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: undefined,
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('token is required and must be a string');
     });
@@ -274,7 +274,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: '',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('token is required and must be a string');
     });
@@ -283,7 +283,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: 123,
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('token is required and must be a string');
     });
@@ -292,7 +292,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: null,
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('userId is required and must be a string');
     });
@@ -301,7 +301,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: undefined,
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('userId is required and must be a string');
     });
@@ -310,7 +310,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: '',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('userId is required and must be a string');
     });
@@ -319,7 +319,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: 123,
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       })).rejects.toThrow('userId is required and must be a string');
     });
@@ -329,29 +329,29 @@ describe('validateTokenWorkflow', () => {
   // Error Handling - Function Parameters
   // ============================================================================
   describe('error handling - function parameters', () => {
-    it('should throw error for non-function bubbleValidateFn', async () => {
+    it('should throw error for non-function validateFn', async () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn: 'not a function',
+        validateFn: 'not a function',
         supabaseFetchUserFn: createMockSupabaseFetchUserFn(mockUserData)
-      })).rejects.toThrow('bubbleValidateFn must be a function');
+      })).rejects.toThrow('validateFn must be a function');
     });
 
-    it('should throw error for null bubbleValidateFn', async () => {
+    it('should throw error for null validateFn', async () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn: null,
+        validateFn: null,
         supabaseFetchUserFn: createMockSupabaseFetchUserFn(mockUserData)
-      })).rejects.toThrow('bubbleValidateFn must be a function');
+      })).rejects.toThrow('validateFn must be a function');
     });
 
     it('should throw error for non-function supabaseFetchUserFn', async () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn: createMockBubbleValidateFn(true),
+        validateFn: createMockValidateFn(true),
         supabaseFetchUserFn: 'not a function'
       })).rejects.toThrow('supabaseFetchUserFn must be a function');
     });
@@ -360,7 +360,7 @@ describe('validateTokenWorkflow', () => {
       await expect(validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn: createMockBubbleValidateFn(true),
+        validateFn: createMockValidateFn(true),
         supabaseFetchUserFn: null
       })).rejects.toThrow('supabaseFetchUserFn must be a function');
     });
@@ -371,13 +371,13 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('output structure verification', () => {
     it('should return object with all expected properties', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -389,7 +389,7 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should handle missing name fields', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         id: 'user_123'
       });
@@ -397,7 +397,7 @@ describe('validateTokenWorkflow', () => {
       const result = await validateTokenWorkflow({
         token: 'valid_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 
@@ -411,13 +411,13 @@ describe('validateTokenWorkflow', () => {
   // ============================================================================
   describe('real-world scenarios', () => {
     it('should authenticate returning user with cached type', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'session_token_xyz',
         userId: '1703456789012345678',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn,
         cachedUserType: 'A Guest (I would like to rent a space)'
       });
@@ -427,7 +427,7 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should handle new user without cached type', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(true);
+      const validateFn = createMockValidateFn(true);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn({
         id: 'new_user_123',
         first_name: 'Jane',
@@ -438,7 +438,7 @@ describe('validateTokenWorkflow', () => {
       const result = await validateTokenWorkflow({
         token: 'new_session_token',
         userId: 'new_user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn,
         cachedUserType: null
       });
@@ -447,13 +447,13 @@ describe('validateTokenWorkflow', () => {
     });
 
     it('should reject expired token', async () => {
-      const bubbleValidateFn = createMockBubbleValidateFn(false);
+      const validateFn = createMockValidateFn(false);
       const supabaseFetchUserFn = createMockSupabaseFetchUserFn(mockUserData);
 
       const result = await validateTokenWorkflow({
         token: 'expired_token',
         userId: 'user_123',
-        bubbleValidateFn,
+        validateFn,
         supabaseFetchUserFn
       });
 

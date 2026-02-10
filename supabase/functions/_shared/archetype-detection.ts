@@ -20,9 +20,9 @@ export interface ArchetypeSignals {
   requestFrequencyPerMonth: number;
 
   // Transaction preferences
-  buyoutPreference: number;  // 0-1
-  crashPreference: number;
-  swapPreference: number;
+  fullWeekPreference: number;  // 0-1
+  sharedNightPreference: number;
+  alternatingPreference: number;
 
   // Flexibility indicators
   flexibilityScore: number;  // 0-100
@@ -30,7 +30,7 @@ export interface ArchetypeSignals {
   reciprocityRatio: number;  // Given / Received
 }
 
-export interface UserArchetype {
+export interface BehaviorArchetype {
   userId: string;
   archetypeType: 'big_spender' | 'high_flexibility' | 'average_user';
   confidence: number;  // 0-1
@@ -42,7 +42,7 @@ export interface UserArchetype {
 /**
  * Get archetype signals from database for a user
  */
-export async function getUserArchetypeSignals(
+export async function getBehaviorArchetypeSignals(
   supabaseClient: any,
   userId: string
 ): Promise<ArchetypeSignals> {
@@ -125,20 +125,20 @@ export async function getUserArchetypeSignals(
   const requestFrequencyPerMonth = (recentRequests / 3);  // 90 days = 3 months
 
   // Calculate transaction preferences
-  const buyouts = requestedTransactions.filter(t => t.transaction_type === 'buyout').length;
-  const crashes = requestedTransactions.filter(t => t.transaction_type === 'crash').length;
-  const swaps = requestedTransactions.filter(t => t.transaction_type === 'swap').length;
+  const fullWeeks = requestedTransactions.filter(t => t.transaction_type === 'full_week').length;
+  const sharedNights = requestedTransactions.filter(t => t.transaction_type === 'shared_night').length;
+  const alternations = requestedTransactions.filter(t => t.transaction_type === 'alternating').length;
   const total = requestedTransactions.length || 1;
 
-  const buyoutPreference = buyouts / total;
-  const crashPreference = crashes / total;
-  const swapPreference = swaps / total;
+  const fullWeekPreference = fullWeeks / total;
+  const sharedNightPreference = sharedNights / total;
+  const alternatingPreference = alternations / total;
 
   // Calculate flexibility score (0-100)
   // Based on: acceptance rate, swap preference, reciprocity
   const flexibilityScore = Math.min(100, Math.round(
     (acceptanceRate * 40) +
-    (swapPreference * 30) +
+    (alternatingPreference * 30) +
     ((receivedTransactions.length / Math.max(requestedTransactions.length, 1)) * 30)
   ));
 
@@ -158,9 +158,9 @@ export async function getUserArchetypeSignals(
     avgResponseTimeHours: Math.max(0.1, avgResponseTimeHours),
     acceptanceRate: Math.max(0, Math.min(1, acceptanceRate)),
     requestFrequencyPerMonth,
-    buyoutPreference,
-    crashPreference,
-    swapPreference,
+    fullWeekPreference,
+    sharedNightPreference,
+    alternatingPreference,
     flexibilityScore,
     accommodationHistory,
     reciprocityRatio: Math.max(0, reciprocityRatio)
@@ -170,7 +170,7 @@ export async function getUserArchetypeSignals(
 /**
  * Detect user archetype based on signals
  */
-export function detectUserArchetype(signals: ArchetypeSignals): UserArchetype {
+export function detectBehaviorArchetype(signals: ArchetypeSignals): BehaviorArchetype {
 
   const reasoning: string[] = [];
   let bigSpenderScore = 0;
@@ -260,14 +260,14 @@ export function detectUserArchetype(signals: ArchetypeSignals): UserArchetype {
 
   // TRANSACTION PREFERENCE (bonus points)
 
-  if (signals.buyoutPreference > 0.6) {
+  if (signals.fullWeekPreference > 0.6) {
     bigSpenderScore += 10;
-    reasoning.push(`Prefers buyouts (${(signals.buyoutPreference * 100).toFixed(0)}%)`);
+    reasoning.push(`Prefers full week (${(signals.fullWeekPreference * 100).toFixed(0)}%)`);
   }
 
-  if (signals.swapPreference > 0.5) {
+  if (signals.alternatingPreference > 0.5) {
     highFlexScore += 10;
-    reasoning.push(`Prefers swaps (${(signals.swapPreference * 100).toFixed(0)}%)`);
+    reasoning.push(`Prefers alternating (${(signals.alternatingPreference * 100).toFixed(0)}%)`);
   }
 
   // Normalize scores
@@ -309,9 +309,9 @@ function getDefaultSignals(): ArchetypeSignals {
     avgResponseTimeHours: 24,
     acceptanceRate: 0.5,
     requestFrequencyPerMonth: 0,
-    buyoutPreference: 0.33,
-    crashPreference: 0.33,
-    swapPreference: 0.34,
+    fullWeekPreference: 0.33,
+    sharedNightPreference: 0.33,
+    alternatingPreference: 0.34,
     flexibilityScore: 50,
     accommodationHistory: 0,
     reciprocityRatio: 1

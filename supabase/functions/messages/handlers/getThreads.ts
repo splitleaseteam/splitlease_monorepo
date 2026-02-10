@@ -41,10 +41,10 @@ interface GetThreadsResult {
 export async function handleGetThreads(
   supabaseAdmin: SupabaseClient,
   _payload: Record<string, unknown>,
-  user: { id: string; email: string; bubbleId?: string }
+  user: { id: string; email: string; platformId?: string }
 ): Promise<GetThreadsResult> {
   console.log('[getThreads] ========== GET THREADS ==========');
-  console.log('[getThreads] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
+  console.log('[getThreads] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.platformId);
 
   // Resolve user's Bubble ID via shared auth utility
   const resolvedUser = await resolveUser(supabaseAdmin, user);
@@ -56,7 +56,7 @@ export async function handleGetThreads(
     .from('message_thread')
     .select('*')
     .or(`host_user_id.eq.${userBubbleId},guest_user_id.eq.${userBubbleId}`)
-    .order('bubble_updated_at', { ascending: false, nullsFirst: false })
+    .order('original_updated_at', { ascending: false, nullsFirst: false })
     .limit(20);
 
   console.log('[getThreads] Query result:', {
@@ -93,12 +93,12 @@ export async function handleGetThreads(
   if (contactIds.size > 0) {
     const { data: contacts } = await supabaseAdmin
       .from('user')
-      .select('bubble_legacy_id, first_name, last_name, profile_photo_url')
-      .in('bubble_legacy_id', Array.from(contactIds));
+      .select('legacy_platform_id, first_name, last_name, profile_photo_url')
+      .in('legacy_platform_id', Array.from(contactIds));
 
     if (contacts) {
       contactMap = contacts.reduce((acc, contact) => {
-        acc[contact.bubble_legacy_id] = {
+        acc[contact.legacy_platform_id] = {
           name: `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown User',
           avatar: contact.profile_photo_url,
         };
@@ -112,12 +112,12 @@ export async function handleGetThreads(
   if (listingIds.size > 0) {
     const { data: listings } = await supabaseAdmin
       .from('listing')
-      .select('bubble_legacy_id, listing_title')
-      .in('bubble_legacy_id', Array.from(listingIds));
+      .select('legacy_platform_id, listing_title')
+      .in('legacy_platform_id', Array.from(listingIds));
 
     if (listings) {
       listingMap = listings.reduce((acc, listing) => {
-        acc[listing.bubble_legacy_id] = listing.listing_title || 'Unnamed Property';
+        acc[listing.legacy_platform_id] = listing.listing_title || 'Unnamed Property';
         return acc;
       }, {} as Record<string, string>);
     }
@@ -154,12 +154,12 @@ export async function handleGetThreads(
   if (proposalIds.size > 0) {
     const { data: proposals, error: proposalsError } = await supabaseAdmin
       .from('booking_proposal')
-      .select('bubble_legacy_id, proposal_workflow_status')
-      .in('bubble_legacy_id', Array.from(proposalIds));
+      .select('legacy_platform_id, proposal_workflow_status')
+      .in('legacy_platform_id', Array.from(proposalIds));
 
     if (!proposalsError && proposals) {
       proposalMap = proposals.reduce((acc, proposal) => {
-        acc[proposal.bubble_legacy_id] = {
+        acc[proposal.legacy_platform_id] = {
           status: proposal.proposal_workflow_status || 'unknown',
         };
         return acc;
@@ -192,7 +192,7 @@ export async function handleGetThreads(
     const contact = contactId ? contactMap[contactId] : null;
 
     // Format the last modified time
-    const modifiedDate = thread.bubble_updated_at ? new Date(thread.bubble_updated_at) : new Date();
+    const modifiedDate = thread.original_updated_at ? new Date(thread.original_updated_at) : new Date();
     const now = new Date();
     const diffMs = now.getTime() - modifiedDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));

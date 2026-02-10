@@ -251,11 +251,11 @@ describe('processProfilePhotoUrl', () => {
       expect(result).toBe('https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50');
     });
 
-    it('should handle Bubble.io CDN URL', () => {
+    it('should handle protocol-relative CDN URL', () => {
       const result = processProfilePhotoUrl({
-        photoUrl: '//d1muf25xaso8hp.cloudfront.net/photo.jpg'
+        photoUrl: '//cdn.example.com/photo.jpg'
       });
-      expect(result).toBe('https://d1muf25xaso8hp.cloudfront.net/photo.jpg');
+      expect(result).toBe('https://cdn.example.com/photo.jpg');
     });
 
     it('should handle user with no profile photo', () => {

@@ -41,19 +41,19 @@ function deriveMatchReasons(proposal) {
   const listing = proposal?.listing || {};
 
   // Schedule match - check if days selected matches common patterns
-  const daysSelected = proposal['Days Selected'] || proposal.hcDaysSelected || [];
+  const daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
   if (Array.isArray(daysSelected) && daysSelected.length >= 4) {
     reasons.push({ tag: 'Schedule', description: 'Fits your preferred days' });
   }
 
   // Duration match - check reservation span
-  const weeks = proposal['Reservation Span (Weeks)'] || proposal['hc reservation span (weeks)'];
+  const weeks = proposal['Reservation Span (Weeks)'] || proposal['host_counter_offer_reservation_span_weeks'];
   if (weeks && weeks >= 8) {
     reasons.push({ tag: 'Duration', description: 'Long-term stay available' });
   }
 
   // Budget - if price is reasonable (heuristic: under $200/night)
-  const nightlyPrice = proposal['proposal nightly price'] || proposal['hc nightly price'];
+  const nightlyPrice = proposal['proposal nightly price'] || proposal['host_counter_offer_nightly_price'];
   if (nightlyPrice && nightlyPrice <= 200) {
     reasons.push({ tag: 'Budget', description: 'Within your price range' });
   }

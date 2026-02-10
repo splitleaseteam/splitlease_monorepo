@@ -3,7 +3,7 @@
  * Split Lease - Native Supabase Messaging
  *
  * Helper functions for native message and thread creation.
- * NO BUBBLE DEPENDENCY - All operations are Supabase-native.
+ * All operations are Supabase-native.
  *
  * The database triggers handle:
  * - Broadcasting new messages to Realtime channels
@@ -17,12 +17,12 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 // ============================================
 
 /**
- * Generate a Bubble-compatible ID using the database function
+ * Generate a platform-compatible ID using the database function
  * Format: {13-digit-timestamp}x{17-digit-random}
  * Example: 1765872300914x25497779776179264
  */
-export async function generateBubbleId(supabase: SupabaseClient): Promise<string> {
-  const { data, error } = await supabase.rpc('generate_bubble_id');
+export async function generatePlatformId(supabase: SupabaseClient): Promise<string> {
+  const { data, error } = await supabase.rpc('generate_unique_id');
 
   if (error) {
     console.error('[messagingHelpers] Failed to generate ID:', error);
@@ -40,10 +40,10 @@ export async function generateBubbleId(supabase: SupabaseClient): Promise<string
 // ============================================
 
 /**
- * Get user's Bubble ID from email
- * Maps auth.users.email -> public.user.bubble_legacy_id
+ * Get user's platform ID from email
+ * Maps auth.users.email -> public.user.legacy_platform_id
  */
-export async function getUserBubbleId(
+export async function getUserPlatformId(
   supabase: SupabaseClient,
   userEmail: string
 ): Promise<string | null> {
@@ -52,7 +52,7 @@ export async function getUserBubbleId(
 
   const { data, error } = await supabase
     .from('user')
-    .select('bubble_legacy_id')
+    .select('legacy_platform_id')
     .ilike('email', normalizedEmail)
     .limit(1)
     .maybeSingle();
@@ -62,11 +62,11 @@ export async function getUserBubbleId(
     return null;
   }
 
-  return data.bubble_legacy_id;
+  return data.legacy_platform_id;
 }
 
 /**
- * Get user profile by Bubble ID
+ * Get user profile by platform ID
  */
 export async function getUserProfile(
   supabase: SupabaseClient,
@@ -74,8 +74,8 @@ export async function getUserProfile(
 ): Promise<{ _id: string; firstName: string; lastName: string; avatar?: string } | null> {
   const { data, error } = await supabase
     .from('user')
-    .select('bubble_legacy_id, first_name, last_name, profile_photo_url')
-    .eq('bubble_legacy_id', userId)
+    .select('legacy_platform_id, first_name, last_name, profile_photo_url')
+    .eq('legacy_platform_id', userId)
     .single();
 
   if (error || !data) {
@@ -83,7 +83,7 @@ export async function getUserProfile(
   }
 
   return {
-    _id: data.bubble_legacy_id,
+    _id: data.legacy_platform_id,
     firstName: data.first_name || '',
     lastName: data.last_name || '',
     avatar: data.profile_photo_url,
@@ -111,7 +111,7 @@ export async function createThread(
   supabase: SupabaseClient,
   params: CreateThreadParams
 ): Promise<string> {
-  const threadId = await generateBubbleId(supabase);
+  const threadId = await generatePlatformId(supabase);
   const now = new Date().toISOString();
 
   const { error } = await supabase
@@ -124,8 +124,8 @@ export async function createThread(
       proposal_id: params.proposalId || null,
       thread_subject_text: params.subject || null,
       created_by_user_id: params.createdBy,
-      bubble_created_at: now,
-      bubble_updated_at: now,
+      original_created_at: now,
+      original_updated_at: now,
       participant_user_ids_json: [params.hostUserId, params.guestUserId],
       is_from_logged_out_user: false,
       created_at: now,
@@ -226,7 +226,7 @@ export async function createMessage(
   supabase: SupabaseClient,
   params: CreateMessageParams
 ): Promise<string> {
-  const messageId = await generateBubbleId(supabase);
+  const messageId = await generatePlatformId(supabase);
   const now = new Date().toISOString();
 
   // Get thread info to determine host/guest
@@ -257,12 +257,12 @@ export async function createMessage(
       call_to_action_button_label: params.callToAction || null,
       split_bot_warning_text: params.splitBotWarning || null,
       unread_by_user_ids_json: unreadUsers,
-      bubble_created_at: now,
-      bubble_updated_at: now,
+      original_created_at: now,
+      original_updated_at: now,
       created_by_user_id: params.senderUserId,
       created_at: now,
       updated_at: now,
-      is_pending_bubble_migration: false,
+      is_pending_migration: false,
     });
 
   if (error) {
@@ -359,7 +359,7 @@ export async function getListingName(
   const { data, error } = await supabase
     .from('listing')
     .select('listing_title')
-    .eq('bubble_legacy_id', listingId)
+    .eq('legacy_platform_id', listingId)
     .single();
 
   if (error || !data) {
@@ -438,7 +438,7 @@ export async function findOrCreateProposalThread(
       .from('message_thread')
       .update({
         proposal_id: params.proposalId,
-        bubble_updated_at: new Date().toISOString(),
+        original_updated_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', existingThreadByListing);
@@ -477,13 +477,13 @@ export const SPLITBOT_USER_ID = '1634177189464x117577733821174320';
 
 /**
  * Create a SplitBot automated message
- * Sets is_from_split_bot = true and is_forwarded_message = true (per Bubble pattern)
+ * Sets is_from_split_bot = true and is_forwarded_message = true (per legacy pattern)
  */
 export async function createSplitBotMessage(
   supabase: SupabaseClient,
   params: CreateSplitBotMessageParams
 ): Promise<string> {
-  const messageId = await generateBubbleId(supabase);
+  const messageId = await generatePlatformId(supabase);
   const now = new Date().toISOString();
 
   // Get thread info for host/guest IDs
@@ -502,19 +502,19 @@ export async function createSplitBotMessage(
       host_user_id: thread.hostUser,
       guest_user_id: thread.guestUser,
       is_from_split_bot: true,
-      is_forwarded_message: true, // SplitBot messages are marked as forwarded per Bubble pattern
+      is_forwarded_message: true, // SplitBot messages are marked as forwarded per legacy pattern
       is_visible_to_host: params.visibleToHost,
       is_visible_to_guest: params.visibleToGuest,
       is_hidden_or_deleted: false,
       call_to_action_button_label: params.callToAction,
       split_bot_warning_text: params.splitBotWarning || null,
       unread_by_user_ids_json: [params.recipientUserId],
-      bubble_created_at: now,
-      bubble_updated_at: now,
+      original_created_at: now,
+      original_updated_at: now,
       created_by_user_id: SPLITBOT_USER_ID,
       created_at: now,
       updated_at: now,
-      is_pending_bubble_migration: false,
+      is_pending_migration: false,
     });
 
   if (error) {
@@ -541,7 +541,7 @@ export async function updateThreadLastMessage(
     .update({
       last_message_preview_text: messageBody.substring(0, 100), // Truncate for preview
       last_message_sent_at: now,
-      bubble_updated_at: now,
+      original_updated_at: now,
       updated_at: now,
     })
     .eq('id', threadId);
@@ -584,9 +584,9 @@ export async function getLastVisibleMessagesForThreads(
   // We fetch the most recent messages per thread, then filter by visibility
   const { data: messages, error } = await supabase
     .from('thread_message')
-    .select('thread_id, message_body_text, bubble_created_at, is_visible_to_host, is_visible_to_guest')
+    .select('thread_id, message_body_text, original_created_at, is_visible_to_host, is_visible_to_guest')
     .in('thread_id', threadIds)
-    .order('bubble_created_at', { ascending: false });
+    .order('original_created_at', { ascending: false });
 
   if (error) {
     console.error('[messagingHelpers] Failed to fetch messages for preview:', error);

@@ -99,7 +99,7 @@ function getActionButtonText(transactionType, baseAmount, feeAmount, totalAmount
     return `Send Share Request ($${SHARE_FEE.toFixed(0)} fee)`;
   }
 
-  if (transactionType === 'swap') {
+  if (transactionType === 'alternating') {
     return `Send Swap Request ($${SWAP_FEE.toFixed(0)} fee)`;
   }
 
@@ -135,7 +135,7 @@ function LoadingSpinner() {
   * - Swap: $5 flat (initiator only)
   * - Share: $5 flat (initiator only)
  */
-function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = 'Roommate', children }) {
+function FeeTooltip({ feeBreakdown, transactionType = 'full_week', roommateName = 'Roommate', children }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef(null);
 
@@ -174,7 +174,7 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
   }
 
   // Swap: $5 flat fee (initiator only)
-  if (transactionType === 'swap') {
+  if (transactionType === 'alternating') {
     return (
       <div
         className="buyout-panel__tooltip-wrapper"
@@ -235,7 +235,7 @@ function FeeTooltip({ feeBreakdown, transactionType = 'buyout', roommateName = '
   * - Swap: $5 flat (initiator only)
   * - Share: $5 flat (initiator only)
  */
-function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'buyout', roommateName = 'Roommate', priceLabel = 'Base offer' }) {
+function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'full_week', roommateName = 'Roommate', priceLabel = 'Base offer' }) {
   if (isCalculating) {
     return (
       <div className="buyout-panel__pricing buyout-panel__pricing--loading">
@@ -265,7 +265,7 @@ function PriceBreakdown({ feeBreakdown, isCalculating, transactionType = 'buyout
   }
 
   // Swap: $5 flat fee (initiator only)
-  if (transactionType === 'swap') {
+  if (transactionType === 'alternating') {
     return (
       <div className="buyout-panel__pricing">
         <div className="buyout-panel__price-row">
@@ -381,7 +381,7 @@ function CounterOfferContent({ requestData, onCounterOffer, onCancel, isSubmitti
  * Swap Mode Content - Select a night to offer in exchange
  */
 function SwapModeContent({
-  mode = 'swap',
+  mode = 'alternating',
   requestedNight,
   roommateName,
   availableNights,
@@ -553,8 +553,8 @@ function SwapModeContent({
  */
 function RequestTypeTabs({ activeType, onTypeChange, disabled }) {
   const types = [
-    { key: 'buyout', label: 'Buyout' },
-    { key: 'swap', label: 'Swap' },
+    { key: 'full_week', label: 'Full Week' },
+    { key: 'alternating', label: 'Alternating' },
     { key: 'share', label: 'Share' }
   ];
 
@@ -593,7 +593,7 @@ export default function BuyOutPanel({
   myFlexibilityScore = null,
   roommateFlexibilityScore = null,
   // Request Type props
-  requestType = 'buyout',
+  requestType = 'full_week',
   onRequestTypeChange,
   // Swap Mode props
   isSwapMode = false,
@@ -877,7 +877,7 @@ export default function BuyOutPanel({
       {/* Persistent Request Type Toggle Tabs */}
       {(showSwapPanel || showActivePanel) && !showSuccessState && !showSwapSuccessState && !showShareSuccessState && (
         <RequestTypeTabs
-          activeType={isSwapMode || isCounterMode ? 'swap' : requestType}
+          activeType={isSwapMode || isCounterMode ? 'alternating' : requestType}
           onTypeChange={handleTypeChange}
           disabled={isSubmitting}
         />
@@ -886,7 +886,7 @@ export default function BuyOutPanel({
       {/* Swap Mode Panel */}
       {showSwapPanel && (
         <SwapModeContent
-          mode={isCounterMode ? 'counter' : 'swap'}
+          mode={isCounterMode ? 'counter' : 'alternating'}
           requestedNight={isCounterMode ? counterOriginalNight : selectedDate}
           roommateName={resolvedCoTenantName}
           availableNights={isCounterMode ? resolvedCoTenantNights : userNights}
@@ -1216,7 +1216,7 @@ BuyOutPanel.propTypes = {
   myFlexibilityScore: PropTypes.number,
   roommateFlexibilityScore: PropTypes.number,
   // Request Type props
-  requestType: PropTypes.oneOf(['buyout', 'share', 'swap']),
+  requestType: PropTypes.oneOf(['full_week', 'share', 'alternating']),
   onRequestTypeChange: PropTypes.func,
   // Swap Mode props
   isSwapMode: PropTypes.bool,

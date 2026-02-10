@@ -9,7 +9,6 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import {
   CancelRequestInput,
   CancelRequestResponse,
@@ -26,8 +25,7 @@ import { validateCancelInput } from "../lib/validators.ts";
  * 2. Fetch the request
  * 3. Verify request is still pending
  * 4. Update request status to cancelled
- * 5. Enqueue Bubble sync
- * 6. Return response
+ * 5. Return response
  */
 export async function handleCancel(
   payload: Record<string, unknown>,
@@ -94,31 +92,6 @@ export async function handleCancel(
   }
 
   console.log(`[date-change-request:cancel] Request status updated to cancelled`);
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `cancel:${input.requestId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'datechangerequest',
-          recordId: input.requestId,
-          operation: 'UPDATE',
-          payload: updateData,
-        },
-      ],
-    });
-
-    console.log(`[date-change-request:cancel] Bubble sync enqueued`);
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    console.error(`[date-change-request:cancel] Failed to enqueue Bubble sync (non-blocking):`, syncError);
-  }
 
   // ================================================
   // RETURN RESPONSE

@@ -92,13 +92,13 @@ export async function handleGenerate(
   if (!damageDeposit && leaseData.Proposal) {
     const { data: proposal } = await supabase
       .from('proposal')
-      .select(`_id, "hc damage deposit", "hc cleaning fee"`)
+      .select(`_id, "host_counter_offer_damage_deposit", "host_counter_offer_cleaning_fee"`)
       .eq('_id', leaseData.Proposal)
       .single();
 
     if (proposal) {
       const proposalData = proposal as unknown as ProposalData;
-      damageDeposit = proposalData['hc damage deposit'] || 0;
+      damageDeposit = proposalData['host_counter_offer_damage_deposit'] || 0;
       console.log(`[guest-payment-records:generate] Fetched damage deposit from proposal: ${damageDeposit}`);
     }
   }
@@ -130,7 +130,7 @@ export async function handleGenerate(
 
   const paymentRecordIds: string[] = [];
   for (let i = 0; i < schedule.numberOfPaymentCycles; i++) {
-    const { data: recordId, error: idError } = await supabase.rpc('generate_bubble_id');
+    const { data: recordId, error: idError } = await supabase.rpc('generate_unique_id');
     if (idError || !recordId) {
       console.error(`[guest-payment-records:generate] ID generation failed:`, idError);
       throw new SupabaseSyncError('Failed to generate payment record ID');

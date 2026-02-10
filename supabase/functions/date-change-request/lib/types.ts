@@ -139,7 +139,7 @@ export interface RestoreThrottleAbilityResponse {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Database Types (matching Bubble column names)
+// Database Types
 // ─────────────────────────────────────────────────────────────
 
 export interface DateChangeRequestData {

@@ -8,7 +8,7 @@
  * - 'pristine': Initial state when modal opens → "Close" + "Edit Proposal"
  * - 'editing': User is actively editing fields → "Cancel edits" + "Display New Terms"
  * - 'general': User reviewed new terms, ready to submit → "Close" + "Submit Proposal Edits"
- * - 'cancel': Cancel proposal modal is shown (handled by separate CancelProposalModal)
+ * - 'cancel': Cancel proposal modal is shown (handled by separate EndProposalModal)
  *
  * State Transitions:
  * pristine → editing (click "Edit Proposal")
@@ -28,7 +28,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, FileText, HelpCircle } from 'lucide-react'
 import { executeCancelProposal } from '../../logic/workflows/proposals/cancelProposalWorkflow.js'
 import { PROPOSAL_STATUSES } from '../../logic/constants/proposalStatuses.js'
-import CancelProposalModal from './CancelProposalModal.jsx'
+import EndProposalModal from './EndProposalModal.jsx'
 import './GuestEditingProposalModal.css'
 
 // ============================================================================
@@ -297,7 +297,7 @@ function ReservationPriceBreakdown({
   const price4WeekLabel = get4WeekPriceLabel(effectiveRentalType)
 
   const getHouseRulesLabel = () => {
-    const count = houseRulesToDisplay?.length || proposal?.hcHouseRules?.length || 0
+    const count = houseRulesToDisplay?.length || proposal?.hostCounterOfferHouseRules?.length || 0
     if (count === 0) {
       return isGuest ? 'No House Rules' : "You Don't Have any House Rules"
     }
@@ -366,7 +366,7 @@ function ReservationPriceBreakdown({
           {getHouseRulesLabel()}
         </span>
         <span className={`rpb-value ${isTinyScreen ? 'rpb-value--small' : ''}`}>
-          {houseRulesToDisplay?.length || proposal?.hcHouseRules?.length || 0}
+          {houseRulesToDisplay?.length || proposal?.hostCounterOfferHouseRules?.length || 0}
         </span>
       </div>
 
@@ -542,7 +542,7 @@ export default function GuestEditingProposalModal({
 
   // Helper to parse days selected from proposal
   const parseDaysSelected = (proposal) => {
-    let days = proposal?.['Days Selected'] || proposal?.['hc days selected'] || []
+    let days = proposal?.['Days Selected'] || proposal?.['host_counter_offer_days_selected'] || []
     if (typeof days === 'string') {
       try { days = JSON.parse(days) } catch (e) { days = [] }
     }
@@ -599,8 +599,8 @@ export default function GuestEditingProposalModal({
     const checkOutDayValue = proposal?.['check out day'] || proposal?.checkOutDay
 
     return {
-      moveInDate: proposal?.hcMoveInDate ? new Date(proposal.hcMoveInDate) :
-                  proposal?.['hc Move-in Date'] ? new Date(proposal['hc Move-in Date']) :
+      moveInDate: proposal?.hostCounterOfferMoveInDate ? new Date(proposal.hostCounterOfferMoveInDate) :
+                  proposal?.['host_counter_offer_move_in_date'] ? new Date(proposal['host_counter_offer_move_in_date']) :
                   proposal?.['Move in range start'] ? new Date(proposal['Move in range start']) :
                   new Date(),
       flexibleMoveInRange: proposal?.moveInRangeText || proposal?.['Move in range text'] || '',
@@ -642,7 +642,7 @@ export default function GuestEditingProposalModal({
   // Handle initial state setup when proposal changes
   useEffect(() => {
     if (proposal && openForFirstTime) {
-      const moveInDateValue = proposal?.hcMoveInDate || proposal?.['hc Move-in Date'] || proposal?.['Move in range start']
+      const moveInDateValue = proposal?.hostCounterOfferMoveInDate || proposal?.['host_counter_offer_move_in_date'] || proposal?.['Move in range start']
       const weeksValue = proposal?.reservationSpanWeeks || proposal?.['Reservation Span (Weeks)'] || 4
       const daysSelected = parseDaysSelected(proposal)
       const nightsCount = proposal?.['nights per week (num)'] || daysSelected.length - 1 || 4
@@ -858,8 +858,8 @@ export default function GuestEditingProposalModal({
 
   // Get house rules from proposal or listing
   const houseRulesToDisplay = useMemo(() => {
-    return proposal?.hcHouseRules ||
-           proposal?.['hc House Rules'] ||
+    return proposal?.hostCounterOfferHouseRules ||
+           proposal?.['host_counter_offer_house_rules'] ||
            listing?.['House Rules'] ||
            []
   }, [proposal, listing])
@@ -1212,7 +1212,7 @@ export default function GuestEditingProposalModal({
         )}
 
         {/* Cancel proposal modal */}
-        <CancelProposalModal
+        <EndProposalModal
           isOpen={view === 'cancel'}
           proposal={proposal}
           listing={listing || proposal?._listing}

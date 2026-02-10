@@ -190,7 +190,7 @@ SELECT
   h."Name - Full" as host_full_name,
   h."Verify - Linked In ID" as host_linkedin_verified,
   h."Verify - Phone" as host_phone_verified,
-  h."user verified?" as host_verified,
+  h."identity_verified" as host_verified,
   -- Geography info (pre-joined)
   b."Display" as borough_name,
   hood."Display" as hood_name

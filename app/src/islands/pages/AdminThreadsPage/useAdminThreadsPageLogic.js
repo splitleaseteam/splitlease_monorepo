@@ -54,8 +54,8 @@ function adaptThread(rawThread) {
   return {
     id: rawThread._id,
     subject: rawThread['Thread Subject'] || 'No Subject',
-    createdDate: rawThread.bubble_created_at,
-    modifiedDate: rawThread.bubble_updated_at,
+    createdDate: rawThread.original_created_at,
+    modifiedDate: rawThread.original_updated_at,
     lastMessageDate: rawThread['last_message_at'],
     callToAction: rawThread['Call to Action'],
     proposalId: rawThread.Proposal,
@@ -100,7 +100,7 @@ function adaptMessage(rawMessage, rawThread) {
   return {
     id: rawMessage._id,
     body: rawMessage['Message Body'] || '',
-    createdDate: rawMessage.bubble_created_at,
+    createdDate: rawMessage.original_created_at,
     senderType: deriveSenderType(rawMessage, hostUserId, guestUserId),
     isSplitBot: rawMessage['is Split Bot'] || false,
     isVisibleToHost: rawMessage['is Visible to Host'] ?? true,

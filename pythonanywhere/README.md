@@ -26,7 +26,7 @@ Main service hub with comprehensive feature set:
 | **Document Parser** | Parse and extract data from various document formats |
 | **PDF Generators** | Create:<br>• House Manual PDFs<br>• Curated Listings PDFs |
 | **Google Drive Integration** | Upload generated documents to Google Drive |
-| **User/Knowledge Search** | Slack slash commands integrated with Bubble.io backend |
+| **User/Knowledge Search** | Slack slash commands integrated with Supabase backend |
 | **Database Checker** | Validate data integrity across datatypes (listings, properties, proposals, users) |
 | **Health Monitoring** | Resilient health check system with Slack notifications |
 | **Logging** | Dual Slack webhook integration (success + error channels) |
@@ -108,9 +108,9 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
 GOOGLE_DRIVE_FOLDER_ID=your-folder-id
 
-# Bubble.io Integration
-BUBBLE_API_KEY=your-bubble-api-key
-BUBBLE_API_URL=https://your-app.bubbleapps.io/api/1.1
+# Supabase Integration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 ### 4. Initialize Database

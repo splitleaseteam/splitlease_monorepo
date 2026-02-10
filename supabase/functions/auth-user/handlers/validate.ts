@@ -1,6 +1,6 @@
 /**
  * Validate Handler - Validate session and fetch user data
- * Split Lease - bubble-auth-proxy
+ * Split Lease - auth-user
  *
  * Flow:
  * 1. Get token and user_id from payload
@@ -21,7 +21,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError, SupabaseSyncError } from '../../_shared/errors.ts';
+import { ApiError, SupabaseSyncError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 export async function handleValidate(
@@ -61,7 +61,7 @@ export async function handleValidate(
     let userData = null;
     let userError = null;
 
-    const userSelectFields = 'id, bubble_legacy_id, first_name, last_name, profile_photo_url, current_user_role, email, bio_text, stated_need_for_space_text, stated_special_needs_text, rental_application_form_id, is_usability_tester, phone_number';
+    const userSelectFields = 'id, legacy_platform_id, first_name, last_name, profile_photo_url, current_user_role, email, bio_text, stated_need_for_space_text, stated_special_needs_text, rental_application_form_id, is_usability_tester, phone_number';
 
     // First attempt: query by id
     console.log(`[validate] Attempting to find user by id: ${user_id}`);
@@ -198,14 +198,14 @@ export async function handleValidate(
     return userDataObject;
 
   } catch (error) {
-    if (error instanceof BubbleApiError || error instanceof SupabaseSyncError) {
+    if (error instanceof ApiError || error instanceof SupabaseSyncError) {
       throw error;
     }
 
     console.error(`[validate] ========== VALIDATION ERROR ==========`);
     console.error(`[validate] Error:`, error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to validate token: ${error.message}`,
       500,
       error

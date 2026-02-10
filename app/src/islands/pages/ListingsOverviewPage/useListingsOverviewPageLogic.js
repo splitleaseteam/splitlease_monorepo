@@ -105,8 +105,8 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
     photoCount: photos.length,
     features,
     errors,
-    modifiedAt: row.bubble_updated_at ? new Date(row.bubble_updated_at) : null,
-    createdAt: row.bubble_created_at ? new Date(row.bubble_created_at) : null,
+    modifiedAt: row.original_updated_at ? new Date(row.original_updated_at) : null,
+    createdAt: row.original_created_at ? new Date(row.original_created_at) : null,
     // Keep raw data for updates
     _raw: row,
   };

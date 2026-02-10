@@ -1,8 +1,8 @@
-import type { EligibilityResult, UserArchetype } from '../types.ts';
+import type { EligibilityResult, BiddingArchetype } from '../types.ts';
 
 interface UserInfo {
   userId: string;
-  archetype: UserArchetype;
+  archetype: BiddingArchetype;
 }
 
 /**

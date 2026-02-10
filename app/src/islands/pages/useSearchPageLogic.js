@@ -501,7 +501,7 @@ export function useSearchPageLogic() {
         .not('is_active', 'is', false)
         .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
         .not('photos_with_urls_captions_and_sort_order_json', 'is', null)
-        .order('updated_at', { ascending: false })
+        .order('original_updated_at', { ascending: false })
 
       const { data, error } = await query
 

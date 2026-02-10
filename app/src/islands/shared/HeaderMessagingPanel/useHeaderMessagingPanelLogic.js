@@ -409,7 +409,7 @@ export function useHeaderMessagingPanelLogic({
                 ? 'host'
                 : 'guest',
             is_outgoing: isOwnMessage,
-            timestamp: new Date(newRow['bubble_created_at']).toLocaleString('en-US', {
+            timestamp: new Date(newRow['original_created_at']).toLocaleString('en-US', {
               month: 'short',
               day: 'numeric',
               hour: 'numeric',
@@ -610,9 +610,9 @@ export function useHeaderMessagingPanelLogic({
         // Fetch recent messages for all threads with visibility info
         const { data: messagesData } = await supabase
           .from('thread_message')
-          .select('"thread_id", message_body_text, bubble_created_at, "is Visible to Host", "is Visible to Guest"')
+          .select('"thread_id", message_body_text, original_created_at, "is Visible to Host", "is Visible to Guest"')
           .in('"thread_id"', threadIds)
-          .order('bubble_created_at', { ascending: false });
+          .order('original_created_at', { ascending: false });
 
         if (messagesData && messagesData.length > 0) {
           // For each thread, find the most recent message visible to the user
@@ -640,8 +640,8 @@ export function useHeaderMessagingPanelLogic({
         const contact = contactId ? contactMap[contactId] : null;
 
         // Format the last modified time
-        const modifiedDate = thread.bubble_updated_at
-          ? new Date(thread.bubble_updated_at)
+        const modifiedDate = thread.original_updated_at
+          ? new Date(thread.original_updated_at)
           : new Date();
         const now = new Date();
         const diffMs = now.getTime() - modifiedDate.getTime();

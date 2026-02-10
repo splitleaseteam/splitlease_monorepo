@@ -1,6 +1,6 @@
 /**
  * Input validation utilities for Supabase Edge Functions
- * Split Lease - Bubble API Migration
+ * Split Lease
  *
  * NO FALLBACK PRINCIPLE: Validation failures throw errors immediately
  */

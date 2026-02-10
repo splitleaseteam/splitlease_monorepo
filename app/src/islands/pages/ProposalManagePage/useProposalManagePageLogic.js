@@ -20,6 +20,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
+import { PROPOSAL_STATUSES as CANONICAL_STATUSES } from '../../../logic/constants/proposalStatuses.js';
 
 // ============================================================================
 // SUPABASE CONFIGURATION (for Edge Function calls with soft headers pattern)
@@ -115,19 +116,19 @@ async function fetchInBatches(table, selectColumns, ids, batchSize = 10) {
 // ============================================================================
 
 const PROPOSAL_STATUSES = [
-  'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
-  'Proposal Submitted by guest - Awaiting Rental Application',
-  'Proposal Submitted for guest by Split Lease - Pending Confirmation',
-  'Host Review',
-  'Host Counteroffer Submitted / Awaiting Guest Review',
-  'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-  'Lease Documents Sent for Review',
-  'Lease Documents Sent for Signatures',
-  'Lease Documents Signed / Awaiting Initial payment',
-  'Initial Payment Submitted / Lease activated',
-  'Proposal Cancelled by Guest',
-  'Proposal Rejected by Host',
-  'Proposal Cancelled by Split Lease',
+  CANONICAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key,
+  CANONICAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key,
+  CANONICAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key,
+  CANONICAL_STATUSES.HOST_REVIEW.key,
+  CANONICAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key,
+  CANONICAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key,
+  CANONICAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key,
+  CANONICAL_STATUSES.CANCELLED_BY_GUEST.key,
+  CANONICAL_STATUSES.REJECTED_BY_HOST.key,
+  CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key,
   'Guest Ignored Suggestion'
 ];
 
@@ -270,8 +271,8 @@ function normalizeProposal(proposal, guest, host, listing) {
   return {
     _id: proposal.id,
     status: proposal.proposal_workflow_status || proposal.status || '',
-    createdDate: proposal.bubble_created_at || proposal.createdDate || null,
-    modifiedDate: proposal.bubble_updated_at || proposal.modifiedDate || null,
+    createdDate: proposal.original_created_at || proposal.createdDate || null,
+    modifiedDate: proposal.original_updated_at || proposal.modifiedDate || null,
 
     guest,
     host,
@@ -432,8 +433,8 @@ export function useProposalManagePageLogic() {
           guest_stated_need_for_space,
           guest_about_yourself_text,
           guest_introduction_message,
-          bubble_created_at,
-          bubble_updated_at
+          original_created_at,
+          original_updated_at
         `, { count: 'exact' })
         .or('is_deleted.is.null,is_deleted.eq.false');
 
@@ -450,18 +451,18 @@ export function useProposalManagePageLogic() {
         const startDateStr = filters.startDate instanceof Date
           ? filters.startDate.toISOString()
           : filters.startDate;
-        query = query.gte('bubble_updated_at', startDateStr);
+        query = query.gte('original_updated_at', startDateStr);
       }
 
       if (filters.endDate) {
         const endDateStr = filters.endDate instanceof Date
           ? filters.endDate.toISOString()
           : filters.endDate;
-        query = query.lte('bubble_updated_at', endDateStr);
+        query = query.lte('original_updated_at', endDateStr);
       }
 
       // Sort
-      query = query.order('bubble_updated_at', { ascending: filters.sortDirection === 'asc' });
+      query = query.order('original_updated_at', { ascending: filters.sortDirection === 'asc' });
 
       // Limit results
       query = query.limit(100);
@@ -683,7 +684,7 @@ export function useProposalManagePageLogic() {
       case 'cancelProposal':
         if (window.confirm(`Are you sure you want to cancel proposal ${proposal._id || proposal.id}?`)) {
           try {
-            await handleStatusChange(proposal._id || proposal.id, 'Proposal Cancelled by Split Lease');
+            await handleStatusChange(proposal._id || proposal.id, CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key);
           } catch (err) {
             alert('Failed to cancel proposal');
           }

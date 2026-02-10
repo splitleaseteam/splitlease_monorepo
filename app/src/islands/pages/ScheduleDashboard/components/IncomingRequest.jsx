@@ -2,7 +2,7 @@
  * Incoming Request Component
  *
  * Displays incoming requests with actions based on lease type:
- * - Co-tenant leases: Accept/Counter/Decline for buyout/swap requests
+ * - Co-tenant leases: Accept/Counter/Decline for full_week/alternating requests
  * - Guest-host leases (host): Approve/Decline for date change/cancellation requests
  */
 
@@ -66,8 +66,8 @@ function getTimeAgo(timestamp) {
 // ============================================================================
 
 const REQUEST_TYPE_LABELS = {
-  buyout: 'Buyout Request',
-  swap: 'Swap Request',
+  full_week: 'Full Week Request',
+  alternating: 'Alternating Request',
   share: 'Co-Occupy Request',
   date_change: 'Date Change Request',
   cancellation: 'Cancellation Request',
@@ -125,10 +125,10 @@ export default function IncomingRequest({
     const { type, night, nights, dates, oldDates, newDates, amount } = request;
 
     switch (type) {
-      case 'buyout':
+      case 'full_week':
         return `${senderName || 'Co-tenant'} wants to buy ${formatDate(night || nights?.[0])} for $${amount?.toFixed(2) || '0.00'}`;
-      case 'swap':
-        return `${senderName || 'Co-tenant'} wants to swap ${formatDate(night || nights?.[0])}`;
+      case 'alternating':
+        return `${senderName || 'Co-tenant'} wants to alternate ${formatDate(night || nights?.[0])}`;
       case 'share':
         return `${senderName || 'Co-tenant'} wants to co-occupy on ${formatDate(night || nights?.[0])}`;
       case 'date_change':
@@ -172,8 +172,8 @@ export default function IncomingRequest({
           </div>
         )}
 
-        {/* Show amount details for buyout requests */}
-        {request.type === 'buyout' && request.amount && (
+        {/* Show amount details for full_week requests */}
+        {request.type === 'full_week' && request.amount && (
           <div className="incoming-request__amount">
             <span className="incoming-request__amount-label">Offered Amount:</span>
             <span className="incoming-request__amount-value">${request.amount.toFixed(2)}</span>
@@ -234,7 +234,7 @@ export default function IncomingRequest({
               >
                 Accept{request.amount ? ` $${request.amount.toFixed(2)}` : ''}
               </button>
-              {request.type === 'buyout' && (
+              {request.type === 'full_week' && (
                 <button
                   className="incoming-request__btn incoming-request__btn--secondary"
                   onClick={() => onCounter?.(request)}
@@ -287,7 +287,7 @@ export default function IncomingRequest({
 IncomingRequest.propTypes = {
   request: PropTypes.shape({
     id: PropTypes.string,
-    type: PropTypes.oneOf(['buyout', 'swap', 'share', 'date_change', 'cancellation', 'offer_dates']),
+    type: PropTypes.oneOf(['full_week', 'alternating', 'share', 'date_change', 'cancellation', 'offer_dates']),
     status: PropTypes.oneOf(['pending', 'accepted', 'declined', 'countered', 'expired']),
     night: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
     nights: PropTypes.array,

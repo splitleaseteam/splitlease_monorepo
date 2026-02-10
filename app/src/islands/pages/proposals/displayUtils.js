@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Display Utilities for Proposal Cards
  *
  * Pure functions for formatting proposal data for display.
@@ -183,7 +183,7 @@ export function getHostProfilePhoto(host) {
 }
 
 /**
- * Build meta text for collapsed card (e.g., "5 days Â· 12 weeks")
+ * Build meta text for collapsed card (e.g., "5 days · 12 weeks")
  * @param {Array} daysSelected - Array of selected day indices
  * @param {string|number} weeks - Number of weeks
  * @returns {string} Meta text
@@ -191,7 +191,7 @@ export function getHostProfilePhoto(host) {
 export function buildMetaText(daysSelected, weeks) {
   const daysCount = Array.isArray(daysSelected) ? daysSelected.length : 0;
   if (weeks) {
-    return `${daysCount} day${daysCount !== 1 ? 's' : ''} Â· ${weeks} weeks`;
+    return `${daysCount} day${daysCount !== 1 ? 's' : ''} · ${weeks} weeks`;
   }
   return `${daysCount} day${daysCount !== 1 ? 's' : ''}`;
 }
@@ -339,8 +339,8 @@ export function generateGuestNarrativeText(proposal) {
   const isCounteroffer = proposal?.['counter offer happened'];
 
   // Days selected (prefer counteroffer if exists)
-  let daysSelected = isCounteroffer && proposal?.['hc days selected']?.length > 0
-    ? proposal['hc days selected']
+  let daysSelected = isCounteroffer && proposal?.['host_counter_offer_days_selected']?.length > 0
+    ? proposal['host_counter_offer_days_selected']
     : proposal?.['Days Selected'] || [];
 
   // Parse if string
@@ -351,24 +351,24 @@ export function generateGuestNarrativeText(proposal) {
   const nightsPerWeek = Array.isArray(daysSelected) ? daysSelected.length : 0;
 
   // Duration
-  const durationWeeks = isCounteroffer && proposal?.['hc reservation span (weeks)']
-    ? proposal['hc reservation span (weeks)']
+  const durationWeeks = isCounteroffer && proposal?.['host_counter_offer_reservation_span_weeks']
+    ? proposal['host_counter_offer_reservation_span_weeks']
     : proposal?.['Reservation Span (Weeks)'] || 0;
 
   // Pricing
-  const nightlyRate = isCounteroffer && proposal?.['hc nightly price'] != null
-    ? proposal['hc nightly price']
+  const nightlyRate = isCounteroffer && proposal?.['host_counter_offer_nightly_price'] != null
+    ? proposal['host_counter_offer_nightly_price']
     : proposal?.['proposal nightly price'] || 0;
 
-  const totalPrice = isCounteroffer && proposal?.['hc total price'] != null
-    ? proposal['hc total price']
+  const totalPrice = isCounteroffer && proposal?.['host_counter_offer_total_price'] != null
+    ? proposal['host_counter_offer_total_price']
     : proposal?.['Total Price for Reservation (guest)'] || 0;
 
   const weeklyPrice = nightlyRate * nightsPerWeek;
 
   // Dates
-  const moveInDate = isCounteroffer && proposal?.['hc move in date']
-    ? proposal['hc move in date']
+  const moveInDate = isCounteroffer && proposal?.['host_counter_offer_move_in_date']
+    ? proposal['host_counter_offer_move_in_date']
     : proposal?.['Move in range start'];
 
   // Format dates
@@ -402,7 +402,7 @@ export function generateGuestNarrativeText(proposal) {
     scheduleText = `The schedule is every day of each week. That's ${nightsPerWeek} nights per week.`;
   } else if (dayRangeText) {
     const weekendSuffix = weekendsFree ? ', with weekends free' : '';
-    scheduleText = `The schedule is ${dayRangeText} each week â€” checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
+    scheduleText = `The schedule is ${dayRangeText} each week — checking in ${checkInDay} and out ${checkOutDay}. That's ${nightsPerWeek} nights per week${weekendSuffix}.`;
   } else {
     scheduleText = `That's ${nightsPerWeek} nights per week.`;
   }

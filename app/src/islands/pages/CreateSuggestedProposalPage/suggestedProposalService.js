@@ -109,7 +109,7 @@ export async function getDefaultListings() {
       .select(LISTING_SELECT_FIELDS)
       .eq('is_deleted', false)
       .not('rental_type', 'is', null)
-      .order('bubble_updated_at', { ascending: false })
+      .order('original_updated_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;
@@ -205,7 +205,7 @@ const USER_SELECT_FIELDS = `
   stated_need_for_space_text,
   stated_special_needs_text,
   current_user_role,
-  bubble_created_at
+  original_created_at
 `;
 
 /**
@@ -218,7 +218,7 @@ export async function getDefaultGuests() {
       .from('user')
       .select(USER_SELECT_FIELDS)
       .ilike('current_user_role', '%Guest%')
-      .order('bubble_created_at', { ascending: false })
+      .order('original_created_at', { ascending: false })
       .limit(20);
 
     if (error) throw error;
@@ -240,7 +240,7 @@ export async function searchGuests(searchTerm) {
       .select(USER_SELECT_FIELDS)
       .ilike('current_user_role', '%Guest%')
       .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone_number.ilike.%${searchTerm}%,id.ilike.%${searchTerm}%`)
-      .order('bubble_created_at', { ascending: false })
+      .order('original_created_at', { ascending: false })
       .limit(20);
 
     if (error) throw error;
@@ -265,12 +265,12 @@ export async function getUserProposalsForListing(userId, listingId) {
         guest_selected_days_numbers_json,
         reservation_span_in_weeks,
         move_in_range_start_date,
-        bubble_created_at
+        original_created_at
       `)
       .eq('guest_user_id', userId)
       .eq('listing_id', listingId)
       .neq('is_deleted', true)
-      .order('bubble_created_at', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     if (error) throw error;
     return { data: data || [], error: null };

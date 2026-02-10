@@ -8,21 +8,15 @@
  * 1. Fetch listing from Supabase
  * 2. Extract host rates from listing
  * 3. Calculate all pricing arrays and scalars
- * 4. Generate Bubble-compatible ID via RPC
+ * 4. Generate unique ID via RPC
  * 5. Insert pricing_list record
  * 6. Update listing FK to point to new pricing_list
- * 7. Enqueue Bubble sync
  *
  * NO FALLBACK PRINCIPLE: Fails fast if listing not found or invalid
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { validateRequiredFields } from '../../_shared/validation.ts';
-import {
-  enqueueBubbleSync,
-  triggerQueueProcessing,
-  filterBubbleIncompatibleFields,
-} from '../../_shared/queueSync.ts';
 import { calculatePricingList } from '../utils/pricingCalculator.ts';
 
 interface CreatePayload {
@@ -71,7 +65,7 @@ export async function handleCreate(
 
   try {
     // Step 1: Fetch listing
-    console.log('[pricing-list:create] Step 1/4: Fetching listing...');
+    console.log('[pricing-list:create] Step 1/5: Fetching listing...');
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
       .select(`
@@ -99,7 +93,7 @@ export async function handleCreate(
     console.log('[pricing-list:create] ✅ Step 1 complete - Listing found');
 
     // Step 2: Calculate pricing
-    console.log('[pricing-list:create] Step 2/4: Calculating pricing...');
+    console.log('[pricing-list:create] Step 2/5: Calculating pricing...');
     const pricingData = calculatePricingList({
       listing,
       unitMarkup: unit_markup,
@@ -108,10 +102,10 @@ export async function handleCreate(
     console.log('[pricing-list:create] ✅ Step 2 complete - Pricing calculated');
     console.log('[pricing-list:create] Starting price:', pricingData.startingNightlyPrice);
 
-    // Step 3: Generate Bubble-compatible ID via RPC
-    console.log('[pricing-list:create] Step 3/6: Generating pricing_list ID...');
+    // Step 3: Generate unique ID via RPC
+    console.log('[pricing-list:create] Step 3/5: Generating pricing_list ID...');
 
-    const { data: pricingListId, error: rpcError } = await supabase.rpc('generate_bubble_id');
+    const { data: pricingListId, error: rpcError } = await supabase.rpc('generate_unique_id');
 
     if (rpcError || !pricingListId) {
       console.error('[pricing-list:create] Failed to generate ID:', rpcError);
@@ -121,7 +115,7 @@ export async function handleCreate(
     console.log('[pricing-list:create] ✅ Step 3 complete - Generated ID:', pricingListId);
 
     // Step 4: Insert pricing_list
-    console.log('[pricing-list:create] Step 4/6: Inserting pricing_list...');
+    console.log('[pricing-list:create] Step 4/5: Inserting pricing_list...');
     const now = new Date().toISOString();
 
     // Note: Only include columns that exist in pricing_list table schema
@@ -161,7 +155,7 @@ export async function handleCreate(
     console.log('[pricing-list:create] ✅ Step 4 complete - Pricing list saved');
 
     // Step 5: Update listing FK to point to new pricing_list
-    console.log('[pricing-list:create] Step 5/6: Updating listing FK...');
+    console.log('[pricing-list:create] Step 5/5: Updating listing FK...');
 
     const { error: updateError } = await supabase
       .from('listing')
@@ -175,23 +169,6 @@ export async function handleCreate(
 
     console.log('[pricing-list:create] ✅ Step 5 complete - Listing FK updated');
 
-    // Step 6: Enqueue Bubble sync
-    console.log('[pricing-list:create] Step 6/6: Enqueueing Bubble sync...');
-
-    await enqueueBubbleSync(supabase, {
-      correlationId: `pricing_list:${pricingListId}`,
-      items: [{
-        sequence: 1,
-        table: 'pricing_list',
-        recordId: pricingListId,
-        operation: 'INSERT',
-        payload: filterBubbleIncompatibleFields(pricingListRecord),
-      }],
-    });
-
-    triggerQueueProcessing();
-
-    console.log('[pricing-list:create] ✅ Step 6 complete - Sync queued');
     console.log('[pricing-list:create] ========== SUCCESS ==========');
 
     return {

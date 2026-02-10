@@ -3,12 +3,10 @@
  * Operations for creating and managing documents sent to hosts
  *
  * Actions:
- * - list_policies: Get all policy documents from Bubble
- * - list_hosts: Get all host users from Supabase
+ * - list_policies: Get all policy documents
+ * - list_hosts: Get all host users
  * - create: Create a new document sent record
  * - request_change: Submit a change request for a document
- *
- * This function bridges data from Bubble (policy documents) and Supabase (users, documentssent)
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
@@ -152,9 +150,8 @@ function generateId(): string {
 /**
  * List all policy documents
  *
- * Since policy documents may be in Bubble, we'll try to fetch from:
- * 1. A local Supabase table (if synced) - zatpoliciesdocuments
- * 2. Fallback: Return a message that policies need to be synced
+ * Fetch policy documents from Supabase.
+ * Tries multiple table naming patterns for backward compatibility.
  */
 async function handleListPolicies(supabase: SupabaseClient) {
   console.log('[document] Fetching policy documents...');
@@ -192,11 +189,10 @@ async function handleListPolicies(supabase: SupabaseClient) {
   }
 
   // If no local table found, return empty array with a note
-  // In a full implementation, this would call the Bubble Data API
   console.log('[document] No policy documents table found in Supabase');
 
   // For now, return some mock data to demonstrate the UI
-  // TODO: Implement Bubble Data API call to fetch from 'ZAT-Policies Documents'
+  // TODO: Create and populate a policies table in Supabase
   return [
     { id: 'policy_lease_agreement', Name: 'Standard Lease Agreement' },
     { id: 'policy_house_rules', Name: 'House Rules Document' },

@@ -998,7 +998,7 @@ export default function SearchScheduleSelector({
       <SelectorRow>
         <CalendarIcon>
           <img
-            src="https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1748370325535x745487629939088300/calendar-minimalistic-svgrepo-com%202.svg"
+            src="/assets/images/calendar-minimalistic-svgrepo-com-2.svg"
             alt="Calendar"
           />
         </CalendarIcon>

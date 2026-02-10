@@ -14,7 +14,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 interface GetUserDataPayload {
@@ -139,14 +139,14 @@ export async function handleGetUserData(
     };
 
   } catch (error: any) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[get-user-data] ========== ERROR ==========');
     console.error('[get-user-data] Error:', error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to get user data: ${error.message}`,
       500,
       error

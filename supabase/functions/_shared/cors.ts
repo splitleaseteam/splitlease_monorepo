@@ -1,6 +1,6 @@
 /**
  * CORS configuration for Supabase Edge Functions
- * Split Lease - Bubble API Migration
+ * Split Lease
  */
 
 export const corsHeaders = {

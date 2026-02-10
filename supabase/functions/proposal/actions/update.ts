@@ -240,9 +240,9 @@ export async function handleUpdate(
   // HOST COUNTEROFFER FIELDS
   // ================================================
 
-  if (input.hc_nightly_price !== undefined) {
-    updates["hc nightly price"] = input.hc_nightly_price;
-    updatedFields.push("hc_nightly_price");
+  if (input.host_counter_offer_nightly_price !== undefined) {
+    updates["host_counter_offer_nightly_price"] = input.host_counter_offer_nightly_price;
+    updatedFields.push("host_counter_offer_nightly_price");
   }
 
   // Set "counter offer happened" flag when status changes to counteroffer
@@ -250,54 +250,54 @@ export async function handleUpdate(
   if (input.status === "Host Counteroffer Submitted / Awaiting Guest Review") {
     updates["counter offer happened"] = true;
   }
-  if (input.hc_days_selected !== undefined) {
-    updates["hc days selected"] = input.hc_days_selected;
-    updatedFields.push("hc_days_selected");
+  if (input.host_counter_offer_days_selected !== undefined) {
+    updates["host_counter_offer_days_selected"] = input.host_counter_offer_days_selected;
+    updatedFields.push("host_counter_offer_days_selected");
   }
-  if (input.hc_nights_selected !== undefined) {
-    updates["hc nights selected"] = input.hc_nights_selected;
-    updates["hc nights per week"] = input.hc_nights_selected.length;
-    updatedFields.push("hc_nights_selected");
+  if (input.host_counter_offer_nights_selected !== undefined) {
+    updates["host_counter_offer_nights_selected"] = input.host_counter_offer_nights_selected;
+    updates["host_counter_offer_nights_per_week"] = input.host_counter_offer_nights_selected.length;
+    updatedFields.push("host_counter_offer_nights_selected");
   }
-  if (input.hc_nights_per_week !== undefined) {
-    updates["hc nights per week"] = input.hc_nights_per_week;
-    updatedFields.push("hc_nights_per_week");
+  if (input.host_counter_offer_nights_per_week !== undefined) {
+    updates["host_counter_offer_nights_per_week"] = input.host_counter_offer_nights_per_week;
+    updatedFields.push("host_counter_offer_nights_per_week");
   }
-  if (input.hc_move_in_date !== undefined) {
-    updates["hc move in date"] = input.hc_move_in_date;
-    updatedFields.push("hc_move_in_date");
+  if (input.host_counter_offer_move_in_date !== undefined) {
+    updates["host_counter_offer_move_in_date"] = input.host_counter_offer_move_in_date;
+    updatedFields.push("host_counter_offer_move_in_date");
   }
-  if (input.hc_reservation_span_weeks !== undefined) {
-    updates["hc reservation span (weeks)"] = input.hc_reservation_span_weeks;
-    updatedFields.push("hc_reservation_span_weeks");
+  if (input.host_counter_offer_reservation_span_weeks !== undefined) {
+    updates["host_counter_offer_reservation_span_weeks"] = input.host_counter_offer_reservation_span_weeks;
+    updatedFields.push("host_counter_offer_reservation_span_weeks");
   }
-  if (input.hc_cleaning_fee !== undefined) {
-    updates["hc cleaning fee"] = input.hc_cleaning_fee;
-    updatedFields.push("hc_cleaning_fee");
+  if (input.host_counter_offer_cleaning_fee !== undefined) {
+    updates["host_counter_offer_cleaning_fee"] = input.host_counter_offer_cleaning_fee;
+    updatedFields.push("host_counter_offer_cleaning_fee");
   }
-  if (input.hc_damage_deposit !== undefined) {
-    updates["hc damage deposit"] = input.hc_damage_deposit;
-    updatedFields.push("hc_damage_deposit");
+  if (input.host_counter_offer_damage_deposit !== undefined) {
+    updates["host_counter_offer_damage_deposit"] = input.host_counter_offer_damage_deposit;
+    updatedFields.push("host_counter_offer_damage_deposit");
   }
-  if (input.hc_total_price !== undefined) {
-    updates["hc total price"] = input.hc_total_price;
-    updatedFields.push("hc_total_price");
+  if (input.host_counter_offer_total_price !== undefined) {
+    updates["host_counter_offer_total_price"] = input.host_counter_offer_total_price;
+    updatedFields.push("host_counter_offer_total_price");
   }
-  if (input.hc_four_week_rent !== undefined) {
-    updates["hc 4 week rent"] = input.hc_four_week_rent;
-    updatedFields.push("hc_four_week_rent");
+  if (input.host_counter_offer_four_week_rent !== undefined) {
+    updates["host_counter_offer_4_week_rent"] = input.host_counter_offer_four_week_rent;
+    updatedFields.push("host_counter_offer_four_week_rent");
   }
-  if (input.hc_check_in !== undefined) {
-    updates["hc check in day"] = input.hc_check_in;
-    updatedFields.push("hc_check_in");
+  if (input.host_counter_offer_check_in !== undefined) {
+    updates["host_counter_offer_check_in_day"] = input.host_counter_offer_check_in;
+    updatedFields.push("host_counter_offer_check_in");
   }
-  if (input.hc_check_out !== undefined) {
-    updates["hc check out day"] = input.hc_check_out;
-    updatedFields.push("hc_check_out");
+  if (input.host_counter_offer_check_out !== undefined) {
+    updates["host_counter_offer_check_out_day"] = input.host_counter_offer_check_out;
+    updatedFields.push("host_counter_offer_check_out");
   }
-  if (input.hc_house_rules !== undefined) {
-    updates["hc house rules"] = input.hc_house_rules;
-    updatedFields.push("hc_house_rules");
+  if (input.host_counter_offer_house_rules !== undefined) {
+    updates["host_counter_offer_house_rules"] = input.host_counter_offer_house_rules;
+    updatedFields.push("host_counter_offer_house_rules");
   }
 
   // ================================================
@@ -305,14 +305,14 @@ export async function handleUpdate(
   // ================================================
 
   const hasCounterofferInputs =
-    input.hc_nights_selected !== undefined ||
-    input.hc_nights_per_week !== undefined ||
-    input.hc_reservation_span_weeks !== undefined ||
-    input.hc_move_in_date !== undefined ||
-    input.hc_check_in !== undefined ||
-    input.hc_check_out !== undefined ||
-    input.hc_days_selected !== undefined ||
-    input.hc_house_rules !== undefined ||
+    input.host_counter_offer_nights_selected !== undefined ||
+    input.host_counter_offer_nights_per_week !== undefined ||
+    input.host_counter_offer_reservation_span_weeks !== undefined ||
+    input.host_counter_offer_move_in_date !== undefined ||
+    input.host_counter_offer_check_in !== undefined ||
+    input.host_counter_offer_check_out !== undefined ||
+    input.host_counter_offer_days_selected !== undefined ||
+    input.host_counter_offer_house_rules !== undefined ||
     input.status === "Host Counteroffer Submitted / Awaiting Guest Review";
 
   if (hasCounterofferInputs) {
@@ -351,21 +351,21 @@ export async function handleUpdate(
         .toLowerCase() as RentalType);
 
     const hcNightsSelected =
-      input.hc_nights_selected ||
-      (proposalData["hc nights selected"] as number[] | undefined) ||
+      input.host_counter_offer_nights_selected ||
+      (proposalData["host_counter_offer_nights_selected"] as number[] | undefined) ||
       (proposalData["Nights Selected (Nights list)"] as number[] | undefined) ||
       [];
 
     const hcNightsPerWeek =
-      input.hc_nights_per_week ||
+      input.host_counter_offer_nights_per_week ||
       (Array.isArray(hcNightsSelected) ? hcNightsSelected.length : 0) ||
-      (proposalData["hc nights per week"] as number | undefined) ||
+      (proposalData["host_counter_offer_nights_per_week"] as number | undefined) ||
       (proposalData["nights per week (num)"] as number | undefined) ||
       0;
 
     const hcReservationWeeks =
-      input.hc_reservation_span_weeks ||
-      (proposalData["hc reservation span (weeks)"] as number | undefined) ||
+      input.host_counter_offer_reservation_span_weeks ||
+      (proposalData["host_counter_offer_reservation_span_weeks"] as number | undefined) ||
       (proposalData["Reservation Span (Weeks)"] as number | undefined) ||
       0;
 
@@ -449,24 +449,24 @@ export async function handleUpdate(
           ? hostCompPerPeriod * 4
           : hostCompPerNight * hcNightsPerWeek * 4;
 
-    updates["hc nights per week"] = hcNightsPerWeek;
-    updates["hc nightly price"] = roundToTwoDecimals(guestNightlyPrice);
-    updates["hc total price"] = roundToTwoDecimals(totalGuestPrice);
-    updates["hc 4 week rent"] = roundToTwoDecimals(fourWeekRent);
-    updates["hc 4 week compensation"] = roundToTwoDecimals(fourWeekCompensation);
-    updates["hc host compensation (per period)"] = roundToTwoDecimals(hostCompPerPeriod);
-    updates["hc total host compensation"] = roundToTwoDecimals(totalHostCompensation);
-    updates["hc duration in months"] = roundToTwoDecimals(durationMonths);
+    updates["host_counter_offer_nights_per_week"] = hcNightsPerWeek;
+    updates["host_counter_offer_nightly_price"] = roundToTwoDecimals(guestNightlyPrice);
+    updates["host_counter_offer_total_price"] = roundToTwoDecimals(totalGuestPrice);
+    updates["host_counter_offer_4_week_rent"] = roundToTwoDecimals(fourWeekRent);
+    updates["host_counter_offer_4_week_compensation"] = roundToTwoDecimals(fourWeekCompensation);
+    updates["host_counter_offer_host_compensation_per_period"] = roundToTwoDecimals(hostCompPerPeriod);
+    updates["host_counter_offer_total_host_compensation"] = roundToTwoDecimals(totalHostCompensation);
+    updates["host_counter_offer_duration_in_months"] = roundToTwoDecimals(durationMonths);
 
     updatedFields.push(
-      "hc_nights_per_week",
-      "hc_nightly_price",
-      "hc_total_price",
-      "hc_four_week_rent",
-      "hc_four_week_compensation",
-      "hc_host_compensation",
-      "hc_total_host_compensation",
-      "hc_duration_in_months"
+      "host_counter_offer_nights_per_week",
+      "host_counter_offer_nightly_price",
+      "host_counter_offer_total_price",
+      "host_counter_offer_four_week_rent",
+      "host_counter_offer_four_week_compensation",
+      "host_counter_offer_host_compensation",
+      "host_counter_offer_total_host_compensation",
+      "host_counter_offer_duration_in_months"
     );
   }
 
@@ -522,7 +522,7 @@ export async function handleUpdate(
   // Send AI-generated summary to guest explaining what changed in the counteroffer
 
   const isCounterOfferStatus = input.status === "Host Counteroffer Submitted / Awaiting Guest Review";
-  const hasCounterOfferFields = updatedFields.some(f => f.startsWith("hc_"));
+  const hasCounterOfferFields = updatedFields.some(f => f.startsWith("host_counter_offer_"));
 
   if (isCounterOfferStatus && hasCounterOfferFields) {
     try {
@@ -538,7 +538,7 @@ export async function handleUpdate(
 
         // Build context for AI summary
         const originalDays = proposalData["Days Selected"] as number[] || [];
-        const counterDays = input.hc_days_selected || originalDays;
+        const counterDays = input.host_counter_offer_days_selected || originalDays;
 
         const counterSummary = await generateCounterOfferSummary(supabase, {
           originalWeeks: proposalData["Reservation Span (Weeks)"] || 0,
@@ -546,11 +546,11 @@ export async function handleUpdate(
           originalDays: formatDaysAsRange(originalDays),
           originalNightlyPrice: proposalData["proposal nightly price"] || 0,
           originalTotalPrice: proposalData["Total Price for Reservation (guest)"] || 0,
-          counterWeeks: input.hc_reservation_span_weeks || proposalData["Reservation Span (Weeks)"] || 0,
-          counterMoveIn: formatDateForDisplay(input.hc_move_in_date || proposalData["Move in range start"] || ""),
+          counterWeeks: input.host_counter_offer_reservation_span_weeks || proposalData["Reservation Span (Weeks)"] || 0,
+          counterMoveIn: formatDateForDisplay(input.host_counter_offer_move_in_date || proposalData["Move in range start"] || ""),
           counterDays: formatDaysAsRange(counterDays),
-          counterNightlyPrice: input.hc_nightly_price || proposalData["proposal nightly price"] || 0,
-          counterTotalPrice: input.hc_total_price || proposalData["Total Price for Reservation (guest)"] || 0,
+          counterNightlyPrice: input.host_counter_offer_nightly_price || proposalData["proposal nightly price"] || 0,
+          counterTotalPrice: input.host_counter_offer_total_price || proposalData["Total Price for Reservation (guest)"] || 0,
         });
 
         // Build the full message with intro

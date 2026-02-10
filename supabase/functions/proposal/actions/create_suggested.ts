@@ -43,7 +43,7 @@ import {
   updateThreadLastMessage,
   getUserProfile,
   getListingName,
-  generateBubbleId,
+  generatePlatformId,
 } from "../../_shared/messagingHelpers.ts";
 import {
   getCTAForProposalStatus,
@@ -390,15 +390,15 @@ export async function handleCreateSuggested(
   // GENERATE IDS
   // ================================================
 
-  // Generate Bubble-compatible ID for proposal
-  const { data: proposalId, error: proposalIdError } = await supabase.rpc('generate_bubble_id');
+  // Generate unique ID for proposal
+  const { data: proposalId, error: proposalIdError } = await supabase.rpc('generate_unique_id');
   if (proposalIdError || !proposalId) {
     console.error(`[proposal:create_suggested] Proposal ID generation failed:`, proposalIdError);
     throw new SupabaseSyncError('Failed to generate proposal ID');
   }
 
-  // Generate Bubble-compatible ID for thread
-  const { data: threadId, error: threadIdError } = await supabase.rpc('generate_bubble_id');
+  // Generate unique ID for thread
+  const { data: threadId, error: threadIdError } = await supabase.rpc('generate_unique_id');
   if (threadIdError || !threadId) {
     console.error(`[proposal:create_suggested] Thread ID generation failed:`, threadIdError);
     throw new SupabaseSyncError('Failed to generate thread ID');
@@ -473,7 +473,7 @@ export async function handleCreateSuggested(
     "rental type": listingData["rental type"],
     "House Rules": listingData["Features - House Rules"],
     "week selection": listingData["Weeks offered"],
-    "hc house rules": listingData["Features - House Rules"],
+    "host_counter_offer_house_rules": listingData["Features - House Rules"],
     "Location - Address": listingData["Location - Address"],
     "Location - Address slightly different": listingData["Location - slightly different address"],
 
@@ -606,7 +606,7 @@ export async function handleCreateSuggested(
             // The frontend (SuggestedProposalPopup) queries this table to display
             // the "Why This Listing?" explanation to the guest
             try {
-              const summaryId = await generateBubbleId(supabase);
+              const summaryId = await generatePlatformId(supabase);
               const now = new Date().toISOString();
 
               const { error: summaryInsertError } = await supabase

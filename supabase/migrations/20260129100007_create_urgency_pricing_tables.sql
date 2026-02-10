@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS urgency_pricing_cache (
     lookback_window INTEGER DEFAULT 90 CHECK (lookback_window > 0),
 
     -- Transaction context (optional)
-    transaction_type VARCHAR(20) CHECK (transaction_type IN ('buyout', 'crash', 'swap')),
+    transaction_type VARCHAR(20) CHECK (transaction_type IN ('full_week', 'shared_night', 'alternating')),
 
     -- Price projections (stored as JSON)
     projections JSONB,

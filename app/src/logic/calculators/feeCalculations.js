@@ -14,25 +14,25 @@ export const FEE_RATES = {
 // ============================================================================
 // SCHEDULE DASHBOARD FEE STRUCTURE
 // ============================================================================
-// Buyout: 1.5% per party (both requestor and recipient pay 1.5%)
-// Swap: $5 flat (initiator only)
+// Full Week: 1.5% per party (both requestor and recipient pay 1.5%)
+// Alternating: $5 flat (initiator only)
 // Share: $5 flat (initiator only)
 
 export const FEE_STRUCTURE = {
-    buyout: {
+    full_week: {
         type: 'percentage',
         rate: 0.015,       // 1.5% per party
         minFee: null,
         maxFee: null,
         perParty: true,
         label: 'Service Fee (1.5%)',
-        description: 'Each party pays 1.5% of the buyout amount'
+        description: 'Each party pays 1.5% of the full week amount'
     },
-    swap: {
+    alternating: {
         type: 'flat',
         amount: 5.00,
         initiatorOnly: true,
-        label: 'Swap Fee',
+        label: 'Alternating Fee',
         description: 'Initiator pays a $5 fee'
     },
     share: {
@@ -46,8 +46,8 @@ export const FEE_STRUCTURE = {
 
 /**
  * Calculate transaction fee based on type
- * @param {string} transactionType - 'buyout', 'swap', or 'share'
- * @param {number} baseAmount - Base transaction amount (for buyout)
+ * @param {string} transactionType - 'full_week', 'alternating', or 'share'
+ * @param {number} baseAmount - Base transaction amount (for full_week)
  * @returns {Object} Fee breakdown with totalFee, requestorFee, recipientFee
  */
 export const calculateTransactionFee = (transactionType, baseAmount = 0) => {
@@ -108,8 +108,8 @@ export const calculateTransactionFee = (transactionType, baseAmount = 0) => {
 
 /**
  * Calculate what requestor pays and what recipient receives
- * @param {string} transactionType - 'buyout', 'swap', or 'share'
- * @param {number} baseAmount - The offer/buyout amount
+ * @param {string} transactionType - 'full_week', 'alternating', or 'share'
+ * @param {number} baseAmount - The offer/full_week amount
  * @returns {Object} Payment breakdown
  */
 export const calculatePaymentBreakdown = (transactionType, baseAmount) => {

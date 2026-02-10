@@ -127,10 +127,10 @@ async function sendInquiryWelcomeMessages(
 export async function handleSendMessage(
   supabaseAdmin: SupabaseClient,
   payload: Record<string, unknown>,
-  user: { id: string; email: string; bubbleId?: string }
+  user: { id: string; email: string; platformId?: string }
 ): Promise<SendMessageResult> {
   console.log('[sendMessage] ========== SEND MESSAGE (NATIVE) ===========');
-  console.log('[sendMessage] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
+  console.log('[sendMessage] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.platformId);
   console.log('[sendMessage] RAW PAYLOAD:', JSON.stringify(payload, null, 2));
 
   const typedPayload = payload as unknown as SendMessagePayload;

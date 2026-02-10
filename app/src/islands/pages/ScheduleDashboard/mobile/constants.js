@@ -9,8 +9,8 @@
  * Used to determine which content to render in the bottom sheet
  */
 export const SHEET_TYPES = {
-  BUYOUT: 'buyout',
-  SWAP: 'swap',
+  FULL_WEEK: 'full_week',
+  ALTERNATING: 'alternating',
   SHARE: 'share',
   COUNTER: 'counter',
   CONFIRM: 'confirm',

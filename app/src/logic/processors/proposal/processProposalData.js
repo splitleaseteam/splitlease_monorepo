@@ -25,7 +25,7 @@
  *     Guest: 'user456',
  *     'Move-In Date': '2025-01-15',
  *     'Days of Week': [1, 2, 3],
- *     'hc Days of Week': null,
+ *     'host_counter_offer_days_of_week': null,
  *     'Proposal Status': 'Host Countered',
  *     ...
  *   }
@@ -66,36 +66,36 @@ export function processProposalData({ rawProposal, listing = null, guest = null,
 
   // Merge terms: Use host-changed (hc) fields if they exist, otherwise use original
   const currentTerms = {
-    moveInDate: hasHostCounteroffer && rawProposal['hc Move-In Date']
-      ? rawProposal['hc Move-In Date']
+    moveInDate: hasHostCounteroffer && rawProposal['host_counter_offer_move_in_date']
+      ? rawProposal['host_counter_offer_move_in_date']
       : rawProposal['Move-In Date'],
 
-    daysOfWeek: hasHostCounteroffer && rawProposal['hc Days of Week']
-      ? rawProposal['hc Days of Week']
+    daysOfWeek: hasHostCounteroffer && rawProposal['host_counter_offer_days_of_week']
+      ? rawProposal['host_counter_offer_days_of_week']
       : rawProposal['Days of Week'],
 
-    weeks: hasHostCounteroffer && rawProposal['hc Weeks']
-      ? rawProposal['hc Weeks']
+    weeks: hasHostCounteroffer && rawProposal['host_counter_offer_weeks']
+      ? rawProposal['host_counter_offer_weeks']
       : rawProposal.Weeks,
 
-    totalRent: hasHostCounteroffer && rawProposal['hc Total Rent']
-      ? rawProposal['hc Total Rent']
+    totalRent: hasHostCounteroffer && rawProposal['host_counter_offer_total_price']
+      ? rawProposal['host_counter_offer_total_price']
       : rawProposal['Total Rent'],
 
-    cleaningFee: hasHostCounteroffer && rawProposal['hc Cleaning Fee']
-      ? rawProposal['hc Cleaning Fee']
+    cleaningFee: hasHostCounteroffer && rawProposal['host_counter_offer_cleaning_fee']
+      ? rawProposal['host_counter_offer_cleaning_fee']
       : rawProposal['Cleaning Fee'],
 
-    securityDeposit: hasHostCounteroffer && rawProposal['hc Security Deposit']
-      ? rawProposal['hc Security Deposit']
+    securityDeposit: hasHostCounteroffer && rawProposal['host_counter_offer_damage_deposit']
+      ? rawProposal['host_counter_offer_damage_deposit']
       : rawProposal['Security Deposit'],
 
-    houseRules: hasHostCounteroffer && rawProposal['hc House Rules']
-      ? rawProposal['hc House Rules']
+    houseRules: hasHostCounteroffer && rawProposal['host_counter_offer_house_rules']
+      ? rawProposal['host_counter_offer_house_rules']
       : rawProposal['House Rules'],
 
-    moveOutDate: hasHostCounteroffer && rawProposal['hc Move-Out Date']
-      ? rawProposal['hc Move-Out Date']
+    moveOutDate: hasHostCounteroffer && rawProposal['host_counter_offer_move_out_date']
+      ? rawProposal['host_counter_offer_move_out_date']
       : rawProposal['Move-Out Date']
   }
 
@@ -137,8 +137,8 @@ export function processProposalData({ rawProposal, listing = null, guest = null,
     cancellationReason: rawProposal['reason for cancellation'] || null,
 
     // Timestamps
-    createdDate: rawProposal.bubble_created_at,
-    modifiedDate: rawProposal.bubble_updated_at,
+    createdDate: rawProposal.original_created_at,
+    modifiedDate: rawProposal.original_updated_at,
 
     // Enriched data (if provided)
     _listing: listing,

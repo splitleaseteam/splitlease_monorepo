@@ -76,7 +76,7 @@ function normalizeGuest(guest) {
     work_verified: hasWorkVerification,
     is_verified: isUserVerified,
     review_count: guest.review_count || 0,
-    created_at: guest.bubble_created_at || guest.created_at || null
+    created_at: guest.original_created_at || guest.created_at || null
   };
 }
 
@@ -107,7 +107,7 @@ function normalizeProposal(proposal, normalizedGuest = null) {
     end_date: proposal.planned_move_out_date || proposal.end_date || null,
     move_in_range_start: proposal.move_in_range_start_date || proposal.move_in_range_start || null,
     move_in_range_end: proposal.move_in_range_end_date || proposal.move_in_range_end || null,
-    created_at: proposal.bubble_created_at || proposal.created_at || null,
+    created_at: proposal.original_created_at || proposal.created_at || null,
 
     // Days/Schedule
     days_selected: proposal.guest_selected_days_numbers_json || proposal.days_selected || [],
@@ -269,7 +269,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         // Get proposal counts and most recent proposal date for each listing
         const { data: proposalStats, error: statsError } = await supabase
           .from('booking_proposal')
-          .select('listing_id, bubble_created_at')
+          .select('listing_id, original_created_at')
           .in('listing_id', listingIds)
           .or('is_deleted.is.null,is_deleted.eq.false');
 
@@ -287,7 +287,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           }
           statsMap[listingId].count++;
           countsMap[listingId] = (countsMap[listingId] || 0) + 1;
-          const createdDate = new Date(p.bubble_created_at);
+          const createdDate = new Date(p.original_created_at);
           if (!statsMap[listingId].mostRecent || createdDate > statsMap[listingId].mostRecent) {
             statsMap[listingId].mostRecent = createdDate;
           }
@@ -426,8 +426,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           guest_stated_need_for_space,
           guest_about_yourself_text,
           guest_introduction_message,
-          bubble_created_at,
-          bubble_updated_at,
+          original_created_at,
+          original_updated_at,
           virtual_meeting_record_id,
           has_host_counter_offer,
           host_proposed_reservation_span_weeks,
@@ -442,7 +442,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         `)
         .eq('listing_id', listingId)
         .neq('is_deleted', true)
-        .order('bubble_created_at', { ascending: false });
+        .order('original_created_at', { ascending: false });
 
       if (error) {
         console.error('[useHostProposalsPageLogic] Error fetching proposals:', error);
@@ -458,7 +458,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
           const { data: guests, error: guestError } = await supabase
             .from('user')
-            .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", review_count, bubble_created_at')
+            .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", review_count, original_created_at')
             .in('id', guestIds);
 
           if (guestError) {
@@ -527,7 +527,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             .select('*')
             .in('"Proposal associated"', proposalIds)
             .eq('"To Account"', hostUserId)
-            .order('bubble_created_at', { ascending: false });
+            .order('original_created_at', { ascending: false });
 
           if (summariesError) {
             console.error('[useHostProposalsPageLogic] Error fetching negotiation summaries:', summariesError);
@@ -767,10 +767,10 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    *
    * Transforms frontend field names to Edge Function expected format:
    * - Frontend uses camelCase (numberOfWeeks, checkIn, etc.)
-   * - Edge Function expects hc_ prefix snake_case (hc_reservation_span_weeks, hc_check_in, etc.)
+   * - Edge Function expects host_counter_offer_ prefix snake_case (host_counter_offer_reservation_span_weeks, host_counter_offer_check_in, etc.)
    * - Day/night values come as strings ('Monday', 'Monday Night') and must be converted to indices
    *
-   * IMPORTANT: ALL hc_ fields must be populated (with either new or original values)
+   * IMPORTANT: ALL host_counter_offer_ fields must be populated (with either new or original values)
    * to enable strikethrough comparison in the UI. If a field wasn't changed,
    * we copy the original value to the hc_ field.
    */
@@ -837,23 +837,23 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         status: 'Host Counteroffer Submitted / Awaiting Guest Review',
 
         // Schedule fields - use new value if provided, otherwise copy original
-        hc_reservation_span_weeks: hcReservationSpanWeeks,
-        hc_check_in: convertedCheckIn ?? (typeof originalCheckIn === 'number' ? originalCheckIn : parseInt(originalCheckIn, 10) || 0),
-        hc_check_out: convertedCheckOut ?? (typeof originalCheckOut === 'number' ? originalCheckOut : parseInt(originalCheckOut, 10) || 0),
-        hc_nights_selected: hcNightsSelected,
-        hc_days_selected: convertedDays ?? originalDays,
-        hc_move_in_date: convertedMoveIn ?? originalMoveIn,
-        hc_nights_per_week: hcNightsPerWeek,
+        host_counter_offer_reservation_span_weeks: hcReservationSpanWeeks,
+        host_counter_offer_check_in: convertedCheckIn ?? (typeof originalCheckIn === 'number' ? originalCheckIn : parseInt(originalCheckIn, 10) || 0),
+        host_counter_offer_check_out: convertedCheckOut ?? (typeof originalCheckOut === 'number' ? originalCheckOut : parseInt(originalCheckOut, 10) || 0),
+        host_counter_offer_nights_selected: hcNightsSelected,
+        host_counter_offer_days_selected: convertedDays ?? originalDays,
+        host_counter_offer_move_in_date: convertedMoveIn ?? originalMoveIn,
+        host_counter_offer_nights_per_week: hcNightsPerWeek,
 
         // Financial fields - recalculate based on counteroffer terms
-        hc_nightly_price: hcNightlyPrice,
-        hc_cleaning_fee: parseFloat(originalCleaningFee) || 0,
-        hc_damage_deposit: parseFloat(originalDamageDeposit) || 0,
-        hc_total_price: hcTotalPrice,
-        hc_four_week_rent: hcFourWeekRent,
+        host_counter_offer_nightly_price: hcNightlyPrice,
+        host_counter_offer_cleaning_fee: parseFloat(originalCleaningFee) || 0,
+        host_counter_offer_damage_deposit: parseFloat(originalDamageDeposit) || 0,
+        host_counter_offer_total_price: hcTotalPrice,
+        host_counter_offer_four_week_rent: hcFourWeekRent,
 
         // House rules - convert to array of IDs
-        hc_house_rules: Array.isArray(newHouseRules)
+        host_counter_offer_house_rules: Array.isArray(newHouseRules)
           ? newHouseRules.map(rule => rule.id || rule).filter(Boolean)
           : []
       };

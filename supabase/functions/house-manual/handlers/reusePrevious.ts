@@ -48,9 +48,9 @@ const REUSABLE_FIELDS = [
 ];
 
 /**
- * Generate a Bubble-compatible ID (mimics their ID format)
+ * Generate a platform-compatible ID
  */
-function generateBubbleId(): string {
+function generatePlatformId(): string {
   const timestamp = Date.now().toString(36);
   const randomPart = Math.random().toString(36).substring(2, 10);
   return `${timestamp}x${randomPart}`;
@@ -144,7 +144,7 @@ export async function handleReusePrevious(
       : null;
 
     suggestionsToCreate.push({
-      _id: generateBubbleId(),
+      _id: generatePlatformId(),
       Content: contentValue,
       "Previous Content": previousContent,
       "Field suggested house manual": field,

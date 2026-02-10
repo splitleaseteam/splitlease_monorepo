@@ -13,8 +13,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import {
-  getUserArchetypeSignals,
-  detectUserArchetype
+  getBehaviorArchetypeSignals,
+  detectBehaviorArchetype
 } from '../_shared/archetype-detection.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 
@@ -297,10 +297,10 @@ async function processUser(
 
   try {
     // Get archetype signals
-    const signals = await getUserArchetypeSignals(supabaseClient, userId);
+    const signals = await getBehaviorArchetypeSignals(supabaseClient, userId);
 
     // Detect archetype
-    const newArchetype = detectUserArchetype(signals);
+    const newArchetype = detectBehaviorArchetype(signals);
     newArchetype.userId = userId;
 
     // Get existing archetype

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FullscreenProposalMapModal Component - v2.0 PROTOCOL REDESIGN
  *
  * A fullscreen map modal that displays all user proposals with price pin markers.
@@ -76,7 +76,7 @@ function getProposalCoordinates(proposal) {
 function getProposalPrice(proposal) {
   const isCounteroffer = proposal.has_host_counter_offer || proposal['counter offer happened'];
   return isCounteroffer
-    ? proposal['hc nightly price']
+    ? proposal['host_counter_offer_nightly_price']
     : proposal.calculated_nightly_price || proposal['proposal nightly price'] || 0;
 }
 
@@ -167,7 +167,7 @@ export default function FullscreenProposalMapModal({
     // Show brief toast notification using protocol colors
     const toast = document.createElement('div');
     toast.className = 'proposal-selected-toast';
-    toast.innerHTML = `<span>âœ“</span> Viewing: ${listingName}`;
+    toast.innerHTML = `<span>✓</span> Viewing: ${listingName}`;
     toast.style.cssText = `
       position: fixed;
       bottom: var(--protocol-space-lg, 24px);
@@ -267,17 +267,17 @@ export default function FullscreenProposalMapModal({
     if (!isOpen) return;
 
     const initMap = () => {
-      console.log('ðŸ—ºï¸ FullscreenProposalMapModal: Initializing map...');
+      console.log('🗺️ FullscreenProposalMapModal: Initializing map...');
 
       if (!mapRef.current) {
-        console.warn('âš ï¸ FullscreenProposalMapModal: mapRef not available');
+        console.warn('⚠️ FullscreenProposalMapModal: mapRef not available');
         setIsLoading(false);
         return;
       }
 
       // Don't recreate map if it already exists
       if (googleMapRef.current) {
-        console.log('âœ… FullscreenProposalMapModal: Map already exists, skipping init');
+        console.log('✅ FullscreenProposalMapModal: Map already exists, skipping init');
         setIsLoading(false);
         return;
       }
@@ -308,16 +308,16 @@ export default function FullscreenProposalMapModal({
       googleMapRef.current = map;
       setMapLoaded(true);
       setIsLoading(false);
-      console.log('âœ… FullscreenProposalMapModal: Map initialized successfully');
+      console.log('✅ FullscreenProposalMapModal: Map initialized successfully');
     };
 
     // Check that both google.maps exists AND ControlPosition is available (indicates full load)
     // This is the same pattern used in GoogleMap.jsx
     if (window.google && window.google.maps && window.google.maps.ControlPosition) {
-      console.log('âœ… FullscreenProposalMapModal: Google Maps API already loaded');
+      console.log('✅ FullscreenProposalMapModal: Google Maps API already loaded');
       initMap();
     } else {
-      console.log('â³ FullscreenProposalMapModal: Waiting for Google Maps API to load...');
+      console.log('⏳ FullscreenProposalMapModal: Waiting for Google Maps API to load...');
       setIsLoading(true);
       window.addEventListener('google-maps-loaded', initMap);
       return () => window.removeEventListener('google-maps-loaded', initMap);

@@ -57,7 +57,7 @@ export const BuyoutCard: React.FC<TransactionCardProps> = ({
       tabIndex={index}
       aria-selected={isSelected}
       aria-expanded={isExpanded}
-      data-transaction-type="buyout"
+      data-transaction-type="full_week"
       onKeyPress={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -77,7 +77,7 @@ export const BuyoutCard: React.FC<TransactionCardProps> = ({
       <div className={styles.cardHeader}>
         <div className={styles.cardTitle}>
           <span className={styles.icon}>🏆</span>
-          <h3>Buyout - Exclusive Access</h3>
+          <h3>Full Week - Exclusive Access</h3>
         </div>
         {option.estimatedAcceptanceProbability > 0.6 && (
           <div className={styles.confidenceIndicator}>
@@ -171,7 +171,7 @@ export const BuyoutCard: React.FC<TransactionCardProps> = ({
                 hotel costs!"
               </p>
               <p className={styles.proofAttribution}>
-                - Similar user who chose buyout
+                - Similar user who chose full week
               </p>
             </div>
           )}
@@ -198,7 +198,7 @@ export const BuyoutCard: React.FC<TransactionCardProps> = ({
               </div>
               <p className={styles.probabilityText}>
                 {Math.round(option.estimatedAcceptanceProbability * 100)}%
-                historical acceptance rate for buyouts
+                historical acceptance rate for full week
               </p>
             </div>
           )}

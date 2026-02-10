@@ -231,7 +231,7 @@ export function ClaimListingCard({ listing, onSeeDetails, onDelete }) {
 export function HouseManualCard({ manual, onEdit, onDelete, onViewVisits, isMobile = false }) {
   const manualName = manual.display || manual.Display || 'House Manual';
   const audience = manual.audience || manual.Audience?.Display || 'Not specified';
-  const createdDate = manual.createdOn || manual.bubble_created_at;
+  const createdDate = manual.createdOn || manual.original_created_at;
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown date';

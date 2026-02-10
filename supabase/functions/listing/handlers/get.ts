@@ -2,11 +2,11 @@
  * Get Listing Handler
  * Priority: HIGH
  *
- * Fetches listing data from Bubble Data API
+ * Fetches listing data from Supabase
  * Used by self-listing page to preload listing name and other data
  */
 
-import { BubbleSyncService } from '../../_shared/bubbleSync.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 interface GetListingPayload {
@@ -15,7 +15,7 @@ interface GetListingPayload {
 
 /**
  * Handle fetching a listing by ID
- * Fetches from Bubble Data API and returns the data
+ * Fetches from Supabase and returns the data
  */
 export async function handleGet(
   payload: Record<string, unknown>
@@ -28,31 +28,35 @@ export async function handleGet(
 
   const { listing_id } = payload as GetListingPayload;
 
-  // Initialize BubbleSyncService
-  const bubbleBaseUrl = Deno.env.get('BUBBLE_API_BASE_URL');
-  const bubbleApiKey = Deno.env.get('BUBBLE_API_KEY');
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-  if (!bubbleBaseUrl || !bubbleApiKey || !supabaseUrl || !supabaseServiceKey) {
+  if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Missing required environment variables');
   }
 
-  const syncService = new BubbleSyncService(
-    bubbleBaseUrl,
-    bubbleApiKey,
-    supabaseUrl,
-    supabaseServiceKey
-  );
+  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
 
   console.log('[listing:get] Fetching listing ID:', listing_id);
 
   try {
-    // Fetch listing from Bubble Data API
-    // Note: Bubble type is 'Listing' (not 'zat_listings')
-    const listingData = await syncService.fetchBubbleObject('Listing', listing_id);
+    const { data: listingData, error } = await supabase
+      .from('listing')
+      .select('*')
+      .eq('_id', listing_id)
+      .single();
 
-    console.log('[listing:get] ✅ Listing fetched from Bubble');
+    if (error || !listingData) {
+      console.error('[listing:get] Listing fetch failed:', error);
+      throw new Error(`Listing not found: ${listing_id}`);
+    }
+
+    console.log('[listing:get] Listing fetched from Supabase');
     console.log('[listing:get] Listing Name:', listingData?.Name);
     console.log('[listing:get] ========== SUCCESS ==========');
 

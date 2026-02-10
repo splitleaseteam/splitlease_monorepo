@@ -52,7 +52,7 @@ export const CrashCard: React.FC<TransactionCardProps> = ({
       tabIndex={index}
       aria-selected={isSelected}
       aria-expanded={isExpanded}
-      data-transaction-type="crash"
+      data-transaction-type="shared_night"
       onKeyPress={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -72,11 +72,11 @@ export const CrashCard: React.FC<TransactionCardProps> = ({
       <div className={styles.cardHeader}>
         <div className={styles.cardTitle}>
           <span className={styles.icon}>🛋️</span>
-          <h3>Crash - Shared Space</h3>
+          <h3>Shared Night - Shared Space</h3>
         </div>
-        {option.savingsVsBuyout && option.savingsVsBuyout > 0 && (
+        {option.savingsVsFullWeek && option.savingsVsFullWeek > 0 && (
           <div className={styles.savingsBadge}>
-            {formatSavings(option.savingsVsBuyout)} vs Buyout
+            {formatSavings(option.savingsVsFullWeek)} vs Full Week
           </div>
         )}
       </div>
@@ -116,7 +116,7 @@ export const CrashCard: React.FC<TransactionCardProps> = ({
           <ul className={styles.benefitsList}>
             <li>
               <span className={styles.checkmark}>✓</span>
-              Affordable option (~20% of buyout cost)
+              Affordable option (~20% of full week cost)
             </li>
             <li>
               <span className={styles.checkmark}>✓</span>
@@ -150,11 +150,11 @@ export const CrashCard: React.FC<TransactionCardProps> = ({
           </div>
 
           {/* Cost-Benefit Messaging */}
-          {option.savingsVsBuyout && option.savingsVsBuyout > 0 && (
+          {option.savingsVsFullWeek && option.savingsVsFullWeek > 0 && (
             <div className={styles.costBenefit}>
               <h5>💰 Cost Savings</h5>
               <p>
-                Save {formatCurrency(option.savingsVsBuyout)} compared to buyout
+                Save {formatCurrency(option.savingsVsFullWeek)} compared to full week
                 while still getting access to the room. Perfect for short trips
                 or budget-conscious travelers.
               </p>
@@ -167,10 +167,10 @@ export const CrashCard: React.FC<TransactionCardProps> = ({
               <span className={styles.quoteIcon}>💬</span>
               <p>
                 "Great option when I needed the room but didn't want to pay full
-                buyout. Shared space worked perfectly!"
+                week. Shared space worked perfectly!"
               </p>
               <p className={styles.proofAttribution}>
-                - User who chose crash
+                - User who chose shared night
               </p>
             </div>
           )}
@@ -197,7 +197,7 @@ export const CrashCard: React.FC<TransactionCardProps> = ({
               </div>
               <p className={styles.probabilityText}>
                 {Math.round(option.estimatedAcceptanceProbability * 100)}%
-                historical acceptance rate for crashes
+                historical acceptance rate for shared nights
               </p>
             </div>
           )}

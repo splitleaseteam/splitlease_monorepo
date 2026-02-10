@@ -3,7 +3,7 @@
  * Split Lease - AI Gateway
  *
  * Generates well-written listing descriptions based on user-provided listing data
- * Mirrors the original Bubble.io ChatGPT implementation
+ * AI listing description generator
  */
 
 import { registerPrompt } from "./_registry.ts";

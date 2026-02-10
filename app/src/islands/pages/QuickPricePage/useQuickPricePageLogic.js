@@ -76,8 +76,8 @@ function adaptListingFromSupabase(raw) {
     hostName: `${host.name_first || ''} ${host.name_last || ''}`.trim() || 'Unknown Host',
 
     // Dates
-    createdAt: raw.bubble_created_at ? new Date(raw.bubble_created_at) : null,
-    modifiedAt: raw.bubble_updated_at ? new Date(raw.bubble_updated_at) : null,
+    createdAt: raw.original_created_at ? new Date(raw.original_created_at) : null,
+    modifiedAt: raw.original_updated_at ? new Date(raw.original_updated_at) : null,
   };
 }
 

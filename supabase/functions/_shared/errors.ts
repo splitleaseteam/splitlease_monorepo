@@ -1,30 +1,23 @@
 /**
  * Error handling utilities for Supabase Edge Functions
- * Split Lease - Bubble API Migration
+ * Split Lease
  *
  * NO FALLBACK PRINCIPLE: All errors fail fast without fallback logic
  */
 
-export class BubbleApiError extends Error {
+export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number = 500,
-    public bubbleResponse?: any
+    public apiResponse?: any
   ) {
     super(message);
-    this.name = 'BubbleApiError';
+    this.name = 'ApiError';
   }
 }
 
-export class SupabaseSyncError extends Error {
-  constructor(
-    message: string,
-    public originalError?: any
-  ) {
-    super(message);
-    this.name = 'SupabaseSyncError';
-  }
-}
+/** @deprecated Use ApiError instead */
+export const BubbleApiError = ApiError;
 
 export class ValidationError extends Error {
   constructor(message: string) {
@@ -68,7 +61,7 @@ export function formatErrorResponse(error: Error): { success: false; error: stri
  * Get HTTP status code from error type
  */
 export function getStatusCodeFromError(error: Error): number {
-  if (error instanceof BubbleApiError) {
+  if (error instanceof ApiError) {
     return error.statusCode;
   }
   if (error instanceof AuthenticationError) {

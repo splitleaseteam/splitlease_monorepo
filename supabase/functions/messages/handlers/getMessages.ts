@@ -60,10 +60,10 @@ interface GetMessagesResult {
 export async function handleGetMessages(
   supabaseAdmin: SupabaseClient,
   payload: Record<string, unknown>,
-  user: { id: string; email: string; bubbleId?: string }
+  user: { id: string; email: string; platformId?: string }
 ): Promise<GetMessagesResult> {
   console.log('[getMessages] ========== GET MESSAGES ==========');
-  console.log('[getMessages] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
+  console.log('[getMessages] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.platformId);
   console.log('[getMessages] Payload:', JSON.stringify(payload, null, 2));
 
   // Validate required fields
@@ -118,7 +118,7 @@ export async function handleGetMessages(
     .select(`
       id,
       message_body_text,
-      bubble_created_at,
+      original_created_at,
       sender_user_id,
       is_visible_to_guest,
       is_visible_to_host,
@@ -127,7 +127,7 @@ export async function handleGetMessages(
       call_to_action_button_label
     `)
     .eq('thread_id', thread_id)
-    .order('bubble_created_at', { ascending: true });
+    .order('original_created_at', { ascending: true });
 
   // Apply visibility filter
   if (isHostInThread) {
@@ -159,12 +159,12 @@ export async function handleGetMessages(
   if (senderIds.size > 0) {
     const { data: senders, error: sendersError } = await supabaseAdmin
       .from('user')
-      .select('bubble_legacy_id, first_name, last_name, profile_photo_url')
-      .in('bubble_legacy_id', Array.from(senderIds));
+      .select('legacy_platform_id, first_name, last_name, profile_photo_url')
+      .in('legacy_platform_id', Array.from(senderIds));
 
     if (!sendersError && senders) {
       senderMap = senders.reduce((acc, sender) => {
-        acc[sender.bubble_legacy_id] = {
+        acc[sender.legacy_platform_id] = {
           name: `${sender.first_name || ''} ${sender.last_name || ''}`.trim() || 'Unknown',
           avatar: sender.profile_photo_url,
         };
@@ -179,7 +179,7 @@ export async function handleGetMessages(
     const { data: contact, error: contactError } = await supabaseAdmin
       .from('user')
       .select('first_name, last_name, profile_photo_url')
-      .eq('bubble_legacy_id', contactId)
+      .eq('legacy_platform_id', contactId)
       .single();
 
     if (!contactError && contact) {
@@ -196,7 +196,7 @@ export async function handleGetMessages(
     const { data: listing, error: listingError } = await supabaseAdmin
       .from('listing')
       .select('listing_title')
-      .eq('bubble_legacy_id', thread.listing_id)
+      .eq('legacy_platform_id', thread.listing_id)
       .single();
 
     if (!listingError && listing) {
@@ -211,7 +211,7 @@ export async function handleGetMessages(
     const { data: proposal, error: proposalError } = await supabaseAdmin
       .from('booking_proposal')
       .select('proposal_workflow_status')
-      .eq('bubble_legacy_id', thread.proposal_id)
+      .eq('legacy_platform_id', thread.proposal_id)
       .single();
 
     if (!proposalError && proposal) {
@@ -245,7 +245,7 @@ export async function handleGetMessages(
     }
 
     // Format timestamp
-    const createdDate = msg.bubble_created_at ? new Date(msg.bubble_created_at) : new Date();
+    const createdDate = msg.original_created_at ? new Date(msg.original_created_at) : new Date();
     const timestamp = createdDate.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',

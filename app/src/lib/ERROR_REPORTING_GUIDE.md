@@ -190,7 +190,6 @@ These files perform async operations with bare `try/catch` and would benefit mos
 from structured error reporting:
 
 **API/Data Layer:**
-- `lib/bubbleAPI.js` -- all Bubble API proxy calls
 - `lib/auth.js` -- login, logout, token validation
 - `lib/listingDataFetcher.js` -- listing queries
 - `lib/proposalDataFetcher.js` -- proposal queries with joins

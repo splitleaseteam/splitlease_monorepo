@@ -30,7 +30,7 @@ function calculateNetFlow(transactions) {
     return { amount: 0, direction: 'neutral', formatted: '$0.00' };
   }
 
-  const completedTxns = transactions.filter((t) => t.status === 'complete' && t.type === 'buyout');
+  const completedTxns = transactions.filter((t) => t.status === 'complete' && t.type === 'full_week');
 
   let netAmount = 0;
   for (const txn of completedTxns) {

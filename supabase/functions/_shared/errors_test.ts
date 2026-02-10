@@ -12,7 +12,7 @@
 
 import { assertEquals, assertInstanceOf } from 'jsr:@std/assert@1';
 import {
-  BubbleApiError,
+  ApiError,
   SupabaseSyncError,
   ValidationError,
   AuthenticationError,
@@ -77,37 +77,37 @@ Deno.test('AuthenticationError uses default message', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// BubbleApiError Tests
+// ApiError Tests
 // ─────────────────────────────────────────────────────────────
 
-Deno.test('BubbleApiError extends Error', () => {
-  const error = new BubbleApiError('API failed');
+Deno.test('ApiError extends Error', () => {
+  const error = new ApiError('API failed');
   assertInstanceOf(error, Error);
 });
 
-Deno.test('BubbleApiError has correct name', () => {
-  const error = new BubbleApiError('API failed');
-  assertEquals(error.name, 'BubbleApiError');
+Deno.test('ApiError has correct name', () => {
+  const error = new ApiError('API failed');
+  assertEquals(error.name, 'ApiError');
 });
 
-Deno.test('BubbleApiError includes default status code', () => {
-  const error = new BubbleApiError('API failed');
+Deno.test('ApiError includes default status code', () => {
+  const error = new ApiError('API failed');
   assertEquals(error.statusCode, 500);
 });
 
-Deno.test('BubbleApiError includes custom status code', () => {
-  const error = new BubbleApiError('Not found', 404);
+Deno.test('ApiError includes custom status code', () => {
+  const error = new ApiError('Not found', 404);
   assertEquals(error.statusCode, 404);
 });
 
-Deno.test('BubbleApiError includes bubble response', () => {
-  const response = { error: 'Internal error', code: 'BUBBLE_ERR' };
-  const error = new BubbleApiError('API failed', 500, response);
+Deno.test('ApiError includes response data', () => {
+  const response = { error: 'Internal error', code: 'API_ERR' };
+  const error = new ApiError('API failed', 500, response);
   assertEquals(error.bubbleResponse, response);
 });
 
-Deno.test('BubbleApiError bubble response is undefined when not provided', () => {
-  const error = new BubbleApiError('API failed', 500);
+Deno.test('ApiError response data is undefined when not provided', () => {
+  const error = new ApiError('API failed', 500);
   assertEquals(error.bubbleResponse, undefined);
 });
 
@@ -219,11 +219,11 @@ Deno.test('getStatusCodeFromError() returns 401 for AuthenticationError', () => 
   assertEquals(getStatusCodeFromError(error), 401);
 });
 
-Deno.test('getStatusCodeFromError() returns status from BubbleApiError', () => {
-  const error404 = new BubbleApiError('Not found', 404);
+Deno.test('getStatusCodeFromError() returns status from ApiError', () => {
+  const error404 = new ApiError('Not found', 404);
   assertEquals(getStatusCodeFromError(error404), 404);
 
-  const error500 = new BubbleApiError('Server error', 500);
+  const error500 = new ApiError('Server error', 500);
   assertEquals(getStatusCodeFromError(error500), 500);
 });
 

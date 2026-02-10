@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Simulation Guestside Demo Page Logic Hook
  *
  * Follows the Hollow Component Pattern:
@@ -480,10 +480,10 @@ export function useSimulationGuestsideDemoPageLogic() {
           payload: {
             proposalId: simulationState.testProposalId,
             counterofferData: {
-              'hc nightly price': DEFAULT_COUNTEROFFER.nightlyPrice,
-              'hc nights per week': DEFAULT_COUNTEROFFER.nightsPerWeek,
-              'hc check in day': DEFAULT_COUNTEROFFER.checkInDay,
-              'hc check out day': DEFAULT_COUNTEROFFER.checkOutDay
+              'host_counter_offer_nightly_price': DEFAULT_COUNTEROFFER.nightlyPrice,
+              'host_counter_offer_nights_per_week': DEFAULT_COUNTEROFFER.nightsPerWeek,
+              'host_counter_offer_check_in_day': DEFAULT_COUNTEROFFER.checkInDay,
+              'host_counter_offer_check_out_day': DEFAULT_COUNTEROFFER.checkOutDay
             },
             isUsabilityTest: true,
             hostPersona: 'Host #3'
@@ -553,7 +553,7 @@ export function useSimulationGuestsideDemoPageLogic() {
           lease_type: 'Drafting',
           'Lease signed?': false,
           'is_usability_test': true,
-          bubble_created_at: new Date().toISOString()
+          original_created_at: new Date().toISOString()
         })
         .select('id')
         .single();
@@ -570,7 +570,7 @@ export function useSimulationGuestsideDemoPageLogic() {
         .from('booking_proposal')
         .update({
           proposal_workflow_status: 'Lease Documents Sent for Review',
-          bubble_updated_at: new Date().toISOString()
+          original_updated_at: new Date().toISOString()
         })
         .eq('id', simulationState.testProposalId);
 

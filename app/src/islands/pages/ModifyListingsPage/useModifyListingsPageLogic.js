@@ -279,7 +279,7 @@ export default function useModifyListingsPageLogic() {
       setOriginalListing(structuredClone(data));
       hasChangesRef.current = false;
       currentListingIdRef.current = data._id || data.id; // Track current listing ID
-      setLastSaved(data.bubble_updated_at ? new Date(data.bubble_updated_at) : null);
+      setLastSaved(data.original_updated_at ? new Date(data.original_updated_at) : null);
 
       // Update URL
       const params = new URLSearchParams(window.location.search);
@@ -305,7 +305,7 @@ export default function useModifyListingsPageLogic() {
         .from('listing')
         .select(LISTING_SELECT_FIELDS)
         .eq('is_deleted', false)
-        .order('bubble_updated_at', { ascending: false })
+        .order('original_updated_at', { ascending: false })
         .limit(20);
 
       if (fetchError) throw fetchError;
@@ -338,7 +338,7 @@ export default function useModifyListingsPageLogic() {
         .select(LISTING_SELECT_FIELDS)
         .eq('is_deleted', false)
         .or(`listing_title.ilike.%${query}%,id.ilike.%${query}%,host_display_name.ilike.%${query}%,host_email.ilike.%${query}%,rental_type.ilike.%${query}%`)
-        .order('bubble_updated_at', { ascending: false })
+        .order('original_updated_at', { ascending: false })
         .limit(20);
 
       if (searchError) throw searchError;

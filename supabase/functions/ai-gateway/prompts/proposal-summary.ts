@@ -3,7 +3,6 @@
  * Split Lease - AI Gateway
  *
  * Generates a concise summary of a proposal for host notification
- * Mirrors Bubble workflow Step 24 (core-create-summary-of-proposal)
  */
 
 import { registerPrompt, registerLoader } from "./_registry.ts";

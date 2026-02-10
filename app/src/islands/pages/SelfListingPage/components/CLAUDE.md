@@ -152,9 +152,9 @@ import { NightlyPriceSlider } from './components/NightlyPriceSlider';
 [FIELDS]: oneNightPrice, decayPerNight, fiveNightTotal, calculatedRates
 [VALIDATION]: Checked in listingLocalStore.validateForSubmission()
 
-### Bubble API Submission
-[TRANSFORM]: prepareListingSubmission() maps nightlyPricing to Bubble fields
-[FIELDS]: 'Price 1 night selected', 'Price 2 nights selected', ..., 'Price 5 nights selected', 'Nightly Decay Rate'
+### Listing Submission
+[TRANSFORM]: prepareListingSubmission() maps nightlyPricing to database fields
+[FIELDS]: nightly_rate_for_1_night_stay through nightly_rate_for_7_night_stay
 
 ---
 

@@ -33,7 +33,7 @@ export function getActionEffects(action, state) {
     }
     case ACTION_TYPES.ACCEPT_REQUEST: {
       const { requestId, transaction } = action.payload;
-      if (transaction.type === 'swap') {
+      if (transaction.type === 'alternating') {
         validateSwapOwnership({
           nights: transaction.nights,
           payerId: transaction.payerId,

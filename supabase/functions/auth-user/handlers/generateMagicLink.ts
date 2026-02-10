@@ -16,7 +16,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields, validateEmail } from '../../_shared/validation.ts';
 
 export async function handleGenerateMagicLink(
@@ -56,7 +56,7 @@ export async function handleGenerateMagicLink(
 
     if (error) {
       console.error('[generate-magic-link] Error generating link:', error.message);
-      throw new BubbleApiError(
+      throw new ApiError(
         `Failed to generate magic link: ${error.message}`,
         error.status || 500
       );
@@ -64,7 +64,7 @@ export async function handleGenerateMagicLink(
 
     if (!data?.properties?.action_link) {
       console.error('[generate-magic-link] No action_link in response');
-      throw new BubbleApiError('Magic link generation failed - no link returned', 500);
+      throw new ApiError('Magic link generation failed - no link returned', 500);
     }
 
     console.log('[generate-magic-link] Magic link generated successfully');
@@ -81,14 +81,14 @@ export async function handleGenerateMagicLink(
     };
 
   } catch (error: any) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[generate-magic-link] ========== ERROR ==========');
     console.error('[generate-magic-link] Error:', error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to generate magic link: ${error.message}`,
       500,
       error

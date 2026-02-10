@@ -2,7 +2,7 @@
  * Default Selection Engine - Pattern 1: Personalized Defaults
  *
  * Core recommendation algorithm for selecting personalized transaction defaults.
- * Uses rule-based logic to recommend buyout, crash, or swap based on context.
+ * Uses rule-based logic to recommend full_week, shared_night, or alternating based on context.
  *
  * SCAFFOLDING: Uses simple heuristics. Replace with ML model when ready.
  *
@@ -22,12 +22,12 @@ import type {
  * Analyzes user archetype, urgency, and context to recommend best transaction type.
  *
  * Decision tree:
- * 1. Big Spender + High Urgency → Buyout
- * 2. High Flex + Any Urgency → Swap
- * 3. Average + Low Urgency → Swap
- * 4. Average + Medium Urgency → Crash
- * 5. Average + High Urgency → Crash
- * 6. Big Spender + Low Urgency → Buyout
+ * 1. Big Spender + High Urgency → Full Week
+ * 2. High Flex + Any Urgency → Alternating
+ * 3. Average + Low Urgency → Alternating
+ * 4. Average + Medium Urgency → Shared Night
+ * 5. Average + High Urgency → Shared Night
+ * 6. Big Spender + Low Urgency → Full Week
  *
  * @param context - Transaction context
  * @returns Default selection result with recommendations
@@ -51,12 +51,12 @@ export function selectPersonalizedDefault(
     daysUntilCheckIn <= 14
   ) {
     return {
-      primaryOption: 'buyout',
-      sortedOptions: buildSortedOptions(context, ['buyout', 'crash', 'swap']),
+      primaryOption: 'full_week',
+      sortedOptions: buildSortedOptions(context, ['full_week', 'shared_night', 'alternating']),
       reasoning: [
         'High urgency booking',
         'Your typical preference for guaranteed access',
-        `Similar users choose buyout ${Math.round(0.70 * 100)}% of the time`,
+        `Similar users choose full week ${Math.round(0.70 * 100)}% of the time`,
         'Immediate confirmation likely',
       ],
       confidence: 0.85,
@@ -67,16 +67,16 @@ export function selectPersonalizedDefault(
   // RULE 2: High Flex + Any Urgency → SWAP
   // ========================================
   if (requestingUserArchetype === 'high_flexibility') {
-    const previousSwaps = userHistory.previousTransactions || 0;
+    const previousAlternations = userHistory.previousTransactions || 0;
     return {
-      primaryOption: 'swap',
-      sortedOptions: buildSortedOptions(context, ['swap', 'crash', 'buyout']),
+      primaryOption: 'alternating',
+      sortedOptions: buildSortedOptions(context, ['alternating', 'shared_night', 'full_week']),
       reasoning: [
         'You prefer fair exchanges',
-        previousSwaps > 0
-          ? `You've completed ${previousSwaps} successful transactions`
+        previousAlternations > 0
+          ? `You've completed ${previousAlternations} successful transactions`
           : 'Build goodwill with reciprocal exchanges',
-        `${roommate.name} accepts ${Math.round(roommate.acceptanceRate * 100)}% of swaps`,
+        `${roommate.name} accepts ${Math.round(roommate.acceptanceRate * 100)}% of alternating requests`,
       ],
       confidence: 0.78,
     };
@@ -90,10 +90,10 @@ export function selectPersonalizedDefault(
     requestingUserArchetype === 'average_user'
   ) {
     return {
-      primaryOption: 'swap',
-      sortedOptions: buildSortedOptions(context, ['swap', 'crash', 'buyout']),
+      primaryOption: 'alternating',
+      sortedOptions: buildSortedOptions(context, ['alternating', 'shared_night', 'full_week']),
       reasoning: [
-        'Plenty of time to find a fair swap',
+        'Plenty of time to find a fair alternating arrangement',
         'Save money with no-cost exchange',
         'Average success rate: 72%',
       ],
@@ -110,12 +110,12 @@ export function selectPersonalizedDefault(
     requestingUserArchetype === 'average_user'
   ) {
     return {
-      primaryOption: 'crash',
-      sortedOptions: buildSortedOptions(context, ['crash', 'swap', 'buyout']),
+      primaryOption: 'shared_night',
+      sortedOptions: buildSortedOptions(context, ['shared_night', 'alternating', 'full_week']),
       reasoning: [
         'Good balance of cost and certainty',
         'Shared space keeps costs low',
-        `${Math.round(roommate.acceptanceRate * 100)}% acceptance rate for crashes`,
+        `${Math.round(roommate.acceptanceRate * 100)}% acceptance rate for shared nights`,
       ],
       confidence: 0.70,
     };
@@ -129,11 +129,11 @@ export function selectPersonalizedDefault(
     requestingUserArchetype === 'average_user'
   ) {
     return {
-      primaryOption: 'crash',
-      sortedOptions: buildSortedOptions(context, ['crash', 'buyout', 'swap']),
+      primaryOption: 'shared_night',
+      sortedOptions: buildSortedOptions(context, ['shared_night', 'full_week', 'alternating']),
       reasoning: [
         'Urgent need at reasonable cost',
-        'Buyout may be too expensive with urgency premium',
+        'Full week may be too expensive with urgency premium',
         'Your belongings are already there',
       ],
       confidence: 0.75,
@@ -145,8 +145,8 @@ export function selectPersonalizedDefault(
   // ========================================
   if (requestingUserArchetype === 'big_spender') {
     return {
-      primaryOption: 'buyout',
-      sortedOptions: buildSortedOptions(context, ['buyout', 'crash', 'swap']),
+      primaryOption: 'full_week',
+      sortedOptions: buildSortedOptions(context, ['full_week', 'shared_night', 'alternating']),
       reasoning: [
         'Guaranteed access is worth it',
         'Your time is valuable',
@@ -160,8 +160,8 @@ export function selectPersonalizedDefault(
   // DEFAULT FALLBACK (should rarely hit this)
   // ========================================
   return {
-    primaryOption: 'crash',
-    sortedOptions: buildSortedOptions(context, ['crash', 'swap', 'buyout']),
+    primaryOption: 'shared_night',
+    sortedOptions: buildSortedOptions(context, ['shared_night', 'alternating', 'full_week']),
     reasoning: ['Balanced option for your situation'],
     confidence: 0.50,
   };
@@ -212,35 +212,35 @@ function buildTransactionOption(
   let price: number;
   let platformFee: number;
   let roommateReceives: number | undefined;
-  let savingsVsBuyout: number | undefined;
+  let savingsVsFullWeek: number | undefined;
   let requiresUserNight: boolean | undefined;
   let potentialMatches: number | undefined;
 
-  if (type === 'buyout') {
-    // Buyout: High price, urgency premium applies
+  if (type === 'full_week') {
+    // Full Week: High price, urgency premium applies
     const basePrice = targetNight.basePrice * targetNight.marketDemand;
     price = Math.round(basePrice * urgencyMultiplier);
     platformFee = Math.round(price * 0.015); // 1.5% platform fee
     roommateReceives = Math.round(price * 0.985); // Roommate gets 98.5%
-  } else if (type === 'crash') {
-    // Crash: ~20% of buyout price
-    const buyoutPrice = Math.round(
+  } else if (type === 'shared_night') {
+    // Shared Night: ~20% of full_week price
+    const fullWeekPrice = Math.round(
       targetNight.basePrice * targetNight.marketDemand * urgencyMultiplier
     );
-    price = Math.round(buyoutPrice * 0.20);
+    price = Math.round(fullWeekPrice * 0.20);
     platformFee = Math.round(price * 0.015);
     roommateReceives = Math.round(price * 0.985);
-    savingsVsBuyout = buyoutPrice - (price + platformFee);
+    savingsVsFullWeek = fullWeekPrice - (price + platformFee);
   } else {
-    // Swap: Free exchange, only platform fee
+    // Alternating: Free exchange, only platform fee
     price = 0;
-    platformFee = 500; // $5 platform fee for swap processing
+    platformFee = 500; // $5 platform fee for alternating processing
     requiresUserNight = true;
     potentialMatches = 2; // SCAFFOLDING: Would come from real match algorithm
-    const buyoutPrice = Math.round(
+    const fullWeekPrice = Math.round(
       targetNight.basePrice * targetNight.marketDemand * urgencyMultiplier
     );
-    savingsVsBuyout = buyoutPrice;
+    savingsVsFullWeek = fullWeekPrice;
   }
 
   const totalCost = price + platformFee;
@@ -266,7 +266,7 @@ function buildTransactionOption(
     recommended: false, // Set by buildSortedOptions
     priority: 1, // Set by buildSortedOptions
     roommateReceives,
-    savingsVsBuyout,
+    savingsVsFullWeek,
     requiresUserNight,
     potentialMatches,
   };
@@ -311,13 +311,13 @@ function calculateConfidence(
   // Start with user archetype confidence
   let confidence = requestingUserConfidence;
 
-  // Boost confidence for buyout with high urgency
-  if (type === 'buyout' && daysUntilCheckIn <= 7) {
+  // Boost confidence for full_week with high urgency
+  if (type === 'full_week' && daysUntilCheckIn <= 7) {
     confidence = Math.min(0.95, confidence + 0.1);
   }
 
-  // Reduce confidence for swap with low urgency (less time to find match)
-  if (type === 'swap' && daysUntilCheckIn <= 7) {
+  // Reduce confidence for alternating with low urgency (less time to find match)
+  if (type === 'alternating' && daysUntilCheckIn <= 7) {
     confidence = Math.max(0.4, confidence - 0.15);
   }
 
@@ -341,8 +341,8 @@ function calculateAcceptanceProbability(
 ): number {
   let probability = roommateAcceptanceRate;
 
-  // Buyout has higher acceptance (financial incentive)
-  if (type === 'buyout') {
+  // Full week has higher acceptance (financial incentive)
+  if (type === 'full_week') {
     probability = Math.min(0.95, probability + 0.15);
   }
 
@@ -351,8 +351,8 @@ function calculateAcceptanceProbability(
     probability = Math.max(0.3, probability - 0.1);
   }
 
-  // Swap has lower acceptance (requires matching availability)
-  if (type === 'swap') {
+  // Alternating has lower acceptance (requires matching availability)
+  if (type === 'alternating') {
     probability = Math.max(0.4, probability - 0.1);
   }
 

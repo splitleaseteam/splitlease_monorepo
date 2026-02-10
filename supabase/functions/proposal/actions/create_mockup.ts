@@ -249,7 +249,7 @@ export async function handleCreateMockup(
     console.log("[proposal:create_mockup] Step 6: Generating proposal ID...");
 
     const { data: proposalId, error: idError } = await supabase.rpc(
-      "generate_bubble_id"
+      "generate_unique_id"
     );
     if (idError || !proposalId) {
       console.error("[proposal:create_mockup] ID generation failed:", idError);

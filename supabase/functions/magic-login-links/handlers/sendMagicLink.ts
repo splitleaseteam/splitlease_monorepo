@@ -16,7 +16,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 // Import existing handlers from auth-user
@@ -117,14 +117,14 @@ export async function handleSendMagicLink(
       .single();
 
     if (userError || !userData) {
-      throw new BubbleApiError(`User not found: ${userId}`, 404);
+      throw new ApiError(`User not found: ${userId}`, 404);
     }
 
     const userEmail = userData['email as text'];
     const userPhone = userData['Phone Number (as text)'];
 
     if (!userEmail) {
-      throw new BubbleApiError(`User ${userId} has no email address`, 400);
+      throw new ApiError(`User ${userId} has no email address`, 400);
     }
 
     console.log(`[send-magic-link] User email: ${userEmail}`);
@@ -192,14 +192,14 @@ export async function handleSendMagicLink(
     };
 
   } catch (error: any) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[send-magic-link] ========== ERROR ==========');
     console.error('[send-magic-link] Error:', error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to send magic link: ${error.message}`,
       500,
       error

@@ -70,7 +70,7 @@ interface MatchedIds {
 }
 
 // ============================================================================
-// GPT-4 Parsing Prompt (Replicated from Bubble)
+// GPT-4 Parsing Prompt
 // ============================================================================
 
 function buildParsingPrompt(

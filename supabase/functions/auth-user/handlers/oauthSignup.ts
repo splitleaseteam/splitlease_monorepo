@@ -6,7 +6,7 @@
  * 1. Validate OAuth payload
  * 2. Check if email already exists in public.user table
  * 3. If duplicate: Return indicator for frontend to show confirmation modal
- * 4. If new: Generate ID, create user record, queue Bubble sync
+ * 4. If new: Generate ID, create user record
  * 5. Return user data
  *
  * @param supabaseUrl - Supabase project URL
@@ -15,9 +15,8 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
-import { enqueueSignupSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
 import { mapUserTypeToDisplay } from '../../_shared/userTypeMapping.ts';
 
 interface OAuthSignupPayload {
@@ -82,7 +81,7 @@ export async function handleOAuthSignup(
 
     if (userCheckError) {
       console.error('[oauth-signup] Error checking existing user:', userCheckError.message);
-      throw new BubbleApiError('Failed to verify email availability', 500);
+      throw new ApiError('Failed to verify email availability', 500);
     }
 
     if (existingUser) {
@@ -98,14 +97,14 @@ export async function handleOAuthSignup(
 
     console.log('[oauth-signup] Email is available');
 
-    // ========== GENERATE BUBBLE-STYLE ID ==========
-    console.log('[oauth-signup] Generating ID using generate_bubble_id()...');
+    // ========== GENERATE UNIQUE ID ==========
+    console.log('[oauth-signup] Generating ID using generate_unique_id()...');
 
-    const { data: generatedUserId, error: userIdError } = await supabaseAdmin.rpc('generate_bubble_id');
+    const { data: generatedUserId, error: userIdError } = await supabaseAdmin.rpc('generate_unique_id');
 
     if (userIdError) {
       console.error('[oauth-signup] Failed to generate ID:', userIdError);
-      throw new BubbleApiError('Failed to generate unique ID', 500);
+      throw new ApiError('Failed to generate unique ID', 500);
     }
 
     const generatedHostId = generatedUserId;
@@ -119,7 +118,6 @@ export async function handleOAuthSignup(
 
     const userRecord = {
       '_id': generatedUserId,
-      'bubble_id': null,
       'email': email.toLowerCase(),
       'email as text': email.toLowerCase(),
       'Name - First': firstName || null,
@@ -147,7 +145,7 @@ export async function handleOAuthSignup(
 
     if (userInsertError) {
       console.error('[oauth-signup] Failed to insert user:', userInsertError.message);
-      throw new BubbleApiError(
+      throw new ApiError(
         `Failed to create user profile: ${userInsertError.message}`,
         500
       );
@@ -176,17 +174,6 @@ export async function handleOAuthSignup(
       // Non-blocking - user record already created
     }
 
-    // ========== QUEUE BUBBLE SYNC ==========
-    console.log('[oauth-signup] Queueing Bubble sync...');
-
-    try {
-      await enqueueSignupSync(supabaseAdmin, generatedUserId, generatedHostId);
-      console.log('[oauth-signup] Bubble sync queued');
-      triggerQueueProcessing();
-    } catch (syncQueueError) {
-      console.error('[oauth-signup] Failed to queue Bubble sync (non-blocking):', syncQueueError);
-    }
-
     console.log('[oauth-signup] ========== OAUTH SIGNUP COMPLETE ==========');
 
     return {
@@ -200,12 +187,12 @@ export async function handleOAuthSignup(
     };
 
   } catch (error) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[oauth-signup] Error:', error);
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to complete OAuth signup: ${error.message}`,
       500
     );

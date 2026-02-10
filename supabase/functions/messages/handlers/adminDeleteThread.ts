@@ -31,7 +31,7 @@ async function verifyAdminRole(
 
   const { data: userData, error } = await supabaseAdmin
     .from('user')
-    .select('bubble_legacy_id, is_admin')
+    .select('legacy_platform_id, is_admin')
     .ilike('email', user.email)
     .maybeSingle();
 

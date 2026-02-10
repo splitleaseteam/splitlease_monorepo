@@ -2,23 +2,21 @@
  * Send Calendar Invite Handler
  * Split Lease - Supabase Edge Functions
  *
- * Triggers the Zapier workflow to send Google Calendar invites.
- * This is a fire-and-forget operation - we trigger the workflow
- * and don't wait for Zapier's response.
+ * Sends a calendar invite notification email to the user about their virtual meeting.
+ * Uses the internal send-email edge function via SendGrid.
+ * This is a fire-and-forget operation.
  *
  * Steps:
  * 1. Validate input
- * 2. Call Bubble workflow: l3-trigger-send-google-calend
- * 3. Return success response
- *
- * NOTE: This calls Bubble workflow directly (not queue-based)
- * because it's triggering an external integration, not syncing data.
+ * 2. Look up proposal and user details from DB
+ * 3. Send calendar invite email via send-email function
+ * 4. Return success response
  *
  * NO FALLBACK PRINCIPLE: All errors fail fast without fallback logic
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { ValidationError as _ValidationError, BubbleApiError } from "../../_shared/errors.ts";
+import { ValidationError as _ValidationError } from "../../_shared/errors.ts";
 import {
   SendCalendarInviteInput,
   SendCalendarInviteResponse,
@@ -26,13 +24,16 @@ import {
 } from "../lib/types.ts";
 import { validateSendCalendarInviteInput } from "../lib/validators.ts";
 
+// Basic email template ID for internal notifications
+const BASIC_TEMPLATE_ID = '1560447575939x331870423481483500';
+
 /**
  * Handle send calendar invite request
  */
 export async function handleSendCalendarInvite(
   payload: Record<string, unknown>,
   user: UserContext | null,
-  _supabase: SupabaseClient
+  supabase: SupabaseClient
 ): Promise<SendCalendarInviteResponse> {
   console.log(`[virtual-meeting:send_calendar_invite] Starting for user: ${user?.email || 'public'}`);
 
@@ -46,61 +47,69 @@ export async function handleSendCalendarInvite(
   console.log(`[virtual-meeting:send_calendar_invite] Validated input - proposal: ${input.proposalId}, user: ${input.userId}`);
 
   // ================================================
-  // GET BUBBLE API CREDENTIALS
+  // LOOK UP USER AND PROPOSAL DETAILS
   // ================================================
 
-  const bubbleBaseUrl = Deno.env.get('BUBBLE_API_BASE_URL');
-  const bubbleApiKey = Deno.env.get('BUBBLE_API_KEY');
+  const { data: targetUser } = await supabase
+    .from('user')
+    .select('email, first_name')
+    .eq('id', input.userId)
+    .single();
 
-  if (!bubbleBaseUrl || !bubbleApiKey) {
-    throw new Error('Missing Bubble API credentials');
+  if (!targetUser?.email) {
+    throw new Error(`User not found or missing email: ${input.userId}`);
   }
 
   // ================================================
-  // TRIGGER BUBBLE WORKFLOW
+  // SEND CALENDAR INVITE EMAIL
   // ================================================
 
-  const workflowUrl = `${bubbleBaseUrl}/wf/l3-trigger-send-google-calend`;
-  const workflowParams = {
-    proposal: input.proposalId,
-    user: input.userId,
-  };
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-  console.log(`[virtual-meeting:send_calendar_invite] Triggering workflow: l3-trigger-send-google-calend`);
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Missing Supabase configuration for internal email');
+  }
 
-  try {
-    const response = await fetch(workflowUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${bubbleApiKey}`,
-        'Content-Type': 'application/json',
+  const subject = 'Virtual Meeting Calendar Invite - Split Lease';
+  const bodyText = `Hi ${targetUser.first_name || 'there'}, a virtual meeting has been scheduled for your Split Lease booking (Proposal: ${input.proposalId}). Please check your dashboard for the meeting details and add it to your calendar.`;
+
+  console.log(`[virtual-meeting:send_calendar_invite] Sending calendar invite email to: ${targetUser.email}`);
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'send',
+      payload: {
+        template_id: BASIC_TEMPLATE_ID,
+        to_email: targetUser.email,
+        to_name: targetUser.first_name || 'User',
+        subject,
+        variables: {
+          body_text: bodyText,
+          first_name: targetUser.first_name || '',
+        },
       },
-      body: JSON.stringify(workflowParams),
-    });
+    }),
+  });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[virtual-meeting:send_calendar_invite] Bubble workflow failed:`, errorText);
-      throw new BubbleApiError(`Failed to trigger calendar invite workflow: ${response.status}`, response.status);
-    }
-
-    console.log(`[virtual-meeting:send_calendar_invite] Workflow triggered successfully`);
-
-  } catch (error) {
-    if (error instanceof BubbleApiError) {
-      throw error;
-    }
-    console.error(`[virtual-meeting:send_calendar_invite] Error calling Bubble:`, error);
-    throw new BubbleApiError(`Failed to call Bubble API: ${(error as Error).message}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[virtual-meeting:send_calendar_invite] Email send failed:`, errorText);
+    throw new Error(`Failed to send calendar invite email: ${response.status}`);
   }
+
+  console.log(`[virtual-meeting:send_calendar_invite] Calendar invite email sent successfully`);
 
   // ================================================
   // RETURN RESPONSE
   // ================================================
 
   const now = new Date().toISOString();
-
-  console.log(`[virtual-meeting:send_calendar_invite] Complete, returning response`);
 
   return {
     success: true,

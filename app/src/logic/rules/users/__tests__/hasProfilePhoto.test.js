@@ -179,9 +179,9 @@ describe('hasProfilePhoto', () => {
       expect(result).toBe(true);
     });
 
-    it('should detect Bubble CDN photo', () => {
+    it('should detect protocol-relative CDN photo', () => {
       const result = hasProfilePhoto({
-        photoUrl: '//d1muf25xaso8hp.cloudfront.net/user_photo.jpg'
+        photoUrl: '//cdn.example.com/user_photo.jpg'
       });
       expect(result).toBe(true);
     });

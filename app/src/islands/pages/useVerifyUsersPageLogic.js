@@ -124,7 +124,7 @@ export default function useVerifyUsersPageLogic() {
       headers.Authorization = `Bearer ${session.access_token}`;
     }
 
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-users`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/identity-verification-admin`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ action, payload }),

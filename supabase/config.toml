@@ -456,10 +456,10 @@ verify_jwt = false
 import_map = "./functions/messages/deno.json"
 entrypoint = "./functions/messages/index.ts"
 
-[functions.rental-application]
+[functions.rental-application-submit]
 enabled = true
 verify_jwt = false
-entrypoint = "./functions/rental-application/index.ts"
+entrypoint = "./functions/rental-application-submit/index.ts"
 
 [functions.date-change-request]
 enabled = true
@@ -492,11 +492,11 @@ verify_jwt = false
 import_map = "./functions/message-curation/deno.json"
 entrypoint = "./functions/message-curation/index.ts"
 
-[functions.identity-verification]
+[functions.identity-verification-submit]
 enabled = true
 verify_jwt = false
-import_map = "./functions/identity-verification/deno.json"
-entrypoint = "./functions/identity-verification/index.ts"
+import_map = "./functions/identity-verification-submit/deno.json"
+entrypoint = "./functions/identity-verification-submit/index.ts"
 
 [functions.ai-room-redesign]
 enabled = true
@@ -597,11 +597,11 @@ enabled = true
 verify_jwt = false  # Review: Should this require authentication?
 entrypoint = "./functions/reminder-scheduler/index.ts"
 
-[functions.rental-applications]
+[functions.rental-application-admin]
 enabled = true
 verify_jwt = false  # Review: Should this require authentication?
-import_map = "./functions/rental-applications/deno.json"
-entrypoint = "./functions/rental-applications/index.ts"
+import_map = "./functions/rental-application-admin/deno.json"
+entrypoint = "./functions/rental-application-admin/index.ts"
 
 [functions.reviews-overview]
 enabled = true
@@ -629,8 +629,8 @@ enabled = true
 verify_jwt = false  # Review: Should this require authentication?
 entrypoint = "./functions/usability-data-admin/index.ts"
 
-[functions.verify-users]
+[functions.identity-verification-admin]
 enabled = true
 verify_jwt = false  # Review: Should this require authentication?
-import_map = "./functions/verify-users/deno.json"
-entrypoint = "./functions/verify-users/index.ts"
+import_map = "./functions/identity-verification-admin/deno.json"
+entrypoint = "./functions/identity-verification-admin/index.ts"

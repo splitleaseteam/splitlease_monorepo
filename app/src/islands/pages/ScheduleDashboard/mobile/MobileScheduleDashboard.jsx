@@ -270,9 +270,9 @@ export default function MobileScheduleDashboard() {
   const handleCalendarAction = (action, date) => {
     if (!date) return;
     const dateStr = format(date, 'yyyy-MM-dd');
-    if (action === 'buyout' || action === 'share' || action === 'swap') {
+    if (action === 'full_week' || action === 'share' || action === 'alternating') {
       handleSelectNight(dateStr);
-      if (action === 'swap') {
+      if (action === 'alternating') {
         handleSwapInstead();
       }
       sheet.openSheet(action, { date });
@@ -502,9 +502,9 @@ export default function MobileScheduleDashboard() {
           sheet.closeSheet();
           handleCancelSwapMode();
         }}
-        title={sheet.sheetType === 'buyout' ? 'Request Buyout' : sheet.sheetType === 'share' ? 'Offer Share' : sheet.sheetType === 'swap' ? 'Propose Swap' : ''}
+        title={sheet.sheetType === 'full_week' ? 'Request Full Week' : sheet.sheetType === 'share' ? 'Offer Share' : sheet.sheetType === 'alternating' ? 'Propose Alternating' : ''}
       >
-        {sheet.sheetType === 'buyout' && sheetDateStr && (
+        {sheet.sheetType === 'full_week' && sheetDateStr && (
           <BuyOutSheet
             selectedNight={sheetDateStr}
             suggestedPrice={basePrice}
@@ -560,7 +560,7 @@ export default function MobileScheduleDashboard() {
             }}
           />
         )}
-        {sheet.sheetType === 'swap' && sheetDateStr && (
+        {sheet.sheetType === 'alternating' && sheetDateStr && (
           <SwapSheet
             requestedNight={sheetDateStr}
             userNights={userNights}
@@ -576,13 +576,13 @@ export default function MobileScheduleDashboard() {
                 sheet.closeSheet();
                 handleCancelSwapMode();
                 showToast({
-                  title: 'Swap sent',
+                  title: 'Alternating sent',
                   content: 'Your swap request has been sent.',
                   type: 'success'
                 });
               } catch (err) {
                 showToast({
-                  title: 'Swap failed',
+                  title: 'Alternating failed',
                   content: err?.message || 'Failed to propose swap.',
                   type: 'error'
                 });

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useCompareTermsModalLogic Hook
  *
  * Hollow Component pattern - all business logic for CompareTermsModal
@@ -161,17 +161,17 @@ export function useCompareTermsModalLogic({
   const counterofferTerms = useMemo(() => {
     if (!proposal) return null;
 
-    const moveInDate = proposal['hc move in date'];
-    const daysSelected = parseDaysSelected(proposal['hc days selected'] || proposal['Days Selected']);
-    const checkInDay = proposal['hc check in day'] ?? proposal['check in day'];
-    const checkOutDay = proposal['hc check out day'] ?? proposal['check out day'];
-    const nightsPerWeek = proposal['hc nights per week'] ?? proposal['nights per week (num)'] ?? daysSelected.length ?? 0;
-    const reservationWeeks = proposal['hc reservation span (weeks)'] ?? proposal['Reservation Span (Weeks)'] ?? 0;
-    const nightlyPrice = proposal['hc nightly price'] ?? proposal['proposal nightly price'] ?? 0;
-    const totalPrice = proposal['hc total price'] ?? proposal['Total Price for Reservation (guest)'] ?? 0;
-    const cleaningFee = proposal['hc cleaning fee'] ?? proposal['cleaning fee'] ?? 0;
-    const damageDeposit = proposal['hc damage deposit'] ?? proposal['damage deposit'] ?? 0;
-    const maintenanceFee = proposal['hc maintenance fee'] ?? proposal['maintenance fee'] ?? 0;
+    const moveInDate = proposal['host_counter_offer_move_in_date'];
+    const daysSelected = parseDaysSelected(proposal['host_counter_offer_days_selected'] || proposal['Days Selected']);
+    const checkInDay = proposal['host_counter_offer_check_in_day'] ?? proposal['check in day'];
+    const checkOutDay = proposal['host_counter_offer_check_out_day'] ?? proposal['check out day'];
+    const nightsPerWeek = proposal['host_counter_offer_nights_per_week'] ?? proposal['nights per week (num)'] ?? daysSelected.length ?? 0;
+    const reservationWeeks = proposal['host_counter_offer_reservation_span_weeks'] ?? proposal['Reservation Span (Weeks)'] ?? 0;
+    const nightlyPrice = proposal['host_counter_offer_nightly_price'] ?? proposal['proposal nightly price'] ?? 0;
+    const totalPrice = proposal['host_counter_offer_total_price'] ?? proposal['Total Price for Reservation (guest)'] ?? 0;
+    const cleaningFee = proposal['host_counter_offer_cleaning_fee'] ?? proposal['cleaning fee'] ?? 0;
+    const damageDeposit = proposal['host_counter_offer_damage_deposit'] ?? proposal['damage deposit'] ?? 0;
+    const maintenanceFee = proposal['host_counter_offer_maintenance_fee'] ?? proposal['maintenance fee'] ?? 0;
 
     // Calculate derived fields
     const nightsReserved = nightsPerWeek * reservationWeeks;
@@ -219,7 +219,7 @@ export function useCompareTermsModalLogic({
   // Get house rules - prioritize counteroffer values if present
   const houseRules = useMemo(() => {
     const hasCounteroffer = proposal?.['counter offer happened'];
-    const hcRules = proposal?.['hc house rules'] || proposal?.hcHouseRules;
+    const hcRules = proposal?.['host_counter_offer_house_rules'] || proposal?.hostCounterOfferHouseRules;
 
     // If counteroffer happened and has house rules, use those
     if (hasCounteroffer && Array.isArray(hcRules) && hcRules.length > 0) {
@@ -275,8 +275,8 @@ export function useCompareTermsModalLogic({
       await acceptCounteroffer(proposalId);
 
       // Step 6: Calculate 4-week rent (from COUNTEROFFER terms)
-      const counterofferNightsPerWeek = proposal['hc nights per week'] || originalNightsPerWeek;
-      const counterofferNightlyPrice = proposal['hc nightly price'] || originalNightlyPrice;
+      const counterofferNightsPerWeek = proposal['host_counter_offer_nights_per_week'] || originalNightsPerWeek;
+      const counterofferNightlyPrice = proposal['host_counter_offer_nightly_price'] || originalNightlyPrice;
       const fourWeekRent = counterofferNightsPerWeek * 4 * counterofferNightlyPrice;
 
       // Step 7: Call lease creation Edge Function
@@ -370,12 +370,12 @@ export function useCompareTermsModalLogic({
       }
 
       // Show success state (will display success message in modal)
-      console.log('[useCompareTermsModalLogic] âœ… Acceptance complete, showing success modal');
+      console.log('[useCompareTermsModalLogic] ✅ Acceptance complete, showing success modal');
       setAcceptanceSuccess(true);
       // NOTE: Do NOT reload here - user must click "Got it!" to acknowledge
 
     } catch (err) {
-      console.error('[useCompareTermsModalLogic] âŒ Error accepting counteroffer:', err);
+      console.error('[useCompareTermsModalLogic] ❌ Error accepting counteroffer:', err);
       setError(err.message || 'Failed to accept counteroffer. Please try again.');
     } finally {
       setIsAccepting(false);

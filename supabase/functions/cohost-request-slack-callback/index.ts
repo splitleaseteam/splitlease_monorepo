@@ -469,7 +469,7 @@ async function handleModalSubmission(
   console.log(`[slack-callback] Meeting: ${meetingDisplayText}`);
 
   // Update the co-host request in database
-  // Store the display name (matches os_cohost_admins.display pattern from Bubble.io)
+  // Store the display name (matches os_cohost_admins.display pattern)
   const updateData: Record<string, unknown> = {
     "Co-Host selected (OS)": cohostData.display, // Display name from os_cohost_admins
     "Status - Co-Host Request": "Co-Host Selected",

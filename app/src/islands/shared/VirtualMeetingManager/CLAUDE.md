@@ -45,7 +45,7 @@
 [RULE_5]: Exactly 3 time slots REQUIRED for request/suggest views
 [RULE_6]: Parent controls visibility via initialView prop (empty string '' hides component entirely)
 [RULE_7]: Handle field name variations throughout (camelCase, snake_case, 'space case', Pascal Case)
-[RULE_8]: All Bubble API calls MUST go through Supabase Edge Function proxy (never direct)
+[RULE_8]: All API calls go through Supabase Edge Functions
 [RULE_9]: Component returns null if initialView is empty string (unmounted state)
 [RULE_10]: Success/error messages auto-dismiss after 5 seconds
 
@@ -77,18 +77,16 @@
 
 ---
 
-## BUBBLE_WORKFLOWS
+## EDGE_FUNCTION_ACTIONS
 
-| Workflow | Endpoint | Description |
-|----------|----------|-------------|
-| accept-virtual-meeting | /wf/accept-virtual-meeting | Accept meeting request and set booked date. Params: proposal, booked_date_sel, user_accepting |
-| CORE-create-virtual-meeting | /wf/CORE-create-virtual-meeting | Create new meeting request with 3 proposed time slots. Params: proposal, times_selected, requested_by, is_alternative_times, timezone_string |
-| decline-virtual-meeting | /wf/decline-virtual-meeting | Decline meeting request. Params: proposal |
-| cancel-virtual-meeting | /wf/cancel-virtual-meeting | Cancel existing scheduled meeting. Params: meeting_id, proposal |
-| l3-trigger-send-google-calend | /wf/l3-trigger-send-google-calend | Send Google Calendar invite via Zapier. Params: proposal, user |
-| notify-virtual-meeting-partici | /wf/notify-virtual-meeting-partici | Send SMS/Email notifications to participants. Params: host, guest, virtual_meeting |
+| Action | Description |
+|--------|-------------|
+| accept | Accept meeting request and set booked date. Params: proposal, booked_date_sel, user_accepting |
+| create | Create new meeting request with 3 proposed time slots. Params: proposal, times_selected, requested_by, is_alternative_times, timezone_string |
+| decline | Decline meeting request. Params: proposal |
+| cancel | Cancel existing scheduled meeting. Params: meeting_id, proposal |
 
-All workflows are called through the `virtual-meeting` Supabase Edge Function with action-based routing. The service layer (virtualMeetingService.js) returns standardized `{status, data?, message?}` responses and includes `retryApiCall()` with exponential backoff.
+All actions are called through the `virtual-meeting` Supabase Edge Function with action-based routing. The service layer (virtualMeetingService.js) returns standardized `{status, data?, message?}` responses and includes `retryApiCall()` with exponential backoff.
 
 ---
 

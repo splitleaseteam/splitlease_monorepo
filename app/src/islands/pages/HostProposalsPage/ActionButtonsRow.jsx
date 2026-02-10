@@ -23,6 +23,7 @@ import {
   XCircle,
   Trash2
 } from 'lucide-react';
+import { PROPOSAL_STATUSES } from '../../../logic/constants/proposalStatuses.js';
 
 /**
  * Get the status key from a proposal
@@ -60,8 +61,8 @@ function hasGuestCounteroffer(proposal) {
  * @returns {boolean} True if awaiting rental app
  */
 function isAwaitingRentalApp(statusKey) {
-  return statusKey === 'Proposal Submitted by guest - Awaiting Rental Application' ||
-         statusKey === 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application';
+  return statusKey === PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key ||
+         statusKey === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key;
 }
 
 /**
@@ -171,8 +172,8 @@ export function ActionButtonsRow({
   // New proposal - needs review (match full Bubble status text)
   if (statusKey === 'proposal_submitted' ||
       statusKey === 'host_review' ||
-      statusKey === 'Host Review' ||
-      statusKey === 'Rental Application Submitted') {
+      statusKey === PROPOSAL_STATUSES.HOST_REVIEW.key ||
+      statusKey === PROPOSAL_STATUSES.RENTAL_APP_SUBMITTED.key) {
     return (
       <div className="hp7-actions-row">
         <button
@@ -205,7 +206,7 @@ export function ActionButtonsRow({
 
   // Host counteroffer - waiting for guest (match full Bubble status text)
   if (statusKey === 'host_counteroffer' ||
-      statusKey === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+      statusKey === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key) {
     return (
       <div className="hp7-actions-row">
         <button
@@ -239,9 +240,9 @@ export function ActionButtonsRow({
   // Accepted - in progress (match full Bubble status text)
   if (statusKey === 'accepted' ||
       statusKey.startsWith('lease_') ||
-      statusKey === 'Proposal or Counteroffer Accepted / Drafting Lease Documents' ||
+      statusKey === PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key ||
       statusKey.startsWith('Lease Documents ') ||
-      statusKey === 'Reviewing Documents') {
+      statusKey === PROPOSAL_STATUSES.REVIEWING_DOCUMENTS.key) {
     return (
       <div className="hp7-actions-row">
         <button
@@ -277,9 +278,9 @@ export function ActionButtonsRow({
     statusKey === 'rejected_by_host' ||
     statusKey === 'cancelled_by_guest' ||
     statusKey === 'cancelled_by_splitlease' ||
-    statusKey === 'Proposal Rejected by Host' ||
-    statusKey === 'Proposal Cancelled by Guest' ||
-    statusKey === 'Proposal Cancelled by Split Lease'
+    statusKey === PROPOSAL_STATUSES.REJECTED_BY_HOST.key ||
+    statusKey === PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key ||
+    statusKey === PROPOSAL_STATUSES.CANCELLED_BY_SPLITLEASE.key
   ) {
     return (
       <div className="hp7-actions-row">
@@ -297,7 +298,7 @@ export function ActionButtonsRow({
 
   // Active lease - message only (match full Bubble status text)
   if (statusKey === 'payment_submitted' ||
-      statusKey === 'Initial Payment Submitted / Lease activated ') {
+      statusKey === PROPOSAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key) {
     return (
       <div className="hp7-actions-row">
         <button

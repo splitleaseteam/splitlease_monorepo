@@ -76,7 +76,7 @@ export async function handleCreate(
   // GENERATE ID
   // ================================================
 
-  const { data: coHostRequestId, error: requestIdError } = await supabase.rpc('generate_bubble_id');
+  const { data: coHostRequestId, error: requestIdError } = await supabase.rpc('generate_unique_id');
   if (requestIdError || !coHostRequestId) {
     console.error(`[cohost-request:create] Co-host request ID generation failed:`, requestIdError);
     throw new SupabaseSyncError('Failed to generate co-host request ID');

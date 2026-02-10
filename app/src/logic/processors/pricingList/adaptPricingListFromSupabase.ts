@@ -71,6 +71,6 @@ export function adaptPricingListFromSupabase(
     // Metadata fields (new)
     rentalType: rawPricingList.rental_type ?? 'Nightly',
     numberSelectedNights: rawPricingList['Number Selected Nights'] || [],
-    modifiedDate: rawPricingList.bubble_updated_at
+    modifiedDate: rawPricingList.original_updated_at
   };
 }

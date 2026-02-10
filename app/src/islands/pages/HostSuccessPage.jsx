@@ -21,7 +21,7 @@ function Hero({ onListProperty }) {
         </div>
         <div className="host-success-hero-image">
           <img
-            src="https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1603247553911x165995697495644260/RentalRepeat-Graphic.svg"
+            src="/assets/images/rental-repeat-graphic.svg"
             alt="Rental Repeat Graphic"
             loading="eager"
           />
@@ -109,7 +109,7 @@ export default function HostSuccessPage() {
       name: 'Emily Johnson',
       profession: 'Graphic Designer',
       avatar:
-        'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=,f=auto,dpr=1,fit=contain/f1756215264078x737048307341117100/Emily%20Johnson%20-%20Fake%20Profile%20Photo.jfif',
+        '/assets/images/emily-johnson-profile.jfif',
       title: 'Maximize your unused space with Split Lease—flexible, reliable, and profitable short-term rentals.',
       paragraphs: [
         'As a graphic designer in New York City, I travel frequently for work, leaving my apartment empty for days. Split Lease has been a game-changer, allowing me to rent out my space during these periods. The registration and listing process was straightforward, and the platform\'s flexibility is perfect for my needs, letting me rent out my apartment only on the nights I\'m away.',

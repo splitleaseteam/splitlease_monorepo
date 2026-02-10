@@ -261,7 +261,7 @@ function sendWelcomeEmail(data) {
           'body text': emailBodyHtml,
           'button': buttonHtml,
           'year': new Date().getFullYear().toString(),
-          'logo url': 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1599068082301x985428647498498600/SL%20Logo.png',
+          'logo url': '/assets/images/sl-logo.png',
           'cc': '',
           'bcc': '',
           'reply_to': '',
@@ -350,7 +350,7 @@ free form text inputted: ${data.freeformText}`;
           'body text': emailBodyHtml,
           'button': '', // No button for internal notification
           'year': new Date().getFullYear().toString(),
-          'logo url': 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1599068082301x985428647498498600/SL%20Logo.png',
+          'logo url': '/assets/images/sl-logo.png',
           'cc': '',
           'bcc': '',
           'reply_to': '',
@@ -883,10 +883,10 @@ function LottieAnimation({ src, loop = true, autoplay = true, className = '' }) 
 
 // ============ SUB-COMPONENTS ============
 
-const PARSING_LOTTIE_URL = 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1722533720265x199451206376484160/Animation%20-%201722533570126.json';
+const PARSING_LOTTIE_URL = '/assets/images/animation-lottie-loading.json';
 // Use a JSON lottie instead of .lottie format (which requires special handling)
-const LOADING_LOTTIE_URL = 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1722533720265x199451206376484160/Animation%20-%201722533570126.json';
-const SUCCESS_LOTTIE_URL = 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1745939792891x394981453861459140/Report.json';
+const LOADING_LOTTIE_URL = '/assets/images/animation-lottie-loading.json';
+const SUCCESS_LOTTIE_URL = '/assets/images/report-lottie.json';
 
 // Topic definitions for freeform input detection
 const FREEFORM_TOPICS = [

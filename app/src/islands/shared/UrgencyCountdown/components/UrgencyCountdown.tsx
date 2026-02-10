@@ -356,14 +356,14 @@ export const UrgencyCountdown: React.FC<UrgencyCountdownProps> = ({
       {variant === 'prominent' && (
         <div className="transaction-context">
           <span className="context-icon">
-            {transactionType === 'buyout' && '🏠'}
-            {transactionType === 'crash' && '🛋️'}
-            {transactionType === 'swap' && '🔄'}
+            {transactionType === 'full_week' && '🏠'}
+            {transactionType === 'shared_night' && '🛋️'}
+            {transactionType === 'alternating' && '🔄'}
           </span>
           <span className="context-text">
-            {transactionType === 'buyout' && 'Full buyout pricing'}
-            {transactionType === 'crash' && 'Crash request pricing'}
-            {transactionType === 'swap' && 'Date swap pricing'}
+            {transactionType === 'full_week' && 'Full week pricing'}
+            {transactionType === 'shared_night' && 'Shared night pricing'}
+            {transactionType === 'alternating' && 'Alternating pricing'}
           </span>
         </div>
       )}

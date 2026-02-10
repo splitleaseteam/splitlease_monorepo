@@ -107,7 +107,7 @@ export function useManageRentalApplicationsPageLogic({ showToast }) {
 
   // ===== EDGE FUNCTION CALLER =====
   const callEdgeFunction = useCallback(async (action, payload = {}) => {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/rental-applications`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/rental-application-admin`, {
       method: 'POST',
       headers: buildHeaders(),
       body: JSON.stringify({ action, payload })

@@ -42,7 +42,7 @@ async function verifyAdminRole(
 ): Promise<boolean> {
   const { data: userData, error } = await supabaseAdmin
     .from('user')
-    .select('bubble_legacy_id, is_admin')
+    .select('legacy_platform_id, is_admin')
     .ilike('email', user.email)
     .maybeSingle();
 
@@ -253,15 +253,15 @@ export async function handleAdminSendReminder(
 
   const { data: users, error: usersError } = await supabaseAdmin
     .from('user')
-    .select('bubble_legacy_id, first_name, last_name, email, phone_number')
-    .in('bubble_legacy_id', userIds);
+    .select('legacy_platform_id, first_name, last_name, email, phone_number')
+    .in('legacy_platform_id', userIds);
 
   if (usersError) {
     throw new Error(`Failed to fetch user data: ${usersError.message}`);
   }
 
   const userMap = (users || []).reduce((acc, u) => {
-    acc[u.bubble_legacy_id] = u;
+    acc[u.legacy_platform_id] = u;
     return acc;
   }, {} as Record<string, typeof users[0]>);
 
@@ -286,7 +286,7 @@ export async function handleAdminSendReminder(
     const recipientName = [recipient.user.first_name, recipient.user.last_name].filter(Boolean).join(' ') || 'Valued User';
 
     // Fetch user's notification preferences
-    const prefs = await getNotificationPreferences(supabaseAdmin, recipient.user.bubble_legacy_id);
+    const prefs = await getNotificationPreferences(supabaseAdmin, recipient.user.legacy_platform_id);
 
     // Send email
     if ((payload.method === 'email' || payload.method === 'both') && recipient.user.email) {

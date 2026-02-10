@@ -187,19 +187,19 @@ function Hero({ onExploreRentals, onMoreDetails }) {
 function ValuePropositions() {
   const valueProps = [
     {
-      icon: 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=192,f=auto,dpr=1,fit=contain/f1621245433645x903943195219269100/Icon-OnlineSelect%201%20%281%29.png',
+      icon: '/assets/images/icon-online-select.png',
       title: '100s of Split Leases, or source off market',
     },
     {
-      icon: 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=192,f=auto,dpr=1,fit=contain/f1621245536528x133519290791932700/Icon-Skyline%20%281%29.png',
+      icon: '/assets/images/icon-skyline.png',
       title: 'Financially optimal. 45% less than Airbnb',
     },
     {
-      icon: 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=192,f=auto,dpr=1,fit=contain/f1621245565680x203884400943151520/Icon-Backpack%20Hero_1%201%20%281%29.png',
+      icon: '/assets/images/icon-backpack-hero.png',
       title: 'Safely store items while you\'re away.',
     },
     {
-      icon: 'https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=192,f=auto,dpr=1,fit=contain/f1621245591320x851695569344734000/Layer%209%20%281%29.png',
+      icon: '/assets/images/icon-layer9.png',
       title: 'Same room, same bed. Unlike a hotel.',
     },
   ];
@@ -697,7 +697,7 @@ function MarketReportPopup({ onRequestClick, onDismiss, isVisible }) {
 
         <div className="market-popup-illustration">
           <lottie-player
-            src="https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1751640509056x731482311814151200/atom%20white.json"
+            src="/assets/images/atom-white-lottie.json"
             background="transparent"
             speed="1"
             style={{ width: '120px', height: '120px' }}
@@ -721,7 +721,7 @@ function FloatingBadge({ onClick }) {
         <span className="badge-text-top">Free</span>
         <div className="badge-icon">
           <lottie-player
-            src="https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/f1751640509056x731482311814151200/atom%20white.json"
+            src="/assets/images/atom-white-lottie.json"
             background="transparent"
             speed="1"
             style={{ width: '102px', height: '102px' }}

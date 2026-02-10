@@ -9,7 +9,6 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError, AuthenticationError as _AuthenticationError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import {
   AcceptRequestInput,
   AcceptRequestResponse,
@@ -29,8 +28,7 @@ import { sendDateChangeRequestNotifications } from "./notifications.ts";
  * 4. Verify request is still pending
  * 5. Update request status
  * 6. Update lease booked dates (if applicable)
- * 7. Enqueue Bubble sync
- * 8. Return response
+ * 7. Return response
  */
 export async function handleAccept(
   payload: Record<string, unknown>,
@@ -195,31 +193,6 @@ export async function handleAccept(
       // Non-blocking - log but continue
       console.error(`[date-change-request:accept] Lease update error (non-blocking):`, leaseErr);
     }
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `accept:${input.requestId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'datechangerequest',
-          recordId: input.requestId,
-          operation: 'UPDATE',
-          payload: updateData,
-        },
-      ],
-    });
-
-    console.log(`[date-change-request:accept] Bubble sync enqueued`);
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    console.error(`[date-change-request:accept] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

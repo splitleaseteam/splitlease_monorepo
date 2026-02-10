@@ -7,7 +7,7 @@
  * 2. Client-side validation (password length, match)
  * 3. Check if email already exists in public.user table
  * 4. Check if email already exists in Supabase Auth
- * 5. Generate user_id using generate_bubble_id()
+ * 5. Generate user_id using generate_unique_id()
  * 6. Create Supabase Auth user (auth.users table)
  * 7. Sign in user to get session tokens
  * 8. Insert user profile into public.user table with:
@@ -29,9 +29,8 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields, validateEmail } from '../../_shared/validation.ts';
-import { enqueueSignupSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
 import { mapUserTypeToDisplay } from '../../_shared/userTypeMapping.ts';
 import {
   sendWelcomeEmail,
@@ -84,18 +83,18 @@ export async function handleSignup(
 
   // Client-side validation
   if (password.length < 4) {
-    throw new BubbleApiError('Password must be at least 4 characters long.', 400);
+    throw new ApiError('Password must be at least 4 characters long.', 400);
   }
 
   if (password !== retype) {
-    throw new BubbleApiError('The two passwords do not match!', 400);
+    throw new ApiError('The two passwords do not match!', 400);
   }
 
   // Email format validation
   try {
     validateEmail(email);
   } catch {
-    throw new BubbleApiError('Please enter a valid email address.', 400);
+    throw new ApiError('Please enter a valid email address.', 400);
   }
 
   // Initialize Supabase admin client
@@ -123,12 +122,12 @@ export async function handleSignup(
 
     if (userCheckError) {
       console.error('[signup] Error checking existing user:', userCheckError.message);
-      throw new BubbleApiError('Failed to verify email availability', 500);
+      throw new ApiError('Failed to verify email availability', 500);
     }
 
     if (existingUser) {
       console.log('[signup] ❌ BLOCKED: Email already exists in user table:', email, 'user_id:', existingUser._id);
-      throw new BubbleApiError('This email is already in use.', 400, 'USED_EMAIL');
+      throw new ApiError('This email is already in use.', 400, 'USED_EMAIL');
     }
 
     console.log('[signup] ✅ Email NOT in public.user table');
@@ -153,20 +152,20 @@ export async function handleSignup(
 
     if (existingAuthUser) {
       console.log('[signup] ❌ BLOCKED: Email already exists in Supabase Auth:', email);
-      throw new BubbleApiError('This email is already in use.', 400, 'USED_EMAIL');
+      throw new ApiError('This email is already in use.', 400, 'USED_EMAIL');
     }
 
     console.log('[signup] ✅ Email NOT in Supabase Auth');
     console.log('[signup] ✅ Email is available - proceeding with signup');
 
-    // ========== GENERATE BUBBLE-STYLE ID ==========
-    console.log('[signup] Generating ID using generate_bubble_id()...');
+    // ========== GENERATE UNIQUE ID ==========
+    console.log('[signup] Generating ID using generate_unique_id()...');
 
-    const { data: generatedUserId, error: userIdError } = await supabaseAdmin.rpc('generate_bubble_id');
+    const { data: generatedUserId, error: userIdError } = await supabaseAdmin.rpc('generate_unique_id');
 
     if (userIdError) {
       console.error('[signup] Failed to generate ID:', userIdError);
-      throw new BubbleApiError('Failed to generate unique ID', 500);
+      throw new ApiError('Failed to generate unique ID', 500);
     }
 
     // User._id is now used directly as host reference - no separate host account ID needed
@@ -198,9 +197,9 @@ export async function handleSignup(
 
       // Map Supabase auth errors to user-friendly messages
       if (authError.message.includes('already registered')) {
-        throw new BubbleApiError('This email is already in use.', 400, 'USED_EMAIL');
+        throw new ApiError('This email is already in use.', 400, 'USED_EMAIL');
       }
-      throw new BubbleApiError(`Failed to create account: ${authError.message}`, 500);
+      throw new ApiError(`Failed to create account: ${authError.message}`, 500);
     }
 
     const supabaseUserId = authData.user?.id;
@@ -218,7 +217,7 @@ export async function handleSignup(
       console.error('[signup] Failed to sign in user:', signInError?.message);
       // User was created but couldn't get session - clean up
       await supabaseAdmin.auth.admin.deleteUser(supabaseUserId!);
-      throw new BubbleApiError('Failed to create session. Please try again.', 500);
+      throw new ApiError('Failed to create session. Please try again.', 500);
     }
 
     const { access_token, refresh_token, expires_in } = sessionData.session;
@@ -247,7 +246,6 @@ export async function handleSignup(
 
     const userRecord = {
       '_id': generatedUserId,
-      'bubble_id': null, // No Bubble user - native Supabase signup
       'email': email.toLowerCase(),
       'email as text': email.toLowerCase(),
       'Name - First': firstName || null,
@@ -278,7 +276,7 @@ export async function handleSignup(
       console.error('[signup] Failed to insert into public.user:', userInsertError.message);
       // Clean up: delete auth user (no account_host to clean up anymore)
       await supabaseAdmin.auth.admin.deleteUser(supabaseUserId!);
-      throw new BubbleApiError(
+      throw new ApiError(
         `Failed to create user profile: ${userInsertError.message}`,
         500
       );
@@ -306,24 +304,6 @@ export async function handleSignup(
     console.log(`[signup]    public.user created: yes`);
     console.log(`[signup]    notification_preferences created: ${prefsResult.success ? 'yes' : 'no'}`);
     console.log(`[signup]    account_host created: SKIPPED (deprecated)`);
-
-    // ========== QUEUE BUBBLE SYNC ==========
-    // Queue the atomic signup operation for Bubble sync
-    // This will be processed by bubble_sync Edge Function (via pg_cron or HTTP trigger)
-    console.log('[signup] Queueing Bubble sync for background processing...');
-
-    try {
-      await enqueueSignupSync(supabaseAdmin, generatedUserId, generatedHostId);
-      console.log('[signup] ✅ Bubble sync queued');
-
-      // Trigger queue processing immediately (fire-and-forget, non-blocking)
-      // This is a backup - pg_cron will also process the queue every minute
-      triggerQueueProcessing();
-      console.log('[signup] Queue processing triggered');
-    } catch (syncQueueError) {
-      // Log but don't fail signup - the queue item can be processed later by pg_cron
-      console.error('[signup] Failed to queue Bubble sync (non-blocking):', syncQueueError);
-    }
 
     // ========== SEND WELCOME EMAILS & SMS ==========
     // Fire-and-forget pattern: promises run without awaiting
@@ -417,14 +397,14 @@ export async function handleSignup(
     };
 
   } catch (error) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error(`[signup] ========== SIGNUP ERROR ==========`);
     console.error(`[signup] Error:`, error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to register user: ${error.message}`,
       500
     );

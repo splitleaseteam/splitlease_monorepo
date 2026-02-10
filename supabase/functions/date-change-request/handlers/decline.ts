@@ -9,7 +9,6 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import {
   DeclineRequestInput,
   DeclineRequestResponse,
@@ -27,8 +26,7 @@ import { sendDateChangeRequestNotifications } from "./notifications.ts";
  * 2. Fetch the request
  * 3. Verify request is still pending
  * 4. Update request status to Rejected
- * 5. Enqueue Bubble sync
- * 6. Return response
+ * 5. Return response
  */
 export async function handleDecline(
   payload: Record<string, unknown>,
@@ -118,31 +116,6 @@ export async function handleDecline(
     });
   } catch (notificationError) {
     console.error(`[date-change-request:decline] Notification error (non-blocking):`, notificationError);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `decline:${input.requestId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'datechangerequest',
-          recordId: input.requestId,
-          operation: 'UPDATE',
-          payload: updateData,
-        },
-      ],
-    });
-
-    console.log(`[date-change-request:decline] Bubble sync enqueued`);
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    console.error(`[date-change-request:decline] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

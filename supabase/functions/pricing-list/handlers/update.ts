@@ -9,11 +9,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { validateRequiredFields } from '../../_shared/validation.ts';
-import {
-  enqueueBubbleSync,
-  triggerQueueProcessing,
-  filterBubbleIncompatibleFields,
-} from '../../_shared/queueSync.ts';
 import { calculatePricingList } from '../utils/pricingCalculator.ts';
 
 interface UpdatePayload {
@@ -63,7 +58,7 @@ export async function handleUpdate(
 
   try {
     // Step 1: Fetch listing with its pricing_list FK
-    console.log('[pricing-list:update] Step 1/4: Fetching listing...');
+    console.log('[pricing-list:update] Step 1/3: Fetching listing...');
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
       .select(`
@@ -96,7 +91,7 @@ export async function handleUpdate(
     console.log('[pricing-list:update] ✅ Step 1 complete - Listing found with pricing_list:', pricingListId);
 
     // Step 2: Calculate pricing with new inputs
-    console.log('[pricing-list:update] Step 2/4: Calculating pricing...');
+    console.log('[pricing-list:update] Step 2/3: Calculating pricing...');
     const pricingData = calculatePricingList({
       listing,
       unitMarkup: unit_markup,
@@ -106,7 +101,7 @@ export async function handleUpdate(
 
     // Step 3: Update pricing_list by its _id
     // Note: Only include columns that exist in pricing_list table schema
-    console.log('[pricing-list:update] Step 3/4: Updating pricing_list...');
+    console.log('[pricing-list:update] Step 3/3: Updating pricing_list...');
 
     const now = new Date().toISOString();
 
@@ -141,24 +136,6 @@ export async function handleUpdate(
 
     console.log('[pricing-list:update] ✅ Step 3 complete - Pricing list updated');
 
-    // Step 4: Enqueue Bubble sync
-    console.log('[pricing-list:update] Step 4/4: Enqueueing Bubble sync...');
-
-    await enqueueBubbleSync(supabase, {
-      correlationId: `pricing_list:${pricingListId}`,
-      items: [{
-        sequence: 1,
-        table: 'pricing_list',
-        recordId: pricingListId,
-        operation: 'UPDATE',
-        bubbleId: pricingListId,
-        payload: filterBubbleIncompatibleFields(updateData),
-      }],
-    });
-
-    triggerQueueProcessing();
-
-    console.log('[pricing-list:update] ✅ Step 4 complete - Sync queued');
     console.log('[pricing-list:update] ========== SUCCESS ==========');
 
     return {

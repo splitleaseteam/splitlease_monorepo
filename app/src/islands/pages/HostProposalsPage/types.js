@@ -5,7 +5,7 @@
  * Based on the Bubble.io proposal schema with adaptations for the frontend.
  */
 
-import { getStatusConfig, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
+import { PROPOSAL_STATUSES, getStatusConfig, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
 
 /**
  * Proposal status types
@@ -52,107 +52,7 @@ import { getStatusConfig, isTerminalStatus } from '../../../logic/constants/prop
  *   7 = Initial Payment Submitted / Lease activated
  *   -1 = Cancelled/Rejected (special states)
  */
-export const PROPOSAL_STATUSES = {
-  proposal_submitted: {
-    id: 'proposal_submitted',
-    displayText: 'Proposal Submitted',
-    usualOrder: 0, // Awaiting rental application
-    hostAction1: 'See Details',
-    hostAction2: 'Request Rental App',
-    guestAction1: 'View Status',
-    guestAction2: 'Edit Proposal'
-  },
-  host_review: {
-    id: 'host_review',
-    displayText: 'Host Review',
-    usualOrder: 1,
-    hostAction1: 'Review / Modify',
-    hostAction2: 'Accept Proposal',
-    guestAction1: 'View Status',
-    guestAction2: ''
-  },
-  host_counteroffer: {
-    id: 'host_counteroffer',
-    displayText: 'Host Counteroffer Submitted',
-    usualOrder: 2,
-    hostAction1: 'Remind Guest',
-    hostAction2: 'See Details',
-    guestAction1: 'Review Counteroffer',
-    guestAction2: 'Reject'
-  },
-  accepted: {
-    id: 'accepted',
-    displayText: 'Accepted / Drafting Docs',
-    usualOrder: 3,
-    hostAction1: 'Remind Split Lease',
-    hostAction2: 'See Details',
-    guestAction1: 'View Status',
-    guestAction2: ''
-  },
-  lease_documents_sent: {
-    id: 'lease_documents_sent',
-    displayText: 'Lease Documents Sent for Review',
-    usualOrder: 4,
-    hostAction1: 'Review Documents',
-    hostAction2: 'Verify Identity',
-    guestAction1: 'Sign Documents',
-    guestAction2: ''
-  },
-  lease_documents_signatures: {
-    id: 'lease_documents_signatures',
-    displayText: 'Lease Documents Sent for Signatures',
-    usualOrder: 5,
-    hostAction1: 'Resend Documents',
-    hostAction2: '',
-    guestAction1: 'Sign Documents',
-    guestAction2: ''
-  },
-  lease_signed: {
-    id: 'lease_signed',
-    displayText: 'Lease Documents Signed',
-    usualOrder: 6,
-    hostAction1: 'Resend Documents',
-    hostAction2: '',
-    guestAction1: 'View Documents',
-    guestAction2: ''
-  },
-  payment_submitted: {
-    id: 'payment_submitted',
-    displayText: 'Initial Payment Submitted',
-    usualOrder: 7,
-    hostAction1: 'Go to Leases',
-    hostAction2: '',
-    guestAction1: 'View Lease',
-    guestAction2: ''
-  },
-  cancelled_by_guest: {
-    id: 'cancelled_by_guest',
-    displayText: 'Cancelled by Guest',
-    usualOrder: -1, // Special cancelled state
-    hostAction1: 'Delete Proposal',
-    hostAction2: '',
-    guestAction1: '',
-    guestAction2: ''
-  },
-  rejected_by_host: {
-    id: 'rejected_by_host',
-    displayText: 'Rejected by Host',
-    usualOrder: -1, // Special cancelled state
-    hostAction1: 'Delete Proposal',
-    hostAction2: '',
-    guestAction1: '',
-    guestAction2: ''
-  },
-  cancelled_by_splitlease: {
-    id: 'cancelled_by_splitlease',
-    displayText: 'Cancelled by Split Lease',
-    usualOrder: -1, // Special cancelled state
-    hostAction1: 'Delete Proposal',
-    hostAction2: '',
-    guestAction1: '',
-    guestAction2: ''
-  }
-};
+// PROPOSAL_STATUSES is imported from the canonical source: logic/constants/proposalStatuses.js
 
 /**
  * Progress bar step thresholds (usualOrder values required to complete each step)
@@ -192,7 +92,7 @@ export function getStatusTagInfo(status) {
   }
 
   // Host counteroffer - awaiting guest review
-  if (statusConfig.key === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+  if (statusConfig.key === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key) {
     return {
       text: 'Guest Reviewing Counteroffer',
       backgroundColor: '#FEF3C7',

@@ -52,7 +52,7 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
       tabIndex={index}
       aria-selected={isSelected}
       aria-expanded={isExpanded}
-      data-transaction-type="swap"
+      data-transaction-type="alternating"
       onKeyPress={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -72,7 +72,7 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
       <div className={styles.cardHeader}>
         <div className={styles.cardTitle}>
           <span className={styles.icon}>🔄</span>
-          <h3>Swap - Fair Exchange</h3>
+          <h3>Alternating - Fair Exchange</h3>
         </div>
         {option.potentialMatches && option.potentialMatches > 0 && (
           <div className={styles.matchesBadge}>
@@ -139,7 +139,7 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
             <div className={styles.swapRequirement}>
               <strong>📅 Exchange Requirement</strong>
               <p>
-                To complete a swap, you need to offer {option.roommate.name} one
+                To complete an alternating arrangement, you need to offer {option.roommate.name} one
                 of your assigned nights in exchange. This ensures fairness for
                 both parties.
               </p>
@@ -156,8 +156,8 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
           <div className={styles.reciprocityMessage}>
             <h5>🤝 Building Reciprocity</h5>
             <p>
-              Swaps build goodwill and make future requests easier. Users who
-              participate in swaps are 2.3x more likely to have their requests
+              Alternating arrangements build goodwill and make future requests easier. Users who
+              participate in alternating are 2.3x more likely to have their requests
               accepted.
             </p>
           </div>
@@ -171,7 +171,7 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
                 relationship. Win-win!"
               </p>
               <p className={styles.proofAttribution}>
-                - User who swaps regularly
+                - User who alternates regularly
               </p>
             </div>
           )}
@@ -198,7 +198,7 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
               </div>
               <p className={styles.probabilityText}>
                 {Math.round(option.estimatedAcceptanceProbability * 100)}%
-                historical acceptance rate for swaps
+                historical acceptance rate for alternating
               </p>
             </div>
           )}
@@ -208,7 +208,7 @@ export const SwapCard: React.FC<TransactionCardProps> = ({
             <div className={styles.matchesPreview}>
               <h5>Your Available Nights</h5>
               <p className={styles.matchesHint}>
-                After selecting swap, you'll choose which of your nights to offer
+                After selecting alternating, you'll choose which of your nights to offer
                 in exchange. We'll show you {option.roommate.name}'s preferences.
               </p>
             </div>

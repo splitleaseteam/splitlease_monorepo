@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Lease Readiness Checks
  *
  * Defines validation rules for each document type and checks
@@ -97,7 +97,7 @@ export const SUPPLEMENTAL_REQUIREMENTS = {
     {
       key: 'moveInDate',
       label: 'Move-in date',
-      check: (data) => !!data.proposal?.['hc move in date'] || !!data.lease?.['Reservation Period : Start'],
+      check: (data) => !!data.proposal?.['host_counter_offer_move_in_date'] || !!data.lease?.['Reservation Period : Start'],
       source: 'proposal',
     },
     {
@@ -171,7 +171,7 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
     {
       key: 'moveInDate',
       label: 'Move-in date',
-      check: (data) => !!data.proposal?.['hc move in date'] || !!data.lease?.['Reservation Period : Start'],
+      check: (data) => !!data.proposal?.['host_counter_offer_move_in_date'] || !!data.lease?.['Reservation Period : Start'],
       source: 'proposal',
     },
     {
@@ -185,7 +185,7 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
       label: 'Damage deposit amount',
       check: (data) => {
         const deposit = data.guestPayments?.[0]?.['Damage Deposit'] ||
-          data.proposal?.['hc damage deposit'] ||
+          data.proposal?.['host_counter_offer_damage_deposit'] ||
           data.proposal?.['damage deposit'];
         return deposit !== null && deposit !== undefined;
       },
@@ -195,7 +195,7 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
       key: 'houseRules',
       label: 'House rules',
       check: (data) => {
-        const rules = data.proposal?.['hc house rules'] ||
+        const rules = data.proposal?.['host_counter_offer_house_rules'] ||
           data.proposal?.['House Rules'] ||
           data.listing?.house_rule_reference_ids_json;
         return !!rules && (Array.isArray(rules) ? rules.length > 0 : true);
@@ -254,7 +254,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
       key: 'fourWeekRent',
       label: 'Four week rent amount',
       check: (data) => {
-        const rent = data.proposal?.['hc 4 week rent'] || data.proposal?.['4 week rent'];
+        const rent = data.proposal?.['host_counter_offer_4_week_rent'] || data.proposal?.['4 week rent'];
         return rent !== null && rent !== undefined && rent > 0;
       },
       source: 'proposal',
@@ -266,7 +266,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
       key: 'maintenanceFee',
       label: 'Maintenance/cleaning fee',
       check: (data) => {
-        const fee = data.proposal?.['hc cleaning fee'] || data.proposal?.['cleaning fee'];
+        const fee = data.proposal?.['host_counter_offer_cleaning_fee'] || data.proposal?.['cleaning fee'];
         return fee !== null && fee !== undefined;
       },
       source: 'proposal',
@@ -275,7 +275,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
       key: 'damageDeposit',
       label: 'Damage deposit amount',
       check: (data) => {
-        const deposit = data.proposal?.['hc damage deposit'] || data.proposal?.['damage deposit'];
+        const deposit = data.proposal?.['host_counter_offer_damage_deposit'] || data.proposal?.['damage deposit'];
         return deposit !== null && deposit !== undefined;
       },
       source: 'proposal',
@@ -439,18 +439,18 @@ export function formatReadinessReport(readinessReport, lease) {
   const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
   const leaseId = lease?._id || 'Unknown';
 
-  lines.push(`ðŸ“‹ Lease Readiness Report`);
+  lines.push(`📋 Lease Readiness Report`);
   lines.push(`Agreement: ${agreementNumber} (${leaseId})`);
   lines.push(`Status: ${readinessReport.summary.status}`);
   lines.push(`Documents Ready: ${readinessReport.readyCount}/${readinessReport.totalCount}`);
   lines.push('');
 
   if (readinessReport.allBlockingIssues.length > 0) {
-    lines.push('âŒ BLOCKING ISSUES:');
+    lines.push('❌ BLOCKING ISSUES:');
     for (const issue of readinessReport.allBlockingIssues) {
-      lines.push(`  â€¢ ${issue.label} (${issue.source})`);
+      lines.push(`  • ${issue.label} (${issue.source})`);
       if (issue.suggestion) {
-        lines.push(`    â†’ ${issue.suggestion}`);
+        lines.push(`    → ${issue.suggestion}`);
       }
       lines.push(`    Affects: ${issue.affectedDocuments.join(', ')}`);
     }
@@ -458,9 +458,9 @@ export function formatReadinessReport(readinessReport, lease) {
   }
 
   // Per-document status
-  lines.push('ðŸ“„ DOCUMENT STATUS:');
+  lines.push('📄 DOCUMENT STATUS:');
   for (const doc of readinessReport.documents) {
-    const icon = doc.canGenerate ? 'âœ…' : 'âŒ';
+    const icon = doc.canGenerate ? '✅' : '❌';
     lines.push(`  ${icon} ${doc.documentName}`);
     if (!doc.canGenerate && doc.blockingIssues.length > 0) {
       for (const issue of doc.blockingIssues) {
@@ -484,7 +484,7 @@ export function formatReadinessForSlack(readinessReport, lease) {
   const leaseId = lease?._id || 'Unknown';
 
   const missingFields = readinessReport.allBlockingIssues
-    .map(issue => `â€¢ ${issue.label} (${issue.source})`)
+    .map(issue => `• ${issue.label} (${issue.source})`)
     .join('\n');
 
   const affectedDocs = readinessReport.documentsNotReady
@@ -495,13 +495,13 @@ export function formatReadinessForSlack(readinessReport, lease) {
     .join(', ');
 
   return {
-    text: `âš ï¸ Document Generation Blocked`,
+    text: `⚠️ Document Generation Blocked`,
     blocks: [
       {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'âš ï¸ Document Generation Blocked',
+          text: '⚠️ Document Generation Blocked',
         },
       },
       {

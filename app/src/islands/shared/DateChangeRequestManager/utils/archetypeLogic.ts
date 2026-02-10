@@ -168,15 +168,15 @@ function calculateArchetypeScores(
   // TRANSACTION PREFERENCES (bonus points)
   // ========================================
 
-  if (signals.buyoutPreference > 0.6) {
+  if (signals.fullWeekPreference > 0.6) {
     bigSpenderScore += 10;
   }
 
-  if (signals.swapPreference > 0.5) {
+  if (signals.alternatingPreference > 0.5) {
     highFlexScore += 10;
   }
 
-  if (signals.crashPreference > 0.4) {
+  if (signals.sharedNightPreference > 0.4) {
     averageScore += 10;
   }
 
@@ -221,8 +221,8 @@ function generateArchetypeReason(
     if (signals.acceptanceRate < 0.5) {
       reasons.push('Selective about accepting proposals');
     }
-    if (signals.buyoutPreference > 0.6) {
-      reasons.push(`Prefer buyouts (${(signals.buyoutPreference * 100).toFixed(0)}% of time)`);
+    if (signals.fullWeekPreference > 0.6) {
+      reasons.push(`Prefer full week (${(signals.fullWeekPreference * 100).toFixed(0)}% of time)`);
     }
   } else if (archetype === 'high_flexibility') {
     if (signals.flexibilityScore > 70) {
@@ -231,8 +231,8 @@ function generateArchetypeReason(
     if (signals.accommodationHistory > 10) {
       reasons.push(`Accommodated others ${signals.accommodationHistory} times`);
     }
-    if (signals.swapPreference > 0.5) {
-      reasons.push(`Prefer swaps (${(signals.swapPreference * 100).toFixed(0)}% of time)`);
+    if (signals.alternatingPreference > 0.5) {
+      reasons.push(`Prefer alternating (${(signals.alternatingPreference * 100).toFixed(0)}% of time)`);
     }
     if (signals.reciprocityRatio > 1.5) {
       reasons.push('Gives more than receives');
@@ -289,9 +289,9 @@ function buildSignalsFromHistory(
       avgResponseTimeHours: 24,
       acceptanceRate: 0.5,
       requestFrequencyPerMonth: 0,
-      buyoutPreference: 0.33,
-      crashPreference: 0.33,
-      swapPreference: 0.34,
+      fullWeekPreference: 0.33,
+      sharedNightPreference: 0.33,
+      alternatingPreference: 0.34,
       flexibilityScore: 50,
       accommodationHistory: 0,
       reciprocityRatio: 1.0,
@@ -339,14 +339,14 @@ function buildSignalsFromHistory(
   const requestFrequencyPerMonth = recentRequests.length;
 
   // Calculate transaction type preferences
-  const buyouts = dateChangeHistory.filter(d => d.type === 'buyout').length;
-  const crashes = dateChangeHistory.filter(d => d.type === 'crash').length;
-  const swaps = dateChangeHistory.filter(d => d.type === 'swap').length;
-  const total = buyouts + crashes + swaps;
+  const fullWeeks = dateChangeHistory.filter(d => d.type === 'full_week').length;
+  const sharedNights = dateChangeHistory.filter(d => d.type === 'shared_night').length;
+  const alternations = dateChangeHistory.filter(d => d.type === 'alternating').length;
+  const total = fullWeeks + sharedNights + alternations;
 
-  const buyoutPreference = total > 0 ? buyouts / total : 0.33;
-  const crashPreference = total > 0 ? crashes / total : 0.33;
-  const swapPreference = total > 0 ? swaps / total : 0.34;
+  const fullWeekPreference = total > 0 ? fullWeeks / total : 0.33;
+  const sharedNightPreference = total > 0 ? sharedNights / total : 0.33;
+  const alternatingPreference = total > 0 ? alternations / total : 0.34;
 
   // Calculate flexibility score (based on date flexibility in bookings)
   const flexibleBookings = bookingHistory.filter(b => b.wasFlexible);
@@ -355,8 +355,8 @@ function buildSignalsFromHistory(
       ? (flexibleBookings.length / bookingHistory.length) * 100
       : 50;
 
-  // Calculate accommodation history (count of swaps)
-  const accommodationHistory = swaps;
+  // Calculate accommodation history (count of alternations)
+  const accommodationHistory = alternations;
 
   // Calculate reciprocity ratio (placeholder - would need real data)
   const reciprocityRatio = 1.0;
@@ -368,9 +368,9 @@ function buildSignalsFromHistory(
     avgResponseTimeHours,
     acceptanceRate,
     requestFrequencyPerMonth,
-    buyoutPreference,
-    crashPreference,
-    swapPreference,
+    fullWeekPreference,
+    sharedNightPreference,
+    alternatingPreference,
     flexibilityScore,
     accommodationHistory,
     reciprocityRatio,

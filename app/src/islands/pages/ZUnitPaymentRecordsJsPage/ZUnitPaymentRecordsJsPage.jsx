@@ -2,7 +2,7 @@
  * Z-Unit Payment Records JS Test Page
  *
  * Internal test page for payment records management and validation.
- * Compares JavaScript-calculated vs. Bubble native payment schedules.
+ * Compares JavaScript-calculated vs. legacy native payment schedules.
  * Follows the Hollow Component Pattern - ALL logic in useZUnitPaymentRecordsJsPageLogic hook.
  *
  * Route: /_internal/z-unit-payment-records-js
@@ -232,10 +232,10 @@ function ViewModeToggle({ viewMode, handleViewModeChange }) {
       </button>
       <button
         type="button"
-        className={`zupr-toggle-btn ${viewMode === 'bubbleNative' ? 'active' : ''}`}
-        onClick={() => handleViewModeChange('bubbleNative')}
+        className={`zupr-toggle-btn ${viewMode === 'legacyNative' ? 'active' : ''}`}
+        onClick={() => handleViewModeChange('legacyNative')}
       >
-        Bubble Native
+        Legacy Native
       </button>
     </div>
   );
@@ -369,7 +369,7 @@ export default function ZUnitPaymentRecordsJsPage() {
       {/* Header */}
       <header className="zupr-header">
         <h1>Z-Unit Payment Records JS Test</h1>
-        <p>Payment schedule management and JavaScript vs. Bubble comparison</p>
+        <p>Payment schedule management and JavaScript vs. legacy comparison</p>
       </header>
 
       <div className="zupr-container">
