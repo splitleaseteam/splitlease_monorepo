@@ -21,10 +21,10 @@ import { DATABASE } from './constants.js';
 // ============================================================================
 
 const lookupCache = {
-  neighborhoods: new Map(), // neighborhoodId -> name
+  neighborhoods: new Map(), // neighborhoodId -> {name, description, zips, borough}
   boroughs: new Map(),       // boroughId -> name
   propertyTypes: new Map(),  // propertyTypeId -> label
-  amenities: new Map(),      // amenityId -> {name, icon}
+  amenities: new Map(),      // amenityId -> {name, icon, type}
   safety: new Map(),         // safetyId -> {name, icon}
   houseRules: new Map(),     // houseRuleId -> {name, icon}
   parking: new Map(),        // parkingId -> {label}
@@ -113,7 +113,9 @@ async function initializeBoroughLookups() {
 }
 
 /**
- * Fetch and cache all neighborhoods
+ * Fetch and cache all neighborhoods (lightweight — descriptions lazy-loaded)
+ * Startup fetches name, zips, and borough only (~27 KB vs 166 KB with descriptions).
+ * Descriptions are fetched on demand via fetchNeighborhoodDescription().
  * @returns {Promise<void>}
  */
 async function initializeNeighborhoodLookups() {
@@ -121,16 +123,21 @@ async function initializeNeighborhoodLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('_id, Display');
+      .select('_id, Display, "Zips", "Geo-Borough"');
 
     if (error) throw error;
 
     if (data && Array.isArray(data)) {
       data.forEach(neighborhood => {
-        const name = neighborhood.Display || 'Unknown Neighborhood';
-        lookupCache.neighborhoods.set(neighborhood._id, name.trim());
+        const name = (neighborhood.Display || 'Unknown Neighborhood').trim();
+        lookupCache.neighborhoods.set(neighborhood._id, {
+          name,
+          description: null, // lazy-loaded via fetchNeighborhoodDescription()
+          zips: neighborhood.Zips || [],
+          borough: neighborhood['Geo-Borough'] || null
+        });
       });
-      console.log(`Cached ${lookupCache.neighborhoods.size} neighborhoods`);
+      console.log(`Cached ${lookupCache.neighborhoods.size} neighborhoods (descriptions deferred)`);
     }
   } catch (error) {
     console.error('Failed to initialize neighborhood lookups:', error);
@@ -184,7 +191,7 @@ async function initializeAmenityLookups() {
   try {
     const { data, error } = await supabase
       .from(DATABASE.TABLES.AMENITY)
-      .select('_id, Name, Icon');
+      .select('_id, Name, Icon, "Type - Amenity Categories"');
 
     if (error) throw error;
 
@@ -192,7 +199,8 @@ async function initializeAmenityLookups() {
       data.forEach(amenity => {
         lookupCache.amenities.set(amenity._id, {
           name: amenity.Name || 'Unknown Amenity',
-          icon: amenity.Icon || ''
+          icon: amenity.Icon || '',
+          type: amenity['Type - Amenity Categories'] || ''
         });
       });
       console.log(`Cached ${lookupCache.amenities.size} amenities`);
@@ -388,12 +396,25 @@ async function initializeCancellationReasonLookups() {
 export function getNeighborhoodName(neighborhoodId) {
   if (!neighborhoodId) return '';
 
-  const name = lookupCache.neighborhoods.get(neighborhoodId);
-  if (name) return name;
+  const hood = lookupCache.neighborhoods.get(neighborhoodId);
+  if (hood) return hood.name;
 
   // Cache miss - return ID as fallback to show what's missing
   console.warn(`Neighborhood ID not found in cache: ${neighborhoodId}`);
   return neighborhoodId; // Show ID so we can debug
+}
+
+/**
+ * Get full neighborhood info by ID (name, description, zips, borough)
+ * Description may be null if not yet lazy-loaded — check needsFetch.
+ * @param {string} neighborhoodId - The neighborhood ID
+ * @returns {{name: string, description: string|null, zips: string[], borough: string|null, needsFetch: boolean}} Neighborhood info
+ */
+export function getNeighborhoodInfo(neighborhoodId) {
+  if (!neighborhoodId) return { name: '', description: null, zips: [], borough: null, needsFetch: true };
+  const hood = lookupCache.neighborhoods.get(neighborhoodId);
+  if (!hood) return { name: '', description: null, zips: [], borough: null, needsFetch: true };
+  return { ...hood, needsFetch: hood.description === null };
 }
 
 /**
@@ -578,6 +599,25 @@ export function getAllParkingOptions() {
 }
 
 /**
+ * Get all neighborhoods from cache, grouped by borough name.
+ * Returns an array of { id, name, borough } sorted by borough then name.
+ * Useful for building deduplicated borough dropdown filters.
+ * @returns {Array<{id: string, name: string, borough: string|null}>}
+ */
+export function getAllNeighborhoods() {
+  const results = [];
+  lookupCache.neighborhoods.forEach((hood, id) => {
+    results.push({ id, name: hood.name, borough: hood.borough });
+  });
+  return results.sort((a, b) => {
+    const aBoro = a.borough || '';
+    const bBoro = b.borough || '';
+    if (aBoro !== bBoro) return aBoro.localeCompare(bBoro);
+    return a.name.localeCompare(b.name);
+  });
+}
+
+/**
  * Get storage option data by ID (synchronous lookup from cache)
  * @param {string} storageId - The storage option ID
  * @returns {object|null} The storage option data {title, summaryGuest} or null
@@ -633,6 +673,43 @@ export function getHostRejectionReasons() {
 // ============================================================================
 
 /**
+ * Fetch and cache a single neighborhood description on demand.
+ * Returns cached description immediately if already loaded.
+ * Updates the in-memory cache so subsequent calls are instant.
+ * @param {string} neighborhoodId - The neighborhood ID
+ * @returns {Promise<string>} The neighborhood description (empty string if none)
+ */
+export async function fetchNeighborhoodDescription(neighborhoodId) {
+  if (!neighborhoodId) return '';
+
+  const cached = lookupCache.neighborhoods.get(neighborhoodId);
+  if (cached?.description !== null && cached?.description !== undefined) return cached.description;
+
+  try {
+    const { data, error } = await supabase
+      .schema('reference_table')
+      .from(DATABASE.TABLES.NEIGHBORHOOD)
+      .select('"Neighborhood Description"')
+      .eq('_id', neighborhoodId)
+      .single();
+
+    if (error) throw error;
+
+    const description = data?.['Neighborhood Description'] || '';
+
+    // Update the existing cache entry (preserves name, zips, borough)
+    if (cached) {
+      cached.description = description;
+    }
+
+    return description;
+  } catch (error) {
+    console.error(`Failed to fetch neighborhood description ${neighborhoodId}:`, error);
+    return '';
+  }
+}
+
+/**
  * Fetch neighborhood name by ID from database (async)
  * Use this only if the cache doesn't have the value
  * @param {string} neighborhoodId - The neighborhood ID
@@ -643,21 +720,26 @@ export async function fetchNeighborhoodName(neighborhoodId) {
 
   // Check cache first
   const cached = lookupCache.neighborhoods.get(neighborhoodId);
-  if (cached) return cached;
+  if (cached) return cached.name;
 
   try {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('Display')
+      .select('Display, "Neighborhood Description", "Zips", "Geo-Borough"')
       .eq('_id', neighborhoodId)
       .single();
 
     if (error) throw error;
 
     const name = data?.Display || 'Unknown Neighborhood';
-    // Cache the result
-    lookupCache.neighborhoods.set(neighborhoodId, name);
+    // Cache the result as object
+    lookupCache.neighborhoods.set(neighborhoodId, {
+      name,
+      description: data?.['Neighborhood Description'] || '',
+      zips: data?.Zips || [],
+      borough: data?.['Geo-Borough'] || null
+    });
     return name;
   } catch (error) {
     console.error(`Failed to fetch neighborhood ${neighborhoodId}:`, error);

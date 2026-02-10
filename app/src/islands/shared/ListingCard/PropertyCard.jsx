@@ -30,6 +30,7 @@ const PropertyCard = memo(function PropertyCard({
   onCardLeave,
   onOpenContactModal,
   onOpenInfoModal,
+  onOpenDetailDrawer,
   isLoggedIn,
   isFavorited,
   userId,
@@ -177,7 +178,15 @@ const PropertyCard = memo(function PropertyCard({
 
   const listingId = listing.id || listing._id;
 
-  // Handle card click - pass days-selected parameter
+  // Check if this listing was previously viewed (read once on mount/id change)
+  const isViewed = useMemo(() => {
+    try {
+      const viewed = JSON.parse(sessionStorage.getItem('sl_viewed_listings') || '[]');
+      return viewed.includes(listingId);
+    } catch { return false; }
+  }, [listingId]);
+
+  // Handle card click - open drawer on search page, navigate otherwise
   const handleCardClick = (e) => {
     if (!listingId) {
       e.preventDefault();
@@ -189,8 +198,27 @@ const PropertyCard = memo(function PropertyCard({
       return;
     }
 
-    // Prevent default link behavior
+    // Mark as viewed in sessionStorage
+    try {
+      const viewed = JSON.parse(sessionStorage.getItem('sl_viewed_listings') || '[]');
+      if (!viewed.includes(listingId)) {
+        viewed.push(listingId);
+        sessionStorage.setItem('sl_viewed_listings', JSON.stringify(viewed));
+      }
+    } catch (_) { /* ignore storage errors */ }
+
+    // Ctrl+Click or Cmd+Click: let browser open in new tab naturally
+    if (e.ctrlKey || e.metaKey) {
+      return;
+    }
+
     e.preventDefault();
+
+    // On search page with drawer available: open drawer instead of navigating
+    if (variant === 'search' && onOpenDetailDrawer) {
+      onOpenDetailDrawer(listing);
+      return;
+    }
 
     // Get days-selected from URL at click time
     const urlParams = new URLSearchParams(window.location.search);
@@ -200,20 +228,12 @@ const PropertyCard = memo(function PropertyCard({
       ? `/view-split-lease/${listingId}?days-selected=${daysSelected}`
       : `/view-split-lease/${listingId}`;
 
-    if (variant === 'search') {
-      logger.debug('PropertyCard: Opening listing with URL:', url);
-    } else {
-      console.log('PropertyCard: Opening listing with URL:', url);
-    }
-
     // Detect mobile viewport
     const isMobile = window.innerWidth <= 768;
 
     if (isMobile || variant === 'favorites') {
-      // On mobile or favorites page, navigate in same tab
       window.location.href = url;
     } else {
-      // On desktop SearchPage, open in new tab
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
@@ -231,6 +251,8 @@ const PropertyCard = memo(function PropertyCard({
     <a
       className="listing-card"
       data-listing-id={listingId}
+      role="listitem"
+      aria-label={`View listing details for ${listing.title}`}
       href={listingId ? `/view-split-lease/${listingId}` : '#'}
       target="_blank"
       rel="noopener noreferrer"
@@ -253,6 +275,8 @@ const PropertyCard = memo(function PropertyCard({
           <img
             src={listing.images[currentImageIndex]}
             alt={listing.title}
+            loading="lazy"
+            decoding="async"
             onClick={onPhotoClick ? handleImageClick : undefined}
             style={{ cursor: onPhotoClick ? 'pointer' : 'default' }}
           />
@@ -282,6 +306,7 @@ const PropertyCard = memo(function PropertyCard({
             onRequireAuth={onRequireAuth}
             size="medium"
           />
+          <span className="viewed-badge" aria-label="Previously viewed">&#10003;</span>
           {listing.isNew && <span className="new-badge">New Listing</span>}
           {listing.type === 'Entire Place' && (
             <span className="family-friendly-tag" aria-label="Family Friendly - Entire place listing suitable for families">
@@ -292,6 +317,17 @@ const PropertyCard = memo(function PropertyCard({
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
               Family Friendly
+            </span>
+          )}
+          {listing.transitTime && (
+            <span className="transit-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="3" width="16" height="18" rx="2" />
+                <circle cx="8.5" cy="15.5" r="1.5" />
+                <circle cx="15.5" cy="15.5" r="1.5" />
+                <path d="M4 11h16" />
+              </svg>
+              {listing.transitTime}
             </span>
           )}
         </div>
@@ -424,7 +460,7 @@ const PropertyCard = memo(function PropertyCard({
               {/* Host Profile */}
               <div className="host-profile">
                 {listing.host?.image ? (
-                  <img src={listing.host.image} alt={listing.host.name} className="host-avatar" />
+                  <img src={listing.host.image} alt={listing.host.name} className="host-avatar" loading="lazy" decoding="async" />
                 ) : (
                   <div className="host-avatar-placeholder">?</div>
                 )}
@@ -439,7 +475,7 @@ const PropertyCard = memo(function PropertyCard({
             <div className="listing-host-row">
               <div className="host">
                 {listing.host?.image ? (
-                  <img src={listing.host.image} alt={listing.host.name} className="host-avatar" />
+                  <img src={listing.host.image} alt={listing.host.name} className="host-avatar" loading="lazy" decoding="async" />
                 ) : (
                   <div className="host-avatar-placeholder">?</div>
                 )}
@@ -546,29 +582,6 @@ const PropertyCard = memo(function PropertyCard({
           ) : (
             <div className="availability-note">Message Split Lease<br/>for Availability</div>
           )}
-          {/* Debug: Show pricingList min nightly price */}
-          {variant === 'search' && listing.pricingList && (() => {
-            // Calculate actual minimum: use startingNightlyPrice if valid, otherwise find min from nightlyPrice array
-            const storedMin = Number(listing.pricingList.startingNightlyPrice);
-            const nightlyPrices = listing.pricingList.nightlyPrice || [];
-            const validPrices = nightlyPrices.filter(p => Number(p) > 0);
-            const arrayMin = validPrices.length > 0 ? Math.min(...validPrices) : null;
-            const displayMin = (storedMin > 0) ? storedMin : arrayMin;
-
-            return (
-              <div style={{
-                marginTop: '8px',
-                padding: '4px 6px',
-                fontSize: '10px',
-                backgroundColor: '#fff3cd',
-                border: '1px solid #ffc107',
-                borderRadius: '4px',
-                color: '#856404'
-              }}>
-                <div><strong>Min:</strong> {displayMin ? `$${displayMin.toFixed(2)}` : 'N/A'}</div>
-              </div>
-            );
-          })()}
         </div>
       </div>
     </a>

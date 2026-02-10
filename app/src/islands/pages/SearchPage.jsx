@@ -19,16 +19,12 @@
  * SECURITY: All user IDs derived from JWT via useAuthenticatedUser hook
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import GoogleMap from '../shared/GoogleMap.jsx';
 import InformationalText from '../shared/InformationalText.jsx';
-import ContactHostMessaging from '../shared/ContactHostMessaging.jsx';
-import AiSignupMarketReport from '../shared/AiSignupMarketReport/AiSignupMarketReport.jsx';
 import SearchScheduleSelector from '../shared/SearchScheduleSelector.jsx';
-import SignUpLoginModal from '../shared/SignUpLoginModal.jsx';
 import LoggedInAvatar from '../shared/LoggedInAvatar/LoggedInAvatar.jsx';
-import CreateProposalFlowV2, { clearProposalDraft } from '../shared/CreateProposalFlowV2.jsx';
 import { isGuest } from '../../logic/rules/users/isGuest.js';
 import { isHost } from '../../logic/rules/users/isHost.js';
 import { logger } from '../../lib/logger.js';
@@ -42,10 +38,12 @@ import { countSelectedNights } from '../../lib/scheduleSelector/nightCalculation
 import ProposalSuccessModal from '../modals/ProposalSuccessModal.jsx';
 import CompactScheduleIndicator from './SearchPage/components/CompactScheduleIndicator.jsx';
 import MobileFilterBar from './SearchPage/components/MobileFilterBar.jsx';
+import ListingDetailDrawer from './SearchPage/components/ListingDetailDrawer.jsx';
 import { NeighborhoodSearchFilter } from './SearchPage/components/NeighborhoodFilters.jsx';
 import { BoroughSearchFilter } from './SearchPage/components/BoroughFilters.jsx';
 import PropertyCard from '../shared/ListingCard/PropertyCard.jsx';
 import UsabilityPopup from '../shared/UsabilityPopup/UsabilityPopup.jsx';
+import { ErrorBoundary } from '../shared/ErrorBoundary.jsx';
 
 // HOOKS - Hollow Component Pattern
 import { useSearchPageLogic } from './useSearchPageLogic.js';
@@ -53,6 +51,11 @@ import { useSearchPageAuth } from './useSearchPageAuth.js';
 
 // SERVICE - Centralized proposal API
 import { createProposal, transformListingForProposal } from '../../lib/proposalService.js';
+
+const SignUpLoginModal = lazy(() => import('../shared/SignUpLoginModal.jsx'));
+const AiSignupMarketReport = lazy(() => import('../shared/AiSignupMarketReport/AiSignupMarketReport.jsx'));
+const CreateProposalFlowV2 = lazy(() => import('../shared/CreateProposalFlowV2.jsx'));
+const ContactHostMessaging = lazy(() => import('../shared/ContactHostMessaging.jsx'));
 
 // ============================================================================
 // Internal Components (UI-only, no business logic)
@@ -66,9 +69,13 @@ function ListingsGrid({
   onLoadMore,
   hasMore,
   isLoading,
+  isPaused,
   onOpenContactModal,
   onOpenInfoModal,
-  mapRef,
+  onLocationClick,
+  onCardHover,
+  onCardLeave,
+  onOpenDetailDrawer,
   isLoggedIn,
   userId,
   favoritedListingIds,
@@ -83,7 +90,7 @@ function ListingsGrid({
   const sentinelRef = useRef(null);
 
   useEffect(() => {
-    if (!sentinelRef.current || !hasMore || isLoading) return;
+    if (!sentinelRef.current || !hasMore || isLoading || isPaused) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -101,10 +108,10 @@ function ListingsGrid({
         observer.unobserve(sentinelRef.current);
       }
     };
-  }, [hasMore, isLoading, onLoadMore]);
+  }, [hasMore, isLoading, isPaused, onLoadMore]);
 
   return (
-    <div className="listings-container">
+    <div className="listings-container" role="list" aria-label="Search results listings">
       {listings.map((listing) => {
         const listingId = listing.id || listing._id;
         const isFavorited = favoritedListingIds?.has(listingId);
@@ -113,11 +120,10 @@ function ListingsGrid({
           <PropertyCard
             key={listing.id}
             listing={listing}
-            onLocationClick={(listing) => {
-              if (mapRef.current) {
-                mapRef.current.zoomToListing(listing.id);
-              }
-            }}
+            onLocationClick={onLocationClick}
+            onCardHover={onCardHover}
+            onCardLeave={onCardLeave}
+            onOpenDetailDrawer={onOpenDetailDrawer}
             onOpenContactModal={onOpenContactModal}
             onOpenInfoModal={onOpenInfoModal}
             isLoggedIn={isLoggedIn}
@@ -271,7 +277,14 @@ export default function SearchPage() {
     handleOpenInfoModal,
     handleCloseInfoModal,
     handleOpenAIResearchModal,
-    handleCloseAIResearchModal
+    handleCloseAIResearchModal,
+    // Drawer
+    isDetailDrawerOpen,
+    detailDrawerListing,
+    handleOpenDetailDrawer,
+    handleCloseDetailDrawer,
+    // Price Percentiles
+    pricePercentiles
   } = useSearchPageLogic();
 
   // ==========================================================================
@@ -497,32 +510,42 @@ export default function SearchPage() {
   useEffect(() => {
     let lastScrollY = 0;
     let ticking = false;
+    let latestRead = null;
 
     const handleScroll = (e) => {
+      const scrollTarget = e?.target;
+      const currentScrollY =
+        scrollTarget && scrollTarget !== window
+          ? (scrollTarget.scrollTop || 0)
+          : (window.scrollY || window.pageYOffset || 0);
+      const viewportWidth = window.innerWidth;
+
+      latestRead = { currentScrollY, viewportWidth };
+
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scrollElement = e.target;
-          const currentScrollY = scrollElement.scrollTop || 0;
-          const isMobile = window.innerWidth <= 768;
-          const isDesktop = window.innerWidth >= 769;
-
-          if (isMobile) {
-            if (currentScrollY > 250 && currentScrollY > lastScrollY) {
-              setMobileHeaderHidden(true);
-            } else if (currentScrollY < lastScrollY) {
-              setMobileHeaderHidden(false);
-            }
-            setDesktopHeaderCollapsed(false);
-          } else if (isDesktop) {
-            if (currentScrollY > 150 && currentScrollY > lastScrollY) {
-              setDesktopHeaderCollapsed(true);
-            } else if (currentScrollY < lastScrollY) {
-              setDesktopHeaderCollapsed(false);
-            }
-            setMobileHeaderHidden(false);
+          const read = latestRead;
+          if (!read) {
+            ticking = false;
+            return;
           }
 
-          lastScrollY = currentScrollY;
+          const { currentScrollY: nextScrollY, viewportWidth: nextViewportWidth } = read;
+          const isMobile = nextViewportWidth <= 768;
+          const isDesktop = nextViewportWidth >= 769;
+          let nextMobileHeaderHidden = false;
+          let nextDesktopHeaderCollapsed = false;
+
+          if (isMobile) {
+            nextMobileHeaderHidden = nextScrollY > 250 && nextScrollY > lastScrollY;
+          } else if (isDesktop) {
+            nextDesktopHeaderCollapsed = nextScrollY > 150 && nextScrollY > lastScrollY;
+          }
+
+          setMobileHeaderHidden(prev => (prev === nextMobileHeaderHidden ? prev : nextMobileHeaderHidden));
+          setDesktopHeaderCollapsed(prev => (prev === nextDesktopHeaderCollapsed ? prev : nextDesktopHeaderCollapsed));
+
+          lastScrollY = nextScrollY;
           ticking = false;
         });
         ticking = true;
@@ -630,11 +653,96 @@ export default function SearchPage() {
     }
   };
 
+  const scrollToListingCardWithRetry = useCallback((listing, attempts = 5) => {
+    const listingId = listing.id || listing._id;
+    const listingCard = document.querySelector(`[data-listing-id="${listingId}"]`);
+
+    if (listingCard) {
+      scrollToListingCard(listing);
+      return;
+    }
+
+    if (attempts > 0) {
+      window.setTimeout(() => {
+        scrollToListingCardWithRetry(listing, attempts - 1);
+      }, 120);
+    }
+  }, [scrollToListingCard]);
+
+  const handleMobileMarkerClick = useCallback((listing) => {
+    setMobileMapVisible(false);
+    window.setTimeout(() => {
+      scrollToListingCardWithRetry(listing);
+    }, 300);
+  }, [scrollToListingCardWithRetry]);
+
+  // ==========================================================================
+  // DRAWER + HOVER HANDLERS
+  // ==========================================================================
+
+  // QW3: Escape key closes overlays in priority order
+  useEffect(() => {
+    const handleEscapeKey = (e) => {
+      if (e.key === 'Escape') {
+        const target = e.target;
+        const isTextInput = !!(
+          target && (
+            target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'SELECT' ||
+            target.isContentEditable
+          )
+        );
+
+        if (isTextInput) return;
+
+        if (isDetailDrawerOpen) {
+          handleCloseDetailDrawer();
+        } else if (filterPopupOpen) {
+          closeFilterPopup();
+        } else if (filterPanelActive) {
+          setFilterPanelActive(false);
+        } else if (mobileMapVisible) {
+          setMobileMapVisible(false);
+        } else if (menuOpen) {
+          setMenuOpen(false);
+        }
+      }
+    };
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [isDetailDrawerOpen, filterPopupOpen, filterPanelActive, mobileMapVisible, menuOpen, closeFilterPopup, handleCloseDetailDrawer]);
+
+  // QW1: Card ↔ Map hover sync (debounced to prevent rapid-fire highlights)
+  const hoverTimerRef = useRef(null);
+  const handleCardHover = useCallback((listing) => {
+    clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      mapRef.current?.highlightListing(listing.id);
+    }, 150);
+  }, [mapRef]);
+
+  const handleCardLeave = useCallback(() => {
+    clearTimeout(hoverTimerRef.current);
+    mapRef.current?.stopPulse();
+  }, [mapRef]);
+
   // ==========================================================================
   // PROPOSAL HANDLERS
   // ==========================================================================
 
-  const handleOpenCreateProposalModal = (listing) => {
+  const handleLocationClick = useCallback((listing) => {
+    if (mapRef.current) {
+      mapRef.current.zoomToListing(listing.id);
+    }
+  }, [mapRef]);
+
+  const handleRequireAuth = useCallback(() => {
+    setAuthModalView('signup');
+    setIsAuthModalOpen(true);
+  }, []);
+
+  const handleOpenCreateProposalModal = useCallback((listing) => {
     const urlParams = new URLSearchParams(window.location.search);
     const daysParam = urlParams.get('days-selected');
 
@@ -685,7 +793,7 @@ export default function SearchPage() {
     setMoveInDateForProposal(smartMoveInDate);
     setReservationSpanForProposal(prefillReservationSpan);
     setIsCreateProposalModalOpen(true);
-  };
+  }, [lastProposalDefaults, setReservationSpanForProposal]);
 
   const handleCloseCreateProposalModal = () => {
     setIsCreateProposalModalOpen(false);
@@ -730,6 +838,7 @@ export default function SearchPage() {
       }
 
       // Success handling
+      const { clearProposalDraft } = await import('../shared/CreateProposalFlowV2.jsx');
       clearProposalDraft(proposalData.listingId);
       setIsCreateProposalModalOpen(false);
       setPendingProposalData(null);
@@ -830,6 +939,7 @@ export default function SearchPage() {
               setIsAuthModalOpen(true);
             }}
             isHidden={mobileHeaderHidden}
+            isExpanded={filterPanelActive}
           />
 
           {/* Floating Map Button - Mobile only */}
@@ -867,6 +977,7 @@ export default function SearchPage() {
                   className={`filter-toggle-btn-new ${filterPopupOpen ? 'active' : ''}`}
                   onClick={toggleFilterPopup}
                   aria-label="Open filters"
+                  aria-expanded={filterPopupOpen}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
@@ -896,7 +1007,7 @@ export default function SearchPage() {
 
           {/* Filter Tags Row - Shows active filters as removable chips */}
           <div className={`filter-tags-row ${activeFilterTags.length > 0 ? 'has-filters' : ''} ${desktopHeaderCollapsed ? 'filter-tags-row--collapsed' : ''}`}>
-            <button className="results-filter-btn" onClick={toggleFilterPopup}>
+            <button className="results-filter-btn" onClick={toggleFilterPopup} aria-expanded={filterPopupOpen}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
               </svg>
@@ -939,7 +1050,13 @@ export default function SearchPage() {
           </div>
 
           {/* Filter Popup Modal */}
-          <div className={`filter-popup ${filterPopupOpen ? 'open' : ''}`}>
+          <div
+            className={`filter-popup ${filterPopupOpen ? 'open' : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filter options"
+            aria-hidden={!filterPopupOpen}
+          >
             <div className="filter-popup-header">
               <h3 className="filter-popup-title">Filters</h3>
               <button className="filter-popup-clear" onClick={clearAllFilters}>
@@ -1024,7 +1141,7 @@ export default function SearchPage() {
           {filterPanelActive && (
             <>
               <div className="mobile-filter-backdrop" onClick={() => setFilterPanelActive(false)}></div>
-              <div className="mobile-filter-sheet">
+              <div className="mobile-filter-sheet" role="dialog" aria-modal="true" aria-label="Filter listings">
                 {/* Grab Handle */}
                 <div className="mobile-filter-handle"></div>
 
@@ -1171,17 +1288,18 @@ export default function SearchPage() {
                       onLoadMore={handleFallbackLoadMore}
                       hasMore={hasFallbackMore}
                       isLoading={false}
+                      isPaused={isDetailDrawerOpen}
                       onOpenContactModal={handleOpenContactModal}
                       onOpenInfoModal={handleOpenInfoModal}
-                      mapRef={mapRef}
+                      onLocationClick={handleLocationClick}
+                      onCardHover={handleCardHover}
+                      onCardLeave={handleCardLeave}
+                      onOpenDetailDrawer={handleOpenDetailDrawer}
                       isLoggedIn={isLoggedIn}
                       userId={authUserId}
                       favoritedListingIds={favoritedListingIds}
                       onToggleFavorite={handleToggleFavorite}
-                      onRequireAuth={() => {
-                        setAuthModalView('signup');
-                        setIsAuthModalOpen(true);
-                      }}
+                      onRequireAuth={handleRequireAuth}
                       showCreateProposalButton={showCreateProposalButton}
                       onOpenCreateProposalModal={handleOpenCreateProposalModal}
                       proposalsByListingId={proposalsByListingId}
@@ -1199,17 +1317,18 @@ export default function SearchPage() {
                 onLoadMore={handleLoadMore}
                 hasMore={hasMore}
                 isLoading={isLoading}
+                isPaused={isDetailDrawerOpen}
                 onOpenContactModal={handleOpenContactModal}
                 onOpenInfoModal={handleOpenInfoModal}
-                mapRef={mapRef}
+                onLocationClick={handleLocationClick}
+                onCardHover={handleCardHover}
+                onCardLeave={handleCardLeave}
+                onOpenDetailDrawer={handleOpenDetailDrawer}
                 isLoggedIn={isLoggedIn}
                 userId={authUserId}
                 favoritedListingIds={favoritedListingIds}
                 onToggleFavorite={handleToggleFavorite}
-                onRequireAuth={() => {
-                  setAuthModalView('signup');
-                  setIsAuthModalOpen(true);
-                }}
+                onRequireAuth={handleRequireAuth}
                 showCreateProposalButton={showCreateProposalButton}
                 onOpenCreateProposalModal={handleOpenCreateProposalModal}
                 proposalsByListingId={proposalsByListingId}
@@ -1258,6 +1377,7 @@ export default function SearchPage() {
                     className="hamburger-menu"
                     onClick={() => setMenuOpen(!menuOpen)}
                     aria-label="Toggle menu"
+                    aria-expanded={menuOpen}
                   >
                     <span>Menu</span>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1299,26 +1419,28 @@ export default function SearchPage() {
             favoritedListingIds={favoritedListingIds}
             onToggleFavorite={handleToggleFavorite}
             userId={authUserId}
-            onRequireAuth={() => {
-              setAuthModalView('signup');
-              setIsAuthModalOpen(true);
-            }}
+            onRequireAuth={handleRequireAuth}
             showMessageButton={showMessageButton}
           />
         </section>
       </main>
 
       {/* Modals */}
-      <ContactHostMessaging
-        isOpen={isContactModalOpen}
-        onClose={handleCloseContactModal}
-        listing={selectedListing}
-        onLoginRequired={() => {
-          handleCloseContactModal();
-          setAuthModalView('signup');
-          setIsAuthModalOpen(true);
-        }}
-      />
+      {isContactModalOpen && (
+        <ErrorBoundary>
+          <Suspense fallback={<div className="modal-loading">Loading...</div>}>
+            <ContactHostMessaging
+              isOpen={isContactModalOpen}
+              onClose={handleCloseContactModal}
+              listing={selectedListing}
+              onLoginRequired={() => {
+                handleCloseContactModal();
+                handleRequireAuth();
+              }}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      )}
 
       <InformationalText
         isOpen={isInfoModalOpen}
@@ -1331,55 +1453,75 @@ export default function SearchPage() {
         showMoreAvailable={informationalTexts['Price Starts']?.showMore}
       />
 
-      <AiSignupMarketReport
-        isOpen={isAIResearchModalOpen}
-        onClose={handleCloseAIResearchModal}
-      />
+      {isAIResearchModalOpen && (
+        <ErrorBoundary>
+          <Suspense fallback={<div className="modal-loading">Loading...</div>}>
+            <AiSignupMarketReport
+              isOpen={isAIResearchModalOpen}
+              onClose={handleCloseAIResearchModal}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      )}
 
-      <SignUpLoginModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        initialView={authModalView}
-        onAuthSuccess={() => {
-          logger.debug('Auth successful from SearchPage');
-        }}
-      />
+      {isAuthModalOpen && (
+        <ErrorBoundary>
+          <Suspense fallback={<div className="modal-loading">Loading...</div>}>
+            <SignUpLoginModal
+              isOpen={isAuthModalOpen}
+              onClose={() => setIsAuthModalOpen(false)}
+              initialView={authModalView}
+              onAuthSuccess={() => {
+                logger.debug('Auth successful from SearchPage');
+              }}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      )}
 
       {isCreateProposalModalOpen && selectedListingForProposal && (
-        <CreateProposalFlowV2
-          listing={transformListingForProposal(selectedListingForProposal)}
-          moveInDate={moveInDateForProposal}
-          daysSelected={selectedDayObjectsForProposal}
-          nightsSelected={selectedDayObjectsForProposal.length > 0 ? selectedDayObjectsForProposal.length - 1 : 0}
-          reservationSpan={reservationSpanForProposal}
-          pricingBreakdown={null}
-          zatConfig={zatConfig}
-          isFirstProposal={!loggedInUserData || loggedInUserData.proposalCount === 0}
-          useFullFlow={true}
-          existingUserData={loggedInUserData ? {
-            needForSpace: loggedInUserData.needForSpace || '',
-            aboutYourself: loggedInUserData.aboutMe || '',
-            hasUniqueRequirements: !!loggedInUserData.specialNeeds,
-            uniqueRequirements: loggedInUserData.specialNeeds || ''
-          } : null}
-          onClose={handleCloseCreateProposalModal}
-          onSubmit={handleCreateProposalSubmit}
-          isSubmitting={isSubmittingProposal}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<div className="modal-loading">Loading...</div>}>
+            <CreateProposalFlowV2
+              listing={transformListingForProposal(selectedListingForProposal)}
+              moveInDate={moveInDateForProposal}
+              daysSelected={selectedDayObjectsForProposal}
+              nightsSelected={selectedDayObjectsForProposal.length > 0 ? selectedDayObjectsForProposal.length - 1 : 0}
+              reservationSpan={reservationSpanForProposal}
+              pricingBreakdown={null}
+              zatConfig={zatConfig}
+              isFirstProposal={!loggedInUserData || loggedInUserData.proposalCount === 0}
+              useFullFlow={true}
+              existingUserData={loggedInUserData ? {
+                needForSpace: loggedInUserData.needForSpace || '',
+                aboutYourself: loggedInUserData.aboutMe || '',
+                hasUniqueRequirements: !!loggedInUserData.specialNeeds,
+                uniqueRequirements: loggedInUserData.specialNeeds || ''
+              } : null}
+              onClose={handleCloseCreateProposalModal}
+              onSubmit={handleCreateProposalSubmit}
+              isSubmitting={isSubmittingProposal}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {showAuthModalForProposal && (
-        <SignUpLoginModal
-          isOpen={showAuthModalForProposal}
-          onClose={() => {
-            setShowAuthModalForProposal(false);
-            setPendingProposalData(null);
-          }}
-          initialView="signup-step1"
-          onAuthSuccess={handleAuthSuccessForProposal}
-          defaultUserType="guest"
-          skipReload={true}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<div className="modal-loading">Loading...</div>}>
+            <SignUpLoginModal
+              isOpen={showAuthModalForProposal}
+              onClose={() => {
+                setShowAuthModalForProposal(false);
+                setPendingProposalData(null);
+              }}
+              initialView="signup-step1"
+              onAuthSuccess={handleAuthSuccessForProposal}
+              defaultUserType="guest"
+              skipReload={true}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {showSuccessModal && (
@@ -1397,7 +1539,7 @@ export default function SearchPage() {
 
       {/* Mobile Map Modal */}
       {mobileMapVisible && (
-        <div className="mobile-map-modal">
+        <div className="mobile-map-modal" role="dialog" aria-modal="true" aria-label="Map view">
           <div className="mobile-map-header">
             <button
               className="mobile-map-close-btn"
@@ -1416,22 +1558,37 @@ export default function SearchPage() {
               selectedListing={null}
               selectedBorough={selectedBoroughs.length > 0 ? selectedBoroughs[0] : null}
               selectedNightsCount={selectedNightsCount}
-              onMarkerClick={() => {}}
+              onMarkerClick={handleMobileMarkerClick}
               onMessageClick={handleOpenContactModal}
               onAIResearchClick={handleOpenAIResearchModal}
               isLoggedIn={isLoggedIn}
               favoritedListingIds={favoritedListingIds}
               onToggleFavorite={handleToggleFavorite}
               userId={authUserId}
-              onRequireAuth={() => {
-                setAuthModalView('signup');
-                setIsAuthModalOpen(true);
-              }}
+              onRequireAuth={handleRequireAuth}
               showMessageButton={showMessageButton}
             />
           </div>
         </div>
       )}
+
+      {/* Listing Detail Drawer */}
+      <ListingDetailDrawer
+        isOpen={isDetailDrawerOpen}
+        listing={detailDrawerListing}
+        onClose={handleCloseDetailDrawer}
+        onOpenContactModal={handleOpenContactModal}
+        onOpenCreateProposalModal={handleOpenCreateProposalModal}
+        showCreateProposalButton={showCreateProposalButton}
+        proposalsByListingId={proposalsByListingId}
+        selectedNightsCount={selectedNightsCount}
+        isLoggedIn={isLoggedIn}
+        favoritedListingIds={favoritedListingIds}
+        onToggleFavorite={handleToggleFavorite}
+        userId={authUserId}
+        onRequireAuth={handleRequireAuth}
+        pricePercentiles={pricePercentiles}
+      />
 
       <UsabilityPopup userData={authenticatedUser} />
     </div>

@@ -136,7 +136,7 @@ export const PRICE_FIELD_MAP = {
 
 export const SORT_OPTIONS = {
   'recommended': {
-    field: 'bubble_updated_at',
+    field: 'updated_at',
     ascending: false,
     label: 'Recommended',
     description: 'Our curated recommendations'
@@ -154,7 +154,7 @@ export const SORT_OPTIONS = {
     description: 'Most popular listings'
   },
   'recent': {
-    field: 'bubble_created_at',
+    field: 'created_at',
     ascending: false,
     label: 'Newest',
     description: 'Newest listings first'
