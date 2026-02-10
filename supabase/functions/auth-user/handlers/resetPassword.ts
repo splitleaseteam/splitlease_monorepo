@@ -20,7 +20,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError as _BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError as _ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields, validateEmail } from '../../_shared/validation.ts';
 
 export async function handleRequestPasswordReset(
@@ -140,7 +140,7 @@ export async function handleRequestPasswordReset(
             user_type: legacyUser['Type - User Current'] || 'Guest',
             first_name: legacyUser['Name - First'] || '',
             last_name: legacyUser['Name - Last'] || '',
-            migrated_from_bubble: true,
+            migrated_from_legacy: true,
             migration_date: new Date().toISOString()
           }
         });

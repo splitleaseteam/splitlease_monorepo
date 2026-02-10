@@ -807,7 +807,7 @@ const GoogleLogo = () => (
 );
 
 // Split Lease logo URL
-const LOGO_URL = 'https://d1muf25xaso8hp.cloudfront.net/https%3A%2F%2F50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io%2Ff1587601671931x294112149689599100%2Fsplit%2520lease%2520purple%2520circle.png?w=48&h=&auto=enhance&dpr=1&q=100&fit=max';
+const LOGO_URL = '/assets/images/split-lease-purple-circle.png';
 
 // Generate arrays for date selectors
 const months = [

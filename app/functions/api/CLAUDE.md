@@ -174,4 +174,4 @@ export async function onRequestPost(context) {
 [CLOUDFLARE_FUNCTIONS]: This directory - Cloudflare Pages Functions
 [SUPABASE_EDGE_FUNCTIONS]: `supabase/functions/` - Supabase Edge Functions (Deno)
 [USE_CLOUDFLARE_FOR]: Simple API endpoints, webhooks, form handlers
-[USE_SUPABASE_FOR]: Database operations, Bubble API proxy, authentication
+[USE_SUPABASE_FOR]: Database operations, authentication

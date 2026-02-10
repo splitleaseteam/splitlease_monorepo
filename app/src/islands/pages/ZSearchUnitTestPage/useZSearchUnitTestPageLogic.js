@@ -198,11 +198,11 @@ export function useZSearchUnitTestPageLogic() {
 
       // Apply sorting
       const sortConfig = {
-        'recommended': { field: 'bubble_updated_at', ascending: false },
+        'recommended': { field: 'original_updated_at', ascending: false },
         'price-low': { field: 'standardized_min_nightly_price_for_search_filter', ascending: true },
         'price-high': { field: 'standardized_min_nightly_price_for_search_filter', ascending: false },
-        'newest': { field: 'bubble_created_at', ascending: false }
-      }[filters.sortBy] || { field: 'bubble_updated_at', ascending: false };
+        'newest': { field: 'original_created_at', ascending: false }
+      }[filters.sortBy] || { field: 'original_updated_at', ascending: false };
 
       query = query.order(sortConfig.field, { ascending: sortConfig.ascending });
 
@@ -228,8 +228,8 @@ export function useZSearchUnitTestPageLogic() {
         isActive: listing.is_active || false,
         isComplete: listing.is_listing_profile_complete || false,
         isApproved: listing.is_approved || false,
-        modifiedDate: listing.bubble_updated_at,
-        createdDate: listing.bubble_created_at
+        modifiedDate: listing.original_updated_at,
+        createdDate: listing.original_created_at
       }));
 
       setListings(transformedListings);

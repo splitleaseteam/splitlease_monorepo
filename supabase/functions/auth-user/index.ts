@@ -8,8 +8,8 @@
  * Supported Actions:
  * - login: User login (email/password) - via Supabase Auth (native)
  * - signup: New user registration - via Supabase Auth (native)
- * - logout: User logout (invalidate token) - via Bubble (legacy)
- * - validate: Validate token and fetch user data - via Bubble + Supabase
+ * - logout: User logout (invalidate token) - via Supabase Auth
+ * - validate: Validate token and fetch user data - via Supabase
  * - request_password_reset: Send password reset email - via Supabase Auth (native)
  * - update_password: Update password after reset link clicked - via Supabase Auth (native)
  * - generate_magic_link: Generate magic link without sending email - via Supabase Auth (native)
@@ -39,7 +39,6 @@ import {
   validateAction,
   routeToHandler,
   getSupabaseConfig,
-  getBubbleConfig,
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,
@@ -81,9 +80,8 @@ const ALLOWED_ACTIONS = [
 
 type Action = typeof ALLOWED_ACTIONS[number];
 
-// Actions that require Bubble API configuration
-// NOTE: validate was removed - it no longer uses Bubble API (uses Supabase only)
-const BUBBLE_REQUIRED_ACTIONS: ReadonlySet<string> = new Set([]);
+// Actions that require additional API configuration (currently none)
+const ADDITIONAL_CONFIG_ACTIONS: ReadonlySet<string> = new Set([]);
 
 // Handler map (immutable record) - replaces switch statement
 const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
@@ -105,17 +103,14 @@ const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Get combined configuration for auth operations
- * Some actions need both Supabase and Bubble config
+ * Get configuration for auth operations
  */
 interface AuthConfig {
   readonly supabaseUrl: string;
   readonly supabaseServiceKey: string;
-  readonly bubbleBaseUrl?: string;
-  readonly bubbleApiKey?: string;
 }
 
-const getAuthConfig = (action: string): Result<AuthConfig, Error> => {
+const getAuthConfig = (_action: string): Result<AuthConfig, Error> => {
   // Supabase config is always required
   const supabaseResult = getSupabaseConfig();
   if (!supabaseResult.ok) {
@@ -123,21 +118,6 @@ const getAuthConfig = (action: string): Result<AuthConfig, Error> => {
   }
 
   const { supabaseUrl, supabaseServiceKey } = supabaseResult.value;
-
-  // Bubble config only required for validate action
-  if (BUBBLE_REQUIRED_ACTIONS.has(action)) {
-    const bubbleResult = getBubbleConfig();
-    if (!bubbleResult.ok) {
-      return bubbleResult;
-    }
-
-    return ok({
-      supabaseUrl,
-      supabaseServiceKey,
-      bubbleBaseUrl: bubbleResult.value.bubbleBaseUrl,
-      bubbleApiKey: bubbleResult.value.bubbleApiKey,
-    });
-  }
 
   return ok({ supabaseUrl, supabaseServiceKey });
 };
@@ -248,7 +228,7 @@ function executeHandler(
   payload: Record<string, unknown>,
   config: AuthConfig
 ): Promise<unknown> {
-  const { supabaseUrl, supabaseServiceKey, _bubbleBaseUrl, _bubbleApiKey } = config;
+  const { supabaseUrl, supabaseServiceKey } = config;
 
   switch (action) {
     case 'login':

@@ -86,8 +86,8 @@ function normalizeLease(lease) {
     supplementalAgreement: lease['supplemental agreement'],
     hostPayoutSchedule: lease['Host Payout Schedule'] || null,
     periodicTenancyAgreement: lease['Periodic Tenancy Agreement'] || null,
-    createdDate: lease.bubble_created_at,
-    modifiedDate: lease.bubble_updated_at,
+    createdDate: lease.original_created_at,
+    modifiedDate: lease.original_updated_at,
     // Related data
     stays: (lease.stays || []).map(normalizeStay),
     paymentRecords: (lease.paymentRecords || []).map(normalizePaymentRecord),
@@ -158,7 +158,7 @@ function normalizeDateChangeRequest(dcr) {
     originalDate: dcr['Original Date'],
     requestedDate: dcr['Requested Date'],
     priceAdjustment: dcr['Price Adjustment'],
-    createdDate: dcr.bubble_created_at,
+    createdDate: dcr.original_created_at,
   };
 }
 
@@ -612,7 +612,7 @@ export function useHostLeasesPageLogic() {
       const { error: stayError } = await supabase
         .from('lease_weekly_stay')
         .update({
-          bubble_updated_at: new Date().toISOString(),
+          original_updated_at: new Date().toISOString(),
         })
         .eq('id', stayId);
 

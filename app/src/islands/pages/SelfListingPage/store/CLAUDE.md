@@ -9,7 +9,7 @@
 
 ### index.ts
 [INTENT]: Barrel export for store module
-[EXPORTS]: listingLocalStore, StoreState (type), useListingStore, prepareListingSubmission, prepareDraftPayload, preparePhotoPayload, validateBubblePayload, BubbleListingPayload (type)
+[EXPORTS]: listingLocalStore, StoreState (type), useListingStore, prepareListingSubmission, prepareDraftPayload, preparePhotoPayload, validateListingPayload, ListingPayload (type)
 
 ### listingLocalStore.ts
 [INTENT]: Singleton store class with localStorage persistence
@@ -23,8 +23,8 @@
 [PATTERN]: Hook wraps singleton, subscribes to changes, triggers React re-renders
 
 ### prepareListingSubmission.ts
-[INTENT]: Transform local form data to Bubble API payload format
-[EXPORTS]: prepareListingSubmission, prepareDraftPayload, preparePhotoPayload, validateBubblePayload, BubbleListingPayload (type)
+[INTENT]: Transform local form data to Supabase listing table payload format
+[EXPORTS]: prepareListingSubmission, prepareDraftPayload, preparePhotoPayload, validateListingPayload, ListingPayload (type)
 
 ---
 

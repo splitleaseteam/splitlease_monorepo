@@ -6,7 +6,7 @@
  *
  * Payment Records Test Features:
  * - Lease selector with search
- * - JS-calculated vs Bubble native payment comparison
+ * - JS-calculated vs legacy native payment comparison
  * - Guest and Host payment schedule tables
  * - Regenerate payment records functionality
  * - Reservation calendar with navigation
@@ -27,8 +27,8 @@ const MONTH_NAMES = [
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // Initial state values
-const INITIAL_GUEST_PAYMENT_SCHEDULE = { jsCalculated: [], bubbleNative: [] };
-const INITIAL_HOST_PAYMENT_SCHEDULE = { jsCalculated: [], bubbleNative: [] };
+const INITIAL_GUEST_PAYMENT_SCHEDULE = { jsCalculated: [], legacyNative: [] };
+const INITIAL_HOST_PAYMENT_SCHEDULE = { jsCalculated: [], legacyNative: [] };
 
 /**
  * Parse array field that may be JSON string or native array
@@ -112,8 +112,8 @@ export function useZUnitPaymentRecordsJsPageLogic() {
   const [regenerationError, setRegenerationError] = useState(null);
   const [regenerationSuccess, setRegenerationSuccess] = useState(null);
 
-  // View mode toggle (JS calculated vs Bubble native)
-  const [viewMode, setViewMode] = useState('jsCalculated'); // 'jsCalculated' or 'bubbleNative'
+  // View mode toggle (JS calculated vs legacy native)
+  const [viewMode, setViewMode] = useState('jsCalculated'); // 'jsCalculated' or 'legacyNative'
 
   // Fetch leases for dropdown
   useEffect(() => {
@@ -195,8 +195,8 @@ export function useZUnitPaymentRecordsJsPageLogic() {
     }
   }, []);
 
-  // Fetch Bubble native payment records
-  const fetchBubbleNativePayments = useCallback(async (guestPaymentIds, hostPaymentIds) => {
+  // Fetch legacy native payment records
+  const fetchLegacyNativePayments = useCallback(async (guestPaymentIds, hostPaymentIds) => {
     const guestNative = [];
     const hostNative = [];
 
@@ -399,22 +399,22 @@ export function useZUnitPaymentRecordsJsPageLogic() {
       // Fetch proposal data
       const proposal = await fetchProposalData(lease.proposal_id);
 
-      // Fetch Bubble native payment records
+      // Fetch legacy native payment records
       const guestPaymentIds = parseArrayField(lease.guest_to_platform_payment_records_json);
       const hostPaymentIds = parseArrayField(lease.platform_to_host_payment_records_json);
-      const { guestNative, hostNative } = await fetchBubbleNativePayments(guestPaymentIds, hostPaymentIds);
+      const { guestNative, hostNative } = await fetchLegacyNativePayments(guestPaymentIds, hostPaymentIds);
 
       // Calculate JS payment schedules
       const { guestSchedule, hostSchedule } = calculateJsPaymentSchedules(proposal, lease);
 
       setGuestPaymentSchedule({
         jsCalculated: guestSchedule,
-        bubbleNative: guestNative
+        legacyNative: guestNative
       });
 
       setHostPaymentSchedule({
         jsCalculated: hostSchedule,
-        bubbleNative: hostNative
+        legacyNative: hostNative
       });
 
     } catch (error) {
@@ -424,7 +424,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
       setSelectedLeaseLoading(false);
       setPaymentSchedulesLoading(false);
     }
-  }, [leases, fetchProposalData, fetchBubbleNativePayments, calculateJsPaymentSchedules]);
+  }, [leases, fetchProposalData, fetchLegacyNativePayments, calculateJsPaymentSchedules]);
 
   // Regenerate guest payment records via Edge Function
   const handleRegenerateGuestPayments = useCallback(async () => {
@@ -597,11 +597,11 @@ export function useZUnitPaymentRecordsJsPageLogic() {
   // Get active payment schedules based on view mode
   const activeGuestSchedule = viewMode === 'jsCalculated'
     ? guestPaymentSchedule.jsCalculated
-    : guestPaymentSchedule.bubbleNative;
+    : guestPaymentSchedule.legacyNative;
 
   const activeHostSchedule = viewMode === 'jsCalculated'
     ? hostPaymentSchedule.jsCalculated
-    : hostPaymentSchedule.bubbleNative;
+    : hostPaymentSchedule.legacyNative;
 
   return {
     // Constants

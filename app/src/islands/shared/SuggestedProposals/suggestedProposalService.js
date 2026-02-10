@@ -29,7 +29,7 @@ export async function fetchSuggestedProposals(userId) {
       .select('*')
       .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false')
-      .order('bubble_created_at', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     if (proposalsError) {
       console.error('Error fetching proposals:', proposalsError);
@@ -61,7 +61,7 @@ export async function fetchSuggestedProposals(userId) {
       .select('*')
       .in('"Proposal associated"', proposalIdsForSummaries)
       .eq('"To Account"', userId)
-      .order('bubble_created_at', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     // Attach summaries to proposals
     if (summariesData && summariesData.length > 0) {
@@ -108,7 +108,7 @@ export async function markProposalInterested(proposalId) {
       .from('booking_proposal')
       .update({
         proposal_workflow_status: 'Proposal Submitted by guest - Awaiting Rental Application',
-        bubble_updated_at: new Date().toISOString()
+        original_updated_at: new Date().toISOString()
       })
       .eq('id', proposalId);
 
@@ -145,7 +145,7 @@ export async function dismissProposal(proposalId, feedback = null) {
     // Build update payload
     const updatePayload = {
       is_deleted: true,
-      bubble_updated_at: new Date().toISOString()
+      original_updated_at: new Date().toISOString()
     };
 
     // Store feedback if provided (using Guest Comments field)
@@ -224,7 +224,7 @@ export async function fetchPendingConfirmationProposals(userId) {
       .select('*')
       .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false')
-      .order('bubble_created_at', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     if (proposalsError) {
       console.error('Error fetching proposals:', proposalsError);
@@ -254,7 +254,7 @@ export async function fetchPendingConfirmationProposals(userId) {
       .select('*')
       .in('"Proposal associated"', proposalIdsForSummaries)
       .eq('"To Account"', userId)
-      .order('bubble_created_at', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     // Attach summaries to proposals
     if (summariesData && summariesData.length > 0) {

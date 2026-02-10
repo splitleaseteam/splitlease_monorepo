@@ -3,7 +3,7 @@
  * Centralized configuration for API endpoints, day mappings, schedules, and other constants
  *
  * Usage:
- *   import { BUBBLE_API_URL, DAYS, SCHEDULE_PATTERNS } from './constants.js'
+ *   import { DAYS, SCHEDULE_PATTERNS } from './constants.js'
  */
 
 // ============================================================================
@@ -32,7 +32,7 @@ export const AI_SIGNUP_WORKFLOW_URL = 'https://app.split.lease/api/1.1/wf/ai-sig
 // REMOVED: VITE_BUBBLE_API_KEY - Now stored server-side in Supabase Secrets
 // REMOVED: VITE_BUBBLE_API_BASE_URL - Now stored server-side in Supabase Secrets
 // Supabase credentials are configured in supabase.js using VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
-// All Bubble workflows now proxied through bubble-proxy and auth-user Edge Functions
+// All API calls route through Supabase Edge Functions
 
 // ============================================================================
 // Lottie Animation URLs
@@ -136,7 +136,7 @@ export const PRICE_FIELD_MAP = {
 
 export const SORT_OPTIONS = {
   'recommended': {
-    field: 'bubble_updated_at',
+    field: 'original_updated_at',
     ascending: false,
     label: 'Recommended',
     description: 'Our curated recommendations'
@@ -154,7 +154,7 @@ export const SORT_OPTIONS = {
     description: 'Most popular listings'
   },
   'recent': {
-    field: 'bubble_created_at',
+    field: 'original_created_at',
     ascending: false,
     label: 'Newest',
     description: 'Newest listings first'

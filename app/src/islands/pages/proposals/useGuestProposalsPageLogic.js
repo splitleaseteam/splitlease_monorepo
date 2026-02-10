@@ -321,8 +321,8 @@ export function useGuestProposalsPageLogic() {
       }
 
       // Then by creation date (newest first)
-      const aDate = new Date(a.bubble_created_at || a.createdAt || 0);
-      const bDate = new Date(b.bubble_created_at || b.createdAt || 0);
+      const aDate = new Date(a.original_created_at || a.createdAt || 0);
+      const bDate = new Date(b.original_created_at || b.createdAt || 0);
       return bDate - aDate;
     };
 

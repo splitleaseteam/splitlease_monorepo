@@ -233,9 +233,9 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
     isOnline: dbListing.is_active || false,
     isApproved: dbListing.is_approved || false,
     isComplete: dbListing.is_listing_profile_complete || false,
-    createdAt: dbListing.bubble_created_at ? new Date(dbListing.bubble_created_at) : null,
-    activeSince: dbListing.bubble_created_at ? new Date(dbListing.bubble_created_at) : null,
-    updatedAt: dbListing.bubble_updated_at ? new Date(dbListing.bubble_updated_at) : null,
+    createdAt: dbListing.original_created_at ? new Date(dbListing.original_created_at) : null,
+    activeSince: dbListing.original_created_at ? new Date(dbListing.original_created_at) : null,
+    updatedAt: dbListing.original_updated_at ? new Date(dbListing.original_updated_at) : null,
 
     // Property Details
     features: {
@@ -455,7 +455,7 @@ export function useListingData(listingId) {
           .from('co_hostrequest')
           .select('*')
           .eq('Listing', listingId)
-          .order('bubble_created_at', { ascending: false })
+          .order('original_created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 

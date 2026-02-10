@@ -20,7 +20,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 interface VerifyEmailPayload {
@@ -68,13 +68,13 @@ export async function handleVerifyEmail(
 
       // Map specific errors to user-friendly messages
       if (verifyError.message.includes('expired')) {
-        throw new BubbleApiError('Verification link has expired. Please request a new one.', 400, 'TOKEN_EXPIRED');
+        throw new ApiError('Verification link has expired. Please request a new one.', 400, 'TOKEN_EXPIRED');
       }
       if (verifyError.message.includes('invalid')) {
-        throw new BubbleApiError('Invalid verification link. Please request a new one.', 400, 'TOKEN_INVALID');
+        throw new ApiError('Invalid verification link. Please request a new one.', 400, 'TOKEN_INVALID');
       }
 
-      throw new BubbleApiError(`Verification failed: ${verifyError.message}`, 400);
+      throw new ApiError(`Verification failed: ${verifyError.message}`, 400);
     }
 
     console.log('[verifyEmail] ✅ Token verified successfully');
@@ -107,7 +107,7 @@ export async function handleVerifyEmail(
         };
       }
 
-      throw new BubbleApiError(`Failed to update verification status: ${updateError.message}`, 500);
+      throw new ApiError(`Failed to update verification status: ${updateError.message}`, 500);
     }
 
     console.log('[verifyEmail] ✅ email_verified updated for user:', updateData._id);
@@ -119,14 +119,14 @@ export async function handleVerifyEmail(
     };
 
   } catch (error) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[verifyEmail] ========== VERIFICATION ERROR ==========');
     console.error('[verifyEmail] Error:', error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Email verification failed: ${(error as Error).message}`,
       500
     );

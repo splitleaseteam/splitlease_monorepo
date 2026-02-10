@@ -2,15 +2,13 @@
  * Create Date Change Request Handler
  * Split Lease - Supabase Edge Functions
  *
- * Creates a new date change request in the datechangerequest table
- * and enqueues Bubble sync.
+ * Creates a new date change request in the datechangerequest table.
  *
  * NO FALLBACK PRINCIPLE: All errors fail fast without fallback logic
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import {
   CreateDateChangeRequestInput,
   CreateDateChangeRequestResponse,
@@ -29,10 +27,9 @@ import { sendDateChangeRequestNotifications } from "./notifications.ts";
  * 1. Validate input
  * 2. Check throttle status
  * 3. Verify lease exists and user is participant
- * 4. Generate unique _id via generate_bubble_id RPC
+ * 4. Generate unique _id via generate_unique_id RPC
  * 5. Insert record into datechangerequest
- * 6. Enqueue Bubble sync
- * 7. Return the created request ID
+ * 6. Return the created request ID
  */
 export async function handleCreate(
   payload: Record<string, unknown>,
@@ -128,7 +125,7 @@ export async function handleCreate(
   // GENERATE ID
   // ================================================
 
-  const { data: requestId, error: idError } = await supabase.rpc('generate_bubble_id');
+  const { data: requestId, error: idError } = await supabase.rpc('generate_unique_id');
   if (idError || !requestId) {
     console.error(`[date-change-request:create] ID generation failed:`, idError);
     throw new SupabaseSyncError('Failed to generate request ID');
@@ -206,34 +203,6 @@ export async function handleCreate(
     });
   } catch (notificationError) {
     console.error(`[date-change-request:create] Notification error (non-blocking):`, notificationError);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: requestId,
-      items: [
-        {
-          sequence: 1,
-          table: 'datechangerequest',
-          recordId: requestId,
-          operation: 'INSERT',
-          payload: requestData,
-        },
-      ],
-    });
-
-    console.log(`[date-change-request:create] Bubble sync enqueued (correlation: ${requestId})`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[date-change-request:create] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

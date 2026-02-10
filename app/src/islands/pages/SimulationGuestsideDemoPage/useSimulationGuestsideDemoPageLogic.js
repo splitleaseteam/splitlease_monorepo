@@ -553,7 +553,7 @@ export function useSimulationGuestsideDemoPageLogic() {
           lease_type: 'Drafting',
           'Lease signed?': false,
           'is_usability_test': true,
-          bubble_created_at: new Date().toISOString()
+          original_created_at: new Date().toISOString()
         })
         .select('id')
         .single();
@@ -570,7 +570,7 @@ export function useSimulationGuestsideDemoPageLogic() {
         .from('booking_proposal')
         .update({
           proposal_workflow_status: 'Lease Documents Sent for Review',
-          bubble_updated_at: new Date().toISOString()
+          original_updated_at: new Date().toISOString()
         })
         .eq('id', simulationState.testProposalId);
 

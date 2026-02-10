@@ -24,7 +24,6 @@
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SupabaseSyncError } from '../../_shared/errors.ts';
-import { enqueueBubbleSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
 import { validateCreateLeasePayload, normalizeIsCounteroffer } from '../lib/validators.ts';
 import {
   calculateMoveOutDate,
@@ -171,7 +170,7 @@ export async function handleCreate(
   console.log('[lease:create] Phase 2: Creating lease record...');
 
   // Generate lease ID
-  const { data: leaseId, error: leaseIdError } = await supabase.rpc('generate_bubble_id');
+  const { data: leaseId, error: leaseIdError } = await supabase.rpc('generate_unique_id');
   if (leaseIdError || !leaseId) {
     throw new SupabaseSyncError('Failed to generate lease ID');
   }
@@ -581,39 +580,6 @@ export async function handleCreate(
   }
 
   console.log(`[lease:create] Phase 8 complete: Documents generated = ${documentsGenerated}`);
-
-  // ═══════════════════════════════════════════════════════════════
-  // BUBBLE SYNC (Non-blocking)
-  // ═══════════════════════════════════════════════════════════════
-
-  console.log('[lease:create] Enqueueing Bubble sync...');
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `lease:${leaseId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'bookings_leases',
-          recordId: leaseId,
-          operation: 'INSERT',
-          payload: leaseRecord as Record<string, unknown>,
-        },
-        {
-          sequence: 2,
-          table: 'proposal',
-          recordId: input.proposalId,
-          operation: 'UPDATE',
-          payload: proposalUpdate,
-        },
-      ],
-    });
-
-    triggerQueueProcessing();
-    console.log('[lease:create] Bubble sync enqueued');
-  } catch (syncError) {
-    console.warn('[lease:create] Bubble sync failed (non-blocking):', syncError);
-  }
 
   // ═══════════════════════════════════════════════════════════════
   // RESPONSE

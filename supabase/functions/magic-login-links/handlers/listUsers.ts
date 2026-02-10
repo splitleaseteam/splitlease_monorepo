@@ -14,7 +14,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 
 interface ListUsersPayload {
   searchText?: string;
@@ -81,7 +81,7 @@ export async function handleListUsers(
 
     if (error) {
       console.error('[list-users] Query error:', error.message);
-      throw new BubbleApiError(
+      throw new ApiError(
         `Failed to list users: ${error.message}`,
         500
       );
@@ -103,14 +103,14 @@ export async function handleListUsers(
     return { users };
 
   } catch (error: any) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[list-users] ========== ERROR ==========');
     console.error('[list-users] Error:', error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to list users: ${error.message}`,
       500,
       error

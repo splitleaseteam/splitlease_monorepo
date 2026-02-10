@@ -73,7 +73,6 @@ export async function handleAdminConfirmMeeting(
   console.log(`[admin_confirm_meeting] Successfully confirmed meeting ${payload.meetingId}`);
 
   // TODO: Queue calendar invite and notifications in a future iteration
-  // await enqueueBubbleSync(supabase, { ... })
 
   return data;
 }

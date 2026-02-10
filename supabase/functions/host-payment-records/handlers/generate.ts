@@ -24,7 +24,6 @@ import {
 } from '../lib/types.ts';
 import { validateGenerateInput, normalizeRentalType, normalizeWeekPattern } from '../lib/validators.ts';
 import { calculatePaymentSchedule, parseDate as _parseDate } from '../lib/calculations.ts';
-import { enqueueBubbleSync, triggerQueueProcessing } from '../../_shared/queueSync.ts';
 
 /**
  * Handle generate payment records request
@@ -35,7 +34,6 @@ import { enqueueBubbleSync, triggerQueueProcessing } from '../../_shared/queueSy
  * 3. Calculates payment schedule
  * 4. Creates payment records in Supabase
  * 5. Updates the lease with total compensation
- * 6. Queues Bubble sync
  */
 export async function handleGenerate(
   payload: Record<string, unknown>,
@@ -131,7 +129,7 @@ export async function handleGenerate(
 
   const paymentRecordIds: string[] = [];
   for (let i = 0; i < schedule.numberOfPaymentCycles; i++) {
-    const { data: recordId, error: idError } = await supabase.rpc('generate_bubble_id');
+    const { data: recordId, error: idError } = await supabase.rpc('generate_unique_id');
     if (idError || !recordId) {
       console.error(`[host-payment-records:generate] ID generation failed:`, idError);
       throw new SupabaseSyncError('Failed to generate payment record ID');
@@ -209,46 +207,6 @@ export async function handleGenerate(
     // Non-blocking - payment records were created, lease update is secondary
   } else {
     console.log(`[host-payment-records:generate] Lease updated with payment records`);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    const syncItems = paymentRecords.map((record, index) => ({
-      sequence: index + 1,
-      table: 'paymentrecords',
-      recordId: record._id,
-      operation: 'INSERT' as const,
-      payload: record,
-    }));
-
-    // Add lease update to sync queue
-    syncItems.push({
-      sequence: paymentRecords.length + 1,
-      table: 'bookings_leases',
-      recordId: input.leaseId,
-      operation: 'UPDATE' as const,
-      payload: {
-        'Payment Records SL-Hosts': updatedPaymentRecords,
-        'Total Compensation': schedule.totalCompensationAmount,
-      },
-    });
-
-    await enqueueBubbleSync(supabase, {
-      correlationId: input.leaseId,
-      items: syncItems,
-    });
-
-    console.log(`[host-payment-records:generate] Bubble sync items enqueued (correlation: ${input.leaseId})`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[host-payment-records:generate] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

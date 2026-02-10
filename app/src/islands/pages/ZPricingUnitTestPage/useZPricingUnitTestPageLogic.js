@@ -303,7 +303,7 @@ export function useZPricingUnitTestPageLogic() {
           host_email
         `)
         .eq('is_deleted', false)
-        .order('bubble_updated_at', { ascending: false })
+        .order('original_updated_at', { ascending: false })
         .limit(500);
 
       if (error) throw error;

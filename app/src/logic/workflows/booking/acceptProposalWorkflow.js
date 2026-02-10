@@ -62,7 +62,7 @@ export async function acceptProposalWorkflow({
       .from('booking_proposal')
       .update({
         'proposal_workflow_status': PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
-        'bubble_updated_at': new Date().toISOString()
+        'original_updated_at': new Date().toISOString()
       })
       .eq('id', proposal.id)
 

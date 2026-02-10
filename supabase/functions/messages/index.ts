@@ -151,10 +151,10 @@ const authenticateUser = async (
 
     if (!authError && authUser) {
       console.log('[messages] ✅ Authenticated via Supabase JWT');
-      // Extract bubbleId from user_metadata (set during signup)
-      const bubbleId = authUser.user_metadata?.user_id as string | undefined;
-      console.log('[messages] DEBUG: user_metadata.user_id (bubbleId):', bubbleId);
-      return ok({ id: authUser.id, email: authUser.email ?? "", bubbleId });
+      // Extract platformId from user_metadata (set during signup)
+      const platformId = authUser.user_metadata?.user_id as string | undefined;
+      console.log('[messages] DEBUG: user_metadata.user_id (platformId):', platformId);
+      return ok({ id: authUser.id, email: authUser.email ?? "", platformId });
     }
 
     console.log('[messages] DEBUG: JWT auth failed:', authError?.message);

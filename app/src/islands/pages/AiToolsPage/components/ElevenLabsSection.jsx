@@ -124,7 +124,7 @@ export default function ElevenLabsSection({
                       {narration['Narrator data'] || 'Unknown Narrator'}
                     </span>
                     <span className="item-date">
-                      {new Date(narration.bubble_created_at).toLocaleDateString()}
+                      {new Date(narration.original_created_at).toLocaleDateString()}
                     </span>
                   </div>
 

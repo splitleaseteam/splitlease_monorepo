@@ -240,7 +240,7 @@ export default function Footer() {
 
         <div className="alexa-card">
           <img
-            src="https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=256,h=225,f=auto,dpr=1,fit=cover,q=75/f1625329487406x361063433051586300/402087-smart-speakers-amazon-echo-dot-4th-gen-10015594%201.png"
+            src="/assets/images/amazon-echo-dot.png"
             alt="Amazon Alexa"
             className="alexa-device-image"
             loading="lazy"

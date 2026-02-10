@@ -59,9 +59,9 @@ import {
   formatDaysAsRange,
   formatDateForDisplay,
 } from "../../_shared/negotiationSummaryHelpers.ts";
-import { generateBubbleId } from "../../_shared/messagingHelpers.ts";
+import { generatePlatformId } from "../../_shared/messagingHelpers.ts";
 
-// ID generation is now done via RPC: generate_bubble_id()
+// ID generation is now done via RPC: generate_platform_id()
 
 /**
  * Handle create proposal request
@@ -486,8 +486,8 @@ export async function handleCreate(
   // STEP 1: CREATE PROPOSAL RECORD
   // ================================================
 
-  // Generate Bubble-compatible ID using RPC
-  const { data: proposalId, error: idError } = await supabase.rpc('generate_bubble_id');
+  // Generate unique ID using RPC
+  const { data: proposalId, error: idError } = await supabase.rpc('generate_unique_id');
   if (idError || !proposalId) {
     console.error(`[proposal:create] ID generation failed:`, idError);
     throw new SupabaseSyncError('Failed to generate proposal ID');
@@ -774,7 +774,7 @@ export async function handleCreate(
         // ================================================
         // The host should see this summary to quickly understand the proposal
         try {
-          const summaryId = await generateBubbleId(supabase);
+          const summaryId = await generatePlatformId(supabase);
           const summaryNow = new Date().toISOString();
 
           const { error: summaryInsertError } = await supabase

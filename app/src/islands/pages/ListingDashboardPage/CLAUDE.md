@@ -21,7 +21,7 @@
 [EXPORTS]: default useListingDashboardPageLogic
 [DEPENDS_ON]: supabase, auth, aiService, amenitiesService, safetyFeaturesService, houseRulesService, neighborhoodService
 [USED_BY]: ListingDashboardPage.jsx
-[KEY_FEATURES]: Listing table support, lookup table resolution, day conversion (Bubble 1-7 to JS 0-6), AI content generation, photo reordering, blocked dates management
+[KEY_FEATURES]: Listing table support, lookup table resolution, AI content generation, photo reordering, blocked dates management
 [DATA_FLOW]: Fetches listing from listing table (by _id), transforms to component format, resolves IDs to names via lookup tables
 [AI_WORKFLOW]: Load amenities/neighborhood/rules/safety first, then generate AI title/description with enriched context
 [PHOTO_OPS]: Set cover, delete, reorder with DB persistence
@@ -57,8 +57,8 @@
 [INTENT]: Convert Supabase listing to component-friendly format
 [INPUT]: dbListing (raw from listing table), photos array, lookups object
 [OUTPUT]: Transformed listing object with resolved IDs and computed fields
-[KEY_TRANSFORMS]: JSON array parsing (amenities, rules, safety, days), day conversion (Bubble 1-7 to JS 0-6), photo object mapping, location address parsing, pricing object construction
-[ID_HANDLING]: listing table uses '_id' (Bubble ID)
+[KEY_TRANSFORMS]: JSON array parsing (amenities, rules, safety, days), photo object mapping, location address parsing, pricing object construction
+[ID_HANDLING]: listing table uses '_id' as primary key
 [COMPATIBILITY]: Returns both transformed properties and raw DB fields for EditListingDetails modal
 
 ### fetchLookupTables()
@@ -78,15 +78,13 @@
 ## KEY_FEATURES
 
 ### Listing Table Support
-[DESCRIPTION]: Uses listing table with '_id' (Bubble ID) as primary key
+[DESCRIPTION]: Uses listing table with '_id' as primary key
 [FLOW]: Query listing table directly by '_id'
 [PHOTOS]: Listings use listing_photo table for photo storage
 
-### Day Indexing Conversion
-[CRITICAL]: JS uses 0-6 (Sun-Sat), Bubble uses 1-7 (Sun-Sat)
-[CONVERSION]: adaptDaysFromBubble (Bubble to JS), adaptDaysToBubble (JS to Bubble)
+### Day Indexing
+[FORMAT]: JS 0-6 (Sun-Sat) — database stores 0-indexed natively (no conversion needed)
 [NIGHT_IDS]: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-[STORAGE]: Bubble format in DB, JS format in component state
 
 ### AI Import Assistant Workflow
 [PHASE_1]: Load common data (in-unit amenities, building amenities, neighborhood description, house rules, safety features)
@@ -118,7 +116,7 @@
 
 | Table | Key | Purpose |
 |-------|-----|---------|
-| listing | _id (Bubble ID) | All listings (self-listing and Bubble-synced) |
+| listing | _id | All listings |
 | listing_photo | Listing (_id) | Photos with URL, sort order, cover flag, active flag, type |
 | proposal | Listing (_id) | Proposals badge count in navigation |
 | booking_lease | listing_id | Leases badge count in navigation |

@@ -10,15 +10,13 @@
  * 2. Fetch proposal to get virtual meeting ID
  * 3. Update virtual meeting: set booked date, confirm status
  * 4. Update proposal: set request_virtual_meeting status
- * 5. Enqueue Bubble sync for UPDATE operation
- * 6. Return response
+ * 5. Return response
  *
  * NO FALLBACK PRINCIPLE: All errors fail fast without fallback logic
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import { sendVMAcceptMessages } from "../../_shared/vmMessagingHelpers.ts";
 import {
   AcceptVirtualMeetingInput,
@@ -148,40 +146,6 @@ export async function handleAccept(
     // Non-blocking - VM was updated successfully
   } else {
     console.log(`[virtual-meeting:accept] Proposal updated with confirmed status`);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `accept-vm:${virtualMeetingId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'virtualmeetingschedulesandlinks',
-          recordId: virtualMeetingId,
-          operation: 'UPDATE',
-          bubbleId: virtualMeetingId,
-          payload: {
-            _id: virtualMeetingId,
-            "booked date": input.bookedDate,
-            "confirmedBySplitLease": true,
-            "Modified Date": now,
-          },
-        },
-      ],
-    });
-
-    console.log(`[virtual-meeting:accept] Bubble sync enqueued (correlation: accept-vm:${virtualMeetingId})`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[virtual-meeting:accept] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

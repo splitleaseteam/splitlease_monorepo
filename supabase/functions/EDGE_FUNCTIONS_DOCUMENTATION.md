@@ -69,7 +69,7 @@
 | Pattern | Description | Used By |
 |---------|-------------|---------|
 | **JWT Auth** | Bearer token in Authorization header | Most functions |
-| **Legacy Auth** | user_id in payload (Bubble migration) | messages |
+| **Legacy Auth** | user_id in payload (legacy migration) | messages |
 | **Public** | No auth required | slack, send-email (public templates) |
 | **Soft Headers** | Optional auth for internal admin pages | admin functions |
 
@@ -91,7 +91,7 @@ export const corsHeaders = {
 |-------------|-------------|-------|
 | `ValidationError` | 400 | Invalid input/payload |
 | `AuthenticationError` | 401 | Missing/invalid auth |
-| `BubbleApiError` | variable | Bubble API failures |
+| `ApiError` | variable | External API failures |
 | `SupabaseSyncError` | 500 | Database sync failures |
 | `OpenAIError` | variable | AI API failures |
 
@@ -110,7 +110,6 @@ const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
 | `validateAction()` | Validate action against allowed list |
 | `routeToHandler()` | Route to handler function |
 | `getSupabaseConfig()` | Get Supabase URL/keys from env |
-| `getBubbleConfig()` | Get Bubble API config from env |
 | `formatSuccessResponse()` | Format 200 response |
 | `formatErrorResponseHttp()` | Format error response with status |
 | `formatCorsResponse()` | Format CORS preflight response |
@@ -177,8 +176,6 @@ curl -X POST "https://your-project.supabase.co/functions/v1/auth-user" \
 | `delete` | No | Delete a listing |
 
 **Database Tables**: `listing`
-
-**Dependencies**: Bubble.io for create/submit (atomic sync)
 
 **Example curl:**
 ```bash
@@ -553,139 +550,119 @@ curl -X POST "https://your-project.supabase.co/functions/v1/ai-gateway" \
 
 ## Workflow Functions
 
-### 28. bubble_sync
-**Purpose**: Process sync_queue and push data FROM Supabase TO Bubble
-
-**Actions:**
-| Action | Description |
-|--------|-------------|
-| `process_queue` | Process using Workflow API |
-| `process_queue_data_api` | Process using Data API (recommended) |
-| `sync_single` | Manually sync single record |
-| `retry_failed` | Retry failed items |
-| `get_status` | Get queue statistics |
-| `cleanup` | Clean up old completed items |
-| `build_request` | Preview request (debugging) |
-| `sync_signup_atomic` | Atomic signup sync |
-
-**Queue Table**: `sync_queue`
-**Status Flow**: `pending` -> `processing` -> `completed`/`failed`
-
----
-
-### 29. workflow-enqueue
+### 28. workflow-enqueue
 **Purpose**: Enqueue workflow operations
 
 ---
 
-### 30. workflow-orchestrator
+### 29. workflow-orchestrator
 **Purpose**: Orchestrate complex workflows
 
 ---
 
-### 31. reminder-scheduler
+### 30. reminder-scheduler
 **Purpose**: Schedule and manage reminders
 
 ---
 
 ## Utility Functions
 
-### 32. qr-generator
+### 31. qr-generator
 **Purpose**: Generate QR codes
 
 ---
 
-### 33. qr-codes
+### 32. qr-codes
 **Purpose**: QR code management
 
 ---
 
-### 34. query-leo
+### 33. query-leo
 **Purpose**: Query Leo (internal tool)
 
 ---
 
-### 35. quick-match
+### 34. quick-match
 **Purpose**: Quick matching algorithm for listings
 
 ---
 
-### 36. pricing
+### 35. pricing
 **Purpose**: Pricing calculations (placeholder)
 
 ---
 
-### 37. lease
+### 36. lease
 **Purpose**: Lease operations
 
 ---
 
-### 38. house-manual
+### 37. house-manual
 **Purpose**: House manual management
 
 ---
 
-### 39. identity-verification
+### 38. identity-verification
 **Purpose**: Identity verification operations
 
 ---
 
-### 40. emergency
+### 39. emergency
 **Purpose**: Emergency contact/procedures
 
 ---
 
-### 41. document
+### 40. document
 **Purpose**: Document management
 
 ---
 
-### 42. date-change-request
+### 41. date-change-request
 **Purpose**: Handle date change requests
 
 ---
 
-### 43. cohost-request
+### 42. cohost-request
 **Purpose**: Co-host request operations
 
 ---
 
-### 44. cohost-request-slack-callback
+### 43. cohost-request-slack-callback
 **Purpose**: Handle Slack callbacks for co-host requests
 
 ---
 
-### 45. virtual-meeting
+### 44. virtual-meeting
 **Purpose**: Virtual meeting integration (HeyGen, ElevenLabs)
 
 ---
 
-### 46. rental-application
+### 45. rental-application
 **Purpose**: Rental application operations (user-facing)
 
 ---
 
-### 47. guest-management
+### 46. guest-management
 **Purpose**: Guest management operations
 
 ---
 
-### 48. guest-payment-records
+### 47. guest-payment-records
 **Purpose**: Guest payment record management
 
 ---
 
-### 49. host-payment-records
+### 48. host-payment-records
 **Purpose**: Host payment record management
 
 ---
 
-### 50. experience-survey
+### 49. experience-survey
 **Purpose**: Experience survey management
 
 ---
 
-### 51. backfill-negotiation-summaries
+### 50. backfill-negotiation-summaries
 **Purpose**: Backfill AI-generated negotiation summaries
 
 ---
@@ -812,8 +789,6 @@ switch (action) {
 | `SUPABASE_URL` | All | Supabase project URL |
 | `SUPABASE_ANON_KEY` | All | Client operations |
 | `SUPABASE_SERVICE_ROLE_KEY` | All | Admin operations |
-| `BUBBLE_API_BASE_URL` | bubble_sync, listing | Bubble API base URL |
-| `BUBBLE_API_KEY` | bubble_sync, listing | Bubble API key |
 | `OPENAI_API_KEY` | ai-gateway, ai-* | OpenAI API key |
 | `SENDGRID_API_KEY` | send-email | SendGrid API key |
 | `SENDGRID_EMAIL_ENDPOINT` | send-email | SendGrid endpoint |

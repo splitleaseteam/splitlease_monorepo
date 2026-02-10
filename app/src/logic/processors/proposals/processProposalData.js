@@ -165,8 +165,8 @@ export function processProposalData(rawProposal) {
     hcHouseRules: rawProposal['hc house rules'] || null,
 
     // Metadata
-    createdDate: rawProposal.bubble_created_at || null,
-    modifiedDate: rawProposal.bubble_updated_at || null,
+    createdDate: rawProposal.original_created_at || null,
+    modifiedDate: rawProposal.original_updated_at || null,
     aboutYourself: rawProposal.about_yourself || null,
     specialNeeds: rawProposal.special_needs || null,
     reasonForCancellation: rawProposal['reason for cancellation'] || null,

@@ -10,15 +10,13 @@
  * 2. Fetch proposal to get virtual meeting ID
  * 3. Update virtual meeting: set meeting declined = true
  * 4. Update proposal: clear request_virtual_meeting
- * 5. Enqueue Bubble sync for UPDATE operation
- * 6. Return response
+ * 5. Return response
  *
  * NO FALLBACK PRINCIPLE: All errors fail fast without fallback logic
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import {
   DeclineVirtualMeetingInput,
   DeclineVirtualMeetingResponse,
@@ -132,39 +130,6 @@ export async function handleDecline(
     // Non-blocking - VM was updated successfully
   } else {
     console.log(`[virtual-meeting:decline] Proposal updated - cleared virtual meeting request`);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `decline-vm:${virtualMeetingId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'virtualmeetingschedulesandlinks',
-          recordId: virtualMeetingId,
-          operation: 'UPDATE',
-          bubbleId: virtualMeetingId,
-          payload: {
-            _id: virtualMeetingId,
-            "meeting declined": true,
-            "Modified Date": now,
-          },
-        },
-      ],
-    });
-
-    console.log(`[virtual-meeting:decline] Bubble sync enqueued (correlation: decline-vm:${virtualMeetingId})`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[virtual-meeting:decline] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

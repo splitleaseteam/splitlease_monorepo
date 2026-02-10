@@ -161,7 +161,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
             id,
             current_user_role
           `)
-          .eq('bubble_legacy_id', userId)
+          .eq('legacy_platform_id', userId)
           .single(),
 
         // 2. Fetch listings for this user using the same RPC as HostOverview
@@ -206,11 +206,11 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         //    Fetch the most recent one's ID for deep-linking from the menu
         supabase
           .from('booking_proposal')
-          .select('id, bubble_created_at')
+          .select('id, original_created_at')
           .eq('guest_user_id', userId)
           .in('proposal_workflow_status', SUGGESTED_PROPOSAL_STATUSES)
           .or('is_deleted.is.null,is_deleted.eq.false')
-          .order('bubble_created_at', { ascending: false })
+          .order('original_created_at', { ascending: false })
           .limit(10),
 
         // 8. Get favorites and proposals counts from junction tables (Phase 5b migration)

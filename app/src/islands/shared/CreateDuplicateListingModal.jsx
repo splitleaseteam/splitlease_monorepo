@@ -146,8 +146,8 @@ export default function CreateDuplicateListingModal({
 
       // Remove fields that shouldn't be duplicated
       delete duplicateData._id;
-      delete duplicateData.bubble_created_at;
-      delete duplicateData.bubble_updated_at;
+      delete duplicateData.original_created_at;
+      delete duplicateData.original_updated_at;
 
       const { data: newListing, error } = await supabase
         .from('zat_listings')

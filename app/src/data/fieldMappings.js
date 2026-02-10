@@ -112,6 +112,6 @@ export const IDENTITY_FIELDS = {
   ACTIVE: 'is_active',
   APPROVED: 'is_approved',
   COMPLETE: 'is_listing_profile_complete',
-  CREATED_DATE: 'bubble_created_at',
-  MODIFIED_DATE: 'bubble_updated_at',
+  CREATED_DATE: 'original_created_at',
+  MODIFIED_DATE: 'original_updated_at',
 };

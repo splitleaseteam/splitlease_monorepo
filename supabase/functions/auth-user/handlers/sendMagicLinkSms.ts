@@ -18,7 +18,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields, validateEmail } from '../../_shared/validation.ts';
 
 // E.164 phone format validation (matches send-sms)
@@ -45,7 +45,7 @@ interface SendMagicLinkSmsResult {
  */
 const validatePhoneNumber = (phone: string): void => {
   if (!E164_REGEX.test(phone)) {
-    throw new BubbleApiError(
+    throw new ApiError(
       `Phone number must be in E.164 format (e.g., +15551234567). Got: ${phone}`,
       400
     );
@@ -71,7 +71,7 @@ async function sendSmsViaTwilio(
   const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
 
   if (!accountSid || !authToken) {
-    throw new BubbleApiError('SMS service not configured (missing Twilio credentials)', 500);
+    throw new ApiError('SMS service not configured (missing Twilio credentials)', 500);
   }
 
   console.log('[sendMagicLinkSms] Sending SMS via Twilio...');
@@ -100,7 +100,7 @@ async function sendSmsViaTwilio(
   if (!response.ok) {
     console.error('[sendMagicLinkSms] Twilio error:', response.status, result);
     const errorMessage = result?.message || 'SMS delivery failed';
-    throw new BubbleApiError(`SMS delivery failed: ${errorMessage}`, response.status);
+    throw new ApiError(`SMS delivery failed: ${errorMessage}`, response.status);
   }
 
   console.log('[sendMagicLinkSms] SMS sent successfully, SID:', result.sid);
@@ -152,7 +152,7 @@ export async function handleSendMagicLinkSms(
 
     if (linkError) {
       console.error('[sendMagicLinkSms] Error generating magic link:', linkError.message);
-      throw new BubbleApiError(
+      throw new ApiError(
         `Failed to generate magic link: ${linkError.message}`,
         linkError.status || 500
       );
@@ -160,7 +160,7 @@ export async function handleSendMagicLinkSms(
 
     if (!linkData?.properties?.action_link) {
       console.error('[sendMagicLinkSms] No action_link in response');
-      throw new BubbleApiError('Magic link generation failed - no link returned', 500);
+      throw new ApiError('Magic link generation failed - no link returned', 500);
     }
 
     const magicLink = linkData.properties.action_link;
@@ -180,7 +180,7 @@ export async function handleSendMagicLinkSms(
     };
 
   } catch (error: unknown) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
@@ -188,7 +188,7 @@ export async function handleSendMagicLinkSms(
     console.error('[sendMagicLinkSms] Error:', error);
 
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to send magic link via SMS: ${errorMessage}`,
       500,
       error

@@ -24,8 +24,8 @@ async function getOrCreateDraftId(): Promise<string> {
     return draftId;
   }
 
-  // Generate a new Bubble-compatible ID via RPC
-  const { data, error } = await supabase.rpc('generate_bubble_id');
+  // Generate a new unique ID via RPC
+  const { data, error } = await supabase.rpc('generate_unique_id');
   if (error || !data) {
     // Fallback to local ID if RPC fails
     draftId = `draft_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

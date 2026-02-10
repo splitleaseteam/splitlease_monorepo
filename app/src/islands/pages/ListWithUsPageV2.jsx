@@ -13,8 +13,8 @@ function cn(...inputs) {
 }
 
 // --- Asset Constants ---
-const AVATAR_1 = "https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=,f=auto,dpr=1,fit=contain/f1628195334709x669100317545697300/brad%20circle.png";
-const AVATAR_2 = "https://50bf0464e4735aabad1cc8848a0e8b8a.cdn.bubble.io/cdn-cgi/image/w=192,h=,f=auto,dpr=1,fit=contain/f1606752112120x678210779169741800/arvind-image-success-story.jpg";
+const AVATAR_1 = "/assets/images/brad-circle.png";
+const AVATAR_2 = "/assets/images/arvind-success-story.jpg";
 
 // --- Button Component ---
 const Button = ({ className, variant = 'primary', size = 'md', children, ...props }) => {

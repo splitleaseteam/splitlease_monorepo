@@ -59,7 +59,7 @@ export async function requestVirtualMeeting(proposalId, guestId) {
     .from('booking_proposal')
     .update({
       'virtual_meeting_record_id': data._id,
-      'bubble_updated_at': new Date().toISOString()
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', proposalId);
 

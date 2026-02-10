@@ -143,7 +143,7 @@ export default function AccountProfilePage() {
     // Public view specific
     responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
     responseRate: logic.profileData?.['Response Rate'] || 95,
-    memberSince: logic.profileData?.bubble_created_at || logic.profileData?.['_created_date']
+    memberSince: logic.profileData?.original_created_at || logic.profileData?.['_created_date']
   };
 
   return (

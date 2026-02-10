@@ -101,8 +101,8 @@ export async function getListings({ filters, page = 1, pageSize = PAGE_SIZE }) {
       photos_with_urls_captions_and_sort_order_json,
       in_unit_amenity_reference_ids_json,
       "Errors",
-      bubble_updated_at,
-      bubble_created_at,
+      original_updated_at,
+      original_created_at,
       "Listing Code OP"
     `, { count: 'exact' });
 
@@ -144,17 +144,17 @@ export async function getListings({ filters, page = 1, pageSize = PAGE_SIZE }) {
   }
 
   if (filters.startDate) {
-    query = query.gte('bubble_updated_at', filters.startDate.toISOString());
+    query = query.gte('original_updated_at', filters.startDate.toISOString());
   }
 
   if (filters.endDate) {
-    query = query.lte('bubble_updated_at', filters.endDate.toISOString());
+    query = query.lte('original_updated_at', filters.endDate.toISOString());
   }
 
   // Pagination
   const from = (page - 1) * pageSize;
   query = query
-    .order('bubble_updated_at', { ascending: false })
+    .order('original_updated_at', { ascending: false })
     .range(from, from + pageSize - 1);
 
   const { data, error, count } = await query;
@@ -202,7 +202,7 @@ export async function updateListing(id, changes) {
   // Add timestamp
   const updatePayload = {
     ...changes,
-    bubble_updated_at: new Date().toISOString(),
+    original_updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -235,7 +235,7 @@ export async function deleteListing(id) {
     .from('listing')
     .update({
       is_deleted: true,
-      bubble_updated_at: new Date().toISOString(),
+      original_updated_at: new Date().toISOString(),
     })
     .eq('id', id);
 
@@ -285,7 +285,7 @@ export async function addError(listingId, errorCode) {
     .from('listing')
     .update({
       Errors: updatedErrors,
-      bubble_updated_at: new Date().toISOString(),
+      original_updated_at: new Date().toISOString(),
     })
     .eq('id', listingId)
     .select()
@@ -310,7 +310,7 @@ export async function clearErrors(listingId) {
     .from('listing')
     .update({
       Errors: [],
-      bubble_updated_at: new Date().toISOString(),
+      original_updated_at: new Date().toISOString(),
     })
     .eq('id', listingId)
     .select()
@@ -365,7 +365,7 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
       .update({
         'nightly_rate_for_1_night_stay': newNightly,
         'nightly_rate_for_3_night_stay': new3Night,
-        bubble_updated_at: new Date().toISOString(),
+        original_updated_at: new Date().toISOString(),
       })
       .eq('id', id);
 

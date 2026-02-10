@@ -142,8 +142,8 @@ export async function handleSubmit(
     throw new ValidationError(`User not found for ID: ${userId}`);
   }
 
-  const bubbleUserId = userData._id;
-  console.log(`[RentalApp:submit] Found user with ID: ${bubbleUserId}`);
+  const userId = userData._id;
+  console.log(`[RentalApp:submit] Found user with ID: ${userId}`);
 
   // ================================================
   // CHECK FOR EXISTING RENTAL APPLICATION
@@ -158,7 +158,7 @@ export async function handleSubmit(
   // GENERATE UNIQUE ID
   // ================================================
 
-  const { data: rentalAppId, error: idError } = await supabase.rpc('generate_bubble_id');
+  const { data: rentalAppId, error: idError } = await supabase.rpc('generate_unique_id');
   if (idError || !rentalAppId) {
     console.error(`[RentalApp:submit] ID generation failed:`, idError);
     throw new SupabaseSyncError('Failed to generate rental application ID');
@@ -186,7 +186,7 @@ export async function handleSubmit(
 
   const rentalAppData: Record<string, unknown> = {
     _id: rentalAppId,
-    'Created By': bubbleUserId,
+    'Created By': userId,
     name: input.fullName,
     DOB: input.dob || null,
     email: input.email,
@@ -272,7 +272,7 @@ export async function handleSubmit(
   const { error: userUpdateError } = await supabase
     .from('user')
     .update(userUpdateData)
-    .eq('_id', bubbleUserId);
+    .eq('_id', userId);
 
   if (userUpdateError) {
     console.error(`[RentalApp:submit] User update failed:`, userUpdateError);
@@ -291,7 +291,7 @@ export async function handleSubmit(
   const { data: userProposals, error: proposalsFetchError } = await supabase
     .from('proposal')
     .select('_id')
-    .eq('Guest', bubbleUserId);
+    .eq('Guest', userId);
 
   if (proposalsFetchError) {
     console.error(`[RentalApp:submit] Failed to fetch proposals:`, proposalsFetchError);

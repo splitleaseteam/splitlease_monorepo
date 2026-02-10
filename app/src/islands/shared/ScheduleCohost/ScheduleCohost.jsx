@@ -1002,8 +1002,8 @@ export default function ScheduleCohost({
 
             {/* Metadata - Creation date and ID */}
             <div className="schedule-cohost-metadata-centered">
-              {(coHostRequest.createdDate || coHostRequest.bubble_created_at) && (
-                <p>Created: {formatDateForDisplay(new Date(coHostRequest.createdDate || coHostRequest.bubble_created_at))}</p>
+              {(coHostRequest.createdDate || coHostRequest.original_created_at) && (
+                <p>Created: {formatDateForDisplay(new Date(coHostRequest.createdDate || coHostRequest.original_created_at))}</p>
               )}
               {(coHostRequest.id || coHostRequest._id) && (
                 <p>Unique ID: {coHostRequest.id || coHostRequest._id}</p>

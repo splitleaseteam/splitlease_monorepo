@@ -148,7 +148,7 @@ export default function JingleSection({
                       {jingle['Melody Preferences'] || 'Custom'}
                     </span>
                     <span className="item-date">
-                      {new Date(jingle.bubble_created_at).toLocaleDateString()}
+                      {new Date(jingle.original_created_at).toLocaleDateString()}
                     </span>
                   </div>
 

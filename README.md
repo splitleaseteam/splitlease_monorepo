@@ -41,7 +41,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 | **Four-Layer Logic** | Calculators, Rules, Processors, Workflows for clean separation |
 | **Hollow Components** | Page components contain NO logic - delegate everything to hooks |
 | **0-Based Day Indexing** | 0=Sunday through 6=Saturday everywhere (matching JavaScript `Date.getDay()`) |
-| **Queue-Based Sync** | Supabase-to-Bubble sync via `sync_queue` table with pg_cron |
+| **Queue-Based Sync** | Background job processing via `sync_queue` table with pg_cron |
 
 ### Application Scale
 
@@ -84,11 +84,10 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 +---------------------------------------------------------------+
 |                                                                |
 |  auth-user/       Login, signup, password reset (Supabase Auth)|
-|  proposal/        Proposal CRUD with queue-based Bubble sync   |
-|  listing/         Listing CRUD with atomic Bubble sync         |
+|  proposal/        Proposal CRUD                                |
+|  listing/         Listing CRUD                                 |
 |  messages/        Real-time messaging threads                  |
 |  ai-gateway/      OpenAI proxy with prompt templating          |
-|  bubble_sync/     Queue processor for Supabase->Bubble sync    |
 |  workflow-*/      pgmq-based workflow orchestration            |
 |                                                                |
 |  _shared/         CORS, errors, validation, Slack, sync utils  |
@@ -99,8 +98,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 +---------------------------------------------------------------+
 |                        DATA LAYER                              |
 +---------------------------------------------------------------+
-|  Supabase PostgreSQL  <--->  Bubble.io (legacy, migrating)     |
-|  (primary for auth + new)    (legacy data, synced via queue)  |
+|  Supabase PostgreSQL (primary data store)                      |
 +---------------------------------------------------------------+
 ```
 
@@ -112,7 +110,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 | **Hollow Components** | Page components delegate everything to `useXxxPageLogic` hooks |
 | **Route Registry** | Single source of truth in `app/src/routes.config.js` |
 | **Action-Based Edge Functions** | All functions use `{ action, payload }` request pattern |
-| **Queue-Based Sync** | Supabase->Bubble sync via `sync_queue` table, processed by cron |
+| **Queue-Based Sync** | Background job processing via `sync_queue` table, processed by cron |
 | **Workflow Orchestration** | pgmq-based workflow execution with pg_net triggers |
 
 ### Day Indexing Convention
@@ -215,7 +213,6 @@ Split Lease/
 |   |   +-- listing/                  # Listing CRUD
 |   |   +-- messages/                 # Messaging
 |   |   +-- ai-gateway/               # OpenAI proxy
-|   |   +-- bubble_sync/              # Sync queue processor
 |   |   +-- send-email/               # SendGrid integration
 |   |   +-- send-sms/                 # Twilio integration
 |   |   +-- virtual-meeting/          # Virtual meeting lifecycle
@@ -257,8 +254,8 @@ Split Lease/
 | Function | Purpose | Key Actions |
 |----------|---------|-------------|
 | **auth-user** | Authentication via Supabase Auth | login, signup, logout, validate, request_password_reset, update_password |
-| **proposal** | Proposal CRUD with Bubble sync | create, update, get, suggest |
-| **listing** | Listing CRUD with atomic sync | create, get, submit |
+| **proposal** | Proposal CRUD | create, update, get, suggest |
+| **listing** | Listing CRUD | create, get, submit |
 | **messages** | Real-time messaging threads | send_message, get_messages, send_guest_inquiry |
 | **rental-application** | Rental application submissions | submit |
 | **virtual-meeting** | Virtual meeting lifecycle | create, delete, accept, decline, send_calendar_invite |
@@ -283,7 +280,6 @@ Split Lease/
 
 | Function | Purpose |
 |----------|---------|
-| **bubble_sync** | Process sync_queue, push data FROM Supabase TO Bubble |
 | **workflow-enqueue** | Entry point for workflow orchestration |
 | **workflow-orchestrator** | pgmq-based workflow processor |
 
@@ -292,11 +288,9 @@ Split Lease/
 | Utility | Purpose |
 |---------|---------|
 | **cors.ts** | CORS headers configuration |
-| **errors.ts** | Custom error classes (BubbleApiError, ValidationError, etc.) |
+| **errors.ts** | Custom error classes (ValidationError, SupabaseSyncError, etc.) |
 | **validation.ts** | Input validation (email, phone, required fields) |
 | **slack.ts** | ErrorCollector class for consolidated Slack reporting |
-| **queueSync.ts** | Queue-based Bubble sync utilities |
-| **bubbleSync.ts** | BubbleSyncService (Write-Read-Write atomic pattern) |
 | **openai.ts** | OpenAI API wrapper (complete, stream) |
 | **junctionHelpers.ts** | Junction table dual-write helpers |
 | **messagingHelpers.ts** | Native Supabase messaging operations |
@@ -367,16 +361,6 @@ Orchestration functions that compose multiple layers.
 
 ## Database
 
-### Sync Queue System
-
-Supabase-to-Bubble sync via queue table:
-
-```
-Supabase -> sync_queue -> bubble_sync -> Bubble API
-                ^
-        pg_cron (5 min) or immediate trigger
-```
-
 ### Workflow Orchestration
 
 pgmq-based workflow execution:
@@ -389,7 +373,7 @@ Frontend -> workflow-enqueue -> pgmq -> workflow-orchestrator -> Edge Functions
 
 | Migration | Purpose |
 |-----------|---------|
-| sync_queue | Pending operations for Bubble sync |
+| sync_queue | Pending operations for background processing |
 | sync_config | Table-to-workflow mappings |
 | workflow_definitions | Named workflow configurations |
 | workflow_executions | Execution tracking |
@@ -624,7 +608,7 @@ These files/modules look similar but serve different user roles, data shapes, or
 |------|-------|---------------------|
 | Pricing | `lib/priceCalculations.js`, `lib/scheduleSelector/priceCalculations.js`, `logic/calculators/pricing/` | Host compensation vs schedule pricing vs reservation totals — different consumers, inputs, outputs |
 | Schedule selectors | `ListingScheduleSelector`, `HostScheduleSelector`, `SearchScheduleSelector` | Host configuring vs host editing vs guest filtering — different interaction models |
-| Day conversion | `logic/processors/external/adaptDays*.js`, `proposal/lib/dayConversion.ts` | Frontend boundary (JS 0-6 to Bubble 1-7) vs backend boundary (same conversion, different runtime) |
+| Day conversion | `logic/processors/external/adaptDays*.js`, `proposal/lib/dayConversion.ts` | Frontend boundary vs backend boundary (same conversion, different runtime) |
 | Proposal components | `islands/proposals/` (deprecated), `islands/pages/proposals/` | Old location vs current location — only `pages/proposals/` is active |
 
 **Before consolidating any code:**

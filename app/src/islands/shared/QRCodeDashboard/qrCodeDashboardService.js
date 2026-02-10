@@ -36,8 +36,8 @@ export const adaptQRCodeFromDB = (row) => {
     houseManualId: row['House Manual'] || null,
     hostId: row['Host'] || null,
     guestId: row['Guest'] || null,
-    createdAt: row.bubble_created_at ? new Date(row.bubble_created_at) : null,
-    updatedAt: row.bubble_updated_at ? new Date(row.bubble_updated_at) : null,
+    createdAt: row.original_created_at ? new Date(row.original_created_at) : null,
+    updatedAt: row.original_updated_at ? new Date(row.original_updated_at) : null,
     isScanned: row['QR codes scanned?'] || false
   };
 };
@@ -81,8 +81,8 @@ export const adaptHouseManualFromDB = (row) => {
     listingId: row.listing_id || null,
     hostId: row.host_user_id || null,
     qrCodes: row.qr_code_urls_json || [],
-    createdAt: row.bubble_created_at ? new Date(row.bubble_created_at) : null,
-    updatedAt: row.bubble_updated_at ? new Date(row.bubble_updated_at) : null
+    createdAt: row.original_created_at ? new Date(row.original_created_at) : null,
+    updatedAt: row.original_updated_at ? new Date(row.original_updated_at) : null
   };
 };
 
@@ -141,7 +141,7 @@ export async function fetchHouseManual(houseManualId) {
 
     const { data, error } = await supabase
       .from('house_manual')
-      .select('id, manual_title, listing_id, host_user_id, qr_code_urls_json, bubble_created_at, bubble_updated_at')
+      .select('id, manual_title, listing_id, host_user_id, qr_code_urls_json, original_created_at, original_updated_at')
       .eq('id', houseManualId)
       .single();
 
@@ -177,7 +177,7 @@ export async function createQRCode(qrCode, houseManualId, hostId) {
     }
 
     const row = adaptQRCodeToDB(qrCode, houseManualId, hostId);
-    row.bubble_created_at = new Date().toISOString();
+    row.original_created_at = new Date().toISOString();
     row['Created By'] = hostId || null;
 
     const { data, error } = await supabase

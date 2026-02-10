@@ -9,7 +9,6 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import { DeleteVirtualMeetingInput, DeleteVirtualMeetingResponse, UserContext } from "../lib/types.ts";
 import { validateDeleteVirtualMeetingInput } from "../lib/validators.ts";
 
@@ -21,8 +20,7 @@ import { validateDeleteVirtualMeetingInput } from "../lib/validators.ts";
  * 2. Verify VM exists
  * 3. Delete VM record from virtualmeetingschedulesandlinks
  * 4. Update proposal: set 'virtual meeting' to null, clear 'request virtual meeting'
- * 5. Enqueue Bubble sync for DELETE operation
- * 6. Return response
+ * 5. Return response
  */
 export async function handleDelete(
   payload: Record<string, unknown>,
@@ -92,35 +90,6 @@ export async function handleDelete(
     // Non-blocking - VM was deleted successfully
   } else {
     console.log(`[virtual-meeting:delete] Proposal updated - cleared virtual meeting fields`);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: `delete-vm:${input.virtualMeetingId}`,
-      items: [
-        {
-          sequence: 1,
-          table: 'virtualmeetingschedulesandlinks',
-          recordId: input.virtualMeetingId,
-          operation: 'DELETE',
-          bubbleId: input.virtualMeetingId,
-          payload: { _id: input.virtualMeetingId },
-        },
-      ],
-    });
-
-    console.log(`[virtual-meeting:delete] Bubble sync enqueued (correlation: delete-vm:${input.virtualMeetingId})`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[virtual-meeting:delete] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

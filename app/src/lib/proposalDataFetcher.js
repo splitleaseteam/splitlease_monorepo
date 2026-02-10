@@ -94,7 +94,7 @@ export async function fetchProposalsByGuest(userId) {
       .select('*')
       .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false')
-      .order('bubble_created_at', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     if (proposalsError) {
       console.error('Error fetching proposals:', proposalsError);
@@ -130,7 +130,7 @@ export async function fetchLastProposalDefaults(userId) {
       .select('move_in_range_start_date, reservation_span_in_weeks')
       .eq('guest_user_id', userId)
       .or('is_deleted.is.null,is_deleted.eq.false')
-      .order('bubble_created_at', { ascending: false })
+      .order('original_created_at', { ascending: false })
       .limit(1)
       .single();
 

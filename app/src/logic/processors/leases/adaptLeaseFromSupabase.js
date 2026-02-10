@@ -155,8 +155,8 @@ export function adaptLeaseFromSupabase(row) {
     // Dates
     startDate: parseDate(row.reservation_start_date || row['Reservation Period : Start']),
     endDate: parseDate(row.reservation_end_date || row['Reservation Period : End']),
-    createdAt: parseDate(row.bubble_created_at),
-    modifiedAt: parseDate(row.bubble_updated_at),
+    createdAt: parseDate(row.original_created_at),
+    modifiedAt: parseDate(row.original_updated_at),
     firstPaymentDate: parseDate(row['First Payment Date']),
 
     // Date aliases (for DateChangeRequestManager compatibility)
@@ -376,7 +376,7 @@ export function adaptDateChangeRequestFromSupabase(dcr) {
     listOfOldDates: parseJsonbArray(dcr['Original Date']),
     listOfNewDates: parseJsonbArray(dcr['Requested Date']),
     priceAdjustment: dcr['Price Adjustment'],
-    dateAdded: parseDate(dcr.bubble_created_at),
+    dateAdded: parseDate(dcr.original_created_at),
     visibleToGuest: dcr['visible to guest'] ?? true,
   };
 }

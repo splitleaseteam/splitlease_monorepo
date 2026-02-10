@@ -41,8 +41,8 @@ function transformSupabaseDocument(supabaseDoc) {
     pdfUrl: supabaseDoc['PDF Version'],
     visible_on_policies_page: supabaseDoc.Active,
     visible_on_logged_out: supabaseDoc['visible on logged out?'],
-    createdDate: supabaseDoc.bubble_created_at,
-    modifiedDate: supabaseDoc.bubble_updated_at,
+    createdDate: supabaseDoc.original_created_at,
+    modifiedDate: supabaseDoc.original_updated_at,
     createdBy: supabaseDoc['Created By']
   };
 }

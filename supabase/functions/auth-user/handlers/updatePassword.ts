@@ -19,7 +19,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 export async function handleUpdatePassword(
@@ -37,7 +37,7 @@ export async function handleUpdatePassword(
 
   // Password validation (matching signup.ts - minimum 4 characters)
   if (password.length < 4) {
-    throw new BubbleApiError('Password must be at least 4 characters long.', 400);
+    throw new ApiError('Password must be at least 4 characters long.', 400);
   }
 
   try {
@@ -59,7 +59,7 @@ export async function handleUpdatePassword(
 
     if (userError || !user) {
       console.error(`[update-password] Invalid or expired session:`, userError?.message);
-      throw new BubbleApiError('Invalid or expired reset link. Please request a new password reset.', 401);
+      throw new ApiError('Invalid or expired reset link. Please request a new password reset.', 401);
     }
 
     console.log(`[update-password] Session valid for user: ${user.id}`);
@@ -78,7 +78,7 @@ export async function handleUpdatePassword(
 
     if (updateError) {
       console.error(`[update-password] Password update failed:`, updateError.message);
-      throw new BubbleApiError('Failed to update password. Please try again.', 500);
+      throw new ApiError('Failed to update password. Please try again.', 500);
     }
 
     console.log(`[update-password] Password updated successfully`);
@@ -89,14 +89,14 @@ export async function handleUpdatePassword(
     };
 
   } catch (error) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error(`[update-password] ========== UPDATE ERROR ==========`);
     console.error(`[update-password] Error:`, error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to update password: ${error.message}`,
       500,
       error

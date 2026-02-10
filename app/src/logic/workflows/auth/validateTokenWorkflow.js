@@ -3,19 +3,19 @@
  * Three-step process to validate authentication and retrieve user profile.
  *
  * @intent Validate user's authentication token and fetch their profile data.
- * @rule Step 1: Validate token via Bubble API (authentication check).
+ * @rule Step 1: Validate token via auth API (authentication check).
  * @rule Step 2: Fetch user display data from Supabase.
  * @rule Step 3: Fetch and cache user type if not already stored.
  *
  * This is an orchestration workflow that coordinates:
- * - External API validation (Bubble)
+ * - External API validation
  * - Database queries (Supabase)
  * - Data transformation (user profile)
  *
  * @param {object} params - Named parameters.
  * @param {string} params.token - Authentication token to validate.
  * @param {string} params.userId - User ID for fetching profile.
- * @param {Function} params.bubbleValidateFn - Function to validate token with Bubble API.
+ * @param {Function} params.validateFn - Function to validate token with auth API.
  * @param {Function} params.supabaseFetchUserFn - Function to fetch user from Supabase.
  * @param {string|null} params.cachedUserType - Cached user type (if available).
  * @returns {Promise<object|null>} User data object or null if invalid.
@@ -27,7 +27,7 @@
  * const userData = await validateTokenWorkflow({
  *   token: 'abc123',
  *   userId: 'user_456',
- *   bubbleValidateFn: async (token, userId) => { ... },
+ *   validateFn: async (token, userId) => { ... },
  *   supabaseFetchUserFn: async (userId) => { ... },
  *   cachedUserType: 'Guest'
  * })
@@ -36,7 +36,7 @@
 export async function validateTokenWorkflow({
   token,
   userId,
-  bubbleValidateFn,
+  validateFn,
   supabaseFetchUserFn,
   cachedUserType = null
 }) {
@@ -53,9 +53,9 @@ export async function validateTokenWorkflow({
     )
   }
 
-  if (typeof bubbleValidateFn !== 'function') {
+  if (typeof validateFn !== 'function') {
     throw new Error(
-      'validateTokenWorkflow: bubbleValidateFn must be a function'
+      'validateTokenWorkflow: validateFn must be a function'
     )
   }
 
@@ -65,8 +65,8 @@ export async function validateTokenWorkflow({
     )
   }
 
-  // Step 1: Validate token via Bubble API
-  const isValidToken = await bubbleValidateFn(token, userId)
+  // Step 1: Validate token via auth API
+  const isValidToken = await validateFn(token, userId)
 
   if (!isValidToken) {
     // Token is invalid

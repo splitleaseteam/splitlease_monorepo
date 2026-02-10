@@ -18,7 +18,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError, SupabaseSyncError } from '../../_shared/errors.ts';
+import { ApiError, SupabaseSyncError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 import { sendLoginNotificationEmail } from '../../_shared/emailUtils.ts';
 import {
@@ -61,18 +61,18 @@ export async function handleLogin(
 
       // Map common auth errors to user-friendly messages
       if (authError.message.includes('Invalid login credentials')) {
-        throw new BubbleApiError('Invalid email or password. Please try again.', 401);
+        throw new ApiError('Invalid email or password. Please try again.', 401);
       }
       if (authError.message.includes('Email not confirmed')) {
-        throw new BubbleApiError('Please verify your email address before logging in.', 401);
+        throw new ApiError('Please verify your email address before logging in.', 401);
       }
 
-      throw new BubbleApiError(authError.message, 401);
+      throw new ApiError(authError.message, 401);
     }
 
     if (!authData.session || !authData.user) {
       console.error(`[login] No session returned from auth`);
-      throw new BubbleApiError('Authentication failed. Please try again.', 401);
+      throw new ApiError('Authentication failed. Please try again.', 401);
     }
 
     const { session, user: authUser } = authData;
@@ -180,14 +180,14 @@ export async function handleLogin(
     };
 
   } catch (error) {
-    if (error instanceof BubbleApiError || error instanceof SupabaseSyncError) {
+    if (error instanceof ApiError || error instanceof SupabaseSyncError) {
       throw error;
     }
 
     console.error(`[login] ========== LOGIN ERROR ==========`);
     console.error(`[login] Error:`, error);
 
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to authenticate user: ${error.message}`,
       500,
       error

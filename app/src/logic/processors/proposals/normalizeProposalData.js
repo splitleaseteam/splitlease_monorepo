@@ -31,7 +31,7 @@ export function normalizeProposalData(proposal, normalizedGuest = null) {
     end_date: proposal['Move-out'] || proposal.end_date || null,
     move_in_range_start: proposal.move_in_range_start_date || proposal.move_in_range_start || null,
     move_in_range_end: proposal.move_in_range_end_date || proposal.move_in_range_end || null,
-    created_at: proposal.bubble_created_at || proposal.created_at || null,
+    created_at: proposal.original_created_at || proposal.created_at || null,
 
     // Days/Schedule
     days_selected: proposal.guest_selected_days_numbers_json || proposal.days_selected || [],

@@ -18,10 +18,10 @@ interface CreateQuickProposalPayload {
 }
 
 /**
- * Generate a unique Bubble-compatible ID
+ * Generate a unique platform-compatible ID
  */
-async function generateBubbleId(supabase: SupabaseClient): Promise<string> {
-  const { data, error } = await supabase.rpc('generate_bubble_id');
+async function generatePlatformId(supabase: SupabaseClient): Promise<string> {
+  const { data, error } = await supabase.rpc('generate_unique_id');
   if (error) {
     throw new Error(`Failed to generate ID: ${error.message}`);
   }
@@ -82,8 +82,8 @@ export async function handleCreateQuickProposal(
   }
 
   // Generate unique IDs for proposal and thread
-  const proposalId = await generateBubbleId(supabase);
-  const threadId = await generateBubbleId(supabase);
+  const proposalId = await generatePlatformId(supabase);
+  const threadId = await generatePlatformId(supabase);
 
   const timestamp = new Date().toISOString();
 

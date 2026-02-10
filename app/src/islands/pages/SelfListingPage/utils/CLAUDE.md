@@ -286,7 +286,7 @@ useEffect(() => {
 ## DATABASE_FIELD_NAMING
 
 ### Convention Issues
-[PROBLEM]: Bubble.io field names use spaces and special characters
+[PROBLEM]: Some legacy database field names use spaces and special characters
 [EXAMPLES]: "Type - Amenity Categories", "pre-set?", "Neighborhood Description"
 [SOLUTION]: Quote field names in Supabase queries
 [TYPESCRIPT]: Interface properties also use quoted names

@@ -10,7 +10,6 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
 import { validateRequired } from "../../_shared/validation.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -44,8 +43,7 @@ interface RateCoHostRequestResponse {
  * 1. Validate input (requestId, Rating required)
  * 2. Verify co-host request exists
  * 3. Update co-host request with rating and close status
- * 4. Enqueue Bubble sync
- * 5. Return success response
+ * 4. Return success response
  */
 export async function handleRate(
   payload: Record<string, unknown>,
@@ -110,37 +108,6 @@ export async function handleRate(
   }
 
   console.log(`[cohost-request:rate] Co-host request updated successfully`);
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: input.requestId,
-      items: [
-        {
-          sequence: 1,
-          table: 'co_hostrequest',
-          recordId: input.requestId,
-          operation: 'UPDATE',
-          payload: {
-            _id: input.requestId,
-            ...updateData,
-          },
-        },
-      ],
-    });
-
-    console.log(`[cohost-request:rate] Bubble sync enqueued`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[cohost-request:rate] Failed to enqueue Bubble sync (non-blocking):`, syncError);
-  }
 
   // ================================================
   // RETURN RESPONSE

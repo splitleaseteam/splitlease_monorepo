@@ -159,7 +159,7 @@ async function authenticateFromHeaders(
   headers: Headers,
   supabaseUrl: string,
   supabaseAnonKey: string
-): Promise<{ id: string; email: string; bubble_user_id?: string } | null> {
+): Promise<{ id: string; email: string; user_id?: string } | null> {
   const authHeader = headers.get('Authorization');
   if (!authHeader) return null;
 
@@ -173,7 +173,7 @@ async function authenticateFromHeaders(
   return {
     id: user.id,
     email: user.email ?? '',
-    bubble_user_id: user.user_metadata?.bubble_user_id
+    user_id: user.user_metadata?.legacy_platform_id
   };
 }
 
@@ -182,7 +182,7 @@ async function _checkAdminStatus(
   supabase: SupabaseClient
 ): Promise<boolean> {
   try {
-    // First get the user's bubble_user_id from auth metadata
+    // First get the user's platform user_id from auth metadata
     const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(userId);
 
     if (authError || !user) {
@@ -190,9 +190,9 @@ async function _checkAdminStatus(
       return false;
     }
 
-    const bubbleUserId = user.user_metadata?.bubble_user_id;
-    if (!bubbleUserId) {
-      console.log('[rental-applications] No bubble_user_id found for user');
+    const platformUserId = user.user_metadata?.legacy_platform_id;
+    if (!platformUserId) {
+      console.log('[rental-applications] No platform user_id found for user');
       // Check user_metadata for admin flag as fallback
       return user.user_metadata?.is_admin === true;
     }
@@ -201,7 +201,7 @@ async function _checkAdminStatus(
     const { data: userData, error: userError } = await supabase
       .from('user')
       .select('"Toggle - Is Admin"')
-      .eq('_id', bubbleUserId)
+      .eq('_id', platformUserId)
       .single();
 
     if (userError) {

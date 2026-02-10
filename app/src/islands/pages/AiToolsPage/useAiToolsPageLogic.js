@@ -77,7 +77,7 @@ export function useAiToolsPageLogic() {
       const { data, error: fetchError } = await supabase
         .from('house_manual')
         .select('id, manual_title, host_user_id, listing_id')
-        .order('bubble_created_at', { ascending: false });
+        .order('original_created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
       return data || [];

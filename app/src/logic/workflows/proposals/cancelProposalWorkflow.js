@@ -101,7 +101,7 @@ export async function executeCancelProposal(proposalId, reason = null) {
 
   const updateData = {
     'proposal_workflow_status': PROPOSAL_STATUSES.CANCELLED_BY_GUEST.key,
-    'bubble_updated_at': now
+    'original_updated_at': now
   };
 
   // Add reason if provided
@@ -162,7 +162,7 @@ export async function executeDeleteProposal(proposalId) {
     .from('booking_proposal')
     .update({
       'is_deleted': true,
-      'bubble_updated_at': now
+      'original_updated_at': now
     })
     .eq('id', proposalId);
 

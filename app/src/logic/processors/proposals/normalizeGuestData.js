@@ -35,6 +35,6 @@ export function normalizeGuestData(guest) {
     work_verified: hasWorkVerification,
     is_verified: isUserVerified,
     review_count: guest.review_count || 0,
-    created_at: guest.bubble_created_at || guest.created_at || null
+    created_at: guest.original_created_at || guest.created_at || null
   };
 }

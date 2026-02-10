@@ -10,7 +10,6 @@
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError, SupabaseSyncError } from "../../_shared/errors.ts";
-import { enqueueBubbleSync, triggerQueueProcessing } from "../../_shared/queueSync.ts";
 import { sendVMRequestMessages } from "../../_shared/vmMessagingHelpers.ts";
 import {
   CreateVirtualMeetingInput,
@@ -30,11 +29,10 @@ import { validateCreateVirtualMeetingInput } from "../lib/validators.ts";
  * 2. Fetch proposal to get Guest, Host, Listing relationships
  * 3. Fetch host user data via account_host -> user
  * 4. Fetch guest user data
- * 5. Generate unique _id via generate_bubble_id RPC
+ * 5. Generate unique _id via generate_unique_id RPC
  * 6. Insert record into virtualmeetingschedulesandlinks
  * 7. Update proposal.virtual meeting field to link the new VM
- * 8. Enqueue Bubble sync for the created record
- * 9. Return the created VM ID
+ * 8. Return the created VM ID
  */
 export async function handleCreate(
   payload: Record<string, unknown>,
@@ -136,7 +134,7 @@ export async function handleCreate(
   // GENERATE ID
   // ================================================
 
-  const { data: virtualMeetingId, error: idError } = await supabase.rpc('generate_bubble_id');
+  const { data: virtualMeetingId, error: idError } = await supabase.rpc('generate_unique_id');
   if (idError || !virtualMeetingId) {
     console.error(`[virtual-meeting:create] ID generation failed:`, idError);
     throw new SupabaseSyncError('Failed to generate virtual meeting ID');
@@ -226,34 +224,6 @@ export async function handleCreate(
     // Non-blocking - continue (VM was created successfully)
   } else {
     console.log(`[virtual-meeting:create] Proposal updated with VM link and request status`);
-  }
-
-  // ================================================
-  // ENQUEUE BUBBLE SYNC
-  // ================================================
-
-  try {
-    await enqueueBubbleSync(supabase, {
-      correlationId: virtualMeetingId,
-      items: [
-        {
-          sequence: 1,
-          table: 'virtualmeetingschedulesandlinks',
-          recordId: virtualMeetingId,
-          operation: 'INSERT',
-          payload: vmData,
-        },
-      ],
-    });
-
-    console.log(`[virtual-meeting:create] Bubble sync enqueued (correlation: ${virtualMeetingId})`);
-
-    // Trigger queue processing (fire and forget)
-    triggerQueueProcessing();
-
-  } catch (syncError) {
-    // Log but don't fail - items can be manually requeued if needed
-    console.error(`[virtual-meeting:create] Failed to enqueue Bubble sync (non-blocking):`, syncError);
   }
 
   // ================================================

@@ -130,7 +130,7 @@ export async function handleGenerate(
 
   const paymentRecordIds: string[] = [];
   for (let i = 0; i < schedule.numberOfPaymentCycles; i++) {
-    const { data: recordId, error: idError } = await supabase.rpc('generate_bubble_id');
+    const { data: recordId, error: idError } = await supabase.rpc('generate_unique_id');
     if (idError || !recordId) {
       console.error(`[guest-payment-records:generate] ID generation failed:`, idError);
       throw new SupabaseSyncError('Failed to generate payment record ID');

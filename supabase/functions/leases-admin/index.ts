@@ -444,13 +444,13 @@ async function handleUpdateStatus(
     throw new Error(`Invalid status: ${status}`);
   }
 
-  // Capitalize status for Bubble compatibility
-  const bubbleStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  // Capitalize status for display
+  const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
   const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
-      'Lease Status': bubbleStatus,
+      'Lease Status': formattedStatus,
       'Modified Date': new Date().toISOString(),
     })
     .eq('_id', leaseId)
@@ -564,12 +564,12 @@ async function handleBulkUpdateStatus(
     throw new Error('status is required');
   }
 
-  const bubbleStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
   const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .update({
-      'Lease Status': bubbleStatus,
+      'Lease Status': formattedStatus,
       'Modified Date': new Date().toISOString(),
     })
     .in('_id', leaseIds)

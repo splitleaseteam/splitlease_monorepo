@@ -436,12 +436,12 @@ export default function ViewSplitLeasePage() {
 
         const { data: existingProposals, error } = await supabase
           .from('booking_proposal')
-          .select('id, proposal_workflow_status, bubble_created_at')
+          .select('id, proposal_workflow_status, original_created_at')
           .eq('guest_user_id', loggedInUserData.userId)
           .eq('listing_id', listing.id || listing._id)
           .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
           .or('"Deleted".is.null,"Deleted".eq.false')
-          .order('bubble_created_at', { ascending: false })
+          .order('original_created_at', { ascending: false })
           .limit(1);
 
         if (error) {

@@ -103,8 +103,8 @@ export function useGuestExperienceReviewPageLogic() {
     try {
       const userId = getUserId();
 
-      // Generate a Bubble-compatible ID for the survey record
-      const { data: surveyId, error: idError } = await supabase.rpc('generate_bubble_id');
+      // Generate a unique ID for the survey record
+      const { data: surveyId, error: idError } = await supabase.rpc('generate_unique_id');
       if (idError) {
         console.error('[GuestExperienceReview] ID generation error:', idError);
         throw new Error('Failed to generate survey ID');

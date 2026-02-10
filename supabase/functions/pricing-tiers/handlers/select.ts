@@ -77,7 +77,7 @@ export async function handleSelect(
   // ================================================
 
   const { data: selectionId, error: idError } = await supabase.rpc(
-    "generate_bubble_id"
+    "generate_unique_id"
   );
   if (idError || !selectionId) {
     console.error(

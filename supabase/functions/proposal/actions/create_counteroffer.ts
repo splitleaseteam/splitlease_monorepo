@@ -18,7 +18,7 @@ import {
   calculateActualActiveWeeks,
 } from "../lib/calculations.ts";
 import { calculatePricingList } from "../../pricing-list/utils/pricingCalculator.ts";
-import { createSplitBotMessage, generateBubbleId } from "../../_shared/messagingHelpers.ts";
+import { createSplitBotMessage, generatePlatformId } from "../../_shared/messagingHelpers.ts";
 import {
   generateCounterOfferSummary,
   formatDaysAsRange,
@@ -306,7 +306,7 @@ export async function handleCreateCounteroffer(
 
         // Persist AI summary to negotiationsummary table
         try {
-          const summaryId = await generateBubbleId(supabase);
+          const summaryId = await generatePlatformId(supabase);
           const summaryNow = new Date().toISOString();
 
           const { error: summaryInsertError } = await supabase
@@ -421,7 +421,7 @@ export async function handleCreateCounteroffer(
       const listingName = listing?.['Name'] || 'Proposal Thread';
 
       // Generate new thread ID
-      const { data: newId } = await supabase.rpc('generate_bubble_id');
+      const { data: newId } = await supabase.rpc('generate_unique_id');
       threadId = newId || `${Date.now()}x${Math.floor(Math.random() * 1e17).toString().padStart(17, '0')}`;
 
       const now = new Date().toISOString();

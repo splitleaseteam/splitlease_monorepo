@@ -437,7 +437,7 @@ export function useSearchPageLogic() {
 - AboutUsPage: `zat_splitleaseteam`
 - All lookup tables: `zat_*` (neighborhoods, boroughs, amenities, etc.)
 
-### Bubble API (via Edge Functions)
+### Supabase Edge Functions
 - Proposals: proposal edge function
 - User data: auth-user edge function
 - Listing data: listing edge function

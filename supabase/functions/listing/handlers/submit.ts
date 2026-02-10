@@ -392,8 +392,7 @@ export async function handleSubmit(
         console.log('[listing:submit] Step 4/4: Checking for first listing...');
 
         // Query listing table directly to count user's listings
-        // NOTE: We can't use user.Listings array because it's updated asynchronously
-        // by the bubble_sync queue after this handler completes
+        // NOTE: We can't use user.Listings array because it may not be updated yet
         const { count: listingCount, error: countError } = await supabase
           .from('listing')
           .select('_id', { count: 'exact', head: true })

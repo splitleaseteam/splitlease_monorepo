@@ -137,8 +137,8 @@ export function processProposalData({ rawProposal, listing = null, guest = null,
     cancellationReason: rawProposal['reason for cancellation'] || null,
 
     // Timestamps
-    createdDate: rawProposal.bubble_created_at,
-    modifiedDate: rawProposal.bubble_updated_at,
+    createdDate: rawProposal.original_created_at,
+    modifiedDate: rawProposal.original_updated_at,
 
     // Enriched data (if provided)
     _listing: listing,

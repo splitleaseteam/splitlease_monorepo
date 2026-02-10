@@ -82,16 +82,16 @@ Constants: AMENITIES_INSIDE (28), AMENITIES_OUTSIDE (25), HOUSE_RULES (29), SAFE
 
 ---
 
-## BUBBLE_API_MAPPING
+## API_FIELD_MAPPING
 
 ### Field Name Translation
 [INTERNAL]: camelCase (listingName, typeOfSpace, damageDeposit)
-[BUBBLE]: Title Case With Spaces ('Name', 'Type of Space', 'Damage Deposit')
+[DATABASE]: snake_case (listing_title, space_type, damage_deposit_amount)
 [TRANSFORM]: prepareListingSubmission() handles mapping
 
 ### Data Type Conversions
 [DATES]: Date objects -> ISO strings (YYYY-MM-DD)
-[AVAILABLE_NIGHTS]: Object with booleans -> Array of day names
+[AVAILABLE_NIGHTS]: Object with booleans -> Array of day indices (0-6)
 [ARRAYS]: Remain arrays (amenities, house rules, safety features)
 
 ---

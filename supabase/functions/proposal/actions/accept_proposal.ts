@@ -135,7 +135,7 @@ export async function handleAcceptProposal(
       const listingName = listing?.['Name'] || 'Proposal Thread';
 
       // Generate new thread ID
-      const { data: newId } = await supabase.rpc('generate_bubble_id');
+      const { data: newId } = await supabase.rpc('generate_unique_id');
       threadId = newId || `${Date.now()}x${Math.floor(Math.random() * 1e17).toString().padStart(17, '0')}`;
 
       const now = new Date().toISOString();

@@ -117,8 +117,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       host_proposed_reservation_span_weeks,
       host_proposed_total_guest_price,
       host_proposed_nightly_price,
-      bubble_created_at,
-      bubble_updated_at,
+      original_created_at,
+      original_updated_at,
       guest_about_yourself_text,
       rental_application_id,
       virtual_meeting_record_id,
@@ -129,7 +129,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     .in('id', proposalIds)
     .or('is_deleted.is.null,is_deleted.eq.false')
     .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
-    .order('bubble_created_at', { ascending: false });
+    .order('original_created_at', { ascending: false });
 
   if (proposalError) {
     console.error('fetchProposalsByIds: Error fetching proposals:', proposalError);
@@ -500,12 +500,12 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
           message_body_text,
           "Call to Action",
           thread_id,
-          bubble_created_at
+          original_created_at
         `)
         .in('thread_id', threadIds)
         .eq('is_from_split_bot', true)
         .eq('"Call to Action"', 'Respond to Counter Offer')
-        .order('bubble_created_at', { ascending: false });
+        .order('original_created_at', { ascending: false });
 
       if (counterofferError) {
         console.error('fetchProposalsByIds: Error fetching counteroffer messages:', counterofferError);

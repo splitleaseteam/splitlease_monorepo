@@ -365,7 +365,7 @@ export function useMessagingPageLogic() {
             sender_type: newRow['is_from_split_bot'] ? 'splitbot' :
               (newRow.originator_user_id === newRow.host_user_id ? 'host' : 'guest'),
             is_outgoing: isOwnMessage,
-            timestamp: new Date(newRow['bubble_created_at']).toLocaleString('en-US', {
+            timestamp: new Date(newRow['original_created_at']).toLocaleString('en-US', {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
             }),
             call_to_action: newRow['Call to Action'] ? {
@@ -759,12 +759,12 @@ export function useMessagingPageLogic() {
         .select(`
           id,
           proposal_workflow_status,
-          bubble_created_at,
+          original_created_at,
           move_in_range_start_date,
           move_in_range_end_date,
           nights_per_week_count,
           four_week_rent_amount,
-          bubble_updated_at
+          original_updated_at
         `)
         .eq('id', proposalId)
         .single();
@@ -778,12 +778,12 @@ export function useMessagingPageLogic() {
       return {
         id: data.id,
         status: data.proposal_workflow_status || 'pending',
-        createdAt: data.bubble_created_at,
+        createdAt: data.original_created_at,
         startDate: data.move_in_range_start_date,
         endDate: data.move_in_range_end_date,
         daysPerWeek: data.nights_per_week_count,
         totalMonthlyPrice: data.four_week_rent_amount,
-        modifiedDate: data.bubble_updated_at,
+        modifiedDate: data.original_updated_at,
       };
     } catch (err) {
       console.error('[RightPanel] Error fetching proposal:', err);

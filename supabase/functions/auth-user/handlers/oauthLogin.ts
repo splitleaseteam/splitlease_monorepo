@@ -14,7 +14,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { BubbleApiError } from '../../_shared/errors.ts';
+import { ApiError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
 interface OAuthLoginPayload {
@@ -64,7 +64,7 @@ export async function handleOAuthLogin(
 
     if (userCheckError) {
       console.error('[oauth-login] Error checking user:', userCheckError.message);
-      throw new BubbleApiError('Failed to verify user', 500);
+      throw new ApiError('Failed to verify user', 500);
     }
 
     if (!existingUser) {
@@ -129,12 +129,12 @@ export async function handleOAuthLogin(
     };
 
   } catch (error) {
-    if (error instanceof BubbleApiError) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
     console.error('[oauth-login] Error:', error);
-    throw new BubbleApiError(
+    throw new ApiError(
       `Failed to complete OAuth login: ${error.message}`,
       500
     );
