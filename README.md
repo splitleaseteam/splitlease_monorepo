@@ -47,13 +47,12 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 
 | Metric | Count |
 |--------|-------|
-| Entry Points | 27+ |
+| Entry Points | 29 |
 | Page Components | 25+ |
 | Shared Components | 50+ |
-| Edge Functions | 17 |
+| Edge Functions | 68 |
 | Database Tables | 93+ |
 | Logic Functions | 57 |
-| Documentation Files | 52 |
 
 ---
 
@@ -68,7 +67,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 +---------------------------------------------------------------+
 |                                                                |
 |  public/*.html  -->  src/*.jsx (entry)  -->  islands/pages/   |
-|  (27 HTML files)     (mount React)          (page components) |
+|  (29 HTML files)     (mount React)          (page components) |
 |                                                                |
 |  src/logic/  ------------------------------------------        |
 |  +-- calculators/   (pure math: calculate*, get*)              |
@@ -101,7 +100,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 |                        DATA LAYER                              |
 +---------------------------------------------------------------+
 |  Supabase PostgreSQL  <--->  Bubble.io (legacy, migrating)     |
-|  (primary + native)          (source of truth for some data)  |
+|  (primary for auth + new)    (legacy data, synced via queue)  |
 +---------------------------------------------------------------+
 ```
 
@@ -147,7 +146,7 @@ cd splitlease
 cd app && bun install
 
 # 3. Configure environment
-./scripts/copy_dot_env.sh
+cp .env.example .env
 # Edit .env with your API keys
 
 # 4. Start development server
@@ -185,13 +184,13 @@ supabase migration new <name>  # Create new migration
 Split Lease/
 +-- app/                              # React frontend application
 |   +-- public/                       # Static HTML pages and assets
-|   |   +-- *.html                    # 27 HTML entry points
+|   |   +-- *.html                    # 29 HTML entry points
 |   |   +-- assets/                   # Fonts, icons, images, lotties, videos
 |   |   +-- _redirects                # Generated Cloudflare routing rules
 |   |   +-- _headers                  # HTTP header configuration
 |   |   +-- _routes.json              # Cloudflare Functions routing
 |   +-- src/
-|   |   +-- *.jsx                     # 27 entry point files
+|   |   +-- *.jsx                     # 29 entry point files
 |   |   +-- islands/
 |   |   |   +-- pages/                # Page components (25+)
 |   |   |   +-- modals/               # Modal components (17+)
@@ -210,7 +209,7 @@ Split Lease/
 |   +-- package.json                  # Dependencies
 |
 +-- supabase/                         # Backend
-|   +-- functions/                    # Edge Functions (17)
+|   +-- functions/                    # Edge Functions (68)
 |   |   +-- auth-user/                # Authentication
 |   |   +-- proposal/                 # Proposal CRUD
 |   |   +-- listing/                  # Listing CRUD
@@ -221,27 +220,11 @@ Split Lease/
 |   |   +-- send-sms/                 # Twilio integration
 |   |   +-- virtual-meeting/          # Virtual meeting lifecycle
 |   |   +-- workflow-*/               # Workflow orchestration
-|   |   +-- _shared/                  # Shared utilities (13 files)
-|   +-- migrations/                   # Database migrations (14+)
+|   |   +-- _shared/                  # Shared utilities (19+ files)
+|   +-- migrations/                   # Database migrations
 |   +-- config.toml                   # Supabase configuration
 |
-+-- .claude/                          # Claude Code configuration
-|   +-- Documentation/                # Project documentation (52 files)
-|   |   +-- miniCLAUDE.md             # Quick reference
-|   |   +-- largeCLAUDE.md            # Full context
-|   |   +-- Architecture/             # Architecture guides
-|   |   +-- Auth/                     # Authentication docs
-|   |   +-- Backend(EDGE - Functions)/ # Edge Function docs
-|   |   +-- Database/                 # Database schema docs
-|   |   +-- Pages/                    # Page-specific docs
-|   |   +-- Routing/                  # Routing guides
-|   +-- plans/                        # Implementation plans
-|   |   +-- New/                      # Active plans
-|   |   +-- Done/                     # Completed plans
-|   |   +-- Documents/                # Analysis documents
-|   +-- agents/                       # Subagent configurations
-|   +-- commands/                     # Custom slash commands
-|
++-- pythonanywhere/                   # PythonAnywhere Flask backends (3 apps)
 +-- CLAUDE.md                         # Main project context
 ```
 
@@ -267,7 +250,7 @@ Split Lease/
 
 ### Overview
 
-17 Edge Functions running on Deno 2/TypeScript with action-based routing.
+68 Edge Functions running on Deno 2/TypeScript with action-based routing. See `supabase/functions/EDGE_FUNCTIONS_DOCUMENTATION.md` for the full catalog.
 
 ### Core Business Functions
 
@@ -301,7 +284,6 @@ Split Lease/
 | Function | Purpose |
 |----------|---------|
 | **bubble_sync** | Process sync_queue, push data FROM Supabase TO Bubble |
-| **bubble-proxy** | Legacy Bubble API proxy (being deprecated) |
 | **workflow-enqueue** | Entry point for workflow orchestration |
 | **workflow-orchestrator** | pgmq-based workflow processor |
 
@@ -474,7 +456,7 @@ await updateListing(id, changedFields);
 | Multiple | Workflows run in parallel | All affected platforms | ~1.8 min (parallel) |
 
 **Setup Required:**
-1. **First time only:** Configure GitHub secrets (see [`.github/SECRETS_SETUP.md`](.github/SECRETS_SETUP.md))
+1. **First time only:** Configure GitHub secrets in repository Settings > Secrets and variables > Actions
 2. **Then:** Just push to `main` - deployments happen automatically
 
 **Dev/Feature Branches:**
@@ -484,7 +466,7 @@ await updateListing(id, changedFields);
 
 **Smart Deployment:**
 - **Changed functions only**: If you edit `auth-user`, only `auth-user` deploys (~23 seconds)
-- **All functions**: If you edit `_shared/`, all 17 functions deploy (~2 minutes)
+- **All functions**: If you edit `_shared/`, all functions deploy (~2 minutes)
 - **Tests required**: Deployments blocked if `bun run test` fails
 
 ---
@@ -537,7 +519,7 @@ cd ../mysite3 && pip3 install --user -r requirements.txt
 touch /var/www/<username>_pythonanywhere_com_wsgi.py
 ```
 
-See [`pythonAnywhere/DEPLOYMENT.md`](pythonAnywhere/DEPLOYMENT.md) for detailed setup instructions.
+See `pythonanywhere/README.md` for detailed setup instructions.
 
 ---
 
@@ -562,38 +544,17 @@ git checkout main
 
 ### Documentation Hierarchy
 
+Documentation is distributed as CLAUDE.md files throughout the codebase:
+
 | File | Use For |
 |------|---------|
-| `.claude/Documentation/miniCLAUDE.md` | Quick reference, simple tasks |
-| `.claude/Documentation/largeCLAUDE.md` | Full context, complex tasks |
-| `app/CLAUDE.md` | Frontend architecture details |
-| `supabase/CLAUDE.md` | Edge Functions reference |
-
-### Documentation Structure
-
-```
-.claude/Documentation/
-+-- miniCLAUDE.md          # Quick reference (17KB)
-+-- largeCLAUDE.md         # Full context (55KB)
-+-- Architecture/          # Core architecture guides
-+-- Auth/                  # Authentication patterns
-+-- Backend(EDGE - Functions)/ # Edge Function docs
-+-- Database/              # Schema and relations
-+-- External/              # Google Maps, Hotjar
-+-- Pages/                 # Page-specific references
-+-- Routing/               # Route configuration
-```
-
-### Key Topics by Document
-
-| Topic | Primary Document |
-|-------|------------------|
-| Authentication patterns | `Auth/AUTH_GUIDE.md` |
-| Routing configuration | `Routing/ROUTING_GUIDE.md` |
-| Edge Function development | `Backend(EDGE - Functions)/README.md` |
-| Database schema | `Database/DATABASE_TABLES_DETAILED.md` |
-| Foreign key constraints | `Database/REFERENCE_TABLES_FK_FIELDS.md` |
-| Google Maps integration | `External/GOOGLE_MAPS_API_IMPLEMENTATION.md` |
+| `README.md` (this file) | Project overview, quick start, architecture |
+| `app/src/CLAUDE.md` | Frontend architecture, entry points, logic layers |
+| `app/src/islands/CLAUDE.md` | Component library, patterns, page inventory |
+| `supabase/CLAUDE.md` | Edge Functions, shared utilities, sync patterns |
+| `supabase/functions/EDGE_FUNCTIONS_DOCUMENTATION.md` | Full edge function catalog (68 functions) |
+| `app/src/lib/SECURE_AUTH_README.md` | Authentication & encryption system |
+| `pythonanywhere/README.md` | PythonAnywhere Flask apps setup & deployment |
 
 ---
 
@@ -655,5 +616,5 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-**Last Updated**: 2025-12-18
-**Status**: Active Development (Bubble.io -> Supabase Edge Functions migration in progress)
+**Last Updated**: 2026-02-10
+**Status**: Active Development

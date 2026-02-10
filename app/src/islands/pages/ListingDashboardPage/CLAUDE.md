@@ -245,12 +245,11 @@
 
 ---
 
-## TODO
+## KNOWN_LIMITATIONS
 
-[PRODUCTION]: Replace mock data with live Supabase queries (already implemented)
-[NAVIGATION]: Implement tab-specific navigation for proposals/meetings/leases
-[FORM_SAVE]: Add debounced save for inline edits (currently edit-in-modal only)
-[PHOTO_TYPE]: Implement photo type change handler (currently logs to console)
+[NAVIGATION]: Tab-specific navigation for proposals/meetings/leases not yet implemented
+[FORM_SAVE]: Inline edits use edit-in-modal pattern (no debounced inline save)
+[PHOTO_TYPE]: Photo type change handler logs to console only
 
 ---
 

@@ -82,7 +82,7 @@ POST https://app.split.lease/version-test/api/1.1/wf/ai-signup-guest
 ```javascript
 {
   'Content-Type': 'application/json',
-  'Authorization': 'Bearer 5dbb448f9a6bbb043cb56ac16b8de109'
+  'Authorization': 'Bearer <BUBBLE_API_KEY>'
 }
 ```
 
@@ -168,9 +168,9 @@ All styles are scoped to the component and won't affect other parts of your appl
 ## Dependencies
 
 - **React**: ^18.0.0
-- **lottie-web**: Dynamically imported (loaded on-demand)
+- **lottie-react**: Dynamically imported (loaded on-demand)
 
-The `lottie-web` package is lazy-loaded to avoid SSR issues and reduce initial bundle size.
+The `lottie-react` package is lazy-loaded to avoid SSR issues and reduce initial bundle size.
 
 ## Example Test Data
 

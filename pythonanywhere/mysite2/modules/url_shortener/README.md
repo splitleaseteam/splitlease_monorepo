@@ -22,7 +22,7 @@ Core URL shortening functionality:
 ## Usage
 
 ```python
-from modules.url_shortener.shortener import create_short_url, get_long_url
+from modules.url_shortener.url_shortener import create_short_url, get_long_url
 
 # Create a short URL
 short_code = create_short_url("https://example.com/very/long/url")

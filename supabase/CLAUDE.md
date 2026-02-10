@@ -1,6 +1,6 @@
 # Supabase Backend - LLM Reference
 
-**GENERATED**: 2025-12-11
+**GENERATED**: 2026-02-10
 **SCOPE**: Edge Functions, Shared Utilities, Configuration
 **OPTIMIZATION**: Semantic Searchability + Digestibility
 **RUNTIME**: Deno 2
@@ -9,8 +9,8 @@
 
 ## QUICK_STATS
 
-[TOTAL_EDGE_FUNCTIONS]: 9
-[TOTAL_SHARED_UTILITIES]: 9
+[TOTAL_EDGE_FUNCTIONS]: 68
+[TOTAL_SHARED_UTILITIES]: 19+
 [PRIMARY_LANGUAGE]: TypeScript
 [KEY_PATTERNS]: action-based-routing, atomic-sync, no-fallback, error-collection, queue-based-sync
 
@@ -36,15 +36,6 @@
 [PUBLIC_ACTIONS]: All actions are public
 [ENDPOINT]: POST /functions/v1/auth-user
 
-### functions/bubble-proxy/index.ts
-[INTENT]: Proxy for Bubble API operations with atomic sync
-[ACTIONS]: send_message, ai_inquiry, upload_photos, submit_referral, toggle_favorite, get_favorites, parse_profile
-[AUTH_REQUIRED]: Only for submit_referral
-[PUBLIC_ACTIONS]: send_message, ai_inquiry, upload_photos, toggle_favorite, get_favorites, parse_profile
-[DEPRECATED_ACTIONS]: create_proposal (use /proposal), create_listing (use /listing), get_listing (use /listing)
-[ENDPOINT]: POST /functions/v1/bubble-proxy
-[HANDLERS_DIR]: functions/bubble-proxy/handlers/
-
 ### functions/ai-gateway/index.ts
 [INTENT]: OpenAI proxy with prompt templating and data loaders
 [ACTIONS]: complete (non-streaming), stream (SSE streaming)
@@ -69,8 +60,8 @@
 ### functions/proposal/index.ts
 [INTENT]: Proposal CRUD operations
 [ACTIONS]: create, update, get, suggest
-[AUTH_REQUIRED]: Yes, except for get and create (temporarily public during migration)
-[PUBLIC_ACTIONS]: get, create
+[AUTH_REQUIRED]: Yes for create, update, suggest; No for get
+[PUBLIC_ACTIONS]: get
 [ENDPOINT]: POST /functions/v1/proposal
 [HANDLERS_DIR]: functions/proposal/actions/
 [LIB_DIR]: functions/proposal/lib/
@@ -115,9 +106,9 @@
 ### functions/_shared/bubbleSync.ts
 [INTENT]: Core atomic sync service implementing Write-Read-Write pattern
 [EXPORTS]: BubbleSyncService class
-[PATTERN]: 1) Create in Bubble (source of truth), 2) Fetch from Bubble Data API, 3) Sync to Supabase (replica)
+[PATTERN]: 1) Write to Bubble via Workflow/Data API, 2) Fetch from Bubble Data API, 3) Sync to Supabase (legacy atomic sync pattern)
 [KEY_METHODS]: triggerWorkflow(), fetchBubbleObject(), syncToSupabase(), createAndSync(), triggerWorkflowOnly()
-[USED_BY]: bubble-proxy handlers, listing handlers
+[USED_BY]: listing handlers, bubble_sync handlers
 [NO_FALLBACK]: Throws on any failure, no default values
 
 ### functions/_shared/queueSync.ts
@@ -178,55 +169,6 @@
 [INTENT]: JSON parsing and normalization utilities
 [EXPORTS]: Helper functions for JSON manipulation
 [USED_BY]: Various edge functions
-
----
-
-## BUBBLE_PROXY_HANDLERS
-
-### functions/bubble-proxy/handlers/messaging.ts
-[INTENT]: Send message to host (no sync, workflow only)
-[EXPORTS]: handleSendMessage()
-[WORKFLOW]: send-message-to-host (Bubble)
-[AUTH_REQUIRED]: No
-
-### functions/bubble-proxy/handlers/aiInquiry.ts
-[INTENT]: AI-powered market research inquiry with atomic sync
-[EXPORTS]: handleAiInquiry()
-[WORKFLOW]: ai-inquiry (Bubble)
-[SYNC]: Atomic sync to inquiries table
-[AUTH_REQUIRED]: No
-
-### functions/bubble-proxy/handlers/photos.ts
-[INTENT]: Upload listing photos with atomic sync
-[EXPORTS]: handlePhotoUpload()
-[WORKFLOW]: upload-photos (Bubble)
-[SYNC]: Atomic sync to photos table
-[AUTH_REQUIRED]: No
-
-### functions/bubble-proxy/handlers/referral.ts
-[INTENT]: Submit referral with atomic sync
-[EXPORTS]: handleReferral()
-[WORKFLOW]: submit-referral (Bubble)
-[SYNC]: Atomic sync to referrals table
-[AUTH_REQUIRED]: Yes
-
-### functions/bubble-proxy/handlers/favorites.ts
-[INTENT]: Toggle favorite listing
-[EXPORTS]: handleFavorites()
-[WORKFLOW]: toggle-favorite (Bubble)
-[AUTH_REQUIRED]: No (uses Bubble user ID)
-
-### functions/bubble-proxy/handlers/getFavorites.ts
-[INTENT]: Get user's favorited listings
-[EXPORTS]: handleGetFavorites()
-[WORKFLOW]: get-favorites (Bubble)
-[AUTH_REQUIRED]: No (uses Bubble user ID)
-
-### functions/bubble-proxy/handlers/parseProfile.ts
-[INTENT]: Parse user profile during AI signup
-[EXPORTS]: handleParseProfile()
-[OPERATION]: Supabase query only (no Bubble API)
-[AUTH_REQUIRED]: No
 
 ---
 
@@ -500,14 +442,10 @@
 ### config.toml
 [INTENT]: Supabase local development configuration
 [DEFINES]: All edge function entrypoints, Deno version, API ports
-[EDGE_FUNCTIONS]: bubble-proxy, auth-user, ai-signup-guest, slack, proposal, communications, pricing, bubble_sync, listing, ai-gateway
+[EDGE_FUNCTIONS]: auth-user, ai-signup-guest, slack, proposal, communications, pricing, bubble_sync, listing, ai-gateway, and 59 more (see EDGE_FUNCTIONS_DOCUMENTATION.md)
 [DENO_VERSION]: 2
 [VERIFY_JWT]: false (functions handle their own auth)
 [POLICY]: per_worker (enables hot reload)
-
-### functions/bubble-proxy/deno.json
-[INTENT]: Import map for bubble-proxy function
-[IMPORTS]: Supabase client, shared utilities
 
 ### functions/ai-gateway/deno.json
 [INTENT]: Import map for ai-gateway function
@@ -529,28 +467,12 @@
 
 ## MIGRATIONS
 
-### migrations/20251205_create_sync_queue_tables.sql
-[INTENT]: Create sync_queue and related tables
-[TABLES]: sync_queue
-[INDEXES]: status, created_at, idempotency_key
-[TRIGGERS]: None
-
-### migrations/20251209_listing_bubble_sync_backend.sql
-[INTENT]: Add Bubble sync backend for listings
-[ADDS]: bubble_id, sync_status, bubble_sync_error columns to listing table
-
-### migrations/20251209_extend_sync_queue_for_signup.sql
-[INTENT]: Extend sync_queue to support SIGNUP_ATOMIC operation
-[ADDS]: SIGNUP_ATOMIC to operation enum
-
-### migrations/20251209_fix_bubble_sync_payload_filtering.sql
-[INTENT]: Fix payload filtering to remove Bubble-incompatible fields
-[NOTE]: This is handled in queueSync.ts now
-
-### migrations/20251210_queue_processing_cron.sql
-[INTENT]: Setup pg_cron job to process sync_queue every 5 minutes
-[JOB]: SELECT cron.schedule('process-bubble-sync-queue', '*/5 * * * *', $$SELECT net.http_post(...)$$)
-[STATUS]: ⚠️ REMOVED - See migrations/20260124_remove_cron_jobs.sql
+Migrations are located in `supabase/migrations/`. The oldest present migration starts at `20260125_*`.
+Run `ls supabase/migrations/` for the current list. Key areas covered:
+- Identity verification and user fields
+- Sync queue tables and operations
+- Notification preferences
+- Workflow definitions and executions
 
 ---
 
@@ -689,14 +611,14 @@ await triggerQueueProcessing();
 [UNIQUE_ID_GENERATION]: Use supabaseAdmin.rpc('generate_bubble_id') for Bubble-compatible IDs
 [NO_FALLBACK]: Never add fallback logic, default values, or compatibility layers
 [ERROR_HANDLING]: Fail fast, let errors propagate, client can retry
-[BUBBLE_SOURCE_OF_TRUTH]: Bubble is primary database, Supabase is replica
-[SYNC_PATTERN]: Create in Bubble first, then sync to Supabase
+[DATA_MIGRATION]: Supabase is primary for auth and new features; Bubble retains legacy data synced via queue
+[SYNC_PATTERN]: New records created in Supabase, synced to Bubble via sync_queue; legacy data still read from Bubble
 [QUEUE_PROCESSING]: Async sync via sync_queue, processed by bubble_sync function + cron job
 [CORS]: All functions return CORS headers, handle OPTIONS preflight
 [LOGGING]: Extensive console logging for debugging, errors go to Slack
 
 ---
 
-**DOCUMENT_VERSION**: 2.0
-**LAST_UPDATED**: 2025-12-11
+**DOCUMENT_VERSION**: 3.0
+**LAST_UPDATED**: 2026-02-10
 **OPTIMIZED_FOR**: LLM semantic search and context digestion

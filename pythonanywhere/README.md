@@ -61,7 +61,7 @@ Main service hub with comprehensive feature set:
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/splitleaseteam/splitlease.git
 cd pythonanywhere
 ```
 
@@ -127,7 +127,7 @@ python -c "from app import db; db.create_all()"
 ```bash
 # On PythonAnywhere console
 cd /home/YourUsername
-git clone <repository-url> mysite
+git clone https://github.com/splitleaseteam/splitlease.git mysite
 cd mysite
 pip3 install --user -r requirements.txt
 

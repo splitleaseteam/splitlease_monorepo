@@ -21,7 +21,7 @@ app/src/islands/shared/LoggedInAvatar/
 ├── LoggedInAvatar.jsx    # Main component
 ├── LoggedInAvatar.css    # Styles
 ├── README.md             # This file
-└── index.js              # Export file
+└── useLoggedInAvatarData.js  # Data hook
 ```
 
 ## Usage

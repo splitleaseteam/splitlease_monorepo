@@ -438,9 +438,9 @@ export function useSearchPageLogic() {
 - All lookup tables: `zat_*` (neighborhoods, boroughs, amenities, etc.)
 
 ### Bubble API (via Edge Functions)
-- Proposals: bubble-proxy edge function
+- Proposals: proposal edge function
 - User data: auth-user edge function
-- Listing data: bubble-proxy edge function
+- Listing data: listing edge function
 
 ### Static Data Files
 - HelpCenterPage, HelpCenterCategoryPage: `data/helpCenterData.js`

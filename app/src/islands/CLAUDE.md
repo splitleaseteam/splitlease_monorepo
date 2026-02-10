@@ -1,6 +1,6 @@
 # Islands - LLM Reference
 
-**GENERATED**: 2025-12-11
+**GENERATED**: 2026-02-10
 **SCOPE**: React component library using Islands Architecture pattern
 **OPTIMIZATION**: Semantic Searchability + Digestibility
 
@@ -267,12 +267,12 @@ export function useSearchPageLogic() {
 
 [PAGES_DETAIL]: islands/pages/CLAUDE.md (page component inventory)
 [PROPOSALS_DETAIL]: islands/proposals/CLAUDE.md (proposal component inventory)
-[MODALS_DETAIL]: (not yet created - would contain modal component inventory)
-[SHARED_DETAIL]: (not yet created - would contain shared component inventory)
+[MODALS_DETAIL]: See islands/modals/ directory for modal components
+[SHARED_DETAIL]: See islands/shared/ directory for shared components
 [PARENT_CONTEXT]: app/src/CLAUDE.md (source directory overview)
 [APP_GUIDE]: app/CLAUDE.md (complete frontend architecture guide)
 
 ---
 
-**VERSION**: 2.0
-**UPDATED**: 2025-12-11
+**VERSION**: 3.0
+**UPDATED**: 2026-02-10

@@ -353,9 +353,9 @@ import './Header.css'
 
 ## RELATED_DOCUMENTATION
 
-[PARENT]: C:\Users\Split Lease\Documents\Split Lease\app\src\styles\CLAUDE.md
-[VARIABLES]: C:\Users\Split Lease\Documents\Split Lease\app\src\styles\variables.css
-[COMPONENTS]: C:\Users\Split Lease\Documents\Split Lease\app\src\islands\CLAUDE.md
+[PARENT]: app/src/styles/CLAUDE.md
+[VARIABLES]: app/src/styles/variables.css
+[COMPONENTS]: app/src/islands/CLAUDE.md
 
 ---
 

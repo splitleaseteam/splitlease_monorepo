@@ -10,7 +10,7 @@ This directory contains the database reset script for safely deleting test data 
 |------|---------|
 | `reset_test_data.sql` | Main reset script with configurable isolation strategies |
 | `README_reset_guide.md` | This file - quick reference guide |
-| `../.claude/plans/Documents/20260203_database_schema_analysis.md` | Complete schema analysis |
+| *(schema analysis available on request)* | Complete schema analysis |
 
 ## Quick Start
 
@@ -247,7 +247,6 @@ Consider:
 
 ## Related Documentation
 
-- [Complete Schema Analysis](../.claude/plans/Documents/20260203_database_schema_analysis.md)
 - [Supabase CLI Reference](https://supabase.com/docs/reference/cli)
 - [PostgreSQL DELETE Documentation](https://www.postgresql.org/docs/current/sql-delete.html)
 

@@ -1,6 +1,6 @@
 # app/src - React Application Source - LLM Reference
 
-**GENERATED**: 2025-12-11
+**GENERATED**: 2026-02-10
 **SCOPE**: Frontend React application source directory
 **OPTIMIZATION**: Semantic Searchability + Digestibility
 **PARENT**: app/
@@ -664,10 +664,10 @@ const listing = await bubbleAPI.getListing(listingId);
 
 ## IMPORT_ALIASES
 
-[ALIAS]: logic/* → C:\Users\Split Lease\Documents\Split Lease\app\src\logic/*
-[ALIAS]: lib/* → C:\Users\Split Lease\Documents\Split Lease\app\src\lib/*
-[ALIAS]: islands/* → C:\Users\Split Lease\Documents\Split Lease\app\src\islands/*
-[ALIAS]: styles/* → C:\Users\Split Lease\Documents\Split Lease\app\src\styles/*
+[ALIAS]: logic/* → app/src/logic/*
+[ALIAS]: lib/* → app/src/lib/*
+[ALIAS]: islands/* → app/src/islands/*
+[ALIAS]: styles/* → app/src/styles/*
 
 ```javascript
 // Use absolute imports from src/
@@ -779,6 +779,6 @@ import Button from 'islands/shared/Button.jsx';
 
 ---
 
-**VERSION**: 5.0
-**LAST_UPDATED**: 2025-12-11
+**VERSION**: 6.0
+**LAST_UPDATED**: 2026-02-10
 **MAINTAINER**: Claude Code

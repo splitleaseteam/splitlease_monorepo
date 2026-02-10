@@ -339,7 +339,7 @@ const [showCreateModal, setShowCreateModal] = useState(false);
 
 ## License
 
-MIT
+Proprietary - Split Lease
 
 ---
 

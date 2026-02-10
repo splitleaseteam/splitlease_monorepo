@@ -141,7 +141,7 @@ if (!userData) {
 }
 ```
 
-No client-side session expiration is performed - Bubble is the source of truth for token validity.
+No client-side session expiration is performed - the server validates tokens on each request.
 
 ## Usage Guide
 
@@ -294,46 +294,14 @@ if (migrated) {
 
 **Migration happens once per session** (when tab opens).
 
-## Future Enhancements
+## Potential Future Enhancements
 
-### Short-Term (Next Sprint)
-
-1. **Token Refresh Mechanism**
-   ```javascript
-   // Auto-refresh before expiry
-   setInterval(async () => {
-     if (isTokenExpiring()) {
-       await refreshAccessToken();
-     }
-   }, 60000); // Check every minute
-   ```
-
-2. **CSRF Protection**
-   ```javascript
-   // Add CSRF token to all API requests
-   const csrfToken = generateCSRFToken();
-   headers['X-CSRF-Token'] = csrfToken;
-   ```
-
-3. **HttpOnly Cookies (via Cloudflare Worker)**
-   - Move to server-side cookie management
-   - Tokens never accessible to JavaScript
-
-### Long-Term
-
-1. **Cloudflare Worker Auth Proxy**
-   - Centralized auth validation
-   - Rate limiting
-   - IP-based anomaly detection
-
-2. **Multi-Factor Authentication (MFA)**
-   - TOTP support
-   - SMS/email verification
-
-3. **Session Management UI**
-   - View active sessions
-   - Logout from all devices
-   - Session activity log
+- Token refresh mechanism (auto-refresh before expiry)
+- CSRF protection (X-CSRF-Token header)
+- HttpOnly cookies via Cloudflare Worker (server-side cookie management)
+- Cloudflare Worker auth proxy (rate limiting, anomaly detection)
+- Multi-Factor Authentication (TOTP, SMS/email)
+- Session management UI (active sessions, logout from all devices)
 
 ## Troubleshooting
 
@@ -389,24 +357,12 @@ const tokens = await __DEV__.dumpSecureStorage();
 console.log('Tokens:', tokens);
 ```
 
-### Unit Tests (TODO)
+### Unit Tests
 
-```javascript
-describe('Secure Storage', () => {
-  it('encrypts tokens', async () => {
-    await setAuthToken('test-token-123');
-    const raw = sessionStorage.getItem('__sl_at__');
-    expect(raw).not.toBe('test-token-123'); // Encrypted
-  });
-
-  it('decrypts tokens', async () => {
-    await setAuthToken('test-token-123');
-    const token = await getAuthToken();
-    expect(token).toBe('test-token-123'); // Decrypted
-  });
-
-});
-```
+Unit tests for encryption/decryption should cover:
+- Token encryption (sessionStorage value differs from plaintext)
+- Token decryption (round-trip returns original value)
+- Legacy storage migration
 
 ## Best Practices
 
@@ -435,6 +391,6 @@ For questions or issues:
 
 ---
 
-**Last Updated:** 2025-01-21
+**Last Updated:** 2026-02-10
 **Version:** 1.0.0
 **Status:** ✅ Production Ready
