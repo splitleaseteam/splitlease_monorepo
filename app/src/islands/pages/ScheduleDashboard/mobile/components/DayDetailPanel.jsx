@@ -68,11 +68,11 @@ export default function DayDetailPanel({
 
   // Support both new and deprecated prop names
   const resolvedCoTenantName = coTenantName || roommateName || 'Co-tenant';
-  const [requestType, setRequestType] = useState('buyout');
+  const [requestType, setRequestType] = useState('full_week');
 
   useEffect(() => {
     if (status === 'cotenant') {
-      setRequestType('buyout');
+      setRequestType('full_week');
     }
   }, [date, status]);
 
@@ -133,8 +133,8 @@ export default function DayDetailPanel({
                 <div className="request-type-toggle__segments" role="group" aria-label="Request type">
                   <button
                     type="button"
-                    className={`request-type-toggle__segment ${requestType === 'buyout' ? 'is-selected' : ''}`}
-                    onClick={() => setRequestType('buyout')}
+                    className={`request-type-toggle__segment ${requestType === 'full_week' ? 'is-selected' : ''}`}
+                    onClick={() => setRequestType('full_week')}
                   >
                     <span className="request-type-toggle__icon">💰</span>
                     <span className="request-type-toggle__label">Buy</span>
@@ -144,11 +144,11 @@ export default function DayDetailPanel({
                   </button>
                   <button
                     type="button"
-                    className={`request-type-toggle__segment ${requestType === 'swap' ? 'is-selected' : ''}`}
-                    onClick={() => setRequestType('swap')}
+                    className={`request-type-toggle__segment ${requestType === 'alternating' ? 'is-selected' : ''}`}
+                    onClick={() => setRequestType('alternating')}
                   >
                     <span className="request-type-toggle__icon">🔄</span>
-                    <span className="request-type-toggle__label">Swap</span>
+                    <span className="request-type-toggle__label">Alternating</span>
                     <span className="request-type-toggle__value">1:1</span>
                   </button>
                   <button
@@ -168,7 +168,7 @@ export default function DayDetailPanel({
                   className="request-type-toggle__continue"
                   onClick={() => onAction(requestType, date)}
                 >
-                  Continue with {requestType === 'buyout' ? 'Buyout' : requestType === 'swap' ? 'Swap' : 'Share'} →
+                  Continue with {requestType === 'full_week' ? 'Full Week' : requestType === 'alternating' ? 'Alternating' : 'Share'} →
                 </button>
               </div>
             )}
@@ -176,10 +176,10 @@ export default function DayDetailPanel({
               <>
                 <button
                   type="button"
-                  onClick={() => onAction('swap', date)}
+                  onClick={() => onAction('alternating', date)}
                   className="day-detail-panel__btn day-detail-panel__btn--swap"
                 >
-                  🔄 Swap
+                  🔄 Alternating
                 </button>
                 <button
                   type="button"

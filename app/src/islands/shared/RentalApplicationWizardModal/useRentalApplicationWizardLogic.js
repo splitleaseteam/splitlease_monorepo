@@ -305,7 +305,7 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
         const accessToken = session?.access_token;
 
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application`,
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application-submit`,
           {
             method: 'POST',
             headers: {
@@ -787,7 +787,7 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
       const accessToken = session?.access_token;
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application-submit`,
         {
           method: 'POST',
           headers: {
@@ -881,7 +881,7 @@ export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicatio
       const accessToken = session?.access_token;
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application-submit`,
         {
           method: 'POST',
           headers: {

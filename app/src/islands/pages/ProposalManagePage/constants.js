@@ -5,25 +5,27 @@
  * Merged from external tool types/proposal.js and existing proposalStatusConfig.js
  */
 
+import { PROPOSAL_STATUSES as CANONICAL_STATUSES } from '../../../logic/constants/proposalStatuses.js';
+
 /**
  * All possible proposal statuses in the system
  * Used for status dropdown and filtering
  */
 export const PROPOSAL_STATUSES = [
-  'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
-  'Proposal Submitted by guest - Awaiting Rental Application',
-  'Proposal Submitted for guest by Split Lease - Pending Confirmation',
-  'Host Review',
-  'Host Counteroffer Submitted / Awaiting Guest Review',
+  CANONICAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key,
+  CANONICAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key,
+  CANONICAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key,
+  CANONICAL_STATUSES.HOST_REVIEW.key,
+  CANONICAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key,
   'Guest Counteroffer Submitted / Awaiting Host Review',
-  'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-  'Lease Documents Sent for Review',
-  'Lease Documents Sent for Signatures',
-  'Lease Documents Signed / Awaiting Initial payment',
-  'Initial Payment Submitted / Lease activated',
-  'Proposal Cancelled by Guest',
-  'Proposal Rejected by Host',
-  'Proposal Cancelled by Split Lease',
+  CANONICAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key,
+  CANONICAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key,
+  CANONICAL_STATUSES.CANCELLED_BY_GUEST.key,
+  CANONICAL_STATUSES.REJECTED_BY_HOST.key,
+  CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key,
   'Guest Ignored Suggestion'
 ];
 
@@ -41,32 +43,32 @@ export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'
 /**
  * Default proposal status for admin-created proposals
  */
-export const DEFAULT_ADMIN_PROPOSAL_STATUS = 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application';
+export const DEFAULT_ADMIN_PROPOSAL_STATUS = CANONICAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key;
 
 /**
  * Statuses that indicate a proposal is active/in-progress
  */
 export const ACTIVE_STATUSES = [
-  'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
-  'Proposal Submitted by guest - Awaiting Rental Application',
-  'Proposal Submitted for guest by Split Lease - Pending Confirmation',
-  'Host Review',
-  'Host Counteroffer Submitted / Awaiting Guest Review',
+  CANONICAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key,
+  CANONICAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key,
+  CANONICAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key,
+  CANONICAL_STATUSES.HOST_REVIEW.key,
+  CANONICAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key,
   'Guest Counteroffer Submitted / Awaiting Host Review',
-  'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-  'Lease Documents Sent for Review',
-  'Lease Documents Sent for Signatures',
-  'Lease Documents Signed / Awaiting Initial payment'
+  CANONICAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key
 ];
 
 /**
  * Statuses that indicate a proposal is closed/completed
  */
 export const CLOSED_STATUSES = [
-  'Initial Payment Submitted / Lease activated',
-  'Proposal Cancelled by Guest',
-  'Proposal Rejected by Host',
-  'Proposal Cancelled by Split Lease',
+  CANONICAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key,
+  CANONICAL_STATUSES.CANCELLED_BY_GUEST.key,
+  CANONICAL_STATUSES.REJECTED_BY_HOST.key,
+  CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key,
   'Guest Ignored Suggestion'
 ];
 
@@ -75,9 +77,9 @@ export const CLOSED_STATUSES = [
  * Used to determine if "View My Lease" button should be shown
  */
 export const LEASE_CREATED_STATUSES = [
-  'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-  'Lease Documents Sent for Review',
-  'Lease Documents Sent for Signatures',
-  'Lease Documents Signed / Awaiting Initial payment',
-  'Initial Payment Submitted / Lease activated'
+  CANONICAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key,
+  CANONICAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key,
+  CANONICAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key
 ];

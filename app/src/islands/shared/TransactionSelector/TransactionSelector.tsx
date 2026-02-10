@@ -2,7 +2,7 @@
  * TransactionSelector Component - Pattern 1: Personalized Defaults
  *
  * Main container for transaction selection UI with personalized recommendations.
- * Displays buyout, crash, and swap options as cards with visual hierarchy based on archetype.
+ * Displays full_week, shared_night, and alternating options as cards with visual hierarchy based on archetype.
  *
  * @module components/TransactionSelector
  */
@@ -225,9 +225,9 @@ export const TransactionSelector: React.FC<TransactionSelectorProps> = ({
             | typeof CrashCard
             | typeof SwapCard;
 
-          if (option.type === 'buyout') {
+          if (option.type === 'full_week') {
             CardComponent = BuyoutCard;
-          } else if (option.type === 'crash') {
+          } else if (option.type === 'shared_night') {
             CardComponent = CrashCard;
           } else {
             CardComponent = SwapCard;

@@ -41,7 +41,7 @@ const COLUMN_MAP = {
   selfieWithId: 'Selfie with ID',
   idFront: 'ID front',
   idBack: 'ID Back',
-  isVerified: 'user verified?',
+  isVerified: 'identity_verified',
   idDocumentsSubmitted: 'ID documents submitted? ',
   profileCompleteness: 'profile completeness',
   tasksCompleted: 'Tasks Completed',
@@ -68,7 +68,7 @@ const USER_SELECT_COLUMNS = `
   "Selfie with ID",
   "ID front",
   "ID Back",
-  "user verified?",
+  "identity_verified",
   "ID documents submitted? ",
   "profile completeness",
   "Tasks Completed",
@@ -76,11 +76,11 @@ const USER_SELECT_COLUMNS = `
   "Modified Date"
 `;
 
-console.log("[verify-users] Edge Function initializing...");
+console.log("[identity-verification-admin] Edge Function initializing...");
 
 Deno.serve(async (req: Request) => {
   try {
-    console.log(`[verify-users] Request: ${req.method}`);
+    console.log(`[identity-verification-admin] Request: ${req.method}`);
 
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
     const action = body.action || 'unknown';
     const payload = body.payload || {};
 
-    console.log(`[verify-users] Action: ${action}`);
+    console.log(`[identity-verification-admin] Action: ${action}`);
 
     // Validate action
     const validActions = ['list_users', 'search_users', 'get_user', 'toggle_verification'];
@@ -115,9 +115,9 @@ Deno.serve(async (req: Request) => {
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
 
     if (user) {
-      console.log(`[verify-users] Authenticated user: ${user.email} (${user.id})`);
+      console.log(`[identity-verification-admin] Authenticated user: ${user.email} (${user.id})`);
     } else {
-      console.log('[verify-users] No auth header - proceeding as internal page request');
+      console.log('[identity-verification-admin] No auth header - proceeding as internal page request');
     }
 
     // Create service client for database operations
@@ -154,7 +154,7 @@ Deno.serve(async (req: Request) => {
         throw new Error(`Unhandled action: ${action}`);
     }
 
-    console.log('[verify-users] Action completed successfully');
+    console.log('[identity-verification-admin] Action completed successfully');
 
     return new Response(
       JSON.stringify({ success: true, data: result }),
@@ -162,7 +162,7 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error) {
-    console.error('[verify-users] Error:', error);
+    console.error('[identity-verification-admin] Error:', error);
     return errorResponse((error as Error).message, 500);
   }
 });
@@ -208,7 +208,7 @@ async function _checkAdminStatus(
     .single();
 
   if (error || !data) {
-    console.error('[verify-users] Admin check failed:', error);
+    console.error('[identity-verification-admin] Admin check failed:', error);
     return false;
   }
 
@@ -256,7 +256,7 @@ async function handleListUsers(
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error('[verify-users] List users error:', {
+    console.error('[identity-verification-admin] List users error:', {
       code: error.code,
       message: error.message,
       details: error.details,
@@ -294,7 +294,7 @@ async function handleSearchUsers(
     .limit(20);
 
   if (error) {
-    console.error('[verify-users] Search users error:', error);
+    console.error('[identity-verification-admin] Search users error:', error);
     throw new Error(`Failed to search users: ${error.message}`);
   }
 
@@ -326,7 +326,7 @@ async function handleGetUser(
     if (error.code === 'PGRST116') {
       throw new Error('User not found');
     }
-    console.error('[verify-users] Get user error:', error);
+    console.error('[identity-verification-admin] Get user error:', error);
     throw new Error(`Failed to fetch user: ${error.message}`);
   }
 
@@ -337,7 +337,7 @@ async function handleGetUser(
  * Toggle user verification status
  *
  * Side effects:
- * - Updates 'user verified?' field
+ * - Updates 'identity_verified' field
  * - Updates 'Tasks Completed' (adds/removes 'identity')
  * - Updates 'profile completeness' (+/- 15%)
  * - Logs verification change for audit trail
@@ -364,7 +364,7 @@ async function handleToggleVerification(
       _id,
       "email",
       "Name - Full",
-      "user verified?",
+      "identity_verified",
       "profile completeness",
       "Tasks Completed"
     `)
@@ -403,7 +403,7 @@ async function handleToggleVerification(
   const { data: updatedUser, error: updateError } = await supabase
     .from('user')
     .update({
-      'user verified?': isVerified,
+      'identity_verified': isVerified,
       'profile completeness': newCompleteness,
       'Tasks Completed': newTasks,
       'Modified Date': now,
@@ -414,17 +414,17 @@ async function handleToggleVerification(
     .single();
 
   if (updateError) {
-    console.error('[verify-users] Update error:', updateError);
+    console.error('[identity-verification-admin] Update error:', updateError);
     throw new Error(`Failed to update verification: ${updateError.message}`);
   }
 
   // Log verification change (audit trail)
-  console.log('[verify-users] Verification changed:', {
+  console.log('[identity-verification-admin] Verification changed:', {
     userId,
     userEmail: currentUser.email,
     userName: currentUser['Name - Full'],
     isVerified,
-    previousVerified: currentUser['user verified?'],
+    previousVerified: currentUser['identity_verified'],
     adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
     notes,
@@ -437,7 +437,7 @@ async function handleToggleVerification(
   // - Cancel scheduled API reminders if profile completeness >= 80%
 
   if (isVerified) {
-    console.log('[verify-users] Verification workflow triggered:');
+    console.log('[identity-verification-admin] Verification workflow triggered:');
     console.log('  1. User marked as verified');
     console.log('  2. Profile completeness updated:', newCompleteness);
     console.log('  3. Tasks completed updated:', newTasks);
@@ -450,10 +450,10 @@ async function handleToggleVerification(
       console.log('  8. Profile completeness >= 80% - Reminder cancellation would be triggered');
     }
   } else {
-    console.log('[verify-users] Verification revoked for user:', currentUser.email);
+    console.log('[identity-verification-admin] Verification revoked for user:', currentUser.email);
   }
 
   return { user: toJsUser(updatedUser) };
 }
 
-console.log("[verify-users] Edge Function ready");
+console.log("[identity-verification-admin] Edge Function ready");

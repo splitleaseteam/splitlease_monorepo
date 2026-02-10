@@ -3,7 +3,7 @@
  *
  * Full-width sortable table showing:
  * - Date
- * - Type (Buyout/Swap)
+ * - Type (Full Week/Alternating)
  * - Night(s)
  * - Amount
  * - Status (Complete/Pending/Declined)
@@ -30,7 +30,7 @@ function formatNights(nights, transaction) {
     return formatDate(nights[0]);
   }
   if (nights.length === 2) {
-    if (transaction?.type === 'swap' && transaction.direction) {
+    if (transaction?.type === 'alternating' && transaction.direction) {
       if (transaction.direction === 'outgoing') {
         return `Give ${formatDate(nights[0])} → Get ${formatDate(nights[1])}`;
       }
@@ -50,7 +50,7 @@ function formatAmount(transaction) {
   const { direction, initiatorPays, recipientReceives, amount, type } = transaction;
 
   // Swaps and shares have no monetary amount (just fees)
-  if (type === 'swap' || type === 'share') {
+  if (type === 'alternating' || type === 'share') {
     return '$0.00';
   }
 
@@ -99,8 +99,8 @@ function StatusDot({ status }) {
 
 function TypeLabel({ type }) {
   const typeMap = {
-    buyout: { label: 'Buyout', icon: '💰' },
-    swap: { label: 'Swap', icon: '🔄' },
+    full_week: { label: 'Full Week', icon: '💰' },
+    alternating: { label: 'Alternating', icon: '🔄' },
     share: { label: 'Share', icon: '🤝' },
     offer: { label: 'Offer', icon: '📤' }
   };
@@ -213,7 +213,7 @@ function TransactionDetails({ transaction, onCancel, onAccept, onDecline, onCoun
                 >
                   Accept
                 </button>
-                {transaction.type === 'buyout' && (
+                {transaction.type === 'full_week' && (
                   <button
                     className="transaction-details__btn transaction-details__btn--counter"
                     onClick={(e) => {
@@ -357,8 +357,8 @@ export default function TransactionHistory({
           onChange={(e) => setFilter(e.target.value)}
         >
           <option value="all">All Transactions</option>
-          <option value="buyout">Buyouts</option>
-          <option value="swap">Swaps</option>
+          <option value="full_week">Full Week</option>
+          <option value="alternating">Alternating</option>
           <option value="offer">Offers</option>
           <option value="pending">Pending</option>
         </select>
@@ -464,7 +464,7 @@ TransactionHistory.propTypes = {
   transactions: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.string,
     date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-    type: PropTypes.oneOf(['buyout', 'swap', 'share', 'offer']),
+    type: PropTypes.oneOf(['full_week', 'alternating', 'share', 'offer']),
     nights: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])),
     amount: PropTypes.number,
     status: PropTypes.oneOf(['complete', 'pending', 'declined', 'cancelled']),

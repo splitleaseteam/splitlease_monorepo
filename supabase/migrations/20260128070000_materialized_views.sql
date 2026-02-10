@@ -106,7 +106,7 @@ SELECT
   COUNT(*) FILTER (WHERE "Type - User Current" LIKE '%Guest%') as guest_users,
   COUNT(*) FILTER (WHERE "Created Date" >= NOW() - INTERVAL '7 days') as new_users_7_days,
   COUNT(*) FILTER (WHERE "Created Date" >= NOW() - INTERVAL '30 days') as new_users_30_days,
-  COUNT(*) FILTER (WHERE "user verified?" = true) as verified_users,
+  COUNT(*) FILTER (WHERE "identity_verified" = true) as verified_users,
   COUNT(*) FILTER (WHERE admin = true) as admin_users,
   NOW() as computed_at
 FROM "user";

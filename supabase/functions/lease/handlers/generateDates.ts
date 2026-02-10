@@ -87,13 +87,13 @@ export async function handleGenerateDates(
         "week selection",
         "Days Selected",
         "nights per week (num)",
-        "hc check in day",
-        "hc check out day",
-        "hc reservation span (weeks)",
-        "hc move in date",
-        "hc weeks schedule",
-        "hc days selected",
-        "hc nights selected",
+        "host_counter_offer_check_in_day",
+        "host_counter_offer_check_out_day",
+        "host_counter_offer_reservation_span_weeks",
+        "host_counter_offer_move_in_date",
+        "host_counter_offer_weeks_schedule",
+        "host_counter_offer_days_selected",
+        "host_counter_offer_nights_selected",
         "counter offer happened"
       `
       )
@@ -119,9 +119,9 @@ export async function handleGenerateDates(
 
     if (useHC) {
       // Extract Display value from object if present, otherwise use the value directly
-      const hcCheckInDay = proposal['hc check in day'];
-      const hcCheckOutDay = proposal['hc check out day'];
-      const hcWeeksSchedule = proposal['hc weeks schedule'];
+      const hcCheckInDay = proposal['host_counter_offer_check_in_day'];
+      const hcCheckOutDay = proposal['host_counter_offer_check_out_day'];
+      const hcWeeksSchedule = proposal['host_counter_offer_weeks_schedule'];
 
       checkInDay =
         (typeof hcCheckInDay === 'object' && hcCheckInDay?.Display) ||
@@ -132,13 +132,13 @@ export async function handleGenerateDates(
         hcCheckOutDay ||
         payload.checkOutDay;
       reservationSpanWeeks =
-        proposal['hc reservation span (weeks)'] || payload.reservationSpanWeeks;
-      moveInDate = proposal['hc move in date'] || payload.moveInDate;
+        proposal['host_counter_offer_reservation_span_weeks'] || payload.reservationSpanWeeks;
+      moveInDate = proposal['host_counter_offer_move_in_date'] || payload.moveInDate;
       weeksSchedule =
         (typeof hcWeeksSchedule === 'object' && hcWeeksSchedule?.Display) ||
         hcWeeksSchedule ||
         'Every week';
-      nightsSelected = proposal['hc days selected'] || proposal['hc nights selected'];
+      nightsSelected = proposal['host_counter_offer_days_selected'] || proposal['host_counter_offer_nights_selected'];
     } else {
       // Extract Display value from object if present, otherwise use the value directly
       const checkInDayVal = proposal['check in day'];

@@ -34,12 +34,12 @@ export interface ArchetypeSignals {
   requestFrequencyPerMonth: number;
 
   // Transaction preferences (15% weight)
-  /** Preference for buyout (0-1) */
-  buyoutPreference: number;
-  /** Preference for crash (0-1) */
-  crashPreference: number;
-  /** Preference for swap (0-1) */
-  swapPreference: number;
+  /** Preference for full_week (0-1) */
+  fullWeekPreference: number;
+  /** Preference for shared_night (0-1) */
+  sharedNightPreference: number;
+  /** Preference for alternating (0-1) */
+  alternatingPreference: number;
 
   // Flexibility indicators (10% weight)
   /** Flexibility score (0-100) */

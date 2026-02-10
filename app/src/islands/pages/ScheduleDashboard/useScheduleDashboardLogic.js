@@ -85,7 +85,7 @@ function calculateNetFlow(transactions) {
     return { amount: 0, direction: 'neutral', formatted: '$0.00' };
   }
 
-  const completedTxns = transactions.filter(t => t.status === 'complete' && t.type === 'buyout');
+  const completedTxns = transactions.filter(t => t.status === 'complete' && t.type === 'full_week');
 
   let netAmount = 0;
   for (const txn of completedTxns) {
@@ -537,7 +537,7 @@ export function useScheduleDashboardLogic() {
 
       // Determine default request type based on adjacency
       const isContiguous = isNightContiguous(dateString);
-      request.setDefaultRequestType(isContiguous ? 'buyout' : 'share');
+      request.setDefaultRequestType(isContiguous ? 'full_week' : 'share');
 
       // Open the request panel
       ui.setIsBuyOutOpen(true);
@@ -572,7 +572,7 @@ export function useScheduleDashboardLogic() {
       const newTransaction = {
         id: `txn-${Date.now()}`,
         date: new Date(),
-        type: 'buyout',
+        type: 'full_week',
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
@@ -588,7 +588,7 @@ export function useScheduleDashboardLogic() {
         type: 'request',
         status: 'pending',
         requestData: {
-          type: 'buyout',
+          type: 'full_week',
           nights: [nightDate],
           amount: finalAmount,
           offeredPrice: finalAmount,
@@ -686,9 +686,9 @@ export function useScheduleDashboardLogic() {
    * Handle request type change (toggle between buyout, share, swap)
    */
   const handleRequestTypeChange = useCallback((newType) => {
-    if (newType === 'swap') {
+    if (newType === 'alternating') {
       request.setIsSwapMode(true);
-      request.setRequestType('swap');
+      request.setRequestType('alternating');
     } else {
       request.setIsSwapMode(false);
       request.setIsCounterMode(false);
@@ -766,7 +766,7 @@ export function useScheduleDashboardLogic() {
       const newTransaction = {
         id: `txn-${Date.now()}`,
         date: new Date(),
-        type: 'swap',
+        type: 'alternating',
         nights: [requestedDate, offeredDate],
         amount: 0,
         payerId: currentUserId,
@@ -782,7 +782,7 @@ export function useScheduleDashboardLogic() {
         type: 'request',
         status: 'pending',
         requestData: {
-          type: 'swap',
+          type: 'alternating',
           nights: [requestedDate, offeredDate],
           transactionId: newTransaction.id
         }
@@ -928,7 +928,7 @@ export function useScheduleDashboardLogic() {
       const newTransaction = {
         id: `txn-${Date.now()}`,
         date: new Date(),
-        type: 'swap',
+        type: 'alternating',
         nights: [giveDate, receiveDate],
         amount: 0,
         payerId: currentUserId,
@@ -944,7 +944,7 @@ export function useScheduleDashboardLogic() {
         type: 'request',
         status: 'pending',
         requestData: {
-          type: 'swap',
+          type: 'alternating',
           nights: [giveDate, receiveDate],
           transactionId: newTransaction.id,
           message: messageText || ''

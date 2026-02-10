@@ -767,10 +767,10 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    *
    * Transforms frontend field names to Edge Function expected format:
    * - Frontend uses camelCase (numberOfWeeks, checkIn, etc.)
-   * - Edge Function expects hc_ prefix snake_case (hc_reservation_span_weeks, hc_check_in, etc.)
+   * - Edge Function expects host_counter_offer_ prefix snake_case (host_counter_offer_reservation_span_weeks, host_counter_offer_check_in, etc.)
    * - Day/night values come as strings ('Monday', 'Monday Night') and must be converted to indices
    *
-   * IMPORTANT: ALL hc_ fields must be populated (with either new or original values)
+   * IMPORTANT: ALL host_counter_offer_ fields must be populated (with either new or original values)
    * to enable strikethrough comparison in the UI. If a field wasn't changed,
    * we copy the original value to the hc_ field.
    */
@@ -837,23 +837,23 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         status: 'Host Counteroffer Submitted / Awaiting Guest Review',
 
         // Schedule fields - use new value if provided, otherwise copy original
-        hc_reservation_span_weeks: hcReservationSpanWeeks,
-        hc_check_in: convertedCheckIn ?? (typeof originalCheckIn === 'number' ? originalCheckIn : parseInt(originalCheckIn, 10) || 0),
-        hc_check_out: convertedCheckOut ?? (typeof originalCheckOut === 'number' ? originalCheckOut : parseInt(originalCheckOut, 10) || 0),
-        hc_nights_selected: hcNightsSelected,
-        hc_days_selected: convertedDays ?? originalDays,
-        hc_move_in_date: convertedMoveIn ?? originalMoveIn,
-        hc_nights_per_week: hcNightsPerWeek,
+        host_counter_offer_reservation_span_weeks: hcReservationSpanWeeks,
+        host_counter_offer_check_in: convertedCheckIn ?? (typeof originalCheckIn === 'number' ? originalCheckIn : parseInt(originalCheckIn, 10) || 0),
+        host_counter_offer_check_out: convertedCheckOut ?? (typeof originalCheckOut === 'number' ? originalCheckOut : parseInt(originalCheckOut, 10) || 0),
+        host_counter_offer_nights_selected: hcNightsSelected,
+        host_counter_offer_days_selected: convertedDays ?? originalDays,
+        host_counter_offer_move_in_date: convertedMoveIn ?? originalMoveIn,
+        host_counter_offer_nights_per_week: hcNightsPerWeek,
 
         // Financial fields - recalculate based on counteroffer terms
-        hc_nightly_price: hcNightlyPrice,
-        hc_cleaning_fee: parseFloat(originalCleaningFee) || 0,
-        hc_damage_deposit: parseFloat(originalDamageDeposit) || 0,
-        hc_total_price: hcTotalPrice,
-        hc_four_week_rent: hcFourWeekRent,
+        host_counter_offer_nightly_price: hcNightlyPrice,
+        host_counter_offer_cleaning_fee: parseFloat(originalCleaningFee) || 0,
+        host_counter_offer_damage_deposit: parseFloat(originalDamageDeposit) || 0,
+        host_counter_offer_total_price: hcTotalPrice,
+        host_counter_offer_four_week_rent: hcFourWeekRent,
 
         // House rules - convert to array of IDs
-        hc_house_rules: Array.isArray(newHouseRules)
+        host_counter_offer_house_rules: Array.isArray(newHouseRules)
           ? newHouseRules.map(rule => rule.id || rule).filter(Boolean)
           : []
       };

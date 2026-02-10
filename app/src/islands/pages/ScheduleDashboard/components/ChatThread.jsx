@@ -104,10 +104,10 @@ function TransactionNotice({ message }) {
       day: 'numeric'
     }) : '';
 
-    if (transaction.type === 'buyout') {
+    if (transaction.type === 'full_week') {
       return `Night bought: You get ${nightStr}`;
     }
-    if (transaction.type === 'swap') {
+    if (transaction.type === 'alternating') {
       return `Night swapped: You get ${nightStr}`;
     }
     if (transaction.type === 'offer') {

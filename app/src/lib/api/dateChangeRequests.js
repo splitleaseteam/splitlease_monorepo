@@ -41,7 +41,7 @@ async function updateGuestBooking(requestId) {
 
 export function getAvailableRequestTypes(lease, userRole) {
   if (lease?.leaseType === 'co_tenant') {
-    return ['buyout', 'swap', 'share'];
+    return ['full_week', 'alternating', 'share'];
   }
 
   if (userRole === 'guest') {

@@ -35,7 +35,7 @@ const meta: Meta<typeof UrgencyCountdown> = {
     },
     transactionType: {
       control: { type: 'select' },
-      options: ['buyout', 'crash', 'swap'],
+      options: ['full_week', 'shared_night', 'alternating'],
     },
     variant: {
       control: { type: 'select' },
@@ -51,7 +51,7 @@ export const LowUrgency: Story = {
   args: {
     targetDate: addDays(new Date(), 21),
     basePrice: 180,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     variant: 'default',
   },
   parameters: {
@@ -67,7 +67,7 @@ export const MediumUrgency: Story = {
   args: {
     targetDate: addDays(new Date(), 10),
     basePrice: 180,
-    transactionType: 'crash',
+    transactionType: 'shared_night',
     variant: 'default',
   },
   parameters: {
@@ -83,7 +83,7 @@ export const HighUrgency: Story = {
   args: {
     targetDate: addDays(new Date(), 5),
     basePrice: 180,
-    transactionType: 'swap',
+    transactionType: 'alternating',
     variant: 'default',
   },
   parameters: {
@@ -99,7 +99,7 @@ export const CriticalUrgency: Story = {
   args: {
     targetDate: addDays(new Date(), 2),
     basePrice: 180,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     variant: 'default',
   },
   parameters: {
@@ -115,7 +115,7 @@ export const CompactVariant: Story = {
   args: {
     targetDate: addDays(new Date(), 5),
     basePrice: 180,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     variant: 'compact',
   },
 };
@@ -124,7 +124,7 @@ export const ProminentVariant: Story = {
   args: {
     targetDate: addDays(new Date(), 5),
     basePrice: 180,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     variant: 'prominent',
   },
 };
@@ -133,7 +133,7 @@ export const MinimalVariant: Story = {
   args: {
     targetDate: addDays(new Date(), 5),
     basePrice: 180,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     variant: 'minimal',
   },
 };
@@ -142,7 +142,7 @@ export const WithBudgetWarning: Story = {
   args: {
     targetDate: addDays(new Date(), 2),
     basePrice: 180,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     budgetContext: {
       maxBudget: 500,
       preferredBudget: 400,
@@ -162,7 +162,7 @@ export const HighMarketDemand: Story = {
     targetDate: addDays(new Date(), 7),
     basePrice: 180,
     marketDemandMultiplier: 1.4,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
   },
   parameters: {
     docs: {
@@ -178,7 +178,7 @@ export const LowMarketDemand: Story = {
     targetDate: addDays(new Date(), 7),
     basePrice: 180,
     marketDemandMultiplier: 0.7,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
   },
   parameters: {
     docs: {
@@ -595,7 +595,7 @@ export const Playground: Story = {
     basePrice: 180,
     urgencySteepness: 2.0,
     marketDemandMultiplier: 1.0,
-    transactionType: 'buyout',
+    transactionType: 'full_week',
     variant: 'default',
   },
   parameters: {

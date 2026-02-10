@@ -132,7 +132,7 @@ export async function submitVerificationWithUrls({
   frontIdUrl,
   backIdUrl,
 }) {
-  const { data, error } = await supabase.functions.invoke('identity-verification', {
+  const { data, error } = await supabase.functions.invoke('identity-verification-submit', {
     body: {
       action: 'submit_verification',
       payload: {

@@ -141,15 +141,15 @@ export function getTermsComparison(proposal) {
   };
 
   const counterofferTerms = {
-    daysSelected: proposal.hcDaysSelected || proposal['hc days selected'] || originalTerms.daysSelected,
-    nightsPerWeek: proposal.hcNightsPerWeek || proposal['hc nights per week'] || originalTerms.nightsPerWeek,
-    reservationWeeks: proposal.hcReservationWeeks || proposal['hc reservation span (weeks)'] || originalTerms.reservationWeeks,
-    checkInDay: proposal.hcCheckInDay || proposal['hc check in day'] || originalTerms.checkInDay,
-    checkOutDay: proposal.hcCheckOutDay || proposal['hc check out day'] || originalTerms.checkOutDay,
-    totalPrice: proposal.hcTotalPrice || proposal['hc total price'] || originalTerms.totalPrice,
-    nightlyPrice: proposal.hcNightlyPrice || proposal['hc nightly price'] || originalTerms.nightlyPrice,
-    damageDeposit: proposal.hcDamageDeposit || proposal['hc damage deposit'] || originalTerms.damageDeposit,
-    cleaningFee: proposal.hcCleaningFee || proposal['hc cleaning fee'] || originalTerms.cleaningFee
+    daysSelected: proposal.hostCounterOfferDaysSelected || proposal['host_counter_offer_days_selected'] || originalTerms.daysSelected,
+    nightsPerWeek: proposal.hostCounterOfferNightsPerWeek || proposal['host_counter_offer_nights_per_week'] || originalTerms.nightsPerWeek,
+    reservationWeeks: proposal.hostCounterOfferReservationWeeks || proposal['host_counter_offer_reservation_span_weeks'] || originalTerms.reservationWeeks,
+    checkInDay: proposal.hostCounterOfferCheckInDay || proposal['host_counter_offer_check_in_day'] || originalTerms.checkInDay,
+    checkOutDay: proposal.hostCounterOfferCheckOutDay || proposal['host_counter_offer_check_out_day'] || originalTerms.checkOutDay,
+    totalPrice: proposal.hostCounterOfferTotalPrice || proposal['host_counter_offer_total_price'] || originalTerms.totalPrice,
+    nightlyPrice: proposal.hostCounterOfferNightlyPrice || proposal['host_counter_offer_nightly_price'] || originalTerms.nightlyPrice,
+    damageDeposit: proposal.hostCounterOfferDamageDeposit || proposal['host_counter_offer_damage_deposit'] || originalTerms.damageDeposit,
+    cleaningFee: proposal.hostCounterOfferCleaningFee || proposal['host_counter_offer_cleaning_fee'] || originalTerms.cleaningFee
   };
 
   // Build list of changes

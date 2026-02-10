@@ -92,13 +92,13 @@ export async function handleGenerate(
   if (!damageDeposit && leaseData.Proposal) {
     const { data: proposal } = await supabase
       .from('proposal')
-      .select(`_id, "hc damage deposit", "hc cleaning fee"`)
+      .select(`_id, "host_counter_offer_damage_deposit", "host_counter_offer_cleaning_fee"`)
       .eq('_id', leaseData.Proposal)
       .single();
 
     if (proposal) {
       const proposalData = proposal as unknown as ProposalData;
-      damageDeposit = proposalData['hc damage deposit'] || 0;
+      damageDeposit = proposalData['host_counter_offer_damage_deposit'] || 0;
       console.log(`[guest-payment-records:generate] Fetched damage deposit from proposal: ${damageDeposit}`);
     }
   }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Can Generate Documents Rule
  *
  * Validates that a lease has all required data for document generation.
@@ -46,9 +46,9 @@ export function canGenerateDocuments({
     warnings.push('Proposal record not found - some fields may be missing');
   } else {
     // Check for key financial fields
-    const hasMoveInDate = proposal['hc move in date'] || lease?.['Reservation Period : Start'];
+    const hasMoveInDate = proposal['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
     const hasMoveOutDate = proposal['Move-out'] || lease?.['Reservation Period : End'];
-    const hasRent = proposal['hc 4 week rent'] || proposal['4 week rent'];
+    const hasRent = proposal['host_counter_offer_4_week_rent'] || proposal['4 week rent'];
 
     if (!hasMoveInDate) {
       errors.push('Move-in date is required (check proposal.hc move in date)');

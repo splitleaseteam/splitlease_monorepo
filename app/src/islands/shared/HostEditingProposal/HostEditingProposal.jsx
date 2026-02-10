@@ -42,7 +42,7 @@ import {
 import { ReservationPriceBreakdown } from './ReservationPriceBreakdown'
 import { ScheduleSelector } from './ScheduleSelector'
 import { DateInput, ReservationSpanDropdown, NumberInput, HouseRulesMultiSelect } from './FormInputs'
-import CancelProposalModal from '../../modals/CancelProposalModal.jsx'
+import EndProposalModal from '../../modals/EndProposalModal.jsx'
 import './HostEditingProposal.css'
 
 /**
@@ -135,42 +135,42 @@ export function HostEditingProposal({
       const useCounterOfferValues = statusInfo.usualOrder >= 3
 
       if (useCounterOfferValues) {
-        const hcMoveInDate = proposal?.host_proposed_move_in_date || proposal?.hcMoveInDate
+        const hcMoveInDate = proposal?.host_proposed_move_in_date || proposal?.hostCounterOfferMoveInDate
         if (hcMoveInDate) {
           setEditedMoveInDate(new Date(hcMoveInDate))
         }
 
-        const hcReservationSpan = proposal?.host_proposed_reservation_span_weeks || proposal?.hcReservationSpan
+        const hcReservationSpan = proposal?.host_proposed_reservation_span_weeks || proposal?.hostCounterOfferReservationSpan
         if (hcReservationSpan) {
           setEditedReservationSpan(hcReservationSpan)
         }
 
-        const hcWeeks = proposal?.host_proposed_reservation_span_weeks || proposal?.hcReservationSpanWeeks
+        const hcWeeks = proposal?.host_proposed_reservation_span_weeks || proposal?.hostCounterOfferReservationSpanWeeks
         if (hcWeeks) {
           setEditedWeeks(hcWeeks)
         }
 
-        const hcCheckInDay = proposal?.hcCheckInDay
+        const hcCheckInDay = proposal?.hostCounterOfferCheckInDay
         if (hcCheckInDay) {
           setEditedCheckInDay(hcCheckInDay)
         }
 
-        const hcCheckOutDay = proposal?.hcCheckOutDay
+        const hcCheckOutDay = proposal?.hostCounterOfferCheckOutDay
         if (hcCheckOutDay) {
           setEditedCheckOutDay(hcCheckOutDay)
         }
 
-        const hcNightsSelected = proposal?.host_proposed_selected_nights_json || proposal?.hcNightsSelected
+        const hcNightsSelected = proposal?.host_proposed_selected_nights_json || proposal?.hostCounterOfferNightsSelected
         if (hcNightsSelected) {
           setEditedNightsSelected(hcNightsSelected)
         }
 
-        const hcDaysSelected = proposal?.host_proposed_selected_days_json || proposal?.hcDaysSelected
+        const hcDaysSelected = proposal?.host_proposed_selected_days_json || proposal?.hostCounterOfferDaysSelected
         if (hcDaysSelected) {
           setEditedDaysSelected(hcDaysSelected)
         }
 
-        const hcHouseRules = proposal?.host_proposed_house_rules_json || proposal?.hcHouseRules
+        const hcHouseRules = proposal?.host_proposed_house_rules_json || proposal?.hostCounterOfferHouseRules
         if (hcHouseRules) {
           setEditedHouseRules(hcHouseRules)
         }
@@ -667,10 +667,10 @@ export function HostEditingProposal({
     </div>
   )
 
-  // If initialShowReject is true, render only the CancelProposalModal
+  // If initialShowReject is true, render only the EndProposalModal
   if (initialShowReject && showRejectModal) {
     return (
-      <CancelProposalModal
+      <EndProposalModal
         isOpen={showRejectModal}
         proposal={proposal}
         userType="host"
@@ -745,7 +745,7 @@ export function HostEditingProposal({
       {renderFooter()}
 
       {/* Reject Proposal Modal */}
-      <CancelProposalModal
+      <EndProposalModal
         isOpen={showRejectModal}
         proposal={proposal}
         userType="host"

@@ -40,7 +40,7 @@ import { executeDeleteProposal } from '../../../logic/workflows/proposals/cancel
 import { goToRentalApplication, getListingUrlWithProposalContext } from '../../../lib/navigation.js';
 import HostProfileModal from '../../modals/HostProfileModal.jsx';
 import GuestEditingProposalModal from '../../modals/GuestEditingProposalModal.jsx';
-import CancelProposalModal from '../../modals/CancelProposalModal.jsx';
+import EndProposalModal from '../../modals/EndProposalModal.jsx';
 import CompareTermsModal from '../../modals/CompareTermsModal.jsx';
 import NotInterestedModal from '../../shared/SuggestedProposals/components/NotInterestedModal.jsx';
 import VirtualMeetingManager from '../../shared/VirtualMeetingManager/VirtualMeetingManager.jsx';
@@ -112,11 +112,11 @@ function getCheckInOutRange(proposal) {
   // Priority 1: For counteroffers, prefer HC fields
   // Priority 2: Use explicit check-in/check-out day fields
   const checkInDay = isCounteroffer
-    ? (proposal['hc check in day'] ?? proposal['check in day'])
-    : (proposal['check in day'] ?? proposal['hc check in day']);
+    ? (proposal['host_counter_offer_check_in_day'] ?? proposal['check in day'])
+    : (proposal['check in day'] ?? proposal['host_counter_offer_check_in_day']);
   const checkOutDay = isCounteroffer
-    ? (proposal['hc check out day'] ?? proposal['check out day'])
-    : (proposal['check out day'] ?? proposal['hc check out day']);
+    ? (proposal['host_counter_offer_check_out_day'] ?? proposal['check out day'])
+    : (proposal['check out day'] ?? proposal['host_counter_offer_check_out_day']);
 
   if (checkInDay != null && checkOutDay != null) {
     const checkInIndex = typeof checkInDay === 'number' ? checkInDay : parseInt(checkInDay, 10);
@@ -130,7 +130,7 @@ function getCheckInOutRange(proposal) {
   }
 
   // Priority 2: Derive from Days Selected array
-  let daysSelected = proposal['Days Selected'] || proposal.hcDaysSelected || [];
+  let daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
@@ -268,7 +268,7 @@ function getOriginalCheckInOutRange(proposal) {
  * Parse days selected for URL context
  */
 function parseDaysSelectedForContext(proposal) {
-  let days = proposal['Days Selected'] || proposal.hcDaysSelected || [];
+  let days = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
@@ -299,7 +299,7 @@ function parseDaysSelectedForContext(proposal) {
 function getEffectiveReservationSpan(proposal) {
   const isCounteroffer = proposal['counter offer happened'];
   return isCounteroffer
-    ? proposal['hc reservation span (weeks)']
+    ? proposal['host_counter_offer_reservation_span_weeks']
     : proposal['Reservation Span (Weeks)'];
 }
 
@@ -584,15 +584,15 @@ export default function ExpandableProposalCard({
   const originalMoveInStart = proposal?.['Move in range start'];
 
   // HC values (host counteroffer) - only if counteroffer happened
-  let hcDaysSelected = proposal?.['hc days selected'] || [];
+  let hcDaysSelected = proposal?.['host_counter_offer_days_selected'] || [];
   if (typeof hcDaysSelected === 'string') {
     try { hcDaysSelected = JSON.parse(hcDaysSelected); } catch (_e) { hcDaysSelected = []; }
   }
-  const hcNightsPerWeek = proposal?.['hc nights per week'] || hcDaysSelected.length;
-  const hcReservationWeeks = proposal?.['hc reservation span (weeks)'];
-  const hcNightlyPrice = proposal?.['hc nightly price'];
-  const hcTotalPrice = proposal?.['hc total price'];
-  const hcMoveInDate = proposal?.['hc move in date'];
+  const hcNightsPerWeek = proposal?.['host_counter_offer_nights_per_week'] || hcDaysSelected.length;
+  const hcReservationWeeks = proposal?.['host_counter_offer_reservation_span_weeks'];
+  const hcNightlyPrice = proposal?.['host_counter_offer_nightly_price'];
+  const hcTotalPrice = proposal?.['host_counter_offer_total_price'];
+  const hcMoveInDate = proposal?.['host_counter_offer_move_in_date'];
 
   // Active values (what to display as current - prefer HC if counteroffer)
   const daysSelected = isCounteroffer && hcDaysSelected.length > 0 ? hcDaysSelected : originalDaysSelected;
@@ -1174,7 +1174,7 @@ export default function ExpandableProposalCard({
         />
       )}
 
-      <CancelProposalModal
+      <EndProposalModal
         isOpen={showCancelModal}
         proposal={proposal}
         buttonText="Cancel Proposal"

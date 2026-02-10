@@ -57,7 +57,7 @@ export async function handleGet(
     lease.Proposal
       ? supabase
           .from('proposal')
-          .select('_id, Status, "rental type", "hc move in date", "hc reservation span (weeks)", "hc nights per week", "hc nightly price"')
+          .select('_id, Status, "rental type", "host_counter_offer_move_in_date", "host_counter_offer_reservation_span_weeks", "host_counter_offer_nights_per_week", "host_counter_offer_nightly_price"')
           .eq('_id', lease.Proposal)
           .single()
       : Promise.resolve({ data: null, error: null }),

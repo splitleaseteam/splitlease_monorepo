@@ -14,11 +14,11 @@ export function derivePerspective({
     const { payerId, payeeId, type } = transaction;
     const hasParticipants = payerId && payeeId;
     const isInitiator = hasParticipants && payerId === currentUserId;
-    const hasDirection = hasParticipants && type !== 'swap';
+    const hasDirection = hasParticipants && type !== 'alternating';
     const isIncoming = hasDirection && payeeId === currentUserId;
     const direction = hasDirection
       ? (isIncoming ? 'incoming' : 'outgoing')
-      : (type === 'swap' && hasParticipants ? (isInitiator ? 'outgoing' : 'incoming') : null);
+      : (type === 'alternating' && hasParticipants ? (isInitiator ? 'outgoing' : 'incoming') : null);
     const counterpartyId = hasParticipants
       ? (payerId === currentUserId ? payeeId : payerId)
       : (payerId || payeeId);

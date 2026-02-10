@@ -87,7 +87,7 @@ export default function ProposalSelector({ proposals, selectedId, onSelect, coun
           const listing = fullProposal.listing || {};
           const status = fullProposal.Status || '';
           const daysSelected = fullProposal['Days Selected'] || [];
-          const weeks = fullProposal['Reservation Span (Weeks)'] || fullProposal['hc reservation span (weeks)'] || '';
+          const weeks = fullProposal['Reservation Span (Weeks)'] || fullProposal['host_counter_offer_reservation_span_weeks'] || '';
 
           // Get photo URL
           const photoUrl = listing.featuredPhotoUrl ||

@@ -16,37 +16,37 @@ export const TRANSACTION_CONFIGS = {
     label: 'Date Change',
     splitModel: true,
     allowUrgency: true,
-    allowBuyout: false,
+    allowFullWeek: false,
   },
   lease_takeover: {
     label: 'Lease Takeover',
     splitModel: true,
     allowUrgency: false,
-    allowBuyout: false,
+    allowFullWeek: false,
   },
   sublet: {
     label: 'Sublet',
     splitModel: false,
     allowUrgency: false,
-    allowBuyout: false,
+    allowFullWeek: false,
   },
   lease_renewal: {
     label: 'Lease Renewal',
     splitModel: true,
     allowUrgency: false,
-    allowBuyout: false,
+    allowFullWeek: false,
   },
-  buyout: {
-    label: 'Buyout',
+  full_week: {
+    label: 'Full Week',
     splitModel: true,
     allowUrgency: true,
-    allowBuyout: true,
+    allowFullWeek: true,
   },
-  swap: {
-    label: 'Swap',
+  alternating: {
+    label: 'Alternating',
     splitModel: false,
     allowUrgency: false,
-    allowBuyout: false,
+    allowFullWeek: false,
   },
 };
 
@@ -100,11 +100,11 @@ export const calculateFeeBreakdown = (
   const config = TRANSACTION_CONFIGS[transactionType] || TRANSACTION_CONFIGS.date_change;
   const {
     urgencyMultiplier = 1,
-    buyoutMultiplier = 1,
+    fullWeekMultiplier = 1,
     applyMinimumFee = true,
   } = options;
 
-  const adjustedPrice = roundCurrency(basePrice * urgencyMultiplier * buyoutMultiplier);
+  const adjustedPrice = roundCurrency(basePrice * urgencyMultiplier * fullWeekMultiplier);
   const baseFee = roundCurrency(adjustedPrice * FEE_RATES.TOTAL_RATE);
   const totalFee = applyMinimumFee
     ? Math.max(FEE_RATES.MIN_FEE_AMOUNT, baseFee)
@@ -141,12 +141,12 @@ export const calculateFeeBreakdown = (
     });
   }
 
-  if (buyoutMultiplier > 1 && config.allowBuyout) {
+  if (fullWeekMultiplier > 1 && config.allowFullWeek) {
     components.push({
-      label: `Buyout premium (${formatPercentage((buyoutMultiplier - 1) * 100, 0)})`,
-      amount: roundCurrency(basePrice * (buyoutMultiplier - 1)),
+      label: `Full Week premium (${formatPercentage((fullWeekMultiplier - 1) * 100, 0)})`,
+      amount: roundCurrency(basePrice * (fullWeekMultiplier - 1)),
       type: 'premium',
-      description: 'Additional premium for buyout transactions',
+      description: 'Additional premium for full week transactions',
     });
   }
 

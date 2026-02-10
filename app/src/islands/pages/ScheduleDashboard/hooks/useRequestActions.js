@@ -54,12 +54,12 @@ export function useRequestActions({
       });
       const finalAmount = totalPrice || basePrice || 0;
       const baseAmount = Number.isFinite(baseAmountOverride) ? baseAmountOverride : (basePrice || finalAmount || 0);
-      const paymentBreakdown = calculatePaymentBreakdown('buyout', baseAmount || 0);
+      const paymentBreakdown = calculatePaymentBreakdown('full_week', baseAmount || 0);
 
       const newTransaction = {
         id: `txn-${Date.now()}`,
         date: new Date(),
-        type: 'buyout',
+        type: 'full_week',
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
@@ -75,7 +75,7 @@ export function useRequestActions({
         type: 'request',
         status: 'pending',
         requestData: {
-          type: 'buyout',
+          type: 'full_week',
           nights: [nightDate],
           amount: paymentBreakdown.requestorPays || finalAmount,
           offeredPrice: baseAmount,
@@ -201,12 +201,12 @@ export function useRequestActions({
 
   /**
    * Handle request type change.
-   * @param {string} newType - 'buyout' | 'share' | 'swap'
+   * @param {string} newType - 'full_week' | 'share' | 'alternating'
    */
   const handleRequestTypeChange = useCallback((newType) => {
-    if (newType === 'swap' && !selectedNight) return;
+    if (newType === 'alternating' && !selectedNight) return;
     request.setRequestType(newType);
-    if (newType === 'swap') {
+    if (newType === 'alternating') {
       request.setIsSwapMode(true);
       request.setSwapOfferNight(null);
     }
@@ -273,7 +273,7 @@ export function useRequestActions({
       const newTransaction = {
         id: `txn-${Date.now()}`,
         date: new Date(),
-        type: 'swap',
+        type: 'alternating',
         nights: [requestedDate, offeredDate],
         amount: 0,
         payerId: currentUserId,
@@ -289,7 +289,7 @@ export function useRequestActions({
         type: 'request',
         status: 'pending',
         requestData: {
-          type: 'swap',
+          type: 'alternating',
           nights: [requestedDate, offeredDate],
           transactionId: newTransaction.id
         }

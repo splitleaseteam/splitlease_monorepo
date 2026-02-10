@@ -74,7 +74,7 @@ function formatSuccessResponse(data: unknown): Response {
  * Format error response with CORS headers
  */
 function formatErrorResponse(error: Error, statusCode: number = 500): Response {
-  console.error('[identity-verification] Error:', error.message);
+  console.error('[identity-verification-submit] Error:', error.message);
   return new Response(
     JSON.stringify({ success: false, error: error.message }),
     {
@@ -88,7 +88,7 @@ function formatErrorResponse(error: Error, statusCode: number = 500): Response {
 // Effect Boundary (Side Effects Isolated Here)
 // ─────────────────────────────────────────────────────────────
 
-console.log('[identity-verification] Edge Function started');
+console.log('[identity-verification-submit] Edge Function started');
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -97,8 +97,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log(`[identity-verification] ========== NEW REQUEST ==========`);
-    console.log(`[identity-verification] Method: ${req.method}`);
+    console.log(`[identity-verification-submit] ========== NEW REQUEST ==========`);
+    console.log(`[identity-verification-submit] Method: ${req.method}`);
 
     // ─────────────────────────────────────────────────────────
     // Step 1: Parse request body
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, payload } = body;
 
-    console.log(`[identity-verification] Action: ${action}`);
+    console.log(`[identity-verification-submit] Action: ${action}`);
 
     // ─────────────────────────────────────────────────────────
     // Step 2: Validate action
@@ -154,11 +154,11 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
-      console.error('[identity-verification] Auth error:', authError);
+      console.error('[identity-verification-submit] Auth error:', authError);
       throw new AuthenticationError('Invalid or expired token');
     }
 
-    console.log(`[identity-verification] Authenticated user: ${user.id}`);
+    console.log(`[identity-verification-submit] Authenticated user: ${user.id}`);
 
     // ─────────────────────────────────────────────────────────
     // Step 5: Route to handler
@@ -172,14 +172,14 @@ Deno.serve(async (req) => {
       payload || {}
     );
 
-    console.log(`[identity-verification] Handler completed successfully`);
-    console.log(`[identity-verification] ========== REQUEST COMPLETE ==========`);
+    console.log(`[identity-verification-submit] Handler completed successfully`);
+    console.log(`[identity-verification-submit] ========== REQUEST COMPLETE ==========`);
 
     return formatSuccessResponse(result);
 
   } catch (error) {
-    console.error('[identity-verification] ========== ERROR ==========');
-    console.error('[identity-verification] Error:', error);
+    console.error('[identity-verification-submit] ========== ERROR ==========');
+    console.error('[identity-verification-submit] Error:', error);
 
     if (error instanceof ValidationError) {
       return formatErrorResponse(error, 400);

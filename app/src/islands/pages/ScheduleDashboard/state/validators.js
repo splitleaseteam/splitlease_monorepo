@@ -46,7 +46,7 @@ export function applyTransactionOwnership({ calendarOwnership, transaction }) {
   nextOwnership[payerId] = normalize(nextOwnership[payerId]);
   nextOwnership[payeeId] = normalize(nextOwnership[payeeId]);
 
-  if (type === 'buyout') {
+  if (type === 'full_week') {
     nights.forEach((night) => {
       const nightString = toDateString(night);
       nextOwnership[payeeId] = nextOwnership[payeeId].filter((n) => n !== nightString);
@@ -57,7 +57,7 @@ export function applyTransactionOwnership({ calendarOwnership, transaction }) {
     return nextOwnership;
   }
 
-  if (type === 'swap') {
+  if (type === 'alternating') {
     nights.forEach((night) => {
       const nightString = toDateString(night);
       if (nextOwnership[payerId].includes(nightString)) {

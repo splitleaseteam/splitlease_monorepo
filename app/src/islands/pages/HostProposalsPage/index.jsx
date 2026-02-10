@@ -513,7 +513,7 @@ export default function HostProposalsPage() {
       {isEditingProposal && selectedProposal && (
         showRejectOnOpen ? (
           // Reject-only mode: render HostEditingProposal without overlay/container
-          // (it will only render the CancelProposalModal via portal)
+          // (it will only render the EndProposalModal via portal)
           <HostEditingProposal
             proposal={selectedProposal}
             availableHouseRules={allHouseRules}

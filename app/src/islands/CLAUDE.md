@@ -44,7 +44,7 @@ Static HTML Page (SEO-friendly)
 [TOTAL_FILES]: 13 modal components
 [PATTERN]: Controlled components (isOpen state managed by parent)
 [STRUCTURE]: Header + Body + Footer sections with onClose/onConfirm callbacks
-[KEY_FILES]: ProposalDetailsModal, MapModal, EditProposalModal, VirtualMeetingModal, CancelProposalModal, CompareTermsModal, HostProfileModal, GuestEditingProposalModal, NotificationSettingsModal, EditPhoneNumberModal, ProposalSuccessModal
+[KEY_FILES]: ProposalDetailsModal, MapModal, EditProposalModal, VirtualMeetingModal, EndProposalModal, CompareTermsModal, HostProfileModal, GuestEditingProposalModal, NotificationSettingsModal, EditPhoneNumberModal, ProposalSuccessModal
 [USAGE]: Imported by pages or shared components for overlay interactions
 
 ### pages/
@@ -112,7 +112,7 @@ export function useSearchPageLogic() {
 [CONTROL]: Parent component controls isOpen state, passes callbacks for user actions
 [CALLBACKS]: onClose (cancel/dismiss), onConfirm (primary action), other action-specific callbacks
 [BACKDROP]: Click outside or ESC key triggers onClose
-[EXAMPLE_FILES]: ProposalDetailsModal, MapModal, VirtualMeetingModal, CancelProposalModal
+[EXAMPLE_FILES]: ProposalDetailsModal, MapModal, VirtualMeetingModal, EndProposalModal
 
 ```jsx
 <ProposalDetailsModal

@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.recommendation_logs (
   CHECK ((auth_user_id IS NOT NULL) OR (bubble_user_id IS NOT NULL)),
 
   -- Recommendation details
-  primary_recommendation TEXT NOT NULL CHECK (primary_recommendation IN ('buyout', 'crash', 'swap')),
+  primary_recommendation TEXT NOT NULL CHECK (primary_recommendation IN ('full_week', 'shared_night', 'alternating')),
   archetype_type TEXT NOT NULL,
   archetype_confidence DECIMAL(3, 2),
 
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS public.recommendation_logs (
   options JSONB NOT NULL DEFAULT '[]'::jsonb,
 
   -- User interaction
-  user_selected TEXT CHECK (user_selected IN ('buyout', 'crash', 'swap', NULL)),
+  user_selected TEXT CHECK (user_selected IN ('full_week', 'shared_night', 'alternating', NULL)),
   time_to_decision_seconds INTEGER,
   followed_recommendation BOOLEAN,
 
   -- Outcome
   request_submitted BOOLEAN DEFAULT FALSE,
   request_accepted BOOLEAN,
-  final_transaction_type TEXT CHECK (final_transaction_type IN ('buyout', 'crash', 'swap', NULL)),
+  final_transaction_type TEXT CHECK (final_transaction_type IN ('full_week', 'shared_night', 'alternating', NULL)),
 
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),

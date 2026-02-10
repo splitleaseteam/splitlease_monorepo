@@ -86,12 +86,12 @@ export function calculateBuyoutPrice(baseRate, noticeTier, edgePreference, dayOf
  * @param {Date} date - Target date
  * @param {object} pricingStrategy - User's pricing preferences
  * @param {Date} today - Reference date for notice calculation
- * @param {string} requestType - 'buyout' | 'share' | 'swap'
+ * @param {string} requestType - 'full_week' | 'share' | 'alternating'
  * @returns {number} Calculated price
  */
-export function calculatePriceForDate(date, pricingStrategy, today = new Date(), requestType = 'buyout') {
+export function calculatePriceForDate(date, pricingStrategy, today = new Date(), requestType = 'full_week') {
   // Swap requests are always free
-  if (requestType === 'swap') return 0;
+  if (requestType === 'alternating') return 0;
 
   const todayNormalized = new Date(today);
   todayNormalized.setHours(0, 0, 0, 0);

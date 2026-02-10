@@ -1,12 +1,12 @@
 /**
- * CancelProposalModal Component Stories
+ * EndProposalModal Component Stories
  *
  * Unified modal for confirming proposal cancellation (guest) or rejection (host).
  * Features reason selection with optional custom input for "Other" reasons.
  */
 
 import { useState } from 'react';
-import CancelProposalModal from './CancelProposalModal';
+import EndProposalModal from './EndProposalModal';
 
 // Mock proposal data
 const mockProposal = {
@@ -30,15 +30,15 @@ const mockListing = {
 };
 
 export default {
-  title: 'Modals/CancelProposalModal',
-  component: CancelProposalModal,
+  title: 'Modals/EndProposalModal',
+  component: EndProposalModal,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component: `
-## CancelProposalModal Component
+## EndProposalModal Component
 
 A confirmation modal for proposal cancellation (guest) or rejection (host).
 
@@ -52,9 +52,9 @@ A confirmation modal for proposal cancellation (guest) or rejection (host).
 
 ### Usage
 \`\`\`jsx
-import CancelProposalModal from 'islands/modals/CancelProposalModal';
+import EndProposalModal from 'islands/modals/EndProposalModal';
 
-<CancelProposalModal
+<EndProposalModal
   isOpen={showModal}
   proposal={proposal}
   listing={listing}
@@ -123,7 +123,7 @@ const CancelProposalDemo = ({ userType, buttonText, initialOpen = true }) => {
         </button>
       </div>
 
-      <CancelProposalModal
+      <EndProposalModal
         isOpen={isOpen}
         proposal={mockProposal}
         listing={mockListing}
@@ -196,7 +196,7 @@ export const Closed = {
 export const AllStatesOverview = {
   render: () => (
     <div style={{ padding: '40px' }}>
-      <h2 style={{ marginBottom: '24px', color: '#1f2937' }}>CancelProposalModal States</h2>
+      <h2 style={{ marginBottom: '24px', color: '#1f2937' }}>EndProposalModal States</h2>
 
       <div style={{ display: 'grid', gap: '24px', maxWidth: '800px' }}>
         <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>

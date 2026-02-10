@@ -1,5 +1,5 @@
 /**
- * CancelProposalModal Component - v3.0 PROTOCOL REDESIGN
+ * EndProposalModal Component - v3.0 PROTOCOL REDESIGN
  *
  * Unified modal for confirming proposal cancellation/rejection with reason selection.
  * Supports both guest cancellation and host rejection flows via userType prop.
@@ -64,7 +64,7 @@ function isOtherReason(label) {
   return lowerLabel === 'other' || lowerLabel.startsWith('other ')
 }
 
-export default function CancelProposalModal({
+export default function EndProposalModal({
   isOpen,
   proposal,
   listing,
@@ -129,7 +129,7 @@ export default function CancelProposalModal({
 
       await onConfirm(reason || undefined)
     } catch (err) {
-      console.error('[CancelProposalModal] Error:', err)
+      console.error('[EndProposalModal] Error:', err)
     } finally {
       setIsSubmitting(false)
     }

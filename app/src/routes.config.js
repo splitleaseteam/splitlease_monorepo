@@ -558,12 +558,12 @@ export const routes = [
     hasDynamicSegment: false
   },
   {
-    path: '/_verify-users',
-    file: 'verify-users.html',
-    aliases: ['/_verify-users.html'],
+    path: '/_identity-verification-admin',
+    file: 'identity-verification-admin.html',
+    aliases: ['/_identity-verification-admin.html'],
     protected: false,
     cloudflareInternal: true,
-    internalName: 'verify-users-view',
+    internalName: 'identity-verification-admin-view',
     hasDynamicSegment: false
   },
   {

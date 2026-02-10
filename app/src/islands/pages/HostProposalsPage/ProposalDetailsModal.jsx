@@ -15,7 +15,7 @@ import { useState } from 'react';
 import DayIndicator from './DayIndicator.jsx';
 import { getStatusTagInfo, getNightsAsDayNames, getCheckInOutFromDays, PROGRESS_THRESHOLDS } from './types.js';
 import { formatCurrency, formatDate, formatDateTime } from './formatters.js';
-import { getStatusConfig, getUsualOrder, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
+import { PROPOSAL_STATUSES, getStatusConfig, getUsualOrder, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
 import { getVMButtonText, getVMButtonStyle, getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
 
 /**
@@ -32,25 +32,25 @@ function getHostStatusMessage(statusConfig, rentalAppSubmitted) {
   // Map status keys to host-appropriate messages
   const hostMessages = {
     // Pre-acceptance states
-    'Proposal Submitted by guest - Awaiting Rental Application': 'Request Rental App Submission',
-    'Proposal Submitted for guest by Split Lease - Awaiting Rental Application': 'Request Rental App Submission',
-    'Proposal Submitted for guest by Split Lease - Pending Confirmation': 'Awaiting Guest Confirmation',
-    'Pending': 'Proposal Pending',
-    'Pending Confirmation': 'Awaiting Guest Confirmation',
-    'Host Review': rentalAppSubmitted ? 'Rental App Received - Review & Decide' : 'Under Your Review',
-    'Rental Application Submitted': 'Rental App Received - Review & Decide',
+    [PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key]: 'Request Rental App Submission',
+    [PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key]: 'Request Rental App Submission',
+    [PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key]: 'Awaiting Guest Confirmation',
+    [PROPOSAL_STATUSES.PENDING.key]: 'Proposal Pending',
+    [PROPOSAL_STATUSES.PENDING_CONFIRMATION.key]: 'Awaiting Guest Confirmation',
+    [PROPOSAL_STATUSES.HOST_REVIEW.key]: rentalAppSubmitted ? 'Rental App Received - Review & Decide' : 'Under Your Review',
+    [PROPOSAL_STATUSES.RENTAL_APP_SUBMITTED.key]: 'Rental App Received - Review & Decide',
 
     // Counteroffer states
-    'Host Counteroffer Submitted / Awaiting Guest Review': 'Counteroffer Sent - Awaiting Guest Response',
+    [PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key]: 'Counteroffer Sent - Awaiting Guest Response',
 
     // Post-acceptance states
-    'Proposal or Counteroffer Accepted / Drafting Lease Documents': 'Accepted - Drafting Lease Documents',
-    'Reviewing Documents': 'Documents Under Review',
-    'Lease Documents Sent for Review': 'Lease Documents Sent to Guest',
-    'Lease Documents Sent for Signatures': 'Awaiting Signatures',
-    'Lease Documents Signed / Awaiting Initial payment': 'Awaiting Initial Payment',
-    'Lease Signed / Awaiting Initial Payment': 'Awaiting Initial Payment',
-    'Initial Payment Submitted / Lease activated ': 'Lease Activated!',
+    [PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key]: 'Accepted - Drafting Lease Documents',
+    [PROPOSAL_STATUSES.REVIEWING_DOCUMENTS.key]: 'Documents Under Review',
+    [PROPOSAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_REVIEW.key]: 'Lease Documents Sent to Guest',
+    [PROPOSAL_STATUSES.LEASE_DOCUMENTS_SENT_FOR_SIGNATURES.key]: 'Awaiting Signatures',
+    [PROPOSAL_STATUSES.LEASE_DOCUMENTS_SIGNED_AWAITING_PAYMENT.key]: 'Awaiting Initial Payment',
+    [PROPOSAL_STATUSES.LEASE_SIGNED_AWAITING_INITIAL_PAYMENT.key]: 'Awaiting Initial Payment',
+    [PROPOSAL_STATUSES.INITIAL_PAYMENT_SUBMITTED_LEASE_ACTIVATED.key]: 'Lease Activated!',
   };
 
   // Return mapped message or fallback to status label
@@ -105,8 +105,8 @@ export default function ProposalDetailsModal({
   const isAccepted = usualOrder >= 3 && !isCancelled; // Accepted or beyond (sort_order 3+ in reference table)
 
   // Special state: Awaiting rental app submission - show in green as positive action
-  const isAwaitingRentalApp = statusConfig.key === 'Proposal Submitted by guest - Awaiting Rental Application' ||
-                              statusConfig.key === 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application';
+  const isAwaitingRentalApp = statusConfig.key === PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key ||
+                              statusConfig.key === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key;
 
   // Check if rental application has been submitted (for "current" state on Host Review)
   const rentalApplication = proposal.rentalApplication || proposal['rental application'] || proposal['Rental Application'];
@@ -283,8 +283,8 @@ export default function ProposalDetailsModal({
     const { key } = statusConfig;
 
     // Awaiting rental application - host can request rental app or view details
-    if (key === 'Proposal Submitted by guest - Awaiting Rental Application' ||
-        key === 'Proposal Submitted for guest by Split Lease - Awaiting Rental Application') {
+    if (key === PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key ||
+        key === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key) {
       return (
         <>
           <button
@@ -304,7 +304,7 @@ export default function ProposalDetailsModal({
     }
 
     // Host counteroffer sent - waiting for guest
-    if (key === 'Host Counteroffer Submitted / Awaiting Guest Review') {
+    if (key === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key) {
       return (
         <>
           <button

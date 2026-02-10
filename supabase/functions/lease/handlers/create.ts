@@ -140,15 +140,15 @@ export async function handleCreate(
 
   // If NOT a counteroffer, copy original values to HC fields
   if (!input.isCounteroffer) {
-    proposalUpdate['hc move in date'] = proposalData['Move in range start'];
-    proposalUpdate['hc reservation span (weeks)'] = proposalData['Reservation Span (Weeks)'];
-    proposalUpdate['hc nights per week'] = proposalData['nights per week (num)'];
-    proposalUpdate['hc nightly price'] = proposalData['proposal nightly price'];
-    proposalUpdate['hc 4 week rent'] = input.fourWeekRent;
-    proposalUpdate['hc 4 week compensation'] = input.fourWeekCompensation;
-    proposalUpdate['hc damage deposit'] = proposalData['damage deposit'];
-    proposalUpdate['hc cleaning fee'] = proposalData['cleaning fee'];
-    proposalUpdate['hc maintenance fee'] = proposalData['maintenance fee'];
+    proposalUpdate['host_counter_offer_move_in_date'] = proposalData['Move in range start'];
+    proposalUpdate['host_counter_offer_reservation_span_weeks'] = proposalData['Reservation Span (Weeks)'];
+    proposalUpdate['host_counter_offer_nights_per_week'] = proposalData['nights per week (num)'];
+    proposalUpdate['host_counter_offer_nightly_price'] = proposalData['proposal nightly price'];
+    proposalUpdate['host_counter_offer_4_week_rent'] = input.fourWeekRent;
+    proposalUpdate['host_counter_offer_4_week_compensation'] = input.fourWeekCompensation;
+    proposalUpdate['host_counter_offer_damage_deposit'] = proposalData['damage deposit'];
+    proposalUpdate['host_counter_offer_cleaning_fee'] = proposalData['cleaning fee'];
+    proposalUpdate['host_counter_offer_maintenance_fee'] = proposalData['maintenance fee'];
   }
 
   // Update proposal
@@ -294,13 +294,13 @@ export async function handleCreate(
     rentalType: proposalData['rental type'],
     moveInDate: activeTerms.moveInDate,
     reservationSpanWeeks: activeTerms.reservationWeeks,
-    reservationSpanMonths: proposalData['hc duration in months'] || proposalData['duration in months'],
+    reservationSpanMonths: proposalData['host_counter_offer_duration_in_months'] || proposalData['duration in months'],
     weekPattern:
-      proposalData['hc weeks schedule']?.Display ||
+      proposalData['host_counter_offer_weeks_schedule']?.Display ||
       proposalData['week selection']?.Display ||
       'Every week',
     fourWeekRent: activeTerms.fourWeekRent,
-    rentPerMonth: proposalData['hc host compensation (per period)'] || proposalData['host compensation'],
+    rentPerMonth: proposalData['host_counter_offer_host_compensation_per_period'] || proposalData['host compensation'],
     maintenanceFee: activeTerms.maintenanceFee,
     damageDeposit: activeTerms.damageDeposit,
   };
@@ -325,9 +325,9 @@ export async function handleCreate(
   let weeksSchedule: string;
 
   if (input.isCounteroffer) {
-    const hcCheckInDay = proposalData['hc check in day'];
-    const hcCheckOutDay = proposalData['hc check out day'];
-    const hcWeeksSchedule = proposalData['hc weeks schedule'];
+    const hcCheckInDay = proposalData['host_counter_offer_check_in_day'];
+    const hcCheckOutDay = proposalData['host_counter_offer_check_out_day'];
+    const hcWeeksSchedule = proposalData['host_counter_offer_weeks_schedule'];
 
     checkInDay =
       (typeof hcCheckInDay === 'object' && (hcCheckInDay as { Display?: string })?.Display) ||
@@ -358,7 +358,7 @@ export async function handleCreate(
 
   // Get nights selected
   const nightsSelected = input.isCounteroffer
-    ? proposalData['hc days selected'] || proposalData['hc nights selected']
+    ? proposalData['host_counter_offer_days_selected'] || proposalData['host_counter_offer_nights_selected']
     : proposalData['Days Selected'];
 
   // Handle full-week normalization

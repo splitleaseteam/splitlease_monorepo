@@ -703,7 +703,7 @@ ScheduleCalendar.propTypes = {
     id: PropTypes.string,
     amount: PropTypes.number,
     direction: PropTypes.oneOf(['incoming', 'outgoing']),
-    type: PropTypes.oneOf(['buyout', 'swap', 'offer']),
+    type: PropTypes.oneOf(['full_week', 'alternating', 'offer']),
     status: PropTypes.oneOf(['complete', 'pending', 'declined', 'cancelled'])
   })),
   onSelectTransaction: PropTypes.func,

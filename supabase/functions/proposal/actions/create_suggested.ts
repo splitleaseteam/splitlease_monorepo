@@ -473,7 +473,7 @@ export async function handleCreateSuggested(
     "rental type": listingData["rental type"],
     "House Rules": listingData["Features - House Rules"],
     "week selection": listingData["Weeks offered"],
-    "hc house rules": listingData["Features - House Rules"],
+    "host_counter_offer_house_rules": listingData["Features - House Rules"],
     "Location - Address": listingData["Location - Address"],
     "Location - Address slightly different": listingData["Location - slightly different address"],
 

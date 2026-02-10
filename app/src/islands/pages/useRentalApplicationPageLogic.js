@@ -442,7 +442,7 @@ export function useRentalApplicationPageLogic() {
 
       // Upload via Edge Function
       const token = getAuthToken();
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application-submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -704,7 +704,7 @@ export function useRentalApplicationPageLogic() {
 
         // Fetch full rental application via Edge Function
         const token = getAuthToken();
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application`, {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application-submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -911,7 +911,7 @@ export function useRentalApplicationPageLogic() {
       }
 
       // Call the rental-application Edge Function (Supabase only, no Bubble sync)
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rental-application-submit`, {
         method: 'POST',
         headers,
         body: JSON.stringify({

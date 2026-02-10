@@ -10,7 +10,7 @@
 /**
  * Transaction type identifiers
  */
-export type TransactionType = 'buyout' | 'crash' | 'swap';
+export type TransactionType = 'full_week' | 'shared_night' | 'alternating';
 
 /**
  * User archetype classifications
@@ -66,13 +66,13 @@ export interface TransactionOption {
   recommended: boolean;
   /** Priority ranking (1 = highest) */
   priority: number;
-  /** Amount roommate will receive (buyout only) in cents */
+  /** Amount roommate will receive (full_week only) in cents */
   roommateReceives?: number;
-  /** Savings vs buyout (crash/swap only) in cents */
-  savingsVsBuyout?: number;
-  /** Whether swap requires user to offer a night */
+  /** Savings vs full_week (shared_night/alternating only) in cents */
+  savingsVsFullWeek?: number;
+  /** Whether alternating requires user to offer a night */
   requiresUserNight?: boolean;
-  /** Number of potential swap matches */
+  /** Number of potential alternating matches */
   potentialMatches?: number;
   /** Reasoning strings for recommendation */
   reasoning?: string[];
@@ -237,9 +237,9 @@ export interface TransactionOptionViewedEvent {
   archetypeConfidence: number;
   daysUntilCheckIn: number;
   pricing: {
-    buyout: number;
-    crash: number;
-    swap: number;
+    full_week: number;
+    shared_night: number;
+    alternating: number;
   };
 }
 

@@ -84,13 +84,13 @@ export function InfoGrid({ proposal }) {
   }
 
   // HC values (host counteroffer)
-  const hcMoveIn = proposal?.['hc move in date'];
-  const hcWeeks = proposal?.['hc reservation span (weeks)'];
-  let hcDays = proposal?.['hc days selected'] || [];
+  const hcMoveIn = proposal?.['host_counter_offer_move_in_date'];
+  const hcWeeks = proposal?.['host_counter_offer_reservation_span_weeks'];
+  let hcDays = proposal?.['host_counter_offer_days_selected'] || [];
   if (typeof hcDays === 'string') {
     try { hcDays = JSON.parse(hcDays); } catch { hcDays = []; }
   }
-  let hcNights = proposal?.['hc nights selected'] || [];
+  let hcNights = proposal?.['host_counter_offer_nights_selected'] || [];
   if (typeof hcNights === 'string') {
     try { hcNights = JSON.parse(hcNights); } catch { hcNights = []; }
   }

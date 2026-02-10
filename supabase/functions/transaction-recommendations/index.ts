@@ -11,8 +11,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import {
-  detectUserArchetype,
-  getUserArchetypeSignals
+  detectBehaviorArchetype,
+  getBehaviorArchetypeSignals
 } from '../_shared/archetype-detection.ts';
 import {
   selectPersonalizedDefault,
@@ -66,14 +66,14 @@ serve(async (req: Request) => {
     );
 
     // Fetch user archetype signals
-    const archetypeSignals = await getUserArchetypeSignals(supabaseClient, userId);
+    const archetypeSignals = await getBehaviorArchetypeSignals(supabaseClient, userId);
 
     // Detect user archetype
-    const userArchetype = detectUserArchetype(archetypeSignals);
+    const userArchetype = detectBehaviorArchetype(archetypeSignals);
 
     // Fetch roommate archetype
-    const roommateSignals = await getUserArchetypeSignals(supabaseClient, roommateId);
-    const roommateArchetype = detectUserArchetype(roommateSignals);
+    const roommateSignals = await getBehaviorArchetypeSignals(supabaseClient, roommateId);
+    const roommateArchetype = detectBehaviorArchetype(roommateSignals);
 
     // Get target night pricing data
     const { data: targetNightData, error: targetNightError } = await supabaseClient

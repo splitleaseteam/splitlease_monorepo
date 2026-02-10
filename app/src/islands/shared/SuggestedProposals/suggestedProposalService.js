@@ -7,7 +7,7 @@
 
 import { supabase } from '../../../lib/supabase.js';
 import { loadProposalDetails } from '../../../lib/proposalDataFetcher.js';
-import { isSuggestedProposal, isPendingConfirmationProposal } from '../../../logic/constants/proposalStatuses.js';
+import { PROPOSAL_STATUSES, isSuggestedProposal, isPendingConfirmationProposal } from '../../../logic/constants/proposalStatuses.js';
 
 /**
  * Fetch all suggested proposals for a user
@@ -107,7 +107,7 @@ export async function markProposalInterested(proposalId) {
     const { error } = await supabase
       .from('booking_proposal')
       .update({
-        proposal_workflow_status: 'Proposal Submitted by guest - Awaiting Rental Application',
+        proposal_workflow_status: PROPOSAL_STATUSES.PROPOSAL_SUBMITTED_AWAITING_RENTAL_APP.key,
         original_updated_at: new Date().toISOString()
       })
       .eq('id', proposalId);

@@ -174,11 +174,11 @@ export function usePersonalizedDefaults({
         archetypeConfidence: recommendations.userArchetype.confidence,
         daysUntilCheckIn: recommendations.contextFactors.daysUntilCheckIn,
         pricing: {
-          buyout: recommendations.options.find((o) => o.type === 'buyout')
+          full_week: recommendations.options.find((o) => o.type === 'full_week')
             ?.totalCost || 0,
-          crash: recommendations.options.find((o) => o.type === 'crash')
+          shared_night: recommendations.options.find((o) => o.type === 'shared_night')
             ?.totalCost || 0,
-          swap: recommendations.options.find((o) => o.type === 'swap')
+          alternating: recommendations.options.find((o) => o.type === 'alternating')
             ?.totalCost || 0,
         },
       });
@@ -241,7 +241,7 @@ export function usePersonalizedDefaultsMock(
 ): UsePersonalizedDefaultsReturn {
   const mockOptions: TransactionOption[] = [
     {
-      type: 'buyout',
+      type: 'full_week',
       price: 283500,
       platformFee: 4300,
       totalCost: 287800,
@@ -262,11 +262,11 @@ export function usePersonalizedDefaultsMock(
       reasoning: [
         'High urgency booking',
         'Your typical preference for guaranteed access',
-        'Similar users choose buyout 70% of the time',
+        'Similar users choose full week 70% of the time',
       ],
     },
     {
-      type: 'crash',
+      type: 'shared_night',
       price: 32400,
       platformFee: 500,
       totalCost: 32900,
@@ -284,10 +284,10 @@ export function usePersonalizedDefaultsMock(
       recommended: false,
       priority: 2,
       roommateReceives: 31900,
-      savingsVsBuyout: 254900,
+      savingsVsFullWeek: 254900,
     },
     {
-      type: 'swap',
+      type: 'alternating',
       price: 0,
       platformFee: 500,
       totalCost: 500,
@@ -306,12 +306,12 @@ export function usePersonalizedDefaultsMock(
       priority: 3,
       requiresUserNight: true,
       potentialMatches: 2,
-      savingsVsBuyout: 287300,
+      savingsVsFullWeek: 287300,
     },
   ];
 
   return {
-    primaryOption: 'buyout',
+    primaryOption: 'full_week',
     sortedOptions: mockOptions,
     reasoning: mockOptions[0].reasoning || [],
     loading: false,

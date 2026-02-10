@@ -114,7 +114,7 @@ async function uploadDocument(supabase, userId, documentType, file) {
  * @returns {Promise<Object>} Edge Function response
  */
 async function submitVerification(supabase, payload) {
-  const { data, error } = await supabase.functions.invoke('identity-verification', {
+  const { data, error } = await supabase.functions.invoke('identity-verification-submit', {
     body: {
       action: 'submit_verification',
       payload,
@@ -139,7 +139,7 @@ async function submitVerification(supabase, payload) {
  * @returns {Promise<Object>} Verification status
  */
 export async function getVerificationStatusWorkflow(supabase) {
-  const { data, error } = await supabase.functions.invoke('identity-verification', {
+  const { data, error } = await supabase.functions.invoke('identity-verification-submit', {
     body: {
       action: 'get_status',
       payload: {},

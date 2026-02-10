@@ -52,35 +52,35 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
   const counterOfferHappened = proposal['counter offer happened'];
 
   // Get display values (use hc fields if counteroffer, otherwise original)
-  const moveInDate = counterOfferHappened && proposal['hc move in date']
-    ? new Date(proposal['hc move in date'])
+  const moveInDate = counterOfferHappened && proposal['host_counter_offer_move_in_date']
+    ? new Date(proposal['host_counter_offer_move_in_date'])
     : new Date(proposal['Move in range start']);
 
-  const checkInDay = counterOfferHappened && proposal['hc check in day']
-    ? proposal['hc check in day']
+  const checkInDay = counterOfferHappened && proposal['host_counter_offer_check_in_day']
+    ? proposal['host_counter_offer_check_in_day']
     : proposal['check in day'];
 
-  const checkOutDay = counterOfferHappened && proposal['hc check out day']
-    ? proposal['hc check out day']
+  const checkOutDay = counterOfferHappened && proposal['host_counter_offer_check_out_day']
+    ? proposal['host_counter_offer_check_out_day']
     : proposal['check out day'];
 
-  const reservationWeeks = counterOfferHappened && proposal['hc reservation span (weeks)']
-    ? proposal['hc reservation span (weeks)']
+  const reservationWeeks = counterOfferHappened && proposal['host_counter_offer_reservation_span_weeks']
+    ? proposal['host_counter_offer_reservation_span_weeks']
     : proposal['Reservation Span (Weeks)'];
 
-  const nightlyPrice = counterOfferHappened && proposal['hc nightly price']
-    ? proposal['hc nightly price']
+  const nightlyPrice = counterOfferHappened && proposal['host_counter_offer_nightly_price']
+    ? proposal['host_counter_offer_nightly_price']
     : proposal['proposal nightly price'];
 
-  const nightsPerWeek = counterOfferHappened && proposal['hc nights per week']
-    ? proposal['hc nights per week']
+  const nightsPerWeek = counterOfferHappened && proposal['host_counter_offer_nights_per_week']
+    ? proposal['host_counter_offer_nights_per_week']
     : proposal['nights per week (num)'];
 
   const totalNights = reservationWeeks * nightsPerWeek;
   const subtotal = totalNights * nightlyPrice;
 
-  const damageDeposit = counterOfferHappened && proposal['hc damage deposit']
-    ? proposal['hc damage deposit']
+  const damageDeposit = counterOfferHappened && proposal['host_counter_offer_damage_deposit']
+    ? proposal['host_counter_offer_damage_deposit']
     : (proposal['damage deposit'] || 0);
 
   const maintenanceFee = 0; // Appears to be 0 in most cases

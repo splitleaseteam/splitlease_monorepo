@@ -55,11 +55,11 @@ export async function hostAcceptProposalWorkflow({ proposalId, proposal }) {
   // Step 3: Calculate 4-week compensation (from ORIGINAL or HC proposal terms)
   // If guest counteroffer exists, use hc_ fields; otherwise use original fields
   const nightsPerWeek = hasGuestCounteroffer
-    ? (proposal['hc nights per week'] || proposal['hc_nights_per_week'] || proposal['nights per week (num)'] || 0)
+    ? (proposal['host_counter_offer_nights_per_week'] || proposal['host_counter_offer_nights_per_week'] || proposal['nights per week (num)'] || 0)
     : (proposal['nights per week (num)'] || proposal.nights_per_week || 0);
 
   const nightlyPrice = hasGuestCounteroffer
-    ? (proposal['hc nightly price'] || proposal['hc_nightly_price'] || proposal['proposal nightly price'] || 0)
+    ? (proposal['host_counter_offer_nightly_price'] || proposal['host_counter_offer_nightly_price'] || proposal['proposal nightly price'] || 0)
     : (proposal['proposal nightly price'] || proposal.nightly_rate || 0);
 
   // 4-week compensation = nights/week * 4 weeks * nightly price * 85% (host share)

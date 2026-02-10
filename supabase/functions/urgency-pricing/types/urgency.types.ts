@@ -19,9 +19,9 @@ export enum UrgencyLevel {
  * Transaction types that support urgency pricing
  */
 export enum TransactionType {
-  BUYOUT = 'buyout',
-  CRASH = 'crash',
-  SWAP = 'swap',
+  FULL_WEEK = 'full_week',
+  SHARED_NIGHT = 'shared_night',
+  ALTERNATING = 'alternating',
 }
 
 /**

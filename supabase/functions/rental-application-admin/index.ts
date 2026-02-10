@@ -25,11 +25,11 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 };
 
-console.log("[rental-applications] Edge Function initializing...");
+console.log("[rental-application-admin] Edge Function initializing...");
 
 Deno.serve(async (req: Request) => {
   try {
-    console.log(`[rental-applications] Request: ${req.method}`);
+    console.log(`[rental-application-admin] Request: ${req.method}`);
 
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
@@ -41,7 +41,7 @@ Deno.serve(async (req: Request) => {
     const action = body.action || 'unknown';
     const payload = body.payload || {};
 
-    console.log(`[rental-applications] Action: ${action}`);
+    console.log(`[rental-application-admin] Action: ${action}`);
 
     // Validate action
     const validActions = [
@@ -74,15 +74,15 @@ Deno.serve(async (req: Request) => {
     const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
 
     if (user) {
-      console.log(`[rental-applications] Authenticated user: ${user.email} (${user.id})`);
+      console.log(`[rental-application-admin] Authenticated user: ${user.email} (${user.id})`);
     } else {
-      console.log('[rental-applications] No auth header - proceeding as internal page request');
+      console.log('[rental-application-admin] No auth header - proceeding as internal page request');
     }
 
     // NOTE: Admin role check removed to allow any authenticated user access for testing
     // const isAdmin = await checkAdminStatus(user.id, supabase);
     // if (!isAdmin) {
-    //   console.log(`[rental-applications] User ${user.id} is not an admin`);
+    //   console.log(`[rental-application-admin] User ${user.id} is not an admin`);
     //   return errorResponse('Admin access required', 403);
     // }
 
@@ -133,7 +133,7 @@ Deno.serve(async (req: Request) => {
         throw new Error(`Unhandled action: ${action}`);
     }
 
-    console.log('[rental-applications] Action completed successfully');
+    console.log('[rental-application-admin] Action completed successfully');
 
     return new Response(
       JSON.stringify({ success: true, ...result }),
@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error) {
-    console.error('[rental-applications] Error:', error);
+    console.error('[rental-application-admin] Error:', error);
     return errorResponse((error as Error).message, 500);
   }
 });
@@ -186,13 +186,13 @@ async function _checkAdminStatus(
     const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(userId);
 
     if (authError || !user) {
-      console.error('[rental-applications] Failed to get user:', authError);
+      console.error('[rental-application-admin] Failed to get user:', authError);
       return false;
     }
 
     const platformUserId = user.user_metadata?.legacy_platform_id;
     if (!platformUserId) {
-      console.log('[rental-applications] No platform user_id found for user');
+      console.log('[rental-application-admin] No platform user_id found for user');
       // Check user_metadata for admin flag as fallback
       return user.user_metadata?.is_admin === true;
     }
@@ -205,14 +205,14 @@ async function _checkAdminStatus(
       .single();
 
     if (userError) {
-      console.error('[rental-applications] Failed to check admin status:', userError);
+      console.error('[rental-application-admin] Failed to check admin status:', userError);
       // Fall back to user_metadata
       return user.user_metadata?.is_admin === true;
     }
 
     return userData?.['Toggle - Is Admin'] === true;
   } catch (_err) {
-    console.error('[rental-applications] Admin check error:', err);
+    console.error('[rental-application-admin] Admin check error:', err);
     return false;
   }
 }
@@ -303,7 +303,7 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   const { data, error, count } = await query;
 
   if (error) {
-    console.error('[rental-applications] List error:', error);
+    console.error('[rental-application-admin] List error:', error);
     throw new Error(`Failed to fetch applications: ${error.message}`);
   }
 
@@ -342,7 +342,7 @@ async function handleGet(
     .single();
 
   if (error) {
-    console.error('[rental-applications] Get error:', error);
+    console.error('[rental-application-admin] Get error:', error);
     throw new Error(`Failed to fetch application: ${error.message}`);
   }
 
@@ -437,7 +437,7 @@ async function handleUpdate(
     .single();
 
   if (error) {
-    console.error('[rental-applications] Update error:', error);
+    console.error('[rental-application-admin] Update error:', error);
     throw new Error(`Failed to update application: ${error.message}`);
   }
 
@@ -473,7 +473,7 @@ async function handleUpdateStatus(
     .single();
 
   if (error) {
-    console.error('[rental-applications] Update status error:', error);
+    console.error('[rental-application-admin] Update status error:', error);
     throw new Error(`Failed to update status: ${error.message}`);
   }
 
@@ -858,4 +858,4 @@ function transformApplication(record: Record<string, unknown>) {
   };
 }
 
-console.log("[rental-applications] Edge Function ready");
+console.log("[rental-application-admin] Edge Function ready");

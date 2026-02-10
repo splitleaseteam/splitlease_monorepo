@@ -120,15 +120,15 @@ const getUserId = async (
 // Effect Boundary (Side Effects Isolated Here)
 // ─────────────────────────────────────────────────────────────
 
-console.log("[rental-application] Edge Function started (FP mode)");
+console.log("[rental-application-submit] Edge Function started (FP mode)");
 
 Deno.serve(async (req: Request) => {
   const correlationId = crypto.randomUUID().slice(0, 8);
-  let errorLog: ErrorLog = createErrorLog('rental-application', 'unknown', correlationId);
+  let errorLog: ErrorLog = createErrorLog('rental-application-submit', 'unknown', correlationId);
 
   try {
-    console.log(`[rental-application] ========== REQUEST ==========`);
-    console.log(`[rental-application] Method: ${req.method}`);
+    console.log(`[rental-application-submit] ========== REQUEST ==========`);
+    console.log(`[rental-application-submit] Method: ${req.method}`);
 
     const parseResult = await parseRequest(req);
 
@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
 
     const { action, payload, headers } = parseResult.value;
     errorLog = setAction(errorLog, action);
-    console.log(`[rental-application] Action: ${action}`);
+    console.log(`[rental-application-submit] Action: ${action}`);
 
     const actionResult = validateAction(ALLOWED_ACTIONS, action);
     if (!actionResult.ok) {
@@ -168,7 +168,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const userId = userIdResult.value;
-    console.log(`[rental-application] Using user_id: ${userId}`);
+    console.log(`[rental-application-submit] Using user_id: ${userId}`);
 
     const supabaseAdmin = createClient(config.supabaseUrl, config.supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -182,13 +182,13 @@ Deno.serve(async (req: Request) => {
     const handler = handlerResult.value;
     const result = await handler(payload, supabaseAdmin, userId);
 
-    console.log(`[rental-application] ========== SUCCESS ==========`);
+    console.log(`[rental-application-submit] ========== SUCCESS ==========`);
 
     return formatSuccessResponse(result);
 
   } catch (error) {
-    console.error(`[rental-application] ========== ERROR ==========`);
-    console.error(`[rental-application]`, error);
+    console.error(`[rental-application-submit] ========== ERROR ==========`);
+    console.error(`[rental-application-submit]`, error);
 
     errorLog = addError(errorLog, error as Error, 'Fatal error in main handler');
     reportErrorLog(errorLog);

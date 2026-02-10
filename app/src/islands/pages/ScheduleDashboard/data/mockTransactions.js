@@ -2,8 +2,8 @@
  * Mock transactions for ScheduleDashboard development
  *
  * Fee Structure:
- * - Buyout: 1.5% per party (both initiator and recipient pay their own 1.5% fee)
- * - Swap: $5 flat (initiator only)
+ * - Full Week: 1.5% per party (both initiator and recipient pay their own 1.5% fee)
+ * - Alternating: $5 flat (initiator only)
  * - Share: $5 flat (initiator only)
  *
  * Fields:
@@ -21,7 +21,7 @@ const SHARE_FEE = 5.00; // Flat $5 for shares (initiator only)
 /**
  * Calculate fees for a buyout transaction
  */
-function calculateBuyoutFees(baseAmount) {
+function calculateFullWeekFees(baseAmount) {
   const fee = Math.round(baseAmount * FEE_RATE * 100) / 100;
   return {
     initiatorFee: fee,
@@ -37,11 +37,11 @@ export const MOCK_TRANSACTIONS = [
   {
     id: 'txn-1',
     date: new Date(2026, 0, 28),
-    type: 'buyout',
+    type: 'full_week',
     nights: [new Date(2026, 1, 14)],
     baseAmount: 150,
     amount: 150, // Legacy field for backwards compatibility
-    ...calculateBuyoutFees(150),
+    ...calculateFullWeekFees(150),
     suggestedPrice: 150,
     offeredPrice: 150,
     payerId: 'current-user',
@@ -49,11 +49,11 @@ export const MOCK_TRANSACTIONS = [
     status: 'pending'
   },
   // txn-2: Completed swap - current user initiated
-  // Swap fee: $5 (initiator only)
+  // Alternating fee: $5 (initiator only)
   {
     id: 'txn-2',
     date: new Date(2026, 0, 25),
-    type: 'swap',
+    type: 'alternating',
     nights: [new Date(2026, 1, 10), new Date(2026, 1, 17)],
     baseAmount: 0,
     amount: 0,
@@ -72,11 +72,11 @@ export const MOCK_TRANSACTIONS = [
   {
     id: 'txn-3',
     date: new Date(2026, 0, 20),
-    type: 'buyout',
+    type: 'full_week',
     nights: [new Date(2026, 1, 7)],
     baseAmount: 125,
     amount: 125,
-    ...calculateBuyoutFees(125),
+    ...calculateFullWeekFees(125),
     suggestedPrice: 125,
     offeredPrice: 125,
     payerId: 'user-456',
@@ -88,11 +88,11 @@ export const MOCK_TRANSACTIONS = [
   {
     id: 'txn-4',
     date: new Date(2026, 0, 15),
-    type: 'buyout',
+    type: 'full_week',
     nights: [new Date(2026, 1, 3)],
     baseAmount: 175,
     amount: 175,
-    ...calculateBuyoutFees(175),
+    ...calculateFullWeekFees(175),
     suggestedPrice: 220,
     offeredPrice: 175,
     payerId: 'current-user',
@@ -103,7 +103,7 @@ export const MOCK_TRANSACTIONS = [
   {
     id: 'txn-5',
     date: new Date(2026, 0, 30),
-    type: 'swap',
+    type: 'alternating',
     nights: [new Date(2026, 1, 11), new Date(2026, 1, 14)],
     baseAmount: 0,
     amount: 0,

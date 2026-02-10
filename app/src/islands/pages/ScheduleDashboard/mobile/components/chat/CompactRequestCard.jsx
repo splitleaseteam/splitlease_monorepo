@@ -12,10 +12,10 @@ export default function CompactRequestCard({ request, isMine }) {
   const { type, nights, amount } = request || {};
   const dateLabel = formatDate(nights?.[0]);
 
-  const typeLabel = type === 'buyout'
-    ? '$ Buyout'
-    : type === 'swap'
-      ? '<-> Swap'
+  const typeLabel = type === 'full_week'
+    ? '$ Full Week'
+    : type === 'alternating'
+      ? '<-> Alternating'
       : 'Share';
 
   return (

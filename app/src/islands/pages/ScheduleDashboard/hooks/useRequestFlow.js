@@ -16,8 +16,8 @@ export function useRequestFlow() {
   // -------------------------------------------------------------------------
   // REQUEST TYPE STATE
   // -------------------------------------------------------------------------
-  const [requestType, setRequestType] = useState('buyout'); // 'buyout' | 'share' | 'swap'
-  const [defaultRequestType, setDefaultRequestType] = useState('buyout'); // 'buyout' | 'share'
+  const [requestType, setRequestType] = useState('full_week'); // 'full_week' | 'share' | 'alternating'
+  const [defaultRequestType, setDefaultRequestType] = useState('full_week'); // 'full_week' | 'share'
 
   // -------------------------------------------------------------------------
   // SWAP MODE STATE
@@ -44,20 +44,20 @@ export function useRequestFlow() {
 
   /**
    * Change the request type if valid
-   * @param {string} type - The request type ('buyout', 'share', or 'swap')
+   * @param {string} type - The request type ('full_week', 'share', or 'alternating')
    */
   const handleRequestTypeChange = useCallback((type) => {
-    if (type === 'buyout' || type === 'share' || type === 'swap') {
+    if (type === 'full_week' || type === 'share' || type === 'alternating') {
       setRequestType(type);
     }
   }, []);
 
   /**
-   * Enter swap mode - sets isSwapMode to true and requestType to 'swap'
+   * Enter swap mode - sets isSwapMode to true and requestType to 'alternating'
    */
   const handleSwapInstead = useCallback(() => {
     setIsSwapMode(true);
-    setRequestType('swap');
+    setRequestType('alternating');
   }, []);
 
   /**
@@ -110,8 +110,8 @@ export function useRequestFlow() {
    * Reset all request flow state to initial values
    */
   const resetRequestFlow = useCallback(() => {
-    setRequestType('buyout');
-    setDefaultRequestType('buyout');
+    setRequestType('full_week');
+    setDefaultRequestType('full_week');
     setIsSwapMode(false);
     setSwapOfferNight(null);
     setIsCounterMode(false);

@@ -11,14 +11,14 @@
  * - Negotiation summary section (conditional)
  * - Three action buttons: Cancel Proposal, Close, Accept Host Terms
  * - "Check the full document" link
- * - Nested CancelProposalModal for decline flow
+ * - Nested EndProposalModal for decline flow
  */
 
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Info } from 'lucide-react';
 import { useCompareTermsModalLogic } from './useCompareTermsModalLogic.js';
-import CancelProposalModal from './CancelProposalModal.jsx';
+import EndProposalModal from './EndProposalModal.jsx';
 import './CompareTermsModal.css';
 
 /**
@@ -457,7 +457,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
 
       {/* Nested Cancel Proposal Modal */}
       {showCancelModal && (
-        <CancelProposalModal
+        <EndProposalModal
           isOpen={showCancelModal}
           proposal={proposal}
           userType="guest"

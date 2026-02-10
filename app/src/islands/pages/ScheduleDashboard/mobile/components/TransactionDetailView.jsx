@@ -44,9 +44,9 @@ function formatRelativeTime(date) {
 
 function getTypeIcon(type) {
   switch (type?.toLowerCase()) {
-    case 'buyout':
+    case 'full_week':
       return '💰';
-    case 'swap':
+    case 'alternating':
       return '🔄';
     case 'share':
       return '🏠';

@@ -1009,7 +1009,7 @@ dd.gep-detail-value {
    CANCEL PROPOSAL MODAL STYLES
    ===================================================== */
 
-.cancel-proposal-modal {
+.end-proposal-modal {
   width: 100%;
   min-height: 200px;
   display: flex;

@@ -52,20 +52,20 @@ describe('calculateFeeBreakdown', () => {
       expect(result.totalPrice).toBe(3045);
     });
 
-    it('should calculate 1.5% fee for buyout', () => {
-      const result = calculateFeeBreakdown(2000, 'buyout');
+    it('should calculate 1.5% fee for full_week', () => {
+      const result = calculateFeeBreakdown(2000, 'full_week');
 
       expect(result.basePrice).toBe(2000);
       expect(result.totalFee).toBe(30); // 2000 * 0.015
       expect(result.totalPrice).toBe(2030);
     });
 
-    it('should calculate 1.5% fee for swap', () => {
-      const result = calculateFeeBreakdown(1500, 'swap');
+    it('should calculate 1.5% fee for alternating', () => {
+      const result = calculateFeeBreakdown(1500, 'alternating');
 
       expect(result.basePrice).toBe(1500);
       expect(result.totalFee).toBe(22.5); // 1500 * 0.015
-      expect(result.splitModel).toBe(false); // Swap doesn't use split model
+      expect(result.splitModel).toBe(false); // Alternating doesn't use split model
       expect(result.platformFee).toBe(22.5); // Platform gets full fee
       expect(result.landlordShare).toBe(0); // No landlord share
     });
@@ -139,8 +139,8 @@ describe('calculateFeeBreakdown', () => {
       expect(result.totalPrice).toBe(1218);
     });
 
-    it('should apply urgency multiplier for buyout', () => {
-      const result = calculateFeeBreakdown(1000, 'buyout', { urgencyMultiplier: 1.5 });
+    it('should apply urgency multiplier for full_week', () => {
+      const result = calculateFeeBreakdown(1000, 'full_week', { urgencyMultiplier: 1.5 });
 
       expect(result.adjustedPrice).toBe(1500); // 1000 * 1.5
       expect(result.totalFee).toBe(22.5); // 1500 * 0.015
@@ -157,10 +157,10 @@ describe('calculateFeeBreakdown', () => {
       expect(result.totalFee).toBeDefined();
     });
 
-    it('should handle urgency multiplier with buyout multiplier', () => {
-      const result = calculateFeeBreakdown(1000, 'buyout', {
+    it('should handle urgency multiplier with full week multiplier', () => {
+      const result = calculateFeeBreakdown(1000, 'full_week', {
         urgencyMultiplier: 1.2,
-        buyoutMultiplier: 1.1
+        fullWeekMultiplier: 1.1
       });
 
       expect(result.adjustedPrice).toBe(1320); // 1000 * 1.2 * 1.1
@@ -169,21 +169,21 @@ describe('calculateFeeBreakdown', () => {
   });
 
   // ============================================================================
-  // Buyout Multiplier Tests
+  // Full Week Multiplier Tests
   // ============================================================================
-  describe('buyout multiplier', () => {
-    it('should apply buyout multiplier for buyout transactions', () => {
-      const result = calculateFeeBreakdown(1000, 'buyout', { buyoutMultiplier: 1.25 });
+  describe('full week multiplier', () => {
+    it('should apply full week multiplier for full_week transactions', () => {
+      const result = calculateFeeBreakdown(1000, 'full_week', { fullWeekMultiplier: 1.25 });
 
       expect(result.adjustedPrice).toBe(1250); // 1000 * 1.25
       expect(result.totalFee).toBeCloseTo(18.75, 2);
     });
 
-    it('should respect buyout multiplier config', () => {
-      // Test actual implementation behavior for buyout multiplier
-      const result = calculateFeeBreakdown(1000, 'date_change', { buyoutMultiplier: 1.5 });
+    it('should respect full week multiplier config', () => {
+      // Test actual implementation behavior for full_week multiplier
+      const result = calculateFeeBreakdown(1000, 'date_change', { fullWeekMultiplier: 1.5 });
 
-      // Implementation checks config.allowBuyout before applying
+      // Implementation checks config.allowFullWeek before applying
       expect(result.adjustedPrice).toBeDefined();
       expect(result.totalFee).toBeGreaterThan(0);
     });
@@ -347,13 +347,13 @@ describe('calculateFeeBreakdown', () => {
       expect(urgencyComponent.amount).toBe(200);
     });
 
-    it('should include buyout premium component when applied', () => {
-      const result = calculateFeeBreakdown(1000, 'buyout', { buyoutMultiplier: 1.25 });
+    it('should include full week premium component when applied', () => {
+      const result = calculateFeeBreakdown(1000, 'full_week', { fullWeekMultiplier: 1.25 });
 
-      const buyoutComponent = result.components.find(c => c.type === 'premium');
-      expect(buyoutComponent).toBeDefined();
-      expect(buyoutComponent.label).toBe('Buyout premium (25%)');
-      expect(buyoutComponent.amount).toBe(250);
+      const fullWeekComponent = result.components.find(c => c.type === 'premium');
+      expect(fullWeekComponent).toBeDefined();
+      expect(fullWeekComponent.label).toBe('Full Week premium (25%)');
+      expect(fullWeekComponent.amount).toBe(250);
     });
 
     it('should include fee component', () => {
@@ -485,9 +485,9 @@ describe('calculateFeeBreakdown', () => {
     });
 
     it('should handle lease takeover with urgency', () => {
-      const result = calculateFeeBreakdown(5000, 'buyout', {
+      const result = calculateFeeBreakdown(5000, 'full_week', {
         urgencyMultiplier: 1.15,
-        buyoutMultiplier: 1.1
+        fullWeekMultiplier: 1.1
       });
 
       // 5000 * 1.15 * 1.1 = 6325
@@ -496,7 +496,7 @@ describe('calculateFeeBreakdown', () => {
     });
 
     it('should show savings advantage for all transaction types', () => {
-      const transactionTypes = ['date_change', 'lease_takeover', 'lease_renewal', 'buyout', 'swap', 'sublet'];
+      const transactionTypes = ['date_change', 'lease_takeover', 'lease_renewal', 'full_week', 'alternating', 'sublet'];
 
       transactionTypes.forEach(type => {
         const result = calculateFeeBreakdown(5000, type);
@@ -546,7 +546,7 @@ describe('calculateFeeBreakdown', () => {
       expect(TRANSACTION_CONFIGS.date_change.allowUrgency).toBe(true);
       expect(TRANSACTION_CONFIGS.lease_takeover.allowUrgency).toBe(false);
       expect(TRANSACTION_CONFIGS.sublet.splitModel).toBe(false);
-      expect(TRANSACTION_CONFIGS.buyout.allowBuyout).toBe(true);
+      expect(TRANSACTION_CONFIGS.full_week.allowFullWeek).toBe(true);
     });
   });
 });

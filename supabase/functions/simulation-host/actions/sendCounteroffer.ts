@@ -72,10 +72,10 @@ export async function handleSendCounteroffer(
   const { error: counterError } = await supabase
     .from('proposal')
     .update({
-      'hc nightly price': offer.nightlyPrice,
-      'hc nights per week': offer.nightsPerWeek,
-      'hc check in day': offer.checkInDay,
-      'hc check out day': offer.checkOutDay,
+      'host_counter_offer_nightly_price': offer.nightlyPrice,
+      'host_counter_offer_nights_per_week': offer.nightsPerWeek,
+      'host_counter_offer_check_in_day': offer.checkInDay,
+      'host_counter_offer_check_out_day': offer.checkOutDay,
       Status: 'Host Counteroffer Sent',
       'Modified Date': new Date().toISOString(),
     })

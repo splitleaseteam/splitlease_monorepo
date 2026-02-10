@@ -72,7 +72,7 @@ export interface UseTransactionPricingReturn extends PricingBreakdown {
  *   pricePercentage: 100,
  *   daysUntilCheckIn: 7,
  *   marketDemand: 1.2,
- *   transactionType: 'buyout'
+ *   transactionType: 'full_week'
  * });
  * ```
  */
@@ -81,7 +81,7 @@ export function useTransactionPricing({
   pricePercentage,
   daysUntilCheckIn,
   marketDemand = 1.0,
-  transactionType = 'buyout',
+  transactionType = 'full_week',
 }: UseTransactionPricingParams): UseTransactionPricingReturn {
   const pricing = useMemo(() => {
     // Calculate user's selected price (before urgency)
@@ -96,9 +96,9 @@ export function useTransactionPricing({
     const urgencyPremium = Math.round(baseProposal * (urgencyMultiplier - 1));
     const finalPrice = baseProposal + urgencyPremium;
 
-    // Calculate platform fee (1.5% for buyout/crash, flat $5 for swap)
+    // Calculate platform fee (1.5% for full_week/shared_night, flat $5 for alternating)
     const platformFee =
-      transactionType === 'swap'
+      transactionType === 'alternating'
         ? 500
         : Math.round(finalPrice * 0.015);
 

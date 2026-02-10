@@ -18,7 +18,7 @@ export const MOCK_MESSAGES = [
     type: 'system',
     text: 'Swap completed.',
     requestData: {
-      type: 'swap',
+      type: 'alternating',
       nights: [new Date(2026, 1, 10)],
       transactionId: 'txn-2'
     },
@@ -38,7 +38,7 @@ export const MOCK_MESSAGES = [
     status: 'pending',
     text: 'Sarah proposed swapping Feb 11 for Feb 14',
     requestData: {
-      type: 'swap',
+      type: 'alternating',
       nights: [new Date(2026, 1, 11), new Date(2026, 1, 14)],
       transactionId: 'txn-5'
     },

@@ -87,7 +87,7 @@ export function ProposalCardBody({ proposal, handlers = {} }) {
 
   // Use nights_selected for the pill display (hosts see nights, not days)
   // Prioritize HC nights when counteroffer exists
-  let hcNightsSelected = proposal?.['hc nights selected'] || [];
+  let hcNightsSelected = proposal?.['host_counter_offer_nights_selected'] || [];
   if (typeof hcNightsSelected === 'string') {
     try { hcNightsSelected = JSON.parse(hcNightsSelected); } catch { hcNightsSelected = []; }
   }
