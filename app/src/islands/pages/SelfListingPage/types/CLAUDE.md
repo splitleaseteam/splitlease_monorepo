@@ -5,98 +5,54 @@
 
 ---
 
-## QUICK_STATS
-
-[TOTAL_FILES]: 1
-[PRIMARY_LANGUAGE]: TypeScript
-[KEY_PATTERNS]: Type-driven development, Enum-like types, Default values
-
----
-
-## FILES
-
-### listing.types.ts
-[INTENT]: Complete type system for listing form data
-[EXPORTS]: 50+ types, interfaces, and constants
-[PATTERN]: Type definitions organized by form section
-[DEFAULTS]: DEFAULT_LISTING_DATA provides initial form state
-
----
-
 ## TYPE_CATEGORIES
 
 ### Enums (String Literal Types)
 
-#### RentalType
-[VALUES]: 'Nightly' | 'Weekly' | 'Monthly'
-[USAGE]: leaseStyles.rentalType
-
-#### SpaceType
-[VALUES]: 'Private Room' | 'Entire Place' | 'Shared Room'
-[USAGE]: spaceSnapshot.typeOfSpace
-
-#### KitchenType
-[VALUES]: 'Full Kitchen' | 'Kitchenette' | 'No Kitchen' | 'Kitchen Not Accessible'
-[USAGE]: spaceSnapshot.typeOfKitchen
-
-#### ParkingType
-[VALUES]: 'Street Parking' | 'No Parking' | 'Off-Street Parking' | 'Attached Garage' | 'Detached Garage' | 'Nearby Parking Structure'
-[USAGE]: spaceSnapshot.typeOfParking
-
-#### GenderPreference
-[VALUES]: 'Male' | 'Female' | 'Other/Non Defined' | 'No Preference'
-[USAGE]: rules.preferredGender
-
-#### CancellationPolicy
-[VALUES]: 'Standard' | 'Additional Host Restrictions'
-[USAGE]: rules.cancellationPolicy
-
-#### WeeklyPattern
-[VALUES]: 'One week on, one week off' | 'Two weeks on, two weeks off' | 'One week on, three weeks off'
-[USAGE]: leaseStyles.weeklyPattern
+| Type | Values | Usage |
+|------|--------|-------|
+| RentalType | 'Nightly' \| 'Weekly' \| 'Monthly' | leaseStyles.rentalType |
+| SpaceType | 'Private Room' \| 'Entire Place' \| 'Shared Room' | spaceSnapshot.typeOfSpace |
+| KitchenType | 'Full Kitchen' \| 'Kitchenette' \| 'No Kitchen' \| 'Kitchen Not Accessible' | spaceSnapshot.typeOfKitchen |
+| ParkingType | 'Street Parking' \| 'No Parking' \| 'Off-Street Parking' \| 'Attached Garage' \| 'Detached Garage' \| 'Nearby Parking Structure' | spaceSnapshot.typeOfParking |
+| GenderPreference | 'Male' \| 'Female' \| 'Other/Non Defined' \| 'No Preference' | rules.preferredGender |
+| CancellationPolicy | 'Standard' \| 'Additional Host Restrictions' | rules.cancellationPolicy |
+| WeeklyPattern | 'One week on, one week off' \| 'Two weeks on, two weeks off' \| 'One week on, three weeks off' | leaseStyles.weeklyPattern |
 
 ---
 
 ## SECTION_INTERFACES
 
 ### AddressData
-[INTENT]: Geocoded address information
-[FIELDS]: fullAddress (string), number (string), street (string), city (string), state (string), zip (string), neighborhood (string), latitude (number | undefined), longitude (number | undefined), validated (boolean)
-[VALIDATION]: validated flag ensures address went through geocoding
+[FIELDS]: fullAddress, number, street, city, state, zip, neighborhood, latitude?, longitude?, validated
+[KEY]: validated flag ensures address went through geocoding
 
 ### SpaceSnapshot (Section 1)
-[INTENT]: Property basics and address
-[FIELDS]: listingName (string), typeOfSpace (SpaceType | ''), bedrooms (number), typeOfKitchen (KitchenType | ''), beds (number), typeOfParking (ParkingType | ''), bathrooms (number), address (AddressData)
+[FIELDS]: listingName, typeOfSpace, bedrooms, typeOfKitchen, beds, typeOfParking, bathrooms, address
 [DEFAULTS]: bedrooms=2, beds=2, bathrooms=2.5
 
 ### Features (Section 2)
-[INTENT]: Amenities and descriptions
-[FIELDS]: amenitiesInsideUnit (string[]), amenitiesOutsideUnit (string[]), descriptionOfLodging (string), neighborhoodDescription (string)
+[FIELDS]: amenitiesInsideUnit, amenitiesOutsideUnit, descriptionOfLodging, neighborhoodDescription
 [DEFAULTS]: Empty arrays, empty strings
 
 ### LeaseStylesConfig (Section 3)
-[INTENT]: Rental type and availability configuration
-[FIELDS]: rentalType (RentalType), availableNights (object with boolean fields for each day), weeklyPattern (WeeklyPattern | ''), subsidyAgreement (boolean)
+[FIELDS]: rentalType, availableNights (per-day booleans), weeklyPattern, subsidyAgreement
 [DEFAULTS]: rentalType='Monthly', subsidyAgreement=false
 
 ### Pricing (Section 4)
-[INTENT]: Pricing configuration per rental type
-[FIELDS]: damageDeposit (number), maintenanceFee (number), monthlyCompensation (number | undefined), weeklyCompensation (number | undefined), nightlyPricing (NightlyPricing | undefined)
+[FIELDS]: damageDeposit, maintenanceFee, monthlyCompensation?, weeklyCompensation?, nightlyPricing?
 [DEFAULTS]: damageDeposit=500, maintenanceFee=0
 
 ### Rules (Section 5)
-[INTENT]: House rules and policies
-[FIELDS]: cancellationPolicy (CancellationPolicy | ''), preferredGender (GenderPreference), numberOfGuests (number), checkInTime (string), checkOutTime (string), idealMinDuration (number), idealMaxDuration (number), houseRules (string[]), blockedDates (Date[])
+[FIELDS]: cancellationPolicy, preferredGender, numberOfGuests, checkInTime, checkOutTime, idealMinDuration, idealMaxDuration, houseRules, blockedDates
 [DEFAULTS]: numberOfGuests=2, checkInTime='2:00 PM', checkOutTime='11:00 AM', idealMinDuration=6, idealMaxDuration=52
 
 ### Photos (Section 6)
-[INTENT]: Photo upload tracking
-[FIELDS]: photos (PhotoData[]), minRequired (number)
+[FIELDS]: photos (PhotoData[]), minRequired
 [DEFAULTS]: photos=[], minRequired=3
 
 ### ReviewData (Section 7)
-[INTENT]: Final review fields and additional metadata
-[FIELDS]: optionalNotes (string | undefined), agreedToTerms (boolean), safetyFeatures (string[] | undefined), squareFootage (number | undefined), firstDayAvailable (string | undefined), previousReviewsLink (string | undefined)
+[FIELDS]: optionalNotes?, agreedToTerms, safetyFeatures?, squareFootage?, firstDayAvailable?, previousReviewsLink?
 [DEFAULTS]: agreedToTerms=false
 
 ---
@@ -105,184 +61,24 @@
 
 ### NightlyPricing
 [INTENT]: Nightly pricing with decay curve for long-stay discounts
-[FIELDS]: oneNightPrice (number), decayPerNight (number), fiveNightTotal (number), calculatedRates (object)
-[CALCULATED_RATES]: night1-night5 (individual prices), cumulativeNight2-cumulativeNight5 (running totals)
+[FIELDS]: oneNightPrice, decayPerNight, fiveNightTotal, calculatedRates (night1-night5 individual + cumulativeNight2-cumulativeNight5)
 [SOURCE]: Generated by NightlyPriceSlider component
 
 ### PhotoData
 [INTENT]: Individual photo metadata and upload state
-[FIELDS]: id (string), url (string), file (File | undefined), caption (string | undefined), displayOrder (number), storagePath (string | undefined), isUploading (boolean | undefined), uploadError (string | undefined)
-[TRANSIENT_FIELDS]: file, isUploading, uploadError (not persisted to localStorage)
+[FIELDS]: id, url, file?, caption?, displayOrder, storagePath?, isUploading?, uploadError?
+[TRANSIENT]: file, isUploading, uploadError are not persisted to localStorage
 
 ### ListingFormData
-[INTENT]: Complete form state
-[FIELDS]: id (string | undefined), userId (string | undefined), spaceSnapshot (SpaceSnapshot), features (Features), leaseStyles (LeaseStylesConfig), pricing (Pricing), rules (Rules), photos (Photos), review (ReviewData), currentSection (number), completedSections (number[]), isDraft (boolean), isSubmitted (boolean), createdAt (Date | undefined), updatedAt (Date | undefined)
-[DEFAULTS]: Provided by DEFAULT_LISTING_DATA
-
----
-
-## VALIDATION_TYPES
-
-### ValidationError
-[INTENT]: Single validation error
-[FIELDS]: field (string), message (string), section (number)
-[USAGE]: Returned by validation functions
-
-### SectionStatus
-[INTENT]: Section completion status
-[FIELDS]: sectionNumber (number), isComplete (boolean), hasErrors (boolean), errorCount (number)
-[USAGE]: UI progress indicators
-
-### FormState
-[INTENT]: Complete form state with metadata
-[FIELDS]: data (ListingFormData), currentSection (number), errors (ValidationError[]), isLoading (boolean), isSaving (boolean)
-[USAGE]: Alternative state shape (not currently used in favor of StoreState)
+[INTENT]: Complete form state combining all sections
+[FIELDS]: id?, userId?, spaceSnapshot, features, leaseStyles, pricing, rules, photos, review, currentSection, completedSections, isDraft, isSubmitted, createdAt?, updatedAt?
+[DEFAULTS]: Provided by DEFAULT_LISTING_DATA constant in listing.types.ts
 
 ---
 
 ## OPTION_CONSTANTS
 
-### AMENITIES_INSIDE
-[INTENT]: Pre-defined in-unit amenity options
-[TYPE]: string[]
-[COUNT]: 28 items
-[EXAMPLES]: 'Air Conditioned', 'WiFi', 'Washer', 'Dryer', 'Bedding', 'TV', 'Private Entrance'
-[USAGE]: Checkbox list in Section 2
-
-### AMENITIES_OUTSIDE
-[INTENT]: Pre-defined building/outdoor amenity options
-[TYPE]: string[]
-[COUNT]: 25 items
-[EXAMPLES]: 'Elevator', 'Gym', 'Pool (Indoor)', 'Doorman', 'Laundry Room', 'Security Cameras'
-[USAGE]: Checkbox list in Section 2
-
-### HOUSE_RULES
-[INTENT]: Pre-defined house rule options
-[TYPE]: string[]
-[COUNT]: 29 items
-[EXAMPLES]: 'No Smoking Inside', 'No Pets', 'Quiet Hours', 'No Parties', 'Clean Up After Yourself'
-[USAGE]: Checkbox list in Section 5
-
-### SAFETY_FEATURES
-[INTENT]: Pre-defined safety feature options
-[TYPE]: string[]
-[COUNT]: 6 items
-[VALUES]: 'Smoke Detector', 'Carbon Monoxide Detector', 'Fire Extinguisher', 'First Aid Kit', 'Fire Sprinklers', 'Lock on Bedroom Door'
-[USAGE]: Checkbox list in Section 7
-[DATABASE_MATCH]: Names must match zfut_safetyfeatures table
-
----
-
-## DEFAULT_LISTING_DATA
-
-### Purpose
-[INTENT]: Initial form state for new listings
-[TYPE]: ListingFormData
-[USAGE]: Store initializes with this data
-
-### Default Values by Section
-```typescript
-{
-  spaceSnapshot: {
-    listingName: '',
-    typeOfSpace: '',
-    bedrooms: 2,
-    typeOfKitchen: '',
-    beds: 2,
-    typeOfParking: '',
-    bathrooms: 2.5,
-    address: {
-      fullAddress: '',
-      number: '',
-      street: '',
-      city: '',
-      state: '',
-      zip: '',
-      neighborhood: '',
-      validated: false
-    }
-  },
-  features: {
-    amenitiesInsideUnit: [],
-    amenitiesOutsideUnit: [],
-    descriptionOfLodging: '',
-    neighborhoodDescription: ''
-  },
-  leaseStyles: {
-    rentalType: 'Monthly',
-    subsidyAgreement: false
-  },
-  pricing: {
-    damageDeposit: 500,
-    maintenanceFee: 0
-  },
-  rules: {
-    cancellationPolicy: '',
-    preferredGender: 'No Preference',
-    numberOfGuests: 2,
-    checkInTime: '2:00 PM',
-    checkOutTime: '11:00 AM',
-    idealMinDuration: 6,
-    idealMaxDuration: 52,
-    houseRules: [],
-    blockedDates: []
-  },
-  photos: {
-    photos: [],
-    minRequired: 3
-  },
-  review: {
-    agreedToTerms: false,
-    safetyFeatures: [],
-    squareFootage: undefined,
-    firstDayAvailable: '',
-    previousReviewsLink: ''
-  },
-  currentSection: 1,
-  completedSections: [],
-  isDraft: true,
-  isSubmitted: false
-}
-```
-
----
-
-## TYPE_USAGE_PATTERNS
-
-### Form Data Updates
-```typescript
-import type { SpaceSnapshot } from './types/listing.types';
-
-const updateSpaceSnapshot = (data: SpaceSnapshot) => {
-  listingLocalStore.updateSpaceSnapshot(data);
-};
-```
-
-### Validation
-```typescript
-import type { ValidationError, ListingFormData } from './types/listing.types';
-
-function validateSection1(data: ListingFormData): ValidationError[] {
-  const errors: ValidationError[] = [];
-  if (!data.spaceSnapshot.listingName) {
-    errors.push({
-      field: 'listingName',
-      message: 'Listing name is required',
-      section: 1
-    });
-  }
-  return errors;
-}
-```
-
-### Type Guards
-```typescript
-import type { RentalType } from './types/listing.types';
-
-function isNightlyRental(rentalType: RentalType): boolean {
-  return rentalType === 'Nightly';
-}
-```
+Constants: AMENITIES_INSIDE (28), AMENITIES_OUTSIDE (25), HOUSE_RULES (29), SAFETY_FEATURES (6) -- defined in listing.types.ts
 
 ---
 
@@ -294,60 +90,9 @@ function isNightlyRental(rentalType: RentalType): boolean {
 [TRANSFORM]: prepareListingSubmission() handles mapping
 
 ### Data Type Conversions
-[DATES]: Date objects → ISO strings (YYYY-MM-DD)
-[AVAILABLE_NIGHTS]: Object with booleans → Array of day names
+[DATES]: Date objects -> ISO strings (YYYY-MM-DD)
+[AVAILABLE_NIGHTS]: Object with booleans -> Array of day names
 [ARRAYS]: Remain arrays (amenities, house rules, safety features)
-
----
-
-## TYPE_SAFETY_BENEFITS
-
-### Compile-Time Validation
-[BENEFIT]: TypeScript catches field name typos before runtime
-[EXAMPLE]: data.spaceSnapsho (typo) → TypeScript error
-
-### Autocomplete
-[BENEFIT]: IDEs provide field suggestions
-[EXAMPLE]: Typing data.spaceSnapshot. shows all available fields
-
-### Refactoring Safety
-[BENEFIT]: Renaming fields updates all usages
-[EXAMPLE]: Rename bedrooms → bedroomCount affects all files
-
-### Documentation
-[BENEFIT]: Types serve as inline documentation
-[EXAMPLE]: RentalType shows only valid values
-
----
-
-## INTEGRATION_POINTS
-
-### Store
-[CONSUMER]: listingLocalStore uses ListingFormData as primary data shape
-[VALIDATION]: validateForSubmission() checks against type constraints
-
-### Components
-[CONSUMERS]: Section components receive typed props
-[TYPE_CHECKING]: Ensures sections receive correct data shape
-
-### API Transformation
-[CONSUMER]: prepareListingSubmission() transforms ListingFormData to BubbleListingPayload
-[TYPE_SAFETY]: Both sides have complete type definitions
-
----
-
-## CONSTANTS_VS_DATABASE
-
-### Hard-Coded Constants
-[LISTS]: AMENITIES_INSIDE, AMENITIES_OUTSIDE, HOUSE_RULES, SAFETY_FEATURES
-[REASON]: These are pre-defined options, not user-generated
-[TRADEOFF]: Updates require code change vs database query on every page load
-
-### Database-Sourced Options
-[TABLES]: zat_features_amenity, zfut_safetyfeatures
-[FETCHED_BY]: amenitiesService.ts, safetyService.ts
-[BENEFIT]: Admin can add/remove options without code deploy
-[USAGE]: Sections use both constants and database-fetched options
 
 ---
 
@@ -370,6 +115,4 @@ function isNightlyRental(rentalType: RentalType): boolean {
 
 ---
 
-**FILE_COUNT**: 1
 **TYPE_COUNT**: 30+
-**TOTAL_LINES**: 372

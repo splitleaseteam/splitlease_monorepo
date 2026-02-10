@@ -616,5 +616,25 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
+## Semantic Boundaries (DO NOT MERGE)
+
+These files/modules look similar but serve different user roles, data shapes, or contexts:
+
+| Area | Files | Why They're Distinct |
+|------|-------|---------------------|
+| Pricing | `lib/priceCalculations.js`, `lib/scheduleSelector/priceCalculations.js`, `logic/calculators/pricing/` | Host compensation vs schedule pricing vs reservation totals — different consumers, inputs, outputs |
+| Schedule selectors | `ListingScheduleSelector`, `HostScheduleSelector`, `SearchScheduleSelector` | Host configuring vs host editing vs guest filtering — different interaction models |
+| Day conversion | `logic/processors/external/adaptDays*.js`, `proposal/lib/dayConversion.ts` | Frontend boundary (JS 0-6 to Bubble 1-7) vs backend boundary (same conversion, different runtime) |
+| Proposal components | `islands/proposals/` (deprecated), `islands/pages/proposals/` | Old location vs current location — only `pages/proposals/` is active |
+
+**Before consolidating any code:**
+1. Read variable names — do the inputs/outputs describe the same concept?
+2. Check consumers — are the same pages/hooks using both files?
+3. Compare function signatures — do they take the same parameters?
+4. Ask "who uses this?" — different user roles (host vs guest) often mean different features
+5. When in doubt, DON'T merge
+
+---
+
 **Last Updated**: 2026-02-10
 **Status**: Active Development
