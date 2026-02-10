@@ -11,10 +11,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getUserType } from '../../../lib/auth.js';
-import { getUserId } from '../../../lib/secureStorage.js';
 import { supabase } from '../../../lib/supabase.js';
-import { isHost } from '../../../logic/rules/users/isHost.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { getAllHouseRules } from '../../shared/EditListingDetails/services/houseRulesService.js';
 import { getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
 import { DAYS_OF_WEEK, nightNamesToIndices } from '../../shared/HostEditingProposal/types.js';
@@ -153,14 +151,21 @@ function normalizeProposal(proposal, normalizedGuest = null) {
  */
 export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   // ============================================================================
-  // AUTH STATE
+  // AUTH - consolidated hook handles authentication, role check, and redirect
   // ============================================================================
-  const [authState, setAuthState] = useState({
-    isChecking: !skipAuth,
-    isAuthenticated: skipAuth,
-    shouldRedirect: false,
-    userType: skipAuth ? 'host' : null
-  });
+  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser(
+    skipAuth ? {} : { requireHost: true, redirectOnFail: '/' }
+  );
+
+  // Derived authState for backward-compatible component API
+  const authState = skipAuth
+    ? { isChecking: false, isAuthenticated: true, shouldRedirect: false, userType: 'host' }
+    : {
+        isChecking: authLoading,
+        isAuthenticated,
+        shouldRedirect: !authLoading && !isAuthenticated,
+        userType: authUser?.userType || null
+      };
 
   // ============================================================================
   // DATA STATE
@@ -200,7 +205,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   const [allHouseRules, setAllHouseRules] = useState([]);
 
   // ============================================================================
-  // AUTH CHECK
+  // AUTH -> USER STATE + DATA LOADING
   // ============================================================================
   useEffect(() => {
     // Skip auth check in demo mode
@@ -209,117 +214,22 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       return;
     }
 
-    async function checkAuth() {
-      try {
-        const isLoggedIn = await checkAuthStatus();
+    if (authLoading) return;
+    if (!isAuthenticated || !authUser) return;
 
-        if (!isLoggedIn) {
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            shouldRedirect: true,
-            userType: null
-          });
-          // Redirect to home
-          window.location.href = '/';
-          return;
-        }
+    // Map authUser to local user state shape that rest of file expects
+    const localUser = {
+      userId: authUser.id,
+      id: authUser.id,
+      firstName: authUser.firstName || 'Host',
+      email: authUser.email || '',
+      userType: authUser.userType || ''
+    };
+    setUser(localUser);
 
-        // ========================================================================
-        // GOLD STANDARD AUTH PATTERN - Step 2: Deep validation with clearOnFailure: false
-        // ========================================================================
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        let userType = null;
-        let finalUserData = null;
-
-        if (userData) {
-          // Success path: Use validated user data
-          userType = userData['User Type'] || userData.userType;
-          finalUserData = userData;
-        } else {
-          // ========================================================================
-          // GOLD STANDARD AUTH PATTERN - Step 3: Fallback to Supabase session metadata
-          // ========================================================================
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            // Session valid but profile fetch failed - use session metadata
-            userType = session.user.user_metadata?.user_type || getUserType() || null;
-
-            // Create minimal user data from session for loadHostData
-            if (userType && isHost({ userType })) {
-              finalUserData = {
-                userId: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-                firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-                email: session.user.email,
-                userType: userType
-              };
-            }
-
-            // If we can't determine userType from session, redirect
-            if (!userType) {
-              setAuthState({
-                isChecking: false,
-                isAuthenticated: true,
-                shouldRedirect: true,
-                userType: null
-              });
-              window.location.href = '/';
-              return;
-            }
-          } else {
-            // No valid session - redirect
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: false,
-              shouldRedirect: true,
-              userType: null
-            });
-            window.location.href = '/';
-            return;
-          }
-        }
-
-        // Check if user is a host
-        if (!isHost({ userType })) {
-          console.warn('[HostProposals] User is not a Host, redirecting...');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            shouldRedirect: true,
-            userType: userType
-          });
-          window.location.href = '/';
-          return;
-        }
-
-        setUser(finalUserData);
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          shouldRedirect: false,
-          userType: userType
-        });
-
-        // Load host data
-        await loadHostData(finalUserData.userId || finalUserData.id);
-
-      } catch (err) {
-        console.error('Auth check failed:', err);
-        setError('Authentication failed. Please log in again.');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          shouldRedirect: true,
-          userType: null
-        });
-      }
-    }
-
-    checkAuth();
-  }, []);
+    // Load host data
+    loadHostData(authUser.id);
+  }, [authLoading, isAuthenticated, authUser, skipAuth]);
 
   // ============================================================================
   // LOAD REFERENCE DATA (House Rules)

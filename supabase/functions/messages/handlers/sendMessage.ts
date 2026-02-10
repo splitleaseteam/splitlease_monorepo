@@ -17,8 +17,8 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
+import { resolveUser } from '../../_shared/auth.ts';
 import {
-  getUserBubbleId,
   getUserProfile,
   getListingName,
   createMessage,
@@ -150,37 +150,10 @@ export async function handleSendMessage(
   }
   console.log('[sendMessage] ✅ Message body validation passed:', typedPayload.message_body.substring(0, 50));
 
-  // Determine user's Bubble ID (priority order):
-  // 1. user.bubbleId from JWT user_metadata (set during signup)
-  // 2. user.id if it looks like a Bubble ID (legacy auth)
-  // 3. Lookup from public.user by email (fallback for migrated users)
-  let senderBubbleId: string | null = null;
-
-  // Priority 1: Use bubbleId from JWT user_metadata if available
-  if (user.bubbleId) {
-    senderBubbleId = user.bubbleId;
-    console.log('[sendMessage] Using Bubble ID from JWT user_metadata:', senderBubbleId);
-  }
-  // Priority 2: Check if user.id looks like a Bubble ID (legacy auth)
-  else if (/^\d+x\d+$/.test(user.id)) {
-    senderBubbleId = user.id;
-    console.log('[sendMessage] Using direct Bubble ID from legacy auth:', senderBubbleId);
-  }
-  // Priority 3: JWT auth without metadata - look up by email in public.user
-  else {
-    if (!user.email) {
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
-    }
-    senderBubbleId = await getUserBubbleId(supabaseAdmin, user.email);
-    console.log('[sendMessage] Looked up Bubble ID from email:', senderBubbleId);
-  }
-
-  if (!senderBubbleId) {
-    console.error('[sendMessage] ❌ Could not determine sender Bubble ID');
-    throw new ValidationError('Could not find user profile. Please try logging in again.');
-  }
-
-  console.log('[sendMessage] ✅ Sender Bubble ID determined:', senderBubbleId);
+  // Resolve sender's Bubble ID via shared auth utility
+  const resolvedUser = await resolveUser(supabaseAdmin, user);
+  const senderBubbleId = resolvedUser.id;
+  console.log('[sendMessage] Sender Bubble ID determined:', senderBubbleId);
 
   let threadId = typedPayload.thread_id;
   let isNewThread = false;

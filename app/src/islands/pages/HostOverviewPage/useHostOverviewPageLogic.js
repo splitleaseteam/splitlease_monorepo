@@ -14,9 +14,8 @@
  * - user: Current user data
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getAvatarUrl } from '../../../lib/auth.js';
-import { getUserId } from '../../../lib/secureStorage.js';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import { initializeLookups, getBoroughName } from '../../../lib/dataLookups.js';
 
@@ -55,17 +54,26 @@ function extractBoroughFromAddress(addressField) {
 
 export function useHostOverviewPageLogic() {
   // ============================================================================
+  // AUTH (consolidated hook)
+  // ============================================================================
+  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    requireHost: true,
+    redirectOnFail: '/'
+  });
+
+  // Derive authState shape for consumers
+  const authState = {
+    isChecking: authLoading,
+    shouldRedirect: !authLoading && !isAuthenticated
+  };
+
+  // ============================================================================
   // STATE
   // ============================================================================
 
-  // Auth state
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    shouldRedirect: false
-  });
-
   // User data
   const [user, setUser] = useState(null);
+  const userRef = useRef(null);
 
   // Data lists
   const [listingsToClaim, setListingsToClaim] = useState([]);
@@ -113,28 +121,6 @@ export function useHostOverviewPageLogic() {
   // ============================================================================
   // DATA FETCHING
   // ============================================================================
-
-  const fetchUserData = useCallback(async () => {
-    // CRITICAL: Use clearOnFailure: false to preserve session if Edge Function fails
-    try {
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-      if (userData) {
-        setUser({
-          id: userData.userId || userData.id,
-          firstName: userData.firstName || 'Host',
-          lastName: userData.lastName || '',
-          email: userData.email || '',
-          // After migration, user.id serves as host reference directly
-          accountHostId: userData.accountHostId || userData.userId || userData.id
-        });
-        return userData;
-      }
-      return null;
-    } catch (err) {
-      console.error('Error fetching user data:', err);
-      return null;
-    }
-  }, []);
 
   const fetchHostListings = useCallback(async (hostAccountId, userId) => {
     if (!hostAccountId && !userId) return [];
@@ -506,78 +492,17 @@ export function useHostOverviewPageLogic() {
     }
   }, []);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (finalUser = null) => {
+    const activeUser = finalUser || userRef.current;
+    if (!activeUser) return; // No user yet, skip
+
     setLoading(true);
     setError(null);
 
     try {
-      // ========================================================================
-      // GOLD STANDARD AUTH PATTERN - Step 1: Quick auth check
-      // ========================================================================
-      const isAuthenticated = await checkAuthStatus();
-
-      if (!isAuthenticated) {
-        console.log('[HostOverview] User not authenticated, redirecting to home');
-        setAuthState({ isChecking: false, shouldRedirect: true });
-        setTimeout(() => {
-          window.location.href = '/?login=true';
-        }, 100);
-        return;
-      }
-
-      // ========================================================================
-      // GOLD STANDARD AUTH PATTERN - Step 2: Deep validation with clearOnFailure: false
-      // ========================================================================
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-      let finalUser = null;
-
-      if (userData) {
-        // Success path: Use validated user data
-        // Note: validateTokenAndFetchUser returns { userId, accountHostId, ... }
-        finalUser = {
-          id: userData.userId || userData.accountHostId || userData.id,
-          firstName: userData.firstName || 'Host',
-          lastName: userData.lastName || '',
-          email: userData.email || '',
-          accountHostId: userData.accountHostId || userData.userId || userData.id
-        };
-        setUser(finalUser);
-        console.log('[HostOverview] User data loaded:', finalUser.firstName);
-      } else {
-        // ========================================================================
-        // GOLD STANDARD AUTH PATTERN - Step 3: Fallback to Supabase session metadata
-        // ========================================================================
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          // Session valid but profile fetch failed - use session metadata
-          const fallbackUser = {
-            id: session.user.id,
-            firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-            lastName: session.user.user_metadata?.last_name || '',
-            email: session.user.email,
-            accountHostId: session.user.user_metadata?.user_id || getUserId() || session.user.id
-          };
-          setUser(fallbackUser);
-          finalUser = fallbackUser;
-          console.log('[HostOverview] Using fallback user data from session:', fallbackUser.firstName);
-        } else {
-          // No valid session - redirect
-          console.log('[HostOverview] No valid session, redirecting');
-          setAuthState({ isChecking: false, shouldRedirect: true });
-          setTimeout(() => {
-            window.location.href = '/?login=true';
-          }, 100);
-          return;
-        }
-      }
-
-      setAuthState({ isChecking: false, shouldRedirect: false });
-
       // After migration, user.id serves as host reference directly
-      const hostAccountId = finalUser.accountHostId || finalUser.id;
-      const userId = finalUser.id;
+      const hostAccountId = activeUser.accountHostId || activeUser.id;
+      const userId = activeUser.id;
 
       console.log('[HostOverview] loadData - hostAccountId:', hostAccountId, 'userId:', userId);
 
@@ -606,9 +531,23 @@ export function useHostOverviewPageLogic() {
   // EFFECTS
   // ============================================================================
 
+  // When auth completes, map authUser to local state and trigger data fetch
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (authLoading || !authUser) return;
+
+    const mappedUser = {
+      id: authUserId,
+      firstName: authUser.firstName || 'Host',
+      lastName: authUser.fullName?.split(' ').slice(1).join(' ') || '',
+      email: authUser.email || '',
+      accountHostId: authUser.accountHostId || authUserId
+    };
+    setUser(mappedUser);
+    userRef.current = mappedUser;
+    console.log('[HostOverview] User data loaded:', mappedUser.firstName);
+
+    loadData(mappedUser);
+  }, [authLoading, authUser, authUserId, loadData]);
 
   // ============================================================================
   // ACTION HANDLERS

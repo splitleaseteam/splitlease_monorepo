@@ -1,0 +1,115 @@
+/* ========================================
+   Loading Spinner Base Styles
+   ========================================
+   Shared base classes for spinners and loading overlays.
+   Components should compose these with their own overrides.
+   Uses CSS custom properties from variables.css.
+   ======================================== */
+
+/* Spinner animation keyframes - single definition for all spinners. */
+@keyframes spinnerBaseSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Base spinner - circular border spinner.
+   Default size is medium (32px). Uses purple accent as the
+   visible arc color with a light gray track. */
+.spinner-base {
+  display: inline-block;
+  border-radius: var(--rounded-full);
+  border-style: solid;
+  border-color: var(--border-color);
+  border-top-color: var(--secondary-purple);
+  animation: spinnerBaseSpin var(--animation-duration) var(--easing-linear) infinite;
+  /* Default medium size */
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   Size Variants
+   ======================================== */
+
+/* Small - for inline use within buttons or compact areas (16px). */
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  animation-duration: 0.8s;
+}
+
+/* Medium - default standalone spinner (32px). */
+.spinner-md {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
+/* Large - for prominent page-level loading states (48px). */
+.spinner-lg {
+  width: 48px;
+  height: 48px;
+  border-width: 4px;
+}
+
+/* ========================================
+   Color Variants
+   ======================================== */
+
+/* White spinner - for use on dark/purple backgrounds (e.g., inside buttons). */
+.spinner-white {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: var(--white);
+}
+
+/* ========================================
+   Loading Overlay
+   ======================================== */
+
+/* Full-page loading overlay - covers the entire viewport
+   with a semi-transparent background and a centered spinner. */
+.loading-overlay-base {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+}
+
+/* Container-scoped loading overlay - covers the parent element
+   rather than the full viewport. Parent must have position: relative. */
+.loading-overlay-contained {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-dropdown);
+  background: var(--overlay-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  border-radius: inherit;
+}
+
+/* Loading text - optional message below the spinner. */
+.loading-text-base {
+  font-family: var(--font-inter);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-gray);
+  margin: 0;
+  text-align: center;
+}

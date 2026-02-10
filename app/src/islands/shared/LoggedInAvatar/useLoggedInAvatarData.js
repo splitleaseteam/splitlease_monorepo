@@ -161,7 +161,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
             id,
             current_user_role
           `)
-          .eq('id', userId)
+          .eq('bubble_legacy_id', userId)
           .single(),
 
         // 2. Fetch listings for this user using the same RPC as HostOverview
@@ -178,7 +178,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         supabase
           .from('virtualmeetingschedulesandlinks')
           .select('_id', { count: 'exact', head: true })
-          .or(`Guest.eq.${userId},Host.eq.${userId}`)
+          .or(`guest.eq.${userId},host.eq.${userId}`)
           .then(result => {
             // If table doesn't exist or query fails, return count = 0
             if (result.error) {

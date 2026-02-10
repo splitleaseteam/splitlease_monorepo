@@ -120,9 +120,9 @@ export async function handleSendSplitBotMessage(
   if (!resolvedThreadId && input.proposalId) {
     console.log('[sendSplitBotMessage] Looking up thread by proposalId:', input.proposalId);
     const { data: threadLookup, error: lookupError } = await supabase
-      .from('thread')
-      .select('_id')
-      .eq('"Proposal"', input.proposalId)
+      .from('message_thread')
+      .select('id')
+      .eq('proposal_id', input.proposalId)
       .maybeSingle();
 
     if (lookupError) {
@@ -135,7 +135,7 @@ export async function handleSendSplitBotMessage(
       throw new ValidationError(`No thread found for proposal: ${input.proposalId}`);
     }
 
-    resolvedThreadId = threadLookup._id;
+    resolvedThreadId = threadLookup.id;
     console.log('[sendSplitBotMessage] Found thread by proposal:', resolvedThreadId);
   }
 

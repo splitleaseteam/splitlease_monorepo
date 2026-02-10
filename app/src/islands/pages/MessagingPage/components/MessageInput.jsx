@@ -7,10 +7,18 @@
  * - Has character limit of 1000 characters
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, forwardRef } from 'react';
 
-export default function MessageInput({ value, onChange, onSend, disabled, isSending }) {
+const MessageInput = forwardRef(function MessageInput({ value, onChange, onSend, disabled, isSending }, ref) {
   const textareaRef = useRef(null);
+
+  // Merge forwarded ref with internal ref so parent can focus the textarea
+  useEffect(() => {
+    if (ref) {
+      if (typeof ref === 'function') ref(textareaRef.current);
+      else ref.current = textareaRef.current;
+    }
+  }, [ref]);
   const maxCharacters = 1000;
 
   // Auto-resize textarea based on content
@@ -74,4 +82,6 @@ export default function MessageInput({ value, onChange, onSend, disabled, isSend
       </div>
     </div>
   );
-}
+});
+
+export default MessageInput;

@@ -340,7 +340,7 @@ export default function MessagingPage() {
               {/* Thread Sidebar - Hidden on mobile when viewing conversation */}
               <ThreadSidebar
                 threads={threads}
-                selectedThreadId={selectedThread?._id}
+                selectedThreadId={selectedThread?.id}
                 onThreadSelect={handleMobileThreadSelect}
                 onAction={handlePanelAction}
                 className={isMobile && mobileView === 'conversation' ? 'thread-sidebar--hidden' : ''}

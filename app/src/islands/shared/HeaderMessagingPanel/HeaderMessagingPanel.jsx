@@ -34,7 +34,7 @@ import './HeaderMessagingPanel.css';
  * @param {object} props
  * @param {boolean} props.isOpen - Whether the panel is open
  * @param {function} props.onClose - Callback to close the panel
- * @param {string} props.userBubbleId - User's Bubble ID
+ * @param {string} props.userId - User's ID
  * @param {string} props.userName - User's first name
  * @param {string} props.userAvatar - User's avatar URL
  * @param {function} [props.onUnreadCountChange] - Callback to refresh header unread count
@@ -42,7 +42,7 @@ import './HeaderMessagingPanel.css';
 export default function HeaderMessagingPanel({
   isOpen,
   onClose,
-  userBubbleId,
+  userId,
   userName,
   userAvatar,
   onUnreadCountChange,
@@ -82,7 +82,7 @@ export default function HeaderMessagingPanel({
     handleProposalSubmit,
   } = useHeaderMessagingPanelLogic({
     isOpen,
-    userBubbleId,
+    userId,
     userName,
     userAvatar,
     onClose,

@@ -12,44 +12,43 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AuthenticationError, ValidationError as _ValidationError } from '../../_shared/errors.ts';
 
 interface AdminThread {
-  _id: string;
-  'Thread Subject': string;
-  'Created Date': string;
-  'Modified Date': string;
-  last_message_at: string;
-  'Call to Action': string;
-  'Proposal': string;
-  'Listing': string;
-  'Masked Email': string;
-  'from logged out user?': boolean;
+  id: string;
+  thread_subject_text: string;
+  bubble_created_at: string;
+  bubble_updated_at: string;
+  last_message_sent_at: string;
+  proposal_id: string;
+  listing_id: string;
+  logged_out_user_masked_email: string;
+  is_from_logged_out_user: boolean;
   host_user_id: string;
   guest_user_id: string;
   hostUser: {
-    _id: string;
-    'Name - Full': string;
+    bubble_legacy_id: string;
+    first_name: string;
+    last_name: string;
     email: string;
-    'Phone Number (as text)': string;
-    'Profile Photo': string;
+    phone_number: string;
+    profile_photo_url: string;
   } | null;
   guestUser: {
-    _id: string;
-    'Name - Full': string;
+    bubble_legacy_id: string;
+    first_name: string;
+    last_name: string;
     email: string;
-    'Phone Number (as text)': string;
-    'Profile Photo': string;
+    phone_number: string;
+    profile_photo_url: string;
   } | null;
   threadMessages?: Array<{
-    _id: string;
-    'Message Body': string;
-    'Created Date': string;
-    'is Split Bot': boolean;
-    'is Visible to Host': boolean;
-    'is Visible to Guest': boolean;
-    'is deleted (is hidden)': boolean;
-    originator_user_id: string;
-    'Call to Action': string;
-    'Not Logged In Name': string;
-    'Not Logged In Email': string;
+    id: string;
+    message_body_text: string;
+    bubble_created_at: string;
+    is_from_split_bot: boolean;
+    is_visible_to_host: boolean;
+    is_visible_to_guest: boolean;
+    is_hidden_or_deleted: boolean;
+    sender_user_id: string;
+    call_to_action_button_label: string;
   }>;
 }
 
@@ -71,7 +70,7 @@ async function verifyAdminRole(
   // Look up user by email to check admin flag
   const { data: userData, error } = await supabaseAdmin
     .from('user')
-    .select('_id, "Toggle - Is Admin"')
+    .select('bubble_legacy_id, is_admin')
     .ilike('email', user.email)
     .maybeSingle();
 
@@ -80,7 +79,7 @@ async function verifyAdminRole(
     return false;
   }
 
-  const isAdmin = userData?.['Toggle - Is Admin'] === true;
+  const isAdmin = userData?.is_admin === true;
   console.log('[adminGetAllThreads] Admin check result:', isAdmin);
 
   return isAdmin;
@@ -115,7 +114,7 @@ export async function handleAdminGetAllThreads(
 
   // Step 2: Get total count
   const { count, error: countError } = await supabaseAdmin
-    .from('thread')
+    .from('message_thread')
     .select('*', { count: 'exact', head: true });
 
   if (countError) {
@@ -125,22 +124,21 @@ export async function handleAdminGetAllThreads(
 
   // Step 3: Query all threads with user data
   const query = supabaseAdmin
-    .from('thread')
+    .from('message_thread')
     .select(`
-      _id,
-      "Thread Subject",
-      "Created Date",
-      "Modified Date",
-      last_message_at,
-      "Call to Action",
-      "Proposal",
-      "Listing",
-      "Masked Email",
-      "from logged out user?",
+      id,
+      thread_subject_text,
+      bubble_created_at,
+      bubble_updated_at,
+      last_message_sent_at,
+      proposal_id,
+      listing_id,
+      logged_out_user_masked_email,
+      is_from_logged_out_user,
       host_user_id,
       guest_user_id
     `)
-    .order('"Modified Date"', { ascending: false })
+    .order('bubble_updated_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   const { data: threads, error: threadsError } = await query;
@@ -169,15 +167,15 @@ export async function handleAdminGetAllThreads(
   if (userIds.size > 0) {
     const { data: users, error: usersError } = await supabaseAdmin
       .from('user')
-      .select('_id, "Name - Full", email, "Phone Number (as text)", "Profile Photo"')
-      .in('_id', Array.from(userIds));
+      .select('bubble_legacy_id, first_name, last_name, email, phone_number, profile_photo_url')
+      .in('bubble_legacy_id', Array.from(userIds));
 
     if (usersError) {
       console.error('[adminGetAllThreads] Users query failed:', usersError.message);
       // Don't throw - continue with partial data
     } else if (users) {
       userMap = users.reduce((acc, user) => {
-        acc[user._id] = user as AdminThread['hostUser'];
+        acc[user.bubble_legacy_id] = user as AdminThread['hostUser'];
         return acc;
       }, {} as Record<string, AdminThread['hostUser']>);
     }
@@ -186,26 +184,24 @@ export async function handleAdminGetAllThreads(
   // Step 6: Optionally fetch messages for each thread
   let messagesMap: Record<string, AdminThread['threadMessages']> = {};
   if (includeMessages) {
-    const threadIds = threads.map(t => t._id);
+    const threadIds = threads.map(t => t.id);
 
     const { data: messages, error: messagesError } = await supabaseAdmin
-      .from('_message')
+      .from('thread_message')
       .select(`
-        _id,
+        id,
         thread_id,
-        "Message Body",
-        "Created Date",
-        "is Split Bot",
-        "is Visible to Host",
-        "is Visible to Guest",
-        "is deleted (is hidden)",
-        originator_user_id,
-        "Call to Action",
-        "Not Logged In Name",
-        "Not Logged In Email"
+        message_body_text,
+        bubble_created_at,
+        is_from_split_bot,
+        is_visible_to_host,
+        is_visible_to_guest,
+        is_hidden_or_deleted,
+        sender_user_id,
+        call_to_action_button_label
       `)
       .in('thread_id', threadIds)
-      .order('"Created Date"', { ascending: true });
+      .order('bubble_created_at', { ascending: true });
 
     if (messagesError) {
       console.error('[adminGetAllThreads] Messages query failed:', messagesError.message);
@@ -226,7 +222,7 @@ export async function handleAdminGetAllThreads(
     ...thread,
     hostUser: thread.host_user_id ? userMap[thread.host_user_id] || null : null,
     guestUser: thread.guest_user_id ? userMap[thread.guest_user_id] || null : null,
-    threadMessages: includeMessages ? messagesMap[thread._id] || [] : undefined,
+    threadMessages: includeMessages ? messagesMap[thread.id] || [] : undefined,
   }));
 
   console.log('[adminGetAllThreads] Returning', result.length, 'threads');

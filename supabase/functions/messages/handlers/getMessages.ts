@@ -13,9 +13,10 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
+import { resolveUser } from '../../_shared/auth.ts';
 
 interface Message {
-  _id: string;
+  id: string;
   message_body: string;
   sender_name: string;
   sender_avatar?: string;
@@ -71,77 +72,25 @@ export async function handleGetMessages(
 
   const { thread_id, limit = 50, offset = 0 } = typedPayload;
 
-  // Determine user's Bubble ID (priority order):
-  // 1. user.bubbleId from JWT user_metadata (set during signup)
-  // 2. user.id if it looks like a Bubble ID (legacy auth)
-  // 3. Lookup from public.user by email (fallback for migrated users)
-  let userBubbleId: string;
-  let userType: string = '';
-
-  // Priority 1: Use bubbleId from JWT user_metadata if available
-  if (user.bubbleId) {
-    userBubbleId = user.bubbleId;
-    console.log('[getMessages] Using Bubble ID from JWT user_metadata:', userBubbleId);
-
-    // Still need to fetch user type from database
-    const { data: userData } = await supabaseAdmin
-      .from('user')
-      .select('"Type - User Current"')
-      .eq('_id', userBubbleId)
-      .maybeSingle();
-    userType = userData?.['Type - User Current'] || '';
-  }
-  // Priority 2: Check if user.id looks like a Bubble ID (legacy auth)
-  else if (/^\d+x\d+$/.test(user.id)) {
-    userBubbleId = user.id;
-    console.log('[getMessages] Using direct Bubble ID from legacy auth:', userBubbleId);
-
-    // Fetch user type
-    const { data: userData } = await supabaseAdmin
-      .from('user')
-      .select('"Type - User Current"')
-      .eq('_id', userBubbleId)
-      .maybeSingle();
-    userType = userData?.['Type - User Current'] || '';
-  }
-  // Priority 3: JWT auth without metadata - look up by email in public.user
-  else {
-    if (!user.email) {
-      console.error('[getMessages] No email in auth token');
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
-    }
-
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from('user')
-      .select('_id, "Type - User Current"')
-      .ilike('email', user.email)
-      .single();
-
-    if (userError || !userData?._id) {
-      console.error('[getMessages] User lookup failed:', userError?.message);
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
-    }
-
-    userBubbleId = userData._id;
-    userType = userData['Type - User Current'] || '';
-    console.log('[getMessages] Looked up Bubble ID from email:', userBubbleId);
-  }
-
+  // Resolve user's Bubble ID and type via shared auth utility
+  const resolvedUser = await resolveUser(supabaseAdmin, user);
+  const userBubbleId = resolvedUser.id;
+  const userType = resolvedUser.userType;
   const isHost = userType.includes('Host');
   console.log('[getMessages] User Bubble ID:', userBubbleId);
   console.log('[getMessages] Is Host:', isHost);
 
   // Verify user has access to this thread
   const { data: thread, error: threadError } = await supabaseAdmin
-    .from('thread')
+    .from('message_thread')
     .select(`
-      _id,
+      id,
       host_user_id,
       guest_user_id,
-      "Listing",
-      "Proposal"
+      listing_id,
+      proposal_id
     `)
-    .eq('_id', thread_id)
+    .eq('id', thread_id)
     .single();
 
   if (threadError || !thread) {
@@ -165,26 +114,26 @@ export async function handleGetMessages(
   // Fetch messages for this thread
   // Filter by visibility based on user role in thread
   let query = supabaseAdmin
-    .from('_message')
+    .from('thread_message')
     .select(`
-      _id,
-      "Message Body",
-      "Created Date",
-      originator_user_id,
-      "is Visible to Guest",
-      "is Visible to Host",
-      "is Split Bot",
-      "Split Bot Warning",
-      "Call to Action"
+      id,
+      message_body_text,
+      bubble_created_at,
+      sender_user_id,
+      is_visible_to_guest,
+      is_visible_to_host,
+      is_from_split_bot,
+      split_bot_warning_text,
+      call_to_action_button_label
     `)
     .eq('thread_id', thread_id)
-    .order('"Created Date"', { ascending: true });
+    .order('bubble_created_at', { ascending: true });
 
   // Apply visibility filter
   if (isHostInThread) {
-    query = query.eq('"is Visible to Host"', true);
+    query = query.eq('is_visible_to_host', true);
   } else {
-    query = query.eq('"is Visible to Guest"', true);
+    query = query.eq('is_visible_to_guest', true);
   }
 
   // Apply pagination
@@ -202,7 +151,7 @@ export async function handleGetMessages(
   // Collect all sender IDs for batch lookup
   const senderIds = new Set<string>();
   messages?.forEach(msg => {
-    if (msg.originator_user_id) senderIds.add(msg.originator_user_id);
+    if (msg.sender_user_id) senderIds.add(msg.sender_user_id);
   });
 
   // Batch fetch sender user data
@@ -210,14 +159,14 @@ export async function handleGetMessages(
   if (senderIds.size > 0) {
     const { data: senders, error: sendersError } = await supabaseAdmin
       .from('user')
-      .select('_id, "Name - First", "Name - Last", "Profile Photo"')
-      .in('_id', Array.from(senderIds));
+      .select('bubble_legacy_id, first_name, last_name, profile_photo_url')
+      .in('bubble_legacy_id', Array.from(senderIds));
 
     if (!sendersError && senders) {
       senderMap = senders.reduce((acc, sender) => {
-        acc[sender._id] = {
-          name: `${sender['Name - First'] || ''} ${sender['Name - Last'] || ''}`.trim() || 'Unknown',
-          avatar: sender['Profile Photo'],
+        acc[sender.bubble_legacy_id] = {
+          name: `${sender.first_name || ''} ${sender.last_name || ''}`.trim() || 'Unknown',
+          avatar: sender.profile_photo_url,
         };
         return acc;
       }, {} as Record<string, { name: string; avatar?: string }>);
@@ -229,44 +178,44 @@ export async function handleGetMessages(
   if (contactId) {
     const { data: contact, error: contactError } = await supabaseAdmin
       .from('user')
-      .select('"Name - First", "Name - Last", "Profile Photo"')
-      .eq('_id', contactId)
+      .select('first_name, last_name, profile_photo_url')
+      .eq('bubble_legacy_id', contactId)
       .single();
 
     if (!contactError && contact) {
       contactInfo = {
-        name: `${contact['Name - First'] || ''} ${contact['Name - Last'] || ''}`.trim() || 'Unknown User',
-        avatar: contact['Profile Photo'],
+        name: `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown User',
+        avatar: contact.profile_photo_url,
       };
     }
   }
 
   // Fetch listing name if present
   let propertyName: string | undefined;
-  if (thread['Listing']) {
+  if (thread.listing_id) {
     const { data: listing, error: listingError } = await supabaseAdmin
       .from('listing')
-      .select('Name')
-      .eq('_id', thread['Listing'])
+      .select('listing_title')
+      .eq('bubble_legacy_id', thread.listing_id)
       .single();
 
     if (!listingError && listing) {
-      propertyName = listing.Name;
+      propertyName = listing.listing_title;
     }
   }
 
   // Fetch proposal status if present
   let proposalStatus: string | undefined;
   let statusType: string | undefined;
-  if (thread['Proposal']) {
+  if (thread.proposal_id) {
     const { data: proposal, error: proposalError } = await supabaseAdmin
-      .from('proposal')
-      .select('"Proposal Status"')
-      .eq('_id', thread['Proposal'])
+      .from('booking_proposal')
+      .select('proposal_workflow_status')
+      .eq('bubble_legacy_id', thread.proposal_id)
       .single();
 
     if (!proposalError && proposal) {
-      proposalStatus = proposal['Proposal Status'];
+      proposalStatus = proposal.proposal_workflow_status;
       // Map status to type for styling
       if (proposalStatus?.includes('Declined') || proposalStatus?.includes('Cancelled')) {
         statusType = 'declined';
@@ -280,10 +229,10 @@ export async function handleGetMessages(
 
   // Transform messages to response format
   const transformedMessages: Message[] = (messages || []).map(msg => {
-    const senderId = msg.originator_user_id;
+    const senderId = msg.sender_user_id;
     const sender = senderId ? senderMap[senderId] : null;
     const isOutgoing = senderId === userBubbleId;
-    const isSplitBot = msg['is Split Bot'] === true;
+    const isSplitBot = msg.is_from_split_bot === true;
 
     // Determine sender type
     let senderType: 'guest' | 'host' | 'splitbot';
@@ -296,7 +245,7 @@ export async function handleGetMessages(
     }
 
     // Format timestamp
-    const createdDate = msg['Created Date'] ? new Date(msg['Created Date']) : new Date();
+    const createdDate = msg.bubble_created_at ? new Date(msg.bubble_created_at) : new Date();
     const timestamp = createdDate.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -306,47 +255,47 @@ export async function handleGetMessages(
 
     // Build call to action if present
     let callToAction: Message['call_to_action'];
-    if (msg['Call to Action']) {
+    if (msg.call_to_action_button_label) {
       callToAction = {
-        type: msg['Call to Action'],
+        type: msg.call_to_action_button_label,
         message: 'View Details',
       };
     }
 
     return {
-      _id: msg._id,
-      message_body: msg['Message Body'] || '',
+      id: msg.id,
+      message_body: msg.message_body_text || '',
       sender_name: isSplitBot ? 'Split Bot' : (sender?.name || 'Unknown'),
       sender_avatar: isSplitBot ? undefined : sender?.avatar,
       sender_type: senderType,
       is_outgoing: isOutgoing,
       timestamp,
       call_to_action: callToAction,
-      split_bot_warning: msg['Split Bot Warning'],
+      split_bot_warning: msg.split_bot_warning_text,
     };
   });
 
   // Mark messages as read by removing user from Unread Users
   // This is a fire-and-forget operation
   if (messages && messages.length > 0) {
-    const messageIds = messages.map(m => m._id);
+    const messageIds = messages.map(m => m.id);
 
     // Get messages with Unread Users containing this user
     const { data: unreadMessages, error: unreadError } = await supabaseAdmin
-      .from('_message')
-      .select('_id, "Unread Users"')
-      .in('_id', messageIds);
+      .from('thread_message')
+      .select('id, unread_by_user_ids_json')
+      .in('id', messageIds);
 
     if (!unreadError && unreadMessages) {
       for (const msg of unreadMessages) {
-        const unreadUsers = msg['Unread Users'] || [];
+        const unreadUsers = msg.unread_by_user_ids_json || [];
         if (Array.isArray(unreadUsers) && unreadUsers.includes(userBubbleId)) {
           // Remove user from unread list
           const updatedUnread = unreadUsers.filter((id: string) => id !== userBubbleId);
           await supabaseAdmin
-            .from('_message')
-            .update({ "Unread Users": updatedUnread })
-            .eq('_id', msg._id);
+            .from('thread_message')
+            .update({ unread_by_user_ids_json: updatedUnread })
+            .eq('id', msg.id);
         }
       }
     }
@@ -354,7 +303,7 @@ export async function handleGetMessages(
 
   // Check if there are more messages
   const { count: totalCount } = await supabaseAdmin
-    .from('_message')
+    .from('thread_message')
     .select('*', { count: 'exact', head: true })
     .eq('thread_id', thread_id);
 
@@ -372,8 +321,8 @@ export async function handleGetMessages(
       property_name: propertyName,
       status: proposalStatus,
       status_type: statusType,
-      proposal_id: thread['Proposal'] || undefined,
-      listing_id: thread['Listing'] || undefined,
+      proposal_id: thread.proposal_id || undefined,
+      listing_id: thread.listing_id || undefined,
     },
   };
 }

@@ -41,20 +41,19 @@ export async function generateBubbleId(supabase: SupabaseClient): Promise<string
 
 /**
  * Get user's Bubble ID from email
- * Maps auth.users.email -> public.user._id
+ * Maps auth.users.email -> public.user.bubble_legacy_id
  */
 export async function getUserBubbleId(
   supabase: SupabaseClient,
   userEmail: string
 ): Promise<string | null> {
-  // Try the 'email' column first (case-insensitive), then fall back to 'email as text'
-  // Both columns should have the same value due to signup logic
+  // Try the 'email' column first (case-insensitive)
   const normalizedEmail = userEmail.toLowerCase();
 
   const { data, error } = await supabase
     .from('user')
-    .select('_id')
-    .or(`email.ilike.${normalizedEmail},"email as text".ilike.${normalizedEmail}`)
+    .select('bubble_legacy_id')
+    .ilike('email', normalizedEmail)
     .limit(1)
     .maybeSingle();
 
@@ -63,7 +62,7 @@ export async function getUserBubbleId(
     return null;
   }
 
-  return data._id;
+  return data.bubble_legacy_id;
 }
 
 /**
@@ -75,8 +74,8 @@ export async function getUserProfile(
 ): Promise<{ _id: string; firstName: string; lastName: string; avatar?: string } | null> {
   const { data, error } = await supabase
     .from('user')
-    .select('_id, "Name - First", "Name - Last", "Profile Photo"')
-    .eq('_id', userId)
+    .select('bubble_legacy_id, first_name, last_name, profile_photo_url')
+    .eq('bubble_legacy_id', userId)
     .single();
 
   if (error || !data) {
@@ -84,10 +83,10 @@ export async function getUserProfile(
   }
 
   return {
-    _id: data._id,
-    firstName: data['Name - First'] || '',
-    lastName: data['Name - Last'] || '',
-    avatar: data['Profile Photo'],
+    _id: data.bubble_legacy_id,
+    firstName: data.first_name || '',
+    lastName: data.last_name || '',
+    avatar: data.profile_photo_url,
   };
 }
 
@@ -116,19 +115,19 @@ export async function createThread(
   const now = new Date().toISOString();
 
   const { error } = await supabase
-    .from('thread')
+    .from('message_thread')
     .insert({
-      _id: threadId,
+      id: threadId,
       host_user_id: params.hostUserId,
       guest_user_id: params.guestUserId,
-      "Listing": params.listingId || null,
-      "Proposal": params.proposalId || null,
-      "Thread Subject": params.subject || null,
-      "Created By": params.createdBy,
-      "Created Date": now,
-      "Modified Date": now,
-      "Participants": [params.hostUserId, params.guestUserId],
-      "from logged out user?": false,
+      listing_id: params.listingId || null,
+      proposal_id: params.proposalId || null,
+      thread_subject_text: params.subject || null,
+      created_by_user_id: params.createdBy,
+      bubble_created_at: now,
+      bubble_updated_at: now,
+      participant_user_ids_json: [params.hostUserId, params.guestUserId],
+      is_from_logged_out_user: false,
       created_at: now,
       updated_at: now,
     });
@@ -156,13 +155,13 @@ export async function findExistingThread(
   listingId?: string
 ): Promise<string | null> {
   let query = supabase
-    .from('thread')
-    .select('_id')
+    .from('message_thread')
+    .select('id')
     .eq('host_user_id', hostUserId)
     .eq('guest_user_id', guestUserId);
 
   if (listingId) {
-    query = query.eq('"Listing"', listingId);
+    query = query.eq('listing_id', listingId);
   }
 
   const { data, error } = await query.limit(1).maybeSingle();
@@ -172,7 +171,7 @@ export async function findExistingThread(
     return null;
   }
 
-  return data?._id || null;
+  return data?.id || null;
 }
 
 /**
@@ -183,9 +182,9 @@ export async function getThread(
   threadId: string
 ): Promise<{ _id: string; hostUser: string; guestUser: string; listing?: string } | null> {
   const { data, error } = await supabase
-    .from('thread')
-    .select('_id, host_user_id, guest_user_id, "Listing"')
-    .eq('_id', threadId)
+    .from('message_thread')
+    .select('id, host_user_id, guest_user_id, listing_id')
+    .eq('id', threadId)
     .single();
 
   if (error || !data) {
@@ -193,10 +192,10 @@ export async function getThread(
   }
 
   return {
-    _id: data._id,
+    _id: data.id,
     hostUser: data.host_user_id,
     guestUser: data.guest_user_id,
-    listing: data['Listing'],
+    listing: data.listing_id,
   };
 }
 
@@ -242,28 +241,28 @@ export async function createMessage(
     .filter(id => id && id !== params.senderUserId);
 
   const { error } = await supabase
-    .from('_message')
+    .from('thread_message')
     .insert({
-      _id: messageId,
+      id: messageId,
       thread_id: params.threadId,
-      "Message Body": params.messageBody,
-      originator_user_id: params.senderUserId,
+      message_body_text: params.messageBody,
+      sender_user_id: params.senderUserId,
       host_user_id: thread.hostUser,
       guest_user_id: thread.guestUser,
-      "is Split Bot": params.isSplitBot || false,
-      "is Visible to Host": params.visibleToHost ?? true,
-      "is Visible to Guest": params.visibleToGuest ?? true,
-      "is Forwarded": false,
-      "is deleted (is hidden)": false,
-      "Call to Action": params.callToAction || null,
-      "Split Bot Warning": params.splitBotWarning || null,
-      "Unread Users": unreadUsers,
-      "Created Date": now,
-      "Modified Date": now,
-      "Created By": params.senderUserId,
+      is_from_split_bot: params.isSplitBot || false,
+      is_visible_to_host: params.visibleToHost ?? true,
+      is_visible_to_guest: params.visibleToGuest ?? true,
+      is_forwarded_message: false,
+      is_hidden_or_deleted: false,
+      call_to_action_button_label: params.callToAction || null,
+      split_bot_warning_text: params.splitBotWarning || null,
+      unread_by_user_ids_json: unreadUsers,
+      bubble_created_at: now,
+      bubble_updated_at: now,
+      created_by_user_id: params.senderUserId,
       created_at: now,
       updated_at: now,
-      pending: false,
+      is_pending_bubble_migration: false,
     });
 
   if (error) {
@@ -276,7 +275,7 @@ export async function createMessage(
 }
 
 /**
- * Mark messages as read by removing user from Unread Users
+ * Mark messages as read by removing user from unread_by_user_ids_json
  */
 export async function markMessagesAsRead(
   supabase: SupabaseClient,
@@ -285,18 +284,18 @@ export async function markMessagesAsRead(
 ): Promise<void> {
   for (const messageId of messageIds) {
     const { data: message } = await supabase
-      .from('_message')
-      .select('"Unread Users"')
-      .eq('_id', messageId)
+      .from('thread_message')
+      .select('unread_by_user_ids_json')
+      .eq('id', messageId)
       .single();
 
-    if (message && Array.isArray(message['Unread Users'])) {
-      const updatedUnread = message['Unread Users'].filter((id: string) => id !== userId);
+    if (message && Array.isArray(message.unread_by_user_ids_json)) {
+      const updatedUnread = message.unread_by_user_ids_json.filter((id: string) => id !== userId);
 
       await supabase
-        .from('_message')
-        .update({ "Unread Users": updatedUnread })
-        .eq('_id', messageId);
+        .from('thread_message')
+        .update({ unread_by_user_ids_json: updatedUnread })
+        .eq('id', messageId);
     }
   }
 }
@@ -310,10 +309,10 @@ export async function getUnreadCount(
   userId: string
 ): Promise<number> {
   const { count, error } = await supabase
-    .from('_message')
+    .from('thread_message')
     .select('*', { count: 'exact', head: true })
     .eq('thread_id', threadId)
-    .contains('"Unread Users"', [userId]);
+    .contains('unread_by_user_ids_json', [userId]);
 
   if (error) {
     console.error('[messagingHelpers] Failed to get unread count:', error);
@@ -336,9 +335,9 @@ export async function findThreadByProposal(
   proposalId: string
 ): Promise<string | null> {
   const { data, error } = await supabase
-    .from('thread')
-    .select('_id')
-    .eq('"Proposal"', proposalId)
+    .from('message_thread')
+    .select('id')
+    .eq('proposal_id', proposalId)
     .limit(1)
     .maybeSingle();
 
@@ -347,7 +346,7 @@ export async function findThreadByProposal(
     return null;
   }
 
-  return data?._id || null;
+  return data?.id || null;
 }
 
 /**
@@ -359,8 +358,8 @@ export async function getListingName(
 ): Promise<string | null> {
   const { data, error } = await supabase
     .from('listing')
-    .select('"Name"')
-    .eq('_id', listingId)
+    .select('listing_title')
+    .eq('bubble_legacy_id', listingId)
     .single();
 
   if (error || !data) {
@@ -368,7 +367,7 @@ export async function getListingName(
     return null;
   }
 
-  return data['Name'] || null;
+  return data.listing_title || null;
 }
 
 export interface CreateProposalThreadParams {
@@ -436,13 +435,13 @@ export async function findOrCreateProposalThread(
 
     // Update the existing thread to link it to this proposal
     const { error: updateError } = await supabase
-      .from('thread')
+      .from('message_thread')
       .update({
-        "Proposal": params.proposalId,
-        "Modified Date": new Date().toISOString(),
+        proposal_id: params.proposalId,
+        bubble_updated_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('_id', existingThreadByListing);
+      .eq('id', existingThreadByListing);
 
     if (updateError) {
       console.error('[messagingHelpers] Failed to update thread with proposal:', updateError);
@@ -478,7 +477,7 @@ export const SPLITBOT_USER_ID = '1634177189464x117577733821174320';
 
 /**
  * Create a SplitBot automated message
- * Sets is_split_bot = true and is_forwarded = true (per Bubble pattern)
+ * Sets is_from_split_bot = true and is_forwarded_message = true (per Bubble pattern)
  */
 export async function createSplitBotMessage(
   supabase: SupabaseClient,
@@ -494,28 +493,28 @@ export async function createSplitBotMessage(
   }
 
   const { error } = await supabase
-    .from('_message')
+    .from('thread_message')
     .insert({
-      _id: messageId,
+      id: messageId,
       thread_id: params.threadId,
-      "Message Body": params.messageBody,
-      originator_user_id: SPLITBOT_USER_ID,
+      message_body_text: params.messageBody,
+      sender_user_id: SPLITBOT_USER_ID,
       host_user_id: thread.hostUser,
       guest_user_id: thread.guestUser,
-      "is Split Bot": true,
-      "is Forwarded": true, // SplitBot messages are marked as forwarded per Bubble pattern
-      "is Visible to Host": params.visibleToHost,
-      "is Visible to Guest": params.visibleToGuest,
-      "is deleted (is hidden)": false,
-      "Call to Action": params.callToAction,
-      "Split Bot Warning": params.splitBotWarning || null,
-      "Unread Users": [params.recipientUserId],
-      "Created Date": now,
-      "Modified Date": now,
-      "Created By": SPLITBOT_USER_ID,
+      is_from_split_bot: true,
+      is_forwarded_message: true, // SplitBot messages are marked as forwarded per Bubble pattern
+      is_visible_to_host: params.visibleToHost,
+      is_visible_to_guest: params.visibleToGuest,
+      is_hidden_or_deleted: false,
+      call_to_action_button_label: params.callToAction,
+      split_bot_warning_text: params.splitBotWarning || null,
+      unread_by_user_ids_json: [params.recipientUserId],
+      bubble_created_at: now,
+      bubble_updated_at: now,
+      created_by_user_id: SPLITBOT_USER_ID,
       created_at: now,
       updated_at: now,
-      pending: false,
+      is_pending_bubble_migration: false,
     });
 
   if (error) {
@@ -529,7 +528,6 @@ export async function createSplitBotMessage(
 
 /**
  * Update thread's last message info after sending a message
- * Uses Bubble.io column naming convention: "~Last Message" and "~Date Last Message"
  */
 export async function updateThreadLastMessage(
   supabase: SupabaseClient,
@@ -539,14 +537,14 @@ export async function updateThreadLastMessage(
   const now = new Date().toISOString();
 
   const { error } = await supabase
-    .from('thread')
+    .from('message_thread')
     .update({
-      "~Last Message": messageBody.substring(0, 100), // Truncate for preview
-      "~Date Last Message": now,
-      "Modified Date": now,
+      last_message_preview_text: messageBody.substring(0, 100), // Truncate for preview
+      last_message_sent_at: now,
+      bubble_updated_at: now,
       updated_at: now,
     })
-    .eq('_id', threadId);
+    .eq('id', threadId);
 
   if (error) {
     console.error('[messagingHelpers] Failed to update thread last message:', error);
@@ -570,7 +568,6 @@ export interface LastVisibleMessageResult {
  *
  * @param supabase - Supabase client
  * @param threadIds - Array of thread IDs to fetch last messages for
- * @param userBubbleId - The Bubble ID of the viewing user
  * @param threadUserRoles - Map of threadId -> 'host' | 'guest' indicating user's role in each thread
  * @returns Map of threadId -> last visible message body
  */
@@ -586,10 +583,10 @@ export async function getLastVisibleMessagesForThreads(
   // Fetch all recent messages for these threads with visibility info
   // We fetch the most recent messages per thread, then filter by visibility
   const { data: messages, error } = await supabase
-    .from('_message')
-    .select('thread_id, "Message Body", "Created Date", "is Visible to Host", "is Visible to Guest"')
+    .from('thread_message')
+    .select('thread_id, message_body_text, bubble_created_at, is_visible_to_host, is_visible_to_guest')
     .in('thread_id', threadIds)
-    .order('"Created Date"', { ascending: false });
+    .order('bubble_created_at', { ascending: false });
 
   if (error) {
     console.error('[messagingHelpers] Failed to fetch messages for preview:', error);
@@ -613,14 +610,14 @@ export async function getLastVisibleMessagesForThreads(
 
       // Check visibility based on user's role in this thread
       if (role === 'host') {
-        return msg['is Visible to Host'] === true;
+        return msg.is_visible_to_host === true;
       } else {
-        return msg['is Visible to Guest'] === true;
+        return msg.is_visible_to_guest === true;
       }
     });
 
-    if (visibleMessage && visibleMessage['Message Body']) {
-      resultMap.set(threadId, visibleMessage['Message Body'].substring(0, 100));
+    if (visibleMessage && visibleMessage.message_body_text) {
+      resultMap.set(threadId, visibleMessage.message_body_text.substring(0, 100));
     }
   }
 

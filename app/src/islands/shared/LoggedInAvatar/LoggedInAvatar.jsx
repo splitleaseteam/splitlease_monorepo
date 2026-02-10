@@ -15,7 +15,7 @@ import HeaderMessagingPanel from '../HeaderMessagingPanel/HeaderMessagingPanel.j
  * - Click outside to close functionality
  * - Dynamic menu visibility based on Supabase data
  *
- * Menu Visibility Rules (from Bubble.io conditionals):
+ * Menu Visibility Rules:
  * 1. My Profile - ALWAYS visible
  * 2. My Proposals - ALWAYS visible (all users)
  * 3. Proposals Suggested - GUEST only AND has proposals with "suggested by SL" status
@@ -27,7 +27,7 @@ import HeaderMessagingPanel from '../HeaderMessagingPanel/HeaderMessagingPanel.j
  * @component
  * @param {Object} props - Component props
  * @param {Object} props.user - Current user object
- * @param {string} props.user.id - User ID (Bubble _id)
+ * @param {string} props.user.id - User ID
  * @param {string} props.user.name - User's full name
  * @param {string} props.user.email - User's email
  * @param {'HOST' | 'GUEST' | 'TRIAL_HOST'} props.user.userType - User type (fallback if data not loaded)
@@ -378,7 +378,7 @@ export default function LoggedInAvatar({
   const menuItems = getMenuItems();
 
   // Extract first name from full name
-  const firstName = user.name.split(' ')[0];
+  const firstName = (user.name || '').split(' ')[0];
 
   // Check if on a page with light header for styling
   const isSearchPage = currentPath.includes('search');
@@ -455,7 +455,7 @@ export default function LoggedInAvatar({
             <HeaderMessagingPanel
               isOpen={showMessagingPanel}
               onClose={() => setShowMessagingPanel(false)}
-              userBubbleId={user.id}
+              userId={user.id}
               userName={firstName}
               userAvatar={user.avatarUrl}
               onUnreadCountChange={refetchUnreadCount}

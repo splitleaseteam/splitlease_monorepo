@@ -25,7 +25,7 @@ import { clearProposalDraft } from '../CreateProposalFlowV2.jsx';
 /**
  * @param {object} options
  * @param {boolean} options.isOpen - Whether the panel is currently open
- * @param {string} options.userBubbleId - The user's Bubble ID
+ * @param {string} options.userId - The user's ID
  * @param {string} options.userName - The user's first name (for typing indicator)
  * @param {string} options.userAvatar - The user's avatar URL
  * @param {function} options.onClose - Callback to close the panel
@@ -33,7 +33,7 @@ import { clearProposalDraft } from '../CreateProposalFlowV2.jsx';
  */
 export function useHeaderMessagingPanelLogic({
   isOpen,
-  userBubbleId,
+  userId,
   userName,
   userAvatar,
   onClose,
@@ -329,7 +329,7 @@ export function useHeaderMessagingPanelLogic({
   // ============================================================================
   // CTA HANDLER (reuse from MessagingPage)
   // ============================================================================
-  const user = { bubbleId: userBubbleId };
+  const user = { id: userId };
   const { handleCTAClick, getCTAButtonConfig } = useCTAHandler({
     user,
     selectedThread,
@@ -342,10 +342,10 @@ export function useHeaderMessagingPanelLogic({
   // ============================================================================
   useEffect(() => {
     // Only fetch if panel is open, we have a user ID, and haven't loaded yet
-    if (isOpen && userBubbleId && !hasLoadedThreads.current) {
+    if (isOpen && userId && !hasLoadedThreads.current) {
       fetchThreads();
     }
-  }, [isOpen, userBubbleId]);
+  }, [isOpen, userId]);
 
   // Reset when panel closes
   useEffect(() => {
@@ -364,7 +364,7 @@ export function useHeaderMessagingPanelLogic({
   // REALTIME SUBSCRIPTION
   // ============================================================================
   useEffect(() => {
-    if (!selectedThread || !userBubbleId || !isOpen) return;
+    if (!selectedThread || !userId || !isOpen) return;
 
     const channelName = `panel-messages-${selectedThread._id}`;
     console.log('[Panel Realtime] Subscribing to:', channelName);
@@ -388,7 +388,7 @@ export function useHeaderMessagingPanelLogic({
           return;
         }
 
-        const isOwnMessage = newRow['originator_user_id'] === userBubbleId;
+        const isOwnMessage = newRow['originator_user_id'] === userId;
 
         // Add message to state (avoid duplicates)
         setMessages((prev) => {
@@ -437,7 +437,7 @@ export function useHeaderMessagingPanelLogic({
       const state = channel.presenceState();
       const typingUsers = Object.values(state)
         .flat()
-        .filter((u) => u.typing && u.user_id !== userBubbleId);
+        .filter((u) => u.typing && u.user_id !== userId);
 
       if (typingUsers.length > 0) {
         setIsOtherUserTyping(true);
@@ -451,7 +451,7 @@ export function useHeaderMessagingPanelLogic({
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         await channel.track({
-          user_id: userBubbleId,
+          user_id: userId,
           user_name: userName || 'User',
           typing: false,
           online_at: new Date().toISOString(),
@@ -465,18 +465,18 @@ export function useHeaderMessagingPanelLogic({
       channel.unsubscribe();
       channelRef.current = null;
     };
-  }, [selectedThread?._id, userBubbleId, isOpen]);
+  }, [selectedThread?._id, userId, isOpen]);
 
   // ============================================================================
   // TYPING INDICATOR
   // ============================================================================
   const trackTyping = useCallback(
     async (isTyping) => {
-      if (!channelRef.current || !userBubbleId) return;
+      if (!channelRef.current || !userId) return;
 
       try {
         await channelRef.current.track({
-          user_id: userBubbleId,
+          user_id: userId,
           user_name: userName || 'User',
           typing: isTyping,
           typing_at: isTyping ? new Date().toISOString() : null,
@@ -486,7 +486,7 @@ export function useHeaderMessagingPanelLogic({
         console.error('[Panel Realtime] Failed to track typing:', err);
       }
     },
-    [userBubbleId, userName]
+    [userId, userName]
   );
 
   // ============================================================================
@@ -501,8 +501,8 @@ export function useHeaderMessagingPanelLogic({
       setIsLoading(true);
       setError(null);
 
-      const bubbleId = userBubbleId || getUserId();
-      if (!bubbleId) {
+      const currentUserId = userId || getUserId();
+      if (!currentUserId) {
         throw new Error('User ID not available');
       }
 
@@ -510,7 +510,7 @@ export function useHeaderMessagingPanelLogic({
       // Uses RPC function because PostgREST .or() doesn't handle column names
       // with leading hyphens ("host_user_id", "guest_user_id") correctly
       const { data: threadsData, error: threadsError } = await supabase
-        .rpc('get_user_threads', { user_id: bubbleId });
+        .rpc('get_user_threads', { user_id: currentUserId });
 
       if (threadsError) {
         throw new Error(`Failed to fetch threads: ${threadsError.message}`);
@@ -529,7 +529,7 @@ export function useHeaderMessagingPanelLogic({
       threadsData.forEach((thread) => {
         const hostId = thread['host_user_id'];
         const guestId = thread['guest_user_id'];
-        const contactId = hostId === bubbleId ? guestId : hostId;
+        const contactId = hostId === currentUserId ? guestId : hostId;
         if (contactId) contactIds.add(contactId);
         if (thread['listing_id']) listingIds.add(thread['listing_id']);
       });
@@ -584,7 +584,7 @@ export function useHeaderMessagingPanelLogic({
           .from('thread_message')
           .select('"thread_id"')
           .in('"thread_id"', threadIds)
-          .filter('unread_by_user_ids_json', 'cs', JSON.stringify([bubbleId]));
+          .filter('unread_by_user_ids_json', 'cs', JSON.stringify([currentUserId]));
 
         if (unreadData) {
           // Count occurrences of each thread ID
@@ -604,7 +604,7 @@ export function useHeaderMessagingPanelLogic({
         // Build a map of thread -> user role (host or guest)
         const threadRoles = {};
         threadsData.forEach((thread) => {
-          threadRoles[thread._id] = thread['host_user_id'] === bubbleId ? 'host' : 'guest';
+          threadRoles[thread._id] = thread['host_user_id'] === currentUserId ? 'host' : 'guest';
         });
 
         // Fetch recent messages for all threads with visibility info
@@ -636,7 +636,7 @@ export function useHeaderMessagingPanelLogic({
       const transformedThreads = threadsData.map((thread) => {
         const hostId = thread['host_user_id'];
         const guestId = thread['guest_user_id'];
-        const contactId = hostId === bubbleId ? guestId : hostId;
+        const contactId = hostId === currentUserId ? guestId : hostId;
         const contact = contactId ? contactMap[contactId] : null;
 
         // Format the last modified time
@@ -698,14 +698,14 @@ export function useHeaderMessagingPanelLogic({
 
       // Include user_id in payload for legacy auth support
       // Edge Function accepts user_id when no JWT Authorization header is present
-      const bubbleId = userBubbleId || getUserId();
+      const currentUserId = userId || getUserId();
 
       const { data, error } = await supabase.functions.invoke('messages', {
         body: {
           action: 'get_messages',
           payload: {
             thread_id: threadId,
-            user_id: bubbleId,  // Legacy auth: pass user_id inside payload
+            user_id: currentUserId,  // Legacy auth: pass user_id inside payload
           },
         },
       });
@@ -751,7 +751,7 @@ export function useHeaderMessagingPanelLogic({
       }
 
       // Include user_id in payload for legacy auth support
-      const bubbleId = userBubbleId || getUserId();
+      const currentUserId = userId || getUserId();
 
       const { data, error } = await supabase.functions.invoke('messages', {
         body: {
@@ -759,7 +759,7 @@ export function useHeaderMessagingPanelLogic({
           payload: {
             thread_id: selectedThread._id,
             message_body: messageInput.trim(),
-            user_id: bubbleId,  // Legacy auth: pass user_id inside payload
+            user_id: currentUserId,  // Legacy auth: pass user_id inside payload
           },
         },
       });

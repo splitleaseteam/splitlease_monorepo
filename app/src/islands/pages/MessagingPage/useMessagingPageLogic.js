@@ -16,9 +16,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getAvatarUrl, getUserType } from '../../../lib/auth.js';
 import { getUserId, getSessionId } from '../../../lib/secureStorage.js';
 import { supabase } from '../../../lib/supabase.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { useCTAHandler } from './useCTAHandler.js';
 import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
@@ -26,6 +26,8 @@ import { calculateNextAvailableCheckIn } from '../../../logic/calculators/schedu
 import { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
 
 export function useMessagingPageLogic() {
+  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({ redirectOnFail: '/?login=true' });
+
   // ============================================================================
   // AUTH STATE
   // ============================================================================
@@ -145,8 +147,7 @@ export function useMessagingPageLogic() {
 
         // Transform listing data for the modal
         const transformedListing = {
-          _id: listingData._id,
-          id: listingData._id,
+          id: listingData.id,
           Name: listingData.listing_title || 'Unnamed Listing',
           title: listingData.listing_title || 'Unnamed Listing',
           'Primary Photo': listingData['Primary Photo'],
@@ -237,77 +238,29 @@ export function useMessagingPageLogic() {
   // AUTH CHECK ON MOUNT
   // ============================================================================
   useEffect(() => {
-    async function init() {
-      try {
-        // Step 1: Check basic auth status
-        const isAuthenticated = await checkAuthStatus();
+    if (authLoading) return;
+    if (!isAuthenticated || !authUser) return;
 
-        if (!isAuthenticated) {
-          console.log('[Messaging] User not authenticated, redirecting to home');
-          setAuthState({ isChecking: false, shouldRedirect: true });
-          setTimeout(() => {
-            window.location.href = '/?login=true';
-          }, 100);
-          return;
-        }
+    // Map hook user to local user state (preserving shape expected by rest of file)
+    setUser({
+      id: authUser.id,
+      email: authUser.email,
+      firstName: authUser.firstName,
+      lastName: authUser.fullName?.split(' ').slice(1).join(' ') || '',
+      profilePhoto: authUser.profilePhoto,
+      userType: authUser.userType || null
+    });
+    setAuthState({ isChecking: false, shouldRedirect: false });
 
-        // Step 2: Get user data using the gold standard pattern
-        // Use clearOnFailure: false to preserve session even if profile fetch fails
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (userData) {
-          // User profile fetched successfully
-          setUser({
-            id: userData.userId,
-            email: userData.email,
-            bubbleId: userData.userId,  // userId from validateTokenAndFetchUser is the Bubble _id
-            firstName: userData.firstName,
-            lastName: userData.fullName?.split(' ').slice(1).join(' ') || '',
-            profilePhoto: userData.profilePhoto,
-            userType: userData.userType || null  // 'Host' or 'Guest'
-          });
-          console.log('[Messaging] User data loaded:', userData.firstName, '- Type:', userData.userType);
-        } else {
-          // Fallback: Use session metadata if profile fetch failed but session is valid
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            const fallbackUser = {
-              id: session.user.id,
-              email: session.user.email,
-              bubbleId: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-              firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'User',
-              lastName: session.user.user_metadata?.last_name || '',
-              profilePhoto: getAvatarUrl() || null,
-              userType: session.user.user_metadata?.user_type || getUserType() || null
-            };
-            setUser(fallbackUser);
-            console.log('[Messaging] Using fallback user data from session:', fallbackUser.firstName, '- Type:', fallbackUser.userType);
-          } else {
-            // No session at all - redirect
-            console.log('[Messaging] No valid session, redirecting');
-            setAuthState({ isChecking: false, shouldRedirect: true });
-            setTimeout(() => {
-              window.location.href = '/?login=true';
-            }, 100);
-            return;
-          }
-        }
-
-        setAuthState({ isChecking: false, shouldRedirect: false });
-
-        // Fetch threads after auth is confirmed
-        await fetchThreads();
-        initialLoadDone.current = true;
-      } catch (err) {
-        console.error('[Messaging] Auth check failed:', err);
-        setError('Failed to check authentication. Please refresh the page.');
-        setIsLoading(false);
-      }
-    }
-
-    init();
-  }, []);
+    // Fetch threads after auth confirmed
+    fetchThreads().then(() => {
+      initialLoadDone.current = true;
+    }).catch(err => {
+      console.error('[Messaging] Failed to fetch threads:', err);
+      setError('Failed to load conversations. Please refresh the page.');
+      setIsLoading(false);
+    });
+  }, [authLoading, isAuthenticated, authUser]);
 
   // Ref to track if initial thread selection has been done
   const hasAutoSelectedThread = useRef(false);
@@ -350,7 +303,7 @@ export function useMessagingPageLogic() {
     const threadId = params.get('thread');
 
     if (threadId) {
-      const thread = threads.find(t => t._id === threadId);
+      const thread = threads.find(t => t.id === threadId);
       if (thread) {
         hasAutoSelectedThread.current = true;
         handleThreadSelectInternal(thread);
@@ -365,10 +318,10 @@ export function useMessagingPageLogic() {
   // REALTIME SUBSCRIPTION - Using Postgres Changes (more reliable than broadcast)
   // ============================================================================
   useEffect(() => {
-    if (!selectedThread || authState.isChecking || !user?.bubbleId) return;
+    if (!selectedThread || authState.isChecking || !user?.id) return;
 
-    const channelName = `messages-${selectedThread._id}`;
-    console.log('[Realtime] Subscribing to postgres_changes for thread:', selectedThread._id);
+    const channelName = `messages-${selectedThread.id}`;
+    console.log('[Realtime] Subscribing to postgres_changes for thread:', selectedThread.id);
 
     const channel = supabase.channel(channelName);
 
@@ -389,7 +342,7 @@ export function useMessagingPageLogic() {
         if (!newRow) return;
 
         // Client-side filter: only process messages for this thread
-        if (newRow.thread_id !== selectedThread._id) {
+        if (newRow.thread_id !== selectedThread.id) {
           console.log('[Realtime] Message is for different thread, ignoring');
           return;
         }
@@ -397,11 +350,11 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Message is for this thread, processing...');
 
         // Skip if this is our own message (already added optimistically)
-        const isOwnMessage = newRow.originator_user_id === user?.bubbleId;
+        const isOwnMessage = newRow.originator_user_id === user?.id;
 
         // Add message to state (avoid duplicates)
         setMessages(prev => {
-          if (prev.some(m => m._id === newRow.id)) return prev;
+          if (prev.some(m => m.id === newRow.id)) return prev;
 
           // Transform database row to UI format
           const transformedMessage = {
@@ -438,7 +391,7 @@ export function useMessagingPageLogic() {
       const state = channel.presenceState();
       const typingUsers = Object.values(state)
         .flat()
-        .filter(u => u.typing && u.user_id !== user?.bubbleId);
+        .filter(u => u.typing && u.user_id !== user?.id);
 
       if (typingUsers.length > 0) {
         setIsOtherUserTyping(true);
@@ -455,7 +408,7 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Successfully subscribed to channel:', channelName);
         // Track presence for typing indicators
         await channel.track({
-          user_id: user?.bubbleId,
+          user_id: user?.id,
           user_name: user?.firstName || 'User',
           typing: false,
           online_at: new Date().toISOString(),
@@ -475,7 +428,7 @@ export function useMessagingPageLogic() {
       channel.unsubscribe();
       channelRef.current = null;
     };
-  }, [selectedThread?._id, authState.isChecking, user?.bubbleId]);
+  }, [selectedThread?.id, authState.isChecking, user?.id]);
 
   // ============================================================================
   // TYPING INDICATOR
@@ -489,7 +442,7 @@ export function useMessagingPageLogic() {
 
     try {
       await channelRef.current.track({
-        user_id: user.bubbleId,
+        user_id: user.id,
         user_name: user.firstName || 'User',
         typing: isTyping,
         typing_at: isTyping ? new Date().toISOString() : null,
@@ -691,7 +644,7 @@ export function useMessagingPageLogic() {
 
       // Build payload - include user_id for legacy auth fallback
       const payload = {
-        thread_id: selectedThread._id,
+        thread_id: selectedThread.id,
         message_body: messageInput.trim(),
       };
       if (!accessToken) {
@@ -735,7 +688,7 @@ export function useMessagingPageLogic() {
         // However, for the sender's immediate feedback, add optimistically
         // (the Realtime broadcast might also arrive, but we'll dedupe)
         const optimisticMessage = {
-          _id: data.data.message_id,
+          id: data.data.message_id,
           message_body: messageInput.trim(),
           sender_name: 'You',
           sender_type: 'guest', // Will be corrected by Realtime if wrong
@@ -747,7 +700,7 @@ export function useMessagingPageLogic() {
 
         setMessages(prev => {
           // Avoid duplicates
-          if (prev.some(m => m._id === optimisticMessage._id)) return prev;
+          if (prev.some(m => m.id === optimisticMessage.id)) return prev;
           return [...prev, optimisticMessage];
         });
 
@@ -807,10 +760,10 @@ export function useMessagingPageLogic() {
           id,
           proposal_workflow_status,
           bubble_created_at,
-          "Start Date",
-          "End Date",
-          "Days per Week",
-          "Total Monthly Price",
+          move_in_range_start_date,
+          move_in_range_end_date,
+          nights_per_week_count,
+          four_week_rent_amount,
           bubble_updated_at
         `)
         .eq('id', proposalId)
@@ -826,10 +779,10 @@ export function useMessagingPageLogic() {
         id: data.id,
         status: data.proposal_workflow_status || 'pending',
         createdAt: data.bubble_created_at,
-        startDate: data['Start Date'],
-        endDate: data['End Date'],
-        daysPerWeek: data['Days per Week'],
-        totalMonthlyPrice: data['Total Monthly Price'],
+        startDate: data.move_in_range_start_date,
+        endDate: data.move_in_range_end_date,
+        daysPerWeek: data.nights_per_week_count,
+        totalMonthlyPrice: data.four_week_rent_amount,
         modifiedDate: data.bubble_updated_at,
       };
     } catch (err) {
@@ -848,11 +801,10 @@ export function useMessagingPageLogic() {
         .select(`
           id,
           listing_title,
-          cover_photo_url,
-          "Neighborhood",
-          "City",
-          "Street Address",
-          "State",
+          photos_with_urls_captions_and_sort_order_json,
+          neighborhood_name_entered_by_host,
+          city,
+          state,
           monthly_rate_paid_to_host,
           rental_type
         `)
@@ -864,18 +816,22 @@ export function useMessagingPageLogic() {
         return null;
       }
 
+      // Extract primary photo from photos JSON
+      const photos = data.photos_with_urls_captions_and_sort_order_json;
+      const primaryImage = Array.isArray(photos) && photos.length > 0 ? photos[0]?.url : null;
+
       // Build address string
       const addressParts = [
-        data['Neighborhood'],
-        data['City'],
-        data['State']
+        data.neighborhood_name_entered_by_host,
+        data.city,
+        data.state
       ].filter(Boolean);
 
       // Transform to UI format
       return {
         id: data.id,
         name: data.listing_title || 'Unnamed Listing',
-        primaryImage: data.cover_photo_url,
+        primaryImage,
         address: addressParts.join(', ') || 'Location not specified',
         monthlyRate: data.monthly_rate_paid_to_host,
         listingType: data.rental_type || 'Flexible',
@@ -924,7 +880,7 @@ export function useMessagingPageLogic() {
       case 'video':
         // Open video call scheduling modal
         handleOpenModal('schedule_video', {
-          threadId: selectedThread?._id,
+          threadId: selectedThread?.id,
           contactName: threadInfo?.contact_name,
         });
         break;
@@ -937,7 +893,7 @@ export function useMessagingPageLogic() {
       case 'schedule':
         // Open meeting scheduling modal
         handleOpenModal('schedule_meeting', {
-          threadId: selectedThread?._id,
+          threadId: selectedThread?.id,
           contactName: threadInfo?.contact_name,
         });
         break;
@@ -1011,11 +967,11 @@ export function useMessagingPageLogic() {
     // Mark thread as read in local state (backend will mark messages as read)
     setThreads(prevThreads =>
       prevThreads.map(t =>
-        t._id === thread._id ? { ...t, unread_count: 0 } : t
+        t.id === thread.id ? { ...t, unread_count: 0 } : t
       )
     );
 
-    fetchMessages(thread._id);
+    fetchMessages(thread.id);
   }
 
   /**
@@ -1035,17 +991,17 @@ export function useMessagingPageLogic() {
     // Mark thread as read in local state (backend will mark messages as read)
     setThreads(prevThreads =>
       prevThreads.map(t =>
-        t._id === thread._id ? { ...t, unread_count: 0 } : t
+        t.id === thread.id ? { ...t, unread_count: 0 } : t
       )
     );
 
     // Update URL
     const params = new URLSearchParams(window.location.search);
-    params.set('thread', thread._id);
+    params.set('thread', thread.id);
     window.history.replaceState({}, '', `?${params.toString()}`);
 
     // Fetch messages for selected thread
-    fetchMessages(thread._id);
+    fetchMessages(thread.id);
   }, []);
 
   /**
@@ -1168,7 +1124,7 @@ export function useMessagingPageLogic() {
           : `${reservationSpanWeeks} weeks`;
 
       // Build payload (using 0-indexed days)
-      const listingId = proposalModalData?.listing?._id || proposalModalData?.listing?.id;
+      const listingId = proposalModalData?.listing?.id;
       const payload = {
         guestId: guestId,
         listingId: listingId,

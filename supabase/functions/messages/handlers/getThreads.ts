@@ -12,9 +12,10 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { User as _User } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError } from '../../_shared/errors.ts';
 import { getLastVisibleMessagesForThreads } from '../../_shared/messagingHelpers.ts';
+import { resolveUser } from '../../_shared/auth.ts';
 
 interface Thread {
-  _id: string;
+  id: string;
   contact_name: string;
   contact_avatar?: string;
   property_name?: string;
@@ -45,51 +46,17 @@ export async function handleGetThreads(
   console.log('[getThreads] ========== GET THREADS ==========');
   console.log('[getThreads] User ID:', user.id, 'Email:', user.email, 'BubbleId from metadata:', user.bubbleId);
 
-  // Determine user's Bubble ID (priority order):
-  // 1. user.bubbleId from JWT user_metadata (set during signup)
-  // 2. user.id if it looks like a Bubble ID (legacy auth)
-  // 3. Lookup from public.user by email (fallback for migrated users)
-  let userBubbleId: string;
-
-  // Priority 1: Use bubbleId from JWT user_metadata if available
-  if (user.bubbleId) {
-    userBubbleId = user.bubbleId;
-    console.log('[getThreads] Using Bubble ID from JWT user_metadata:', userBubbleId);
-  }
-  // Priority 2: Check if user.id looks like a Bubble ID (legacy auth)
-  else if (/^\d+x\d+$/.test(user.id)) {
-    userBubbleId = user.id;
-    console.log('[getThreads] Using direct Bubble ID from legacy auth:', userBubbleId);
-  }
-  // Priority 3: JWT auth without metadata - look up by email in public.user
-  else {
-    if (!user.email) {
-      console.error('[getThreads] No email in auth token');
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
-    }
-
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from('user')
-      .select('_id, "Type - User Current"')
-      .ilike('email', user.email)
-      .single();
-
-    if (userError || !userData?._id) {
-      console.error('[getThreads] User lookup failed:', userError?.message);
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
-    }
-
-    userBubbleId = userData._id;
-    console.log('[getThreads] Looked up Bubble ID from email:', userBubbleId);
-  }
+  // Resolve user's Bubble ID via shared auth utility
+  const resolvedUser = await resolveUser(supabaseAdmin, user);
+  const userBubbleId = resolvedUser.id;
 
   // Step 1: Query threads where user is host or guest
   // Direct query now works with normalized column names
   const { data: threads, error: threadsError } = await supabaseAdmin
-    .from('thread')
+    .from('message_thread')
     .select('*')
     .or(`host_user_id.eq.${userBubbleId},guest_user_id.eq.${userBubbleId}`)
-    .order('"Modified Date"', { ascending: false, nullsFirst: false })
+    .order('bubble_updated_at', { ascending: false, nullsFirst: false })
     .limit(20);
 
   console.log('[getThreads] Query result:', {
@@ -118,7 +85,7 @@ export async function handleGetThreads(
     const guestId = thread.guest_user_id;
     const contactId = hostId === userBubbleId ? guestId : hostId;
     if (contactId) contactIds.add(contactId);
-    if (thread['Listing']) listingIds.add(thread['Listing']);
+    if (thread.listing_id) listingIds.add(thread.listing_id);
   });
 
   // Step 3: Batch fetch contact user data
@@ -126,14 +93,14 @@ export async function handleGetThreads(
   if (contactIds.size > 0) {
     const { data: contacts } = await supabaseAdmin
       .from('user')
-      .select('_id, "Name - First", "Name - Last", "Profile Photo"')
-      .in('_id', Array.from(contactIds));
+      .select('bubble_legacy_id, first_name, last_name, profile_photo_url')
+      .in('bubble_legacy_id', Array.from(contactIds));
 
     if (contacts) {
       contactMap = contacts.reduce((acc, contact) => {
-        acc[contact._id] = {
-          name: `${contact['Name - First'] || ''} ${contact['Name - Last'] || ''}`.trim() || 'Unknown User',
-          avatar: contact['Profile Photo'],
+        acc[contact.bubble_legacy_id] = {
+          name: `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown User',
+          avatar: contact.profile_photo_url,
         };
         return acc;
       }, {} as Record<string, { name: string; avatar?: string }>);
@@ -145,26 +112,26 @@ export async function handleGetThreads(
   if (listingIds.size > 0) {
     const { data: listings } = await supabaseAdmin
       .from('listing')
-      .select('_id, Name')
-      .in('_id', Array.from(listingIds));
+      .select('bubble_legacy_id, listing_title')
+      .in('bubble_legacy_id', Array.from(listingIds));
 
     if (listings) {
       listingMap = listings.reduce((acc, listing) => {
-        acc[listing._id] = listing.Name || 'Unnamed Property';
+        acc[listing.bubble_legacy_id] = listing.listing_title || 'Unnamed Property';
         return acc;
       }, {} as Record<string, string>);
     }
   }
 
   // Step 5: Fetch unread message counts per thread
-  const threadIds = threads.map(t => t._id);
+  const threadIds = threads.map(t => t.id);
   let unreadCountMap: Record<string, number> = {};
   if (threadIds.length > 0) {
     const { data: unreadData, error: unreadError } = await supabaseAdmin
-      .from('_message')
+      .from('thread_message')
       .select('thread_id')
       .in('thread_id', threadIds)
-      .contains('"Unread Users"', JSON.stringify([userBubbleId]));
+      .contains('unread_by_user_ids_json', JSON.stringify([userBubbleId]));
 
     if (!unreadError && unreadData) {
       // Count messages per thread
@@ -180,20 +147,20 @@ export async function handleGetThreads(
   // This enables hosts to see which threads have pending proposals
   const proposalIds = new Set<string>();
   threads.forEach(thread => {
-    if (thread['Proposal']) proposalIds.add(thread['Proposal']);
+    if (thread.proposal_id) proposalIds.add(thread.proposal_id);
   });
 
   let proposalMap: Record<string, { status: string }> = {};
   if (proposalIds.size > 0) {
     const { data: proposals, error: proposalsError } = await supabaseAdmin
-      .from('proposal')
-      .select('_id, "Status"')
-      .in('_id', Array.from(proposalIds));
+      .from('booking_proposal')
+      .select('bubble_legacy_id, proposal_workflow_status')
+      .in('bubble_legacy_id', Array.from(proposalIds));
 
     if (!proposalsError && proposals) {
       proposalMap = proposals.reduce((acc, proposal) => {
-        acc[proposal._id] = {
-          status: proposal['Status'] || 'unknown',
+        acc[proposal.bubble_legacy_id] = {
+          status: proposal.proposal_workflow_status || 'unknown',
         };
         return acc;
       }, {} as Record<string, { status: string }>);
@@ -202,12 +169,12 @@ export async function handleGetThreads(
   }
 
   // Step 5c: Compute visibility-aware message previews
-  // The static ~Last Message field doesn't consider visibility, so we compute
+  // The static last_message_preview_text field doesn't consider visibility, so we compute
   // the preview based on the most recent message visible to the current user
   const threadUserRoles = new Map<string, 'host' | 'guest'>();
   threads.forEach(thread => {
     const role = thread.host_user_id === userBubbleId ? 'host' : 'guest';
-    threadUserRoles.set(thread._id, role);
+    threadUserRoles.set(thread.id, role);
   });
 
   const visiblePreviewMap = await getLastVisibleMessagesForThreads(
@@ -225,7 +192,7 @@ export async function handleGetThreads(
     const contact = contactId ? contactMap[contactId] : null;
 
     // Format the last modified time
-    const modifiedDate = thread['Modified Date'] ? new Date(thread['Modified Date']) : new Date();
+    const modifiedDate = thread.bubble_updated_at ? new Date(thread.bubble_updated_at) : new Date();
     const now = new Date();
     const diffMs = now.getTime() - modifiedDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -242,7 +209,7 @@ export async function handleGetThreads(
     }
 
     // Get proposal data if thread has a proposal
-    const proposalId = thread['Proposal'];
+    const proposalId = thread.proposal_id;
     const proposalData = proposalId ? proposalMap[proposalId] : null;
     const proposalStatus = proposalData?.status;
 
@@ -258,16 +225,16 @@ export async function handleGetThreads(
     const hasPendingProposal = proposalStatus ? pendingStatuses.includes(proposalStatus) : false;
 
     return {
-      _id: thread._id,
+      id: thread.id,
       host_user_id: hostId,
       guest_user_id: guestId,
       contact_name: contact?.name || 'Split Lease',
       contact_avatar: contact?.avatar,
-      property_name: thread['Listing'] ? listingMap[thread['Listing']] : undefined,
-      // Use visibility-aware preview if available, fall back to static ~Last Message
-      last_message_preview: visiblePreviewMap.get(thread._id) || thread['~Last Message'] || 'No messages yet',
+      property_name: thread.listing_id ? listingMap[thread.listing_id] : undefined,
+      // Use visibility-aware preview if available, fall back to static last_message_preview_text
+      last_message_preview: visiblePreviewMap.get(thread.id) || thread.last_message_preview_text || 'No messages yet',
       last_message_time: lastMessageTime,
-      unread_count: unreadCountMap[thread._id] || 0,
+      unread_count: unreadCountMap[thread.id] || 0,
       is_with_splitbot: false,
       proposal_id: proposalId,
       proposal_status: proposalStatus,

@@ -1,0 +1,142 @@
+/* Modal Base Styles
+   Shared base classes for all modals. Compose with component overrides.
+   Uses CSS custom properties from variables.css. */
+
+/* Backdrop overlay - full viewport, dark background, flex centering. */
+.modal-overlay-base {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  animation: modalBaseFadeIn var(--transition-slow) var(--easing-ease);
+}
+
+/* Modal box - white bg, rounded corners, constrained height, flex column. */
+.modal-container-base {
+  background: var(--bg-white);
+  border-radius: var(--rounded-2xl);
+  width: 90%;
+  max-width: 480px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: modalBaseScaleIn var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Header - fixed at top, flex row for title and close button. */
+.modal-header-base {
+  flex-shrink: 0;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--border-width-thin) solid var(--border-color);
+  gap: var(--spacing-lg);
+}
+
+/* Body - scrollable content area that fills remaining space. */
+.modal-body-base {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-2xl);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Footer - fixed at bottom, flex row for action buttons. */
+.modal-footer-base {
+  flex-shrink: 0;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: var(--border-width-thin) solid var(--border-color);
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+}
+
+/* Close button - circular, transparent, icon-sized. */
+.modal-close-button-base {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded-full);
+  color: var(--text-gray);
+  transition: background var(--transition-base) var(--easing-ease),
+              color var(--transition-base) var(--easing-ease);
+  flex-shrink: 0;
+}
+
+.modal-close-button-base:hover {
+  background: var(--bg-light-gray);
+  color: var(--text-dark);
+}
+
+/* Mobile grab handle - hidden by default, shown on mobile bottom sheets. */
+.modal-grab-handle-base {
+  display: none;
+  width: 36px;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  margin: var(--spacing-sm) auto;
+  flex-shrink: 0;
+}
+
+/* Animations */
+@keyframes modalBaseFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalBaseScaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalBaseSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Mobile Bottom Sheet (< 480px) - converts to bottom-anchored sheet. */
+@media (max-width: 480px) {
+  .modal-overlay-base {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-container-base {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--rounded-2xl) var(--rounded-2xl) 0 0;
+    max-height: 90vh;
+    animation: modalBaseSlideUp var(--transition-slower) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .modal-grab-handle-base {
+    display: block;
+  }
+
+  .modal-footer-base {
+    padding-bottom: var(--spacing-xl);
+  }
+}

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Guest Proposals Page Logic Hook (V7)
  *
  * Follows the Hollow Component Pattern:
@@ -19,6 +19,7 @@
  * - Page requires authenticated Guest user
  * - User ID comes from session, NOT URL
  * - Redirects to home if not authenticated or not a Guest
+ * - Uses consolidated useAuthenticatedUser hook
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -28,9 +29,7 @@ import { transformProposalData, getProposalDisplayText } from '../../../lib/prop
 import { getStatusConfig, getStageFromStatus } from '../../../logic/constants/proposalStatuses.js';
 import { getAllStagesFormatted } from '../../../logic/constants/proposalStages.js';
 import { fetchStatusConfigurations, getButtonConfigForProposal, isStatusConfigCacheReady } from '../../../lib/proposals/statusButtonConfig.js';
-import { checkAuthStatus, validateTokenAndFetchUser, getFirstName, getUserType } from '../../../lib/auth.js';
-import { getUserId } from '../../../lib/secureStorage.js';
-import { supabase } from '../../../lib/supabase.js';
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { isSLSuggested, isPendingConfirmation, isTerminalStatus } from './displayUtils.js';
 
 /**
@@ -42,14 +41,20 @@ export function useGuestProposalsPageLogic() {
   // STATE
   // ============================================================================
 
-  // Auth state
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    isAuthenticated: false,
-    isGuest: false,
-    shouldRedirect: false,
-    redirectReason: null
+  // Auth - consolidated hook handles authentication, role check, and redirect
+  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    requireGuest: true,
+    redirectOnFail: '/'
   });
+
+  // Derived authState for backward-compatible component API
+  const authState = {
+    isChecking: authLoading,
+    isAuthenticated,
+    isGuest: isAuthenticated,
+    shouldRedirect: !authLoading && !isAuthenticated,
+    redirectReason: null
+  };
 
   // Data state
   const [user, setUser] = useState(null);
@@ -68,122 +73,10 @@ export function useGuestProposalsPageLogic() {
   const [error, setError] = useState(null);
 
   // ============================================================================
-  // AUTHENTICATION CHECK
+  // URL CLEANUP (runs once on mount)
   // ============================================================================
-
-  /**
-   * Check authentication status and user type
-   * Redirects if not authenticated or not a Guest
-   *
-   * Uses two-step auth pattern (same as FavoriteListingsPage, SearchPage, ViewSplitLeasePage):
-   * 1. checkAuthStatus() - lightweight check for tokens/cookies
-   * 2. validateTokenAndFetchUser() - validates token AND fetches user data including userType
-   */
   useEffect(() => {
-    async function checkAuth() {
-      console.log('ðŸ” Guest Proposals: Checking authentication...');
-
-      // Clean any legacy user ID from URL first
-      cleanLegacyUserIdFromUrl();
-
-      // Step 1: Lightweight auth check (tokens/cookies exist)
-      const isAuthenticated = await checkAuthStatus();
-
-      if (!isAuthenticated) {
-        console.log('âŒ Guest Proposals: User not authenticated, redirecting to home');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: false,
-          isGuest: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_AUTHENTICATED'
-        });
-        // Redirect to home page
-        window.location.href = '/';
-        return;
-      }
-
-      // ========================================================================
-      // GOLD STANDARD AUTH PATTERN - Step 2: Deep validation with clearOnFailure: false
-      // ========================================================================
-      const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-      let userType = null;
-      let isGuest = false;
-
-      if (userData) {
-        // Success path: Use validated user data
-        userType = userData.userType;
-        isGuest = userType === 'Guest' || userType?.includes('Guest');
-        console.log('âœ… Guest Proposals: User data loaded, userType:', userType);
-      } else {
-        // ========================================================================
-        // GOLD STANDARD AUTH PATTERN - Step 3: Fallback to Supabase session metadata
-        // ========================================================================
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          // Session valid but profile fetch failed - use session metadata
-          userType = session.user.user_metadata?.user_type || getUserType() || null;
-          isGuest = userType === 'Guest' || userType?.includes?.('Guest');
-          console.log('âš ï¸ Guest Proposals: Using fallback session data, userType:', userType);
-
-          // If we can't determine userType from session, redirect
-          if (!userType) {
-            console.log('âŒ Guest Proposals: Cannot determine user type from session, redirecting');
-            setAuthState({
-              isChecking: false,
-              isAuthenticated: true,
-              isGuest: false,
-              shouldRedirect: true,
-              redirectReason: 'USER_TYPE_UNKNOWN'
-            });
-            window.location.href = '/';
-            return;
-          }
-        } else {
-          // No valid session - redirect
-          console.log('âŒ Guest Proposals: No valid session, redirecting to home');
-          setAuthState({
-            isChecking: false,
-            isAuthenticated: false,
-            isGuest: false,
-            shouldRedirect: true,
-            redirectReason: 'TOKEN_INVALID'
-          });
-          window.location.href = '/';
-          return;
-        }
-      }
-
-      // Check if user is a Guest (not a Host)
-      // Database has inconsistent values: 'Guest' OR 'A Guest (I would like to rent a space)'
-
-      if (!isGuest) {
-        console.log('âŒ Guest Proposals: User is not a Guest (type:', userType, '), redirecting to home');
-        setAuthState({
-          isChecking: false,
-          isAuthenticated: true,
-          isGuest: false,
-          shouldRedirect: true,
-          redirectReason: 'NOT_GUEST'
-        });
-        // Redirect to home page
-        window.location.href = '/';
-        return;
-      }
-
-      console.log('âœ… Guest Proposals: User authenticated as Guest');
-      setAuthState({
-        isChecking: false,
-        isAuthenticated: true,
-        isGuest: true,
-        shouldRedirect: false,
-        redirectReason: null
-      });
-    }
-
-    checkAuth();
+    cleanLegacyUserIdFromUrl();
   }, []);
 
   // ============================================================================
@@ -226,11 +119,11 @@ export function useGuestProposalsPageLogic() {
 
   // Load data after auth check passes
   useEffect(() => {
-    // Only load proposals if authenticated as Guest
-    if (authState.isAuthenticated && authState.isGuest && !authState.isChecking) {
-      loadProposals();
-    }
-  }, [authState.isAuthenticated, authState.isGuest, authState.isChecking, loadProposals]);
+    if (authLoading) return;
+    if (!isAuthenticated || !authUser) return;
+
+    loadProposals();
+  }, [authLoading, isAuthenticated, authUser, loadProposals]);
 
   // ============================================================================
   // URL-BASED AUTO-EXPAND
@@ -259,10 +152,10 @@ export function useGuestProposalsPageLogic() {
     // Verify the proposal exists in the user's proposals
     const proposalExists = proposals.some(p => p.id === proposalIdFromUrl);
     if (proposalExists) {
-      console.log('ðŸ“‚ Auto-expanding proposal from URL:', proposalIdFromUrl);
+      console.log('Auto-expanding proposal from URL:', proposalIdFromUrl);
       setExpandedProposalId(proposalIdFromUrl);
     } else {
-      console.warn('âš ï¸ Proposal ID from URL not found in user proposals:', proposalIdFromUrl);
+      console.warn('Proposal ID from URL not found in user proposals:', proposalIdFromUrl);
     }
     hasProcessedUrlExpand.current = true;
   }, [proposals, isLoading]);
@@ -444,7 +337,7 @@ export function useGuestProposalsPageLogic() {
   // ============================================================================
 
   // Show loading if checking auth OR loading proposals
-  const isPageLoading = authState.isChecking || isLoading;
+  const isPageLoading = authLoading || isLoading;
 
   // ============================================================================
   // RETURN

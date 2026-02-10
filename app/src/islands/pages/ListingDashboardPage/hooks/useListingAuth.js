@@ -1,77 +1,31 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../../../lib/supabase';
-import { logger } from '../../../../lib/logger';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../../lib/auth/tokenValidation.js';
-import { getFirstName } from '../../../../lib/auth/session.js';
-import { getUserId } from '../../../../lib/secureStorage';
+import { useAuthenticatedUser } from '../../../../hooks/useAuthenticatedUser.js';
 
 /**
- * Hook for handling authentication state and current user data
- * Follows Gold Standard auth pattern with fallback to session metadata
+ * Hook for handling authentication state and current user data.
+ * Wraps useAuthenticatedUser and maps to the shape listing dashboard hooks expect.
  */
 export function useListingAuth() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    shouldRedirect: false
+  const { user: authUser, userId, loading, error, isAuthenticated } = useAuthenticatedUser({
+    redirectOnFail: '/?login=true'
   });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        // Step 1: Quick auth check
-        const isAuthenticated = await checkAuthStatus();
+  // Map to the shape that listing dashboard hooks expect
+  const currentUser = authUser ? {
+    id: userId,
+    userId: userId,
+    firstName: authUser.firstName || 'Host',
+    name: authUser.fullName || authUser.firstName || 'Host',
+    first_name: authUser.firstName || 'Host',
+    fullName: authUser.fullName || '',
+    email: authUser.email || '',
+    accountHostId: authUser.accountHostId || userId,
+  } : null;
 
-        if (!isAuthenticated) {
-          logger.debug('[useListingAuth] User not authenticated, redirecting to home');
-          setAuthState({ isChecking: false, shouldRedirect: true });
-          setTimeout(() => {
-            window.location.href = '/?login=true';
-          }, 100);
-          return;
-        }
-
-        // Step 2: Deep validation with clearOnFailure: false
-        const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
-
-        if (userData) {
-          // Success path: Use validated user data
-          setCurrentUser(userData);
-          setAuthState({ isChecking: false, shouldRedirect: false });
-          logger.debug('[useListingAuth] User data loaded:', userData.first_name || userData.firstName);
-        } else {
-          // Step 3: Fallback to Supabase session metadata
-          const { data: { session } } = await supabase.auth.getSession();
-
-          if (session?.user) {
-            // Session valid but profile fetch failed - use session metadata
-            const fallbackUser = {
-              id: session.user.user_metadata?.user_id || getUserId() || session.user.id,
-              first_name: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-              last_name: session.user.user_metadata?.last_name || '',
-              email: session.user.email,
-              firstName: session.user.user_metadata?.first_name || getFirstName() || session.user.email?.split('@')[0] || 'Host',
-              lastName: session.user.user_metadata?.last_name || ''
-            };
-            setCurrentUser(fallbackUser);
-            setAuthState({ isChecking: false, shouldRedirect: false });
-            logger.debug('[useListingAuth] Using fallback user data from session:', fallbackUser.firstName);
-          } else {
-            // No valid session - redirect
-            logger.debug('[useListingAuth] No valid session, redirecting');
-            setAuthState({ isChecking: false, shouldRedirect: true });
-            setTimeout(() => {
-              window.location.href = '/?login=true';
-            }, 100);
-          }
-        }
-      } catch (err) {
-        logger.warn('[useListingAuth] Could not fetch user data:', err);
-        setAuthState({ isChecking: false, shouldRedirect: false });
-      }
-    };
-    fetchUser();
-  }, []);
+  // Map to authState shape expected by consumers
+  const authState = {
+    isChecking: loading,
+    shouldRedirect: !loading && !isAuthenticated
+  };
 
   return {
     currentUser,

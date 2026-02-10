@@ -31,7 +31,7 @@ async function verifyAdminRole(
 
   const { data: userData, error } = await supabaseAdmin
     .from('user')
-    .select('_id, "Toggle - Is Admin"')
+    .select('bubble_legacy_id, is_admin')
     .ilike('email', user.email)
     .maybeSingle();
 
@@ -40,7 +40,7 @@ async function verifyAdminRole(
     return false;
   }
 
-  return userData?.['Toggle - Is Admin'] === true;
+  return userData?.is_admin === true;
 }
 
 /**
@@ -116,9 +116,9 @@ export async function handleAdminDeleteThread(
 
   // Step 3: Verify thread exists
   const { data: thread, error: threadError } = await supabaseAdmin
-    .from('thread')
-    .select('_id, "Thread Subject", host_user_id, guest_user_id')
-    .eq('_id', payload.threadId)
+    .from('message_thread')
+    .select('id, thread_subject_text, host_user_id, guest_user_id')
+    .eq('id', payload.threadId)
     .maybeSingle();
 
   if (threadError) {
@@ -130,15 +130,15 @@ export async function handleAdminDeleteThread(
     throw new ValidationError('Thread not found');
   }
 
-  console.log('[adminDeleteThread] Found thread:', thread['Thread Subject'] || thread._id);
+  console.log('[adminDeleteThread] Found thread:', thread.thread_subject_text || thread.id);
 
   // Step 4: Soft-delete all messages in the thread
-  // Set "is deleted (is hidden)" = true for all messages
+  // Set is_hidden_or_deleted = true for all messages
   const { data: deletedMessages, error: msgDeleteError } = await supabaseAdmin
-    .from('_message')
-    .update({ 'is deleted (is hidden)': true })
+    .from('thread_message')
+    .update({ is_hidden_or_deleted: true })
     .eq('thread_id', payload.threadId)
-    .select('_id');
+    .select('id');
 
   if (msgDeleteError) {
     console.error('[adminDeleteThread] Message soft-delete failed:', msgDeleteError.message);
@@ -154,14 +154,14 @@ export async function handleAdminDeleteThread(
   // 1. Add it via migration (preferred)
   // 2. Use a naming convention in Thread Subject
   // For now, we'll prepend [DELETED] to the subject as a soft-delete marker
-  const deletedSubject = thread['Thread Subject']?.startsWith('[DELETED]')
-    ? thread['Thread Subject']
-    : `[DELETED] ${thread['Thread Subject'] || 'Unnamed Thread'}`;
+  const deletedSubject = thread.thread_subject_text?.startsWith('[DELETED]')
+    ? thread.thread_subject_text
+    : `[DELETED] ${thread.thread_subject_text || 'Unnamed Thread'}`;
 
   const { error: threadDeleteError } = await supabaseAdmin
-    .from('thread')
-    .update({ 'Thread Subject': deletedSubject })
-    .eq('_id', payload.threadId);
+    .from('message_thread')
+    .update({ thread_subject_text: deletedSubject })
+    .eq('id', payload.threadId);
 
   if (threadDeleteError) {
     console.error('[adminDeleteThread] Thread soft-delete failed:', threadDeleteError.message);
@@ -170,7 +170,7 @@ export async function handleAdminDeleteThread(
 
   // Step 6: Log the admin action
   await logAdminAction(supabaseAdmin, user, 'delete_thread', payload.threadId, {
-    originalSubject: thread['Thread Subject'],
+    originalSubject: thread.thread_subject_text,
     messageCount: deletedMessageCount,
     hostUserId: thread.host_user_id,
     guestUserId: thread.guest_user_id,

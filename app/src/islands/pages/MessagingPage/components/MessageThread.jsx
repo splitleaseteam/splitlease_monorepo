@@ -180,7 +180,7 @@ export default function MessageThread({
               }
 
               return (
-                <div key={message._id || index}>
+                <div key={message.id || index}>
                   {/* Date Separator */}
                   {showDateSeparator && (
                     <div className="date-separator">

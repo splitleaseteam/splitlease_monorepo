@@ -304,7 +304,7 @@ export function useGuestMenuData(userId, isAuthenticated) {
         // Check if user has rental application (check for rental_application_id or rental app fields)
         supabase
           .from('user')
-          .select('id, rental_application_id')
+          .select('id, rental_application_form_id')
           .eq('id', userId)
           .single(),
 
@@ -320,7 +320,7 @@ export function useGuestMenuData(userId, isAuthenticated) {
       const leasesCount = leasesResult.count || 0;
 
       // Check if user has a rental application
-      const hasRentalApp = !!(userResult.data?.rental_application_id);
+      const hasRentalApp = !!(userResult.data?.rental_application_form_id);
 
       // Determine state based on counts (priority order matters)
       if (leasesCount > 0) {

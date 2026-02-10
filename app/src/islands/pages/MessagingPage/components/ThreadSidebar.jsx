@@ -49,9 +49,9 @@ export default function ThreadSidebar({
         ) : (
           threads.map(thread => (
             <ThreadCard
-              key={thread._id}
+              key={thread.id}
               thread={thread}
-              isSelected={thread._id === selectedThreadId}
+              isSelected={thread.id === selectedThreadId}
               onClick={() => onThreadSelect(thread)}
             />
           ))

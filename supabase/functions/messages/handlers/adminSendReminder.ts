@@ -42,7 +42,7 @@ async function verifyAdminRole(
 ): Promise<boolean> {
   const { data: userData, error } = await supabaseAdmin
     .from('user')
-    .select('_id, "Toggle - Is Admin"')
+    .select('bubble_legacy_id, is_admin')
     .ilike('email', user.email)
     .maybeSingle();
 
@@ -51,7 +51,7 @@ async function verifyAdminRole(
     return false;
   }
 
-  return userData?.['Toggle - Is Admin'] === true;
+  return userData?.is_admin === true;
 }
 
 /**
@@ -233,15 +233,15 @@ export async function handleAdminSendReminder(
 
   // Step 3: Fetch thread with user data
   const { data: thread, error: threadError } = await supabaseAdmin
-    .from('thread')
+    .from('message_thread')
     .select(`
-      _id,
-      "Thread Subject",
-      last_message_preview,
+      id,
+      thread_subject_text,
+      last_message_preview_text,
       host_user_id,
       guest_user_id
     `)
-    .eq('_id', payload.threadId)
+    .eq('id', payload.threadId)
     .maybeSingle();
 
   if (threadError || !thread) {
@@ -253,15 +253,15 @@ export async function handleAdminSendReminder(
 
   const { data: users, error: usersError } = await supabaseAdmin
     .from('user')
-    .select('_id, "Name - Full", email, "Phone Number (as text)"')
-    .in('_id', userIds);
+    .select('bubble_legacy_id, first_name, last_name, email, phone_number')
+    .in('bubble_legacy_id', userIds);
 
   if (usersError) {
     throw new Error(`Failed to fetch user data: ${usersError.message}`);
   }
 
   const userMap = (users || []).reduce((acc, u) => {
-    acc[u._id] = u;
+    acc[u.bubble_legacy_id] = u;
     return acc;
   }, {} as Record<string, typeof users[0]>);
 
@@ -270,8 +270,8 @@ export async function handleAdminSendReminder(
 
   // Step 5: Send notifications
   const sentTo: AdminSendReminderResult['sentTo'] = [];
-  const threadSubject = thread['Thread Subject'] || 'Your Conversation';
-  const messagePreview = thread['last_message_preview'] || 'You have a new message';
+  const threadSubject = thread.thread_subject_text || 'Your Conversation';
+  const messagePreview = thread.last_message_preview_text || 'You have a new message';
 
   const recipientsToNotify: Array<{ type: 'host' | 'guest'; user: typeof hostUser }> = [];
 
@@ -283,10 +283,10 @@ export async function handleAdminSendReminder(
   }
 
   for (const recipient of recipientsToNotify) {
-    const recipientName = recipient.user['Name - Full'] || 'Valued User';
+    const recipientName = [recipient.user.first_name, recipient.user.last_name].filter(Boolean).join(' ') || 'Valued User';
 
     // Fetch user's notification preferences
-    const prefs = await getNotificationPreferences(supabaseAdmin, recipient.user._id);
+    const prefs = await getNotificationPreferences(supabaseAdmin, recipient.user.bubble_legacy_id);
 
     // Send email
     if ((payload.method === 'email' || payload.method === 'both') && recipient.user.email) {
@@ -317,7 +317,7 @@ export async function handleAdminSendReminder(
     }
 
     // Send SMS
-    if ((payload.method === 'sms' || payload.method === 'both') && recipient.user['Phone Number (as text)']) {
+    if ((payload.method === 'sms' || payload.method === 'both') && recipient.user.phone_number) {
       const smsAllowed = checkSmsPreference(prefs, 'message_forwarding');
 
       if (!smsAllowed && !payload.forceOverride) {
@@ -329,7 +329,7 @@ export async function handleAdminSendReminder(
         }
 
         const smsSent = await sendReminderSms(
-          recipient.user['Phone Number (as text)'],
+          recipient.user.phone_number,
           recipientName,
           threadSubject
         );
@@ -337,7 +337,7 @@ export async function handleAdminSendReminder(
           sentTo.push({
             type: recipient.type,
             method: 'sms',
-            recipient: recipient.user['Phone Number (as text)'],
+            recipient: recipient.user.phone_number,
           });
         }
       }

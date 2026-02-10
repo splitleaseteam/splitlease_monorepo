@@ -16,15 +16,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase';
-
-/**
- * Auth states enum
- */
-const AUTH_STATES = {
-  LOADING: 'loading',
-  AUTHENTICATED: 'authenticated',
-  UNAUTHENTICATED: 'unauthenticated',
-};
+import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 
 /**
  * useHouseManualPageLogic - Main logic hook for House Manual page
@@ -34,8 +26,10 @@ export function useHouseManualPageLogic() {
   // STATE
   // ============================================================================
 
-  // Authentication
-  const [authState, setAuthState] = useState(AUTH_STATES.LOADING);
+  // Authentication (via consolidated hook - resolves Bubble legacy ID correctly)
+  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+    redirectOnFail: '/?login=true'
+  });
   const [user, setUser] = useState(null);
 
   // Listings for selection
@@ -59,58 +53,31 @@ export function useHouseManualPageLogic() {
     return listings.find((l) => l.id === selectedListingId) || null;
   }, [listings, selectedListingId]);
 
-  const isLoading = authState === AUTH_STATES.LOADING || isLoadingListings;
+  const isLoading = authLoading || isLoadingListings;
 
   // ============================================================================
   // AUTHENTICATION
   // ============================================================================
 
+  // Sync authenticated user from consolidated hook into local state
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
+    if (authLoading) return;
+    if (!isAuthenticated || !authUser) return;
 
-        if (session?.user) {
-          setUser(session.user);
-          setAuthState(AUTH_STATES.AUTHENTICATED);
-        } else {
-          setAuthState(AUTH_STATES.UNAUTHENTICATED);
-        }
-      } catch (err) {
-        console.error('[useHouseManualPageLogic] Auth check failed:', err);
-        setAuthState(AUTH_STATES.UNAUTHENTICATED);
-      }
-    };
-
-    checkAuth();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setAuthState(AUTH_STATES.AUTHENTICATED);
-      } else {
-        setUser(null);
-        setAuthState(AUTH_STATES.UNAUTHENTICATED);
-      }
+    // Set local user state with proper Bubble legacy ID (not Supabase UUID)
+    setUser({
+      id: authUser.id,
+      email: authUser.email,
+      firstName: authUser.firstName,
     });
-
-    return () => subscription?.unsubscribe();
-  }, []);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (authState === AUTH_STATES.UNAUTHENTICATED) {
-      window.location.href = '/?login=true';
-    }
-  }, [authState]);
+  }, [authLoading, isAuthenticated, authUser]);
 
   // ============================================================================
   // FETCH USER'S LISTINGS
   // ============================================================================
 
   useEffect(() => {
-    if (authState !== AUTH_STATES.AUTHENTICATED || !user) return;
+    if (!isAuthenticated || !user) return;
 
     const fetchListings = async () => {
       setIsLoadingListings(true);
@@ -142,7 +109,7 @@ export function useHouseManualPageLogic() {
     };
 
     fetchListings();
-  }, [authState, user, selectedListingId]);
+  }, [isAuthenticated, user, selectedListingId]);
 
   // ============================================================================
   // FETCH EXISTING HOUSE MANUAL
@@ -264,9 +231,8 @@ export function useHouseManualPageLogic() {
 
   return {
     // Auth state
-    authState,
     user,
-    isAuthenticated: authState === AUTH_STATES.AUTHENTICATED,
+    isAuthenticated,
 
     // Listings
     listings,

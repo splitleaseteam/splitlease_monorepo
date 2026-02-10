@@ -445,8 +445,8 @@ root.render(<PageComponent />);
 [EXPORTS]: Map configuration, marker helpers
 
 #### lib/priceCalculations.js
-[INTENT]: Legacy pricing calculations
-[NOTE]: Being migrated to logic/calculators/pricing/
+[INTENT]: Guest-facing pricing (host nightly rate, host 4-week compensation, price display messages)
+[DO_NOT_MERGE]: Different business context from logic/calculators/pricing/ — see REFACTORING_RULES below
 
 #### lib/sanitize.js
 [INTENT]: Input sanitization
@@ -621,6 +621,44 @@ import { bubbleAPI } from 'lib/bubbleAPI.js';
 // Proxied through Edge Function
 const listing = await bubbleAPI.getListing(listingId);
 ```
+
+---
+
+## REFACTORING_RULES
+
+[CRITICAL]: DO NOT consolidate files without semantic analysis. Structural similarity does NOT mean functional duplication.
+
+### Files That Look Similar But Are NOT Duplicates
+
+#### Pricing (3 separate contexts — DO NOT MERGE)
+[FILE]: lib/priceCalculations.js
+[CONTEXT]: Host compensation calculations (host nightly rate, host 4-week compensation, price display messages)
+[FILE]: lib/scheduleSelector/priceCalculations.js
+[CONTEXT]: Schedule selector pricing engine (monthly/weekly/nightly with period calculations)
+[FILE]: logic/calculators/pricing/
+[CONTEXT]: Reservation totals, fee breakdowns, guest-facing prices, quick proposals
+[WHY_DIFFERENT]: Different input shapes, different variable names, different consumers, different user roles
+
+#### Schedule Selectors (3+ separate features — DO NOT MERGE)
+[FILE]: ListingScheduleSelector — hosts configuring available days for a listing
+[FILE]: HostScheduleSelector — hosts editing proposal schedules with auto-fill/auto-complete
+[FILE]: SearchScheduleSelector — guests filtering search results with drag-to-select and URL persistence
+[WHY_DIFFERENT]: Different user roles, different interaction models, different data flows
+
+### Before Consolidating Any Code
+1. Read variable names — do the inputs/outputs describe the same concept?
+2. Check consumers — are the same pages/hooks using both files?
+3. Compare function signatures — do they take the same parameters?
+4. Ask "who uses this?" — different user roles (host vs guest) often mean different features
+5. When in doubt, DON'T merge — keep separate and extract only truly shared primitives
+
+### What IS Safe to Consolidate
+- Auth check patterns (identical 3-step pattern) — same flow everywhere
+- Loading/error/empty state UI components — pure presentation
+- Formatting utilities (currency, dates, display names) — stateless transforms
+- CSS base classes (visual patterns, not behavior)
+- Modal overlay mechanics (backdrop, escape key, scroll lock)
+- Generic hooks (useAsyncOperation, useSupabaseQuery, useMediaQuery)
 
 ---
 
