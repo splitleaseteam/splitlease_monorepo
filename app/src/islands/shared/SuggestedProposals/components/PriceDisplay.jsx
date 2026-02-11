@@ -4,21 +4,7 @@
  * Shows nightly price and total price for the reservation.
  */
 
-/**
- * Format price as USD currency
- * @param {number} amount
- * @returns {string}
- */
-function formatPrice(amount) {
-  if (typeof amount !== 'number' || isNaN(amount)) return '$0';
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount);
-}
+import { formatPrice } from '../../../../lib/formatters.js';
 
 /**
  * @param {Object} props
