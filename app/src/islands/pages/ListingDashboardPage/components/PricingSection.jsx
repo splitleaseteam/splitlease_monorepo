@@ -11,7 +11,7 @@ const WEEKLY_PATTERN_LABELS = {
   'custom': 'Custom pattern',
 };
 
-export default function PricingSection() {
+export default function PricingSection({ compact = false }) {
   const { listing, handleEditSection } = useListingDashboard();
   const weeklyComp = listing?.weeklyCompensation || {};
   const nightsAvailable = listing?.nightsAvailable || [];
@@ -19,18 +19,72 @@ export default function PricingSection() {
   const isMonthly = (listing?.leaseStyle || '').toLowerCase() === 'monthly';
   const isWeekly = (listing?.leaseStyle || '').toLowerCase() === 'weekly';
 
-  return (
-    <div id="pricing" className="listing-dashboard-section">
-      {/* Section Header */}
-      <div className="listing-dashboard-section__header">
-        <h2 className="listing-dashboard-section__title">Pricing and Lease Style</h2>
-        <button className="listing-dashboard-section__edit" onClick={() => handleEditSection('pricing')}>
-          edit
-        </button>
-      </div>
+  const compactRows = [
+    {
+      label: 'Lease style',
+      value: listing?.leaseStyle || 'Nightly',
+    },
+    isWeekly && listing?.weeksOffered
+      ? {
+          label: 'Weekly pattern',
+          value: WEEKLY_PATTERN_LABELS[listing.weeksOffered] || listing.weeksOffered,
+        }
+      : null,
+    isMonthly
+      ? {
+          label: 'Monthly host rate',
+          value: `${formatCurrency(listing?.monthlyHostRate || 0)}/month`,
+          tooltip: 'Amount paid to you after platform fees',
+        }
+      : null,
+    isWeekly
+      ? {
+          label: 'Weekly host rate',
+          value: `${formatCurrency(listing?.weeklyHostRate || 0)}/week`,
+          tooltip: 'Amount paid to you after platform fees',
+        }
+      : null,
+    isNightly
+      ? {
+          label: 'Nights available',
+          value: `${nightsAvailable.length}/7`,
+        }
+      : null,
+    {
+      label: 'Damage deposit',
+      value: formatCurrency(listing?.damageDeposit || 0),
+      tooltip: 'One-time refundable deposit collected at check-in',
+    },
+    {
+      label: 'Maintenance fee',
+      value: formatCurrency(listing?.maintenanceFee || 0),
+      tooltip: 'Recurring fee for cleaning and property upkeep',
+    },
+  ].filter(Boolean);
 
-      {/* Content */}
-      <div className="listing-dashboard-pricing">
+  return (
+    <div id="pricing" className={compact ? 'listing-dashboard-pricing listing-dashboard-pricing--compact' : 'listing-dashboard-section'}>
+      {!compact && (
+        <div className="listing-dashboard-section__header">
+          <h2 className="listing-dashboard-section__title">Pricing and Lease Style</h2>
+          <button className="listing-dashboard-section__edit" onClick={() => handleEditSection('pricing')}>
+            edit
+          </button>
+        </div>
+      )}
+
+      {compact ? (
+        <div className="listing-dashboard-pricing__compact-list" aria-label="Pricing summary">
+          {compactRows.map((row) => (
+            <div key={row.label} className="listing-dashboard-pricing__compact-row">
+              <span className="listing-dashboard-pricing__compact-label">{row.label}</span>
+              <span className="listing-dashboard-pricing__compact-value" data-tooltip={row.tooltip}>{row.value}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="listing-dashboard-pricing">
         {/* Left Column - Lease Style Info */}
         <div className="listing-dashboard-pricing__left">
           <div className="listing-dashboard-pricing__info">
@@ -109,18 +163,19 @@ export default function PricingSection() {
             </p>
           </div>
         </div>
-      </div>
+          </div>
 
-      {/* Bottom Edit Button - More intuitive placement */}
-      <div className="listing-dashboard-section__footer">
-        <button className="listing-dashboard-section__edit-bottom" onClick={() => handleEditSection('pricing')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-          Edit Pricing & Lease Style
-        </button>
-      </div>
+          <div className="listing-dashboard-section__footer">
+            <button className="listing-dashboard-section__edit-bottom" onClick={() => handleEditSection('pricing')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Edit Pricing & Lease Style
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

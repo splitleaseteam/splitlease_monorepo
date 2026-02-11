@@ -48,6 +48,7 @@ export default function useListingDashboardPageLogic() {
   const [showScheduleCohost, setShowScheduleCohost] = useState(false);
   const [showImportReviews, setShowImportReviews] = useState(false);
   const [isImportingReviews, setIsImportingReviews] = useState(false);
+  const [aiLoading, setAiLoading] = useState({});
   const [isSavingBlockedDates, setIsSavingBlockedDates] = useState(false);
   const blockedDatesTimerRef = useRef(null);
   const blockedDatesBeforeSaveRef = useRef(null);
@@ -289,8 +290,58 @@ export default function useListingDashboardPageLogic() {
     }
   }, []);
 
+  const handleAskAI = useCallback((field) => {
+    if (!field) {
+      return;
+    }
+
+    setAiLoading((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
+
+    setTimeout(() => {
+      setAiLoading((prev) => ({
+        ...prev,
+        [field]: false,
+      }));
+
+      if (window.showToast) {
+        window.showToast({
+          title: 'AI Assistant',
+          content: `I'd love to help write your ${field}! This feature is coming in the next update.`,
+          type: 'info',
+        });
+        return;
+      }
+
+      alert(`AI Assistant: I'd love to help write your ${field}! This feature is coming in the next update.`);
+    }, 1000);
+  }, []);
+
   // Edit modal handlers
   const handleEditSection = useCallback((section, focusField = null) => {
+    setEditSection(section);
+    setEditFocusField(focusField);
+  }, []);
+
+  // Tab-aware edit — switches to the correct tab before opening the edit modal.
+  // PERF: Tabs are a render optimization only — switching tabs triggers no new queries.
+  // All listing data is fetched once on mount regardless of which tab is active.
+  const handleEditSectionWithTab = useCallback((section, focusField = null) => {
+    const sectionTabMap = {
+      name: 'manage',
+      description: 'manage',
+      amenities: 'manage',
+      details: 'manage',
+      pricing: 'manage',
+      rules: 'manage',
+      availability: 'manage',
+      photos: 'manage',
+      'cancellation-policy': 'manage',
+    };
+    const targetTab = sectionTabMap[section] || 'manage';
+    setActiveTab(targetTab);
     setEditSection(section);
     setEditFocusField(focusField);
   }, []);
@@ -472,6 +523,7 @@ export default function useListingDashboardPageLogic() {
     showScheduleCohost,
     showImportReviews,
     isImportingReviews,
+    aiLoading,
 
     // UI handlers
     handleTabChange,
@@ -487,7 +539,9 @@ export default function useListingDashboardPageLogic() {
     handleImportReviews,
     handleCloseImportReviews,
     handleSubmitImportReviews,
+    handleAskAI,
     handleEditSection,
+    handleEditSectionWithTab,
     handleCloseEdit,
     handleSaveEdit,
     handleAvailabilityChange,

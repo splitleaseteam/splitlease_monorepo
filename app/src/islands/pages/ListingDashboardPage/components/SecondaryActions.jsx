@@ -1,5 +1,4 @@
 import { useListingDashboard } from '../context/ListingDashboardContext';
-import SectionDropdown from './SectionDropdown.jsx';
 
 // Icon components (inline SVGs)
 const SparklesIcon = () => (
@@ -35,8 +34,6 @@ export default function SecondaryActions() {
         <SparklesIcon />
         <span>AI Import Assistant</span>
       </button>
-
-      <SectionDropdown menuId="section-dropdown-menu-secondary" />
     </div>
   );
 }

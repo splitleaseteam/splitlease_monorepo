@@ -198,7 +198,7 @@ const PHOTO_TYPES = [
   'Other',
 ];
 
-export default function PhotosSection() {
+export default function PhotosSection({ compact = false }) {
   // Get data and handlers from context (migrated from props pattern)
   const {
     listing,
@@ -327,17 +327,30 @@ export default function PhotosSection() {
   };
 
   return (
-    <div id="photos" className="listing-dashboard-section">
-      {/* Section Header */}
-      <div className="listing-dashboard-section__header">
-        <h2 className="listing-dashboard-section__title">Photos</h2>
-        <button
-          className="listing-dashboard-section__add-btn"
-          onClick={() => handleEditSection('photos')}
-        >
-          Add Photos
-        </button>
-      </div>
+    <div id="photos" className={compact ? 'listing-dashboard-photos listing-dashboard-photos--compact' : 'listing-dashboard-section'}>
+      {!compact && (
+        <div className="listing-dashboard-section__header">
+          <h2 className="listing-dashboard-section__title">Photos</h2>
+          <button
+            className="listing-dashboard-section__add-btn"
+            onClick={() => handleEditSection('photos')}
+          >
+            Add Photos
+          </button>
+        </div>
+      )}
+
+      {compact && (
+        <div className="listing-dashboard-photos__compact-actions">
+          <button
+            className="listing-dashboard-section__add-btn"
+            onClick={() => handleEditSection('photos')}
+            type="button"
+          >
+            Add Photos
+          </button>
+        </div>
+      )}
 
       {/* Drag hint */}
       {photos.length > 1 && (
@@ -352,7 +365,7 @@ export default function PhotosSection() {
       )}
 
       {/* Photos Grid */}
-      <div className="listing-dashboard-photos__grid">
+      <div className={compact ? 'listing-dashboard-photos__grid listing-dashboard-photos__grid--compact' : 'listing-dashboard-photos__grid'}>
         {photos.map((photo, index) => {
           const imageUrl = getImageUrl(photo);
           const isDragging = draggedIndex === index;

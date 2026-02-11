@@ -21,7 +21,7 @@ const formatDateForInput = (date) => {
   return d.toISOString().split('T')[0];
 };
 
-export default function AvailabilitySection() {
+export default function AvailabilitySection({ compact = false }) {
   const {
     listing,
     calendarData,
@@ -189,15 +189,8 @@ export default function AvailabilitySection() {
     });
   };
 
-  return (
-    <div id="availability" className="listing-dashboard-availability">
-      {/* Settings Section */}
-      <div className="listing-dashboard-section">
-        <div className="listing-dashboard-section__header">
-          <h2 className="listing-dashboard-section__title">Listing Availability</h2>
-        </div>
-
-        <div className="listing-dashboard-availability__settings">
+  const settingsFields = (
+    <div className={compact ? 'listing-dashboard-availability__settings listing-dashboard-availability__settings--compact-row' : 'listing-dashboard-availability__settings'}>
           {/* Lease Term */}
           <div className="listing-dashboard-availability__field">
             <label htmlFor="availability-lease-term-min">What is the ideal Lease Term? (Enter between 6 and 52 weeks.)</label>
@@ -275,13 +268,28 @@ export default function AvailabilitySection() {
             </div>
           </div>
         </div>
-      </div>
+  );
+
+  return (
+    <div id="availability" className={compact ? 'listing-dashboard-availability listing-dashboard-availability--compact' : 'listing-dashboard-availability'}>
+      {!compact && (
+        <div className="listing-dashboard-section">
+          <div className="listing-dashboard-section__header">
+            <h2 className="listing-dashboard-section__title">Listing Availability</h2>
+          </div>
+          {settingsFields}
+        </div>
+      )}
+
+      {compact && settingsFields}
 
       {/* Calendar Section */}
-      <div className="listing-dashboard-section">
-        <div className="listing-dashboard-section__header">
-          <h2 className="listing-dashboard-section__title">Blocked Dates</h2>
-        </div>
+      <div className={compact ? 'listing-dashboard-availability__calendar-shell' : 'listing-dashboard-section'}>
+        {!compact && (
+          <div className="listing-dashboard-section__header">
+            <h2 className="listing-dashboard-section__title">Blocked Dates</h2>
+          </div>
+        )}
 
         <div className="listing-dashboard-availability__calendar-container">
           {/* Left Side - Instructions + Quick Actions + Blocked Dates */}

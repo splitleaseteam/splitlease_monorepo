@@ -392,6 +392,12 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
 
     // Status
     status: dbListing.is_active ? 'Online' : 'Offline',
+    displayStatus: (() => {
+      if (dbListing.is_active && dbListing.is_approved) return 'online';
+      if (!dbListing.is_approved && dbListing.is_listing_profile_complete) return 'review';
+      if (dbListing.is_approved && !dbListing.is_active) return 'paused';
+      return 'draft';
+    })(),
     isOnline: dbListing.is_active || false,
     isApproved: dbListing.is_approved || false,
     isComplete: dbListing.is_listing_profile_complete || false,

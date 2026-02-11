@@ -5,14 +5,14 @@ import { FileTextIcon, CalendarIcon, FileCheckIcon } from './icons.jsx';
 
 // Component-specific icons (unique to ActionCardGrid)
 const EyeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
 const LinkIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </svg>
@@ -50,7 +50,7 @@ export default function ActionCardGrid() {
     },
     {
       id: 'proposals',
-      icon: <FileTextIcon size={32} />,
+      icon: <FileTextIcon size={18} />,
       label: 'Proposals',
       tooltip: 'View and manage guest proposals',
       badge: counts.proposals > 0,
@@ -58,7 +58,7 @@ export default function ActionCardGrid() {
     },
     {
       id: 'meetings',
-      icon: <CalendarIcon size={32} />,
+      icon: <CalendarIcon size={18} />,
       label: 'Virtual Meetings',
       tooltip: 'View scheduled virtual meetings',
       badge: counts.virtualMeetings > 0,
@@ -66,7 +66,7 @@ export default function ActionCardGrid() {
     },
     {
       id: 'leases',
-      icon: <FileCheckIcon size={32} />,
+      icon: <FileCheckIcon size={18} />,
       label: 'Leases',
       tooltip: 'View active and upcoming leases',
       badge: counts.leases > 0,

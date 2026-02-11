@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
+import { logger } from '../../../../lib/logger';
 
 const DEFAULT_STATS = {
   medianMonthlyRate: 0,
@@ -163,14 +164,22 @@ function InsightsPanel() {
     setDismissedIds((prev) => {
       const next = new Set(prev);
       next.add(id);
-      try { localStorage.setItem(DISMISSED_KEY, JSON.stringify([...next])); } catch {}
+      try {
+        localStorage.setItem(DISMISSED_KEY, JSON.stringify([...next]));
+      } catch (error) {
+        logger.warn('[InsightsPanel] Failed to persist dismissed insights', error);
+      }
       return next;
     });
   }, [DISMISSED_KEY]);
 
   const handleRestoreAll = useCallback(() => {
     setDismissedIds(new Set());
-    try { localStorage.removeItem(DISMISSED_KEY); } catch {}
+    try {
+      localStorage.removeItem(DISMISSED_KEY);
+    } catch (error) {
+      logger.warn('[InsightsPanel] Failed to clear dismissed insights', error);
+    }
   }, [DISMISSED_KEY]);
 
   // Only show when listing is underperforming

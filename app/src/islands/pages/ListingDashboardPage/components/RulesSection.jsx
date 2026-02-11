@@ -72,7 +72,7 @@ const GuestsIcon = () => (
   </svg>
 );
 
-export default function RulesSection() {
+export default function RulesSection({ compact = false }) {
   const { listing, handleEditSection } = useListingDashboard();
   const houseRules = listing?.houseRules || [];
   const preferredGender = listing?.preferredGender?.display || 'Any';
@@ -81,24 +81,24 @@ export default function RulesSection() {
   const hasHouseRules = houseRules.length > 0;
 
   return (
-    <div id="rules" className="listing-dashboard-section">
-      {/* Section Header */}
-      <div className="listing-dashboard-section__header">
-        <h2 className="listing-dashboard-section__title">Rules</h2>
-        <button className="listing-dashboard-section__edit" onClick={() => handleEditSection('rules')}>
-          edit
-        </button>
-      </div>
+    <div id="rules" className={compact ? 'listing-dashboard-rules listing-dashboard-rules--compact' : 'listing-dashboard-section'}>
+      {!compact && (
+        <div className="listing-dashboard-section__header">
+          <h2 className="listing-dashboard-section__title">Rules</h2>
+          <button className="listing-dashboard-section__edit" onClick={() => handleEditSection('rules')}>
+            edit
+          </button>
+        </div>
+      )}
 
-      {/* Content */}
       <div className="listing-dashboard-rules">
         {/* House Rules Grid or Empty State */}
         {hasHouseRules ? (
-          <div className="listing-dashboard-rules__grid">
+          <div className={compact ? 'listing-dashboard-rules__compact-list' : 'listing-dashboard-rules__grid'}>
             {houseRules.map((rule) => (
               <div
                 key={rule.id}
-                className="listing-dashboard-rules__item"
+                className={compact ? 'listing-dashboard-rules__compact-item' : 'listing-dashboard-rules__item'}
                 data-tooltip={getRuleTooltip(rule)}
               >
                 <span className="listing-dashboard-rules__icon">
@@ -113,8 +113,8 @@ export default function RulesSection() {
         )}
 
         {/* Guest Restrictions */}
-        <div className="listing-dashboard-rules__restrictions">
-          <div className="listing-dashboard-rules__item">
+        <div className={compact ? 'listing-dashboard-rules__restrictions listing-dashboard-rules__restrictions--compact' : 'listing-dashboard-rules__restrictions'}>
+          <div className={compact ? 'listing-dashboard-rules__compact-item' : 'listing-dashboard-rules__item'}>
             <span className="listing-dashboard-rules__icon">
               <GenderIcon />
             </span>
@@ -122,7 +122,7 @@ export default function RulesSection() {
               Gender Preferred: {preferredGender}
             </span>
           </div>
-          <div className="listing-dashboard-rules__item">
+          <div className={compact ? 'listing-dashboard-rules__compact-item' : 'listing-dashboard-rules__item'}>
             <span className="listing-dashboard-rules__icon">
               <GuestsIcon />
             </span>

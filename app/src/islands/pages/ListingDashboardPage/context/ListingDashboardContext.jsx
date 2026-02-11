@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo } from 'react';
 import useListingDashboardPageLogic from '../useListingDashboardPageLogic.js';
+import { getCompletionPct, getMissingFields } from '../utils/listingCompletion';
 
 const ListingDataContext = createContext(null);
 const ListingActionsContext = createContext(null);
@@ -7,10 +8,15 @@ const ListingActionsContext = createContext(null);
 export function ListingDashboardProvider({ children }) {
   const logic = useListingDashboardPageLogic();
 
+  const completionPct = useMemo(() => getCompletionPct(logic.listing), [logic.listing]);
+  const missingFields = useMemo(() => getMissingFields(logic.listing), [logic.listing]);
+
   const dataValue = useMemo(() => ({
     authState: logic.authState,
     currentUser: logic.currentUser,
     listing: logic.listing,
+    completionPct,
+    missingFields,
     counts: logic.counts,
     isLoading: logic.isLoading,
     error: logic.error,
@@ -29,6 +35,7 @@ export function ListingDashboardProvider({ children }) {
     showScheduleCohost: logic.showScheduleCohost,
     showImportReviews: logic.showImportReviews,
     isImportingReviews: logic.isImportingReviews,
+    aiLoading: logic.aiLoading,
     insights: logic.insights,
     isInsightsLoading: logic.isInsightsLoading,
     fetchInsights: logic.fetchInsights,
@@ -37,6 +44,8 @@ export function ListingDashboardProvider({ children }) {
     logic.authState,
     logic.currentUser,
     logic.listing,
+    completionPct,
+    missingFields,
     logic.counts,
     logic.isLoading,
     logic.error,
@@ -55,6 +64,7 @@ export function ListingDashboardProvider({ children }) {
     logic.showScheduleCohost,
     logic.showImportReviews,
     logic.isImportingReviews,
+    logic.aiLoading,
     logic.insights,
     logic.isInsightsLoading,
     logic.fetchInsights,
@@ -82,7 +92,9 @@ export function ListingDashboardProvider({ children }) {
     handleImportReviews: logic.handleImportReviews,
     handleCloseImportReviews: logic.handleCloseImportReviews,
     handleSubmitImportReviews: logic.handleSubmitImportReviews,
+    handleAskAI: logic.handleAskAI,
     handleEditSection: logic.handleEditSection,
+    handleEditSectionWithTab: logic.handleEditSectionWithTab,
     handleCloseEdit: logic.handleCloseEdit,
     handleSaveEdit: logic.handleSaveEdit,
     handleAvailabilityChange: logic.handleAvailabilityChange,
@@ -110,7 +122,9 @@ export function ListingDashboardProvider({ children }) {
     logic.handleImportReviews,
     logic.handleCloseImportReviews,
     logic.handleSubmitImportReviews,
+    logic.handleAskAI,
     logic.handleEditSection,
+    logic.handleEditSectionWithTab,
     logic.handleCloseEdit,
     logic.handleSaveEdit,
     logic.handleAvailabilityChange,

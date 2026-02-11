@@ -29,6 +29,20 @@ const SECTIONS = [
   { id: 'cancellation-policy', label: 'Cancellation Policy' },
 ];
 
+// Section-to-tab mapping — when sections move to different tabs, update this map.
+// PERF: No data layer changes needed; tabs are a render-only optimization.
+const SECTION_TAB_MAP = {
+  'property-info': 'manage',
+  'description': 'manage',
+  'amenities': 'manage',
+  'details': 'manage',
+  'pricing': 'manage',
+  'rules': 'manage',
+  'availability': 'manage',
+  'photos': 'manage',
+  'cancellation-policy': 'manage',
+};
+
 function getSectionStatus(sectionId, listing) {
   if (!listing) return 'missing';
 
@@ -92,7 +106,7 @@ export default function SectionDropdown({
   buttonClassName = '',
   menuClassName = '',
 }) {
-  const { listing } = useListingDashboard();
+  const { listing, activeTab, handleTabChange } = useListingDashboard();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
   const dropdownRef = useRef(null);
@@ -149,6 +163,11 @@ export default function SectionDropdown({
 
   const handleSectionSelect = (sectionId) => {
     closeDropdown();
+    // Switch to the section's tab if not already active
+    const targetTab = SECTION_TAB_MAP[sectionId] || 'manage';
+    if (activeTab !== targetTab) {
+      handleTabChange(targetTab);
+    }
     const sectionElement = document.querySelector(`[data-section-id="${sectionId}"]`) || document.getElementById(sectionId);
     if (sectionElement) {
       const headerOffset = 80;

@@ -7,7 +7,7 @@ const POLICY_IDS = {
   ADDITIONAL_RESTRICTIONS: '1665431684611x656977293321267800',
 };
 
-export default function CancellationPolicySection() {
+export default function CancellationPolicySection({ compact = false }) {
   const {
     listing,
     handleCancellationPolicyChange,
@@ -72,11 +72,15 @@ export default function CancellationPolicySection() {
   };
 
   return (
-    <div id="cancellation-policy" className="listing-dashboard-section">
-      {/* Section Header */}
-      <div className="listing-dashboard-section__header">
-        <h2 className="listing-dashboard-section__title">Cancellation Policy</h2>
-      </div>
+    <div
+      id="cancellation-policy"
+      className={compact ? 'listing-dashboard-cancellation listing-dashboard-cancellation--compact' : 'listing-dashboard-section'}
+    >
+      {!compact && (
+        <div className="listing-dashboard-section__header">
+          <h2 className="listing-dashboard-section__title">Cancellation Policy</h2>
+        </div>
+      )}
 
       {/* Content */}
       <div className="listing-dashboard-cancellation">

@@ -45,10 +45,6 @@
 /_quick-price  /_internal/quick-price-view  200
 /_quick-price/  /_internal/quick-price-view  200
 
-# /_identity-verification-admin → identity-verification-admin.html
-/_identity-verification-admin  /_internal/identity-verification-admin-view  200
-/_identity-verification-admin/  /_internal/identity-verification-admin-view  200
-
 # /_co-host-requests → co-host-requests.html
 /_co-host-requests  /_internal/co-host-requests-view  200
 /_co-host-requests/  /_internal/co-host-requests-view  200
