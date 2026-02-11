@@ -35,7 +35,7 @@ export function useCalendarState({
   setCurrentDate,
   blockedDates,
   listing,
-  counts,
+  calendarData,
   showAllBlockedDates,
   today,
   formatDateKey,
@@ -65,13 +65,13 @@ export function useCalendarState({
 
   const leaseDateMap = useMemo(() => {
     const map = new Map();
-    const activeLeases = counts?.activeLeases || [];
+    const bookedRanges = calendarData?.bookedDateRanges || [];
 
-    activeLeases.forEach((lease) => {
-      if (!lease.reservation_start_date || !lease.reservation_end_date) return;
+    bookedRanges.forEach((lease) => {
+      if (!lease.start || !lease.end) return;
 
-      const start = new Date(lease.reservation_start_date);
-      const end = new Date(lease.reservation_end_date);
+      const start = new Date(lease.start);
+      const end = new Date(lease.end);
       if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return;
 
       for (let day = new Date(start); day <= end; day.setDate(day.getDate() + 1)) {
@@ -83,7 +83,7 @@ export function useCalendarState({
     });
 
     return map;
-  }, [counts?.activeLeases, formatDateKey]);
+  }, [calendarData?.bookedDateRanges, formatDateKey]);
 
   const bookedDates = useMemo(() => new Set(leaseDateMap.keys()), [leaseDateMap]);
 
@@ -115,6 +115,9 @@ export function useCalendarState({
   }, [firstAvailableDateKey, formatDateKey]);
 
   const baseNightlyRate = useMemo(() => {
+    const overlayRate = Number(calendarData?.pricing?.perNight);
+    if (Number.isFinite(overlayRate) && overlayRate > 0) return Math.round(overlayRate);
+
     if (listing?.nightlyPricing && typeof listing.nightlyPricing === 'object') {
       const direct = Number(
         listing.nightlyPricing.default
@@ -136,7 +139,7 @@ export function useCalendarState({
     if (Number.isFinite(monthly) && monthly > 0) return Math.round(monthly / 30);
 
     return null;
-  }, [listing]);
+  }, [calendarData?.pricing?.perNight, listing]);
 
   const getDayPrice = useCallback((date) => {
     if (!date || !date.getTime || Number.isNaN(date.getTime())) return null;

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { logger } from '../../../../lib/logger';
 
+// PERF: 10-min TTL prevents redundant comparable queries for the same listing
 const INSIGHTS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 /**
@@ -39,6 +40,7 @@ function getPhotoCount(listing) {
 /**
  * Determine if a listing is underperforming based on age, proposal count, and clicks.
  */
+// PERF: Pure computation — no queries, runs client-side from already-fetched data
 export function isListingUnderperforming(listing, counts) {
   if (!listing || !counts) return false;
   const createdAt = listing.createdAt || listing.original_created_at;
@@ -240,6 +242,10 @@ export function analyzeListingVsComparables(listing, comparables, counts, calend
 
 /**
  * useInsightsData — Lazy-loaded competitive insights for a listing.
+ *
+ * PERF: Not called on initial load. Only fetched when InsightsPanel mounts
+ * and isUnderperforming is true. fetchComparableListings runs outside the
+ * main Promise.all to avoid adding latency to the critical path.
  *
  * Returns:
  *   - insights: analysis result (null until fetched)

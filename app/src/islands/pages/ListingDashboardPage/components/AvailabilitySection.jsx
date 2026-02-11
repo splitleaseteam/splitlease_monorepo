@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { lazy, Suspense, useState, useCallback, useMemo, useEffect } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
-import CalendarGrid from './CalendarGrid.jsx';
 import { useCalendarState } from './availability/useCalendarState.js';
 import { useDragToBlock } from './availability/useDragToBlock.js';
+
+const CalendarGrid = lazy(() => import('./CalendarGrid.jsx'));
 
 // Helper to format date as YYYY-MM-DD
 const formatDateKey = (date) => {
@@ -21,7 +22,13 @@ const formatDateForInput = (date) => {
 };
 
 export default function AvailabilitySection() {
-  const { listing, counts, handleBlockedDatesChange, handleAvailabilityChange } = useListingDashboard();
+  const {
+    listing,
+    calendarData,
+    ensureCalendarData,
+    handleBlockedDatesChange,
+    handleAvailabilityChange,
+  } = useListingDashboard();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showPrices, setShowPrices] = useState(() => {
     return window.localStorage.getItem('ld-calendar-showPrices') === 'true';
@@ -41,6 +48,10 @@ export default function AvailabilitySection() {
   useEffect(() => {
     setBlockedDates(listing?.blockedDates || []);
   }, [listing?.blockedDates]);
+
+  useEffect(() => {
+    ensureCalendarData?.();
+  }, [ensureCalendarData]);
 
   // Stable today reference
   const today = useMemo(() => {
@@ -71,7 +82,7 @@ export default function AvailabilitySection() {
     setCurrentDate,
     blockedDates,
     listing,
-    counts,
+    calendarData,
     showAllBlockedDates,
     today,
     formatDateKey,
@@ -361,32 +372,34 @@ export default function AvailabilitySection() {
             className="listing-dashboard-availability__multi-calendar"
             onTouchMove={handleTouchMove}
           >
-            {visibleMonths.map((monthDate, idx) => (
-              <CalendarGrid
-                key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
-                currentDate={monthDate}
-                navigateMonth={idx === 0 ? navigateMonth : undefined}
-                calendarDays={multiCalendarDays[idx]}
-                isDateBlocked={isDateBlocked}
-                isDateBooked={isDateBooked}
-                isToday={isToday}
-                isFirstAvailableDate={isFirstAvailableDate}
-                getDayPrice={getDayPrice}
-                showPrices={showPrices}
-                setShowPrices={idx === 0 ? setShowPrices : undefined}
-                getDayTooltip={getDayTooltip}
-                getLeaseTooltip={getLeaseTooltip}
-                monthStats={multiMonthStats[idx]}
-                handleDateClick={handleDateClick}
-                showNavigation={idx === 0}
-                compact={true}
-                showLegend={idx === visibleMonths.length - 1}
-                dragState={dragState}
-                onDayMouseDown={handleDayMouseDown}
-                onDayMouseEnter={handleDayMouseEnter}
-                isDayInDragRange={isDayInDragRange}
-              />
-            ))}
+            <Suspense fallback={<div className="listing-dashboard-section-loading">Loading calendar...</div>}>
+              {visibleMonths.map((monthDate, idx) => (
+                <CalendarGrid
+                  key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
+                  currentDate={monthDate}
+                  navigateMonth={idx === 0 ? navigateMonth : undefined}
+                  calendarDays={multiCalendarDays[idx]}
+                  isDateBlocked={isDateBlocked}
+                  isDateBooked={isDateBooked}
+                  isToday={isToday}
+                  isFirstAvailableDate={isFirstAvailableDate}
+                  getDayPrice={getDayPrice}
+                  showPrices={showPrices}
+                  setShowPrices={idx === 0 ? setShowPrices : undefined}
+                  getDayTooltip={getDayTooltip}
+                  getLeaseTooltip={getLeaseTooltip}
+                  monthStats={multiMonthStats[idx]}
+                  handleDateClick={handleDateClick}
+                  showNavigation={idx === 0}
+                  compact={true}
+                  showLegend={idx === visibleMonths.length - 1}
+                  dragState={dragState}
+                  onDayMouseDown={handleDayMouseDown}
+                  onDayMouseEnter={handleDayMouseEnter}
+                  isDayInDragRange={isDayInDragRange}
+                />
+              ))}
+            </Suspense>
           </div>
         </div>
       </div>

@@ -13,6 +13,129 @@ function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+function getDayClassName(dayInfo, isBlocked, isBooked, isTodayDate, isFirstAvailable, isSelectable, dragState, inDrag) {
+  const classes = [
+    'listing-dashboard-availability__calendar-day',
+    !dayInfo.isCurrentMonth && 'listing-dashboard-availability__calendar-day--other-month',
+    dayInfo.isPast && 'listing-dashboard-availability__calendar-day--past',
+    !dayInfo.isPast && !isBlocked && !isBooked && dayInfo.isCurrentMonth && 'listing-dashboard-availability__calendar-day--available',
+    isBooked && 'listing-dashboard-availability__calendar-day--booked',
+    isBlocked && 'listing-dashboard-availability__calendar-day--blocked',
+    isTodayDate && 'listing-dashboard-availability__calendar-day--today',
+    isFirstAvailable && 'listing-dashboard-availability__calendar-day--first-available',
+    isSelectable && 'listing-dashboard-availability__calendar-day--selectable',
+  ];
+
+  if (inDrag && dragState?.active) {
+    classes.push(
+      dragState.mode === 'block'
+        ? 'listing-dashboard-availability__calendar-day--drag-block'
+        : 'listing-dashboard-availability__calendar-day--drag-unblock'
+    );
+  }
+
+  return classes.filter(Boolean).join(' ');
+}
+
+const CalendarDayCell = React.memo(function CalendarDayCell({
+  dayInfo,
+  compact,
+  dragState,
+  isDateBlocked,
+  isDateBooked,
+  isToday,
+  isFirstAvailableDate,
+  showPrices,
+  getDayPrice,
+  getDayTooltip,
+  getLeaseTooltip,
+  handleDateClick,
+  onDayMouseDown,
+  onDayMouseEnter,
+  isDayInDragRange,
+}) {
+  const isBlocked = dayInfo.date && isDateBlocked(dayInfo.date);
+  const isBooked = dayInfo.date && isDateBooked?.(dayInfo.date);
+  const isSelectable = !dayInfo.isPast && dayInfo.date && !isBooked;
+  const isTodayDate = isToday?.(dayInfo.date);
+  const isFirstAvailable = isFirstAvailableDate?.(dayInfo.date);
+  const dayPrice = showPrices ? getDayPrice?.(dayInfo.date) : null;
+  const tooltip = getDayTooltip?.(dayInfo, isBlocked, isBooked);
+  const leaseTooltip = isBooked ? getLeaseTooltip?.(dayInfo.date) : undefined;
+  const dateKey = toDateKey(dayInfo.date);
+  const inDrag = isDayInDragRange ? isDayInDragRange(dayInfo.date) : false;
+  const className = getDayClassName(
+    dayInfo,
+    isBlocked,
+    isBooked,
+    isTodayDate,
+    isFirstAvailable,
+    isSelectable,
+    dragState,
+    inDrag
+  );
+
+  const handleMouseDown = isSelectable && onDayMouseDown
+    ? (event) => {
+      event.preventDefault();
+      onDayMouseDown(dayInfo);
+    }
+    : undefined;
+
+  const handleTouchStart = isSelectable && onDayMouseDown
+    ? () => onDayMouseDown(dayInfo)
+    : undefined;
+
+  const handleKeyDown = (event) => {
+    if (isSelectable && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      handleDateClick(dayInfo);
+    }
+
+    if (dayInfo.date && ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault();
+      const target = new Date(dayInfo.date);
+      switch (event.key) {
+        case 'ArrowRight': target.setDate(target.getDate() + 1); break;
+        case 'ArrowLeft': target.setDate(target.getDate() - 1); break;
+        case 'ArrowDown': target.setDate(target.getDate() + 7); break;
+        case 'ArrowUp': target.setDate(target.getDate() - 7); break;
+        default: break;
+      }
+      const targetKey = toDateKey(target);
+      const container = event.currentTarget.closest('.listing-dashboard-availability__multi-calendar')
+        || event.currentTarget.closest('.listing-dashboard-availability__calendar-container');
+      if (container && targetKey) {
+        const cell = container.querySelector(`[data-date="${targetKey}"]`);
+        if (cell) cell.focus();
+      }
+    }
+  };
+
+  return (
+    <div
+      className={className}
+      data-date={(!compact || dayInfo.isCurrentMonth) ? dateKey : undefined}
+      data-tooltip={leaseTooltip || tooltip}
+      onMouseDown={handleMouseDown}
+      onMouseEnter={onDayMouseEnter ? () => onDayMouseEnter(dayInfo) : undefined}
+      onTouchStart={handleTouchStart}
+      role={isSelectable ? 'button' : undefined}
+      tabIndex={isSelectable ? 0 : undefined}
+      aria-pressed={isSelectable ? (isBooked || isBlocked) : undefined}
+      onKeyDown={handleKeyDown}
+    >
+      <span className="listing-dashboard-availability__day-number">{String(dayInfo.day).padStart(2, '0')}</span>
+      {dayPrice !== null && (
+        <span className="listing-dashboard-availability__day-price">${dayPrice}</span>
+      )}
+      {isFirstAvailable && (
+        <span className="listing-dashboard-availability__first-available-badge">First available</span>
+      )}
+    </div>
+  );
+});
+
 /**
  * Calendar grid component for displaying and selecting dates.
  * Supports multi-month layout, drag-to-select, pricing overlay,
@@ -87,81 +210,26 @@ const CalendarGrid = React.memo(function CalendarGrid({
           dragState?.active && 'listing-dashboard-availability__calendar-grid--dragging',
         ].filter(Boolean).join(' ')}
       >
-        {calendarDays.map((dayInfo, index) => {
-          const isBlocked = dayInfo.date && isDateBlocked(dayInfo.date);
-          const isBooked = dayInfo.date && isDateBooked?.(dayInfo.date);
-          const isSelectable = !dayInfo.isPast && dayInfo.date && !isBooked;
-          const isTodayDate = isToday?.(dayInfo.date);
-          const isFirstAvailable = isFirstAvailableDate?.(dayInfo.date);
-          const dayPrice = showPrices ? getDayPrice?.(dayInfo.date) : null;
-          const tooltip = getDayTooltip?.(dayInfo, isBlocked, isBooked);
-          const leaseTooltip = isBooked ? getLeaseTooltip?.(dayInfo.date) : undefined;
-          const dateKey = toDateKey(dayInfo.date);
-          const inDrag = isDayInDragRange ? isDayInDragRange(dayInfo.date) : false;
-
-          let dragClass = '';
-          if (inDrag && dragState?.active) {
-            dragClass = dragState.mode === 'block'
-              ? ' listing-dashboard-availability__calendar-day--drag-block'
-              : ' listing-dashboard-availability__calendar-day--drag-unblock';
-          }
-
-          return (
-            <div
-              key={index}
-              className={[
-                'listing-dashboard-availability__calendar-day',
-                !dayInfo.isCurrentMonth && 'listing-dashboard-availability__calendar-day--other-month',
-                dayInfo.isPast && 'listing-dashboard-availability__calendar-day--past',
-                !dayInfo.isPast && !isBlocked && !isBooked && dayInfo.isCurrentMonth && 'listing-dashboard-availability__calendar-day--available',
-                isBooked && 'listing-dashboard-availability__calendar-day--booked',
-                isBlocked && 'listing-dashboard-availability__calendar-day--blocked',
-                isTodayDate && 'listing-dashboard-availability__calendar-day--today',
-                isFirstAvailable && 'listing-dashboard-availability__calendar-day--first-available',
-                isSelectable && 'listing-dashboard-availability__calendar-day--selectable',
-              ].filter(Boolean).join(' ') + dragClass}
-              data-date={(!compact || dayInfo.isCurrentMonth) ? dateKey : undefined}
-              data-tooltip={leaseTooltip || tooltip}
-              onMouseDown={isSelectable && onDayMouseDown ? (e) => { e.preventDefault(); onDayMouseDown(dayInfo); } : undefined}
-              onMouseEnter={onDayMouseEnter ? () => onDayMouseEnter(dayInfo) : undefined}
-              onTouchStart={isSelectable && onDayMouseDown ? () => onDayMouseDown(dayInfo) : undefined}
-              role={isSelectable ? 'button' : undefined}
-              tabIndex={isSelectable ? 0 : undefined}
-              aria-pressed={isSelectable ? (isBooked || isBlocked) : undefined}
-              onKeyDown={(e) => {
-                if (isSelectable && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  handleDateClick(dayInfo);
-                }
-                if (dayInfo.date && ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-                  e.preventDefault();
-                  const target = new Date(dayInfo.date);
-                  switch (e.key) {
-                    case 'ArrowRight': target.setDate(target.getDate() + 1); break;
-                    case 'ArrowLeft': target.setDate(target.getDate() - 1); break;
-                    case 'ArrowDown': target.setDate(target.getDate() + 7); break;
-                    case 'ArrowUp': target.setDate(target.getDate() - 7); break;
-                  }
-                  const targetKey = toDateKey(target);
-                  const container = e.currentTarget.closest('.listing-dashboard-availability__multi-calendar')
-                    || e.currentTarget.closest('.listing-dashboard-availability__calendar-container');
-                  if (container && targetKey) {
-                    const cell = container.querySelector(`[data-date="${targetKey}"]`);
-                    if (cell) cell.focus();
-                  }
-                }
-              }}
-            >
-              <span className="listing-dashboard-availability__day-number">{String(dayInfo.day).padStart(2, '0')}</span>
-              {dayPrice !== null && (
-                <span className="listing-dashboard-availability__day-price">${dayPrice}</span>
-              )}
-              {isFirstAvailable && (
-                <span className="listing-dashboard-availability__first-available-badge">First available</span>
-              )}
-            </div>
-          );
-        })}
+        {calendarDays.map((dayInfo) => (
+          <CalendarDayCell
+            key={toDateKey(dayInfo.date) || `${currentDate.getFullYear()}-${currentDate.getMonth()}-${dayInfo.day}`}
+            dayInfo={dayInfo}
+            compact={compact}
+            dragState={dragState}
+            isDateBlocked={isDateBlocked}
+            isDateBooked={isDateBooked}
+            isToday={isToday}
+            isFirstAvailableDate={isFirstAvailableDate}
+            showPrices={showPrices}
+            getDayPrice={getDayPrice}
+            getDayTooltip={getDayTooltip}
+            getLeaseTooltip={getLeaseTooltip}
+            handleDateClick={handleDateClick}
+            onDayMouseDown={onDayMouseDown}
+            onDayMouseEnter={onDayMouseEnter}
+            isDayInDragRange={isDayInDragRange}
+          />
+        ))}
       </div>
 
       {/* Legend */}

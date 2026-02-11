@@ -87,6 +87,7 @@ export function ListingDashboardProvider({ children }) {
     handleSaveEdit: logic.handleSaveEdit,
     handleAvailabilityChange: logic.handleAvailabilityChange,
     handleBlockedDatesChange: logic.handleBlockedDatesChange,
+    ensureCalendarData: logic.ensureCalendarData,
     updateListing: logic.updateListing,
   }), [
     logic.handleSetCoverPhoto,
@@ -114,6 +115,7 @@ export function ListingDashboardProvider({ children }) {
     logic.handleSaveEdit,
     logic.handleAvailabilityChange,
     logic.handleBlockedDatesChange,
+    logic.ensureCalendarData,
     logic.updateListing,
   ]);
 

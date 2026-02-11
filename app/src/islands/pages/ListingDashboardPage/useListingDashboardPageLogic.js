@@ -39,7 +39,7 @@ export default function useListingDashboardPageLogic() {
     listingId
   );
 
-  const { setListing, updateListing, fetchListing, setExistingCohostRequest } = data;
+  const { setListing, updateListing, fetchListing, setExistingCohostRequest, ensureCalendarData } = data;
 
   // Local UI state
   const [activeTab, setActiveTab] = useState('manage');
@@ -492,6 +492,7 @@ export default function useListingDashboardPageLogic() {
     handleSaveEdit,
     handleAvailabilityChange,
     handleBlockedDatesChange,
+    ensureCalendarData,
 
     // Expose updateListing for modal compatibility
     updateListing,

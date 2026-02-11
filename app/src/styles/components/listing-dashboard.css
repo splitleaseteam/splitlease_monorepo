@@ -3605,6 +3605,83 @@
   margin: 0;
 }
 
+/* ===== Sections Grid — Two-Column Desktop Layout ===== */
+.listing-dashboard-sections-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1200px) {
+  .listing-dashboard-sections-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .listing-dashboard-sections-grid > .listing-dashboard-section--full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ===== Desktop Compact Spacing ===== */
+@media (min-width: 1200px) {
+  .listing-dashboard-collapsible {
+    margin-bottom: 0;
+  }
+  .listing-dashboard-collapsible__header {
+    padding: 10px 16px;
+  }
+  .listing-dashboard-collapsible__summary {
+    font-size: 12px;
+    padding: 0 16px 8px;
+    margin-top: 0;
+  }
+  .listing-dashboard-collapsible__body {
+    padding: 0;
+  }
+  .listing-dashboard-collapsible__title {
+    font-size: 14px;
+  }
+
+  /* Property info compact */
+  .listing-dashboard-property {
+    padding: 12px 16px;
+  }
+
+  /* Mini panels compact */
+  .listing-dashboard-mini-panels {
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px 16px;
+  }
+  .listing-dashboard-mini-panel {
+    padding: 8px 12px;
+  }
+
+  /* Insights compact */
+  .listing-dashboard-insights {
+    padding: 10px 16px;
+  }
+  .listing-dashboard-insights__card {
+    padding: 8px 12px;
+  }
+
+  /* Nav compact */
+  .listing-dashboard-nav__tabs-row {
+    padding: 12px 16px 10px;
+  }
+
+  /* Action cards compact */
+  .listing-dashboard-actions {
+    padding: 8px 16px;
+    gap: 8px;
+  }
+
+  /* Secondary actions compact */
+  .listing-dashboard-secondary {
+    padding: 4px 16px 8px;
+  }
+}
+
 /**
  * Applied to sections modified by AI Import Assistant
  * Creates a pulsing purple glow effect that fades after 8 seconds

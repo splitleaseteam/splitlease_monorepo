@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useListingDashboard } from '../context/ListingDashboardContext';
+import { memo, useState, useEffect } from 'react';
 import { logger } from '../../../../lib/logger';
 
 const STORAGE_PREFIX = 'ld-sections-';
 
-export default function CollapsibleSection({
+function CollapsibleSection({
+  listingId,
   id,
   title,
   children,
   summary,
   className,
   defaultExpanded = true,
+  unmountWhenCollapsed = false,
 }) {
-  const { listing } = useListingDashboard();
-  const listingStorageKey = `${STORAGE_PREFIX}${listing?.id || 'unknown'}`;
+  const listingStorageKey = `${STORAGE_PREFIX}${listingId || 'unknown'}`;
 
   const [expanded, setExpanded] = useState(() => {
     try {
@@ -90,7 +90,7 @@ export default function CollapsibleSection({
         className="listing-dashboard-collapsible__body"
         style={{ maxHeight: bodyHeight, overflow: bodyHeight === 'none' ? 'visible' : 'hidden' }}
       >
-        {children}
+        {(!unmountWhenCollapsed || expanded) ? children : null}
       </div>
 
       {!expanded && summary && (
@@ -99,3 +99,5 @@ export default function CollapsibleSection({
     </div>
   );
 }
+
+export default memo(CollapsibleSection);

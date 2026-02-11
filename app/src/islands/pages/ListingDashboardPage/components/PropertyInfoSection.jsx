@@ -267,6 +267,7 @@ export default function PropertyInfoSection() {
   const fullAddress = listing?.location?.address || '';
 
   const handleScrollToInsights = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('ld:fetch-insights'));
     const el = document.getElementById('insights-panel');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -38,11 +38,29 @@
  *   listing.createdAt       → original_created_at
  *   listing.updatedAt       → original_updated_at
  */
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { logger } from '../../../../lib/logger';
 import { getBoroughForZipCode } from '../../../../lib/nycZipCodes';
 
+function runWhenIdle(callback) {
+  if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+    return window.requestIdleCallback(callback, { timeout: 1200 });
+  }
+  return window.setTimeout(callback, 120);
+}
+
+function cancelIdleRun(handle) {
+  if (typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+    window.cancelIdleCallback(handle);
+    return;
+  }
+  clearTimeout(handle);
+}
+
+// PERF: Module-level cache shared across component instances, survives re-renders.
+// Safe with React concurrent mode (not inside component scope).
+// 30-min TTL — reference data changes rarely; eliminates 6 queries on repeat visits.
 const LOOKUP_CACHE_TTL_MS = 30 * 60 * 1000;
 let lookupCache = null;
 let lookupCacheTime = 0;
@@ -499,6 +517,7 @@ export function useListingData(listingId) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [existingCohostRequest, setExistingCohostRequest] = useState(null);
+  const [calendarData, setCalendarData] = useState(null);
 
   const fetchListing = useCallback(async (silent = false) => {
     if (!listingId) {
@@ -535,7 +554,9 @@ export function useListingData(listingId) {
 
       logger.debug('✅ Found listing:', listingData.id);
 
-      // Fetch lookup tables and related data in parallel
+      // PERF: 7 queries in parallel — all use listingId from URL (no data dependency on listing row).
+      // Listing query runs first as a sequential gate (must exist before fetching related data).
+      // Lookups are cached 30 min, so on repeat visits this slot resolves instantly.
       const [lookups, proposalsResult, leasesResult, meetingsResult, reviewsResult, messagesResult, cohostResult] = await Promise.all([
         fetchLookupTables(),
         // 12A: Enriched proposal query — recent proposals with key fields
@@ -712,21 +733,39 @@ export function useListingData(listingId) {
     return data;
   }, [listingId]);
 
-  // Calendar-specific computed data for heatmap, lease overlays, pricing
-  const calendarData = useMemo(() => ({
+  const buildCalendarData = useCallback(() => ({
     bookedDateRanges: (counts.activeLeases || [])
-      .filter(l => l.reservation_start_date && l.reservation_end_date)
-      .map(l => ({
-        start: l.reservation_start_date.substring(0, 10),
-        end: l.reservation_end_date.substring(0, 10),
-        leaseId: l.id,
-        agreementNumber: l.agreement_number || `Lease ${l.id.substring(0, 8)}`,
-        isSigned: l.is_lease_signed,
+      .filter((lease) => lease.reservation_start_date && lease.reservation_end_date)
+      .map((lease) => ({
+        start: lease.reservation_start_date.substring(0, 10),
+        end: lease.reservation_end_date.substring(0, 10),
+        leaseId: lease.id,
+        agreementNumber: lease.agreement_number || `Lease ${lease.id.substring(0, 8)}`,
+        isSigned: lease.is_lease_signed,
       })),
     demandDates: getProposalDemandDates(counts.recentProposals),
     blockedDates: listing?.blockedDates || [],
     pricing: getDailyPricingForCalendar(listing),
   }), [counts.activeLeases, counts.recentProposals, listing]);
+
+  const ensureCalendarData = useCallback(() => {
+    const data = buildCalendarData();
+    setCalendarData(data);
+    return data;
+  }, [buildCalendarData]);
+
+  useEffect(() => {
+    if (!listing) {
+      setCalendarData(null);
+      return undefined;
+    }
+
+    const idleHandle = runWhenIdle(() => {
+      setCalendarData(buildCalendarData());
+    });
+
+    return () => cancelIdleRun(idleHandle);
+  }, [listing, counts.activeLeases, counts.recentProposals, buildCalendarData]);
 
   // Initialize on mount
   useEffect(() => {
@@ -744,5 +783,6 @@ export function useListingData(listingId) {
     fetchListing,
     updateListing,
     calendarData,
+    ensureCalendarData,
   };
 }

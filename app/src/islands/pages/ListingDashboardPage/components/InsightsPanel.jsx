@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
 
 const DEFAULT_STATS = {
@@ -84,7 +84,7 @@ function InsightSkeletons() {
   );
 }
 
-export default function InsightsPanel() {
+function InsightsPanel() {
   const {
     listing,
     insights,
@@ -96,6 +96,7 @@ export default function InsightsPanel() {
 
   const listingId = listing?.id;
   const DISMISSED_KEY = `ld-dismissed-insights-${listingId}`;
+  const insightsTriggerRef = useRef(null);
 
   const [dismissedIds, setDismissedIds] = useState(() => {
     try {
@@ -104,11 +105,44 @@ export default function InsightsPanel() {
     } catch { return new Set(); }
   });
 
-  // Auto-fetch when underperforming
   useEffect(() => {
-    if (isUnderperforming && !insights && !isInsightsLoading) {
-      fetchInsights?.();
+    try {
+      const saved = localStorage.getItem(DISMISSED_KEY);
+      setDismissedIds(saved ? new Set(JSON.parse(saved)) : new Set());
+    } catch {
+      setDismissedIds(new Set());
     }
+  }, [DISMISSED_KEY]);
+
+  useEffect(() => {
+    if (!isUnderperforming || insights || isInsightsLoading || !fetchInsights) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          fetchInsights();
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    if (insightsTriggerRef.current) {
+      observer.observe(insightsTriggerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isUnderperforming, insights, isInsightsLoading, fetchInsights]);
+
+  useEffect(() => {
+    const handleInsightsRequest = () => {
+      if (isUnderperforming && !insights && !isInsightsLoading) {
+        fetchInsights?.();
+      }
+    };
+
+    window.addEventListener('ld:fetch-insights', handleInsightsRequest);
+    return () => window.removeEventListener('ld:fetch-insights', handleInsightsRequest);
   }, [isUnderperforming, insights, isInsightsLoading, fetchInsights]);
 
   const suggestions = useMemo(() => insights?.insights || [], [insights]);
@@ -145,6 +179,7 @@ export default function InsightsPanel() {
   return (
     <section
       id="insights-panel"
+      ref={insightsTriggerRef}
       className="listing-dashboard-section listing-dashboard-insights"
       role="region"
       aria-label="Listing improvement suggestions"
@@ -250,3 +285,5 @@ export default function InsightsPanel() {
     </section>
   );
 }
+
+export default memo(InsightsPanel);
