@@ -7,7 +7,6 @@
  * Uses 0-indexed days (0=Sunday, 1=Monday, ..., 6=Saturday) internally.
  */
 
-import React from 'react';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 

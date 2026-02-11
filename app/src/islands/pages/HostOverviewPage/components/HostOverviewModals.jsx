@@ -12,7 +12,7 @@
  * - Accessible (ARIA labels, focus management)
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 export function Modal({ isOpen, onClose, title, children, size = 'medium' }) {
   useEffect(() => {

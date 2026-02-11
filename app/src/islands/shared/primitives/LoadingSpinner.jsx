@@ -8,7 +8,6 @@
  * @example <LoadingSpinner size="lg" color="var(--accent-blue)" />
  */
 
-import React from 'react';
 
 const SIZE_MAP = {
   sm: { dimension: 20, border: 2 },

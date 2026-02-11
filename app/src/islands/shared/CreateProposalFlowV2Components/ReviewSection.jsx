@@ -43,7 +43,7 @@ function getWeeksOfferedDescription(weeksOffered) {
   return null;
 }
 
-export default function ReviewSection({ data, listing, onEditUserDetails, onEditMoveIn, onEditDays }) {
+export default function ReviewSection({ data, listing, _onEditUserDetails, onEditMoveIn, onEditDays }) {
   // Format currency with comma separators for thousands
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {

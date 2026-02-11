@@ -10,7 +10,7 @@
  * Security: Only supports a whitelist of tags, no arbitrary HTML injection.
  */
 
-import { createElement, Fragment } from 'react';
+import { createElement } from 'react';
 
 /**
  * Regex patterns for BBCode tags

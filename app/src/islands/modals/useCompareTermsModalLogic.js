@@ -14,7 +14,7 @@
  * 7. Schedule API workflow: CORE-create-lease (TODO: Edge Function)
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { acceptCounteroffer, declineCounteroffer, getTermsComparison } from '../../logic/workflows/proposals/counterofferWorkflow.js';
 import { formatPrice, formatDate } from '../../lib/proposals/dataTransformers.js';
@@ -386,7 +386,7 @@ export function useCompareTermsModalLogic({
   /**
    * Handle Cancel/Decline Counteroffer
    */
-  const handleCancelProposal = useCallback((reason) => {
+  const handleCancelProposal = useCallback((_reason) => {
     setShowCancelModal(true);
     if (onCancelProposal) {
       onCancelProposal();

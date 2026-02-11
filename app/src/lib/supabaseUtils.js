@@ -8,7 +8,6 @@
  */
 
 import { supabase } from './supabase.js';
-import { DATABASE } from './constants.js';
 import { logger } from './logger.js';
 import { parseJsonArrayFieldOptional } from '../logic/processors/listing/parseJsonArrayField.js';
 

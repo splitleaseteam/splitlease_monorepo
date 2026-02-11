@@ -5,7 +5,6 @@
  * Shows filled/empty stars based on the rating value.
  */
 
-import React from 'react';
 import { Star } from 'lucide-react';
 import './ReviewStarDisplay.css';
 

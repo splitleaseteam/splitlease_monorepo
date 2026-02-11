@@ -24,7 +24,7 @@ export default function ListingDetailDrawer({
   showCreateProposalButton,
   proposalsByListingId,
   selectedNightsCount,
-  isLoggedIn,
+  _isLoggedIn,
   favoritedListingIds,
   onToggleFavorite,
   userId,

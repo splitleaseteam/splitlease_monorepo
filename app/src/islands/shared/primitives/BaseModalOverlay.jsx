@@ -10,7 +10,7 @@
  * </BaseModalOverlay>
  */
 
-import React, { useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 
 const overlayStyle = {
   position: 'fixed',

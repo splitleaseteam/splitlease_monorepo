@@ -5,7 +5,6 @@
  * Shown when user is viewing their own profile.
  */
 
-import React from 'react';
 import BasicInfoCard from './cards/BasicInfoCard.jsx';
 import AboutCard from './cards/AboutCard.jsx';
 import RequirementsCard from './cards/RequirementsCard.jsx';

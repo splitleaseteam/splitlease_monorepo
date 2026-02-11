@@ -8,14 +8,14 @@
  * Public View: Stats, verification badges, member since date
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
 import SearchScheduleSelector from '../../../shared/SearchScheduleSelector.jsx';
 import TrustVerificationCard from './cards/TrustVerificationCard.jsx';
 import AccountSettingsCard from './cards/AccountSettingsCard.jsx';
-import { Check, X, Calendar, Mail, Phone, ShieldCheck, Linkedin, Pencil } from 'lucide-react';
+import { Check, Calendar, Mail, Phone, ShieldCheck, Linkedin, Pencil } from 'lucide-react';
 
 // ============================================================================
 // VERIFICATION ICONS MAP

@@ -10,7 +10,6 @@
  * - submitted: Application submitted, show success state
  */
 
-import React from 'react';
 import ProfileCard from './shared/ProfileCard.jsx';
 import { FileText, Clock, CheckCircle, ChevronRight, Edit3 } from 'lucide-react';
 import './RentalApplicationCard.css';

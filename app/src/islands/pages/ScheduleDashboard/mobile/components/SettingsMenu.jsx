@@ -4,7 +4,6 @@
  * Main settings menu with navigation items.
  */
 
-import React from 'react';
 
 /**
  * Settings menu items configuration

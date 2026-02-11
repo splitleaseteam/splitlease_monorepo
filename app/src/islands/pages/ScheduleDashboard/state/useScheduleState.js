@@ -19,7 +19,7 @@ function parseStoredItem(key) {
   if (!raw) return null;
   try {
     return JSON.parse(raw);
-  } catch (err) {
+  } catch (_err) {
     console.warn(`Invalid ${key} JSON in localStorage, using defaults`);
     return null;
   }

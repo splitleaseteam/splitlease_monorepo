@@ -17,10 +17,10 @@
  * - If Delta >= 2 (more flexible): -10% button is normal, green feedback
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useFeeCalculation } from '../../../../logic/hooks/useFeeCalculation';
-import { calculateTransactionFee, calculatePaymentBreakdown } from '../../../../logic/calculators/feeCalculations';
+import { calculatePaymentBreakdown } from '../../../../logic/calculators/feeCalculations';
 import BuyoutFormulaSettings from './BuyoutFormulaSettings.jsx';
 
 // ============================================================================
@@ -560,7 +560,7 @@ function RequestTypeTabs({ activeType, onTypeChange, disabled }) {
 
   return (
     <div className="buyout-panel__type-tabs" role="tablist">
-      {types.map(({ key, label, icon }) => (
+      {types.map(({ key, label, _icon }) => (
         <button
           key={key}
           type="button"

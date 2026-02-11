@@ -10,7 +10,6 @@
  * - ONLY renders UI based on pre-calculated state
  */
 
-import React from 'react';
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { useReportEmergencyPageLogic } from './useReportEmergencyPageLogic.js';

@@ -3,7 +3,6 @@
  * Section for quick proposal creation
  */
 
-import React from 'react';
 import DaySelector from './DaySelector';
 import ListingPreview from './ListingPreview';
 import CalculatedFieldsDisplay from './CalculatedFieldsDisplay';

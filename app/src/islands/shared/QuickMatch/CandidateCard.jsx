@@ -9,7 +9,6 @@
  * @param {function} props.onSelect - Callback when card is selected
  * @param {boolean} props.isSelected - Whether this card is currently selected
  */
-import React from 'react';
 
 export function CandidateCard({ candidate, onSelect, isSelected }) {
   if (!candidate) return null;

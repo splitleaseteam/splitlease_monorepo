@@ -165,7 +165,7 @@ function LeaseSelector({
 
 // Payment table component
 function PaymentTable({
-  title,
+  _title,
   records,
   isGuest = true,
   formatDisplayDate,

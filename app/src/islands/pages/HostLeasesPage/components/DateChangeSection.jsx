@@ -3,7 +3,6 @@
  *
  * Displays date change requests with accept/decline actions for pending requests.
  */
-import React from 'react';
 import { CalendarDays, ArrowRight, Check, X, Eye } from 'lucide-react';
 import { formatFullDate, formatCurrency, getDateChangeStatusClass } from '../formatters.js';
 

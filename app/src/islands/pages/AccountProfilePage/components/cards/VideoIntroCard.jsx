@@ -6,9 +6,8 @@
  * Public view: Video player (placeholder)
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
-import { Video, Upload } from 'lucide-react';
+import { Video } from 'lucide-react';
 
 export default function VideoIntroCard({
   videoUrl,

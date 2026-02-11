@@ -4,7 +4,7 @@
  * Displays payment schedule and history in a table format.
  * Shows: Payment #, Scheduled Date, Actual Date, Rent, Maintenance Fee, Damage Deposit, Total
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Receipt, ExternalLink, CheckCircle, Clock } from 'lucide-react';
 import { formatCurrency, formatDate } from '../formatters.js';
 

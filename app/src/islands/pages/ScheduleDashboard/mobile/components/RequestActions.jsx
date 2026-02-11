@@ -4,7 +4,7 @@
  * Accept/Decline/Counter action buttons for request messages.
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
  * Action buttons for request messages

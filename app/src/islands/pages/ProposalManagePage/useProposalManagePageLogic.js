@@ -667,7 +667,7 @@ export function useProposalManagePageLogic() {
         try {
           alert(`Reminder sent to ${proposal.guest?.firstName || 'Guest'}`);
           // TODO: Implement actual reminder via messaging Edge Function
-        } catch (err) {
+        } catch (_err) {
           alert('Failed to send reminder');
         }
         break;
@@ -676,7 +676,7 @@ export function useProposalManagePageLogic() {
         try {
           alert(`Reminder sent to ${proposal.host?.firstName || 'Host'}`);
           // TODO: Implement actual reminder via messaging Edge Function
-        } catch (err) {
+        } catch (_err) {
           alert('Failed to send reminder');
         }
         break;
@@ -685,7 +685,7 @@ export function useProposalManagePageLogic() {
         if (window.confirm(`Are you sure you want to cancel proposal ${proposal._id || proposal.id}?`)) {
           try {
             await handleStatusChange(proposal._id || proposal.id, CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key);
-          } catch (err) {
+          } catch (_err) {
             alert('Failed to cancel proposal');
           }
         }

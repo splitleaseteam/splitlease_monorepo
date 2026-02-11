@@ -4,7 +4,6 @@
  * Back navigation header for settings sections.
  */
 
-import React from 'react';
 
 /**
  * Section header with back button

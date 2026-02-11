@@ -5,7 +5,7 @@
  * Handles SMS and email communication with guests
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function CommunicationPanel({
   emergency,

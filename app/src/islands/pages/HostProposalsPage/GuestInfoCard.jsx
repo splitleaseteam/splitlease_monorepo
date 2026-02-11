@@ -9,7 +9,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { CheckCircle, Briefcase, Star, Calendar } from 'lucide-react';
 
 /**

@@ -5,7 +5,6 @@
  * Fields: fullName, dob, email, phone
  */
 
-import React from 'react';
 
 export default function PersonalInfoStep({
   formData,

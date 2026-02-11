@@ -4,7 +4,6 @@
  * A horizontal tab/pill-style selector for filtering leases by listing.
  * Each tab shows: circular thumbnail, listing name, and lease count badge.
  */
-import React from 'react';
 
 /**
  * Get listing thumbnail URL with fallback

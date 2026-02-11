@@ -10,7 +10,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { ChevronDown, CheckCircle } from 'lucide-react';
 import { isNewProposal, getStatusTagConfig, getCheckInOutFromDays } from './types.js';
 

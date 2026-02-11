@@ -17,7 +17,7 @@ export default function RequestDetailsModal({
   onAssignCoHost,
   onAddNotes,
   onCloseRequest,
-  onUpdateStatus,
+  _onUpdateStatus,
   getStatusColor,
   getStatusLabel,
   formatDate,

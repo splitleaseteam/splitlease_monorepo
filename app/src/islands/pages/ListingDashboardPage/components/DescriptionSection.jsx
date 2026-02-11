@@ -3,7 +3,7 @@ import { useListingDashboard } from '../context/ListingDashboardContext';
 
 const TRUNCATE_THRESHOLD = 600;
 
-function DescriptionBlock({ title, text, emptyText, emptyPrompt, onEdit, onAskAI, sectionKey }) {
+function DescriptionBlock({ title, text, emptyText, emptyPrompt, onEdit, _onAskAI, _sectionKey }) {
   const [expanded, setExpanded] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const isLong = text && text.length > TRUNCATE_THRESHOLD;

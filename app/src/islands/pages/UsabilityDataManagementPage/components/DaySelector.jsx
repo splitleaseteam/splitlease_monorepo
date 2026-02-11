@@ -3,7 +3,6 @@
  * Interactive day buttons for selecting reservation days
  */
 
-import React from 'react';
 
 /**
  * Convert day label to 0-based index for comparison

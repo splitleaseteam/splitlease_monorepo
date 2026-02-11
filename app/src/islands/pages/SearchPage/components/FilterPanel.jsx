@@ -3,8 +3,8 @@
  */
 export function FilterPanel({
   isActive,
-  selectedDays,
-  onDaysChange,
+  _selectedDays,
+  _onDaysChange,
   boroughs,
   selectedBorough,
   onBoroughChange,

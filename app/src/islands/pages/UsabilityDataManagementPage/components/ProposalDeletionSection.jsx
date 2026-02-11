@@ -3,7 +3,6 @@
  * Section for deleting proposals
  */
 
-import React from 'react';
 
 export default function ProposalDeletionSection({
   proposalIdInput,

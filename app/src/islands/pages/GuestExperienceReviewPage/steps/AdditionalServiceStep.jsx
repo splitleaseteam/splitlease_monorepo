@@ -2,7 +2,6 @@
  * AdditionalServiceStep - Step 8: Additional services desired
  */
 
-import React from 'react';
 
 export default function AdditionalServiceStep({ formData, updateField }) {
   return (

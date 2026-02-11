@@ -4,7 +4,6 @@
  * Hollow component - all logic delegated to useSendMagicLoginLinksPageLogic hook
  */
 
-import React from 'react';
 import { useSendMagicLoginLinksPageLogic } from './useSendMagicLoginLinksPageLogic.js';
 import './SendMagicLoginLinksPage.css';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader';

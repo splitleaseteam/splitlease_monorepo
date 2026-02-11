@@ -13,10 +13,10 @@
 
 import { useState } from 'react';
 import DayIndicator from './DayIndicator.jsx';
-import { getStatusTagInfo, getNightsAsDayNames, getCheckInOutFromDays, PROGRESS_THRESHOLDS } from './types.js';
+import { getStatusTagInfo, getNightsAsDayNames, getCheckInOutFromDays } from './types.js';
 import { formatCurrency, formatDate, formatDateTime } from './formatters.js';
-import { PROPOSAL_STATUSES, getStatusConfig, getUsualOrder, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
-import { getVMButtonText, getVMButtonStyle, getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
+import { PROPOSAL_STATUSES, getStatusConfig, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
+import { getVMButtonText, getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
 
 /**
  * Get host-appropriate status message based on proposal status

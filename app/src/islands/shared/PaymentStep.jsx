@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Lock,
     CreditCard,
@@ -49,7 +49,7 @@ const PaymentForm = ({
     onBack,
     transactionType,
     leaseId,
-    userId,
+    _userId,
     metadata = {}
 }) => {
     const stripe = useStripe();

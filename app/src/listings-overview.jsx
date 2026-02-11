@@ -8,7 +8,6 @@
  * Auth: Admin only
  */
 
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ListingsOverviewPage from './islands/pages/ListingsOverviewPage/index.jsx';
 

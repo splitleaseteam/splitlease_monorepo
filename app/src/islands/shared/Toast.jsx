@@ -261,7 +261,7 @@ function ToastContainer({ toasts, onRemove }) {
 /**
  * Individual Toast Item
  */
-function ToastItem({ toast, index, onRemove }) {
+function ToastItem({ toast, _index, onRemove }) {
   const [isVisible, setIsVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 

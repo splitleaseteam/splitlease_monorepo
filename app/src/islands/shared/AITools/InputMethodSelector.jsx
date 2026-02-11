@@ -7,7 +7,6 @@
  * @module AITools/InputMethodSelector
  */
 
-import React from 'react';
 import { useAITools, INPUT_METHODS } from './AIToolsProvider';
 
 // Icons for each input method

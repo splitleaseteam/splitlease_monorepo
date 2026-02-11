@@ -14,7 +14,6 @@
  * Layout: 2-column grid with Notice Period (left) and stacked tiers (right)
  */
 
-import React from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================

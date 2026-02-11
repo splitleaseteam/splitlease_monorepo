@@ -18,7 +18,7 @@ export default function ThreadSelector({
   onSelect,
   onSearchChange,
   onPageChange,
-  getThreadDisplayLabel,
+  _getThreadDisplayLabel,
   formatDate,
 }) {
   return (

@@ -5,7 +5,6 @@
  * Displays a list of emergencies in the sidebar
  */
 
-import React from 'react';
 
 const STATUS_COLORS = {
   REPORTED: '#dc3545',

@@ -10,7 +10,7 @@
  * - Debug info display
  */
 import { useState } from 'react';
-import { DollarSign, Plus, RefreshCw, Trash2, Edit, Calendar } from 'lucide-react';
+import { DollarSign, Plus, RefreshCw, Edit, Calendar } from 'lucide-react';
 import PaymentRecordForm from './PaymentRecordForm.jsx';
 import PaymentTable from './PaymentTable.jsx';
 

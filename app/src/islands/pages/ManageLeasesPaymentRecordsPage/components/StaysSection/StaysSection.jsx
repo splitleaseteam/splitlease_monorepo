@@ -6,7 +6,7 @@
  * - Create stays from lease dates
  * - Clear all stays
  */
-import { Calendar, Plus, Trash2, Copy } from 'lucide-react';
+import { Calendar, Plus, Trash2 } from 'lucide-react';
 import StayCard from './StayCard.jsx';
 
 export default function StaysSection({

@@ -12,7 +12,7 @@
  * - onChangePageSize: Handler for page size changes
  */
 
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 
 // Format currency
 function formatCurrency(amount) {

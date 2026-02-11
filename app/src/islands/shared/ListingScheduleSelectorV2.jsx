@@ -33,7 +33,7 @@ export default function ListingScheduleSelector({
   limitToFiveNights = false,
   reservationSpan = 13,
   zatConfig = null,
-  onScheduleSave,
+  _onScheduleSave,
   onSelectionChange,
   onPriceChange,
   showPricing = true

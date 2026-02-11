@@ -5,7 +5,6 @@
  * "Give $50, Get $50" - rewards unlock when invited friend completes first booking.
  */
 
-import React from 'react';
 import { X } from 'lucide-react';
 
 // Gift icon SVG (matches Feather icons style)

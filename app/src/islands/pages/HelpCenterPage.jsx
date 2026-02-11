@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Users, Info, LifeBuoy, BookOpen, FileText, Search, HelpCircle, ChevronRight, ArrowRight } from 'lucide-react';
+import { User, Users, Info, LifeBuoy, BookOpen, FileText, Search, HelpCircle, ArrowRight } from 'lucide-react';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import { helpCenterCategories, searchHelpCenter } from '../../data/helpCenterData.js';

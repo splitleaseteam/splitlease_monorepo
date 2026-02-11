@@ -688,7 +688,7 @@ async function submitSignup(data) {
       try {
         const errorJson = JSON.parse(errorText);
         errorMessage = errorJson.error || errorJson.message || errorMessage;
-      } catch (e) {
+      } catch (_e) {
         errorMessage = errorText || errorMessage;
       }
 
@@ -1237,7 +1237,7 @@ function NavigationButtons({ showBack, onBack, onNext, nextLabel, isLoading = fa
 
 // ============ MAIN COMPONENT ============
 
-export default function AiSignupMarketReport({ isOpen, onClose, onSubmit }) {
+export default function AiSignupMarketReport({ isOpen, onClose, _onSubmit }) {
   // Toast notifications (with fallback rendering when no ToastProvider)
   const { toasts, showToast, removeToast } = useToast();
 

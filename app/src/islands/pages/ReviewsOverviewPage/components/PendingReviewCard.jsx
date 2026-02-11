@@ -5,7 +5,6 @@
  * Displays days until review window expires.
  */
 
-import React from 'react';
 import { Calendar, Star, Clock, User } from 'lucide-react';
 import { formatDateRange } from '../../../../logic/processors/reviews/reviewOverviewAdapter.js';
 import './PendingReviewCard.css';

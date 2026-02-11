@@ -6,7 +6,6 @@
  *   import { fitBoundsToMarkers, calculateMapCenter } from './mapUtils.js';
  */
 
-import { getBoroughMapConfig } from './constants.js';
 
 /**
  * Fit map bounds to show all markers

@@ -14,8 +14,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { checkAuthStatus, validateTokenAndFetchUser } from '../../../lib/auth/index.js';
-import { supabase } from '../../../lib/supabase.js';
+import { checkAuthStatus } from '../../../lib/auth/index.js';
 import {
   getBoroughs,
   getNeighborhoods,

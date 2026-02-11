@@ -8,7 +8,6 @@
  * Color when enabled: #31135D (protocol primary purple)
  */
 
-import React from 'react';
 
 export default function NotificationToggle({
   checked = false,

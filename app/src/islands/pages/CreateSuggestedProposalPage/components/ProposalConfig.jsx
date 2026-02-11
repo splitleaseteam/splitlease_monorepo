@@ -5,7 +5,6 @@
  */
 
 import { PROPOSAL_STATUSES } from '../../../../logic/constants/proposalStatuses.js';
-import { DAY_NAMES } from '../../../../lib/dayUtils.js';
 
 // Day button labels (single letter display, 0-indexed order starting with Sunday)
 const DAY_BUTTONS = [

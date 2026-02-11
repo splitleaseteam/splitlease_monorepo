@@ -4,7 +4,7 @@
  * Input sanitization utilities for XSS protection, SQL injection prevention,
  * and general input validation.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   sanitizeText,
   sanitizeSearchQuery,

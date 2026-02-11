@@ -13,7 +13,7 @@
  * Note: Supports both 'coTenant' and 'roommate' prop naming for backward compatibility.
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================

@@ -15,7 +15,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import { aiToolsService } from '../../../lib/aiToolsService.js';
-import { MELODY_PREFERENCES, CONTENT_PREFERENCES } from './types.js';
+import { MELODY_PREFERENCES } from './types.js';
 
 // NOTE: Admin email whitelist removed to allow any authenticated user access for testing
 // Original whitelist: ['sharath@splitlease.io', 'admin@splitlease.io', 'test@splitlease.io']
@@ -86,7 +86,7 @@ export function useAiToolsPageLogic() {
   }, []);
 
   // visit table has been removed - return empty array
-  const fetchVisitsForManual = useCallback(async (houseManualId) => {
+  const fetchVisitsForManual = useCallback(async (_houseManualId) => {
     return [];
   }, []);
 

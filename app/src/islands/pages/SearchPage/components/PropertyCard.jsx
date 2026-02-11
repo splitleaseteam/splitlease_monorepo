@@ -8,7 +8,7 @@ import { logger } from '../../../../lib/logger.js';
 /**
  * PropertyCard - Individual listing card
  */
-export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onOpenInfoModal, isLoggedIn, isFavorited, userId, onToggleFavorite, onRequireAuth, showCreateProposalButton, onOpenCreateProposalModal, proposalForListing, selectedNightsCount }) {
+export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onOpenInfoModal, _isLoggedIn, isFavorited, userId, onToggleFavorite, onRequireAuth, showCreateProposalButton, onOpenCreateProposalModal, proposalForListing, selectedNightsCount }) {
   const { currentImageIndex, hasImages, hasMultipleImages, handlePrevImage, handleNextImage } =
     useImageCarousel(listing.images);
   const priceInfoTriggerRef = useRef(null);

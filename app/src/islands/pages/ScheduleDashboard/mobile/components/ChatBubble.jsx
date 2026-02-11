@@ -4,7 +4,6 @@
  * Individual message bubble with support for request actions.
  */
 
-import React from 'react';
 import RequestActions from './RequestActions.jsx';
 
 /**

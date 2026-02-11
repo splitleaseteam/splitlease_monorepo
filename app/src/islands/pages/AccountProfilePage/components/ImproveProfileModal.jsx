@@ -4,7 +4,6 @@
  * Modal for showing profile improvement suggestions.
  */
 
-import React from 'react';
 import { X } from 'lucide-react';
 import NextActionCard from './shared/NextActionCard.jsx';
 

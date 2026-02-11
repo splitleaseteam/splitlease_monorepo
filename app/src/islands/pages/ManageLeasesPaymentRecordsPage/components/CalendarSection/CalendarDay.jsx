@@ -8,7 +8,7 @@ export default function CalendarDay({
   isBooked,
   isBookedAfterRequest,
   isInLeaseRange,
-  viewMode
+  _viewMode
 }) {
   // Build class name based on state
   const classNames = ['mlpr-calendar-day'];

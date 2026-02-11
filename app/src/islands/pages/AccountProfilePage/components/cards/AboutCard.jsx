@@ -5,7 +5,6 @@
  * Public view shows "About {firstName}" with bio-text styling.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 
 const MAX_BIO_LENGTH = 500;

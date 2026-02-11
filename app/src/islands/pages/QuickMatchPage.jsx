@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuickMatchPageLogic } from './useQuickMatchPageLogic';
 import Header from '../shared/Header';
 import Footer from '../shared/Footer';

@@ -3,7 +3,6 @@
  * Section for deleting host account data
  */
 
-import React from 'react';
 
 export default function HostDataSection({
   hosts,

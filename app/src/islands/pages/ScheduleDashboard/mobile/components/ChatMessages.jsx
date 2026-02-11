@@ -4,7 +4,7 @@
  * Scrollable message list with auto-scroll to bottom.
  */
 
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import ChatBubble from './ChatBubble.jsx';
 
 /**

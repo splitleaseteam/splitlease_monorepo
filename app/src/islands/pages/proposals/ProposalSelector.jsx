@@ -8,7 +8,7 @@
  * (filtering handled in userProposalQueries.js)
  */
 
-import { getStatusConfig, shouldShowStatusBanner } from '../../../logic/constants/proposalStatuses.js';
+import { getStatusConfig } from '../../../logic/constants/proposalStatuses.js';
 
 /**
  * Get status badge class based on proposal status

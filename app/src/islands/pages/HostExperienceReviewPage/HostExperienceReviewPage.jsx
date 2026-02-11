@@ -1,4 +1,3 @@
-import React from 'react';
 import { useHostExperienceReviewPageLogic } from './useHostExperienceReviewPageLogic.js';
 import StepProgress from './components/StepProgress.jsx';
 import NavigationButtons from './components/NavigationButtons.jsx';

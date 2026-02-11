@@ -10,7 +10,6 @@
  * @param {function} props.onApply - Callback to apply filters (trigger search)
  * @param {function} props.onReset - Callback to reset filters
  */
-import React from 'react';
 
 const BOROUGHS = [
   { value: '', label: 'All Boroughs' },

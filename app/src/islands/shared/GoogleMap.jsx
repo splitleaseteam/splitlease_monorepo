@@ -21,7 +21,7 @@
  */
 
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback, memo } from 'react';
-import { DEFAULTS, COLORS, getBoroughMapConfig } from '../../lib/constants.js';
+import { COLORS, getBoroughMapConfig } from '../../lib/constants.js';
 import ListingCardForMap from './ListingCard/ListingCardForMap.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { logger } from '../../lib/logger.js';
@@ -185,7 +185,7 @@ const GoogleMap = forwardRef(({
       const mockNightsArray = Array(selectedNightsCount).fill({ nightNumber: 0 });
       const priceBreakdown = calculatePrice(mockNightsArray, listing, 13, null);
       return priceBreakdown.pricePerNight || startingPrice;
-    } catch (error) {
+    } catch (_error) {
       // Fallback to starting price on error
       return startingPrice;
     }

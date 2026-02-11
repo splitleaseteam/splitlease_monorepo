@@ -5,7 +5,6 @@
  * Contains message list and input bar.
  */
 
-import React from 'react';
 import ChatMessages from './ChatMessages.jsx';
 import ChatInput from './ChatInput.jsx';
 

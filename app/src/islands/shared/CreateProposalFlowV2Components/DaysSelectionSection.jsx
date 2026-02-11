@@ -3,7 +3,7 @@
  * Now uses the reusable ListingScheduleSelector component with full price calculation
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import ListingScheduleSelector from '../ListingScheduleSelector.jsx';
 
 // Day name constants for check-in/check-out calculation

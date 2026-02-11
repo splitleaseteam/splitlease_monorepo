@@ -117,7 +117,7 @@ export function useZScheduleTestPageLogic() {
 
       if (error) throw error;
       setListings(data || []);
-    } catch (err) {
+    } catch (_err) {
       setListingsError('Failed to load listings');
     } finally {
       setListingsLoading(false);
@@ -128,7 +128,7 @@ export function useZScheduleTestPageLogic() {
     try {
       const config = await fetchZatPriceConfiguration();
       setZatConfig(config);
-    } catch (err) {
+    } catch (_err) {
       setZatConfig(null);
     }
   }
@@ -176,7 +176,7 @@ export function useZScheduleTestPageLogic() {
 
       setSelectedListing(data);
       setScheduleListing(buildScheduleListing(data));
-    } catch (err) {
+    } catch (_err) {
       setSelectedListing(null);
       setScheduleListing({ daysAvailable: [0, 1, 2, 3, 4, 5, 6], nightsAvailable: [] });
     }

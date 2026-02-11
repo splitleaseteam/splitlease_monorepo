@@ -5,7 +5,6 @@
  * File uploads for employment proof, credit score, etc.
  */
 
-import React from 'react';
 import { Upload, Check, X, FileText } from 'lucide-react';
 
 function FileUploadBox({

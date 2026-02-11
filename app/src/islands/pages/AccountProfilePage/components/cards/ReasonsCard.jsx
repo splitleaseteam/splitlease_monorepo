@@ -7,7 +7,6 @@
  * Public View: Shows green reason tags with check icons (per design).
  */
 
-import React from 'react';
 import { Check } from 'lucide-react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 import SelectableChip from '../shared/SelectableChip.jsx';

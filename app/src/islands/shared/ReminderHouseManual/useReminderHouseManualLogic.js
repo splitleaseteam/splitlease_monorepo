@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import reminderHouseManualService from './reminderHouseManualService.js';
-import { adaptReminderFromDatabase, adaptRemindersFromDatabase } from '../../../logic/processors/reminders/reminderAdapter.js';
+import { adaptRemindersFromDatabase } from '../../../logic/processors/reminders/reminderAdapter.js';
 import { canSubmitReminder, canDeleteReminder, canEditReminder } from '../../../logic/rules/reminders/reminderValidation.js';
 import { createReminderWorkflow, updateReminderWorkflow, deleteReminderWorkflow } from '../../../logic/workflows/reminders/reminderWorkflow.js';
 import { getReminderTypeOptions } from '../../../logic/processors/reminders/reminderFormatter.js';

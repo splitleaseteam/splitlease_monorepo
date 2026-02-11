@@ -9,7 +9,6 @@
  * - ghost: Transparent background
  */
 
-import React from 'react';
 
 export function Button({
   children,

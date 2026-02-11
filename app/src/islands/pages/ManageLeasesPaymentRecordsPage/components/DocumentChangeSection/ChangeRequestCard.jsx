@@ -1,7 +1,7 @@
 /**
  * ChangeRequestCard - Display individual change request
  */
-import { Calendar, ArrowRight, ExternalLink, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowRight, ExternalLink, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 /**
  * Format date for display

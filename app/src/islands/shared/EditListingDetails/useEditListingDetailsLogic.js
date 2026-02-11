@@ -9,7 +9,7 @@ import { generateListingDescription, generateListingTitle } from '../../../lib/a
 import { getCommonHouseRules } from './services/houseRulesService';
 import { getCommonSafetyFeatures } from './services/safetyFeaturesService';
 import { getCommonInUnitAmenities, getCommonBuildingAmenities } from './services/amenitiesService';
-import { getNeighborhoodByZipCode, getNeighborhoodDescriptionWithFallback } from './services/neighborhoodService';
+import { getNeighborhoodDescriptionWithFallback } from './services/neighborhoodService';
 import { getBoroughIdByName } from './services/boroughService';
 import { getCityIdByName } from './services/cityService';
 import { uploadPhoto } from '../../../lib/photoUpload';

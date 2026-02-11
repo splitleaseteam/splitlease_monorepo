@@ -8,7 +8,6 @@
  * - VirtualMeetingCard: Scheduled virtual meetings
  */
 
-import React from 'react';
 import { formatCurrency as _formatCurrency } from '../../../../lib/formatting/formatCurrency.js';
 import { extractPhotos } from '../../../../lib/supabaseUtils.js';
 

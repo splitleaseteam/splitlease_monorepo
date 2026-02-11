@@ -10,7 +10,7 @@ export default function MobileFilterBar({
   isExpanded,
   isLoggedIn,
   currentUser,
-  favoritesCount,
+  _favoritesCount,
   onNavigate,
   onLogout,
   onOpenAuthModal,

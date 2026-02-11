@@ -2,7 +2,6 @@
  * ChangeStep - Step 6: What changed after using Split Lease
  */
 
-import React from 'react';
 
 export default function ChangeStep({ formData, updateField }) {
   return (

@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { getAllHouseRules } from '../../shared/EditListingDetails/services/houseRulesService.js';
-import { getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
+import { getVMStateInfo } from '../../../logic/rules/proposals/virtualMeetingRules.js';
 import { DAYS_OF_WEEK, nightNamesToIndices } from '../../shared/HostEditingProposal/types.js';
 import { showToast } from '../../shared/Toast.jsx';
 import { findThreadByProposal } from '../../../lib/messagingUtils.js';
@@ -997,7 +997,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    * Handle remind Split Lease
    * TODO: Implement proper reminder system (email/notification)
    */
-  const handleRemindSplitLease = useCallback(async (proposal) => {
+  const handleRemindSplitLease = useCallback(async (_proposal) => {
     try {
       // For now, just show a confirmation - can be connected to a notification system later
       showToast({ title: 'Coming Soon', content: 'Reminder feature coming soon! For urgent matters, please contact support@splitlease.com', type: 'info' });

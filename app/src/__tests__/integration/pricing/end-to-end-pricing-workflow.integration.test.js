@@ -17,7 +17,6 @@ import {
   savePricingWorkflow,
   recalculatePricingListWorkflow
 } from '../../../logic/workflows/pricingList/index.js';
-import { PRICING_CONSTANTS } from '../../../logic/constants/pricingConstants.js';
 
 // Mock Edge Function for persistence
 vi.mock('../../../lib/supabase.js', () => ({

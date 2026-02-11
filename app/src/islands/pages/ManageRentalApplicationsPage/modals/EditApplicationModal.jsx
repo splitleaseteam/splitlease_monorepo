@@ -9,7 +9,7 @@
  * - isSaving: Whether save operation is in progress
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 // Section titles
 const SECTION_TITLES = {

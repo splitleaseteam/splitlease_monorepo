@@ -42,7 +42,7 @@ export default function RequestDetails({
   onBack,
   onSubmit,
   isLoading,
-  feeBreakdown,
+  _feeBreakdown,
   isFeeCalculating,
 }) {
   const proposedPrice = (baseNightlyPrice * pricePercentage) / 100;

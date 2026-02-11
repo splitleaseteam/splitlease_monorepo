@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useScheduleSelector } from './useScheduleSelector.js';
 import { DayButton } from './DayButton.jsx';
 import { ErrorOverlay } from './ErrorOverlay.jsx';
@@ -23,7 +23,7 @@ export default function ListingScheduleSelector({
   limitToFiveNights = false,
   reservationSpan = 13,
   zatConfig = null,
-  onScheduleSave,
+  _onScheduleSave,
   onSelectionChange,
   onPriceChange,
   showPricing = true

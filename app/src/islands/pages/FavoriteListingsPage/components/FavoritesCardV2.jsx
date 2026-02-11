@@ -12,7 +12,7 @@ import { useDeviceDetection } from '../../../../hooks/useDeviceDetection.js';
  * FavoriteButtonWithConfirm - Favorite button with confirmation popup
  * Shows "Are you sure?" popup before removing from favorites
  */
-const FavoriteButtonWithConfirm = ({ listingId, userId, onConfirmRemove }) => {
+const FavoriteButtonWithConfirm = ({ _listingId, _userId, onConfirmRemove }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const popupRef = useRef(null);
   const buttonRef = useRef(null);

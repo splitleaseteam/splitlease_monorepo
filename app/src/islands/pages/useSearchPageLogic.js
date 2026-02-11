@@ -58,8 +58,6 @@ import { fetchInformationalTexts } from '../../lib/informationalTextsFetcher.js'
 import { logger } from '../../lib/logger.js'
 
 // Logic Core imports - direct imports from source files
-import { calculateGuestFacingPrice } from '../../logic/calculators/pricing/calculateGuestFacingPrice.js';
-import { formatHostName } from '../../logic/processors/display/formatHostName.js';
 import { extractListingCoordinates } from '../../logic/processors/listing/extractListingCoordinates.js';
 import { adaptPricingListFromSupabase } from '../../logic/processors/pricingList/adaptPricingListFromSupabase';
 import { isValidPriceTier } from '../../logic/rules/search/isValidPriceTier.js';

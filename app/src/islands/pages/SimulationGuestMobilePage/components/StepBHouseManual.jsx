@@ -10,7 +10,7 @@ export default function StepBHouseManual({
   status,
   onAction,
   disabled,
-  houseManual,
+  _houseManual,
   stepNumber
 }) {
   const isCompleted = status === 'completed';

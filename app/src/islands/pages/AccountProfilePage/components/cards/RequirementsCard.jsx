@@ -5,7 +5,6 @@
  * Includes "Need for Space" and "Special Needs" fields.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 
 export default function RequirementsCard({

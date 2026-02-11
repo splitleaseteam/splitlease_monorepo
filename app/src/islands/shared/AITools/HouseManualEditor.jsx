@@ -7,7 +7,7 @@
  * @module AITools/HouseManualEditor
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAITools, INPUT_METHODS } from './AIToolsProvider';
 
 // Icons

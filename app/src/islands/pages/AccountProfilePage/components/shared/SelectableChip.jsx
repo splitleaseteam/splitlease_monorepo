@@ -5,7 +5,6 @@
  * Supports interactive and read-only modes, plus success (green) variant.
  */
 
-import React from 'react';
 
 export default function SelectableChip({
   label,

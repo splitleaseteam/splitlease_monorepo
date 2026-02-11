@@ -9,7 +9,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import ProposalCardHeader from './ProposalCardHeader.jsx';
 import ProposalCardBody from './ProposalCardBody.jsx';
 import { getCardVariant } from './types.js';

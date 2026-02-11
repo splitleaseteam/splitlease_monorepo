@@ -16,7 +16,7 @@
  * @module AITools/AIToolsProvider
  */
 
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 import { useAIToolsState, INPUT_METHODS } from './useAIToolsState';
 
 // Create context with null default

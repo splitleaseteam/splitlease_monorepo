@@ -47,7 +47,7 @@ export function ReservationPriceBreakdown({
   moveInDate,
   checkInDay,
   checkOutDay,
-  reservationSpan,
+  _reservationSpan,
   weeksReservationSpan,
   houseRules = [],
   nightsSelected = [],
@@ -55,7 +55,7 @@ export function ReservationPriceBreakdown({
   totalCompensation = 0,
   hostCompensationPer4Weeks = 0,
   originalTotalCompensation,
-  originalCompensationPer4Weeks,
+  _originalCompensationPer4Weeks,
   isVisible = true,
   originalValues
 }) {

@@ -2,7 +2,6 @@
  * WelcomeStep - Step 1: Introduction to the survey
  */
 
-import React from 'react';
 
 export default function WelcomeStep() {
   return (

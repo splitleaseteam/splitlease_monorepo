@@ -5,7 +5,6 @@
  * Fields: hasPets, isSmoker, needsParking, references
  */
 
-import React from 'react';
 
 export default function RequirementsStep({
   formData,

@@ -2,7 +2,6 @@
  * RecommendStep - Step 9: NPS score (1-10 slider)
  */
 
-import React from 'react';
 
 export default function RecommendStep({ formData, updateField }) {
   const score = formData.recommend;

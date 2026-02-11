@@ -4,7 +4,7 @@
  * Sharing willingness settings with percentage slider.
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import SectionHeader from './SectionHeader.jsx';
 
 /**

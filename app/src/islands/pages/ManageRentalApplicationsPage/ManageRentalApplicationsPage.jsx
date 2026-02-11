@@ -11,7 +11,6 @@
  * - Deep linking support via URL parameter (?id=xxx)
  */
 
-import React from 'react';
 import { useManageRentalApplicationsPageLogic } from './useManageRentalApplicationsPageLogic.js';
 import SearchFilters from './components/SearchFilters.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';

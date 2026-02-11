@@ -31,7 +31,7 @@ const PropertyCard = memo(function PropertyCard({
   onOpenContactModal,
   onOpenInfoModal,
   onOpenDetailDrawer,
-  isLoggedIn,
+  _isLoggedIn,
   isFavorited,
   userId,
   onToggleFavorite,

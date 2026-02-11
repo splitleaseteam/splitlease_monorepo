@@ -4,7 +4,7 @@
  * Pricing controls for buyout settings with multipliers.
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import SectionHeader from './SectionHeader.jsx';
 
 /**

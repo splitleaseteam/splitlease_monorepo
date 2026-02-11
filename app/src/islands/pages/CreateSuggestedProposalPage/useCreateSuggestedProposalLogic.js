@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { PROPOSAL_STATUSES } from '../../../logic/constants/proposalStatuses.js';
-import { DAY_NAMES, getDayName } from '../../../lib/dayUtils.js';
+import { DAY_NAMES } from '../../../lib/dayUtils.js';
 import { calculateCheckInCheckOut } from '../../../lib/scheduleSelector/nightCalculations.js';
 import {
   searchListings,

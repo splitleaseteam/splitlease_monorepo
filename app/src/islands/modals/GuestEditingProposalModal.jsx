@@ -25,7 +25,7 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { X, ChevronLeft, ChevronRight, FileText, HelpCircle } from 'lucide-react'
+import { X, ChevronLeft, FileText, HelpCircle } from 'lucide-react'
 import { formatCurrency as _formatCurrency } from '../../lib/formatting/formatCurrency.js'
 import { executeCancelProposal } from '../../logic/workflows/proposals/cancelProposalWorkflow.js'
 import { PROPOSAL_STATUSES } from '../../logic/constants/proposalStatuses.js'
@@ -163,8 +163,8 @@ function DayNightSelector({
   onNightToggle,
   checkInDay,
   checkOutDay,
-  onCheckInSelect,
-  onCheckOutSelect,
+  _onCheckInSelect,
+  _onCheckOutSelect,
   disabled = false
 }) {
   const handleDayClick = useCallback((dayIndex) => {
@@ -540,7 +540,7 @@ export default function GuestEditingProposalModal({
   const parseDaysSelected = (proposal) => {
     let days = proposal?.['Days Selected'] || proposal?.['host_counter_offer_days_selected'] || []
     if (typeof days === 'string') {
-      try { days = JSON.parse(days) } catch (e) { days = [] }
+      try { days = JSON.parse(days) } catch (_e) { days = [] }
     }
     if (!Array.isArray(days) || days.length === 0) return [1, 2, 3, 4, 5] // Default Mon-Fri
 

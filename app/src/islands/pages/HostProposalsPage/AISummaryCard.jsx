@@ -11,7 +11,7 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Cpu, ChevronDown, ChevronUp } from 'lucide-react';
 
 const STORAGE_KEY = 'aiSummaryCollapsed';

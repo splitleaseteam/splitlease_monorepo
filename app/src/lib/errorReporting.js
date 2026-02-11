@@ -40,7 +40,7 @@ async function initSentry() {
       tracesSampleRate: 0.1,
 
       // Error filtering
-      beforeSend(event, hint) {
+      beforeSend(event, _hint) {
         // Don't send errors from browser extensions
         if (event.exception?.values?.[0]?.stacktrace?.frames?.some(
           frame => frame.filename?.includes('chrome-extension://')

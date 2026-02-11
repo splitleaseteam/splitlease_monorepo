@@ -4,7 +4,7 @@
  * Displays individual category ratings in an expandable/collapsible format.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Star } from 'lucide-react';
 import './RatingBreakdown.css';
 

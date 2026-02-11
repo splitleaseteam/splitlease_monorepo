@@ -21,7 +21,7 @@ export default function ThreadCard({
   thread,
   onDelete,
   onSendReminder,
-  onViewMessages,
+  _onViewMessages,
   expandedThreadId,
   onToggleExpand,
 }) {

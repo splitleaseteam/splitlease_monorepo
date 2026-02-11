@@ -5,7 +5,6 @@
  * Used in both 'create' and 'update' sections.
  */
 
-import { formatReminderType } from '../../../../logic/processors/reminders/reminderFormatter.js';
 
 const ReminderForm = ({
   formData,

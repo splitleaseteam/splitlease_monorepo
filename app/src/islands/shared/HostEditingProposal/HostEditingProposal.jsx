@@ -290,7 +290,7 @@ export function HostEditingProposal({
       setShowConfirmPopup(false)
       setView('pristine')
       onCancel?.()
-    } catch (error) {
+    } catch (_error) {
       onAlert?.({
         type: 'error',
         title: 'Error',
@@ -312,7 +312,7 @@ export function HostEditingProposal({
         })
         setShowRejectModal(false)
         onCancel?.()
-      } catch (error) {
+      } catch (_error) {
         onAlert?.({
           type: 'error',
           title: 'Error',

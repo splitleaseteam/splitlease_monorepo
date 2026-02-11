@@ -25,7 +25,6 @@ import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 
 import { useSimulationGuestsideDemoPageLogic } from './useSimulationGuestsideDemoPageLogic.js';
-import { SIMULATION_STEPS } from './constants/simulationSteps.js';
 
 // Components
 import { SimulationHeader } from './components/SimulationHeader.jsx';

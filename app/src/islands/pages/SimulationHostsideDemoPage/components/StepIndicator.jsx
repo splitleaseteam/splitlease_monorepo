@@ -7,7 +7,7 @@
  * @module pages/SimulationHostsideDemoPage/components/StepIndicator
  */
 
-import { Check, Circle, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight } from 'lucide-react';
 
 /**
  * StepIndicator component

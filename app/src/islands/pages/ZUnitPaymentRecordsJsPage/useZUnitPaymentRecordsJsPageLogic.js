@@ -282,7 +282,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
   }, []);
 
   // Calculate JS payment schedules
-  const calculateJsPaymentSchedules = useCallback((proposal, lease) => {
+  const calculateJsPaymentSchedules = useCallback((proposal, _lease) => {
     if (!proposal) {
       return { guestSchedule: [], hostSchedule: [] };
     }

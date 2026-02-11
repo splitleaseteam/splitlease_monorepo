@@ -28,7 +28,7 @@ import { QR_CODE_USE_CASES } from './qrCodeUseCases.js';
  */
 export function useQRCodeDashboardLogic({
   houseManualId,
-  listingId,
+  _listingId,
   hostId,
   initialMode = 'view',
   onQRCodesChanged,

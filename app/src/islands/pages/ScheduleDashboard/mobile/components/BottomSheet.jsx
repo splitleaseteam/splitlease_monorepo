@@ -5,7 +5,7 @@
  * Slides up from bottom with backdrop, supports multiple heights.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 /**

@@ -1,4 +1,4 @@
-import { sortDays, getNextDay, createNight } from './dayHelpers.js';
+import { sortDays, createNight } from './dayHelpers.js';
 
 /**
  * Calculate nights from selected days

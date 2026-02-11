@@ -2,7 +2,6 @@
  * PaymentRecordForm - Form for creating/editing payment records
  */
 import { useState } from 'react';
-import { Upload } from 'lucide-react';
 
 export default function PaymentRecordForm({
   initialData = {},

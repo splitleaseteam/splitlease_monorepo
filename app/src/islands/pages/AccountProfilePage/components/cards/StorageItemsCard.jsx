@@ -7,7 +7,6 @@
  * Public View: Shows gray item tags with subtle border (per design).
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 import SelectableChip from '../shared/SelectableChip.jsx';
 

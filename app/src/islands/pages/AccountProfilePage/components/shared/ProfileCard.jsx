@@ -6,7 +6,7 @@
  * Supports optional subtitle for secondary description.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 export default function ProfileCard({

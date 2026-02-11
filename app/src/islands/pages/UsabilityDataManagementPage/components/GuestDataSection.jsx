@@ -3,7 +3,6 @@
  * Section for deleting guest account data
  */
 
-import React from 'react';
 
 export default function GuestDataSection({
   guests,

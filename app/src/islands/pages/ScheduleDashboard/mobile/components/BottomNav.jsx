@@ -5,7 +5,6 @@
  * Displays 4 tabs: Calendar, Chat, History, Settings.
  */
 
-import React from 'react';
 
 const NAV_ITEMS = [
   { id: 'calendar', icon: '📅', label: 'Calendar' },

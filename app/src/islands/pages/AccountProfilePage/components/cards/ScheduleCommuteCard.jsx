@@ -7,7 +7,6 @@
  * Public View: Shows visual day pills and transport badge (per design).
  */
 
-import React from 'react';
 import { Car, Train, Plane, Compass } from 'lucide-react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 import DaySelectorPills from '../shared/DaySelectorPills.jsx';

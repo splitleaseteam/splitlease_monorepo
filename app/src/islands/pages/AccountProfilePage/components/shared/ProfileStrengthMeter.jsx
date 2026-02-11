@@ -5,7 +5,6 @@
  * Only shown in editor view.
  */
 
-import React from 'react';
 import { Info } from 'lucide-react';
 
 export default function ProfileStrengthMeter({

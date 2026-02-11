@@ -5,7 +5,6 @@
  * Conditional fields based on employmentStatus selection.
  */
 
-import React from 'react';
 
 export default function EmploymentStep({
   formData,

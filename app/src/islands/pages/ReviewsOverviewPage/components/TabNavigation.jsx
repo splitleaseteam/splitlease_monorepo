@@ -5,7 +5,6 @@
  * Shows badge counts for each tab when available.
  */
 
-import React from 'react';
 import { Clock, MessageSquare, CheckCircle } from 'lucide-react';
 import './TabNavigation.css';
 

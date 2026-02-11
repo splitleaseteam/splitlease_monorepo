@@ -10,7 +10,6 @@
  *   <NotificationSettingsIsland userId="user_123" />
  */
 
-import React from 'react';
 import { useNotificationSettings } from './useNotificationSettings.js';
 import { NOTIFICATION_CATEGORIES } from './notificationCategories.js';
 import NotificationCategoryRow from './NotificationCategoryRow.jsx';

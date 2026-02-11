@@ -11,7 +11,6 @@
  * Once filled and saved, the DOB field is hidden on subsequent visits.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 
 export default function BasicInfoCard({

@@ -3,7 +3,6 @@
  * Displays listing photos and info
  */
 
-import React from 'react';
 
 export default function ListingPreview({ listing }) {
   const hasPhotos = listing?.photos && listing.photos.length > 0;

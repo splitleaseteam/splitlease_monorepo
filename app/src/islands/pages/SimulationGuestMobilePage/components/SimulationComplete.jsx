@@ -6,7 +6,7 @@
  */
 
 export default function SimulationComplete({
-  simulationData,
+  _simulationData,
   onCleanup,
   isLoading
 }) {

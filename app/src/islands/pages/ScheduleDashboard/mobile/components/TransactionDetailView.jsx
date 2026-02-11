@@ -4,7 +4,7 @@
  * Full-screen transaction detail view with timeline and actions.
  */
 
-import React, { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 
 function formatFullDate(date) {
   if (!date) return '';

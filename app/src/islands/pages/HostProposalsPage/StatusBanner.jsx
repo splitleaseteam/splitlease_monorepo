@@ -10,7 +10,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { Inbox, Repeat, Check, Clock, X } from 'lucide-react';
 
 /**

@@ -10,7 +10,6 @@
  * @param {number} props.maxPossibleScore - Maximum possible score (default: 95)
  * @param {boolean} props.compact - Whether to show compact version
  */
-import React from 'react';
 
 export function ScoreBreakdown({ breakdown, totalScore, maxPossibleScore = 95, compact = false }) {
   if (!breakdown) {

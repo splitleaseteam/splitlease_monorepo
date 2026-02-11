@@ -3,7 +3,6 @@
  * Shows calculated pricing breakdown
  */
 
-import React from 'react';
 
 export default function CalculatedFieldsDisplay({
   dayPattern,

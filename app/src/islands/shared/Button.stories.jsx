@@ -5,7 +5,7 @@
  * Used throughout the application for primary actions, form submissions, and navigation.
  */
 import Button from './Button';
-import { Search, Plus, ChevronRight, Download, Loader2 } from 'lucide-react';
+import { Search, Plus, ChevronRight, Download } from 'lucide-react';
 
 export default {
   title: 'Shared/Button',

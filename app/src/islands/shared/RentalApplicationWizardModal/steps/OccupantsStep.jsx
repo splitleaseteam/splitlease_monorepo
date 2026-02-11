@@ -5,7 +5,6 @@
  * Allows adding up to 6 additional occupants with name and relationship.
  */
 
-import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
 export default function OccupantsStep({

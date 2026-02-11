@@ -69,7 +69,7 @@ export function NarrativeGuestProposalBody({ proposal, onViewListing, children }
         {/* Schedule paragraph - with dynamic highlighting */}
         <p className="epc-narrative-paragraph">
           {schedule.dayRangeText ? (
-            schedule.text.split(schedule.dayRangeText).map((part, i, arr) => (
+            schedule.text.split(schedule.dayRangeText).map((part, i, _arr) => (
               <React.Fragment key={i}>
                 {i > 0 && <strong>{schedule.dayRangeText}</strong>}
                 {part.split(`${schedule.nightsPerWeek} nights per week`).map((subpart, j) => (

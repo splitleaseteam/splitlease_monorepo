@@ -4,7 +4,6 @@ import Footer from '../shared/Footer.jsx';
 import CreateDuplicateListingModal from '../shared/CreateDuplicateListingModal/CreateDuplicateListingModal.jsx';
 import ImportListingModal from '../shared/ImportListingModal/ImportListingModal.jsx';
 import Toast, { useToast } from '../shared/Toast.jsx';
-import { SIGNUP_LOGIN_URL } from '../../lib/constants.js';
 
 export default function ListWithUsPage() {
   const [showCreateListingModal, setShowCreateListingModal] = useState(false);

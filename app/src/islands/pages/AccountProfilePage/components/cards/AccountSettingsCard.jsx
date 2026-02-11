@@ -5,7 +5,6 @@
  * Editor view only - notification settings, password change.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 import { Bell, Lock, ChevronRight } from 'lucide-react';
 

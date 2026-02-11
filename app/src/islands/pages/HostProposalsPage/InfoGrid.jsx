@@ -12,7 +12,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { formatFullDate } from './formatters.js';
 import { getCheckInOutFromDays } from './types.js';
 

@@ -7,7 +7,6 @@
  * - Guest-host leases (host): Offer Dates, Block Dates
  */
 
-import React from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================

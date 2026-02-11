@@ -6,7 +6,7 @@
  * - Guest-host leases (host): Approve/Decline for date change/cancellation requests
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================

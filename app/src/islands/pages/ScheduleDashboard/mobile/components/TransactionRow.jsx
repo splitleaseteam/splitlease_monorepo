@@ -4,7 +4,6 @@
  * Compact transaction row with expand toggle.
  */
 
-import React from 'react';
 import StatusBadge from './StatusBadge.jsx';
 import TransactionDetails from './TransactionDetails.jsx';
 

@@ -8,7 +8,7 @@
  * - onClearFilters: Handler to reset all filters
  */
 
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 
 export default function SearchFilters({
   filters,

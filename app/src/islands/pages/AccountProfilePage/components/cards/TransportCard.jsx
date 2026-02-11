@@ -5,7 +5,6 @@
  * Split from ScheduleCommuteCard for better separation of concerns.
  */
 
-import React from 'react';
 import { Car, Train, Plane, Compass } from 'lucide-react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 

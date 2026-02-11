@@ -5,7 +5,6 @@
  * Different icons and messages for each tab type.
  */
 
-import React from 'react';
 import { Clock, MessageSquare, CheckCircle, Star } from 'lucide-react';
 import './EmptyState.css';
 

@@ -5,7 +5,6 @@
  * Shows action text, icon, and points reward badge.
  */
 
-import React from 'react';
 import { Camera, Edit, Phone, ShieldCheck, Linkedin, AlertCircle } from 'lucide-react';
 
 // Icon mapping

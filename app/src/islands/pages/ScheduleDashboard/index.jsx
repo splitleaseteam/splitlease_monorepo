@@ -21,7 +21,6 @@
  * Route: /schedule/:leaseId
  */
 
-import React from 'react';
 import Footer from '../../shared/Footer.jsx';
 import { useScheduleDashboardLogic } from './useScheduleDashboardCalendarPricingDateChangeLogic.js';
 import ScheduleCalendar from './components/ScheduleCalendar.jsx';
@@ -32,7 +31,6 @@ import TransactionHistory from './components/TransactionHistory.jsx';
 import FlexibilityBreakdownModal from './components/FlexibilityBreakdownModal.jsx';
 import DashboardModeToggle from './components/DashboardModeToggle.jsx';
 import BuyoutFormulaSettings from './components/BuyoutFormulaSettings.jsx';
-import BuyoutPriceVisualization from './components/BuyoutPriceVisualization.jsx';
 import ReservationHeader from './components/ReservationHeader.jsx';
 
 // ============================================================================

@@ -57,7 +57,6 @@
  * ```
  */
 
-import React from 'react';
 
 /**
  * Default icon shown when no custom `icon` prop is provided.

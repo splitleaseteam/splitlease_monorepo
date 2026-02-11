@@ -3,7 +3,6 @@
  * Modal for confirming proposal creation
  */
 
-import React from 'react';
 
 /**
  * Convert day indices to readable labels

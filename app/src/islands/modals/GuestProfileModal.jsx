@@ -106,7 +106,7 @@ export default function GuestProfileModal({ guest, onClose }) {
               {/* Only show verified items - positive framing */}
               {verifiedItems.length > 0 && (
                 <div className="gpm-verification-badges">
-                  {verifiedItems.map(({ icon: Icon, label }) => (
+                  {verifiedItems.map(({ icon: _Icon, label }) => (
                     <div key={label} className="gpm-verified-badge">
                       <CheckCircle size={12} strokeWidth={2} />
                       <span>{label}</span>

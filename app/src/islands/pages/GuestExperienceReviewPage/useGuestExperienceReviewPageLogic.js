@@ -319,7 +319,7 @@ export function useGuestExperienceReviewPageLogic() {
 /**
  * Send internal notification email to the team via send-email Edge Function
  */
-async function sendNotificationEmail(formData, surveyId) {
+async function sendNotificationEmail(formData, _surveyId) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -360,7 +360,7 @@ async function sendNotificationEmail(formData, surveyId) {
 /**
  * Send confirmation email to the reviewer
  */
-async function sendReviewerConfirmationEmail(formData, surveyId) {
+async function sendReviewerConfirmationEmail(formData, _surveyId) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) return;
@@ -399,7 +399,7 @@ async function sendReviewerConfirmationEmail(formData, surveyId) {
 /**
  * Send Slack notification to internal channel
  */
-async function sendSlackNotification(formData, surveyId) {
+async function sendSlackNotification(formData, _surveyId) {
   try {
     // Use the Slack webhook via Edge Function
     await supabase.functions.invoke('slack-notify', {

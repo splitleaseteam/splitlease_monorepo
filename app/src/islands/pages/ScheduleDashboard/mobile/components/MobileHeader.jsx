@@ -5,7 +5,6 @@
  * Shows current view title and user context.
  */
 
-import React from 'react';
 import { NAV_ITEMS } from './BottomNav';
 
 /**

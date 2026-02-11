@@ -4,7 +4,6 @@
  * Card for received reviews showing reviewer info, rating, and comment preview.
  */
 
-import React from 'react';
 import { Calendar, Eye, User } from 'lucide-react';
 import ReviewStarDisplay from './ReviewStarDisplay';
 import { formatReviewDate, formatDateRange } from '../../../../logic/processors/reviews/reviewOverviewAdapter.js';

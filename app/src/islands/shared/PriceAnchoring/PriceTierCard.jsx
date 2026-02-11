@@ -3,7 +3,6 @@
  * Individual card for Budget/Recommended/Premium tiers
  */
 
-import React from 'react';
 import SavingsBadge from './SavingsBadge';
 
 /**

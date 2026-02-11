@@ -7,7 +7,6 @@
  * - Lease period dates
  */
 
-import React from 'react';
 
 export default function LeaseInfoBar({
   lease,

@@ -494,7 +494,7 @@ export function useGuestRelationshipsDashboardLogic() {
     showToast('Proposal removed', 'success');
   }
 
-  function handleConfirmPricing(proposalId) {
+  function handleConfirmPricing(_proposalId) {
     showToast('Pricing confirmation not yet implemented', 'info');
   }
 
@@ -526,7 +526,7 @@ export function useGuestRelationshipsDashboardLogic() {
   // HANDLERS - Listings
   // -------------------------------------------------------------------------
 
-  function handleAddListing(listingId, userIds) {
+  function handleAddListing(listingId, _userIds) {
     const listing = allListings.find(l => l._id === listingId || l.id === listingId);
     if (listing && !suggestedListings.some(l => (l._id || l.id) === listingId)) {
       setSuggestedListings(prev => [...prev, listing]);
@@ -539,7 +539,7 @@ export function useGuestRelationshipsDashboardLogic() {
     showToast('Listing removed', 'success');
   }
 
-  function handleAddCuratedListing(listingId) {
+  function handleAddCuratedListing(_listingId) {
     showToast('Curated listing feature not yet implemented', 'info');
   }
 

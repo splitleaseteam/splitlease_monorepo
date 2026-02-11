@@ -1429,7 +1429,7 @@ export function useAccountProfilePageLogic() {
   // PHOTO HANDLERS
   // ============================================================================
 
-  const handleCoverPhotoChange = useCallback(async (file) => {
+  const handleCoverPhotoChange = useCallback(async (_file) => {
     // TODO: Implement cover photo upload
   }, []);
 

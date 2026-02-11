@@ -5,7 +5,7 @@
  * Displays buyouts, swaps, and shares sorted by date.
  */
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import TransactionRow from './TransactionRow.jsx';
 import EmptyState from './EmptyState.jsx';
 

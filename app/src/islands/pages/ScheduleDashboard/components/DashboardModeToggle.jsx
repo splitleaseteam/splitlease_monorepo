@@ -8,7 +8,6 @@
  * Location: Under the co-tenant profile card in the right column
  */
 
-import React from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================

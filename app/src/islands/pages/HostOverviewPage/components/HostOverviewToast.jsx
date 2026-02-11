@@ -13,7 +13,7 @@
  * - Multiple toast stacking
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function Toast({ id, title, message, type = 'information', duration = 3000, onClose }) {
   const [progress, setProgress] = useState(100);

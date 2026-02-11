@@ -19,7 +19,6 @@ import {
   getGoogleOAuthLoginFlow,
   clearGoogleOAuthLoginFlow,
 } from '../secureStorage.js';
-import { setIsUserLoggedIn } from './tokenValidation.js';
 import { setUserType } from './session.js';
 
 // ============================================================================

@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { FormDropdown, FormCheckboxGroup, FormInput, FormDatePicker, SectionContainer } from '../shared';
+import { FormDropdown, FormCheckboxGroup, FormDatePicker, SectionContainer } from '../shared';
 import { cancellationPolicies, genderOptions, guestCounts, checkInTimes, checkOutTimes, durationMonths } from '../data';
 
 export default function RulesSection({

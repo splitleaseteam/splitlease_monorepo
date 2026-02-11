@@ -1,4 +1,3 @@
-import React from 'react';
 import { X, ShieldCheck, Zap, Clock, TrendingDown } from 'lucide-react';
 import { formatCurrency } from '../../logic/calculators/feeCalculations';
 import './FeeExplainer.css';

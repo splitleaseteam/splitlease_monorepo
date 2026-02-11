@@ -11,7 +11,6 @@
  * - Submitted: Reviews user has written
  */
 
-import React from 'react';
 import { useReviewsOverviewPageLogic } from './useReviewsOverviewPageLogic';
 import Header from '../../shared/Header';
 import Footer from '../../shared/Footer';

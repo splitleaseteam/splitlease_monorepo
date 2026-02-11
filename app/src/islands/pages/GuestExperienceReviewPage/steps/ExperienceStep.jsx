@@ -2,7 +2,6 @@
  * ExperienceStep - Step 3: Describe overall experience
  */
 
-import React from 'react';
 
 export default function ExperienceStep({ formData, updateField }) {
   return (

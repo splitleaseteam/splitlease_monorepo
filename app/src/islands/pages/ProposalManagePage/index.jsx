@@ -17,7 +17,6 @@
  * - Admin-only access with Gold Standard Auth Pattern
  */
 
-import { useState } from 'react';
 import { useProposalManagePageLogic } from './useProposalManagePageLogic.js';
 import FilterSection from './FilterSection.jsx';
 import ProposalItem from './ProposalItem.jsx';

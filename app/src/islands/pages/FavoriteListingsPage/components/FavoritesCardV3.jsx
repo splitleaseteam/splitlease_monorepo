@@ -233,8 +233,8 @@ const FavoritesCardV3 = ({
   onToggleFavorite,
   onOpenCreateProposalModal,
   proposalForListing,
-  onMapClick,
-  userId
+  _onMapClick,
+  _userId
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);

@@ -468,7 +468,7 @@ export default function useModifyListingsPageLogic() {
    * Save a specific section
    * @param {string} sectionId - Section to save
    */
-  async function saveSection(sectionId) {
+  async function saveSection(_sectionId) {
     // For now, just save all changes
     await saveChanges();
   }

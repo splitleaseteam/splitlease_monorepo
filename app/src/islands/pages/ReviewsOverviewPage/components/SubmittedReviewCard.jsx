@@ -4,7 +4,6 @@
  * Card for reviews the user has submitted, showing reviewee and their rating.
  */
 
-import React from 'react';
 import { Calendar, Eye, User, ThumbsUp, ThumbsDown } from 'lucide-react';
 import ReviewStarDisplay from './ReviewStarDisplay';
 import { formatReviewDate, formatDateRange } from '../../../../logic/processors/reviews/reviewOverviewAdapter.js';

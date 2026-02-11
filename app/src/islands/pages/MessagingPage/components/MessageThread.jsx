@@ -8,7 +8,7 @@
  * - Upwork-style design with gray background and date separators
  */
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import MessageBubble from './MessageBubble.jsx';
 import ThreadHeader from './ThreadHeader.jsx';
 import TypingIndicator from './TypingIndicator.jsx';

@@ -12,7 +12,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 
 /**
  * PricingRow displays the pricing information

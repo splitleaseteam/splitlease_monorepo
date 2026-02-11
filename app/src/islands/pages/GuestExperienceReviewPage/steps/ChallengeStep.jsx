@@ -2,7 +2,6 @@
  * ChallengeStep - Step 4: Biggest challenge before Split Lease
  */
 
-import React from 'react';
 
 export default function ChallengeStep({ formData, updateField }) {
   return (

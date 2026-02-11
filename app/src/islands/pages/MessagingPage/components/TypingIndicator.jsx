@@ -6,7 +6,6 @@
  * Displays animated dots and the typing user's name.
  */
 
-import React from 'react';
 
 export function TypingIndicator({ userName }) {
   if (!userName) return null;

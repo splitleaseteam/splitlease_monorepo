@@ -4,7 +4,7 @@
  * Sticky bottom input bar for sending messages.
  */
 
-import React, { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 
 /**
  * Chat input bar with auto-expanding textarea

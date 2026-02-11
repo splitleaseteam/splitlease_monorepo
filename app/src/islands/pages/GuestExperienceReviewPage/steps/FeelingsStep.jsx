@@ -2,7 +2,6 @@
  * FeelingsStep - Step 5: How the challenge made them feel
  */
 
-import React from 'react';
 
 export default function FeelingsStep({ formData, updateField }) {
   return (

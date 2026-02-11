@@ -5,7 +5,6 @@
  * Summary of all entered information with signature field.
  */
 
-import React from 'react';
 import { Edit2, Check, AlertCircle } from 'lucide-react';
 
 function ReviewSection({ title, children, onEdit, stepNumber }) {

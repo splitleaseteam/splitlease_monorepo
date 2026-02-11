@@ -10,7 +10,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { AlertCircle, Loader, Archive } from 'lucide-react';
 import CollapsibleProposalCard from './CollapsibleProposalCard.jsx';
 

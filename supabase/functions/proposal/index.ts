@@ -6,14 +6,7 @@
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// CORS headers inlined
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
-};
+import { createClients, authenticateRequest, corsHeaders } from '../_shared/supabaseClient.ts';
 
 console.log("[proposal] Edge Function initializing...");
 
@@ -47,19 +40,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Get Supabase config
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
-
-    if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
-      throw new Error('Missing Supabase configuration');
-    }
-
-    // Create service client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
+    // Create clients via shared factory
+    const { admin: supabase, config } = createClients();
 
     let result: unknown;
 
@@ -72,13 +54,14 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] Create handler loaded');
 
         // SECURITY: Require authentication for proposal creation
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
+        const authResult = await authenticateRequest(req.headers, config);
+        if (!authResult.ok) {
           return new Response(
             JSON.stringify({ success: false, error: 'Authentication required' }),
             { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+        const user = authResult.value!;
 
         console.log(`[proposal:create] Authenticated user: ${user.id}`);
         result = await handleCreate(payload, user, supabase);
@@ -91,7 +74,8 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] Update handler loaded');
 
         // Optional authentication - soft headers pattern for internal admin pages
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+        const authResult = await authenticateRequest(req.headers, config, undefined, { optional: true });
+        const user = authResult.ok ? authResult.value : null;
         if (user) {
           console.log(`[proposal:update] Authenticated user: ${user.email} (${user.id})`);
         } else {
@@ -116,13 +100,14 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] Suggest handler loaded');
 
         // Authentication required
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
+        const authResult = await authenticateRequest(req.headers, config);
+        if (!authResult.ok) {
           return new Response(
             JSON.stringify({ success: false, error: 'Authentication required' }),
             { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+        const user = authResult.value!;
         result = await handleSuggest(payload, user, supabase);
         break;
       }
@@ -171,8 +156,8 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] createTestProposal handler loaded');
 
         // Authentication required - must be logged in as the tester
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
+        const authResult = await authenticateRequest(req.headers, config);
+        if (!authResult.ok) {
           return new Response(
             JSON.stringify({ success: false, error: 'Authentication required' }),
             { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -188,8 +173,8 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] createTestRentalApplication handler loaded');
 
         // Authentication required
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
+        const authResult = await authenticateRequest(req.headers, config);
+        if (!authResult.ok) {
           return new Response(
             JSON.stringify({ success: false, error: 'Authentication required' }),
             { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -205,8 +190,8 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] acceptProposal handler loaded');
 
         // Authentication required
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
+        const authResult = await authenticateRequest(req.headers, config);
+        if (!authResult.ok) {
           return new Response(
             JSON.stringify({ success: false, error: 'Authentication required' }),
             { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -222,8 +207,8 @@ Deno.serve(async (req: Request) => {
         console.log('[proposal] createCounteroffer handler loaded');
 
         // Authentication required
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-        if (!user) {
+        const authResult = await authenticateRequest(req.headers, config);
+        if (!authResult.ok) {
           return new Response(
             JSON.stringify({ success: false, error: 'Authentication required' }),
             { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -240,7 +225,8 @@ Deno.serve(async (req: Request) => {
 
         // Optional authentication - soft headers pattern for legacy token users
         // Service role key bypasses RLS, so auth is for logging/audit purposes only
-        const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+        const authResult = await authenticateRequest(req.headers, config, undefined, { optional: true });
+        const user = authResult.ok ? authResult.value : null;
         if (user) {
           console.log(`[proposal:acceptCounteroffer] Authenticated user: ${user.email} (${user.id})`);
         } else {
@@ -273,51 +259,5 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
-
-// Helper function for authentication
-// Looks up user by email (matches pattern in auth-user/handlers/login.ts)
-async function authenticateFromHeaders(
-  headers: Headers,
-  supabaseUrl: string,
-  supabaseAnonKey: string
-): Promise<{ id: string; email: string } | null> {
-  const authHeader = headers.get('Authorization');
-
-  if (!authHeader) {
-    console.log('[proposal:auth] No Authorization header');
-    return null;
-  }
-
-  try {
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error } = await authClient.auth.getUser();
-
-    if (error || !user) {
-      console.error('[proposal:auth] getUser failed:', error?.message);
-      return null;
-    }
-
-    // Lookup application user ID by email (user table doesn't have Supabase Auth UUID column)
-    const { data: appUser, error: appUserError } = await authClient
-      .from('user')
-      .select('_id')
-      .eq('email', user.email?.toLowerCase())
-      .maybeSingle();
-
-    if (appUserError || !appUser) {
-      console.error('[proposal:auth] User lookup failed:', appUserError?.message);
-      return null;
-    }
-
-    return { id: appUser._id, email: user.email ?? '' };
-
-  } catch (_err) {
-    console.error('[proposal:auth] Exception:', (err as Error).message);
-    return null;
-  }
-}
 
 console.log("[proposal] Edge Function ready");

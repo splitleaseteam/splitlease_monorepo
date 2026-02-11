@@ -5,7 +5,7 @@
  * Includes a referral invite button that opens the full ReferralModal.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ReferralModal from '../../pages/AccountProfilePage/components/ReferralModal.jsx';
 
 // Checkmark circle icon

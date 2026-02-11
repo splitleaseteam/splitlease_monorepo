@@ -13,7 +13,7 @@
  * @module AITools/PhoneCallInterface
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAITools } from './AIToolsProvider';
 import { supabase } from '../../../lib/supabase';
 
@@ -56,7 +56,7 @@ const CheckCircleIcon = () => (
 /**
  * PhoneCallInterface - AI phone call for house manual collection
  */
-export default function PhoneCallInterface({ onDataExtracted }) {
+export default function PhoneCallInterface({ _onDataExtracted }) {
   const {
     setProcessingState,
     setError,

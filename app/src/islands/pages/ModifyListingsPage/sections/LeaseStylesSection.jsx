@@ -6,7 +6,7 @@
  * @param {function} props.onUpdate - Partial update callback
  */
 
-import { FormInput, FormDropdown, FormCheckbox, SectionContainer } from '../shared';
+import { FormInput, FormDropdown, SectionContainer } from '../shared';
 import { rentalTypes, weeklyPatterns } from '../data';
 
 const DAYS_OF_WEEK = [

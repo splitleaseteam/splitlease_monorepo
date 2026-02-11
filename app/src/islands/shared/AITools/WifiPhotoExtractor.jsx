@@ -13,7 +13,7 @@
  * @module AITools/WifiPhotoExtractor
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useAITools } from './AIToolsProvider';
 import { supabase } from '../../../lib/supabase';
 

@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import visitReviewerService from './visitReviewerService.js';
 import { adaptHouseManualForViewer, groupSectionsByCategory } from '../../../logic/processors/houseManual/adaptHouseManualForViewer.js';
 import { canAccessManual, canSubmitReview } from '../../../logic/rules/houseManual/canAccessManual.js';
-import { isTokenExpired, validateTokenStatus } from '../../../logic/rules/houseManual/isManualExpired.js';
+import { isTokenExpired } from '../../../logic/rules/houseManual/isManualExpired.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 
 /**

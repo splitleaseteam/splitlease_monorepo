@@ -5,7 +5,6 @@
  * Only shown in editor view or preview mode for own profile.
  */
 
-import React from 'react';
 import { ExternalLink, ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { useToast } from '../../../../shared/Toast.jsx';
 

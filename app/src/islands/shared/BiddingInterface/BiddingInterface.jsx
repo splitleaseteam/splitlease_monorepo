@@ -16,7 +16,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useBiddingRealtime } from '../../../hooks/useBiddingRealtime.js';
 import { canUserBid } from '../../../logic/bidding/rules/canUserBid.js';
 import { isBidValid } from '../../../logic/bidding/rules/isBidValid.js';
@@ -48,7 +48,7 @@ function formatCurrency(amount) {
 export default function BiddingInterface({
   sessionId,
   currentUserId,
-  targetNight,
+  _targetNight,
   onClose,
   onSessionEnd
 }) {

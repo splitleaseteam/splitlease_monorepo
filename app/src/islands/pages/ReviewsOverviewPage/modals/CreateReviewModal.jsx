@@ -5,7 +5,7 @@
  * Supports both host reviewing guest and guest reviewing host flows.
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Star, ThumbsUp, ThumbsDown, Calendar } from 'lucide-react';
 import { REVIEW_CATEGORIES } from '../../../../logic/constants/reviewCategories.js';
 import { GUEST_REVIEW_CATEGORIES } from '../../../../logic/constants/guestReviewCategories.js';

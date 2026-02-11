@@ -8,8 +8,8 @@
  * - Date change requests
  * - PDF document links
  */
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, User, Calendar, DollarSign, FileText, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, User, Calendar, DollarSign, AlertCircle } from 'lucide-react';
 import {
   formatCurrency,
   formatFullDate,

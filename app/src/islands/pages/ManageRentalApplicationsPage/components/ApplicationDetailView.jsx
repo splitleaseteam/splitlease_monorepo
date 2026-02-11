@@ -10,7 +10,7 @@
  * - statusOptions: Available status options
  */
 
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 
 // Format currency
 function formatCurrency(amount) {

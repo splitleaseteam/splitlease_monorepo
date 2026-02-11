@@ -15,7 +15,7 @@ import './VirtualMeetingManager.css';
 export default function DetailsOfProposalAndVM({
   proposal,
   meeting,
-  onClose,
+  _onClose,
 }) {
   const handleAddToCalendar = () => {
     const url = generateGoogleCalendarUrl(meeting, proposal);

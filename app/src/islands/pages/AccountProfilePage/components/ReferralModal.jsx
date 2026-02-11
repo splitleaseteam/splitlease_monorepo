@@ -12,7 +12,7 @@
  * - Feather icons (stroke-only)
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '../../../shared/Toast';
 import './ReferralModal.css';
 

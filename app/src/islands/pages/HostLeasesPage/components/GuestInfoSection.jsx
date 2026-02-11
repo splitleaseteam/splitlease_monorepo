@@ -4,7 +4,6 @@
  * Displays guest details within a lease card.
  * Shows avatar, name, contact info, and verification badges.
  */
-import React from 'react';
 import { User, Mail, Phone, CheckCircle, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatPhoneNumber } from '../formatters.js';
 

@@ -5,7 +5,6 @@
  * Read-only presentation with bio-text styling.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 
 export default function MyRequirementsCard({ content }) {

@@ -4,7 +4,7 @@
  * Expanded transaction details with action buttons.
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
  * Format full date for display
@@ -58,7 +58,7 @@ function formatRelativeTime(date) {
  */
 export default function TransactionDetails({
   transaction,
-  isMine,
+  _isMine,
   isRequester,
   onAccept,
   onDecline,

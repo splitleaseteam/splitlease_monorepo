@@ -11,7 +11,7 @@
  * @param {number} props.currentStep - Current step index (0-6)
  * @param {Object} props.stepStatuses - Status of each step { A: 'pending'|'active'|'completed'|'disabled', ... }
  */
-export default function StepProgress({ currentStep, stepStatuses }) {
+export default function StepProgress({ _currentStep, stepStatuses }) {
   const steps = [
     { letter: 'A', number: 1, label: 'Mark Tester' },
     { letter: 'B', number: 2, label: 'Proposals' },

@@ -69,7 +69,7 @@ function ensureLottieScript() {
 // INTERNAL COMPONENT: Hero Section
 // ============================================================================
 
-function Hero({ onExploreRentals, onMoreDetails }) {
+function Hero({ onExploreRentals, _onMoreDetails }) {
   const heroRef = useRef(null);
 
   // Pause floating avatar animations when hero section is off-screen

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './LoggedInAvatar.css';
 import { useLoggedInAvatarData, getMenuVisibility, NORMALIZED_USER_TYPES } from './useLoggedInAvatarData.js';
-import ReferralModal from '../../pages/AccountProfilePage/components/ReferralModal.jsx';
 import HeaderMessagingPanel from '../HeaderMessagingPanel/HeaderMessagingPanel.jsx';
 
 /**

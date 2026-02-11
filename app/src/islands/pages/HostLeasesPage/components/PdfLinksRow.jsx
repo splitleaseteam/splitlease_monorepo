@@ -7,7 +7,6 @@
  * - Payout Schedule
  * - Periodic Tenancy Agreement
  */
-import React from 'react';
 import { FileText, ExternalLink, Calendar, DollarSign, FileCheck } from 'lucide-react';
 
 /**

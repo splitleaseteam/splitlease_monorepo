@@ -2,7 +2,6 @@
  * ShareAndReferralStep - Step 11: Consent to share + Referral
  */
 
-import React from 'react';
 
 export default function ShareAndReferralStep({
   formData,

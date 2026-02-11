@@ -36,7 +36,7 @@ export function useHeaderMessagingPanelLogic({
   userId,
   userName,
   userAvatar,
-  onClose,
+  _onClose,
   onUnreadCountChange,
 }) {
   // ============================================================================

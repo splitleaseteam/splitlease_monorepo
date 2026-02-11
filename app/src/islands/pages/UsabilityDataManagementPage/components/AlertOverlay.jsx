@@ -3,7 +3,6 @@
  * Simple alert/notification overlay
  */
 
-import React from 'react';
 
 export default function AlertOverlay({
   title,

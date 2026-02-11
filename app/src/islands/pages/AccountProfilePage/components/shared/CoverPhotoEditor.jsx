@@ -5,7 +5,7 @@
  * Shows default gradient when no image is set.
  */
 
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { Camera } from 'lucide-react';
 
 export default function CoverPhotoEditor({

@@ -4,7 +4,6 @@
  * Modal for viewing full review details including all category ratings.
  */
 
-import React from 'react';
 import { X, Calendar, User, ThumbsUp, ThumbsDown, Star } from 'lucide-react';
 import ReviewStarDisplay from '../components/ReviewStarDisplay';
 import { formatReviewDate, formatDateRange } from '../../../../logic/processors/reviews/reviewOverviewAdapter.js';

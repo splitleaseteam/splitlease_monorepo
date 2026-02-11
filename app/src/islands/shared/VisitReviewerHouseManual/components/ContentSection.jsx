@@ -74,9 +74,9 @@ const ContentSection = ({
 const SectionContent = ({
   type,
   content,
-  sectionId,
-  onMapView,
-  onNarrationPlay,
+  _sectionId,
+  _onMapView,
+  _onNarrationPlay,
 }) => {
   if (!content) {
     return <p className="vrhm-text-content">No information available.</p>;

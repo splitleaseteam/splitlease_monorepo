@@ -22,7 +22,7 @@
  * - Redirects to home if not authenticated or not a Host
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { FileText } from 'lucide-react';
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';

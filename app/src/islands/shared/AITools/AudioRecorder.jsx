@@ -14,7 +14,7 @@
  * @module AITools/AudioRecorder
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAITools } from './AIToolsProvider';
 import { supabase } from '../../../lib/supabase';
 

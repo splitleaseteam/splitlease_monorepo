@@ -2,7 +2,6 @@
  * NameStep - Step 2: Capture the reviewer's name
  */
 
-import React from 'react';
 
 export default function NameStep({ formData, updateField }) {
   return (

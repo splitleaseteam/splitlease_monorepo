@@ -7,7 +7,6 @@
  * 11-step survey wizard for collecting guest feedback.
  */
 
-import React from 'react';
 import { useGuestExperienceReviewPageLogic } from './useGuestExperienceReviewPageLogic';
 import Header from '../../shared/Header';
 import NavigationButtons from './components/NavigationButtons';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, ChevronUp, Info, TrendingDown } from 'lucide-react';
 import { calculateFeeBreakdown, formatCurrency } from '../../logic/calculators/feeCalculations';
 import FeeExplainer from './FeeExplainer';

@@ -13,7 +13,7 @@
  * @module AITools/FreeformTextInput
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useAITools } from './AIToolsProvider';
 import { supabase } from '../../../lib/supabase';
 

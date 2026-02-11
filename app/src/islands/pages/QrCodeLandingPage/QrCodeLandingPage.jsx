@@ -13,7 +13,7 @@
  * @module QrCodeLandingPage
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQrCodeLandingPageLogic } from './useQrCodeLandingPageLogic.js';
 import { styles, useCaseConfig, spinnerKeyframes } from './qrCodeLandingStyles.js';
 

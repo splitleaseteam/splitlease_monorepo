@@ -27,8 +27,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { X, MapPin } from 'lucide-react';
-import { COLORS, getBoroughMapConfig } from '../../lib/constants.js';
-import { formatPrice } from '../../lib/proposals/dataTransformers.js';
+import { getBoroughMapConfig } from '../../lib/constants.js';
 import { isTerminalStatus } from '../../logic/constants/proposalStatuses.js';
 import { isValidCoordinates } from '../../lib/mapUtils.js';
 import './FullscreenProposalMapModal.css';

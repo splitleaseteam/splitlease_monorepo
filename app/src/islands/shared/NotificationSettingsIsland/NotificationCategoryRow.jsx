@@ -5,7 +5,6 @@
  * Uses CSS classes instead of inline styles for protocol compliance.
  */
 
-import React from 'react';
 import NotificationToggle from './NotificationToggle.jsx';
 
 export default function NotificationCategoryRow({

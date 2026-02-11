@@ -29,7 +29,6 @@
  * ```
  */
 
-import React from 'react';
 
 /**
  * Spinner size presets (width, height, border thickness)

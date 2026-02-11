@@ -18,7 +18,7 @@ import SignUpLoginModal from '../shared/AuthSignupLoginOAuthResetFlowModal';
 import ProposalSuccessModal from '../modals/ProposalSuccessModal.jsx';
 import FavoriteButton from '../shared/FavoriteButton/FavoriteButton.jsx';
 import { initializeLookups } from '../../lib/dataLookups.js';
-import { checkAuthStatus, validateTokenAndFetchUser, getSessionId, getUserId, getUserType } from '../../lib/auth/index.js';
+import { checkAuthStatus, validateTokenAndFetchUser, getSessionId, getUserType } from '../../lib/auth/index.js';
 import { fetchListingComplete, getListingIdFromUrl, fetchZatPriceConfiguration } from '../../lib/listingDataFetcher.js';
 import {
   calculatePricingBreakdown,
@@ -32,7 +32,7 @@ import {
   getBlockedDatesList,
   calculateNightsFromDays
 } from '../../lib/availabilityValidation.js';
-import { DAY_ABBREVIATIONS, DEFAULTS, COLORS, SCHEDULE_PATTERNS } from '../../lib/constants.js';
+import { DAY_ABBREVIATIONS, DEFAULTS, COLORS } from '../../lib/constants.js';
 import { createDay } from '../../lib/scheduleSelector/dayHelpers.js';
 import { supabase } from '../../lib/supabase.js';
 import { logger } from '../../lib/logger.js';

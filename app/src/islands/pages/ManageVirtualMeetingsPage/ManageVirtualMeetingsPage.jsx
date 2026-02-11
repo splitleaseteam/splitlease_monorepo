@@ -24,7 +24,6 @@ import NewRequestsSection from './components/NewRequestsSection';
 import ConfirmedMeetingsSection from './components/ConfirmedMeetingsSection';
 import AvailabilityCalendar from './components/AvailabilityCalendar';
 import LoadingState from './components/LoadingState';
-import EmptyState from './components/EmptyState';
 import ErrorState from './components/ErrorState';
 import StatsHeader from './components/StatsHeader';
 

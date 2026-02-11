@@ -5,7 +5,7 @@
  * Shows completed, current, and pending stages with visual indicators.
  */
 
-export default function ProgressTracker({ stages, currentStage, statusConfig }) {
+export default function ProgressTracker({ stages, _currentStage, statusConfig }) {
   if (!stages || stages.length === 0) {
     return null;
   }

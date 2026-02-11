@@ -4,7 +4,6 @@
  * Reusable empty state placeholder with icon and message.
  */
 
-import React from 'react';
 
 /**
  * Empty state component

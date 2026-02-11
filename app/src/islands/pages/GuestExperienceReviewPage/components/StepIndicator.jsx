@@ -7,7 +7,6 @@
  * - Upcoming steps (outlined)
  */
 
-import React from 'react';
 
 export default function StepIndicator({ currentStep, totalSteps, steps }) {
   return (

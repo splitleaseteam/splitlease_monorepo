@@ -3,7 +3,6 @@
  *
  * Modal displaying full details of a date change request.
  */
-import React from 'react';
 import { X, CalendarDays, ArrowRight, User, Clock, DollarSign, Check, X as XIcon } from 'lucide-react';
 import { formatFullDate, formatCurrency, getDateChangeStatusClass } from '../formatters.js';
 

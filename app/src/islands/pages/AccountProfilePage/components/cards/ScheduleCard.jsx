@@ -5,7 +5,6 @@
  * Split from ScheduleCommuteCard for better separation of concerns.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 import DaySelectorPills from '../shared/DaySelectorPills.jsx';
 

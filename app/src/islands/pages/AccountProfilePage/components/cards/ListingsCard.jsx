@@ -6,7 +6,6 @@
  * Supports loading, empty, and populated states.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 
 /**

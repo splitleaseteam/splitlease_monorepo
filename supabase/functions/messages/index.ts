@@ -27,11 +27,16 @@
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { AuthenticationError } from '../_shared/errors.ts';
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Shared Supabase client factory (Phase 1)
+import {
+  createServiceClient,
+  authenticateRequest,
+  type AuthenticatedUser,
+} from '../_shared/supabaseClient.ts';
 
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -42,7 +47,6 @@ import {
   formatErrorResponseHttp,
   formatCorsResponse,
   CorsPreflightSignal,
-  AuthenticatedUser,
 } from "../_shared/functional/orchestration.ts";
 import { createErrorLog, addError, setUserId, setAction, ErrorLog } from "../_shared/functional/errorLog.ts";
 import { reportErrorLog } from "../_shared/slack.ts";
@@ -108,93 +112,6 @@ const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// Pure Functions
-// ─────────────────────────────────────────────────────────────
-
-/**
- * Authenticate user from request headers OR payload (legacy auth fallback)
- *
- * Supports two authentication methods:
- * 1. Supabase JWT token in Authorization header (modern auth)
- * 2. user_id in payload (legacy auth for users who logged in before Supabase migration)
- *
- * Returns Result with user or error
- */
-const authenticateUser = async (
-  headers: Headers,
-  supabaseUrl: string,
-  supabaseAnonKey: string,
-  supabaseServiceKey: string,
-  requireAuth: boolean,
-  payload: Record<string, unknown>
-): Promise<Result<AuthenticatedUser | null, AuthenticationError>> => {
-  // Public actions don't require auth
-  if (!requireAuth) {
-    return ok(null);
-  }
-
-  // Try Method 1: JWT token in Authorization header (modern auth)
-  // Pattern: Create Supabase client with Authorization header, then call getUser()
-  // This is the proven pattern used by proposal and other functions
-  const authHeader = headers.get('Authorization');
-  console.log('[messages] DEBUG: Authorization header present:', !!authHeader, 'length:', authHeader?.length ?? 0);
-
-  if (authHeader) {
-
-    // Create auth client with the Authorization header embedded
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    // getUser() without token parameter - uses the embedded Authorization header
-    const { data: { user: authUser }, error: authError } = await authClient.auth.getUser();
-
-    if (!authError && authUser) {
-      console.log('[messages] ✅ Authenticated via Supabase JWT');
-      // Extract platformId from user_metadata (set during signup)
-      const platformId = authUser.user_metadata?.user_id as string | undefined;
-      console.log('[messages] DEBUG: user_metadata.user_id (platformId):', platformId);
-      return ok({ id: authUser.id, email: authUser.email ?? "", platformId });
-    }
-
-    console.log('[messages] DEBUG: JWT auth failed:', authError?.message);
-  } else {
-    console.log('[messages] DEBUG: No Authorization header, checking for legacy auth...');
-  }
-
-  // Try Method 2: user_id in payload (legacy auth)
-  const userId = payload.user_id as string | undefined;
-  if (userId) {
-    console.log('[messages] DEBUG: Found user_id in payload, trying legacy auth lookup...');
-
-    // Use service role to bypass RLS for user lookup
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-    });
-
-    // Verify user exists in database by _id (Bubble ID)
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from('user')
-      .select('_id, email')
-      .eq('_id', userId)
-      .maybeSingle();
-
-    if (userData && !userError) {
-      console.log('[messages] ✅ Authenticated via legacy auth (user_id lookup)');
-      return ok({
-        id: userData._id,
-        email: userData.email ?? ""
-      });
-    }
-
-    console.log('[messages] DEBUG: Legacy auth lookup failed:', userError?.message || 'User not found');
-  }
-
-  // Both methods failed
-  return err(new AuthenticationError("Invalid or expired authentication token. Please log in again."));
-};
-
-// ─────────────────────────────────────────────────────────────
 // Effect Boundary (Side Effects Isolated Here)
 // ─────────────────────────────────────────────────────────────
 
@@ -253,18 +170,14 @@ Deno.serve(async (req) => {
 
     // ─────────────────────────────────────────────────────────
     // Step 4: Authenticate user (side effect boundary)
-    // Supports both JWT auth (modern) and user_id in payload (legacy)
+    // Uses shared factory — supports JWT auth + legacy user_id fallback
     // ─────────────────────────────────────────────────────────
 
     const requireAuth = !isPublicAction(PUBLIC_ACTIONS, action);
-    const authResult = await authenticateUser(
-      headers,
-      config.supabaseUrl,
-      config.supabaseAnonKey,
-      config.supabaseServiceKey,
-      requireAuth,
-      payload
-    );
+    const authResult = await authenticateRequest(headers, config, payload, {
+      optional: !requireAuth,
+      allowLegacyFallback: true,
+    });
 
     if (!authResult.ok) {
       throw authResult.error;
@@ -280,12 +193,10 @@ Deno.serve(async (req) => {
     }
 
     // ─────────────────────────────────────────────────────────
-    // Step 5: Create admin client (side effect - client creation)
+    // Step 5: Create admin client (shared factory)
     // ─────────────────────────────────────────────────────────
 
-    const supabaseAdmin = createClient(config.supabaseUrl, config.supabaseServiceKey, {
-      auth: { persistSession: false },
-    });
+    const supabaseAdmin = createServiceClient(config);
 
     // ─────────────────────────────────────────────────────────
     // Step 6: Route to handler (pure lookup + execution)
@@ -333,7 +244,7 @@ function executeHandler(
   action: Action,
   payload: Record<string, unknown>,
   user: AuthenticatedUser | null,
-  supabaseAdmin: ReturnType<typeof createClient>
+  supabaseAdmin: SupabaseClient
 ): Promise<unknown> {
   switch (action) {
     case 'send_message':

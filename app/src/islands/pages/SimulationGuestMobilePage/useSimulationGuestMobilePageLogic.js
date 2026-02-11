@@ -20,9 +20,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
-import { supabase } from '../../../lib/supabase.js';
 import * as simulationService from '../../../lib/simulationGuestService.js';
-import { canProgressToStep, getNextStepId } from '../../../logic/rules/simulation/canProgressToStep.js';
+import { canProgressToStep } from '../../../logic/rules/simulation/canProgressToStep.js';
 import { selectProposalByScheduleType } from '../../../logic/processors/simulation/selectProposalByScheduleType.js';
 
 /**

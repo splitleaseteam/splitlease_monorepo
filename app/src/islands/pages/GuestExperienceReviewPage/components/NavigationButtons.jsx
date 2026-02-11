@@ -2,7 +2,6 @@
  * NavigationButtons - Back/Next buttons for survey navigation
  */
 
-import React from 'react';
 
 export default function NavigationButtons({
   currentStep,

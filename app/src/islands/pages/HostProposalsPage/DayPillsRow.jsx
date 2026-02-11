@@ -12,7 +12,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { getCheckInOutFromNights } from './types.js';
 
 const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];

@@ -77,7 +77,7 @@ function setupMockSupabaseClient(options = {}) {
     error: selectError,
   });
 
-  const mockEq = vi.fn((column, value) => ({
+  const mockEq = vi.fn((_column, _value) => ({
     single: mockSingle,
   }));
 
@@ -91,7 +91,7 @@ function setupMockSupabaseClient(options = {}) {
 
   const mockInsert = vi.fn().mockResolvedValue(insertResponse);
 
-  supabase.from.mockImplementation((table) => ({
+  supabase.from.mockImplementation((_table) => ({
     select: mockSelect,
     update: mockUpdate,
     insert: mockInsert,

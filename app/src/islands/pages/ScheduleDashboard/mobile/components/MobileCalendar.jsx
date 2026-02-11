@@ -5,7 +5,7 @@
  * Shows 1 week at a time with navigation, day cells, and price overlays.
  */
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   startOfMonth,
   endOfMonth,

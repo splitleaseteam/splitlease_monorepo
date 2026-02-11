@@ -10,7 +10,7 @@
  * 5. Password is updated via Edge Function
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { updatePassword } from '../../lib/auth/index.js';
 import Header from '../shared/Header.jsx';
@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
     }
 
     // Listen for PASSWORD_RECOVERY event from Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
       console.log('Auth event:', event);
 
       if (event === 'PASSWORD_RECOVERY') {

@@ -2,7 +2,6 @@
  * StaffAndQuestionsStep - Step 10: Staff recognition and questions
  */
 
-import React from 'react';
 
 export default function StaffAndQuestionsStep({ formData, updateField }) {
   return (

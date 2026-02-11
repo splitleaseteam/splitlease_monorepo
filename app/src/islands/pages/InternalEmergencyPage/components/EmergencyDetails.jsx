@@ -5,7 +5,7 @@
  * Displays full emergency details and action controls
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const STATUS_OPTIONS = [
   { value: 'REPORTED', label: 'Reported' },

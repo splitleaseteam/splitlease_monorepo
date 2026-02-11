@@ -5,7 +5,7 @@
  * Fields: currentAddress, apartmentUnit, lengthResided, renting
  */
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function AddressStep({
   formData,

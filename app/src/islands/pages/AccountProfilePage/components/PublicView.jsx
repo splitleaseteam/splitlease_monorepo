@@ -7,7 +7,6 @@
  * Design Reference: Guest_Profile_Public_v3.html
  */
 
-import React from 'react';
 import AboutCard from './cards/AboutCard.jsx';
 import WhySplitLeaseCard from './cards/WhySplitLeaseCard.jsx';
 import MyRequirementsCard from './cards/MyRequirementsCard.jsx';

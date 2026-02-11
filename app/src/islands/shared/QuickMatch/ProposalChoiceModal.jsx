@@ -12,7 +12,7 @@
  * @param {function} props.onConfirm - Callback when match is confirmed (receives notes)
  * @param {boolean} props.isSubmitting - Whether the submission is in progress
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ScoreBreakdown } from './ScoreBreakdown.jsx';
 
 export function ProposalChoiceModal({

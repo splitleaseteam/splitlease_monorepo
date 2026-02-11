@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
-import { SIGNUP_LOGIN_URL } from '../../lib/constants.js';
 
 // Example Card component with mobile flip support
 function SwipeableExampleCard({ name, avatarUrl, pattern, review, activeDays }) {

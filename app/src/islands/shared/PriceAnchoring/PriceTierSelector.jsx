@@ -3,7 +3,7 @@
  * 3-tier price selector with visual hierarchy
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PriceTierCard from './PriceTierCard';
 import './PriceAnchoring.css';
 
@@ -76,7 +76,7 @@ const PRICE_TIERS = {
  */
 export default function PriceTierSelector({
   basePrice,
-  currentPrice,
+  _currentPrice,
   onPriceChange,
   defaultTier = 'recommended',
   disabled = false,

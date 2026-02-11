@@ -4,7 +4,6 @@
  * Displays individual stay periods in a table format.
  * Shows: Week #, Period, Status, Review Action
  */
-import React from 'react';
 import { Calendar, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatStayPeriod, getStayStatusClass } from '../formatters.js';
 

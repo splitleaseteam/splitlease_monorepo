@@ -9,7 +9,7 @@
  * - Public View: User viewing someone else's profile (read-only)
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import { ToastProvider } from '../../shared/Toast.jsx';
@@ -239,7 +239,7 @@ export default function AccountProfilePage() {
         <EditPhoneNumberModal
           isOpen={logic.showPhoneEditModal}
           currentPhoneNumber={logic.profileData?.phone_number || ''}
-          onSave={async (newPhone) => {
+          onSave={async (_newPhone) => {
             // Phone save is handled by the modal
             logic.handleClosePhoneEditModal();
           }}

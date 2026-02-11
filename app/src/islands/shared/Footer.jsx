@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { SIGNUP_LOGIN_URL, SEARCH_URL } from '../../lib/constants.js';
-import { supabase } from '../../lib/supabase.js';
 import { useAuthenticatedUser } from '../../hooks/useAuthenticatedUser.js';
 import { normalizeUserType, NORMALIZED_USER_TYPES } from './LoggedInAvatar/useLoggedInAvatarData.js';
 import CreateDuplicateListingModal from './CreateDuplicateListingModal/CreateDuplicateListingModal.jsx';

@@ -5,7 +5,6 @@
  * Shows email, phone, gov ID, and LinkedIn verification status.
  */
 
-import React from 'react';
 import ProfileCard from '../shared/ProfileCard.jsx';
 import { Mail, Phone, ShieldCheck, Linkedin, CheckCircle } from 'lucide-react';
 

@@ -282,7 +282,7 @@ function generatePreviewHtml(templateJson, placeholderValues) {
     });
 
     return preview;
-  } catch (error) {
+  } catch (_error) {
     return `<p style="color: #dc2626; padding: 20px;">Error extracting template preview.</p>`;
   }
 }

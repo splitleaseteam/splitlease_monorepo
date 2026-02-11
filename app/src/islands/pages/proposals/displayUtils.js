@@ -345,7 +345,7 @@ export function generateGuestNarrativeText(proposal) {
 
   // Parse if string
   if (typeof daysSelected === 'string') {
-    try { daysSelected = JSON.parse(daysSelected); } catch (e) { daysSelected = []; }
+    try { daysSelected = JSON.parse(daysSelected); } catch (_e) { daysSelected = []; }
   }
 
   const nightsPerWeek = Array.isArray(daysSelected) ? daysSelected.length : 0;

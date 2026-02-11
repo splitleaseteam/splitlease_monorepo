@@ -193,7 +193,7 @@ describe('Bidding Compensation - Integration Tests', () => {
       // Simulate a bidding session where each bid is 10% above previous
       const bids = [1000, 1100, 1210, 1331]; // 10% increments
 
-      bids.forEach((bid, index) => {
+      bids.forEach((bid, _index) => {
         const comp = calcComp({ winningBid: bid });
         const expected = bid * 0.25;
 

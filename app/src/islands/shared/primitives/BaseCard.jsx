@@ -8,7 +8,6 @@
  * @example <BaseCard as="section">Section card</BaseCard>
  */
 
-import React from 'react';
 
 const cardStyle = {
   background: 'var(--bg-white, #ffffff)',

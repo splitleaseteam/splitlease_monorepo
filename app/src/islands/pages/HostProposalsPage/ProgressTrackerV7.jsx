@@ -10,7 +10,6 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import React from 'react';
 import { getStatusConfig, isCompletedStatus } from '../../../logic/constants/proposalStatuses.js';
 
 /**

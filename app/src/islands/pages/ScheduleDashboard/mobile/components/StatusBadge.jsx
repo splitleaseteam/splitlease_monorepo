@@ -4,7 +4,6 @@
  * Visual status indicator badge.
  */
 
-import React from 'react';
 
 /**
  * Status configuration with labels and icons

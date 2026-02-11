@@ -144,7 +144,7 @@ async function transitionSLProposalsOnRentalAppSubmit(userId) {
   }
 }
 
-export function useRentalApplicationWizardLogic({ onClose, onSuccess, applicationStatus = 'not_started', userProfileData = null }) {
+export function useRentalApplicationWizardLogic({ _onClose, onSuccess, applicationStatus = 'not_started', userProfileData = null }) {
   // ============================================================================
   // USER IDENTIFICATION (required for user-scoped localStorage)
   // ============================================================================

@@ -17,7 +17,7 @@ export default function ThreadSidebar({
   threads,
   selectedThreadId,
   onThreadSelect,
-  onAction,
+  _onAction,
   className = ''
 }) {
   return (

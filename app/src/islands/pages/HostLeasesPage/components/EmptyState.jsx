@@ -3,7 +3,6 @@
  *
  * Displays when there are no leases for the selected listing.
  */
-import React from 'react';
 import { FileText } from 'lucide-react';
 
 /**

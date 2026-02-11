@@ -10,7 +10,7 @@
  * @module pages/SimulationHostsideDemoPage/components/StepButton
  */
 
-import { CheckCircle, Loader2, Circle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 
 /**
  * StepButton component

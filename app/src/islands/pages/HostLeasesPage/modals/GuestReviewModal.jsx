@@ -3,7 +3,7 @@
  *
  * Modal for hosts to submit reviews for guests after completed stays.
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { formatStayPeriod } from '../formatters.js';
 

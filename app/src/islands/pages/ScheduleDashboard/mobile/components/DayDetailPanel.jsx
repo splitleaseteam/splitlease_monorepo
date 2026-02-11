@@ -11,7 +11,7 @@
  * - Predictable behavior (simple state: selectedDay or null)
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 
 /**

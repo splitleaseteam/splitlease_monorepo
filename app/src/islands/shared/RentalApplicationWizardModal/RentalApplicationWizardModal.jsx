@@ -5,7 +5,7 @@
  * 7 steps with clickable navigation, auto-save, and file upload support.
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { X, FileText, Save } from 'lucide-react';
 import { useRentalApplicationWizardLogic } from './useRentalApplicationWizardLogic.js';
 import StepIndicator from './StepIndicator.jsx';

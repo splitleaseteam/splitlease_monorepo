@@ -1,4 +1,3 @@
-import React from 'react'
 import './DeletePhotoModal.css'
 
 const DeletePhotoModal = ({ photoName, onConfirm, onCancel }) => {

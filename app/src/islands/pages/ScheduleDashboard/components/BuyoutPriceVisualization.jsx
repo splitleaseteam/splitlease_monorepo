@@ -12,7 +12,7 @@
  * Updates live as user adjusts formula settings.
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 // ============================================================================

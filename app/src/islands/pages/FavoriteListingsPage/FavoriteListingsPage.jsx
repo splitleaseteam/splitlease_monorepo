@@ -11,14 +11,13 @@ import GoogleMap from '../../shared/GoogleMap.jsx';
 import ContactHostMessaging from '../../shared/ContactHostMessaging.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
 import LoggedInAvatar from '../../shared/LoggedInAvatar/LoggedInAvatar.jsx';
-import FavoriteButton from '../../shared/FavoriteButton/FavoriteButton.jsx';
 import CreateProposalFlowV2, { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
 import ProposalSuccessModal from '../../modals/ProposalSuccessModal.jsx';
 import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
 import EmptyState from './components/EmptyState';
 import FavoritesCardV2 from './components/FavoritesCardV2.jsx';
 import FavoritesCardV3 from './components/FavoritesCardV3.jsx';
-import { getFavoritedListingIds, removeFromFavorites } from './favoritesApi';
+import { getFavoritedListingIds } from './favoritesApi';
 
 /**
  * CARD VERSION TOGGLE
@@ -37,7 +36,6 @@ import { fetchPhotoUrls, extractPhotos, fetchHostData, parseAmenities } from '..
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
 import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
 import { shiftMoveInDateIfPast } from '../../../logic/calculators/scheduling/shiftMoveInDateIfPast.js';
-import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { isHost } from '../../../logic/rules/users/isHost.js';
 import './FavoriteListingsPage.css';

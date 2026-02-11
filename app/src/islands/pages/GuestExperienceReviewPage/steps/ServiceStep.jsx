@@ -2,7 +2,6 @@
  * ServiceStep - Step 7: What stood out about the service
  */
 
-import React from 'react';
 
 export default function ServiceStep({ formData, updateField }) {
   return (

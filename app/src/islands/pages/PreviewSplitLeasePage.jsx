@@ -28,7 +28,7 @@ import {
   getBlockedDatesList,
   calculateNightsFromDays
 } from '../../lib/availabilityValidation.js';
-import { DAY_ABBREVIATIONS, DEFAULTS, COLORS, SCHEDULE_PATTERNS } from '../../lib/constants.js';
+import { DAY_ABBREVIATIONS, DEFAULTS, COLORS } from '../../lib/constants.js';
 import { createDay } from '../../lib/scheduleSelector/dayHelpers.js';
 import '../../styles/listing-schedule-selector.css';
 

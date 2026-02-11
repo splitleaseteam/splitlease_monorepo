@@ -41,10 +41,10 @@ export function NarrativeProposalBody({ proposal, handlers = {}, onViewProfile }
 
         {/* Schedule paragraph */}
         <p className="hp7-narrative-paragraph">
-          {schedule.text.split(schedule.dayRangeText).map((part, i, arr) => (
+          {schedule.text.split(schedule.dayRangeText).map((part, i, _arr) => (
             <React.Fragment key={i}>
               {i > 0 && <strong>{schedule.dayRangeText}</strong>}
-              {part.split(`${schedule.nightsPerWeek} nights per week`).map((subpart, j, subarr) => (
+              {part.split(`${schedule.nightsPerWeek} nights per week`).map((subpart, j, _subarr) => (
                 <React.Fragment key={j}>
                   {j > 0 && <strong>{schedule.nightsPerWeek} nights per week</strong>}
                   {subpart}

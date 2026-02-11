@@ -5,7 +5,7 @@
  * Shows menu or active section based on navigation state.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import SettingsMenu from './SettingsMenu.jsx';
 import PricingSection from './PricingSection.jsx';
 import SharingSection from './SharingSection.jsx';

@@ -8,7 +8,6 @@
  * @param {object} props.proposal - The proposal data from the Edge Function
  * @param {boolean} props.isLoading - Loading state
  */
-import React from 'react';
 
 export function ProposalCard({ proposal, isLoading }) {
   if (isLoading) {

@@ -5,7 +5,7 @@
  * (Day 2 of simulation continues numbering from Day 1).
  */
 
-export default function StepIndicator({ currentStep, stepStatuses }) {
+export default function StepIndicator({ _currentStep, stepStatuses }) {
   const steps = [
     { id: 'A', number: 7, label: 'Lease Signed' },
     { id: 'B', number: 8, label: 'House Manual' },

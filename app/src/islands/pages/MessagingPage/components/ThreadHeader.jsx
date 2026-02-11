@@ -8,7 +8,7 @@
  * On mobile, shows a back button to return to the thread list.
  */
 
-import { getVirtualMeetingState, getVMButtonText, getVMStateInfo, VM_STATES } from '../../../../logic/rules/proposals/virtualMeetingRules.js';
+import { getVirtualMeetingState, getVMStateInfo, VM_STATES } from '../../../../logic/rules/proposals/virtualMeetingRules.js';
 
 export default function ThreadHeader({
   info,

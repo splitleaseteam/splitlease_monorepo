@@ -3,7 +3,7 @@
  * Displays savings amount and percentage
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { formatCurrency } from '../../../lib/formatters';
 
 /**
