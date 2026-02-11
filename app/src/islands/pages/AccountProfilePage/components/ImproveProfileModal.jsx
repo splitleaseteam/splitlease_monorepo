@@ -54,7 +54,7 @@ export default function ImproveProfileModal({
             ))}
           </div>
         ) : (
-          <p className="referral-modal-subtitle">You're all set. No new suggestions right now.</p>
+          <p className="referral-modal-subtitle">You&apos;re all set. No new suggestions right now.</p>
         )}
       </div>
     </div>

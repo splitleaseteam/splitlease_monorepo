@@ -230,7 +230,7 @@ const ImportListingReviewsModal = ({
               </svg>
             </div>
             <p className="import-listing-info-text">
-              Our team will review your request and import your reviews within 24-48 hours. You'll receive an email confirmation once complete.
+              Our team will review your request and import your reviews within 24-48 hours. You&apos;ll receive an email confirmation once complete.
             </p>
           </div>
 

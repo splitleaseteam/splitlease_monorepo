@@ -153,7 +153,7 @@ export const calculateFeeBreakdown = (basePrice, transactionType = 'date_change'
 
     const platformFee = basePrice * FEE_RATES.PLATFORM_RATE;
     const landlordShare = basePrice * FEE_RATES.LANDLORD_RATE;
-    let totalFee = platformFee + landlordShare;
+    const totalFee = platformFee + landlordShare;
 
     // Round to 2 decimal places
     const roundedPlatformFee = Math.round(platformFee * 100) / 100;

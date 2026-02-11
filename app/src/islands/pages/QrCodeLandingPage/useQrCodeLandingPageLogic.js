@@ -8,6 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 
 /**
@@ -18,48 +19,39 @@ import { supabase } from '../../../lib/supabase.js';
  */
 export function useQrCodeLandingPageLogic(qrCodeId) {
   const [qrCodeData, setQrCodeData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [notificationStatus, setNotificationStatus] = useState(null);
 
-  useEffect(() => {
-    async function fetchAndRecordScan() {
-      try {
-        setLoading(true);
-        setError(null);
+  const { isLoading: loading, error: fetchError, execute: executeFetchAndRecordScan } = useAsyncOperation(
+    async (id) => {
+      // Call Edge Function to get QR code data AND record the scan
+      // This single call handles both data retrieval and notification triggering
+      const { data, error: invokeError } = await supabase.functions.invoke('qr-codes', {
+        body: {
+          action: 'record_scan',
+          payload: { qrCodeId: id },
+        },
+      });
 
-        // Call Edge Function to get QR code data AND record the scan
-        // This single call handles both data retrieval and notification triggering
-        const { data, error: fetchError } = await supabase.functions.invoke('qr-codes', {
-          body: {
-            action: 'record_scan',
-            payload: { qrCodeId },
-          },
-        });
-
-        if (fetchError) {
-          throw new Error(fetchError.message || 'Failed to load QR code data');
-        }
-
-        if (!data?.success) {
-          throw new Error(data?.error || 'QR code not found');
-        }
-
-        setQrCodeData(data.data.qrCode);
-        setNotificationStatus(data.data.notificationsSent);
-
-      } catch (err) {
-        console.error('[QR Code Landing] Fetch error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (invokeError) {
+        throw new Error(invokeError.message || 'Failed to load QR code data');
       }
-    }
 
-    if (qrCodeId) {
-      fetchAndRecordScan();
+      if (!data?.success) {
+        throw new Error(data?.error || 'QR code not found');
+      }
+
+      setQrCodeData(data.data.qrCode);
+      setNotificationStatus(data.data.notificationsSent);
     }
-  }, [qrCodeId]);
+  );
+
+  useEffect(() => {
+    if (qrCodeId) {
+      executeFetchAndRecordScan(qrCodeId).catch((err) => {
+        console.error('[QR Code Landing] Fetch error:', err);
+      });
+    }
+  }, [qrCodeId, executeFetchAndRecordScan]);
 
   /**
    * Handler for viewing full house manual
@@ -74,7 +66,7 @@ export function useQrCodeLandingPageLogic(qrCodeId) {
   return {
     qrCodeData,
     loading,
-    error,
+    error: fetchError?.message ?? null,
     notificationStatus,
     handleViewHouseManual,
     hasVisit: Boolean(qrCodeData?.visitId),

@@ -26,7 +26,7 @@ function SwipeableExampleCard({ name, avatarUrl, pattern, review, activeDays }) 
         </div>
         <div className="example-content-wrapper">
           <p className="example-pattern">{pattern}</p>
-          <p className="example-review">"{review}"</p>
+          <p className="example-review">&quot;{review}&quot;</p>
         </div>
         <div className="example-timeline">
           {[0, 1, 2, 3, 4, 5, 6].map(day => (
@@ -78,7 +78,7 @@ function SwipeableExampleCard({ name, avatarUrl, pattern, review, activeDays }) 
             <div className="example-name">{name}</div>
           </div>
           <div className="review-content">
-            <p className="example-review-text">"{review}"</p>
+            <p className="example-review-text">&quot;{review}&quot;</p>
           </div>
           <div className="swipe-hint back">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -201,15 +201,15 @@ export default function CareersPage() {
         <div className="hero-container">
           <div className="hero-badge">
             <i data-feather="zap"></i>
-            <span>WE'RE HIRING</span>
+            <span>WE&apos;RE HIRING</span>
           </div>
           <h1 className="hero-title">
             Split Lease Careers<br />
             <span className="highlight">Start Here</span>
           </h1>
           <p className="hero-subtitle">
-            We're building a market network for multilocal living.<br /><br />
-            At Split Lease, we enable flexible part-time rentals with split schedules — empowering people to live in multiple cities, without paying for days they don't use.
+            We&apos;re building a market network for multilocal living.<br /><br />
+            At Split Lease, we enable flexible part-time rentals with split schedules — empowering people to live in multiple cities, without paying for days they don&apos;t use.
           </p>
           <div className="hero-cta">
             <a href="#roles" className="cta-primary">
@@ -257,10 +257,10 @@ export default function CareersPage() {
               <div className="section-label">MISSION</div>
               <h2 className="section-title">Helping People Live Multilocally</h2>
               <p className="section-description">
-                We're creating a new category where flexibility meets affordability in housing.
+                We&apos;re creating a new category where flexibility meets affordability in housing.
               </p>
               <p className="section-description">
-                Split Lease enables alternating arrangements where multiple guests use the same space on different days. You only pay for the nights you need — whether that's 3 days a week or 5. No traditional lease, no wasted rent, just flexible access.
+                Split Lease enables alternating arrangements where multiple guests use the same space on different days. You only pay for the nights you need — whether that&apos;s 3 days a week or 5. No traditional lease, no wasted rent, just flexible access.
               </p>
               <div className="section-links">
                 <a href="#" className="section-link" onClick={(e) => { e.preventDefault(); openGameModal(); }}>
@@ -287,14 +287,14 @@ export default function CareersPage() {
               <div className="section-label">COMPANY</div>
               <h2 className="section-title">How We Got Here</h2>
               <p className="section-description">
-                We started by testing one atomic network — an anchor listing, a hot deal, and active hosts. Today we're scaling that model to create a new category: multilocal living.
+                We started by testing one atomic network — an anchor listing, a hot deal, and active hosts. Today we&apos;re scaling that model to create a new category: multilocal living.
               </p>
             </div>
 
             <div className="video-links">
               <a href="#" className="section-link">
                 <i data-feather="edit-3" style={{width: '18px', height: '18px'}}></i>
-                <span>What it's like to work here — Read Michelle's take</span>
+                <span>What it&apos;s like to work here — Read Michelle&apos;s take</span>
                 <i data-feather="arrow-right"></i>
               </a>
             </div>
@@ -350,7 +350,7 @@ export default function CareersPage() {
               <div className="value-icon">
                 <i data-feather="globe"></i>
               </div>
-              <h3 className="value-title">Build what's needed</h3>
+              <h3 className="value-title">Build what&apos;s needed</h3>
               <p className="value-description">No skyscrapers in small towns — we stay balanced.</p>
             </div>
             <div className="value-item">
@@ -375,12 +375,12 @@ export default function CareersPage() {
       <section className="content-section" style={{background: 'white'}}>
         <div className="section-container">
           <div className="section-header">
-            <div className="section-label">WHY WE'LL WIN</div>
+            <div className="section-label">WHY WE&apos;LL WIN</div>
             <h2 className="section-title">Built for the Future</h2>
             <p className="section-description">
               The world is changing fast — and so are the ways people live.<br /><br />
-              We're combining pretotyping, AI, and insights from consumer behavior research to design products that meet real human needs.<br /><br />
-              When flexibility becomes the new normal, we'll be ready.
+              We&apos;re combining pretotyping, AI, and insights from consumer behavior research to design products that meet real human needs.<br /><br />
+              When flexibility becomes the new normal, we&apos;ll be ready.
             </p>
           </div>
         </div>
@@ -429,10 +429,10 @@ export default function CareersPage() {
       <section className="content-section" style={{background: 'white'}}>
         <div className="section-container">
           <div className="section-header">
-            <div className="section-label">WHAT'S INSIDE</div>
-            <h2 className="section-title">We're Not Just Building a Company</h2>
+            <div className="section-label">WHAT&apos;S INSIDE</div>
+            <h2 className="section-title">We&apos;re Not Just Building a Company</h2>
             <p className="section-description">
-              We're building a learning engine.
+              We&apos;re building a learning engine.
             </p>
           </div>
           <div className="resources-list">
@@ -483,7 +483,7 @@ export default function CareersPage() {
             <div className="section-label">RESOURCES</div>
             <h2 className="section-title">Learn With Us</h2>
             <p className="section-description">
-              Whether you're joining our team or just curious about the future of housing, these resources will help you understand our industry and approach to building great products.
+              Whether you&apos;re joining our team or just curious about the future of housing, these resources will help you understand our industry and approach to building great products.
             </p>
           </div>
           <div className="resources-grid" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginTop: '40px'}}>
@@ -514,7 +514,7 @@ export default function CareersPage() {
                 What is a MultiLocal?
               </h3>
               <p style={{fontSize: '15px', lineHeight: '1.6', color: '#6b7280', marginBottom: '16px', flex: '1'}}>
-                An introduction to multilocal living — what it means, who it's for, and the market insights driving this emerging lifestyle trend.
+                An introduction to multilocal living — what it means, who it&apos;s for, and the market insights driving this emerging lifestyle trend.
               </p>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: '#6366f1', fontSize: '14px', fontWeight: '500'}}>
                 <span>Download PDF</span>
@@ -567,7 +567,7 @@ export default function CareersPage() {
             <div className="section-label">OPEN ROLES</div>
             <h2 className="section-title">Join Our Team</h2>
             <p className="section-description">
-              We're looking for talented individuals to help us build the future of flexible living.
+              We&apos;re looking for talented individuals to help us build the future of flexible living.
             </p>
           </div>
 
@@ -593,7 +593,7 @@ export default function CareersPage() {
                 </button>
               </div>
               <p className="role-description">
-                We're seeking a highly organized and proactive Executive Assistant to support our leadership team. You'll be the operational backbone, managing schedules, coordinating projects, and ensuring smooth day-to-day operations across our remote team.
+                We&apos;re seeking a highly organized and proactive Executive Assistant to support our leadership team. You&apos;ll be the operational backbone, managing schedules, coordinating projects, and ensuring smooth day-to-day operations across our remote team.
               </p>
             </div>
           </div>

@@ -103,7 +103,7 @@ function SimulationComplete({ onReset }) {
           <li>✓ Marked yourself as a usability tester</li>
           <li>✓ Received 3 proposals from simulated guests</li>
           <li>✓ Mariska accepted your VM invitation</li>
-          <li>✓ Drafted lease documents for Mariska's proposal</li>
+          <li>✓ Drafted lease documents for Mariska&apos;s proposal</li>
           <li>✓ Received a VM invite from Jacques</li>
         </ul>
       </div>

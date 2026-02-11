@@ -599,7 +599,7 @@ export function useHeaderMessagingPanelLogic({
       // Compute visibility-aware message previews
       // The static ~Last Message field doesn't consider visibility, so we fetch
       // the most recent message visible to the current user for each thread
-      let visiblePreviewMap = {};
+      const visiblePreviewMap = {};
       if (threadIds.length > 0) {
         // Build a map of thread -> user role (host or guest)
         const threadRoles = {};

@@ -862,7 +862,7 @@ export default function BuyOutPanel({
           </span>
           <h3 className="buyout-panel__success-title">Share Request Sent!</h3>
           <p className="buyout-panel__success-text">
-            Waiting for {counterpartyLabel}'s response. If accepted, you'll both have access to this night.
+            Waiting for {counterpartyLabel}&apos;s response. If accepted, you&apos;ll both have access to this night.
           </p>
           <button
             type="button"
@@ -1052,7 +1052,7 @@ export default function BuyOutPanel({
               {/* Feedback Detail (Layer 3) */}
               {showFeedbackDetail && offerFeedback && (
                 <div className="buyout-panel__feedback-detail">
-                   <p>Based on {resolvedCoTenantName}'s pricing preferences and current demand.</p>
+                   <p>Based on {resolvedCoTenantName}&apos;s pricing preferences and current demand.</p>
                    {flexibilityContext.delta !== 0 && myFlexibilityScore && roommateFlexibilityScore && (
                      <p className="buyout-panel__flexibility-comparison">
                        Flexibility: You ({myFlexibilityScore}/10) vs {resolvedCoTenantName} ({roommateFlexibilityScore}/10)

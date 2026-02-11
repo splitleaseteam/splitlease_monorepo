@@ -272,7 +272,7 @@ export async function fetchListingComplete(listingId) {
     // 9. Reviews
     // NOTE: reviews_json column was removed from listing table (doesn't exist in DB).
     // Review fetching is now handled separately if needed via the mainreview table.
-    let reviewsData = [];
+    const reviewsData = [];
 
     // 10. Extract coordinates from map_pin_offset_address_json JSONB field
     // Fallback to address_with_lat_lng_json if offset is not available

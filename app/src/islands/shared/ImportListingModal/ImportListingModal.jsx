@@ -242,7 +242,7 @@ const ImportListingModal = ({
                 <AlertCircleIcon />
               </div>
               <p className="import-listing-info-text">
-                We'll import photos, description, and amenities. You can edit everything after import.
+                We&apos;ll import photos, description, and amenities. You can edit everything after import.
               </p>
             </div>
           </form>

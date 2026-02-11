@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { FileText, Plus, Trash2, DollarSign, MoreHorizontal, Calendar, Moon, Home } from 'lucide-react';
+import { formatCurrency as _formatCurrency } from '../../../../lib/formatting/formatCurrency.js';
 
 export default function ProposalsSection({
   currentProposals,
@@ -40,13 +41,7 @@ export default function ProposalsSection({
     });
   }
 
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(amount || 0);
-  }
+  const formatCurrency = (amount) => _formatCurrency(amount || 0);
 
   function ProposalCard({ proposal, type }) {
     const listing = proposal.listing || {};

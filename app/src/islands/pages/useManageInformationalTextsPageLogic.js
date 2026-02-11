@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { useToast } from '../shared/Toast';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
 
 /**
  * useManageInformationalTextsPageLogic - Logic hook for Manage Informational Texts Page
@@ -35,8 +36,6 @@ export default function useManageInformationalTextsPageLogic() {
 
   // ===== ENTRIES STATE =====
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // ===== FORM STATE =====
   const [mode, setMode] = useState('list'); // 'list' | 'create' | 'edit'
@@ -49,6 +48,19 @@ export default function useManageInformationalTextsPageLogic() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'desktopPlus' | 'ipad' | 'mobile'
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // ===== ASYNC OPERATIONS =====
+  const {
+    isLoading: loading,
+    error: loadEntriesError,
+    execute: executeLoadEntries,
+  } = useAsyncOperation(async () => {
+    const data = await callEdgeFunction('list', { limit: 500 });
+    setEntries(data.entries || []);
+  });
+
+  // Expose error as string for backward compatibility
+  const error = loadEntriesError?.message || null;
 
   // Filtered entries based on search
   const filteredEntries = useMemo(() => {
@@ -108,20 +120,11 @@ export default function useManageInformationalTextsPageLogic() {
   /**
    * Fetch all entries from the Edge Function
    */
-  async function loadEntries() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await callEdgeFunction('list', { limit: 500 });
-      setEntries(data.entries || []);
-    } catch (err) {
+  function loadEntries() {
+    executeLoadEntries().catch((err) => {
       console.error('[useManageInformationalTextsPageLogic] Error loading entries:', err);
-      setError(err.message || 'Failed to load entries');
       showToast(err.message || 'Failed to load entries', 'error');
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   /**

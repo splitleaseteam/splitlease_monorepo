@@ -1101,7 +1101,7 @@ function ContactForm({ email, phone, onEmailChange, onPhoneChange }) {
       </div>
 
       <p className="contact-disclaimer">
-        We'll send your personalized market research report to this email address.
+        We&apos;ll send your personalized market research report to this email address.
       </p>
     </div>
   );
@@ -1160,7 +1160,7 @@ function FinalMessage({ message, isAsync = false }) {
       <p className="final-message">{message}</p>
       {isAsync ? (
         <p className="final-sub-message">
-          We're analyzing your preferences in the background. Your personalized market research report will be ready by tomorrow morning!
+          We&apos;re analyzing your preferences in the background. Your personalized market research report will be ready by tomorrow morning!
         </p>
       ) : (
         <p className="final-sub-message">

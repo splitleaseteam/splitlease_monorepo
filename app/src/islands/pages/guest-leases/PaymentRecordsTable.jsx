@@ -5,18 +5,10 @@
  */
 
 import { Download, CheckCircle, Clock } from 'lucide-react';
+import { formatCurrency as _formatCurrency } from '../../../lib/formatting/formatCurrency.js';
 import './PaymentRecordsTable.css';
 
-/**
- * Format currency for display
- */
-function formatCurrency(amount) {
-  if (amount === null || amount === undefined) return '$0.00';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount);
-}
+const formatCurrency = (amount) => _formatCurrency(amount, { showCents: true });
 
 /**
  * Format date for display

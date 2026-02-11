@@ -206,7 +206,7 @@ export default function ProposalSuccessModal({
         {!hasSubmittedRentalApp && (
           <div style={styles.infoBox}>
             <h4 style={styles.infoTitle}>
-              What's Next?
+              What&apos;s Next?
             </h4>
             <p style={styles.infoText}>
               Complete your rental application to increase your chances of approval.
@@ -219,7 +219,7 @@ export default function ProposalSuccessModal({
         {hasSubmittedRentalApp && (
           <div style={styles.infoBox}>
             <h4 style={styles.infoTitle}>
-              What's Next?
+              What&apos;s Next?
             </h4>
             <p style={styles.infoText}>
               Your rental application is already on file. The host will review your proposal and get back to you soon.

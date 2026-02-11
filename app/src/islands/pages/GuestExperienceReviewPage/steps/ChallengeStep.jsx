@@ -12,7 +12,7 @@ export default function ChallengeStep({ formData, updateField }) {
       </h2>
 
       <p className="step-helper">
-        We'd love to understand the problems you were facing before finding us.
+        We&apos;d love to understand the problems you were facing before finding us.
       </p>
 
       <textarea

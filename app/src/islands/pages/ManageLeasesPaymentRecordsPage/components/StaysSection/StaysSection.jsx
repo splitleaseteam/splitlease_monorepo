@@ -61,7 +61,7 @@ export default function StaysSection({
           <Calendar size={32} />
           <p>No stays have been created for this lease</p>
           <p style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-            Click "Create Stays" to generate stays from the lease dates
+            Click &quot;Create Stays&quot; to generate stays from the lease dates
           </p>
         </div>
       ) : (

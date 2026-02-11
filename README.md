@@ -52,7 +52,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 | Shared Components | 50+ |
 | Edge Functions | 67 |
 | Database Tables | 93+ |
-| Logic Functions | 57 |
+| Logic Functions | 277 |
 
 ---
 
@@ -67,7 +67,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 +---------------------------------------------------------------+
 |                                                                |
 |  public/*.html  -->  src/*.jsx (entry)  -->  islands/pages/   |
-|  (29 HTML files)     (mount React)          (page components) |
+|  (85 HTML files)     (mount React)          (page components) |
 |                                                                |
 |  src/logic/  ------------------------------------------        |
 |  +-- calculators/   (pure math: calculate*, get*)              |
@@ -130,7 +130,7 @@ See `app/src/CLAUDE.md` for detailed pattern documentation including Islands Arc
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/splitleasesharath/splitlease.git
+git clone https://github.com/splitleaseteam/splitlease.git
 cd splitlease
 
 # 2. Install dependencies
@@ -175,13 +175,13 @@ supabase migration new <name>  # Create new migration
 Split Lease/
 +-- app/                              # React frontend application
 |   +-- public/                       # Static HTML pages and assets
-|   |   +-- *.html                    # 29 HTML entry points
+|   |   +-- *.html                    # 83 HTML entry points
 |   |   +-- assets/                   # Fonts, icons, images, lotties, videos
 |   |   +-- _redirects                # Generated Cloudflare routing rules
 |   |   +-- _headers                  # HTTP header configuration
 |   |   +-- _routes.json              # Cloudflare Functions routing
 |   +-- src/
-|   |   +-- *.jsx                     # 29 entry point files
+|   |   +-- *.jsx                     # 83 entry point files
 |   |   +-- islands/
 |   |   |   +-- pages/                # Page components (25+)
 |   |   |   +-- modals/               # Modal components (17+)

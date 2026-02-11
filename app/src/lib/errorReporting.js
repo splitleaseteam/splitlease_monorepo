@@ -201,7 +201,7 @@ export class ErrorBoundary extends React.Component {
       return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
           <h2>Something went wrong</h2>
-          <p>We've been notified and will fix this soon.</p>
+          <p>We&apos;ve been notified and will fix this soon.</p>
           <button onClick={() => window.location.reload()}>
             Reload Page
           </button>

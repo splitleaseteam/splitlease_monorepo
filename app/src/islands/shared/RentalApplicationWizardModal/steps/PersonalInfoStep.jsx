@@ -17,7 +17,7 @@ export default function PersonalInfoStep({
   return (
     <div className="wizard-step personal-info-step">
       <p className="wizard-step__intro">
-        Let's start with some basic information about you.
+        Let&apos;s start with some basic information about you.
       </p>
 
       <div className="wizard-form-group">

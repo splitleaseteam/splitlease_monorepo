@@ -379,7 +379,7 @@ function SupportSection() {
       <div className="support-section-alt-container">
         <div className="support-section-alt-header">
           <p className="support-section-alt-eyebrow">Need Help?</p>
-          <h2>We're here for you</h2>
+          <h2>We&apos;re here for you</h2>
         </div>
         <div className="support-section-alt-grid">
           {supportOptions.map((option, index) => (

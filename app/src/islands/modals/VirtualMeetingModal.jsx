@@ -12,6 +12,7 @@
 
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase.js';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
 
 export default function VirtualMeetingModal({
   proposal,
@@ -21,7 +22,6 @@ export default function VirtualMeetingModal({
   onClose,
   onSuccess
 }) {
-  const [loading, setLoading] = useState(false);
   const [bookedDate, setBookedDate] = useState('');
   const [bookedTime, setBookedTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -29,15 +29,9 @@ export default function VirtualMeetingModal({
   // Determine if user is suggesting alternative time
   const isSuggestingAlternative = view === 'alternative';
 
-  // Handle request submission (guest or host requesting meeting)
-  async function handleSubmitRequest() {
-    if (!bookedDate || !bookedTime) {
-      window.showToast?.({ title: 'Warning', content: 'Please select a date and time', type: 'warning' });
-      return;
-    }
-
-    setLoading(true);
-    try {
+  // Async operation hooks for each handler
+  const { isLoading: submitting, execute: executeSubmit } = useAsyncOperation(
+    async () => {
       const bookedDateTime = new Date(`${bookedDate}T${bookedTime}`).toISOString();
 
       if (virtualMeeting) {
@@ -82,22 +76,11 @@ export default function VirtualMeetingModal({
 
         if (updateError) throw updateError;
       }
-
-      window.showToast?.({ title: 'Success', content: 'Virtual meeting request sent!', type: 'success' });
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Error submitting VM request:', error);
-      window.showToast?.({ title: 'Error', content: 'Failed to submit request. Please try again.', type: 'error' });
-    } finally {
-      setLoading(false);
     }
-  }
+  );
 
-  // Handle accepting a meeting request
-  async function handleAcceptRequest() {
-    setLoading(true);
-    try {
+  const { isLoading: accepting, execute: executeAccept } = useAsyncOperation(
+    async () => {
       const { error } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .update({
@@ -108,22 +91,11 @@ export default function VirtualMeetingModal({
         .eq('_id', virtualMeeting._id);
 
       if (error) throw error;
-
-      window.showToast?.({ title: 'Success', content: 'Meeting request accepted! Awaiting Split Lease confirmation.', type: 'success' });
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Error accepting VM:', error);
-      window.showToast?.({ title: 'Error', content: 'Failed to accept request. Please try again.', type: 'error' });
-    } finally {
-      setLoading(false);
     }
-  }
+  );
 
-  // Handle declining a meeting request
-  async function handleDeclineRequest() {
-    setLoading(true);
-    try {
+  const { isLoading: declining, execute: executeDecline } = useAsyncOperation(
+    async () => {
       const { error } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .update({
@@ -133,22 +105,11 @@ export default function VirtualMeetingModal({
         .eq('_id', virtualMeeting._id);
 
       if (error) throw error;
-
-      window.showToast?.({ title: 'Success', content: 'Meeting request declined. They can suggest a different time.', type: 'success' });
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Error declining VM:', error);
-      window.showToast?.({ title: 'Error', content: 'Failed to decline request. Please try again.', type: 'error' });
-    } finally {
-      setLoading(false);
     }
-  }
+  );
 
-  // Handle canceling an existing meeting
-  async function handleCancelMeeting() {
-    setLoading(true);
-    try {
+  const { isLoading: canceling, execute: executeCancel } = useAsyncOperation(
+    async () => {
       // Delete VM
       const { error: deleteError } = await supabase
         .from('virtualmeetingschedulesandlinks')
@@ -167,15 +128,66 @@ export default function VirtualMeetingModal({
         .eq('id', proposal.id || proposal._id);
 
       if (updateError) throw updateError;
+    }
+  );
 
+  // Combined loading state preserves the exact `loading` variable used in JSX
+  const loading = submitting || accepting || declining || canceling;
+
+  // Handle request submission (guest or host requesting meeting)
+  async function handleSubmitRequest() {
+    if (!bookedDate || !bookedTime) {
+      window.showToast?.({ title: 'Warning', content: 'Please select a date and time', type: 'warning' });
+      return;
+    }
+
+    try {
+      await executeSubmit();
+      window.showToast?.({ title: 'Success', content: 'Virtual meeting request sent!', type: 'success' });
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Error submitting VM request:', error);
+      window.showToast?.({ title: 'Error', content: 'Failed to submit request. Please try again.', type: 'error' });
+    }
+  }
+
+  // Handle accepting a meeting request
+  async function handleAcceptRequest() {
+    try {
+      await executeAccept();
+      window.showToast?.({ title: 'Success', content: 'Meeting request accepted! Awaiting Split Lease confirmation.', type: 'success' });
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Error accepting VM:', error);
+      window.showToast?.({ title: 'Error', content: 'Failed to accept request. Please try again.', type: 'error' });
+    }
+  }
+
+  // Handle declining a meeting request
+  async function handleDeclineRequest() {
+    try {
+      await executeDecline();
+      window.showToast?.({ title: 'Success', content: 'Meeting request declined. They can suggest a different time.', type: 'success' });
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Error declining VM:', error);
+      window.showToast?.({ title: 'Error', content: 'Failed to decline request. Please try again.', type: 'error' });
+    }
+  }
+
+  // Handle canceling an existing meeting
+  async function handleCancelMeeting() {
+    try {
+      await executeCancel();
       window.showToast?.({ title: 'Success', content: 'Virtual meeting cancelled.', type: 'success' });
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       console.error('Error canceling VM:', error);
       window.showToast?.({ title: 'Error', content: 'Failed to cancel meeting. Please try again.', type: 'error' });
-    } finally {
-      setLoading(false);
     }
   }
 

@@ -68,7 +68,7 @@ const MockEditPhoneNumberModal = ({ isOpen, currentPhone, onClose, onSave }) => 
             }}
           />
           <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#6b7280' }}>
-            We'll send a verification code to this number
+            We&apos;ll send a verification code to this number
           </p>
         </div>
 

@@ -142,7 +142,7 @@ export default function HelpCenterPage() {
           <div className="hc-search-results">
             <div className="hc-search-results-header">
               <h2>Search Results</h2>
-              <p>{searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"</p>
+              <p>{searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;</p>
             </div>
 
             {searchResults.length > 0 ? (
@@ -213,8 +213,8 @@ export default function HelpCenterPage() {
               <HelpCircle />
             </div>
             <div className="hc-info-box-content">
-              <p><strong>Still can't find what you're looking for?</strong></p>
-              <p>Contact our support team and we'll be happy to help you out. We typically respond within 24 hours.</p>
+              <p><strong>Still can&apos;t find what you&apos;re looking for?</strong></p>
+              <p>Contact our support team and we&apos;ll be happy to help you out. We typically respond within 24 hours.</p>
             </div>
           </a>
         )}
@@ -229,7 +229,7 @@ export default function HelpCenterPage() {
             </button>
 
             <h2 className="modal-title">Ask Us a Question</h2>
-            <p className="modal-subtitle">We'll get back to you as soon as possible</p>
+            <p className="modal-subtitle">We&apos;ll get back to you as soon as possible</p>
 
             {submitSuccess ? (
               <div className="success-message">

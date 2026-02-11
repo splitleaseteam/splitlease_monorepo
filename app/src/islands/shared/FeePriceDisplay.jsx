@@ -73,7 +73,7 @@ export default function FeePriceDisplay({ basePrice, transactionType = 'date_cha
                 <div className="price-row price-row-savings">
                     <div className="savings-content">
                         <TrendingDown size={16} />
-                        <span>You're saving {formatCurrency(breakdown.savingsVsTraditional)} vs. competitors</span>
+                        <span>You&apos;re saving {formatCurrency(breakdown.savingsVsTraditional)} vs. competitors</span>
                     </div>
                 </div>
             )}

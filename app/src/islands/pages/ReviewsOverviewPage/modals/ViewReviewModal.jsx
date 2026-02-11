@@ -106,7 +106,7 @@ export default function ViewReviewModal({ isOpen, review, onClose }) {
           {review.comment && (
             <div className="view-review-modal__comment">
               <h4>Written Review</h4>
-              <p>"{review.comment}"</p>
+              <p>&quot;{review.comment}&quot;</p>
             </div>
           )}
 

@@ -107,8 +107,8 @@ export default function NotInterestedModal({
         {/* Body */}
         <div className="protocol-body">
           <p className="not-interested-message">
-            We'll remove <strong>{listingName}</strong> from your suggestions.
-            If you'd like, let us know why it wasn't a good fit:
+            We&apos;ll remove <strong>{listingName}</strong> from your suggestions.
+            If you&apos;d like, let us know why it wasn&apos;t a good fit:
           </p>
 
           <label className="not-interested-label">

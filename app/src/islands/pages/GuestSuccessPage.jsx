@@ -104,7 +104,7 @@ function StoryCard({ story, index, onFindSplitLease }) {
             <p className="story-schedule">{story.schedule}</p>
           </div>
         </div>
-        <blockquote className="story-quote">"{story.quote}"</blockquote>
+        <blockquote className="story-quote">&quot;{story.quote}&quot;</blockquote>
         <p className="story-full">{story.fullStory}</p>
         <div className="story-meta">
           <span className="story-location">

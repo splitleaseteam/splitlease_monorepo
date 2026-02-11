@@ -13,6 +13,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase.js';
+import { formatCurrency as _formatCurrency } from '../../lib/formatting/formatCurrency.js';
 
 export default function ProposalDetailsModal({ proposal, listing, onClose }) {
   const [houseRules, setHouseRules] = useState([]);
@@ -87,15 +88,8 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
 
   const pricePerFourWeeks = nightlyPrice * nightsPerWeek * 4;
 
-  // Format currency
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount || 0);
-  }
+  // Format currency — uses canonical lib/formatting
+  const formatCurrency = (amount) => _formatCurrency(amount || 0, { showCents: true });
 
   // Format date
   function formatDate(date) {

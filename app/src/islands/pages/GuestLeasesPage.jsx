@@ -80,7 +80,7 @@ function EmptyState() {
         </svg>
       </div>
       <h2>No Leases Yet</h2>
-      <p>You don't have any active leases.</p>
+      <p>You don&apos;t have any active leases.</p>
       <p className="empty-subtext">
         Browse listings and submit a proposal to get started with your first rental.
       </p>
@@ -188,7 +188,7 @@ export default function GuestLeasesPage() {
             {user && (
               <div className="page-header">
                 <h1 className="page-title">
-                  {user.firstName}'s Leases
+                  {user.firstName}&apos;s Leases
                 </h1>
               </div>
             )}

@@ -101,7 +101,7 @@ export default function ListWithUsPage() {
             <div className="list-step-card">
               <div className="list-step-number">2</div>
               <h3 className="list-step-title">Rental Period & Pricing Strategy</h3>
-              <p className="list-step-description">Specify your preferred rental model: Nightly, Weekly, or Monthly. Set a competitive price reflecting your property's value.</p>
+              <p className="list-step-description">Specify your preferred rental model: Nightly, Weekly, or Monthly. Set a competitive price reflecting your property&apos;s value.</p>
             </div>
 
             <div className="list-step-card">
@@ -134,7 +134,7 @@ export default function ListWithUsPage() {
               </div>
               <div className="list-lease-separator"></div>
               <div className="list-lease-features">
-                <div className="list-lease-feature">Certain nights are designated for the Guest's use according to a standardized weekly pattern</div>
+                <div className="list-lease-feature">Certain nights are designated for the Guest&apos;s use according to a standardized weekly pattern</div>
                 <div className="list-lease-feature">You may lease unused nights for extra income or keep them</div>
                 <div className="list-lease-feature">You define $/night</div>
               </div>
@@ -148,7 +148,7 @@ export default function ListWithUsPage() {
               </div>
               <div className="list-lease-separator"></div>
               <div className="list-lease-features">
-                <div className="list-lease-feature">Certain weeks are designated for the Guest's use according to a standardized monthly pattern</div>
+                <div className="list-lease-feature">Certain weeks are designated for the Guest&apos;s use according to a standardized monthly pattern</div>
                 <div className="list-lease-feature">You may lease unused weeks for extra income or keep them</div>
                 <div className="list-lease-feature">You define $/wk</div>
               </div>
@@ -273,7 +273,7 @@ export default function ListWithUsPage() {
             <details className="pricing-details">
               <summary>How does Smart Pricing work?</summary>
               <div className="details-content">
-                We calculate a "decay curve" for your pricing. The first night is your full Base Rate.
+                We calculate a &quot;decay curve&quot; for your pricing. The first night is your full Base Rate.
                 Each consecutive night gets slightly cheaper based on your Discount setting.
                 This encourages guests to book longer blocks (like Mon-Fri) instead of just two nights,
                 maximizing your occupancy and reducing turnover effort.

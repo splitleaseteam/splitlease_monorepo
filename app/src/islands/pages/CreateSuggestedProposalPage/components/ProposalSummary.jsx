@@ -3,14 +3,10 @@
  */
 
 import { getDayName } from '../../../../lib/dayUtils.js';
+import { formatCurrency as _formatCurrency } from '../../../../lib/formatting/formatCurrency.js';
 import { getAddressString, getDefaultPhoto } from '../suggestedProposalService.js';
 
-function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount || 0);
-}
+const formatCurrency = (amount) => _formatCurrency(amount || 0, { showCents: true });
 
 export default function ProposalSummary({
   selectedListing,

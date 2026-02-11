@@ -381,7 +381,7 @@ export default function ProposalDetailsModal({
         <div className="modal-content">
           {/* Header */}
           <div className="modal-header">
-            <h2 className="modal-title">{guestName}'s Proposal</h2>
+            <h2 className="modal-title">{guestName}&apos;s Proposal</h2>
             <div className="modal-schedule">
               <span className="schedule-text">
                 {checkInDay} to {checkOutDay} (check-out)
@@ -602,7 +602,7 @@ export default function ProposalDetailsModal({
               </button>
               {customScheduleExpanded && (
                 <div className="section-content custom-schedule-content">
-                  <p className="custom-schedule-label">Guest's schedule request:</p>
+                  <p className="custom-schedule-label">Guest&apos;s schedule request:</p>
                   <p className="custom-schedule-text">{customScheduleDescription}</p>
                 </div>
               )}

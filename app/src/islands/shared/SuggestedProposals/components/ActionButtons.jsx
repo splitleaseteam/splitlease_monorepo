@@ -46,7 +46,7 @@ export default function ActionButtons({
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            I'm Interested
+            I&apos;m Interested
           </>
         )}
       </button>

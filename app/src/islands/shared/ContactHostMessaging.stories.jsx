@@ -291,9 +291,9 @@ export const QuickQuestionsDemo = {
           Click the quick question chips to auto-populate common inquiries:
         </p>
         <ul style={{ marginTop: '12px', color: '#6b7280', fontSize: '14px' }}>
-          <li>Availability - "Is the space available for my dates?"</li>
-          <li>Amenities - "What amenities are included?"</li>
-          <li>Flexibility - "Is there flexibility with the schedule?"</li>
+          <li>Availability - &quot;Is the space available for my dates?&quot;</li>
+          <li>Amenities - &quot;What amenities are included?&quot;</li>
+          <li>Flexibility - &quot;Is there flexibility with the schedule?&quot;</li>
         </ul>
       </div>
       <ContactHostDemo {...args} />

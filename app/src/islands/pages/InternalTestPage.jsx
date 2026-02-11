@@ -354,7 +354,7 @@ export default function InternalTestPage() {
           <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
             <li><strong>Send Email:</strong> Opens preview sidebar → To: splitleasesharath@gmail.com</li>
             <li><strong>Send SMS:</strong> To: +1 (313) 757-5323 | From: +1 (415) 569-2985</li>
-            <li><strong>Email Template ID:</strong> 1756320055390x685004717147094100 ("General Email Template 4")</li>
+            <li><strong>Email Template ID:</strong> 1756320055390x685004717147094100 (&quot;General Email Template 4&quot;)</li>
             <li><strong>Email Placeholders:</strong> title, bodytext1, bodytext2, button_url, button_text, logourl, preheadertext</li>
             <li><strong>SMS Payload:</strong> Direct Twilio proxy (to, from, body) - no templates</li>
           </ul>

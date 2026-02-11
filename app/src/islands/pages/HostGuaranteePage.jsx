@@ -69,7 +69,7 @@ export default function HostGuaranteePage() {
             <span className="highlight">Host Guarantee</span>
           </h1>
           <p className="guarantee-hero-subtitle">
-            Split Lease's Host Guarantee matches industry leaders. If a guest damages your place or belongings during a stay and doesn't reimburse you, you may be protected with up to <strong>$1,000,000 USD</strong> property damage protection.
+            Split Lease&apos;s Host Guarantee matches industry leaders. If a guest damages your place or belongings during a stay and doesn&apos;t reimburse you, you may be protected with up to <strong>$1,000,000 USD</strong> property damage protection.
           </p>
         </div>
       </section>
@@ -81,7 +81,7 @@ export default function HostGuaranteePage() {
 
         <div className="guarantee-comparison-container">
           <div className="guarantee-comparison-header">
-            <h2 className="guarantee-comparison-title">What's in and what's out?</h2>
+            <h2 className="guarantee-comparison-title">What&apos;s in and what&apos;s out?</h2>
           </div>
 
           {/* Comparison Table */}
@@ -136,7 +136,7 @@ export default function HostGuaranteePage() {
             {/* Matches terms */}
             <div className="comparison-row">
               <div className="comparison-cell feature-cell">
-                Matches Airbnb's Host Guarantee Terms
+                Matches Airbnb&apos;s Host Guarantee Terms
               </div>
               <div className="comparison-cell check-cell">
                 <span className="check-icon included">✓</span>
@@ -149,7 +149,7 @@ export default function HostGuaranteePage() {
             {/* Not Protected Section */}
             <div className="comparison-section-header not-protected">
               <span className="section-icon not-protected">✗</span>
-              Host Guarantee doesn't protect:
+              Host Guarantee doesn&apos;t protect:
             </div>
 
             {/* Theft of cash */}
@@ -229,7 +229,7 @@ export default function HostGuaranteePage() {
                 <h3 className="guarantee-info-card-title">Airbnb Host Guarantee Full TOS</h3>
               </div>
               <p className="guarantee-info-card-description">
-                View Airbnb's official Host Guarantee terms for comparison
+                View Airbnb&apos;s official Host Guarantee terms for comparison
               </p>
               <a
                 href="https://www.airbnb.com/help/article/279"

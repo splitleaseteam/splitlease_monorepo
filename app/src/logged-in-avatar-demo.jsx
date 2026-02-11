@@ -110,7 +110,7 @@ function LoggedInAvatarDemo() {
               <p><strong>Type:</strong> {guestUser.userType}</p>
               <p><strong>Favorites:</strong> {guestUser.favoritesCount}</p>
               <p><strong>Unread Messages:</strong> {guestUser.unreadMessagesCount}</p>
-              <p><strong>Note:</strong> Shows "Suggested Proposal" instead of "My Proposals"</p>
+              <p><strong>Note:</strong> Shows &quot;Suggested Proposal&quot; instead of &quot;My Proposals&quot;</p>
             </div>
           </div>
         </div>
@@ -141,7 +141,7 @@ function LoggedInAvatarDemo() {
       <div style={{ marginTop: '60px', padding: '20px', background: '#fff3cd', borderRadius: '8px' }}>
         <h3>Features Demonstrated:</h3>
         <ul>
-          <li>User type conditional rendering (HOST shows "My Proposals", GUEST shows "Suggested Proposal")</li>
+          <li>User type conditional rendering (HOST shows &quot;My Proposals&quot;, GUEST shows &quot;Suggested Proposal&quot;)</li>
           <li>Notification badges with counts (purple for most items, red for Messages)</li>
           <li>Active page highlighting (orange left border on current page)</li>
           <li>Smart routing based on user data</li>

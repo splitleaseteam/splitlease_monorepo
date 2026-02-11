@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { formatCurrency as _formatCurrency } from '../../../../lib/formatting/formatCurrency.js';
 import { extractPhotos } from '../../../../lib/supabaseUtils.js';
 
 // Base Card Component
@@ -27,13 +28,13 @@ export function Card({ children, className = '', onClick, hover = false }) {
   );
 }
 
-// Helper function to format currency
-function formatCurrency(amount) {
+// Format currency — uses canonical lib/formatting
+const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return null;
   const num = parseFloat(amount);
   if (isNaN(num)) return null;
-  return `$${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-}
+  return _formatCurrency(num);
+};
 
 // Listing Card - For host's managed listings
 // New horizontal design with thumbnail, title, actions, and proposals badge

@@ -44,9 +44,9 @@ export default function MonthlyPricingForm({
             <div className="pricing-edit-agreement">
                 <div className="pricing-edit-agreement__info">
                     <p>
-                        Our Split Lease 'Monthly' model helps guests meet rent obligations through a subsidy.
-                        For financial stability, we may need to sublease unused nights. If this isn't ideal,
-                        our other models might be more fitting for you, as they don't require this provision.
+                        Our Split Lease &apos;Monthly&apos; model helps guests meet rent obligations through a subsidy.
+                        For financial stability, we may need to sublease unused nights. If this isn&apos;t ideal,
+                        our other models might be more fitting for you, as they don&apos;t require this provision.
                     </p>
                     <button
                         type="button"

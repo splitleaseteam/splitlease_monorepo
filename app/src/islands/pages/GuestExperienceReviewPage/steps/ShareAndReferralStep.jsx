@@ -40,7 +40,7 @@ export default function ShareAndReferralStep({
                   <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span>Yes, I'm happy to share</span>
+              <span>Yes, I&apos;m happy to share</span>
             </div>
           </label>
 
@@ -111,7 +111,7 @@ export default function ShareAndReferralStep({
         </div>
 
         <p className="referral-note">
-          Your friend will receive an invitation email. This is optional and won't affect your survey submission.
+          Your friend will receive an invitation email. This is optional and won&apos;t affect your survey submission.
         </p>
       </div>
     </div>

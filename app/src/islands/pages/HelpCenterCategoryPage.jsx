@@ -68,7 +68,7 @@ export default function HelpCenterCategoryPage() {
         <Header />
         <main className="hc-container" style={{ padding: '80px 16px', textAlign: 'center' }}>
           <h1>Category Not Found</h1>
-          <p style={{ color: '#666', marginBottom: '24px' }}>The category you're looking for doesn't exist.</p>
+          <p style={{ color: '#666', marginBottom: '24px' }}>The category you&apos;re looking for doesn&apos;t exist.</p>
           <a href="/help-center" className="hc-back-link">
             <ArrowLeft />
             Back to Help Center

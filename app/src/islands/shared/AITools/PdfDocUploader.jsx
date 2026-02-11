@@ -404,7 +404,7 @@ export default function PdfDocUploader({ onDataExtracted }) {
           </div>
 
           <p className="ai-tools-pdf__url-hint">
-            Make sure the document is shared as "Anyone with the link can view"
+            Make sure the document is shared as &quot;Anyone with the link can view&quot;
           </p>
 
           <button

@@ -78,11 +78,11 @@ export const ErrorDisplay = {
   render: () => (
     <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'sans-serif' }}>
       <h1 style={{ color: '#e53e3e' }}>Something went wrong</h1>
-      <p>We couldn't load this page. Please refresh or contact support.</p>
+      <p>We couldn&apos;t load this page. Please refresh or contact support.</p>
       <details style={{ marginTop: '20px', textAlign: 'left' }}>
         <summary style={{ cursor: 'pointer' }}>Error Details</summary>
         <pre style={{ background: '#f3f4f6', padding: '12px', borderRadius: '6px', marginTop: '8px' }}>
-          Error: Cannot read properties of undefined (reading 'map')
+          Error: Cannot read properties of undefined (reading &apos;map&apos;)
         </pre>
       </details>
     </div>
@@ -104,11 +104,11 @@ export const ErrorStatesGallery = {
         <h4 style={{ marginBottom: '16px', color: '#31135D' }}>TypeError</h4>
         <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
           <h1 style={{ color: '#e53e3e', fontSize: '24px' }}>Something went wrong</h1>
-          <p style={{ color: '#6b7280' }}>We couldn't load this page. Please refresh or contact support.</p>
+          <p style={{ color: '#6b7280' }}>We couldn&apos;t load this page. Please refresh or contact support.</p>
           <details style={{ marginTop: '16px', textAlign: 'left' }}>
             <summary style={{ cursor: 'pointer' }}>Error Details</summary>
             <pre style={{ background: '#f3f4f6', padding: '12px', borderRadius: '6px', marginTop: '8px', fontSize: '12px' }}>
-              TypeError: Cannot read properties of undefined (reading 'map')
+              TypeError: Cannot read properties of undefined (reading &apos;map&apos;)
             </pre>
           </details>
         </div>
@@ -118,7 +118,7 @@ export const ErrorStatesGallery = {
         <h4 style={{ marginBottom: '16px', color: '#31135D' }}>ReferenceError</h4>
         <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
           <h1 style={{ color: '#e53e3e', fontSize: '24px' }}>Something went wrong</h1>
-          <p style={{ color: '#6b7280' }}>We couldn't load this page. Please refresh or contact support.</p>
+          <p style={{ color: '#6b7280' }}>We couldn&apos;t load this page. Please refresh or contact support.</p>
           <details style={{ marginTop: '16px', textAlign: 'left' }}>
             <summary style={{ cursor: 'pointer' }}>Error Details</summary>
             <pre style={{ background: '#f3f4f6', padding: '12px', borderRadius: '6px', marginTop: '8px', fontSize: '12px' }}>
@@ -132,7 +132,7 @@ export const ErrorStatesGallery = {
         <h4 style={{ marginBottom: '16px', color: '#31135D' }}>Network Error</h4>
         <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
           <h1 style={{ color: '#e53e3e', fontSize: '24px' }}>Something went wrong</h1>
-          <p style={{ color: '#6b7280' }}>We couldn't load this page. Please refresh or contact support.</p>
+          <p style={{ color: '#6b7280' }}>We couldn&apos;t load this page. Please refresh or contact support.</p>
           <details style={{ marginTop: '16px', textAlign: 'left' }}>
             <summary style={{ cursor: 'pointer' }}>Error Details</summary>
             <pre style={{ background: '#f3f4f6', padding: '12px', borderRadius: '6px', marginTop: '8px', fontSize: '12px' }}>
@@ -185,7 +185,7 @@ function App() {
         <li>Wrap major page sections in separate boundaries</li>
         <li>Use at route level for full-page error handling</li>
         <li>Combine with logging service for production monitoring</li>
-        <li>Provide "retry" or "go home" actions when possible</li>
+        <li>Provide &quot;retry&quot; or &quot;go home&quot; actions when possible</li>
       </ul>
     </div>
   ),

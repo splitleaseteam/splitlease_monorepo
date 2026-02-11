@@ -58,7 +58,7 @@ export default function RentalApplicationCard({
           <div className="rental-app-card__info">
             <h3 className="rental-app-card__heading">Continue Your Application</h3>
             <p className="rental-app-card__description">
-              You're {progress}% done. Pick up where you left off.
+              You&apos;re {progress}% done. Pick up where you left off.
             </p>
             <div className="rental-app-card__progress">
               <div className="rental-app-card__progress-bar">

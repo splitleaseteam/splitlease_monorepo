@@ -210,7 +210,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
             <h2 className="section-heading">Your Listings</h2>
             {myListings.length === 0 ? (
               <div className="empty-state">
-                <p>You don't have any listings yet.</p>
+                <p>You don&apos;t have any listings yet.</p>
                 <Button variant="primary" onClick={handleCreateNewListing}>
                   Create Your First Listing
                 </Button>
@@ -244,7 +244,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
             </div>
             {houseManuals.length === 0 ? (
               <div className="empty-state">
-                <p>You don't have any house manuals yet.</p>
+                <p>You don&apos;t have any house manuals yet.</p>
               </div>
             ) : (
               <div className="manuals-grid">

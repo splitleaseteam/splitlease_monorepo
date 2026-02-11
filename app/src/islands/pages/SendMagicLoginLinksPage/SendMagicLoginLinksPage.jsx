@@ -105,7 +105,7 @@ export default function SendMagicLoginLinksPage() {
             value={logic.phoneOverride}
             onChange={(e) => logic.setPhoneOverride(e.target.value)}
           />
-          <p className="help-text">Leave empty to use user's phone number, or enter an override in E.164 format</p>
+          <p className="help-text">Leave empty to use user&apos;s phone number, or enter an override in E.164 format</p>
           <div className="step-actions">
             <button onClick={() => logic.setCurrentStep(1)} className="btn-secondary">Back</button>
             <button onClick={logic.handleContinueToPageSelection} className="btn-primary">Continue</button>

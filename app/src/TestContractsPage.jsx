@@ -724,7 +724,7 @@ function TestContractsPage() {
             )}
             {!response && !isLoading && (
               <p style={{ ...styles.responseText, color: '#9ca3af' }}>
-                Click "Generate Document" to see the response...
+                Click &quot;Generate Document&quot; to see the response...
               </p>
             )}
 

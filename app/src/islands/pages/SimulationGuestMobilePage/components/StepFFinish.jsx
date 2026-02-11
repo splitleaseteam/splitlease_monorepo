@@ -30,7 +30,7 @@ export default function StepFFinish({
       </div>
 
       <p className="step-card__description">
-        Congratulations! You've completed all the steps in the guest experience
+        Congratulations! You&apos;ve completed all the steps in the guest experience
         simulation. Click below to finish the test and see your results.
       </p>
 

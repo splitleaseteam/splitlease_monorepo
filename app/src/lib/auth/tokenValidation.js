@@ -339,7 +339,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
       const userData = data.data;
 
       // Always prefer fresh userType from API; fall back to cache only if API didn't provide one
-      let userType = userData.userType || getSecureUserType() || null;
+      const userType = userData.userType || getSecureUserType() || null;
       if (userData.userType) {
         setSecureUserType(userData.userType);
         logger.info('✅ User type from API:', userData.userType);

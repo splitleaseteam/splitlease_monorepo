@@ -204,7 +204,7 @@ export default function TransactionDetailView({
         {messageText && (
           <div className="transaction-detail-view__section">
             <h3 className="transaction-detail-view__section-title">Message</h3>
-            <p className="transaction-detail-view__message">"{messageText}"</p>
+            <p className="transaction-detail-view__message">&quot;{messageText}&quot;</p>
           </div>
         )}
       </div>

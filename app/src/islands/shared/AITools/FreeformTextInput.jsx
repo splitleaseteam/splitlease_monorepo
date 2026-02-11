@@ -190,7 +190,7 @@ export default function FreeformTextInput({ onDataExtracted }) {
                 className="ai-tools-freeform__template-btn"
                 onClick={() => handleUseTemplate(template)}
               >
-                Use "{template.label}"
+                Use &quot;{template.label}&quot;
               </button>
             ))}
           </div>

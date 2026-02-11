@@ -31,7 +31,7 @@ export default function ThrottlingWarning({
         <div className="dcr-throttle-content">
           <strong>Request Limit Reached</strong>
           <p>
-            You've made {requestCount} requests in the last 24 hours.
+            You&apos;ve made {requestCount} requests in the last 24 hours.
             Please wait before submitting more requests.
           </p>
         </div>

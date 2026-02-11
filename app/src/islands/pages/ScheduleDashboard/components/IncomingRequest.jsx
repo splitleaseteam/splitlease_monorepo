@@ -168,7 +168,7 @@ export default function IncomingRequest({
         {request.message && (
           <div className="incoming-request__message">
             <span className="incoming-request__message-label">Message:</span>
-            <p className="incoming-request__message-text">"{request.message}"</p>
+            <p className="incoming-request__message-text">&quot;{request.message}&quot;</p>
           </div>
         )}
 

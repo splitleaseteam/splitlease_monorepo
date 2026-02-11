@@ -1,27 +1,45 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../lib/supabase.js';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 
 const FROM_EMAIL = 'tech@leasesplit.com';
 const RECIPIENT_PLACEHOLDERS = ['$$to$$', '$$cc$$', '$$bcc$$'];
 const JSON_FRAGMENT_PLACEHOLDERS = ['$$cc$$', '$$bcc$$', '$$reply_to$$'];
 
 export default function useZEmailsUnitPageLogic() {
-  const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [placeholderValues, setPlaceholderValues] = useState({});
   const [multiEmailValues, setMultiEmailValues] = useState({});
   const [previewHtml, setPreviewHtml] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
+
+  // ===== ASYNC OPERATIONS =====
+  const {
+    data: templates,
+    isLoading: loading,
+    error: templateError,
+    execute: executeLoadTemplates,
+  } = useAsyncOperation(async () => {
+    const { data, error: fetchError } = await supabase
+      .schema('reference_table')
+      .from('zat_email_html_template_eg_sendbasicemailwf_')
+      .select('_id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
+      .order('Created Date', { ascending: false });
+
+    if (fetchError) throw new Error('Unable to load email templates. Please try again later.');
+    return data || [];
+  }, { initialData: [] });
+
+  // Expose error as string for backward compatibility
+  const error = templateError?.message || null;
 
   useEffect(() => {
     document.title = 'Email Unit Test | Admin';
   }, []);
 
   useEffect(() => {
-    loadTemplates();
+    executeLoadTemplates().catch(() => {});
   }, []);
 
   const selectedTemplate = useMemo(() => {
@@ -39,29 +57,6 @@ export default function useZEmailsUnitPageLogic() {
     const toEmails = multiEmailValues['$$to$$'] || [];
     return toEmails.some((email) => email && email.trim().length > 0);
   }, [selectedTemplate, multiEmailValues]);
-
-  async function loadTemplates() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .schema('reference_table')
-        .from('zat_email_html_template_eg_sendbasicemailwf_')
-        .select('_id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
-        .order('Created Date', { ascending: false });
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      setTemplates(data || []);
-    } catch (err) {
-      setError('Unable to load email templates. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function handleTemplateChange(templateId) {
     setSelectedTemplateId(templateId || null);

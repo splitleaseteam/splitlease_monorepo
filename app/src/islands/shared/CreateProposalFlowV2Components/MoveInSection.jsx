@@ -88,7 +88,7 @@ export default function MoveInSection({ data, updateData, listing, errors = {} }
           </span>
         </label>
         <div className="helper-text">
-          Your move in date depends on this listing's availability. Let us know if you have any move-in flexibility
+          Your move in date depends on this listing&apos;s availability. Let us know if you have any move-in flexibility
         </div>
         <input
           type="date"

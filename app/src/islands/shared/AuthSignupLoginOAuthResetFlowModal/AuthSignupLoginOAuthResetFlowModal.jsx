@@ -115,7 +115,7 @@ export default function SignUpLoginModal({
           <UserPlusIcon size={24} />
         </div>
         <div style={styles.userTypeContent}>
-          <div style={styles.userTypeTitle}>I'm new around here</div>
+          <div style={styles.userTypeTitle}>I&apos;m new around here</div>
           <p style={styles.userTypeDesc}>Create an account to get started</p>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function SignUpLoginModal({
 
       <div style={styles.header}>
         <h1 style={styles.title}>What brings you here?</h1>
-        <p style={styles.subtitle}>I'm here to...</p>
+        <p style={styles.subtitle}>I&apos;m here to...</p>
       </div>
 
       {/* Guest card */}
@@ -359,7 +359,7 @@ export default function SignUpLoginModal({
         </button>
 
         <div style={styles.footerLink}>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <button type="button" onClick={goToUserType} style={styles.link}>
             Sign up
           </button>
@@ -481,7 +481,7 @@ export default function SignUpLoginModal({
               e.target.style.backgroundColor = '#F7F2FA';
             }}
           />
-          <p style={styles.helperText}>We'll use this for login and important updates</p>
+          <p style={styles.helperText}>We&apos;ll use this for login and important updates</p>
         </div>
 
         <div style={styles.formGroup}>
@@ -666,7 +666,7 @@ export default function SignUpLoginModal({
           <KeyIcon />
         </div>
         <h2 style={styles.title}>Reset your password</h2>
-        <p style={styles.subtitle}>Enter your email address and we'll send you a link to reset your password.</p>
+        <p style={styles.subtitle}>Enter your email address and we&apos;ll send you a link to reset your password.</p>
       </div>
 
       <form onSubmit={handlePasswordReset}>
@@ -730,7 +730,7 @@ export default function SignUpLoginModal({
           <MailIcon />
         </div>
         <h2 style={styles.title}>Magic link login</h2>
-        <p style={styles.subtitle}>Enter your email and we'll send you a link to sign in instantly—no password needed.</p>
+        <p style={styles.subtitle}>Enter your email and we&apos;ll send you a link to sign in instantly—no password needed.</p>
       </div>
 
       <form onSubmit={handleMagicLink}>
@@ -783,7 +783,7 @@ export default function SignUpLoginModal({
         </div>
         <h2 style={styles.title}>Check your email</h2>
         <p style={styles.subtitle}>
-          We've sent a password reset link to <strong>{resetEmail}</strong>.
+          We&apos;ve sent a password reset link to <strong>{resetEmail}</strong>.
           Click the link in the email to reset your password.
         </p>
       </div>
@@ -797,7 +797,7 @@ export default function SignUpLoginModal({
       </button>
 
       <p style={{ ...styles.linkText, marginTop: '16px' }}>
-        Didn't receive the email?{' '}
+        Didn&apos;t receive the email?{' '}
         <button type="button" onClick={handlePasswordReset} style={styles.link} disabled={isLoading}>
           {isLoading ? 'Resending...' : 'Resend'}
         </button>
@@ -816,7 +816,7 @@ export default function SignUpLoginModal({
         </div>
         <h2 style={styles.title}>Magic link sent!</h2>
         <p style={styles.subtitle}>
-          We've sent a magic login link to <strong>{resetEmail}</strong>.
+          We&apos;ve sent a magic login link to <strong>{resetEmail}</strong>.
           Click the link in the email to sign in instantly.
         </p>
       </div>
@@ -830,7 +830,7 @@ export default function SignUpLoginModal({
       </button>
 
       <p style={{ ...styles.linkText, marginTop: '16px' }}>
-        Didn't receive the email?{' '}
+        Didn&apos;t receive the email?{' '}
         <button type="button" onClick={handleMagicLink} style={styles.link} disabled={isLoading}>
           {isLoading ? 'Resending...' : 'Resend'}
         </button>
@@ -847,7 +847,7 @@ export default function SignUpLoginModal({
         <div style={{ ...styles.headerIcon, backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
           <CheckCircleIcon />
         </div>
-        <h2 style={styles.title}>You're all set!</h2>
+        <h2 style={styles.title}>You&apos;re all set!</h2>
         <p style={styles.subtitle}>
           Your account has been created successfully. Welcome to Split Lease!
         </p>
@@ -987,7 +987,7 @@ export default function SignUpLoginModal({
             <div style={styles.header}>
               <h1 style={styles.title}>No Account Found</h1>
               <p style={styles.subtitle}>
-                We couldn't find an account with <strong>{userNotFoundData.email}</strong>.
+                We couldn&apos;t find an account with <strong>{userNotFoundData.email}</strong>.
               </p>
             </div>
 

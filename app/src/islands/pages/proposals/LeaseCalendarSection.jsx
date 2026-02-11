@@ -329,7 +329,7 @@ export default function LeaseCalendarSection({ proposal }) {
           </div>
           <p>{message}</p>
           <p className="lcs-pending-subtext">
-            This schedule is an estimate. During your reservation, you'll be able to
+            This schedule is an estimate. During your reservation, you&apos;ll be able to
             request date changes or adjust your schedule with host approval.
           </p>
         </div>

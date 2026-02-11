@@ -66,7 +66,7 @@ export default function SubmittedReviewCard({ review, onViewDetails }) {
 
       {comment && (
         <p className="submitted-review-card__comment">
-          "{truncatedComment}"
+          &quot;{truncatedComment}&quot;
         </p>
       )}
 

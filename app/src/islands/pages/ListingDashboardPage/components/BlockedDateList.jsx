@@ -68,7 +68,7 @@ const BlockedDateList = React.memo(function BlockedDateList({
         </div>
       ) : (
         <p className="listing-dashboard-availability__no-blocked">
-          You don't have any future date blocked yet
+          You don&apos;t have any future date blocked yet
         </p>
       )}
 

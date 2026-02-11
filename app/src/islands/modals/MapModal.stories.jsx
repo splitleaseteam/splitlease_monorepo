@@ -200,7 +200,7 @@ export const AllBoroughs = {
       <h2 style={{ marginBottom: '16px', color: '#31135D' }}>NYC Boroughs</h2>
       <p style={{ marginBottom: '24px', color: '#6b7280' }}>
         The MapModal supports listings from all NYC boroughs.
-        Click "View Details" buttons below (in a real implementation).
+        Click &quot;View Details&quot; buttons below (in a real implementation).
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
         {[

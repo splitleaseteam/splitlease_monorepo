@@ -2,7 +2,7 @@
  * Formatting utilities for Host Proposals Page
  */
 
-import { formatCurrency as sharedFormatCurrency } from '../../../lib/formatters.js';
+import { formatCurrency as sharedFormatCurrency } from '../../../lib/formatting/formatCurrency.js';
 
 /**
  * Format a number as currency (USD)

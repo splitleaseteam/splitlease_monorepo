@@ -108,14 +108,14 @@ export default function CheckInCheckOutFlow({
                   onClick={() => onImOnMyWay(stay)}
                 >
                   <Navigation size={20} />
-                  I'm on my way
+                  I&apos;m on my way
                 </button>
                 <button
                   className="check-flow__action-btn check-flow__action-btn--here"
                   onClick={() => onImHere(stay)}
                 >
                   <MapPin size={20} />
-                  I'm here
+                  I&apos;m here
                 </button>
               </div>
 
@@ -230,10 +230,10 @@ export default function CheckInCheckOutFlow({
                   onClick={() => onLeavingProperty(stay)}
                 >
                   <LogOut size={16} />
-                  I'm Leaving the Property
+                  I&apos;m Leaving the Property
                 </button>
                 <p className="check-flow__leave-hint">
-                  Click this when you've completed checkout and are leaving.
+                  Click this when you&apos;ve completed checkout and are leaving.
                 </p>
               </div>
             </div>

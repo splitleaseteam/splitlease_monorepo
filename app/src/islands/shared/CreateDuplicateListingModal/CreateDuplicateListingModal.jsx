@@ -323,7 +323,7 @@ export default function CreateDuplicateListingModal({
               placeholder="Enter listing title"
               disabled={isDuplicating}
             />
-            <p className="create-listing-helper">Don't worry, you can change it later</p>
+            <p className="create-listing-helper">Don&apos;t worry, you can change it later</p>
           </div>
         </div>
 

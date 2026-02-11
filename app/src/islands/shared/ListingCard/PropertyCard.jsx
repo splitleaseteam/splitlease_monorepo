@@ -205,7 +205,7 @@ const PropertyCard = memo(function PropertyCard({
         viewed.push(listingId);
         sessionStorage.setItem('sl_viewed_listings', JSON.stringify(viewed));
       }
-    } catch (_) { /* ignore storage errors */ }
+    } catch (e) { console.warn('Failed to update viewed listings in sessionStorage:', e); }
 
     // Ctrl+Click or Cmd+Click: let browser open in new tab naturally
     if (e.ctrlKey || e.metaKey) {

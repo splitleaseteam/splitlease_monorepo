@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { useToast } from '../shared/Toast';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
 
 /**
  * useVerifyUsersPageLogic - Logic hook for Verify Users Admin Page
@@ -65,9 +66,21 @@ export default function useVerifyUsersPageLogic() {
   // ===== IMAGE MODAL STATE =====
   const [modalImage, setModalImage] = useState(null);
 
-  // ===== LOADING/ERROR STATE =====
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // ===== LOADING/ERROR STATE (via useAsyncOperation) =====
+  const {
+    isLoading: loading,
+    error: loadUserError,
+    execute: executeLoadUserById,
+  } = useAsyncOperation(async (userId) => {
+    const data = await callEdgeFunction('get_user', { userId });
+    if (data.user) {
+      setSelectedUser(data.user);
+      setSearchQuery(data.user.email || '');
+    }
+  });
+
+  // Expose error as string for backward compatibility
+  const error = loadUserError?.message || null;
 
   // Ref for dropdown click-outside handling
   const dropdownRef = useRef(null);
@@ -147,13 +160,11 @@ export default function useVerifyUsersPageLogic() {
   async function searchUsers(query) {
     try {
       setIsSearching(true);
-      setError(null);
 
       const data = await callEdgeFunction('search_users', { query });
       setSearchResults(data.users || []);
     } catch (err) {
       console.error('[useVerifyUsersPageLogic] Search error:', err);
-      setError(err.message);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -179,23 +190,11 @@ export default function useVerifyUsersPageLogic() {
   /**
    * Load a specific user by ID (for URL param)
    */
-  async function loadUserById(userId) {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await callEdgeFunction('get_user', { userId });
-      if (data.user) {
-        setSelectedUser(data.user);
-        setSearchQuery(data.user.email || '');
-      }
-    } catch (err) {
+  function loadUserById(userId) {
+    executeLoadUserById(userId).catch((err) => {
       console.error('[useVerifyUsersPageLogic] Load user error:', err);
-      setError(err.message);
       showToast(err.message || 'Failed to load user', 'error');
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   /**

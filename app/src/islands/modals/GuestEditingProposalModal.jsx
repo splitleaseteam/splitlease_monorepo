@@ -26,6 +26,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight, FileText, HelpCircle } from 'lucide-react'
+import { formatCurrency as _formatCurrency } from '../../lib/formatting/formatCurrency.js'
 import { executeCancelProposal } from '../../logic/workflows/proposals/cancelProposalWorkflow.js'
 import { PROPOSAL_STATUSES } from '../../logic/constants/proposalStatuses.js'
 import EndProposalModal from './EndProposalModal.jsx'
@@ -66,12 +67,7 @@ const AVG_DAYS_PER_MONTH = 30.44
 // UTILITY FUNCTIONS
 // ============================================================================
 
-function formatCurrency(value) {
-  if (value === undefined || value === null || isNaN(value)) {
-    return '$0.00'
-  }
-  return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
+const formatCurrency = (value) => _formatCurrency(value, { showCents: true });
 
 function formatDateFull(date) {
   if (!date || !(date instanceof Date)) return ''

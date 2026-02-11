@@ -33,7 +33,7 @@ export default function ThrottlingBlockPopup({
         </h3>
 
         <p className="dcr-throttle-popup-message">
-          You created 10 or more requests in 24 hours and {otherParticipantName} hasn't
+          You created 10 or more requests in 24 hours and {otherParticipantName} hasn&apos;t
           responded yet. To keep the integrity of the platform and not overwhelm{' '}
           {otherParticipantName}, we put on hold your ability to create requests for 24 hours!
         </p>

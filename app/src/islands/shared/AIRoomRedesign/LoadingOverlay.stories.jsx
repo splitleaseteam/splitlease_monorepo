@@ -68,7 +68,7 @@ import { LoadingOverlay } from 'islands/shared/AIRoomRedesign/LoadingOverlay';
         }}>
           <h2 style={{ margin: '0 0 16px', color: '#1f2937' }}>Background Content</h2>
           <p style={{ color: '#6b7280', margin: 0 }}>
-            This content is behind the loading overlay when it's visible.
+            This content is behind the loading overlay when it&apos;s visible.
             The overlay uses backdrop-blur for a frosted glass effect.
           </p>
         </div>
@@ -138,13 +138,13 @@ export const AllMessages = {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <h3 style={{ margin: 0, color: '#1f2937' }}>Common Loading Messages</h3>
       <ul style={{ margin: 0, paddingLeft: '20px', color: '#6b7280', lineHeight: '2' }}>
-        <li>"Generating your redesign..."</li>
-        <li>"Processing your photo..."</li>
-        <li>"Analyzing room layout..."</li>
-        <li>"Applying [Style Name] style..."</li>
-        <li>"Creating virtual staging..."</li>
-        <li>"Enhancing image quality..."</li>
-        <li>"Almost done..."</li>
+        <li>&quot;Generating your redesign...&quot;</li>
+        <li>&quot;Processing your photo...&quot;</li>
+        <li>&quot;Analyzing room layout...&quot;</li>
+        <li>&quot;Applying [Style Name] style...&quot;</li>
+        <li>&quot;Creating virtual staging...&quot;</li>
+        <li>&quot;Enhancing image quality...&quot;</li>
+        <li>&quot;Almost done...&quot;</li>
       </ul>
       <p style={{ margin: '16px 0 0', color: '#9ca3af', fontSize: '14px' }}>
         Toggle isVisible in the controls above to see the overlay.

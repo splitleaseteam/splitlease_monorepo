@@ -208,11 +208,11 @@ export default function ReferralLandingPage() {
           </div>
 
           <h1 className="referral-landing-hero__title">
-            You've Been Invited to Split Lease!
+            You&apos;ve Been Invited to Split Lease!
           </h1>
 
           <p className="referral-landing-hero__subtitle">
-            {referrerName} thinks you'd love Split Lease. Claim your $50 bonus and
+            {referrerName} thinks you&apos;d love Split Lease. Claim your $50 bonus and
             {isHost
               ? ' start earning from your space.'
               : ' find your perfect NYC home base.'}
@@ -252,7 +252,7 @@ export default function ReferralLandingPage() {
                   <div className="referral-landing-success__icon">
                     <CheckIcon />
                   </div>
-                  <h3>You're All Set!</h3>
+                  <h3>You&apos;re All Set!</h3>
                   <p>Your $50 bonus has been reserved. Redirecting you to get started...</p>
                 </div>
               ) : (

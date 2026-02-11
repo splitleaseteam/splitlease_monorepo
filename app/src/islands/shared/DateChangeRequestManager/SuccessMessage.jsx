@@ -70,7 +70,7 @@ export default function SuccessMessage({
           {!isAcceptance ? (
             <>
               <li>The other party has 48 hours to respond</li>
-              <li>You'll receive a notification when they reply</li>
+              <li>You&apos;ll receive a notification when they reply</li>
               <li>If accepted, the lease dates will be updated automatically</li>
             </>
           ) : (

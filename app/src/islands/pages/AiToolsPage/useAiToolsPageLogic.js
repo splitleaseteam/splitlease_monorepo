@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import { aiToolsService } from '../../../lib/aiToolsService.js';
 import { MELODY_PREFERENCES, CONTENT_PREFERENCES } from './types.js';
@@ -23,9 +24,6 @@ export function useAiToolsPageLogic() {
   // ============================================================================
   // STATE
   // ============================================================================
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Data selection state
   const [houseManuals, setHouseManuals] = useState([]);
@@ -171,11 +169,8 @@ export function useAiToolsPageLogic() {
   // INITIALIZATION
   // ============================================================================
 
-  const loadInitialData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
+  const { isLoading: loading, error, execute: executeLoadInitialData } = useAsyncOperation(
+    async () => {
       const [manuals, narratorsList] = await Promise.all([
         fetchHouseManuals(),
         fetchNarrators(),
@@ -186,18 +181,14 @@ export function useAiToolsPageLogic() {
       if (narratorsList.length > 0) {
         setSelectedNarrator(narratorsList[0].id);
       }
-
-      setLoading(false);
-    } catch (err) {
-      console.error('[AiTools] Error loading initial data:', err);
-      setError(`Failed to load AI Tools: ${err.message}`);
-      setLoading(false);
     }
-  }, [fetchHouseManuals, fetchNarrators]);
+  );
 
   useEffect(() => {
-    loadInitialData();
-  }, [loadInitialData]);
+    executeLoadInitialData().catch((err) => {
+      console.error('[AiTools] Error loading initial data:', err);
+    });
+  }, [executeLoadInitialData]);
 
   // ============================================================================
   // SELECTION HANDLERS
@@ -518,7 +509,7 @@ export function useAiToolsPageLogic() {
   return {
     // Loading
     loading,
-    error,
+    error: error?.message ?? null,
 
     // Data
     houseManuals,

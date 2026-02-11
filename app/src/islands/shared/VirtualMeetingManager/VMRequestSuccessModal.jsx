@@ -128,7 +128,7 @@ export default function VMRequestSuccessModal({
 
           <p className="vm-success-modal-message">
             Your virtual meeting request has been sent to {hostName}.
-            They'll review your proposed times and get back to you soon.
+            They&apos;ll review your proposed times and get back to you soon.
           </p>
 
           <button className="vm-success-modal-btn" onClick={onClose}>

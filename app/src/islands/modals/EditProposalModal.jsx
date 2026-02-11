@@ -18,6 +18,8 @@ import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import { differenceInWeeks } from 'date-fns';
 import { supabase } from '../../lib/supabase.js';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
+import { formatCurrency as _formatCurrency } from '../../lib/formatting/formatCurrency.js';
 import 'react-datepicker/dist/react-datepicker.css';
 
 // Protocol Color Constants
@@ -43,8 +45,17 @@ const CloseIcon = () => (
 );
 
 export default function EditProposalModal({ proposal, listing, onClose, onSuccess }) {
-  const [loading, setLoading] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState(null);
+
+  const { isLoading: loading, execute: executeUpdate } = useAsyncOperation(
+    async (updatePayload) => {
+      const { error } = await supabase
+        .from('booking_proposal')
+        .update(updatePayload)
+        .eq('id', proposal.id || proposal._id);
+      if (error) throw error;
+    }
+  );
 
   // Inject protocol CSS for mobile bottom-sheet
   useEffect(() => {
@@ -204,39 +215,28 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
       return;
     }
 
-    setLoading(true);
-
     try {
-      // Update proposal in database
-      const { error } = await supabase
-        .from('booking_proposal')
-        .update({
-          move_in_range_start_date: formData.moveInStart.toISOString(),
-          move_in_range_end_date: formData.moveInEnd.toISOString(),
-          reservation_span_in_weeks: formData.reservationWeeks,
-          guest_selected_days_numbers_json: formData.daysSelected,
-          nights_per_week_count: formData.nightsPerWeek,
-          checkin_day_of_week_number: formData.checkInDay,
-          checkout_day_of_week_number: formData.checkOutDay,
-          total_reservation_price_for_guest: calculatedPrice?.total || 0,
-          calculated_nightly_price: calculatedPrice?.nightlyRate || 0,
-          cleaning_fee_amount: calculatedPrice?.cleaningFee || 0,
-          damage_deposit_amount: calculatedPrice?.damageDeposit || 0,
-          'Modified Date': new Date().toISOString(),
-        })
-        .eq('id', proposal.id || proposal._id);
-
-      if (error) throw error;
+      await executeUpdate({
+        move_in_range_start_date: formData.moveInStart.toISOString(),
+        move_in_range_end_date: formData.moveInEnd.toISOString(),
+        reservation_span_in_weeks: formData.reservationWeeks,
+        guest_selected_days_numbers_json: formData.daysSelected,
+        nights_per_week_count: formData.nightsPerWeek,
+        checkin_day_of_week_number: formData.checkInDay,
+        checkout_day_of_week_number: formData.checkOutDay,
+        total_reservation_price_for_guest: calculatedPrice?.total || 0,
+        calculated_nightly_price: calculatedPrice?.nightlyRate || 0,
+        cleaning_fee_amount: calculatedPrice?.cleaningFee || 0,
+        damage_deposit_amount: calculatedPrice?.damageDeposit || 0,
+        'Modified Date': new Date().toISOString(),
+      });
 
       alert('Proposal updated successfully!');
       if (onSuccess) onSuccess();
       onClose();
-
     } catch (error) {
       console.error('Error updating proposal:', error);
       alert('Failed to update proposal. Please try again.');
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -259,15 +259,8 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
     }
   }
 
-  // Format currency
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  }
+  // Format currency — uses canonical lib/formatting
+  const formatCurrency = (amount) => _formatCurrency(amount);
 
   // Styles
   const styles = {

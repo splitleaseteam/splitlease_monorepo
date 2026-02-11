@@ -198,7 +198,7 @@ export default function UsabilityPopup({ userData, onSuccess, onError }) {
         {/* Description */}
         <p className="usability-popup-description">
           For the best testing experience, continue this session on your phone.
-          We'll text you a login link.
+          We&apos;ll text you a login link.
         </p>
 
         {/* Success state */}

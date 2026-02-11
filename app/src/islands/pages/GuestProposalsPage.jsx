@@ -71,7 +71,7 @@ function EmptyState() {
     <div className="empty-state">
       <div className="empty-icon" aria-hidden="true">0</div>
       <h2>No Proposals Yet</h2>
-      <p>You haven't submitted any proposals yet.</p>
+      <p>You haven&apos;t submitted any proposals yet.</p>
       <p className="empty-subtext">
         Browse listings and submit a proposal to get started.
       </p>

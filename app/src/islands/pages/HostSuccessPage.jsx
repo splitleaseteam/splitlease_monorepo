@@ -88,7 +88,7 @@ function StoryCard({ story, onListProperty }) {
           <p key={index}>{paragraph}</p>
         ))}
         <div className="host-success-story-cta">
-          <p>Let's Find Your Ideal Tenant</p>
+          <p>Let&apos;s Find Your Ideal Tenant</p>
           <button className="host-success-btn-secondary" onClick={onListProperty}>
             List Your Property
           </button>
@@ -141,7 +141,7 @@ export default function HostSuccessPage() {
       <Hero onListProperty={handleListProperty} />
 
       <section className="host-success-section">
-        <h2 className="host-success-title">Our Hosts' Success Stories</h2>
+        <h2 className="host-success-title">Our Hosts&apos; Success Stories</h2>
 
         {stories.map((story, index) => (
           <StoryCard key={index} story={story} onListProperty={handleListProperty} />

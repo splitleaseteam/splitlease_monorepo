@@ -84,7 +84,7 @@ export default function ElevenLabsSection({
               rows={8}
             />
             <span className="field-hint">
-              Tip: Include pauses with "..." and emphasis with CAPS for better narration.
+              Tip: Include pauses with &quot;...&quot; and emphasis with CAPS for better narration.
             </span>
           </div>
 

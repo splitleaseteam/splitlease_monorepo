@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import {
   fetchEmergencies,
   fetchEmergencyById,
@@ -37,8 +38,6 @@ export function useInternalEmergencyPageLogic() {
   const [presetEmails, setPresetEmails] = useState([]);
 
   // UI state
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('success');
 
@@ -46,24 +45,11 @@ export function useInternalEmergencyPageLogic() {
   const [statusFilter, setStatusFilter] = useState('');
 
   // ============================================================================
-  // Initialization (no auth redirect for internal pages)
-  // ============================================================================
-
-  useEffect(() => {
-    // No redirect if not authenticated - this is an internal page accessible without login
-    // Just load the data directly
-    loadInitialData();
-  }, []);
-
-  // ============================================================================
   // Data Loading
   // ============================================================================
 
-  const loadInitialData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
+  const { isLoading: loading, error: loadError, execute: executeLoadInitialData } = useAsyncOperation(
+    async () => {
       // Load all data in parallel
       const [emergencyData, teamData, presetMsgData, presetEmailData] = await Promise.all([
         fetchEmergencies({ status: statusFilter || undefined, limit: 100 }),
@@ -78,17 +64,24 @@ export function useInternalEmergencyPageLogic() {
       setPresetEmails(presetEmailData || []);
 
       console.log('[InternalEmergencyPage] Loaded', emergencyData?.length || 0, 'emergencies');
-    } catch (loadError) {
-      console.error('[InternalEmergencyPage] Load error:', loadError);
-      setError(loadError.message || 'Failed to load emergencies');
-    } finally {
-      setLoading(false);
     }
-  }, [statusFilter]);
+  );
+
+  // ============================================================================
+  // Initialization (no auth redirect for internal pages)
+  // ============================================================================
+
+  useEffect(() => {
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Just load the data directly
+    executeLoadInitialData().catch((err) => {
+      console.error('[InternalEmergencyPage] Load error:', err);
+    });
+  }, []);
 
   // Reload when filter changes
   useEffect(() => {
-    if (!loading && !error) {
+    if (!loading && !loadError) {
       loadEmergencies();
     }
   }, [statusFilter]);
@@ -265,7 +258,7 @@ export function useInternalEmergencyPageLogic() {
 
     // UI State
     loading,
-    error,
+    error: loadError?.message || null,
     alertMessage,
     alertType,
 

@@ -236,7 +236,7 @@ export const AllVariants = {
             borderLeft: '4px solid #7c3aed',
             marginBottom: '20px',
           }}>
-            <h4 style={{ margin: '0 0 8px', color: '#5b21b6', fontSize: '14px' }}>What's Next?</h4>
+            <h4 style={{ margin: '0 0 8px', color: '#5b21b6', fontSize: '14px' }}>What&apos;s Next?</h4>
             <p style={{ margin: 0, color: '#6d28d9', fontSize: '14px' }}>
               Complete your rental application to increase your chances of approval.
             </p>
@@ -319,7 +319,7 @@ export const AllVariants = {
             borderLeft: '4px solid #7c3aed',
             marginBottom: '20px',
           }}>
-            <h4 style={{ margin: '0 0 8px', color: '#5b21b6', fontSize: '14px' }}>What's Next?</h4>
+            <h4 style={{ margin: '0 0 8px', color: '#5b21b6', fontSize: '14px' }}>What&apos;s Next?</h4>
             <p style={{ margin: 0, color: '#6d28d9', fontSize: '14px' }}>
               Your rental application is already on file. The host will review and get back to you.
             </p>

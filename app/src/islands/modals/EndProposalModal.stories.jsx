@@ -202,28 +202,28 @@ export const AllStatesOverview = {
         <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginBottom: '12px', color: '#374151' }}>Guest Flow</h3>
           <ul style={{ color: '#6b7280', lineHeight: '1.8' }}>
-            <li>Title: "Cancel Proposal"</li>
-            <li>Message: "Are you sure you want to cancel your proposal for {'{listing name}'}?"</li>
+            <li>Title: &quot;Cancel Proposal&quot;</li>
+            <li>Message: &quot;Are you sure you want to cancel your proposal for {'{listing name}'}?&quot;</li>
             <li>Reasons: Found another property, Changed move-in dates, Changed budget, etc.</li>
-            <li>Confirm button: "Yes, Cancel"</li>
+            <li>Confirm button: &quot;Yes, Cancel&quot;</li>
           </ul>
         </div>
 
         <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginBottom: '12px', color: '#374151' }}>Host Flow</h3>
           <ul style={{ color: '#6b7280', lineHeight: '1.8' }}>
-            <li>Title: "Reject Proposal"</li>
-            <li>Message: "Are you sure you want to reject this proposal from {'{guest name}'}?"</li>
+            <li>Title: &quot;Reject Proposal&quot;</li>
+            <li>Message: &quot;Are you sure you want to reject this proposal from {'{guest name}'}?&quot;</li>
             <li>Reasons: Already have another guest, Price change, Want different schedule, etc.</li>
-            <li>Confirm button: "Yes, Reject"</li>
+            <li>Confirm button: &quot;Yes, Reject&quot;</li>
           </ul>
         </div>
 
         <div style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginBottom: '12px', color: '#374151' }}>Counteroffer Decline</h3>
           <ul style={{ color: '#6b7280', lineHeight: '1.8' }}>
-            <li>Title: "Decline Counteroffer"</li>
-            <li>Message: "Are you sure you want to decline the host's counteroffer for {'{listing name}'}?"</li>
+            <li>Title: &quot;Decline Counteroffer&quot;</li>
+            <li>Message: &quot;Are you sure you want to decline the host&apos;s counteroffer for {'{listing name}'}?&quot;</li>
             <li>Uses guest reasons</li>
           </ul>
         </div>

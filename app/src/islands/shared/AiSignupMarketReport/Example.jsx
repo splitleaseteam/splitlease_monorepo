@@ -307,7 +307,7 @@ export function ConditionalExample({ user }) {
   if (hasRequestedReport) {
     return (
       <div>
-        <p>✅ You've already requested a market report. Check your email!</p>
+        <p>✅ You&apos;ve already requested a market report. Check your email!</p>
       </div>
     );
   }

@@ -8,7 +8,7 @@ export default function StaffAndQuestionsStep({ formData, updateField }) {
   return (
     <div className="step staff-questions-step">
       <h2 className="step-question">
-        Is there a Split Lease team member you'd like to recognize?
+        Is there a Split Lease team member you&apos;d like to recognize?
       </h2>
 
       <p className="step-helper">

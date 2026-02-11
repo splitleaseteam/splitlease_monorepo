@@ -410,7 +410,7 @@ export default function SignUpTrialHost() {
 
                 {/* Value proposition */}
                 <div style={styles.valueProps}>
-                  <h3 style={styles.valuePropTitle}>What you'll get:</h3>
+                  <h3 style={styles.valuePropTitle}>What you&apos;ll get:</h3>
                   <ul style={styles.valuePropList}>
                     <li>Professional house manual templates</li>
                     <li>Easy-to-share digital guides for guests</li>

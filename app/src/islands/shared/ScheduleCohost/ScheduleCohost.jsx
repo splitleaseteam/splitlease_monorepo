@@ -962,7 +962,7 @@ export default function ScheduleCohost({
 
             {/* Info message */}
             <p className="schedule-cohost-success-info">
-              We'll reach out to confirm a time that works for everyone. You'll receive a confirmation email and SMS shortly.
+              We&apos;ll reach out to confirm a time that works for everyone. You&apos;ll receive a confirmation email and SMS shortly.
             </p>
 
             {/* Rating Section - only visible when meeting is completed (status >= stage 4) */}

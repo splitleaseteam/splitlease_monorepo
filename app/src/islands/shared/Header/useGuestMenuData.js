@@ -14,6 +14,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import { SEARCH_URL } from '../../../lib/constants.js';
 
@@ -269,20 +270,15 @@ export function getGuestMenuConfig(state, onSignupClick) {
  */
 export function useGuestMenuData(userId, isAuthenticated) {
   const [state, setState] = useState(GUEST_MENU_STATES.LOGGED_OUT);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    // If not authenticated, state is LOGGED_OUT
-    if (!isAuthenticated || !userId) {
-      setState(GUEST_MENU_STATES.LOGGED_OUT);
-      return;
-    }
+  const { isLoading: loading, error, execute: fetchData } = useAsyncOperation(
+    async () => {
+      // If not authenticated, state is LOGGED_OUT
+      if (!isAuthenticated || !userId) {
+        setState(GUEST_MENU_STATES.LOGGED_OUT);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
-
-    try {
       // Fetch proposals, suggested proposals, rental app, and leases in parallel
       const [proposalsResult, suggestedResult, userResult, leasesResult] = await Promise.all([
         // Count user's proposals (as guest)
@@ -334,22 +330,26 @@ export function useGuestMenuData(userId, isAuthenticated) {
       } else {
         setState(GUEST_MENU_STATES.NO_PROPOSALS_NO_APP);
       }
-
-    } catch (err) {
-      console.error('[useGuestMenuData] Error:', err);
-      setError(err.message);
-      // Default to NO_PROPOSALS_NO_APP on error if authenticated
-      setState(GUEST_MENU_STATES.NO_PROPOSALS_NO_APP);
-    } finally {
-      setLoading(false);
     }
-  }, [userId, isAuthenticated]);
+  );
 
+  // On error, default to NO_PROPOSALS_NO_APP if authenticated
   useEffect(() => {
-    fetchData();
+    if (error && isAuthenticated) {
+      console.error('[useGuestMenuData] Error:', error);
+      setState(GUEST_MENU_STATES.NO_PROPOSALS_NO_APP);
+    }
+  }, [error, isAuthenticated]);
+
+  const refetch = useCallback(() => {
+    fetchData().catch(() => {});
   }, [fetchData]);
 
-  return { state, loading, error, refetch: fetchData };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { state, loading, error: error?.message ?? null, refetch };
 }
 
 export default useGuestMenuData;

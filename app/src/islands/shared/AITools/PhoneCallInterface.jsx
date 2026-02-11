@@ -186,7 +186,7 @@ export default function PhoneCallInterface({ onDataExtracted }) {
       <div className="ai-tools-phone__how-it-works">
         <h4>How it works:</h4>
         <ol>
-          <li>Click "Start Call" and we'll call your registered phone number</li>
+          <li>Click &quot;Start Call&quot; and we&apos;ll call your registered phone number</li>
           <li>Our AI assistant will {callType === 'guided' ? 'ask you questions' : 'listen to your description'}</li>
           <li>Your answers are transcribed and extracted into your house manual</li>
           <li>The call typically takes 3-5 minutes</li>

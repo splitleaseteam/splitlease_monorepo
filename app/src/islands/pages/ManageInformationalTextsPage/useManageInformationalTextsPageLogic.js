@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import { useToast } from '../../shared/Toast';
 
@@ -35,14 +36,11 @@ export default function useManageInformationalTextsPageLogic() {
 
   // ===== ENTRIES STATE =====
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // ===== FORM STATE =====
   const [mode, setMode] = useState('list'); // 'list' | 'create' | 'edit'
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [selectedEntry, setSelectedEntry] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
   // ===== UI STATE =====
@@ -60,19 +58,7 @@ export default function useManageInformationalTextsPageLogic() {
     );
   }, [entries, searchQuery]);
 
-  // Check if form can be submitted
-  const canSubmit = useMemo(() => {
-    return (
-      formData.tagTitle?.trim() &&
-      formData.desktop?.trim() &&
-      !isSubmitting
-    );
-  }, [formData.tagTitle, formData.desktop, isSubmitting]);
-
-  // Load entries on mount
-  useEffect(() => {
-    loadEntries();
-  }, []);
+  // ===== ASYNC OPERATIONS =====
 
   /**
    * Call the Edge Function with an action
@@ -108,21 +94,77 @@ export default function useManageInformationalTextsPageLogic() {
   /**
    * Fetch all entries from the Edge Function
    */
-  async function loadEntries() {
-    try {
-      setLoading(true);
-      setError(null);
-
+  const { isLoading: loading, error: loadEntriesError, execute: executeLoadEntries } = useAsyncOperation(
+    async () => {
       const data = await callEdgeFunction('list', { limit: 500 });
       setEntries(data.entries || []);
-    } catch (err) {
-      console.error('[useManageInformationalTextsPageLogic] Error loading entries:', err);
-      setError(err.message || 'Failed to load entries');
-      showToast(err.message || 'Failed to load entries', 'error');
-    } finally {
-      setLoading(false);
     }
+  );
+
+  function loadEntries() {
+    executeLoadEntries().catch((err) => {
+      console.error('[useManageInformationalTextsPageLogic] Error loading entries:', err);
+      showToast(err.message || 'Failed to load entries', 'error');
+    });
   }
+
+  /**
+   * Submit the form (create or update)
+   */
+  const { isLoading: isSubmittingForm, execute: executeSubmit } = useAsyncOperation(
+    async () => {
+      if (mode === 'create') {
+        const created = await callEdgeFunction('create', formData);
+        setEntries(prev => [created, ...prev]);
+        showToast(`Created "${formData.tagTitle}"`, 'success');
+      } else {
+        const updated = await callEdgeFunction('update', {
+          id: selectedEntry._id,
+          ...formData
+        });
+        setEntries(prev => prev.map(e => e._id === updated._id ? updated : e));
+        showToast(`Updated "${formData.tagTitle}"`, 'success');
+      }
+
+      cancelForm();
+    }
+  );
+
+  /**
+   * Execute delete after confirmation
+   */
+  const { isLoading: isDeleting, execute: executeDeleteOp } = useAsyncOperation(
+    async () => {
+      if (!deleteConfirmId) return;
+
+      const result = await callEdgeFunction('delete', { id: deleteConfirmId });
+      setEntries(prev => prev.filter(e => e._id !== deleteConfirmId));
+      showToast(`Deleted "${result.tagTitle}"`, 'success');
+      setDeleteConfirmId(null);
+
+      // If editing the deleted entry, go back to list
+      if (selectedEntry?._id === deleteConfirmId) {
+        cancelForm();
+      }
+    }
+  );
+
+  // Combined submitting state for both submit and delete operations
+  const isSubmitting = isSubmittingForm || isDeleting;
+
+  // Check if form can be submitted
+  const canSubmit = useMemo(() => {
+    return (
+      formData.tagTitle?.trim() &&
+      formData.desktop?.trim() &&
+      !isSubmitting
+    );
+  }, [formData.tagTitle, formData.desktop, isSubmitting]);
+
+  // Load entries on mount
+  useEffect(() => {
+    loadEntries();
+  }, []);
 
   /**
    * Handle form field change
@@ -199,31 +241,13 @@ export default function useManageInformationalTextsPageLogic() {
     setFormErrors({});
   }
 
-  /**
-   * Submit the form (create or update)
-   */
   async function handleSubmit() {
     if (!validateForm()) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      if (mode === 'create') {
-        const created = await callEdgeFunction('create', formData);
-        setEntries(prev => [created, ...prev]);
-        showToast(`Created "${formData.tagTitle}"`, 'success');
-      } else {
-        const updated = await callEdgeFunction('update', {
-          id: selectedEntry._id,
-          ...formData
-        });
-        setEntries(prev => prev.map(e => e._id === updated._id ? updated : e));
-        showToast(`Updated "${formData.tagTitle}"`, 'success');
-      }
-
-      cancelForm();
+      await executeSubmit();
     } catch (err) {
       console.error('[useManageInformationalTextsPageLogic] Submit error:', err);
       showToast(err.message || 'Failed to save', 'error');
@@ -232,8 +256,6 @@ export default function useManageInformationalTextsPageLogic() {
       if (err.message?.includes('already exists')) {
         setFormErrors({ tagTitle: err.message });
       }
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -251,29 +273,12 @@ export default function useManageInformationalTextsPageLogic() {
     setDeleteConfirmId(null);
   }
 
-  /**
-   * Execute delete after confirmation
-   */
   async function executeDelete() {
-    if (!deleteConfirmId) return;
-
-    setIsSubmitting(true);
-
     try {
-      const result = await callEdgeFunction('delete', { id: deleteConfirmId });
-      setEntries(prev => prev.filter(e => e._id !== deleteConfirmId));
-      showToast(`Deleted "${result.tagTitle}"`, 'success');
-      setDeleteConfirmId(null);
-
-      // If editing the deleted entry, go back to list
-      if (selectedEntry?._id === deleteConfirmId) {
-        cancelForm();
-      }
+      await executeDeleteOp();
     } catch (err) {
       console.error('[useManageInformationalTextsPageLogic] Delete error:', err);
       showToast(err.message || 'Failed to delete', 'error');
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -295,7 +300,7 @@ export default function useManageInformationalTextsPageLogic() {
     entries,
     filteredEntries,
     loading,
-    error,
+    error: loadEntriesError?.message || null,
 
     // ===== FORM STATE =====
     mode,

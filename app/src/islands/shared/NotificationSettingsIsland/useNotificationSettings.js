@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import {
   getDefaultPreferences,
@@ -18,33 +19,24 @@ const TABLE_NAME = 'notificationsettingsos_lists_';
 export function useNotificationSettings(userId) {
   const [preferences, setPreferences] = useState(getDefaultPreferences());
   const [recordId, setRecordId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [pendingToggles, setPendingToggles] = useState(new Set());
 
-  /**
-   * Fetch user's notification preferences
-   */
-  const fetchPreferences = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
+  const { isLoading: loading, error: fetchError, execute: executeFetch } = useAsyncOperation(
+    async () => {
+      if (!userId) {
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
-
-    try {
       // Query by "Created By" column (reliable user identifier)
-      const { data, error: fetchError } = await supabase
+      const { data, error: queryError } = await supabase
         .from(TABLE_NAME)
         .select('*')
         .eq('Created By', userId)
         .single();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (queryError && queryError.code !== 'PGRST116') {
         // PGRST116 = no rows found, which is expected for new users
-        throw fetchError;
+        throw new Error(queryError.message || 'Failed to load notification settings');
       }
 
       if (data) {
@@ -57,13 +49,16 @@ export function useNotificationSettings(userId) {
         console.log('[useNotificationSettings] No preferences found for user:', userId);
         setPreferences(getDefaultPreferences());
       }
-    } catch (err) {
-      console.error('[useNotificationSettings] Error fetching preferences:', err);
-      setError(err.message || 'Failed to load notification settings');
-    } finally {
-      setLoading(false);
     }
-  }, [userId]);
+  );
+
+  const error = fetchError?.message ?? null;
+
+  const fetchPreferences = useCallback(() => {
+    executeFetch().catch((err) => {
+      console.error('[useNotificationSettings] Error fetching preferences:', err);
+    });
+  }, [executeFetch]);
 
   /**
    * Toggle a specific channel for a category

@@ -152,7 +152,7 @@ export default function AboutUsPage() {
             </h1>
 
             <p className="hero-subtitle">
-              We're a team of multilocals who built Split Lease because we were living the need. Now we're making flexible housing accessible to everyone.
+              We&apos;re a team of multilocals who built Split Lease because we were living the need. Now we&apos;re making flexible housing accessible to everyone.
             </p>
 
             {/* Team Avatar Carousel */}
@@ -199,13 +199,13 @@ export default function AboutUsPage() {
 
               <ul className="about-pain-points">
                 <li>We needed to be in the city part of the time</li>
-                <li>But we weren't willing to give up our primary residences.</li>
+                <li>But we weren&apos;t willing to give up our primary residences.</li>
                 <li>Random nights at hotels and Airbnbs add up.</li>
                 <li>Carrying a suitcase around everywhere does not make you feel like a local.</li>
               </ul>
 
               <p className="about-story-text about-highlight">
-                <strong>So we crafted a solution for people like ourselves.</strong> Who want to be multi-local without the cost of a second mortgage. And we didn't want to schlep suitcases across NYC. We wanted a reliable place to stay where we could store our stuff and get to know the neighborhood.
+                <strong>So we crafted a solution for people like ourselves.</strong> Who want to be multi-local without the cost of a second mortgage. And we didn&apos;t want to schlep suitcases across NYC. We wanted a reliable place to stay where we could store our stuff and get to know the neighborhood.
               </p>
 
               <p className="about-story-text about-highlight about-standalone">
@@ -213,7 +213,7 @@ export default function AboutUsPage() {
               </p>
 
               <p className="about-story-text">
-                We shared space and alternated nights based on our schedules. We each took certain nights of the week that we needed week after week. And most importantly, everybody saved money. It's not the solution for everybody. But it's our mission to make it possible for everyone who needs it.
+                We shared space and alternated nights based on our schedules. We each took certain nights of the week that we needed week after week. And most importantly, everybody saved money. It&apos;s not the solution for everybody. But it&apos;s our mission to make it possible for everyone who needs it.
               </p>
             </div>
           </div>

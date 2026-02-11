@@ -346,7 +346,7 @@ export default function AvailabilitySection({ compact = false }) {
                 </div>
               ) : (
                 <p className="listing-dashboard-availability__no-blocked">
-                  You don't have any future dates blocked yet
+                  You don&apos;t have any future dates blocked yet
                 </p>
               )}
 

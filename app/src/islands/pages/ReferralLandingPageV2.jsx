@@ -218,7 +218,7 @@ export default function ReferralLandingPageV2() {
 
           {/* V2: Title focuses on invitation, not money */}
           <h1 className="referral-landing-hero__title">
-            You've been invited to host on Split Lease
+            You&apos;ve been invited to host on Split Lease
           </h1>
 
           {/* V2: Referrer is a trust signal, not emotional driver */}
@@ -262,7 +262,7 @@ export default function ReferralLandingPageV2() {
                   <div className="referral-landing-success__icon">
                     <CheckIcon />
                   </div>
-                  <h3>You're All Set!</h3>
+                  <h3>You&apos;re All Set!</h3>
                   <p>Your bonus has been reserved. Redirecting you to list your space...</p>
                 </div>
               ) : (
@@ -345,7 +345,7 @@ export default function ReferralLandingPageV2() {
 
             {/* V2: Low-pressure closing note */}
             <p className="referral-landing-no-obligation">
-              No action required unless you're interested.
+              No action required unless you&apos;re interested.
             </p>
           </div>
         </div>

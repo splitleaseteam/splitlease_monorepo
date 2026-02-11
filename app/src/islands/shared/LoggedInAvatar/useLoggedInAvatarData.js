@@ -36,6 +36,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 
 /**
@@ -124,19 +125,13 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
     threadsCount: 0, // Count of message threads user is part of
     pendingProposalThreadsCount: 0 // Count of threads with pending proposals (host notification)
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
+  const { isLoading: loading, error, execute: executeFetch } = useAsyncOperation(
+    async () => {
+      if (!userId) {
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
-
-    try {
       console.log('[useLoggedInAvatarData] Fetching data for user:', userId);
 
       // Fetch all data in parallel for performance
@@ -405,14 +400,19 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
       console.log('[useLoggedInAvatarData] Data fetched:', newData);
       setData(newData);
+    },
+    { initialData: null }
+  );
 
-    } catch (err) {
-      console.error('[useLoggedInAvatarData] Error:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (error) {
+      console.error('[useLoggedInAvatarData] Error:', error);
     }
-  }, [userId, fallbackUserType]);
+  }, [error]);
+
+  const fetchData = useCallback(() => {
+    executeFetch().catch(() => {});
+  }, [executeFetch]);
 
   useEffect(() => {
     fetchData();
@@ -477,7 +477,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
     };
   }, [userId, refetchUnreadCount]);
 
-  return { data, loading, error, refetch: fetchData, refetchUnreadCount };
+  return { data, loading, error: error?.message ?? null, refetch: fetchData, refetchUnreadCount };
 }
 
 /**

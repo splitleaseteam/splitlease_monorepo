@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 
 /**
@@ -248,20 +249,15 @@ export function getHostMenuConfig(state, onSignupClick) {
  */
 export function useHostMenuData(userId, isAuthenticated) {
   const [state, setState] = useState(HOST_MENU_STATES.LOGGED_OUT);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    // If not authenticated, state is LOGGED_OUT
-    if (!isAuthenticated || !userId) {
-      setState(HOST_MENU_STATES.LOGGED_OUT);
-      return;
-    }
+  const { isLoading: loading, error, execute: fetchData } = useAsyncOperation(
+    async () => {
+      // If not authenticated, state is LOGGED_OUT
+      if (!isAuthenticated || !userId) {
+        setState(HOST_MENU_STATES.LOGGED_OUT);
+        return;
+      }
 
-    setLoading(true);
-    setError(null);
-
-    try {
       // Fetch listings, proposals, and leases in parallel
       const [listingsResult, proposalsResult, leasesResult] = await Promise.all([
         // Count user's listings
@@ -297,22 +293,26 @@ export function useHostMenuData(userId, isAuthenticated) {
       } else {
         setState(HOST_MENU_STATES.NO_LISTING);
       }
-
-    } catch (err) {
-      console.error('[useHostMenuData] Error:', err);
-      setError(err.message);
-      // Default to NO_LISTING on error if authenticated
-      setState(HOST_MENU_STATES.NO_LISTING);
-    } finally {
-      setLoading(false);
     }
-  }, [userId, isAuthenticated]);
+  );
 
+  // On error, default to NO_LISTING if authenticated
   useEffect(() => {
-    fetchData();
+    if (error && isAuthenticated) {
+      console.error('[useHostMenuData] Error:', error);
+      setState(HOST_MENU_STATES.NO_LISTING);
+    }
+  }, [error, isAuthenticated]);
+
+  const refetch = useCallback(() => {
+    fetchData().catch(() => {});
   }, [fetchData]);
 
-  return { state, loading, error, refetch: fetchData };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { state, loading, error: error?.message ?? null, refetch };
 }
 
 export default useHostMenuData;

@@ -3,18 +3,83 @@ import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { sendFaqInquiry } from '../../lib/slackService.js';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
 
 export default function FAQPage() {
   const [activeTab, setActiveTab] = useState('general');
   const [faqs, setFaqs] = useState({ general: [], travelers: [], hosts: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [openQuestionId, setOpenQuestionId] = useState(null);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', inquiry: '' });
-  const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
+
+  // ===== ASYNC OPERATIONS =====
+  const {
+    isLoading: loading,
+    error: faqLoadError,
+    execute: executeLoadFAQs,
+  } = useAsyncOperation(async () => {
+    const { data, error: fetchError } = await supabase
+      .schema('reference_table')
+      .from('zat_faq')
+      .select('_id, Question, Answer, Category, sub-category')
+      .order('Category', { ascending: true })
+      .order('sub-category', { ascending: true });
+
+    if (fetchError) throw fetchError;
+
+    // Map tab names to database Category values
+    const categoryMapping = {
+      'general': 'General',
+      'travelers': 'Guest',
+      'hosts': 'Host'
+    };
+
+    // Group FAQs by category
+    const grouped = {
+      general: [],
+      travelers: [],
+      hosts: []
+    };
+
+    data.forEach(faq => {
+      for (const [tabName, dbCategory] of Object.entries(categoryMapping)) {
+        if (faq.Category === dbCategory) {
+          grouped[tabName].push(faq);
+          break;
+        }
+      }
+    });
+
+    setFaqs(grouped);
+  });
+
+  // Expose error as string for backward compatibility
+  const error = faqLoadError ? 'Unable to load FAQs. Please try again later.' : null;
+
+  const {
+    isLoading: submitting,
+    error: inquiryError,
+    execute: executeInquirySubmit,
+    reset: resetInquiry,
+  } = useAsyncOperation(async ({ name, email, inquiry }) => {
+    // Validate form
+    if (!name || !email || !inquiry) {
+      throw new Error('Please fill in all fields');
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    // Send inquiry via Slack Edge Function
+    await sendFaqInquiry({ name, email, inquiry });
+  });
+
+  // Expose submit error as string for backward compatibility
+  const submitError = inquiryError?.message || null;
 
   useEffect(() => {
     // Parse URL parameters
@@ -45,50 +110,10 @@ export default function FAQPage() {
     loadFAQs();
   }, []);
 
-  async function loadFAQs() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .schema('reference_table')
-        .from('zat_faq')
-        .select('_id, Question, Answer, Category, sub-category')
-        .order('Category', { ascending: true })
-        .order('sub-category', { ascending: true });
-
-      if (fetchError) throw fetchError;
-
-      // Map tab names to database Category values
-      const categoryMapping = {
-        'general': 'General',
-        'travelers': 'Guest',
-        'hosts': 'Host'
-      };
-
-      // Group FAQs by category
-      const grouped = {
-        general: [],
-        travelers: [],
-        hosts: []
-      };
-
-      data.forEach(faq => {
-        for (const [tabName, dbCategory] of Object.entries(categoryMapping)) {
-          if (faq.Category === dbCategory) {
-            grouped[tabName].push(faq);
-            break;
-          }
-        }
-      });
-
-      setFaqs(grouped);
-    } catch (err) {
+  function loadFAQs() {
+    executeLoadFAQs().catch((err) => {
       console.error('Error loading FAQs:', err);
-      setError('Unable to load FAQs. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   const handleTabClick = (tabName) => {
@@ -97,38 +122,14 @@ export default function FAQPage() {
 
   const handleInquirySubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
-    setSubmitError(null);
-
-    const { name, email, inquiry } = inquiryForm;
-
-    // Validate form
-    if (!name || !email || !inquiry) {
-      setSubmitError('Please fill in all fields');
-      setSubmitting(false);
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setSubmitError('Please enter a valid email address');
-      setSubmitting(false);
-      return;
-    }
 
     try {
-      // Send inquiry via Slack Edge Function
-      await sendFaqInquiry({ name, email, inquiry });
-
+      await executeInquirySubmit(inquiryForm);
       setSubmitSuccess(true);
       setInquiryForm({ name: '', email: '', inquiry: '' });
       // User closes modal manually after reading success message
     } catch (err) {
       console.error('Error sending inquiry:', err);
-      setSubmitError(err.message || 'Failed to send inquiry. Please try again.');
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -140,13 +141,13 @@ export default function FAQPage() {
     e.preventDefault();
     setShowInquiryModal(true);
     setSubmitSuccess(false);
-    setSubmitError(null);
+    resetInquiry();
   };
 
   const closeInquiryModal = () => {
     setShowInquiryModal(false);
     setInquiryForm({ name: '', email: '', inquiry: '' });
-    setSubmitError(null);
+    resetInquiry();
     setSubmitSuccess(false);
   };
 
@@ -230,7 +231,7 @@ export default function FAQPage() {
       {/* Bottom CTA */}
       <section className="bottom-cta">
         <a href="#" className="cta-link" onClick={openInquiryModal}>
-          Can't find the answer to your question?
+          Can&apos;t find the answer to your question?
         </a>
       </section>
 
@@ -243,7 +244,7 @@ export default function FAQPage() {
             </button>
 
             <h2 className="modal-title">Ask Us a Question</h2>
-            <p className="modal-subtitle">We'll get back to you as soon as possible</p>
+            <p className="modal-subtitle">We&apos;ll get back to you as soon as possible</p>
 
             {submitSuccess ? (
               <div className="success-message">

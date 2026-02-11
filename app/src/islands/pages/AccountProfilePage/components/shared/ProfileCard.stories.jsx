@@ -98,7 +98,7 @@ export const WithSubtitle = {
     children: (
       <div style={{ padding: '16px 0' }}>
         <p style={{ color: '#374151' }}>
-          Hi, I'm a software developer looking for a flexible living arrangement in NYC.
+          Hi, I&apos;m a software developer looking for a flexible living arrangement in NYC.
           I work remotely and travel frequently.
         </p>
       </div>

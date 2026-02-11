@@ -225,7 +225,7 @@ export default function BiddingInterface({
           {isUserHighBidder ? (
             <span className="bidding-interface__you-leading">
               <span className="bidding-interface__trophy-icon">🏆</span>
-              You're leading!
+              You&apos;re leading!
             </span>
           ) : (
             <span className="bidding-interface__them-leading">
@@ -356,7 +356,7 @@ export default function BiddingInterface({
                   />
                 </div>
                 <p className="bidding-interface__auto-bid-explainer">
-                  We'll automatically bid up to ${autoBidMax || '___'} if {otherParticipant?.name} bids higher. Works like eBay proxy bidding.
+                  We&apos;ll automatically bid up to ${autoBidMax || '___'} if {otherParticipant?.name} bids higher. Works like eBay proxy bidding.
                 </p>
               </div>
             )}
@@ -407,7 +407,7 @@ export default function BiddingInterface({
                 Withdraw from Bidding
               </button>
               <p className="bidding-interface__withdraw-warning">
-                ⚠️ You won't be able to re-enter this session
+                ⚠️ You won&apos;t be able to re-enter this session
               </p>
             </div>
           )}
@@ -422,11 +422,11 @@ export default function BiddingInterface({
             You have the high bid!
           </div>
           <p className="bidding-interface__winning-message">
-            You'll win automatically if no one bids higher before the timer ends.
+            You&apos;ll win automatically if no one bids higher before the timer ends.
           </p>
           <div className="bidding-interface__winning-details">
             <div className="bidding-interface__detail-row">
-              <span className="bidding-interface__detail-label">You'll pay:</span>
+              <span className="bidding-interface__detail-label">You&apos;ll pay:</span>
               <span className="bidding-interface__detail-value">
                 ${formatCurrency(currentHigh)}
               </span>

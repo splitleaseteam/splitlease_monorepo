@@ -101,7 +101,7 @@ export default function CountdownTimer({ expiresAt, onExpire }) {
     return (
       <div className="countdown-timer countdown-timer--expired">
         <span className="countdown-timer__icon">⏰</span>
-        <span className="countdown-timer__text">Time's Up!</span>
+        <span className="countdown-timer__text">Time&apos;s Up!</span>
       </div>
     );
   }

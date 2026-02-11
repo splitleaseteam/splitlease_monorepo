@@ -466,8 +466,8 @@ function Instructions() {
         <li>1. Select a user from the dropdown or search by email address</li>
         <li>2. Review all four identity documents (profile photo, selfie with ID, front and back of government ID)</li>
         <li>3. Click on any image to view it in full size</li>
-        <li>4. Once verified, toggle the "User Verified?" switch to ON</li>
-        <li>5. The system will automatically update the user's profile and send notifications</li>
+        <li>4. Once verified, toggle the &quot;User Verified?&quot; switch to ON</li>
+        <li>5. The system will automatically update the user&apos;s profile and send notifications</li>
       </ul>
     </div>
   );

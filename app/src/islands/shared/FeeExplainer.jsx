@@ -45,7 +45,7 @@ export default function FeeExplainer({ onClose, savings }) {
                             <TrendingDown size={32} className="comparison-icon" />
                             <div className="comparison-text">
                                 <span className="comparison-label">Industry Leading Rates</span>
-                                <p>You're saving around {formatCurrency(savings)} compared to traditional platforms.</p>
+                                <p>You&apos;re saving around {formatCurrency(savings)} compared to traditional platforms.</p>
                             </div>
                         </div>
                     )}

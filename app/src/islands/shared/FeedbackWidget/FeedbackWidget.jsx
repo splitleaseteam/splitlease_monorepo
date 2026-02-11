@@ -334,7 +334,7 @@ export default function FeedbackWidget({
       >
         <div className="feedback-modal">
           <div className="feedback-modal__header">
-            <h2 className="feedback-modal__title">We're Sorry to Hear That</h2>
+            <h2 className="feedback-modal__title">We&apos;re Sorry to Hear That</h2>
             <button
               className="feedback-modal__close"
               aria-label="Close modal"

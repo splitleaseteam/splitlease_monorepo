@@ -15,6 +15,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { supabase } from '../../../lib/supabase.js';
 import { initializeLookups, getBoroughName } from '../../../lib/dataLookups.js';
@@ -81,10 +82,6 @@ export function useHostOverviewPageLogic() {
   const [houseManuals, setHouseManuals] = useState([]);
   const [virtualMeetings, setVirtualMeetings] = useState([]);
 
-  // Loading and error states
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   // UI state
   const [showHelpBanner, setShowHelpBanner] = useState(true);
   const [toasts, setToasts] = useState([]);
@@ -99,7 +96,6 @@ export function useHostOverviewPageLogic() {
 
   // Import listing modal state
   const [showImportListingModal, setShowImportListingModal] = useState(false);
-  const [importListingLoading, setImportListingLoading] = useState(false);
 
   // Schedule cohost modal state
   const [showScheduleCohost, setShowScheduleCohost] = useState(false);
@@ -492,14 +488,11 @@ export function useHostOverviewPageLogic() {
     }
   }, []);
 
-  const loadData = useCallback(async (finalUser = null) => {
-    const activeUser = finalUser || userRef.current;
-    if (!activeUser) return; // No user yet, skip
+  const { isLoading: loading, error: loadDataError, execute: executeLoadData } = useAsyncOperation(
+    async (finalUser = null) => {
+      const activeUser = finalUser || userRef.current;
+      if (!activeUser) return; // No user yet, skip
 
-    setLoading(true);
-    setError(null);
-
-    try {
       // After migration, user.id serves as host reference directly
       const hostAccountId = activeUser.accountHostId || activeUser.id;
       const userId = activeUser.id;
@@ -518,14 +511,17 @@ export function useHostOverviewPageLogic() {
       setListingsToClaim(claimListings);
       setHouseManuals(manuals);
       setVirtualMeetings(meetings);
+    }
+  );
+
+  const loadData = useCallback(async (finalUser = null) => {
+    try {
+      await executeLoadData(finalUser);
     } catch (err) {
       console.error('[HostOverview] Error loading data:', err);
-      setError('Failed to load your dashboard. Please try again.');
       showToast('Error', 'Failed to load dashboard data', 'error', 5000);
-    } finally {
-      setLoading(false);
     }
-  }, [fetchHostListings, fetchListingsToClaim, fetchHouseManuals, fetchVirtualMeetings, showToast]);
+  }, [executeLoadData, showToast]);
 
   // ============================================================================
   // EFFECTS
@@ -583,9 +579,8 @@ export function useHostOverviewPageLogic() {
     setShowScheduleCohost(false);
   }, [showToast]);
 
-  const handleImportListingSubmit = useCallback(async ({ listingUrl, emailAddress }) => {
-    setImportListingLoading(true);
-    try {
+  const { isLoading: importListingLoading, execute: executeImportListing } = useAsyncOperation(
+    async ({ listingUrl, emailAddress }) => {
       // Send import request to Cloudflare Pages Function (same-origin, no CORS issues)
       const response = await fetch('/api/import-listing', {
         method: 'POST',
@@ -605,13 +600,17 @@ export function useHostOverviewPageLogic() {
 
       showToast('Success', 'Import request submitted! We\'ll notify you when your listing is ready.', 'success', 5000);
       setShowImportListingModal(false);
+    }
+  );
+
+  const handleImportListingSubmit = useCallback(async (formData) => {
+    try {
+      await executeImportListing(formData);
     } catch (err) {
       console.error('Error submitting import request:', err);
       showToast('Error', 'Failed to submit import request. Please try again.', 'error', 5000);
-    } finally {
-      setImportListingLoading(false);
     }
-  }, [user, showToast]);
+  }, [executeImportListing, showToast]);
 
   const handleCreateNewManual = useCallback(async () => {
     try {
@@ -792,7 +791,7 @@ export function useHostOverviewPageLogic() {
     houseManuals,
     virtualMeetings,
     loading,
-    error,
+    error: loadDataError ? 'Failed to load your dashboard. Please try again.' : null,
 
     // UI State
     showHelpBanner,

@@ -292,7 +292,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             />
           </div>
           <p className="eld-form-helper">
-            A good title highlights your space's best feature and location
+            A good title highlights your space&apos;s best feature and location
           </p>
         </div>
       </div>
@@ -338,7 +338,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
             />
           </div>
           <p className="eld-form-helper">
-            A compelling description highlights your space's unique features and lifestyle benefits
+            A compelling description highlights your space&apos;s unique features and lifestyle benefits
           </p>
         </div>
       </div>

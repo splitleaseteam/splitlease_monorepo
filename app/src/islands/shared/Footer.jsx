@@ -186,7 +186,7 @@ export default function Footer() {
               <h4>Import Your Listing</h4>
             </div>
             <p className="import-tagline">Already listed elsewhere?</p>
-            <p className="import-text">We'll copy everything over for you in minutes.</p>
+            <p className="import-text">We&apos;ll copy everything over for you in minutes.</p>
             <input
               type="text"
               placeholder="Paste your listing URL"

@@ -1,5 +1,6 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, ExternalLink } from 'lucide-react';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
 import { supabase } from '../../lib/supabase.js';
@@ -60,10 +61,48 @@ function generateSlug(name) {
 export default function PoliciesPage() {
   const [policies, setPolicies] = useState([]);
   const [currentPolicy, setCurrentPolicy] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const { isLoading: loading, error: fetchError, execute: fetchPolicies } = useAsyncOperation(
+    async () => {
+      console.log('Fetching policies from Supabase...');
+
+      const { data, error } = await supabase
+        .schema('reference_table')
+        .from('zat_policiesdocuments')
+        .select('*')
+        .eq('Active', true)
+        .order('Name', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error('Failed to load policies. Please refresh the page.');
+      }
+
+      console.log('Fetched policies:', data);
+      const transformedPolicies = data.map(transformSupabaseDocument);
+      setPolicies(transformedPolicies);
+
+      // Load policy based on URL hash or default to first
+      const hash = window.location.hash.substring(1);
+      if (hash) {
+        const policy = transformedPolicies.find(p => p.slug === hash);
+        if (policy) {
+          setCurrentPolicy(policy);
+          return;
+        }
+      }
+
+      // Load first policy by default ONLY if no hash was provided
+      if (!hash && transformedPolicies.length > 0) {
+        setCurrentPolicy(transformedPolicies[0]);
+        window.location.hash = transformedPolicies[0].slug;
+      }
+    }
+  );
+
+  const error = fetchError?.message ?? null;
 
   // Detect mobile viewport (matches CSS breakpoint at 900px)
   useEffect(() => {
@@ -75,51 +114,9 @@ export default function PoliciesPage() {
 
   // Fetch policies from Supabase
   useEffect(() => {
-    async function fetchPolicies() {
-      try {
-        setLoading(true);
-        console.log('ðŸ“¡ Fetching policies from Supabase...');
-
-        const { data, error } = await supabase
-          .schema('reference_table')
-          .from('zat_policiesdocuments')
-          .select('*')
-          .eq('Active', true)
-          .order('Name', { ascending: true });
-
-        if (error) {
-          console.error('âŒ Supabase error:', error);
-          throw error;
-        }
-
-        console.log('âœ… Fetched policies:', data);
-        const transformedPolicies = data.map(transformSupabaseDocument);
-        setPolicies(transformedPolicies);
-
-        // Load policy based on URL hash or default to first
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-          const policy = transformedPolicies.find(p => p.slug === hash);
-          if (policy) {
-            setCurrentPolicy(policy);
-            return;
-          }
-        }
-
-        // Load first policy by default ONLY if no hash was provided
-        if (!hash && transformedPolicies.length > 0) {
-          setCurrentPolicy(transformedPolicies[0]);
-          window.location.hash = transformedPolicies[0].slug;
-        }
-      } catch (err) {
-        console.error('Error fetching policies:', err);
-        setError('Failed to load policies. Please refresh the page.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchPolicies();
+    fetchPolicies().catch((err) => {
+      console.error('Error fetching policies:', err);
+    });
   }, []);
 
   // Handle hash changes

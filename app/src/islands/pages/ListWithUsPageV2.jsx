@@ -361,7 +361,7 @@ const InfrastructureSection = () => {
             </h2>
 
             <p className="text-xl text-gray-500 mb-12 leading-relaxed max-w-lg">
-              You aren't just a host; you're the decision-maker. Define your price, choose your rhythm, and set your terms. We simply build the rails for your revenue to run on.
+              You aren&apos;t just a host; you&apos;re the decision-maker. Define your price, choose your rhythm, and set your terms. We simply build the rails for your revenue to run on.
             </p>
 
             {/* Control Panel UI Mockup */}

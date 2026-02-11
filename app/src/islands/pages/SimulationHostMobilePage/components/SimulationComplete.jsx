@@ -47,7 +47,7 @@ export default function SimulationComplete({
       </div>
 
       <p className="simulation-host-complete__note">
-        Clicking "Clean Up" will remove all test data created during this simulation.
+        Clicking &quot;Clean Up&quot; will remove all test data created during this simulation.
       </p>
     </div>
   );

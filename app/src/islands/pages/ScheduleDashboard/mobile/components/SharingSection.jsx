@@ -129,7 +129,7 @@ export default function SharingSection({ value, onSave, onBack }) {
           <span className="settings-info-box__icon">ℹ️</span>
           <p>
             This setting indicates how open you are to sharing nights with your co-tenant.
-            A higher percentage means you're more likely to accept sharing requests.
+            A higher percentage means you&apos;re more likely to accept sharing requests.
           </p>
         </div>
 

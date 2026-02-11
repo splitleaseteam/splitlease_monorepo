@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase.js';
+import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
 
 /**
  * useEmailSmsUnitPageLogic - Logic hook for Email & SMS Unit Page
@@ -33,24 +34,54 @@ const MULTI_EMAIL_PLACEHOLDERS = ['$$to$$', '$$cc$$', '$$bcc$$'];
 
 export default function useEmailSmsUnitPageLogic() {
   // ===== EMAIL STATE =====
-  const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [placeholderValues, setPlaceholderValues] = useState({});
   const [multiEmailValues, setMultiEmailValues] = useState({}); // { '$$cc$$': ['', ''], '$$bcc$$': [''] }
   const [previewHtml, setPreviewHtml] = useState(''); // Manual preview (not real-time)
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null); // { success: bool, message: string }
 
   // ===== SMS STATE =====
-  const [twilioNumbers, setTwilioNumbers] = useState([]);
   const [smsFromNumber, setSmsFromNumber] = useState(''); // Selected phone_number_international
   const [smsToNumber, setSmsToNumber] = useState(''); // 10-digit phone number
   const [smsBody, setSmsBody] = useState('');
-  const [smsLoading, setSmsLoading] = useState(true);
   const [smsSending, setSmsSending] = useState(false);
   const [smsResult, setSmsResult] = useState(null); // { success: bool, message: string }
+
+  // ===== ASYNC OPERATIONS =====
+  const {
+    data: templates,
+    isLoading: loading,
+    error: templateError,
+    execute: executeLoadTemplates,
+  } = useAsyncOperation(async () => {
+    const { data, error: fetchError } = await supabase
+      .schema('reference_table')
+      .from('zat_email_html_template_eg_sendbasicemailwf_')
+      .select('_id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
+      .order('Created Date', { ascending: false });
+
+    if (fetchError) throw new Error('Unable to load email templates. Please try again later.');
+    return data || [];
+  }, { initialData: [] });
+
+  // Expose error as string for backward compatibility
+  const error = templateError?.message || null;
+
+  const {
+    data: twilioNumbers,
+    isLoading: smsLoading,
+    execute: executeLoadTwilioNumbers,
+  } = useAsyncOperation(async () => {
+    const { data, error: fetchError } = await supabase
+      .schema('reference_table')
+      .from('os_twilio_numbers')
+      .select('id, name, display, phone_number, phone_number_international')
+      .order('name', { ascending: true });
+
+    if (fetchError) throw fetchError;
+    return data || [];
+  }, { initialData: [] });
 
   // Get the selected template object
   const selectedTemplate = useMemo(() => {
@@ -92,66 +123,17 @@ export default function useEmailSmsUnitPageLogic() {
 
   // Load templates on mount
   useEffect(() => {
-    loadTemplates();
+    executeLoadTemplates().catch((err) => {
+      console.error('[useEmailSmsUnitPageLogic] Error loading templates:', err);
+    });
   }, []);
 
   // Load Twilio numbers on mount
   useEffect(() => {
-    loadTwilioNumbers();
-  }, []);
-
-  /**
-   * Fetch all email templates from Supabase
-   */
-  async function loadTemplates() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
-        .schema('reference_table')
-        .from('zat_email_html_template_eg_sendbasicemailwf_')
-        .select('_id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
-        .order('Created Date', { ascending: false });
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      setTemplates(data || []);
-    } catch (err) {
-      console.error('[useEmailSmsUnitPageLogic] Error loading templates:', err);
-      setError('Unable to load email templates. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /**
-   * Fetch Twilio phone numbers from Supabase
-   */
-  async function loadTwilioNumbers() {
-    try {
-      setSmsLoading(true);
-
-      const { data, error: fetchError } = await supabase
-        .schema('reference_table')
-        .from('os_twilio_numbers')
-        .select('id, name, display, phone_number, phone_number_international')
-        .order('name', { ascending: true });
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      setTwilioNumbers(data || []);
-    } catch (err) {
+    executeLoadTwilioNumbers().catch((err) => {
       console.error('[useEmailSmsUnitPageLogic] Error loading Twilio numbers:', err);
-      // Don't set error state for SMS loading failure - just log it
-    } finally {
-      setSmsLoading(false);
-    }
-  }
+    });
+  }, []);
 
   /**
    * Handle template selection change

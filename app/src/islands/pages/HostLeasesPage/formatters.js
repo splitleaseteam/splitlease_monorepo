@@ -2,19 +2,15 @@
  * Formatting utilities for Host Leases Page
  */
 
+import { formatCurrency as _formatCurrency } from '../../../lib/formatting/formatCurrency.js';
+
 /**
- * Format a number as currency (USD)
+ * Format a number as currency (USD) with cents
  * @param {number} amount - The amount to format
  * @returns {string} Formatted currency string
  */
 export function formatCurrency(amount) {
-  if (amount == null || isNaN(amount)) return '$0.00';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount);
+  return _formatCurrency(amount, { showCents: true });
 }
 
 /**
@@ -23,13 +19,7 @@ export function formatCurrency(amount) {
  * @returns {string} Formatted currency string without cents
  */
 export function formatCurrencyWhole(amount) {
-  if (amount == null || isNaN(amount)) return '$0';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount);
+  return _formatCurrency(amount);
 }
 
 /**

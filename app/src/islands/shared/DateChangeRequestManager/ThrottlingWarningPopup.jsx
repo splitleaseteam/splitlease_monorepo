@@ -50,7 +50,7 @@ export default function ThrottlingWarningPopup({
         </h3>
 
         <p className="dcr-throttle-popup-message">
-          You created 5 or more requests in 24 hours and {otherParticipantName} hasn't
+          You created 5 or more requests in 24 hours and {otherParticipantName} hasn&apos;t
           responded yet. We advise you to hold on creation until {otherParticipantName} responds
           to your initial requests.
         </p>
@@ -61,7 +61,7 @@ export default function ThrottlingWarningPopup({
             checked={dontShowAgain}
             onChange={handleCheckboxChange}
           />
-          <span>Don't show me this again</span>
+          <span>Don&apos;t show me this again</span>
         </label>
 
         <div className="dcr-throttle-popup-buttons">

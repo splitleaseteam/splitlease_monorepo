@@ -295,7 +295,7 @@ export default function WhySplitLeasePage() {
         <div className="why-exist-container">
           <h2 className="why-exist-title">The Problem with Living in Two Cities</h2>
           <p className="why-exist-description">
-            Hotels cost a fortune. Airbnb is a lottery. Full-time leases make you pay for nights you're not even there. And nobody lets you leave your stuff.
+            Hotels cost a fortune. Airbnb is a lottery. Full-time leases make you pay for nights you&apos;re not even there. And nobody lets you leave your stuff.
           </p>
 
           <div className="why-exist-pain">
@@ -308,7 +308,7 @@ export default function WhySplitLeasePage() {
               </div>
               <div className="pain-separator"></div>
               <h3 className="pain-title">Hotels Drain Your Wallet</h3>
-              <p className="pain-text">$300/night adds up to $3,600/month for just 12 nights. You're paying premium rates for generic rooms.</p>
+              <p className="pain-text">$300/night adds up to $3,600/month for just 12 nights. You&apos;re paying premium rates for generic rooms.</p>
             </div>
 
             <div className="pain-card">
@@ -324,7 +324,7 @@ export default function WhySplitLeasePage() {
               </div>
               <div className="pain-separator"></div>
               <h3 className="pain-title">Airbnb is a Gamble</h3>
-              <p className="pain-text">Different place every visit. "Wifi works great" means maybe. Can't leave belongings. Living out of a suitcase forever.</p>
+              <p className="pain-text">Different place every visit. &quot;Wifi works great&quot; means maybe. Can&apos;t leave belongings. Living out of a suitcase forever.</p>
             </div>
 
             <div className="pain-card">
@@ -336,7 +336,7 @@ export default function WhySplitLeasePage() {
               </div>
               <div className="pain-separator"></div>
               <h3 className="pain-title">Pay for Empty Nights</h3>
-              <p className="pain-text">Full-time lease costs $3,200/month for 30 nights. You're only there 12. That empty apartment is draining $2,000/month while you're gone.</p>
+              <p className="pain-text">Full-time lease costs $3,200/month for 30 nights. You&apos;re only there 12. That empty apartment is draining $2,000/month while you&apos;re gone.</p>
             </div>
           </div>
         </div>
@@ -353,7 +353,7 @@ export default function WhySplitLeasePage() {
             <div className="schedule-eyebrow">Your Schedule, Your Way</div>
             <h2 className="schedule-title">Pay Only for the Nights You Need</h2>
             <p className="schedule-subtitle">
-              Select which days you'll be in NYC each week. No more paying for nights you're not using.
+              Select which days you&apos;ll be in NYC each week. No more paying for nights you&apos;re not using.
             </p>
           </div>
 
@@ -392,13 +392,13 @@ export default function WhySplitLeasePage() {
             <div className="step-card">
               <div className="step-number">1</div>
               <h3 className="step-title">Select Your Schedule</h3>
-              <p className="step-description">Choose which nights you'll be in NYC each week. We match you with spaces that fit your exact schedule.</p>
+              <p className="step-description">Choose which nights you&apos;ll be in NYC each week. We match you with spaces that fit your exact schedule.</p>
             </div>
 
             <div className="step-card">
               <div className="step-number">2</div>
               <h3 className="step-title">Browse & Book</h3>
-              <p className="step-description">View verified spaces with quality setups. Submit a proposal for your schedule and we'll match you with the perfect space.</p>
+              <p className="step-description">View verified spaces with quality setups. Submit a proposal for your schedule and we&apos;ll match you with the perfect space.</p>
             </div>
 
             <div className="step-card">
@@ -539,7 +539,7 @@ export default function WhySplitLeasePage() {
           <div className="different-eyebrow">The Split Lease Difference</div>
           <h2 className="different-title">Share Spaces. Different Days. Lower Prices.</h2>
           <p className="different-description">
-            Here's the secret: Multiple guests share the same space on different days of the week. You get Monday-Wednesday. Someone else gets Thursday-Saturday. Same apartment, different schedules, fraction of the cost.
+            Here&apos;s the secret: Multiple guests share the same space on different days of the week. You get Monday-Wednesday. Someone else gets Thursday-Saturday. Same apartment, different schedules, fraction of the cost.
           </p>
 
           <div className="split-schedule-visual">
@@ -586,7 +586,7 @@ export default function WhySplitLeasePage() {
           </div>
 
           <p className="different-description">
-            <strong>Why this works:</strong> You're not a tourist bouncing between Airbnbs. You need a consistent spaceâ€”and a place to <strong>permanently store your belongings.</strong> Split Lease matches you with others who share your schedule. Flexible, consistent, affordable.
+            <strong>Why this works:</strong> You&apos;re not a tourist bouncing between Airbnbs. You need a consistent spaceâ€”and a place to <strong>permanently store your belongings.</strong> Split Lease matches you with others who share your schedule. Flexible, consistent, affordable.
           </p>
         </div>
       </section>
@@ -602,7 +602,7 @@ export default function WhySplitLeasePage() {
             <div className="pricing-eyebrow">Transparent Pricing</div>
             <h2 className="pricing-title">How Are Prices So Low?</h2>
             <p className="pricing-subtitle">
-              Because you're sharing space on different days, hosts charge less while maintaining consistent occupancy.
+              Because you&apos;re sharing space on different days, hosts charge less while maintaining consistent occupancy.
             </p>
           </div>
 
@@ -651,7 +651,7 @@ export default function WhySplitLeasePage() {
           </div>
 
           <div className="pricing-explanation-text">
-            <strong>The math is simple:</strong> Hotels charge premium rates because they need to cover empty nights. Full-time leases make you pay for nights you're not there. Split Lease matches you with space that fits your exact scheduleâ€”and because multiple guests share different days, everyone pays less while hosts earn consistent income. It's housing designed for how multi-local people actually live.
+            <strong>The math is simple:</strong> Hotels charge premium rates because they need to cover empty nights. Full-time leases make you pay for nights you&apos;re not there. Split Lease matches you with space that fits your exact scheduleâ€”and because multiple guests share different days, everyone pays less while hosts earn consistent income. It&apos;s housing designed for how multi-local people actually live.
           </div>
         </div>
       </section>
@@ -679,7 +679,7 @@ export default function WhySplitLeasePage() {
                 <h3 className="testimonial-name">Priya Sharma</h3>
                 <p className="testimonial-role">Senior Product Designer Â· 12 nights/month in NYC</p>
                 <p className="testimonial-quote">
-                  "I work with NYC clients regularly and needed a consistent place to stay. Split Lease gave me the consistency I needed without the commitment I didn't. Saved $24K last year and never had a booking nightmare."
+                  &quot;I work with NYC clients regularly and needed a consistent place to stay. Split Lease gave me the consistency I needed without the commitment I didn&apos;t. Saved $24K last year and never had a booking nightmare.&quot;
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story
@@ -696,7 +696,7 @@ export default function WhySplitLeasePage() {
                 <h3 className="testimonial-name">Marcus Chen</h3>
                 <p className="testimonial-role">Strategy Consultant Â· 8 nights/month in NYC</p>
                 <p className="testimonial-quote">
-                  "Every week I'm in NYC for client meetings. Split Lease is my second homeâ€”literally. Same apartment, same key, zero hassle. It's transformed how I work and live."
+                  &quot;Every week I&apos;m in NYC for client meetings. Split Lease is my second homeâ€”literally. Same apartment, same key, zero hassle. It&apos;s transformed how I work and live.&quot;
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story
@@ -713,7 +713,7 @@ export default function WhySplitLeasePage() {
                 <h3 className="testimonial-name">David Martinez</h3>
                 <p className="testimonial-role">Father Â· Every weekend in NYC</p>
                 <p className="testimonial-quote">
-                  "I live in Boston but have custody every weekend. Split Lease gave me a consistent place for my kidsâ€”their clothes, toys, and favorite books are always there. They call it 'Dad's NYC home.' Worth every penny for that stability."
+                  &quot;I live in Boston but have custody every weekend. Split Lease gave me a consistent place for my kidsâ€”their clothes, toys, and favorite books are always there. They call it &apos;Dad&apos;s NYC home.&apos; Worth every penny for that stability.&quot;
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story
@@ -730,7 +730,7 @@ export default function WhySplitLeasePage() {
                 <h3 className="testimonial-name">Sarah Kim</h3>
                 <p className="testimonial-role">MBA Student Â· 3 nights/week in NYC</p>
                 <p className="testimonial-quote">
-                  "My program has me in NYC every Tuesday-Thursday. Split Lease saved me from drowning in hotel costs or commuting 4 hours daily. I can focus on my studies, not logistics. My textbooks and study materials stay thereâ€”it's my second dorm."
+                  &quot;My program has me in NYC every Tuesday-Thursday. Split Lease saved me from drowning in hotel costs or commuting 4 hours daily. I can focus on my studies, not logistics. My textbooks and study materials stay thereâ€”it&apos;s my second dorm.&quot;
                 </p>
                 <a href="/guest-success" className="testimonial-link">
                   Read full story
