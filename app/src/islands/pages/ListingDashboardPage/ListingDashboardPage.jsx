@@ -70,7 +70,7 @@ function ListingDashboardContent() {
     setActiveTab(tabId);
     try {
       localStorage.setItem('ld-active-tab', tabId);
-    } catch { /* ignore */ }
+    } catch (e) { console.warn('Failed to save active tab to localStorage:', e); }
   };
 
   // Loading state

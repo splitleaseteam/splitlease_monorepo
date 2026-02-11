@@ -82,10 +82,6 @@
 [FLOW]: Query listing table directly by '_id'
 [PHOTOS]: Listings use listing_photo table for photo storage
 
-### Day Indexing
-[FORMAT]: JS 0-6 (Sun-Sat) — database stores 0-indexed natively (no conversion needed)
-[NIGHT_IDS]: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-
 ### AI Import Assistant Workflow
 [PHASE_1]: Load common data (in-unit amenities, building amenities, neighborhood description, house rules, safety features)
 [PHASE_2]: Generate AI content (title, description) with enriched listing context

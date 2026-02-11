@@ -47,7 +47,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 
 | Metric | Count |
 |--------|-------|
-| Entry Points | 29 |
+| Entry Points | 83 |
 | Page Components | 25+ |
 | Shared Components | 50+ |
 | Edge Functions | 67 |

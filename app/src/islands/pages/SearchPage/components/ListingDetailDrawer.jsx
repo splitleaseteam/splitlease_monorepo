@@ -279,7 +279,7 @@ export default function ListingDetailDrawer({
     if (navigator.share) {
       try {
         await navigator.share({ title: listing.title, url: window.location.origin + url });
-      } catch (_) { /* user cancelled */ }
+      } catch (_) { console.debug('Share dialog dismissed by user'); }
     } else {
       await navigator.clipboard.writeText(window.location.origin + url);
       setShareToast(true);

@@ -267,25 +267,6 @@ if (window.showToast) {
 
 ---
 
-## COMPONENT_SIZE_ESTIMATES
-
-| File | Lines | Type |
-|------|-------|------|
-| NotificationSettingsIsland.jsx | ~140 | Component |
-| useNotificationSettings.js | ~130 | Hook |
-| notificationCategories.js | ~95 | Config |
-| NotificationToggle.jsx | ~100 | Component |
-| NotificationCategoryRow.jsx | ~80 | Component |
-| index.js | ~15 | Exports |
-| CLAUDE.md | (this file) | Documentation |
-
-[TOTAL_LINES]: ~560
-[COMPONENT_COUNT]: 3
-[HOOK_COUNT]: 1
-[CONFIG_COUNT]: 1
-
----
-
 ## RELATED_FILES
 
 [MODAL_WRAPPER]: app/src/islands/modals/NotificationSettingsModal.jsx

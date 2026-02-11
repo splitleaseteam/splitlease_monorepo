@@ -27,11 +27,7 @@ export const BUBBLE_MESSAGING_ENDPOINT = 'https://app.split.lease/api/1.1/wf/cor
 export const AI_SIGNUP_WORKFLOW_URL = 'https://app.split.lease/api/1.1/wf/ai-signup-guest';
 
 // External API Keys and Configuration
-// Note: API keys and base URLs are configured as environment variables
-// VITE_GOOGLE_MAPS_API_KEY - Google Maps API key
-// REMOVED: VITE_BUBBLE_API_KEY - Now stored server-side in Supabase Secrets
-// REMOVED: VITE_BUBBLE_API_BASE_URL - Now stored server-side in Supabase Secrets
-// Supabase credentials are configured in supabase.js using VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+// Note: API keys and base URLs are configured as environment variables (see app/.env.example)
 // All API calls route through Supabase Edge Functions
 
 // ============================================================================

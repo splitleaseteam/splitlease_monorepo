@@ -14,9 +14,9 @@ export class ErrorBoundary extends React.Component {
     console.error('React Error Boundary caught error:', error, errorInfo);
   }
 
-  handleReload = () => {
+  handleReload() {
     window.location.reload();
-  };
+  }
 
   render() {
     if (this.state.hasError) {

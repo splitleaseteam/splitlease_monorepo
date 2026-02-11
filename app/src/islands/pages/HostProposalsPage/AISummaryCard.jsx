@@ -116,8 +116,8 @@ function getInitialCollapsedState() {
 function saveCollapsedState(isCollapsed) {
   try {
     localStorage.setItem(STORAGE_KEY, String(isCollapsed));
-  } catch {
-    // Silently fail if localStorage is unavailable
+  } catch (e) {
+    console.warn('Failed to save AI summary collapsed state to localStorage:', e);
   }
 }
 
