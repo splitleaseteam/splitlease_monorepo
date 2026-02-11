@@ -28,13 +28,13 @@ const LeaseStyleSelector = React.memo(function LeaseStyleSelector({ activeStyle,
   return (
     <div className="pricing-edit__styles">
       <h3 className="pricing-edit__subtitle">Select your Lease Style</h3>
-      <div className="pricing-edit__style-grid">
+      <div className="pricing-edit__style-grid" role="radiogroup" aria-label="Lease style">
         {LEASE_STYLES.map((style) => (
           <div
             key={style.id}
             className={`pricing-edit__style-card ${activeStyle === style.id ? 'pricing-edit__style-card--active' : ''} ${disabled ? 'pricing-edit__style-card--disabled' : ''}`}
             onClick={() => !disabled && onSelect(style.id)}
-            role="button"
+            role="radio"
             tabIndex={disabled ? -1 : 0}
             onKeyDown={(e) => {
               if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
@@ -42,7 +42,7 @@ const LeaseStyleSelector = React.memo(function LeaseStyleSelector({ activeStyle,
                 onSelect(style.id);
               }
             }}
-            aria-pressed={activeStyle === style.id}
+            aria-checked={activeStyle === style.id}
             aria-disabled={disabled}
           >
             <div className="pricing-edit__style-header">

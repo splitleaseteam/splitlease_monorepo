@@ -73,7 +73,10 @@ export default function PricingSection() {
           {isMonthly ? (
             <div className="listing-dashboard-pricing__monthly-rate">
               <p className="listing-dashboard-pricing__monthly-rate-label">Monthly Host Rate</p>
-              <p className="listing-dashboard-pricing__monthly-rate-value">
+              <p
+                className="listing-dashboard-pricing__monthly-rate-value"
+                data-tooltip="Amount paid to you after platform fees"
+              >
                 {formatCurrency(listing?.monthlyHostRate || 0)}
                 <span className="listing-dashboard-pricing__monthly-rate-period">/month</span>
               </p>
@@ -81,7 +84,10 @@ export default function PricingSection() {
           ) : isWeekly ? (
             <div className="listing-dashboard-pricing__weekly-rate">
               <p className="listing-dashboard-pricing__weekly-rate-label">Weekly Host Rate</p>
-              <p className="listing-dashboard-pricing__weekly-rate-value">
+              <p
+                className="listing-dashboard-pricing__weekly-rate-value"
+                data-tooltip="Amount paid to you after platform fees"
+              >
                 {formatCurrency(listing?.weeklyHostRate || 0)}
                 <span className="listing-dashboard-pricing__weekly-rate-period">/week</span>
               </p>
@@ -96,8 +102,12 @@ export default function PricingSection() {
 
           <div className="listing-dashboard-pricing__fees">
             <p><strong>Additional Charges</strong></p>
-            <p>Damage Deposit: {formatCurrency(listing?.damageDeposit || 0)}</p>
-            <p>Maintenance Fee: {formatCurrency(listing?.maintenanceFee || 0)}</p>
+            <p data-tooltip="One-time refundable deposit collected at check-in">
+              Damage Deposit: {formatCurrency(listing?.damageDeposit || 0)}
+            </p>
+            <p data-tooltip="Recurring fee for cleaning and property upkeep">
+              Maintenance Fee: {formatCurrency(listing?.maintenanceFee || 0)}
+            </p>
           </div>
         </div>
       </div>

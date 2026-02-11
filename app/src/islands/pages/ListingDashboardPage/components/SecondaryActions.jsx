@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
+import SectionDropdown from './SectionDropdown.jsx';
 
 // Icon components (inline SVGs)
 const SparklesIcon = () => (
@@ -22,66 +22,8 @@ const SparklesIcon = () => (
   </svg>
 );
 
-const ChevronDownIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-);
-
-const SECTIONS = [
-  { id: 'property-info', label: 'Property Info' },
-  { id: 'description', label: 'Description' },
-  { id: 'amenities', label: 'Amenities' },
-  { id: 'details', label: 'Details' },
-  { id: 'pricing', label: 'Pricing & Lease Style' },
-  { id: 'rules', label: 'Rules' },
-  { id: 'availability', label: 'Availability' },
-  { id: 'photos', label: 'Photos' },
-  { id: 'cancellation-policy', label: 'Cancellation Policy' },
-];
-
 export default function SecondaryActions() {
   const { handleAIAssistant } = useListingDashboard();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const handleSectionSelect = (sectionId) => {
-    setIsDropdownOpen(false);
-    const sectionElement = document.getElementById(sectionId);
-    if (sectionElement) {
-      // Calculate position with offset to ensure title is visible
-      const headerOffset = 80; // Account for fixed header or padding
-      const elementPosition = sectionElement.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   return (
     <div className="listing-dashboard-secondary">
@@ -94,29 +36,7 @@ export default function SecondaryActions() {
         <span>AI Import Assistant</span>
       </button>
 
-      {/* Choose Section Dropdown */}
-      <div className="listing-dashboard-secondary__dropdown" ref={dropdownRef}>
-        <button
-          className="listing-dashboard-secondary__dropdown-btn"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        >
-          <span>Choose a Section</span>
-          <ChevronDownIcon />
-        </button>
-        {isDropdownOpen && (
-          <div className="listing-dashboard-secondary__dropdown-menu">
-            {SECTIONS.map((section) => (
-              <button
-                key={section.id}
-                className="listing-dashboard-secondary__dropdown-item"
-                onClick={() => handleSectionSelect(section.id)}
-              >
-                {section.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <SectionDropdown menuId="section-dropdown-menu-secondary" />
     </div>
   );
 }

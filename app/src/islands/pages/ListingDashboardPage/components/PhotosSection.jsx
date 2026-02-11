@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
+import { ChevronLeftIcon, ChevronRightIcon } from './icons.jsx';
 
 // Icons
 const StarIcon = ({ filled }) => (
@@ -63,6 +64,130 @@ const DragHandleIcon = () => (
   </svg>
 );
 
+// Lightbox-specific icon (not shared — unique close X)
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+function PhotoLightbox({ photos, index, onClose, getImageUrl }) {
+  const [currentIndex, setCurrentIndex] = useState(index);
+  const closeRef = useRef(null);
+  const prevRef = useRef(null);
+  const nextRef = useRef(null);
+
+  const goNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % photos.length);
+  }, [photos.length]);
+
+  const goPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  }, [photos.length]);
+
+  // Focus close button on mount
+  useEffect(() => {
+    closeRef.current?.focus();
+  }, []);
+
+  // Keyboard navigation + focus trap
+  useEffect(() => {
+    const focusable = [prevRef.current, closeRef.current, nextRef.current].filter(Boolean);
+    const handleKey = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'ArrowRight') { goNext(); return; }
+      if (e.key === 'ArrowLeft') { goPrev(); return; }
+      if (e.key === 'Tab' && focusable.length > 0) {
+        const currentIdx = focusable.indexOf(document.activeElement);
+        if (e.shiftKey) {
+          e.preventDefault();
+          focusable[currentIdx <= 0 ? focusable.length - 1 : currentIdx - 1]?.focus();
+        } else {
+          e.preventDefault();
+          focusable[currentIdx >= focusable.length - 1 ? 0 : currentIdx + 1]?.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose, goNext, goPrev]);
+
+  // Lock body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const photo = photos[currentIndex];
+  const imageUrl = getImageUrl(photo);
+
+  return (
+    <div
+      className="listing-dashboard-lightbox"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Photo lightbox"
+    >
+      {/* Close button */}
+      <button
+        ref={closeRef}
+        className="listing-dashboard-lightbox__close"
+        onClick={onClose}
+        aria-label="Close lightbox"
+      >
+        <CloseIcon />
+      </button>
+
+      {/* Previous */}
+      {photos.length > 1 && (
+        <button
+          ref={prevRef}
+          className="listing-dashboard-lightbox__nav listing-dashboard-lightbox__nav--prev"
+          onClick={goPrev}
+          aria-label="Previous photo"
+        >
+          <ChevronLeftIcon size={32} />
+        </button>
+      )}
+
+      {/* Photo */}
+      <div className="listing-dashboard-lightbox__content">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={photo.photoType || `Photo ${currentIndex + 1}`}
+            className="listing-dashboard-lightbox__image"
+          />
+        ) : (
+          <p className="listing-dashboard-lightbox__no-image">No image available</p>
+        )}
+        <div className="listing-dashboard-lightbox__info">
+          <span className="listing-dashboard-lightbox__counter">
+            {currentIndex + 1} of {photos.length}
+          </span>
+          {photo.photoType && (
+            <span className="listing-dashboard-lightbox__type">{photo.photoType}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Next */}
+      {photos.length > 1 && (
+        <button
+          ref={nextRef}
+          className="listing-dashboard-lightbox__nav listing-dashboard-lightbox__nav--next"
+          onClick={goNext}
+          aria-label="Next photo"
+        >
+          <ChevronRightIcon size={32} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 const PHOTO_TYPES = [
   'Dining Room',
   'Bathroom',
@@ -91,9 +216,14 @@ export default function PhotosSection() {
 
   const photos = listing?.photos || [];
 
+  // Lightbox state
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [keyboardDragIndex, setKeyboardDragIndex] = useState(null);
+  const cardRefs = useRef([]);
 
   // Drag and drop handlers
   const handleDragStart = (e, index) => {
@@ -144,6 +274,46 @@ export default function PhotosSection() {
     setDragOverIndex(null);
   };
 
+  const handleCardKeyDown = (event, index) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+
+      if (keyboardDragIndex === null) {
+        setKeyboardDragIndex(index);
+      } else {
+        setKeyboardDragIndex(null);
+      }
+      return;
+    }
+
+    if (keyboardDragIndex === null) {
+      return;
+    }
+
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+      return;
+    }
+
+    event.preventDefault();
+    const direction = event.key === 'ArrowLeft' ? -1 : 1;
+    const targetIndex = keyboardDragIndex + direction;
+
+    if (targetIndex < 0 || targetIndex >= photos.length) {
+      return;
+    }
+
+    handleReorderPhotos?.(keyboardDragIndex, targetIndex);
+    setKeyboardDragIndex(targetIndex);
+
+    window.requestAnimationFrame(() => {
+      cardRefs.current[targetIndex]?.focus();
+    });
+  };
+
   // Helper to get a valid image URL
   const getImageUrl = (photo) => {
     // Handle different photo URL formats
@@ -181,6 +351,11 @@ export default function PhotosSection() {
           Drag and drop photos to reorder. First photo is the cover photo.
         </p>
       )}
+      {photos.length > 1 && (
+        <p className="sr-only" aria-live="polite">
+          Keyboard reorder available. Focus a photo, press Space to pick it up, use left and right arrows to move it, then press Space or Enter to drop.
+        </p>
+      )}
 
       {/* Photos Grid */}
       <div className="listing-dashboard-photos__grid">
@@ -193,12 +368,20 @@ export default function PhotosSection() {
             <div
               key={photo.id || index}
               className={`listing-dashboard-photos__card ${isDragging ? 'listing-dashboard-photos__card--dragging' : ''} ${isDragOver ? 'listing-dashboard-photos__card--drag-over' : ''}`}
+              ref={(element) => {
+                cardRefs.current[index] = element;
+              }}
               draggable
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
+              onKeyDown={(event) => handleCardKeyDown(event, index)}
+              tabIndex={0}
+              role="group"
+              aria-grabbed={keyboardDragIndex === index}
+              aria-label={`Photo ${index + 1}${keyboardDragIndex === index ? ', picked up for reordering' : ''}`}
             >
               {/* Drag Handle */}
               <div className="listing-dashboard-photos__drag-handle" title="Drag to reorder">
@@ -214,6 +397,8 @@ export default function PhotosSection() {
                     className="listing-dashboard-photos__image"
                     onError={handleImageError}
                     draggable={false}
+                    onClick={() => setLightboxIndex(index)}
+                    style={{ cursor: 'zoom-in' }}
                   />
                 ) : (
                   <div className="listing-dashboard-photos__placeholder">
@@ -238,14 +423,14 @@ export default function PhotosSection() {
                   <button
                     className={`listing-dashboard-photos__star-btn ${(photo.isCover || index === 0) ? 'listing-dashboard-photos__star-btn--active' : ''}`}
                     onClick={() => handleSetCoverPhoto?.(photo.id)}
-                    title={(photo.isCover || index === 0) ? 'Current cover photo' : 'Set as cover photo'}
+                    aria-label={(photo.isCover || index === 0) ? 'Current cover photo' : 'Set as cover photo'}
                   >
                     <StarIcon filled={photo.isCover || index === 0} />
                   </button>
                   <button
                     className="listing-dashboard-photos__delete-btn"
                     onClick={() => handleDeletePhoto?.(photo.id)}
-                    title="Delete photo"
+                    aria-label="Delete photo"
                   >
                     <TrashIcon />
                   </button>
@@ -256,6 +441,7 @@ export default function PhotosSection() {
               <div className="listing-dashboard-photos__type">
                 <select
                   value={photo.photoType || 'Other'}
+                  aria-label={`Photo type for photo ${index + 1}`}
                   onChange={() => {
                     // TODO: Handle photo type change
                   }}
@@ -284,6 +470,16 @@ export default function PhotosSection() {
           </div>
         )}
       </div>
+
+      {/* Photo Lightbox */}
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          getImageUrl={getImageUrl}
+        />
+      )}
     </div>
   );
 }

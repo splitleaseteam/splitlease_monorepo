@@ -12,6 +12,7 @@ import ActionCardGrid from './components/ActionCardGrid.jsx';
 import AlertBanner from './components/AlertBanner.jsx';
 import SecondaryActions from './components/SecondaryActions.jsx';
 import PropertyInfoSection from './components/PropertyInfoSection.jsx';
+import MiniPanels from './components/MiniPanels.jsx';
 import DetailsSection from './components/DetailsSection.jsx';
 import AmenitiesSection from './components/AmenitiesSection.jsx';
 import DescriptionSection from './components/DescriptionSection.jsx';
@@ -21,6 +22,7 @@ import RulesSection from './components/RulesSection.jsx';
 import AvailabilitySection from './components/AvailabilitySection.jsx';
 import PhotosSection from './components/PhotosSection.jsx';
 import CancellationPolicySection from './components/CancellationPolicySection.jsx';
+import CollapsibleSection from './components/CollapsibleSection.jsx';
 import '../../../styles/components/listing-dashboard.css';
 import '../AccountProfilePage/AccountProfilePage.css'; // For ReferralModal styles
 
@@ -143,48 +145,112 @@ function ListingDashboardContent() {
             {/* Secondary Actions */}
             <SecondaryActions />
 
-            {/* Property Info Section */}
+            {/* Property Info Section — always visible, not collapsible */}
             <div className={highlightedFields?.has('name') ? 'listing-dashboard-section--ai-highlighted' : ''}>
               <PropertyInfoSection />
             </div>
 
+            <MiniPanels />
+
             {/* Description Section */}
-            <div className={
-              (highlightedFields?.has('description') || highlightedFields?.has('neighborhood'))
-                ? 'listing-dashboard-section--ai-highlighted'
-                : ''
-            }>
-              <DescriptionSection />
-            </div>
+            <CollapsibleSection
+              id="description"
+              title="Description"
+              summary={
+                listing.description
+                  ? `${listing.description.length} characters`
+                  : 'No description'
+              }
+            >
+              <div className={
+                (highlightedFields?.has('description') || highlightedFields?.has('neighborhood'))
+                  ? 'listing-dashboard-section--ai-highlighted'
+                  : ''
+              }>
+                <DescriptionSection />
+              </div>
+            </CollapsibleSection>
 
             {/* Amenities Section */}
-            <div className={highlightedFields?.has('amenities') ? 'listing-dashboard-section--ai-highlighted' : ''}>
-              <AmenitiesSection />
-            </div>
+            <CollapsibleSection
+              id="amenities"
+              title="Amenities"
+              summary={`${listing.inUnitAmenities?.length || 0} in-unit, ${listing.buildingAmenities?.length || 0} building amenities`}
+            >
+              <div className={highlightedFields?.has('amenities') ? 'listing-dashboard-section--ai-highlighted' : ''}>
+                <AmenitiesSection />
+              </div>
+            </CollapsibleSection>
 
             {/* Details Section */}
-            <DetailsSection />
+            <CollapsibleSection
+              id="details"
+              title="Details"
+              summary={`${listing.features?.bedrooms || 0} bed, ${listing.features?.bathrooms || 0} bath${listing.features?.squareFootage ? `, ${listing.features.squareFootage} sqft` : ''}`}
+            >
+              <DetailsSection />
+            </CollapsibleSection>
 
             {/* Pricing & Lease Style Section */}
-            <PricingSection />
+            <CollapsibleSection
+              id="pricing"
+              title="Pricing & Lease Style"
+              summary={
+                listing.monthlyHostRate > 0
+                  ? `$${listing.monthlyHostRate}/month`
+                  : listing.weeklyHostRate > 0
+                    ? `$${listing.weeklyHostRate}/week`
+                    : 'No pricing set'
+              }
+            >
+              <PricingSection />
+            </CollapsibleSection>
 
             {/* Rules Section */}
-            <div className={
-              (highlightedFields?.has('rules') || highlightedFields?.has('safety'))
-                ? 'listing-dashboard-section--ai-highlighted'
-                : ''
-            }>
-              <RulesSection />
-            </div>
+            <CollapsibleSection
+              id="rules"
+              title="Rules"
+              summary={`${listing.houseRules?.length || 0} house rules`}
+            >
+              <div className={
+                (highlightedFields?.has('rules') || highlightedFields?.has('safety'))
+                  ? 'listing-dashboard-section--ai-highlighted'
+                  : ''
+              }>
+                <RulesSection />
+              </div>
+            </CollapsibleSection>
 
             {/* Availability Section */}
-            <AvailabilitySection />
+            <CollapsibleSection
+              id="availability"
+              title="Availability"
+              summary={
+                listing.earliestAvailableDate
+                  ? `Available from ${new Date(listing.earliestAvailableDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                  : 'No availability set'
+              }
+            >
+              <AvailabilitySection />
+            </CollapsibleSection>
 
             {/* Photos Section */}
-            <PhotosSection />
+            <CollapsibleSection
+              id="photos"
+              title="Photos"
+              summary={`${listing.photos?.length || 0} photos`}
+            >
+              <PhotosSection />
+            </CollapsibleSection>
 
             {/* Cancellation Policy Section */}
-            <CancellationPolicySection />
+            <CollapsibleSection
+              id="cancellation-policy"
+              title="Cancellation Policy"
+              summary={listing.cancellationPolicy ? 'Policy set' : 'Standard'}
+            >
+              <CancellationPolicySection />
+            </CollapsibleSection>
           </div>
         </div>
       </div>
@@ -196,7 +262,7 @@ function ListingDashboardContent() {
           listing={listing}
           onClose={handleCloseEdit}
           onSave={async (updates) => {
-            await updateListing(listing.id, updates);
+            await updateListing(updates);
             handleSaveEdit(updates);
           }}
           isOwner={true}

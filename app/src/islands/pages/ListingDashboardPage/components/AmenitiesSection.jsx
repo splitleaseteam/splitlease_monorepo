@@ -1,5 +1,32 @@
 import { useListingDashboard } from '../context/ListingDashboardContext';
 
+const AMENITY_TOOLTIP_FALLBACKS = {
+  doorman: 'Building has doorman or concierge service',
+  concierge: 'Building has doorman or concierge service',
+  elevator: 'Building has elevator access',
+  gym: 'On-site fitness center or gym',
+  laundry: 'In-unit or in-building laundry facilities',
+  wifi: 'High-speed wireless internet included',
+  internet: 'High-speed wireless internet included',
+  parking: 'Parking is available on or near the property',
+  airconditioning: 'Air conditioning is available in the space',
+  heating: 'Heating is available in the space',
+  kitchen: 'Kitchen access is included',
+};
+
+function normalizeLookupKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function getAmenityTooltip(amenity) {
+  if (amenity?.description) {
+    return amenity.description;
+  }
+
+  const key = normalizeLookupKey(amenity?.name);
+  return AMENITY_TOOLTIP_FALLBACKS[key] || amenity?.name || '';
+}
+
 // Default icon for amenities without a database icon URL
 const DefaultIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,7 +92,11 @@ export default function AmenitiesSection() {
           {hasInUnitAmenities ? (
             <div className="listing-dashboard-amenities__grid">
               {inUnitAmenities.map((amenity) => (
-                <div key={amenity.id} className="listing-dashboard-amenities__item">
+                <div
+                  key={amenity.id}
+                  className="listing-dashboard-amenities__item"
+                  data-tooltip={getAmenityTooltip(amenity)}
+                >
                   <span className="listing-dashboard-amenities__icon">
                     <AmenityIcon icon={amenity.icon} name={amenity.name} />
                   </span>
@@ -84,7 +115,11 @@ export default function AmenitiesSection() {
           {hasBuildingAmenities ? (
             <div className="listing-dashboard-amenities__grid">
               {buildingAmenities.map((amenity) => (
-                <div key={amenity.id} className="listing-dashboard-amenities__item">
+                <div
+                  key={amenity.id}
+                  className="listing-dashboard-amenities__item"
+                  data-tooltip={getAmenityTooltip(amenity)}
+                >
                   <span className="listing-dashboard-amenities__icon">
                     <AmenityIcon icon={amenity.icon} name={amenity.name} />
                   </span>

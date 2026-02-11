@@ -24,6 +24,7 @@ export default function NightlyPricingForm({
                 <div className="pricing-edit-schedule__header">
                     <label>Select Available Nights</label>
                     <button
+                        type="button"
                         className="pricing-edit-schedule__select-all"
                         onClick={onSelectAllNights}
                         disabled={!isOwner}
@@ -56,6 +57,7 @@ export default function NightlyPricingForm({
                 <label>
                     Ideal # of Nights Per Week
                     <button
+                        type="button"
                         ref={infoRefs.nightsPerWeek}
                         className="pricing-edit-field__help"
                         onClick={onInfoClick('nightsPerWeek')}
@@ -100,6 +102,7 @@ export default function NightlyPricingForm({
                                 <label>
                                     Your Compensation / Week @ {nights} nights / week occupancy
                                     <button
+                                        type="button"
                                         ref={infoRefs.weeklyComp?.[nights]}
                                         className="pricing-edit-field__help"
                                         onClick={onInfoClick(`weeklyComp${nights}`)}

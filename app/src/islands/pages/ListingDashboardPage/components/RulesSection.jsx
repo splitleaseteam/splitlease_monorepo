@@ -1,5 +1,25 @@
 import { useListingDashboard } from '../context/ListingDashboardContext';
 
+const RULE_TOOLTIP_FALLBACKS = {
+  nosmoking: 'Smoking is not permitted on the property',
+  nopets: 'Pets are not allowed',
+  noparties: 'Social gatherings and parties are not permitted',
+  quiethours: 'Quiet hours are observed (typically 10pm-8am)',
+};
+
+function normalizeLookupKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function getRuleTooltip(rule) {
+  if (rule?.description) {
+    return rule.description;
+  }
+
+  const key = normalizeLookupKey(rule?.name);
+  return RULE_TOOLTIP_FALLBACKS[key] || rule?.name || '';
+}
+
 // Default icon for rules without a database icon URL
 const DefaultRuleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -76,7 +96,11 @@ export default function RulesSection() {
         {hasHouseRules ? (
           <div className="listing-dashboard-rules__grid">
             {houseRules.map((rule) => (
-              <div key={rule.id} className="listing-dashboard-rules__item">
+              <div
+                key={rule.id}
+                className="listing-dashboard-rules__item"
+                data-tooltip={getRuleTooltip(rule)}
+              >
                 <span className="listing-dashboard-rules__icon">
                   <RuleIcon icon={rule.icon} name={rule.name} />
                 </span>

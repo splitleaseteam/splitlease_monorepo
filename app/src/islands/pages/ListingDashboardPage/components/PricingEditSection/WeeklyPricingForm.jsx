@@ -38,6 +38,7 @@ export default function WeeklyPricingForm({
                 <label>
                     Weekly Pricing*
                     <button
+                        type="button"
                         ref={infoRefs.weeklyPricing}
                         className="pricing-edit-field__help"
                         onClick={onInfoClick('weeklyPricing')}

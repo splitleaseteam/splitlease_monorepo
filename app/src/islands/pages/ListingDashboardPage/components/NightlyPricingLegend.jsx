@@ -41,10 +41,12 @@ export default function NightlyPricingLegend({
             const perNight = getNightlyRate(nights);
             // Calculate gradient class (n1 = darkest, higher = lighter)
             const gradientIndex = index + 1;
+            const tooltipText = `${nights} nights × ${formatCurrency(perNight)}/night = ${formatCurrency(total)}/week`;
             return (
               <div
                 key={nights}
                 className={`ld-nightly-legend__swatch ld-nightly-legend__swatch--n${gradientIndex}`}
+                data-tooltip={tooltipText}
               >
                 <span className="ld-nightly-legend__swatch-nights">{nights} nights</span>
                 <span className="ld-nightly-legend__swatch-total">{formatCurrency(total)}</span>

@@ -1,99 +1,16 @@
-import { useState } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
+import { FileTextIcon, CalendarIcon, FileCheckIcon, ChevronLeftIcon } from './icons.jsx';
+import SectionDropdown from './SectionDropdown.jsx';
 
-// Icon components (inline SVGs to avoid external dependency)
-const ArrowLeftIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m12 19-7-7 7-7" />
-    <path d="M19 12H5" />
-  </svg>
-);
-
+// Component-specific icons
 const ListIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="8" x2="21" y1="6" y2="6" />
     <line x1="8" x2="21" y1="12" y2="12" />
     <line x1="8" x2="21" y1="18" y2="18" />
     <line x1="3" x2="3.01" y1="6" y2="6" />
     <line x1="3" x2="3.01" y1="12" y2="12" />
     <line x1="3" x2="3.01" y1="18" y2="18" />
-  </svg>
-);
-
-const FileTextIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" x2="8" y1="13" y2="13" />
-    <line x1="16" x2="8" y1="17" y2="17" />
-    <line x1="10" x2="8" y1="9" y2="9" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-    <line x1="16" x2="16" y1="2" y2="6" />
-    <line x1="8" x2="8" y1="2" y2="6" />
-    <line x1="3" x2="21" y1="10" y2="10" />
-  </svg>
-);
-
-const FileCheckIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-    <polyline points="14 2 14 8 20 8" />
-    <path d="m9 15 2 2 4-4" />
   </svg>
 );
 
@@ -118,7 +35,7 @@ const GiftIcon = () => (
 );
 
 export default function NavigationHeader({ onInviteClick }) {
-  const { activeTab, counts, listing, handleTabChange } = useListingDashboard();
+  const { activeTab, counts, listing, handleTabChange, handleBackClick } = useListingDashboard();
 
   // Handle tab click - some tabs navigate to different pages
   const handleTabClick = (tabId) => {
@@ -169,10 +86,13 @@ export default function NavigationHeader({ onInviteClick }) {
 
   return (
     <div className="listing-dashboard-nav">
-      {/* Tabs Row - Tabs on left, Invite on right */}
       <div className="listing-dashboard-nav__tabs-row">
-        {/* Tab Navigation */}
-        <div className="listing-dashboard-nav__tabs">
+        <button className="listing-dashboard-nav__back-btn" onClick={handleBackClick}>
+          <ChevronLeftIcon size={18} />
+          <span>Back</span>
+        </button>
+
+        <div className="listing-dashboard-nav__tabs" role="tablist" aria-label="Listing dashboard navigation">
           {visibleTabs.map((tab) => (
             <button
               key={tab.id}
@@ -180,6 +100,8 @@ export default function NavigationHeader({ onInviteClick }) {
               className={`listing-dashboard-nav__tab ${
                 activeTab === tab.id ? 'listing-dashboard-nav__tab--active' : ''
               }`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
             >
               {tab.icon}
               <span>{tab.label}</span>
@@ -192,16 +114,24 @@ export default function NavigationHeader({ onInviteClick }) {
           ))}
         </div>
 
-        {/* Invite Friends Button */}
-        {onInviteClick && (
-          <button
-            className="listing-dashboard-nav__invite-btn"
-            onClick={onInviteClick}
-          >
-            <GiftIcon />
-            <span>Give $50, Get $50</span>
-          </button>
-        )}
+        <div className="listing-dashboard-nav__actions">
+          {onInviteClick && (
+            <button
+              className="listing-dashboard-nav__invite-btn"
+              onClick={onInviteClick}
+            >
+              <GiftIcon />
+              <span>Give $50, Get $50</span>
+            </button>
+          )}
+
+          <SectionDropdown
+            menuId="section-dropdown-menu-nav"
+            wrapperClassName="listing-dashboard-nav__section-dropdown"
+            buttonClassName="listing-dashboard-nav__section-dropdown-btn"
+            menuClassName="listing-dashboard-nav__section-dropdown-menu"
+          />
+        </div>
       </div>
     </div>
   );

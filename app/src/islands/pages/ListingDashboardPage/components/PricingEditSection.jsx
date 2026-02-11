@@ -1,5 +1,4 @@
-﻿import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import HostScheduleSelector from '../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import InformationalText from '../../../shared/InformationalText';
 import { logger } from '../../../../lib/logger';
 import { formatCurrency, calculateNightlyRate } from '../../../../lib/formatters';
@@ -7,6 +6,7 @@ import LeaseStyleSelector from './PricingEditSection/LeaseStyleSelector';
 import NightlyPricingForm from './PricingEditSection/NightlyPricingForm';
 import WeeklyPricingForm from './PricingEditSection/WeeklyPricingForm';
 import MonthlyPricingForm from './PricingEditSection/MonthlyPricingForm';
+import { useFocusTrap } from '../hooks/useFocusTrap.js';
 
 // Rental type options based on LeaseStyleSelector
 const RENTAL_TYPES = [
@@ -49,6 +49,8 @@ export default function PricingEditSection({
   onSave,
   isOwner = true,
 }) {
+  const overlayRef = useRef(null);
+
   // State for form fields
   const [selectedRentalType, setSelectedRentalType] = useState(listing?.leaseStyle || 'Nightly');
   const [damageDeposit, setDamageDeposit] = useState(listing?.damageDeposit || 500);
@@ -359,12 +361,32 @@ export default function PricingEditSection({
     }
   };
 
+  const handleEscape = useCallback(() => {
+    if (showConfirmModal) {
+      setShowConfirmModal(false);
+      return;
+    }
+
+    handleBackClick();
+  }, [showConfirmModal, handleBackClick]);
+
+  useFocusTrap(overlayRef, {
+    isActive: true,
+    onEscape: handleEscape,
+  });
+
   return (
-    <div className="pricing-edit-overlay">
+    <div
+      ref={overlayRef}
+      className="pricing-edit-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pricing-edit-title"
+    >
       <div className="pricing-edit-container">
         {/* Header with back button */}
         <div className="pricing-edit-header">
-          <button className="pricing-edit-back" onClick={handleBackClick}>
+          <button type="button" className="pricing-edit-back" onClick={handleBackClick}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
@@ -376,8 +398,9 @@ export default function PricingEditSection({
         <div className="pricing-edit-content">
           <div className="pricing-edit-title-row">
             <div className="pricing-edit-title">
-              <h2>Pricing Controls</h2>
+              <h2 id="pricing-edit-title">Pricing Controls</h2>
               <button
+                type="button"
                 ref={infoRefs.pricingControls}
                 className="pricing-edit-help"
                 onClick={handleInfoClick('pricingControls')}
@@ -390,6 +413,7 @@ export default function PricingEditSection({
               </button>
             </div>
             <button
+              type="button"
               className={`pricing-edit-save ${!isFormValid() ? 'pricing-edit-save--disabled' : ''}`}
               onClick={handleSave}
               disabled={!isFormValid() || isSaving}
@@ -410,7 +434,7 @@ export default function PricingEditSection({
             <div className="pricing-edit-field">
               <label>
                 Damage Deposit*
-                <button ref={infoRefs.damageDeposit} className="pricing-edit-field__help" onClick={handleInfoClick('damageDeposit')}>
+                <button type="button" ref={infoRefs.damageDeposit} className="pricing-edit-field__help" onClick={handleInfoClick('damageDeposit')}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
@@ -430,7 +454,7 @@ export default function PricingEditSection({
             <div className="pricing-edit-field">
               <label>
                 Monthly Maintenance Fee
-                <button ref={infoRefs.maintenanceFee} className="pricing-edit-field__help" onClick={handleInfoClick('maintenanceFee')}>
+                <button type="button" ref={infoRefs.maintenanceFee} className="pricing-edit-field__help" onClick={handleInfoClick('maintenanceFee')}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
@@ -534,7 +558,7 @@ export default function PricingEditSection({
           <div className="host-modal host-modal--small" onClick={(e) => e.stopPropagation()}>
             <div className="host-modal__header">
               <h3 className="host-modal__title">Discard Changes?</h3>
-              <button className="host-modal__close" onClick={() => setShowConfirmModal(false)}>
+              <button type="button" className="host-modal__close" onClick={() => setShowConfirmModal(false)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
@@ -545,10 +569,10 @@ export default function PricingEditSection({
                 You have unsaved changes. Are you sure you want to leave without saving?
               </p>
               <div className="host-confirm-modal__actions">
-                <button className="btn btn--secondary" onClick={() => setShowConfirmModal(false)}>
+                <button type="button" className="btn btn--secondary" onClick={() => setShowConfirmModal(false)}>
                   Keep Editing
                 </button>
-                <button className="btn btn--danger" onClick={onClose}>
+                <button type="button" className="btn btn--danger" onClick={onClose}>
                   Discard Changes
                 </button>
               </div>

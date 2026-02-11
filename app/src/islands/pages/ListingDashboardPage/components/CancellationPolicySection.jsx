@@ -80,7 +80,11 @@ export default function CancellationPolicySection() {
 
       {/* Content */}
       <div className="listing-dashboard-cancellation">
+        <label htmlFor="cancellation-policy-select" className="sr-only">
+          Policy Type
+        </label>
         <select
+          id="cancellation-policy-select"
           className="listing-dashboard-cancellation__select"
           value={getDisplayValue()}
           onChange={handlePolicyChange}

@@ -15,6 +15,7 @@ export default function MonthlyPricingForm({
                 <label>
                     Monthly Host Compensation*
                     <button
+                        type="button"
                         ref={infoRefs.monthlyComp}
                         className="pricing-edit-field__help"
                         onClick={onInfoClick('monthlyComp')}
@@ -50,6 +51,7 @@ export default function MonthlyPricingForm({
                         our other models might be more fitting for you, as they don't require this provision.
                     </p>
                     <button
+                        type="button"
                         ref={infoRefs.monthlyAgreement}
                         className="pricing-edit-agreement__help"
                         onClick={onInfoClick('monthlyAgreement')}

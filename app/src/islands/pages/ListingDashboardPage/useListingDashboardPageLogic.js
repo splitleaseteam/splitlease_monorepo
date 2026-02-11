@@ -169,7 +169,7 @@ export default function useListingDashboardPageLogic() {
     } catch (error) {
       logger.error('âŒ Failed to save cancellation policy:', error);
     }
-  }, [listingId, data]);
+  }, [listingId, data.updateListing, data.setListing]);
 
   const handleCancellationRestrictionsChange = useCallback(async (restrictionsText) => {
     if (!listingId) {
@@ -192,7 +192,7 @@ export default function useListingDashboardPageLogic() {
     } catch (error) {
       logger.error('âŒ Failed to save cancellation restrictions:', error);
     }
-  }, [listingId, data]);
+  }, [listingId, data.updateListing, data.setListing]);
 
   // Schedule Cohost handlers
   const handleScheduleCohost = useCallback(() => {
@@ -213,7 +213,7 @@ export default function useListingDashboardPageLogic() {
         ...requestData,
       });
     }
-  }, [data]);
+  }, [data.setExistingCohostRequest]);
 
   // Import Reviews handlers
   const handleImportReviews = useCallback(() => {
@@ -276,7 +276,7 @@ export default function useListingDashboardPageLogic() {
     if (listingId) {
       data.fetchListing(true);
     }
-  }, [listingId, data]);
+  }, [listingId, data.fetchListing]);
 
   const handleSaveEdit = useCallback((updatedData) => {
     if (updatedData && typeof updatedData === 'object') {
@@ -303,7 +303,7 @@ export default function useListingDashboardPageLogic() {
         return updates;
       });
     }
-  }, [data]);
+  }, [data.setListing]);
 
   // Availability handlers
   const handleAvailabilityChange = useCallback(async (fieldName, value) => {
@@ -318,11 +318,11 @@ export default function useListingDashboardPageLogic() {
 
     try {
       const fieldMapping = {
-        'checkInTime': 'NEW Date Check-in Time',
-        'checkOutTime': 'NEW Date Check-out Time',
-        'earliestAvailableDate': ' First Available',
-        'leaseTermMin': 'Minimum Weeks',
-        'leaseTermMax': 'Maximum Weeks'
+        'checkInTime': 'checkin_time_of_day',
+        'checkOutTime': 'checkout_time_of_day',
+        'earliestAvailableDate': 'first_available_date',
+        'leaseTermMin': 'minimum_weeks_per_stay',
+        'leaseTermMax': 'maximum_weeks_per_stay'
       };
 
       const dbFieldName = fieldMapping[fieldName];
@@ -351,7 +351,7 @@ export default function useListingDashboardPageLogic() {
         type: 'error'
       });
     }
-  }, [listingId, data]);
+  }, [listingId, data.updateListing, data.setListing]);
 
   const handleBlockedDatesChange = useCallback(async (newBlockedDates) => {
     if (!listingId) {
@@ -362,7 +362,7 @@ export default function useListingDashboardPageLogic() {
     logger.debug('ðŸ“… Saving blocked dates:', newBlockedDates);
 
     try {
-      await data.updateListing({ 'Dates - Blocked': JSON.stringify(newBlockedDates) });
+      await data.updateListing({ 'blocked_specific_dates_json': JSON.stringify(newBlockedDates) });
 
       data.setListing((prev) => ({
         ...prev,
@@ -373,7 +373,7 @@ export default function useListingDashboardPageLogic() {
     } catch (error) {
       logger.error('âŒ Failed to save blocked dates:', error);
     }
-  }, [listingId, data]);
+  }, [listingId, data.updateListing, data.setListing]);
 
   return {
     // Auth state from useListingAuth

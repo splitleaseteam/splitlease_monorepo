@@ -1,18 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
-
-// Calendar navigation icons
-const ChevronLeftIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m15 18-6-6 6-6" />
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m9 18 6-6-6-6" />
-  </svg>
-);
+import { ChevronLeftIcon, ChevronRightIcon } from './icons.jsx';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -60,7 +48,7 @@ const formatDateForInput = (date) => {
 };
 
 export default function AvailabilitySection() {
-  const { listing, handleEditSection, handleBlockedDatesChange, handleAvailabilityChange } = useListingDashboard();
+  const { listing, handleBlockedDatesChange, handleAvailabilityChange } = useListingDashboard();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dateSelectionMode, setDateSelectionMode] = useState('individual'); // 'range' or 'individual'
 
@@ -85,8 +73,7 @@ export default function AvailabilitySection() {
     return d.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
   };
 
-  // Get calendar days for current month
-  const getCalendarDays = () => {
+  const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
@@ -142,15 +129,15 @@ export default function AvailabilitySection() {
     }
 
     return days;
-  };
+  }, [currentDate]);
 
-  const navigateMonth = (direction) => {
+  const navigateMonth = useCallback((direction) => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() + direction);
       return newDate;
     });
-  };
+  }, []);
 
   // Check if a date is blocked
   const isDateBlocked = useCallback((date) => {
@@ -191,6 +178,11 @@ export default function AvailabilitySection() {
     });
   }, [handleBlockedDatesChange]);
 
+  const handleRangeSelect = useCallback((startDate, endDate) => {
+    const rangeDates = getDatesBetween(startDate, endDate);
+    addBlockedDates(rangeDates);
+  }, [addBlockedDates]);
+
   // Handle date click
   const handleDateClick = useCallback((dayInfo) => {
     // Don't allow clicking on past dates or dates without valid Date objects
@@ -210,13 +202,12 @@ export default function AvailabilitySection() {
         setRangeStart(dayInfo.date);
       } else {
         // Second click: block all dates in the range
-        const rangeDates = getDatesBetween(rangeStart, dayInfo.date);
-        addBlockedDates(rangeDates);
+        handleRangeSelect(rangeStart, dayInfo.date);
         // Reset range start for next selection
         setRangeStart(null);
       }
     }
-  }, [dateSelectionMode, rangeStart, toggleBlockedDate, addBlockedDates]);
+  }, [dateSelectionMode, rangeStart, toggleBlockedDate, handleRangeSelect]);
 
   // Check if a date is within the pending range (when rangeStart is set)
   const isInPendingRange = useCallback((date) => {
@@ -226,16 +217,18 @@ export default function AvailabilitySection() {
     return dateKey === startKey;
   }, [rangeStart, dateSelectionMode]);
 
+  const sortedBlockedDates = useMemo(() => {
+    return [...blockedDates].sort();
+  }, [blockedDates]);
+
   // Get future blocked dates for display
   const allFutureBlockedDates = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayKey = formatDateKey(today);
 
-    return blockedDates
-      .filter((dateKey) => dateKey >= todayKey)
-      .sort();
-  }, [blockedDates]);
+    return sortedBlockedDates.filter((dateKey) => dateKey >= todayKey);
+  }, [sortedBlockedDates]);
 
   // Get past blocked dates (for expandable history section)
   const pastBlockedDates = useMemo(() => {
@@ -243,11 +236,10 @@ export default function AvailabilitySection() {
     today.setHours(0, 0, 0, 0);
     const todayKey = formatDateKey(today);
 
-    return blockedDates
+    return sortedBlockedDates
       .filter((dateKey) => dateKey < todayKey)
-      .sort()
       .reverse(); // Most recent past dates first
-  }, [blockedDates]);
+  }, [sortedBlockedDates]);
 
   // Dates to display (limited or all based on showAllBlockedDates)
   const displayedBlockedDates = useMemo(() => {
@@ -260,12 +252,28 @@ export default function AvailabilitySection() {
   const hasMoreDates = allFutureBlockedDates.length > 10;
 
   // Reset range start when switching modes
-  const handleModeChange = (mode) => {
+  const handleModeChange = useCallback((mode) => {
     setDateSelectionMode(mode);
     setRangeStart(null);
-  };
+  }, []);
 
-  const calendarDays = getCalendarDays();
+  // Month stats: count available vs total future days in the displayed month
+  const monthStats = useMemo(() => {
+    const currentMonthDays = calendarDays.filter((d) => d.isCurrentMonth);
+    const futureDays = currentMonthDays.filter((d) => !d.isPast);
+    const availableDays = futureDays.filter(
+      (d) => d.date && !isDateBlocked(d.date)
+    );
+    return { available: availableDays.length, total: futureDays.length };
+  }, [calendarDays, isDateBlocked]);
+
+  // Tooltip text for a given day
+  const getDayTooltip = (dayInfo, isBlocked) => {
+    if (!dayInfo.isCurrentMonth) return undefined;
+    if (dayInfo.isPast) return 'Past date';
+    if (isBlocked) return 'Blocked';
+    return 'Available';
+  };
 
   return (
     <div id="availability" className="listing-dashboard-availability">
@@ -278,13 +286,15 @@ export default function AvailabilitySection() {
         <div className="listing-dashboard-availability__settings">
           {/* Lease Term */}
           <div className="listing-dashboard-availability__field">
-            <label>What is the ideal Lease Term? (Enter between 6 and 52 weeks.)</label>
+            <label htmlFor="availability-lease-term-min">What is the ideal Lease Term? (Enter between 6 and 52 weeks.)</label>
             <div className="listing-dashboard-availability__range-inputs">
               <input
+                id="availability-lease-term-min"
                 type="number"
                 value={listing?.leaseTermMin || 6}
                 min={6}
                 max={52}
+                aria-label="Minimum lease term in weeks"
                 onChange={(e) => {
                   const val = Math.min(52, Math.max(6, parseInt(e.target.value) || 6));
                   handleAvailabilityChange?.('leaseTermMin', val);
@@ -292,10 +302,12 @@ export default function AvailabilitySection() {
               />
               <span>-</span>
               <input
+                id="availability-lease-term-max"
                 type="number"
                 value={listing?.leaseTermMax || 52}
                 min={6}
                 max={52}
+                aria-label="Maximum lease term in weeks"
                 onChange={(e) => {
                   const val = Math.min(52, Math.max(6, parseInt(e.target.value) || 52));
                   handleAvailabilityChange?.('leaseTermMax', val);
@@ -306,8 +318,9 @@ export default function AvailabilitySection() {
 
           {/* Earliest Available Date */}
           <div className="listing-dashboard-availability__field">
-            <label>What is the earliest date someone could rent from you?</label>
+            <label htmlFor="availability-earliest-date">What is the earliest date someone could rent from you?</label>
             <input
+              id="availability-earliest-date"
               type="date"
               value={formatDateForInput(listing?.earliestAvailableDate)}
               className="listing-dashboard-availability__date-input"
@@ -318,8 +331,9 @@ export default function AvailabilitySection() {
           {/* Check In/Out Times */}
           <div className="listing-dashboard-availability__times">
             <div className="listing-dashboard-availability__time-field">
-              <label>Check In Time</label>
+              <label htmlFor="availability-checkin-time">Check In Time</label>
               <select
+                id="availability-checkin-time"
                 value={listing?.checkInTime || '1:00 pm'}
                 onChange={(e) => handleAvailabilityChange?.('checkInTime', e.target.value)}
               >
@@ -332,8 +346,9 @@ export default function AvailabilitySection() {
               </select>
             </div>
             <div className="listing-dashboard-availability__time-field">
-              <label>Check Out Time</label>
+              <label htmlFor="availability-checkout-time">Check Out Time</label>
               <select
+                id="availability-checkout-time"
                 value={listing?.checkOutTime || '11:00 am'}
                 onChange={(e) => handleAvailabilityChange?.('checkOutTime', e.target.value)}
               >
@@ -404,6 +419,7 @@ export default function AvailabilitySection() {
                         className="listing-dashboard-availability__remove-date"
                         onClick={() => toggleBlockedDate(dateKey)}
                         title="Remove blocked date"
+                        aria-label={`Remove blocked date ${dateKey}`}
                       >
                         ×
                       </button>
@@ -467,11 +483,11 @@ export default function AvailabilitySection() {
           <div className="listing-dashboard-availability__calendar">
             {/* Calendar Header */}
             <div className="listing-dashboard-availability__calendar-header">
-              <button onClick={() => navigateMonth(-1)}>
+              <button type="button" onClick={() => navigateMonth(-1)} aria-label="Previous month">
                 <ChevronLeftIcon />
               </button>
               <span>{MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
-              <button onClick={() => navigateMonth(1)}>
+              <button type="button" onClick={() => navigateMonth(1)} aria-label="Next month">
                 <ChevronRightIcon />
               </button>
             </div>
@@ -491,6 +507,7 @@ export default function AvailabilitySection() {
                 const isBlocked = dayInfo.date && isDateBlocked(dayInfo.date);
                 const isRangeStartDate = isInPendingRange(dayInfo.date);
                 const isSelectable = !dayInfo.isPast && dayInfo.date;
+                const tooltip = getDayTooltip(dayInfo, isBlocked);
 
                 return (
                   <div
@@ -501,9 +518,11 @@ export default function AvailabilitySection() {
                     } ${isBlocked ? 'listing-dashboard-availability__calendar-day--blocked' : ''
                     } ${isRangeStartDate ? 'listing-dashboard-availability__calendar-day--range-start' : ''
                     } ${isSelectable ? 'listing-dashboard-availability__calendar-day--selectable' : ''}`}
+                    data-tooltip={tooltip}
                     onClick={() => handleDateClick(dayInfo)}
                     role={isSelectable ? 'button' : undefined}
                     tabIndex={isSelectable ? 0 : undefined}
+                    aria-pressed={isSelectable ? isBlocked : undefined}
                     onKeyDown={(e) => {
                       if (isSelectable && (e.key === 'Enter' || e.key === ' ')) {
                         e.preventDefault();
@@ -536,6 +555,13 @@ export default function AvailabilitySection() {
                 <span>First Available</span>
               </div>
             </div>
+
+            {/* Month Stats */}
+            {monthStats.total > 0 && (
+              <p className="listing-dashboard-availability__month-stats">
+                {monthStats.available} of {monthStats.total} days available this month
+              </p>
+            )}
           </div>
         </div>
       </div>
