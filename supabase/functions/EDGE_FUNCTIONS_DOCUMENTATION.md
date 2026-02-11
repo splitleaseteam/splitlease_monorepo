@@ -1,144 +1,73 @@
-# Supabase Edge Functions - Comprehensive Documentation
+# Edge Functions Documentation
 
-**Generated**: 2026-01-28
-**Total Functions**: 67
-**Runtime**: Deno 2 with JSR imports
-**Architecture**: FP (Functional Programming) with Result types
+```
+Generated: 2026-02-11
+Total Functions: 66
+Runtime: Deno 2 with JSR imports
+Architecture: FP (Functional Programming) with Result types
+```
 
 ---
 
-## Table of Contents
+### AI Functions (5)
 
-1. [Architecture Overview](#architecture-overview)
-2. [Shared Utilities](#shared-utilities)
-3. [Core Functions](#core-functions)
-4. [Communication Functions](#communication-functions)
-5. [AI Functions](#ai-functions)
-6. [Admin Functions](#admin-functions)
-7. [Simulation/Testing Functions](#simulationtesting-functions)
-8. [Workflow Functions](#workflow-functions)
-9. [Utility Functions](#utility-functions)
-10. [Common Patterns](#common-patterns)
-11. [Potential Improvements](#potential-improvements)
+#### 1. ai-gateway
+**Purpose**: OpenAI proxy with prompt templating
 
----
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `complete` | Conditional* | Non-streaming completion |
+| `stream` | Conditional* | SSE streaming completion |
 
-## Architecture Overview
+*Public prompts don't require auth
 
-### Design Principles
-
-| Principle | Description |
-|-----------|-------------|
-| **NO_FALLBACK** | All functions fail fast without fallback logic or default values |
-| **FP Architecture** | Pure functions, immutable data, side effects isolated to boundaries |
-| **Action-Based Routing** | All functions use `{ action, payload }` request pattern |
-| **Result Types** | Error propagation via Result monad (ok/err) |
-| **Error Collection** | ONE REQUEST = ONE SLACK LOG (consolidated error reporting) |
-
-### Request/Response Format
-
-**Standard Request:**
-```json
-{
-  "action": "action_name",
-  "payload": {
-    "field1": "value1",
-    "field2": "value2"
-  }
-}
-```
-
-**Success Response:**
-```json
-{
-  "success": true,
-  "data": { ... }
-}
-```
-
-**Error Response:**
-```json
-{
-  "success": false,
-  "error": "Error message"
-}
-```
-
-### Authentication Patterns
-
-| Pattern | Description | Used By |
-|---------|-------------|---------|
-| **JWT Auth** | Bearer token in Authorization header | Most functions |
-| **Legacy Auth** | user_id in payload (legacy migration) | messages |
-| **Public** | No auth required | slack, send-email (public templates) |
-| **Soft Headers** | Optional auth for internal admin pages | admin functions |
+**Public Prompts**: `listing-description`, `listing-title`, `neighborhood-description`, `parse-call-transcription`, `echo-test`, `negotiation-summary-suggested`, `negotiation-summary-counteroffer`, `negotiation-summary-host`
 
 ---
 
-## Shared Utilities
+#### 2. ai-parse-profile
+**Purpose**: AI-powered profile parsing during signup
 
-### _shared/cors.ts
-```typescript
-export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
-};
-```
-
-### _shared/errors.ts
-| Error Class | HTTP Status | Usage |
-|-------------|-------------|-------|
-| `ValidationError` | 400 | Invalid input/payload |
-| `AuthenticationError` | 401 | Missing/invalid auth |
-| `ApiError` | variable | External API failures |
-| `SupabaseSyncError` | 500 | Database sync failures |
-| `OpenAIError` | variable | AI API failures |
-
-### _shared/functional/result.ts
-```typescript
-// Result monad for error handling
-type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
-const ok = <T>(value: T): Result<T, never> => ({ ok: true, value });
-const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
-```
-
-### _shared/functional/orchestration.ts
-| Export | Purpose |
-|--------|---------|
-| `parseRequest()` | Parse and validate request body |
-| `validateAction()` | Validate action against allowed list |
-| `routeToHandler()` | Route to handler function |
-| `getSupabaseConfig()` | Get Supabase URL/keys from env |
-| `formatSuccessResponse()` | Format 200 response |
-| `formatErrorResponseHttp()` | Format error response with status |
-| `formatCorsResponse()` | Format CORS preflight response |
-| `extractAuthToken()` | Extract Bearer token from headers |
-
-### _shared/slack.ts
-| Export | Purpose |
-|--------|---------|
-| `ErrorCollector` | Collect errors for single Slack log |
-| `sendToSlack()` | Send message to Slack webhook |
-| `createErrorCollector()` | Factory for error collector |
-| `reportErrorLog()` | Report error log to Slack |
-
-### _shared/validation.ts
-| Export | Purpose |
-|--------|---------|
-| `validateEmail()` | Validate email format |
-| `validatePhone()` | Validate phone format |
-| `validateRequired()` | Validate required field exists |
-| `validateRequiredFields()` | Validate multiple required fields |
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `parse` | No | Parse profile data from input |
 
 ---
 
-## Core Functions
+#### 3. ai-room-redesign
+**Purpose**: AI-powered room redesign suggestions
 
-### 1. auth-user
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `redesign` | Yes | Generate room redesign suggestions |
+
+---
+
+#### 4. ai-signup-guest
+**Purpose**: AI-powered guest signup flow
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `start` | No | Start AI signup flow |
+| `next` | No | Process next step |
+| `complete` | No | Complete signup |
+
+---
+
+#### 5. ai-tools
+**Purpose**: Additional AI utility tools
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| Various | Yes | Multiple AI utility actions |
+
+---
+
+### Authentication Functions (1)
+
+#### 6. auth-user
 **Purpose**: Authentication operations via Supabase Auth
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
 | `login` | No | User login (email/password) |
@@ -155,19 +84,160 @@ const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
 
 **Database Tables**: `user`, `host_account`, `guest_account`
 
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/auth-user" \
-  -H "Content-Type: application/json" \
-  -d '{"action": "login", "payload": {"email": "user@example.com", "password": "secret"}}'
-```
+---
+
+### Background Jobs (6)
+
+#### 7. archetype-recalculation-job
+**Purpose**: Scheduled job that recalculates user archetypes
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (POST) | Admin/Service | Run recalculation job |
+
+**Configuration**:
+- `batchSize`: Number of users per batch (default: 100)
+- `maxConcurrent`: Max concurrent operations (default: 10)
+- `onlyStaleUsers`: Only process stale archetypes (default: true)
+- `staleThresholdHours`: Hours before archetype is stale (default: 24)
 
 ---
 
-### 2. listing
+#### 8. backfill-negotiation-summaries
+**Purpose**: Backfill AI-generated negotiation summaries
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `backfill` | Admin | Backfill missing summaries |
+
+---
+
+#### 9. date-change-reminder-cron
+**Purpose**: Cron job for date change request reminders
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (POST) | Service | Run reminder check |
+
+**Configuration**:
+- Reminder window: 1.5-2.5 hours before expiry
+- Cooldown: 12 hours between reminders
+
+---
+
+#### 10. workflow-enqueue
+**Purpose**: Enqueue workflow operations
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `enqueue` | Service | Add job to queue |
+
+---
+
+#### 11. workflow-orchestrator
+**Purpose**: Orchestrate complex workflows
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `orchestrate` | Service | Execute workflow |
+
+---
+
+#### 12. reminder-scheduler
+**Purpose**: Schedule and manage reminders
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `schedule` | Service | Schedule reminder |
+| `cancel` | Service | Cancel reminder |
+
+---
+
+### Bidding Functions (3)
+
+#### 13. submit-bid
+**Purpose**: Submit bids on bidding sessions (Pattern 4: BS+BS Competitive Bidding)
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `submit` | Yes | Submit a new bid |
+| `get_session` | No | Get current session state |
+| `get_bid_history` | No | Get all bids in session |
+| `create_session` | Yes | Create new bidding session |
+
+---
+
+#### 14. withdraw-bid
+**Purpose**: Withdraw from bidding sessions
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `withdraw` | Yes | Withdraw from session |
+| `get_withdrawal_status` | Yes | Check withdrawal eligibility |
+
+---
+
+#### 15. set-auto-bid
+**Purpose**: Configure auto-bidding
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `set` | Yes | Set max auto-bid amount |
+| `get` | Yes | Get current auto-bid settings |
+| `clear` | Yes | Remove auto-bid configuration |
+
+---
+
+### Communication Functions (4)
+
+#### 16. send-email
+**Purpose**: Send templated emails via SendGrid
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `send` | Conditional* | Send templated email |
+| `health` | No | Check function health |
+
+*Public templates (magic login, welcome) don't require auth
+
+---
+
+#### 17. send-sms
+**Purpose**: Send SMS via Twilio
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `send` | Conditional* | Send SMS message |
+| `health` | No | Check function health |
+
+*Magic link SMS from specific number doesn't require auth
+
+---
+
+#### 18. communications
+**Purpose**: Placeholder for future communications
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `health` | No | Health check (placeholder) |
+
+---
+
+#### 19. slack
+**Purpose**: Slack integration for FAQ inquiries
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `faq_inquiry` | No | Send FAQ inquiry to Slack |
+| `diagnose` | No | Diagnose environment config |
+
+---
+
+### Core Business Functions (16)
+
+#### 20. listing
 **Purpose**: Listing CRUD operations
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
 | `create` | No | Create a new listing |
@@ -175,21 +245,11 @@ curl -X POST "https://your-project.supabase.co/functions/v1/auth-user" \
 | `submit` | Yes | Full listing submission |
 | `delete` | No | Delete a listing |
 
-**Database Tables**: `listing`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/listing" \
-  -H "Content-Type: application/json" \
-  -d '{"action": "get", "payload": {"listing_id": "abc123"}}'
-```
-
 ---
 
-### 3. proposal
+#### 21. proposal
 **Purpose**: Proposal CRUD and simulation operations
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
 | `create` | Yes | Create new proposal |
@@ -205,22 +265,11 @@ curl -X POST "https://your-project.supabase.co/functions/v1/listing" \
 | `createCounteroffer` | Yes | Create counteroffer |
 | `acceptCounteroffer` | Yes | Accept counteroffer |
 
-**Database Tables**: `proposal`, `listing`, `user`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/proposal" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT" \
-  -d '{"action": "get", "payload": {"proposal_id": "abc123"}}'
-```
-
 ---
 
-### 4. messages
+#### 22. messages
 **Purpose**: Real-time messaging operations
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
 | `send_message` | Yes | Send message in thread |
@@ -232,162 +281,143 @@ curl -X POST "https://your-project.supabase.co/functions/v1/proposal" \
 | `admin_delete_thread` | No* | Soft-delete thread (admin) |
 | `admin_send_reminder` | No* | Send reminder (admin) |
 
-*Admin actions use soft headers pattern (optional auth for internal pages)
-
-**Database Tables**: `thread`, `_message`, `user`, `listing`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/messages" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT" \
-  -d '{"action": "get_threads", "payload": {"user_id": "user123"}}'
-```
+*Admin actions use soft headers pattern
 
 ---
 
-## Communication Functions
+#### 23. date-change-request
+**Purpose**: Handle date change requests
 
-### 5. send-email
-**Purpose**: Send templated emails via SendGrid
-
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
-| `send` | Conditional* | Send templated email |
-| `health` | No | Check function health |
-
-*Public templates (magic login, welcome) don't require auth
-
-**Environment Variables:**
-- `SENDGRID_API_KEY`
-- `SENDGRID_EMAIL_ENDPOINT`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/send-email" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT" \
-  -d '{"action": "send", "payload": {"template_id": "xxx", "to": "user@example.com", "dynamic_data": {...}}}'
-```
+| `create` | Yes | Create date change request |
+| `get` | Yes | Get request details |
+| `update` | Yes | Update request |
+| `accept` | Yes | Accept request |
+| `reject` | Yes | Reject request |
 
 ---
 
-### 6. send-sms
-**Purpose**: Send SMS via Twilio
+#### 24. cohost-request
+**Purpose**: Co-host request operations
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
-| `send` | Conditional* | Send SMS message |
-| `health` | No | Check function health |
-
-*Magic link SMS from specific number doesn't require auth
-
-**Environment Variables:**
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/send-sms" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT" \
-  -d '{"action": "send", "payload": {"to": "+15551234567", "from": "+14155692985", "body": "Your code is 123456"}}'
-```
+| `create` | Yes | Create cohost request |
+| `get` | Yes | Get request details |
+| `update` | Yes | Update request |
+| `delete` | Yes | Delete request |
 
 ---
 
-### 7. slack
-**Purpose**: Slack integration for FAQ inquiries
+#### 25. cohost-request-slack-callback
+**Purpose**: Handle Slack callbacks for co-host requests
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
-| `faq_inquiry` | No | Send FAQ inquiry to Slack |
-| `diagnose` | No | Diagnose environment config |
-
-**Environment Variables:**
-- `SLACK_WEBHOOK_ACQUISITION`
-- `SLACK_WEBHOOK_GENERAL`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/slack" \
-  -H "Content-Type: application/json" \
-  -d '{"action": "faq_inquiry", "payload": {"name": "John", "email": "john@example.com", "inquiry": "How does pricing work?"}}'
-```
+| `callback` | No | Handle Slack callback |
 
 ---
 
-### 8. communications
-**Purpose**: Placeholder for future communications
+#### 26. document
+**Purpose**: Document management
 
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
-| `health` | No | Health check (placeholder) |
+| CRUD | Yes | Standard CRUD operations |
 
 ---
 
-## AI Functions
+#### 27. emergency
+**Purpose**: Emergency contact/procedures
 
-### 9. ai-gateway
-**Purpose**: OpenAI proxy with prompt templating
-
-**Actions:**
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
-| `complete` | Conditional* | Non-streaming completion |
-| `stream` | Conditional* | SSE streaming completion |
-
-*Public prompts don't require auth
-
-**Public Prompts:**
-- `listing-description`
-- `listing-title`
-- `neighborhood-description`
-- `parse-call-transcription`
-- `echo-test`
-- `negotiation-summary-suggested`
-- `negotiation-summary-counteroffer`
-- `negotiation-summary-host`
-
-**Example curl:**
-```bash
-curl -X POST "https://your-project.supabase.co/functions/v1/ai-gateway" \
-  -H "Content-Type: application/json" \
-  -d '{"action": "complete", "payload": {"prompt_key": "listing-description", "variables": {"neighborhood": "Chelsea", "beds": 2}}}'
-```
+| CRUD | Yes | Standard CRUD operations |
 
 ---
 
-### 10. ai-parse-profile
-**Purpose**: AI-powered profile parsing during signup
+#### 28. house-manual
+**Purpose**: House manual management
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
 
 ---
 
-### 11. ai-room-redesign
-**Purpose**: AI-powered room redesign suggestions
+#### 29. guest-management
+**Purpose**: Guest management operations
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
 
 ---
 
-### 12. ai-signup-guest
-**Purpose**: AI-powered guest signup flow
+#### 30. guest-payment-records
+**Purpose**: Guest payment record management
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
 
 ---
 
-### 13. ai-tools
-**Purpose**: Additional AI utility tools
+#### 31. host-payment-records
+**Purpose**: Host payment record management
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
 
 ---
 
-## Admin Functions
+#### 32. experience-survey
+**Purpose**: Experience survey management
 
-### 14. leases-admin
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
+
+---
+
+#### 33. lease
+**Purpose**: Lease operations
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
+
+---
+
+#### 34. virtual-meeting
+**Purpose**: Virtual meeting integration (HeyGen, ElevenLabs)
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | Yes | Standard CRUD operations |
+
+---
+
+#### 35. rental-application-submit
+**Purpose**: User rental application submission
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `submit` | No* | Submit rental application form |
+| `get` | No* | Get existing application data |
+| `upload` | No* | Upload supporting documents |
+
+*Public for legacy Bubble token users (user_id in payload)
+
+---
+
+### Admin Functions (14)
+
+#### 36. leases-admin
 **Purpose**: Admin dashboard for lease management
 
-**Actions:**
 | Action | Description |
 |--------|-------------|
 | `list` | List all leases with pagination |
@@ -397,58 +427,9 @@ curl -X POST "https://your-project.supabase.co/functions/v1/ai-gateway" \
 
 ---
 
-### 15. magic-login-links
-**Purpose**: Admin tool for generating magic login links
+#### 37. rental-application-admin
+**Purpose**: Admin rental application management
 
-**Actions:**
-| Action | Description |
-|--------|-------------|
-| `list_users` | List users for magic link generation |
-| `get_user_data` | Get user data by ID |
-| `send_magic_link` | Generate and send magic link |
-| `get_destination_pages` | Get available destination pages |
-
----
-
-### 16. message-curation
-**Purpose**: Admin tool for message moderation
-
-**Actions:**
-| Action | Description |
-|--------|-------------|
-| `getThreads` | Get all threads with filters |
-| `getThreadMessages` | Get messages for thread |
-| `getMessage` | Get single message |
-| `deleteMessage` | Soft-delete message |
-| `deleteThread` | Soft-delete thread |
-| `forwardMessage` | Forward message |
-| `sendSplitBotMessage` | Send SplitBot message |
-
-**Database Tables**: `thread`, `_message`, `user`, `listing`
-
----
-
-### 17. pricing-admin
-**Purpose**: Admin dashboard for listing price management
-
-**Actions:**
-| Action | Description |
-|--------|-------------|
-| `list` | List listings with pricing |
-| `get` | Get single listing pricing |
-| `updatePrice` | Update listing price |
-| `bulkUpdate` | Bulk update prices |
-| `setOverride` | Set price override |
-| `toggleActive` | Toggle listing active status |
-| `getConfig` | Get pricing configuration |
-| `export` | Export to CSV/JSON |
-
----
-
-### 18. rental-applications
-**Purpose**: Admin dashboard for rental application management
-
-**Actions:**
 | Action | Description |
 |--------|-------------|
 | `list` | List all applications |
@@ -462,14 +443,86 @@ curl -X POST "https://your-project.supabase.co/functions/v1/ai-gateway" \
 | `add_employment` | Add employment history |
 | `delete_employment` | Remove employment history |
 
-**Database Tables**: `rentalapplication`
+---
+
+#### 38. identity-verification-admin
+**Purpose**: Admin tool for identity verification
+
+| Action | Description |
+|--------|-------------|
+| `list_users` | List users (paginated) |
+| `search_users` | Search by email or name |
+| `get_user` | Get user with documents |
+| `toggle_verification` | Update verification status |
 
 ---
 
-### 19. simulation-admin
+#### 39. magic-login-links
+**Purpose**: Admin tool for generating magic login links
+
+| Action | Description |
+|--------|-------------|
+| `list_users` | List users for link generation |
+| `get_user_data` | Get user data by ID |
+| `send_magic_link` | Generate and send magic link |
+| `get_destination_pages` | Get available destinations |
+
+---
+
+#### 40. message-curation
+**Purpose**: Admin tool for message moderation
+
+| Action | Description |
+|--------|-------------|
+| `getThreads` | Get all threads with filters |
+| `getThreadMessages` | Get messages for thread |
+| `getMessage` | Get single message |
+| `deleteMessage` | Soft-delete message |
+| `deleteThread` | Soft-delete thread |
+| `forwardMessage` | Forward message |
+| `sendSplitBotMessage` | Send SplitBot message |
+
+---
+
+#### 41. pricing-admin
+**Purpose**: Admin dashboard for listing price management
+
+| Action | Description |
+|--------|-------------|
+| `list` | List listings with pricing |
+| `get` | Get single listing pricing |
+| `updatePrice` | Update listing price |
+| `bulkUpdate` | Bulk update prices |
+| `setOverride` | Set price override |
+| `toggleActive` | Toggle listing active status |
+| `getConfig` | Get pricing configuration |
+| `export` | Export to CSV/JSON |
+
+---
+
+#### 42. pricing-list
+**Purpose**: Pricing list management
+
+| Action | Description |
+|--------|-------------|
+| CRUD | Standard CRUD operations |
+
+---
+
+#### 43. pricing-list-bulk
+**Purpose**: Bulk pricing list processor
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (POST) | Admin | Bulk recalculate pricing lists |
+
+**Parameters**: `dry_run`, `limit`, `offset`
+
+---
+
+#### 44. simulation-admin
 **Purpose**: Admin tool for usability testing simulation testers
 
-**Actions:**
 | Action | Description |
 |--------|-------------|
 | `listTesters` | List all usability testers |
@@ -478,24 +531,11 @@ curl -X POST "https://your-project.supabase.co/functions/v1/ai-gateway" \
 | `advanceToDay2` | Advance tester to step 4 |
 | `getStatistics` | Get tester distribution stats |
 
-**Usability Steps:**
-| Step | Key | Label |
-|------|-----|-------|
-| 0 | `not_started` | Not Started |
-| 1 | `day_1_intro` | Day 1 - Introduction |
-| 2 | `day_1_tasks` | Day 1 - Tasks |
-| 3 | `day_1_complete` | Day 1 - Complete |
-| 4 | `day_2_intro` | Day 2 - Introduction |
-| 5 | `day_2_tasks` | Day 2 - Tasks |
-| 6 | `day_2_complete` | Day 2 - Complete |
-| 7 | `completed` | Completed |
-
 ---
 
-### 20. usability-data-admin
+#### 45. usability-data-admin
 **Purpose**: Admin tool for managing usability testing data
 
-**Actions:**
 | Action | Description |
 |--------|-------------|
 | `listHosts` | Get usability tester hosts |
@@ -511,295 +551,250 @@ curl -X POST "https://your-project.supabase.co/functions/v1/ai-gateway" \
 
 ---
 
-### 21. verify-users
-**Purpose**: User verification management
-
----
-
-### 22. co-host-requests
+#### 46. co-host-requests
 **Purpose**: Co-host request management
 
+| Action | Description |
+|--------|-------------|
+| CRUD | Standard CRUD operations |
+
 ---
 
-### 23. informational-texts
+#### 47. informational-texts
 **Purpose**: Manage informational text content
 
+| Action | Description |
+|--------|-------------|
+| CRUD | Standard CRUD operations |
+
 ---
 
-### 24. pricing-list
-**Purpose**: Pricing list management
-
----
-
-### 25. reviews-overview
+#### 48. reviews-overview
 **Purpose**: Reviews overview and management
 
+| Action | Description |
+|--------|-------------|
+| `list` | List reviews with filters |
+
 ---
 
-## Simulation/Testing Functions
+#### 49. verify-users
+**Purpose**: User verification management
 
-### 26. simulation-guest
+| Action | Description |
+|--------|-------------|
+| CRUD | Standard CRUD operations |
+
+---
+
+### Document Functions (1)
+
+#### 50. lease-documents
+**Purpose**: Generate DOCX lease documents to Google Drive
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `generate_host_payout` | No | Generate Host Payout Schedule Form |
+| `generate_supplemental` | No | Generate Supplemental Agreement |
+| `generate_periodic_tenancy` | No | Generate Periodic Tenancy Agreement |
+| `generate_credit_card_auth` | No | Generate Credit Card Authorization Form |
+| `generate_all` | No | Generate all 4 documents |
+
+**Templates**: Stored in Supabase Storage bucket `document-templates`
+
+---
+
+### Integration Functions (1)
+
+#### 51. calendar-automation
+**Purpose**: Google Calendar integration with Meet links
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `process_virtual_meeting` | No | Create Google Calendar events with Meet links |
+| `health` | No | Health check endpoint |
+| `test_config` | No | Configuration verification |
+
+---
+
+### Payment Functions (3)
+
+#### 52. create-payment-intent
+**Purpose**: Stripe PaymentIntent for date change fees
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (POST) | Yes | Create/retrieve PaymentIntent |
+
+**Parameters**: `requestId`, `paymentMethodId`, `savePaymentMethod`
+
+---
+
+#### 53. process-date-change-fee
+**Purpose**: Fee calculation for date change requests
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (POST) | Yes | Calculate and store fee breakdown |
+
+**Fee Structure**:
+- Platform Rate: 0.75%
+- Landlord Rate: 0.75%
+- Total: 1.5%
+- Minimum Fee: $5.00
+
+---
+
+#### 54. stripe-webhook
+**Purpose**: Stripe webhook handler
+
+| Event | Description |
+|-------|-------------|
+| `payment_intent.succeeded` | Update request to paid |
+| `payment_intent.payment_failed` | Record failure |
+| `payment_intent.canceled` | Reset payment status |
+| `charge.refunded` | Record refund |
+| `charge.dispute.created` | Record dispute |
+
+---
+
+### Pricing Functions (4)
+
+#### 55. pricing
+**Purpose**: Pricing calculations
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `calculate` | No | Calculate pricing |
+
+---
+
+#### 56. pricing-tiers
+**Purpose**: Dynamic pricing tier generation (Pattern 3: Price Anchoring)
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `calculate` | No | Calculate pricing tiers from base price |
+| `select` | No | Record user's tier selection |
+
+---
+
+#### 57. urgency-pricing
+**Purpose**: Urgency-based pricing calculations
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `calculate` | No | Calculate urgency pricing |
+| `batch` | No | Batch calculate multiple requests |
+| `calendar` | No | Get pricing for multiple dates |
+| `events` | Yes | Manage event multipliers |
+| `stats` | No | Get cache statistics |
+| `health` | No | Health check endpoint |
+
+---
+
+#### 58. transaction-recommendations
+**Purpose**: Personalized transaction type recommendations (Pattern 1)
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (GET) | Yes | Get personalized recommendations |
+
+**Impact**: +204% revenue per transaction
+
+---
+
+### User/Archetype Functions (2)
+
+#### 59. user-archetype
+**Purpose**: User behavioral archetype retrieval
+
+| Method | Auth Required | Description |
+|--------|---------------|-------------|
+| GET | Yes | Retrieve current archetype |
+| POST | Admin | Force recalculation |
+| PUT | Admin | Manual override |
+
+**Archetype Types**: `big_spender`, `high_flexibility`, `average_user`
+
+---
+
+#### 60. identity-verification-submit
+**Purpose**: User identity document submission
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `submit_verification` | Yes | Submit documents for verification |
+| `get_status` | Yes | Get current verification status |
+
+---
+
+### Simulation Functions (2)
+
+#### 61. simulation-guest
 **Purpose**: Guest-side usability simulation flow
 
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `simulate` | No | Run guest simulation |
+
 ---
 
-### 27. simulation-host
+#### 62. simulation-host
 **Purpose**: Host-side usability simulation flow
 
----
-
-## Workflow Functions
-
-### 28. workflow-enqueue
-**Purpose**: Enqueue workflow operations
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `simulate` | No | Run host simulation |
 
 ---
 
-### 29. workflow-orchestrator
-**Purpose**: Orchestrate complex workflows
+### Utility Functions (5)
 
----
-
-### 30. reminder-scheduler
-**Purpose**: Schedule and manage reminders
-
----
-
-## Utility Functions
-
-### 31. qr-generator
+#### 63. qr-generator
 **Purpose**: Generate QR codes
 
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `generate` | No | Generate QR code |
+
 ---
 
-### 32. qr-codes
+#### 64. qr-codes
 **Purpose**: QR code management
 
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| CRUD | No | Standard CRUD operations |
+
 ---
 
-### 33. query-leo
+#### 65. query-leo
 **Purpose**: Query Leo (internal tool)
 
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `query` | Admin | Execute query |
+
 ---
 
-### 34. quick-match
+#### 66. quick-match
 **Purpose**: Quick matching algorithm for listings
 
----
-
-### 35. pricing
-**Purpose**: Pricing calculations (placeholder)
-
----
-
-### 36. lease
-**Purpose**: Lease operations
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| `match` | No | Find matches |
 
 ---
 
-### 37. house-manual
-**Purpose**: House manual management
+#### 67. temp-fix-trigger
+**Purpose**: Temporary trigger fix utility
+
+| Action | Auth Required | Description |
+|--------|---------------|-------------|
+| (POST) | Service | Generate fix SQL |
 
 ---
 
-### 38. identity-verification
-**Purpose**: Identity verification operations
-
----
-
-### 39. emergency
-**Purpose**: Emergency contact/procedures
-
----
-
-### 40. document
-**Purpose**: Document management
-
----
-
-### 41. date-change-request
-**Purpose**: Handle date change requests
-
----
-
-### 42. cohost-request
-**Purpose**: Co-host request operations
-
----
-
-### 43. cohost-request-slack-callback
-**Purpose**: Handle Slack callbacks for co-host requests
-
----
-
-### 44. virtual-meeting
-**Purpose**: Virtual meeting integration (HeyGen, ElevenLabs)
-
----
-
-### 45. rental-application
-**Purpose**: Rental application operations (user-facing)
-
----
-
-### 46. guest-management
-**Purpose**: Guest management operations
-
----
-
-### 47. guest-payment-records
-**Purpose**: Guest payment record management
-
----
-
-### 48. host-payment-records
-**Purpose**: Host payment record management
-
----
-
-### 49. experience-survey
-**Purpose**: Experience survey management
-
----
-
-### 50. backfill-negotiation-summaries
-**Purpose**: Backfill AI-generated negotiation summaries
-
----
-
-## Common Patterns
-
-### 1. FP Architecture Pattern
-```typescript
-import { Result, ok, err } from "../_shared/functional/result.ts";
-import { createErrorLog, addError, setAction } from "../_shared/functional/errorLog.ts";
-
-Deno.serve(async (req) => {
-  const correlationId = crypto.randomUUID().slice(0, 8);
-  let errorLog = createErrorLog('function-name', 'unknown', correlationId);
-
-  try {
-    // Step 1: Parse request
-    const parseResult = await parseRequest(req);
-    if (!parseResult.ok) {
-      if (parseResult.error instanceof CorsPreflightSignal) {
-        return formatCorsResponse();
-      }
-      throw parseResult.error;
-    }
-
-    // Step 2: Validate action
-    const actionResult = validateAction(ALLOWED_ACTIONS, action);
-    if (!actionResult.ok) throw actionResult.error;
-
-    // Step 3: Get configuration
-    const configResult = getSupabaseConfig();
-    if (!configResult.ok) throw configResult.error;
-
-    // Step 4: Route to handler
-    const handlerResult = routeToHandler(handlers, action);
-    if (!handlerResult.ok) throw handlerResult.error;
-
-    const result = await handler(payload);
-    return formatSuccessResponse(result);
-
-  } catch (error) {
-    errorLog = addError(errorLog, error, 'Fatal error');
-    reportErrorLog(errorLog);
-    return formatErrorResponseHttp(error);
-  }
-});
-```
-
-### 2. Authentication Pattern
-```typescript
-// JWT Auth (modern)
-const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-  global: { headers: { Authorization: authHeader } },
-});
-const { data: { user }, error } = await authClient.auth.getUser();
-
-// Legacy Auth (user_id in payload)
-const userId = payload.user_id;
-const { data: userData } = await supabaseAdmin
-  .from('user')
-  .select('_id, email')
-  .eq('_id', userId)
-  .maybeSingle();
-```
-
-### 3. Soft Headers Pattern (Admin Pages)
-```typescript
-// Optional auth for internal admin pages
-const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-if (user) {
-  console.log(`Authenticated user: ${user.email}`);
-} else {
-  console.log('No auth header - proceeding as internal page request');
-}
-```
-
-### 4. Dynamic Imports (Lazy Loading)
-```typescript
-// Load handlers on demand to reduce boot time
-switch (action) {
-  case 'create': {
-    const { handleCreate } = await import("./actions/create.ts");
-    result = await handleCreate(payload, user, supabase);
-    break;
-  }
-}
-```
-
----
-
-## Potential Improvements
-
-### Security
-1. **Re-enable admin role checks**: Many admin functions have role checks commented out for testing
-2. **Rate limiting**: Add rate limiting for public endpoints (send-email, send-sms)
-3. **Input sanitization**: Add more robust input sanitization for user-provided content
-
-### Architecture
-1. **Consolidate error handling**: Some functions have inlined error classes, should use shared
-2. **Standardize handler signatures**: Handler parameters vary between functions
-3. **Add request ID logging**: Include correlation ID in all log messages
-
-### Performance
-1. **Connection pooling**: Implement connection pooling for database clients
-2. **Cache frequently accessed data**: Add caching layer for configuration data
-3. **Optimize cold starts**: More aggressive lazy loading of handlers
-
-### Documentation
-1. **Add OpenAPI specs**: Generate OpenAPI documentation for each function
-2. **Add integration tests**: Create comprehensive test suite for each action
-3. **Add request/response schemas**: TypeScript interfaces for all payloads
-
-### Monitoring
-1. **Add metrics collection**: Track latency, error rates per function
-2. **Structured logging**: Move to structured JSON logging
-3. **Alert thresholds**: Configure alerts for error rate spikes
-
----
-
-## Environment Variables Reference
-
-| Variable | Used By | Purpose |
-|----------|---------|---------|
-| `SUPABASE_URL` | All | Supabase project URL |
-| `SUPABASE_ANON_KEY` | All | Client operations |
-| `SUPABASE_SERVICE_ROLE_KEY` | All | Admin operations |
-| `OPENAI_API_KEY` | ai-gateway, ai-* | OpenAI API key |
-| `SENDGRID_API_KEY` | send-email | SendGrid API key |
-| `SENDGRID_EMAIL_ENDPOINT` | send-email | SendGrid endpoint |
-| `TWILIO_ACCOUNT_SID` | send-sms | Twilio account SID |
-| `TWILIO_AUTH_TOKEN` | send-sms | Twilio auth token |
-| `SLACK_WEBHOOK_DATABASE_WEBHOOK` | _shared/slack | Database errors |
-| `SLACK_WEBHOOK_ACQUISITION` | slack | Acquisition channel |
-| `SLACK_WEBHOOK_GENERAL` | slack | General channel |
-
----
-
-**Document Version**: 1.0
-**Last Updated**: 2026-01-28
-**Generated By**: Claude Opus 4.5
+**Document Version**: 2.0
+**Last Updated**: 2026-02-11
