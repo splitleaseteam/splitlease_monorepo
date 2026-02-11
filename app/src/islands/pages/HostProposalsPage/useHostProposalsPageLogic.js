@@ -450,60 +450,90 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       }
 
 
-      // Enrich proposals with guest data
-      if (proposals && proposals.length > 0) {
-        const guestIds = [...new Set(proposals.map(p => p.guest_user_id).filter(Boolean))];
+      // Enrich proposals with guest, virtual meeting, and negotiation summary data
+      let enrichedProposals = proposals || [];
 
-        if (guestIds.length > 0) {
+      if (enrichedProposals.length > 0) {
+        // Build all lookup IDs first
+        const guestIds = [...new Set(enrichedProposals.map(p => p.guest_user_id).filter(Boolean))];
+        const vmIds = [...new Set(enrichedProposals.map(p => p.virtual_meeting_record_id).filter(Boolean))];
+        const proposalIds = enrichedProposals.map(p => p.id);
+        // Use override if provided (needed when called before user state is set), otherwise fall back to user state
+        const hostUserId = hostUserIdOverride || user?.userId || user?.id;
 
-          const { data: guests, error: guestError } = await supabase
-            .from('user')
-            .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", review_count, original_created_at')
-            .in('id', guestIds);
+        // Fetch all enrichment data in parallel
+        const [guestsResult, vmResult, summariesResult] = await Promise.all([
+          guestIds.length > 0
+            ? supabase
+                .from('user')
+                .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", review_count, original_created_at')
+                .in('id', guestIds)
+            : { data: null, error: null },
+          vmIds.length > 0
+            ? supabase
+                .from('virtualmeetingschedulesandlinks')
+                .select(`
+                  _id,
+                  "requested by",
+                  "booked date",
+                  "meeting declined",
+                  "confirmedBySplitLease",
+                  "suggested dates and times",
+                  "meeting link"
+                `)
+                .in('_id', vmIds)
+            : { data: null, error: null },
+          proposalIds.length > 0 && hostUserId
+            ? supabase
+                .from('negotiationsummary')
+                .select('*')
+                .in('"Proposal associated"', proposalIds)
+                .eq('"To Account"', hostUserId)
+                .order('original_created_at', { ascending: false })
+            : { data: null, error: null }
+        ]);
 
-          if (guestError) {
-            console.error('[useHostProposalsPageLogic] Error fetching guests:', guestError);
-          }
+        // Log any fetch errors
+        if (guestsResult.error) {
+          console.error('[useHostProposalsPageLogic] Error fetching guests:', guestsResult.error);
+        }
+        if (summariesResult.error) {
+          console.error('[useHostProposalsPageLogic] Error fetching negotiation summaries:', summariesResult.error);
+        }
 
+        // Build lookup maps
+        const guestMap = {};
+        guestsResult.data?.forEach(g => { guestMap[g.id] = g; });
 
-          const guestMap = {};
-          guests?.forEach(g => { guestMap[g.id] = g; });
+        const vmMap = {};
+        vmResult.data?.forEach(vm => { vmMap[vm._id] = vm; });
 
-          // Attach normalized guest data to each proposal
-          proposals.forEach(p => {
-            if (p.guest_user_id && guestMap[p.guest_user_id]) {
-              const normalized = normalizeGuest(guestMap[p.guest_user_id]);
-              p.guest = normalized;
+        const summaryMap = {};
+        if (!summariesResult.error) {
+          summariesResult.data?.forEach(summary => {
+            const proposalId = summary['Proposal associated'];
+            if (!summaryMap[proposalId]) {
+              summaryMap[proposalId] = [];
             }
+            summaryMap[proposalId].push(summary);
           });
         }
 
-        // Enrich proposals with virtual meeting data
-        const vmIds = [...new Set(proposals.map(p => p.virtual_meeting_record_id).filter(Boolean))];
+        // Create enriched proposals immutably
+        enrichedProposals = enrichedProposals.map(p => {
+          const guest = p.guest_user_id && guestMap[p.guest_user_id]
+            ? normalizeGuest(guestMap[p.guest_user_id])
+            : undefined;
 
-        if (vmIds.length > 0) {
-          const { data: virtualMeetings } = await supabase
-            .from('virtualmeetingschedulesandlinks')
-            .select(`
-              _id,
-              "requested by",
-              "booked date",
-              "meeting declined",
-              "confirmedBySplitLease",
-              "suggested dates and times",
-              "meeting link"
-            `)
-            .in('_id', vmIds);
+          const rawVm = p.virtual_meeting_record_id && vmMap[p.virtual_meeting_record_id]
+            ? vmMap[p.virtual_meeting_record_id]
+            : null;
 
-          const vmMap = {};
-          virtualMeetings?.forEach(vm => { vmMap[vm._id] = vm; });
-
-          // Attach virtual meeting data to each proposal (normalize field names)
-          proposals.forEach(p => {
-            if (p.virtual_meeting_record_id && vmMap[p.virtual_meeting_record_id]) {
-              const rawVm = vmMap[p.virtual_meeting_record_id];
-              // Normalize field names for consistency with virtualMeetingRules.js
-              p.virtualMeeting = {
+          return {
+            ...p,
+            ...(guest ? { guest } : {}),
+            ...(rawVm ? {
+              virtualMeeting: {
                 _id: rawVm._id,
                 requestedBy: rawVm['requested by'],
                 bookedDate: rawVm['booked date'],
@@ -511,47 +541,15 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
                 confirmedBySplitlease: rawVm['confirmedBySplitLease'],
                 suggestedTimes: rawVm['suggested dates and times'],
                 meetingLink: rawVm['meeting link']
-              };
-            }
-          });
-        }
-
-        // Enrich proposals with negotiation summaries (host-directed)
-        const proposalIds = proposals.map(p => p.id);
-        // Use override if provided (needed when called before user state is set), otherwise fall back to user state
-        const hostUserId = hostUserIdOverride || user?.userId || user?.id;
-
-        if (proposalIds.length > 0 && hostUserId) {
-          const { data: summariesData, error: summariesError } = await supabase
-            .from('negotiationsummary')
-            .select('*')
-            .in('"Proposal associated"', proposalIds)
-            .eq('"To Account"', hostUserId)
-            .order('original_created_at', { ascending: false });
-
-          if (summariesError) {
-            console.error('[useHostProposalsPageLogic] Error fetching negotiation summaries:', summariesError);
-          } else {
-            const summaryMap = {};
-            summariesData?.forEach(summary => {
-              const proposalId = summary['Proposal associated'];
-              if (!summaryMap[proposalId]) {
-                summaryMap[proposalId] = [];
               }
-              summaryMap[proposalId].push(summary);
-            });
-
-            // Attach summaries to proposals
-            proposals.forEach(p => {
-              p.negotiationSummaries = summaryMap[p.id] || [];
-            });
-
-          }
-        }
+            } : {}),
+            negotiationSummaries: summaryMap[p.id] || []
+          };
+        });
       }
 
       // Normalize all proposals for V7 components
-      const normalizedProposals = (proposals || []).map(p => normalizeProposal(p, p.guest));
+      const normalizedProposals = enrichedProposals.map(p => normalizeProposal(p, p.guest));
       return normalizedProposals;
     } catch (err) {
       console.error('Failed to fetch proposals:', err);

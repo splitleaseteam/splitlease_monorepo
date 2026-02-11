@@ -59,14 +59,12 @@ function getRegisteredFunctions() {
   const configContent = fs.readFileSync(CONFIG_FILE, 'utf8');
 
   // Simple regex parser for [functions.name] sections
-  const functionMatches = configContent.matchAll(/\[functions\.([^\]]+)\]/g);
-  const functions = [];
+  const functions = Array.from(
+    configContent.matchAll(/\[functions\.([^\]]+)\]/g),
+    match => match[1]
+  ).sort();
 
-  for (const match of functionMatches) {
-    functions.push(match[1]);
-  }
-
-  return functions.sort();
+  return functions;
 }
 
 /**
