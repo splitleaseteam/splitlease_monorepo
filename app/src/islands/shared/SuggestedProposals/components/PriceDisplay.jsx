@@ -4,7 +4,7 @@
  * Shows nightly price and total price for the reservation.
  */
 
-import { formatPrice } from '../../../../lib/formatters.js';
+import { formatCurrency as formatPrice } from '../../../../lib/formatters.js';
 
 /**
  * @param {Object} props
