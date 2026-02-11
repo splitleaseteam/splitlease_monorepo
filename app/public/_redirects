@@ -45,10 +45,6 @@
 /_quick-price  /_internal/quick-price-view  200
 /_quick-price/  /_internal/quick-price-view  200
 
-# /_verify-users → verify-users.html
-/_verify-users  /_internal/verify-users-view  200
-/_verify-users/  /_internal/verify-users-view  200
-
 # /_co-host-requests → co-host-requests.html
 /_co-host-requests  /_internal/co-host-requests-view  200
 /_co-host-requests/  /_internal/co-host-requests-view  200
