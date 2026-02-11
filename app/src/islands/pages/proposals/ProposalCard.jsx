@@ -280,7 +280,7 @@ const STATUS_BANNERS = {
   // Suggested proposals by Split Lease agent
   [PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key]: {
     type: 'suggested',
-    text: '�'� Suggested Proposal �" Complete Your Application\nYou confirmed this suggestion. Please submit your rental application to proceed.',
+    text: 'Suggested Proposal — Complete Your Application\nYou confirmed this suggestion. Please submit your rental application to proceed.',
     bgColor: '#F3E8FF',
     borderColor: '#4B0082',
     textColor: '#4B0082'

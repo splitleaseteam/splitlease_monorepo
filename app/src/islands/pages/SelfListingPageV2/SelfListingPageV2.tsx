@@ -16,7 +16,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Smartphone } from 'lucide-react';
 import Header from '../../shared/Header.jsx';
-import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal.jsx';
+import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
 import Toast, { useToast } from '../../shared/Toast.jsx';
 import { HostScheduleSelector } from '../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';

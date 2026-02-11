@@ -221,6 +221,36 @@ export default function ScheduleCalendar({
     };
   }, [lease, resolvedCoTenantName, guestName, hostName]);
 
+  // Default to current date if no month provided
+  const currentMonth = currentMonthProp || new Date();
+
+  // Calculate the two months to display
+  const month1 = currentMonth;
+  const month2 = addMonths(currentMonth, 1);
+
+  // Calculate adjacent nights (memoized for performance)
+  const adjacentNights = useMemo(
+    () => findAdjacentNights(userNights, resolvedCoTenantNights),
+    [userNights, resolvedCoTenantNights]
+  );
+
+  // Today's date for comparison (normalized to start of day)
+  const today = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }, []);
+
+  // Build calendar grids for both months
+  const month1Days = useMemo(
+    () => buildCalendarGrid(month1.getFullYear(), month1.getMonth()),
+    [month1]
+  );
+
+  const month2Days = useMemo(
+    () => buildCalendarGrid(month2.getFullYear(), month2.getMonth()),
+    [month2]
+  );
+
   /**
    * Check if a date has a pending date change request
    */
@@ -268,24 +298,6 @@ export default function ScheduleCalendar({
       </div>
     );
   }
-  // Default to current date if no month provided
-  const currentMonth = currentMonthProp || new Date();
-
-  // Calculate the two months to display
-  const month1 = currentMonth;
-  const month2 = addMonths(currentMonth, 1);
-
-  // Calculate adjacent nights (memoized for performance)
-  const adjacentNights = useMemo(
-    () => findAdjacentNights(userNights, resolvedCoTenantNights),
-    [userNights, resolvedCoTenantNights]
-  );
-
-  // Today's date for comparison (normalized to start of day)
-  const today = useMemo(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }, []);
 
   /**
    * Check if a date is in the past
@@ -334,17 +346,6 @@ export default function ScheduleCalendar({
     const prefix = transaction.direction === 'incoming' ? '+' : '-';
     return `${prefix}$${Number(transaction.amount).toFixed(2)}`;
   };
-
-  // Build calendar grids for both months
-  const month1Days = useMemo(
-    () => buildCalendarGrid(month1.getFullYear(), month1.getMonth()),
-    [month1]
-  );
-
-  const month2Days = useMemo(
-    () => buildCalendarGrid(month2.getFullYear(), month2.getMonth()),
-    [month2]
-  );
 
   /**
    * Get the status of a day for styling

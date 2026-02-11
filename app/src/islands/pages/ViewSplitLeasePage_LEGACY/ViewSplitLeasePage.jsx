@@ -14,7 +14,7 @@ import ListingScheduleSelector from '../shared/ListingScheduleSelector.jsx';
 import GoogleMap from '../shared/GoogleMap.jsx';
 import ContactHostMessaging from '../shared/ContactHostMessaging.jsx';
 import InformationalText from '../shared/InformationalText.jsx';
-import SignUpLoginModal from '../shared/AuthSignupLoginOAuthResetFlowModal.jsx';
+import SignUpLoginModal from '../shared/AuthSignupLoginOAuthResetFlowModal';
 import ProposalSuccessModal from '../modals/ProposalSuccessModal.jsx';
 import FavoriteButton from '../shared/FavoriteButton/FavoriteButton.jsx';
 import { initializeLookups } from '../../lib/dataLookups.js';

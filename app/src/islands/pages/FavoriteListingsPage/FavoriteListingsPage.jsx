@@ -14,7 +14,7 @@ import LoggedInAvatar from '../../shared/LoggedInAvatar/LoggedInAvatar.jsx';
 import FavoriteButton from '../../shared/FavoriteButton/FavoriteButton.jsx';
 import CreateProposalFlowV2, { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
 import ProposalSuccessModal from '../../modals/ProposalSuccessModal.jsx';
-import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal.jsx';
+import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
 import EmptyState from './components/EmptyState';
 import FavoritesCardV2 from './components/FavoritesCardV2.jsx';
 import FavoritesCardV3 from './components/FavoritesCardV3.jsx';

@@ -52,7 +52,7 @@ import { useSearchPageAuth } from './useSearchPageAuth.js';
 // SERVICE - Centralized proposal API
 import { createProposal, transformListingForProposal } from '../../lib/proposalService.js';
 
-const SignUpLoginModal = lazy(() => import('../shared/AuthSignupLoginOAuthResetFlowModal.jsx'));
+const SignUpLoginModal = lazy(() => import('../shared/AuthSignupLoginOAuthResetFlowModal'));
 const AiSignupMarketReport = lazy(() => import('../shared/AiSignupMarketReport/AiSignupMarketReport.jsx'));
 const CreateProposalFlowV2 = lazy(() => import('../shared/CreateProposalFlowV2.jsx'));
 const ContactHostMessaging = lazy(() => import('../shared/ContactHostMessaging.jsx'));

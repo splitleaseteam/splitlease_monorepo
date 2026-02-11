@@ -63,9 +63,6 @@ export default function DayDetailPanel({
   counterTargetNight,
   onSubmitCounter
 }) {
-  // Don't render if no date selected
-  if (!date) return null;
-
   // Support both new and deprecated prop names
   const resolvedCoTenantName = coTenantName || roommateName || 'Co-tenant';
   const [requestType, setRequestType] = useState('full_week');
@@ -75,6 +72,9 @@ export default function DayDetailPanel({
       setRequestType('full_week');
     }
   }, [date, status]);
+
+  // Don't render if no date selected
+  if (!date) return null;
 
   const { icon, label } = STATUS_CONFIG[status]
     || (status === 'cotenant'
