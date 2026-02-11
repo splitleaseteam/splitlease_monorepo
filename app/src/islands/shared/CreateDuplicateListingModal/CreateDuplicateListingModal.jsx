@@ -21,6 +21,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { showToast } from '../Toast.jsx';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 // TODO: Re-add when Bubble integration is restored
 // import { createListingInCode } from '../../../lib/bubbleAPI.js';
 import '../../../styles/components/create-listing-modal.css';
@@ -62,7 +63,45 @@ export default function CreateDuplicateListingModal({
   const [viewMode, setViewMode] = useState('create'); // 'create' or 'copy'
   const [listingName, setListingName] = useState('');
   const [selectedListingId, setSelectedListingId] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Async operation for duplicate listing
+  const { isLoading: isDuplicating, execute: executeDuplicate } = useAsyncOperation(async () => {
+    const originalListing = existingListings.find(l => l._id === selectedListingId);
+    if (!originalListing) {
+      throw new Error('Selected listing not found');
+    }
+
+    // Create duplicate with all properties from original
+    const duplicateData = {
+      ...originalListing,
+      _id: undefined, // Remove ID to create new record
+      Name: listingName.trim(),
+      active: false, // Set to inactive by default
+      'Operator Last Updated AUT': new Date().toISOString(),
+      'Created Date': undefined,
+      'Modified Date': undefined,
+    };
+
+    // Remove fields that shouldn't be duplicated
+    delete duplicateData._id;
+    delete duplicateData.original_created_at;
+    delete duplicateData.original_updated_at;
+
+    const { data: newListing, error } = await supabase
+      .from('zat_listings')
+      .insert(duplicateData)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Update profile completeness if needed
+    if (currentUser && !currentUser.tasksCompleted?.includes('listing')) {
+      await updateProfileCompleteness(currentUser._id, 'listing');
+    }
+
+    return newListing;
+  });
 
   // Reset state when modal opens
   useEffect(() => {
@@ -125,42 +164,8 @@ export default function CreateDuplicateListingModal({
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      const originalListing = existingListings.find(l => l._id === selectedListingId);
-      if (!originalListing) {
-        throw new Error('Selected listing not found');
-      }
-
-      // Create duplicate with all properties from original
-      const duplicateData = {
-        ...originalListing,
-        _id: undefined, // Remove ID to create new record
-        Name: listingName.trim(),
-        active: false, // Set to inactive by default
-        'Operator Last Updated AUT': new Date().toISOString(),
-        'Created Date': undefined,
-        'Modified Date': undefined,
-      };
-
-      // Remove fields that shouldn't be duplicated
-      delete duplicateData._id;
-      delete duplicateData.original_created_at;
-      delete duplicateData.original_updated_at;
-
-      const { data: newListing, error } = await supabase
-        .from('zat_listings')
-        .insert(duplicateData)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update profile completeness if needed
-      if (currentUser && !currentUser.tasksCompleted?.includes('listing')) {
-        await updateProfileCompleteness(currentUser._id, 'listing');
-      }
+      const newListing = await executeDuplicate();
 
       onClose();
 
@@ -176,8 +181,6 @@ export default function CreateDuplicateListingModal({
     } catch (error) {
       console.error('Error duplicating listing:', error);
       showToast('Failed to duplicate listing. Please try again.', 'error', 3000);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -318,7 +321,7 @@ export default function CreateDuplicateListingModal({
               value={listingName}
               onChange={(e) => setListingName(e.target.value)}
               placeholder="Enter listing title"
-              disabled={isLoading}
+              disabled={isDuplicating}
             />
             <p className="create-listing-helper">Don't worry, you can change it later</p>
           </div>
@@ -334,7 +337,6 @@ export default function CreateDuplicateListingModal({
                   type="button"
                   className="create-listing-btn create-listing-btn-secondary"
                   onClick={handleShowCopyMode}
-                  disabled={isLoading}
                 >
                   Copy Existing
                 </button>
@@ -343,16 +345,9 @@ export default function CreateDuplicateListingModal({
                 type="button"
                 className="create-listing-btn create-listing-btn-primary"
                 onClick={handleCreateNew}
-                disabled={!listingName.trim() || isLoading}
+                disabled={!listingName.trim()}
               >
-                {isLoading ? (
-                  <>
-                    <span className="spinner" aria-hidden="true" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create New'
-                )}
+                Create New
               </button>
             </>
           ) : (
@@ -361,7 +356,7 @@ export default function CreateDuplicateListingModal({
                 type="button"
                 className="create-listing-btn create-listing-btn-back"
                 onClick={handleBack}
-                disabled={isLoading}
+                disabled={isDuplicating}
               >
                 Back
               </button>
@@ -369,9 +364,9 @@ export default function CreateDuplicateListingModal({
                 type="button"
                 className="create-listing-btn create-listing-btn-primary"
                 onClick={handleDuplicate}
-                disabled={!listingName.trim() || !selectedListingId || isLoading}
+                disabled={!listingName.trim() || !selectedListingId || isDuplicating}
               >
-                {isLoading ? (
+                {isDuplicating ? (
                   <>
                     <span className="spinner" aria-hidden="true" />
                     Duplicating...

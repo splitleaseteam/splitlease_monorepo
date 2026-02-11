@@ -3,6 +3,7 @@ import type { Features } from '../types/listing.types';
 import { getNeighborhoodDescriptionWithFallback } from '../utils/neighborhoodService';
 import { getCommonInUnitAmenities, getCommonBuildingAmenities, getAllInUnitAmenities, getAllBuildingAmenities } from '../utils/amenitiesService';
 import { generateListingDescription, extractListingDataFromDraft } from '../../../../lib/aiService';
+import { useAsyncOperation } from '../../../../hooks/useAsyncOperation';
 
 interface Section2Props {
   data: Features;
@@ -22,10 +23,6 @@ export const Section2Features: React.FC<Section2Props> = ({
   showToast
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoadingNeighborhood, setIsLoadingNeighborhood] = useState(false);
-  const [isLoadingInUnitAmenities, setIsLoadingInUnitAmenities] = useState(false);
-  const [isLoadingBuildingAmenities, setIsLoadingBuildingAmenities] = useState(false);
-  const [isLoadingDescription, setIsLoadingDescription] = useState(false);
 
   // State for amenities fetched from database
   const [inUnitAmenities, setInUnitAmenities] = useState<string[]>([]);
@@ -86,8 +83,7 @@ export const Section2Features: React.FC<Section2Props> = ({
     handleChange(field, updated);
   };
 
-  const loadCommonInUnitAmenities = async () => {
-    setIsLoadingInUnitAmenities(true);
+  const { isLoading: isLoadingInUnitAmenities, execute: loadCommonInUnitAmenities } = useAsyncOperation(async () => {
     try {
       const commonAmenities = await getCommonInUnitAmenities();
       if (commonAmenities.length > 0) {
@@ -98,13 +94,10 @@ export const Section2Features: React.FC<Section2Props> = ({
     } catch (error) {
       console.error('Error loading common in-unit amenities:', error);
       alert('Error loading common amenities. Please try again.');
-    } finally {
-      setIsLoadingInUnitAmenities(false);
     }
-  };
+  });
 
-  const loadCommonBuildingAmenities = async () => {
-    setIsLoadingBuildingAmenities(true);
+  const { isLoading: isLoadingBuildingAmenities, execute: loadCommonBuildingAmenities } = useAsyncOperation(async () => {
     try {
       const commonAmenities = await getCommonBuildingAmenities();
       if (commonAmenities.length > 0) {
@@ -115,14 +108,10 @@ export const Section2Features: React.FC<Section2Props> = ({
     } catch (error) {
       console.error('Error loading common building amenities:', error);
       alert('Error loading common amenities. Please try again.');
-    } finally {
-      setIsLoadingBuildingAmenities(false);
     }
-  };
+  });
 
-  const loadTemplate = async () => {
-    setIsLoadingDescription(true);
-
+  const { isLoading: isLoadingDescription, execute: loadTemplate } = useAsyncOperation(async () => {
     try {
       // Extract listing data from localStorage draft
       const listingData = extractListingDataFromDraft();
@@ -152,18 +141,15 @@ export const Section2Features: React.FC<Section2Props> = ({
       console.error('[Section2Features] Error generating description:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       alert(`Error generating description: ${errorMessage}`);
-    } finally {
-      setIsLoadingDescription(false);
     }
-  };
+  });
 
-  const loadNeighborhoodTemplate = async () => {
+  const { isLoading: isLoadingNeighborhood, execute: loadNeighborhoodTemplate } = useAsyncOperation(async () => {
     if (!zipCode) {
       alert('Please complete Section 1 (Address) first to load neighborhood template.');
       return;
     }
 
-    setIsLoadingNeighborhood(true);
     try {
       // Get address data from localStorage draft
       const draftJson = localStorage.getItem('selfListingDraft');
@@ -192,10 +178,8 @@ export const Section2Features: React.FC<Section2Props> = ({
     } catch (error) {
       console.error('Error loading neighborhood template:', error);
       alert('Error loading neighborhood template. Please try again.');
-    } finally {
-      setIsLoadingNeighborhood(false);
     }
-  };
+  });
 
   const validateForm = (): string[] => {
     const newErrors: Record<string, string> = {};

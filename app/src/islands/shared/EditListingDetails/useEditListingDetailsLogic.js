@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation';
 import { generateListingDescription, generateListingTitle } from '../../../lib/aiService';
 import { getCommonHouseRules } from './services/houseRulesService';
 import { getCommonSafetyFeatures } from './services/safetyFeaturesService';
@@ -49,15 +50,6 @@ const FOCUS_FIELD_SECTIONS = {
 export function useEditListingDetailsLogic({ listing, editSection, focusField, onClose, onSave, updateListing }) {
   const [formData, setFormData] = useState({});
   const formDataInitializedRef = useRef(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
-  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
-  const [isLoadingInUnitAmenities, setIsLoadingInUnitAmenities] = useState(false);
-  const [isLoadingBuildingAmenities, setIsLoadingBuildingAmenities] = useState(false);
-  const [isLoadingRules, setIsLoadingRules] = useState(false);
-  const [isLoadingSafetyFeatures, setIsLoadingSafetyFeatures] = useState(false);
-  const [isLoadingNeighborhood, setIsLoadingNeighborhood] = useState(false);
-  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [toast, setToast] = useState(null);
 
   // Address autocomplete state
@@ -508,201 +500,198 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     }
   }, [formData, listing, updateListing, showToast]);
 
-  const handleSave = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Only send fields that have actually changed to avoid FK constraint issues
-      // when unchanged FK fields contain null or invalid values
-      const changedFields = {};
-      for (const [key, value] of Object.entries(formData)) {
-        // Compare with original listing value - only include if different
-        const originalValue = listing[key];
+  // --- useAsyncOperation hooks for all 9 loading states ---
 
-        // Handle array comparison (for amenities, rules, photos, etc.)
-        if (Array.isArray(value) && Array.isArray(originalValue)) {
-          if (JSON.stringify(value) !== JSON.stringify(originalValue)) {
-            changedFields[key] = value;
-          }
-        } else if (value !== originalValue) {
+  const { isLoading, execute: executeSave } = useAsyncOperation(async () => {
+    // Only send fields that have actually changed to avoid FK constraint issues
+    // when unchanged FK fields contain null or invalid values
+    const changedFields = {};
+    for (const [key, value] of Object.entries(formData)) {
+      // Compare with original listing value - only include if different
+      const originalValue = listing[key];
+
+      // Handle array comparison (for amenities, rules, photos, etc.)
+      if (Array.isArray(value) && Array.isArray(originalValue)) {
+        if (JSON.stringify(value) !== JSON.stringify(originalValue)) {
           changedFields[key] = value;
         }
+      } else if (value !== originalValue) {
+        changedFields[key] = value;
       }
+    }
 
-      // If no changes, just close
-      if (Object.keys(changedFields).length === 0) {
-        showToast('No changes detected', 'Closing without saving');
-        setTimeout(onClose, 1500);
-        return;
+    // If no changes, just close
+    if (Object.keys(changedFields).length === 0) {
+      showToast('No changes detected', 'Closing without saving');
+      setTimeout(onClose, 1500);
+      return;
+    }
+
+    // Convert borough display name to FK ID if borough was changed
+    // The database expects a foreign key ID, not the display name
+    if (changedFields.borough) {
+      const boroughName = changedFields.borough;
+      const boroughId = await getBoroughIdByName(boroughName);
+      if (boroughId) {
+        changedFields.borough = boroughId;
+        console.log('\uD83D\uDCCD Converted borough name to ID:', boroughName, '->', boroughId);
+      } else {
+        // If we can't find the borough ID, don't save this field to avoid FK errors
+        console.warn('\u26A0\uFE0F Could not find borough ID for:', boroughName, '- skipping borough update');
+        delete changedFields.borough;
       }
+    }
 
-      // Convert borough display name to FK ID if borough was changed
-      // The database expects a foreign key ID, not the display name
-      if (changedFields.borough) {
-        const boroughName = changedFields.borough;
-        const boroughId = await getBoroughIdByName(boroughName);
-        if (boroughId) {
-          changedFields.borough = boroughId;
-          console.log('ðŸ“ Converted borough name to ID:', boroughName, '->', boroughId);
+    // Convert city name to FK ID if city was changed (city is derived from borough)
+    // The database expects a foreign key ID, not the city name string
+    if (changedFields.city || changedFields.borough) {
+      // Determine the current borough name (from form data, since changedFields may have converted ID)
+      const currentBoroughName = formData.borough || listing.borough;
+
+      // Derive city name from borough
+      const cityName = getCityForBorough(currentBoroughName) || formData.city;
+
+      if (cityName) {
+        const cityId = await getCityIdByName(cityName);
+        if (cityId) {
+          changedFields.city = cityId;
+          console.log('\uD83C\uDFD9\uFE0F Converted city name to ID:', cityName, '->', cityId);
         } else {
-          // If we can't find the borough ID, don't save this field to avoid FK errors
-          console.warn('âš ï¸ Could not find borough ID for:', boroughName, '- skipping borough update');
-          delete changedFields.borough;
+          // If we can't find the city ID, show warning but allow save without city field
+          console.warn('\u26A0\uFE0F Could not find city ID for:', cityName, '- removing city from update');
+          delete changedFields.city;
+          showToast('City lookup failed', `Could not find city "${cityName}" in database`, 'warning');
         }
       }
+    }
 
-      // Convert city name to FK ID if city was changed (city is derived from borough)
-      // The database expects a foreign key ID, not the city name string
-      if (changedFields.city || changedFields.borough) {
-        // Determine the current borough name (from form data, since changedFields may have converted ID)
-        const currentBoroughName = formData.borough || listing.borough;
+    console.log('\uD83D\uDCDD Saving only changed fields:', Object.keys(changedFields));
+    const updatedListing = await updateListing(listing.id, changedFields, listing);
+    showToast('Changes saved!', 'Your listing has been updated');
+    onSave(updatedListing);
+    setTimeout(onClose, 2000);
+  });
 
-        // Derive city name from borough
-        const cityName = getCityForBorough(currentBoroughName) || formData.city;
-
-        if (cityName) {
-          const cityId = await getCityIdByName(cityName);
-          if (cityId) {
-            changedFields.city = cityId;
-            console.log('ðŸ™ï¸ Converted city name to ID:', cityName, '->', cityId);
-          } else {
-            // If we can't find the city ID, show warning but allow save without city field
-            console.warn('âš ï¸ Could not find city ID for:', cityName, '- removing city from update');
-            delete changedFields.city;
-            showToast('City lookup failed', `Could not find city "${cityName}" in database`, 'warning');
-          }
-        }
-      }
-
-      console.log('ðŸ“ Saving only changed fields:', Object.keys(changedFields));
-      const updatedListing = await updateListing(listing.id, changedFields, listing);
-      showToast('Changes saved!', 'Your listing has been updated');
-      onSave(updatedListing);
-      setTimeout(onClose, 2000);
-    } catch (error) {
+  const handleSave = useCallback(() => {
+    executeSave().catch((error) => {
       console.error('Error saving:', error);
       showToast('Failed to save changes', 'Please try again', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [listing, formData, updateListing, onSave, onClose, showToast]);
+    });
+  }, [executeSave, showToast]);
 
   const toggleSection = useCallback((section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
-  const loadCommonRules = useCallback(async () => {
-    setIsLoadingRules(true);
-    try {
-      const commonRules = await getCommonHouseRules();
+  const { isLoading: isLoadingRules, execute: executeLoadCommonRules } = useAsyncOperation(async () => {
+    const commonRules = await getCommonHouseRules();
 
-      if (commonRules.length === 0) {
-        showToast('No common rules found', 'Database returned no pre-set rules', 'error');
-        return;
-      }
+    if (commonRules.length === 0) {
+      showToast('No common rules found', 'Database returned no pre-set rules', 'error');
+      return;
+    }
 
-      const selectedRules = Array.isArray(formData.house_rule_reference_ids_json)
-        ? formData.house_rule_reference_ids_json
-        : [];
-      const newRules = [...new Set([...selectedRules, ...commonRules])];
-      setFormData(prev => ({ ...prev, house_rule_reference_ids_json: newRules }));
+    const selectedRules = Array.isArray(formData.house_rule_reference_ids_json)
+      ? formData.house_rule_reference_ids_json
+      : [];
+    const newRules = [...new Set([...selectedRules, ...commonRules])];
+    setFormData(prev => ({ ...prev, house_rule_reference_ids_json: newRules }));
 
-      // Save to database but don't trigger parent refresh (avoids scroll jump)
-      // Parent will refresh listing when modal is closed
-      await updateListing(listing.id, { house_rule_reference_ids_json: newRules });
-      showToast('Common rules loaded!', `${commonRules.length} rules added`);
-    } catch (e) {
+    // Save to database but don't trigger parent refresh (avoids scroll jump)
+    // Parent will refresh listing when modal is closed
+    await updateListing(listing.id, { house_rule_reference_ids_json: newRules });
+    showToast('Common rules loaded!', `${commonRules.length} rules added`);
+  });
+
+  const loadCommonRules = useCallback(() => {
+    executeLoadCommonRules().catch((e) => {
       console.error('[loadCommonRules] Error:', e);
       showToast('Error loading rules', 'Please try again', 'error');
-    } finally {
-      setIsLoadingRules(false);
+    });
+  }, [executeLoadCommonRules, showToast]);
+
+  const { isLoading: isLoadingSafetyFeatures, execute: executeLoadCommonSafetyFeatures } = useAsyncOperation(async () => {
+    const commonFeatures = await getCommonSafetyFeatures();
+
+    if (commonFeatures.length === 0) {
+      showToast('No common safety features found', 'Database returned no pre-set features', 'error');
+      return;
     }
-  }, [formData, listing, updateListing, showToast]);
 
-  const loadCommonSafetyFeatures = useCallback(async () => {
-    setIsLoadingSafetyFeatures(true);
-    try {
-      const commonFeatures = await getCommonSafetyFeatures();
+    const currentFeatures = Array.isArray(formData.safety_feature_reference_ids_json)
+      ? formData.safety_feature_reference_ids_json
+      : [];
+    const newFeatures = [...new Set([...currentFeatures, ...commonFeatures])];
+    setFormData(prev => ({ ...prev, safety_feature_reference_ids_json: newFeatures }));
 
-      if (commonFeatures.length === 0) {
-        showToast('No common safety features found', 'Database returned no pre-set features', 'error');
-        return;
-      }
+    // Save to database but don't trigger parent refresh (avoids scroll jump)
+    // Parent will refresh listing when modal is closed
+    await updateListing(listing.id, { safety_feature_reference_ids_json: newFeatures });
+    showToast('Common safety features loaded!', `${commonFeatures.length} features added`);
+  });
 
-      const currentFeatures = Array.isArray(formData.safety_feature_reference_ids_json)
-        ? formData.safety_feature_reference_ids_json
-        : [];
-      const newFeatures = [...new Set([...currentFeatures, ...commonFeatures])];
-      setFormData(prev => ({ ...prev, safety_feature_reference_ids_json: newFeatures }));
-
-      // Save to database but don't trigger parent refresh (avoids scroll jump)
-      // Parent will refresh listing when modal is closed
-      await updateListing(listing.id, { safety_feature_reference_ids_json: newFeatures });
-      showToast('Common safety features loaded!', `${commonFeatures.length} features added`);
-    } catch (e) {
+  const loadCommonSafetyFeatures = useCallback(() => {
+    executeLoadCommonSafetyFeatures().catch((e) => {
       console.error('[loadCommonSafetyFeatures] Error:', e);
       showToast('Error loading safety features', 'Please try again', 'error');
-    } finally {
-      setIsLoadingSafetyFeatures(false);
+    });
+  }, [executeLoadCommonSafetyFeatures, showToast]);
+
+  const { isLoading: isLoadingInUnitAmenities, execute: executeLoadCommonInUnitAmenities } = useAsyncOperation(async () => {
+    const commonAmenities = await getCommonInUnitAmenities();
+
+    if (commonAmenities.length === 0) {
+      showToast('No common in-unit amenities found', 'Database returned no pre-set amenities', 'error');
+      return;
     }
-  }, [formData, listing, updateListing, showToast]);
 
-  const loadCommonInUnitAmenities = useCallback(async () => {
-    setIsLoadingInUnitAmenities(true);
-    try {
-      const commonAmenities = await getCommonInUnitAmenities();
+    const currentAmenities = Array.isArray(formData.in_unit_amenity_reference_ids_json)
+      ? formData.in_unit_amenity_reference_ids_json
+      : [];
+    const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
+    setFormData(prev => ({ ...prev, in_unit_amenity_reference_ids_json: newAmenities }));
 
-      if (commonAmenities.length === 0) {
-        showToast('No common in-unit amenities found', 'Database returned no pre-set amenities', 'error');
-        return;
-      }
+    // Save to database but don't trigger parent refresh (avoids scroll jump)
+    // Parent will refresh listing when modal is closed
+    await updateListing(listing.id, { in_unit_amenity_reference_ids_json: newAmenities });
+    showToast('Common in-unit amenities loaded!', `${commonAmenities.length} amenities added`);
+  });
 
-      const currentAmenities = Array.isArray(formData.in_unit_amenity_reference_ids_json)
-        ? formData.in_unit_amenity_reference_ids_json
-        : [];
-      const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
-      setFormData(prev => ({ ...prev, in_unit_amenity_reference_ids_json: newAmenities }));
-
-      // Save to database but don't trigger parent refresh (avoids scroll jump)
-      // Parent will refresh listing when modal is closed
-      await updateListing(listing.id, { in_unit_amenity_reference_ids_json: newAmenities });
-      showToast('Common in-unit amenities loaded!', `${commonAmenities.length} amenities added`);
-    } catch (e) {
+  const loadCommonInUnitAmenities = useCallback(() => {
+    executeLoadCommonInUnitAmenities().catch((e) => {
       console.error('[loadCommonInUnitAmenities] Error:', e);
       showToast('Error loading amenities', 'Please try again', 'error');
-    } finally {
-      setIsLoadingInUnitAmenities(false);
+    });
+  }, [executeLoadCommonInUnitAmenities, showToast]);
+
+  const { isLoading: isLoadingBuildingAmenities, execute: executeLoadCommonBuildingAmenities } = useAsyncOperation(async () => {
+    const commonAmenities = await getCommonBuildingAmenities();
+
+    if (commonAmenities.length === 0) {
+      showToast('No common building amenities found', 'Database returned no pre-set amenities', 'error');
+      return;
     }
-  }, [formData, listing, updateListing, showToast]);
 
-  const loadCommonBuildingAmenities = useCallback(async () => {
-    setIsLoadingBuildingAmenities(true);
-    try {
-      const commonAmenities = await getCommonBuildingAmenities();
+    const currentAmenities = Array.isArray(formData.in_building_amenity_reference_ids_json)
+      ? formData.in_building_amenity_reference_ids_json
+      : [];
+    const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
+    setFormData(prev => ({ ...prev, in_building_amenity_reference_ids_json: newAmenities }));
 
-      if (commonAmenities.length === 0) {
-        showToast('No common building amenities found', 'Database returned no pre-set amenities', 'error');
-        return;
-      }
+    // Save to database but don't trigger parent refresh (avoids scroll jump)
+    // Parent will refresh listing when modal is closed
+    await updateListing(listing.id, { in_building_amenity_reference_ids_json: newAmenities });
+    showToast('Common building amenities loaded!', `${commonAmenities.length} amenities added`);
+  });
 
-      const currentAmenities = Array.isArray(formData.in_building_amenity_reference_ids_json)
-        ? formData.in_building_amenity_reference_ids_json
-        : [];
-      const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
-      setFormData(prev => ({ ...prev, in_building_amenity_reference_ids_json: newAmenities }));
-
-      // Save to database but don't trigger parent refresh (avoids scroll jump)
-      // Parent will refresh listing when modal is closed
-      await updateListing(listing.id, { in_building_amenity_reference_ids_json: newAmenities });
-      showToast('Common building amenities loaded!', `${commonAmenities.length} amenities added`);
-    } catch (e) {
+  const loadCommonBuildingAmenities = useCallback(() => {
+    executeLoadCommonBuildingAmenities().catch((e) => {
       console.error('[loadCommonBuildingAmenities] Error:', e);
       showToast('Error loading amenities', 'Please try again', 'error');
-    } finally {
-      setIsLoadingBuildingAmenities(false);
-    }
-  }, [formData, listing, updateListing, showToast]);
+    });
+  }, [executeLoadCommonBuildingAmenities, showToast]);
 
-  const loadNeighborhoodTemplate = useCallback(async () => {
+  const { isLoading: isLoadingNeighborhood, execute: executeLoadNeighborhoodTemplate } = useAsyncOperation(async () => {
     // Get ZIP code from form data or listing
     const zipCode = formData.zip_code || listing?.zip_code;
 
@@ -711,36 +700,35 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       return;
     }
 
-    setIsLoadingNeighborhood(true);
-    try {
-      // Build address data for AI fallback
-      const addressData = {
-        fullAddress: `${formData.city || listing?.city || ''}, ${formData.state || listing?.state || ''}`,
-        city: formData.city || listing?.city || '',
-        state: formData.state || listing?.state || '',
-        zip: zipCode,
-      };
+    // Build address data for AI fallback
+    const addressData = {
+      fullAddress: `${formData.city || listing?.city || ''}, ${formData.state || listing?.state || ''}`,
+      city: formData.city || listing?.city || '',
+      state: formData.state || listing?.state || '',
+      zip: zipCode,
+    };
 
-      const result = await getNeighborhoodDescriptionWithFallback(zipCode, addressData);
+    const result = await getNeighborhoodDescriptionWithFallback(zipCode, addressData);
 
-      if (result && result.description) {
-        handleInputChange('neighborhood_description_by_host', result.description);
+    if (result && result.description) {
+      handleInputChange('neighborhood_description_by_host', result.description);
 
-        if (result.source === 'ai') {
-          showToast('Description generated!', 'AI-generated neighborhood description based on address');
-        } else {
-          showToast('Template loaded!', `Loaded description for ${result.neighborhoodName || 'neighborhood'}`);
-        }
+      if (result.source === 'ai') {
+        showToast('Description generated!', 'AI-generated neighborhood description based on address');
       } else {
-        showToast('Could not load template', `No description available for ZIP: ${zipCode}`, 'error');
+        showToast('Template loaded!', `Loaded description for ${result.neighborhoodName || 'neighborhood'}`);
       }
-    } catch (error) {
+    } else {
+      showToast('Could not load template', `No description available for ZIP: ${zipCode}`, 'error');
+    }
+  });
+
+  const loadNeighborhoodTemplate = useCallback(() => {
+    executeLoadNeighborhoodTemplate().catch((error) => {
       console.error('[loadNeighborhoodTemplate] Error:', error);
       showToast('Error loading template', 'Please try again', 'error');
-    } finally {
-      setIsLoadingNeighborhood(false);
-    }
-  }, [formData, listing, handleInputChange, showToast]);
+    });
+  }, [executeLoadNeighborhoodTemplate, showToast]);
 
   /**
    * Extract listing data from current form/listing for AI generation
@@ -764,59 +752,57 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
   /**
    * Generate AI listing title
    */
-  const generateAITitle = useCallback(async () => {
-    setIsGeneratingTitle(true);
-    try {
-      const listingData = extractListingDataForAI();
+  const { isLoading: isGeneratingTitle, execute: executeGenerateAITitle } = useAsyncOperation(async () => {
+    const listingData = extractListingDataForAI();
 
-      if (!listingData.neighborhood && !listingData.typeOfSpace) {
-        showToast('Missing data', 'Please fill in neighborhood or space type first', 'error');
-        return;
-      }
+    if (!listingData.neighborhood && !listingData.typeOfSpace) {
+      showToast('Missing data', 'Please fill in neighborhood or space type first', 'error');
+      return;
+    }
 
-      console.log('[EditListingDetails] Generating AI title with data:', listingData);
-      const generatedTitle = await generateListingTitle(listingData);
+    console.log('[EditListingDetails] Generating AI title with data:', listingData);
+    const generatedTitle = await generateListingTitle(listingData);
 
-      if (generatedTitle) {
-        handleInputChange('listing_title', generatedTitle);
-        showToast('Title generated!', 'AI title applied successfully');
-      } else {
-        showToast('Could not generate title', 'Please try again', 'error');
-      }
-    } catch (error) {
+    if (generatedTitle) {
+      handleInputChange('listing_title', generatedTitle);
+      showToast('Title generated!', 'AI title applied successfully');
+    } else {
+      showToast('Could not generate title', 'Please try again', 'error');
+    }
+  });
+
+  const generateAITitle = useCallback(() => {
+    executeGenerateAITitle().catch((error) => {
       console.error('[EditListingDetails] Error generating title:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       showToast('Error generating title', errorMessage, 'error');
-    } finally {
-      setIsGeneratingTitle(false);
-    }
-  }, [extractListingDataForAI, handleInputChange, showToast]);
+    });
+  }, [executeGenerateAITitle, showToast]);
 
   /**
    * Generate AI listing description
    */
-  const generateAIDescription = useCallback(async () => {
-    setIsGeneratingDescription(true);
-    try {
-      const listingData = extractListingDataForAI();
+  const { isLoading: isGeneratingDescription, execute: executeGenerateAIDescription } = useAsyncOperation(async () => {
+    const listingData = extractListingDataForAI();
 
-      console.log('[EditListingDetails] Generating AI description with data:', listingData);
-      const generatedDescription = await generateListingDescription(listingData);
+    console.log('[EditListingDetails] Generating AI description with data:', listingData);
+    const generatedDescription = await generateListingDescription(listingData);
 
-      if (generatedDescription) {
-        handleInputChange('listing_description', generatedDescription);
-        showToast('Description generated!', 'AI description applied successfully');
-      } else {
-        showToast('Could not generate description', 'Please try again', 'error');
-      }
-    } catch (error) {
+    if (generatedDescription) {
+      handleInputChange('listing_description', generatedDescription);
+      showToast('Description generated!', 'AI description applied successfully');
+    } else {
+      showToast('Could not generate description', 'Please try again', 'error');
+    }
+  });
+
+  const generateAIDescription = useCallback(() => {
+    executeGenerateAIDescription().catch((error) => {
       console.error('[EditListingDetails] Error generating description:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       showToast('Error generating description', errorMessage, 'error');
-    } finally {
-      setIsGeneratingDescription(false);
-    }
-  }, [extractListingDataForAI, handleInputChange, showToast]);
+    });
+  }, [executeGenerateAIDescription, showToast]);
 
   const addPhotoUrl = useCallback(() => {
     const url = prompt('Enter image URL:');
@@ -831,11 +817,10 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
   /**
    * Handle file upload for photos
    */
-  const handlePhotoUpload = useCallback(async (e) => {
+  const { isLoading: isUploadingPhotos, execute: executePhotoUpload } = useAsyncOperation(async (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setIsUploadingPhotos(true);
     const currentPhotos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
       ? formData.photos_with_urls_captions_and_sort_order_json
       : [];
@@ -860,11 +845,16 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       console.error('[handlePhotoUpload] Error:', error);
       showToast('Error uploading photos', error.message || 'Please try again', 'error');
     } finally {
-      setIsUploadingPhotos(false);
-      // Reset file input
+      // Reset file input (always runs regardless of success/failure)
       e.target.value = '';
     }
-  }, [formData, listing, handleInputChange, updateListing, onSave, showToast]);
+  });
+
+  const handlePhotoUpload = useCallback((e) => {
+    executePhotoUpload(e).catch(() => {
+      // Error already handled via toast inside the async function
+    });
+  }, [executePhotoUpload]);
 
   /**
    * Remove a photo from the list

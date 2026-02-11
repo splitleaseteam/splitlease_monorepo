@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { ListingFormData, ReviewData } from '../types/listing.types';
 import { SAFETY_FEATURES } from '../types/listing.types';
 import { getCommonSafetyFeatures } from '../utils/safetyService';
+import { useAsyncOperation } from '../../../../hooks/useAsyncOperation';
 
 interface Section7Props {
   formData: ListingFormData;
@@ -24,21 +25,14 @@ export const Section7Review: React.FC<Section7Props> = ({
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-  const [isLoadingSafetyFeatures, setIsLoadingSafetyFeatures] = useState(false);
 
-  const loadCommonSafetyFeatures = async () => {
-    setIsLoadingSafetyFeatures(true);
-    try {
-      const commonFeatures = await getCommonSafetyFeatures();
-      if (commonFeatures.length > 0) {
-        handleChange('safetyFeatures', commonFeatures);
-      }
-    } catch (err) {
-      console.error('Failed to load common safety features:', err);
-    } finally {
-      setIsLoadingSafetyFeatures(false);
+  const { isLoading: isLoadingSafetyFeatures, execute: loadCommonSafetyFeatures } = useAsyncOperation(async () => {
+    const commonFeatures = await getCommonSafetyFeatures();
+    if (commonFeatures.length > 0) {
+      handleChange('safetyFeatures', commonFeatures);
     }
-  };
+    return commonFeatures;
+  });
 
   const toggleSection = (sectionKey: string) => {
     setExpandedSections(prev => ({

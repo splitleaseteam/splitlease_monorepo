@@ -26,6 +26,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase.js';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import './FavoriteButton.css';
 
 const FavoriteButton = ({
@@ -41,13 +42,60 @@ const FavoriteButton = ({
   // Local state for immediate visual feedback
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Sync internal state when parent's initialFavorited prop changes
   // This ensures multiple FavoriteButton instances for the same listing stay in sync
   useEffect(() => {
     setIsFavorited(initialFavorited);
   }, [initialFavorited]);
+
+  // Async operation for the Supabase favorite toggle (API call only)
+  const { isLoading, execute: executeFavoriteToggle } = useAsyncOperation(async (newFavoritedState) => {
+    // Fetch current favorited user IDs from listing table
+    const { data: listingData, error: fetchError } = await supabase
+      .from('listing')
+      .select('user_ids_who_favorited_json')
+      .eq('id', listingId)
+      .single();
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
+    // Get current favorited users array (or empty array if null)
+    const currentFavoritedBy = listingData?.user_ids_who_favorited_json || [];
+
+    // Add or remove the user ID
+    let newFavoritedBy;
+    if (newFavoritedState) {
+      // Add user to favorites (avoid duplicates)
+      if (!currentFavoritedBy.includes(userId)) {
+        newFavoritedBy = [...currentFavoritedBy, userId];
+      } else {
+        newFavoritedBy = currentFavoritedBy;
+      }
+    } else {
+      // Remove user from favorites
+      newFavoritedBy = currentFavoritedBy.filter(id => id !== userId);
+    }
+
+    // Update listing table with new favorited users array
+    const { error: updateError } = await supabase
+      .from('listing')
+      .update({ user_ids_who_favorited_json: newFavoritedBy })
+      .eq('id', listingId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    // Notify parent if callback provided
+    if (onToggle) {
+      onToggle(newFavoritedState, listingId);
+    }
+
+    console.log(`[FavoriteButton] ${newFavoritedState ? 'Added' : 'Removed'} listing ${listingId} ${newFavoritedState ? 'to' : 'from'} favorites`);
+  });
 
   const handleClick = useCallback(async (e) => {
     e.preventDefault();
@@ -63,7 +111,7 @@ const FavoriteButton = ({
       return;
     }
 
-    // Immediate visual feedback - toggle state NOW
+    // Immediate visual feedback - toggle state NOW (optimistic update)
     const newFavoritedState = !isFavorited;
     setIsFavorited(newFavoritedState);
     setIsAnimating(true);
@@ -72,60 +120,14 @@ const FavoriteButton = ({
     setTimeout(() => setIsAnimating(false), 300);
 
     // Sync with Supabase listing table directly
-    setIsLoading(true);
     try {
-      // Fetch current favorited user IDs from listing table
-      const { data: listingData, error: fetchError } = await supabase
-        .from('listing')
-        .select('user_ids_who_favorited_json')
-        .eq('id', listingId)
-        .single();
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      // Get current favorited users array (or empty array if null)
-      const currentFavoritedBy = listingData?.user_ids_who_favorited_json || [];
-
-      // Add or remove the user ID
-      let newFavoritedBy;
-      if (newFavoritedState) {
-        // Add user to favorites (avoid duplicates)
-        if (!currentFavoritedBy.includes(userId)) {
-          newFavoritedBy = [...currentFavoritedBy, userId];
-        } else {
-          newFavoritedBy = currentFavoritedBy;
-        }
-      } else {
-        // Remove user from favorites
-        newFavoritedBy = currentFavoritedBy.filter(id => id !== userId);
-      }
-
-      // Update listing table with new favorited users array
-      const { error: updateError } = await supabase
-        .from('listing')
-        .update({ user_ids_who_favorited_json: newFavoritedBy })
-        .eq('id', listingId);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      // Notify parent if callback provided
-      if (onToggle) {
-        onToggle(newFavoritedState, listingId);
-      }
-
-      console.log(`[FavoriteButton] ${newFavoritedState ? 'Added' : 'Removed'} listing ${listingId} ${newFavoritedState ? 'to' : 'from'} favorites`);
+      await executeFavoriteToggle(newFavoritedState);
     } catch (error) {
       console.error('[FavoriteButton] Error toggling favorite:', error);
       // Revert visual state on error
       setIsFavorited(!newFavoritedState);
-    } finally {
-      setIsLoading(false);
     }
-  }, [listingId, userId, isFavorited, isLoading, disabled, onToggle, onRequireAuth]);
+  }, [listingId, userId, isFavorited, isLoading, disabled, onToggle, onRequireAuth, executeFavoriteToggle]);
 
   // Size classes
   const sizeClass = {
