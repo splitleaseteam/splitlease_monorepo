@@ -574,7 +574,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       }
 
       console.log('ðŸ“ Saving only changed fields:', Object.keys(changedFields));
-      const updatedListing = await updateListing(listing.id, changedFields);
+      const updatedListing = await updateListing(listing.id, changedFields, listing);
       showToast('Changes saved!', 'Your listing has been updated');
       onSave(updatedListing);
       setTimeout(onClose, 2000);

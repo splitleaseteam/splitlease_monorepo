@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getListingById, updateListing } from '../../../lib/listingService.js';
+import { getListingById, updateListing } from '../../../lib/listingCrudGeoPhotoPricingService.js';
 import { uploadPhoto, deletePhoto } from '../../../lib/photoUpload.js';
 import {
   initializeLookups,

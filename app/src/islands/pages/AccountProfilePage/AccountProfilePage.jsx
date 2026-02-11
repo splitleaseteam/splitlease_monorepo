@@ -15,7 +15,7 @@ import Footer from '../../shared/Footer.jsx';
 import { ToastProvider } from '../../shared/Toast.jsx';
 import NotificationSettingsModal from '../../modals/NotificationSettingsModal.jsx';
 import EditPhoneNumberModal from '../../modals/EditPhoneNumberModal.jsx';
-import { useAccountProfilePageLogic } from './useAccountProfilePageLogic.js';
+import { useAccountProfilePageLogic } from './useAccountProfileStrengthVerificationAndEditLogic.js';
 import ProfileSidebar from './components/ProfileSidebar.jsx';
 import EditorView from './components/EditorView.jsx';
 import PublicView from './components/PublicView.jsx';

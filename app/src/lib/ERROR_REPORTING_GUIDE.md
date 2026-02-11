@@ -196,7 +196,7 @@ from structured error reporting:
 - `lib/auth.js` -- login, logout, token validation
 - `lib/listingDataFetcher.js` -- listing queries
 - `lib/proposalDataFetcher.js` -- proposal queries with joins
-- `lib/listingService.js` -- listing CRUD operations
+- `lib/listingCrudGeoPhotoPricingService.js` -- listing CRUD operations
 - `lib/photoUpload.js` -- photo upload/delete to storage
 - `lib/slackService.js` -- Slack notification integration
 
@@ -205,7 +205,7 @@ from structured error reporting:
 - `islands/pages/ViewSplitLeasePage/` -- listing detail page
 - `islands/pages/GuestProposalsPage/` / `useGuestProposalsPageLogic.js`
 - `islands/pages/HostProposalsPage/` / `useHostProposalsPageLogic.js`
-- `islands/pages/AccountProfilePage/` / `useAccountProfilePageLogic.js`
+- `islands/pages/AccountProfilePage/` / `useAccountProfileStrengthVerificationAndEditLogic.js`
 - `islands/pages/ListingDashboardPage/` / `useListingDashboardPageLogic.js`
 - `islands/pages/SelfListingPage/` -- multi-step listing creation
 

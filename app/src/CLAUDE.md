@@ -56,7 +56,7 @@ Shared utilities in `lib/` organized by concern:
 
 **Core API Clients**: `supabase.js`, `auth/index.js` (modular barrel), `secureStorage.js`
 **Auth Hook**: `hooks/useAuthenticatedUser.js` — single hook for all protected pages (role gating, redirect, user object)
-**Data Access**: `dataLookups.js`, `proposalDataFetcher.js`, `listingDataFetcher.js`, `listingService.js`
+**Data Access**: `dataLookups.js`, `proposalDataFetcher.js`, `listingDataFetcher.js`, `listingCrudGeoPhotoPricingService.js`
 **Constants**: `constants.js` (single source of truth for all config)
 **Utilities**: `dayUtils.js`, `mapUtils.js`, `sanitize.js`, `urlParams.js`, `navigation.js`, `photoUpload.js`
 **Integrations**: `slackService.js`, `aiService.js`, `hotjar.js`

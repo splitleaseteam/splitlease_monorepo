@@ -5,7 +5,7 @@ import { getUserType as getStoredUserType, getAuthState } from '../../lib/secure
 import { supabase } from '../../lib/supabase.js';
 import CreateDuplicateListingModal from './CreateDuplicateListingModal/CreateDuplicateListingModal.jsx';
 import LoggedInAvatar from './LoggedInAvatar/LoggedInAvatar.jsx';
-import SignUpLoginModal from './SignUpLoginModal.jsx';
+import SignUpLoginModal from './AuthSignupLoginOAuthResetFlowModal.jsx';
 import { useHostMenuData, getHostMenuConfig } from './Header/useHostMenuData.js';
 import { useGuestMenuData, getGuestMenuConfig } from './Header/useGuestMenuData.js';
 import SuggestedProposalPopup from './SuggestedProposals/SuggestedProposalPopup.jsx';

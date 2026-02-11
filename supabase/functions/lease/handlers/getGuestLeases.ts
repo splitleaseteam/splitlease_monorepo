@@ -4,97 +4,28 @@
  *
  * Fetches all leases for a guest user.
  * Includes related data: host info, listing, stays, payment records, date change requests.
+ *
+ * Schema notes:
+ * - booking_lease, user, listing, lease_weekly_stay: migrated to snake_case
+ * - paymentrecords, datechangerequest: still use Bubble-era column names
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ValidationError, AuthenticationError } from '../../_shared/errors.ts';
-import type { UserContext, LeaseData, StayData } from '../lib/types.ts';
-
-/**
- * Extended lease data with related records for guest view
- */
-export interface GuestLeaseData extends LeaseData {
-  host: HostInfo | null;
-  listing: ListingInfo | null;
-  stays: StayWithReview[];
-  paymentRecords: PaymentRecord[];
-  dateChangeRequests: DateChangeRequest[];
-}
-
-interface HostInfo {
-  _id: string;
-  email: string;
-  'Name - Full': string;
-  'Name - First': string;
-  'Profile Photo': string | null;
-  'Phone Number': string | null;
-  'user verified?': boolean;
-}
-
-interface ListingInfo {
-  _id: string;
-  Name: string;
-  'Cover Photo': string | null;
-  Neighborhood: string | null;
-  Address: string | null;
-  City: string | null;
-}
-
-interface StayWithReview extends StayData {
-  'Review Submitted by Guest': boolean;
-  'Review Submitted by Host': boolean;
-}
-
-interface PaymentRecord {
-  _id: string;
-  'Booking - Reservation': string;
-  'Payment #': number;
-  'Scheduled Date': string;
-  'Actual Date': string | null;
-  'Rent Amount': number;
-  'Maintenance Fee': number;
-  'Damage Deposit': number;
-  'Total Amount': number;
-  'Bank Transaction Number': string | null;
-  'Payment Receipt': string | null;
-  'Is Paid': boolean;
-  'Is Refunded': boolean;
-}
-
-interface DateChangeRequest {
-  _id: string;
-  Lease: string;
-  'Requested by': string;
-  'Request receiver': string;
-  'Stay Associated 1': string | null;
-  'Stay Associated 2': string | null;
-  status: string;
-  'Request Type': string;
-  'Original Date': string;
-  'Requested Date': string;
-  'Price Adjustment': number | null;
-  'Created Date': string;
-  requestedByUser?: HostInfo | null;
-}
+import type { UserContext } from '../lib/types.ts';
 
 /**
  * Handle get guest leases request
  *
  * Fetches all leases where the authenticated user is the guest.
- *
- * @param payload - Request payload (currently empty, uses authenticated user)
- * @param user - Authenticated user context
- * @param supabase - Supabase client
- * @returns Array of leases with related data
  */
 export async function handleGetGuestLeases(
   _payload: Record<string, unknown>,
   user: UserContext | null,
   supabase: SupabaseClient
-): Promise<GuestLeaseData[]> {
+): Promise<Record<string, unknown>[]> {
   console.log('[lease:getGuestLeases] Fetching guest leases...');
 
-  // Validate authentication
   if (!user) {
     throw new AuthenticationError('Authentication required');
   }
@@ -104,10 +35,10 @@ export async function handleGetGuestLeases(
 
   // Step 1: Fetch leases where the user is the guest
   const { data: leases, error: leasesError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('*')
-    .eq('Guest', guestUserId)
-    .order('"Created Date"', { ascending: false });
+    .eq('guest_user_id', guestUserId)
+    .order('created_at', { ascending: false });
 
   if (leasesError) {
     console.error('[lease:getGuestLeases] Error fetching leases:', leasesError.message);
@@ -122,98 +53,83 @@ export async function handleGetGuestLeases(
   console.log('[lease:getGuestLeases] Found leases:', leases.length);
 
   // Step 2: Collect all unique IDs needed for related data
-  const hostIds = [...new Set(leases.map((l: LeaseData) => l.Host).filter(Boolean))];
-  const listingIds = [...new Set(leases.map((l: LeaseData) => l.Listing).filter(Boolean))];
-  const leaseIds = leases.map((l: LeaseData) => l._id);
+  const hostIds = [...new Set(leases.map((l: Record<string, unknown>) => l.host_user_id).filter(Boolean))] as string[];
+  const listingIds = [...new Set(leases.map((l: Record<string, unknown>) => l.listing_id).filter(Boolean))] as string[];
+  const leaseIds = leases.map((l: Record<string, unknown>) => l.id) as string[];
 
-  // Step 3: Fetch hosts
-  const hostMap: Record<string, HostInfo> = {};
+  // Step 3: Fetch hosts (user table uses snake_case)
+  const hostMap: Record<string, Record<string, unknown>> = {};
   if (hostIds.length > 0) {
     const { data: hosts, error: hostsError } = await supabase
       .from('user')
-      .select(`
-        _id,
-        email,
-        "Name - Full",
-        "Name - First",
-        "Profile Photo",
-        "Phone Number",
-        "user verified?"
-      `)
-      .in('_id', hostIds);
+      .select('id, email, first_name, last_name, profile_photo_url, phone_number, is_user_verified')
+      .in('id', hostIds);
 
     if (hostsError) {
       console.warn('[lease:getGuestLeases] Error fetching hosts:', hostsError.message);
     } else if (hosts) {
-      hosts.forEach((h: HostInfo) => {
-        hostMap[h._id] = h;
+      hosts.forEach((h: Record<string, unknown>) => {
+        hostMap[h.id as string] = h;
       });
     }
   }
 
-  // Step 4: Fetch listing details
-  const listingMap: Record<string, ListingInfo> = {};
+  // Step 4: Fetch listing details (listing table uses snake_case)
+  const listingMap: Record<string, Record<string, unknown>> = {};
   if (listingIds.length > 0) {
     const { data: listings, error: listingsError } = await supabase
       .from('listing')
-      .select(`
-        _id,
-        Name,
-        "Cover Photo",
-        Neighborhood,
-        Address,
-        City
-      `)
-      .in('_id', listingIds);
+      .select('id, listing_title, photos_with_urls_captions_and_sort_order_json, neighborhood_name_entered_by_host, address_with_lat_lng_json, city, state, zip_code, borough, primary_neighborhood_reference_id')
+      .in('id', listingIds);
 
     if (listingsError) {
       console.warn('[lease:getGuestLeases] Error fetching listings:', listingsError.message);
     } else if (listings) {
-      listings.forEach((l: ListingInfo) => {
-        listingMap[l._id] = l;
+      listings.forEach((l: Record<string, unknown>) => {
+        listingMap[l.id as string] = l;
       });
     }
   }
 
-  // Step 5: Fetch stays for all leases
-  const staysByLease: Record<string, StayWithReview[]> = {};
+  // Step 5: Fetch stays for all leases (lease_weekly_stay uses snake_case)
+  const staysByLease: Record<string, Record<string, unknown>[]> = {};
   if (leaseIds.length > 0) {
     const { data: stays, error: staysError } = await supabase
-      .from('bookings_stays')
-      .select(`
-        _id,
-        Lease,
-        "Week Number",
-        Guest,
-        Host,
-        listing,
-        "Dates - List of dates in this period",
-        "Check In (night)",
-        "Last Night (night)",
-        "Check-out day",
-        "Stay Status",
-        "Review Submitted by Guest",
-        "Review Submitted by Host",
-        "Created Date",
-        "Modified Date"
-      `)
-      .in('Lease', leaseIds)
-      .order('"Week Number"', { ascending: true });
+      .from('lease_weekly_stay')
+      .select('id, lease_id, week_number_in_lease, guest_user_id, host_user_id, listing_id, dates_in_this_stay_period_json, checkin_night_date, last_night_date, checkout_day_date, stay_status, created_at, updated_at')
+      .in('lease_id', leaseIds)
+      .order('week_number_in_lease', { ascending: true });
 
     if (staysError) {
       console.warn('[lease:getGuestLeases] Error fetching stays:', staysError.message);
     } else if (stays) {
-      stays.forEach((s: StayWithReview) => {
-        if (!staysByLease[s.Lease]) {
-          staysByLease[s.Lease] = [];
+      stays.forEach((s: Record<string, unknown>) => {
+        const leaseId = s.lease_id as string;
+        if (!staysByLease[leaseId]) {
+          staysByLease[leaseId] = [];
         }
-        staysByLease[s.Lease].push(s);
+        // Map to names the frontend adapter expects
+        staysByLease[leaseId].push({
+          _id: s.id,
+          Lease: s.lease_id,
+          'Week Number': s.week_number_in_lease,
+          Guest: s.guest_user_id,
+          Host: s.host_user_id,
+          listing: s.listing_id,
+          'Dates - List of dates in this period': s.dates_in_this_stay_period_json,
+          'Check In (night)': s.checkin_night_date,
+          'Last Night (night)': s.last_night_date,
+          'Check-out day': s.checkout_day_date,
+          'Stay Status': s.stay_status,
+          'Created Date': s.created_at,
+          'Modified Date': s.updated_at,
+        });
       });
     }
   }
 
-  // Step 6: Fetch payment records for all leases (guest payments)
-  const paymentsByLease: Record<string, PaymentRecord[]> = {};
+  // Step 6: Fetch payment records (paymentrecords table still uses Bubble-era names)
+  const paymentsByLease: Record<string, Record<string, unknown>[]> = {};
   if (leaseIds.length > 0) {
     const { data: payments, error: paymentsError } = await supabase
       .from('paymentrecords')
@@ -222,15 +138,15 @@ export async function handleGetGuestLeases(
         "Booking - Reservation",
         "Payment #",
         "Scheduled Date",
-        "Actual Date",
-        "Rent Amount",
+        "Actual Date of Payment",
+        "Rent",
         "Maintenance Fee",
         "Damage Deposit",
-        "Total Amount",
+        "Total Paid by Guest",
         "Bank Transaction Number",
         "Payment Receipt",
-        "Is Paid",
-        "Is Refunded"
+        "Payment from guest?",
+        pending
       `)
       .in('"Booking - Reservation"', leaseIds)
       .order('"Payment #"', { ascending: true });
@@ -238,79 +154,113 @@ export async function handleGetGuestLeases(
     if (paymentsError) {
       console.warn('[lease:getGuestLeases] Error fetching payments:', paymentsError.message);
     } else if (payments) {
-      payments.forEach((p: PaymentRecord) => {
-        const leaseId = p['Booking - Reservation'];
+      payments.forEach((p: Record<string, unknown>) => {
+        const leaseId = p['Booking - Reservation'] as string;
         if (!paymentsByLease[leaseId]) {
           paymentsByLease[leaseId] = [];
         }
-        paymentsByLease[leaseId].push(p);
+        // Map to names the frontend adapter expects
+        paymentsByLease[leaseId].push({
+          _id: p._id,
+          'Booking - Reservation': p['Booking - Reservation'],
+          'Payment #': p['Payment #'],
+          'Scheduled Date': p['Scheduled Date'],
+          'Actual Date': p['Actual Date of Payment'],
+          'Rent Amount': p['Rent'],
+          'Maintenance Fee': p['Maintenance Fee'],
+          'Damage Deposit': p['Damage Deposit'],
+          'Total Amount': p['Total Paid by Guest'],
+          'Bank Transaction Number': p['Bank Transaction Number'],
+          'Payment Receipt': p['Payment Receipt'],
+          'Is Paid': p['Payment from guest?'] ?? false,
+          pending: p.pending,
+        });
       });
     }
   }
 
-  // Step 7: Fetch date change requests for all leases (visible to guest)
-  const dateChangesByLease: Record<string, DateChangeRequest[]> = {};
+  // Step 7: Fetch date change requests (datechangerequest table still uses Bubble-era names)
+  const dateChangesByLease: Record<string, Record<string, unknown>[]> = {};
   if (leaseIds.length > 0) {
     const { data: dateChanges, error: dateChangesError } = await supabase
       .from('datechangerequest')
       .select(`
         _id,
-        Lease,
+        "Lease",
         "Requested by",
         "Request receiver",
         "Stay Associated 1",
         "Stay Associated 2",
-        status,
-        "Request Type",
-        "Original Date",
-        "Requested Date",
-        "Price Adjustment",
+        "request status",
+        "type of request",
+        "LIST of OLD Dates in the stay",
+        "LIST of NEW Dates in the stay",
+        "Price/Rate of the night",
         "Created Date",
-        "visible to guest"
+        "visible to the guest?"
       `)
-      .in('Lease', leaseIds)
-      .or(`"visible to guest".eq.true,"Requested by".eq.${guestUserId}`)
+      .in('"Lease"', leaseIds)
+      .or(`"visible to the guest?".eq.true,"Requested by".eq.${guestUserId}`)
       .order('"Created Date"', { ascending: false });
 
     if (dateChangesError) {
       console.warn('[lease:getGuestLeases] Error fetching date changes:', dateChangesError.message);
     } else if (dateChanges) {
       // Collect requestedBy user IDs for fetching names
-      const requestedByIds = [...new Set(dateChanges.map((dc: DateChangeRequest) => dc['Requested by']).filter(Boolean))];
+      const requestedByIds = [...new Set(dateChanges.map((dc: Record<string, unknown>) => dc['Requested by']).filter(Boolean))] as string[];
 
-      // Fetch user info for requestedBy
-      const requestedByMap: Record<string, HostInfo> = {};
+      const requestedByMap: Record<string, Record<string, unknown>> = {};
       if (requestedByIds.length > 0) {
         const { data: requestedByUsers } = await supabase
           .from('user')
-          .select(`_id, "Name - Full", "Name - First", "Profile Photo"`)
-          .in('_id', requestedByIds);
+          .select('id, first_name, last_name, profile_photo_url')
+          .in('id', requestedByIds);
 
         if (requestedByUsers) {
-          requestedByUsers.forEach((u: HostInfo) => {
-            requestedByMap[u._id] = u;
+          requestedByUsers.forEach((u: Record<string, unknown>) => {
+            requestedByMap[u.id as string] = u;
           });
         }
       }
 
-      dateChanges.forEach((dc: DateChangeRequest) => {
-        if (!dateChangesByLease[dc.Lease]) {
-          dateChangesByLease[dc.Lease] = [];
+      dateChanges.forEach((dc: Record<string, unknown>) => {
+        const leaseId = dc['Lease'] as string;
+        if (!dateChangesByLease[leaseId]) {
+          dateChangesByLease[leaseId] = [];
         }
-        dc.requestedByUser = requestedByMap[dc['Requested by']] || null;
-        dateChangesByLease[dc.Lease].push(dc);
+        // Map to names the frontend adapter expects
+        dateChangesByLease[leaseId].push({
+          _id: dc._id,
+          Lease: dc['Lease'],
+          'Requested by': dc['Requested by'],
+          'Request receiver': dc['Request receiver'],
+          'Stay Associated 1': dc['Stay Associated 1'],
+          'Stay Associated 2': dc['Stay Associated 2'],
+          status: dc['request status'],
+          'Request Type': dc['type of request'],
+          'Original Date': dc['LIST of OLD Dates in the stay'],
+          'Requested Date': dc['LIST of NEW Dates in the stay'],
+          'Price Adjustment': dc['Price/Rate of the night'],
+          'Created Date': dc['Created Date'],
+          'visible to guest': dc['visible to the guest?'],
+          requestedByUser: requestedByMap[dc['Requested by'] as string] || null,
+        });
       });
     }
   }
 
   // Step 8: Assemble the complete lease data
-  const enrichedLeases: GuestLeaseData[] = leases.map((lease: LeaseData) => ({
+  const enrichedLeases = leases.map((lease: Record<string, unknown>) => ({
+    // Pass through all lease fields (snake_case from booking_lease)
     ...lease,
-    host: hostMap[lease.Host] || null,
-    listing: listingMap[lease.Listing] || null,
-    stays: staysByLease[lease._id] || [],
-    paymentRecords: paymentsByLease[lease._id] || [],
-    dateChangeRequests: dateChangesByLease[lease._id] || [],
+    // Also provide Bubble-era aliases the adapter checks for
+    _id: lease.id,
+    // Related entities
+    host: hostMap[lease.host_user_id as string] || null,
+    listing: listingMap[lease.listing_id as string] || null,
+    stays: staysByLease[lease.id as string] || [],
+    paymentRecords: paymentsByLease[lease.id as string] || [],
+    dateChangeRequests: dateChangesByLease[lease.id as string] || [],
   }));
 
   console.log('[lease:getGuestLeases] Returning enriched leases:', enrichedLeases.length);

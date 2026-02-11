@@ -19,7 +19,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Header from '../../shared/Header.jsx';
-import { useMessagingPageLogic } from './useMessagingPageLogic.js';
+import { useMessagingPageLogic } from './useMessagingRealtimeChannelsAndCTALogic.js';
 import ThreadSidebar from './components/ThreadSidebar.jsx';
 import MessageThread from './components/MessageThread.jsx';
 import MessageInput from './components/MessageInput.jsx';

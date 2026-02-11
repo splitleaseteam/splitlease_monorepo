@@ -16,7 +16,7 @@ import Header from '../shared/Header';
 import Footer from '../shared/Footer';
 import CreateProposalFlowV2 from '../shared/CreateProposalFlowV2';
 import ContactHostMessaging from '../shared/ContactHostMessaging';
-import SignUpLoginModal from '../shared/SignUpLoginModal';
+import SignUpLoginModal from '../shared/AuthSignupLoginOAuthResetFlowModal';
 import ProposalSuccessModal from '../modals/ProposalSuccessModal';
 import { PhotoGallery } from './ViewSplitLeasePage/components/PhotoGallery';
 import { BookingWidget } from './ViewSplitLeasePage/components/BookingWidget';

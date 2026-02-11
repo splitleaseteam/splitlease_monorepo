@@ -50,7 +50,7 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 | Entry Points | 29 |
 | Page Components | 25+ |
 | Shared Components | 50+ |
-| Edge Functions | 68 |
+| Edge Functions | 67 |
 | Database Tables | 93+ |
 | Logic Functions | 57 |
 
@@ -200,7 +200,7 @@ Split Lease/
 |   +-- package.json                  # Dependencies
 |
 +-- supabase/                         # Backend
-|   +-- functions/                    # Edge Functions (68)
+|   +-- functions/                    # Edge Functions (67)
 |   |   +-- auth-user/                # Authentication
 |   |   +-- proposal/                 # Proposal CRUD
 |   |   +-- listing/                  # Listing CRUD
@@ -240,7 +240,7 @@ Split Lease/
 
 ### Overview
 
-68 Edge Functions running on Deno 2/TypeScript with action-based routing. See `supabase/functions/EDGE_FUNCTIONS_DOCUMENTATION.md` for the full catalog.
+67 Edge Functions running on Deno 2/TypeScript with action-based routing. See `supabase/functions/EDGE_FUNCTIONS_DOCUMENTATION.md` for the full catalog.
 
 ### Core Business Functions
 
@@ -529,7 +529,7 @@ Documentation is distributed as CLAUDE.md files throughout the codebase:
 | `app/src/CLAUDE.md` | Frontend architecture, entry points, logic layers |
 | `app/src/islands/CLAUDE.md` | Component library, patterns, page inventory |
 | `supabase/CLAUDE.md` | Edge Functions, shared utilities, sync patterns |
-| `supabase/functions/EDGE_FUNCTIONS_DOCUMENTATION.md` | Full edge function catalog (68 functions) |
+| `supabase/functions/EDGE_FUNCTIONS_DOCUMENTATION.md` | Full edge function catalog (67 functions) |
 | `app/src/lib/SECURE_AUTH_README.md` | Authentication & encryption system |
 | `pythonanywhere/README.md` | PythonAnywhere Flask apps setup & deployment |
 

@@ -149,7 +149,7 @@ Uses Islands Architecture and Hollow Component Pattern. See `app/src/CLAUDE.md` 
 [ENTRY_POINT]: ListWithUsPage.jsx
 [HOOK]: None (static marketing)
 [ROUTE]: /list-with-us
-[IMPORTS]: shared/Header, shared/SignUpLoginModal
+[IMPORTS]: shared/Header, shared/AuthSignupLoginOAuthResetFlowModal
 
 ### NotFoundPage.jsx
 [INTENT]: 404 error page with navigation options

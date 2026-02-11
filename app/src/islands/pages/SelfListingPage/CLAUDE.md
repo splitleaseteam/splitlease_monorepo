@@ -94,7 +94,7 @@ listingLocalStore (singleton)
     ↓
 localStorage (auto-save with 1s debounce)
     ↓
-Submit → prepareListingSubmission → listingService → Supabase listing table
+Submit → prepareListingSubmission → listingCrudGeoPhotoPricingService → Supabase listing table
 ```
 
 [AUTO_SAVE]: 1 second debounce after field changes
@@ -109,7 +109,7 @@ Submit → prepareListingSubmission → listingService → Supabase listing tabl
 1. User clicks Submit (Section 7)
 2. Check auth status
 3. IF not logged in:
-   - Show SignUpLoginModal with defaultUserType="host"
+   - Show AuthSignupLoginOAuthResetFlowModal with defaultUserType="host"
    - Set agreedToTerms=true after signup (modal shows terms)
    - Show success modal in loading state
    - Proceed with submission after 300ms delay
@@ -121,7 +121,7 @@ Submit → prepareListingSubmission → listingService → Supabase listing tabl
    - Clear localStorage on success
 ```
 
-[AUTH_MODAL]: SignUpLoginModal with skipReload=true, onAuthSuccess callback
+[AUTH_MODAL]: AuthSignupLoginOAuthResetFlowModal with skipReload=true, onAuthSuccess callback
 [SUCCESS_MODAL]: Two states - loading (spinner) and success (checkmark + CTAs)
 [ERROR_HANDLING]: Alert on validation errors, hide modal on submission errors
 
@@ -208,7 +208,7 @@ Submit → prepareListingSubmission → listingService → Supabase listing tabl
 
 ## INTEGRATION_POINTS
 
-### SignUpLoginModal
+### AuthSignupLoginOAuthResetFlowModal
 [PROPS]: isOpen, onClose, initialView="signup", defaultUserType="host", skipReload=true, onAuthSuccess
 [CALLBACK]: onAuthSuccess sets agreedToTerms=true, updates header, triggers submission
 
@@ -216,12 +216,12 @@ Submit → prepareListingSubmission → listingService → Supabase listing tabl
 [HOOK]: useToast() from shared/Toast
 [USAGE]: Shows success message after auth: "Account created successfully! Creating your listing..."
 
-### listingService
+### listingCrudGeoPhotoPricingService
 [FUNCTION]: createListing(formData)
 [RETURNS]: { id, ...listing data }
 [DESTINATION]: Supabase listing table
 
-### listingService
+### listingCrudGeoPhotoPricingService
 [FUNCTION]: getListingById(listingId)
 [USAGE]: Fetches existing listing data for editing
 

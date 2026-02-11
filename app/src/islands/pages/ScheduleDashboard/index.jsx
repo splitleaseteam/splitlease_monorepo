@@ -23,7 +23,7 @@
 
 import React from 'react';
 import Footer from '../../shared/Footer.jsx';
-import { useScheduleDashboardLogic } from './useScheduleDashboardLogic.js';
+import { useScheduleDashboardLogic } from './useScheduleDashboardCalendarPricingDateChangeLogic.js';
 import ScheduleCalendar from './components/ScheduleCalendar.jsx';
 import RoommateProfileCard from './components/CoTenantProfileCard.jsx';
 import BuyOutPanel from './components/BuyOutPanel.jsx';

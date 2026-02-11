@@ -22,7 +22,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { useScheduleDashboardLogic } from '../useScheduleDashboardLogic.js';
+import { useScheduleDashboardLogic } from '../useScheduleDashboardCalendarPricingDateChangeLogic.js';
 import { MobileHeader } from './components/MobileHeader.jsx';
 import { BottomNav } from './components/BottomNav.jsx';
 import MobileCalendar from './components/MobileCalendar.jsx';
