@@ -17,39 +17,7 @@
 
 ## ARCHITECTURE_OVERVIEW
 
-### Islands Architecture
-- Each page is an independent React root mounted to an HTML file
-- Entry points in `app/src/*.jsx` create React roots and mount page components
-- Progressive enhancement: static HTML + hydrated React islands
-
-### Hollow Component Pattern
-- Page components contain ONLY JSX rendering (no business logic)
-- ALL business logic delegated to custom hooks (`use*PageLogic.js`)
-- Hooks return pre-calculated state and pre-bound event handlers
-- Benefits: testable logic, focused UI, reusable business logic
-
-### Pattern Example
-```jsx
-// Page Component (Hollow - UI only)
-export default function SearchPage() {
-  const {
-    listings,      // pre-processed data
-    filters,       // derived state
-    handleFilter   // pre-bound handler
-  } = useSearchPageLogic();
-
-  return <div>{/* Pure rendering */}</div>;
-}
-
-// Logic Hook (All business logic)
-export function useSearchPageLogic() {
-  // State management
-  // Data fetching
-  // Event handlers
-  // Computed values
-  return { listings, filters, handleFilter };
-}
-```
+Uses Islands Architecture and Hollow Component Pattern. See `app/src/CLAUDE.md` for detailed pattern documentation and code examples.
 
 ---
 
@@ -357,28 +325,6 @@ export function useSearchPageLogic() {
 [DATA_FETCHERS]: lib/listingDataFetcher
 [CALCULATORS]: logic/calculators/pricing/, logic/calculators/scheduling/
 [AUTH]: Optional (some features require authentication)
-
----
-
-## HOLLOW_COMPONENT_PATTERN_BENEFITS
-
-### Testability
-- Business logic isolated in hooks can be unit tested without rendering UI
-- UI components can be snapshot tested with mocked hook responses
-
-### Reusability
-- Logic hooks can be shared between multiple components
-- UI components can be used with different logic implementations
-
-### Maintainability
-- Clear separation of concerns: UI vs. business logic
-- Easy to locate and modify business rules (always in hooks)
-- Component files stay small and focused
-
-### Developer Experience
-- Hook signatures document all page capabilities
-- Pre-calculated state reduces component complexity
-- Type definitions in one place (hook return type)
 
 ---
 

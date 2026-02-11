@@ -848,11 +848,17 @@ function mapAvailableNightsToNames(availableNights) {
 
 /**
  * Update an existing listing in listing table
+ *
+ * When originalData is provided, only fields that have actually changed from the
+ * original are sent to Supabase. This prevents FK constraint violations (409/23503)
+ * caused by PostgREST validating unchanged null FK fields.
+ *
  * @param {string} listingId - The listing's id (Bubble-compatible ID)
  * @param {object} formData - Updated form data (can be flat DB columns or nested SelfListingPage format)
+ * @param {object} [originalData] - Original listing data for change detection. If omitted, all fields are sent (backward compatible).
  * @returns {Promise<object>} - Updated listing
  */
-export async function updateListing(listingId, formData) {
+export async function updateListing(listingId, formData, originalData = null) {
   logger.debug('[ListingService] Updating listing:', listingId);
 
   if (!listingId) {
@@ -876,6 +882,46 @@ export async function updateListing(listingId, formData) {
   }
 
   listingData.original_updated_at = new Date().toISOString();
+
+  // REG-001: Filter out unchanged fields to prevent FK constraint violations.
+  // When originalData is provided, only send fields that actually differ from the original.
+  // This stops PostgREST from re-validating unchanged null FK fields (which causes 409/23503).
+  if (originalData) {
+    const filteredData = {};
+    for (const [key, value] of Object.entries(listingData)) {
+      // Always include the timestamp
+      if (key === 'original_updated_at') {
+        filteredData[key] = value;
+        continue;
+      }
+
+      const originalValue = originalData[key];
+
+      // Compare using JSON.stringify to handle arrays, objects, and primitives uniformly
+      if (JSON.stringify(value) !== JSON.stringify(originalValue)) {
+        filteredData[key] = value;
+      }
+    }
+
+    const droppedCount = Object.keys(listingData).length - Object.keys(filteredData).length;
+    if (droppedCount > 0) {
+      logger.debug(`[ListingService] Filtered out ${droppedCount} unchanged field(s) to prevent FK constraint issues`);
+    }
+
+    listingData = filteredData;
+  }
+
+  // If only the timestamp remains after filtering, skip the update
+  if (Object.keys(listingData).length <= 1 && listingData.original_updated_at) {
+    logger.debug('[ListingService] No changed fields to update, skipping Supabase call');
+    // Fetch and return the current listing so callers still get data back
+    const { data: currentData } = await supabase
+      .from('listing')
+      .select('*')
+      .eq('id', listingId)
+      .single();
+    return currentData;
+  }
 
   const { data, error } = await supabase
     .from('listing')

@@ -60,3 +60,9 @@ export function calculateNightlyRate(weeklyComp, nightCount) {
   if (!weeklyComp || nightCount === 0) return 0;
   return Math.round(weeklyComp / nightCount);
 }
+
+/**
+ * Alias for formatCurrency — convenience export for consumers
+ * that use the name "formatPrice".
+ */
+export { formatCurrency as formatPrice };

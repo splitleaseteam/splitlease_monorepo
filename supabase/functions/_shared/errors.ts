@@ -19,6 +19,16 @@ export class ApiError extends Error {
 /** @deprecated Use ApiError instead */
 export const BubbleApiError = ApiError;
 
+export class SupabaseSyncError extends Error {
+  constructor(
+    message: string,
+    public originalError?: any
+  ) {
+    super(message);
+    this.name = 'SupabaseSyncError';
+  }
+}
+
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);

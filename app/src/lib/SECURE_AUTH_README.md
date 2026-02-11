@@ -5,7 +5,7 @@
 Split Lease now uses a **secure, encrypted storage system** for authentication tokens. This improves security by:
 
 1. **Encrypting tokens** using AES-GCM encryption
-2. **Using sessionStorage** instead of localStorage (cleared when tab closes)
+2. **Using localStorage** with encryption (tokens encrypted at rest)
 3. **Publishing only state** (not tokens) to the rest of the application
 4. **Reducing session duration** from 24 hours to 1 hour
 
@@ -23,8 +23,8 @@ Split Lease now uses a **secure, encrypted storage system** for authentication t
 │  ✅ isSessionValid() → boolean                         │
 │                                                         │
 │  Cannot Access:                                        │
-│  ❌ Raw tokens (encrypted in sessionStorage)           │
-│  ❌ Session IDs (encrypted in sessionStorage)          │
+│  ❌ Raw tokens (encrypted in localStorage)           │
+│  ❌ Session IDs (encrypted in localStorage)          │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
                           ▲
@@ -51,7 +51,7 @@ Split Lease now uses a **secure, encrypted storage system** for authentication t
 │          (Encryption & Storage Management)              │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  sessionStorage (encrypted, cleared on tab close):     │
+│  localStorage (encrypted, persists until logout):    │
 │  - __sl_at__  → Encrypted auth token                   │
 │  - __sl_sid__ → Encrypted session/user ID              │
 │  - __sl_rd__  → Encrypted refresh data (future)        │
@@ -81,12 +81,12 @@ const sessionValid = (Date.now() - lastAuth) < 86400000;
 ### After (Secure)
 
 ```javascript
-// ✅ NEW: Tokens encrypted in sessionStorage
+// ✅ NEW: Tokens encrypted in localStorage
 const token = await getAuthToken(); // Returns decrypted token only when needed
 const sessionId = await getSessionId(); // Encrypted at rest
 
-// ✅ NEW: Bubble manages token expiry
-// Client validates on every API request - Bubble rejects expired tokens
+// ✅ NEW: Supabase Auth manages token expiry
+// Client validates on every API request - Supabase Auth rejects expired tokens
 
 // ✅ NEW: Only state exposed to app
 const isAuthenticated = getAuthState(); // Returns boolean, no tokens
@@ -101,7 +101,7 @@ const userType = getUserType(); // Returns 'Host' or 'Guest', no sensitive data
 Tokens are encrypted using **AES-GCM** with a per-session key:
 
 ```javascript
-// Generate unique encryption key per browser tab
+// Generate unique encryption key per session
 const key = await crypto.subtle.generateKey(
   { name: 'AES-GCM', length: 256 },
   true,
@@ -121,21 +121,21 @@ const encrypted = await crypto.subtle.encrypt(
 
 | Data Type | Storage | Visibility | Lifetime |
 |-----------|---------|------------|----------|
-| Auth Token | sessionStorage (encrypted) | Internal only | Tab session |
-| Session ID | sessionStorage (encrypted) | Internal only | Tab session |
-| Auth State | localStorage (plaintext) | Public | Until logout or Bubble token expiry |
+| Auth Token | localStorage (encrypted) | Internal only | Until logout |
+| Session ID | localStorage (encrypted) | Internal only | Until logout |
+| Auth State | localStorage (plaintext) | Public | Until logout or Supabase Auth token expiry |
 | User ID | localStorage (plaintext) | **Public** | Until logout |
 | User Type | localStorage (plaintext) | **Public** | Until logout |
 
 ### 3. **Session Management**
 
-Sessions are managed entirely by **Bubble API token expiry**:
+Sessions are managed entirely by **Supabase Auth API token expiry**:
 
 ```javascript
-// Bubble handles token expiry - we validate on each request
+// Supabase Auth handles token expiry - we validate on each request
 const userData = await validateTokenAndFetchUser();
 if (!userData) {
-  // Token expired or invalid - Bubble rejected it
+  // Token expired or invalid - Supabase Auth rejected it
   clearAuthData();
   redirectToLogin();
 }
@@ -171,8 +171,8 @@ const isValid = isSessionValid();
 // ❌ Don't try to access tokens directly
 const token = localStorage.getItem('splitlease_auth_token'); // Won't work
 
-// ❌ Don't access sessionStorage directly
-const token = sessionStorage.getItem('__sl_at__'); // Encrypted, useless
+// ❌ Don't access localStorage directly
+const token = localStorage.getItem('__sl_at__'); // Encrypted, useless
 
 // ❌ Don't try to decrypt tokens in app code
 const token = await getAuthToken(); // Only for internal auth.js use
@@ -238,21 +238,21 @@ async function handleLogout() {
 - XSS attack could steal tokens easily
 
 **After:**
-- Tokens encrypted in sessionStorage
+- Tokens encrypted in localStorage
 - Even if XSS reads storage, gets encrypted gibberish
 - Encryption key exists only in memory (not stored)
 
-### 2. **Token Expiry (Managed by Bubble)**
+### 2. **Token Expiry (Managed by Supabase Auth)**
 
 **Before:**
 - Client-side 24-hour expiry check
 - No server validation on expiry
 
 **After:**
-- **Bubble API manages token expiry**
+- **Supabase Auth API manages token expiry**
 - Client validates tokens on every request
 - Invalid/expired tokens immediately rejected
-- Forces re-authentication when Bubble says token is invalid
+- Forces re-authentication when Supabase Auth says token is invalid
 
 ### 3. **Storage Isolation**
 
@@ -261,7 +261,7 @@ async function handleLogout() {
 - Tokens survive browser restart
 
 **After:**
-- Sensitive data in sessionStorage (cleared on tab close)
+- Sensitive data in localStorage (encrypted, persists until logout)
 - Public state in localStorage (for convenience)
 - Clear separation of concerns
 
@@ -286,7 +286,7 @@ const migrated = await migrateFromLegacyStorage();
 
 if (migrated) {
   // Old tokens found in localStorage
-  // → Encrypted and moved to sessionStorage
+  // → Encrypted and stored in localStorage
   // → Old keys deleted
   // → State keys created
 }
@@ -308,13 +308,13 @@ if (migrated) {
 ### Issue: User keeps getting logged out
 
 **Check:**
-1. Bubble token expiry - is the token actually expired?
-2. Browser privacy settings - blocking sessionStorage?
-3. Tab close/refresh - sessionStorage cleared?
-4. Validate token with Bubble API to check if it's still valid
+1. Supabase Auth token expiry - is the token actually expired?
+2. Browser privacy settings - blocking localStorage?
+3. Manual logout - was localStorage cleared properly?
+4. Validate token with Supabase Auth API to check if it's still valid
 
 **Solution:**
-If tokens are clearing on refresh, this is expected (sessionStorage behavior). User needs to log in again. Consider implementing HttpOnly cookies for persistence across page refreshes.
+If the user is being logged out unexpectedly, check that the Supabase Auth token has not expired. Tokens in localStorage persist across refreshes, so unexpected logouts typically indicate server-side token rejection.
 
 ### Issue: Migration not working
 
@@ -335,7 +335,7 @@ console.log('Migration:', migrated);
 
 **Possible Causes:**
 1. Page refresh (encryption key lost)
-2. sessionStorage cleared manually
+2. localStorage cleared manually
 3. Browser privacy mode
 
 **Solution:**
@@ -360,7 +360,7 @@ console.log('Tokens:', tokens);
 ### Unit Tests
 
 Unit tests for encryption/decryption should cover:
-- Token encryption (sessionStorage value differs from plaintext)
+- Token encryption (localStorage value differs from plaintext)
 - Token decryption (round-trip returns original value)
 - Legacy storage migration
 
@@ -375,7 +375,7 @@ Unit tests for encryption/decryption should cover:
 
 ### ❌ DON'T:
 
-1. Access sessionStorage directly
+1. Access localStorage directly
 2. Try to decrypt tokens in app code
 3. Store sensitive data in localStorage
 4. Bypass auth state checks

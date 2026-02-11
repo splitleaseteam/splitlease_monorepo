@@ -108,20 +108,13 @@ Split Lease is a flexible rental marketplace for NYC properties enabling:
 |---------|-------------|
 | **Islands Architecture** | Each page is an independent React root. Full page loads between pages. |
 | **Hollow Components** | Page components delegate everything to `useXxxPageLogic` hooks |
+| **Day Indexing** | 0-based (Sun=0 through Sat=6) everywhere, matching `Date.getDay()`. No conversion at API boundaries. |
 | **Route Registry** | Single source of truth in `app/src/routes.config.js` |
 | **Action-Based Edge Functions** | All functions use `{ action, payload }` request pattern |
 | **Queue-Based Sync** | Background job processing via `sync_queue` table, processed by cron |
 | **Workflow Orchestration** | pgmq-based workflow execution with pg_net triggers |
 
-### Day Indexing Convention
-
-All day indices use JavaScript's 0-based standard (matching `Date.getDay()`):
-
-| Day | Sun | Mon | Tue | Wed | Thu | Fri | Sat |
-|-----|-----|-----|-----|-----|-----|-----|-----|
-| Index | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-
-The database stores days natively in this format. No conversion needed at API boundaries.
+See `app/src/CLAUDE.md` for detailed pattern documentation including Islands Architecture entry point pattern, Hollow Component code examples, and Day Indexing utilities.
 
 ---
 

@@ -36,7 +36,6 @@ import { DAY_ABBREVIATIONS, DEFAULTS, COLORS, SCHEDULE_PATTERNS } from '../../li
 import { createDay } from '../../lib/scheduleSelector/dayHelpers.js';
 import { supabase } from '../../lib/supabase.js';
 import { logger } from '../../lib/logger.js';
-import { toast } from '../../lib/toastService.js';
 // NOTE: adaptDaysToBubble removed - database now uses 0-indexed days natively
 import '../../styles/listing-schedule-selector.css';
 import '../../styles/components/toast.css';
@@ -1039,12 +1038,12 @@ export default function ViewSplitLeasePage() {
   const handleCreateProposal = () => {
     // Validate before opening modal
     if (!scheduleValidation?.valid) {
-      toast.warning('Please select a valid contiguous schedule');
+      window.showToast?.({ title: 'Warning', content: 'Please select a valid contiguous schedule', type: 'warning' });
       return;
     }
 
     if (!moveInDate) {
-      toast.warning('Please select a move-in date');
+      window.showToast?.({ title: 'Warning', content: 'Please select a move-in date', type: 'warning' });
       return;
     }
 

@@ -2,8 +2,10 @@
  * Get Threads Handler
  * Split Lease - Messages Edge Function
  *
- * Fetches all message threads for the authenticated user
- * Uses service role key to bypass RLS (supports legacy auth users)
+ * Fetches all message threads for the authenticated user.
+ * Uses the get_threads_for_user() RPC to replace 4 sequential queries
+ * (threads, contacts, listings, unread counts) with a single database call.
+ * Two additional queries remain: proposal status lookup and visibility-aware previews.
  *
  * NO FALLBACK PRINCIPLE: Throws if database query fails
  */
@@ -50,106 +52,49 @@ export async function handleGetThreads(
   const resolvedUser = await resolveUser(supabaseAdmin, user);
   const userBubbleId = resolvedUser.id;
 
-  // Step 1: Query threads where user is host or guest
-  // Direct query now works with normalized column names
-  const { data: threads, error: threadsError } = await supabaseAdmin
-    .from('message_thread')
-    .select('*')
-    .or(`host_user_id.eq.${userBubbleId},guest_user_id.eq.${userBubbleId}`)
-    .order('original_updated_at', { ascending: false, nullsFirst: false })
-    .limit(20);
+  // Step 1: Single RPC call replaces 4 sequential queries:
+  // threads lookup, contact name/avatar lookup, listing name lookup, unread counts
+  const { data: rpcThreads, error: rpcError } = await supabaseAdmin
+    .rpc('get_threads_for_user', { p_user_id: userBubbleId, p_limit: 20 });
 
-  console.log('[getThreads] Query result:', {
-    threadCount: threads?.length || 0,
-    error: threadsError?.message
+  console.log('[getThreads] RPC result:', {
+    threadCount: rpcThreads?.length || 0,
+    error: rpcError?.message
   });
 
-  if (threadsError) {
-    console.error('[getThreads] Threads query failed:', threadsError);
-    throw new Error(`Failed to fetch threads: ${threadsError.message}`);
+  if (rpcError) {
+    console.error('[getThreads] RPC query failed:', rpcError);
+    throw new Error(`Failed to fetch threads: ${rpcError.message}`);
   }
 
-  if (!threads || threads.length === 0) {
+  if (!rpcThreads || rpcThreads.length === 0) {
     console.log('[getThreads] No threads found');
     return { threads: [] };
   }
 
-  console.log('[getThreads] Found', threads.length, 'threads');
+  console.log('[getThreads] Found', rpcThreads.length, 'threads via RPC');
 
-  // Step 2: Collect contact IDs and listing IDs for batch lookup
-  const contactIds = new Set<string>();
-  const listingIds = new Set<string>();
+  const threadIds = rpcThreads.map((t: { thread_id: string }) => t.thread_id);
 
-  threads.forEach(thread => {
-    const hostId = thread.host_user_id;
-    const guestId = thread.guest_user_id;
-    const contactId = hostId === userBubbleId ? guestId : hostId;
-    if (contactId) contactIds.add(contactId);
-    if (thread.listing_id) listingIds.add(thread.listing_id);
-  });
+  // Step 2: Fetch proposal IDs for these threads (RPC doesn't include proposal data)
+  // Query message_thread to get proposal_id for each thread
+  const { data: threadProposals } = await supabaseAdmin
+    .from('message_thread')
+    .select('id, proposal_id')
+    .in('id', threadIds);
 
-  // Step 3: Batch fetch contact user data
-  let contactMap: Record<string, { name: string; avatar?: string }> = {};
-  if (contactIds.size > 0) {
-    const { data: contacts } = await supabaseAdmin
-      .from('user')
-      .select('legacy_platform_id, first_name, last_name, profile_photo_url')
-      .in('legacy_platform_id', Array.from(contactIds));
-
-    if (contacts) {
-      contactMap = contacts.reduce((acc, contact) => {
-        acc[contact.legacy_platform_id] = {
-          name: `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 'Unknown User',
-          avatar: contact.profile_photo_url,
-        };
-        return acc;
-      }, {} as Record<string, { name: string; avatar?: string }>);
-    }
-  }
-
-  // Step 4: Batch fetch listing data
-  let listingMap: Record<string, string> = {};
-  if (listingIds.size > 0) {
-    const { data: listings } = await supabaseAdmin
-      .from('listing')
-      .select('legacy_platform_id, listing_title')
-      .in('legacy_platform_id', Array.from(listingIds));
-
-    if (listings) {
-      listingMap = listings.reduce((acc, listing) => {
-        acc[listing.legacy_platform_id] = listing.listing_title || 'Unnamed Property';
-        return acc;
-      }, {} as Record<string, string>);
-    }
-  }
-
-  // Step 5: Fetch unread message counts per thread
-  const threadIds = threads.map(t => t.id);
-  let unreadCountMap: Record<string, number> = {};
-  if (threadIds.length > 0) {
-    const { data: unreadData, error: unreadError } = await supabaseAdmin
-      .from('thread_message')
-      .select('thread_id')
-      .in('thread_id', threadIds)
-      .contains('unread_by_user_ids_json', JSON.stringify([userBubbleId]));
-
-    if (!unreadError && unreadData) {
-      // Count messages per thread
-      unreadCountMap = unreadData.reduce((acc, msg) => {
-        const threadId = msg.thread_id;
-        acc[threadId] = (acc[threadId] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-    }
-  }
-
-  // Step 5b: Fetch proposal data for threads with proposals
-  // This enables hosts to see which threads have pending proposals
+  const threadProposalMap: Record<string, string> = {};
   const proposalIds = new Set<string>();
-  threads.forEach(thread => {
-    if (thread.proposal_id) proposalIds.add(thread.proposal_id);
-  });
+  if (threadProposals) {
+    for (const tp of threadProposals) {
+      if (tp.proposal_id) {
+        threadProposalMap[tp.id] = tp.proposal_id;
+        proposalIds.add(tp.proposal_id);
+      }
+    }
+  }
 
+  // Fetch proposal statuses for threads that have proposals
   let proposalMap: Record<string, { status: string }> = {};
   if (proposalIds.size > 0) {
     const { data: proposals, error: proposalsError } = await supabaseAdmin
@@ -158,7 +103,7 @@ export async function handleGetThreads(
       .in('legacy_platform_id', Array.from(proposalIds));
 
     if (!proposalsError && proposals) {
-      proposalMap = proposals.reduce((acc, proposal) => {
+      proposalMap = proposals.reduce((acc: Record<string, { status: string }>, proposal: { legacy_platform_id: string; proposal_workflow_status: string }) => {
         acc[proposal.legacy_platform_id] = {
           status: proposal.proposal_workflow_status || 'unknown',
         };
@@ -168,14 +113,13 @@ export async function handleGetThreads(
     console.log('[getThreads] Fetched proposal data for', Object.keys(proposalMap).length, 'proposals');
   }
 
-  // Step 5c: Compute visibility-aware message previews
-  // The static last_message_preview_text field doesn't consider visibility, so we compute
-  // the preview based on the most recent message visible to the current user
+  // Step 3: Compute visibility-aware message previews
+  // The RPC's last_message_preview doesn't consider per-user visibility,
+  // so we compute the preview based on the most recent message visible to the current user
   const threadUserRoles = new Map<string, 'host' | 'guest'>();
-  threads.forEach(thread => {
-    const role = thread.host_user_id === userBubbleId ? 'host' : 'guest';
-    threadUserRoles.set(thread.id, role);
-  });
+  for (const t of rpcThreads) {
+    threadUserRoles.set(t.thread_id, t.is_host ? 'host' : 'guest');
+  }
 
   const visiblePreviewMap = await getLastVisibleMessagesForThreads(
     supabaseAdmin,
@@ -184,15 +128,21 @@ export async function handleGetThreads(
   );
   console.log('[getThreads] Computed visibility-aware previews for', visiblePreviewMap.size, 'threads');
 
-  // Step 6: Transform threads to UI format
-  const transformedThreads: Thread[] = threads.map(thread => {
-    const hostId = thread.host_user_id;
-    const guestId = thread.guest_user_id;
-    const contactId = hostId === userBubbleId ? guestId : hostId;
-    const contact = contactId ? contactMap[contactId] : null;
-
+  // Step 4: Transform RPC results to UI format (identical response shape)
+  const transformedThreads: Thread[] = rpcThreads.map((thread: {
+    thread_id: string;
+    host_user_id: string;
+    guest_user_id: string;
+    listing_name: string | null;
+    last_message_preview: string | null;
+    modified_date: string | null;
+    contact_name: string | null;
+    contact_avatar: string | null;
+    unread_count: number;
+    is_host: boolean;
+  }) => {
     // Format the last modified time
-    const modifiedDate = thread.original_updated_at ? new Date(thread.original_updated_at) : new Date();
+    const modifiedDate = thread.modified_date ? new Date(thread.modified_date) : new Date();
     const now = new Date();
     const diffMs = now.getTime() - modifiedDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -209,12 +159,11 @@ export async function handleGetThreads(
     }
 
     // Get proposal data if thread has a proposal
-    const proposalId = thread.proposal_id;
+    const proposalId = threadProposalMap[thread.thread_id];
     const proposalData = proposalId ? proposalMap[proposalId] : null;
     const proposalStatus = proposalData?.status;
 
     // Determine if this is a pending proposal that needs host attention
-    // Pending statuses that require host review:
     const pendingStatuses = [
       'Proposal Pending',
       'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
@@ -224,17 +173,20 @@ export async function handleGetThreads(
     ];
     const hasPendingProposal = proposalStatus ? pendingStatuses.includes(proposalStatus) : false;
 
+    // RPC returns empty string for contacts with no name; normalize to 'Split Lease'
+    const contactName = thread.contact_name?.trim() || 'Split Lease';
+
     return {
-      id: thread.id,
-      host_user_id: hostId,
-      guest_user_id: guestId,
-      contact_name: contact?.name || 'Split Lease',
-      contact_avatar: contact?.avatar,
-      property_name: thread.listing_id ? listingMap[thread.listing_id] : undefined,
-      // Use visibility-aware preview if available, fall back to static last_message_preview_text
-      last_message_preview: visiblePreviewMap.get(thread.id) || thread.last_message_preview_text || 'No messages yet',
+      id: thread.thread_id,
+      host_user_id: thread.host_user_id,
+      guest_user_id: thread.guest_user_id,
+      contact_name: contactName,
+      contact_avatar: thread.contact_avatar || undefined,
+      property_name: thread.listing_name || undefined,
+      // Use visibility-aware preview if available, fall back to RPC's last_message_preview
+      last_message_preview: visiblePreviewMap.get(thread.thread_id) || thread.last_message_preview || 'No messages yet',
       last_message_time: lastMessageTime,
-      unread_count: unreadCountMap[thread.id] || 0,
+      unread_count: Number(thread.unread_count) || 0,
       is_with_splitbot: false,
       proposal_id: proposalId,
       proposal_status: proposalStatus,

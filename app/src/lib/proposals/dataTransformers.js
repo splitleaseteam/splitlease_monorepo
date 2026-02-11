@@ -9,6 +9,9 @@
  * - Default values for missing data
  */
 
+// Re-export formatPrice from the canonical source for backward compatibility
+export { formatPrice } from '../formatters.js';
+
 /**
  * Transform user data from Bubble.io format
  *
@@ -210,26 +213,6 @@ export function getProposalDisplayText(proposal) {
   const listingName = proposal.listing?.name || 'Property';
 
   return `${hostName} - ${listingName}`;
-}
-
-/**
- * Format price for display
- *
- * @param {number} price - Price value
- * @param {boolean} includeCents - Whether to include cents
- * @returns {string} Formatted price string
- */
-export function formatPrice(price, includeCents = true) {
-  if (price === null || price === undefined) return null;
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: includeCents ? 2 : 0,
-    maximumFractionDigits: includeCents ? 2 : 0
-  });
-
-  return formatter.format(price);
 }
 
 /**

@@ -11,7 +11,6 @@
  */
 
 import { useState, useEffect } from 'react';
-import { toast } from '../../lib/toastService.js';
 import './EditPhoneNumberModal.css';
 
 // Phone icon (Feather style)
@@ -92,7 +91,7 @@ export default function EditPhoneNumberModal({ isOpen, currentPhoneNumber, onSav
 
   const handleSave = async () => {
     if (!newPhoneNumber.trim()) {
-      toast.warning('Please enter a new phone number');
+      window.showToast?.({ title: 'Warning', content: 'Please enter a new phone number', type: 'warning' });
       return;
     }
 
@@ -101,7 +100,7 @@ export default function EditPhoneNumberModal({ isOpen, currentPhoneNumber, onSav
       await onSave(newPhoneNumber.trim());
       onClose();
     } catch (error) {
-      toast.error(`Error saving phone number: ${error.message}`);
+      window.showToast?.({ title: 'Error', content: `Error saving phone number: ${error.message}`, type: 'error' });
     } finally {
       setSaving(false);
     }

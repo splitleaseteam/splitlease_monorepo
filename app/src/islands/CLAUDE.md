@@ -17,23 +17,7 @@
 
 ## ARCHITECTURE_OVERVIEW
 
-[CONCEPT]: Islands Architecture - Independent React apps mounted to static HTML pages
-[BENEFIT]: Progressive enhancement, smaller JavaScript bundles, faster initial page load
-[MOUNT_PATTERN]: Each entry point (src/*.jsx) creates React root and mounts single island component
-[HYDRATION]: React islands hydrate specific DOM nodes, rest of page remains static HTML
-
-```
-Static HTML Page (SEO-friendly)
-    │
-    ├── Static content (navbar, footer, SEO metadata)
-    │
-    └── <div id="root">
-            │
-            ▼
-        React Island (interactive)
-        └── Page Component (HomePage, SearchPage, etc.)
-            └── Shared Components (Header, Footer, Modals)
-```
+Uses Islands Architecture with independent React roots per page. See `app/src/CLAUDE.md` for detailed pattern documentation, entry point pattern, and mount diagram.
 
 ---
 
@@ -77,34 +61,8 @@ Static HTML Page (SEO-friendly)
 ## COMPONENT_PATTERNS
 
 ### Hollow Component Pattern
-[DESCRIPTION]: UI component is "hollow" - contains ONLY JSX rendering, no business logic
-[IMPLEMENTATION]: Component delegates ALL state, effects, and handlers to custom hook
-[HOOK_NAMING]: useXxxPageLogic (e.g., useSearchPageLogic, useViewSplitLeasePageLogic)
-[BENEFIT]: Testable logic separation, reusable UI, clear separation of concerns
+UI components delegate ALL logic to custom hooks (`useXxxPageLogic`). See `app/src/CLAUDE.md` for detailed pattern documentation and code examples.
 [EXAMPLE_FILES]: SearchPage.jsx + useSearchPageLogic.js, ViewSplitLeasePage.jsx + useViewSplitLeasePageLogic.js, GuestProposalsPage.jsx + useGuestProposalsPageLogic.js
-
-```jsx
-// Hollow Component (UI only)
-export default function SearchPage() {
-  const {
-    listings,
-    filters,
-    isLoading,
-    handleFilterChange,
-    handleListingClick
-  } = useSearchPageLogic();
-
-  return <div>{/* Pure rendering - no business logic */}</div>;
-}
-
-// Custom Hook (logic only)
-export function useSearchPageLogic() {
-  const [listings, setListings] = useState([]);
-  const [filters, setFilters] = useState({});
-  // ... all state, effects, handlers
-  return { listings, filters, handleFilterChange, ... };
-}
-```
 
 ### Modal Component Pattern
 [DESCRIPTION]: Overlay dialog with standardized structure and interaction model

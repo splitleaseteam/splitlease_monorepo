@@ -11,7 +11,7 @@
 [STATE_MANAGEMENT]: Local state (useState), URL parameters, localStorage
 [API_STRATEGY]: Supabase Edge Functions (direct database access)
 [ROUTING]: Route registry in routes.config.js
-[ENTRY_POINTS]: 29 total (see routes.config.js for full list)
+[ENTRY_POINTS]: 83 total (see routes.config.js for full list)
 
 ---
 
@@ -255,8 +255,8 @@ import Button from 'islands/shared/Button.jsx';
 
 ## METRICS
 
-[ENTRY_POINTS]: 29 | [LOGIC_FILES]: 57 | [LIB_FILES]: 24 | [TOTAL_FILES]: 150+
-[CALCULATORS]: 9 | [RULES]: 22 | [PROCESSORS]: 14 | [WORKFLOWS]: 12
+[ENTRY_POINTS]: 83 | [LOGIC_FILES]: 202 | [LIB_FILES]: 75 | [TOTAL_FILES]: 822+
+[CALCULATORS]: 80 | [RULES]: 84 | [PROCESSORS]: 52 | [WORKFLOWS]: 31
 
 ---
 

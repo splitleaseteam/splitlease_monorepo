@@ -1,3 +1,6 @@
+> **WARNING**: The errorReporting.js module described below has **0% adoption** across the codebase.
+> No file imports from it. Before following this guide, consider whether the module should be adopted or removed.
+
 # Error Reporting Guide
 
 ## Overview

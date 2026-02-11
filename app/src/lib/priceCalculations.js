@@ -6,6 +6,9 @@
  *   import { calculate4WeekRent, calculateReservationTotal } from './priceCalculations.js';
  */
 
+// Re-export formatPrice from the canonical source for backward compatibility
+export { formatPrice } from './formatters.js';
+
 /**
  * Calculate 4-week rent based on nightly price and selected nights
  * Formula: nightly price Ã— nights per week Ã— 4 weeks
@@ -62,27 +65,6 @@ export function getNightlyPriceForNights(listing, nightsSelected) {
 
   // Default to 4-night rate if available
   return listing.nightly_rate_for_4_night_stay || null;
-}
-
-/**
- * Format price as currency string
- * @param {number} amount - Dollar amount
- * @param {boolean} showCents - Whether to show cents (default: false)
- * @returns {string} Formatted price (e.g., "$1,234" or "$1,234.56")
- */
-export function formatPrice(amount, showCents = false) {
-  if (amount === null || amount === undefined || isNaN(amount)) {
-    return '$0';
-  }
-
-  const formatted = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: showCents ? 2 : 0,
-    maximumFractionDigits: showCents ? 2 : 0
-  }).format(amount);
-
-  return formatted;
 }
 
 /**

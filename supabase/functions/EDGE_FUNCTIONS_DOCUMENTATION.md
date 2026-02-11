@@ -1,7 +1,7 @@
 # Supabase Edge Functions - Comprehensive Documentation
 
 **Generated**: 2026-01-28
-**Total Functions**: 68
+**Total Functions**: 67
 **Runtime**: Deno 2 with JSR imports
 **Architecture**: FP (Functional Programming) with Result types
 

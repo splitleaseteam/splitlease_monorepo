@@ -117,6 +117,14 @@ try {
 
 ---
 
+## MCP_CONNECTION
+
+The Supabase MCP is connected at the **org level** with access to both projects:
+- **Live**: `qcfifybkaddcoimjroca` (production, www.split.lease)
+- **Dev**: `qzsmhgyojmwvtjmnrdea` (localhost instances point here)
+
+---
+
 ## DEPLOYMENT
 
 ```bash
@@ -136,5 +144,5 @@ supabase functions deploy            # Deploy all functions
 
 ---
 
-**DOCUMENT_VERSION**: 5.0
-**LAST_UPDATED**: 2026-02-10
+**DOCUMENT_VERSION**: 5.1
+**LAST_UPDATED**: 2026-02-11

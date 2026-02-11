@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { toast } from '../../../lib/toastService.js';
 
 export function useDocumentChangeRequestLogic({
   currentDocumentId,
@@ -54,7 +53,7 @@ export function useDocumentChangeRequestLogic({
       } catch (err) {
         console.error('[useDocumentChangeRequestLogic] Fetch error:', err);
         setError(err.message);
-        toast.error('Failed to load documents');
+        window.showToast?.({ title: 'Error', content: 'Failed to load documents', type: 'error' });
       } finally {
         setIsLoading(false);
       }
@@ -121,7 +120,7 @@ export function useDocumentChangeRequestLogic({
 
       // Success
       console.log('[useDocumentChangeRequestLogic] Request submitted:', response.data.request_id);
-      toast.success('Change request submitted successfully');
+      window.showToast?.({ title: 'Success', content: 'Change request submitted successfully', type: 'success' });
 
       if (onSuccess) {
         onSuccess(response.data.request_id);
@@ -131,7 +130,7 @@ export function useDocumentChangeRequestLogic({
     } catch (err) {
       console.error('[useDocumentChangeRequestLogic] Submit error:', err);
       setError(err.message);
-      toast.error(`Failed to submit request: ${err.message}`);
+      window.showToast?.({ title: 'Error', content: `Failed to submit request: ${err.message}`, type: 'error' });
       return false;
     } finally {
       setIsSubmitting(false);
