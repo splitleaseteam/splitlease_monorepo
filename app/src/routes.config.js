@@ -558,15 +558,6 @@ export const routes = [
     hasDynamicSegment: false
   },
   {
-    path: '/_identity-verification-admin',
-    file: 'identity-verification-admin.html',
-    aliases: ['/_identity-verification-admin.html'],
-    protected: false,
-    cloudflareInternal: true,
-    internalName: 'identity-verification-admin-view',
-    hasDynamicSegment: false
-  },
-  {
     path: '/_co-host-requests',
     file: 'co-host-requests.html',
     aliases: ['/_co-host-requests.html'],

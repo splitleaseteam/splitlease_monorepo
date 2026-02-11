@@ -14,7 +14,7 @@
  */
 
 import { supabase } from '../supabase.js';
-import { PROPOSAL_STATUSES, getStatusConfig } from '../constants/proposalStatuses.js';
+import { PROPOSAL_STATUSES, getStatusConfig } from '../../logic/constants/proposalStatuses.js';
 
 // In-memory cache for status configurations
 let statusConfigCache = null;
