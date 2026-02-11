@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import InformationalText from '../../../shared/InformationalText';
 import { useListingDashboard } from '../context/ListingDashboardContext';
 
@@ -261,10 +261,17 @@ function CompletionProgress({ listing, onEditSection }) {
 }
 
 export default function PropertyInfoSection() {
-  const { listing, counts, handleImportReviews, handleEditSection } = useListingDashboard();
+  const { listing, counts, handleImportReviews, handleEditSection, isUnderperforming } = useListingDashboard();
   const [showStatusInfo, setShowStatusInfo] = useState(false);
   const statusTriggerRef = useRef(null);
   const fullAddress = listing?.location?.address || '';
+
+  const handleScrollToInsights = useCallback(() => {
+    const el = document.getElementById('insights-panel');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
 
   const handleCopyAddress = async () => {
     if (!fullAddress) return;
@@ -382,6 +389,23 @@ export default function PropertyInfoSection() {
 
       {/* Completeness Progress Bar */}
       <CompletionProgress listing={listing} onEditSection={handleEditSection} />
+
+      {isUnderperforming && (
+        <div className="listing-dashboard-property__benchmark" role="status" aria-live="polite">
+          <span className="listing-dashboard-property__benchmark-icon" aria-hidden="true">📊</span>
+          <span className="listing-dashboard-property__benchmark-text">
+            Below area average -
+            {' '}
+            <button
+              className="listing-dashboard-property__benchmark-link"
+              onClick={handleScrollToInsights}
+              type="button"
+            >
+              see suggestions
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Review Section - Only show when reviews exist */}
       {counts.reviews > 0 && (

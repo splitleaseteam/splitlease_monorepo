@@ -208,12 +208,6 @@ export default function PhotosSection() {
     handleReorderPhotos,
   } = useListingDashboard();
 
-  // Map context handlers to component's expected interface
-  const onAddPhotos = () => handleEditSection('photos');
-  const onDeletePhoto = handleDeletePhoto;
-  const onSetCover = handleSetCoverPhoto;
-  const onReorderPhotos = handleReorderPhotos;
-
   const photos = listing?.photos || [];
 
   // Lightbox state
@@ -442,9 +436,7 @@ export default function PhotosSection() {
                 <select
                   value={photo.photoType || 'Other'}
                   aria-label={`Photo type for photo ${index + 1}`}
-                  onChange={() => {
-                    // TODO: Handle photo type change
-                  }}
+                  onChange={() => {}}
                 >
                   {PHOTO_TYPES.map((type) => (
                     <option key={type} value={type}>

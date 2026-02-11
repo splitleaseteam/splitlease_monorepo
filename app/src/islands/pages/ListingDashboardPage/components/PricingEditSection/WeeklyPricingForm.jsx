@@ -1,5 +1,3 @@
-import React from 'react';
-
 const WEEKLY_PATTERNS = [
     { value: '', label: 'Select a Weekly Pattern' },
     { value: '1', label: '1 week on, 1 week off' },

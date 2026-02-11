@@ -15,6 +15,8 @@ export function ListingDashboardProvider({ children }) {
     isLoading: logic.isLoading,
     error: logic.error,
     existingCohostRequest: logic.existingCohostRequest,
+    calendarData: logic.calendarData,
+    isSavingBlockedDates: logic.isSavingBlockedDates,
     showAIImportAssistant: logic.showAIImportAssistant,
     aiGenerationStatus: logic.aiGenerationStatus,
     isAIGenerating: logic.isAIGenerating,
@@ -27,6 +29,10 @@ export function ListingDashboardProvider({ children }) {
     showScheduleCohost: logic.showScheduleCohost,
     showImportReviews: logic.showImportReviews,
     isImportingReviews: logic.isImportingReviews,
+    insights: logic.insights,
+    isInsightsLoading: logic.isInsightsLoading,
+    fetchInsights: logic.fetchInsights,
+    isUnderperforming: logic.isUnderperforming,
   }), [
     logic.authState,
     logic.currentUser,
@@ -35,6 +41,8 @@ export function ListingDashboardProvider({ children }) {
     logic.isLoading,
     logic.error,
     logic.existingCohostRequest,
+    logic.calendarData,
+    logic.isSavingBlockedDates,
     logic.showAIImportAssistant,
     logic.aiGenerationStatus,
     logic.isAIGenerating,
@@ -47,6 +55,10 @@ export function ListingDashboardProvider({ children }) {
     logic.showScheduleCohost,
     logic.showImportReviews,
     logic.isImportingReviews,
+    logic.insights,
+    logic.isInsightsLoading,
+    logic.fetchInsights,
+    logic.isUnderperforming,
   ]);
 
   const actionsValue = useMemo(() => ({

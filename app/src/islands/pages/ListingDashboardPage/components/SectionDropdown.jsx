@@ -134,7 +134,7 @@ export default function SectionDropdown({
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [listing]);
+  }, []);
 
   const focusMenuItem = (index) => {
     const item = menuItemRefs.current[index];

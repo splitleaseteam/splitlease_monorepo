@@ -1,4 +1,3 @@
-import React from 'react';
 import HostScheduleSelector from '../../../../shared/HostScheduleSelector/HostScheduleSelector.jsx';
 
 export default function NightlyPricingForm({

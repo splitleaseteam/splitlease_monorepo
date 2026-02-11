@@ -1,7 +1,9 @@
-﻿import { useState, useCallback } from 'react';
+﻿import { useState, useCallback, useRef, useEffect } from 'react';
 import { logger } from '../../../lib/logger';
+import { supabase } from '../../../lib/supabase';
 import { useListingAuth } from './hooks/useListingAuth';
 import { useListingData } from './hooks/useListingData';
+import { useInsightsData } from './hooks/useInsightsData';
 import { usePhotoManagement } from './hooks/usePhotoManagement';
 import { useAIImportAssistant } from './hooks/useAIImportAssistant';
 
@@ -22,6 +24,7 @@ export default function useListingDashboardPageLogic() {
   // Compose focused hooks
   const auth = useListingAuth();
   const data = useListingData(listingId);
+  const insightsHook = useInsightsData(listingId, data.listing, data.counts, data.calendarData, supabase);
   const photos = usePhotoManagement(
     data.listing,
     data.setListing,
@@ -36,6 +39,8 @@ export default function useListingDashboardPageLogic() {
     listingId
   );
 
+  const { setListing, updateListing, fetchListing, setExistingCohostRequest } = data;
+
   // Local UI state
   const [activeTab, setActiveTab] = useState('manage');
   const [editSection, setEditSection] = useState(null);
@@ -43,15 +48,29 @@ export default function useListingDashboardPageLogic() {
   const [showScheduleCohost, setShowScheduleCohost] = useState(false);
   const [showImportReviews, setShowImportReviews] = useState(false);
   const [isImportingReviews, setIsImportingReviews] = useState(false);
+  const [isSavingBlockedDates, setIsSavingBlockedDates] = useState(false);
+  const blockedDatesTimerRef = useRef(null);
+  const blockedDatesBeforeSaveRef = useRef(null);
+  const listingRef = useRef(null);
+  const currentUserRef = useRef(null);
+
+  useEffect(() => {
+    listingRef.current = data.listing;
+  }, [data.listing]);
+
+  useEffect(() => {
+    currentUserRef.current = auth.currentUser;
+  }, [auth.currentUser]);
 
   // Tab change handler
   const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
+    const currentListing = listingRef.current;
 
     switch (tab) {
       case 'preview':
-        if (data.listing) {
-          window.open(`/preview-split-lease.html?id=${data.listing.id}`, '_blank');
+        if (currentListing) {
+          window.open(`/preview-split-lease.html?id=${currentListing.id}`, '_blank');
         }
         break;
       case 'proposals':
@@ -60,11 +79,13 @@ export default function useListingDashboardPageLogic() {
       default:
         break;
     }
-  }, [data.listing]);
+  }, []);
 
   // Copy link handler
   const handleCopyLink = useCallback(async () => {
-    if (!data.listing?.id) {
+    const currentListing = listingRef.current;
+
+    if (!currentListing?.id) {
       window.showToast?.({
         title: 'Error',
         content: 'No listing ID available',
@@ -73,7 +94,7 @@ export default function useListingDashboardPageLogic() {
       return;
     }
 
-    const listingUrl = `${window.location.origin}/view-split-lease/${data.listing.id}`;
+    const listingUrl = `${window.location.origin}/view-split-lease/${currentListing.id}`;
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -102,22 +123,24 @@ export default function useListingDashboardPageLogic() {
         type: 'error'
       });
     }
-  }, [data.listing?.id]);
+  }, []);
 
   // Action card click handler
   const handleCardClick = useCallback((cardId) => {
+    const currentListing = listingRef.current;
+
     switch (cardId) {
       case 'preview':
-        if (data.listing) {
-          window.open(`/preview-split-lease.html?id=${data.listing.id}`, '_blank');
+        if (currentListing) {
+          window.open(`/preview-split-lease.html?id=${currentListing.id}`, '_blank');
         }
         break;
       case 'copy-link':
         handleCopyLink();
         break;
       case 'proposals':
-        if (data.listing) {
-          window.location.href = `/host-proposals?listingId=${data.listing.id}`;
+        if (currentListing) {
+          window.location.href = `/host-proposals?listingId=${currentListing.id}`;
         }
         break;
       case 'meetings':
@@ -132,7 +155,7 @@ export default function useListingDashboardPageLogic() {
       default:
         logger.debug('Unknown card clicked:', cardId);
     }
-  }, [data.listing, handleCopyLink]);
+  }, [handleCopyLink]);
 
   // Back to all listings handler
   const handleBackClick = useCallback(() => {
@@ -141,11 +164,11 @@ export default function useListingDashboardPageLogic() {
 
   // Description change handler
   const handleDescriptionChange = useCallback((newDescription) => {
-    data.setListing((prev) => ({
+    setListing((prev) => ({
       ...prev,
       description: newDescription,
     }));
-  }, [data.setListing]);
+  }, [setListing]);
 
   // Cancellation policy handlers
   const handleCancellationPolicyChange = useCallback(async (policyId) => {
@@ -157,9 +180,9 @@ export default function useListingDashboardPageLogic() {
     logger.debug('ðŸ“‹ Updating cancellation policy to:', policyId);
 
     try {
-      await data.updateListing({ 'Cancellation Policy': policyId });
+      await updateListing({ 'Cancellation Policy': policyId });
 
-      data.setListing((prev) => ({
+      setListing((prev) => ({
         ...prev,
         cancellationPolicy: policyId,
         'Cancellation Policy': policyId,
@@ -169,7 +192,7 @@ export default function useListingDashboardPageLogic() {
     } catch (error) {
       logger.error('âŒ Failed to save cancellation policy:', error);
     }
-  }, [listingId, data.updateListing, data.setListing]);
+  }, [listingId, updateListing, setListing]);
 
   const handleCancellationRestrictionsChange = useCallback(async (restrictionsText) => {
     if (!listingId) {
@@ -180,9 +203,9 @@ export default function useListingDashboardPageLogic() {
     logger.debug('ðŸ“‹ Updating cancellation restrictions:', restrictionsText);
 
     try {
-      await data.updateListing({ 'Cancellation Policy - Additional Restrictions': restrictionsText });
+      await updateListing({ 'Cancellation Policy - Additional Restrictions': restrictionsText });
 
-      data.setListing((prev) => ({
+      setListing((prev) => ({
         ...prev,
         cancellationPolicyAdditionalRestrictions: restrictionsText,
         'Cancellation Policy - Additional Restrictions': restrictionsText,
@@ -192,7 +215,7 @@ export default function useListingDashboardPageLogic() {
     } catch (error) {
       logger.error('âŒ Failed to save cancellation restrictions:', error);
     }
-  }, [listingId, data.updateListing, data.setListing]);
+  }, [listingId, updateListing, setListing]);
 
   // Schedule Cohost handlers
   const handleScheduleCohost = useCallback(() => {
@@ -206,14 +229,14 @@ export default function useListingDashboardPageLogic() {
   const handleCohostRequestSubmitted = useCallback((requestData) => {
     logger.debug('âœ… Co-host request submitted:', requestData);
     if (requestData) {
-      data.setExistingCohostRequest({
+      setExistingCohostRequest({
         _id: requestData.requestId || requestData._id,
         status: 'pending',
         createdAt: requestData.createdAt || new Date().toISOString(),
         ...requestData,
       });
     }
-  }, [data.setExistingCohostRequest]);
+  }, [setExistingCohostRequest]);
 
   // Import Reviews handlers
   const handleImportReviews = useCallback(() => {
@@ -225,6 +248,8 @@ export default function useListingDashboardPageLogic() {
   }, []);
 
   const handleSubmitImportReviews = useCallback(async (formData) => {
+    const currentUser = currentUserRef.current;
+
     setIsImportingReviews(true);
     try {
       logger.debug('ðŸ“¥ Submitting import reviews request:', formData);
@@ -238,12 +263,12 @@ export default function useListingDashboardPageLogic() {
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({
-            action: 'faq_inquiry',
-            payload: {
-              name: auth.currentUser?.firstName || auth.currentUser?.name || 'Host',
-              email: formData.emailAddress,
-              inquiry: `ðŸ“¥ **Import Reviews Request**\n\n**Listing ID:** ${formData.listingId || 'N/A'}\n**Reviews URL:** ${formData.reviewsUrl}\n**Requested by:** ${formData.emailAddress}\n\nPlease import reviews from the above URL for this listing.`
-            }
+              action: 'faq_inquiry',
+              payload: {
+                name: currentUser?.firstName || currentUser?.name || 'Host',
+                email: formData.emailAddress,
+                inquiry: `ðŸ“¥ **Import Reviews Request**\n\n**Listing ID:** ${formData.listingId || 'N/A'}\n**Reviews URL:** ${formData.reviewsUrl}\n**Requested by:** ${formData.emailAddress}\n\nPlease import reviews from the above URL for this listing.`
+              }
           }),
         }
       );
@@ -262,7 +287,7 @@ export default function useListingDashboardPageLogic() {
     } finally {
       setIsImportingReviews(false);
     }
-  }, [auth.currentUser]);
+  }, []);
 
   // Edit modal handlers
   const handleEditSection = useCallback((section, focusField = null) => {
@@ -274,13 +299,13 @@ export default function useListingDashboardPageLogic() {
     setEditSection(null);
     setEditFocusField(null);
     if (listingId) {
-      data.fetchListing(true);
+      fetchListing(true);
     }
-  }, [listingId, data.fetchListing]);
+  }, [listingId, fetchListing]);
 
   const handleSaveEdit = useCallback((updatedData) => {
     if (updatedData && typeof updatedData === 'object') {
-      data.setListing((prev) => {
+      setListing((prev) => {
         if (!prev) return prev;
 
         const updates = { ...prev };
@@ -303,7 +328,7 @@ export default function useListingDashboardPageLogic() {
         return updates;
       });
     }
-  }, [data.setListing]);
+  }, [setListing]);
 
   // Availability handlers
   const handleAvailabilityChange = useCallback(async (fieldName, value) => {
@@ -331,9 +356,9 @@ export default function useListingDashboardPageLogic() {
         return;
       }
 
-      await data.updateListing({ [dbFieldName]: value });
+      await updateListing({ [dbFieldName]: value });
 
-      data.setListing((prev) => ({
+      setListing((prev) => ({
         ...prev,
         [fieldName]: value
       }));
@@ -351,29 +376,57 @@ export default function useListingDashboardPageLogic() {
         type: 'error'
       });
     }
-  }, [listingId, data.updateListing, data.setListing]);
+  }, [listingId, updateListing, setListing]);
 
-  const handleBlockedDatesChange = useCallback(async (newBlockedDates) => {
+  const handleBlockedDatesChange = useCallback((newBlockedDates) => {
     if (!listingId) {
-      logger.error('âŒ No listing ID found for blocked dates update');
+      logger.error('No listing ID found for blocked dates update');
       return;
     }
 
-    logger.debug('ðŸ“… Saving blocked dates:', newBlockedDates);
+    const currentListing = listingRef.current;
 
-    try {
-      await data.updateListing({ 'blocked_specific_dates_json': JSON.stringify(newBlockedDates) });
-
-      data.setListing((prev) => ({
-        ...prev,
-        blockedDates: newBlockedDates,
-      }));
-
-      logger.debug('âœ… Blocked dates saved successfully');
-    } catch (error) {
-      logger.error('âŒ Failed to save blocked dates:', error);
+    // Optimistic update: apply to local state immediately
+    if (!blockedDatesBeforeSaveRef.current) {
+      blockedDatesBeforeSaveRef.current = currentListing?.blockedDates || [];
     }
-  }, [listingId, data.updateListing, data.setListing]);
+    setListing((prev) => prev ? { ...prev, blockedDates: newBlockedDates } : prev);
+
+    // Debounce the DB save (500ms) for drag-to-block performance
+    if (blockedDatesTimerRef.current) {
+      clearTimeout(blockedDatesTimerRef.current);
+    }
+    setIsSavingBlockedDates(true);
+
+    blockedDatesTimerRef.current = setTimeout(async () => {
+      try {
+        await updateListing({ blocked_specific_dates_json: JSON.stringify(newBlockedDates) });
+        blockedDatesBeforeSaveRef.current = null;
+      } catch (error) {
+        logger.error('Failed to save blocked dates:', error);
+        const revertDates = blockedDatesBeforeSaveRef.current || [];
+        setListing((prev) => prev ? { ...prev, blockedDates: revertDates } : prev);
+        blockedDatesBeforeSaveRef.current = null;
+        window.showToast?.({
+          title: 'Save Failed',
+          content: 'Could not save blocked dates. Changes reverted.',
+          type: 'error',
+        });
+      } finally {
+        setIsSavingBlockedDates(false);
+        blockedDatesTimerRef.current = null;
+      }
+    }, 500);
+  }, [listingId, updateListing, setListing]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (blockedDatesTimerRef.current) {
+        clearTimeout(blockedDatesTimerRef.current);
+      }
+    };
+  }, []);
 
   return {
     // Auth state from useListingAuth
@@ -386,6 +439,14 @@ export default function useListingDashboardPageLogic() {
     isLoading: data.isLoading,
     error: data.error,
     existingCohostRequest: data.existingCohostRequest,
+    calendarData: data.calendarData,
+    isSavingBlockedDates,
+
+    // Insights from useInsightsData
+    insights: insightsHook.insights,
+    isInsightsLoading: insightsHook.isLoading,
+    fetchInsights: insightsHook.fetchInsights,
+    isUnderperforming: insightsHook.isUnderperforming,
 
     // Photo handlers from usePhotoManagement
     handleSetCoverPhoto: photos.handleSetCoverPhoto,
@@ -433,6 +494,6 @@ export default function useListingDashboardPageLogic() {
     handleBlockedDatesChange,
 
     // Expose updateListing for modal compatibility
-    updateListing: data.updateListing,
+    updateListing,
   };
 }

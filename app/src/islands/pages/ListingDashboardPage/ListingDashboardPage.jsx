@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '../../shared/Header';
 import Footer from '../../shared/Footer';
 import { EditListingDetails } from '../../shared/EditListingDetails/EditListingDetails';
@@ -13,6 +13,7 @@ import AlertBanner from './components/AlertBanner.jsx';
 import SecondaryActions from './components/SecondaryActions.jsx';
 import PropertyInfoSection from './components/PropertyInfoSection.jsx';
 import MiniPanels from './components/MiniPanels.jsx';
+import InsightsPanel from './components/InsightsPanel.jsx';
 import DetailsSection from './components/DetailsSection.jsx';
 import AmenitiesSection from './components/AmenitiesSection.jsx';
 import DescriptionSection from './components/DescriptionSection.jsx';
@@ -26,13 +27,25 @@ import CollapsibleSection from './components/CollapsibleSection.jsx';
 import '../../../styles/components/listing-dashboard.css';
 import '../AccountProfilePage/AccountProfilePage.css'; // For ReferralModal styles
 
+// Section completeness checks — expand only incomplete sections by default
+function getSectionCompletion(listing) {
+  return {
+    description: !!(listing.description && listing.description.length > 20),
+    amenities: (listing.inUnitAmenities?.length || 0) + (listing.buildingAmenities?.length || 0) > 0,
+    details: !!(listing.features?.bedrooms && listing.features?.bathrooms),
+    pricing: (listing.monthlyHostRate || 0) > 0 || (listing.weeklyHostRate || 0) > 0,
+    rules: (listing.houseRules?.length || 0) > 0,
+    availability: !!listing.earliestAvailableDate,
+    photos: (listing.photos?.length || 0) >= 3,
+    cancellation: !!listing.cancellationPolicy,
+  };
+}
+
 // Inner component that uses context
 function ListingDashboardContent() {
   const [showReferralModal, setShowReferralModal] = useState(false);
   const {
-    activeTab,
     listing,
-    counts,
     isLoading,
     error,
     editSection,
@@ -40,13 +53,8 @@ function ListingDashboardContent() {
     showImportReviews,
     currentUser,
     existingCohostRequest,
-    handleTabChange,
-    handleCardClick,
-    handleBackClick,
-    handleScheduleCohost,
     handleCloseScheduleCohost,
     handleCohostRequestSubmitted,
-    handleImportReviews,
     handleCloseImportReviews,
     handleSubmitImportReviews,
     isImportingReviews,
@@ -59,12 +67,10 @@ function ListingDashboardContent() {
     isAIComplete,
     aiGeneratedData,
     highlightedFields,
-    handleEditSection,
     handleCloseEdit,
     handleSaveEdit,
     updateListing,
     editFocusField,
-    handleAIAssistant,
   } = useListingDashboard();
 
   // Loading state
@@ -152,105 +158,129 @@ function ListingDashboardContent() {
 
             <MiniPanels />
 
-            {/* Description Section */}
+            {/* Insights Panel — suggestions to improve listing */}
             <CollapsibleSection
-              id="description"
-              title="Description"
-              summary={
-                listing.description
-                  ? `${listing.description.length} characters`
-                  : 'No description'
-              }
+              id="insights"
+              title="\uD83D\uDCA1 Suggestions to improve your listing"
+              defaultExpanded={true}
             >
-              <div className={
-                (highlightedFields?.has('description') || highlightedFields?.has('neighborhood'))
-                  ? 'listing-dashboard-section--ai-highlighted'
-                  : ''
-              }>
-                <DescriptionSection />
-              </div>
+              <InsightsPanel />
             </CollapsibleSection>
 
-            {/* Amenities Section */}
-            <CollapsibleSection
-              id="amenities"
-              title="Amenities"
-              summary={`${listing.inUnitAmenities?.length || 0} in-unit, ${listing.buildingAmenities?.length || 0} building amenities`}
-            >
-              <div className={highlightedFields?.has('amenities') ? 'listing-dashboard-section--ai-highlighted' : ''}>
-                <AmenitiesSection />
-              </div>
-            </CollapsibleSection>
+            {/* Sections Grid — two-column on desktop */}
+            <div className="listing-dashboard-sections-grid">
+              {/* Description — full width */}
+              <CollapsibleSection
+                id="description"
+                title="Description"
+                className="listing-dashboard-section--full-width"
+                defaultExpanded={!completion.description}
+                summary={
+                  listing.description
+                    ? listing.description.substring(0, 80) + (listing.description.length > 80 ? '...' : '')
+                    : 'No description'
+                }
+              >
+                <div className={
+                  (highlightedFields?.has('description') || highlightedFields?.has('neighborhood'))
+                    ? 'listing-dashboard-section--ai-highlighted'
+                    : ''
+                }>
+                  <DescriptionSection />
+                </div>
+              </CollapsibleSection>
 
-            {/* Details Section */}
-            <CollapsibleSection
-              id="details"
-              title="Details"
-              summary={`${listing.features?.bedrooms || 0} bed, ${listing.features?.bathrooms || 0} bath${listing.features?.squareFootage ? `, ${listing.features.squareFootage} sqft` : ''}`}
-            >
-              <DetailsSection />
-            </CollapsibleSection>
+              {/* Amenities — pairs with Rules */}
+              <CollapsibleSection
+                id="amenities"
+                title="Amenities"
+                defaultExpanded={!completion.amenities}
+                summary={`${(listing.inUnitAmenities?.length || 0) + (listing.buildingAmenities?.length || 0)} amenities`}
+              >
+                <div className={highlightedFields?.has('amenities') ? 'listing-dashboard-section--ai-highlighted' : ''}>
+                  <AmenitiesSection />
+                </div>
+              </CollapsibleSection>
 
-            {/* Pricing & Lease Style Section */}
-            <CollapsibleSection
-              id="pricing"
-              title="Pricing & Lease Style"
-              summary={
-                listing.monthlyHostRate > 0
-                  ? `$${listing.monthlyHostRate}/month`
-                  : listing.weeklyHostRate > 0
-                    ? `$${listing.weeklyHostRate}/week`
-                    : 'No pricing set'
-              }
-            >
-              <PricingSection />
-            </CollapsibleSection>
+              {/* Rules — pairs with Amenities */}
+              <CollapsibleSection
+                id="rules"
+                title="Rules"
+                defaultExpanded={!completion.rules}
+                summary={`${listing.houseRules?.length || 0} rules`}
+              >
+                <div className={
+                  (highlightedFields?.has('rules') || highlightedFields?.has('safety'))
+                    ? 'listing-dashboard-section--ai-highlighted'
+                    : ''
+                }>
+                  <RulesSection />
+                </div>
+              </CollapsibleSection>
 
-            {/* Rules Section */}
-            <CollapsibleSection
-              id="rules"
-              title="Rules"
-              summary={`${listing.houseRules?.length || 0} house rules`}
-            >
-              <div className={
-                (highlightedFields?.has('rules') || highlightedFields?.has('safety'))
-                  ? 'listing-dashboard-section--ai-highlighted'
-                  : ''
-              }>
-                <RulesSection />
-              </div>
-            </CollapsibleSection>
+              {/* Details — pairs with Pricing */}
+              <CollapsibleSection
+                id="details"
+                title="Details"
+                defaultExpanded={!completion.details}
+                summary={`${listing.features?.bedrooms || 0} bed \u00B7 ${listing.features?.bathrooms || 0} bath${listing.features?.squareFootage ? ` \u00B7 ${listing.features.squareFootage} sqft` : ''}`}
+              >
+                <DetailsSection />
+              </CollapsibleSection>
 
-            {/* Availability Section */}
-            <CollapsibleSection
-              id="availability"
-              title="Availability"
-              summary={
-                listing.earliestAvailableDate
-                  ? `Available from ${new Date(listing.earliestAvailableDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                  : 'No availability set'
-              }
-            >
-              <AvailabilitySection />
-            </CollapsibleSection>
+              {/* Pricing — pairs with Details */}
+              <CollapsibleSection
+                id="pricing"
+                title="Pricing & Lease Style"
+                defaultExpanded={!completion.pricing}
+                summary={
+                  listing.monthlyHostRate > 0
+                    ? `$${listing.monthlyHostRate}/mo`
+                    : listing.weeklyHostRate > 0
+                      ? `$${listing.weeklyHostRate}/wk`
+                      : 'No pricing set'
+                }
+              >
+                <PricingSection />
+              </CollapsibleSection>
 
-            {/* Photos Section */}
-            <CollapsibleSection
-              id="photos"
-              title="Photos"
-              summary={`${listing.photos?.length || 0} photos`}
-            >
-              <PhotosSection />
-            </CollapsibleSection>
+              {/* Availability — full width (calendar needs room) */}
+              <CollapsibleSection
+                id="availability"
+                title="Availability"
+                className="listing-dashboard-section--full-width"
+                defaultExpanded={!completion.availability}
+                summary={
+                  listing.earliestAvailableDate
+                    ? `Available ${new Date(listing.earliestAvailableDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}${listing.leaseTermMin ? ` \u00B7 ${listing.leaseTermMin}-${listing.leaseTermMax || '?'} wk terms` : ''}`
+                    : 'No availability set'
+                }
+              >
+                <AvailabilitySection />
+              </CollapsibleSection>
 
-            {/* Cancellation Policy Section */}
-            <CollapsibleSection
-              id="cancellation-policy"
-              title="Cancellation Policy"
-              summary={listing.cancellationPolicy ? 'Policy set' : 'Standard'}
-            >
-              <CancellationPolicySection />
-            </CollapsibleSection>
+              {/* Photos — full width (grid needs room) */}
+              <CollapsibleSection
+                id="photos"
+                title="Photos"
+                className="listing-dashboard-section--full-width"
+                defaultExpanded={!completion.photos}
+                summary={`${listing.photos?.length || 0} photos`}
+              >
+                <PhotosSection />
+              </CollapsibleSection>
+
+              {/* Cancellation Policy — full width */}
+              <CollapsibleSection
+                id="cancellation-policy"
+                title="Cancellation Policy"
+                className="listing-dashboard-section--full-width"
+                defaultExpanded={!completion.cancellation}
+                summary={listing.cancellationPolicy || 'Standard'}
+              >
+                <CancellationPolicySection />
+              </CollapsibleSection>
+            </div>
           </div>
         </div>
       </div>

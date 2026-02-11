@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useListingDashboard } from '../context/ListingDashboardContext';
 import { logger } from '../../../../lib/logger';
 
@@ -9,11 +9,11 @@ export default function CollapsibleSection({
   title,
   children,
   summary,
+  className,
   defaultExpanded = true,
 }) {
   const { listing } = useListingDashboard();
   const listingStorageKey = `${STORAGE_PREFIX}${listing?.id || 'unknown'}`;
-  const bodyRef = useRef(null);
 
   const [expanded, setExpanded] = useState(() => {
     try {
@@ -66,7 +66,7 @@ export default function CollapsibleSection({
   }, [expanded]);
 
   return (
-    <div className="listing-dashboard-collapsible" data-section-id={id}>
+    <div className={`listing-dashboard-collapsible${className ? ` ${className}` : ''}`} data-section-id={id}>
       <button
         className="listing-dashboard-collapsible__header"
         onClick={toggle}
@@ -87,7 +87,6 @@ export default function CollapsibleSection({
 
       <div
         id={`collapsible-body-${id}`}
-        ref={bodyRef}
         className="listing-dashboard-collapsible__body"
         style={{ maxHeight: bodyHeight, overflow: bodyHeight === 'none' ? 'visible' : 'hidden' }}
       >

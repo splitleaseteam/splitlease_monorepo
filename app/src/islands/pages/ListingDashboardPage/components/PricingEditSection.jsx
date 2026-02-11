@@ -8,37 +8,6 @@ import WeeklyPricingForm from './PricingEditSection/WeeklyPricingForm';
 import MonthlyPricingForm from './PricingEditSection/MonthlyPricingForm';
 import { useFocusTrap } from '../hooks/useFocusTrap.js';
 
-// Rental type options based on LeaseStyleSelector
-const RENTAL_TYPES = [
-  {
-    id: 'Nightly',
-    title: 'Nightly',
-    description: 'Rent your space by the night. Best for hosts who want flexibility and higher potential income through short-term stays.',
-    benefits: ['Maximized nightly rates', 'Flexible calendar management'],
-  },
-  {
-    id: 'Weekly',
-    title: 'Weekly (Split Lease)',
-    description: 'Rent your space for specific weeks (e.g., Week 1 & 3 of every month). Best for hosts who use their space regularly but want to monetize it when away.',
-    benefits: ['Consistent schedule', 'Predictable income from recurring guests'],
-  },
-  {
-    id: 'Monthly',
-    title: 'Monthly (Sublet)',
-    description: 'Standard month-to-month lease (e.g., continuous stay from August to December). Best for hosts who want steady occupancy with minimal management.',
-    benefits: ['Continuous occupancy with stable income', 'Set your monthly rate'],
-  },
-];
-
-// Weekly pattern options
-const WEEKLY_PATTERNS = [
-  { value: '', label: 'Select a Weekly Pattern' },
-  { value: '1', label: '1 week on, 1 week off' },
-  { value: '2', label: '2 weeks on, 2 weeks off' },
-  { value: '3', label: '1 week on, 3 weeks off' },
-  { value: 'custom', label: 'Custom pattern' },
-];
-
 /**
  * PricingEditSection - Full editing panel for pricing and lease style
  * Based on Bubble.io "Pricing and Availability" section
@@ -519,24 +488,9 @@ export default function PricingEditSection({
       {activeInfoTooltip && (
         <InformationalText
           isOpen={true}
-          title={
-            typeof infoContent[activeInfoTooltip] === 'function'
-              ? infoContent[activeInfoTooltip](activeInfoTooltip.slice(-1))
-                .title
-              : infoContent[activeInfoTooltip].title
-          }
-          content={
-            typeof infoContent[activeInfoTooltip] === 'function'
-              ? infoContent[activeInfoTooltip](activeInfoTooltip.slice(-1))
-                .content
-              : infoContent[activeInfoTooltip].content
-          }
-          expandedContent={
-            typeof infoContent[activeInfoTooltip] === 'function'
-              ? infoContent[activeInfoTooltip](activeInfoTooltip.slice(-1))
-                .expandedContent
-              : infoContent[activeInfoTooltip].expandedContent
-          }
+          title={infoContent[activeInfoTooltip]?.title}
+          content={infoContent[activeInfoTooltip]?.content}
+          expandedContent={infoContent[activeInfoTooltip]?.expandedContent}
           showMoreAvailable={!!infoContent[activeInfoTooltip]?.expandedContent}
           onClose={() => setActiveInfoTooltip(null)}
           triggerRef={

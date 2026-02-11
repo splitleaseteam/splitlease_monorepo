@@ -5,7 +5,7 @@ import { useAuthenticatedUser } from '../../../../hooks/useAuthenticatedUser.js'
  * Wraps useAuthenticatedUser and maps to the shape listing dashboard hooks expect.
  */
 export function useListingAuth() {
-  const { user: authUser, userId, loading, error, isAuthenticated } = useAuthenticatedUser({
+  const { user: authUser, userId, loading, isAuthenticated } = useAuthenticatedUser({
     redirectOnFail: '/?login=true'
   });
 

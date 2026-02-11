@@ -1,4 +1,4 @@
-﻿import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { logger } from '../../../../lib/logger';
 import { generateListingDescription, generateListingTitle, generateNeighborhoodDescription } from '../../../../lib/aiService';
 import { getCommonHouseRules } from '../../../shared/EditListingDetails/services/houseRulesService';
@@ -25,6 +25,24 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
   const [isAIComplete, setIsAIComplete] = useState(false);
   const [aiGeneratedData, setAiGeneratedData] = useState({});
   const [highlightedFields, setHighlightedFields] = useState(new Set());
+  const listingRef = useRef(listing);
+  const highlightTimeoutRef = useRef(null);
+  const refetchTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    listingRef.current = listing;
+  }, [listing]);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current);
+      }
+      if (refetchTimeoutRef.current) {
+        clearTimeout(refetchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleAIAssistant = useCallback(() => {
     setAiGenerationStatus({
@@ -92,19 +110,27 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
     setHighlightedFields(changedFields);
     logger.debug('âœ¨ Highlighting changed fields:', [...changedFields]);
 
-    setTimeout(() => {
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+    }
+    highlightTimeoutRef.current = setTimeout(() => {
       setHighlightedFields(new Set());
     }, 8000);
 
     if (listingId) {
-      setTimeout(() => {
+      if (refetchTimeoutRef.current) {
+        clearTimeout(refetchTimeoutRef.current);
+      }
+      refetchTimeoutRef.current = setTimeout(() => {
         fetchListing(true);
       }, 500);
     }
   }, [setListing, listingId, fetchListing]);
 
   const handleStartAIGeneration = useCallback(async () => {
-    if (!listing) {
+    const currentListing = listingRef.current;
+
+    if (!currentListing) {
       logger.error('âŒ No listing data available for AI generation');
       return;
     }
@@ -113,10 +139,10 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
     const generatedResults = {};
 
     const enrichedAmenities = {
-      inUnit: listing.inUnitAmenities?.map(a => a.name) || [],
-      building: listing.buildingAmenities?.map(a => a.name) || [],
+      inUnit: currentListing.inUnitAmenities?.map(a => a.name) || [],
+      building: currentListing.buildingAmenities?.map(a => a.name) || [],
     };
-    let enrichedNeighborhood = listing.location?.hoodsDisplay || '';
+    let enrichedNeighborhood = currentListing.location?.hoodsDisplay || '';
 
     try {
       logger.debug('ðŸ¤– Starting AI Import Assistant generation...');
@@ -129,7 +155,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
       try {
         const commonAmenities = await getCommonInUnitAmenities();
         if (commonAmenities.length > 0) {
-          const currentAmenities = listing.inUnitAmenities?.map(a => a.name) || [];
+          const currentAmenities = currentListing.inUnitAmenities?.map(a => a.name) || [];
           const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
           enrichedAmenities.inUnit = newAmenities;
           generatedResults.inUnitAmenities = newAmenities;
@@ -147,7 +173,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
       try {
         const commonAmenities = await getCommonBuildingAmenities();
         if (commonAmenities.length > 0) {
-          const currentAmenities = listing.buildingAmenities?.map(a => a.name) || [];
+          const currentAmenities = currentListing.buildingAmenities?.map(a => a.name) || [];
           const newAmenities = [...new Set([...currentAmenities, ...commonAmenities])];
           enrichedAmenities.building = newAmenities;
           generatedResults.buildingAmenities = newAmenities;
@@ -165,7 +191,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
       try {
         let neighborhoodResult = null;
 
-        const hoodName = listing.location?.hoodsDisplay;
+        const hoodName = currentListing.location?.hoodsDisplay;
         if (hoodName) {
           logger.debug('ðŸ˜ï¸ Trying neighborhood lookup by name:', hoodName);
           neighborhoodResult = await getNeighborhoodByName(hoodName);
@@ -175,7 +201,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         }
 
         if (!neighborhoodResult?.description) {
-          const zipCode = listing.location?.zipCode;
+          const zipCode = currentListing.location?.zipCode;
           if (zipCode) {
             logger.debug('ðŸ˜ï¸ Trying neighborhood lookup by ZIP:', zipCode);
             neighborhoodResult = await getNeighborhoodByZipCode(zipCode);
@@ -188,10 +214,10 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
         if (!neighborhoodResult?.description) {
           logger.debug('ðŸ˜ï¸ No database match, trying AI generation...');
           const addressData = {
-            fullAddress: listing.location?.address || '',
-            city: listing.location?.city || '',
-            state: listing.location?.state || '',
-            zip: listing.location?.zipCode || '',
+              fullAddress: currentListing.location?.address || '',
+              city: currentListing.location?.city || '',
+              state: currentListing.location?.state || '',
+              zip: currentListing.location?.zipCode || '',
           };
 
           if (addressData.city || addressData.fullAddress) {
@@ -226,7 +252,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
       try {
         const commonRules = await getCommonHouseRules();
         if (commonRules.length > 0) {
-          const currentRules = listing.houseRules?.map(r => r.name) || [];
+          const currentRules = currentListing.houseRules?.map(r => r.name) || [];
           const newRules = [...new Set([...currentRules, ...commonRules])];
           generatedResults.houseRules = newRules;
           generatedResults.houseRulesCount = commonRules.length;
@@ -243,7 +269,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
       try {
         const commonFeatures = await getCommonSafetyFeatures();
         if (commonFeatures.length > 0) {
-          const currentFeatures = listing.safetyFeatures?.map(s => s.name) || [];
+          const currentFeatures = currentListing.safetyFeatures?.map(s => s.name) || [];
           const newFeatures = [...new Set([...currentFeatures, ...commonFeatures])];
           generatedResults.safetyFeatures = newFeatures;
           generatedResults.safetyFeaturesCount = commonFeatures.length;
@@ -260,14 +286,14 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
       logger.debug('ðŸ“‹ Step 2: Generating AI content with enriched data...');
 
       const enrichedListingData = {
-        listingName: listing.title || '',
-        address: `${listing.location?.city || ''}, ${listing.location?.state || ''}`,
+        listingName: currentListing.title || '',
+        address: `${currentListing.location?.city || ''}, ${currentListing.location?.state || ''}`,
         neighborhood: enrichedNeighborhood,
-        typeOfSpace: listing.features?.typeOfSpace?.label || '',
-        bedrooms: listing.features?.bedrooms ?? 0,
-        beds: listing.features?.bedrooms ?? 0,
-        bathrooms: listing.features?.bathrooms ?? 0,
-        kitchenType: listing.features?.kitchenType?.display || '',
+        typeOfSpace: currentListing.features?.typeOfSpace?.label || '',
+        bedrooms: currentListing.features?.bedrooms ?? 0,
+        beds: currentListing.features?.bedrooms ?? 0,
+        bathrooms: currentListing.features?.bathrooms ?? 0,
+        kitchenType: currentListing.features?.kitchenType?.display || '',
         amenitiesInsideUnit: enrichedAmenities.inUnit,
         amenitiesOutsideUnit: enrichedAmenities.building,
       };
@@ -310,7 +336,7 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
     } finally {
       setIsAIGenerating(false);
     }
-  }, [listing, updateListing]);
+  }, [updateListing]);
 
   return {
     showAIImportAssistant,

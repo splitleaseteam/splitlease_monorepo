@@ -282,36 +282,6 @@
   transform: translateX(4px);
 }
 
-/* Legacy styles for backwards compatibility */
-.listing-dashboard-alert__expanded {
-  margin-top: 8px;
-}
-
-.listing-dashboard-alert__expanded p {
-  font-size: 14px;
-  color: var(--ld-text-secondary);
-  margin: 0;
-}
-
-.listing-dashboard-alert__close {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background-color: #ef4444;
-  border: none;
-  border-radius: 50%;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.listing-dashboard-alert__close:hover {
-  background-color: #dc2626;
-}
-
 /* Action Card Grid */
 .listing-dashboard-action-grid {
   display: grid;
@@ -772,36 +742,6 @@
   line-height: 1.3;
 }
 
-.listing-dashboard-property__title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--ld-text-primary);
-  margin: 0;
-}
-
-.listing-dashboard-property__input-wrapper {
-  width: 100%;
-}
-
-.listing-dashboard-property__textarea {
-  width: 100%;
-  padding: 16px;
-  background-color: #f9fafb;
-  border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
-  resize: none;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-  box-sizing: border-box;
-}
-
-.listing-dashboard-property__textarea:focus {
-  outline: none;
-  border-color: var(--ld-accent-purple);
-  box-shadow: 0 0 0 3px rgba(107, 79, 187, 0.1);
-}
-
 .listing-dashboard-property__import-btn {
   display: flex;
   align-items: center;
@@ -1022,6 +962,203 @@
   border-color: var(--ld-accent-purple);
 }
 
+.listing-dashboard-property__benchmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #f6e3b1;
+  background: #fff8e6;
+}
+
+.listing-dashboard-property__benchmark-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.listing-dashboard-property__benchmark-text {
+  font-size: 12px;
+  color: #8a5a00;
+}
+
+.listing-dashboard-property__benchmark-link {
+  border: none;
+  padding: 0;
+  background: none;
+  color: #8a5a00;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.listing-dashboard-property__benchmark-link:hover {
+  color: #6e4700;
+}
+
+.listing-dashboard-property__benchmark-link:focus-visible {
+  outline: 2px solid #8a5a00;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.listing-dashboard-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listing-dashboard-insights__cards {
+  display: grid;
+  gap: 12px;
+}
+
+.listing-dashboard-insights__card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--ld-border-color);
+  background: #fbfcff;
+}
+
+.listing-dashboard-insights__card--high {
+  border-color: #f4b8b8;
+  background: #fff6f6;
+}
+
+.listing-dashboard-insights__card--medium {
+  border-color: #f6e3b1;
+  background: #fffaf0;
+}
+
+.listing-dashboard-insights__card--low {
+  border-color: #c7deff;
+  background: #f5f9ff;
+}
+
+.listing-dashboard-insights__priority {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ld-text-secondary);
+}
+
+.listing-dashboard-insights__message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ld-text-primary);
+  line-height: 1.45;
+}
+
+.listing-dashboard-insights__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.listing-dashboard-insights__action-btn,
+.listing-dashboard-insights__dismiss-btn,
+.listing-dashboard-insights__restore-btn {
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.listing-dashboard-insights__action-btn {
+  padding: 8px 12px;
+  border: none;
+  color: white;
+  background: var(--ld-success);
+}
+
+.listing-dashboard-insights__action-btn:hover {
+  background: #1f0b38;
+}
+
+.listing-dashboard-insights__dismiss-btn,
+.listing-dashboard-insights__restore-btn {
+  padding: 8px 10px;
+  border: 1px solid var(--ld-border-color);
+  background: white;
+  color: var(--ld-text-secondary);
+}
+
+.listing-dashboard-insights__dismiss-btn:hover,
+.listing-dashboard-insights__restore-btn:hover {
+  border-color: #c7ccd8;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-insights__empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ld-text-secondary);
+}
+
+.listing-dashboard-insights__card--skeleton {
+  pointer-events: none;
+}
+
+.listing-dashboard-insights__skeleton-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eceff5 25%, #f4f6fb 50%, #eceff5 75%);
+  background-size: 200% 100%;
+  animation: listing-dashboard-insights-shimmer 1.4s linear infinite;
+}
+
+.listing-dashboard-insights__skeleton-bar--short {
+  width: 32%;
+}
+
+.listing-dashboard-insights__skeleton-bar--long {
+  width: 86%;
+}
+
+.listing-dashboard-insights__stats {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--ld-border-color);
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.listing-dashboard-insights__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.listing-dashboard-insights__stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-insights__stat-label {
+  font-size: 11px;
+  color: var(--ld-text-secondary);
+  text-align: center;
+}
+
+@keyframes listing-dashboard-insights-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Details Section */
 .listing-dashboard-details {
   padding: 24px;
@@ -1042,18 +1179,6 @@
     border-radius: 12px;
     gap: 16px;
   }
-}
-
-.listing-dashboard-details__header {
-  border-top: 4px solid #22d3d3;
-  padding-top: 24px;
-}
-
-.listing-dashboard-details__title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--ld-text-primary);
-  margin: 0;
 }
 
 .listing-dashboard-details__subtitle {
@@ -1090,30 +1215,6 @@
   border-radius: 8px;
 }
 
-.listing-dashboard-details__feature-icon {
-  color: var(--ld-accent-purple);
-  flex-shrink: 0;
-}
-
-.listing-dashboard-details__feature-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.listing-dashboard-details__feature-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ld-text-primary);
-  margin: 0;
-}
-
-.listing-dashboard-details__feature-value {
-  font-size: 14px;
-  color: var(--ld-text-secondary);
-  margin: 0;
-}
-
 .listing-dashboard-details__safety {
   display: flex;
   flex-direction: column;
@@ -1148,51 +1249,6 @@
   border-radius: 8px;
   font-size: 14px;
   color: var(--ld-text-primary);
-}
-
-.listing-dashboard-details__policy {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.listing-dashboard-details__select {
-  width: 100%;
-  max-width: 50%;
-  padding: 12px 16px;
-  background-color: #f9fafb;
-  border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.listing-dashboard-details__select:focus {
-  outline: none;
-  border-color: var(--ld-accent-purple);
-  box-shadow: 0 0 0 3px rgba(107, 79, 187, 0.1);
-}
-
-.listing-dashboard-details__cta {
-  padding-top: 24px;
-}
-
-.listing-dashboard-details__cta-btn {
-  padding: 12px 32px;
-  background: linear-gradient(to right, var(--ld-accent-purple), #7c3aed);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(107, 79, 187, 0.25);
-  transition: all 0.2s;
-}
-
-.listing-dashboard-details__cta-btn:hover {
-  box-shadow: 0 6px 12px rgba(107, 79, 187, 0.35);
-  transform: translateY(-1px);
 }
 
 /* Section Common Styles */
@@ -1307,25 +1363,6 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-.listing-dashboard-description__block {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.listing-dashboard-description__label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.listing-dashboard-description__label h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ld-text-primary);
-  margin: 0;
 }
 
 .listing-dashboard-description__text {
@@ -1550,24 +1587,6 @@
   gap: 24px;
 }
 
-.listing-dashboard-pricing__lease-style {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.listing-dashboard-pricing__lease-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ld-text-primary);
-  margin: 0;
-}
-
-.listing-dashboard-pricing__lease-value {
-  font-size: 14px;
-  color: var(--ld-text-secondary);
-}
-
 .listing-dashboard-pricing__days {
   display: flex;
   flex-direction: column;
@@ -1578,12 +1597,6 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--ld-text-primary);
-}
-
-.listing-dashboard-pricing__days-selector {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 .listing-dashboard-pricing__day {
@@ -1597,90 +1610,6 @@
   font-weight: 500;
   background-color: #f3f4f6;
   color: var(--ld-text-secondary);
-}
-
-.listing-dashboard-pricing__day--selected {
-  background-color: var(--ld-accent-purple);
-  color: white;
-}
-
-.listing-dashboard-pricing__rates {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.listing-dashboard-pricing__rates-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ld-text-primary);
-  margin: 0;
-}
-
-.listing-dashboard-pricing__rates-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-@media (min-width: 768px) {
-  .listing-dashboard-pricing__rates-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .listing-dashboard-pricing__rates-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
-
-.listing-dashboard-pricing__rate-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 16px;
-  background-color: #f9fafb;
-  border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
-  text-align: center;
-}
-
-.listing-dashboard-pricing__rate-nights {
-  font-size: 12px;
-  color: var(--ld-text-secondary);
-}
-
-.listing-dashboard-pricing__rate-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ld-text-primary);
-}
-
-.listing-dashboard-pricing__charges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ld-border-color);
-}
-
-.listing-dashboard-pricing__charge {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.listing-dashboard-pricing__charge-label {
-  font-size: 14px;
-  color: var(--ld-text-secondary);
-}
-
-.listing-dashboard-pricing__charge-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ld-text-primary);
 }
 
 /* Rules Section */
@@ -1854,7 +1783,7 @@
   gap: 24px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .listing-dashboard-availability__calendar-container {
     flex-direction: row;
   }
@@ -1873,20 +1802,6 @@
   margin: 0;
 }
 
-.listing-dashboard-availability__mode-toggle {
-  display: flex;
-  gap: 16px;
-}
-
-.listing-dashboard-availability__mode-toggle label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--ld-text-primary);
-  cursor: pointer;
-}
-
 .listing-dashboard-availability__info {
   display: flex;
   flex-direction: column;
@@ -1902,15 +1817,6 @@
 .listing-dashboard-availability__info .listing-dashboard-availability__no-blocked {
   color: var(--ld-text-secondary);
   font-style: italic;
-}
-
-.listing-dashboard-availability__range-hint {
-  padding: 8px 12px;
-  background-color: #ede9fe;
-  color: #5b21b6;
-  border-radius: 6px;
-  font-size: 13px;
-  margin: 0;
 }
 
 .listing-dashboard-availability__blocked-list {
@@ -2017,15 +1923,15 @@
 }
 
 .listing-dashboard-availability__calendar {
-  flex: 1.5;
-  max-width: 550px;
+  flex: 2;
+  max-width: 800px;
   min-width: 0;
   width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .listing-dashboard-availability__calendar {
-    min-width: 400px;
+    min-width: 600px;
   }
 }
 
@@ -2054,6 +1960,20 @@
   font-weight: 600;
 }
 
+.listing-dashboard-availability__price-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #e9e6ff;
+  white-space: nowrap;
+}
+
+.listing-dashboard-availability__price-toggle input {
+  margin: 0;
+}
+
 .listing-dashboard-availability__day-headers {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -2080,6 +2000,7 @@
 
 .listing-dashboard-availability__calendar-day {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 12px 4px;
@@ -2088,6 +2009,8 @@
   border-right: 1px solid var(--ld-border-color);
   cursor: pointer;
   transition: background-color 0.2s;
+  position: relative;
+  min-height: 36px;
 }
 
 .listing-dashboard-availability__calendar-day:hover {
@@ -2100,6 +2023,11 @@
 
 .listing-dashboard-availability__calendar-day--other-month {
   color: #d1d5db;
+}
+
+.listing-dashboard-availability__calendar-day--available {
+  background-color: #22c55e;
+  color: #ffffff;
 }
 
 /* Selectable overflow days (future dates from adjacent months) */
@@ -2117,43 +2045,85 @@
   color: #dc2626;
 }
 
-.listing-dashboard-availability__calendar-day--past {
-  color: #9ca3af;
-  background-color: #f9fafb;
-  cursor: not-allowed;
-}
-
 .listing-dashboard-availability__calendar-day--blocked {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: #ef4444;
+  color: #ffffff;
   font-weight: 500;
 }
 
 .listing-dashboard-availability__calendar-day--blocked:hover {
-  background-color: #fecaca;
+  background-color: #dc2626;
 }
 
-.listing-dashboard-availability__calendar-day--range-start,
-.listing-dashboard-availability__calendar-day--range-end {
-  background-color: #ddd6fe;
-  color: #5b21b6;
-  font-weight: 600;
+.listing-dashboard-availability__calendar-day--booked {
+  background-color: #3b82f6;
+  color: #ffffff;
 }
 
-.listing-dashboard-availability__calendar-day--in-range {
-  background-color: #ede9fe;
-  color: #7c3aed;
-}
-
-.listing-dashboard-availability__calendar-day--selected {
-  background-color: #ddd6fe;
-  color: #5b21b6;
-  font-weight: 600;
+.listing-dashboard-availability__calendar-day--booked:hover {
+  background-color: #2563eb;
 }
 
 .listing-dashboard-availability__calendar-day--selectable:hover {
   background-color: #f3f4f6;
   cursor: pointer;
+}
+
+.listing-dashboard-availability__calendar-day--booked.listing-dashboard-availability__calendar-day--selectable:hover,
+.listing-dashboard-availability__calendar-day--blocked.listing-dashboard-availability__calendar-day--selectable:hover,
+.listing-dashboard-availability__calendar-day--available.listing-dashboard-availability__calendar-day--selectable:hover {
+  filter: brightness(0.95);
+}
+
+.listing-dashboard-availability__calendar-day--past {
+  color: #6b7280;
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+.listing-dashboard-availability__calendar-day--today {
+  box-shadow: inset 0 0 0 2px var(--ld-accent-purple);
+  font-weight: 700;
+}
+
+.listing-dashboard-availability__day-number {
+  line-height: 1;
+}
+
+.listing-dashboard-availability__day-price {
+  margin-top: 3px;
+  font-size: 8px;
+  line-height: 1;
+  color: rgba(17, 24, 39, 0.72);
+}
+
+.listing-dashboard-availability__calendar-day--blocked .listing-dashboard-availability__day-price,
+.listing-dashboard-availability__calendar-day--booked .listing-dashboard-availability__day-price,
+.listing-dashboard-availability__calendar-day--available .listing-dashboard-availability__day-price {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.listing-dashboard-availability__calendar-grid--show-prices .listing-dashboard-availability__calendar-day {
+  min-height: 40px;
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+
+.listing-dashboard-availability__first-available-badge {
+  margin-top: 3px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: var(--ld-accent-purple);
+  color: #ffffff;
+  font-size: 8px;
+  line-height: 1;
+  animation: listing-dashboard-first-available-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes listing-dashboard-first-available-pulse {
+  0%,
+  100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
 }
 
 .listing-dashboard-availability__legend {
@@ -2177,10 +2147,6 @@
   border-radius: 50%;
 }
 
-.listing-dashboard-availability__legend-dot--restricted {
-  background-color: #fbbf24;
-}
-
 .listing-dashboard-availability__legend-dot--blocked {
   background-color: #ef4444;
 }
@@ -2189,8 +2155,12 @@
   background-color: #22c55e;
 }
 
-.listing-dashboard-availability__legend-dot--first {
-  background-color: var(--ld-accent-purple);
+.listing-dashboard-availability__legend-dot--booked {
+  background-color: #3b82f6;
+}
+
+.listing-dashboard-availability__legend-dot--past {
+  background-color: #e5e7eb;
 }
 
 /* Month Stats */
@@ -2199,6 +2169,122 @@
   font-size: 13px;
   color: var(--ld-text-secondary);
   text-align: center;
+}
+
+/* Multi-Month Calendar Layout */
+.listing-dashboard-availability__multi-calendar {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.listing-dashboard-availability__multi-calendar > * {
+  flex: 1 1 0;
+  min-width: 220px;
+}
+
+@media (max-width: 900px) {
+  .listing-dashboard-availability__multi-calendar {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .listing-dashboard-availability__multi-calendar > * {
+    min-width: 0;
+  }
+}
+
+/* Compact Calendar (used in multi-month view) */
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__calendar-header {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__calendar-header button {
+  padding: 2px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__day-header {
+  padding: 5px 2px;
+  font-size: 11px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__calendar-day {
+  padding: 8px 2px;
+  font-size: 11px;
+  min-height: 28px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__day-price {
+  font-size: 7px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__first-available-badge {
+  font-size: 6px;
+  padding: 1px 3px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__calendar-grid--show-prices .listing-dashboard-availability__calendar-day {
+  min-height: 32px;
+  padding-top: 6px;
+  padding-bottom: 4px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__legend {
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__legend-item {
+  font-size: 10px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__legend-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.listing-dashboard-availability__calendar--compact .listing-dashboard-availability__month-stats {
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+/* Drag Preview States */
+.listing-dashboard-availability__calendar-day--drag-block {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #b91c1c !important;
+  outline: 1px dashed #ef4444;
+  outline-offset: -1px;
+}
+
+.listing-dashboard-availability__calendar-day--drag-unblock {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  color: #15803d !important;
+  outline: 1px dashed #22c55e;
+  outline-offset: -1px;
+}
+
+/* Disable text selection during drag */
+.listing-dashboard-availability__calendar-grid--dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: crosshair;
+}
+
+.listing-dashboard-availability__calendar-grid--dragging .listing-dashboard-availability__calendar-day {
+  cursor: crosshair;
+}
+
+/* Quick-Set Pattern Buttons */
+.listing-dashboard-availability__quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 /* Enable interactive states for availability inputs */
@@ -2780,17 +2866,9 @@
     right: 0;
   }
 
-  .listing-dashboard-details__select {
-    max-width: 100%;
-  }
-
   .listing-dashboard-amenities__grid,
   .listing-dashboard-rules__grid {
     grid-template-columns: 1fr;
-  }
-
-  .listing-dashboard-pricing__rates-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 
   .listing-dashboard-photos__grid {
@@ -3754,4 +3832,197 @@ body.listing-dashboard-page .dropdown-arrow {
 
 body.listing-dashboard-page .hamburger-line {
   background-color: #1f2937;
+}
+
+/* ===== Insights Panel ===== */
+.listing-dashboard-insights {
+  padding: 16px 24px;
+}
+
+.listing-dashboard-insights .listing-dashboard-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.listing-dashboard-insights .listing-dashboard-section__title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-insights__restore-btn {
+  font-size: 12px;
+  color: var(--ld-accent-purple);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 8px;
+}
+
+.listing-dashboard-insights__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listing-dashboard-insights__card {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--ld-border-color);
+  background: var(--ld-surface-alt);
+}
+
+.listing-dashboard-insights__card--high {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.listing-dashboard-insights__card--medium {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.listing-dashboard-insights__card--low {
+  border-left-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.listing-dashboard-insights__card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.listing-dashboard-insights__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.listing-dashboard-insights__priority {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ld-text-secondary);
+}
+
+.listing-dashboard-insights__message {
+  font-size: 14px;
+  margin: 0;
+  color: var(--ld-text-primary);
+  line-height: 1.4;
+}
+
+.listing-dashboard-insights__nudge {
+  font-size: 12px;
+  color: var(--ld-text-secondary);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.listing-dashboard-insights__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.listing-dashboard-insights__action-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: var(--ld-accent-purple);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.listing-dashboard-insights__action-btn:hover {
+  background: var(--ld-success);
+}
+
+.listing-dashboard-insights__dismiss-btn {
+  font-size: 12px;
+  color: var(--ld-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.listing-dashboard-insights__dismiss-btn:hover {
+  opacity: 1;
+}
+
+.listing-dashboard-insights__empty {
+  font-size: 13px;
+  color: var(--ld-text-secondary);
+  margin: 0;
+  padding: 8px 0;
+}
+
+/* Stats row */
+.listing-dashboard-insights__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ld-border-color);
+}
+
+.listing-dashboard-insights__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.listing-dashboard-insights__stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-insights__stat-label {
+  font-size: 11px;
+  color: var(--ld-text-secondary);
+}
+
+/* Skeleton loading */
+.listing-dashboard-insights__card--skeleton {
+  animation: ld-insight-pulse 1.5s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.listing-dashboard-insights__skeleton-bar {
+  height: 14px;
+  width: 60%;
+  background: var(--ld-border-color);
+  border-radius: 4px;
+}
+
+.listing-dashboard-insights__skeleton-bar--short {
+  width: 30%;
+  height: 10px;
+}
+
+.listing-dashboard-insights__skeleton-bar--long {
+  width: 80%;
+}
+
+@keyframes ld-insight-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

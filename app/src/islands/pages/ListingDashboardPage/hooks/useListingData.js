@@ -1,9 +1,49 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+/**
+ * useListingData — The data fetching layer for Listing Dashboard
+ *
+ * Data Flow:
+ *   Supabase → useListingData → useListingDashboardPageLogic → ListingDashboardContext → Components
+ *
+ * Queries (in Promise.all):
+ *   1. listing — single row, 54 columns (LISTING_SELECT_COLUMNS)
+ *   2. lookupTables — 6 lookup tables (cached 30 min)
+ *   3. proposals — 5 most recent + total count  { count: 'exact' }
+ *   4. leases — 5 most recent + total count      { count: 'exact' }
+ *   5. meetings — all rows + total count          [FK: "Listing (for Co-Host feature)"]
+ *   6. reviews — count only                       { head: true }
+ *   7. messages — count only                      { head: true }
+ *   8. cohostRequest — single or null             .maybeSingle()
+ *
+ * Computed Data:
+ *   - calendarData: bookedDateRanges, demandDates, blockedDates, pricing
+ *   - engagement: viewCount, favoritesCount (from listing transform)
+ *
+ * Exports:
+ *   - useListingData (hook)
+ *   - groupByStatus, getProposalDemandDates, getDailyPricingForCalendar (utils)
+ *   - LISTING_SELECT_COLUMNS (constant)
+ *
+ * Field Name Map (UI → DB):
+ *   listing.title           → listing_title
+ *   listing.description     → listing_description
+ *   listing.monthlyHostRate → monthly_rate_paid_to_host
+ *   listing.weeklyHostRate  → weekly_rate_paid_to_host
+ *   listing.bedrooms        → bedroom_count         (via features.bedrooms)
+ *   listing.bathrooms       → bathroom_count         (via features.bathrooms)
+ *   listing.zipCode         → zip_code               (via location.zipCode)
+ *   listing.viewCount       → total_click_count
+ *   listing.favoritesCount  → user_ids_who_favorited_json  (array length)
+ *   listing.pricing[N]      → nightly_rate_for_N_night_stay (N=1-5,7; 6 uses 5-night rate)
+ *   listing.blockedDates    → blocked_specific_dates_json
+ *   listing.createdAt       → original_created_at
+ *   listing.updatedAt       → original_updated_at
+ */
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { logger } from '../../../../lib/logger';
 import { getBoroughForZipCode } from '../../../../lib/nycZipCodes';
 
-const LOOKUP_CACHE_TTL_MS = 5 * 60 * 1000;
+const LOOKUP_CACHE_TTL_MS = 30 * 60 * 1000;
 let lookupCache = null;
 let lookupCacheTime = 0;
 
@@ -50,14 +90,45 @@ function groupByStatus(proposals) {
 }
 
 /**
- * Determine if a listing is underperforming based on age, proposal count, and clicks.
+ * Build a Map of move-in dates to demand count from recent proposals.
+ * Used by calendar heatmap to show demand signals.
  */
-export function isListingUnderperforming(listing, counts) {
-  if (!listing || !counts) return false;
-  const createdAt = listing.createdAt || listing.original_created_at;
-  if (!createdAt) return false;
-  const ageInDays = (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24);
-  return ageInDays > 30 && (counts.proposals || 0) < 3 && (listing.viewCount || 0) < 20;
+export function getProposalDemandDates(recentProposals) {
+  if (!recentProposals?.length) return new Map();
+  const demandMap = new Map();
+  recentProposals.forEach(proposal => {
+    if (proposal.move_in_range_start_date) {
+      const dateKey = proposal.move_in_range_start_date.substring(0, 10);
+      demandMap.set(dateKey, (demandMap.get(dateKey) || 0) + 1);
+    }
+  });
+  return demandMap;
+}
+
+/**
+ * Derive a per-night rate for calendar price overlay.
+ * Pricing model is tiered by nights-booked-per-week, not per-day-of-week.
+ * Returns the base nightly rate from the min-nights tier, or derives from weekly/monthly.
+ */
+export function getDailyPricingForCalendar(listing) {
+  if (!listing) return null;
+
+  const minNights = listing.nightsPerWeekMin || 2;
+  const baseNightlyRate = listing.pricing?.[minNights] || 0;
+
+  if (baseNightlyRate > 0) {
+    return { type: 'nightly', perNight: baseNightlyRate, tieredRates: listing.pricing };
+  }
+
+  if (listing.weeklyHostRate > 0) {
+    return { type: 'weekly', perNight: Math.round(listing.weeklyHostRate / 7) };
+  }
+
+  if (listing.monthlyHostRate > 0) {
+    return { type: 'monthly', perNight: Math.round(listing.monthlyHostRate / 30) };
+  }
+
+  return null;
 }
 
 /**
@@ -85,131 +156,6 @@ const LISTING_SELECT_COLUMNS = [
   'original_updated_at', 'total_click_count', 'user_ids_who_favorited_json',
 ].join(', ');
 
-/**
- * Fetch up to 20 comparable active listings in the same zip code.
- */
-export async function fetchComparableListings(listingId, zipCode, supabaseClient) {
-  if (!zipCode || !listingId) return [];
-  const { data } = await supabaseClient
-    .from('listing')
-    .select(`
-      id,
-      listing_title,
-      total_click_count,
-      user_ids_who_favorited_json,
-      monthly_rate_paid_to_host,
-      weekly_rate_paid_to_host,
-      bedroom_count,
-      bathroom_count,
-      photos_with_urls_captions_and_sort_order_json,
-      in_unit_amenity_reference_ids_json,
-      in_building_amenity_reference_ids_json,
-      first_available_date,
-      listing_description,
-      original_created_at
-    `)
-    .neq('id', listingId)
-    .eq('zip_code', zipCode)
-    .eq('is_active', true)
-    .order('total_click_count', { ascending: false })
-    .limit(20);
-
-  return data || [];
-}
-
-/**
- * Compare a listing against comparable listings and return actionable insights.
- */
-export function analyzeListingVsComparables(listing, comparables) {
-  const empty = { insights: [], comparableStats: { medianMonthlyRate: 0, avgPhotos: 0, avgClicks: 0, topAmenities: [] } };
-  if (!listing || !comparables || comparables.length === 0) return empty;
-
-  const insights = [];
-
-  // Pricing: compare monthly rate against median
-  const rates = comparables.map(c => c.monthly_rate_paid_to_host).filter(r => r > 0).sort((a, b) => a - b);
-  const medianRate = rates.length > 0 ? rates[Math.floor(rates.length / 2)] : 0;
-  const listingRate = listing.monthlyHostRate || 0;
-
-  if (medianRate > 0 && listingRate > 0) {
-    const priceDiff = ((listingRate - medianRate) / medianRate) * 100;
-    if (priceDiff > 20) {
-      insights.push({ type: 'pricing', message: `Your monthly rate ($${listingRate}) is ${Math.round(priceDiff)}% above the area median ($${medianRate})`, priority: 'high' });
-    } else if (priceDiff < -30) {
-      insights.push({ type: 'pricing', message: `Your monthly rate ($${listingRate}) is ${Math.round(Math.abs(priceDiff))}% below the area median ($${medianRate})`, priority: 'medium' });
-    }
-  }
-
-  // Photos: compare count against average
-  const photoCounts = comparables.map(c => safeParseJsonArray(c.photos_with_urls_captions_and_sort_order_json).length);
-  const avgPhotos = photoCounts.length > 0 ? photoCounts.reduce((a, b) => a + b, 0) / photoCounts.length : 0;
-  const listingPhotos = listing.photos?.length || 0;
-
-  if (avgPhotos > 0 && listingPhotos < avgPhotos) {
-    insights.push({ type: 'photos', message: `You have ${listingPhotos} photos. Top listings in your area average ${Math.round(avgPhotos)}`, priority: listingPhotos < avgPhotos * 0.5 ? 'high' : 'medium' });
-  }
-
-  // Description: flag short descriptions when median is long
-  const descLengths = comparables.map(c => (c.listing_description || '').length).filter(l => l > 0).sort((a, b) => a - b);
-  const medianDescLength = descLengths.length > 0 ? descLengths[Math.floor(descLengths.length / 2)] : 0;
-  const listingDescLength = (listing.description || '').length;
-
-  if (listingDescLength < 200 && medianDescLength > 400) {
-    insights.push({ type: 'description', message: `Your description is ${listingDescLength} characters. Longer descriptions get more engagement`, priority: 'medium' });
-  }
-
-  // Amenities: find popular amenities missing from this listing
-  const amenityCounts = {};
-  comparables.forEach(c => {
-    const ids = new Set([
-      ...safeParseJsonArray(c.in_unit_amenity_reference_ids_json),
-      ...safeParseJsonArray(c.in_building_amenity_reference_ids_json),
-    ]);
-    ids.forEach(id => { amenityCounts[id] = (amenityCounts[id] || 0) + 1; });
-  });
-
-  const listingAmenityIds = new Set([
-    ...safeParseJsonArray(listing['Features - Amenities In-Unit']),
-    ...safeParseJsonArray(listing['Features - Amenities In-Building']),
-  ]);
-
-  const topAmenities = Object.entries(amenityCounts)
-    .map(([id, count]) => ({ name: id, percentOfListings: Math.round((count / comparables.length) * 100) }))
-    .filter(a => a.percentOfListings > 50)
-    .sort((a, b) => b.percentOfListings - a.percentOfListings);
-
-  const missingPopular = topAmenities.filter(a => !listingAmenityIds.has(a.name));
-  if (missingPopular.length > 0) {
-    insights.push({ type: 'amenities', message: `${missingPopular.length} popular amenities in your area are missing from your listing`, priority: missingPopular.length > 3 ? 'high' : 'low' });
-  }
-
-  // Clicks: normalize by listing age, flag if bottom quartile
-  const clicksPerDay = comparables.map(c => {
-    const age = c.original_created_at ? (Date.now() - new Date(c.original_created_at).getTime()) / (1000 * 60 * 60 * 24) : 0;
-    return age > 0 ? (c.total_click_count || 0) / age : 0;
-  }).filter(c => c > 0).sort((a, b) => a - b);
-
-  if (clicksPerDay.length >= 4) {
-    const q1 = clicksPerDay[Math.floor(clicksPerDay.length * 0.25)];
-    const listingAge = listing.createdAt ? (Date.now() - new Date(listing.createdAt).getTime()) / (1000 * 60 * 60 * 24) : 1;
-    const listingCpd = listingAge > 0 ? (listing.viewCount || 0) / listingAge : 0;
-    if (listingCpd < q1) {
-      insights.push({ type: 'engagement', message: 'Your listing gets fewer daily views than 75% of comparable listings', priority: 'high' });
-    }
-  }
-
-  const avgClicks = comparables.reduce((sum, c) => sum + (c.total_click_count || 0), 0) / comparables.length;
-
-  return {
-    insights,
-    comparableStats: {
-      medianMonthlyRate: medianRate,
-      avgPhotos: Math.round(avgPhotos),
-      avgClicks: Math.round(avgClicks),
-      topAmenities,
-    },
-  };
-}
 
 /**
  * Fetch all lookup tables needed for resolving feature names
@@ -766,16 +712,21 @@ export function useListingData(listingId) {
     return data;
   }, [listingId]);
 
-  // Insights lazy-load cache (Phase 10 groundwork)
-  const insightsRef = useRef(null);
-  const fetchInsights = useCallback(async () => {
-    if (insightsRef.current) return insightsRef.current;
-    if (!listing) return null;
-    const comparables = await fetchComparableListings(listingId, listing.location?.zipCode, supabase);
-    const analysis = analyzeListingVsComparables(listing, comparables);
-    insightsRef.current = analysis;
-    return analysis;
-  }, [listingId, listing]);
+  // Calendar-specific computed data for heatmap, lease overlays, pricing
+  const calendarData = useMemo(() => ({
+    bookedDateRanges: (counts.activeLeases || [])
+      .filter(l => l.reservation_start_date && l.reservation_end_date)
+      .map(l => ({
+        start: l.reservation_start_date.substring(0, 10),
+        end: l.reservation_end_date.substring(0, 10),
+        leaseId: l.id,
+        agreementNumber: l.agreement_number || `Lease ${l.id.substring(0, 8)}`,
+        isSigned: l.is_lease_signed,
+      })),
+    demandDates: getProposalDemandDates(counts.recentProposals),
+    blockedDates: listing?.blockedDates || [],
+    pricing: getDailyPricingForCalendar(listing),
+  }), [counts.activeLeases, counts.recentProposals, listing]);
 
   // Initialize on mount
   useEffect(() => {
@@ -792,6 +743,6 @@ export function useListingData(listingId) {
     setExistingCohostRequest,
     fetchListing,
     updateListing,
-    fetchInsights,
+    calendarData,
   };
 }

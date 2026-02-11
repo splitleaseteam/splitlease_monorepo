@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { logger } from '../../../../lib/logger';
 
@@ -43,18 +43,25 @@ async function persistPhotosToListing(listingId, photos) {
  * JSONB column as an array of objects: [{ url, caption, sort_order, ... }]
  */
 export function usePhotoManagement(listing, setListing, fetchListing, listingId) {
+  const listingRef = useRef(listing);
+
+  useEffect(() => {
+    listingRef.current = listing;
+  }, [listing]);
+
   const handleSetCoverPhoto = useCallback(async (photoId) => {
-    if (!listing || !photoId) return;
+    const currentListing = listingRef.current;
+    if (!currentListing || !photoId) return;
 
     logger.debug('Setting cover photo:', photoId);
 
-    const photoIndex = listing.photos.findIndex(p => p.id === photoId);
+    const photoIndex = currentListing.photos.findIndex((photo) => photo.id === photoId);
     if (photoIndex === -1 || photoIndex === 0) {
       logger.debug('Photo not found or already first');
       return;
     }
 
-    const newPhotos = [...listing.photos];
+    const newPhotos = [...currentListing.photos];
     const [selectedPhoto] = newPhotos.splice(photoIndex, 1);
     selectedPhoto.isCover = true;
 
@@ -73,14 +80,15 @@ export function usePhotoManagement(listing, setListing, fetchListing, listingId)
       logger.error('Error updating cover photo:', err);
       fetchListing(true);
     }
-  }, [listing, setListing, fetchListing, listingId]);
+  }, [setListing, fetchListing, listingId]);
 
   const handleReorderPhotos = useCallback(async (fromIndex, toIndex) => {
-    if (!listing || fromIndex === toIndex) return;
+    const currentListing = listingRef.current;
+    if (!currentListing || fromIndex === toIndex) return;
 
     logger.debug('Reordering photos:', fromIndex, '->', toIndex);
 
-    const newPhotos = [...listing.photos];
+    const newPhotos = [...currentListing.photos];
     const [movedPhoto] = newPhotos.splice(fromIndex, 1);
     newPhotos.splice(toIndex, 0, movedPhoto);
 
@@ -100,22 +108,23 @@ export function usePhotoManagement(listing, setListing, fetchListing, listingId)
       logger.error('Error reordering photos:', err);
       fetchListing(true);
     }
-  }, [listing, setListing, fetchListing, listingId]);
+  }, [setListing, fetchListing, listingId]);
 
   const handleDeletePhoto = useCallback(async (photoId) => {
-    if (!listing || !photoId) return;
+    const currentListing = listingRef.current;
+    if (!currentListing || !photoId) return;
 
     logger.debug('Deleting photo:', photoId);
 
-    const photoIndex = listing.photos.findIndex(p => p.id === photoId);
+    const photoIndex = currentListing.photos.findIndex((photo) => photo.id === photoId);
     if (photoIndex === -1) {
       logger.debug('Photo not found');
       return;
     }
 
-    const newPhotos = listing.photos.filter(p => p.id !== photoId);
+    const newPhotos = currentListing.photos.filter((photo) => photo.id !== photoId);
 
-    if (newPhotos.length > 0 && listing.photos[photoIndex].isCover) {
+    if (newPhotos.length > 0 && currentListing.photos[photoIndex].isCover) {
       newPhotos[0].isCover = true;
     }
 
@@ -131,7 +140,7 @@ export function usePhotoManagement(listing, setListing, fetchListing, listingId)
       logger.error('Error deleting photo:', err);
       fetchListing(true);
     }
-  }, [listing, setListing, fetchListing, listingId]);
+  }, [setListing, fetchListing, listingId]);
 
   return {
     handleSetCoverPhoto,
