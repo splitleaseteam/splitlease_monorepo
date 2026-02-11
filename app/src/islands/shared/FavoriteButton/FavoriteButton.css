@@ -135,8 +135,14 @@
   fill: #FF6B35;
 }
 
-.favorite-button-shared.favorite-button--inline.favorited:hover .favorite-button-icon {
-  color: #e55a2b;
-  stroke: #e55a2b;
-  fill: #e55a2b;
+
+@media (prefers-reduced-motion: reduce) {
+  .favorite-button-shared,
+  .favorite-button-icon {
+    transition: none !important;
+  }
+
+  .favorite-button-shared.animating .favorite-button-icon {
+    animation: none !important;
+  }
 }

@@ -58,6 +58,8 @@ const MapLegend = memo(({ showAllListings, onToggle }) => (
         type="checkbox"
         checked={showAllListings}
         onChange={(e) => onToggle(e.target.checked)}
+        aria-label="Show all listings"
+        aria-expanded={showAllListings}
       />
       <span>Show all listings</span>
     </label>
@@ -197,68 +199,39 @@ const GoogleMap = forwardRef(({
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
-    // Highlight marker: pan to center on it (no zoom change), pulse, and show card
+    // Highlight marker: pulse in place (no map pan — prevents motion sickness)
     highlightListing(listingId) {
-      if (!googleMapRef.current || !mapLoaded) {
-        logger.error('Map not initialized yet');
-        return;
-      }
-
-      // Find the listing in either filtered or all listings
-      const listing = filteredListings.find(l => l.id === listingId) ||
-                     listings.find(l => l.id === listingId);
-
-      if (!listing) {
-        logger.error('Listing not found:', listingId);
-        return;
-      }
-
-      const coords = listing.coordinates;
-      if (!coords || !coords.lat || !coords.lng) {
-        logger.error('Invalid coordinates for listing:', listingId);
-        return;
-      }
-
-      const map = googleMapRef.current;
-
-      // Pan to center on the listing (without changing zoom)
-      map.panTo({ lat: coords.lat, lng: coords.lng });
+      if (!googleMapRef.current || !mapLoaded) return;
 
       const marker = markersRef.current.find(m => m.listingId === listingId);
-      if (marker && marker.div) {
-        // Remove pulse from all other markers first
-        markersRef.current.forEach(m => {
-          if (m.div) m.div.classList.remove('pulse');
-        });
-        // Add pulse animation to this marker (continues until hover ends)
-        marker.div.classList.add('pulse');
+      if (!marker || !marker.div) return;
 
-        // If a map card is already visible, update it to show the hovered listing
-        if (cardVisible && selectedListingForCard) {
-          // Calculate card position for the new marker
-          const mapContainer = mapRef.current;
-          if (mapContainer && marker.div) {
-            const mapRect = mapContainer.getBoundingClientRect();
-            const markerRect = marker.div.getBoundingClientRect();
-
-            // Card dimensions (matching ListingCardForMap)
-            const cardHeight = 300; // Approximate card height
-            const arrowHeight = 10;
-            const gapFromPin = 5;
-
-            const x = markerRect.left - mapRect.left + markerRect.width / 2;
-            // Position card so its bottom (including arrow) is above the marker
-            const y = markerRect.top - mapRect.top - cardHeight - arrowHeight - gapFromPin;
-            setCardPosition({ x, y });
-          }
-          setSelectedListingForCard(listing);
+      // Remove pulse from all other markers first
+      markersRef.current.forEach(m => {
+        if (m.div) {
+          m.div.classList.remove('pulse');
+          m.div.style.outline = '';
+          m.div.style.outlineOffset = '';
         }
+      });
+
+      // Respect prefers-reduced-motion: static highlight only
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) {
+        marker.div.style.outline = '2px solid #4B47CE';
+        marker.div.style.outlineOffset = '2px';
+      } else {
+        marker.div.classList.add('pulse');
       }
     },
     // Stop pulsing all markers (called when hover ends)
     stopPulse() {
       markersRef.current.forEach(m => {
-        if (m.div) m.div.classList.remove('pulse');
+        if (m.div) {
+          m.div.classList.remove('pulse');
+          m.div.style.outline = '';
+          m.div.style.outlineOffset = '';
+        }
       });
     },
     zoomToListing(listingId) {

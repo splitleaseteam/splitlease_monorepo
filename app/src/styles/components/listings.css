@@ -312,6 +312,70 @@
     border-color: #d1d5db;
 }
 
+/* Keyboard focus — visible ring for Tab navigation */
+.listing-card:focus-visible {
+    outline: 2px solid var(--primary-purple, #31135d);
+    outline-offset: 2px;
+    border-color: var(--primary-purple, #31135d);
+}
+
+/* Press feedback — subtle scale on click/tap */
+.listing-card:active {
+    transform: scale(0.98);
+    transition: transform 50ms ease;
+}
+
+/* Viewed state - checkmark badge instead of dimming */
+.listing-card--viewed .listing-images .viewed-badge {
+    display: flex;
+}
+
+.viewed-badge {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+    color: var(--primary-purple, #31135d);
+    font-size: 11px;
+    line-height: 1;
+}
+
+/* Transit Badge - hover-only on card image */
+.transit-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 150ms ease;
+    pointer-events: none;
+}
+
+.transit-badge svg {
+    flex-shrink: 0;
+}
+
+.listing-card:hover .transit-badge {
+    opacity: 1;
+}
+
 /* Highlight effect when scrolling to card from map marker click */
 .listing-card--highlighted {
     border-color: #4B47CE !important;
@@ -1489,13 +1553,13 @@
     }
 }
 
-/* Responsive: Mobile */
-@media (max-width: 768px) {
+/* Responsive: Tablet & Mobile (vertical card layout) */
+@media (max-width: 1024px) {
     .listings-container {
         gap: 1.5rem;
     }
 
-    /* Change to vertical layout on mobile */
+    /* Change to vertical layout on tablet & mobile */
     .listing-card {
         flex-direction: column;
         height: auto;
@@ -2314,4 +2378,33 @@
         font-size: 13px;
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .listing-card,
+    .listing-card:active,
+    .listing-card--highlighted,
+    .transit-badge,
+    .skeleton-image,
+    .skeleton-line,
+    .spinner,
+    .home-page .space-card,
+    .home-page .show-more-btn,
+    .home-page .scroll-indicators .indicator,
+    .preview-date-input,
+    .preview-select-input,
+    .image-nav,
+    .favorite-btn,
+    .message-btn,
+    .create-proposal-btn,
+    .view-proposal-btn,
+    .action-button,
+    .sidebar-map-trigger,
+    .listing-location-pill,
+    .filter-pill {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+}
+
 

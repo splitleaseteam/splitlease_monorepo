@@ -34,8 +34,15 @@ import {
 import {
   initializeLookups,
   getNeighborhoodName,
+  getNeighborhoodInfo,
   getBoroughName,
   getPropertyTypeLabel,
+  getAmenities,
+  getHouseRules,
+  getSafetyFeatures,
+  getCancellationPolicy,
+  getParkingOption,
+  getStorageOption,
   isInitialized
 } from '../../lib/dataLookups.js'
 import { parseUrlToFilters, updateUrlParams, watchUrlChanges } from '../../lib/urlParams.js'
@@ -135,11 +142,16 @@ export function useSearchPageLogic() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileMapVisible, setMobileMapVisible] = useState(false)
 
+  // Listing Detail Drawer
+  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false)
+  const [detailDrawerListing, setDetailDrawerListing] = useState(null)
+
   // Refs
   const mapRef = useRef(null)
   const fetchInProgressRef = useRef(false)
   const lastFetchParamsRef = useRef(null)
   const isInitialMount = useRef(true)
+  const allActivePopulatedRef = useRef(false)
 
   // ============================================================================
   // Logic Core Integration - Filter Validation
@@ -242,13 +254,40 @@ export function useSearchPageLogic() {
       description: `${(dbListing.bedroom_count || 0) === 0 ? 'Studio' : `${dbListing.bedroom_count} bedroom`} • ${dbListing.bathroom_count || 0} bathroom`,
       weeks_offered: dbListing.weeks_offered_schedule_text || 'Every week',
       days_available: parseJsonArray({ field: dbListing.available_days_as_day_numbers_json, fieldName: 'Days Available' }),
-      isNew: false
+      isNew: false,
+      // Drawer-specific fields (fetched via SELECT * but previously discarded)
+      listingDescription: dbListing.listing_description || '',
+      transitTime: dbListing.commute_time_to_nearest_transit || null,
+      checkInTime: dbListing.checkin_time_of_day || null,
+      checkOutTime: dbListing.checkout_time_of_day || null,
+      // Reference data (resolved from IDs via dataLookups cache)
+      unitAmenities: getAmenities(parseJsonArray({ field: dbListing.in_unit_amenity_reference_ids_json, fieldName: 'Unit Amenities' })),
+      buildingAmenities: getAmenities(parseJsonArray({ field: dbListing.in_building_amenity_reference_ids_json, fieldName: 'Building Amenities' })),
+      houseRules: getHouseRules(parseJsonArray({ field: dbListing.house_rule_reference_ids_json, fieldName: 'House Rules' })),
+      safetyFeatures: getSafetyFeatures(parseJsonArray({ field: dbListing.safety_feature_reference_ids_json, fieldName: 'Safety Features' })),
+      cancellationPolicy: getCancellationPolicy(dbListing.cancellation_policy),
+      parkingOption: getParkingOption(dbListing.parking_type),
+      storageOption: getStorageOption(dbListing.secure_storage_option),
+      neighborhoodReferenceId: dbListing.primary_neighborhood_reference_id || null,
+      neighborhoodDescription: getNeighborhoodInfo(dbListing.primary_neighborhood_reference_id)?.description || '',
+      // Stay constraints
+      minWeeksPerStay: toNumber(dbListing.minimum_weeks_per_stay),
+      maxWeeksPerStay: toNumber(dbListing.maximum_weeks_per_stay),
+      minNightsPerStay: toNumber(dbListing.minimum_nights_per_stay),
+      maxNightsPerStay: toNumber(dbListing.maximum_nights_per_stay),
+      kitchenType: dbListing.kitchen_type || null,
+      isTrialAllowed: dbListing.is_trial_period_allowed || false,
+      firstAvailableDate: dbListing.first_available_date || null,
+      favoriteCount: Array.isArray(dbListing.user_ids_who_favorited_json) ? dbListing.user_ids_who_favorited_json.length : 0,
+      // Used to derive green-pin map listings without a separate query
+      isActive: dbListing.is_active === true,
+      isUsabilityTest: dbListing.is_usability_test_listing === true,
     }
   }, [])
 
   const fetchPricingListMap = useCallback(async (listings) => {
     const pricingListIds = Array.from(
-      new Set(listings.map((listing) => listing.pricing_list).filter(Boolean))
+      new Set(listings.map((listing) => listing.pricing_configuration_id).filter(Boolean))
     )
 
     if (pricingListIds.length === 0) {
@@ -274,91 +313,6 @@ export function useSearchPageLogic() {
       return {}
     }
   }, [])
-
-  /**
-   * Fetch ALL active listings for map background (green pins).
-   * Runs once on mount, no filters applied.
-   */
-  const fetchAllActiveListings = useCallback(async () => {
-    logger.debug('Fetching ALL active listings for map background (green pins)...')
-
-    try {
-      const { data, error } = await supabase
-        .from('listing')
-        .select('*')
-        .eq('is_active', true)
-        .eq('is_deleted', false)
-        .eq('is_usability_test_listing', false)
-        .or(
-          'address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null'
-        )
-
-      if (error) throw error
-
-      logger.debug('fetchAllActiveListings: Supabase returned', data.length, 'active listings')
-
-      // Batch fetch photos
-      const photoIdsArray = extractPhotoIdsFromListings(data)
-      const photoMap = await fetchPhotoUrls(photoIdsArray)
-
-      const pricingListMap = await fetchPricingListMap(data)
-
-      // Extract photos per listing
-      const resolvedPhotos = {}
-      data.forEach((listing) => {
-        resolvedPhotos[listing.id] = extractPhotos(
-          listing.photos_with_urls_captions_and_sort_order_json,
-          photoMap,
-          listing.id
-        )
-      })
-
-      // Batch fetch host data
-      const hostIds = new Set()
-      data.forEach((listing) => {
-        if (listing.host_user_id) {
-          hostIds.add(listing.host_user_id)
-        }
-      })
-
-      const hostMap = await fetchHostData(Array.from(hostIds))
-
-      // Map host data to listings
-      const resolvedHosts = {}
-      data.forEach((listing) => {
-        const hostId = listing.host_user_id
-        resolvedHosts[listing.id] = hostMap[hostId] || null
-      })
-
-      // Transform listings using Logic Core
-      const transformedListings = data.map((listing) =>
-        transformListing(
-          listing,
-          resolvedPhotos[listing.id],
-          resolvedHosts[listing.id],
-          pricingListMap[listing.pricing_list] || null
-        )
-      )
-
-      // Filter to only listings with valid coordinates
-      const listingsWithCoordinates = transformedListings.filter((listing) => {
-        const hasValidCoords =
-          listing.coordinates && listing.coordinates.lat && listing.coordinates.lng
-        return hasValidCoords
-      })
-
-      // Filter out listings without photos
-      const listingsWithPhotos = listingsWithCoordinates.filter((listing) => {
-        return listing.images && listing.images.length > 0
-      })
-
-      logger.debug(`Fetched ${listingsWithPhotos.length} active listings with coordinates and photos`)
-      setAllActiveListings(listingsWithPhotos)
-    } catch (error) {
-      logger.error('Failed to fetch all active listings:', error)
-      // Don't set error state - this shouldn't block the page
-    }
-  }, [fetchPricingListMap, transformListing])
 
   /**
    * Fetch filtered listings based on current filter state.
@@ -393,11 +347,9 @@ export function useSearchPageLogic() {
         .from('listing')
         .select('*')
         .eq('is_listing_profile_complete', true)
-        .or('is_active.eq.true,is_active.is.null')
+        .not('is_active', 'is', false)
         .eq('is_deleted', false)
-        .or(
-          'address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null'
-        )
+        .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
 
       // Apply borough filter only when boroughs are selected (empty = show all)
       if (selectedBoroughs.length > 0) {
@@ -481,7 +433,7 @@ export function useSearchPageLogic() {
           listing,
           resolvedPhotos[listing.id],
           resolvedHosts[listing.id],
-          pricingListMap[listing.pricing_list] || null
+          pricingListMap[listing.pricing_configuration_id] || null
         )
       )
 
@@ -499,6 +451,14 @@ export function useSearchPageLogic() {
 
       setAllListings(listingsWithPhotos)
       setLoadedCount(0)
+
+      // Derive green-pin map listings from first fetch (eliminates separate fetchAllActiveListings query)
+      if (!allActivePopulatedRef.current) {
+        const mapListings = listingsWithPhotos.filter(l => l.isActive && !l.isUsabilityTest)
+        setAllActiveListings(mapListings)
+        allActivePopulatedRef.current = true
+        logger.debug('Derived', mapListings.length, 'active map listings from fetchListings (skipped separate query)')
+      }
 
       logger.debug('SearchPage: State updated with', listingsWithPhotos.length, 'listings')
     } catch (err) {
@@ -538,7 +498,7 @@ export function useSearchPageLogic() {
         .from('listing')
         .select('*')
         .eq('is_listing_profile_complete', true)
-        .or('is_active.eq.true,is_active.is.null')
+        .not('is_active', 'is', false)
         .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
         .not('photos_with_urls_captions_and_sort_order_json', 'is', null)
         .order('original_updated_at', { ascending: false })
@@ -617,7 +577,7 @@ export function useSearchPageLogic() {
           listing,
           resolvedPhotos[listing.id],
           resolvedHosts[listing.id],
-          pricingListMap[listing.pricing_list] || null
+          pricingListMap[listing.pricing_configuration_id] || null
         )
       )
 
@@ -669,11 +629,6 @@ export function useSearchPageLogic() {
     }
     loadInformationalTexts()
   }, [])
-
-  // Fetch ALL active listings once on mount
-  useEffect(() => {
-    fetchAllActiveListings()
-  }, [fetchAllActiveListings])
 
   // Load boroughs on mount
   useEffect(() => {
@@ -916,6 +871,50 @@ export function useSearchPageLogic() {
     setIsAIResearchModalOpen(false)
   }, [])
 
+  // Drawer handlers (with history state for back-button support)
+  const drawerHistoryPushedRef = useRef(false)
+  const drawerCloseTimerRef = useRef(null)
+
+  const handleOpenDetailDrawer = useCallback((listing) => {
+    // Cancel any pending close timer (prevents race condition on rapid open/close)
+    if (drawerCloseTimerRef.current) {
+      clearTimeout(drawerCloseTimerRef.current)
+      drawerCloseTimerRef.current = null
+    }
+    setDetailDrawerListing(listing)
+    setIsDetailDrawerOpen(true)
+    window.history.pushState({ drawer: true }, '')
+    drawerHistoryPushedRef.current = true
+  }, [])
+
+  const handleCloseDetailDrawer = useCallback(() => {
+    setIsDetailDrawerOpen(false)
+    drawerCloseTimerRef.current = setTimeout(() => {
+      setDetailDrawerListing(null)
+      drawerCloseTimerRef.current = null
+    }, 300)
+    if (drawerHistoryPushedRef.current) {
+      drawerHistoryPushedRef.current = false
+      window.history.back()
+    }
+  }, [])
+
+  // Close drawer on browser back button
+  useEffect(() => {
+    const handlePopState = () => {
+      if (drawerHistoryPushedRef.current) {
+        drawerHistoryPushedRef.current = false
+        setIsDetailDrawerOpen(false)
+        drawerCloseTimerRef.current = setTimeout(() => {
+          setDetailDrawerListing(null)
+          drawerCloseTimerRef.current = null
+        }, 300)
+      }
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   // ============================================================================
   // Computed Values
   // ============================================================================
@@ -930,6 +929,18 @@ export function useSearchPageLogic() {
     })
     return filtered
   }, [neighborhoods, neighborhoodSearch])
+
+  // Price percentiles for "Great Price" / "Good Value" badges (drawer only)
+  const pricePercentiles = useMemo(() => {
+    const prices = allActiveListings
+      .map(l => l.price?.starting)
+      .filter(p => typeof p === 'number' && p > 0)
+      .sort((a, b) => a - b)
+    if (prices.length < 4) return null
+    const p25 = prices[Math.floor(prices.length * 0.25)]
+    const p50 = prices[Math.floor(prices.length * 0.50)]
+    return { p25, p50 }
+  }, [allActiveListings])
 
   // ============================================================================
   // Return Pre-Calculated State and Handlers
@@ -1009,6 +1020,15 @@ export function useSearchPageLogic() {
     handleCloseInfoModal,
     handleOpenAIResearchModal,
     handleCloseAIResearchModal,
+
+    // Drawer State & Handlers
+    isDetailDrawerOpen,
+    detailDrawerListing,
+    handleOpenDetailDrawer,
+    handleCloseDetailDrawer,
+
+    // Price Percentiles (for drawer badges)
+    pricePercentiles,
 
     // Utility Functions (exported for consumers)
     transformListing
