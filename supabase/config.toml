@@ -634,3 +634,103 @@ enabled = true
 verify_jwt = false  # Review: Should this require authentication?
 import_map = "./functions/identity-verification-admin/deno.json"
 entrypoint = "./functions/identity-verification-admin/index.ts"
+
+# ============================================================================
+# PREVIOUSLY UNREGISTERED EDGE FUNCTIONS — Added 2026-02-11
+# ============================================================================
+
+# P1 — Payment/Revenue
+
+[functions.stripe-webhook]
+enabled = true
+verify_jwt = false  # Stripe signature verification, not JWT
+entrypoint = "./functions/stripe-webhook/index.ts"
+
+[functions.create-payment-intent]
+enabled = true
+verify_jwt = false  # Internal auth via Authorization header + getUser()
+entrypoint = "./functions/create-payment-intent/index.ts"
+
+[functions.process-date-change-fee]
+enabled = true
+verify_jwt = false  # Internal auth via Authorization header + getUser()
+entrypoint = "./functions/process-date-change-fee/index.ts"
+
+# P2 — Bidding System
+
+[functions.submit-bid]
+enabled = true
+verify_jwt = false  # Custom authenticateFromHeaders() helper
+import_map = "./functions/submit-bid/deno.json"
+entrypoint = "./functions/submit-bid/index.ts"
+
+[functions.set-auto-bid]
+enabled = true
+verify_jwt = false  # Custom authenticateFromHeaders() helper
+import_map = "./functions/set-auto-bid/deno.json"
+entrypoint = "./functions/set-auto-bid/index.ts"
+
+[functions.withdraw-bid]
+enabled = true
+verify_jwt = false  # Custom authenticateFromHeaders() helper
+import_map = "./functions/withdraw-bid/deno.json"
+entrypoint = "./functions/withdraw-bid/index.ts"
+
+# P3 — User-facing Features
+
+[functions.pricing-tiers]
+enabled = true
+verify_jwt = false  # Public actions (calculate, select), optional auth
+entrypoint = "./functions/pricing-tiers/index.ts"
+
+[functions.transaction-recommendations]
+enabled = true
+verify_jwt = false  # Internal auth via Authorization header
+entrypoint = "./functions/transaction-recommendations/index.ts"
+
+[functions.user-archetype]
+enabled = true
+verify_jwt = false  # GET public, POST/PUT require admin (checked internally)
+entrypoint = "./functions/user-archetype/index.ts"
+
+[functions.lease-documents]
+enabled = true
+verify_jwt = false  # All actions public, called by internal workflows
+entrypoint = "./functions/lease-documents/index.ts"
+
+[functions.urgency-pricing]
+enabled = true
+verify_jwt = false  # FP orchestration, most actions public
+import_map = "./functions/urgency-pricing/deno.json"
+entrypoint = "./functions/urgency-pricing/index.ts"
+
+# P4 — Admin/Background
+
+[functions.pricing-list-bulk]
+enabled = true
+verify_jwt = false  # Service role key, admin bulk operation
+entrypoint = "./functions/pricing-list-bulk/index.ts"
+
+[functions.calendar-automation]
+enabled = true
+verify_jwt = false  # FP orchestration, public actions skip auth
+import_map = "./functions/calendar-automation/deno.json"
+entrypoint = "./functions/calendar-automation/index.ts"
+
+[functions.archetype-recalculation-job]
+enabled = true
+verify_jwt = false  # Service role key or admin user role
+entrypoint = "./functions/archetype-recalculation-job/index.ts"
+
+[functions.date-change-reminder-cron]
+enabled = true
+verify_jwt = false  # Cron job, service role only
+import_map = "./functions/date-change-reminder-cron/deno.json"
+entrypoint = "./functions/date-change-reminder-cron/index.ts"
+
+# P5 — Migration Utility
+
+[functions.temp-fix-trigger]
+enabled = true
+verify_jwt = false  # One-time migration helper, no auth
+entrypoint = "./functions/temp-fix-trigger/index.ts"
