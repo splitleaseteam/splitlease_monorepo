@@ -14,7 +14,7 @@ export default function SearchOptimising({ listing }) {
     },
     {
       label: 'Listing Code',
-      value: listing['_id'] || listing['id'] || 'N/A',
+      value: listing['id'] || 'N/A',
       description: 'Unique identifier'
     },
     {

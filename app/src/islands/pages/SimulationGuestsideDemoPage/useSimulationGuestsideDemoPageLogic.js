@@ -354,7 +354,7 @@ export function useSimulationGuestsideDemoPageLogic() {
             'is_usability_test': true,
             'Created Date': new Date().toISOString()
           })
-          .select('_id')
+          .select('id')
           .single();
 
         if (vmError) {

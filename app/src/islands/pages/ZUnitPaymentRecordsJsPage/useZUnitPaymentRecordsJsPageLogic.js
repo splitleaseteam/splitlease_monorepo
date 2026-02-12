@@ -217,7 +217,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
             "Bank Transaction Number",
             "receipt_status"
           `)
-          .in('_id', guestPaymentIds)
+          .in('id', guestPaymentIds)
           .order('"Payment #"', { ascending: true });
 
         if (!error && data) {
@@ -246,17 +246,17 @@ export function useZUnitPaymentRecordsJsPageLogic() {
         const { data, error } = await supabase
           .from('paymentrecords')
           .select(`
-            _id,
+            id,
             "Payment #",
             "Scheduled Date",
             "Date payment received",
-            "ðŸ’°Rent",
-            "ðŸ’°Maintenance Fee",
-            "ðŸ’°Total",
+            "ðŸ'°Rent",
+            "ðŸ'°Maintenance Fee",
+            "ðŸ'°Total",
             "Bank Transaction Number",
             "receipt_status"
           `)
-          .in('_id', hostPaymentIds)
+          .in('id', hostPaymentIds)
           .order('"Payment #"', { ascending: true });
 
         if (!error && data) {

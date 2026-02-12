@@ -162,8 +162,8 @@ export async function loadProposalDetailsWorkflow({
     const { data: rulesData, error: rulesError } = await supabase
       .schema('reference_table')
       .from('zat_features_houserule')
-      .select('_id, Name, Icon')
-      .in('_id', houseRulesArray)
+      .select('id, Name, Icon')
+      .in('id', houseRulesArray)
 
     if (!rulesError && rulesData) {
       houseRules = rulesData
@@ -177,7 +177,7 @@ export async function loadProposalDetailsWorkflow({
     const { data: vmData, error: vmError } = await supabase
       .from('virtualmeetingschedulesandlinks')
       .select('*')
-      .eq('_id', virtualMeetingId)
+      .eq('id', virtualMeetingId)
       .single()
 
     if (!vmError && vmData) {

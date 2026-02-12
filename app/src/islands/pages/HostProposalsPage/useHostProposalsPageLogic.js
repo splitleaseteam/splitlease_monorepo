@@ -481,7 +481,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
                   "suggested dates and times",
                   "meeting link"
                 `)
-                .in('_id', vmIds)
+                .in('id', vmIds)
             : { data: null, error: null },
           proposalIds.length > 0 && hostUserId
             ? supabase

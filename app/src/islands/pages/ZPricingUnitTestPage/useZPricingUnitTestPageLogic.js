@@ -344,7 +344,7 @@ export function useZPricingUnitTestPageLogic() {
       const { data, error } = await supabase
         .from('pricing_list')
         .select('*')
-        .eq('_id', listing.pricing_list)
+        .eq('id', listing.pricing_list)
         .maybeSingle();
 
       if (error) throw error;

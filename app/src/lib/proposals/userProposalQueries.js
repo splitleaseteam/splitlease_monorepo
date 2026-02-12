@@ -285,8 +285,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     const { data: hoodsData, error: hoodError } = await supabase
       .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('_id, "Display"')
-      .in('_id', hoodIds);
+      .select('id, "Display"')
+      .in('id', hoodIds);
 
     if (!hoodError) {
       hoods = hoodsData || [];
@@ -300,8 +300,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     const { data: houseRulesData, error: houseRulesError } = await supabase
       .schema('reference_table')
       .from('zat_features_houserule')
-      .select('_id, "Name"')
-      .in('_id', allHouseRuleIds);
+      .select('id, "Name"')
+      .in('id', allHouseRuleIds);
 
     if (!houseRulesError) {
       houseRules = houseRulesData || [];
@@ -384,8 +384,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   if (rentalAppIds.length > 0) {
     const { data: rentalAppsData, error: rentalAppError } = await supabase
       .from('rentalapplication')
-      .select('_id, submitted, "percentage % done"')
-      .in('_id', rentalAppIds);
+      .select('id, submitted, "percentage % done"')
+      .in('id', rentalAppIds);
 
     if (rentalAppError) {
       console.error('fetchProposalsByIds: Error fetching rental applications:', rentalAppError);

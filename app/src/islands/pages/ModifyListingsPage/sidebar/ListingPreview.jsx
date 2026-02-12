@@ -6,7 +6,7 @@
  */
 
 export default function ListingPreview({ listing }) {
-  const listingId = listing['_id'] || listing['id'];
+  const listingId = listing['id'];
   const previewUrl = listingId ? `/preview-split-lease/${listingId}` : null;
   const viewUrl = listingId ? `/view-split-lease/${listingId}` : null;
 

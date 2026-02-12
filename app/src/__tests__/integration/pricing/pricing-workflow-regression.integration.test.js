@@ -600,7 +600,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
     it('should handle legacy listing data structure', async () => {
       // Simulate legacy Bubble.io data structure
       const legacyListing = {
-        '_id': 'legacy-123',
+        'id': 'legacy-123',
         'Nightly rate 1 night': null,
         'Nightly rate 2 nights': 100,
         'Nightly rate 3 nights': 95,
