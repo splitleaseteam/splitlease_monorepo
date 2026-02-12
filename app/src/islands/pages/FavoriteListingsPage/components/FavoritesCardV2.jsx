@@ -6,6 +6,7 @@
  */
 
 import { useState, useRef, useEffect, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useDeviceDetection } from '../../../../hooks/useDeviceDetection.js';
 
 /**
@@ -14,18 +15,42 @@ import { useDeviceDetection } from '../../../../hooks/useDeviceDetection.js';
  */
 const FavoriteButtonWithConfirm = ({ _listingId, _userId, onConfirmRemove }) => {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const popupRef = useRef(null);
   const buttonRef = useRef(null);
+
+  // Calculate popup position when showing
+  useEffect(() => {
+    if (showConfirm && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPopupPosition({
+        top: rect.bottom + 8,
+        left: rect.right - 200,
+      });
+    }
+  }, [showConfirm]);
 
   // Close popup when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (showConfirm && popupRef.current && !popupRef.current.contains(e.target) && !buttonRef.current.contains(e.target)) {
+      if (showConfirm && popupRef.current && !popupRef.current.contains(e.target) && !buttonRef.current?.contains(e.target)) {
         setShowConfirm(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showConfirm]);
+
+  // Close popup on Escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && showConfirm) {
+        setShowConfirm(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [showConfirm]);
 
   const handleButtonClick = (e) => {
@@ -73,15 +98,15 @@ const FavoriteButtonWithConfirm = ({ _listingId, _userId, onConfirmRemove }) => 
       transition: 'transform 0.2s',
     },
     popup: {
-      position: 'absolute',
-      top: '48px',
-      right: '0',
+      position: 'fixed',
+      top: popupPosition.top,
+      left: popupPosition.left,
       background: 'white',
       borderRadius: '12px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
       padding: '16px',
       minWidth: '200px',
-      zIndex: 100,
+      zIndex: 99999,
     },
     popupText: {
       fontSize: '14px',
@@ -126,6 +151,18 @@ const FavoriteButtonWithConfirm = ({ _listingId, _userId, onConfirmRemove }) => 
     },
   };
 
+  // Portal popup - renders directly to document.body to avoid overflow clipping
+  const popupContent = showConfirm ? createPortal(
+    <div ref={popupRef} style={styles.popup} role="dialog" aria-label="Confirm removal">
+      <div style={styles.popupText}>Remove from favorites?</div>
+      <div style={styles.popupButtons}>
+        <button style={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
+        <button style={styles.removeBtn} onClick={handleConfirm}>Remove</button>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
   return (
     <div style={styles.container}>
       <button
@@ -133,21 +170,14 @@ const FavoriteButtonWithConfirm = ({ _listingId, _userId, onConfirmRemove }) => 
         style={styles.button}
         onClick={handleButtonClick}
         aria-label="Remove from favorites"
+        aria-expanded={showConfirm}
+        aria-haspopup="dialog"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" strokeWidth="2">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </button>
-
-      {showConfirm && (
-        <div ref={popupRef} style={styles.popup}>
-          <div style={styles.popupText}>Remove from favorites?</div>
-          <div style={styles.popupButtons}>
-            <button style={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
-            <button style={styles.removeBtn} onClick={handleConfirm}>Remove</button>
-          </div>
-        </div>
-      )}
+      {popupContent}
     </div>
   );
 };
@@ -156,7 +186,6 @@ const FavoritesCardV2 = ({
   listing,
   onToggleFavorite,
   onOpenCreateProposalModal,
-  onPhotoClick,
   proposalForListing,
   viewMode = 'grid',
   userId
@@ -175,9 +204,7 @@ const FavoritesCardV2 = ({
   const { isMobile, isSmallMobile, isTouchDevice } = useDeviceDetection();
 
   const handleCardClick = () => {
-    if (onPhotoClick && photos.length > 0) {
-      onPhotoClick(listing, currentPhotoIndex);
-    }
+    window.location.href = `/listing?id=${listing.id}`;
   };
 
   const handleCreateProposal = (e) => {

@@ -1,9 +1,8 @@
 /**
  * Development-aware logging utility with configurable log levels
  *
- * Automatically gates log levels based on environment.
- * In production: only WARN and ERROR are logged
- * In development: DEBUG, INFO, WARN, and ERROR are logged
+ * Defaults to WARN/ERROR in all environments.
+ * Enable verbose logging with localStorage.debug='*' or set localStorage.logLevel.
  *
  * @example
  * import { logger } from '../../lib/logger.js';
@@ -22,12 +21,47 @@ const LOG_LEVEL = {
   NONE: 4
 };
 
-// Set via environment: production uses WARN level, development uses DEBUG level
-const currentLevel = import.meta.env.PROD ? LOG_LEVEL.WARN : LOG_LEVEL.DEBUG;
+const LEVEL_NAMES = {
+  debug: LOG_LEVEL.DEBUG,
+  info: LOG_LEVEL.INFO,
+  warn: LOG_LEVEL.WARN,
+  error: LOG_LEVEL.ERROR,
+  none: LOG_LEVEL.NONE
+};
+
+function readStorage(key) {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function getCurrentLevel() {
+  const debugFlag = readStorage('debug');
+  if (debugFlag && debugFlag.trim() === '*') {
+    return LOG_LEVEL.DEBUG;
+  }
+
+  const configuredLevel = readStorage('logLevel') || readStorage('sl:log-level');
+  if (configuredLevel) {
+    const normalized = configuredLevel.trim().toLowerCase();
+    if (LEVEL_NAMES[normalized] !== undefined) {
+      return LEVEL_NAMES[normalized];
+    }
+  }
+
+  // Default for both DEV and PROD: only WARN/ERROR.
+  return LOG_LEVEL.WARN;
+}
 
 export const logger = {
-  debug: (...args) => currentLevel <= LOG_LEVEL.DEBUG && console.log('[DEBUG]', ...args),
-  info: (...args) => currentLevel <= LOG_LEVEL.INFO && console.log('[INFO]', ...args),
-  warn: (...args) => currentLevel <= LOG_LEVEL.WARN && console.warn('[WARN]', ...args),
-  error: (...args) => currentLevel <= LOG_LEVEL.ERROR && console.error('[ERROR]', ...args)
+  debug: (...args) => getCurrentLevel() <= LOG_LEVEL.DEBUG && console.log('[DEBUG]', ...args),
+  info: (...args) => getCurrentLevel() <= LOG_LEVEL.INFO && console.log('[INFO]', ...args),
+  warn: (...args) => getCurrentLevel() <= LOG_LEVEL.WARN && console.warn('[WARN]', ...args),
+  error: (...args) => getCurrentLevel() <= LOG_LEVEL.ERROR && console.error('[ERROR]', ...args)
 };

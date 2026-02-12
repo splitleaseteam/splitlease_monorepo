@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { getSessionId } from '../../lib/auth/index.js';
 import { supabase } from '../../lib/supabase.js';
+import { logger } from '../../lib/logger.js';
 
 // ============================================================================
 // DAY NAME <-> INDEX CONVERSION UTILITIES (for DB persistence)
@@ -53,7 +54,7 @@ function parseDayNamesFromDB(rawData) {
         return parsed;
       }
     } catch (e) {
-      console.warn('📅 SearchScheduleSelector: Failed to parse day names string:', rawData, e);
+      logger.warn('📅 SearchScheduleSelector: Failed to parse day names string:', rawData, e);
     }
   }
 
@@ -378,19 +379,19 @@ const getInitialSelectionFromUrl = () => {
       const validDays = dayIndices.filter(d => d >= 0 && d <= 6); // Validate 0-based range
 
       if (validDays.length > 0) {
-        console.log('📅 SearchScheduleSelector: Loaded selection from URL:', {
+        logger.debug('📅 SearchScheduleSelector: Loaded selection from URL:', {
           urlParam: daysParam,
           dayIndices: validDays
         });
         return validDays;
       }
     } catch (e) {
-      console.warn('⚠️ Failed to parse days-selected URL parameter:', e);
+      logger.warn('⚠️ Failed to parse days-selected URL parameter:', e);
     }
   }
 
   // Default to Monday-Friday (0-based: [1,2,3,4,5])
-  console.log('📅 SearchScheduleSelector: Using default Monday-Friday selection');
+  logger.debug('📅 SearchScheduleSelector: Using default Monday-Friday selection');
   return [1, 2, 3, 4, 5];
 };
 
@@ -468,7 +469,7 @@ export default function SearchScheduleSelector({
 
     const loadUserDays = async () => {
       const sessionId = getSessionId();
-      console.log('📅 SearchScheduleSelector [persistence]: getSessionId() returned:', sessionId);
+      logger.debug('📅 SearchScheduleSelector [persistence]: getSessionId() returned:', sessionId);
       setUserId(sessionId);
 
       // Check if there's a days-selected URL parameter - prioritize it over DB
@@ -476,19 +477,19 @@ export default function SearchScheduleSelector({
       const daysFromUrl = urlParams.get('days-selected');
 
       if (daysFromUrl) {
-        console.log('📅 SearchScheduleSelector [persistence]: URL has days-selected parameter, prioritizing URL over DB:', daysFromUrl);
+        logger.debug('📅 SearchScheduleSelector [persistence]: URL has days-selected parameter, prioritizing URL over DB:', daysFromUrl);
         setIsLoadingFromDB(false);
         return;
       }
 
       if (!sessionId) {
-        console.log('📅 SearchScheduleSelector [persistence]: No session, using default behavior');
+        logger.debug('📅 SearchScheduleSelector [persistence]: No session, using default behavior');
         setIsLoadingFromDB(false);
         return;
       }
 
       try {
-        console.log('📅 SearchScheduleSelector [persistence]: Fetching user days for:', sessionId);
+        logger.debug('📅 SearchScheduleSelector [persistence]: Fetching user days for:', sessionId);
 
         const { data, error } = await supabase
           .from('user')
@@ -496,34 +497,34 @@ export default function SearchScheduleSelector({
           .eq('id', sessionId)
           .maybeSingle();
 
-        console.log('📅 SearchScheduleSelector [persistence]: Supabase response:', { data, error });
+        logger.debug('📅 SearchScheduleSelector [persistence]: Supabase response:', { data, error });
 
         if (error) {
-          console.error('📅 SearchScheduleSelector [persistence]: Supabase error:', error);
+          logger.error('📅 SearchScheduleSelector [persistence]: Supabase error:', error);
           setIsLoadingFromDB(false);
           return;
         }
 
         const recentDays = data?.['Recent Days Selected'];
-        console.log('📅 SearchScheduleSelector [persistence]: Recent Days Selected raw value:', recentDays);
+        logger.debug('📅 SearchScheduleSelector [persistence]: Recent Days Selected raw value:', recentDays);
 
         if (recentDays) {
           const indices = dayNamesToIndices(recentDays);
 
           if (indices && indices.length > 0) {
-            console.log('📅 SearchScheduleSelector [persistence]: Loaded user days:', {
+            logger.debug('📅 SearchScheduleSelector [persistence]: Loaded user days:', {
               fromDB: recentDays,
               asIndices: indices
             });
             setSelectedDays(new Set(indices));
           } else {
-            console.log('📅 SearchScheduleSelector [persistence]: No valid days in DB, using default');
+            logger.debug('📅 SearchScheduleSelector [persistence]: No valid days in DB, using default');
           }
         } else {
-          console.log('📅 SearchScheduleSelector [persistence]: No saved days in DB, using default');
+          logger.debug('📅 SearchScheduleSelector [persistence]: No saved days in DB, using default');
         }
       } catch (err) {
-        console.error('📅 SearchScheduleSelector [persistence]: Failed to load user days:', err);
+        logger.error('📅 SearchScheduleSelector [persistence]: Failed to load user days:', err);
       } finally {
         setIsLoadingFromDB(false);
         // Mark as loaded so subsequent changes will be saved
@@ -561,7 +562,7 @@ export default function SearchScheduleSelector({
       const dayNames = indicesToDayNames(dayIndices);
 
       try {
-        console.log('📅 SearchScheduleSelector [persistence]: Saving user days:', dayNames);
+        logger.debug('📅 SearchScheduleSelector [persistence]: Saving user days:', dayNames);
 
         const { error } = await supabase
           .from('user')
@@ -569,13 +570,13 @@ export default function SearchScheduleSelector({
           .eq('id', userId);
 
         if (error) {
-          console.error('📅 SearchScheduleSelector [persistence]: Failed to save:', error);
+          logger.error('📅 SearchScheduleSelector [persistence]: Failed to save:', error);
           return;
         }
 
-        console.log('📅 SearchScheduleSelector [persistence]: Saved successfully');
+        logger.debug('📅 SearchScheduleSelector [persistence]: Saved successfully');
       } catch (err) {
-        console.error('📅 SearchScheduleSelector [persistence]: Save error:', err);
+        logger.error('📅 SearchScheduleSelector [persistence]: Save error:', err);
       }
     }, debounceMs);
   }, [enablePersistence, userId, debounceMs]);
@@ -891,7 +892,7 @@ export default function SearchScheduleSelector({
    */
   useEffect(() => {
     if (!updateUrl) {
-      console.log('📅 SearchScheduleSelector: URL updates disabled');
+      logger.debug('📅 SearchScheduleSelector: URL updates disabled');
       return;
     }
 
@@ -906,7 +907,7 @@ export default function SearchScheduleSelector({
       url.searchParams.set('days-selected', daysParam);
       window.history.replaceState({}, '', url);
 
-      console.log('📅 SearchScheduleSelector: Updated URL parameter:', {
+      logger.debug('📅 SearchScheduleSelector: Updated URL parameter:', {
         dayIndices: selectedDaysArray,
         urlParam: daysParam
       });
@@ -919,7 +920,7 @@ export default function SearchScheduleSelector({
       url.searchParams.delete('days-selected');
       window.history.replaceState({}, '', url);
 
-      console.log('📅 SearchScheduleSelector: Removed URL parameter (no days selected)');
+      logger.debug('📅 SearchScheduleSelector: Removed URL parameter (no days selected)');
     }
   }, [selectedDays, updateUrl]);
 

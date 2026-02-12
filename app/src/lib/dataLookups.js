@@ -15,6 +15,7 @@
 
 import { supabase } from './supabase.js';
 import { DATABASE } from './constants.js';
+import { logger } from './logger.js';
 
 // ============================================================================
 // Cache Storage
@@ -63,28 +64,23 @@ export async function initializeLookups() {
     return; // Already initialized
   }
 
-  try {
-    // Fetch all in parallel for performance
-    await Promise.all([
-      initializeBoroughLookups(),
-      initializeNeighborhoodLookups(),
-      initializePropertyTypeLookups(),
-      initializeAmenityLookups(),
-      initializeSafetyLookups(),
-      initializeHouseRuleLookups(),
-      initializeParkingLookups(),
-      initializeCancellationPolicyLookups(),
-      initializeStorageLookups(),
-      initializeCancellationReasonLookups()
-    ]);
+  // Fetch all in parallel for performance.
+  // If any lookup fails, Promise.all rejects and this function throws.
+  await Promise.all([
+    initializeBoroughLookups(),
+    initializeNeighborhoodLookups(),
+    initializePropertyTypeLookups(),
+    initializeAmenityLookups(),
+    initializeSafetyLookups(),
+    initializeHouseRuleLookups(),
+    initializeParkingLookups(),
+    initializeCancellationPolicyLookups(),
+    initializeStorageLookups(),
+    initializeCancellationReasonLookups()
+  ]);
 
-    lookupCache.initialized = true;
-    console.log('Data lookups initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize data lookups:', error);
-    // Don't throw - allow app to continue with empty caches
-    // This follows "No Fallback Mechanisms" - we show "Unknown" instead
-  }
+  lookupCache.initialized = true;
+  logger.debug('Data lookups initialized successfully');
 }
 
 /**
@@ -92,23 +88,19 @@ export async function initializeLookups() {
  * @returns {Promise<void>}
  */
 async function initializeBoroughLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.BOROUGH)
-      .select('id, "Display Borough"');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.BOROUGH)
+    .select('id, "Display Borough"');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(borough => {
-        const name = borough['Display Borough'] || 'Unknown Borough';
-        lookupCache.boroughs.set(borough.id, name.trim());
-      });
-      console.log(`Cached ${lookupCache.boroughs.size} boroughs`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize borough lookups:', error);
+  if (data && Array.isArray(data)) {
+    data.forEach(borough => {
+      const name = borough['Display Borough'] || 'Unknown Borough';
+      lookupCache.boroughs.set(borough.id, name.trim());
+    });
+    logger.debug(`Cached ${lookupCache.boroughs.size} boroughs`);
   }
 }
 
@@ -119,28 +111,24 @@ async function initializeBoroughLookups() {
  * @returns {Promise<void>}
  */
 async function initializeNeighborhoodLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('id, Display, "Zips", "Geo-Borough"');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.NEIGHBORHOOD)
+    .select('id, Display, "Zips", "Geo-Borough"');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(neighborhood => {
-        const name = (neighborhood.Display || 'Unknown Neighborhood').trim();
-        lookupCache.neighborhoods.set(neighborhood.id, {
-          name,
-          description: null, // lazy-loaded via fetchNeighborhoodDescription()
-          zips: neighborhood.Zips || [],
-          borough: neighborhood['Geo-Borough'] || null
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(neighborhood => {
+      const name = (neighborhood.Display || 'Unknown Neighborhood').trim();
+      lookupCache.neighborhoods.set(neighborhood.id, {
+        name,
+        description: null, // lazy-loaded via fetchNeighborhoodDescription()
+        zips: neighborhood.Zips || [],
+        borough: neighborhood['Geo-Borough'] || null
       });
-      console.log(`Cached ${lookupCache.neighborhoods.size} neighborhoods (descriptions deferred)`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize neighborhood lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.neighborhoods.size} neighborhoods (descriptions deferred)`);
   }
 }
 
@@ -150,36 +138,24 @@ async function initializeNeighborhoodLookups() {
  * @returns {Promise<void>}
  */
 async function initializePropertyTypeLookups() {
-  try {
-    // IMPORTANT: Column name has trailing space: "Label "
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.LISTING_TYPE)
-      .select('id, "Label "')
-      .limit(100);
+  // IMPORTANT: Column name has trailing space: "Label "
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.LISTING_TYPE)
+    .select('id, "Label "')
+    .limit(100);
 
-    if (!error && data && Array.isArray(data)) {
-      data.forEach(type => {
-        // Access column with trailing space
-        const label = type['Label '];
-        if (label) {
-          lookupCache.propertyTypes.set(type.id, label.trim());
-        }
-      });
-      console.log(`Cached ${lookupCache.propertyTypes.size} property types from database`);
-    } else {
-      // Fall back to static mapping if table doesn't exist or query fails
-      Object.entries(PROPERTY_TYPE_MAP).forEach(([key, value]) => {
-        lookupCache.propertyTypes.set(key, value);
-      });
-      console.log('Using static property type mappings');
-    }
-  } catch (error) {
-    console.error('Failed to initialize property type lookups:', error);
-    // Use static mappings as last resort
-    Object.entries(PROPERTY_TYPE_MAP).forEach(([key, value]) => {
-      lookupCache.propertyTypes.set(key, value);
+  if (error) throw error;
+
+  if (data && Array.isArray(data)) {
+    data.forEach(type => {
+      // Access column with trailing space
+      const label = type['Label '];
+      if (label) {
+        lookupCache.propertyTypes.set(type.id, label.trim());
+      }
     });
+    logger.debug(`Cached ${lookupCache.propertyTypes.size} property types from database`);
   }
 }
 
@@ -188,25 +164,21 @@ async function initializePropertyTypeLookups() {
  * @returns {Promise<void>}
  */
 async function initializeAmenityLookups() {
-  try {
-    const { data, error } = await supabase
-      .from(DATABASE.TABLES.AMENITY)
-      .select('id, Name, Icon, "Type - Amenity Categories"');
+  const { data, error } = await supabase
+    .from(DATABASE.TABLES.AMENITY)
+    .select('id, Name, Icon, "Type - Amenity Categories"');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(amenity => {
-        lookupCache.amenities.set(amenity.id, {
-          name: amenity.Name || 'Unknown Amenity',
-          icon: amenity.Icon || '',
-          type: amenity['Type - Amenity Categories'] || ''
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(amenity => {
+      lookupCache.amenities.set(amenity.id, {
+        name: amenity.Name || 'Unknown Amenity',
+        icon: amenity.Icon || '',
+        type: amenity['Type - Amenity Categories'] || ''
       });
-      console.log(`Cached ${lookupCache.amenities.size} amenities`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize amenity lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.amenities.size} amenities`);
   }
 }
 
@@ -215,25 +187,21 @@ async function initializeAmenityLookups() {
  * @returns {Promise<void>}
  */
 async function initializeSafetyLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.SAFETY)
-      .select('id, Name, Icon');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.SAFETY)
+    .select('id, Name, Icon');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(safety => {
-        lookupCache.safety.set(safety.id, {
-          name: safety.Name || 'Unknown Safety Feature',
-          icon: safety.Icon || ''
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(safety => {
+      lookupCache.safety.set(safety.id, {
+        name: safety.Name || 'Unknown Safety Feature',
+        icon: safety.Icon || ''
       });
-      console.log(`Cached ${lookupCache.safety.size} safety features`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize safety lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.safety.size} safety features`);
   }
 }
 
@@ -242,25 +210,21 @@ async function initializeSafetyLookups() {
  * @returns {Promise<void>}
  */
 async function initializeHouseRuleLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.HOUSE_RULE)
-      .select('id, Name, Icon');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.HOUSE_RULE)
+    .select('id, Name, Icon');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(rule => {
-        lookupCache.houseRules.set(rule.id, {
-          name: rule.Name || 'Unknown Rule',
-          icon: rule.Icon || ''
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(rule => {
+      lookupCache.houseRules.set(rule.id, {
+        name: rule.Name || 'Unknown Rule',
+        icon: rule.Icon || ''
       });
-      console.log(`Cached ${lookupCache.houseRules.size} house rules`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize house rule lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.houseRules.size} house rules`);
   }
 }
 
@@ -269,24 +233,20 @@ async function initializeHouseRuleLookups() {
  * @returns {Promise<void>}
  */
 async function initializeParkingLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.PARKING)
-      .select('id, Label');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.PARKING)
+    .select('id, Label');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(parking => {
-        lookupCache.parking.set(parking.id, {
-          label: parking.Label || 'Unknown Parking'
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(parking => {
+      lookupCache.parking.set(parking.id, {
+        label: parking.Label || 'Unknown Parking'
       });
-      console.log(`Cached ${lookupCache.parking.size} parking options`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize parking lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.parking.size} parking options`);
   }
 }
 
@@ -295,28 +255,24 @@ async function initializeParkingLookups() {
  * @returns {Promise<void>}
  */
 async function initializeCancellationPolicyLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.CANCELLATION_POLICY)
-      .select('id, Display, "Best Case Text", "Medium Case Text", "Worst Case Text", "Summary Texts"');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.CANCELLATION_POLICY)
+    .select('id, Display, "Best Case Text", "Medium Case Text", "Worst Case Text", "Summary Texts"');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(policy => {
-        lookupCache.cancellationPolicies.set(policy.id, {
-          display: policy.Display || 'Unknown Policy',
-          bestCaseText: policy['Best Case Text'] || null,
-          mediumCaseText: policy['Medium Case Text'] || null,
-          worstCaseText: policy['Worst Case Text'] || null,
-          summaryTexts: policy['Summary Texts'] || null
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(policy => {
+      lookupCache.cancellationPolicies.set(policy.id, {
+        display: policy.Display || 'Unknown Policy',
+        bestCaseText: policy['Best Case Text'] || null,
+        mediumCaseText: policy['Medium Case Text'] || null,
+        worstCaseText: policy['Worst Case Text'] || null,
+        summaryTexts: policy['Summary Texts'] || null
       });
-      console.log(`Cached ${lookupCache.cancellationPolicies.size} cancellation policies`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize cancellation policy lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.cancellationPolicies.size} cancellation policies`);
   }
 }
 
@@ -325,25 +281,21 @@ async function initializeCancellationPolicyLookups() {
  * @returns {Promise<void>}
  */
 async function initializeStorageLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.STORAGE)
-      .select('id, Title, "Summary - Guest"');
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.STORAGE)
+    .select('id, Title, "Summary - Guest"');
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(storage => {
-        lookupCache.storage.set(storage.id, {
-          title: storage.Title || 'Unknown Storage',
-          summaryGuest: storage['Summary - Guest'] || ''
-        });
+  if (data && Array.isArray(data)) {
+    data.forEach(storage => {
+      lookupCache.storage.set(storage.id, {
+        title: storage.Title || 'Unknown Storage',
+        summaryGuest: storage['Summary - Guest'] || ''
       });
-      console.log(`Cached ${lookupCache.storage.size} storage options`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize storage lookups:', error);
+    });
+    logger.debug(`Cached ${lookupCache.storage.size} storage options`);
   }
 }
 
@@ -352,35 +304,31 @@ async function initializeStorageLookups() {
  * @returns {Promise<void>}
  */
 async function initializeCancellationReasonLookups() {
-  try {
-    const { data, error } = await supabase
-      .schema('reference_table')
-      .from(DATABASE.TABLES.CANCELLATION_REASON)
-      .select('id, user_type, reason, display_order')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
+  const { data, error } = await supabase
+    .schema('reference_table')
+    .from(DATABASE.TABLES.CANCELLATION_REASON)
+    .select('id, user_type, reason, display_order')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
 
-    if (error) throw error;
+  if (error) throw error;
 
-    if (data && Array.isArray(data)) {
-      data.forEach(item => {
-        const cacheData = {
-          id: item.id,
-          reason: item.reason,
-          displayOrder: item.display_order
-        };
+  if (data && Array.isArray(data)) {
+    data.forEach(item => {
+      const cacheData = {
+        id: item.id,
+        reason: item.reason,
+        displayOrder: item.display_order
+      };
 
-        if (item.user_type === 'guest') {
-          lookupCache.guestCancellationReasons.set(item.id, cacheData);
-        } else if (item.user_type === 'host') {
-          lookupCache.hostCancellationReasons.set(item.id, cacheData);
-        }
-      });
-      console.log(`Cached ${lookupCache.guestCancellationReasons.size} guest cancellation reasons`);
-      console.log(`Cached ${lookupCache.hostCancellationReasons.size} host rejection reasons`);
-    }
-  } catch (error) {
-    console.error('Failed to initialize cancellation reason lookups:', error);
+      if (item.user_type === 'guest') {
+        lookupCache.guestCancellationReasons.set(item.id, cacheData);
+      } else if (item.user_type === 'host') {
+        lookupCache.hostCancellationReasons.set(item.id, cacheData);
+      }
+    });
+    logger.debug(`Cached ${lookupCache.guestCancellationReasons.size} guest cancellation reasons`);
+    logger.debug(`Cached ${lookupCache.hostCancellationReasons.size} host rejection reasons`);
   }
 }
 
@@ -400,7 +348,7 @@ export function getNeighborhoodName(neighborhoodId) {
   if (hood) return hood.name;
 
   // Cache miss - return ID as fallback to show what's missing
-  console.warn(`Neighborhood ID not found in cache: ${neighborhoodId}`);
+  logger.warn(`Neighborhood ID not found in cache: ${neighborhoodId}`);
   return neighborhoodId; // Show ID so we can debug
 }
 
@@ -429,7 +377,7 @@ export function getBoroughName(boroughId) {
   if (name) return name;
 
   // Cache miss - return ID as fallback to show what's missing
-  console.warn(`Borough ID not found in cache: ${boroughId}`);
+  logger.warn(`Borough ID not found in cache: ${boroughId}`);
   return boroughId; // Show ID so we can debug
 }
 
@@ -455,7 +403,7 @@ export function getPropertyTypeLabel(propertyTypeId) {
   }
 
   // Return original value if no mapping found
-  console.warn(`Property type not found in cache: ${propertyTypeId}`);
+  logger.warn(`Property type not found in cache: ${propertyTypeId}`);
   return propertyTypeId;
 }
 
@@ -469,7 +417,7 @@ export function getAmenity(amenityId) {
 
   const amenity = lookupCache.amenities.get(amenityId);
   if (!amenity) {
-    console.warn(`Amenity ID not found in cache: ${amenityId}`);
+    logger.warn(`Amenity ID not found in cache: ${amenityId}`);
     return null;
   }
 
@@ -496,7 +444,7 @@ export function getSafetyFeature(safetyId) {
 
   const safety = lookupCache.safety.get(safetyId);
   if (!safety) {
-    console.warn(`Safety feature ID not found in cache: ${safetyId}`);
+    logger.warn(`Safety feature ID not found in cache: ${safetyId}`);
     return null;
   }
 
@@ -523,7 +471,7 @@ export function getHouseRule(ruleId) {
 
   const rule = lookupCache.houseRules.get(ruleId);
   if (!rule) {
-    console.warn(`House rule ID not found in cache: ${ruleId}`);
+    logger.warn(`House rule ID not found in cache: ${ruleId}`);
     return null;
   }
 
@@ -550,7 +498,7 @@ export function getParkingOption(parkingId) {
 
   const parking = lookupCache.parking.get(parkingId);
   if (!parking) {
-    console.warn(`Parking option ID not found in cache: ${parkingId}`);
+    logger.warn(`Parking option ID not found in cache: ${parkingId}`);
     return null;
   }
 
@@ -567,7 +515,7 @@ export function getCancellationPolicy(policyId) {
 
   const policy = lookupCache.cancellationPolicies.get(policyId);
   if (!policy) {
-    console.warn(`Cancellation policy ID not found in cache: ${policyId}`);
+    logger.warn(`Cancellation policy ID not found in cache: ${policyId}`);
     return null;
   }
 
@@ -627,7 +575,7 @@ export function getStorageOption(storageId) {
 
   const storage = lookupCache.storage.get(storageId);
   if (!storage) {
-    console.warn(`Storage option ID not found in cache: ${storageId}`);
+    logger.warn(`Storage option ID not found in cache: ${storageId}`);
     return null;
   }
 
@@ -704,7 +652,7 @@ export async function fetchNeighborhoodDescription(neighborhoodId) {
 
     return description;
   } catch (error) {
-    console.error(`Failed to fetch neighborhood description ${neighborhoodId}:`, error);
+    logger.error(`Failed to fetch neighborhood description ${neighborhoodId}:`, error);
     return '';
   }
 }
@@ -742,7 +690,7 @@ export async function fetchNeighborhoodName(neighborhoodId) {
     });
     return name;
   } catch (error) {
-    console.error(`Failed to fetch neighborhood ${neighborhoodId}:`, error);
+    logger.error(`Failed to fetch neighborhood ${neighborhoodId}:`, error);
     return 'Unknown Neighborhood';
   }
 }
@@ -775,7 +723,7 @@ export async function fetchBoroughName(boroughId) {
     lookupCache.boroughs.set(boroughId, name);
     return name;
   } catch (error) {
-    console.error(`Failed to fetch borough ${boroughId}:`, error);
+    logger.error(`Failed to fetch borough ${boroughId}:`, error);
     return 'Unknown Borough';
   }
 }

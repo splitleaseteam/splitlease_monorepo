@@ -594,9 +594,9 @@ const FavoritesCardV3 = ({
         <div style={styles.amenitiesRow}>
           <span style={styles.amenityTag}>{listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} BR`}</span>
           <span style={styles.amenityTag}>{listing.maxGuests} guests</span>
-          <span style={styles.amenityTag}>WiFi</span>
-          <span style={styles.amenityTag}>Kitchen</span>
-          <span style={styles.amenityTag}>A/C</span>
+          {listing.amenities?.slice(0, 3).map((amenity, idx) => (
+            <span key={idx} style={styles.amenityTag}>{amenity.name}</span>
+          ))}
         </div>
 
         {/* AI SUMMARY - Hidden for now */}

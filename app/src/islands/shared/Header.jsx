@@ -11,6 +11,7 @@ import { useGuestMenuData, getGuestMenuConfig } from './Header/useGuestMenuData.
 import SuggestedProposalPopup from './SuggestedProposals/SuggestedProposalPopup.jsx';
 import HeaderSuggestedProposalTrigger from './SuggestedProposals/HeaderSuggestedProposalTrigger.jsx';
 import { fetchPendingConfirmationCount, fetchPendingConfirmationProposals, markProposalInterested, dismissProposal } from './SuggestedProposals/suggestedProposalService.js';
+import { logger } from '../../lib/logger.js';
 
 export default function Header({ autoShowLogin = false }) {
   const [mobileMenuActive, setMobileMenuActive] = useState(false);
@@ -89,28 +90,28 @@ export default function Header({ autoShowLogin = false }) {
         // This handles the race condition where getSession() returns null but
         // INITIAL_SESSION fires shortly after with a valid session
         if (!hasSupabaseSession) {
-          console.log('[Header] No immediate Supabase session, waiting briefly for initialization...');
+          logger.debug('[Header] No immediate Supabase session, waiting briefly for initialization...');
           await new Promise(resolve => setTimeout(resolve, 200));
           const { data: retryData } = await supabase.auth.getSession();
           session = retryData?.session;
           hasSupabaseSession = !!session;
           if (hasSupabaseSession) {
-            console.log('[Header] ✅ Found Supabase session after brief wait');
+            logger.debug('[Header] ✅ Found Supabase session after brief wait');
           }
         }
       } catch (err) {
-        console.log('[Header] Error checking Supabase session:', err.message);
+        logger.debug('[Header] Error checking Supabase session:', err.message);
       }
 
       // If no auth at all, ensure we show logged-out state
       if (!token && !hasSupabaseSession && !hasCachedAuth) {
-        console.log('[Header] No auth state - confirming logged-out UI');
+        logger.debug('[Header] No auth state - confirming logged-out UI');
         setAuthChecked(true);
         setCurrentUser(null);
         return;
       }
 
-      console.log(`[Header] Auth found (legacy token: ${!!token}, Supabase session: ${hasSupabaseSession}, cached auth: ${hasCachedAuth}) - validating...`);
+      logger.debug(`[Header] Auth found (legacy token: ${!!token}, Supabase session: ${hasSupabaseSession}, cached auth: ${hasCachedAuth}) - validating...`);
 
       // Validate token and get fresh user data
       // CRITICAL: Use clearOnFailure: false to preserve valid Supabase sessions
@@ -122,15 +123,15 @@ export default function Header({ autoShowLogin = false }) {
           // Token is valid - update with real user data
           setCurrentUser(userData);
           setUserType(getStoredUserType());
-          console.log('[Header] Background validation successful:', userData.firstName);
+          logger.debug('[Header] Background validation successful:', userData.firstName);
         } else {
           // Validation failed but session may still be valid
           // Only clear UI state, not the underlying session
-          console.log('[Header] Background validation returned no user data');
+          logger.debug('[Header] Background validation returned no user data');
 
           // If we have a Supabase session, keep trying - don't give up
           if (hasSupabaseSession) {
-            console.log('[Header] Supabase session exists - preserving auth state');
+            logger.debug('[Header] Supabase session exists - preserving auth state');
             // Set basic user info from session if available
             if (session?.user) {
               const bubbleUserId = session.user.user_metadata?.user_id || getUserId() || session.user.id;
@@ -143,7 +144,7 @@ export default function Header({ autoShowLogin = false }) {
             }
           } else {
             setCurrentUser(null);
-            console.log('[Header] Background validation failed - clearing auth UI');
+            logger.debug('[Header] Background validation failed - clearing auth UI');
 
             // If on a protected page and token validation failed:
             // - If autoShowLogin is true, show the modal (don't redirect)
@@ -155,19 +156,19 @@ export default function Header({ autoShowLogin = false }) {
               // Check if there's an auth error in URL - if so, let the page handle it
               const authError = checkUrlForAuthError();
               if (authError) {
-                console.log('⚠️ Auth error present in URL, not redirecting to prevent loop');
+                logger.debug('⚠️ Auth error present in URL, not redirecting to prevent loop');
                 // Let the page component handle the error display
               } else {
-                console.log('⚠️ Invalid token on protected page - redirecting to home');
+                logger.debug('⚠️ Invalid token on protected page - redirecting to home');
                 window.location.replace('/');
               }
             } else if (isProtectedPage() && autoShowLogin) {
-              console.log('⚠️ Invalid token on protected page - auth modal will be shown');
+              logger.debug('⚠️ Invalid token on protected page - auth modal will be shown');
             }
           }
         }
       } catch (error) {
-        console.error('Auth validation error:', error);
+        logger.error('Auth validation error:', error);
         // Don't clear user if we have a session - just log the error
         if (!hasSupabaseSession) {
           setCurrentUser(null);
@@ -192,12 +193,12 @@ export default function Header({ autoShowLogin = false }) {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Header] Auth state changed:', event);
+      logger.debug('[Header] Auth state changed:', event);
 
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
         // Prevent duplicate handling - only process the first sign-in event
         if (signInHandledRef.current) {
-          console.log('[Header] Sign-in already handled, skipping duplicate event:', event);
+          logger.debug('[Header] Sign-in already handled, skipping duplicate event:', event);
           return;
         }
         signInHandledRef.current = true;
@@ -206,10 +207,10 @@ export default function Header({ autoShowLogin = false }) {
         // CRITICAL: Use setTimeout to defer the async work and avoid deadlock with setSession()
         // If we await validateTokenAndFetchUser() synchronously, it calls getSession() which
         // can't complete until setSession() finishes, but setSession() waits for this listener
-        console.log('[Header] User signed in, deferring UI update to avoid deadlock...');
+        logger.debug('[Header] User signed in, deferring UI update to avoid deadlock...');
         setTimeout(async () => {
           try {
-            console.log('[Header] Now updating UI...');
+            logger.debug('[Header] Now updating UI...');
             // CRITICAL: Use clearOnFailure: false to preserve the valid Supabase session
             // even if user profile fetch fails (network error, user not in DB, etc.)
             const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
@@ -217,10 +218,10 @@ export default function Header({ autoShowLogin = false }) {
               setCurrentUser(userData);
               setUserType(getStoredUserType());
               setAuthChecked(true);
-              console.log('[Header] UI updated for:', userData.firstName);
+              logger.debug('[Header] UI updated for:', userData.firstName);
             } else {
               // Validation failed but we have a valid session - set basic info from session
-              console.log('[Header] User profile fetch failed, using session data');
+              logger.debug('[Header] User profile fetch failed, using session data');
               if (session?.user) {
                 setCurrentUser({
                   firstName: session.user.user_metadata?.first_name || session.user.email?.split('@')[0] || 'User',
@@ -231,7 +232,7 @@ export default function Header({ autoShowLogin = false }) {
               }
             }
           } catch (error) {
-            console.error('[Header] Error updating user data after sign in:', error);
+            logger.error('[Header] Error updating user data after sign in:', error);
           }
         }, 0);
       } else if (event === 'SIGNED_OUT') {
@@ -239,7 +240,7 @@ export default function Header({ autoShowLogin = false }) {
         signInHandledRef.current = false;
         // User signed out - trigger page reload/redirect
         // Don't just clear state - the component tree change would interrupt the logout flow
-        console.log('[Header] User signed out, reloading page...');
+        logger.debug('[Header] User signed out, reloading page...');
         if (isProtectedPage()) {
           window.location.href = '/';
         } else {
@@ -259,17 +260,17 @@ export default function Header({ autoShowLogin = false }) {
     const handleOAuthSuccess = (event) => {
       // OAuth login succeeded - Header's onAuthStateChange will update UI
       // No toast needed here as the page will update automatically
-      console.log('[Header] OAuth login success:', event.detail);
+      logger.debug('[Header] OAuth login success:', event.detail);
     };
 
     const handleOAuthError = (event) => {
-      console.log('[Header] OAuth login error:', event.detail.error);
+      logger.debug('[Header] OAuth login error:', event.detail.error);
       // Could show error toast here if needed, but typically the user
       // will see the modal with error state
     };
 
     const handleUserNotFound = (event) => {
-      console.log('[Header] OAuth user not found:', event.detail.email);
+      logger.debug('[Header] OAuth user not found:', event.detail.email);
       // Open signup modal with email prefilled
       setPrefillEmail(event.detail.email);
       setAuthModalInitialView('signup');
@@ -430,7 +431,7 @@ export default function Header({ autoShowLogin = false }) {
 
   // Handle successful authentication
   const handleAuthSuccess = (result) => {
-    console.log('✅ Authentication successful:', result);
+    logger.debug('✅ Authentication successful:', result);
     // The modal will handle the reload
   };
 
@@ -446,23 +447,23 @@ export default function Header({ autoShowLogin = false }) {
 
   // Handle logout
   const handleLogout = async () => {
-    console.log('🔓 Logging out...');
+    logger.debug('🔓 Logging out...');
 
     // Call logout API
     const result = await logoutUser();
 
     if (result.success) {
-      console.log('✅ Logout successful');
+      logger.debug('✅ Logout successful');
       // If on a protected page, redirect to home instead of reloading
       if (isProtectedPage()) {
-        console.log('📍 On protected page - redirecting to home');
+        logger.debug('📍 On protected page - redirecting to home');
         window.location.href = '/';
       } else {
-        console.log('📍 On public page - reloading');
+        logger.debug('📍 On public page - reloading');
         window.location.reload();
       }
     } else {
-      console.error('❌ Logout failed:', result.error);
+      logger.error('❌ Logout failed:', result.error);
     }
   };
 

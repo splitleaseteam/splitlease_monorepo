@@ -38,6 +38,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
+import { logger } from '../../../lib/logger.js';
 
 /**
  * Proposal statuses that indicate a proposal was suggested by Split Lease
@@ -132,7 +133,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         return;
       }
 
-      console.log('[useLoggedInAvatarData] Fetching data for user:', userId);
+      logger.debug('[useLoggedInAvatarData] Fetching data for user:', userId);
 
       // Fetch all data in parallel for performance
       const [
@@ -177,7 +178,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
           .then(result => {
             // If table doesn't exist or query fails, return count = 0
             if (result.error) {
-              console.warn('[useLoggedInAvatarData] virtualmeetingschedulesandlinks table query failed (table may not exist):', result.error.message);
+              logger.warn('[useLoggedInAvatarData] virtualmeetingschedulesandlinks table query failed (table may not exist):', result.error.message);
               return { count: 0, error: null }; // Override error with safe default
             }
             return result;
@@ -255,7 +256,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       // Process user data
       const userData = userResult.data;
       if (userResult.error) {
-        console.error('[useLoggedInAvatarData] Error fetching user:', userResult.error);
+        logger.error('[useLoggedInAvatarData] Error fetching user:', userResult.error);
       }
 
       // Get normalized user type
@@ -269,10 +270,10 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user?.user_metadata?.user_type) {
             rawUserType = session.user.user_metadata.user_type;
-            console.log('[useLoggedInAvatarData] Got user type from Supabase Auth metadata:', rawUserType);
+            logger.debug('[useLoggedInAvatarData] Got user type from Supabase Auth metadata:', rawUserType);
           }
         } catch (err) {
-          console.log('[useLoggedInAvatarData] Could not get Supabase Auth session:', err.message);
+          logger.debug('[useLoggedInAvatarData] Could not get Supabase Auth session:', err.message);
         }
       }
 
@@ -284,11 +285,11 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       } else if (fallbackUserType && Object.values(NORMALIZED_USER_TYPES).includes(fallbackUserType)) {
         // Fallback is already normalized, use it directly
         normalizedType = fallbackUserType;
-        console.log('[useLoggedInAvatarData] Using fallback user type from props:', fallbackUserType);
+        logger.debug('[useLoggedInAvatarData] Using fallback user type from props:', fallbackUserType);
       } else {
         // Last resort: default to GUEST
         normalizedType = NORMALIZED_USER_TYPES.GUEST;
-        console.warn('[useLoggedInAvatarData] No user type found, defaulting to GUEST');
+        logger.warn('[useLoggedInAvatarData] No user type found, defaulting to GUEST');
       }
 
       // Get proposals count based on user type
@@ -304,16 +305,16 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         : hostProposalsCount;
 
       if (guestProposalsResult.error) {
-        console.warn('[useLoggedInAvatarData] Guest proposals count failed:', guestProposalsResult.error);
+        logger.warn('[useLoggedInAvatarData] Guest proposals count failed:', guestProposalsResult.error);
       }
       if (hostProposalsResult.error) {
-        console.warn('[useLoggedInAvatarData] Host proposals count failed:', hostProposalsResult.error);
+        logger.warn('[useLoggedInAvatarData] Host proposals count failed:', hostProposalsResult.error);
       }
 
       // Get favorites count from junction tables RPC (still used for favorites)
       const junctionCounts = junctionCountsResult.data?.[0] || {};
       if (junctionCountsResult.error) {
-        console.warn('[useLoggedInAvatarData] Junction counts RPC failed:', junctionCountsResult.error);
+        logger.warn('[useLoggedInAvatarData] Junction counts RPC failed:', junctionCountsResult.error);
       }
 
       // Get favorites count from junction tables RPC (favorites now stored on listing table)
@@ -332,13 +333,13 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       // The RPC returns results from the listing table
       const rawListings = listingsResult.data || [];
       if (listingsResult.error) {
-        console.warn('[useLoggedInAvatarData] Listings query error:', listingsResult.error);
+        logger.warn('[useLoggedInAvatarData] Listings query error:', listingsResult.error);
       }
       const uniqueListingIds = [...new Set(rawListings.map(l => l.id))];
       const listingsCount = uniqueListingIds.length;
       const firstListingId = listingsCount === 1 ? rawListings[0]?.id : null;
-      console.log('[useLoggedInAvatarData] Listings count:', listingsCount, 'raw:', rawListings.length);
-      console.log('[useLoggedInAvatarData] Proposals counts:', {
+      logger.debug('[useLoggedInAvatarData] Listings count:', listingsCount, 'raw:', rawListings.length);
+      logger.debug('[useLoggedInAvatarData] Proposals counts:', {
         userType: normalizedType,
         guestProposals: guestProposalsCount,
         hostProposals: hostProposalsCount,
@@ -346,7 +347,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       });
 
       // DEBUG: Log unread messages result to diagnose notification issue
-      console.log('[useLoggedInAvatarData] Unread messages result:', {
+      logger.debug('[useLoggedInAvatarData] Unread messages result:', {
         count: messagesResult.count,
         error: messagesResult.error,
         userId: userId
@@ -354,7 +355,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
       // DEBUG: Log threads result to diagnose messaging icon visibility
       // Note: RPC returns { data: <integer>, error } not { count, error }
-      console.log('🧵 [useLoggedInAvatarData] Threads RPC result:', {
+      logger.debug('🧵 [useLoggedInAvatarData] Threads RPC result:', {
         rawData: threadsResult.data,
         dataType: typeof threadsResult.data,
         error: threadsResult.error,
@@ -362,7 +363,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         userId: userId
       });
       if (threadsResult.error) {
-        console.error('❌ [useLoggedInAvatarData] Error fetching threads:', threadsResult.error);
+        logger.error('❌ [useLoggedInAvatarData] Error fetching threads:', threadsResult.error);
       }
 
       // Process suggested proposals - extract count and most recent ID
@@ -371,14 +372,14 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
       const lastSuggestedProposalId = suggestedProposals.length > 0 ? suggestedProposals[0].id : null;
 
       if (suggestedProposalsResult.error) {
-        console.warn('[useLoggedInAvatarData] Suggested proposals query failed:', suggestedProposalsResult.error);
+        logger.warn('[useLoggedInAvatarData] Suggested proposals query failed:', suggestedProposalsResult.error);
       }
 
       // Log pending proposals result for hosts
       if (pendingProposalsResult.error) {
-        console.warn('[useLoggedInAvatarData] Pending proposals count failed:', pendingProposalsResult.error);
+        logger.warn('[useLoggedInAvatarData] Pending proposals count failed:', pendingProposalsResult.error);
       } else {
-        console.log('[useLoggedInAvatarData] Pending proposals count:', pendingProposalsResult.count);
+        logger.debug('[useLoggedInAvatarData] Pending proposals count:', pendingProposalsResult.count);
       }
 
       const newData = {
@@ -398,7 +399,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         pendingProposalThreadsCount: pendingProposalsResult.count || 0  // Count of pending proposals for host notification
       };
 
-      console.log('[useLoggedInAvatarData] Data fetched:', newData);
+      logger.debug('[useLoggedInAvatarData] Data fetched:', newData);
       setData(newData);
     },
     { initialData: null }
@@ -406,7 +407,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
 
   useEffect(() => {
     if (error) {
-      console.error('[useLoggedInAvatarData] Error:', error);
+      logger.error('[useLoggedInAvatarData] Error:', error);
     }
   }, [error]);
 
@@ -433,7 +434,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
     if (!error && count !== null) {
       setData(prev => {
         if (prev.unreadMessagesCount !== count) {
-          console.log('[useLoggedInAvatarData] Unread count updated:', prev.unreadMessagesCount, '->', count);
+          logger.debug('[useLoggedInAvatarData] Unread count updated:', prev.unreadMessagesCount, '->', count);
           return { ...prev, unreadMessagesCount: count };
         }
         return prev;
@@ -448,7 +449,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
   useEffect(() => {
     if (!userId) return;
 
-    console.log('[useLoggedInAvatarData] Setting up realtime subscription for messages');
+    logger.debug('[useLoggedInAvatarData] Setting up realtime subscription for messages');
 
     // Subscribe to thread_message table changes
     const channel = supabase
@@ -461,18 +462,18 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
           table: 'thread_message',
         },
         (payload) => {
-          console.log('[useLoggedInAvatarData] Message change detected:', payload.eventType);
+          logger.debug('[useLoggedInAvatarData] Message change detected:', payload.eventType);
           // Re-fetch unread count on any message change
           // This handles: new messages, messages marked as read, messages deleted
           refetchUnreadCount();
         }
       )
       .subscribe((status) => {
-        console.log('[useLoggedInAvatarData] Realtime subscription status:', status);
+        logger.debug('[useLoggedInAvatarData] Realtime subscription status:', status);
       });
 
     return () => {
-      console.log('[useLoggedInAvatarData] Cleaning up realtime subscription');
+      logger.debug('[useLoggedInAvatarData] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [userId, refetchUnreadCount]);

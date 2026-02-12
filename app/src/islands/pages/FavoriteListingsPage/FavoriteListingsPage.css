@@ -8,26 +8,20 @@
 @import '../../../styles/components/toast.css';
 
 /* ============================================
-   HIDE SCROLLBARS (page-wide)
+   HIDE SCROLLBARS (Scoped to Favorites Page)
    Keep content scrollable but hide visual scrollbars
    ============================================ */
-html,
-body {
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* IE/Edge */
+.favorites-page,
+.favorites-page * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar,
-*::-webkit-scrollbar {
-  display: none !important; /* Chrome, Safari, Opera */
-  width: 0 !important;
-  height: 0 !important;
-}
-
-* {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+.favorites-page::-webkit-scrollbar,
+.favorites-page *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* ============================================
@@ -199,8 +193,8 @@ body::-webkit-scrollbar,
   width: 380px;
   flex-shrink: 0;
   /* Sticky disabled for debugging - uncomment when alignment is fixed */
-  /* position: sticky; */
-  /* top: 152px; */
+  position: sticky;
+  top: 152px;
   height: calc(100vh - 200px);
   background: white;
   border-radius: 20px; /* V6: --radius-xl */

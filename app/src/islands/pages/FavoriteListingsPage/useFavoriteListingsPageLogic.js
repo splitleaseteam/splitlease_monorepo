@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
-import { getFavoritedListingIds } from './favoritesApi';
+import { getFavoritedListingIds, removeFromFavorites } from './favoritesApi';
 
 import { checkAuthStatus, validateTokenAndFetchUser, getSessionId } from '../../../lib/auth/tokenValidation.js';
 import { logoutUser } from '../../../lib/auth/logout.js';
@@ -27,6 +27,7 @@ import { shiftMoveInDateIfPast } from '../../../logic/calculators/scheduling/shi
 import { calculateCheckInOutDays } from '../../../logic/processors/scheduling/calculateCheckInOutDays.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { isHost } from '../../../logic/rules/users/isHost.js';
+import { adaptPricingListFromSupabase } from '../../../logic/processors/pricingList/adaptPricingListFromSupabase.ts';
 
 /**
  * Fetch informational texts from Supabase
@@ -146,7 +147,7 @@ export function useFavoriteListingsPageLogic() {
   }, []);
 
   // Transform raw listing data to match SearchPage format
-  const transformListing = useCallback((dbListing, images, hostData) => {
+  const transformListing = useCallback((dbListing, images, hostData, pricingList) => {
     const neighborhoodName = getNeighborhoodName(dbListing.primary_neighborhood_reference_id);
     const boroughName = getBoroughName(dbListing.borough);
     const propertyType = getPropertyTypeLabel(dbListing.space_type);
@@ -187,10 +188,10 @@ export function useFavoriteListingsPageLogic() {
       borough: boroughName || '',
       coordinates,
       price: {
-        starting: dbListing['Standarized Minimum Nightly Price (Filter)'] || 0,
+        starting: dbListing.standardized_min_nightly_price_for_search_filter || 0,
         full: dbListing.nightly_rate_for_7_night_stay || 0
       },
-      'Starting nightly price': dbListing['Standarized Minimum Nightly Price (Filter)'] || 0,
+      'Starting nightly price': dbListing.standardized_min_nightly_price_for_search_filter || 0,
       'Price 2 nights selected': dbListing.nightly_rate_for_2_night_stay || null,
       'Price 3 nights selected': dbListing.nightly_rate_for_3_night_stay || null,
       'Price 4 nights selected': dbListing.nightly_rate_for_4_night_stay || null,
@@ -208,6 +209,11 @@ export function useFavoriteListingsPageLogic() {
       description: `${(dbListing.bedroom_count || 0) === 0 ? 'Studio' : `${dbListing.bedroom_count} bedroom`} • ${dbListing.bathroom_count || 0} bathroom`,
       weeks_offered: dbListing.weeks_offered_schedule_text || 'Every week',
       isNew: false,
+
+      // Pricing pipeline fields for getListingDisplayPrice fallback chain
+      pricingList: pricingList || null,
+      lowest_nightly_price_for_map_display: dbListing.lowest_nightly_price_for_map_display,
+      standardized_min_nightly_price_for_search_filter: dbListing.standardized_min_nightly_price_for_search_filter,
 
       // Pricing fields for CreateProposalFlowV2 / DaysSelectionSection
       'nightly_rate_2_nights': dbListing.nightly_rate_for_2_night_stay,
@@ -295,6 +301,12 @@ export function useFavoriteListingsPageLogic() {
         setIsLoggedIn(true);
         setUserId(authUserId);
         setCurrentUser(authenticatedUser);
+
+        // Ensure lookups are ready before transforming listings.
+        // Prevents raw UUIDs from showing for neighborhood/borough names.
+        if (!isInitialized()) {
+          await initializeLookups();
+        }
 
         // Fetch user profile + counts from junction tables (Phase 5b migration)
         try {
@@ -418,11 +430,34 @@ export function useFavoriteListingsPageLogic() {
 
         const hostMap = await fetchHostData(Array.from(hostIds));
 
+        // Batch fetch pricing lists
+        const pricingConfigIds = new Set();
+        listingsData.forEach(listing => {
+          if (listing.pricing_configuration_id) {
+            pricingConfigIds.add(listing.pricing_configuration_id);
+          }
+        });
+
+        let pricingMap = {};
+        if (pricingConfigIds.size > 0) {
+          const { data: pricingData } = await supabase
+            .from('pricing_list')
+            .select('*')
+            .in('id', Array.from(pricingConfigIds));
+
+          if (pricingData) {
+            pricingData.forEach(pl => {
+              pricingMap[pl.id] = adaptPricingListFromSupabase(pl);
+            });
+          }
+        }
+
         // Transform listings
         const transformedListings = listingsData
           .map(listing => {
             const hostId = listing.host_user_id;
-            return transformListing(listing, resolvedPhotos[listing.id], hostMap[hostId] || null);
+            const pricingList = pricingMap[listing.pricing_configuration_id] || null;
+            return transformListing(listing, resolvedPhotos[listing.id], hostMap[hostId] || null, pricingList);
           })
           .filter(listing => listing.coordinates && listing.coordinates.lat && listing.coordinates.lng)
           .filter(listing => listing.images && listing.images.length > 0);
@@ -473,14 +508,54 @@ export function useFavoriteListingsPageLogic() {
     }, 3000);
   };
 
-  // Toggle favorite - called after FavoriteButton handles the API call
-  const handleToggleFavorite = (listingId, listingTitle, newState) => {
+  // Toggle favorite for this page (supports optimistic unfavorite with rollback on API failure)
+  const handleToggleFavorite = async (listingId, listingTitle, newState) => {
     const displayName = listingTitle || 'Listing';
 
     // If unfavorited (newState = false), remove from listings display
     if (!newState) {
+      if (!userId) {
+        showToast('Please log in to manage favorites.', 'error');
+        return;
+      }
+
+      const removedIndex = listings.findIndex(l => l.id === listingId);
+      const removedListing = removedIndex >= 0 ? listings[removedIndex] : null;
+
+      // Optimistic UI update
       setListings(prev => prev.filter(l => l.id !== listingId));
-      showToast(`${displayName} removed from favorites`, 'info');
+      setFavoritedListingIds(prev => {
+        const next = new Set(prev);
+        next.delete(listingId);
+        return next;
+      });
+
+      try {
+        await removeFromFavorites(userId, listingId);
+        showToast(`${displayName} removed from favorites`, 'info');
+      } catch (removeError) {
+        console.error('[FavoriteListingsPage] Failed to remove favorite:', removeError);
+
+        // Roll back optimistic update if persistence fails
+        if (removedListing) {
+          setListings(prev => {
+            if (prev.some(l => l.id === removedListing.id)) {
+              return prev;
+            }
+            const next = [...prev];
+            const insertIndex = removedIndex >= 0 && removedIndex <= next.length ? removedIndex : 0;
+            next.splice(insertIndex, 0, removedListing);
+            return next;
+          });
+        }
+        setFavoritedListingIds(prev => {
+          const next = new Set(prev);
+          next.add(listingId);
+          return next;
+        });
+
+        showToast('Could not remove from favorites. Please try again.', 'error');
+      }
     } else {
       showToast(`${displayName} added to favorites`, 'success');
     }
@@ -769,10 +844,10 @@ export function useFavoriteListingsPageLogic() {
   // Determine if "Message" button should be visible on listing cards
   // Hidden for logged-in host users (hosts shouldn't message other hosts)
   const showMessageButton = useMemo(() => {
-    if (!isLoggedIn || !currentUser) return true; // Show for guests (not logged in)
-    const userIsHost = isHost({ userType: currentUser.userType });
+    if (!authenticatedUser) return true; // Show for guests (not logged in)
+    const userIsHost = isHost({ userType: authenticatedUser.userType });
     return !userIsHost;
-  }, [isLoggedIn, currentUser]);
+  }, [authenticatedUser]);
 
   return {
     // State

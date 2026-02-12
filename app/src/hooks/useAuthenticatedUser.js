@@ -10,6 +10,7 @@ import {
 } from '../lib/auth/index.js';
 import { isGuest } from '../logic/rules/users/isGuest.js';
 import { isHost } from '../logic/rules/users/isHost.js';
+import { logger } from '../lib/logger.js';
 
 /**
  * Gold Standard Auth Pattern - consolidated hook for ALL protected pages.
@@ -50,16 +51,16 @@ export function useAuthenticatedUser({
 
     const authenticate = async () => {
       try {
-        console.log('[useAuthenticatedUser] Starting auth check...', { requireGuest, requireHost, redirectOnFail });
+        logger.debug('[useAuthenticatedUser] Starting auth check...', { requireGuest, requireHost, redirectOnFail });
         // ==================================================================
         // Step 0: Lightweight auth check (cookies, tokens, session existence)
         // ==================================================================
         const hasAuth = await checkAuthStatus();
-        console.log('[useAuthenticatedUser] Step 0 checkAuthStatus:', hasAuth);
+        logger.debug('[useAuthenticatedUser] Step 0 checkAuthStatus:', hasAuth);
 
         if (!hasAuth) {
           if (cancelled) return;
-          console.log('[useAuthenticatedUser] FAIL: Not authenticated, redirecting to', redirectOnFail);
+          logger.debug('[useAuthenticatedUser] FAIL: Not authenticated, redirecting to', redirectOnFail);
           setRedirectReason('NOT_AUTHENTICATED');
           if (redirectOnFail) { window.location.href = redirectOnFail; return; }
           setUser(null);
@@ -73,16 +74,16 @@ export function useAuthenticatedUser({
         // ==================================================================
         const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
         const sessionId = getSessionId();
-        console.log('[useAuthenticatedUser] Step 1 validateTokenAndFetchUser:', userData ? 'got user' : 'null', 'sessionId:', sessionId);
+        logger.debug('[useAuthenticatedUser] Step 1 validateTokenAndFetchUser:', userData ? 'got user' : 'null', 'sessionId:', sessionId);
 
         if (userData) {
           const finalUserId = sessionId || userData.userId;
           const userType = userData.userType || getUserType() || '';
-          console.log('[useAuthenticatedUser] Step 1 userType:', JSON.stringify(userType), 'roleCheck:', passesRoleCheck(userType, requireGuest, requireHost));
+          logger.debug('[useAuthenticatedUser] Step 1 userType:', JSON.stringify(userType), 'roleCheck:', passesRoleCheck(userType, requireGuest, requireHost));
 
           if (!passesRoleCheck(userType, requireGuest, requireHost)) {
             if (cancelled) return;
-            console.log('[useAuthenticatedUser] FAIL: Role check failed. userType:', JSON.stringify(userType), 'requireGuest:', requireGuest, 'requireHost:', requireHost);
+            logger.debug('[useAuthenticatedUser] FAIL: Role check failed. userType:', JSON.stringify(userType), 'requireGuest:', requireGuest, 'requireHost:', requireHost);
             setRedirectReason(requireHost ? 'NOT_HOST' : 'NOT_GUEST');
             if (redirectOnFail) { window.location.href = redirectOnFail; return; }
             setUser(null);
@@ -115,11 +116,11 @@ export function useAuthenticatedUser({
         // ==================================================================
         const { data: { session } } = await supabase.auth.getSession();
 
-        console.log('[useAuthenticatedUser] Step 2 Supabase session:', session ? 'found' : 'null');
+        logger.debug('[useAuthenticatedUser] Step 2 Supabase session:', session ? 'found' : 'null');
         if (session?.user) {
           const finalUserId = session.user.user_metadata?.user_id || getUserId() || session.user.id;
           const userType = session.user.user_metadata?.user_type || getUserType() || '';
-          console.log('[useAuthenticatedUser] Step 2 userType:', JSON.stringify(userType), 'metadata:', JSON.stringify(session.user.user_metadata));
+          logger.debug('[useAuthenticatedUser] Step 2 userType:', JSON.stringify(userType), 'metadata:', JSON.stringify(session.user.user_metadata));
 
           if (!passesRoleCheck(userType, requireGuest, requireHost)) {
             if (cancelled) return;
@@ -154,14 +155,14 @@ export function useAuthenticatedUser({
         // Step 3: No auth found
         // ==================================================================
         if (cancelled) return;
-        console.log('[useAuthenticatedUser] FAIL: Step 3 - no auth found at all');
+        logger.debug('[useAuthenticatedUser] FAIL: Step 3 - no auth found at all');
         setRedirectReason('TOKEN_INVALID');
         if (redirectOnFail) { window.location.href = redirectOnFail; return; }
         setUser(null);
         setUserId(null);
         setLoading(false);
       } catch (err) {
-        console.error('[useAuthenticatedUser] Authentication error:', err);
+        logger.error('[useAuthenticatedUser] Authentication error:', err);
         if (cancelled) return;
         setRedirectReason('AUTH_ERROR');
         setError(err);
