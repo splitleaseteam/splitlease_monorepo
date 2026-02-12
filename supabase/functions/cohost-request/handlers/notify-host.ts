@@ -259,7 +259,7 @@ Request ID: ${input.requestId}
       "Status - Co-Host Request": "google meet scheduled",
       "Modified Date": new Date().toISOString()
     })
-    .eq('_id', input.requestId);
+    .eq('id', input.requestId);
 
   if (updateError) {
     console.error(`[cohost-request:notify-host] Status update failed:`, updateError);

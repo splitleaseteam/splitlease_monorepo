@@ -112,7 +112,7 @@ function ListingsGrid({
   return (
     <div className="listings-container" role="list" aria-label="Search results listings">
       {listings.map((listing) => {
-        const listingId = listing.id || listing._id;
+        const listingId = listing.id;
         const isFavorited = favoritedListingIds?.has(listingId);
         const proposalForListing = proposalsByListingId?.get(listingId) || null;
         return (
@@ -640,7 +640,7 @@ export default function SearchPage() {
 
   // Scroll to listing card when marker is clicked
   const scrollToListingCard = (listing) => {
-    const listingId = listing.id || listing._id;
+    const listingId = listing.id;
     const listingCard = document.querySelector(`[data-listing-id="${listingId}"]`);
 
     if (listingCard) {
@@ -653,7 +653,7 @@ export default function SearchPage() {
   };
 
   const scrollToListingCardWithRetry = useCallback((listing, attempts = 5) => {
-    const listingId = listing.id || listing._id;
+    const listingId = listing.id;
     const listingCard = document.querySelector(`[data-listing-id="${listingId}"]`);
 
     if (listingCard) {
@@ -815,7 +815,7 @@ export default function SearchPage() {
       // Use centralized proposal service
       const result = await createProposal({
         guestId: authUserId, // JWT-derived, not getSessionId()
-        listingId: selectedListingForProposal?.id || selectedListingForProposal?._id,
+        listingId: selectedListingForProposal?.id,
         moveInDate: proposalData.moveInDate,
         daysSelectedObjects: proposalData.daysSelectedObjects,
         reservationSpanWeeks: proposalData.reservationSpan || 13,
@@ -846,10 +846,10 @@ export default function SearchPage() {
 
       // Update local state
       if (result.proposalId && selectedListingForProposal) {
-        const listingId = selectedListingForProposal.id || selectedListingForProposal._id;
+        const listingId = selectedListingForProposal.id;
         setProposalsByListingId(prev => {
           const updated = new Map(prev);
-          updated.set(listingId, { _id: result.proposalId });
+          updated.set(listingId, { id: result.proposalId });
           return updated;
         });
       }

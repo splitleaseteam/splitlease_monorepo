@@ -86,7 +86,7 @@ export default function useEmailSmsUnitPageLogic() {
   // Get the selected template object
   const selectedTemplate = useMemo(() => {
     if (!selectedTemplateId) return null;
-    return templates.find(t => t._id === selectedTemplateId) || null;
+    return templates.find(t => t.id === selectedTemplateId) || null;
   }, [templates, selectedTemplateId]);
 
   // Extract placeholders from the selected template
@@ -144,7 +144,7 @@ export default function useEmailSmsUnitPageLogic() {
 
     // Reset placeholder values for the new template
     if (templateId) {
-      const template = templates.find(t => t._id === templateId);
+      const template = templates.find(t => t.id === templateId);
       const newPlaceholders = extractPlaceholders(template?.Placeholder);
       const initialValues = {};
       const initialMultiEmails = {};
@@ -284,7 +284,7 @@ export default function useEmailSmsUnitPageLogic() {
         body: JSON.stringify({
           action: 'send',
           payload: {
-            template_id: selectedTemplate._id,
+            template_id: selectedTemplate.id,
             to_email: toEmails[0], // Primary recipient
             from_email: FROM_EMAIL,
             from_name: 'Split Lease',

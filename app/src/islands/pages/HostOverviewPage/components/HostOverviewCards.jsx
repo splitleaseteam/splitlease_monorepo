@@ -45,7 +45,7 @@ export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals,
 
   // Extract photo URLs from the photos field - only need the cover photo (first image)
   const photosField = listing.photos || listing.photos_with_urls_captions_and_sort_order_json || [];
-  const photoUrls = extractPhotos(photosField, {}, listing.id || listing._id);
+  const photoUrls = extractPhotos(photosField, {}, listing.id);
   const coverPhoto = photoUrls.length > 0 ? photoUrls[0] : null;
 
   // Handle card click (navigate to listing dashboard)

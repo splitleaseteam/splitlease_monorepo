@@ -79,7 +79,7 @@ function shouldShowAISummary(proposal) {
   // Only show for new/review statuses (pending statuses where host needs to take action)
   const status = typeof proposal?.status === 'string'
     ? proposal.status
-    : (proposal?.status?.id || proposal?.status?._id || '');
+    : (proposal?.status?.id || '');
 
   // Match statuses that start with common pending prefixes
   // Database uses Title Case like "Proposal Submitted by guest - Awaiting Rental Application"

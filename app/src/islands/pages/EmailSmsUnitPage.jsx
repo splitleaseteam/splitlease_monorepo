@@ -101,8 +101,8 @@ export default function EmailSmsUnitPage() {
             >
               <option value="">-- Select a template --</option>
               {templates.map(t => (
-                <option key={t._id} value={t._id}>
-                  {t.Name || t.Description || t._id}
+                <option key={t.id} value={t.id}>
+                  {t.Name || t.Description || t.id}
                 </option>
               ))}
             </select>

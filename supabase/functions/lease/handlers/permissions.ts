@@ -30,7 +30,7 @@ export async function grantListingPermission(
   const { data: listing, error: fetchError } = await supabase
     .from('listing')
     .select('"users with permission"')
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (fetchError) {
@@ -55,7 +55,7 @@ export async function grantListingPermission(
   const { error: updateError } = await supabase
     .from('listing')
     .update({ 'users with permission': updatedPermissions })
-    .eq('_id', listingId);
+    .eq('id', listingId);
 
   if (updateError) {
     console.warn(
@@ -88,7 +88,7 @@ export async function revokeListingPermission(
   const { data: listing, error: fetchError } = await supabase
     .from('listing')
     .select('"users with permission"')
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (fetchError) {
@@ -113,7 +113,7 @@ export async function revokeListingPermission(
   const { error: updateError } = await supabase
     .from('listing')
     .update({ 'users with permission': updatedPermissions })
-    .eq('_id', listingId);
+    .eq('id', listingId);
 
   if (updateError) {
     console.warn(

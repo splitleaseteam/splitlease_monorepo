@@ -107,8 +107,8 @@ async function notifySlackNewEmergency(
   if (emergency.proposal_id) {
     const { data: proposal } = await supabase
       .from('proposal')
-      .select('_id, "Agreement #", "Guest", "Listing"')
-      .eq('_id', emergency.proposal_id)
+      .select('id, "Agreement #", "Guest", "Listing"')
+      .eq('id', emergency.proposal_id)
       .single();
 
     if (proposal) {
@@ -118,7 +118,7 @@ async function notifySlackNewEmergency(
         const { data: guest } = await supabase
           .from('user')
           .select('"First name", "Last name", email')
-          .eq('_id', proposal.Guest)
+          .eq('id', proposal.Guest)
           .single();
 
         if (guest) {

@@ -199,7 +199,7 @@ export function useHostOverviewPageLogic() {
       const bubbleResult = results.find(r => r?.type === 'bubble');
       const bubbleListings = bubbleResult?.data?.response?.results || [];
       const mappedBubbleListings = bubbleListings.map(listing => ({
-        id: listing._id || listing.id,
+        id: listing.id,
         name: listing.listing_title || listing.name || 'Unnamed Listing',
         listing_title: listing.listing_title,
         complete: listing.is_listing_profile_complete || listing.complete,
@@ -409,7 +409,7 @@ export function useHostOverviewPageLogic() {
 
       const listings = data?.response?.results || [];
       return listings.map(listing => ({
-        id: listing._id || listing.id,
+        id: listing.id,
         name: listing.listing_title || listing.name || 'Unnamed Listing',
         listing_title: listing.listing_title,
         complete: listing.is_listing_profile_complete || listing.complete,
@@ -443,7 +443,7 @@ export function useHostOverviewPageLogic() {
 
       const manuals = data?.response?.results || [];
       return manuals.map(manual => ({
-        id: manual._id || manual.id,
+        id: manual.id,
         display: manual.Display || manual.display || 'House Manual',
         Display: manual.Display,
         audience: manual.Audience?.Display || manual.audience || 'Guests',
@@ -471,7 +471,7 @@ export function useHostOverviewPageLogic() {
       if (fetchError) throw fetchError;
 
       return (data || []).map(meeting => ({
-        id: meeting._id || meeting.id,
+        id: meeting.id,
         guest: {
           firstName: meeting['guest name'] || 'Guest'
         },

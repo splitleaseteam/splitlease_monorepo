@@ -44,8 +44,8 @@ export async function handleDelete(
 
   const { data: existingVM, error: fetchError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("_id")
-    .eq("_id", input.virtualMeetingId)
+    .select("id")
+    .eq("id", input.virtualMeetingId)
     .single();
 
   if (fetchError || !existingVM) {
@@ -53,7 +53,7 @@ export async function handleDelete(
     throw new ValidationError(`Virtual meeting not found: ${input.virtualMeetingId}`);
   }
 
-  console.log(`[virtual-meeting:delete] Found existing VM: ${existingVM._id}`);
+  console.log(`[virtual-meeting:delete] Found existing VM: ${existingVM.id}`);
 
   // ================================================
   // DELETE VM RECORD
@@ -62,7 +62,7 @@ export async function handleDelete(
   const { error: deleteError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .delete()
-    .eq("_id", input.virtualMeetingId);
+    .eq("id", input.virtualMeetingId);
 
   if (deleteError) {
     console.error(`[virtual-meeting:delete] Delete failed:`, deleteError);
@@ -83,7 +83,7 @@ export async function handleDelete(
       "request virtual meeting": null,
       "Modified Date": now,
     })
-    .eq("_id", input.proposalId);
+    .eq("id", input.proposalId);
 
   if (proposalUpdateError) {
     console.error(`[virtual-meeting:delete] Proposal update failed:`, proposalUpdateError);

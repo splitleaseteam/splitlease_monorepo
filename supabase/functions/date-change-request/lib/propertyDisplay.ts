@@ -21,7 +21,7 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
  * Listing data from database
  */
 export interface ListingData {
-  _id: string;
+  id: string;
   Title?: string | null;
   'Display Name'?: string | null;
   'Display Address'?: string | null;
@@ -134,8 +134,8 @@ export async function fetchListingData(
   try {
     const { data, error } = await supabase
       .from('listings')
-      .select('_id, Title, "Display Name", "Display Address", Address, "Address Line 1", City, State, "Zip Code"')
-      .eq('_id', listingId)
+      .select('id, Title, "Display Name", "Display Address", Address, "Address Line 1", City, State, "Zip Code"')
+      .eq('id', listingId)
       .maybeSingle();
 
     if (error) {
@@ -166,7 +166,7 @@ export async function fetchListingFromLease(
     const { data: lease, error: leaseError } = await supabase
       .from('bookings_leases')
       .select('Listing')
-      .eq('_id', leaseId)
+      .eq('id', leaseId)
       .maybeSingle();
 
     if (leaseError || !lease?.Listing) {
@@ -204,7 +204,7 @@ export async function fetchLeaseAndListing(
         check_out,
         "Agreement Number"
       `)
-      .eq('_id', leaseId)
+      .eq('id', leaseId)
       .maybeSingle();
 
     if (error || !data) {

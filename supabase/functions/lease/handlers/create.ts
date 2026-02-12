@@ -92,7 +92,7 @@ export async function handleCreate(
   const { data: proposal, error: proposalError } = await supabase
     .from('proposal')
     .select('*')
-    .eq('_id', input.proposalId)
+    .eq('id', input.proposalId)
     .single();
 
   if (proposalError || !proposal) {
@@ -103,7 +103,7 @@ export async function handleCreate(
 
   // Fetch listing separately using proposal.Listing ID
   let listingData: {
-    _id: string;
+    id: string;
     Name?: string;
     'House manual'?: string;
     'users with permission'?: string[];
@@ -113,8 +113,8 @@ export async function handleCreate(
   if (proposalData.Listing) {
     const { data: listing, error: listingError } = await supabase
       .from('listing')
-      .select('_id, Name, "House manual", "users with permission", "Cancellation Policy"')
-      .eq('_id', proposalData.Listing)
+      .select('id, Name, "House manual", "users with permission", "Cancellation Policy"')
+      .eq('id', proposalData.Listing)
       .single();
 
     if (listingError) {
@@ -155,7 +155,7 @@ export async function handleCreate(
   const { error: proposalUpdateError } = await supabase
     .from('proposal')
     .update(proposalUpdate)
-    .eq('_id', input.proposalId);
+    .eq('id', input.proposalId);
 
   if (proposalUpdateError) {
     throw new SupabaseSyncError(`Failed to update proposal: ${proposalUpdateError.message}`);
@@ -195,19 +195,19 @@ export async function handleCreate(
   // - 'Reservation Period : End' (NOT 'Move-out')
   // - 'rental type' column does NOT exist in bookings_leases
   // FK CONSTRAINTS (2026-01-28):
-  // - 'Cancellation Policy' → zat_features_cancellationpolicy._id (use null if no valid FK, NOT text!)
-  // - 'Listing' → listing._id
-  // - 'Proposal' → proposal._id
-  // - 'Created By' → user._id
+  // - 'Cancellation Policy' → zat_features_cancellationpolicy.id (use null if no valid FK, NOT text!)
+  // - 'Listing' → listing.id
+  // - 'Proposal' → proposal.id
+  // - 'Created By' → user.id
   const leaseRecord: Partial<LeaseData> = {
-    _id: leaseId,
+    id: leaseId,
     'Agreement Number': agreementNumber,
     Proposal: input.proposalId,
     Guest: proposalData.Guest,
     Host: proposalData['Host User'],
     Listing: proposalData.Listing,
     Participants: [proposalData.Guest, proposalData['Host User']],
-    // FK CONSTRAINT: Must be valid _id from zat_features_cancellationpolicy or null
+    // FK CONSTRAINT: Must be valid id from zat_features_cancellationpolicy or null
     'Cancellation Policy': listingData?.['Cancellation Policy'] || null,
     'First Payment Date': firstPaymentDate,
     'Reservation Period : Start': activeTerms.moveInDate,
@@ -411,7 +411,7 @@ export async function handleCreate(
       'Modified Date': now,
     };
 
-    await supabase.from('proposal').update(proposalDateUpdate).eq('_id', input.proposalId);
+    await supabase.from('proposal').update(proposalDateUpdate).eq('id', input.proposalId);
 
     // Update lease with generated dates (Step 10 from Bubble workflow)
     // SCHEMA-VERIFIED (2026-01-28): bookings_leases table columns
@@ -426,7 +426,7 @@ export async function handleCreate(
       'total week count': dateResult.checkInDates.length,
     };
 
-    await supabase.from('bookings_leases').update(leaseDateUpdate).eq('_id', leaseId);
+    await supabase.from('bookings_leases').update(leaseDateUpdate).eq('id', leaseId);
 
     // Error handling: Notify if no dates generated (Steps 11-12 from Bubble)
     if (dateResult.totalNights === 0) {
@@ -490,7 +490,7 @@ export async function handleCreate(
   await supabase
     .from('bookings_leases')
     .update({ 'List of Stays': stayIds })
-    .eq('_id', leaseId);
+    .eq('id', leaseId);
 
   // 7b: House manual linking
   // SCHEMA-VERIFIED (2026-01-28): 'House Manual' column does NOT exist in bookings_leases
@@ -576,7 +576,7 @@ export async function handleCreate(
     await supabase
       .from('bookings_leases')
       .update({ 'were documents generated?': true })
-      .eq('_id', leaseId);
+      .eq('id', leaseId);
   }
 
   console.log(`[lease:create] Phase 8 complete: Documents generated = ${documentsGenerated}`);
@@ -624,7 +624,7 @@ async function addLeaseToUser(
   const { data: user, error: fetchError } = await supabase
     .from('user')
     .select(columnName)
-    .eq('_id', userId)
+    .eq('id', userId)
     .single();
 
   if (fetchError) {
@@ -645,7 +645,7 @@ async function addLeaseToUser(
   const { error: updateError } = await supabase
     .from('user')
     .update({ [columnName]: updatedLeases })
-    .eq('_id', userId);
+    .eq('id', userId);
 
   if (updateError) {
     console.warn(`[lease:create] Could not update user ${userId}:`, updateError.message);

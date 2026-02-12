@@ -51,7 +51,7 @@ export function adaptReminderFromDatabase({ dbRow }) {
   }
 
   return {
-    id: dbRow._id,
+    id: dbRow.id,
     houseManualId: dbRow['house manual'],
     guestId: dbRow.guest,
     creatorId: dbRow['Created By'],

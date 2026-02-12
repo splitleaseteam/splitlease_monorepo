@@ -133,7 +133,7 @@ export interface CreateEventWithExistingMeetParams {
  * Virtual Meeting Schedule and Link Record
  */
 export interface VirtualMeetingRecord {
-  readonly _id: string;
+  readonly id: string;
   readonly 'booked date': string | null;
   readonly 'end of meeting': string | null;
   readonly 'meeting link': string | null;

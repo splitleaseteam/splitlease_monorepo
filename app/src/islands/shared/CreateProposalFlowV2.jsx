@@ -148,7 +148,7 @@ export default function CreateProposalFlowV2({
   const { toasts, showToast, removeToast } = useToast();
 
   // Get listing ID for localStorage key
-  const listingId = listing?._id;
+  const listingId = listing?.id;
 
   // Load saved draft from localStorage on mount
   const savedDraft = getSavedProposalDraft(listingId);
@@ -337,7 +337,7 @@ export default function CreateProposalFlowV2({
     firstFourWeeksTotal: calculateFirstFourWeeks(pricingBreakdown),
 
     // Listing reference
-    listingId: listing?._id,
+    listingId: listing?.id,
     listingAddress: listing?.Name || listing?.address
   });
 
@@ -391,7 +391,7 @@ export default function CreateProposalFlowV2({
   const pricingListing = useMemo(() => {
     if (!listing) return null;
     return {
-      id: listing._id,
+      id: listing.id,
       minimumNights: listing.minimum_nights_per_stay || 2,
       maximumNights: listing.maximum_nights_per_stay || 7,
       'rental type': listing.rental_type || 'Nightly',

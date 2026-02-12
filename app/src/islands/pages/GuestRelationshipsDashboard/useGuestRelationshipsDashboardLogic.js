@@ -189,15 +189,15 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   useEffect(() => {
-    if (selectedGuest?._id) {
-      loadGuestDetails(selectedGuest._id);
+    if (selectedGuest?.id) {
+      loadGuestDetails(selectedGuest.id);
     } else {
       // Clear guest-specific data
       setAssignedArticles([]);
       setCurrentProposals([]);
       setSuggestedProposals([]);
     }
-  }, [selectedGuest?._id]);
+  }, [selectedGuest?.id]);
 
   async function loadGuestDetails(guestId) {
     try {
@@ -364,7 +364,7 @@ export function useGuestRelationshipsDashboardLogic() {
 
       // Select the newly created guest
       setSelectedGuest({
-        _id: newGuest._id,
+        id: newGuest.id,
         firstName: newGuest.firstName,
         lastName: newGuest.lastName,
         email: newGuest.email,
@@ -416,7 +416,7 @@ export function useGuestRelationshipsDashboardLogic() {
       const newMessage = {
         id: `msg-${Date.now()}`,
         senderId: 'staff',
-        recipientId: selectedGuest._id,
+        recipientId: selectedGuest.id,
         messageBody: `Subject: ${emailSubject}\n\n${emailBody}`,
         messageType: 'email',
         status: 'sent',
@@ -464,7 +464,7 @@ export function useGuestRelationshipsDashboardLogic() {
       const newMessage = {
         id: `msg-${Date.now()}`,
         senderId: 'staff',
-        recipientId: selectedGuest._id,
+        recipientId: selectedGuest.id,
         messageBody: smsBody,
         messageType: 'sms',
         status: 'sent',
@@ -499,14 +499,14 @@ export function useGuestRelationshipsDashboardLogic() {
   }
 
   function handleAddSuggestedProposal(listingId) {
-    const listing = allListings.find(l => l._id === listingId || l.id === listingId);
+    const listing = allListings.find(l => l.id === listingId);
     if (!listing) return;
 
     const newProposal = {
       id: `prop-${Date.now()}`,
       listingId,
       listing,
-      userId: selectedGuest?._id || '',
+      userId: selectedGuest?.id || '',
       moveInDate: new Date().toISOString().split('T')[0],
       daysSelected: 7,
       nights: 7,
@@ -527,15 +527,15 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   function handleAddListing(listingId, _userIds) {
-    const listing = allListings.find(l => l._id === listingId || l.id === listingId);
-    if (listing && !suggestedListings.some(l => (l._id || l.id) === listingId)) {
+    const listing = allListings.find(l => l.id === listingId);
+    if (listing && !suggestedListings.some(l => l.id === listingId)) {
       setSuggestedListings(prev => [...prev, listing]);
       showToast('Listing added', 'success');
     }
   }
 
   function handleRemoveListing(listingId) {
-    setSuggestedListings(prev => prev.filter(l => (l._id || l.id) !== listingId));
+    setSuggestedListings(prev => prev.filter(l => l.id !== listingId));
     showToast('Listing removed', 'success');
   }
 
@@ -548,7 +548,7 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   function handleSelectAllGuests() {
-    setSelectedUsers(allGuests.map(g => g._id));
+    setSelectedUsers(allGuests.map(g => g.id));
   }
 
   function handleDeselectAllGuests() {
@@ -572,7 +572,7 @@ export function useGuestRelationshipsDashboardLogic() {
 
     try {
       setIsLoadingArticles(true);
-      await assignArticle(selectedGuest._id, articleId);
+      await assignArticle(selectedGuest.id, articleId);
 
       // Find the article and add to assigned list
       const article = allArticles.find(a => a.id === articleId);
@@ -598,7 +598,7 @@ export function useGuestRelationshipsDashboardLogic() {
 
     try {
       setIsLoadingArticles(true);
-      await removeArticle(selectedGuest._id, articleId);
+      await removeArticle(selectedGuest.id, articleId);
 
       setAssignedArticles(prev => prev.filter(a => a.id !== articleId));
       showToast('Article removed', 'success');

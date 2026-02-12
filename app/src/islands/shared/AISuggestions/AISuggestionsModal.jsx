@@ -114,7 +114,7 @@ export default function AISuggestionsModal({
     const combinedContent = previousContent
       ? `${previousContent}\n\n${newContent}`
       : newContent;
-    actions.openCombineModal(suggestion._id, combinedContent);
+    actions.openCombineModal(suggestion.id, combinedContent);
   };
 
   // Handle accept all
@@ -220,10 +220,10 @@ export default function AISuggestionsModal({
               <div className="ai-suggestions-list">
                 {suggestions.map((suggestion) => (
                   <SuggestionCard
-                    key={suggestion._id}
+                    key={suggestion.id}
                     suggestion={suggestion}
-                    onAccept={() => actions.acceptSuggestion(suggestion._id)}
-                    onIgnore={() => actions.ignoreSuggestion(suggestion._id)}
+                    onAccept={() => actions.acceptSuggestion(suggestion.id)}
+                    onIgnore={() => actions.ignoreSuggestion(suggestion.id)}
                     onCombine={() => handleCombine(suggestion)}
                     isProcessing={suggestion['being processed?']}
                   />

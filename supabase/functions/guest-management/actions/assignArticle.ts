@@ -39,8 +39,8 @@ export async function handleAssignArticle(
   // Verify guest exists
   const { data: guest, error: guestError } = await supabase
     .from('user')
-    .select('_id')
-    .eq('_id', guestId)
+    .select('id')
+    .eq('id', guestId)
     .maybeSingle();
 
   if (guestError || !guest) {
@@ -50,8 +50,8 @@ export async function handleAssignArticle(
   // Verify article exists
   const { data: article, error: articleError } = await supabase
     .from('knowledge_article')
-    .select('_id')
-    .eq('_id', articleId)
+    .select('id')
+    .eq('id', articleId)
     .maybeSingle();
 
   if (articleError || !article) {
@@ -61,7 +61,7 @@ export async function handleAssignArticle(
   // Check if already assigned
   const { data: existing, error: existingError } = await supabase
     .from('guest_knowledge_assignment')
-    .select('_id')
+    .select('id')
     .eq('guest_id', guestId)
     .eq('article_id', articleId)
     .maybeSingle();
@@ -81,7 +81,7 @@ export async function handleAssignArticle(
   const { data: assignment, error: insertError } = await supabase
     .from('guest_knowledge_assignment')
     .insert({
-      _id: assignmentId,
+      id: assignmentId,
       guest_id: guestId,
       article_id: articleId,
       assigned_at: now,
@@ -99,7 +99,7 @@ export async function handleAssignArticle(
 
   return {
     success: true,
-    assignmentId: assignment._id,
+    assignmentId: assignment.id,
     guestId: assignment.guest_id,
     articleId: assignment.article_id,
     assignedAt: assignment.assigned_at

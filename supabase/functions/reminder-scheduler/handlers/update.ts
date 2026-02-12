@@ -67,7 +67,7 @@ export const handleUpdate = async (
   const { data, error } = await supabase
     .from('remindersfromhousemanual')
     .update(updates)
-    .eq('_id', payload.reminderId)
+    .eq('id', payload.reminderId)
     .select()
     .single();
 

@@ -172,7 +172,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
         // Gracefully handle 400 errors by defaulting to count = 0
         supabase
           .from('virtualmeetingschedulesandlinks')
-          .select('_id', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .or(`guest.eq.${userId},host.eq.${userId}`)
           .then(result => {
             // If table doesn't exist or query fails, return count = 0

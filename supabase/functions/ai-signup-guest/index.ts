@@ -6,7 +6,7 @@
  * 1. Receives email, phone, and freeform text input
  * 2. Looks up the user by email (user was already created in auth-user/signup)
  * 3. Saves the freeform text to the user's `freeform ai signup text` field
- * 4. Returns the user data (including _id) for the subsequent parseProfile call
+ * 4. Returns the user data (including id) for the subsequent parseProfile call
  *
  * This function bridges the gap between user creation and AI profile parsing.
  */
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
 
     const { data: userData, error: userError } = await supabase
       .from('user')
-      .select('_id, email, "Name - First", "Name - Last"')
+      .select('id, email, first_name, last_name')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
@@ -105,25 +105,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('[ai-signup-guest] ✅ User found:', userData._id);
+    console.log('[ai-signup-guest] ✅ User found:', userData.id);
 
     // ========== STEP 2: Save freeform text to user record ==========
     console.log('[ai-signup-guest] Step 2: Saving freeform text to user record...');
 
     const updateData: Record<string, any> = {
-      'freeform ai signup text': text_inputted,
-      'Modified Date': new Date().toISOString(),
+      'freeform ai signup text': text_inputted, // TODO: VERIFY COLUMN NAME
+      'updated_at': new Date().toISOString(),
     };
 
     // Also save phone number if provided
     if (phone) {
-      updateData['Phone Number (as text)'] = phone;
+      updateData['phone_number'] = phone;
     }
 
     const { error: updateError } = await supabase
       .from('user')
       .update(updateData)
-      .eq('_id', userData._id);
+      .eq('id', userData.id);
 
     if (updateError) {
       console.error('[ai-signup-guest] Error updating user:', updateError);
@@ -142,8 +142,8 @@ Deno.serve(async (req) => {
     const loginLink = `${siteUrl}/login`;
 
     // Extract name for email greeting
-    const firstName = userData['Name - First'] || '';
-    const userType = (userData['Type - User Current'] as string) || 'Guest';
+    const firstName = userData.first_name || '';
+    const userType = (userData.current_user_role as string) || 'Guest';
     const mappedUserType = userType.includes('Host') ? 'Host' : 'Guest';
 
     try {
@@ -167,9 +167,9 @@ Deno.serve(async (req) => {
 
     // Send internal notification (non-blocking, but awaited to prevent Deno Edge Function cancellation)
     try {
-      const lastName = userData['Name - Last'] || '';
+      const lastName = userData.last_name || '';
       const result = await sendInternalSignupNotification(
-        userData._id,
+        userData.id,
         userData.email,
         firstName,
         lastName,
@@ -191,10 +191,10 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         data: {
-          _id: userData._id,
+          id: userData.id,
           email: userData.email,
-          firstName: userData['Name - First'],
-          lastName: userData['Name - Last'],
+          firstName: userData.first_name,
+          lastName: userData.last_name,
           text_saved: true
         }
       }),

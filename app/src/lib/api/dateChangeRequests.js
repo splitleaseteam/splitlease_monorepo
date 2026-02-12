@@ -9,10 +9,10 @@ function getCounterpartyFromLease(lease, currentUserId) {
   }
 
   if (lease.leaseType === 'co_tenant') {
-    return lease.host?._id === currentUserId ? lease.guest : lease.host;
+    return lease.host?.id === currentUserId ? lease.guest : lease.host;
   }
 
-  return lease.guest?._id === currentUserId ? lease.host : lease.guest;
+  return lease.guest?.id === currentUserId ? lease.host : lease.guest;
 }
 
 function calculatePriceAdjustment(lease, dates) {
@@ -64,9 +64,9 @@ export function buildDateChangePayload(params) {
   const counterparty = getCounterpartyFromLease(lease, currentUserId);
 
   return {
-    Lease: lease?._id,
+    Lease: lease?.id,
     'Requested by': currentUserId,
-    'Request receiver': counterparty?._id,
+    'Request receiver': counterparty?.id,
     'Request Type': requestType,
     'Original Date': JSON.stringify(originalDates || []),
     'Requested Date': JSON.stringify(newDates || []),
@@ -137,7 +137,7 @@ export async function updateDateChangeRequestStatus(requestId, status) {
   const { data, error } = await supabase
     .from('datechangerequest')
     .update({ status })
-    .eq('_id', requestId)
+    .eq('id', requestId)
     .select()
     .single();
 

@@ -26,11 +26,11 @@ export async function handleDeleteGuestTestStatus(
   const { data, error } = await supabase
     .from('user')
     .update({
-      'Usability Step': 0,
-      'Modified Date': timestamp,
+      onboarding_usability_step: 0,
+      updated_at: timestamp,
     })
-    .eq('_id', guestId)
-    .select('_id, email, "Name - First", "Name - Last", "Usability Step"')
+    .eq('id', guestId)
+    .select('id, email, first_name, last_name, onboarding_usability_step')
     .single();
 
   if (error) {
@@ -44,11 +44,11 @@ export async function handleDeleteGuestTestStatus(
     success: true,
     message: `Reset usability test status for guest ${guestId}`,
     user: {
-      id: data._id,
+      id: data.id,
       email: data.email,
-      firstName: data['Name - First'],
-      lastName: data['Name - Last'],
-      usabilityStep: data['Usability Step'],
+      firstName: data.first_name,
+      lastName: data.last_name,
+      usabilityStep: data.onboarding_usability_step,
     },
     timestamp,
   };

@@ -41,7 +41,7 @@ export default function EditDatesModal({
     if (dates.length === 0) return;
 
     const isoDateStrings = dates.map(d => new Date(d.value).toISOString());
-    onSave(meeting._id || meeting.id, isoDateStrings);
+    onSave(meeting.id, isoDateStrings);
   };
 
   return (

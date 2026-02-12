@@ -126,8 +126,8 @@ registerLoader({
 
     const { data, error } = await supabaseClient
       .from("users")
-      .select("_id, email, first_name, last_name, phone, bio, profile_photo")
-      .eq("_id", userId)
+      .select("id, email, first_name, last_name, phone, bio, profile_photo")
+      .eq("id", userId)
       .single();
 
     if (error) {
@@ -137,7 +137,7 @@ registerLoader({
     }
 
     return {
-      id: data._id,
+      id: data.id,
       email: data.email,
       firstName: data.first_name,
       lastName: data.last_name,

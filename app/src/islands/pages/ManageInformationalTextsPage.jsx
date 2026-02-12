@@ -184,7 +184,7 @@ function ListPanel({
         <div style={styles.entryList}>
           {entries.map(entry => (
             <EntryCard
-              key={entry._id}
+              key={entry.id}
               entry={entry}
               onEdit={onEdit}
               onDelete={onDelete}
@@ -212,7 +212,7 @@ function EntryCard({ entry, onEdit, onDelete }) {
             Edit
           </button>
           <button
-            onClick={() => onDelete(entry._id)}
+            onClick={() => onDelete(entry.id)}
             style={styles.dangerSmallButton}
             title="Delete"
           >

@@ -207,7 +207,7 @@ export default function useVerifyUsersPageLogic() {
 
     // Update URL with user ID for sharing/bookmarking
     const url = new URL(window.location.href);
-    url.searchParams.set('user', user._id);
+    url.searchParams.set('user', user.id);
     window.history.replaceState({}, '', url);
   }, []);
 
@@ -257,7 +257,7 @@ export default function useVerifyUsersPageLogic() {
 
     try {
       const data = await callEdgeFunction('toggle_verification', {
-        userId: selectedUser._id,
+        userId: selectedUser.id,
         isVerified: newVerifiedStatus,
       });
 
@@ -266,7 +266,7 @@ export default function useVerifyUsersPageLogic() {
 
       // Update in search results too
       setSearchResults(prev =>
-        prev.map(u => u._id === data.user._id ? data.user : u)
+        prev.map(u => u.id === data.user.id ? data.user : u)
       );
 
       showToast(

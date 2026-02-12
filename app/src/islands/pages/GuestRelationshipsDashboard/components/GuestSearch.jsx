@@ -75,7 +75,7 @@ export default function GuestSearch({
             <div className="grd-search-dropdown">
               {guests.slice(0, 10).map(guest => (
                 <div
-                  key={guest._id}
+                  key={guest.id}
                   className="grd-dropdown-option"
                   onClick={() => onGuestSelect(guest)}
                 >
@@ -117,7 +117,7 @@ export default function GuestSearch({
             <div className="grd-search-dropdown">
               {guests.slice(0, 10).map(guest => (
                 <div
-                  key={guest._id}
+                  key={guest.id}
                   className="grd-dropdown-option"
                   onClick={() => onGuestSelect(guest)}
                 >
@@ -158,7 +158,7 @@ export default function GuestSearch({
             <div className="grd-search-dropdown">
               {guests.slice(0, 10).map(guest => (
                 <div
-                  key={guest._id}
+                  key={guest.id}
                   className="grd-dropdown-option"
                   onClick={() => onGuestSelect(guest)}
                 >

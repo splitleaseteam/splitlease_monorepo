@@ -211,7 +211,7 @@ const PhotoGallery = memo(function PhotoGallery({
                 <div className={getGridClass()}>
                     {photos.map((photo, idx) => (
                         <PhotoTile
-                            key={photo._id}
+                            key={photo.id}
                             photo={photo}
                             index={idx}
                             onClick={onPhotoClick}
@@ -247,7 +247,7 @@ const PhotoGallery = memo(function PhotoGallery({
                     />
                     {photos.slice(1, 3).map((photo, idx) => (
                         <PhotoTile
-                            key={photo._id}
+                            key={photo.id}
                             photo={photo}
                             index={idx + 1}
                             onClick={onPhotoClick}
@@ -283,7 +283,7 @@ const PhotoGallery = memo(function PhotoGallery({
                     />
                     {photos.slice(1, 4).map((photo, idx) => (
                         <PhotoTile
-                            key={photo._id}
+                            key={photo.id}
                             photo={photo}
                             index={idx + 1}
                             onClick={onPhotoClick}
@@ -320,7 +320,7 @@ const PhotoGallery = memo(function PhotoGallery({
                 />
                 {photosToShow.map((photo, idx) => (
                     <PhotoTile
-                        key={photo._id}
+                        key={photo.id}
                         photo={photo}
                         index={idx + 1}
                         onClick={onPhotoClick}

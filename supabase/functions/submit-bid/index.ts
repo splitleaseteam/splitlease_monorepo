@@ -178,7 +178,7 @@ async function authenticateFromHeaders(
     // Lookup application user ID by email
     const { data: appUser, error: appUserError } = await authClient
       .from('user')
-      .select('_id')
+      .select('id')
       .eq('email', user.email?.toLowerCase())
       .maybeSingle();
 
@@ -187,7 +187,7 @@ async function authenticateFromHeaders(
       return null;
     }
 
-    return { id: appUser._id, email: user.email ?? '' };
+    return { id: appUser.id, email: user.email ?? '' };
   } catch (err) {
     console.error('[submit-bid:auth] Exception:', (err as Error).message);
     return null;

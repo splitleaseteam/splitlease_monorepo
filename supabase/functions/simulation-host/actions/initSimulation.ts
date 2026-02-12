@@ -43,8 +43,8 @@ export async function handleInitSimulation(
   // Verify the user exists and get their user record ID
   const { data: userData, error: userError } = await supabase
     .from('user')
-    .select('_id, "Name - First", "Name - Last", userType')
-    .eq('supabaseUserId', user.id)
+    .select('id, first_name, last_name, current_user_role')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (userError) {
@@ -57,7 +57,7 @@ export async function handleInitSimulation(
   }
 
   // Check if user is a host
-  const userType = userData.userType || '';
+  const userType = userData.current_user_role || '';
   const isHost = userType.includes('Host') || userType.includes('Landlord');
 
   if (!isHost) {
@@ -69,7 +69,7 @@ export async function handleInitSimulation(
 
   return {
     simulationId,
-    hostId: userData._id,
+    hostId: userData.id,
     createdAt: new Date().toISOString()
   };
 }

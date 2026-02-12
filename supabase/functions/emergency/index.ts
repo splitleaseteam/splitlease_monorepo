@@ -278,7 +278,7 @@ async function authenticateAdmin(
 
   const { data: userData, error: userError } = await serviceClient
     .from('user')
-    .select('_id, "Toggle - Is Admin", email, "Name - First", "Name - Last"')
+    .select('id, is_admin, email, first_name, last_name')
     .eq('supabase_user_id', user.id)
     .single();
 
@@ -287,14 +287,14 @@ async function authenticateAdmin(
     return null;
   }
 
-  if (!userData['Toggle - Is Admin']) {
+  if (!userData.is_admin) {
     console.log('[emergency] User is not admin');
     return null;
   }
 
   console.log('[emergency] Admin authenticated:', userData.email);
 
-  return { id: user.id, email: user.email ?? '', userId: userData._id };
+  return { id: user.id, email: user.email ?? '', userId: userData.id };
 }
 
 // ============================================================================
@@ -330,7 +330,7 @@ async function handleGetAll(
 
   // Transform legacy column names to normalized format
   return (data || []).map(row => ({
-    id: row._id,
+    id: row.id,
     proposal_id: row['Reservation'],
     reported_by_user_id: row['reported by'],
     emergency_type: row['Type of emergency reported'],
@@ -362,14 +362,14 @@ async function handleGetById(
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .select('*')
-    .eq('_id', id)
+    .eq('id', id)
     .single();
 
   if (error) throw new Error(`Failed to fetch emergency: ${error.message}`);
 
   // Transform legacy column names to normalized format
   return {
-    id: row._id,
+    id: row.id,
     proposal_id: row['Reservation'],
     reported_by_user_id: row['reported by'],
     emergency_type: row['Type of emergency reported'],
@@ -407,7 +407,7 @@ async function handleCreate(
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .insert({
-      _id: recordId,
+      id: recordId,
       'Reservation': proposal_id || null,
       'reported by': reported_by_user_id || 'no_user',
       'Type of emergency reported': emergency_type,
@@ -423,15 +423,15 @@ async function handleCreate(
 
   if (error) throw new Error(`Failed to create emergency report: ${error.message}`);
 
-  console.log('[emergency:create] Emergency created:', row._id);
+  console.log('[emergency:create] Emergency created:', row.id);
 
   // Slack notification (fire-and-forget)
   sendToSlack('database', {
-    text: `🚨 *NEW EMERGENCY REPORTED*\n\n*Type:* ${emergency_type}\n*Description:* ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}\n\n*Emergency ID:* ${row._id}`,
+    text: `🚨 *NEW EMERGENCY REPORTED*\n\n*Type:* ${emergency_type}\n*Description:* ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}\n\n*Emergency ID:* ${row.id}`,
   });
 
   return {
-    id: row._id,
+    id: row.id,
     emergency_type: row['Type of emergency reported'],
     description: row['Description of emergency'],
     status: 'REPORTED',
@@ -464,14 +464,14 @@ async function handleUpdate(
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .update(fieldsToUpdate)
-    .eq('_id', id)
+    .eq('id', id)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to update emergency: ${error.message}`);
 
   return {
-    id: row._id,
+    id: row.id,
     emergency_type: row['Type of emergency reported'],
     description: row['Description of emergency'],
   };
@@ -493,12 +493,12 @@ async function handleAssignEmergency(
 
   const { data: assignedUser, error: userError } = await supabase
     .from('user')
-    .select('_id, "Name - First", "Name - Last", email, "Toggle - Is Admin"')
-    .eq('_id', assignedToUserId)
+    .select('id, first_name, last_name, email, is_admin')
+    .eq('id', assignedToUserId)
     .single();
 
   if (userError || !assignedUser) throw new Error(`Assigned user not found: ${assignedToUserId}`);
-  if (!assignedUser['Toggle - Is Admin']) throw new Error('Assigned user must be an admin');
+  if (!assignedUser.is_admin) throw new Error('Assigned user must be an admin');
 
   // Map to legacy column names
   const updateData: Record<string, unknown> = {
@@ -510,20 +510,20 @@ async function handleAssignEmergency(
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .update(updateData)
-    .eq('_id', emergencyId)
+    .eq('id', emergencyId)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to assign emergency: ${error.message}`);
 
-  const assignedToName = `${assignedUser['Name - First'] || ''} ${assignedUser['Name - Last'] || ''}`.trim() || assignedUser.email;
+  const assignedToName = `${assignedUser.first_name || ''} ${assignedUser.last_name || ''}`.trim() || assignedUser.email;
 
   sendToSlack('database', {
-    text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${row['Type of emergency reported']}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${row._id}`,
+    text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${row['Type of emergency reported']}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${row.id}`,
   });
 
   return {
-    id: row._id,
+    id: row.id,
     emergency_type: row['Type of emergency reported'],
     assigned_to_user_id: row['Team Member Assigned'],
   };
@@ -554,14 +554,14 @@ async function handleUpdateStatus(
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .update(updateData)
-    .eq('_id', emergencyId)
+    .eq('id', emergencyId)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to update status: ${error.message}`);
 
   return {
-    id: row._id,
+    id: row.id,
     status: row.pending ? 'RESOLVED' : (row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED'),
   };
 }
@@ -582,14 +582,14 @@ async function handleUpdateVisibility(
   const { data: row, error } = await supabase
     .from('emergencyreports')
     .update({ pending: isHidden })
-    .eq('_id', emergencyId)
+    .eq('id', emergencyId)
     .select()
     .single();
 
   if (error) throw new Error(`Failed to update visibility: ${error.message}`);
 
   return {
-    id: row._id,
+    id: row.id,
     is_hidden: row.pending,
   };
 }
@@ -845,21 +845,21 @@ async function handleGetTeamMembers(supabase: SupabaseClient): Promise<unknown[]
 
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, "Name - First", "Name - Last", "Phone Number (as text)", "Toggle - Is Admin"')
-    .eq('"Toggle - Is Admin"', true)
-    .order('"Name - First"', { ascending: true });
+    .select('id, email, first_name, last_name, phone_number, is_admin')
+    .eq('is_admin', true)
+    .order('first_name', { ascending: true });
 
   if (error) throw new Error(`Failed to fetch team members: ${error.message}`);
 
   console.log('[emergency:getTeamMembers] Found', data?.length || 0, 'team members');
 
   return (data || []).map(user => ({
-    _id: user._id,
+    id: user.id,
     email: user.email,
-    firstName: user['Name - First'],
-    lastName: user['Name - Last'],
-    phone: user['Phone Number (as text)'],
-    fullName: `${user['Name - First'] || ''} ${user['Name - Last'] || ''}`.trim() || user.email,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    phone: user.phone_number,
+    fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email,
   }));
 }
 

@@ -95,7 +95,7 @@ export default function ListingSearch({
 
                 return (
                   <div
-                    key={listing._id}
+                    key={listing.id}
                     className={`csp-search-result-item ${hasWarnings ? 'csp-search-result-item--warning' : ''}`}
                     onClick={() => onSelect(listing)}
                   >
@@ -109,7 +109,7 @@ export default function ListingSearch({
                       <h4>
                         {getHostName(listing) || getHostEmail(listing) || 'Unknown Host'} - {listing.listing_title || 'Unnamed Listing'} - {listing.rental_type || 'Standard'} - {listing.maximum_weeks_per_stay ? `${listing.maximum_weeks_per_stay} weeks` : 'Every week'}
                       </h4>
-                      <p className="csp-listing-details-row">unique id: {listing._id}</p>
+                      <p className="csp-listing-details-row">unique id: {listing.id}</p>
                       <p className="csp-listing-details-row">host email: {getHostEmail(listing) || 'Not available'}</p>
                       {hasWarnings && (
                         <div className="csp-listing-warnings">

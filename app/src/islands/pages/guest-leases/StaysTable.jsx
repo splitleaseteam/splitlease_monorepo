@@ -134,7 +134,7 @@ export default function StaysTable({
 
           return (
             <div
-              key={stay._id || stay.id}
+              key={stay.id}
               className="stays-table__row stays-table__row--clickable"
               onClick={(event) => handleRowClick(stay, event)}
               onKeyDown={(event) => handleRowKeyDown(stay, event)}

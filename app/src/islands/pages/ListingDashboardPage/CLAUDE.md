@@ -22,7 +22,7 @@
 [DEPENDS_ON]: supabase, auth, aiService, amenitiesService, safetyFeaturesService, houseRulesService, neighborhoodService
 [USED_BY]: ListingDashboardPage.jsx
 [KEY_FEATURES]: Listing table support, lookup table resolution, AI content generation, photo reordering, blocked dates management
-[DATA_FLOW]: Fetches listing from listing table (by _id), transforms to component format, resolves IDs to names via lookup tables
+[DATA_FLOW]: Fetches listing from listing table (by id), transforms to component format, resolves IDs to names via lookup tables
 [AI_WORKFLOW]: Load amenities/neighborhood/rules/safety first, then generate AI title/description with enriched context
 [PHOTO_OPS]: Set cover, delete, reorder with DB persistence
 
@@ -58,7 +58,7 @@
 [INPUT]: dbListing (raw from listing table), photos array, lookups object
 [OUTPUT]: Transformed listing object with resolved IDs and computed fields
 [KEY_TRANSFORMS]: JSON array parsing (amenities, rules, safety, days), photo object mapping, location address parsing, pricing object construction
-[ID_HANDLING]: listing table uses '_id' as primary key
+[ID_HANDLING]: listing table uses 'id' as primary key
 [COMPATIBILITY]: Returns both transformed properties and raw DB fields for EditListingDetails modal
 
 ### fetchLookupTables()
@@ -78,8 +78,8 @@
 ## KEY_FEATURES
 
 ### Listing Table Support
-[DESCRIPTION]: Uses listing table with '_id' as primary key
-[FLOW]: Query listing table directly by '_id'
+[DESCRIPTION]: Uses listing table with 'id' as primary key
+[FLOW]: Query listing table directly by 'id'
 [PHOTOS]: Listings use listing_photo table for photo storage
 
 ### AI Import Assistant Workflow
@@ -103,8 +103,8 @@
 
 ## URL_PARAMETERS
 
-[LISTING_ID]: ?id={listing_id} or ?listing_id={listing_id}
-[USAGE]: Fetches listing by id (listing_trial) or _id (listing)
+[LISTING_ID]: ?id={id}
+[USAGE]: Fetches listing by id (listing_trial) or id (listing)
 
 ---
 
@@ -112,11 +112,11 @@
 
 | Table | Key | Purpose |
 |-------|-----|---------|
-| listing | _id | All listings |
-| listing_photo | Listing (_id) | Photos with URL, sort order, cover flag, active flag, type |
-| proposal | Listing (_id) | Proposals badge count in navigation |
-| booking_lease | listing_id | Leases badge count in navigation |
-| virtualmeetingschedulesandlinks | Listing (_id) | Virtual meetings badge count in navigation |
+| listing | id | All listings |
+| listing_photo | Listing (id) | Photos with URL, sort order, cover flag, active flag, type |
+| proposal | Listing (id) | Proposals badge count in navigation |
+| booking_lease | id | Leases badge count in navigation |
+| virtualmeetingschedulesandlinks | Listing (id) | Virtual meetings badge count in navigation |
 
 ---
 

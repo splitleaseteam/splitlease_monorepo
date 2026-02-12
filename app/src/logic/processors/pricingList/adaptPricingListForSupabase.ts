@@ -45,10 +45,7 @@ export function adaptPricingListForSupabase(
 
   // Core identifiers
   if (pricingList.id !== undefined) {
-    adapted._id = pricingList.id;
-  }
-  if (pricingList._id !== undefined) {
-    adapted._id = pricingList._id;
+    adapted.id = pricingList.id;
   }
   if (pricingList.listingId !== undefined) {
     adapted.listing = pricingList.listingId;

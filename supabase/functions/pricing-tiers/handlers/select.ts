@@ -94,7 +94,7 @@ export async function handleSelect(
   // ================================================
 
   const selectionRecord = {
-    _id: selectionId,
+    id: selectionId,
     date_change_request_id: input.dateChangeRequestId ?? null,
     user_id: input.userId,
     lease_id: input.leaseId,
@@ -137,7 +137,7 @@ export async function handleSelect(
         tier_price_cents: tierPriceCents,
         anchor_savings_cents: anchorSavingsCents,
       })
-      .eq("_id", input.dateChangeRequestId);
+      .eq("id", input.dateChangeRequestId);
 
     if (updateError) {
       console.error(

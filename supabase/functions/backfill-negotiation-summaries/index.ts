@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     // Step 1: Find all suggested proposals (status contains "Split Lease")
     const { data: suggestedProposals, error: proposalError } = await supabase
       .from("proposal")
-      .select('_id, "Status", "Guest", "Listing", "Created Date"')
+      .select('id, "Status", "Guest", "Listing", "Created Date"')
       .like('"Status"', "%Split Lease%")
       .eq('"Deleted"', false)
       .order('"Created Date"', { ascending: false });
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
     }
 
     // Step 2: Check which proposals already have negotiationsummary records
-    const proposalIds = suggestedProposals.map(p => p._id);
+    const proposalIds = suggestedProposals.map(p => p.id);
     const { data: existingSummaries, error: summaryError } = await supabase
       .from("negotiationsummary")
       .select('"Proposal associated"')
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
 
     for (const proposal of suggestedProposals) {
       const result: BackfillResult = {
-        proposalId: proposal._id,
+        proposalId: proposal.id,
         threadId: null,
         messageId: null,
         summaryExtracted: null,
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
 
       try {
         // Skip if already has a summary
-        if (existingSummaryProposalIds.has(proposal._id)) {
+        if (existingSummaryProposalIds.has(proposal.id)) {
           result.status = "skipped_exists";
           skipped++;
           results.push(result);
@@ -116,8 +116,8 @@ Deno.serve(async (req) => {
         // Note: Legacy column names with special chars need quoted in .eq()
         const { data: thread, error: threadError } = await supabase
           .from("thread")
-          .select('_id, guest_user_id')
-          .eq('"Proposal"', proposal._id)
+          .select('id, guest_user_id')
+          .eq('"Proposal"', proposal.id)
           .maybeSingle();
 
         if (threadError || !thread) {
@@ -128,14 +128,14 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        result.threadId = thread._id;
+        result.threadId = thread.id;
 
         // Find the first SplitBot message in this thread (the AI summary)
         // Note: Legacy column names with special chars need quoted in .eq()
         const { data: splitBotMessage, error: messageError } = await supabase
           .from("_message")
-          .select('_id, "Message Body", "Created Date"')
-          .eq('thread_id', thread._id)
+          .select('id, "Message Body", "Created Date"')
+          .eq('thread_id', thread.id)
           .eq('originator_user_id', SPLITBOT_USER_ID)
           .eq('"is Split Bot"', true)
           .order('"Created Date"', { ascending: true })
@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        result.messageId = splitBotMessage._id;
+        result.messageId = splitBotMessage.id;
         const messageBody = splitBotMessage["Message Body"];
 
         // Validate message body looks like an AI summary (not a generic CTA)
@@ -176,8 +176,8 @@ Deno.serve(async (req) => {
           const { error: insertError } = await supabase
             .from("negotiationsummary")
             .insert({
-              _id: newId,
-              "Proposal associated": proposal._id,
+              id: newId,
+              "Proposal associated": proposal.id,
               "Created By": thread.guest_user_id || proposal.Guest,
               "Created Date": splitBotMessage["Created Date"] || now,
               "Modified Date": now,

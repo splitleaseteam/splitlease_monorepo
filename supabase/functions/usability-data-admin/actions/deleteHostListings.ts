@@ -24,7 +24,7 @@ export async function handleDeleteHostListings(
   // First, get all listing IDs for this host
   const { data: listings, error: fetchError } = await supabase
     .from('listing')
-    .select('_id')
+    .select('id')
     .eq('Host', hostId);
 
   if (fetchError) {
@@ -44,7 +44,7 @@ export async function handleDeleteHostListings(
     };
   }
 
-  const listingIds = listings.map(l => l._id);
+  const listingIds = listings.map(l => l.id);
   console.log('[usability-data-admin] Found listings to delete:', listingIds.length);
 
   // Delete dependent proposals first (FK constraint handling)
@@ -53,7 +53,7 @@ export async function handleDeleteHostListings(
     .from('proposal')
     .delete()
     .in('Listing', listingIds)
-    .select('_id');
+    .select('id');
 
   if (proposalError) {
     console.error('[usability-data-admin] Delete listing proposals error:', proposalError);
@@ -68,7 +68,7 @@ export async function handleDeleteHostListings(
     .from('listing')
     .delete()
     .eq('Host', hostId)
-    .select('_id');
+    .select('id');
 
   if (deleteError) {
     console.error('[usability-data-admin] Delete listings error:', deleteError);

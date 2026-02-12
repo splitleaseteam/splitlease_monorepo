@@ -51,7 +51,7 @@ export async function handleAcceptSuggestion(
   const { data: suggestion, error: fetchError } = await supabaseClient
     .from("zat_aisuggestions")
     .select("*")
-    .eq("_id", suggestionId)
+    .eq("id", suggestionId)
     .single();
 
   if (fetchError || !suggestion) {
@@ -83,7 +83,7 @@ export async function handleAcceptSuggestion(
       "being processed?": true,
       "Modified Date": new Date().toISOString(),
     })
-    .eq("_id", suggestionId);
+    .eq("id", suggestionId);
 
   if (processingError) {
     console.error(`[acceptSuggestion] Failed to mark as processing:`, processingError);
@@ -100,7 +100,7 @@ export async function handleAcceptSuggestion(
     const { error: updateError } = await supabaseClient
       .from("housemanual")
       .update(updatePayload)
-      .eq("_id", houseManualId);
+      .eq("id", houseManualId);
 
     if (updateError) {
       console.error(`[acceptSuggestion] Failed to update house manual:`, updateError);
@@ -108,7 +108,7 @@ export async function handleAcceptSuggestion(
       await supabaseClient
         .from("zat_aisuggestions")
         .update({ "being processed?": false })
-        .eq("_id", suggestionId);
+        .eq("id", suggestionId);
       throw new Error(`Failed to apply suggestion: ${updateError.message}`);
     }
 
@@ -137,7 +137,7 @@ export async function handleAcceptSuggestion(
         "being processed?": false,
         "Modified Date": new Date().toISOString(),
       })
-      .eq("_id", suggestionId);
+      .eq("id", suggestionId);
 
     if (completeError) {
       console.error(`[acceptSuggestion] Failed to mark as accepted:`, completeError);
@@ -157,7 +157,7 @@ export async function handleAcceptSuggestion(
     await supabaseClient
       .from("zat_aisuggestions")
       .update({ "being processed?": false })
-      .eq("_id", suggestionId);
+      .eq("id", suggestionId);
     throw error;
   }
 }

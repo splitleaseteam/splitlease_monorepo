@@ -21,7 +21,7 @@ interface HandlerContext {
 }
 
 interface AISuggestion {
-  _id: string;
+  id: string;
   Content: string;
   "Previous Content": string | null;
   "Field suggested house manual": string;
@@ -40,7 +40,7 @@ interface AISuggestion {
 }
 
 interface HouseManual {
-  _id: string;
+  id: string;
   progress_stage: string;
   transcript: string | null;
   transcript_source: string | null;
@@ -77,8 +77,8 @@ export async function handleGetSuggestions(
   // Fetch house manual with progress info
   const { data: houseManual, error: hmError } = await supabaseClient
     .from("housemanual")
-    .select("_id, progress_stage, transcript, transcript_source, \"AI suggestions creation ended?\"")
-    .eq("_id", houseManualId)
+    .select("id, progress_stage, transcript, transcript_source, \"AI suggestions creation ended?\"")
+    .eq("id", houseManualId)
     .single();
 
   if (hmError) {

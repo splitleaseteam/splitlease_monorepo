@@ -88,7 +88,7 @@ export async function generateStays(
 
     // Build stay record
     const stayRecord: Partial<StayData> = {
-      _id: stayId,
+      id: stayId,
       Lease: leaseId,
       'Week Number': i + 1, // 1-indexed
       Guest: guestId,

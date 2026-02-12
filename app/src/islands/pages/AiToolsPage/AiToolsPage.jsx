@@ -177,8 +177,8 @@ export default function AiToolsPage() {
                 >
                   <option value="">Select a house manual...</option>
                   {houseManuals.map((manual) => (
-                    <option key={manual._id} value={manual._id}>
-                      {[manual['House manual Name'] || manual._id, manual.Listing, manual.Host]
+                    <option key={manual.id} value={manual.id}>
+                      {[manual['House manual Name'] || manual.id, manual.Listing, manual.Host]
                         .filter(Boolean)
                         .join(' - ')}
                     </option>
@@ -197,8 +197,8 @@ export default function AiToolsPage() {
                 >
                   <option value="">Select a visit...</option>
                   {visits.map((visit) => (
-                    <option key={visit._id} value={visit._id}>
-                      {visit.audience || `Visit ${visit._id.slice(-6)}`}
+                    <option key={visit.id} value={visit.id}>
+                      {visit.audience || `Visit ${visit.id.slice(-6)}`}
                     </option>
                   ))}
                 </select>

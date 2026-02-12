@@ -52,7 +52,7 @@ function deriveSenderType(message, hostUserId, guestUserId) {
  */
 function adaptThread(rawThread) {
   return {
-    id: rawThread._id,
+    id: rawThread.id,
     subject: rawThread['Thread Subject'] || 'No Subject',
     createdDate: rawThread.original_created_at,
     modifiedDate: rawThread.original_updated_at,
@@ -65,7 +65,7 @@ function adaptThread(rawThread) {
 
     // Host user
     host: rawThread.hostUser ? {
-      id: rawThread.hostUser._id,
+      id: rawThread.hostUser.id,
       name: rawThread.hostUser.first_name && rawThread.hostUser.last_name ? `${rawThread.hostUser.first_name} ${rawThread.hostUser.last_name}` : 'Unknown Host',
       email: rawThread.hostUser.email,
       phone: rawThread.hostUser.phone_number,
@@ -74,7 +74,7 @@ function adaptThread(rawThread) {
 
     // Guest user
     guest: rawThread.guestUser ? {
-      id: rawThread.guestUser._id,
+      id: rawThread.guestUser.id,
       name: rawThread.guestUser.first_name && rawThread.guestUser.last_name ? `${rawThread.guestUser.first_name} ${rawThread.guestUser.last_name}` : 'Unknown Guest',
       email: rawThread.guestUser.email,
       phone: rawThread.guestUser.phone_number,
@@ -98,7 +98,7 @@ function adaptMessage(rawMessage, rawThread) {
   const guestUserId = rawThread.guest_user_id;
 
   return {
-    id: rawMessage._id,
+    id: rawMessage.id,
     body: rawMessage['Message Body'] || '',
     createdDate: rawMessage.original_created_at,
     senderType: deriveSenderType(rawMessage, hostUserId, guestUserId),

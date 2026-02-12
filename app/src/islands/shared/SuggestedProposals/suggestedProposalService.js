@@ -55,7 +55,7 @@ export async function fetchSuggestedProposals(userId) {
     // Step 5: Fetch negotiation summaries if available
     // Note: Column name uses Bubble convention with space and capital P
     // IMPORTANT: Filter by "To Account" to only show summaries intended for this user
-    const proposalIdsForSummaries = enrichedProposals.map(p => p.id || p._id);
+    const proposalIdsForSummaries = enrichedProposals.map(p => p.id);
     const { data: summariesData } = await supabase
       .from('negotiationsummary')
       .select('*')
@@ -75,7 +75,7 @@ export async function fetchSuggestedProposals(userId) {
       });
 
       enrichedProposals.forEach(proposal => {
-        const pId = proposal.id || proposal._id;
+        const pId = proposal.id;
         proposal._negotiationSummaries = summaryMap[pId] || [];
       });
     }
@@ -248,7 +248,7 @@ export async function fetchPendingConfirmationProposals(userId) {
     // Step 5: Fetch negotiation summaries if available
     // Note: Column name uses Bubble convention with space and capital P
     // IMPORTANT: Filter by "To Account" to only show summaries intended for this user
-    const proposalIdsForSummaries = enrichedProposals.map(p => p.id || p._id);
+    const proposalIdsForSummaries = enrichedProposals.map(p => p.id);
     const { data: summariesData } = await supabase
       .from('negotiationsummary')
       .select('*')
@@ -268,7 +268,7 @@ export async function fetchPendingConfirmationProposals(userId) {
       });
 
       enrichedProposals.forEach(proposal => {
-        const pId = proposal.id || proposal._id;
+        const pId = proposal.id;
         proposal._negotiationSummaries = summaryMap[pId] || [];
       });
     }

@@ -55,7 +55,7 @@ serve(async (req: Request) => {
       .from('listing')
       .select(
         `
-        _id,
+        id,
         nightly_rate_1_night,
         nightly_rate_2_nights,
         nightly_rate_3_nights,
@@ -98,14 +98,14 @@ serve(async (req: Request) => {
 
         // Skip if no valid pricing data (no host rates at all)
         if (pricingData.startingNightlyPrice === null) {
-          console.log(`[bulk] Skipping ${listing._id} - no valid host rates`);
+          console.log(`[bulk] Skipping ${listing.id} - no valid host rates`);
           results.skipped++;
           continue;
         }
 
         if (dry_run) {
           console.log(
-            `[bulk] DRY RUN: Would update ${listing._id} (${listing['rental type'] || 'null'}) -> $${pricingData.startingNightlyPrice}`
+            `[bulk] DRY RUN: Would update ${listing.id} (${listing['rental type'] || 'null'}) -> $${pricingData.startingNightlyPrice}`
           );
           results.processed++;
           continue;
@@ -123,7 +123,7 @@ serve(async (req: Request) => {
 
         const now = new Date().toISOString();
         const pricingListRecord = {
-          _id: pricingListId,
+          id: pricingListId,
           'Created By': listing['Host User'],
           'Host Compensation': pricingData.hostCompensation,
           'Markup and Discount Multiplier': pricingData.markupAndDiscountMultiplier,
@@ -140,7 +140,7 @@ serve(async (req: Request) => {
         // Upsert pricing_list
         const { error: upsertError } = await supabase
           .from('pricing_list')
-          .upsert(pricingListRecord, { onConflict: '_id' });
+          .upsert(pricingListRecord, { onConflict: 'id' });
 
         if (upsertError) {
           throw new Error(`Upsert failed: ${upsertError.message}`);
@@ -151,7 +151,7 @@ serve(async (req: Request) => {
           const { error: updateError } = await supabase
             .from('listing')
             .update({ pricing_list: pricingListId })
-            .eq('_id', listing._id);
+            .eq('id', listing.id);
 
           if (updateError) {
             throw new Error(`FK update failed: ${updateError.message}`);
@@ -163,13 +163,13 @@ serve(async (req: Request) => {
 
         results.processed++;
         console.log(
-          `[bulk] ✓ ${listing._id} (${listing['rental type'] || 'null'}) -> $${pricingData.startingNightlyPrice}`
+          `[bulk] ✓ ${listing.id} (${listing['rental type'] || 'null'}) -> $${pricingData.startingNightlyPrice}`
         );
 
         // Rate limiting: 50ms delay between operations
         await new Promise((resolve) => setTimeout(resolve, 50));
       } catch (err) {
-        const errorMsg = `${listing._id}: ${(err as Error).message}`;
+        const errorMsg = `${listing.id}: ${(err as Error).message}`;
         console.error(`[bulk] ✗ ${errorMsg}`);
         results.errors.push(errorMsg);
       }

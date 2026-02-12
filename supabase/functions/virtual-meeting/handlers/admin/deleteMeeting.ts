@@ -33,8 +33,8 @@ export async function handleAdminDeleteMeeting(
   // Verify meeting exists and can be deleted
   const { data: existing, error: _checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("_id, status, booked_date")
-    .eq("_id", payload.meetingId)
+    .select("id, status, booked_date")
+    .eq("id", payload.meetingId)
     .single();
 
   if (checkError || !existing) {
@@ -50,7 +50,7 @@ export async function handleAdminDeleteMeeting(
   const { error: deleteError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .delete()
-    .eq("_id", payload.meetingId);
+    .eq("id", payload.meetingId);
 
   if (deleteError) {
     console.error("[admin_delete_meeting] Database error:", deleteError);

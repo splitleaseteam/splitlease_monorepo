@@ -19,7 +19,7 @@ export default function ReasonsCard({
 }) {
   // Get selected reason names for display
   const selectedReasonNames = reasonsList
-    .filter(reason => selectedReasons.includes(reason._id))
+    .filter(reason => selectedReasons.includes(reason.id))
     .map(reason => reason.name);
 
   if (readOnly) {
@@ -51,11 +51,11 @@ export default function ReasonsCard({
       <div className="chip-container">
         {reasonsList.map(reason => (
           <SelectableChip
-            key={reason._id}
+            key={reason.id}
             label={reason.name}
-            selected={selectedReasons.includes(reason._id)}
+            selected={selectedReasons.includes(reason.id)}
             variant="success"
-            onChange={() => onChipToggle('goodGuestReasons', reason._id)}
+            onChange={() => onChipToggle('goodGuestReasons', reason.id)}
           />
         ))}
       </div>

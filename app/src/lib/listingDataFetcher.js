@@ -193,7 +193,7 @@ export async function fetchListingComplete(listingId) {
       if (a.SortOrder !== null && b.SortOrder !== null) {
         return a.SortOrder - b.SortOrder;
       }
-      return (a._id || '').localeCompare(b._id || '');
+      return (a.id || '').localeCompare(b.id || '');
     });
 
     // 4. Resolve geographic data

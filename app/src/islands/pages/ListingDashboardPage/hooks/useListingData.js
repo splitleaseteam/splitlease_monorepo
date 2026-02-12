@@ -197,10 +197,10 @@ async function fetchLookupTables() {
     // Fetch amenities
     const { data: amenities } = await supabase
       .from('zat_features_amenity')
-      .select('_id, "Name", "Icon"');
+      .select('id, "Name", "Icon"');
     if (amenities) {
       amenities.forEach((a) => {
-        lookups.amenities[a._id] = { name: a.Name, icon: a.Icon };
+        lookups.amenities[a.id] = { name: a.Name, icon: a.Icon };
         lookups.amenities[a.Name] = { name: a.Name, icon: a.Icon };
       });
     }
@@ -209,10 +209,10 @@ async function fetchLookupTables() {
     const { data: safety } = await supabase
       .schema('reference_table')
       .from('zat_features_safetyfeature')
-      .select('_id, "Name", "Icon"');
+      .select('id, "Name", "Icon"');
     if (safety) {
       safety.forEach((s) => {
-        lookups.safetyFeatures[s._id] = { name: s.Name, icon: s.Icon };
+        lookups.safetyFeatures[s.id] = { name: s.Name, icon: s.Icon };
       });
     }
 
@@ -220,11 +220,11 @@ async function fetchLookupTables() {
     const { data: rules } = await supabase
       .schema('reference_table')
       .from('zat_features_houserule')
-      .select('_id, "Name", "Icon"');
+      .select('id, "Name", "Icon"');
     if (rules) {
       rules.forEach((r) => {
         const icon = r.Icon && r.Icon.startsWith('//') ? 'https:' + r.Icon : r.Icon;
-        lookups.houseRules[r._id] = { name: r.Name, icon };
+        lookups.houseRules[r.id] = { name: r.Name, icon };
         lookups.houseRules[r.Name] = { name: r.Name, icon };
       });
     }
@@ -233,10 +233,10 @@ async function fetchLookupTables() {
     const { data: types } = await supabase
       .schema('reference_table')
       .from('zat_features_listingtype')
-      .select('_id, "Label ", "Icon"');
+      .select('id, "Label ", "Icon"');
     if (types) {
       types.forEach((t) => {
-        lookups.listingTypes[t._id] = { name: t['Label '], icon: t.Icon };
+        lookups.listingTypes[t.id] = { name: t['Label '], icon: t.Icon };
       });
     }
 
@@ -244,10 +244,10 @@ async function fetchLookupTables() {
     const { data: parking } = await supabase
       .schema('reference_table')
       .from('zat_features_parkingoptions')
-      .select('_id, "Label"');
+      .select('id, "Label"');
     if (parking) {
       parking.forEach((p) => {
-        lookups.parkingOptions[p._id] = { name: p.Label };
+        lookups.parkingOptions[p.id] = { name: p.Label };
       });
     }
 
@@ -255,10 +255,10 @@ async function fetchLookupTables() {
     const { data: storage } = await supabase
       .schema('reference_table')
       .from('zat_features_storageoptions')
-      .select('_id, "Title"');
+      .select('id, "Title"');
     if (storage) {
       storage.forEach((s) => {
-        lookups.storageOptions[s._id] = { name: s.Title };
+        lookups.storageOptions[s.id] = { name: s.Title };
       });
     }
 
@@ -320,7 +320,7 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
 
   // Transform photos
   const transformedPhotos = photos.map((photo, index) => ({
-    id: photo._id,
+    id: photo.id,
     url: photo.Photo || photo.URL || '',
     isCover: photo.toggleMainPhoto || index === 0,
     photoType: photo.Type || 'Other',
@@ -655,7 +655,7 @@ export function useListingData(listingId) {
       if (cohostError) {
         logger.warn('⚠️ Failed to fetch cohost request:', cohostError);
       } else if (cohostRequest) {
-        logger.debug('📋 Found existing cohost request:', cohostRequest._id);
+        logger.debug('📋 Found existing cohost request:', cohostRequest.id);
         setExistingCohostRequest(cohostRequest);
       }
 

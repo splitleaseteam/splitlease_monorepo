@@ -49,7 +49,7 @@ export default function RulesSection({
   // Format house rules for checkbox group
   const formatHouseRuleOptions = (rules) => {
     return rules.map(rule => ({
-      value: rule._id || rule.value,
+      value: rule.id || rule.value,
       label: rule.name || rule.label
     }));
   };

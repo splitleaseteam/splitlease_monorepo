@@ -150,22 +150,22 @@ export async function formatPreviousProposals(
     let query = supabase
       .from("proposal")
       .select(`
-        _id,
-        "Reservation Span (Weeks)",
-        "Days Selected",
-        "proposal nightly price",
-        "Total Price for Reservation (guest)",
-        Listing (
-          "Name",
-          "Location - Borough"
+        id,
+        reservation_span_in_weeks,
+        guest_selected_days_numbers_json,
+        calculated_nightly_price,
+        total_reservation_price_for_guest,
+        listing:listing_id (
+          listing_title,
+          borough
         )
       `)
-      .eq('"Guest"', guestId)
-      .order('"Created Date"', { ascending: false })
+      .eq('guest_user_id', guestId)
+      .order('created_at', { ascending: false })
       .limit(4); // Fetch one extra in case we need to exclude current
 
     if (excludeProposalId) {
-      query = query.neq("_id", excludeProposalId);
+      query = query.neq("id", excludeProposalId);
     }
 
     const { data: proposals, error } = await query;
@@ -183,10 +183,10 @@ export async function formatPreviousProposals(
     const recentProposals = proposals.slice(0, 3);
 
     return recentProposals.map((p, i) => {
-      const listing = p.Listing as { Name?: string; "Location - Borough"?: string } | null;
-      const weeks = p["Reservation Span (Weeks)"] || "?";
-      const nightlyPrice = p["proposal nightly price"] || 0;
-      const listingName = listing?.Name || "Unknown listing";
+      const listing = p.listing as { listing_title?: string; borough?: string } | null;
+      const weeks = p.reservation_span_in_weeks || "?";
+      const nightlyPrice = p.calculated_nightly_price || 0;
+      const listingName = listing?.listing_title || "Unknown listing";
       return `${i + 1}. ${listingName} - ${weeks} weeks, $${nightlyPrice}/night`;
     }).join("\n");
   } catch (_err) {

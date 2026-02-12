@@ -24,7 +24,7 @@ export async function handleGetPendingReviews(
   // Get user record to determine user type
   const { data: userData, error: userError } = await supabase
     .from("user")
-    .select("_id, user_type")
+    .select("id, user_type")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -40,14 +40,14 @@ export async function handleGetPendingReviews(
   }
 
   const userType = userData.user_type; // 'Host' or 'Guest'
-  const userId = userData._id;
+  const userId = userData.id;
 
   // Build query based on user type
   // Pending = completed stays without a review from this user
   let query = supabase
     .from("bookings_stays")
     .select(`
-      _id,
+      id,
       lease_id,
       listing_id,
       check_in_date,
@@ -59,16 +59,16 @@ export async function handleGetPendingReviews(
       review_by_host_id,
       review_by_guest_id,
       listing:listing_id (
-        _id,
+        id,
         name,
         cover_image_url
       ),
       lease:lease_id (
-        _id,
+        id,
         host_id,
         guest_id,
-        host:host_id ( _id, name_first, name_last ),
-        guest:guest_id ( _id, name_first, name_last )
+        host:host_id ( id, name_first, name_last ),
+        guest:guest_id ( id, name_first, name_last )
       )
     `)
     .eq("status", "completed")
@@ -126,14 +126,14 @@ export async function handleGetPendingReviews(
 
       if (userType === "Host") {
         // Host reviews Guest
-        revieweeId = lease?.guest?._id || stay.guest_id;
+        revieweeId = lease?.guest?.id || stay.guest_id;
         revieweeName = lease?.guest
           ? `${lease.guest.name_first || ""} ${lease.guest.name_last || ""}`.trim()
           : "Guest";
         revieweeType = "guest";
       } else {
         // Guest reviews Host
-        revieweeId = lease?.host?._id || stay.host_id;
+        revieweeId = lease?.host?.id || stay.host_id;
         revieweeName = lease?.host
           ? `${lease.host.name_first || ""} ${lease.host.name_last || ""}`.trim()
           : "Host";
@@ -141,7 +141,7 @@ export async function handleGetPendingReviews(
       }
 
       return {
-        stay_id: stay._id,
+        stay_id: stay.id,
         lease_id: stay.lease_id,
         listing_id: stay.listing_id,
         listing_name: listing?.name || "Unknown Listing",

@@ -148,7 +148,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   // ============================================================================
   const restoreProgressFromDatabase = async (user) => {
     try {
-      const userId = user.userId || user._id;
+      const userId = user.userId || user.id;
 
       // Check if user is already a usability tester with progress
       const { data: userData, error } = await supabase
@@ -230,7 +230,7 @@ export function useSimulationGuestsideDemoPageLogic() {
       return;
     }
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
     setSimulationState(prev => ({ ...prev, isLoading: true, stepInProgress: 'A' }));
 
     try {
@@ -293,7 +293,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   const handleStepB = useCallback(async () => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
     setSimulationState(prev => ({ ...prev, isLoading: true, stepInProgress: 'B' }));
 
     try {
@@ -363,7 +363,7 @@ export function useSimulationGuestsideDemoPageLogic() {
           // Link VM to proposal
           await supabase
             .from('booking_proposal')
-            .update({ 'virtual meeting': vmData._id })
+            .update({ 'virtual meeting': vmData.id })
             .eq('id', proposalId);
         }
       } catch (vmErr) {
@@ -409,7 +409,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   const handleStepC_Ending1 = useCallback(async () => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
     setSimulationState(prev => ({
       ...prev,
       isLoading: true,
@@ -464,7 +464,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   const handleStepC_Ending2 = useCallback(async () => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
     setSimulationState(prev => ({
       ...prev,
       isLoading: true,
@@ -538,7 +538,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   const handleStepD = useCallback(async (ending) => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
     const stepId = `D${ending}`;
     setSimulationState(prev => ({ ...prev, isLoading: true, stepInProgress: stepId }));
 
@@ -607,7 +607,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   const handleStepE = useCallback(async (ending) => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
     const stepId = `E${ending}`;
     setSimulationState(prev => ({ ...prev, isLoading: true, stepInProgress: stepId }));
 
@@ -688,7 +688,7 @@ export function useSimulationGuestsideDemoPageLogic() {
   const handleReset = useCallback(async () => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
 
     try {
       // Reset user's usability tester status

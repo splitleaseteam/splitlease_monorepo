@@ -75,7 +75,7 @@ export function ListPanel({
         <div className="mit-entry-list">
           {entries.map(entry => (
             <EntryCard
-              key={entry._id}
+              key={entry.id}
               entry={entry}
               onEdit={onEdit}
               onDelete={onDelete}

@@ -13,7 +13,7 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { ValidationError } from "../../_shared/errors.ts";
 
 interface RentalApplicationResponse {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   DOB: string | null;
@@ -53,7 +53,7 @@ interface RentalApplicationResponse {
  *
  * @param payload - Optional payload (not used currently)
  * @param supabase - Supabase client (admin)
- * @param userId - The user's ID (either Supabase UUID or Bubble _id)
+ * @param userId - The user's ID (either Supabase UUID or legacy id)
  * @returns The rental application data or null if none exists
  */
 export async function handleGet(
@@ -74,18 +74,18 @@ export async function handleGet(
     console.log(`[RentalApp:get] Looking up user by supabase_user_id: ${userId}`);
     const result = await supabase
       .from('user')
-      .select('_id, "Rental Application"')
+      .select('id, rental_application_form_id')
       .eq('supabase_user_id', userId)
       .single();
     userData = result.data;
     userError = result.error;
   } else {
-    // Legacy Bubble user - look up by _id directly
-    console.log(`[RentalApp:get] Looking up user by _id (legacy): ${userId}`);
+    // Legacy Bubble user - look up by id directly
+    console.log(`[RentalApp:get] Looking up user by id (legacy): ${userId}`);
     const result = await supabase
       .from('user')
-      .select('_id, "Rental Application"')
-      .eq('_id', userId)
+      .select('id, rental_application_form_id')
+      .eq('id', userId)
       .single();
     userData = result.data;
     userError = result.error;
@@ -96,10 +96,10 @@ export async function handleGet(
     throw new ValidationError(`User not found for ID: ${userId}`);
   }
 
-  console.log(`[RentalApp:get] Found user: ${userData._id}`);
+  console.log(`[RentalApp:get] Found user: ${userData.id}`);
 
   // Check if user has a rental application
-  const rentalAppId = userData["Rental Application"];
+  const rentalAppId = userData.rental_application_form_id;
   if (!rentalAppId) {
     console.log(`[RentalApp:get] User has no rental application`);
     return null;
@@ -111,7 +111,7 @@ export async function handleGet(
   const { data: rentalApp, error: rentalAppError } = await supabase
     .from('rentalapplication')
     .select(`
-      _id,
+      id,
       name,
       email,
       DOB,
@@ -144,7 +144,7 @@ export async function handleGet(
       "State ID - Back",
       "government ID"
     `)
-    .eq('_id', rentalAppId)
+    .eq('id', rentalAppId)
     .single();
 
   if (rentalAppError) {

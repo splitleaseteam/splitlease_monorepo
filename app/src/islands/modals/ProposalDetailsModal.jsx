@@ -35,8 +35,8 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
       const { data, error } = await supabase
         .schema('reference_table')
         .from('zat_features_houserule')
-        .select('_id, Name, Icon')
-        .in('_id', proposal['House Rules']);
+        .select('id, Name, Icon')
+        .in('id', proposal['House Rules']);
 
       if (error) throw error;
       setHouseRules(data || []);
@@ -165,7 +165,7 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
                       <li className="proposal-details-loading">Loading house rules...</li>
                     ) : houseRules.length > 0 ? (
                       houseRules.map((rule) => (
-                        <li key={rule._id} className="proposal-details-rule-item">
+                        <li key={rule.id} className="proposal-details-rule-item">
                           {rule.Icon && <span className="proposal-details-rule-icon">{rule.Icon}</span>}
                           <span>{rule.Name}</span>
                         </li>

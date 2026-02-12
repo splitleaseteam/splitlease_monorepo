@@ -19,7 +19,7 @@ describe('adaptPricingListForSupabase - Integration Tests', () => {
 
       const result = adaptPricingListForSupabase(pricingList);
 
-      expect(result._id).toBe('abc123');
+      expect(result.id).toBe('abc123');
       expect(result.listing).toBe('listing456');
       expect(result['Created By']).toBe('user789');
     });
@@ -209,8 +209,8 @@ describe('adaptPricingListForSupabase - Integration Tests', () => {
 
       const result = adaptPricingListForSupabase(pricingList);
 
-      // Last assignment wins in the implementation
-      expect(result._id).toBe('xyz789');
+      // id field takes the value from pricingList.id
+      expect(result.id).toBe('abc123');
     });
 
     it('should handle zero values for numeric fields', () => {
@@ -281,7 +281,7 @@ describe('adaptPricingListForSupabase - Integration Tests', () => {
       const result = adaptPricingListForSupabase(pricingList);
 
       expect(result).toEqual({
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Created By': 'user789',
         'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
@@ -328,7 +328,7 @@ describe('adaptPricingListForSupabase - Integration Tests', () => {
       const result = adaptPricingListForSupabase(pricingList);
 
       expect(result).toEqual({
-        _id: 'abc123',
+        id: 'abc123',
         'Nightly Price': [null, 120, 115, 110, 105, 100, 95],
         'Starting Nightly Price': 95
       });

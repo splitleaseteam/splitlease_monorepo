@@ -24,7 +24,7 @@ export type WeekPattern =
  * Mirrors the Bubble API Event inputs
  */
 export interface GeneratePaymentRecordsInput {
-  /** The lease/reservation ID (Bookings-Leases._id) */
+  /** The lease/reservation ID (Bookings-Leases.id) */
   leaseId: string;
 
   /** Rental type: 'Nightly', 'Weekly', or 'Monthly' */
@@ -96,7 +96,7 @@ export interface PaymentScheduleResult {
  * Payment record as stored in the database
  */
 export interface PaymentRecord {
-  _id: string;
+  id: string;
 
   /** Reference to the lease (Bookings-Leases) */
   'Booking - Reservation': string;
@@ -137,7 +137,7 @@ export interface PaymentRecord {
  * Lease data needed for payment record generation
  */
 export interface LeaseData {
-  _id: string;
+  id: string;
   Proposal?: string;
   'rental type'?: string;
   'Move In Date'?: string;
@@ -156,7 +156,7 @@ export interface LeaseData {
  * Proposal data for fetching additional payment details
  */
 export interface ProposalData {
-  _id: string;
+  id: string;
   'hc cleaning fee'?: number;
   'hc damage deposit'?: number;
   '4 week compensation'?: number;

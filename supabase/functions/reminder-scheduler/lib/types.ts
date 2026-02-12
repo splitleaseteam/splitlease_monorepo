@@ -34,7 +34,7 @@ export type DeliveryStatus = 'pending' | 'sent' | 'delivered' | 'bounced' | 'fai
  * Reminder record from database
  */
 export interface Reminder {
-  readonly _id: string;
+  readonly id: string;
   readonly 'house manual': string;
   readonly guest?: string;
   readonly 'Created By': string;

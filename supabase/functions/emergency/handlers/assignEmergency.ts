@@ -58,8 +58,8 @@ export async function handleAssignEmergency(
   // Verify the assigned user exists and is admin
   const { data: assignedUser, error: userError } = await supabase
     .from('user')
-    .select('_id, "First name", "Last name", email, admin')
-    .eq('_id', assignedToUserId)
+    .select('id, "First name", "Last name", email, admin')
+    .eq('id', assignedToUserId)
     .single();
 
   if (userError || !assignedUser) {
@@ -121,7 +121,7 @@ async function notifySlackAssignment(
     const { data: proposal } = await supabase
       .from('proposal')
       .select('"Agreement #"')
-      .eq('_id', emergency.proposal_id)
+      .eq('id', emergency.proposal_id)
       .single();
 
     if (proposal) {

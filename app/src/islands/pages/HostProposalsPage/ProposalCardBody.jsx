@@ -36,7 +36,7 @@ import NarrativeProposalBody from './NarrativeProposalBody.jsx';
 function isDeclined(proposal) {
   const status = typeof proposal?.status === 'string'
     ? proposal.status
-    : (proposal?.status?.id || proposal?.status?._id || '');
+    : (proposal?.status?.id || '');
 
   return [
     'rejected_by_host',
@@ -55,7 +55,7 @@ function hasGuestCounteroffer(proposal) {
   if (proposal?.guest_counteroffer) return true;
   const status = typeof proposal?.status === 'string'
     ? proposal.status
-    : (proposal?.status?.id || proposal?.status?._id || '');
+    : (proposal?.status?.id || '');
   if (
     proposal?.last_modified_by === 'guest' &&
     (status === 'host_review' || status === 'proposal_submitted')

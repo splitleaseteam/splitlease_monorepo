@@ -540,12 +540,12 @@ export default function VirtualMeetingsSection({ proposals, currentUserId }) {
       <div className="vm-elegant-list">
         {proposalsWithActiveVM.map((proposal) => (
           <VirtualMeetingCard
-            key={proposal._id}
+            key={proposal.id}
             proposal={proposal}
             currentUserId={currentUserId}
             onOpenVMModal={handleOpenVMModal}
-            isExpanded={expandedCardId === proposal._id}
-            onToggleExpand={() => handleToggleExpand(proposal._id)}
+            isExpanded={expandedCardId === proposal.id}
+            onToggleExpand={() => handleToggleExpand(proposal.id)}
           />
         ))}
       </div>

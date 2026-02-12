@@ -252,7 +252,7 @@ export async function handleGetVisitManual(
   const { data: visit, error: visitError } = await supabaseClient
     .from("visit")
     .select(`
-      _id,
+      id,
       "User shared with (guest)",
       "Arrival/Checkin Date",
       "Language",
@@ -267,7 +267,7 @@ export async function handleGetVisitManual(
       "review_submitted_at",
       "house manual"
     `)
-    .eq("_id", visitId)
+    .eq("id", visitId)
     .single();
 
   if (visitError || !visit) {
@@ -279,7 +279,7 @@ export async function handleGetVisitManual(
   // We need to look up the user table to match supabase auth user to guest ID
   const { data: userData, error: userError } = await supabaseClient
     .from("user")
-    .select("_id, supabase_user_id")
+    .select("id, supabase_user_id")
     .eq("supabase_user_id", userId)
     .single();
 
@@ -291,8 +291,8 @@ export async function handleGetVisitManual(
   const guestId = visit["User shared with (guest)"];
 
   // Verify user is the guest of this visit
-  if (userData._id !== guestId) {
-    console.error(`[getVisitManual] Access denied. User ${userData._id} is not guest ${guestId}`);
+  if (userData.id !== guestId) {
+    console.error(`[getVisitManual] Access denied. User ${userData.id} is not guest ${guestId}`);
     throw new AuthenticationError("You are not authorized to view this house manual");
   }
 
@@ -316,7 +316,7 @@ export async function handleGetVisitManual(
         .update({
           "token_used_at": new Date().toISOString(),
         })
-        .eq("_id", visitId);
+        .eq("id", visitId);
     }
   }
 
@@ -330,7 +330,7 @@ export async function handleGetVisitManual(
   const { data: houseManual, error: hmError } = await supabaseClient
     .from("housemanual")
     .select("*")
-    .eq("_id", houseManualId)
+    .eq("id", houseManualId)
     .single();
 
   if (hmError || !houseManual) {
@@ -343,7 +343,7 @@ export async function handleGetVisitManual(
   // Build response
   return {
     visit: {
-      id: visit._id,
+      id: visit.id,
       guestId: guestId,
       arrivalDate: visit["Arrival/Checkin Date"],
       language: visit["Language"],
@@ -354,7 +354,7 @@ export async function handleGetVisitManual(
       narrationHeard: Boolean(visit["narration heard?"]),
     },
     houseManual: {
-      id: houseManual._id,
+      id: houseManual.id,
       title: houseManual["House manual Name"] || "House Manual",
       hostName: houseManual["Host Name"],
       propertyAddress: extractAddressText(houseManual["Address (geo)"]),

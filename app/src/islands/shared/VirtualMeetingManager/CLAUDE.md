@@ -38,8 +38,8 @@
 
 ## CRITICAL_RULES
 
-[RULE_1]: currentUser MUST have _id (or id) and typeUserSignup (or type_user_signup) fields
-[RULE_2]: proposal MUST have _id (or id) for API calls
+[RULE_1]: currentUser MUST have id and typeUserSignup (or type_user_signup) fields
+[RULE_2]: proposal MUST have id for API calls
 [RULE_3]: virtualMeeting field can be virtualMeeting, 'virtual meeting', or virtual_meeting (handle all variants)
 [RULE_4]: ALL times displayed in EST timezone with (EST) suffix
 [RULE_5]: Exactly 3 time slots REQUIRED for request/suggest views
@@ -84,7 +84,7 @@
 | accept | Accept meeting request and set booked date. Params: proposal, booked_date_sel, user_accepting |
 | create | Create new meeting request with 3 proposed time slots. Params: proposal, times_selected, requested_by, is_alternative_times, timezone_string |
 | decline | Decline meeting request. Params: proposal |
-| cancel | Cancel existing scheduled meeting. Params: meeting_id, proposal |
+| cancel | Cancel existing scheduled meeting. Params: meetingId, proposal |
 
 All actions are called through the `virtual-meeting` Supabase Edge Function with action-based routing. The service layer (virtualMeetingService.js) returns standardized `{status, data?, message?}` responses and includes `retryApiCall()` with exponential backoff.
 

@@ -79,13 +79,13 @@ function ListingItem({ listing, onClick }) {
   const photoUrl = getValidPhotoUrl(photos);
 
   const handleClick = () => {
-    onClick?.(listing._id);
+    onClick?.(listing.id);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onClick?.(listing._id);
+      onClick?.(listing.id);
     }
   };
 
@@ -212,7 +212,7 @@ export default function ListingsCard({
       <div className="listings-grid">
         {listings.map((listing) => (
           <ListingItem
-            key={listing._id}
+            key={listing.id}
             listing={listing}
             onClick={onListingClick}
           />

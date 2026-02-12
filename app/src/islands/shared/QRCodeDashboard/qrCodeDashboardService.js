@@ -26,7 +26,7 @@ export const adaptQRCodeFromDB = (row) => {
   const useCase = getUseCaseByName(useCaseName);
 
   return {
-    id: row._id,
+    id: row.id,
     title: useCaseName || 'Untitled',
     content: row['Long URL'] || '',
     shortUrl: row['Short URL'] || null,
@@ -231,7 +231,7 @@ export async function updateQRCode(qrCodeId, updates) {
     const { data, error } = await supabase
       .from('qrcodes')
       .update(dbUpdates)
-      .eq('_id', qrCodeId)
+      .eq('id', qrCodeId)
       .select()
       .single();
 
@@ -267,7 +267,7 @@ export async function deleteQRCode(qrCodeId) {
     const { error } = await supabase
       .from('qrcodes')
       .delete()
-      .eq('_id', qrCodeId);
+      .eq('id', qrCodeId);
 
     if (error) {
       throw new Error(`Failed to delete QR code: ${error.message}`);
@@ -300,7 +300,7 @@ export async function deleteMultipleQRCodes(qrCodeIds) {
     const { error } = await supabase
       .from('qrcodes')
       .delete()
-      .in('_id', qrCodeIds);
+      .in('id', qrCodeIds);
 
     if (error) {
       throw new Error(`Failed to delete QR codes: ${error.message}`);

@@ -41,7 +41,7 @@ export function useNotificationSettings(userId) {
 
       if (data) {
         // User has existing preferences
-        setRecordId(data.id || data._id);
+        setRecordId(data.id);
         setPreferences(data);
       } else {
         // No preferences found - user will need to have a record created

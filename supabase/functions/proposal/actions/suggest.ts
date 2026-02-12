@@ -85,23 +85,23 @@ export async function handleSuggest(
   const { data: originProposal, error: proposalError } = await supabase
     .from("proposal")
     .select(`
-      _id,
-      Listing,
-      Guest,
-      "Days Selected",
-      "Nights Selected (Nights list)",
-      "Move in range start",
-      "Move in range end",
-      "Reservation Span (Weeks)",
-      "Reservation Span",
-      "nights per week (num)",
-      "proposal nightly price",
-      "Guest flexibility",
-      "preferred gender",
-      "check in day",
-      "check out day"
+      id,
+      listing_id,
+      guest_user_id,
+      guest_selected_days_numbers_json,
+      guest_selected_nights_numbers_json,
+      move_in_range_start_date,
+      move_in_range_end_date,
+      reservation_span_in_weeks,
+      reservation_span_text,
+      nights_per_week_count,
+      calculated_nightly_price,
+      guest_schedule_flexibility_text,
+      preferred_roommate_gender,
+      checkin_day_of_week_number,
+      checkout_day_of_week_number
     `)
-    .eq("_id", input.origin_proposal_id)
+    .eq("id", input.origin_proposal_id)
     .single();
 
   if (proposalError || !originProposal) {
@@ -110,11 +110,11 @@ export async function handleSuggest(
   }
 
   // Verify user owns this proposal
-  if (originProposal.Guest !== user.id) {
+  if (originProposal.guest_user_id !== user.id) {
     throw new ValidationError("You can only generate suggestions for your own proposals");
   }
 
-  console.log(`[proposal:suggest] Origin listing: ${originProposal.Listing}`);
+  console.log(`[proposal:suggest] Origin listing: ${originProposal.listing_id}`);
 
   // ================================================
   // FETCH ORIGIN LISTING (for address matching)
@@ -123,18 +123,18 @@ export async function handleSuggest(
   const { data: originListing, error: listingError } = await supabase
     .from("listing")
     .select(`
-      _id,
-      "Location - Address",
-      "Location - slightly different address",
-      "Days Available (List of Days)",
-      "Nights Available (List of Nights) "
+      id,
+      address_with_lat_lng_json,
+      map_pin_offset_address_json,
+      available_days_as_day_numbers_json,
+      available_nights_as_day_numbers_json
     `)
-    .eq("_id", originProposal.Listing)
+    .eq("id", originProposal.listing_id)
     .single();
 
   if (listingError || !originListing) {
     console.error(`[proposal:suggest] Origin listing fetch failed:`, listingError);
-    throw new ValidationError(`Origin listing not found: ${originProposal.Listing}`);
+    throw new ValidationError(`Origin listing not found: ${originProposal.listing_id}`);
   }
 
   // ================================================
@@ -145,11 +145,11 @@ export async function handleSuggest(
   const skippedReasons: string[] = [];
 
   // Exclude origin listing and any specified exclusions
-  const excludeIds = [originProposal.Listing, ...excludeListingIds];
+  const excludeIds = [originProposal.listing_id, ...excludeListingIds];
 
   // Get guest's selected days (already 0-indexed after migration)
-  const guestDaysJS = originProposal["Days Selected"] || [];
-  const guestNightsPerWeek = originProposal["nights per week (num)"] || guestDaysJS.length;
+  const guestDaysJS = originProposal.guest_selected_days_numbers_json || [];
+  const guestNightsPerWeek = originProposal.nights_per_week_count || guestDaysJS.length;
 
   // Weekly Match: Find listings with overlapping available days
   if (input.suggestion_type === "weekly_match" || input.suggestion_type === "both") {
@@ -159,28 +159,28 @@ export async function handleSuggest(
     const { data: weeklyMatches, error: weeklyError } = await supabase
       .from("listing")
       .select(`
-        _id,
-        "Host User",
-        "rental type",
-        "Days Available (List of Days)",
-        "Nights Available (List of Nights) ",
-        "Location - Address",
-        "Location - slightly different address",
-        "Features - House Rules",
-        "cleaning_fee",
-        "damage_deposit",
-        "Weeks offered",
-        "weekly_host_rate",
-        "nightly_rate_2_nights",
-        "nightly_rate_3_nights",
-        "nightly_rate_4_nights",
-        "nightly_rate_5_nights",
-        "nightly_rate_7_nights",
-        "monthly_host_rate"
+        id,
+        host_user_id,
+        rental_type,
+        available_days_as_day_numbers_json,
+        available_nights_as_day_numbers_json,
+        address_with_lat_lng_json,
+        map_pin_offset_address_json,
+        house_rule_reference_ids_json,
+        cleaning_fee_amount,
+        damage_deposit_amount,
+        weeks_offered_schedule_text,
+        weekly_rate_paid_to_host,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay,
+        monthly_rate_paid_to_host
       `)
-      .eq("Is Live", true)
-      .eq("Deleted", false)
-      .not("_id", "in", `(${excludeIds.join(",")})`);
+      .eq("is_active", true)
+      .eq("is_deleted", false)
+      .not("id", "in", `(${excludeIds.join(",")})`);
 
     if (weeklyError) {
       console.error(`[proposal:suggest] Weekly match query failed:`, weeklyError);
@@ -188,7 +188,7 @@ export async function handleSuggest(
     } else if (weeklyMatches) {
       for (const listing of weeklyMatches) {
         // Check if listing has overlapping available days (already 0-indexed)
-        const listingDaysJS = listing["Days Available (List of Days)"] || [];
+        const listingDaysJS = listing.available_days_as_day_numbers_json || [];
         const overlappingDays = guestDaysJS.filter((d: number) => listingDaysJS.includes(d));
 
         if (overlappingDays.length >= guestNightsPerWeek) {
@@ -208,44 +208,44 @@ export async function handleSuggest(
     console.log(`[proposal:suggest] Searching for same address matches...`);
 
     // Extract address for matching
-    const originAddress = originListing["Location - slightly different address"] ||
-      (originListing["Location - Address"] as Record<string, unknown>)?.address;
+    const originAddress = originListing.map_pin_offset_address_json ||
+      (originListing.address_with_lat_lng_json as Record<string, unknown>)?.address;
 
     if (originAddress) {
       const { data: addressMatches, error: addressError } = await supabase
         .from("listing")
         .select(`
-          _id,
-          "Host User",
-          "rental type",
-          "Days Available (List of Days)",
-          "Nights Available (List of Nights)",
-          "Location - Address",
-          "Location - slightly different address",
-          "Features - House Rules",
-          "cleaning_fee",
-          "damage_deposit",
-          "Weeks offered",
-          "weekly_host_rate",
-          "nightly_rate_2_nights",
-          "nightly_rate_3_nights",
-          "nightly_rate_4_nights",
-          "nightly_rate_5_nights",
-          "nightly_rate_7_nights",
-          "monthly_host_rate"
+          id,
+          host_user_id,
+          rental_type,
+          available_days_as_day_numbers_json,
+          available_nights_as_day_numbers_json,
+          address_with_lat_lng_json,
+          map_pin_offset_address_json,
+          house_rule_reference_ids_json,
+          cleaning_fee_amount,
+          damage_deposit_amount,
+          weeks_offered_schedule_text,
+          weekly_rate_paid_to_host,
+          nightly_rate_for_2_night_stay,
+          nightly_rate_for_3_night_stay,
+          nightly_rate_for_4_night_stay,
+          nightly_rate_for_5_night_stay,
+          nightly_rate_for_7_night_stay,
+          monthly_rate_paid_to_host
         `)
-        .eq("Is Live", true)
-        .eq("Deleted", false)
-        .eq("Location - slightly different address", originAddress)
-        .not("_id", "in", `(${excludeIds.join(",")})`);
+        .eq("is_active", true)
+        .eq("is_deleted", false)
+        .eq("map_pin_offset_address_json", originAddress)
+        .not("id", "in", `(${excludeIds.join(",")})`);
 
       if (addressError) {
         console.error(`[proposal:suggest] Address match query failed:`, addressError);
         skippedReasons.push(`Address match query error: ${addressError.message}`);
       } else if (addressMatches) {
-        const existingIds = new Set(matchingListings.map((l) => l._id));
+        const existingIds = new Set(matchingListings.map((l) => l.id));
         for (const listing of addressMatches) {
-          if (!existingIds.has(listing._id)) {
+          if (!existingIds.has(listing.id)) {
             matchingListings.push(listing as unknown as ListingData);
             if (matchingListings.length >= maxSuggestions) break;
           }
@@ -270,48 +270,48 @@ export async function handleSuggest(
     try {
       // Create suggestion proposal with reference to origin
       const suggestionData = {
-        Listing: listing._id,
-        Guest: originProposal.Guest,
-        "Host User": listing["Host User"],
-        Status: "sl_submitted_awaiting_rental_app", // Default for suggestions
-        "Days Selected": originProposal["Days Selected"],
-        "Nights Selected (Nights list)": originProposal["Nights Selected (Nights list)"],
-        "Move in range start": originProposal["Move in range start"],
-        "Move in range end": originProposal["Move in range end"],
-        "Reservation Span (Weeks)": originProposal["Reservation Span (Weeks)"],
-        "Reservation Span": originProposal["Reservation Span"],
-        "nights per week (num)": originProposal["nights per week (num)"],
-        "proposal nightly price": originProposal["proposal nightly price"],
-        "Guest flexibility": originProposal["Guest flexibility"],
-        "preferred gender": originProposal["preferred gender"],
-        "check in day": originProposal["check in day"],
-        "check out day": originProposal["check out day"],
-        "cleaning fee": listing["cleaning_fee"] || 0,
-        "damage deposit": listing["damage_deposit"] || 0,
+        listing_id: listing.id,
+        guest_user_id: originProposal.guest_user_id,
+        host_user_id: listing.host_user_id,
+        proposal_workflow_status: "sl_submitted_awaiting_rental_app", // Default for suggestions
+        guest_selected_days_numbers_json: originProposal.guest_selected_days_numbers_json,
+        guest_selected_nights_numbers_json: originProposal.guest_selected_nights_numbers_json,
+        move_in_range_start_date: originProposal.move_in_range_start_date,
+        move_in_range_end_date: originProposal.move_in_range_end_date,
+        reservation_span_in_weeks: originProposal.reservation_span_in_weeks,
+        reservation_span_text: originProposal.reservation_span_text,
+        nights_per_week_count: originProposal.nights_per_week_count,
+        calculated_nightly_price: originProposal.calculated_nightly_price,
+        guest_schedule_flexibility_text: originProposal.guest_schedule_flexibility_text,
+        preferred_roommate_gender: originProposal.preferred_roommate_gender,
+        checkin_day_of_week_number: originProposal.checkin_day_of_week_number,
+        checkout_day_of_week_number: originProposal.checkout_day_of_week_number,
+        cleaning_fee_amount: listing.cleaning_fee_amount || 0,
+        damage_deposit_amount: listing.damage_deposit_amount || 0,
         // Mark as suggestion
         "Is Suggested": true,
         "Origin Proposal": input.origin_proposal_id,
         "Suggested Reason": input.suggestion_type,
-        Deleted: false,
-        "Created Date": new Date().toISOString(),
-        "Modified Date": new Date().toISOString(),
+        is_deleted: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       const { data: newSuggestion, error: createError } = await supabase
         .from("proposal")
         .insert(suggestionData)
-        .select("_id")
+        .select("id")
         .single();
 
       if (createError) {
-        console.error(`[proposal:suggest] Failed to create suggestion for listing ${listing._id}:`, createError);
-        skippedReasons.push(`Failed to create suggestion for listing ${listing._id}: ${createError.message}`);
+        console.error(`[proposal:suggest] Failed to create suggestion for listing ${listing.id}:`, createError);
+        skippedReasons.push(`Failed to create suggestion for listing ${listing.id}: ${createError.message}`);
         continue;
       }
 
       if (newSuggestion) {
-        suggestionIds.push(newSuggestion._id);
-        console.log(`[proposal:suggest] Created suggestion ${newSuggestion._id} for listing ${listing._id}`);
+        suggestionIds.push(newSuggestion.id);
+        console.log(`[proposal:suggest] Created suggestion ${newSuggestion.id} for listing ${listing.id}`);
       }
     } catch (error) {
       console.error(`[proposal:suggest] Error creating suggestion:`, error);

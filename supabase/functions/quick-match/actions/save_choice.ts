@@ -38,8 +38,8 @@ export async function handleSaveChoice(
   // Verify proposal exists
   const { data: proposalData, error: proposalError } = await supabase
     .from('proposal')
-    .select('_id, Listing, Guest')
-    .eq('_id', proposal_id)
+    .select('id, Listing, Guest')
+    .eq('id', proposal_id)
     .single();
 
   if (proposalError || !proposalData) {
@@ -50,8 +50,8 @@ export async function handleSaveChoice(
   // Verify matched listing exists and is active
   const { data: listingData, error: listingError } = await supabase
     .from('listing')
-    .select('_id, Name, Active, Deleted')
-    .eq('_id', matched_listing_id)
+    .select('id, Name, Active, Deleted')
+    .eq('id', matched_listing_id)
     .single();
 
   if (listingError || !listingData) {

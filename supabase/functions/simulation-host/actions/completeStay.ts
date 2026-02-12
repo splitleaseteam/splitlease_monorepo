@@ -52,7 +52,7 @@ export async function handleCompleteStay(
           'Lease Status': 'Completed',
           'Modified Date': new Date().toISOString(),
         })
-        .eq('_id', leaseId);
+        .eq('id', leaseId);
 
       if (leaseError) {
         console.warn('[completeStay] Could not update lease:', leaseError);
@@ -68,10 +68,10 @@ export async function handleCompleteStay(
   const { error: proposalError } = await supabase
     .from('proposal')
     .update({
-      Status: 'Stay Completed',
-      'Modified Date': new Date().toISOString(),
+      proposal_workflow_status: 'Stay Completed',
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (proposalError) {
     console.warn('[completeStay] Could not update proposal:', proposalError);
@@ -80,8 +80,8 @@ export async function handleCompleteStay(
   // Step 3: Get guest and host IDs from proposal
   const { data: proposal } = await supabase
     .from('proposal')
-    .select('"Guest User", "Host User", listing')
-    .eq('_id', proposalId)
+    .select('guest_user_id, host_user_id, listing_id')
+    .eq('id', proposalId)
     .single();
 
   if (proposal) {
@@ -91,9 +91,9 @@ export async function handleCompleteStay(
       const { data: hostReview, error: hostReviewError } = await supabase
         .from('review')
         .insert({
-          reviewer: proposal['Host User'],
-          reviewee: proposal['Guest User'],
-          listing: proposal.listing,
+          reviewer: proposal.host_user_id,
+          reviewee: proposal.guest_user_id,
+          listing: proposal.listing_id,
           proposal: proposalId,
           lease: leaseId,
           reviewer_type: 'host',
@@ -103,14 +103,14 @@ export async function handleCompleteStay(
           'simulation_id': simulationId,
           'Created Date': new Date().toISOString(),
         })
-        .select('_id')
+        .select('id')
         .single();
 
       if (hostReviewError) {
         console.warn('[completeStay] Could not create host review:', hostReviewError);
       } else if (hostReview) {
         reviews.push({
-          reviewId: hostReview._id,
+          reviewId: hostReview.id,
           reviewerType: 'host',
           rating: 5,
         });
@@ -121,9 +121,9 @@ export async function handleCompleteStay(
       const { data: guestReview, error: guestReviewError } = await supabase
         .from('review')
         .insert({
-          reviewer: proposal['Guest User'],
-          reviewee: proposal['Host User'],
-          listing: proposal.listing,
+          reviewer: proposal.guest_user_id,
+          reviewee: proposal.host_user_id,
+          listing: proposal.listing_id,
           proposal: proposalId,
           lease: leaseId,
           reviewer_type: 'guest',
@@ -133,14 +133,14 @@ export async function handleCompleteStay(
           'simulation_id': simulationId,
           'Created Date': new Date().toISOString(),
         })
-        .select('_id')
+        .select('id')
         .single();
 
       if (guestReviewError) {
         console.warn('[completeStay] Could not create guest review:', guestReviewError);
       } else if (guestReview) {
         reviews.push({
-          reviewId: guestReview._id,
+          reviewId: guestReview.id,
           reviewerType: 'guest',
           rating: 5,
         });
@@ -155,15 +155,15 @@ export async function handleCompleteStay(
   // Update host's usability step to complete
   const { data: hostUser } = await supabase
     .from('user')
-    .select('_id')
-    .eq('supabaseUserId', user.id)
+    .select('id')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (hostUser) {
     await supabase
       .from('user')
-      .update({ 'Usability Step': 6 })
-      .eq('_id', hostUser._id);
+      .update({ onboarding_usability_step: 6 })
+      .eq('id', hostUser.id);
   }
 
   console.log('[completeStay] Completed - stay finished with', reviews.length, 'reviews');

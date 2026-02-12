@@ -59,12 +59,12 @@ export async function handleCleanup(
       .from('review')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.reviews = reviews?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.reviews, 'reviews');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete reviews:', err);
+    console.warn('[cleanup] Could not delete reviews:', _err);
   }
 
   // 2. Delete guest requests
@@ -73,12 +73,12 @@ export async function handleCleanup(
       .from('guest_requests')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.guestRequests = requests?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.guestRequests, 'guest requests');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete guest requests:', err);
+    console.warn('[cleanup] Could not delete guest requests:', _err);
   }
 
   // 3. Delete leases
@@ -87,12 +87,12 @@ export async function handleCleanup(
       .from('bookings_leases')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.leases = leases?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.leases, 'leases');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete leases:', err);
+    console.warn('[cleanup] Could not delete leases:', _err);
   }
 
   // 4. Delete virtual meetings
@@ -101,12 +101,12 @@ export async function handleCleanup(
       .from('virtualmeetingschedulesandlinks')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.virtualMeetings = meetings?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.virtualMeetings, 'virtual meetings');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete virtual meetings:', err);
+    console.warn('[cleanup] Could not delete virtual meetings:', _err);
   }
 
   // 5. Delete proposals
@@ -115,12 +115,12 @@ export async function handleCleanup(
       .from('proposal')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.proposals = proposals?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.proposals, 'proposals');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete proposals:', err);
+    console.warn('[cleanup] Could not delete proposals:', _err);
   }
 
   // 6. Delete guest accounts
@@ -129,12 +129,12 @@ export async function handleCleanup(
       .from('account_guest')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.guestAccounts = guestAccounts?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.guestAccounts, 'guest accounts');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete guest accounts:', err);
+    console.warn('[cleanup] Could not delete guest accounts:', _err);
   }
 
   // 7. Delete test users (only simulation-created guest users)
@@ -143,19 +143,19 @@ export async function handleCleanup(
       .from('user')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     deletedCounts.users = users?.length || 0;
     console.log('[cleanup] Deleted', deletedCounts.users, 'test users');
   } catch (_err) {
-    console.warn('[cleanup] Could not delete test users:', err);
+    console.warn('[cleanup] Could not delete test users:', _err);
   }
 
   // Reset the host's usability tester status
   const { data: hostUser } = await supabase
     .from('user')
-    .select('_id')
-    .eq('supabaseUserId', user.id)
+    .select('id')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (hostUser) {
@@ -163,10 +163,10 @@ export async function handleCleanup(
       .from('user')
       .update({
         'is usability tester': false,
-        'Usability Step': null,
-        'Modified Date': new Date().toISOString(),
+        onboarding_usability_step: null,
+        updated_at: new Date().toISOString(),
       })
-      .eq('_id', hostUser._id);
+      .eq('id', hostUser.id);
 
     console.log('[cleanup] Reset host usability status');
   }

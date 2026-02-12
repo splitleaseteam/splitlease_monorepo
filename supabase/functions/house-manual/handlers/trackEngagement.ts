@@ -70,13 +70,13 @@ export async function handleTrackEngagement(
   const { data: visit, error: visitError } = await supabaseClient
     .from("visit")
     .select(`
-      _id,
+      id,
       "User shared with (guest)",
       "link saw?",
       "map saw?",
       "narration heard?"
     `)
-    .eq("_id", visitId)
+    .eq("id", visitId)
     .single();
 
   if (visitError || !visit) {
@@ -87,7 +87,7 @@ export async function handleTrackEngagement(
   // Step 2: Verify the authenticated user is the guest of this visit
   const { data: userData, error: userError } = await supabaseClient
     .from("user")
-    .select("_id, supabase_user_id")
+    .select("id, supabase_user_id")
     .eq("supabase_user_id", userId)
     .single();
 
@@ -98,8 +98,8 @@ export async function handleTrackEngagement(
 
   const guestId = visit["User shared with (guest)"];
 
-  if (userData._id !== guestId) {
-    console.error(`[trackEngagement] Access denied. User ${userData._id} is not guest ${guestId}`);
+  if (userData.id !== guestId) {
+    console.error(`[trackEngagement] Access denied. User ${userData.id} is not guest ${guestId}`);
     throw new AuthenticationError("You are not authorized to track engagement for this visit");
   }
 
@@ -122,7 +122,7 @@ export async function handleTrackEngagement(
     const { error: updateError } = await supabaseClient
       .from("visit")
       .update(updatePayload)
-      .eq("_id", visitId);
+      .eq("id", visitId);
 
     if (updateError) {
       console.error(`[trackEngagement] Failed to update visit:`, updateError);

@@ -81,13 +81,13 @@ export async function handleGetThrottleStatus(
     const { data: lease, error: leaseError } = await supabase
       .from('bookings_leases')
       .select(`
-        _id, "Guest", "Host",
+        id, "Guest", "Host",
         "Throttling - guest ability to create requests?",
         "Throttling - host ability to create requests?",
         "Throttling - guest NOT show warning popup",
         "Throttling - host NOT show warning popup"
       `)
-      .eq('_id', leaseId)
+      .eq('id', leaseId)
       .single();
 
     if (leaseError) {
@@ -108,12 +108,12 @@ export async function handleGetThrottleStatus(
     if (otherParticipantId) {
       const { data: otherUser } = await supabase
         .from('user')
-        .select('"Name - First"')
-        .eq('_id', otherParticipantId)
+        .select('first_name')
+        .eq('id', otherParticipantId)
         .single();
 
-      if (otherUser?.['Name - First']) {
-        otherParticipantName = otherUser['Name - First'];
+      if (otherUser?.first_name) {
+        otherParticipantName = otherUser.first_name;
       }
     }
 

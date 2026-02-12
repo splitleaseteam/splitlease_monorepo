@@ -57,8 +57,8 @@ export async function handleDelete(
   // Step 1: Verify listing exists
   const { data: existingListing, error: fetchError } = await supabase
     .from('listing')
-    .select('_id, Name, "Host User"')
-    .eq('_id', listing_id)
+    .select('id, Name, "Host User"')
+    .eq('id', listing_id)
     .single();
 
   if (fetchError || !existingListing) {
@@ -76,7 +76,7 @@ export async function handleDelete(
       Deleted: true,
       'Modified Date': now,
     })
-    .eq('_id', listing_id);
+    .eq('id', listing_id);
 
   if (updateError) {
     console.error('[listing:delete] Update failed:', updateError);

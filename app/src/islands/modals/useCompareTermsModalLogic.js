@@ -245,7 +245,7 @@ export function useCompareTermsModalLogic({
    * Handle Accept Counteroffer - 7-Step Workflow
    */
   const handleAcceptCounteroffer = useCallback(async () => {
-    const proposalId = proposal?.id || proposal?._id;
+    const proposalId = proposal?.id;
     if (!proposalId) {
       setError('Proposal ID is missing');
       return;
@@ -397,7 +397,7 @@ export function useCompareTermsModalLogic({
    * Handle Cancel Modal Confirm
    */
   const handleCancelConfirm = useCallback(async (reason) => {
-    const cancelProposalId = proposal?.id || proposal?._id;
+    const cancelProposalId = proposal?.id;
     if (!cancelProposalId) return;
 
     setIsCancelling(true);

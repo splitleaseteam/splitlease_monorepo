@@ -94,7 +94,7 @@ export default function RequestManagement({
   };
 
   // Check if current user is the receiver
-  const userId = currentUser?._id || currentUser?.id;
+  const userId = currentUser?.id;
   const isReceiver = userId === request.requestReceiver;
 
   // If request is already resolved, show status

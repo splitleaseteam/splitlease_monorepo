@@ -39,7 +39,7 @@ export async function handleGenerateJingleLyrics(context: HandlerContext) {
     const { data: visitData, error: visitError } = await supabaseClient
       .from("visit")
       .select("*")
-      .eq("_id", visitId)
+      .eq("id", visitId)
       .single();
 
     if (!visitError && visitData) {

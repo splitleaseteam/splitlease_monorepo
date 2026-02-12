@@ -100,7 +100,7 @@ export default function ProposalItem({ proposal, onStatusChange, onAction }) {
           <div className="pm-listing-info">
             <p className="pm-listing-name">{listing?.name || 'Unknown Listing'}</p>
             <p className="pm-listing-address">{listing?.address || 'No address'}</p>
-            <p className="pm-listing-id">ID: {listing?._id || 'N/A'}</p>
+            <p className="pm-listing-id">ID: {listing?.id || 'N/A'}</p>
             <p className="pm-listing-type">Type: {listing?.rentalType || 'N/A'}</p>
             {listing?.coverPhoto && (
               <div className="pm-listing-photos">
@@ -207,7 +207,7 @@ export default function ProposalItem({ proposal, onStatusChange, onAction }) {
           <select
             className="pm-status-select"
             value={proposal.status}
-            onChange={(e) => onStatusChange(proposal._id, e.target.value)}
+            onChange={(e) => onStatusChange(proposal.id, e.target.value)}
           >
             {PROPOSAL_STATUSES.map((status, index) => (
               <option key={index} value={status}>
@@ -218,7 +218,7 @@ export default function ProposalItem({ proposal, onStatusChange, onAction }) {
           <div className="pm-proposal-meta">
             <p className="pm-meta-item">
               <span className="pm-meta-label">Proposal ID:</span>
-              <span className="pm-meta-value pm-id-value">{proposal._id}</span>
+              <span className="pm-meta-value pm-id-value">{proposal.id}</span>
             </p>
             <p className="pm-meta-item">
               <span className="pm-meta-label">Created:</span>

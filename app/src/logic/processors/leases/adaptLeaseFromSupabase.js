@@ -72,9 +72,9 @@ function deriveLeaseType(row) {
 function getCounterparty(lease, currentUserId) {
   if (!lease) return null;
   if (lease.leaseType === 'co_tenant') {
-    return (lease.host?.id || lease.host?._id) === currentUserId ? lease.guest : lease.host;
+    return lease.host?.id === currentUserId ? lease.guest : lease.host;
   }
-  return (lease.guest?.id || lease.guest?._id) === currentUserId ? lease.host : lease.guest;
+  return lease.guest?.id === currentUserId ? lease.host : lease.guest;
 }
 
 /**
@@ -88,8 +88,8 @@ function getCoTenantForLease(lease, currentUserId) {
   if (!lease) return null;
 
   // Compare as strings to handle ID format differences
-  const hostId = String(lease.host?.id || lease.host?._id || '');
-  const guestId = String(lease.guest?.id || lease.guest?._id || '');
+  const hostId = String(lease.host?.id || '');
+  const guestId = String(lease.guest?.id || '');
   const userId = String(currentUserId || '');
 
   if (hostId && hostId === userId) return lease.guest;
@@ -114,7 +114,7 @@ function getUserRole(lease, currentUserId) {
   if (lease.leaseType === 'co_tenant') {
     return 'co_tenant';
   }
-  return (lease.guest?.id || lease.guest?._id) === currentUserId ? 'guest' : 'host';
+  return lease.guest?.id === currentUserId ? 'guest' : 'host';
 }
 
 /**
@@ -129,8 +129,7 @@ export function adaptLeaseFromSupabase(row) {
 
   return {
     // Core identifiers
-    _id: row.id || row._id,
-    id: row.id || row._id,
+    id: row.id,
     bubbleId: row.bubble_id,
     agreementNumber: row.agreement_number || row['Agreement Number'] || null,
     proposalId: row.proposal_id || row.Proposal || null,
@@ -139,14 +138,14 @@ export function adaptLeaseFromSupabase(row) {
     isGuestHost: leaseType === 'guest_host',
 
     // Direct ID references (for DateChangeRequestManager compatibility)
-    hostId: row.host_user_id || row.host?.id || row.host?._id || null,
-    guestId: row.guest_user_id || row.guest?.id || row.guest?._id || null,
-    listingId: row.listing_id || row.listing?.id || row.listing?._id || null,
+    hostId: row.host_user_id || row.host?.id || null,
+    guestId: row.guest_user_id || row.guest?.id || null,
+    listingId: row.listing_id || row.listing?.id || null,
 
     // Bubble-style field aliases (for backward compatibility)
-    Host: row.host_user_id || row.host?.id || row.host?._id || null,
-    Guest: row.guest_user_id || row.guest?.id || row.guest?._id || null,
-    Listing: row.listing_id || row.listing?.id || row.listing?._id || null,
+    Host: row.host_user_id || row.host?.id || null,
+    Guest: row.guest_user_id || row.guest?.id || null,
+    Listing: row.listing_id || row.listing?.id || null,
 
     // Status
     status: mapLeaseStatus(row['Lease Status']),
@@ -208,7 +207,7 @@ export function adaptLeaseFromSupabase(row) {
       return getUserRole(this, currentUserId);
     },
     proposal: row.proposal ? {
-      id: row.proposal.id || row.proposal._id,
+      id: row.proposal.id,
       checkInDay: parseInt(row.proposal.checkin_day_of_week_number || row.proposal['check in day']) ?? null,
       checkOutDay: parseInt(row.proposal.checkout_day_of_week_number || row.proposal['check out day']) ?? null,
     } : null,
@@ -274,7 +273,6 @@ function adaptUserFromSupabase(user) {
   if (!user) return null;
 
   return {
-    _id: user.id,
     id: user.id,
     email: user.email || null,
     firstName: user.first_name || null,
@@ -295,8 +293,7 @@ function adaptListingFromSupabase(listing) {
   if (!listing) return null;
 
   return {
-    _id: listing.id || listing._id,
-    id: listing.id || listing._id,
+    id: listing.id,
     name: listing.listing_title || listing.name || 'Unnamed Listing',
     address: listing.address_with_lat_lng_json || listing.address || null,
     neighborhood: listing.primary_neighborhood_reference_id || listing.neighborhood || null,
@@ -314,8 +311,7 @@ function adaptStayFromSupabase(stay) {
   if (!stay) return null;
 
   return {
-    _id: stay._id,
-    id: stay._id,
+    id: stay.id,
     status: stay['Stay Status'] || 'unknown',
     assignedTo: stay['Assigned to'] || stay.assignedTo || stay.assigned_to || null,
     checkIn: parseDate(stay['Check In (night)']),
@@ -339,8 +335,7 @@ function adaptPaymentRecordFromSupabase(payment) {
   if (!payment) return null;
 
   return {
-    _id: payment._id,
-    id: payment._id,
+    id: payment.id,
     leaseId: payment['Booking - Reservation'],
     paymentNumber: payment['Payment #'],
     scheduledDate: parseDate(payment['Scheduled Date']),
@@ -363,8 +358,7 @@ export function adaptDateChangeRequestFromSupabase(dcr) {
   if (!dcr) return null;
 
   return {
-    _id: dcr._id,
-    id: dcr._id,
+    id: dcr.id,
     leaseId: dcr.Lease,
     requestedById: dcr['Requested by'],
     requestReceiverId: dcr['Request receiver'],

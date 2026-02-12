@@ -45,8 +45,8 @@ export async function handleSendCounteroffer(
   // Verify proposal exists and belongs to this simulation
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('_id, Status, simulation_id, "Guest Nightly Price", "Guest Nights per Week"')
-    .eq('_id', proposalId)
+    .select('id, proposal_workflow_status, simulation_id, "Guest Nightly Price", "Guest Nights per Week"')
+    .eq('id', proposalId)
     .single();
 
   if (fetchError || !proposal) {
@@ -76,10 +76,10 @@ export async function handleSendCounteroffer(
       'host_counter_offer_nights_per_week': offer.nightsPerWeek,
       'host_counter_offer_check_in_day': offer.checkInDay,
       'host_counter_offer_check_out_day': offer.checkOutDay,
-      Status: 'Host Counteroffer Sent',
-      'Modified Date': new Date().toISOString(),
+      proposal_workflow_status: 'Host Counteroffer Sent',
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (counterError) {
     console.error('[sendCounteroffer] Error sending counteroffer:', counterError);
@@ -92,10 +92,10 @@ export async function handleSendCounteroffer(
   const { error: rejectError } = await supabase
     .from('proposal')
     .update({
-      Status: 'Guest Rejected Host Counteroffer',
-      'Modified Date': new Date().toISOString(),
+      proposal_workflow_status: 'Guest Rejected Host Counteroffer',
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (rejectError) {
     console.error('[sendCounteroffer] Error simulating rejection:', rejectError);
@@ -105,15 +105,15 @@ export async function handleSendCounteroffer(
   // Update host's usability step
   const { data: hostUser } = await supabase
     .from('user')
-    .select('_id')
-    .eq('supabaseUserId', user.id)
+    .select('id')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (hostUser) {
     await supabase
       .from('user')
-      .update({ 'Usability Step': 3 })
-      .eq('_id', hostUser._id);
+      .update({ onboarding_usability_step: 3 })
+      .eq('id', hostUser.id);
   }
 
   console.log('[sendCounteroffer] Completed - guest rejected counteroffer');

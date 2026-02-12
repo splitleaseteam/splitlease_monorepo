@@ -31,8 +31,8 @@ export async function handleAcceptCounteroffer(
   // Fetch proposal to get counteroffer terms and user IDs
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('*, "host_counter_offer_nightly_price", "host_counter_offer_nights_per_week", "host_counter_offer_check_in_day", "host_counter_offer_check_out_day", Guest, "Host User"')
-    .eq('_id', proposalId)
+    .select('*, host_proposed_nightly_price, host_proposed_nights_per_week, host_proposed_checkin_day, host_proposed_checkout_day, guest_user_id, host_user_id')
+    .eq('id', proposalId)
     .single();
 
   if (fetchError) {
@@ -57,31 +57,31 @@ export async function handleAcceptCounteroffer(
   // - counter offer happened: boolean ✅ (NOT counteroffer_accepted)
   // - proposal nightly price, nights per week (num), check in day, check out day: ✅
   const updateData: Record<string, unknown> = {
-    Status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-    'Modified Date': new Date().toISOString(),
-    'Is Finalized': true
-    // Note: 'counter offer happened' is already true if there was a counteroffer
+    proposal_workflow_status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
+    updated_at: new Date().toISOString(),
+    is_finalized: true
+    // Note: 'has_host_counter_offer' is already true if there was a counteroffer
     // No need to set it again during acceptance
   };
 
   // Apply counteroffer values as the final agreed terms
-  if (proposal['host_counter_offer_nightly_price']) {
-    updateData['proposal nightly price'] = proposal['host_counter_offer_nightly_price'];
+  if (proposal.host_proposed_nightly_price) {
+    updateData.calculated_nightly_price = proposal.host_proposed_nightly_price;
   }
-  if (proposal['host_counter_offer_nights_per_week']) {
-    updateData['nights per week (num)'] = proposal['host_counter_offer_nights_per_week'];
+  if (proposal.host_proposed_nights_per_week) {
+    updateData.nights_per_week_count = proposal.host_proposed_nights_per_week;
   }
-  if (proposal['host_counter_offer_check_in_day'] !== undefined) {
-    updateData['check in day'] = proposal['host_counter_offer_check_in_day'];
+  if (proposal.host_proposed_checkin_day !== undefined) {
+    updateData.checkin_day_of_week_number = proposal.host_proposed_checkin_day;
   }
-  if (proposal['host_counter_offer_check_out_day'] !== undefined) {
-    updateData['check out day'] = proposal['host_counter_offer_check_out_day'];
+  if (proposal.host_proposed_checkout_day !== undefined) {
+    updateData.checkout_day_of_week_number = proposal.host_proposed_checkout_day;
   }
 
   const { error: updateError } = await supabase
     .from('proposal')
     .update(updateData)
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (updateError) {
     console.error('[accept_counteroffer] Update error:', {
@@ -103,8 +103,8 @@ export async function handleAcceptCounteroffer(
     // Strategy 1: Look up thread by Proposal FK
     const { data: threadByProposal, error: threadError } = await supabase
       .from('thread')
-      .select('_id')
-      .eq('Proposal', proposalId)
+      .select('id')
+      .eq('proposal_id', proposalId)
       .limit(1)
       .maybeSingle();
 
@@ -112,7 +112,7 @@ export async function handleAcceptCounteroffer(
       console.error('[accept_counteroffer] Thread lookup by Proposal error:', threadError);
     }
 
-    threadId = threadByProposal?._id || null;
+    threadId = threadByProposal?.id || null;
     console.log('[accept_counteroffer] Strategy 1 (Proposal FK) result:', threadId || 'none');
 
     // Strategy 2: Fallback - find thread by host+guest+listing match
@@ -121,10 +121,10 @@ export async function handleAcceptCounteroffer(
 
       const { data: threadByMatch, error: matchError } = await supabase
         .from('thread')
-        .select('_id')
-        .eq('host_user_id', proposal['Host User'])
-        .eq('guest_user_id', proposal.Guest)
-        .eq('Listing', proposal.Listing)
+        .select('id')
+        .eq('host_user_id', proposal.host_user_id)
+        .eq('guest_user_id', proposal.guest_user_id)
+        .eq('listing_id', proposal.listing_id)
         .limit(1)
         .maybeSingle();
 
@@ -132,21 +132,21 @@ export async function handleAcceptCounteroffer(
         console.error('[accept_counteroffer] Thread lookup by match error:', matchError);
       }
 
-      threadId = threadByMatch?._id || null;
+      threadId = threadByMatch?.id || null;
       console.log('[accept_counteroffer] Strategy 2 (host+guest+listing) result:', threadId || 'none');
 
       // If found via Strategy 2, update the Proposal FK for future lookups
       if (threadId) {
-        const { error: updateError } = await supabase
+        const { error: threadUpdateError } = await supabase
           .from('thread')
           .update({
-            "Proposal": proposalId,
-            "Modified Date": new Date().toISOString()
+            proposal_id: proposalId,
+            updated_at: new Date().toISOString()
           })
-          .eq('_id', threadId);
+          .eq('id', threadId);
 
-        if (updateError) {
-          console.error('[accept_counteroffer] Failed to update thread Proposal FK:', updateError);
+        if (threadUpdateError) {
+          console.error('[accept_counteroffer] Failed to update thread Proposal FK:', threadUpdateError);
         } else {
           console.log('[accept_counteroffer] Updated thread Proposal FK:', threadId);
         }
@@ -160,11 +160,11 @@ export async function handleAcceptCounteroffer(
       // Get listing name for thread subject
       const { data: listing } = await supabase
         .from('listing')
-        .select('"Name"')
-        .eq('_id', proposal.Listing)
+        .select('listing_title')
+        .eq('id', proposal.listing_id)
         .single();
 
-      const listingName = listing?.['Name'] || 'Proposal Thread';
+      const listingName = listing?.listing_title || 'Proposal Thread';
 
       // Generate new thread ID
       const { data: newId } = await supabase.rpc('generate_unique_id');
@@ -174,17 +174,17 @@ export async function handleAcceptCounteroffer(
       const { error: createError } = await supabase
         .from('thread')
         .insert({
-          _id: threadId,
-          host_user_id: proposal['Host User'],
-          guest_user_id: proposal.Guest,
-          "Listing": proposal.Listing,
-          "Proposal": proposalId,
-          "Thread Subject": listingName,
-          "Created By": proposal.Guest,
-          "Created Date": now,
-          "Modified Date": now,
-          "Participants": [proposal['Host User'], proposal.Guest],
-          "from logged out user?": false,
+          id: threadId,
+          host_user_id: proposal.host_user_id,
+          guest_user_id: proposal.guest_user_id,
+          listing_id: proposal.listing_id,
+          proposal_id: proposalId,
+          thread_subject_text: listingName,
+          created_by_user_id: proposal.guest_user_id,
+          original_created_at: now,
+          original_updated_at: now,
+          participant_user_ids_json: [proposal.host_user_id, proposal.guest_user_id],
+          is_from_logged_out_user: false,
           created_at: now,
           updated_at: now,
         });
@@ -206,7 +206,7 @@ export async function handleAcceptCounteroffer(
           callToAction: 'View Lease',
           visibleToHost: false,
           visibleToGuest: true,
-          recipientUserId: proposal.Guest
+          recipientUserId: proposal.guest_user_id
         });
         console.log('[accept_counteroffer] Guest message created');
       } catch (guestMsgError) {
@@ -221,7 +221,7 @@ export async function handleAcceptCounteroffer(
           callToAction: 'View Lease',
           visibleToHost: true,
           visibleToGuest: false,
-          recipientUserId: proposal['Host User'] || proposal.Host
+          recipientUserId: proposal.host_user_id
         });
         console.log('[accept_counteroffer] Host message created');
       } catch (hostMsgError) {

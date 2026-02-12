@@ -103,10 +103,10 @@ export async function handleSubmit(
   console.log(`[RentalApp:submit] Validated input for: ${input.email}`);
 
   // ================================================
-  // FETCH USER DATA (to get Bubble _id for linking)
+  // FETCH USER DATA (to get legacy id for linking)
   // Supports both:
   // - Supabase Auth user IDs (UUID format) - look up by supabase_user_id
-  // - Legacy Bubble user IDs (17-char alphanumeric) - look up by _id directly
+  // - Legacy Bubble user IDs (17-char alphanumeric) - look up by id directly
   // ================================================
 
   // Detect if userId is a UUID (Supabase Auth) or Bubble ID (alphanumeric)
@@ -120,18 +120,18 @@ export async function handleSubmit(
     console.log(`[RentalApp:submit] Looking up user by supabase_user_id: ${userId}`);
     const result = await supabase
       .from('user')
-      .select('_id, email, "Rental Application"')
+      .select('id, email, rental_application_form_id')
       .eq('supabase_user_id', userId)
       .single();
     userData = result.data;
     userError = result.error;
   } else {
-    // Legacy Bubble user - look up by _id directly
-    console.log(`[RentalApp:submit] Looking up user by _id (legacy): ${userId}`);
+    // Legacy Bubble user - look up by id directly
+    console.log(`[RentalApp:submit] Looking up user by id (legacy): ${userId}`);
     const result = await supabase
       .from('user')
-      .select('_id, email, "Rental Application"')
-      .eq('_id', userId)
+      .select('id, email, rental_application_form_id')
+      .eq('id', userId)
       .single();
     userData = result.data;
     userError = result.error;
@@ -142,15 +142,15 @@ export async function handleSubmit(
     throw new ValidationError(`User not found for ID: ${userId}`);
   }
 
-  const userId = userData._id;
-  console.log(`[RentalApp:submit] Found user with ID: ${userId}`);
+  const platformUserId = userData.id;
+  console.log(`[RentalApp:submit] Found user with ID: ${platformUserId}`);
 
   // ================================================
   // CHECK FOR EXISTING RENTAL APPLICATION
   // ================================================
 
-  if (userData["Rental Application"]) {
-    console.log(`[RentalApp:submit] User already has rental application: ${userData["Rental Application"]}`);
+  if (userData.rental_application_form_id) {
+    console.log(`[RentalApp:submit] User already has rental application: ${userData.rental_application_form_id}`);
     // For now, we'll create a new one anyway - the user can manage duplicates
   }
 
@@ -185,8 +185,8 @@ export async function handleSubmit(
   }
 
   const rentalAppData: Record<string, unknown> = {
-    _id: rentalAppId,
-    'Created By': userId,
+    id: rentalAppId,
+    'Created By': platformUserId,
     name: input.fullName,
     DOB: input.dob || null,
     email: input.email,
@@ -254,8 +254,8 @@ export async function handleSubmit(
 
   // Build user update data - includes Job Title sync if provided
   const userUpdateData: Record<string, unknown> = {
-    'Rental Application': rentalAppId,
-    'Modified Date': now,
+    rental_application_form_id: rentalAppId,
+    updated_at: now,
   };
 
   // Sync Job Title to user table if provided in rental application
@@ -272,7 +272,7 @@ export async function handleSubmit(
   const { error: userUpdateError } = await supabase
     .from('user')
     .update(userUpdateData)
-    .eq('_id', userId);
+    .eq('id', platformUserId);
 
   if (userUpdateError) {
     console.error(`[RentalApp:submit] User update failed:`, userUpdateError);
@@ -290,14 +290,14 @@ export async function handleSubmit(
   // Fetch all proposals where Guest equals the user's ID
   const { data: userProposals, error: proposalsFetchError } = await supabase
     .from('proposal')
-    .select('_id')
-    .eq('Guest', userId);
+    .select('id')
+    .eq('guest_user_id', platformUserId);
 
   if (proposalsFetchError) {
     console.error(`[RentalApp:submit] Failed to fetch proposals:`, proposalsFetchError);
     // Non-blocking - continue
   } else if (userProposals && userProposals.length > 0) {
-    const proposalIds = userProposals.map((p: { _id: string }) => p._id);
+    const proposalIds = userProposals.map((p: { id: string }) => p.id);
     console.log(`[RentalApp:submit] Found ${proposalIds.length} proposals to update`);
 
     // Batch update proposals with rental application reference AND status change to Host Review
@@ -305,12 +305,12 @@ export async function handleSubmit(
     const { error: proposalsUpdateError } = await supabase
       .from('proposal')
       .update({
-        'rental application': rentalAppId,
-        'Status': 'Host Review',
-        'Modified Date': now,
+        rental_application_id: rentalAppId,
+        proposal_workflow_status: 'Host Review',
+        updated_at: now,
       })
-      .in('_id', proposalIds)
-      .in('Status', [
+      .in('id', proposalIds)
+      .in('proposal_workflow_status', [
         'Proposal Submitted by guest - Awaiting Rental Application',
         'Proposal Submitted for guest by Split Lease - Awaiting Rental Application',
       ]);

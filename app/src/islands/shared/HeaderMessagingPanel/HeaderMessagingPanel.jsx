@@ -260,7 +260,7 @@ export default function HeaderMessagingPanel({
             ) : (
               threads.map((thread) => (
                 <ThreadCard
-                  key={thread._id}
+                  key={thread.id}
                   thread={thread}
                   isSelected={false}
                   onClick={() => handleThreadSelect(thread)}
@@ -288,7 +288,7 @@ export default function HeaderMessagingPanel({
                 <>
                   {messages.map((message) => (
                     <MessageBubble
-                      key={message._id}
+                      key={message.id}
                       message={message}
                       onCTAClick={handleCTAClick}
                       getCTAButtonConfig={getCTAButtonConfig}

@@ -62,19 +62,20 @@ export async function handleUpdate(
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
       .select(`
-        _id,
-        pricing_list,
-        nightly_rate_1_night,
-        nightly_rate_2_nights,
-        nightly_rate_3_nights,
-        nightly_rate_4_nights,
-        nightly_rate_5_nights,
-        nightly_rate_6_nights,
-        nightly_rate_7_nights,
-        "rental type",
-        "Host User"
+        id,
+        pricing_configuration_id,
+        nightly_rate_for_1_night_stay,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay,
+        weekly_rate_paid_to_host,
+        monthly_rate_paid_to_host,
+        rental_type,
+        host_user_id
       `)
-      .eq('_id', listing_id)
+      .eq('id', listing_id)
       .single();
 
     if (fetchError || !listing) {
@@ -82,13 +83,13 @@ export async function handleUpdate(
       throw new Error(`Listing not found: ${listing_id}`);
     }
 
-    if (!listing.pricing_list) {
-      console.error('[pricing-list:update] No pricing_list FK on listing:', listing_id);
+    if (!listing.pricing_configuration_id) {
+      console.error('[pricing-list:update] No pricing_configuration_id on listing:', listing_id);
       throw new Error(`No pricing_list found for listing: ${listing_id}. Call create first.`);
     }
 
-    const pricingListId = listing.pricing_list;
-    console.log('[pricing-list:update] ✅ Step 1 complete - Listing found with pricing_list:', pricingListId);
+    const pricingListId = listing.pricing_configuration_id;
+    console.log('[pricing-list:update] ✅ Step 1 complete - Listing found with pricing_configuration_id:', pricingListId);
 
     // Step 2: Calculate pricing with new inputs
     console.log('[pricing-list:update] Step 2/3: Calculating pricing...');
@@ -99,7 +100,7 @@ export async function handleUpdate(
 
     console.log('[pricing-list:update] ✅ Step 2 complete - Pricing calculated');
 
-    // Step 3: Update pricing_list by its _id
+    // Step 3: Update pricing_list by its id
     // Note: Only include columns that exist in pricing_list table schema
     console.log('[pricing-list:update] Step 3/3: Updating pricing_list...');
 
@@ -127,7 +128,7 @@ export async function handleUpdate(
     const { error: updateError } = await supabase
       .from('pricing_list')
       .update(updateData)
-      .eq('_id', pricingListId);
+      .eq('id', pricingListId);
 
     if (updateError) {
       console.error('[pricing-list:update] Update failed:', updateError);

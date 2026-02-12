@@ -45,8 +45,7 @@ export function adaptPricingListFromSupabase(
 
   return {
     // Core identifiers
-    id: rawPricingList._id,
-    _id: rawPricingList._id, // Keep for compatibility
+    id: rawPricingList.id,
     listingId: rawPricingList.listing,
     createdBy: rawPricingList['Created By'],
 

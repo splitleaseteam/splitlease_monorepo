@@ -44,7 +44,7 @@ export default function useZEmailsUnitPageLogic() {
 
   const selectedTemplate = useMemo(() => {
     if (!selectedTemplateId) return null;
-    return templates.find((template) => template._id === selectedTemplateId) || null;
+    return templates.find((template) => template.id === selectedTemplateId) || null;
   }, [templates, selectedTemplateId]);
 
   const placeholders = useMemo(() => {
@@ -69,7 +69,7 @@ export default function useZEmailsUnitPageLogic() {
       return;
     }
 
-    const template = templates.find((item) => item._id === templateId);
+    const template = templates.find((item) => item.id === templateId);
     const extracted = extractPlaceholders(template?.Placeholder);
     const initialValues = {};
 
@@ -158,7 +158,7 @@ export default function useZEmailsUnitPageLogic() {
         body: JSON.stringify({
           action: 'send',
           payload: {
-            template_id: selectedTemplate._id,
+            template_id: selectedTemplate.id,
             to_email: toEmails[0],
             from_email: FROM_EMAIL,
             from_name: 'Split Lease',

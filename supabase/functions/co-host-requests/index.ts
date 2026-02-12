@@ -39,7 +39,7 @@ const VALID_STATUSES = Object.keys(STATUS_CONFIG);
 // Column name mapping: JavaScript key <-> Database column
 const _COLUMN_MAP = {
   // Request fields
-  id: '_id',
+  id: 'id',
   hostUserId: 'Host User',
   cohostUserId: 'Co-Host User',
   cohostSelectedOs: 'Co-Host selected (OS)',
@@ -67,7 +67,7 @@ const _COLUMN_MAP = {
 
 // Select columns for request queries (with JOINs)
 const REQUEST_SELECT_COLUMNS = `
-  _id,
+  id,
   "Host User",
   "Co-Host User",
   "Co-Host selected (OS)",
@@ -229,7 +229,7 @@ async function _checkAdminStatus(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin"')
+    .select('is_admin')
     .eq('email', email)
     .single();
 
@@ -238,7 +238,7 @@ async function _checkAdminStatus(
     return false;
   }
 
-  return data['Toggle - Is Admin'] === true;
+  return data.is_admin === true;
 }
 
 /**
@@ -255,7 +255,7 @@ function toJsRequest(
   const statusConfig = STATUS_CONFIG[status] || { label: status, color: 'gray', canAssign: false, canClose: false };
 
   return {
-    id: dbRow._id,
+    id: dbRow.id,
     hostUserId: dbRow['Host User'],
     cohostUserId: dbRow['Co-Host User'],
     cohostSelectedOs: dbRow['Co-Host selected (OS)'],
@@ -280,13 +280,13 @@ function toJsRequest(
     createdDate: dbRow['Created Date'],
     modifiedDate: dbRow['Modified Date'],
     // Joined data
-    hostName: hostData?.['Name - Full'] || 'Unknown',
+    hostName: `${hostData?.first_name || ''} ${hostData?.last_name || ''}`.trim() || 'Unknown',
     hostEmail: hostData?.email || null,
-    hostPhone: hostData?.['Phone Number (as text)'] || null,
-    hostPhoto: hostData?.['Profile Photo'] || null,
-    cohostName: cohostData?.['Name - Full'] || null,
+    hostPhone: hostData?.phone_number || null,
+    hostPhoto: hostData?.profile_photo_url || null,
+    cohostName: `${cohostData?.first_name || ''} ${cohostData?.last_name || ''}`.trim() || null,
     cohostEmail: cohostData?.email || null,
-    cohostPhoto: cohostData?.['Profile Photo'] || null,
+    cohostPhoto: cohostData?.profile_photo_url || null,
     listingName: listingData?.['Name'] || null,
     listingBorough: listingData?.['Location - Borough'] || null,
   };
@@ -314,29 +314,29 @@ async function enrichRequestsWithRelations(
   const [hostsResult, cohostsResult, listingsResult] = await Promise.all([
     hostIds.size > 0 ? supabase
       .from('user')
-      .select('_id, email, "Name - Full", "Phone Number (as text)", "Profile Photo"')
-      .in('_id', Array.from(hostIds)) : { data: [] },
+      .select('id, email, first_name, last_name, phone_number, profile_photo_url')
+      .in('id', Array.from(hostIds)) : { data: [] },
     cohostIds.size > 0 ? supabase
       .from('user')
-      .select('_id, email, "Name - Full", "Profile Photo"')
-      .in('_id', Array.from(cohostIds)) : { data: [] },
+      .select('id, email, first_name, last_name, profile_photo_url')
+      .in('id', Array.from(cohostIds)) : { data: [] },
     listingIds.size > 0 ? supabase
       .from('listing')
-      .select('_id, "Name", "Location - Borough"')
-      .in('_id', Array.from(listingIds)) : { data: [] },
+      .select('id, "Name", "Location - Borough"')
+      .in('id', Array.from(listingIds)) : { data: [] },
   ]);
 
   // Create lookup maps
-  const hostsMap = new Map((hostsResult.data || []).map(h => [h._id, h]));
-  const cohostsMap = new Map((cohostsResult.data || []).map(c => [c._id, c]));
-  const listingsMap = new Map((listingsResult.data || []).map(l => [l._id, l]));
+  const hostsMap = new Map((hostsResult.data || []).map((h: Record<string, unknown>) => [h.id as string, h]));
+  const cohostsMap = new Map((cohostsResult.data || []).map((c: Record<string, unknown>) => [c.id as string, c]));
+  const listingsMap = new Map((listingsResult.data || []).map((l: Record<string, unknown>) => [l.id as string, l]));
 
   // Enrich requests
   return requests.map(req => toJsRequest(
     req,
-    hostsMap.get(req['Host User'] as string),
-    cohostsMap.get(req['Co-Host User'] as string),
-    listingsMap.get(req['Listing'] as string)
+    hostsMap.get(req['Host User'] as string) as Record<string, unknown> | null,
+    cohostsMap.get(req['Co-Host User'] as string) as Record<string, unknown> | null,
+    listingsMap.get(req['Listing'] as string) as Record<string, unknown> | null
   ));
 }
 
@@ -380,9 +380,9 @@ async function handleList(
 
   // Apply sorting
   const dbSortField = sortField === 'createdDate' ? 'Created Date' :
-                      sortField === 'modifiedDate' ? 'Modified Date' :
-                      sortField === 'status' ? 'Status - Co-Host Request' :
-                      sortField;
+    sortField === 'modifiedDate' ? 'Modified Date' :
+      sortField === 'status' ? 'Status - Co-Host Request' :
+        sortField;
 
   query = query.order(dbSortField, { ascending: sortOrder === 'asc' });
 
@@ -438,7 +438,7 @@ async function handleGetById(
   const { data, error } = await supabase
     .from('co_hostrequest')
     .select(REQUEST_SELECT_COLUMNS)
-    .eq('_id', requestId)
+    .eq('id', requestId)
     .single();
 
   if (error) {
@@ -488,7 +488,7 @@ async function handleUpdateStatus(
   const { data, error } = await supabase
     .from('co_hostrequest')
     .update(updateData)
-    .eq('_id', requestId)
+    .eq('id', requestId)
     .select(REQUEST_SELECT_COLUMNS)
     .single();
 
@@ -530,8 +530,8 @@ async function handleAssignCoHost(
   // Verify the co-host user exists
   const { data: cohostUser, error: cohostError } = await supabase
     .from('user')
-    .select('_id, "Name - Full"')
-    .eq('_id', cohostUserId)
+    .select('id, first_name, last_name')
+    .eq('id', cohostUserId)
     .single();
 
   if (cohostError || !cohostUser) {
@@ -539,7 +539,7 @@ async function handleAssignCoHost(
   }
 
   // Get full name from user record
-  const fullName = cohostUser['Name - Full'] || 'Assigned';
+  const fullName = `${cohostUser.first_name || ''} ${cohostUser.last_name || ''}`.trim() || 'Assigned';
 
   const now = new Date().toISOString();
 
@@ -554,7 +554,7 @@ async function handleAssignCoHost(
   const { data, error } = await supabase
     .from('co_hostrequest')
     .update(updateData)
-    .eq('_id', requestId)
+    .eq('id', requestId)
     .select(REQUEST_SELECT_COLUMNS)
     .single();
 
@@ -612,7 +612,7 @@ async function handleAddNotes(
   const { data, error } = await supabase
     .from('co_hostrequest')
     .update(updateData)
-    .eq('_id', requestId)
+    .eq('id', requestId)
     .select(REQUEST_SELECT_COLUMNS)
     .single();
 
@@ -682,8 +682,8 @@ async function handleGetAvailableCoHosts(
 
   const query = supabase
     .from('user')
-    .select('_id, email, "Name - Full", "Profile Photo"')
-    .order('"Name - Full"', { ascending: true })
+    .select('id, email, first_name, last_name, profile_photo_url')
+    .order('first_name', { ascending: true })
     .limit(limit);
 
   const { data, error } = await query;
@@ -694,20 +694,20 @@ async function handleGetAvailableCoHosts(
   }
 
   // Filter by search text on the results (client-side) to avoid column name issues
-  let users = data || [];
+  let users: Array<Record<string, unknown>> = (data || []) as Array<Record<string, unknown>>;
   if (searchText) {
     const searchLower = searchText.toLowerCase();
-    users = users.filter(user =>
-      (user.email || '').toLowerCase().includes(searchLower) ||
-      ((user['Name - Full'] || '')).toLowerCase().includes(searchLower)
+    users = users.filter((user: Record<string, unknown>) =>
+      (String(user.email || '')).toLowerCase().includes(searchLower) ||
+      (`${String(user.first_name || '')} ${String(user.last_name || '')}`.trim().toLowerCase()).includes(searchLower)
     );
   }
 
-  const cohosts = users.map(user => ({
-    id: user._id,
+  const cohosts = users.map((user: Record<string, unknown>) => ({
+    id: user.id,
     email: user.email,
-    name: user['Name - Full'] || user.email,
-    photo: user['Profile Photo'],
+    name: `${String(user.first_name || '')} ${String(user.last_name || '')}`.trim() || user.email,
+    photo: user.profile_photo_url,
   }));
 
   return { cohosts };

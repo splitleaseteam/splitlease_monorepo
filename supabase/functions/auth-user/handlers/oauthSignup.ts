@@ -75,7 +75,7 @@ export async function handleOAuthSignup(
 
     const { data: existingUser, error: userCheckError } = await supabaseAdmin
       .from('user')
-      .select('_id, email, "Name - First", "Name - Last"')
+      .select('id, email, first_name, last_name')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
@@ -90,7 +90,7 @@ export async function handleOAuthSignup(
       return {
         isDuplicate: true,
         existingEmail: email,
-        existingUserId: existingUser._id,
+        existingUserId: existingUser.id,
         message: 'An account with this email already exists.',
       };
     }
@@ -117,24 +117,17 @@ export async function handleOAuthSignup(
     console.log('[oauth-signup] Creating user record...');
 
     const userRecord = {
-      '_id': generatedUserId,
+      'id': generatedUserId,
       'email': email.toLowerCase(),
-      'email as text': email.toLowerCase(),
-      'Name - First': firstName || null,
-      'Name - Last': lastName || null,
-      'Name - Full': fullName,
-      'Date of Birth': null, // OAuth signup skips DOB
-      'Phone Number (as text)': null, // OAuth signup skips phone
-      'Profile Photo': profilePhoto || null, // LinkedIn profile picture (if available)
-      'Type - User Current': userTypeDisplay,
-      'Type - User Signup': userTypeDisplay,
-      'Created Date': now,
-      'Modified Date': now,
+      'first_name': firstName || null,
+      'last_name': lastName || null,
+      'phone_number': null, // OAuth signup skips phone
+      'profile_photo_url': profilePhoto || null, // LinkedIn profile picture (if available)
+      'current_user_role': userTypeDisplay,
+      'created_at': now,
+      'updated_at': now,
       'authentication': {},
       'user_signed_up': true,
-      'Receptivity': 0,
-      'MedianHoursToReply': null,
-      'Listings': null,
     };
 
     console.log('[oauth-signup] User record to insert:', JSON.stringify(userRecord, null, 2));

@@ -11,7 +11,7 @@ import { toISOString } from './dateUtils.js';
  */
 const FIELD_MAP = {
   // Request fields
-  id: '_id',
+  id: 'id',
   lease: 'Lease',
   requestedBy: 'Requested by',
   requestReceiver: 'Request receiver',
@@ -47,7 +47,7 @@ export const transformFromDb = (row) => {
   if (!row) return null;
 
   return {
-    id: row['_id'],
+    id: row['id'],
     lease: row['Lease'],
     requestedBy: row['Requested by'],
     requestReceiver: row['Request receiver'],

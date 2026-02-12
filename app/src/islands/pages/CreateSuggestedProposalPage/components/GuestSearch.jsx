@@ -65,7 +65,7 @@ export default function GuestSearch({
             ) : (
               searchResults.map(guest => (
                 <div
-                  key={guest._id}
+                  key={guest.id}
                   className="csp-search-result-item"
                   onClick={() => onSelect(guest)}
                 >
@@ -79,7 +79,7 @@ export default function GuestSearch({
                     <h4>{(guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.first_name || 'Unknown'}</h4>
                     <p>{guest.email || ''}</p>
                     <p>{guest.phone_number || ''}</p>
-                    <p className="csp-listing-details-row">unique id: {guest._id}</p>
+                    <p className="csp-listing-details-row">unique id: {guest.id}</p>
                   </div>
                 </div>
               ))

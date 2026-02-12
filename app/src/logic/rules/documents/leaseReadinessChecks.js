@@ -34,7 +34,7 @@ export const HOST_PAYOUT_REQUIREMENTS = {
     {
       key: 'host',
       label: 'Host user linked',
-      check: (data) => !!data.host?.id || !!data.host?._id,
+      check: (data) => !!data.host?.id,
       source: 'user',
     },
   ],
@@ -76,20 +76,20 @@ export const SUPPLEMENTAL_REQUIREMENTS = {
     {
       key: 'proposal',
       label: 'Proposal linked',
-      check: (data) => !!data.proposal?._id,
+      check: (data) => !!data.proposal?.id,
       source: 'proposal',
       suggestion: 'Link a proposal to this lease or verify the Proposal field is set',
     },
     {
       key: 'listing',
       label: 'Listing linked',
-      check: (data) => !!data.listing?._id,
+      check: (data) => !!data.listing?.id,
       source: 'listing',
     },
     {
       key: 'host',
       label: 'Host user linked',
-      check: (data) => !!data.host?._id,
+      check: (data) => !!data.host?.id,
       source: 'user',
     },
   ],
@@ -137,26 +137,26 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
     {
       key: 'proposal',
       label: 'Proposal linked',
-      check: (data) => !!data.proposal?._id,
+      check: (data) => !!data.proposal?.id,
       source: 'proposal',
       suggestion: 'Link a proposal to this lease or verify the Proposal field is set',
     },
     {
       key: 'listing',
       label: 'Listing linked',
-      check: (data) => !!data.listing?._id,
+      check: (data) => !!data.listing?.id,
       source: 'listing',
     },
     {
       key: 'guest',
       label: 'Guest user linked',
-      check: (data) => !!data.guest?._id,
+      check: (data) => !!data.guest?.id,
       source: 'user',
     },
     {
       key: 'host',
       label: 'Host user linked',
-      check: (data) => !!data.host?._id,
+      check: (data) => !!data.host?.id,
       source: 'user',
     },
     {
@@ -227,20 +227,20 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
     {
       key: 'proposal',
       label: 'Proposal linked',
-      check: (data) => !!data.proposal?._id,
+      check: (data) => !!data.proposal?.id,
       source: 'proposal',
       suggestion: 'Link a proposal to this lease or verify the Proposal field is set',
     },
     {
       key: 'guest',
       label: 'Guest user linked',
-      check: (data) => !!data.guest?._id,
+      check: (data) => !!data.guest?.id,
       source: 'user',
     },
     {
       key: 'host',
       label: 'Host user linked',
-      check: (data) => !!data.host?._id,
+      check: (data) => !!data.host?.id,
       source: 'user',
     },
     {
@@ -437,7 +437,7 @@ function generateReadinessSummary(results, blockingIssues) {
 export function formatReadinessReport(readinessReport, lease) {
   const lines = [];
   const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
-  const leaseId = lease?._id || 'Unknown';
+  const leaseId = lease?.id || 'Unknown';
 
   lines.push(`📋 Lease Readiness Report`);
   lines.push(`Agreement: ${agreementNumber} (${leaseId})`);
@@ -481,7 +481,7 @@ export function formatReadinessReport(readinessReport, lease) {
  */
 export function formatReadinessForSlack(readinessReport, lease) {
   const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
-  const leaseId = lease?._id || 'Unknown';
+  const leaseId = lease?.id || 'Unknown';
 
   const missingFields = readinessReport.allBlockingIssues
     .map(issue => `• ${issue.label} (${issue.source})`)

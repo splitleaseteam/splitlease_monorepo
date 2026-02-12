@@ -32,8 +32,8 @@ export async function handleAcceptProposal(
   // Fetch proposal to get user IDs for messaging
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('Guest, "Host User", Listing')
-    .eq('_id', proposalId)
+    .select('guest_user_id, host_user_id, listing_id')
+    .eq('id', proposalId)
     .single();
 
   if (fetchError) {
@@ -50,11 +50,11 @@ export async function handleAcceptProposal(
   const { error: updateError } = await supabase
     .from('proposal')
     .update({
-      Status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-      'Modified Date': new Date().toISOString(),
-      'Is Finalized': true
+      proposal_workflow_status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
+      updated_at: new Date().toISOString(),
+      is_finalized: true
     })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (updateError) {
     console.error('[accept_proposal] Update error:', updateError);
@@ -71,8 +71,8 @@ export async function handleAcceptProposal(
     // Strategy 1: Look up thread by Proposal FK
     const { data: threadByProposal, error: threadError } = await supabase
       .from('thread')
-      .select('_id')
-      .eq('Proposal', proposalId)
+      .select('id')
+      .eq('proposal_id', proposalId)
       .limit(1)
       .maybeSingle();
 
@@ -80,7 +80,7 @@ export async function handleAcceptProposal(
       console.error('[accept_proposal] Thread lookup by Proposal error:', threadError);
     }
 
-    threadId = threadByProposal?._id || null;
+    threadId = threadByProposal?.id || null;
     console.log('[accept_proposal] Strategy 1 (Proposal FK) result:', threadId || 'none');
 
     // Strategy 2: Fallback - find thread by host+guest+listing match
@@ -89,10 +89,10 @@ export async function handleAcceptProposal(
 
       const { data: threadByMatch, error: matchError } = await supabase
         .from('thread')
-        .select('_id')
-        .eq('host_user_id', proposal['Host User'])
-        .eq('guest_user_id', proposal.Guest)
-        .eq('Listing', proposal.Listing)
+        .select('id')
+        .eq('host_user_id', proposal.host_user_id)
+        .eq('guest_user_id', proposal.guest_user_id)
+        .eq('listing_id', proposal.listing_id)
         .limit(1)
         .maybeSingle();
 
@@ -100,7 +100,7 @@ export async function handleAcceptProposal(
         console.error('[accept_proposal] Thread lookup by match error:', matchError);
       }
 
-      threadId = threadByMatch?._id || null;
+      threadId = threadByMatch?.id || null;
       console.log('[accept_proposal] Strategy 2 (host+guest+listing) result:', threadId || 'none');
 
       // If found via Strategy 2, update the Proposal FK for future lookups
@@ -108,10 +108,10 @@ export async function handleAcceptProposal(
         const { error: updateThreadError } = await supabase
           .from('thread')
           .update({
-            "Proposal": proposalId,
-            "Modified Date": new Date().toISOString()
+            proposal_id: proposalId,
+            updated_at: new Date().toISOString()
           })
-          .eq('_id', threadId);
+          .eq('id', threadId);
 
         if (updateThreadError) {
           console.error('[accept_proposal] Failed to update thread Proposal FK:', updateThreadError);
@@ -128,11 +128,11 @@ export async function handleAcceptProposal(
       // Get listing name for thread subject
       const { data: listing } = await supabase
         .from('listing')
-        .select('"Name"')
-        .eq('_id', proposal.Listing)
+        .select('listing_title')
+        .eq('id', proposal.listing_id)
         .single();
 
-      const listingName = listing?.['Name'] || 'Proposal Thread';
+      const listingName = listing?.listing_title || 'Proposal Thread';
 
       // Generate new thread ID
       const { data: newId } = await supabase.rpc('generate_unique_id');
@@ -142,17 +142,17 @@ export async function handleAcceptProposal(
       const { error: createError } = await supabase
         .from('thread')
         .insert({
-          _id: threadId,
-          host_user_id: proposal['Host User'],
-          guest_user_id: proposal.Guest,
-          "Listing": proposal.Listing,
-          "Proposal": proposalId,
-          "Thread Subject": listingName,
-          "Created By": proposal['Host User'],
-          "Created Date": now,
-          "Modified Date": now,
-          "Participants": [proposal['Host User'], proposal.Guest],
-          "from logged out user?": false,
+          id: threadId,
+          host_user_id: proposal.host_user_id,
+          guest_user_id: proposal.guest_user_id,
+          listing_id: proposal.listing_id,
+          proposal_id: proposalId,
+          thread_subject_text: listingName,
+          created_by_user_id: proposal.host_user_id,
+          original_created_at: now,
+          original_updated_at: now,
+          participant_user_ids_json: [proposal.host_user_id, proposal.guest_user_id],
+          is_from_logged_out_user: false,
           created_at: now,
           updated_at: now,
         });
@@ -174,7 +174,7 @@ export async function handleAcceptProposal(
           callToAction: 'View Lease',
           visibleToHost: false,
           visibleToGuest: true,
-          recipientUserId: proposal.Guest
+          recipientUserId: proposal.guest_user_id
         });
         console.log('[accept_proposal] Guest message created');
       } catch (guestMsgError) {
@@ -189,7 +189,7 @@ export async function handleAcceptProposal(
           callToAction: 'View Lease',
           visibleToHost: true,
           visibleToGuest: false,
-          recipientUserId: proposal['Host User']
+          recipientUserId: proposal.host_user_id
         });
         console.log('[accept_proposal] Host message created');
       } catch (hostMsgError) {

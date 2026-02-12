@@ -187,8 +187,8 @@ const FavoritesCardV2 = ({
 
   const handleViewProposal = (e) => {
     e.stopPropagation();
-    if (proposalForListing?._id) {
-      window.location.href = `/proposal?id=${proposalForListing._id}`;
+    if (proposalForListing?.id) {
+      window.location.href = `/proposal?id=${proposalForListing.id}`;
     }
   };
 
@@ -486,7 +486,7 @@ export default memo(FavoritesCardV2, (prevProps, nextProps) => {
   // Custom comparison - only re-render if these props change
   return (
     prevProps.listing?.id === nextProps.listing?.id &&
-    prevProps.proposalForListing?._id === nextProps.proposalForListing?._id &&
+    prevProps.proposalForListing?.id === nextProps.proposalForListing?.id &&
     prevProps.viewMode === nextProps.viewMode &&
     prevProps.userId === nextProps.userId
   );

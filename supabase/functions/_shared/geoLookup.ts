@@ -13,12 +13,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // Types for geo lookup results
 export interface BoroughLookupResult {
-  _id: string;
+  id: string;
   displayName: string;
 }
 
 export interface HoodLookupResult {
-  _id: string;
+  id: string;
   displayName: string;
   boroughId: string;
 }
@@ -57,7 +57,7 @@ export async function getBoroughByZipCode(
     const { data, error } = await supabaseClient
       .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('_id, "Display Borough"')
+      .select('id, "Display Borough"')
       .contains('Zip Codes', [cleanZip])
       .limit(1)
       .maybeSingle();
@@ -74,7 +74,7 @@ export async function getBoroughByZipCode(
 
     console.log('[geoLookup] Found borough:', data['Display Borough'], 'for zip:', cleanZip);
     return {
-      _id: data._id,
+      id: data.id,
       displayName: data['Display Borough']
     };
   } catch (_err) {
@@ -112,7 +112,7 @@ export async function getHoodByZipCode(
     const { data, error } = await supabaseClient
       .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('_id, "Display", "Geo-Borough"')
+      .select('id, "Display", "Geo-Borough"')
       .contains('Zips', [cleanZip])
       .limit(1)
       .maybeSingle();
@@ -129,7 +129,7 @@ export async function getHoodByZipCode(
 
     console.log('[geoLookup] Found hood:', data['Display'], 'for zip:', cleanZip);
     return {
-      _id: data._id,
+      id: data.id,
       displayName: data['Display'],
       boroughId: data['Geo-Borough']
     };
@@ -168,13 +168,13 @@ export async function getGeoByZipCode(
       const { data } = await supabaseClient
         .schema('reference_table')
         .from('zat_geo_borough_toplevel')
-        .select('_id, "Display Borough"')
-        .eq('_id', hood.boroughId)
+        .select('id, "Display Borough"')
+        .eq('id', hood.boroughId)
         .maybeSingle();
 
       if (data) {
         finalBorough = {
-          _id: data._id,
+          id: data.id,
           displayName: data['Display Borough']
         };
       }

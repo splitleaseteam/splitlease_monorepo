@@ -56,8 +56,8 @@ export async function handleGet(
     // Note: The FK is on listing.pricing_list (listing points to pricing_list)
     const { data: listing, error: listingError } = await supabase
       .from('listing')
-      .select('pricing_list')
-      .eq('_id', listing_id)
+      .select('pricing_configuration_id')
+      .eq('id', listing_id)
       .single();
 
     if (listingError) {
@@ -65,8 +65,8 @@ export async function handleGet(
       throw new Error(`Failed to fetch listing: ${listingError.message}`);
     }
 
-    if (!listing?.pricing_list) {
-      console.log('[pricing-list:get] No pricing_list FK on listing:', listing_id);
+    if (!listing?.pricing_configuration_id) {
+      console.log('[pricing-list:get] No pricing_configuration_id on listing:', listing_id);
       return {
         pricing_list: null,
         found: false,
@@ -74,13 +74,13 @@ export async function handleGet(
       };
     }
 
-    console.log('[pricing-list:get] Found pricing_list FK:', listing.pricing_list);
+    console.log('[pricing-list:get] Found pricing_configuration_id:', listing.pricing_configuration_id);
 
-    // Step 2: Fetch the pricing_list by its _id
+    // Step 2: Fetch the pricing_list by its id
     const { data: pricingList, error: fetchError } = await supabase
       .from('pricing_list')
       .select('*')
-      .eq('_id', listing.pricing_list)
+      .eq('id', listing.pricing_configuration_id)
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -90,7 +90,7 @@ export async function handleGet(
     }
 
     if (!pricingList) {
-      console.log('[pricing-list:get] pricing_list record not found:', listing.pricing_list);
+      console.log('[pricing-list:get] pricing_list record not found:', listing.pricing_configuration_id);
       return {
         pricing_list: null,
         found: false,

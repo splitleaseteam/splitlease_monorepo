@@ -231,7 +231,7 @@ export default function useListingDashboardPageLogic() {
     logger.debug('âœ… Co-host request submitted:', requestData);
     if (requestData) {
       setExistingCohostRequest({
-        _id: requestData.requestId || requestData._id,
+        id: requestData.requestId || requestData.id,
         status: 'pending',
         createdAt: requestData.createdAt || new Date().toISOString(),
         ...requestData,

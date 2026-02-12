@@ -19,7 +19,7 @@ interface CreateListingPayload {
 }
 
 interface CreateListingResult {
-  _id: string;
+  id: string;
   listing_id: string;
   Name: string;
   [key: string]: unknown;
@@ -77,27 +77,27 @@ export async function handleCreate(
 
     // Build initial listing data
     const listingData: Record<string, unknown> = {
-      _id: listingId,
+      id: listingId,
       Name: listing_name.trim(),
       Status: 'Draft',
       Active: false,
-      'Created Date': now,
-      'Modified Date': now,
+      created_at: now,
+      updated_at: now,
     };
 
-    // If user_email provided, look up user and attach (Host User = user._id)
+    // If user_email provided, look up user and attach (host_user_id = user.id)
     if (user_email) {
       const { data: userData } = await supabase
         .from('user')
-        .select('_id')
+        .select('id')
         .eq('email', user_email.toLowerCase())
         .single();
 
       if (userData) {
-        listingData['Host User'] = userData._id;
-        listingData['Created By'] = userData._id;
+        listingData['host_user_id'] = userData.id;
+        listingData['Created By'] = userData.id;
         listingData['Host email'] = user_email.toLowerCase();
-        console.log('[listing:create] User found:', userData._id);
+        console.log('[listing:create] User found:', userData.id);
       }
     }
 
@@ -116,7 +116,7 @@ export async function handleCreate(
 
     // Return the listing data
     return {
-      _id: listingId,
+      id: listingId,
       listing_id: listingId,
       Name: listing_name.trim(),
       ...listingData

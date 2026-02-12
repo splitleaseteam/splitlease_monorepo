@@ -57,7 +57,7 @@ export async function handleProcessVirtualMeeting(
   const { data: meeting, error: fetchError } = await supabase
     .from('virtualmeetingschedulesandlinks')
     .select('*')
-    .eq('_id', virtualMeetingId)
+    .eq('id', virtualMeetingId)
     .single();
 
   if (fetchError || !meeting) {
@@ -132,7 +132,7 @@ export async function handleProcessVirtualMeeting(
   const { error: update1Error } = await supabase
     .from('virtualmeetingschedulesandlinks')
     .update(update1)
-    .eq('_id', virtualMeetingId);
+    .eq('id', virtualMeetingId);
 
   if (update1Error) {
     console.error(`[calendar-automation:process] Failed to update meeting link:`, update1Error);
@@ -214,7 +214,7 @@ export async function handleProcessVirtualMeeting(
   const { error: update2Error } = await supabase
     .from('virtualmeetingschedulesandlinks')
     .update(update2)
-    .eq('_id', virtualMeetingId);
+    .eq('id', virtualMeetingId);
 
   if (update2Error) {
     console.error(`[calendar-automation:process] Failed to update event IDs:`, update2Error);

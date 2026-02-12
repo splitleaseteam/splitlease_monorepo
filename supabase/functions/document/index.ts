@@ -170,14 +170,14 @@ async function handleListPolicies(supabase: SupabaseClient) {
     try {
       const { data, error } = await supabase
         .from(tableName)
-        .select('_id, Name, "Created Date"')
+        .select('id, Name, "Created Date"')
         .order('Name', { ascending: true });
 
       if (!error && data && data.length > 0) {
         console.log(`[document] Found ${data.length} policies in table: ${tableName}`);
         // Map to consistent format
         return data.map((policy: Record<string, unknown>) => ({
-          id: policy._id,
+          id: policy.id,
           Name: policy.Name || 'Unnamed Policy',
           createdDate: policy['Created Date']
         }));
@@ -205,7 +205,7 @@ async function handleListPolicies(supabase: SupabaseClient) {
 /**
  * List all host users from Supabase
  *
- * Hosts are identified by "Type - User Current" containing:
+ * Hosts are identified by "current_user_role" containing:
  * - 'A Host (I have a space available to rent)'
  * - 'Trial Host'
  */
@@ -216,8 +216,8 @@ async function handleListHosts(supabase: SupabaseClient) {
   // (PostgREST has issues with parentheses in filter values)
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, "Name - Full", "Name - First", "Name - Last", "Type - User Current"')
-    .not('"Type - User Current"', 'is', null)
+    .select('id, email, first_name, last_name, current_user_role')
+    .not('current_user_role', 'is', null)
     .order('email', { ascending: true });
 
   if (error) {
@@ -227,7 +227,7 @@ async function handleListHosts(supabase: SupabaseClient) {
 
   // Filter for hosts client-side (values contain parentheses that break PostgREST filters)
   const hosts = (data || []).filter((user: Record<string, unknown>) => {
-    const userType = user['Type - User Current'] as string;
+    const userType = user.current_user_role as string;
     return userType?.toLowerCase().includes('host');
   });
 
@@ -270,7 +270,7 @@ async function handleCreate(
 
   const now = new Date().toISOString();
   const newEntry = {
-    '_id': generateId(),
+    'id': generateId(),
     'Document on policies': document_on_policies,
     'Document sent title': document_sent_title.trim(),
     'Host user': host_user,
@@ -300,10 +300,10 @@ async function handleCreate(
     throw new Error(`Failed to create document: ${error.message}`);
   }
 
-  console.log('[document] Document created successfully:', data._id);
+  console.log('[document] Document created successfully:', data.id);
 
   return {
-    id: data._id,
+    id: data.id,
     title: data['Document sent title'],
     hostEmail: data['Host email'],
     success: true

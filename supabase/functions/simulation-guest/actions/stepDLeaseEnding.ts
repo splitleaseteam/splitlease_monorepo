@@ -45,7 +45,7 @@ export async function handleStepD(
         end_date: approachingEndDate.toISOString().split('T')[0],
         status: 'Ending Soon'
       })
-      .eq('_id', leaseId);
+      .eq('id', leaseId);
 
     if (updateError) {
       console.log('[step_d] Could not update lease:', updateError.message);

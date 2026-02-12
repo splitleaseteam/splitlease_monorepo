@@ -169,10 +169,10 @@ export default function GuestProposalsPage() {
                   <div className="proposals-section__cards" role="list">
                     {suggested.map(proposal => (
                       <ExpandableProposalCard
-                        key={proposal._id}
+                        key={proposal.id}
                         proposal={proposal}
-                        isExpanded={expandedProposalId === proposal._id}
-                        onToggle={() => handleToggleExpand(proposal._id)}
+                        isExpanded={expandedProposalId === proposal.id}
+                        onToggle={() => handleToggleExpand(proposal.id)}
                         allProposals={proposals}
                         onProposalSelect={handleProposalSelect}
                         onProposalDeleted={handleProposalDeleted}
@@ -195,10 +195,10 @@ export default function GuestProposalsPage() {
                   <div className="proposals-section__cards" role="list">
                     {userCreated.map(proposal => (
                       <ExpandableProposalCard
-                        key={proposal._id}
+                        key={proposal.id}
                         proposal={proposal}
-                        isExpanded={expandedProposalId === proposal._id}
-                        onToggle={() => handleToggleExpand(proposal._id)}
+                        isExpanded={expandedProposalId === proposal.id}
+                        onToggle={() => handleToggleExpand(proposal.id)}
                         allProposals={proposals}
                         onProposalSelect={handleProposalSelect}
                         onProposalDeleted={handleProposalDeleted}
@@ -211,7 +211,7 @@ export default function GuestProposalsPage() {
               {/* Virtual Meetings Section - shows proposals with active VMs */}
               <VirtualMeetingsSection
                 proposals={proposals}
-                currentUserId={user?._id}
+                currentUserId={user?.id}
               />
             </div>
           )}

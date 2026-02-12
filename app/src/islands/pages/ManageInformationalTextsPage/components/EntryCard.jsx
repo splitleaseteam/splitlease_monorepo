@@ -17,7 +17,7 @@ export function EntryCard({ entry, onEdit, onDelete }) {
             Edit
           </button>
           <button
-            onClick={() => onDelete(entry._id)}
+            onClick={() => onDelete(entry.id)}
             className="mit-btn-danger-small"
             title="Delete"
           >

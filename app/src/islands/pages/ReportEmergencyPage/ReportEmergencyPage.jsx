@@ -183,7 +183,7 @@ export default function ReportEmergencyPage() {
                   >
                     <option value="">Select booking (optional)...</option>
                     {userProposals.map((proposal) => (
-                      <option key={proposal._id} value={proposal._id}>
+                      <option key={proposal.id} value={proposal.id}>
                         {proposal.listing?.name || 'Property'} - Agreement #{proposal.agreementNumber || 'N/A'}
                       </option>
                     ))}

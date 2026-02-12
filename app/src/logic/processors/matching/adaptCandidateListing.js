@@ -13,7 +13,7 @@
  *
  * @example
  * adaptCandidateListing({
- *   _id: 'abc123',
+ *   id: 'abc123',
  *   'Location - Borough': 'Manhattan',
  *   'Schedule days available': [0, 1, 2, 3, 4, 5, 6],
  *   'Minimum Nights': 3,
@@ -51,8 +51,7 @@ export function adaptCandidateListing(rawListing) {
 
   return {
     // Core identifiers
-    id: rawListing._id,
-    _id: rawListing._id, // Keep for compatibility
+    id: rawListing.id,
 
     // Name and description
     name: rawListing.Name || 'Untitled Listing',

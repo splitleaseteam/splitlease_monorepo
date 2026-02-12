@@ -71,8 +71,8 @@ function LeaseSelector({
           >
             <option value="">-- Select a lease --</option>
             {leases.map(lease => (
-              <option key={lease._id} value={lease._id}>
-                {lease['Agreement Number'] || lease._id} - {lease['Lease Status'] || 'Unknown'}
+              <option key={lease.id} value={lease.id}>
+                {lease['Agreement Number'] || lease.id} - {lease['Lease Status'] || 'Unknown'}
               </option>
             ))}
           </select>

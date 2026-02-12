@@ -139,7 +139,7 @@ export interface SaveChoiceResult {
 // ─────────────────────────────────────────────────────────────
 
 export interface ProposalRow {
-  readonly _id: string;
+  readonly id: string;
   readonly Guest: string | null;
   readonly Listing: string | null;
   readonly 'Guest email': string;
@@ -158,7 +158,7 @@ export interface ProposalRow {
 }
 
 export interface ListingRow {
-  readonly _id: string;
+  readonly id: string;
   readonly Name: string | null;
   readonly 'Host User': string | null;
   readonly 'Location - Borough': string | null;
@@ -168,15 +168,24 @@ export interface ListingRow {
   readonly 'Nights Available (List of Nights)': number[];
   readonly 'Minimum Nights': number;
   readonly 'Maximum Nights': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 1 night': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 2 nights': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 3 nights': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 4 nights': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 5 nights': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 6 nights': number | null;
-  readonly '\u{1F4B0}Nightly Host Rate for 7 nights': number | null;
-  readonly '\u{1F4B0}Cleaning Cost / Maintenance Fee': number | null;
-  readonly '\u{1F4B0}Damage Deposit': number;
+  readonly nightly_rate_1_night?: number | null;
+  readonly nightly_rate_2_nights?: number | null;
+  readonly nightly_rate_3_nights?: number | null;
+  readonly nightly_rate_4_nights?: number | null;
+  readonly nightly_rate_5_nights?: number | null;
+  readonly nightly_rate_6_nights?: number | null;
+  readonly nightly_rate_7_nights?: number | null;
+  readonly cleaning_fee?: number | null;
+  readonly damage_deposit?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 1 night'?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 2 nights'?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 3 nights'?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 4 nights'?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 5 nights'?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 6 nights'?: number | null;
+  readonly '\u{1F4B0}Nightly Host Rate for 7 nights'?: number | null;
+  readonly '\u{1F4B0}Cleaning Cost / Maintenance Fee'?: number | null;
+  readonly '\u{1F4B0}Damage Deposit'?: number;
   readonly Active: boolean | null;
   readonly Deleted: boolean | null;
   // Joined fields
@@ -185,10 +194,9 @@ export interface ListingRow {
 }
 
 export interface UserRow {
-  readonly _id: string;
-  readonly 'Name - First': string | null;
-  readonly 'Name - Last': string | null;
-  readonly 'Name - Full': string | null;
+  readonly id: string;
+  readonly first_name: string | null;
+  readonly last_name: string | null;
   readonly email: string | null;
   readonly 'Verify - Linked In ID': boolean | null;
   readonly 'Verify - Phone': boolean | null;

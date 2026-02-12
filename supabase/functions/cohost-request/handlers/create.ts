@@ -22,10 +22,10 @@ interface UserContext {
 }
 
 interface CreateCoHostRequestInput {
-  userId: string;           // User's Bubble _id
+  userId: string;           // User's legacy id
   userEmail: string;        // User's email
   userName: string;         // User's name
-  listingId?: string;       // Optional: Listing Bubble _id
+  listingId?: string;       // Optional: Listing legacy id
   selectedTimes: string[];  // Array of formatted datetime strings
   subject?: string;         // Topics/help needed (comma-separated)
   details?: string;         // Additional details text
@@ -45,7 +45,7 @@ interface CreateCoHostRequestResponse {
  *
  * Steps:
  * 1. Validate input (userId, selectedTimes required)
- * 2. Generate unique _id for co-host request
+ * 2. Generate unique id for co-host request
  * 3. Insert co-host request record
  * 4. Return the created ID
  */
@@ -102,7 +102,7 @@ export async function handleCreate(
   // Note: "Host User" is the user making the request (the host who needs help)
   // "Co-Host User" will be assigned later via Slack notification workflow
   const coHostData: Record<string, unknown> = {
-    _id: coHostRequestId,
+    id: coHostRequestId,
     "Host User": input.userId,      // The host requesting co-host assistance
     "Co-Host User": null,           // Will be assigned later by admin
     "Created By": input.userId,
@@ -255,7 +255,7 @@ export async function handleCreate(
       await supabase
         .from("co_hostrequest")
         .update({ "Slack Message TS": slackResult.ts })
-        .eq("_id", coHostRequestId);
+        .eq("id", coHostRequestId);
 
       console.log(`[cohost-request:create] Interactive Slack message sent, ts: ${slackResult.ts}`);
     } else {

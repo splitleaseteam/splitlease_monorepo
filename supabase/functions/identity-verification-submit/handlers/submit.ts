@@ -110,7 +110,7 @@ export async function handleSubmitVerification(
 
   const { data: currentUserData, error: fetchError } = await supabaseAdmin
     .from('user')
-    .select('supabase_user_id, "Profile Photo", "Name - First", email')
+    .select('supabase_user_id, profile_photo_url, first_name, email')
     .eq('supabase_user_id', user.id)
     .single();
 
@@ -137,9 +137,9 @@ export async function handleSubmitVerification(
   };
 
   // Update profile photo with selfie if currently empty
-  if (!currentUserData['Profile Photo']) {
+  if (!currentUserData.profile_photo_url) {
     console.log('[submit] Profile photo empty, updating with selfie URL');
-    updateData['Profile Photo'] = validatedPayload.selfieUrl;
+    updateData.profile_photo_url = validatedPayload.selfieUrl;
   }
 
   // ─────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ export async function handleSubmitVerification(
   // ─────────────────────────────────────────────────────────
 
   const userEmail = currentUserData.email || user.email;
-  const firstName = currentUserData['Name - First'] || 'there';
+  const firstName = currentUserData.first_name || 'there';
 
   if (userEmail) {
     console.log('[submit] Sending confirmation email to:', userEmail);

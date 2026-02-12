@@ -33,7 +33,7 @@ function getStatusKey(proposal) {
   const status = proposal?.status;
   if (!status) return '';
   if (typeof status === 'string') return status;
-  return status.id || status._id || status.key || '';
+  return status.id || status.key || '';
 }
 
 /**

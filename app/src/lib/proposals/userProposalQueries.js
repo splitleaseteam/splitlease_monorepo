@@ -272,8 +272,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     const { data: boroughsData, error: boroughError } = await supabase
       .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('_id, "Display Borough"')
-      .in('_id', boroughIds);
+      .select('id, "Display Borough"')
+      .in('id', boroughIds);
 
     if (!boroughError) {
       boroughs = boroughsData || [];
@@ -396,7 +396,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   }
 
   // Create rental application lookup map
-  const rentalAppMap = new Map(rentalApps.map(ra => [ra._id, ra]));
+  const rentalAppMap = new Map(rentalApps.map(ra => [ra.id, ra]));
 
   // Step 6: Fetch virtual meetings for all proposals
   console.log(`fetchProposalsByIds: Fetching virtual meetings for ${validProposals.length} proposals`);
@@ -489,8 +489,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     if (threadsError) {
       console.error('fetchProposalsByIds: Error fetching threads:', threadsError);
     } else if (threadsData && threadsData.length > 0) {
-      const threadIds = threadsData.map(t => t._id);
-      const threadToProposalMap = new Map(threadsData.map(t => [t._id, t.Proposal]));
+      const threadIds = threadsData.map(t => t.id);
+      const threadToProposalMap = new Map(threadsData.map(t => [t.id, t.Proposal]));
 
       // Fetch SplitBot counteroffer messages
       const { data: counterofferMsgs, error: counterofferError } = await supabase
@@ -529,12 +529,12 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Key guests by their id field
   const guestMap = new Map(guests.map(g => [g.id, g]));
   // Key boroughs and hoods by their _id
-  const boroughMap = new Map(boroughs.map(b => [b._id, b['Display Borough']]));
-  const hoodMap = new Map(hoods.map(h => [h._id, h['Display']]));
+  const boroughMap = new Map(boroughs.map(b => [b.id, b['Display Borough']]));
+  const hoodMap = new Map(hoods.map(h => [h.id, h['Display']]));
   // Key featured photos by their Listing ID
   const featuredPhotoMap = embeddedPhotoMap;
   // Key house rules by their _id to get names
-  const houseRulesMap = new Map(houseRules.map(r => [r._id, r.Name]));
+  const houseRulesMap = new Map(houseRules.map(r => [r.id, r.Name]));
 
   // Step 8: Manually join the data
   const enrichedProposals = validProposals.map((proposal) => {

@@ -30,7 +30,7 @@ import { supabase } from '../../../lib/supabase';
  */
 function adaptResponse(rawResponse) {
   return {
-    id: rawResponse._id,
+    id: rawResponse.id,
     name: rawResponse['Name'] || null,
     type: rawResponse['Type'] || null, // 'Guest' | 'Host'
     date: rawResponse['Created Date'] || null,
@@ -86,7 +86,7 @@ export function useExperienceResponsesPageLogic() {
         .from('experiencesurvey')
         .select(
           `
-          "_id",
+          "id",
           "Name",
           "Type",
           "Created Date",

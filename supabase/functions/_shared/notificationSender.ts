@@ -251,7 +251,7 @@ async function sendSmsViaEdgeFunction(params: SmsParams): Promise<boolean> {
  * ```typescript
  * const result = await sendNotification({
  *   supabase,
- *   userId: guest._id,
+ *   userId: guest.id,
  *   category: 'proposal_updates',
  *   edgeFunction: 'proposal/create',
  *   email: {

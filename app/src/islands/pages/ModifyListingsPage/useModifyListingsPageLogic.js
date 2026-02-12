@@ -190,12 +190,12 @@ export default function useModifyListingsPageLogic() {
       // Column names with spaces need quotes in both select and filter
       const { data: inUnit } = await supabase
         .from('zat_features_amenity')
-        .select('_id, Name, "Type - Amenity Categories"')
+        .select('id, Name, "Type - Amenity Categories"')
         .eq('"Type - Amenity Categories"', 'In Unit');
 
       const { data: inBuilding } = await supabase
         .from('zat_features_amenity')
-        .select('_id, Name, "Type - Amenity Categories"')
+        .select('id, Name, "Type - Amenity Categories"')
         .eq('"Type - Amenity Categories"', 'In Building');
 
       setAmenitiesInUnit(inUnit || []);
@@ -278,7 +278,7 @@ export default function useModifyListingsPageLogic() {
       setListing(data);
       setOriginalListing(structuredClone(data));
       hasChangesRef.current = false;
-      currentListingIdRef.current = data._id || data.id; // Track current listing ID
+      currentListingIdRef.current = data.id; // Track current listing ID
       setLastSaved(data.original_updated_at ? new Date(data.original_updated_at) : null);
 
       // Update URL
@@ -437,7 +437,7 @@ export default function useModifyListingsPageLogic() {
     try {
       console.log('[ModifyListings] Saving changed fields:', Object.keys(changedFields));
 
-      await updateListing(listing._id || listing.id, changedFields);
+      await updateListing(listing.id, changedFields);
 
       // Update original to match current
       setOriginalListing(structuredClone(listing));
@@ -488,7 +488,7 @@ export default function useModifyListingsPageLogic() {
       const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
       const index = photos.length;
 
-      const result = await uploadPhoto({ file }, listing._id || listing.id, index);
+      const result = await uploadPhoto({ file }, listing.id, index);
 
       const newPhoto = {
         id: `photo_${Date.now()}`,
@@ -606,7 +606,7 @@ export default function useModifyListingsPageLogic() {
    * @param {object} result - Search result item
    */
   function selectSearchResult(result) {
-    setListingId(result.id || result._id);
+    setListingId(result.id);
     setSearchQuery('');
     setSearchResults([]);
   }

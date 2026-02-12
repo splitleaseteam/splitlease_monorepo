@@ -20,7 +20,6 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
       const result = adaptPricingListFromSupabase(rawPricingList);
 
       expect(result.id).toBe('abc123');
-      expect(result._id).toBe('abc123');
       expect(result.listingId).toBe('listing456');
       expect(result.createdBy).toBe('user789');
     });
@@ -240,7 +239,6 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
       const result = adaptPricingListFromSupabase({});
 
       expect(result.id).toBeUndefined();
-      expect(result._id).toBeUndefined();
       expect(result.listingId).toBeUndefined();
       expect(result.hostCompensation).toEqual([]);
       expect(result.nightlyPrice).toEqual([]);
@@ -314,7 +312,6 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
       expect(result).toEqual({
         id: 'abc123',
-        _id: 'abc123',
         listingId: 'listing456',
         createdBy: 'user789',
         hostCompensation: [null, 100, 95, 90, 85, 80, 75],

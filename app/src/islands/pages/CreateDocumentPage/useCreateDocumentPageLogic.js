@@ -175,7 +175,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
     try {
       // Find the selected host to get their details
       const selectedHost = hostUsers.find(
-        (host) => host._id === formState.selectedHostId
+        (host) => host.id === formState.selectedHostId
       );
 
       if (!selectedHost) {

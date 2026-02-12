@@ -25,7 +25,7 @@ export type WeekPattern =
  * Input for generating guest payment records
  */
 export interface GenerateGuestPaymentRecordsInput {
-  /** The lease/reservation ID (Bookings-Leases._id) */
+  /** The lease/reservation ID (Bookings-Leases.id) */
   leaseId: string;
 
   /** Rental type: 'Nightly', 'Weekly', or 'Monthly' */
@@ -80,7 +80,7 @@ export interface PaymentScheduleResult {
  * Guest payment record as stored in the database
  */
 export interface GuestPaymentRecord {
-  _id: string;
+  id: string;
 
   /** Reference to the lease (Bookings-Leases) */
   'Booking - Reservation': string;
@@ -121,7 +121,7 @@ export interface GuestPaymentRecord {
  * Lease data needed for payment record generation
  */
 export interface LeaseData {
-  _id: string;
+  id: string;
   Proposal?: string;
   'rental type'?: string;
   'Move In Date'?: string;
@@ -140,7 +140,7 @@ export interface LeaseData {
  * Proposal data for fetching additional payment details
  */
 export interface ProposalData {
-  _id: string;
+  id: string;
   'hc cleaning fee'?: number;
   'hc damage deposit'?: number;
   'hc 4 week rent'?: number;

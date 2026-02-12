@@ -632,7 +632,7 @@ export default function ExpandableProposalCard({
   const counterofferSummary = proposal?.counterofferSummary || null;
 
   // DEBUG: Log counteroffer data for this proposal
-  console.log(`[EPC DEBUG] Proposal ${proposal?._id}: isCounteroffer=${isCounteroffer}, hasCounteroffeSummary=${!!counterofferSummary}, summary=${counterofferSummary?.substring(0, 50) || 'null'}`);
+  console.log(`[EPC DEBUG] Proposal ${proposal?.id}: isCounteroffer=${isCounteroffer}, hasCounteroffeSummary=${!!counterofferSummary}, summary=${counterofferSummary?.substring(0, 50) || 'null'}`);
 
   // Status flags
   const isSuggested = isSLSuggested(status);
@@ -680,7 +680,7 @@ export default function ExpandableProposalCard({
   };
 
   const handleConfirmProposal = async () => {
-    if (!proposal?._id || isConfirming) return;
+    if (!proposal?.id || isConfirming) return;
     if (!canConfirmSuggestedProposal(proposal)) {
       showToast({ title: 'Cannot confirm this proposal', type: 'error' });
       return;
@@ -691,7 +691,7 @@ export default function ExpandableProposalCard({
       const { error } = await supabase
         .from('booking_proposal')
         .update({ proposal_workflow_status: nextStatus, 'Modified Date': new Date().toISOString() })
-        .eq('id', proposal.id || proposal._id);
+        .eq('id', proposal.id);
       if (error) throw new Error(error.message);
       showToast({ title: 'Proposal confirmed!', type: 'success' });
       window.location.reload();
@@ -702,12 +702,12 @@ export default function ExpandableProposalCard({
   };
 
   const handleDeleteProposal = async () => {
-    if (!proposal?._id || isDeleting) return;
+    if (!proposal?.id || isDeleting) return;
     setIsDeleting(true);
     try {
-      await executeDeleteProposal(proposal._id);
+      await executeDeleteProposal(proposal.id);
       showToast({ title: 'Proposal deleted', type: 'info' });
-      if (onProposalDeleted) onProposalDeleted(proposal._id);
+      if (onProposalDeleted) onProposalDeleted(proposal.id);
     } catch (error) {
       showToast({ title: 'Failed to delete proposal', content: error.message, type: 'error' });
       setIsDeleting(false);
@@ -715,13 +715,13 @@ export default function ExpandableProposalCard({
   };
 
   const handleNotInterestedConfirm = async (feedback) => {
-    if (!proposal?._id || isNotInterestedProcessing) return;
+    if (!proposal?.id || isNotInterestedProcessing) return;
     setIsNotInterestedProcessing(true);
     try {
-      await dismissProposal(proposal._id, feedback);
+      await dismissProposal(proposal.id, feedback);
       showToast({ title: 'Proposal dismissed', type: 'info' });
       setShowNotInterestedModal(false);
-      if (onProposalDeleted) onProposalDeleted(proposal._id);
+      if (onProposalDeleted) onProposalDeleted(proposal.id);
     } catch (error) {
       showToast({ title: 'Failed to dismiss proposal', content: error.message, type: 'error' });
     } finally {
@@ -734,10 +734,10 @@ export default function ExpandableProposalCard({
   const shortStatusLabel = getShortStatusLabel(status);
   const statusBadgeClass = getStatusBadgeClass(status);
   const metaText = buildMetaText(daysSelected, reservationWeeks);
-  const currentUser = { _id: currentUserId, typeUserSignup: 'guest' };
+  const currentUser = { id: currentUserId, typeUserSignup: 'guest' };
 
   // Generate unique ID for ARIA relationships
-  const contentId = `proposal-content-${proposal._id}`;
+  const contentId = `proposal-content-${proposal.id}`;
 
   return (
     <div
@@ -784,14 +784,14 @@ export default function ExpandableProposalCard({
         className="epc-content-wrapper"
         style={{ height: contentHeight }}
         role="region"
-        aria-labelledby={`proposal-header-${proposal._id}`}
+        aria-labelledby={`proposal-header-${proposal.id}`}
         hidden={!isExpanded && contentHeight === 0}
       >
         <div ref={contentRef} className="epc-content">
           {/* Mobile Narrative View - CSS shows only on ≤640px */}
           <NarrativeGuestProposalBody
             proposal={proposal}
-            onViewListing={() => window.open(getListingUrlWithProposalContext(listing?._id, {
+            onViewListing={() => window.open(getListingUrlWithProposalContext(listing?.id, {
               daysSelected: parseDaysSelectedForContext(proposal),
               reservationSpan: getEffectiveReservationSpan(proposal),
               moveInDate: proposal['Move in range start']
@@ -813,7 +813,7 @@ export default function ExpandableProposalCard({
                         setProposalDetailsModalInitialView('pristine');
                         setShowProposalDetailsModal(true);
                       } else if (buttonConfig.guestAction1.action === 'submit_rental_app') {
-                        goToRentalApplication(proposal._id);
+                        goToRentalApplication(proposal.id);
                       } else if (buttonConfig.guestAction1.action === 'delete_proposal') {
                         handleDeleteProposal();
                       } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
@@ -886,7 +886,7 @@ export default function ExpandableProposalCard({
           {/* Quick Links Row */}
           <div className="epc-links-row">
             <a
-              href={getListingUrlWithProposalContext(listing?._id, {
+              href={getListingUrlWithProposalContext(listing?.id, {
                 daysSelected: parseDaysSelectedForContext(proposal),
                 reservationSpan: getEffectiveReservationSpan(proposal),
                 moveInDate: proposal['Move in range start']
@@ -900,7 +900,7 @@ export default function ExpandableProposalCard({
             <button className="epc-link-item" onClick={() => setShowMapModal(true)}>
               Map
             </button>
-            <button className="epc-link-item" onClick={() => navigateToMessaging(host?._id, proposal._id)}>
+            <button className="epc-link-item" onClick={() => navigateToMessaging(host?.id, proposal.id)}>
               Message Host
             </button>
             <button className="epc-link-item" onClick={() => setShowHostProfileModal(true)}>
@@ -972,11 +972,11 @@ export default function ExpandableProposalCard({
 
           {/* Days Row */}
           <div className="epc-days-row">
-            <span className="epc-days-label" id={`days-label-${proposal._id}`}>Schedule</span>
+            <span className="epc-days-label" id={`days-label-${proposal.id}`}>Schedule</span>
             <div
               className="epc-days-pills"
               role="group"
-              aria-labelledby={`days-label-${proposal._id}`}
+              aria-labelledby={`days-label-${proposal.id}`}
               aria-label="Selected days of the week"
             >
               {allDays.map((day) => (
@@ -1072,7 +1072,7 @@ export default function ExpandableProposalCard({
                       setProposalDetailsModalInitialView('pristine');
                       setShowProposalDetailsModal(true);
                     } else if (buttonConfig.guestAction1.action === 'submit_rental_app') {
-                      goToRentalApplication(proposal._id);
+                      goToRentalApplication(proposal.id);
                     } else if (buttonConfig.guestAction1.action === 'delete_proposal') {
                       handleDeleteProposal();
                     } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
@@ -1107,7 +1107,7 @@ export default function ExpandableProposalCard({
                     setProposalDetailsModalInitialView('pristine');
                     setShowProposalDetailsModal(true);
                   } else if (buttonConfig.guestAction2.action === 'submit_rental_app') {
-                    goToRentalApplication(proposal._id);
+                    goToRentalApplication(proposal.id);
                   } else if (buttonConfig.guestAction2.action === 'reject_suggestion') {
                     setShowNotInterestedModal(true);
                   } else if (buttonConfig.guestAction2.action === 'review_counteroffer') {
@@ -1204,7 +1204,7 @@ export default function ExpandableProposalCard({
         isOpen={showMapModal}
         onClose={() => setShowMapModal(false)}
         proposals={allProposals}
-        currentProposalId={proposal._id}
+        currentProposalId={proposal.id}
         onProposalSelect={onProposalSelect}
       />
 

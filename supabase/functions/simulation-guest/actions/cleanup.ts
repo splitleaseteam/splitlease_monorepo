@@ -45,7 +45,7 @@ export async function handleCleanup(
       .from('proposal')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     results.proposals = deletedProposals?.length || 0;
     console.log(`[cleanup] Deleted ${results.proposals} proposals`);
@@ -59,7 +59,7 @@ export async function handleCleanup(
       .from('lease')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     results.leases = deletedLeases?.length || 0;
     console.log(`[cleanup] Deleted ${results.leases} leases`);
@@ -73,7 +73,7 @@ export async function handleCleanup(
       .from('date_change_request')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     results.dateChangeRequests = deletedRequests?.length || 0;
     console.log(`[cleanup] Deleted ${results.dateChangeRequests} date change requests`);
@@ -87,7 +87,7 @@ export async function handleCleanup(
       .from('house_manual_visit')
       .delete()
       .eq('simulation_id', simulationId)
-      .select('_id');
+      .select('id');
 
     results.houseManualVisits = deletedVisits?.length || 0;
     console.log(`[cleanup] Deleted ${results.houseManualVisits} house manual visits`);

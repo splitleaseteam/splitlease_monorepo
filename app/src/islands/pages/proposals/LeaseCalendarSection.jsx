@@ -263,14 +263,14 @@ export default function LeaseCalendarSection({ proposal }) {
 
   // Fetch lease data when component mounts (if activated)
   useEffect(() => {
-    if (!isActivated || !proposal?._id) {
+    if (!isActivated || !proposal?.id) {
       setIsLoading(false);
       return;
     }
 
     async function loadLeaseData() {
       setIsLoading(true);
-      const data = await fetchLeaseDataForProposal(proposal._id);
+      const data = await fetchLeaseDataForProposal(proposal.id);
       setLeaseData(data);
 
       // If we have lease data, set initial month to lease start
@@ -285,7 +285,7 @@ export default function LeaseCalendarSection({ proposal }) {
     }
 
     loadLeaseData();
-  }, [isActivated, proposal?._id]);
+  }, [isActivated, proposal?.id]);
 
   // Don't render if not activated or still loading
   if (!isActivated) {

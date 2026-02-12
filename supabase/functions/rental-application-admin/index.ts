@@ -200,8 +200,8 @@ async function _checkAdminStatus(
     // Check the user table for admin status
     const { data: userData, error: userError } = await supabase
       .from('user')
-      .select('"Toggle - Is Admin"')
-      .eq('_id', platformUserId)
+      .select('is_admin')
+      .eq('id', platformUserId)
       .single();
 
     if (userError) {
@@ -210,7 +210,7 @@ async function _checkAdminStatus(
       return user.user_metadata?.is_admin === true;
     }
 
-    return userData?.['Toggle - Is Admin'] === true;
+    return userData?.is_admin === true;
   } catch (_err) {
     console.error('[rental-application-admin] Admin check error:', err);
     return false;
@@ -271,9 +271,9 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   }
 
   if (filters.searchQuery) {
-    // Search across correct field names: _id, name, email
+    // Search across correct field names: id, name, email
     const searchTerm = `%${filters.searchQuery}%`;
-    query = query.or(`_id.ilike.${searchTerm},name.ilike.${searchTerm},email.ilike.${searchTerm}`);
+    query = query.or(`id.ilike.${searchTerm},name.ilike.${searchTerm},email.ilike.${searchTerm}`);
   }
 
   if (filters.minIncome) {
@@ -288,7 +288,7 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   // Column names with special characters must use quoted identifier syntax
   const fieldMapping: Record<string, string> = {
     'created_at': 'Created Date',
-    'unique_id': '_id',
+    'unique_id': 'id',
     'status': 'submitted',  // maps to boolean submitted field
     'completion_percentage': '"percentage % done"',  // quoted for special characters
     'total_monthly_income': 'Monthly Income'
@@ -338,7 +338,7 @@ async function handleGet(
   const { data, error } = await supabase
     .from('rentalapplication')
     .select('*')
-    .eq('_id', id)
+    .eq('id', id)
     .single();
 
   if (error) {
@@ -432,7 +432,7 @@ async function handleUpdate(
   const { data, error } = await supabase
     .from('rentalapplication')
     .update(dbUpdates)
-    .eq('_id', id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -468,7 +468,7 @@ async function handleUpdateStatus(
       'submitted': submittedValue,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -498,7 +498,7 @@ async function handleAddOccupant(
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
     .select('"occupants list"')
-    .eq('_id', applicationId)
+    .eq('id', applicationId)
     .single();
 
   if (fetchError) {
@@ -520,7 +520,7 @@ async function handleAddOccupant(
       'occupants list': updatedOccupants,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', applicationId);
+    .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to add occupant: ${updateError.message}`);
@@ -546,7 +546,7 @@ async function handleDeleteOccupant(
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
     .select('"occupants list"')
-    .eq('_id', applicationId)
+    .eq('id', applicationId)
     .single();
 
   if (fetchError) {
@@ -564,7 +564,7 @@ async function handleDeleteOccupant(
       'occupants list': updatedOccupants,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', applicationId);
+    .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to delete occupant: ${updateError.message}`);
@@ -589,7 +589,7 @@ async function handleAddReference(
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
     .select('references')
-    .eq('_id', applicationId)
+    .eq('id', applicationId)
     .single();
 
   if (fetchError) {
@@ -611,7 +611,7 @@ async function handleAddReference(
       'references': updatedRefs,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', applicationId);
+    .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to add reference: ${updateError.message}`);
@@ -636,7 +636,7 @@ async function handleDeleteReference(
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
     .select('references')
-    .eq('_id', applicationId)
+    .eq('id', applicationId)
     .single();
 
   if (fetchError) {
@@ -654,7 +654,7 @@ async function handleDeleteReference(
       'references': updatedRefs,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', applicationId);
+    .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to delete reference: ${updateError.message}`);
@@ -679,7 +679,7 @@ async function handleAddEmployment(
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
     .select('"Employment History"')
-    .eq('_id', applicationId)
+    .eq('id', applicationId)
     .single();
 
   if (fetchError) {
@@ -701,7 +701,7 @@ async function handleAddEmployment(
       'Employment History': updatedEmployment,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', applicationId);
+    .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to add employment: ${updateError.message}`);
@@ -726,7 +726,7 @@ async function handleDeleteEmployment(
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
     .select('"Employment History"')
-    .eq('_id', applicationId)
+    .eq('id', applicationId)
     .single();
 
   if (fetchError) {
@@ -744,7 +744,7 @@ async function handleDeleteEmployment(
       'Employment History': updatedEmployment,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', applicationId);
+    .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to delete employment: ${updateError.message}`);
@@ -782,8 +782,8 @@ function transformApplication(record: Record<string, unknown>) {
     : (permanentAddress?.address || '');
 
   return {
-    id: record['_id'] as string,
-    unique_id: record['_id'] as string,
+    id: record['id'] as string,
+    unique_id: record['id'] as string,
 
     // Applicant info for display
     applicant_name: applicantName,

@@ -67,7 +67,7 @@ export function adaptReviewListFromApi({ apiReviews }) {
   }
 
   return apiReviews.map(item => ({
-    reviewId: item.review_id || item._id,
+    reviewId: item.review_id || item.id,
     stayId: item.stay_id,
     leaseId: item.lease_id,
     listingName: item.listing_name || 'Unknown Listing',

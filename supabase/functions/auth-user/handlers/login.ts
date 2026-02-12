@@ -87,7 +87,7 @@ export async function handleLogin(
     // First try to find user by email
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user')
-      .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
+      .select('id, email, first_name, last_name, profile_photo_url')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
@@ -97,16 +97,16 @@ export async function handleLogin(
     }
 
     // Get user_id from profile or user_metadata
-    const userId = userProfile?._id || authUser.user_metadata?.user_id || authUser.id;
+    const userId = userProfile?.id || authUser.user_metadata?.user_id || authUser.id;
     const userType = authUser.user_metadata?.user_type || 'Guest';
-    // hostAccountId is now the same as userId (user._id is used directly as host reference)
+    // hostAccountId is now the same as userId (user.id is used directly as host reference)
     const hostAccountId = userId;
 
     // ========== MIGRATION: UPDATE USER METADATA IF NEEDED ==========
     // For users created before the signup flow was updated, their user_metadata.user_id
     // might not be set. We update it here to ensure subsequent Edge Function calls work correctly.
-    if (userProfile?._id && !authUser.user_metadata?.user_id) {
-      console.log('[login] 🔄 MIGRATION: Updating user_metadata.user_id for legacy user:', userProfile._id);
+    if (userProfile?.id && !authUser.user_metadata?.user_id) {
+      console.log('[login] 🔄 MIGRATION: Updating user_metadata.user_id for legacy user:', userProfile.id);
 
       try {
         const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -114,8 +114,8 @@ export async function handleLogin(
           {
             user_metadata: {
               ...authUser.user_metadata,
-              user_id: userProfile._id,
-              host_account_id: userProfile._id, // Same as user_id now
+              user_id: userProfile.id,
+              host_account_id: userProfile.id, // Same as user_id now
             }
           }
         );
@@ -133,7 +133,7 @@ export async function handleLogin(
     }
 
     console.log(`[login] ✅ User profile loaded`);
-    console.log(`[login]    User ID (_id): ${userId}`);
+    console.log(`[login]    User ID: ${userId}`);
     console.log(`[login]    User Type: ${userType}`);
 
     // ========== RETURN SESSION DATA ==========
@@ -143,7 +143,7 @@ export async function handleLogin(
     // NOTE: Must be awaited in Deno Edge Functions - fire-and-forget IIFEs are cancelled when handler returns
     // Respects notification preferences (account_assistance category)
     const loginTimestamp = new Date().toISOString();
-    const firstName = userProfile?.['Name - First'] || '';
+    const firstName = userProfile?.first_name || '';
 
     try {
       // Check notification preferences before sending
@@ -174,9 +174,9 @@ export async function handleLogin(
       user_type: userType,
       host_account_id: hostAccountId,
       email: authUser.email,
-      firstName: userProfile?.['Name - First'] || '',
-      lastName: userProfile?.['Name - Last'] || '',
-      profilePhoto: userProfile?.['Profile Photo'] || null
+      firstName: userProfile?.first_name || '',
+      lastName: userProfile?.last_name || '',
+      profilePhoto: userProfile?.profile_photo_url || null
     };
 
   } catch (error) {

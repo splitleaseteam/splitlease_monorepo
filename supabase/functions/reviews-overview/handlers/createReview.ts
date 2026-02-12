@@ -80,7 +80,7 @@ export async function handleCreateReview(
   // 2. Get user record
   const { data: userData, error: userError } = await supabase
     .from("user")
-    .select("_id, user_type")
+    .select("id, user_type")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -95,14 +95,14 @@ export async function handleCreateReview(
     );
   }
 
-  const reviewerId = userData._id;
+  const reviewerId = userData.id;
   const userType = userData.user_type;
 
   // 3. Verify stay exists and user is authorized
   const { data: stay, error: stayError } = await supabase
     .from("bookings_stays")
     .select(`
-      _id,
+      id,
       lease_id,
       listing_id,
       host_id,
@@ -112,7 +112,7 @@ export async function handleCreateReview(
       review_by_host_id,
       review_by_guest_id
     `)
-    .eq("_id", payload.stayId)
+    .eq("id", payload.stayId)
     .single();
 
   if (stayError || !stay) {
@@ -193,7 +193,7 @@ export async function handleCreateReview(
     throw new Error(`Failed to create review: ${insertError.message}`);
   }
 
-  console.log("[createReview] Review created:", review._id);
+  console.log("[createReview] Review created:", review.id);
 
   // 8. Insert rating details
   const categoryLabels = reviewType === "host_reviews_guest"
@@ -201,7 +201,7 @@ export async function handleCreateReview(
     : GUEST_REVIEW_CATEGORIES;
 
   const ratingDetails = payload.ratings.map(r => ({
-    review_id: review._id,
+    review_id: review.id,
     category: r.category,
     category_label: categoryLabels[r.category] || r.category,
     rating: r.rating
@@ -224,13 +224,13 @@ export async function handleCreateReview(
 
   // 9. Update stay with review reference
   const stayUpdate = reviewType === "host_reviews_guest"
-    ? { review_by_host_id: review._id, review_by_host_submitted_at: new Date().toISOString() }
-    : { review_by_guest_id: review._id, review_by_guest_submitted_at: new Date().toISOString() };
+    ? { review_by_host_id: review.id, review_by_host_submitted_at: new Date().toISOString() }
+    : { review_by_guest_id: review.id, review_by_guest_submitted_at: new Date().toISOString() };
 
   const { error: updateError } = await supabase
     .from("bookings_stays")
     .update(stayUpdate)
-    .eq("_id", payload.stayId);
+    .eq("id", payload.stayId);
 
   if (updateError) {
     console.error("[createReview] Stay update error:", {
@@ -248,7 +248,7 @@ export async function handleCreateReview(
     JSON.stringify({
       success: true,
       data: {
-        reviewId: review._id,
+        reviewId: review.id,
         message: "Review submitted successfully"
       }
     }),

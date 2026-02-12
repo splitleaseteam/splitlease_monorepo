@@ -10,7 +10,7 @@
  * - getStatistics: Get tester distribution by step
  *
  * Database table: user (using existing columns)
- * Relevant columns: is usability tester, Usability Step, Name - First, Name - Last, email, Modified Date
+ * Relevant columns: is usability tester, onboarding_usability_step, first_name, last_name, email, updated_at
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
@@ -166,7 +166,7 @@ async function _checkAdminOrCorporateStatus(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin", "Toggle - Is Corporate User"')
+    .select('is_admin, is_corporate_user')
     .eq('email', email)
     .single();
 
@@ -175,27 +175,27 @@ async function _checkAdminOrCorporateStatus(
     return false;
   }
 
-  return data['Toggle - Is Admin'] === true || data['Toggle - Is Corporate User'] === true;
+  return data.is_admin === true || data.is_corporate_user === true;
 }
 
 /**
  * Format database user record to tester object
  */
 function formatTester(dbUser: Record<string, unknown>) {
-  const step = (dbUser['Usability Step'] as number) ?? 0;
+  const step = (dbUser.onboarding_usability_step as number) ?? 0;
   const stepConfig = USABILITY_STEP_CONFIG[step] || USABILITY_STEP_CONFIG[0];
 
   return {
-    id: dbUser._id,
+    id: dbUser.id,
     email: dbUser.email || '',
-    firstName: dbUser['Name - First'] || '',
-    lastName: dbUser['Name - Last'] || '',
+    firstName: dbUser.first_name || '',
+    lastName: dbUser.last_name || '',
     usabilityStep: step,
     stepKey: stepConfig.key,
     stepLabel: stepConfig.label,
     canAdvance: stepConfig.canAdvance,
     canReset: stepConfig.canReset,
-    modifiedDate: dbUser['Modified Date'] || null,
+    modifiedDate: dbUser.updated_at || null,
   };
 }
 
@@ -212,14 +212,14 @@ async function handleListTesters(
 
   let query = supabase
     .from('user')
-    .select('_id, email, "Name - First", "Name - Last", "Usability Step", "Modified Date"', { count: 'exact' })
+    .select('id, email, first_name, last_name, onboarding_usability_step, updated_at', { count: 'exact' })
     .eq('is usability tester', true)
-    .order('"Name - First"', { ascending: true });
+    .order('first_name', { ascending: true });
 
   // Apply search filter across name and email fields
   if (search) {
     const searchPattern = `%${search}%`;
-    query = query.or(`"Name - First".ilike.${searchPattern},"Name - Last".ilike.${searchPattern},email.ilike.${searchPattern}`);
+    query = query.or(`first_name.ilike.${searchPattern},last_name.ilike.${searchPattern},email.ilike.${searchPattern}`);
   }
 
   // Apply pagination
@@ -256,8 +256,8 @@ async function handleGetTester(
 
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, "Name - First", "Name - Last", "Usability Step", "Modified Date"')
-    .eq('_id', testerId)
+    .select('id, email, first_name, last_name, onboarding_usability_step, updated_at')
+    .eq('id', testerId)
     .single();
 
   if (error) {
@@ -289,11 +289,11 @@ async function handleResetToDay1(
   const { data, error } = await supabase
     .from('user')
     .update({
-      'Usability Step': 0,
-      'Modified Date': now,
+      onboarding_usability_step: 0,
+      updated_at: now,
     })
-    .eq('_id', testerId)
-    .select('_id, email, "Name - First", "Name - Last", "Usability Step", "Modified Date"')
+    .eq('id', testerId)
+    .select('id, email, first_name, last_name, onboarding_usability_step, updated_at')
     .single();
 
   if (error) {
@@ -324,11 +324,11 @@ async function handleAdvanceToDay2(
   const { data, error } = await supabase
     .from('user')
     .update({
-      'Usability Step': 4, // day_2_intro
-      'Modified Date': now,
+      onboarding_usability_step: 4, // day_2_intro
+      updated_at: now,
     })
-    .eq('_id', testerId)
-    .select('_id, email, "Name - First", "Name - Last", "Usability Step", "Modified Date"')
+    .eq('id', testerId)
+    .select('id, email, first_name, last_name, onboarding_usability_step, updated_at')
     .single();
 
   if (error) {
@@ -347,7 +347,7 @@ async function handleAdvanceToDay2(
 async function handleGetStatistics(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('user')
-    .select('"Usability Step"')
+    .select('onboarding_usability_step')
     .eq('is usability tester', true);
 
   if (error) {
@@ -363,7 +363,7 @@ async function handleGetStatistics(supabase: SupabaseClient) {
 
   // Count testers by step
   for (const row of data || []) {
-    const step = (row['Usability Step'] as number) ?? 0;
+    const step = (row.onboarding_usability_step as number) ?? 0;
     if (stepCounts[step] !== undefined) {
       stepCounts[step]++;
     } else {

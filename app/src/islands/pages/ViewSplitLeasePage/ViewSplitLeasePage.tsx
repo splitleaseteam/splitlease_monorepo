@@ -330,7 +330,7 @@ export default function ViewSplitLeasePage() {
         // Fetch complete listing data
         const listingData = await fetchListingComplete(listingId);
         logger.debug('ViewSplitLeasePage: Listing data fetched:', {
-          id: listingData._id,
+          id: listingData.id,
           name: listingData.listing_title
         });
         setListing(listingData);
@@ -401,7 +401,7 @@ export default function ViewSplitLeasePage() {
       setTimeout(() => {
         if (mapRef.current && listing) {
           logger.debug('ViewSplitLeasePage: Calling zoomToListing for initial auto-zoom');
-          mapRef.current.zoomToListing(listing._id);
+          mapRef.current.zoomToListing(listing.id);
           hasAutoZoomedRef.current = true;
         }
       }, 600);
@@ -426,19 +426,19 @@ export default function ViewSplitLeasePage() {
   useEffect(() => {
     // Check if logged-in user already has a proposal for this listing
     async function checkExistingProposal() {
-      if (!loggedInUserData?.userId || !listing?._id) {
+      if (!loggedInUserData?.userId || !listing?.id) {
         setExistingProposalForListing(null);
         return;
       }
 
       try {
-        logger.debug('ViewSplitLeasePage: Checking for existing proposals for listing:', listing._id);
+        logger.debug('ViewSplitLeasePage: Checking for existing proposals for listing:', listing.id);
 
         const { data: existingProposals, error } = await supabase
           .from('booking_proposal')
           .select('id, proposal_workflow_status, original_created_at')
           .eq('guest_user_id', loggedInUserData.userId)
-          .eq('listing_id', listing.id || listing._id)
+          .eq('listing_id', listing.id || listing.id)
           .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
           .or('"Deleted".is.null,"Deleted".eq.false')
           .order('original_created_at', { ascending: false })
@@ -464,7 +464,7 @@ export default function ViewSplitLeasePage() {
     }
 
     checkExistingProposal();
-  }, [loggedInUserData?.userId, listing?._id]);
+  }, [loggedInUserData?.userId, listing?.id]);
 
   // ============================================================================
   // CHECK IF LISTING IS FAVORITED
@@ -473,7 +473,7 @@ export default function ViewSplitLeasePage() {
   useEffect(() => {
     // Check if the current listing is in the user's favorites
     async function checkIfFavorited() {
-      if (!loggedInUserData?.userId || !listing?._id) {
+      if (!loggedInUserData?.userId || !listing?.id) {
         setIsFavorited(false);
         return;
       }
@@ -482,7 +482,7 @@ export default function ViewSplitLeasePage() {
         const { data: listingData, error } = await supabase
           .from('listing')
           .select('user_ids_who_favorited_json')
-          .eq('id', listing.id || listing._id)
+          .eq('id', listing.id || listing.id)
           .single();
 
         if (error) {
@@ -502,7 +502,7 @@ export default function ViewSplitLeasePage() {
     }
 
     checkIfFavorited();
-  }, [loggedInUserData?.userId, listing?._id]);
+  }, [loggedInUserData?.userId, listing?.id]);
 
   // ============================================================================
   // COMPUTED VALUES
@@ -524,7 +524,7 @@ export default function ViewSplitLeasePage() {
   // Prepare listing data for ListingScheduleSelector component
   // Memoize to prevent unnecessary re-renders and map resets
   const scheduleSelectorListing = useMemo(() => listing ? {
-    id: listing._id,
+    id: listing.id,
     firstAvailable: new Date(listing.first_available_date),
     lastAvailable: new Date(listing['Last Available']),
     numberOfNightsAvailable: listing['# of nights available'] || 7,
@@ -542,20 +542,20 @@ export default function ViewSplitLeasePage() {
     maximumNights: listing.maximum_nights_per_stay || 7,
     daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
     daysNotAvailable: [],
-    // Pricing fields for calculation
-    'rental type': listing.rental_type || 'Nightly',
-    'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
-    'unit_markup': listing.unit_markup_percentage || 0,
-    'nightly_rate_2_nights': listing.nightly_rate_for_2_night_stay,
-    'nightly_rate_3_nights': listing.nightly_rate_for_3_night_stay,
-    'nightly_rate_4_nights': listing.nightly_rate_for_4_night_stay,
-    'nightly_rate_5_nights': listing.nightly_rate_for_5_night_stay,
-    'nightly_rate_7_nights': listing.nightly_rate_for_7_night_stay,
-    'weekly_host_rate': listing.weekly_rate_paid_to_host,
-    'monthly_host_rate': listing.monthly_rate_paid_to_host,
-    'price_override': listing['price_override'],
-    'cleaning_fee': listing.cleaning_fee_amount,
-    'damage_deposit': listing.damage_deposit_amount
+    // Pricing fields — keys MUST match what calculatePrice reads
+    rental_type: listing.rental_type || 'Nightly',
+    weeks_offered_schedule_text: listing.weeks_offered_schedule_text || 'Every week',
+    unit_markup_percentage: listing.unit_markup_percentage || 0,
+    nightly_rate_for_2_night_stay: listing.nightly_rate_for_2_night_stay,
+    nightly_rate_for_3_night_stay: listing.nightly_rate_for_3_night_stay,
+    nightly_rate_for_4_night_stay: listing.nightly_rate_for_4_night_stay,
+    nightly_rate_for_5_night_stay: listing.nightly_rate_for_5_night_stay,
+    nightly_rate_for_7_night_stay: listing.nightly_rate_for_7_night_stay,
+    weekly_rate_paid_to_host: listing.weekly_rate_paid_to_host,
+    monthly_rate_paid_to_host: listing.monthly_rate_paid_to_host,
+    price_override: listing.price_override,
+    cleaning_fee_amount: listing.cleaning_fee_amount,
+    damage_deposit_amount: listing.damage_deposit_amount
   } : null, [listing]);
 
   // Initialize with Monday-Friday (1-5) as default
@@ -582,7 +582,7 @@ export default function ViewSplitLeasePage() {
   const mapListings = useMemo(() => {
     if (!listing || !listing.coordinates) return [];
     return [{
-      id: listing._id,
+      id: listing.id,
       title: listing.listing_title,
       coordinates: listing.coordinates,
       price: {
@@ -620,6 +620,12 @@ export default function ViewSplitLeasePage() {
   const handlePriceChange = useCallback((newPriceBreakdown) => {
     console.log('=== PRICE CHANGE CALLBACK ===');
     console.log('Received price breakdown:', newPriceBreakdown);
+    console.log('💰 Price Breakdown Validated:', {
+      valid: newPriceBreakdown?.valid,
+      rent: newPriceBreakdown?.fourWeekRent,
+      total: newPriceBreakdown?.reservationTotal,
+      days: selectedDays.length
+    });
     // Only update if the values have actually changed to prevent infinite loops
     setPriceBreakdown((prev) => {
       if (!prev ||
@@ -630,7 +636,7 @@ export default function ViewSplitLeasePage() {
       }
       return prev;
     });
-  }, []);
+  }, [selectedDays.length]);
 
   const handlePhotoClick = (index) => {
     setCurrentPhotoIndex(index);
@@ -929,7 +935,7 @@ export default function ViewSplitLeasePage() {
       if (shouldZoomMap) {
         setTimeout(() => {
           if (mapRef.current && listing) {
-            mapRef.current.zoomToListing(listing._id);
+            mapRef.current.zoomToListing(listing.id);
           }
         }, 600);
       }
@@ -1764,7 +1770,7 @@ export default function ViewSplitLeasePage() {
               }}>/night</span>
             </div>
             <FavoriteButton
-              listingId={listing?._id}
+              listingId={listing?.id}
               userId={loggedInUserData?.userId}
               initialFavorited={isFavorited}
               onToggle={(newState) => setIsFavorited(newState)}
@@ -2128,7 +2134,7 @@ export default function ViewSplitLeasePage() {
             }}>
               <span style={{ color: '#111827', fontWeight: '500' }}>4-Week Rent</span>
               <span style={{ color: '#111827', fontWeight: '700', fontSize: '16px' }}>
-                {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent
+                {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent != null
                   ? formatPrice(pricingBreakdown.fourWeekRent)
                   : priceMessage || 'Please Add More Days'}
               </span>
@@ -2157,7 +2163,7 @@ export default function ViewSplitLeasePage() {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
             }}>
-              {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal
+              {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal != null
                 ? formatPrice(pricingBreakdown.reservationTotal)
                 : priceMessage || 'Please Add More Days'}
             </span>
@@ -2222,7 +2228,7 @@ export default function ViewSplitLeasePage() {
           {/* Link to existing proposal */}
           {existingProposalForListing && loggedInUserData?.userId && (
             <a
-              href={`/guest-proposals/${loggedInUserData.userId}?proposal=${existingProposalForListing._id}`}
+              href={`/guest-proposals/${loggedInUserData.userId}?proposal=${existingProposalForListing.id}`}
               style={{
                 display: 'block',
                 textAlign: 'center',
@@ -2551,7 +2557,7 @@ export default function ViewSplitLeasePage() {
           isOpen={showContactHostModal}
           onClose={() => setShowContactHostModal(false)}
           listing={{
-            id: listing._id,
+            id: listing.id,
             title: listing.listing_title,
             host: {
               userId: listing.host?.userId,  // User's Bubble ID for messaging
@@ -2759,7 +2765,7 @@ export default function ViewSplitLeasePage() {
                     <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: '500' }}>/night</span>
                   </div>
                   <FavoriteButton
-                    listingId={listing?._id}
+                    listingId={listing?.id}
                     userId={loggedInUserData?.userId}
                     initialFavorited={isFavorited}
                     onToggle={(newState) => setIsFavorited(newState)}
@@ -2975,9 +2981,9 @@ export default function ViewSplitLeasePage() {
                   }}>
                     <span style={{ color: '#111827', fontWeight: '500' }}>4-Week Rent</span>
                     <span style={{ color: '#111827', fontWeight: '700' }}>
-                      {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent
+                      {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent != null
                         ? formatPrice(pricingBreakdown.fourWeekRent)
-                        : 'â€”'}
+                        : 'â€"'}
                     </span>
                   </div>
                   <div style={{
@@ -2995,9 +3001,9 @@ export default function ViewSplitLeasePage() {
                       fontWeight: '800',
                       color: '#31135d'
                     }}>
-                      {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal
+                      {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal != null
                         ? formatPrice(pricingBreakdown.reservationTotal)
-                        : 'â€”'}
+                        : 'â€"'}
                     </span>
                   </div>
                 </div>
@@ -3036,7 +3042,7 @@ export default function ViewSplitLeasePage() {
                 {/* Link to existing proposal */}
                 {existingProposalForListing && loggedInUserData?.userId && (
                   <a
-                    href={`/guest-proposals/${loggedInUserData.userId}?proposal=${existingProposalForListing._id}`}
+                    href={`/guest-proposals/${loggedInUserData.userId}?proposal=${existingProposalForListing.id}`}
                     style={{
                       display: 'block',
                       textAlign: 'center',

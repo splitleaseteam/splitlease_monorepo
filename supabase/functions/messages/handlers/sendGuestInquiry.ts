@@ -20,7 +20,7 @@ interface SendGuestInquiryPayload {
   sender_name: string;           // Required: Guest's name
   sender_email: string;          // Required: Guest's email
   message_body: string;          // Required: Message content
-  recipient_user_id: string;     // Required: Host's user._id (Bubble ID)
+  recipient_user_id: string;     // Required: Host's user.id (Bubble ID)
   listing_id?: string;           // Optional: Associated listing
 }
 

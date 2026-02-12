@@ -342,13 +342,13 @@ describe('normalizeProposalData', () => {
   describe('preserves original fields', () => {
     it('should preserve original proposal fields via spread', () => {
       const proposal = {
-        _id: 'proposal-123',
+        id: 'proposal-123',
         bubble_id: 'abc123xyz',
         customField: 'custom value',
         Status: 'Pending'
       };
       const result = normalizeProposalData(proposal);
-      expect(result._id).toBe('proposal-123');
+      expect(result.id).toBe('proposal-123');
       expect(result.bubble_id).toBe('abc123xyz');
       expect(result.customField).toBe('custom value');
     });
@@ -369,7 +369,7 @@ describe('normalizeProposalData', () => {
   describe('real-world scenarios', () => {
     it('should normalize complete Bubble proposal', () => {
       const bubbleProposal = {
-        _id: 'proposal-123',
+        id: 'proposal-123',
         Status: 'Host Counteroffer Submitted / Awaiting Guest Review',
         'Move in range start': '2025-12-01',
         'Move-out': '2026-03-31',
@@ -387,7 +387,7 @@ describe('normalizeProposalData', () => {
 
       const result = normalizeProposalData(bubbleProposal);
 
-      expect(result._id).toBe('proposal-123');
+      expect(result.id).toBe('proposal-123');
       expect(result.status).toBe('host_counteroffer_submitted_/_awaiting_guest_review');
       expect(result.start_date).toBe('2025-12-01');
       expect(result.end_date).toBe('2026-03-31');
@@ -428,13 +428,13 @@ describe('normalizeProposalData', () => {
 
     it('should handle minimal proposal data', () => {
       const minimalProposal = {
-        _id: 'proposal-789',
+        id: 'proposal-789',
         Status: 'Draft'
       };
 
       const result = normalizeProposalData(minimalProposal);
 
-      expect(result._id).toBe('proposal-789');
+      expect(result.id).toBe('proposal-789');
       expect(result.status).toBe('draft');
       expect(result.days_selected).toEqual([]);
       expect(result.nightly_rate).toBe(0);

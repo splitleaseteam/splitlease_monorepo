@@ -124,7 +124,7 @@ export function ProgressTrackerV7({ proposal }) {
   const rawStatus = proposal?.status || proposal?.Status;
   const statusId = typeof rawStatus === 'string'
     ? rawStatus
-    : (rawStatus?.id || rawStatus?._id || '');
+    : (rawStatus?.id || '');
 
   // Get status config for usualOrder
   const statusConfig = getStatusConfig(statusId);

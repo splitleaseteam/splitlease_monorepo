@@ -10,6 +10,8 @@
  * BOT API: Uses SLACK_BOT_TOKEN for interactive messages with buttons/modals
  */
 
+import { getStatusCodeFromError } from './errors.ts';
+
 // Types
 // ─────────────────────────────────────────────────────────────
 
@@ -32,6 +34,27 @@ interface CollectedError {
   error: Error;
   context?: string;
   timestamp: string;
+}
+
+function isAuthRelatedErrorMessage(message: string | undefined): boolean {
+  if (!message) return false;
+  const normalized = message.toLowerCase();
+  return normalized.includes('token is expired') ||
+    normalized.includes('invalid jwt') ||
+    normalized.includes('authentication token') ||
+    normalized.includes('invalid or expired authentication token') ||
+    normalized.includes('unauthorized') ||
+    normalized.includes('forbidden') ||
+    (normalized.includes('jwt') && normalized.includes('expired'));
+}
+
+function shouldReportError(error: Error): boolean {
+  if (isAuthRelatedErrorMessage(error.message)) {
+    return false;
+  }
+
+  const statusCode = getStatusCodeFromError(error);
+  return statusCode >= 500;
 }
 
 // Webhook Configuration
@@ -206,6 +229,11 @@ export class ErrorCollector {
       return;
     }
 
+    const primaryError = this.errors[0]?.error;
+    if (!primaryError || !shouldReportError(primaryError)) {
+      return;
+    }
+
     const message = this.formatPlainTextMessage();
     sendToSlack('database', message);
   }
@@ -299,6 +327,12 @@ export { setUserContext };
  */
 export function reportErrorLog(log: ErrorLog): void {
   if (!hasErrors(log)) {
+    return;
+  }
+
+  const primaryError = log.errors[0]?.error;
+  if (!primaryError || !shouldReportError(primaryError)) {
+    console.log('[slack] Skipping expected/auth error report');
     return;
   }
 

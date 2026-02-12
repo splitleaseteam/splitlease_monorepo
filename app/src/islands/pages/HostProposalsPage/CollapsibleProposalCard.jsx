@@ -29,7 +29,7 @@ export function CollapsibleProposalCard({
   handlers = {}
 }) {
   const variant = getCardVariant(proposal);
-  const proposalId = proposal?._id || proposal?.id;
+  const proposalId = proposal?.id;
   const contentId = `proposal-content-${proposalId}`;
 
   // Build class name

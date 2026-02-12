@@ -82,7 +82,7 @@ registerLoader({
       const { data: proposal, error: proposalError } = await supabaseClient
         .from("proposal")
         .select(`
-          _id,
+          id,
           "Guest",
           "Listing",
           "Move in range start",
@@ -95,7 +95,7 @@ registerLoader({
           "Guest flexibility",
           "Comment"
         `)
-        .eq("_id", proposalId)
+        .eq("id", proposalId)
         .single();
 
       if (proposalError || !proposal) {
@@ -108,12 +108,13 @@ registerLoader({
       if (proposal.Guest) {
         const { data: guest } = await supabaseClient
           .from("user")
-          .select(`"Name - Full", "Name - First"`)
-          .eq("_id", proposal.Guest)
+          .select(`first_name, last_name`)
+          .eq("id", proposal.Guest)
           .single();
 
         if (guest) {
-          guestName = guest["Name - Full"] || guest["Name - First"] || "Guest";
+          const fullName = [guest.first_name, guest.last_name].filter(Boolean).join(' ');
+          guestName = fullName || guest.first_name || "Guest";
         }
       }
 
@@ -123,7 +124,7 @@ registerLoader({
         const { data: listing } = await supabaseClient
           .from("listing")
           .select("Name")
-          .eq("_id", proposal.Listing)
+          .eq("id", proposal.Listing)
           .single();
 
         if (listing) {
@@ -140,7 +141,7 @@ registerLoader({
 
       return {
         loaded: true,
-        proposalId: proposal._id,
+        proposalId: proposal.id,
         guestName,
         listingName,
         moveInStart: proposal["Move in range start"],

@@ -184,7 +184,7 @@ export function useGuestLeasesPageLogic() {
 
           // Auto-expand first lease if available
           if (leasesData.length > 0 && !expandedLeaseId) {
-            setExpandedLeaseId(leasesData[0]._id);
+            setExpandedLeaseId(leasesData[0].id);
           }
         } else {
           setLeases([]);
@@ -230,7 +230,7 @@ export function useGuestLeasesPageLogic() {
       if (leasesData && Array.isArray(leasesData)) {
         setLeases(leasesData);
         if (leasesData.length > 0 && !expandedLeaseId) {
-          setExpandedLeaseId(leasesData[0]._id);
+          setExpandedLeaseId(leasesData[0].id);
         }
       }
     } catch (err) {
@@ -254,7 +254,7 @@ export function useGuestLeasesPageLogic() {
    * Open check-in/checkout modal
    */
   const handleCheckInOut = useCallback((stay, mode) => {
-    console.log(`🚪 Guest Leases: Opening ${mode} modal for stay:`, stay._id);
+    console.log(`🚪 Guest Leases: Opening ${mode} modal for stay:`, stay.id);
     setCheckInOutModal({
       isOpen: true,
       mode,
@@ -277,10 +277,10 @@ export function useGuestLeasesPageLogic() {
    * Send check-in/checkout message to host
    */
   const handleSendMessage = useCallback(async (message, stay) => {
-    console.log('📨 Guest Leases: Sending message for stay:', stay._id, message);
+    console.log('📨 Guest Leases: Sending message for stay:', stay.id, message);
 
     try {
-      await sendCheckinMessage(stay._id, message, 'custom');
+      await sendCheckinMessage(stay.id, message, 'custom');
 
       showToast({
         title: 'Message Sent',
@@ -303,10 +303,10 @@ export function useGuestLeasesPageLogic() {
    * Send "I'm on my way" notification
    */
   const handleImOnMyWay = useCallback(async (stay) => {
-    console.log("🚗 Guest Leases: I'm on my way for stay:", stay._id);
+    console.log("🚗 Guest Leases: I'm on my way for stay:", stay.id);
 
     try {
-      await sendCheckinMessage(stay._id, "I'm on my way!", 'on_my_way');
+      await sendCheckinMessage(stay.id, "I'm on my way!", 'on_my_way');
 
       showToast({
         title: 'Notification Sent',
@@ -329,12 +329,12 @@ export function useGuestLeasesPageLogic() {
    * Send "I'm here" notification and update stay status
    */
   const handleImHere = useCallback(async (stay) => {
-    console.log("🏠 Guest Leases: I'm here for stay:", stay._id);
+    console.log("🏠 Guest Leases: I'm here for stay:", stay.id);
 
     try {
       // Send notification and update status
-      await sendCheckinMessage(stay._id, "I've arrived!", 'im_here');
-      await updateStayStatus(stay._id, 'in_progress');
+      await sendCheckinMessage(stay.id, "I've arrived!", 'im_here');
+      await updateStayStatus(stay.id, 'in_progress');
 
       showToast({
         title: 'Check-In Complete',
@@ -360,13 +360,13 @@ export function useGuestLeasesPageLogic() {
    * Note: Photos are File objects that need to be uploaded to storage first
    */
   const handleSubmitPhotos = useCallback(async (photos, type, stay) => {
-    console.log(`📷 Guest Leases: Submitting ${photos.length} ${type} photos for stay:`, stay._id);
+    console.log(`📷 Guest Leases: Submitting ${photos.length} ${type} photos for stay:`, stay.id);
 
     try {
       // Upload photos to Supabase storage first
       const photoUrls = [];
       for (const photo of photos) {
-        const fileName = `${stay._id}/${type}/${Date.now()}-${photo.name}`;
+        const fileName = `${stay.id}/${type}/${Date.now()}-${photo.name}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('stay-photos')
           .upload(fileName, photo);
@@ -384,9 +384,9 @@ export function useGuestLeasesPageLogic() {
 
       // Submit photo URLs to the API
       if (type === 'cleaning') {
-        await submitCleaningPhotos(stay._id, photoUrls);
+        await submitCleaningPhotos(stay.id, photoUrls);
       } else {
-        await submitStoragePhotos(stay._id, photoUrls);
+        await submitStoragePhotos(stay.id, photoUrls);
       }
 
       showToast({
@@ -410,10 +410,10 @@ export function useGuestLeasesPageLogic() {
    * Mark guest as leaving the property
    */
   const handleLeavingProperty = useCallback(async (stay) => {
-    console.log('👋 Guest Leases: Leaving property for stay:', stay._id);
+    console.log('👋 Guest Leases: Leaving property for stay:', stay.id);
 
     try {
-      await updateStayStatus(stay._id, 'completed');
+      await updateStayStatus(stay.id, 'completed');
 
       showToast({
         title: 'Check-Out Complete',
@@ -441,7 +441,7 @@ export function useGuestLeasesPageLogic() {
    * Open review submission modal
    */
   const handleSubmitReview = useCallback((stay) => {
-    console.log('⭐ Guest Leases: Submit review for stay:', stay._id);
+    console.log('⭐ Guest Leases: Submit review for stay:', stay.id);
     // TODO: Open review modal or navigate to review page
     showToast({
       title: 'Coming Soon',
@@ -454,7 +454,7 @@ export function useGuestLeasesPageLogic() {
    * View review from host
    */
   const handleSeeReview = useCallback((stay) => {
-    console.log('👁️ Guest Leases: See review for stay:', stay._id);
+    console.log('👁️ Guest Leases: See review for stay:', stay.id);
     // TODO: Open review view modal
     if (stay.reviewSubmittedByHost) {
       showToast({
@@ -473,10 +473,10 @@ export function useGuestLeasesPageLogic() {
    * Approve a date change request
    */
   const handleDateChangeApprove = useCallback(async (request) => {
-    console.log('✅ Guest Leases: Approve date change request:', request._id);
+    console.log('✅ Guest Leases: Approve date change request:', request.id);
 
     try {
-      await approveDateChangeRequest(request._id);
+      await approveDateChangeRequest(request.id);
 
       showToast({
         title: 'Request Approved',
@@ -499,10 +499,10 @@ export function useGuestLeasesPageLogic() {
    * Reject a date change request
    */
   const handleDateChangeReject = useCallback(async (request) => {
-    console.log('❌ Guest Leases: Reject date change request:', request._id);
+    console.log('❌ Guest Leases: Reject date change request:', request.id);
 
     try {
-      await rejectDateChangeRequest(request._id);
+      await rejectDateChangeRequest(request.id);
 
       showToast({
         title: 'Request Rejected',
@@ -525,7 +525,7 @@ export function useGuestLeasesPageLogic() {
    * Navigate to Schedule Dashboard for date change requests
    */
   const handleRequestDateChange = useCallback((lease) => {
-    window.location.href = `/schedule/${lease._id}`;
+    window.location.href = `/schedule/${lease.id}`;
   }, []);
 
   // ============================================================================
@@ -726,10 +726,10 @@ export function useGuestLeasesPageLogic() {
    * Expands the lease card for the next stay
    */
   const handleViewStayDetails = useCallback(() => {
-    if (nextStay?.lease?._id) {
-      setExpandedLeaseId(nextStay.lease._id);
+    if (nextStay?.lease?.id) {
+      setExpandedLeaseId(nextStay.lease.id);
       // Scroll to the lease card
-      const leaseCard = document.querySelector(`[data-lease-id="${nextStay.lease._id}"]`);
+      const leaseCard = document.querySelector(`[data-lease-id="${nextStay.lease.id}"]`);
       if (leaseCard) {
         leaseCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }

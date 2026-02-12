@@ -280,7 +280,7 @@ export async function updateVirtualMeetingDirect(meetingId, updates) {
         ...updates,
         'Modified Date': new Date().toISOString(),
       })
-      .eq('_id', meetingId)
+      .eq('id', meetingId)
       .select()
       .single();
 

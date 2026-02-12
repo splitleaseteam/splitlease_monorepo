@@ -13,7 +13,7 @@
 import { memo, useRef, useMemo, useCallback } from 'react';
 import { useImageCarousel } from '../../../hooks/useImageCarousel.js';
 import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
-import { calculatePrice } from '../../../lib/scheduleSelector/priceCalculations.js';
+import { getListingDisplayPrice } from '../../../logic/calculators/pricing/getListingDisplayPrice.js';
 import { logger } from '../../../lib/logger.js';
 import FavoriteButton from '../FavoriteButton/FavoriteButton.jsx';
 // NOTE: ValueAlert and MatchScore removed - components not yet implemented
@@ -39,7 +39,7 @@ const PropertyCard = memo(function PropertyCard({
   showCreateProposalButton = false,
   onOpenCreateProposalModal,
   proposalForListing,
-  selectedNightsCount = 5, // Default to 5 nights if not provided
+  selectedNightsCount = 4, // Default to 4 nights — matches SearchPage initial state
   onPhotoClick,
   variant = 'search', // 'search' | 'favorites'
   userPreferences = null // AI-extracted user preferences for match scoring
@@ -55,13 +55,13 @@ const PropertyCard = memo(function PropertyCard({
   const priceInfoTriggerRef = useRef(null);
   const mobilePriceInfoTriggerRef = useRef(null);
 
-  const favoriteListingId = listing.id || listing._id;
+  const favoriteListingId = listing.id;
 
   // Memoize availability message (SearchPage only) - depends only on listing ID and variant
   const availabilityInfo = useMemo(() => {
     if (variant !== 'search') return null;
 
-    const id = listing.id || listing._id || '';
+    const id = listing.id || '';
     // Use a simple hash of the listing ID to deterministically assign messages
     const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const messageIndex = hash % 4;
@@ -74,83 +74,16 @@ const PropertyCard = memo(function PropertyCard({
     ];
 
     return messages[messageIndex];
-  }, [listing.id, listing._id, variant]);
+  }, [listing.id, variant]);
 
   const startingPrice = useMemo(() => {
-    const pricingListStarting = Number(listing.pricingList?.startingNightlyPrice)
-    if (!Number.isNaN(pricingListStarting) && pricingListStarting > 0) {
-      return pricingListStarting
-    }
-
-    const listingStarting = Number(listing['Starting nightly price'] ?? listing.price?.starting ?? 0)
-    return Number.isNaN(listingStarting) ? 0 : listingStarting
-  }, [listing.pricingList?.startingNightlyPrice, listing['Starting nightly price'], listing.price?.starting])
-
-  const getPricingListNightlyPrice = useCallback((nightsCount) => {
-    if (!listing.pricingList?.nightlyPrice || nightsCount < 1) {
-      return null
-    }
-
-    const index = nightsCount - 1
-    const rawValue = listing.pricingList.nightlyPrice[index]
-    const parsed = Number(rawValue)
-    if (!Number.isNaN(parsed) && parsed > 0) {
-      return parsed
-    }
-
-    return null
-  }, [listing.pricingList?.nightlyPrice])
+    return getListingDisplayPrice(listing, 0, 'starting');
+  }, [listing]);
 
   // Calculate dynamic price - memoized for performance
   const dynamicPrice = useMemo(() => {
-    const nightsCount = selectedNightsCount;
-
-    // If 0 nights, show starting price
-    if (nightsCount < 1) {
-      return startingPrice;
-    }
-
-    const pricingListNightly = getPricingListNightlyPrice(nightsCount)
-    if (pricingListNightly !== null) {
-      return pricingListNightly
-    }
-
-    if (listing.pricingList) {
-      return startingPrice
-    }
-
-    try {
-      // Create a mock nights array with the correct length
-      const mockNightsArray = Array(nightsCount).fill({ nightNumber: 0 });
-
-      // Use the same pricing calculation as View Split Lease page
-      const priceBreakdown = calculatePrice(mockNightsArray, listing, 13, null);
-
-      if (variant === 'search') {
-        logger.debug(`[PropertyCard] Dynamic price for ${listing.title}:`, {
-          nightsCount,
-          rentalType: listing.rentalType,
-          hostRate: listing[`nightly_rate_${nightsCount}_night${nightsCount === 1 ? '' : 's'}`],
-          pricePerNight: priceBreakdown.pricePerNight,
-          valid: priceBreakdown.valid
-        });
-      }
-
-      return priceBreakdown.pricePerNight || startingPrice;
-    } catch (error) {
-      if (variant === 'search') {
-        logger.warn(`[PropertyCard] Price calculation failed for listing ${listing.id}:`, error.message);
-      }
-      return startingPrice;
-    }
-  }, [
-    selectedNightsCount,
-    startingPrice,
-    listing._id,
-    getPricingListNightlyPrice,
-    listing.rentalType,
-    variant
-  ]);
+    return getListingDisplayPrice(listing, selectedNightsCount, 'dynamic');
+  }, [listing, selectedNightsCount]);
 
   // Render amenity icons (SearchPage only)
   const renderAmenityIcons = () => {
@@ -176,7 +109,7 @@ const PropertyCard = memo(function PropertyCard({
     );
   };
 
-  const listingId = listing.id || listing._id;
+  const listingId = listing.id;
 
   // Check if this listing was previously viewed (read once on mount/id change)
   const isViewed = useMemo(() => {
@@ -427,7 +360,7 @@ const PropertyCard = memo(function PropertyCard({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        window.location.href = `/guest-proposals?proposal=${proposalForListing._id}`;
+                        window.location.href = `/guest-proposals?proposal=${proposalForListing.id}`;
                       }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -504,7 +437,7 @@ const PropertyCard = memo(function PropertyCard({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      window.location.href = `/guest-proposals?proposal=${proposalForListing._id}`;
+                      window.location.href = `/guest-proposals?proposal=${proposalForListing.id}`;
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -561,7 +494,7 @@ const PropertyCard = memo(function PropertyCard({
               textAlign: 'center',
               padding: '4px 0'
             }}>
-              {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week<br/>
+              {selectedNightsCount} night{selectedNightsCount !== 1 ? 's' : ''}/week<br />
               <strong>not available</strong>
             </div>
           )}
@@ -577,10 +510,10 @@ const PropertyCard = memo(function PropertyCard({
           )}
           {variant === 'search' && availabilityInfo ? (
             <div className={`availability-note ${availabilityInfo.className}`}>
-              {availabilityInfo.text.split('\n').map((line, i) => i === 0 ? line : <><br key={i}/>{line}</>)}
+              {availabilityInfo.text.split('\n').map((line, i) => i === 0 ? line : <><br key={i} />{line}</>)}
             </div>
           ) : (
-            <div className="availability-note">Message Split Lease<br/>for Availability</div>
+            <div className="availability-note">Message Split Lease<br />for Availability</div>
           )}
         </div>
       </div>

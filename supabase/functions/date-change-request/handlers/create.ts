@@ -27,7 +27,7 @@ import { sendDateChangeRequestNotifications } from "./notifications.ts";
  * 1. Validate input
  * 2. Check throttle status
  * 3. Verify lease exists and user is participant
- * 4. Generate unique _id via generate_unique_id RPC
+ * 4. Generate unique id via generate_unique_id RPC
  * 5. Insert record into datechangerequest
  * 6. Return the created request ID
  */
@@ -85,7 +85,7 @@ export async function handleCreate(
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
     .select(`
-      _id,
+      id,
       "Guest",
       "Host",
       "Listing",
@@ -93,7 +93,7 @@ export async function handleCreate(
       "Throttling - guest ability to create requests?",
       "Throttling - host ability to create requests?"
     `)
-    .eq('_id', input.leaseId)
+    .eq('id', input.leaseId)
     .single();
 
   if (leaseError || !lease) {
@@ -142,7 +142,7 @@ export async function handleCreate(
   expirationDate.setHours(expirationDate.getHours() + EXPIRATION_HOURS);
 
   const requestData = {
-    _id: requestId,
+    id: requestId,
 
     // Relationships
     'Lease': input.leaseId,

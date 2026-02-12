@@ -58,12 +58,12 @@ export async function requestVirtualMeeting(proposalId, guestId) {
   await supabase
     .from('booking_proposal')
     .update({
-      'virtual_meeting_record_id': data._id,
+      'virtual_meeting_record_id': data.id,
       'original_updated_at': new Date().toISOString()
     })
     .eq('id', proposalId);
 
-  console.log('[virtualMeetingWorkflow] Virtual meeting requested:', data._id);
+  console.log('[virtualMeetingWorkflow] Virtual meeting requested:', data.id);
   return data;
 }
 
@@ -90,7 +90,7 @@ export async function requestAlternativeMeeting(existingVmId, proposalId, guestI
       'meeting declined': true,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', existingVmId);
+    .eq('id', existingVmId);
 
   // Create new VM request
   return await requestVirtualMeeting(proposalId, guestId);
@@ -118,7 +118,7 @@ export async function respondToVirtualMeeting(vmId, bookedDate) {
       'confirmedBySplitLease': false, // Needs admin confirmation after booking
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', vmId)
+    .eq('id', vmId)
     .select()
     .single();
 
@@ -127,7 +127,7 @@ export async function respondToVirtualMeeting(vmId, bookedDate) {
     throw new Error(`Failed to respond to virtual meeting: ${error.message}`);
   }
 
-  console.log('[virtualMeetingWorkflow] Virtual meeting date booked:', data._id);
+  console.log('[virtualMeetingWorkflow] Virtual meeting date booked:', data.id);
   return data;
 }
 
@@ -150,7 +150,7 @@ export async function declineVirtualMeeting(vmId) {
       'meeting declined': true,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', vmId)
+    .eq('id', vmId)
     .select()
     .single();
 
@@ -159,7 +159,7 @@ export async function declineVirtualMeeting(vmId) {
     throw new Error(`Failed to decline virtual meeting: ${error.message}`);
   }
 
-  console.log('[virtualMeetingWorkflow] Virtual meeting declined:', data._id);
+  console.log('[virtualMeetingWorkflow] Virtual meeting declined:', data.id);
   return data;
 }
 
@@ -183,7 +183,7 @@ export async function cancelVirtualMeetingRequest(vmId) {
       'meeting declined': true,
       'Modified Date': new Date().toISOString()
     })
-    .eq('_id', vmId)
+    .eq('id', vmId)
     .select()
     .single();
 
@@ -192,7 +192,7 @@ export async function cancelVirtualMeetingRequest(vmId) {
     throw new Error(`Failed to cancel virtual meeting: ${error.message}`);
   }
 
-  console.log('[virtualMeetingWorkflow] Virtual meeting request cancelled:', data._id);
+  console.log('[virtualMeetingWorkflow] Virtual meeting request cancelled:', data.id);
   return data;
 }
 

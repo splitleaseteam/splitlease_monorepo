@@ -18,7 +18,7 @@ interface CreateGuestPayload {
 }
 
 interface CreateGuestResult {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -63,12 +63,12 @@ export async function handleCreateGuest(
   // Check if email already exists
   const { data: existingUser, error: _checkError } = await supabase
     .from('user')
-    .select('_id, email')
+    .select('id, email')
     .eq('email', email.toLowerCase().trim())
     .maybeSingle();
 
-  if (checkError) {
-    console.error('[createGuest] Error checking existing user:', checkError);
+  if (_checkError) {
+    console.error('[createGuest] Error checking existing user:', _checkError);
   }
 
   if (existingUser) {
@@ -83,17 +83,16 @@ export async function handleCreateGuest(
   const { data: newUser, error: insertError } = await supabase
     .from('user')
     .insert({
-      _id: newId,
-      'Name - First': firstName.trim(),
-      'Name - Last': lastName.trim(),
-      'Name - Full': `${firstName.trim()} ${lastName.trim()}`,
+      id: newId,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
       email: email.toLowerCase().trim(),
-      'Phone Number': phoneNumber?.trim() || null,
+      phone_number: phoneNumber?.trim() || null,
       'Date of Birth': birthDate || null,
-      'User Type': userType,
+      current_user_role: userType,
       notes: notes || null,
-      'Created Date': now,
-      'Modified Date': now
+      created_at: now,
+      updated_at: now
     })
     .select()
     .single();
@@ -106,12 +105,12 @@ export async function handleCreateGuest(
   console.log(`[createGuest] Successfully created guest: ${newId}`);
 
   return {
-    _id: newUser._id,
-    firstName: newUser['Name - First'],
-    lastName: newUser['Name - Last'],
+    id: newUser.id,
+    firstName: newUser.first_name,
+    lastName: newUser.last_name,
     email: newUser.email,
-    phoneNumber: newUser['Phone Number'] || '',
-    userType: newUser['User Type'] || 'guest',
-    createdAt: newUser['Created Date']
+    phoneNumber: newUser.phone_number || '',
+    userType: newUser.current_user_role || 'guest',
+    createdAt: newUser.created_at
   };
 }

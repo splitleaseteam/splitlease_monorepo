@@ -192,9 +192,9 @@ export default function useReminderHouseManualLogic({
 
     // If visit selected, find guest ID
     if (selectedVisitId) {
-      const visit = visits.find(v => (v._id || v.id) === selectedVisitId);
+      const visit = visits.find(v => v.id === selectedVisitId);
       if (visit?.guest) {
-        handleFieldChange('guestId', visit.guest._id || visit.guest.id || visit.guest);
+        handleFieldChange('guestId', visit.guest.id || visit.guest);
       }
     } else {
       handleFieldChange('guestId', '');

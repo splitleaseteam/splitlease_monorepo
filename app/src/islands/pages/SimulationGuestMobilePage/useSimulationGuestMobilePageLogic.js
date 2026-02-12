@@ -114,7 +114,7 @@ export function useSimulationGuestMobilePageLogic() {
 
     try {
       const initData = await simulationService.initializeSimulation({
-        guestId: authState.user._id || authState.user.userId
+        guestId: authState.user.id || authState.user.userId
       });
 
       setSimulationData(prev => ({
@@ -159,7 +159,7 @@ export function useSimulationGuestMobilePageLogic() {
 
       const result = await simulationService.stepALeaseDocuments({
         simulationId: simulationData.simulationId,
-        proposalId: selectedProposal._id || selectedProposal.id
+        proposalId: selectedProposal.id
       });
 
       setSimulationData(prev => ({
@@ -198,7 +198,7 @@ export function useSimulationGuestMobilePageLogic() {
     try {
       const result = await simulationService.stepBHouseManual({
         simulationId: simulationData.simulationId,
-        leaseId: simulationData.lease?._id || simulationData.lease?.id
+        leaseId: simulationData.lease?.id
       });
 
       setSimulationData(prev => ({
@@ -236,7 +236,7 @@ export function useSimulationGuestMobilePageLogic() {
     try {
       const result = await simulationService.stepCDateChange({
         simulationId: simulationData.simulationId,
-        leaseId: simulationData.lease?._id || simulationData.lease?.id
+        leaseId: simulationData.lease?.id
       });
 
       setSimulationData(prev => ({
@@ -274,7 +274,7 @@ export function useSimulationGuestMobilePageLogic() {
     try {
       const result = await simulationService.stepDLeaseEnding({
         simulationId: simulationData.simulationId,
-        leaseId: simulationData.lease?._id || simulationData.lease?.id
+        leaseId: simulationData.lease?.id
       });
 
       setStepStatuses(prev => ({

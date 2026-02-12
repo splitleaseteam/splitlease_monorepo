@@ -198,7 +198,7 @@ async function _checkAdminOrCorporateStatus(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin", "Toggle - Is Corporate User"')
+    .select('is_admin, is_corporate_user')
     .eq('email', email)
     .single();
 
@@ -207,7 +207,7 @@ async function _checkAdminOrCorporateStatus(
     return false;
   }
 
-  return data['Toggle - Is Admin'] === true || data['Toggle - Is Corporate User'] === true;
+  return data.is_admin === true || data.is_corporate_user === true;
 }
 
 console.log("[usability-data-admin] Edge Function ready");

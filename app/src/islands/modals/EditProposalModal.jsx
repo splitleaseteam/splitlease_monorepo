@@ -52,7 +52,7 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
       const { error } = await supabase
         .from('booking_proposal')
         .update(updatePayload)
-        .eq('id', proposal.id || proposal._id);
+        .eq('id', proposal.id);
       if (error) throw error;
     }
   );

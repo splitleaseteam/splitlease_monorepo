@@ -405,7 +405,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, onEdit }) {
       ) : photoCount === 2 ? (
         <div style={getGridStyle()}>
           {photos.map((photo, idx) => (
-            <div key={photo._id} onClick={() => onPhotoClick(idx)} style={imageStyle}>
+            <div key={photo.id} onClick={() => onPhotoClick(idx)} style={imageStyle}>
               <img src={photo.Photo} alt={`${listingName} - ${idx + 1}`} style={imgStyle} />
             </div>
           ))}
@@ -416,7 +416,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, onEdit }) {
             <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
           </div>
           {photos.slice(1, 3).map((photo, idx) => (
-            <div key={photo._id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
+            <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
               <img src={photo['Photo (thumbnail)'] || photo.Photo} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
             </div>
           ))}
@@ -427,7 +427,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, onEdit }) {
             <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
           </div>
           {photos.slice(1, 4).map((photo, idx) => (
-            <div key={photo._id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
+            <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
               <img src={photo['Photo (thumbnail)'] || photo.Photo} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
             </div>
           ))}
@@ -438,7 +438,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, onEdit }) {
             <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
           </div>
           {photos.slice(1, 5).map((photo, idx) => (
-            <div key={photo._id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
+            <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
               <img src={photo['Photo (thumbnail)'] || photo.Photo} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
               {idx === 3 && photoCount > 5 && (
                 <button
@@ -692,7 +692,7 @@ export default function PreviewSplitLeasePage() {
   };
 
   const scheduleSelectorListing = useMemo(() => listing ? {
-    id: listing._id,
+    id: listing.id,
     firstAvailable: new Date(listing.first_available_date),
     lastAvailable: new Date(listing['Last Available']),
     numberOfNightsAvailable: listing['# of nights available'] || 7,
@@ -710,19 +710,20 @@ export default function PreviewSplitLeasePage() {
     maximumNights: listing.maximum_nights_per_stay || 7,
     daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
     daysNotAvailable: [],
-    'rental type': listing.rental_type || 'Nightly',
-    'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
-    'unit_markup': listing.unit_markup_percentage || 0,
-    'nightly_rate_2_nights': listing.nightly_rate_for_2_night_stay,
-    'nightly_rate_3_nights': listing.nightly_rate_for_3_night_stay,
-    'nightly_rate_4_nights': listing.nightly_rate_for_4_night_stay,
-    'nightly_rate_5_nights': listing.nightly_rate_for_5_night_stay,
-    'nightly_rate_7_nights': listing.nightly_rate_for_7_night_stay,
-    'weekly_host_rate': listing.weekly_rate_paid_to_host,
-    'monthly_host_rate': listing.monthly_rate_paid_to_host,
+    // Pricing fields for calculation - MUST MATCH SNAKE_CASE for calculatePrice
+    'rental_type': listing.rental_type || 'Nightly',
+    'weeks_offered_schedule_text': listing.weeks_offered_schedule_text || 'Every week',
+    'unit_markup_percentage': listing.unit_markup_percentage || 0,
+    'nightly_rate_for_2_night_stay': listing.nightly_rate_for_2_night_stay,
+    'nightly_rate_for_3_night_stay': listing.nightly_rate_for_3_night_stay,
+    'nightly_rate_for_4_night_stay': listing.nightly_rate_for_4_night_stay,
+    'nightly_rate_for_5_night_stay': listing.nightly_rate_for_5_night_stay,
+    'nightly_rate_for_7_night_stay': listing.nightly_rate_for_7_night_stay,
+    'weekly_rate_paid_to_host': listing.weekly_rate_paid_to_host,
+    'monthly_rate_paid_to_host': listing.monthly_rate_paid_to_host,
     'price_override': listing['price_override'],
-    'cleaning_fee': listing.cleaning_fee_amount,
-    'damage_deposit': listing.damage_deposit_amount
+    'cleaning_fee_amount': listing.cleaning_fee_amount,
+    'damage_deposit_amount': listing.damage_deposit_amount
   } : null, [listing]);
 
   // Initialize default days
@@ -744,7 +745,7 @@ export default function PreviewSplitLeasePage() {
   const mapListings = useMemo(() => {
     if (!listing || !listing.coordinates) return [];
     return [{
-      id: listing._id,
+      id: listing.id,
       title: listing.listing_title,
       coordinates: listing.coordinates,
       price: {
@@ -911,7 +912,7 @@ export default function PreviewSplitLeasePage() {
       if (shouldZoomMap) {
         setTimeout(() => {
           if (mapRef.current && listing) {
-            mapRef.current.zoomToListing(listing._id);
+            mapRef.current.zoomToListing(listing.id);
           }
         }, 600);
       }
@@ -1778,7 +1779,7 @@ export default function PreviewSplitLeasePage() {
 
           {/* Back to Dashboard Button */}
           <button
-            onClick={() => window.location.href = `/listing-dashboard.html?id=${listing?._id}`}
+            onClick={() => window.location.href = `/listing-dashboard.html?id=${listing?.id}`}
             style={{
               width: '100%',
               padding: '14px',

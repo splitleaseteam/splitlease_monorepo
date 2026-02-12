@@ -19,7 +19,7 @@ export async function getCityIdByName(cityName) {
     const { data, error } = await supabase
       .schema('reference_table')
       .from('zat_location')
-      .select('_id, cityName')
+      .select('id, cityName')
       .eq('cityName', cleanName)
       .limit(1)
       .maybeSingle();
@@ -29,8 +29,8 @@ export async function getCityIdByName(cityName) {
       return null;
     }
 
-    console.log('[CityService] Found city ID:', data._id, 'for name:', cleanName);
-    return data._id;
+    console.log('[CityService] Found city ID:', data.id, 'for name:', cleanName);
+    return data.id;
   } catch (err) {
     console.error('[CityService] Error looking up city:', err);
     return null;

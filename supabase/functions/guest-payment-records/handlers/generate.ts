@@ -70,13 +70,13 @@ export async function handleGenerate(
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
     .select(`
-      _id,
+      id,
       Proposal,
       Guest,
       "Payment Records Guest-SL",
       "Total Rent"
     `)
-    .eq('_id', input.leaseId)
+    .eq('id', input.leaseId)
     .single();
 
   if (leaseError) {
@@ -92,8 +92,8 @@ export async function handleGenerate(
   if (!damageDeposit && leaseData.Proposal) {
     const { data: proposal } = await supabase
       .from('proposal')
-      .select(`_id, "host_counter_offer_damage_deposit", "host_counter_offer_cleaning_fee"`)
-      .eq('_id', leaseData.Proposal)
+      .select(`id, "host_counter_offer_damage_deposit", "host_counter_offer_cleaning_fee"`)
+      .eq('id', leaseData.Proposal)
       .single();
 
     if (proposal) {
@@ -151,7 +151,7 @@ export async function handleGenerate(
     const paymentNumber = i + 1; // 1-indexed like Bubble
 
     const record: GuestPaymentRecord = {
-      _id: paymentRecordIds[i],
+      id: paymentRecordIds[i],
       'Booking - Reservation': input.leaseId,
       'Payment #': paymentNumber,
       'Scheduled Date': convertDateFormat(schedule.paymentDates[i]),
@@ -201,7 +201,7 @@ export async function handleGenerate(
       'Total Rent': schedule.totalReservationPrice,
       'Modified Date': now,
     })
-    .eq('_id', input.leaseId);
+    .eq('id', input.leaseId);
 
   if (leaseUpdateError) {
     console.error(`[guest-payment-records:generate] Lease update failed:`, leaseUpdateError);

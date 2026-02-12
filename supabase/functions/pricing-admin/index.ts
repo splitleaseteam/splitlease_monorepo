@@ -213,7 +213,7 @@ async function _checkAdminRole(supabase: SupabaseClient, authUserId: string): Pr
   // Look up the user record by auth_user_id to check admin toggle
   const { data, error } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin"')
+    .select('is_admin')
     .eq('auth_user_id', authUserId)
     .single();
 
@@ -222,7 +222,7 @@ async function _checkAdminRole(supabase: SupabaseClient, authUserId: string): Pr
     return false;
   }
 
-  return data?.['Toggle - Is Admin'] === true;
+  return data?.is_admin === true;
 }
 
 // ===== ACTION HANDLERS =====
@@ -247,7 +247,7 @@ async function handleList(
   let query = supabase
     .from('listing')
     .select(`
-      _id,
+      id,
       "Name",
       "Active",
       "rental type",
@@ -268,7 +268,7 @@ async function handleList(
       "extra_charges",
       "Created Date",
       "Modified Date",
-      "Host User"
+      host_user_id
     `, { count: 'exact' });
 
   // Apply filters (using actual database column names)
@@ -319,7 +319,7 @@ async function handleList(
   // Collect unique host IDs for separate query
   const hostIds = new Set<string>();
   for (const listing of listings) {
-    if (listing["Host User"]) hostIds.add(listing["Host User"]);
+    if (listing.host_user_id) hostIds.add(listing.host_user_id);
   }
 
   // Fetch hosts in parallel
@@ -327,12 +327,12 @@ async function handleList(
   if (hostIds.size > 0) {
     const { data: hosts } = await supabase
       .from("users")
-      .select("_id, email, name_first, name_last")
-      .in("_id", Array.from(hostIds));
+      .select("id, email, name_first, name_last")
+      .in("id", Array.from(hostIds));
 
     if (hosts) {
       for (const host of hosts) {
-        hostsMap.set(host._id, host);
+        hostsMap.set(host.id, host);
       }
     }
   }
@@ -340,7 +340,7 @@ async function handleList(
   // Enrich listings with host data
   const enrichedListings = listings.map((listing) => ({
     ...listing,
-    host: listing["Host User"] ? hostsMap.get(listing["Host User"]) || null : null,
+    host: listing.host_user_id ? hostsMap.get(listing.host_user_id) || null : null,
   }));
 
   return {
@@ -368,7 +368,7 @@ async function handleGet(
   const { data: listing, error } = await supabase
     .from('listing')
     .select('*')
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (error) {
@@ -377,11 +377,11 @@ async function handleGet(
 
   // Fetch host separately if exists
   let host = null;
-  if (listing?.["Host User"]) {
+  if (listing?.host_user_id) {
     const { data: hostData } = await supabase
       .from("users")
-      .select("_id, email, name_first, name_last, phone_number")
-      .eq("_id", listing["Host User"])
+      .select("id, email, name_first, name_last, phone_number")
+      .eq("id", listing.host_user_id)
       .single();
     host = hostData;
   }
@@ -442,7 +442,7 @@ async function handleUpdatePrice(
   const { data, error } = await supabase
     .from('listing')
     .update(updateData)
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .select()
     .single();
 
@@ -510,7 +510,7 @@ async function handleBulkUpdate(
   const { data, error } = await supabase
     .from('listing')
     .update(updateData)
-    .in('_id', listingIds)
+    .in('id', listingIds)
     .select();
 
   if (error) {
@@ -551,7 +551,7 @@ async function handleSetOverride(
       'price_override': priceOverride,
       'Modified Date': new Date().toISOString(),
     })
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .select()
     .single();
 
@@ -592,7 +592,7 @@ async function handleToggleActive(
       '✅Active': active,
       'Modified Date': new Date().toISOString(),
     })
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .select()
     .single();
 
@@ -643,7 +643,7 @@ async function handleExport(
   const { data, error } = await supabase
     .from('listing')
     .select(`
-      _id,
+      id,
       "🏷Name",
       "✅Active",
       "🏠Rental Type",
@@ -665,7 +665,7 @@ async function handleExport(
       "Created Date",
       host:👤Host(email, "First Name", "Last Name")
     `)
-    .in('_id', listingIds);
+    .in('id', listingIds);
 
   if (error) {
     throw new Error(`Failed to fetch listings for export: ${error.message}`);
@@ -689,7 +689,7 @@ async function handleExport(
     const host = listing.host as Record<string, string> | null;
 
     return [
-      listing._id,
+      listing.id,
       listing['🏷Name'] || '',
       listing['✅Active'] ? 'Yes' : 'No',
       listing['🏠Rental Type'] || '',

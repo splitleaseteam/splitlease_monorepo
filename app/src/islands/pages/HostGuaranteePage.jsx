@@ -22,14 +22,14 @@ export default function HostGuaranteePage() {
         const { data, error } = await supabase
           .schema('reference_table')
           .from('zat_faq')
-          .select('_id, Question, Answer')
-          .in('_id', FAQ_IDS);
+          .select('id, Question, Answer')
+          .in('id', FAQ_IDS);
 
         if (error) throw error;
 
         // Sort FAQs to match the order of FAQ_IDS
         const sortedFaqs = FAQ_IDS.map(id =>
-          data.find(faq => faq._id === id)
+          data.find(faq => faq.id === id)
         ).filter(Boolean);
 
         setFaqs(sortedFaqs);
@@ -267,7 +267,7 @@ export default function HostGuaranteePage() {
                 const isActive = activeAccordion === index;
                 return (
                   <div
-                    key={faq._id}
+                    key={faq.id}
                     className={`guarantee-accordion-item ${isActive ? 'active' : ''}`}
                   >
                     <div

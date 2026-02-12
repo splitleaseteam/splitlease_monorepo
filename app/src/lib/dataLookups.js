@@ -103,7 +103,7 @@ async function initializeBoroughLookups() {
     if (data && Array.isArray(data)) {
       data.forEach(borough => {
         const name = borough['Display Borough'] || 'Unknown Borough';
-        lookupCache.boroughs.set(borough._id, name.trim());
+        lookupCache.boroughs.set(borough.id, name.trim());
       });
       console.log(`Cached ${lookupCache.boroughs.size} boroughs`);
     }
@@ -130,7 +130,7 @@ async function initializeNeighborhoodLookups() {
     if (data && Array.isArray(data)) {
       data.forEach(neighborhood => {
         const name = (neighborhood.Display || 'Unknown Neighborhood').trim();
-        lookupCache.neighborhoods.set(neighborhood._id, {
+        lookupCache.neighborhoods.set(neighborhood.id, {
           name,
           description: null, // lazy-loaded via fetchNeighborhoodDescription()
           zips: neighborhood.Zips || [],
@@ -163,7 +163,7 @@ async function initializePropertyTypeLookups() {
         // Access column with trailing space
         const label = type['Label '];
         if (label) {
-          lookupCache.propertyTypes.set(type._id, label.trim());
+          lookupCache.propertyTypes.set(type.id, label.trim());
         }
       });
       console.log(`Cached ${lookupCache.propertyTypes.size} property types from database`);
@@ -191,13 +191,13 @@ async function initializeAmenityLookups() {
   try {
     const { data, error } = await supabase
       .from(DATABASE.TABLES.AMENITY)
-      .select('_id, Name, Icon, "Type - Amenity Categories"');
+      .select('id, Name, Icon, "Type - Amenity Categories"');
 
     if (error) throw error;
 
     if (data && Array.isArray(data)) {
       data.forEach(amenity => {
-        lookupCache.amenities.set(amenity._id, {
+        lookupCache.amenities.set(amenity.id, {
           name: amenity.Name || 'Unknown Amenity',
           icon: amenity.Icon || '',
           type: amenity['Type - Amenity Categories'] || ''
@@ -225,7 +225,7 @@ async function initializeSafetyLookups() {
 
     if (data && Array.isArray(data)) {
       data.forEach(safety => {
-        lookupCache.safety.set(safety._id, {
+        lookupCache.safety.set(safety.id, {
           name: safety.Name || 'Unknown Safety Feature',
           icon: safety.Icon || ''
         });
@@ -252,7 +252,7 @@ async function initializeHouseRuleLookups() {
 
     if (data && Array.isArray(data)) {
       data.forEach(rule => {
-        lookupCache.houseRules.set(rule._id, {
+        lookupCache.houseRules.set(rule.id, {
           name: rule.Name || 'Unknown Rule',
           icon: rule.Icon || ''
         });
@@ -279,7 +279,7 @@ async function initializeParkingLookups() {
 
     if (data && Array.isArray(data)) {
       data.forEach(parking => {
-        lookupCache.parking.set(parking._id, {
+        lookupCache.parking.set(parking.id, {
           label: parking.Label || 'Unknown Parking'
         });
       });
@@ -305,7 +305,7 @@ async function initializeCancellationPolicyLookups() {
 
     if (data && Array.isArray(data)) {
       data.forEach(policy => {
-        lookupCache.cancellationPolicies.set(policy._id, {
+        lookupCache.cancellationPolicies.set(policy.id, {
           display: policy.Display || 'Unknown Policy',
           bestCaseText: policy['Best Case Text'] || null,
           mediumCaseText: policy['Medium Case Text'] || null,
@@ -335,7 +335,7 @@ async function initializeStorageLookups() {
 
     if (data && Array.isArray(data)) {
       data.forEach(storage => {
-        lookupCache.storage.set(storage._id, {
+        lookupCache.storage.set(storage.id, {
           title: storage.Title || 'Unknown Storage',
           summaryGuest: storage['Summary - Guest'] || ''
         });
@@ -690,7 +690,7 @@ export async function fetchNeighborhoodDescription(neighborhoodId) {
       .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
       .select('"Neighborhood Description"')
-      .eq('_id', neighborhoodId)
+      .eq('id', neighborhoodId)
       .single();
 
     if (error) throw error;
@@ -727,7 +727,7 @@ export async function fetchNeighborhoodName(neighborhoodId) {
       .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
       .select('Display, "Neighborhood Description", "Zips", "Geo-Borough"')
-      .eq('_id', neighborhoodId)
+      .eq('id', neighborhoodId)
       .single();
 
     if (error) throw error;
@@ -765,7 +765,7 @@ export async function fetchBoroughName(boroughId) {
       .schema('reference_table')
       .from(DATABASE.TABLES.BOROUGH)
       .select('"Display Borough"')
-      .eq('_id', boroughId)
+      .eq('id', boroughId)
       .single();
 
     if (error) throw error;

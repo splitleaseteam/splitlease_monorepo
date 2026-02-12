@@ -156,7 +156,7 @@ export default function HostLeasesPage() {
   // RENDER
   // ============================================================================
 
-  const selectedListingId = selectedListing?.id || selectedListing?._id;
+  const selectedListingId = selectedListing?.id;
   const selectedListingName = selectedListing?.title || selectedListing?.name;
   const hasLeases = leases && leases.length > 0;
 

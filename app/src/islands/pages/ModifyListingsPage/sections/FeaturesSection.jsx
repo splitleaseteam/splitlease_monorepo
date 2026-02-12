@@ -35,7 +35,7 @@ export default function FeaturesSection({
   // Format amenities for checkbox group
   const formatAmenityOptions = (amenities) => {
     return amenities.map(amenity => ({
-      value: amenity._id || amenity.value,
+      value: amenity.id || amenity.value,
       label: amenity.name || amenity.label
     }));
   };

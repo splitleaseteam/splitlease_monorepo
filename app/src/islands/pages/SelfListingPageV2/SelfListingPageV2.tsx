@@ -1042,7 +1042,7 @@ export function SelfListingPageV2() {
       const result = await createListing(listingData);
 
       console.log('[SelfListingPageV2] Listing created:', result);
-      setCreatedListingId(result._id);
+      setCreatedListingId(result.id);
       setSubmitSuccess(true);
       // Save last preferences before clearing draft so they persist for next listing
       localStorage.setItem(LAST_HOST_TYPE_KEY, formData.hostType);

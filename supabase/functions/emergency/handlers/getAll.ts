@@ -84,12 +84,12 @@ async function enrichEmergencies(
   if (proposalIds.size > 0) {
     const { data: proposals } = await supabase
       .from('proposal')
-      .select('_id, "Agreement #", "Guest", "Listing", "Move in", "Move out"')
-      .in('_id', Array.from(proposalIds));
+      .select('id, "Agreement #", "Guest", "Listing", "Move in", "Move out"')
+      .in('id', Array.from(proposalIds));
 
     if (proposals) {
       for (const p of proposals) {
-        proposalMap.set(p._id, p);
+        proposalMap.set(p.id, p);
       }
     }
   }
@@ -99,12 +99,12 @@ async function enrichEmergencies(
   if (userIds.size > 0) {
     const { data: users } = await supabase
       .from('user')
-      .select('_id, email, "First name", "Last name", "Phone number", admin')
-      .in('_id', Array.from(userIds));
+      .select('id, email, "First name", "Last name", "Phone number", admin')
+      .in('id', Array.from(userIds));
 
     if (users) {
       for (const u of users) {
-        userMap.set(u._id, u);
+        userMap.set(u.id, u);
       }
     }
   }
@@ -119,12 +119,12 @@ async function enrichEmergencies(
   if (listingIds.size > 0) {
     const { data: listings } = await supabase
       .from('listing')
-      .select('_id, Name, "Street address", "City/Town"')
-      .in('_id', Array.from(listingIds));
+      .select('id, Name, "Street address", "City/Town"')
+      .in('id', Array.from(listingIds));
 
     if (listings) {
       for (const l of listings) {
-        listingMap.set(l._id, l);
+        listingMap.set(l.id, l);
       }
     }
   }
@@ -139,7 +139,7 @@ async function enrichEmergencies(
     return {
       ...emergency,
       proposal: proposal ? {
-        _id: proposal._id,
+        id: proposal.id,
         agreementNumber: proposal['Agreement #'],
         guestId: proposal.Guest,
         listingId: proposal.Listing,
@@ -147,20 +147,20 @@ async function enrichEmergencies(
         moveOut: proposal['Move out'],
       } : null,
       listing: listing ? {
-        _id: listing._id,
+        id: listing.id,
         name: listing.Name,
         streetAddress: listing['Street address'],
         city: listing['City/Town'],
       } : null,
       reportedBy: reportedBy ? {
-        _id: reportedBy._id,
+        id: reportedBy.id,
         email: reportedBy.email,
         firstName: reportedBy['First name'],
         lastName: reportedBy['Last name'],
         phone: reportedBy['Phone number'],
       } : null,
       assignedTo: assignedTo ? {
-        _id: assignedTo._id,
+        id: assignedTo.id,
         email: assignedTo.email,
         firstName: assignedTo['First name'],
         lastName: assignedTo['Last name'],

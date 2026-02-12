@@ -108,7 +108,7 @@ export default function AboutUsPage() {
 
         // Transform data to match component expectations
         const transformedData = data.map(member => ({
-          id: member._id,
+          id: member.id,
           name: member.name,
           title: member.title,
           image: member.image,

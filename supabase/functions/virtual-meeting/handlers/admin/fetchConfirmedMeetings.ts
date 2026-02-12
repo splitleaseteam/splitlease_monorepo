@@ -70,16 +70,16 @@ export async function handleAdminFetchConfirmed(
   const usersPromise = userIds.size > 0
     ? supabase
         .from("users")
-        .select("id, _id, name_first, name_last, email, phone_number, profile_photo_url, timezone")
-        .in("_id", Array.from(userIds))
+        .select("id, name_first, name_last, email, phone_number, profile_photo_url, timezone")
+        .in("id", Array.from(userIds))
     : Promise.resolve({ data: [], error: null });
 
   // Fetch listings in parallel
   const listingsPromise = listingIds.size > 0
     ? supabase
         .from("listing")
-        .select("_id, title, street_address, unit_apt, neighborhood_1")
-        .in("_id", Array.from(listingIds))
+        .select("id, title, street_address, unit_apt, neighborhood_1")
+        .in("id", Array.from(listingIds))
     : Promise.resolve({ data: [], error: null });
 
   const [usersResult, listingsResult] = await Promise.all([usersPromise, listingsPromise]);
@@ -88,14 +88,14 @@ export async function handleAdminFetchConfirmed(
   const usersMap = new Map<string, unknown>();
   if (usersResult.data) {
     for (const user of usersResult.data) {
-      usersMap.set(user._id, user);
+      usersMap.set(user.id, user);
     }
   }
 
   const listingsMap = new Map<string, unknown>();
   if (listingsResult.data) {
     for (const listing of listingsResult.data) {
-      listingsMap.set(listing._id, listing);
+      listingsMap.set(listing.id, listing);
     }
   }
 

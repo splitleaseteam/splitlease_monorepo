@@ -106,8 +106,8 @@ export default function DateChangeRequestManager({
 
   // Fetch throttle status, existing requests, and roommate dates on mount
   useEffect(() => {
-    const userId = currentUser?._id || currentUser?.id;
-    const leaseId = lease?._id || lease?.id;
+    const userId = currentUser?.id;
+    const leaseId = lease?.id;
     const listingId = lease?.Listing || lease?.listingId;
 
     if (userId && leaseId) {
@@ -134,7 +134,7 @@ export default function DateChangeRequestManager({
    * Fetch enhanced throttle status for current user on this lease
    */
   const fetchThrottleStatus = async (userId) => {
-    const leaseId = lease?._id || lease?.id;
+    const leaseId = lease?.id;
     if (!leaseId) return;
 
     const result = await dateChangeRequestService.getEnhancedThrottleStatus(leaseId, userId);
@@ -163,7 +163,7 @@ export default function DateChangeRequestManager({
    * Get user ID (handle different field names)
    */
   const getUserId = () => {
-    return currentUser?._id || currentUser?.id || currentUser?.userId;
+    return currentUser?.id || currentUser?.userId;
   };
 
   /**
@@ -255,7 +255,7 @@ export default function DateChangeRequestManager({
     // Save preference if checkbox was checked
     if (dontShowAgain) {
       const userId = getUserId();
-      const leaseId = lease?._id || lease?.id;
+      const leaseId = lease?.id;
       if (userId && leaseId) {
         await dateChangeRequestService.updateWarningPreference(leaseId, userId, true);
       }
@@ -297,7 +297,7 @@ export default function DateChangeRequestManager({
     try {
       // Create request in pending_payment status
       const result = await dateChangeRequestService.create({
-        leaseId: lease._id || lease.id,
+        leaseId: lease.id,
         typeOfRequest: requestType,
         dateAdded: dateToAdd,
         dateRemoved: dateToRemove,
@@ -311,7 +311,7 @@ export default function DateChangeRequestManager({
       });
 
       if (result.status === 'success') {
-        const requestId = result.data?.id || result.data?._id;
+        const requestId = result.data?.id;
         setPendingRequestId(requestId);
 
         // Track request creation (before payment)
@@ -391,7 +391,7 @@ export default function DateChangeRequestManager({
 
     try {
       const result = await dateChangeRequestService.create({
-        leaseId: lease._id || lease.id,
+        leaseId: lease.id,
         typeOfRequest: requestType,
         dateAdded: dateToAdd,
         dateRemoved: dateToRemove,
@@ -409,7 +409,7 @@ export default function DateChangeRequestManager({
 
         // Track final submission
         analyticsService.trackRequestSubmitted({
-          id: result.data?.id || result.data?._id,
+          id: result.data?.id,
           selectedTier: selectedTier,
           feeBreakdown: feeBreakdown || { totalPrice: calculateProposedPrice() },
           transactionType: requestType,
@@ -436,7 +436,7 @@ export default function DateChangeRequestManager({
 
     try {
       const result = await dateChangeRequestService.accept(
-        requestToManage.id || requestToManage._id,
+        requestToManage.id,
         responseMessage
       );
 
@@ -465,7 +465,7 @@ export default function DateChangeRequestManager({
 
     try {
       const result = await dateChangeRequestService.decline(
-        requestToManage.id || requestToManage._id,
+        requestToManage.id,
         reason
       );
 
@@ -696,7 +696,7 @@ export default function DateChangeRequestManager({
               onPaymentError={handlePaymentError}
               onBack={handleBackFromPayment}
               transactionType="date_change"
-              leaseId={lease?._id || lease?.id}
+              leaseId={lease?.id}
               userId={getUserId()}
               metadata={{
                 requestId: pendingRequestId,

@@ -230,11 +230,11 @@ export default function GuestLeasesPage() {
                 <div className="leases-list">
                   {leases.map(lease => (
                     <LeaseCard
-                      key={lease._id}
+                      key={lease.id}
                       lease={lease}
-                      isExpanded={expandedLeaseId === lease._id}
-                      currentUserId={user?._id}
-                      onToggleExpand={() => handleToggleExpand(lease._id)}
+                      isExpanded={expandedLeaseId === lease.id}
+                      currentUserId={user?.id}
+                      onToggleExpand={() => handleToggleExpand(lease.id)}
                       onCheckInOut={handleCheckInOut}
                       onSubmitReview={handleSubmitReview}
                       onSeeReview={handleSeeReview}
@@ -244,7 +244,7 @@ export default function GuestLeasesPage() {
                       onDownloadDocument={handleDownloadDocument}
                       onEmergencyAssistance={handleEmergencyAssistance}
                       onSeeReputation={handleSeeReputation}
-                      data-lease-id={lease._id}
+                      data-lease-id={lease.id}
                     />
                   ))}
                 </div>

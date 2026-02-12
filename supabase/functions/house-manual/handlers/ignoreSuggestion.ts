@@ -51,7 +51,7 @@ export async function handleIgnoreSuggestion(
       decision: "ignored",
       "Modified Date": new Date().toISOString(),
     })
-    .eq("_id", suggestionId)
+    .eq("id", suggestionId)
     .select()
     .single();
 

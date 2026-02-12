@@ -53,16 +53,16 @@ export async function handleCreateTestGuest(
     .from('user')
     .insert({
       email: testEmail,
-      'Name - First': testFirstName,
-      'Name - Last': testLastName,
-      userType: 'A Guest (I would like to rent a space)',
+      first_name: testFirstName,
+      last_name: testLastName,
+      current_user_role: 'A Guest (I would like to rent a space)',
       'is usability tester': true,
       'is_test_data': true,
       'simulation_id': simulationId,
-      'Created Date': new Date().toISOString(),
-      'Modified Date': new Date().toISOString()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     })
-    .select('_id, email, "Name - First", "Name - Last"')
+    .select('id, email, first_name, last_name')
     .single();
 
   if (createError) {
@@ -70,14 +70,14 @@ export async function handleCreateTestGuest(
     throw new Error(`Failed to create test guest: ${createError.message}`);
   }
 
-  console.log('[createTestGuest] Created test guest:', guestData._id);
+  console.log('[createTestGuest] Created test guest:', guestData.id);
 
   // Also create a guest account record if the table exists
   try {
     await supabase
       .from('account_guest')
       .insert({
-        user: guestData._id,
+        user: guestData.id,
         'is_test_data': true,
         'simulation_id': simulationId,
         'Created Date': new Date().toISOString()
@@ -89,7 +89,7 @@ export async function handleCreateTestGuest(
   }
 
   return {
-    guestId: guestData._id,
+    guestId: guestData.id,
     guestEmail: testEmail,
     guestName: `${testFirstName} ${testLastName}`,
     simulationId

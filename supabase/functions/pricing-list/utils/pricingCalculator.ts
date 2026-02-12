@@ -26,17 +26,17 @@ const PRICING_CONSTANTS = {
 // ─────────────────────────────────────────────────────────────
 
 interface Listing {
-  _id: string;
-  nightly_rate_1_night?: number | null;
-  nightly_rate_2_nights?: number | null;
-  nightly_rate_3_nights?: number | null;
-  nightly_rate_4_nights?: number | null;
-  nightly_rate_5_nights?: number | null;
-  nightly_rate_6_nights?: number | null;
-  nightly_rate_7_nights?: number | null;
-  weekly_host_rate?: number | null;
-  monthly_host_rate?: number | null;
-  'rental type'?: string;
+  id: string;
+  nightly_rate_for_1_night_stay?: number | null;
+  nightly_rate_for_2_night_stay?: number | null;
+  nightly_rate_for_3_night_stay?: number | null;
+  nightly_rate_for_4_night_stay?: number | null;
+  nightly_rate_for_5_night_stay?: number | null;
+  // No 6-night column in DB schema
+  nightly_rate_for_7_night_stay?: number | null;
+  weekly_rate_paid_to_host?: number | null;
+  monthly_rate_paid_to_host?: number | null;
+  rental_type?: string;
   [key: string]: unknown;
 }
 
@@ -67,7 +67,7 @@ function normalizeRate(value: unknown): number | null {
     return null;
   }
   const num = Number(value);
-  if (isNaN(num) || num < 0) {
+  if (isNaN(num) || num <= 0) {
     return null;
   }
   return num;
@@ -98,12 +98,12 @@ const AVG_DAYS_PER_MONTH = 30.4;
  * Array index 0 = 1 night, index 6 = 7 nights
  */
 function calculateHostCompensationArray(listing: Listing): (number | null)[] {
-  const rentalType = listing['rental type'] || 'Nightly';
+  const rentalType = listing['rental_type'] || 'Nightly';
 
   // For Weekly rental type: weeklyRate / numberOfNights
   // E.g., $2000 weekly rate: [2000/1, 2000/2, 2000/3, 2000/4, 2000/5, 2000/6, 2000/7]
   if (rentalType === 'Weekly') {
-    const weeklyRate = normalizeRate(listing['weekly_host_rate']);
+    const weeklyRate = normalizeRate(listing['weekly_rate_paid_to_host']);
     if (weeklyRate !== null) {
       return [
         roundToTwoDecimals(weeklyRate / 1), // 1 night: full weekly rate per night
@@ -121,7 +121,7 @@ function calculateHostCompensationArray(listing: Listing): (number | null)[] {
   // For Monthly rental type: Convert monthly to weekly equivalent, then divide by nights
   // Formula: (monthlyRate / avgDaysPerMonth) * 7 / numberOfNights
   if (rentalType === 'Monthly') {
-    const monthlyRate = normalizeRate(listing['monthly_host_rate']);
+    const monthlyRate = normalizeRate(listing['monthly_rate_paid_to_host']);
     if (monthlyRate !== null) {
       // Weekly equivalent = (monthlyRate / 30.4) * 7
       const weeklyEquivalent = (monthlyRate / AVG_DAYS_PER_MONTH) * 7;
@@ -139,14 +139,15 @@ function calculateHostCompensationArray(listing: Listing): (number | null)[] {
   }
 
   // For Nightly rental type (or fallback): use individual nightly rates
+  // Note: No 6-night column exists in the database schema
   return [
-    normalizeRate(listing['nightly_rate_1_night']),
-    normalizeRate(listing['nightly_rate_2_nights']),
-    normalizeRate(listing['nightly_rate_3_nights']),
-    normalizeRate(listing['nightly_rate_4_nights']),
-    normalizeRate(listing['nightly_rate_5_nights']),
-    normalizeRate(listing['nightly_rate_6_nights']),
-    normalizeRate(listing['nightly_rate_7_nights']),
+    normalizeRate(listing['nightly_rate_for_1_night_stay']),
+    normalizeRate(listing['nightly_rate_for_2_night_stay']),
+    normalizeRate(listing['nightly_rate_for_3_night_stay']),
+    normalizeRate(listing['nightly_rate_for_4_night_stay']),
+    normalizeRate(listing['nightly_rate_for_5_night_stay']),
+    null,
+    normalizeRate(listing['nightly_rate_for_7_night_stay']),
   ];
 }
 
@@ -230,7 +231,7 @@ function calculateNightlyPricesArray(
 
 function calculateLowestNightlyPrice(nightlyPrices: (number | null)[]): number | null {
   const validPrices = nightlyPrices.filter(
-    (price): price is number => price !== null && price !== undefined && !isNaN(price)
+    (price): price is number => price !== null && price !== undefined && !isNaN(price) && price > 0
   );
 
   if (validPrices.length === 0) {

@@ -48,7 +48,7 @@ export async function handleGet(
     const { data: listingData, error } = await supabase
       .from('listing')
       .select('*')
-      .eq('_id', listing_id)
+      .eq('id', listing_id)
       .single();
 
     if (error || !listingData) {

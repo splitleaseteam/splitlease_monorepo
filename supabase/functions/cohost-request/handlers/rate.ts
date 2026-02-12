@@ -21,7 +21,7 @@ interface UserContext {
 }
 
 interface RateCoHostRequestInput {
-  requestId: string;       // Co-host request Bubble _id
+  requestId: string;       // Co-host request legacy id
   Rating: number;          // 1-5 star rating
   "Rating message (optional)"?: string;  // Optional feedback message
 }
@@ -73,8 +73,8 @@ export async function handleRate(
 
   const { data: existingRequest, error: fetchError } = await supabase
     .from("co_hostrequest")
-    .select("_id, status")
-    .eq("_id", input.requestId)
+    .select("id, status")
+    .eq("id", input.requestId)
     .single();
 
   if (fetchError || !existingRequest) {
@@ -100,7 +100,7 @@ export async function handleRate(
   const { error: updateError } = await supabase
     .from("co_hostrequest")
     .update(updateData)
-    .eq("_id", input.requestId);
+    .eq("id", input.requestId);
 
   if (updateError) {
     console.error(`[cohost-request:rate] Update failed:`, updateError);

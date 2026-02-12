@@ -33,11 +33,11 @@ export async function handleMarkTester(
     throw new Error('simulationId is required');
   }
 
-  // Get user's _id from supabaseUserId
+  // Get user ID from supabase_user_id
   const { data: userData, error: fetchError } = await supabase
     .from('user')
-    .select('_id')
-    .eq('supabaseUserId', user.id)
+    .select('id')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (fetchError || !userData) {
@@ -50,21 +50,21 @@ export async function handleMarkTester(
     .from('user')
     .update({
       'is usability tester': true,
-      'Usability Step': 1,
-      'Modified Date': new Date().toISOString()
+      onboarding_usability_step: 1,
+      updated_at: new Date().toISOString()
     })
-    .eq('_id', userData._id);
+    .eq('id', userData.id);
 
   if (updateError) {
     console.error('[markTester] Error updating user:', updateError);
     throw new Error('Failed to mark user as tester');
   }
 
-  console.log('[markTester] Successfully marked user as tester:', userData._id);
+  console.log('[markTester] Successfully marked user as tester:', userData.id);
 
   return {
     success: true,
-    userId: userData._id,
+    userId: userData.id,
     isUsabilityTester: true
   };
 }

@@ -69,20 +69,19 @@ export async function handleCreate(
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
       .select(`
-        _id,
-        nightly_rate_1_night,
-        nightly_rate_2_nights,
-        nightly_rate_3_nights,
-        nightly_rate_4_nights,
-        nightly_rate_5_nights,
-        nightly_rate_6_nights,
-        nightly_rate_7_nights,
-        weekly_host_rate,
-        monthly_host_rate,
-        "rental type",
-        "Host User"
+        id,
+        nightly_rate_for_1_night_stay,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay,
+        weekly_rate_paid_to_host,
+        monthly_rate_paid_to_host,
+        rental_type,
+        host_user_id
       `)
-      .eq('_id', listing_id)
+      .eq('id', listing_id)
       .single();
 
     if (fetchError || !listing) {
@@ -121,8 +120,8 @@ export async function handleCreate(
     // Note: Only include columns that exist in pricing_list table schema
     // Missing columns (not in DB): listing, Overall Site Markup, Slope, rental type
     const pricingListRecord = {
-      _id: pricingListId,
-      'Created By': user_id || listing['Host User'],
+      id: pricingListId,
+      'Created By': user_id || listing['host_user_id'],
 
       // Arrays (JSONB)
       'Host Compensation': pricingData.hostCompensation,
@@ -159,8 +158,8 @@ export async function handleCreate(
 
     const { error: updateError } = await supabase
       .from('listing')
-      .update({ pricing_list: pricingListId })
-      .eq('_id', listing_id);
+      .update({ pricing_configuration_id: pricingListId })
+      .eq('id', listing_id);
 
     if (updateError) {
       console.error('[pricing-list:create] Failed to update listing FK:', updateError);

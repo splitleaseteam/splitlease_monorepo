@@ -78,9 +78,9 @@ export default function ListingsSection({
           <div className="grd-users-grid">
             {allGuests.slice(0, 12).map(guest => (
               <div
-                key={guest._id}
-                className={`grd-user-chip ${selectedUsers.includes(guest._id) ? 'grd-user-chip-selected' : ''}`}
-                onClick={() => onToggleUserSelection(guest._id)}
+                key={guest.id}
+                className={`grd-user-chip ${selectedUsers.includes(guest.id) ? 'grd-user-chip-selected' : ''}`}
+                onClick={() => onToggleUserSelection(guest.id)}
               >
                 <div className="grd-user-chip-avatar">
                   {guest.profilePhoto ? (
@@ -90,7 +90,7 @@ export default function ListingsSection({
                   )}
                 </div>
                 <span className="grd-user-chip-name">{guest.firstName} {guest.lastName}</span>
-                {selectedUsers.includes(guest._id) && (
+                {selectedUsers.includes(guest.id) && (
                   <CheckSquare size={14} className="grd-check-icon" />
                 )}
               </div>
@@ -105,7 +105,7 @@ export default function ListingsSection({
           >
             <option value="">Select a listing...</option>
             {allListings.map(listing => (
-              <option key={listing._id || listing.id} value={listing._id || listing.id}>
+              <option key={listing.id} value={listing.id}>
                 {getListingName(listing)}
               </option>
             ))}
@@ -137,7 +137,7 @@ export default function ListingsSection({
           >
             <option value="">Select a curated listing...</option>
             {allListings.map(listing => (
-              <option key={listing._id || listing.id} value={listing._id || listing.id}>
+              <option key={listing.id} value={listing.id}>
                 {getListingName(listing)} - {getListingHood(listing)}
               </option>
             ))}
@@ -165,7 +165,7 @@ export default function ListingsSection({
         <div className="grd-listings-grid">
           {suggestedListings.length > 0 ? (
             suggestedListings.map(listing => {
-              const listingId = listing._id || listing.id;
+              const listingId = listing.id;
               const photoUrl = getListingPhoto(listing);
 
               return (

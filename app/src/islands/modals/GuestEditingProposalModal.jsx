@@ -801,7 +801,7 @@ export default function GuestEditingProposalModal({
   // Handle cancel proposal confirmation
   const handleConfirmCancel = useCallback(async (reason) => {
     // Get proposal ID from the proposal object
-    const proposalId = proposal?._id;
+    const proposalId = proposal?.id;
 
     if (!proposalId) {
       onAlert?.({

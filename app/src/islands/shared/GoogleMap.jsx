@@ -26,7 +26,8 @@ import ListingCardForMap from './ListingCard/ListingCardForMap.jsx';
 import { supabase } from '../../lib/supabase.js';
 import { logger } from '../../lib/logger.js';
 import { fetchPhotoUrls, extractPhotos } from '../../lib/supabaseUtils.js';
-import { calculatePrice } from '../../lib/scheduleSelector/priceCalculations.js';
+import { getListingDisplayPrice } from '../../logic/calculators/pricing/getListingDisplayPrice.js';
+import { adaptPricingListFromSupabase } from '../../logic/processors/pricingList/adaptPricingListFromSupabase.ts';
 
 /**
  * MapLegend - Shows marker color meanings and toggle
@@ -122,7 +123,7 @@ const GoogleMap = forwardRef(({
   onToggleFavorite = null, // Callback when favorite button is clicked: (listingId, listingTitle, newState) => void
   userId = null,           // Current user ID for favorite button API calls
   onRequireAuth = null,    // Callback to show login modal if not authenticated
-  selectedNightsCount = 0, // Number of nights selected for dynamic price calculation
+  selectedNightsCount = 4, // Default to 4 nights — matches SearchPage initial state
   showMessageButton = true // Whether to show message button (hidden for host users)
 }, ref) => {
   logger.debug('ðŸ—ºï¸ GoogleMap: Component rendered with props:', {
@@ -154,42 +155,13 @@ const GoogleMap = forwardRef(({
   const handlePinClickRef = useRef(null); // Ref to always have latest handlePinClick
 
   /**
-   * Calculate dynamic price for a listing based on selected nights count
-   * Uses the same calculation as PropertyCard in SearchPage
-   * Falls back to starting price if no nights selected or calculation fails
+   * Get the starting price for map marker display.
+   * Map markers always show the static starting price — NOT schedule-adjusted.
+   * Uses the shared getListingDisplayPrice utility in 'starting' mode.
    */
   const getDisplayPrice = useCallback((listing) => {
-    const pricingListStarting = Number(listing.pricingList?.startingNightlyPrice)
-    const startingPrice = !Number.isNaN(pricingListStarting) && pricingListStarting > 0
-      ? pricingListStarting
-      : (listing.price?.starting || listing['Starting nightly price'] || 0)
-
-    // If no nights selected, show starting price
-    if (selectedNightsCount < 1) {
-      return startingPrice;
-    }
-
-    if (listing.pricingList?.nightlyPrice) {
-      const index = selectedNightsCount - 1
-      const rawValue = listing.pricingList.nightlyPrice[index]
-      const parsed = Number(rawValue)
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed
-      }
-
-      return startingPrice
-    }
-
-    try {
-      // Create mock nights array (calculatePrice only uses .length)
-      const mockNightsArray = Array(selectedNightsCount).fill({ nightNumber: 0 });
-      const priceBreakdown = calculatePrice(mockNightsArray, listing, 13, null);
-      return priceBreakdown.pricePerNight || startingPrice;
-    } catch (_error) {
-      // Fallback to starting price on error
-      return startingPrice;
-    }
-  }, [selectedNightsCount]);
+    return getListingDisplayPrice(listing, 0, 'starting');
+  }, []);
 
   // Listing card state
   const [selectedListingForCard, setSelectedListingForCard] = useState(null);
@@ -242,7 +214,7 @@ const GoogleMap = forwardRef(({
 
       // Find the listing in either filtered or all listings
       const listing = filteredListings.find(l => l.id === listingId) ||
-                     listings.find(l => l.id === listingId);
+        listings.find(l => l.id === listingId);
 
       if (!listing) {
         logger.error('Listing not found:', listingId);
@@ -338,7 +310,7 @@ const GoogleMap = forwardRef(({
       }
 
       logger.debug('âœ… fetchDetailedListingData: Listing data received:', {
-        id: listingData._id,
+        id: listingData.id,
         name: listingData.listing_title,
         borough: listingData.borough
       });
@@ -370,8 +342,25 @@ const GoogleMap = forwardRef(({
       const images = extractPhotos(photosField, photoMap, listingId);
       logger.debug('ðŸ“¸ fetchDetailedListingData: Photos received:', images.length, 'images');
 
+      // Fetch pricing list if listing has a pricing configuration
+      let pricingList = null;
+      if (listingData.pricing_configuration_id) {
+        try {
+          const { data: pricingData } = await supabase
+            .from('pricing_list')
+            .select('*')
+            .eq('id', listingData.pricing_configuration_id)
+            .single();
+          if (pricingData) {
+            pricingList = adaptPricingListFromSupabase(pricingData);
+          }
+        } catch (e) {
+          logger.warn('Failed to fetch pricing list for map popup:', e);
+        }
+      }
+
       const detailedListing = {
-        id: listingData._id,
+        id: listingData.id,
         title: listingData.listing_title,
         images,
         location: listingData.borough,
@@ -379,8 +368,9 @@ const GoogleMap = forwardRef(({
         bathrooms: listingData.bathroom_count || 0,
         squareFeet: listingData.square_feet || 0,
         price: {
-          starting: listingData['Standarized Minimum Nightly Price (Filter)'] || 0
+          starting: listingData.standardized_min_nightly_price_for_search_filter || 0
         },
+        pricingList,
         isNew: false,
         isAvailable: listingData.is_active || false
       };
@@ -728,12 +718,12 @@ const GoogleMap = forwardRef(({
           const marker = simpleMode
             ? createSimpleMarker(map, position, listing)
             : createPriceMarker(
-                map,
-                position,
-                displayPrice,
-                COLORS.SECONDARY, // Purple - search results
-                listing
-              );
+              map,
+              position,
+              displayPrice,
+              COLORS.SECONDARY, // Purple - search results
+              listing
+            );
 
           markersRef.current.push(marker);
           bounds.extend(position);
@@ -886,7 +876,7 @@ const GoogleMap = forwardRef(({
 
     // Render markers immediately without lazy loading
     createMarkers();
-  }, [listings, filteredListings, mapLoaded, showAllListings, selectedNightsCount, getDisplayPrice]);
+  }, [listings, filteredListings, mapLoaded, showAllListings, getDisplayPrice]);
 
   // Recenter map when borough changes
   useEffect(() => {
@@ -955,7 +945,7 @@ const GoogleMap = forwardRef(({
   const createPriceMarker = (map, coordinates, price, color, listing) => {
     const markerOverlay = new window.google.maps.OverlayView();
 
-    markerOverlay.onAdd = function() {
+    markerOverlay.onAdd = function () {
       const priceTag = document.createElement('div');
       priceTag.innerHTML = `$${parseFloat(price).toFixed(2)}`;
       priceTag.className = 'map-price-marker';
@@ -1023,7 +1013,7 @@ const GoogleMap = forwardRef(({
       });
     };
 
-    markerOverlay.draw = function() {
+    markerOverlay.draw = function () {
       if (!this.div) {
         logger.warn('ðŸ“ MarkerOverlay.draw: div not found for listing:', listing.id);
         return;
@@ -1055,7 +1045,7 @@ const GoogleMap = forwardRef(({
       }
     };
 
-    markerOverlay.onRemove = function() {
+    markerOverlay.onRemove = function () {
       if (this.div) {
         this.div.parentNode.removeChild(this.div);
         this.div = null;
@@ -1155,7 +1145,7 @@ const GoogleMap = forwardRef(({
             </div>
           )}
           {!isLoadingListingDetails && selectedListingForCard && (() => {
-            const listingId = selectedListingForCard.id || selectedListingForCard._id;
+            const listingId = selectedListingForCard.id;
             logger.debug('[GoogleMap] Rendering ListingCardForMap', {
               listingId,
               hasMessageCallback: !!onMessageClick
@@ -1176,6 +1166,7 @@ const GoogleMap = forwardRef(({
                 userId={userId}
                 onRequireAuth={onRequireAuth}
                 showMessageButton={showMessageButton}
+                selectedNightsCount={selectedNightsCount}
               />
             );
           })()}

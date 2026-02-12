@@ -36,7 +36,7 @@ export async function handleRemoveArticle(
   // Find the assignment
   const { data: existing, error: findError } = await supabase
     .from('guest_knowledge_assignment')
-    .select('_id')
+    .select('id')
     .eq('guest_id', guestId)
     .eq('article_id', articleId)
     .maybeSingle();
@@ -54,7 +54,7 @@ export async function handleRemoveArticle(
   const { error: deleteError } = await supabase
     .from('guest_knowledge_assignment')
     .delete()
-    .eq('_id', existing._id);
+    .eq('id', existing.id);
 
   if (deleteError) {
     console.error('[removeArticle] Delete error:', deleteError);

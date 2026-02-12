@@ -84,7 +84,7 @@ export function useZSearchUnitTestPageLogic() {
         const boroughList = data
           .filter(b => b['Display Borough']?.trim())
           .map(b => ({
-            id: b._id,
+            id: b.id,
             name: b['Display Borough'].trim(),
             value: b['Display Borough'].trim().toLowerCase().replace(/\s+/g, '-')
           }));
@@ -128,7 +128,7 @@ export function useZSearchUnitTestPageLogic() {
         const neighborhoodList = data
           .filter(n => n.Display?.trim())
           .map(n => ({
-            id: n._id,
+            id: n.id,
             name: n.Display.trim(),
             boroughId: n['Geo-Borough']
           }));

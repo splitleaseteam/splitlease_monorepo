@@ -80,7 +80,7 @@ export const handleProcessPending = async (
       );
 
       // Update reminder status
-      await updateReminderStatus(supabase, reminder._id, {
+      await updateReminderStatus(supabase, reminder.id, {
         status: deliveryStatus === 'failed' ? 'pending' : 'sent',
         delivery_status: deliveryStatus,
         sendgrid_message_id: result.sendgridMessageId,
@@ -94,18 +94,18 @@ export const handleProcessPending = async (
       }
 
       results.push({
-        reminderId: reminder._id,
+        reminderId: reminder.id,
         emailSent: result.emailSent,
         smsSent: result.smsSent,
         error: result.error,
       });
 
     } catch (_err) {
-      console.error('[process-pending] Error processing reminder:', reminder._id, err);
+      console.error('[process-pending] Error processing reminder:', reminder.id, err);
       failed++;
 
       results.push({
-        reminderId: reminder._id,
+        reminderId: reminder.id,
         emailSent: false,
         smsSent: false,
         error: err instanceof Error ? err.message : 'Unknown error',

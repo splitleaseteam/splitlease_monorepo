@@ -322,7 +322,7 @@ export async function getUserMostRecentProposal(userId) {
 
     // Map to the format expected by the hook
     const mappedData = {
-      id: prefillData._id,
+      id: prefillData.id,
       guest_selected_days_numbers_json: prefillData.daysSelected,
       reservation_span_in_weeks: prefillData.reservationSpanWeeks,
       move_in_range_start_date: prefillData.moveInRangeStart,

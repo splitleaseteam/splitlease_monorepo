@@ -111,7 +111,7 @@ export function updateReminderWorkflow({ reminder, updates, userId }) {
 
   // Adapt updates for API
   const payload = adaptReminderUpdateForSubmission({
-    reminderId: reminder.id || reminder._id,
+    reminderId: reminder.id,
     updates,
   });
 
@@ -155,6 +155,6 @@ export function deleteReminderWorkflow({ reminder, userId }) {
 
   return {
     canProceed: true,
-    reminderId: reminder.id || reminder._id,
+    reminderId: reminder.id,
   };
 }

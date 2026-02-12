@@ -558,7 +558,7 @@ export function useProposalManagePageLogic() {
         const searchLower = filters.listingSearch.toLowerCase();
         filteredProposals = filteredProposals.filter(p =>
           p.listing?.name?.toLowerCase().includes(searchLower) ||
-          (p.listing?._id || '').toLowerCase().includes(searchLower) ||
+          (p.listing?.id || '').toLowerCase().includes(searchLower) ||
           p.listing?.rentalType?.toLowerCase().includes(searchLower)
         );
       }
@@ -617,7 +617,7 @@ export function useProposalManagePageLogic() {
       // Optimistic update
       setProposals(prev =>
         prev.map(p =>
-          (p._id || p.id) === proposalId
+          p.id === proposalId
             ? { ...p, status: newStatus, modifiedDate: new Date().toISOString() }
             : p
         )
@@ -645,12 +645,12 @@ export function useProposalManagePageLogic() {
   const handleAction = useCallback(async (action, proposal) => {
     switch (action) {
       case 'viewListing':
-        window.open(`/view-split-lease?id=${proposal.listing?._id || ''}`, '_blank');
+        window.open(`/view-split-lease?id=${proposal.listing?.id || ''}`, '_blank');
         break;
 
       case 'viewLease':
         // Navigate to lease management page with proposal ID pre-filled in search
-        window.open(`/_manage-leases-payment-records?search=${proposal._id || proposal.id}`, '_blank');
+        window.open(`/_manage-leases-payment-records?search=${proposal.id}`, '_blank');
         break;
 
       case 'modifyAsHost':
@@ -682,9 +682,9 @@ export function useProposalManagePageLogic() {
         break;
 
       case 'cancelProposal':
-        if (window.confirm(`Are you sure you want to cancel proposal ${proposal._id || proposal.id}?`)) {
+        if (window.confirm(`Are you sure you want to cancel proposal ${proposal.id}?`)) {
           try {
-            await handleStatusChange(proposal._id || proposal.id, CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key);
+            await handleStatusChange(proposal.id, CANONICAL_STATUSES.CANCELLED_BY_SPLITLEASE.key);
           } catch (_err) {
             alert('Failed to cancel proposal');
           }
@@ -717,8 +717,8 @@ export function useProposalManagePageLogic() {
     try {
       // Call Edge Function to create proposal using soft headers pattern
       const result = await callProposalEdgeFunction('create_suggested', {
-        guestId: proposalData.selectedGuest._id || proposalData.selectedGuest.id,
-        listingId: proposalData.selectedListing._id || proposalData.selectedListing.id,
+        guestId: proposalData.selectedGuest.id,
+        listingId: proposalData.selectedListing.id,
         moveInStartRange: proposalData.moveInDate,
         daysSelected: proposalData.weeklySchedule
           .map((active, i) => active ? i : null)

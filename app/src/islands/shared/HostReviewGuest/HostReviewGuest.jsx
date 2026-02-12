@@ -95,10 +95,10 @@ const HostReviewGuest = ({
 
     try {
       const reviewData = adaptReviewForSubmission({
-        guestId: guest?._id || guest?.id,
-        hostId: host?._id || host?.id,
-        leaseId: lease?._id || lease?.id,
-        stayId: stay?._id || stay?.id,
+        guestId: guest?.id,
+        hostId: host?.id,
+        leaseId: lease?.id,
+        stayId: stay?.id,
         ratings,
         feedback,
         overallScore: averageScore

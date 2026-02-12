@@ -48,7 +48,7 @@ export async function handleGenerateNarration(context: HandlerContext) {
     throw new Error("Failed to create narration record");
   }
 
-  console.log(`[ai-tools:generate_narration] Created narration record: ${narration._id}`);
+  console.log(`[ai-tools:generate_narration] Created narration record: ${narration.id}`);
 
   // Call ElevenLabs API to generate audio
   // NOTE: ElevenLabs API endpoint and request format would go here
@@ -60,7 +60,7 @@ export async function handleGenerateNarration(context: HandlerContext) {
   console.log("[ai-tools:generate_narration] Script:", script.substring(0, 100) + "...");
 
   // Mock audio URL for now (replace with real ElevenLabs API call)
-  const mockAudioUrl = `https://mock-elevenlabs.com/audio/${narration._id}.mp3`;
+  const mockAudioUrl = `https://mock-elevenlabs.com/audio/${narration.id}.mp3`;
 
   // Update narration with audio URL
   const { error: updateError } = await supabaseClient
@@ -68,14 +68,14 @@ export async function handleGenerateNarration(context: HandlerContext) {
     .update({
       Narration_Audio: mockAudioUrl,
     })
-    .eq("_id", narration._id);
+    .eq("id", narration.id);
 
   if (updateError) {
     console.error("[ai-tools:generate_narration] Failed to update narration audio URL:", updateError);
   }
 
   return {
-    narrationId: narration._id,
+    narrationId: narration.id,
     audioUrl: mockAudioUrl,
     status: "completed",
     message: "Narration generated (ElevenLabs API integration pending)",

@@ -75,7 +75,7 @@ export const PROGRESS_THRESHOLDS = {
  */
 export function getStatusTagInfo(status) {
   // Extract status key - handles both string and object formats
-  const statusKey = typeof status === 'string' ? status : (status?.id || status?._id || '');
+  const statusKey = typeof status === 'string' ? status : (status?.id || '');
 
   // Use unified status system for proper matching
   const statusConfig = getStatusConfig(statusKey);
@@ -378,7 +378,7 @@ function getProposalStatusKey(proposal) {
   const status = proposal?.status;
   if (!status) return '';
   if (typeof status === 'string') return status;
-  return status.id || status._id || status.key || '';
+  return status.id || status.key || '';
 }
 
 /**

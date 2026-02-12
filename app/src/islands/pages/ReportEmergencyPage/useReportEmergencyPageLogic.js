@@ -66,7 +66,7 @@ export function useReportEmergencyPageLogic() {
           }));
 
           // Load user's active proposals for booking selection
-          await loadUserProposals(authResult.user.userId || authResult.user._id);
+          await loadUserProposals(authResult.user.userId || authResult.user.id);
         }
       } catch (authError) {
         console.error('[ReportEmergencyPage] Auth check failed:', authError);
@@ -284,7 +284,7 @@ export function useReportEmergencyPageLogic() {
 
       // If authenticated, include user ID
       if (isAuthenticated && currentUser) {
-        emergencyData.reported_by_user_id = currentUser.userId || currentUser._id;
+        emergencyData.reported_by_user_id = currentUser.userId || currentUser.id;
       }
 
       // Submit to Edge Function

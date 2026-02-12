@@ -113,7 +113,7 @@ export default function HostProfileModal({ host, listing, onClose }) {
                 )}
                 <div className="hpm-listing-info">
                   <a
-                    href={`/view-split-lease/${listing._id}`}
+                    href={`/view-split-lease/${listing.id}`}
                     className="hpm-listing-name"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -132,7 +132,7 @@ export default function HostProfileModal({ host, listing, onClose }) {
           {/* External Reviews */}
           {listing && (
             <div className="hpm-reviews-section">
-              <ExternalReviews listingId={listing._id} />
+              <ExternalReviews listingId={listing.id} />
             </div>
           )}
         </div>

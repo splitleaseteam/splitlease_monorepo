@@ -14,7 +14,7 @@ interface SearchGuestsPayload {
 }
 
 interface GuestResult {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -36,8 +36,8 @@ export async function handleSearchGuests(
     // Return recent guests if no query
     const { data, error } = await supabase
       .from('user')
-      .select('_id, "Name - First", "Name - Last", email, "Phone Number", "Profile photo"')
-      .order('Modified Date', { ascending: false })
+      .select('id, first_name, last_name, email, phone_number, profile_photo_url, created_at')
+      .order('updated_at', { ascending: false })
       .limit(limit);
 
     if (error) {
@@ -51,24 +51,24 @@ export async function handleSearchGuests(
   // Build search query based on type
   let queryBuilder = supabase
     .from('user')
-    .select('_id, "Name - First", "Name - Last", email, "Phone Number", "Profile photo", "Created Date"');
+    .select('id, first_name, last_name, email, phone_number, profile_photo_url, created_at');
 
   const searchTerm = `%${query.trim()}%`;
 
   switch (searchType) {
     case 'name':
-      queryBuilder = queryBuilder.or(`"Name - First".ilike.${searchTerm},"Name - Last".ilike.${searchTerm}`);
+      queryBuilder = queryBuilder.or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm}`);
       break;
     case 'email':
       queryBuilder = queryBuilder.ilike('email', searchTerm);
       break;
     case 'phone':
-      queryBuilder = queryBuilder.ilike('"Phone Number"', searchTerm);
+      queryBuilder = queryBuilder.ilike('phone_number', searchTerm);
       break;
     case 'all':
     default:
       queryBuilder = queryBuilder.or(
-        `"Name - First".ilike.${searchTerm},"Name - Last".ilike.${searchTerm},email.ilike.${searchTerm},"Phone Number".ilike.${searchTerm}`
+        `first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},phone_number.ilike.${searchTerm}`
       );
       break;
   }
@@ -90,13 +90,13 @@ export async function handleSearchGuests(
  */
 function mapUserToGuest(user: Record<string, unknown>): GuestResult {
   return {
-    _id: user._id as string,
-    firstName: (user['Name - First'] as string) || '',
-    lastName: (user['Name - Last'] as string) || '',
+    id: user.id as string,
+    firstName: (user.first_name as string) || '',
+    lastName: (user.last_name as string) || '',
     email: (user.email as string) || '',
-    phoneNumber: (user['Phone Number'] as string) || '',
-    profilePhoto: user['Profile photo'] as string | undefined,
+    phoneNumber: (user.phone_number as string) || '',
+    profilePhoto: user.profile_photo_url as string | undefined,
     userType: 'guest',
-    createdAt: (user['Created Date'] as string) || new Date().toISOString()
+    createdAt: (user.created_at as string) || new Date().toISOString()
   };
 }

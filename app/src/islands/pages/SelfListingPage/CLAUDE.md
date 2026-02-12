@@ -186,7 +186,7 @@ Submit → prepareListingSubmission → listingCrudGeoPhotoPricingService → Su
 ## SPECIAL_FEATURES
 
 ### URL-Based Editing
-[TRIGGER]: ?listing_id=XXX in URL
+[TRIGGER]: ?id=XXX in URL
 [BEHAVIOR]: Fetches listing from Supabase, preloads listingName into form
 [USE_CASE]: Edit existing listing or duplicate listing
 

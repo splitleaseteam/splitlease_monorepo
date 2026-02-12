@@ -14,13 +14,13 @@
  * @returns {object} Clean, validated proposal object with merged terms.
  *
  * @throws {Error} If rawProposal is null/undefined.
- * @throws {Error} If critical _id field is missing.
+ * @throws {Error} If critical id field is missing.
  * @throws {Error} If Listing or Guest reference is missing.
  *
  * @example
  * const proposal = processProposalData({
  *   rawProposal: {
- *     _id: 'abc123',
+ *     id: 'abc123',
  *     Listing: 'listing123',
  *     Guest: 'user456',
  *     'Move-In Date': '2025-01-15',
@@ -40,20 +40,20 @@ export function processProposalData({ rawProposal, listing = null, guest = null,
   }
 
   // Validate critical ID field
-  if (!rawProposal._id) {
-    throw new Error('processProposalData: Proposal missing critical _id field')
+  if (!rawProposal.id) {
+    throw new Error('processProposalData: Proposal missing critical id field')
   }
 
   // Validate required foreign key references
   if (!rawProposal.Listing) {
     throw new Error(
-      `processProposalData: Proposal ${rawProposal._id} missing required Listing reference`
+      `processProposalData: Proposal ${rawProposal.id} missing required Listing reference`
     )
   }
 
   if (!rawProposal.Guest) {
     throw new Error(
-      `processProposalData: Proposal ${rawProposal._id} missing required Guest reference`
+      `processProposalData: Proposal ${rawProposal.id} missing required Guest reference`
     )
   }
 
@@ -113,7 +113,7 @@ export function processProposalData({ rawProposal, listing = null, guest = null,
 
   return {
     // Identity
-    id: rawProposal._id,
+    id: rawProposal.id,
     listingId: rawProposal.Listing,
     guestId: rawProposal.Guest,
 

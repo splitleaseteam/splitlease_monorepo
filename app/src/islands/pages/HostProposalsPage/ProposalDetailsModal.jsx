@@ -94,7 +94,7 @@ export default function ProposalDetailsModal({
   // Get status info - use unified status system for proper matching
   // Database stores full Bubble status strings like "Proposal Submitted by guest - Awaiting Rental Application"
   const statusRaw = proposal.proposal_workflow_status || proposal.Status || proposal.status || '';
-  const statusKey = typeof statusRaw === 'string' ? statusRaw : (statusRaw?.id || statusRaw?._id || '');
+  const statusKey = typeof statusRaw === 'string' ? statusRaw : (statusRaw?.id || '');
   const statusConfig = getStatusConfig(statusKey);
   const statusInfo = getStatusTagInfo(statusRaw);
   const usualOrder = statusConfig.usualOrder ?? 0;

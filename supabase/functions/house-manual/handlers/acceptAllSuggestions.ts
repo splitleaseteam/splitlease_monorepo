@@ -90,7 +90,7 @@ export async function handleAcceptAllSuggestions(
 
   // Process each suggestion
   for (const suggestion of suggestions) {
-    const suggestionId = suggestion._id;
+    const suggestionId = suggestion.id;
     const fieldName = suggestion["Field suggested house manual"];
     const content = suggestion.Content;
 
@@ -111,7 +111,7 @@ export async function handleAcceptAllSuggestions(
         "being processed?": true,
         "Modified Date": new Date().toISOString(),
       })
-      .eq("_id", suggestionId);
+      .eq("id", suggestionId);
 
     if (processingError) {
       results.push({
@@ -134,7 +134,7 @@ export async function handleAcceptAllSuggestions(
         "being processed?": false,
         "Modified Date": new Date().toISOString(),
       })
-      .eq("_id", suggestionId);
+      .eq("id", suggestionId);
 
     if (acceptError) {
       results.push({
@@ -160,7 +160,7 @@ export async function handleAcceptAllSuggestions(
         ...fieldUpdates,
         "Modified Date": new Date().toISOString(),
       })
-      .eq("_id", houseManualId);
+      .eq("id", houseManualId);
 
     if (applyError) {
       console.error(`[acceptAllSuggestions] Failed to apply updates:`, applyError);

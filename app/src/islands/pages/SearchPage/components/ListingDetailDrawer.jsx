@@ -127,7 +127,7 @@ export default function ListingDetailDrawer({
     handleNextImage,
   } = useImageCarousel(listing?.images);
 
-  const listingId = listing?.id || listing?._id;
+  const listingId = listing?.id;
   const isFavorited = favoritedListingIds?.has(listingId);
   const proposalForListing = proposalsByListingId?.get(listingId) || null;
 
@@ -723,7 +723,7 @@ export default function ListingDetailDrawer({
               <button
                 className="detail-drawer__btn detail-drawer__btn--primary"
                 onClick={() => {
-                  window.location.href = `/guest-proposals?proposal=${proposalForListing._id}`;
+                  window.location.href = `/guest-proposals?proposal=${proposalForListing.id}`;
                 }}
               >
                 View Proposal

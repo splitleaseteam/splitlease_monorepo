@@ -57,8 +57,8 @@ export async function handleUpdateWarningPreference(
 
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
-    .select('_id, "Guest", "Host"')
-    .eq('_id', leaseId)
+    .select('id, "Guest", "Host"')
+    .eq('id', leaseId)
     .single();
 
   if (leaseError) {
@@ -88,7 +88,7 @@ export async function handleUpdateWarningPreference(
   const { error: updateError } = await supabase
     .from('bookings_leases')
     .update({ [preferenceField]: dontShowAgain })
-    .eq('_id', leaseId);
+    .eq('id', leaseId);
 
   if (updateError) {
     console.error(`[date-change-request:update_warning_preference] Update failed:`, updateError);

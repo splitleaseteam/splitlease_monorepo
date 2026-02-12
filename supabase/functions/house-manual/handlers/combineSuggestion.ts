@@ -68,7 +68,7 @@ export async function handleCombineSuggestion(
       "being processed?": true,
       "Modified Date": new Date().toISOString(),
     })
-    .eq("_id", suggestionId);
+    .eq("id", suggestionId);
 
   if (updateError1) {
     console.error(`[combineSuggestion] Failed to mark as processing:`, updateError1);
@@ -79,7 +79,7 @@ export async function handleCombineSuggestion(
   const { data: suggestion, error: fetchError } = await supabaseClient
     .from("zat_aisuggestions")
     .select("*")
-    .eq("_id", suggestionId)
+    .eq("id", suggestionId)
     .single();
 
   if (fetchError || !suggestion) {
@@ -101,7 +101,7 @@ export async function handleCombineSuggestion(
       Content: combinedContent,
       "Modified Date": new Date().toISOString(),
     })
-    .eq("_id", suggestionId);
+    .eq("id", suggestionId);
 
   if (contentUpdateError) {
     console.error(`[combineSuggestion] Failed to update content:`, contentUpdateError);
@@ -109,7 +109,7 @@ export async function handleCombineSuggestion(
     await supabaseClient
       .from("zat_aisuggestions")
       .update({ "being processed?": false })
-      .eq("_id", suggestionId);
+      .eq("id", suggestionId);
     throw new Error(`Failed to update suggestion content: ${contentUpdateError.message}`);
   }
 
@@ -122,7 +122,7 @@ export async function handleCombineSuggestion(
       [fieldName]: combinedContent,
       "Modified Date": new Date().toISOString(),
     })
-    .eq("_id", houseManualId);
+    .eq("id", houseManualId);
 
   if (applyError) {
     console.error(`[combineSuggestion] Failed to apply content:`, applyError);
@@ -130,7 +130,7 @@ export async function handleCombineSuggestion(
     await supabaseClient
       .from("zat_aisuggestions")
       .update({ "being processed?": false })
-      .eq("_id", suggestionId);
+      .eq("id", suggestionId);
     throw new Error(`Failed to apply combined content: ${applyError.message}`);
   }
 
@@ -157,7 +157,7 @@ export async function handleCombineSuggestion(
       "being processed?": false,
       "Modified Date": new Date().toISOString(),
     })
-    .eq("_id", suggestionId);
+    .eq("id", suggestionId);
 
   if (updateError2) {
     console.error(`[combineSuggestion] Failed to mark as combined:`, updateError2);

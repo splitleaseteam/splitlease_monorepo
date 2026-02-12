@@ -22,19 +22,19 @@ export interface HostLeaseData extends LeaseData {
 }
 
 interface GuestInfo {
-  _id: string;
+  id: string;
   email: string;
-  'Name - Full': string;
-  'Name - First': string;
-  'Profile Photo': string | null;
-  'Phone Number': string | null;
+  first_name: string;
+  last_name: string;
+  profile_photo_url: string | null;
+  phone_number: string | null;
   'user verified?': boolean;
   'Verify - Linked In ID': string | null;
   'Selfie with ID': string | null;
 }
 
 interface ListingInfo {
-  _id: string;
+  id: string;
   Name: string;
   'Cover Photo': string | null;
   Neighborhood: string | null;
@@ -45,7 +45,7 @@ interface StayWithReview extends StayData {
 }
 
 interface PaymentRecord {
-  _id: string;
+  id: string;
   'Booking - Reservation': string;
   'Payment #': number;
   'Scheduled Date': string;
@@ -61,7 +61,7 @@ interface PaymentRecord {
 }
 
 interface DateChangeRequest {
-  _id: string;
+  id: string;
   Lease: string;
   'Requested by': string;
   'Request receiver': string;
@@ -131,7 +131,7 @@ export async function handleGetHostLeases(
     return [];
   }
 
-  const listingIds = hostListings.map((l: { _id: string }) => l._id);
+  const listingIds = hostListings.map((l: { id: string }) => l.id);
   console.log('[lease:getHostLeases] Found listings:', listingIds.length);
 
   // If a specific listing is requested, filter to that listing
@@ -159,7 +159,7 @@ export async function handleGetHostLeases(
   // Step 3: Collect all unique IDs needed for related data
   const guestIds = [...new Set(leases.map((l: LeaseData) => l.Guest).filter(Boolean))];
   const leaseListingIds = [...new Set(leases.map((l: LeaseData) => l.Listing).filter(Boolean))];
-  const leaseIds = leases.map((l: LeaseData) => l._id);
+  const leaseIds = leases.map((l: LeaseData) => l.id);
 
   // Step 4: Fetch guests
   const guestMap: Record<string, GuestInfo> = {};
@@ -167,23 +167,23 @@ export async function handleGetHostLeases(
     const { data: guests, error: _guestsError } = await supabase
       .from('user')
       .select(`
-        _id,
+        id,
         email,
-        "Name - Full",
-        "Name - First",
-        "Profile Photo",
-        "Phone Number",
+        first_name,
+        last_name,
+        profile_photo_url,
+        phone_number,
         "user verified?",
         "Verify - Linked In ID",
         "Selfie with ID"
       `)
-      .in('_id', guestIds);
+      .in('id', guestIds);
 
-    if (guestsError) {
-      console.warn('[lease:getHostLeases] Error fetching guests:', guestsError.message);
+    if (_guestsError) {
+      console.warn('[lease:getHostLeases] Error fetching guests:', _guestsError.message);
     } else if (guests) {
       guests.forEach((g: GuestInfo) => {
-        guestMap[g._id] = g;
+        guestMap[g.id] = g;
       });
     }
   }
@@ -194,18 +194,18 @@ export async function handleGetHostLeases(
     const { data: listings, error: listingsError2 } = await supabase
       .from('listing')
       .select(`
-        _id,
+        id,
         Name,
         "Cover Photo",
         Neighborhood
       `)
-      .in('_id', leaseListingIds);
+      .in('id', leaseListingIds);
 
     if (listingsError2) {
       console.warn('[lease:getHostLeases] Error fetching listing details:', listingsError2.message);
     } else if (listings) {
       listings.forEach((l: ListingInfo) => {
-        listingMap[l._id] = l;
+        listingMap[l.id] = l;
       });
     }
   }
@@ -216,7 +216,7 @@ export async function handleGetHostLeases(
     const { data: stays, error: staysError } = await supabase
       .from('bookings_stays')
       .select(`
-        _id,
+        id,
         Lease,
         "Week Number",
         Guest,
@@ -251,7 +251,7 @@ export async function handleGetHostLeases(
     const { data: payments, error: paymentsError } = await supabase
       .from('paymentrecords')
       .select(`
-        _id,
+        id,
         "Booking - Reservation",
         "Payment #",
         "Scheduled Date",
@@ -287,7 +287,7 @@ export async function handleGetHostLeases(
     const { data: dateChanges, error: dateChangesError } = await supabase
       .from('datechangerequest')
       .select(`
-        _id,
+        id,
         Lease,
         "Requested by",
         "Request receiver",
@@ -314,12 +314,12 @@ export async function handleGetHostLeases(
       if (requestedByIds.length > 0) {
         const { data: requestedByUsers } = await supabase
           .from('user')
-          .select(`_id, "Name - Full", "Name - First", "Profile Photo"`)
-          .in('_id', requestedByIds);
+          .select('id, first_name, last_name, profile_photo_url')
+          .in('id', requestedByIds);
 
         if (requestedByUsers) {
           requestedByUsers.forEach((u: GuestInfo) => {
-            requestedByMap[u._id] = u;
+            requestedByMap[u.id] = u;
           });
         }
       }
@@ -339,9 +339,9 @@ export async function handleGetHostLeases(
     ...lease,
     guest: guestMap[lease.Guest] || null,
     listing: listingMap[lease.Listing] || null,
-    stays: staysByLease[lease._id] || [],
-    paymentRecords: paymentsByLease[lease._id] || [],
-    dateChangeRequests: dateChangesByLease[lease._id] || [],
+    stays: staysByLease[lease.id] || [],
+    paymentRecords: paymentsByLease[lease.id] || [],
+    dateChangeRequests: dateChangesByLease[lease.id] || [],
   }));
 
   console.log('[lease:getHostLeases] Returning enriched leases:', enrichedLeases.length);

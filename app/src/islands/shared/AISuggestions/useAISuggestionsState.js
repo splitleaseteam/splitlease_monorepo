@@ -86,14 +86,14 @@ function reducer(state, action) {
     case 'REMOVE_SUGGESTION':
       return {
         ...state,
-        suggestions: state.suggestions.filter(s => s._id !== action.payload),
+        suggestions: state.suggestions.filter(s => s.id !== action.payload),
       };
 
     case 'UPDATE_SUGGESTION':
       return {
         ...state,
         suggestions: state.suggestions.map(s =>
-          s._id === action.payload._id ? action.payload : s
+          s.id === action.payload.id ? action.payload : s
         ),
       };
 
@@ -103,7 +103,7 @@ function reducer(state, action) {
         suggestions: [
           ...state.suggestions,
           ...action.payload.filter(
-            newSug => !state.suggestions.some(s => s._id === newSug._id)
+            newSug => !state.suggestions.some(s => s.id === newSug.id)
           ),
         ],
       };
@@ -215,12 +215,12 @@ export function useAISuggestionsState(houseManualId) {
             dispatch({ type: 'ADD_SUGGESTIONS', payload: [payload.new] });
           } else if (payload.eventType === 'UPDATE') {
             if (payload.new.decision === 'ignored') {
-              dispatch({ type: 'REMOVE_SUGGESTION', payload: payload.new._id });
+              dispatch({ type: 'REMOVE_SUGGESTION', payload: payload.new.id });
             } else {
               dispatch({ type: 'UPDATE_SUGGESTION', payload: payload.new });
             }
           } else if (payload.eventType === 'DELETE') {
-            dispatch({ type: 'REMOVE_SUGGESTION', payload: payload.old._id });
+            dispatch({ type: 'REMOVE_SUGGESTION', payload: payload.old.id });
           }
         }
       )

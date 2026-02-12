@@ -152,7 +152,7 @@ async function handleSubmit(
     throw new Error(`Failed to save survey: ${insertError.message}`);
   }
 
-  console.log("[experience-survey] Survey saved:", survey._id);
+  console.log("[experience-survey] Survey saved:", survey.id);
 
   // 4. Send confirmation email to user
   try {
@@ -202,7 +202,7 @@ async function handleSubmit(
     JSON.stringify({
       success: true,
       data: {
-        surveyId: survey._id,
+        surveyId: survey.id,
         message: "Survey submitted successfully"
       }
     }),

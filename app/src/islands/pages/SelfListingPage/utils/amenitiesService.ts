@@ -1,7 +1,7 @@
 import { supabase } from '../../../../lib/supabase.js';
 
 export interface Amenity {
-  _id: string;
+  id: string;
   Name: string;
   'Type - Amenity Categories': string;
   Icon?: string;

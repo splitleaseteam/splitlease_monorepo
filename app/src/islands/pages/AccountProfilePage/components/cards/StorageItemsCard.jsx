@@ -18,7 +18,7 @@ export default function StorageItemsCard({
 }) {
   // Get selected item names for display
   const selectedItemNames = itemsList
-    .filter(item => selectedItems.includes(item._id))
+    .filter(item => selectedItems.includes(item.id))
     .map(item => item.Name);
 
   if (readOnly) {
@@ -50,10 +50,10 @@ export default function StorageItemsCard({
       <div className="chip-container">
         {itemsList.map(item => (
           <SelectableChip
-            key={item._id}
+            key={item.id}
             label={item.Name}
-            selected={selectedItems.includes(item._id)}
-            onChange={() => onChipToggle('storageItems', item._id)}
+            selected={selectedItems.includes(item.id)}
+            onChange={() => onChipToggle('storageItems', item.id)}
           />
         ))}
       </div>

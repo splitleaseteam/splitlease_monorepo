@@ -39,16 +39,16 @@ export interface GetLeasePayload {
 // ================================================
 
 export interface LeaseData {
-  _id: string;
+  id: string;
   'Agreement Number': string;
-  // FK CONSTRAINT: proposal._id
+  // FK CONSTRAINT: proposal.id
   Proposal: string;
   Guest: string;
   Host: string;
-  // FK CONSTRAINT: listing._id
+  // FK CONSTRAINT: listing.id
   Listing: string;
   Participants: string[];
-  // FK CONSTRAINT: zat_features_cancellationpolicy._id (nullable - use null if no valid FK!)
+  // FK CONSTRAINT: zat_features_cancellationpolicy.id (nullable - use null if no valid FK!)
   'Cancellation Policy': string | null;
   'First Payment Date': string;
   // SCHEMA-VERIFIED (2026-01-28): Actual column names have space before colon
@@ -74,7 +74,7 @@ export interface LeaseData {
 }
 
 export interface ProposalData {
-  _id: string;
+  id: string;
   Guest: string;
   'Host User': string;
   Listing: string;
@@ -123,7 +123,7 @@ export interface ProposalData {
   'total nights'?: number;
   // Nested listing data
   listing?: {
-    _id: string;
+    id: string;
     Name: string;
     'House manual': string | null;
     'users with permission': string[];
@@ -132,7 +132,7 @@ export interface ProposalData {
 }
 
 export interface StayData {
-  _id: string;
+  id: string;
   Lease: string;
   'Week Number': number;
   Guest: string;

@@ -29,7 +29,7 @@ import {
  * Authenticated user information
  */
 export interface AuthenticatedUser {
-  /** Platform user ID (_id from public.user table) */
+  /** Platform user ID (id from public.user table) */
   readonly id: string;
   /** User's email address */
   readonly email: string;
@@ -200,7 +200,7 @@ async function authenticateWithJWT(
     // Look up platform user ID from public.user table
     const { data: appUser, error: lookupError } = await authClient
       .from('user')
-      .select('_id')
+      .select('id')
       .ilike('email', user.email ?? '')
       .maybeSingle();
 
@@ -210,7 +210,7 @@ async function authenticateWithJWT(
     }
 
     return {
-      id: appUser._id,
+      id: appUser.id,
       email: user.email ?? '',
       supabaseAuthId: user.id,
       legacyPlatformId: user.user_metadata?.user_id as string | undefined,
@@ -234,8 +234,8 @@ async function authenticateWithLegacyId(
 
     const { data: userData, error } = await adminClient
       .from('user')
-      .select('_id, email')
-      .eq('_id', userId)
+      .select('id, email')
+      .eq('id', userId)
       .maybeSingle();
 
     if (error || !userData) {
@@ -244,7 +244,7 @@ async function authenticateWithLegacyId(
     }
 
     return {
-      id: userData._id,
+      id: userData.id,
       email: userData.email ?? '',
     };
   } catch (e) {

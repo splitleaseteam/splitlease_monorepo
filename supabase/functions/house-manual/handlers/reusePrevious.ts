@@ -93,8 +93,8 @@ export async function handleReusePrevious(
   // Verify target house manual exists
   const { data: targetManual, error: targetError } = await supabaseClient
     .from("housemanual")
-    .select("_id")
-    .eq("_id", targetHouseManualId)
+    .select("id")
+    .eq("id", targetHouseManualId)
     .single();
 
   if (targetError || !targetManual) {
@@ -105,7 +105,7 @@ export async function handleReusePrevious(
   const { data: sourceManual, error: sourceError } = await supabaseClient
     .from("housemanual")
     .select("*")
-    .eq("_id", sourceHouseManualId)
+    .eq("id", sourceHouseManualId)
     .single();
 
   if (sourceError || !sourceManual) {
@@ -116,7 +116,7 @@ export async function handleReusePrevious(
   const { data: targetContent } = await supabaseClient
     .from("housemanual")
     .select("*")
-    .eq("_id", targetHouseManualId)
+    .eq("id", targetHouseManualId)
     .single();
 
   // Create suggestions for fields with content
@@ -144,7 +144,7 @@ export async function handleReusePrevious(
       : null;
 
     suggestionsToCreate.push({
-      _id: generatePlatformId(),
+      id: generatePlatformId(),
       Content: contentValue,
       "Previous Content": previousContent,
       "Field suggested house manual": field,

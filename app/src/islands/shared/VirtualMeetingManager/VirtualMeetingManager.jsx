@@ -58,9 +58,9 @@ export default function VirtualMeetingManager({
    */
   const handleConfirmTime = async (selectedTime) => {
     try {
-      const userId = currentUser?._id || currentUser?.userId || currentUser?.id;
+      const userId = currentUser?.id || currentUser?.userId;
       const result = await virtualMeetingService.acceptMeeting(
-        proposal._id || proposal.id,
+        proposal.id,
         selectedTime,
         userId
       );
@@ -86,7 +86,7 @@ export default function VirtualMeetingManager({
    */
   const handleDecline = async () => {
     try {
-      const result = await virtualMeetingService.declineMeeting(proposal._id || proposal.id);
+      const result = await virtualMeetingService.declineMeeting(proposal.id);
 
       if (result.status === 'success') {
         setSuccess('Meeting declined');
@@ -119,7 +119,7 @@ export default function VirtualMeetingManager({
   const handleSubmitRequest = async (slots, isSuggestingAlt) => {
     try {
       // Get user ID - check multiple field names for compatibility
-      const userId = currentUser?._id || currentUser?.userId || currentUser?.id;
+      const userId = currentUser?.id || currentUser?.userId;
       console.log('[VM Manager] Submit request - userId:', userId, 'currentUser:', currentUser);
 
       if (!userId) {
@@ -127,7 +127,7 @@ export default function VirtualMeetingManager({
       }
 
       const result = await virtualMeetingService.createRequest(
-        proposal._id || proposal.id,
+        proposal.id,
         slots,
         userId,
         isSuggestingAlt,
@@ -173,8 +173,8 @@ export default function VirtualMeetingManager({
 
     try {
       const result = await virtualMeetingService.cancelMeeting(
-        virtualMeeting._id || virtualMeeting.id,
-        proposal._id || proposal.id
+        virtualMeeting.id,
+        proposal.id
       );
 
       if (result.status === 'success') {
@@ -259,7 +259,7 @@ export default function VirtualMeetingManager({
         isOpen={true}
         onClose={handleSuccessModalClose}
         hostName={getHostName()}
-        referralCode={currentUser?._id || currentUser?.id || 'user'}
+        referralCode={currentUser?.id || 'user'}
         referrerName={getCurrentUserName()}
         userType={getUserType()}
       />

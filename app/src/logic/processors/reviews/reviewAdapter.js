@@ -73,7 +73,7 @@ export function adaptReviewFromApi({ apiReview }) {
   }
 
   return {
-    id: apiReview.id || apiReview._id,
+    id: apiReview.id,
     guestId: apiReview.guest_id,
     hostId: apiReview.host_id,
     leaseId: apiReview.lease_id,

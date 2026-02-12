@@ -66,7 +66,7 @@ export default function CreateDuplicateListingModal({
 
   // Async operation for duplicate listing
   const { isLoading: isDuplicating, execute: executeDuplicate } = useAsyncOperation(async () => {
-    const originalListing = existingListings.find(l => l._id === selectedListingId);
+    const originalListing = existingListings.find(l => l.id === selectedListingId);
     if (!originalListing) {
       throw new Error('Selected listing not found');
     }
@@ -74,7 +74,7 @@ export default function CreateDuplicateListingModal({
     // Create duplicate with all properties from original
     const duplicateData = {
       ...originalListing,
-      _id: undefined, // Remove ID to create new record
+      id: undefined, // Remove ID to create new record
       Name: listingName.trim(),
       active: false, // Set to inactive by default
       'Operator Last Updated AUT': new Date().toISOString(),
@@ -83,7 +83,7 @@ export default function CreateDuplicateListingModal({
     };
 
     // Remove fields that shouldn't be duplicated
-    delete duplicateData._id;
+    delete duplicateData.id;
     delete duplicateData.original_created_at;
     delete duplicateData.original_updated_at;
 
@@ -97,7 +97,7 @@ export default function CreateDuplicateListingModal({
 
     // Update profile completeness if needed
     if (currentUser && !currentUser.tasksCompleted?.includes('listing')) {
-      await updateProfileCompleteness(currentUser._id, 'listing');
+      await updateProfileCompleteness(currentUser.id, 'listing');
     }
 
     return newListing;
@@ -116,7 +116,7 @@ export default function CreateDuplicateListingModal({
   // Update listing name when switching to copy mode with a selected listing
   useEffect(() => {
     if (viewMode === 'copy' && selectedListingId) {
-      const selectedListing = existingListings.find(l => l._id === selectedListingId);
+      const selectedListing = existingListings.find(l => l.id === selectedListingId);
       if (selectedListing) {
         setListingName(`${selectedListing.listing_title} copy`);
       }
@@ -176,7 +176,7 @@ export default function CreateDuplicateListingModal({
       }
 
       if (onNavigateToListing) {
-        onNavigateToListing(newListing._id);
+        onNavigateToListing(newListing.id);
       }
     } catch (error) {
       console.error('Error duplicating listing:', error);
@@ -301,7 +301,7 @@ export default function CreateDuplicateListingModal({
               >
                 <option value="">-- Select a listing --</option>
                 {existingListings.map(listing => (
-                  <option key={listing._id} value={listing._id}>
+                  <option key={listing.id} value={listing.id}>
                     {listing.listing_title}
                   </option>
                 ))}

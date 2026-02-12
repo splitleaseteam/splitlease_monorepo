@@ -57,7 +57,7 @@ export async function handleInitialize(
   // First, find a listing to use (prefer a test listing)
   const { data: listings, error: listingError } = await supabase
     .from('listing')
-    .select('_id, title, host_id')
+    .select('id, title, host_id')
     .limit(1);
 
   if (listingError || !listings || listings.length === 0) {
@@ -67,7 +67,7 @@ export async function handleInitialize(
       simulationId,
       proposals: [
         {
-          _id: `mock_proposal_${Date.now()}`,
+          id: `mock_proposal_${Date.now()}`,
           guest_id: guestId,
           status: 'Pending Guest Deposit',
           schedule_type: 'nightly',
@@ -92,7 +92,7 @@ export async function handleInitialize(
     .from('proposal')
     .insert({
       guest_id: guestId,
-      listing_id: listing._id,
+      listing_id: listing.id,
       host_id: listing.host_id,
       status: 'Pending Guest Deposit',
       schedule_type: 'nightly',
@@ -112,7 +112,7 @@ export async function handleInitialize(
       simulationId,
       proposals: [
         {
-          _id: `mock_proposal_${Date.now()}`,
+          id: `mock_proposal_${Date.now()}`,
           guest_id: guestId,
           status: 'Pending Guest Deposit',
           schedule_type: 'nightly',

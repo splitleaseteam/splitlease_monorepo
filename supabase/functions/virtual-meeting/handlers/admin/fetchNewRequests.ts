@@ -65,16 +65,16 @@ export async function handleAdminFetchNewRequests(
   const usersPromise = userIds.size > 0
     ? supabase
         .from("user")
-        .select('_id, "Name - First", "Name - Last", email, "Phone Number (as text)", "Profile Photo"')
-        .in("_id", Array.from(userIds))
+        .select('id, first_name, last_name, email, phone_number, profile_photo_url')
+        .in("id", Array.from(userIds))
     : Promise.resolve({ data: [], error: null });
 
   // Fetch listings in parallel
   const listingsPromise = listingIds.size > 0
     ? supabase
         .from("listing")
-        .select("_id, title, street_address, unit_apt, neighborhood_1")
-        .in("_id", Array.from(listingIds))
+        .select("id, title, street_address, unit_apt, neighborhood_1")
+        .in("id", Array.from(listingIds))
     : Promise.resolve({ data: [], error: null });
 
   const [usersResult, listingsResult] = await Promise.all([usersPromise, listingsPromise]);
@@ -84,13 +84,13 @@ export async function handleAdminFetchNewRequests(
   if (usersResult.data) {
     for (const user of usersResult.data) {
       // Normalize legacy Bubble column names to frontend-expected property names
-      usersMap.set(user._id, {
-        _id: user._id,
-        name_first: user["Name - First"] || "",
-        name_last: user["Name - Last"] || "",
+      usersMap.set(user.id, {
+        id: user.id,
+        name_first: user.first_name || "",
+        name_last: user.last_name || "",
         email: user.email || "",
-        phone_number: user["Phone Number (as text)"] || "",
-        profile_photo_url: user["Profile Photo"] || "",
+        phone_number: user.phone_number || "",
+        profile_photo_url: user.profile_photo_url || "",
       });
     }
   }
@@ -98,12 +98,12 @@ export async function handleAdminFetchNewRequests(
   const listingsMap = new Map<string, unknown>();
   if (listingsResult.data) {
     for (const listing of listingsResult.data) {
-      listingsMap.set(listing._id, listing);
+      listingsMap.set(listing.id, listing);
     }
   }
 
   // Enrich meetings with related data
-  const enrichedMeetings = meetings.map((meeting) => ({
+  const enrichedMeetings = meetings.map((meeting: Record<string, unknown>) => ({
     ...meeting,
     guest: meeting.guest ? usersMap.get(meeting.guest) || null : null,
     host: meeting.host ? usersMap.get(meeting.host) || null : null,

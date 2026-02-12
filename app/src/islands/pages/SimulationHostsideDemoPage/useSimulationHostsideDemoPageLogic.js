@@ -201,7 +201,7 @@ export function useSimulationHostsideDemoPageLogic() {
   const persistProgress = useCallback((updates) => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
 
     setSimulationState(prev => {
       const newState = { ...prev, ...updates };
@@ -256,7 +256,7 @@ export function useSimulationHostsideDemoPageLogic() {
   const handleStepBClick = useCallback(async () => {
     if (!currentUser) return;
 
-    const userId = currentUser.userId || currentUser._id;
+    const userId = currentUser.userId || currentUser.id;
 
     setSimulationState(prev => ({
       ...prev,

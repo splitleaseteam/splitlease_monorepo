@@ -38,12 +38,12 @@ export async function handleGetProposal(
   const { data: proposalData, error: proposalError } = await supabase
     .from('proposal')
     .select(`
-      _id,
-      Guest,
-      Listing,
+      id,
+      guest_user_id,
+      listing_id,
       "Guest email",
-      "Host User",
-      Status,
+      host_user_id,
+      proposal_workflow_status,
       "Move in range start",
       "Move in range end",
       "Reservation Span (Weeks)",
@@ -55,7 +55,7 @@ export async function handleGetProposal(
       "damage deposit",
       Deleted
     `)
-    .eq('_id', proposal_id)
+    .eq('id', proposal_id)
     .single();
 
   if (proposalError) {
@@ -68,19 +68,19 @@ export async function handleGetProposal(
   }
 
   const proposal = proposalData as ProposalRow;
-  console.log('[quick-match:get_proposal] Proposal found, status:', proposal.Status);
+  console.log('[quick-match:get_proposal] Proposal found, status:', proposal.proposal_workflow_status);
 
   // Fetch guest data
-  const guest = await fetchGuestInfo(supabase, proposal.Guest);
+  const guest = await fetchGuestInfo(supabase, proposal.guest_user_id);
   console.log('[quick-match:get_proposal] Guest:', guest.fullName || guest.email);
 
   // Fetch listing data with borough/hood names
-  const listing = await fetchListingInfo(supabase, proposal.Listing);
+  const listing = await fetchListingInfo(supabase, proposal.listing_id);
   console.log('[quick-match:get_proposal] Listing:', listing.title);
 
   // Build response
   const proposalDetails: ProposalDetails = {
-    id: proposal._id,
+    id: proposal.id,
     guest,
     listing,
     daysSelected: normalizeJsonbArray(proposal['Days Selected']),
@@ -88,7 +88,7 @@ export async function handleGetProposal(
     nightlyPrice: proposal['proposal nightly price'] || 0,
     moveInStart: proposal['Move in range start'],
     moveInEnd: proposal['Move in range end'],
-    status: proposal.Status,
+    status: proposal.proposal_workflow_status,
     reservationWeeks: proposal['Reservation Span (Weeks)'],
   };
 
@@ -117,13 +117,12 @@ async function fetchGuestInfo(
   const { data, error } = await supabase
     .from('user')
     .select(`
-      _id,
-      "Name - First",
-      "Name - Last",
-      "Name - Full",
+      id,
+      first_name,
+      last_name,
       email
     `)
-    .eq('_id', guestId)
+    .eq('id', guestId)
     .single();
 
   if (error || !data) {
@@ -139,10 +138,10 @@ async function fetchGuestInfo(
 
   const user = data as UserRow;
   return {
-    id: user._id,
-    firstName: user['Name - First'],
-    lastName: user['Name - Last'],
-    fullName: user['Name - Full'],
+    id: user.id,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || null,
     email: user.email,
   };
 }
@@ -188,9 +187,9 @@ async function fetchListingInfo(
   const { data, error } = await supabase
     .from('listing')
     .select(`
-      _id,
+      id,
       Name,
-      "Host User",
+      host_user_id,
       "Location - Borough",
       "Location - Hood",
       "Location - Address",
@@ -210,7 +209,7 @@ async function fetchListingInfo(
       Active,
       Deleted
     `)
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (error || !data) {
@@ -226,7 +225,7 @@ async function fetchListingInfo(
     const { data: boroughData } = await supabase
       .from('zat_geo_borough_toplevel')
       .select('Display')
-      .eq('_id', listing['Location - Borough'])
+      .eq('id', listing['Location - Borough'])
       .single();
 
     boroughName = boroughData?.Display || listing['Location - Borough'];
@@ -238,7 +237,7 @@ async function fetchListingInfo(
     const { data: hoodData } = await supabase
       .from('zat_geo_hood_mediumlevel')
       .select('Display')
-      .eq('_id', listing['Location - Hood'])
+      .eq('id', listing['Location - Hood'])
       .single();
 
     hoodName = hoodData?.Display || listing['Location - Hood'];
@@ -255,7 +254,7 @@ async function fetchListingInfo(
   };
 
   return {
-    id: listing._id,
+    id: listing.id,
     title: listing.Name,
     borough: listing['Location - Borough'],
     boroughName,

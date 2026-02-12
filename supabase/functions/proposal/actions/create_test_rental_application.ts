@@ -39,8 +39,8 @@ export async function handleCreateTestRentalApplication(
   // Check if user already has a rental application
   const { data: user, error: userError } = await supabase
     .from('user')
-    .select('_id, "Rental Application", "Name - First", "Name - Last", email')
-    .eq('_id', userId)
+    .select('id, rental_application_form_id, first_name, last_name, email')
+    .eq('id', userId)
     .single();
 
   if (userError) {
@@ -49,10 +49,10 @@ export async function handleCreateTestRentalApplication(
   }
 
   // If user already has a rental app, we'll note that
-  if (user['Rental Application']) {
-    console.log('[create_test_rental_application] User already has rental app:', user['Rental Application']);
+  if (user.rental_application_form_id) {
+    console.log('[create_test_rental_application] User already has rental app:', user.rental_application_form_id);
     return {
-      rentalApplicationId: user['Rental Application'],
+      rentalApplicationId: user.rental_application_form_id,
       message: 'User already has a rental application'
     };
   }
@@ -62,8 +62,8 @@ export async function handleCreateTestRentalApplication(
   // This is a simplified version for simulation purposes
   const rentalAppData = {
     user_id: userId,
-    'First Name': autofillData.firstName || user['Name - First'] || 'Test',
-    'Last Name': autofillData.lastName || user['Name - Last'] || 'User',
+    'First Name': autofillData.firstName || user.first_name || 'Test',
+    'Last Name': autofillData.lastName || user.last_name || 'User',
     Email: autofillData.email || user.email || 'test@example.com',
     Phone: autofillData.phone || '555-555-5555',
     Occupation: autofillData.occupation || 'Software Engineer',
@@ -80,7 +80,7 @@ export async function handleCreateTestRentalApplication(
     const { data: rentalApp, error: insertError } = await supabase
       .from('rental_application')
       .insert(rentalAppData)
-      .select('_id')
+      .select('id')
       .single();
 
     if (insertError) {
@@ -96,13 +96,13 @@ export async function handleCreateTestRentalApplication(
     // Link rental app to user
     await supabase
       .from('user')
-      .update({ 'Rental Application': rentalApp._id })
-      .eq('_id', userId);
+      .update({ rental_application_form_id: rentalApp.id })
+      .eq('id', userId);
 
-    console.log('[create_test_rental_application] Created rental app:', rentalApp._id);
+    console.log('[create_test_rental_application] Created rental app:', rentalApp.id);
 
     return {
-      rentalApplicationId: rentalApp._id,
+      rentalApplicationId: rentalApp.id,
       message: 'Test rental application created successfully'
     };
 

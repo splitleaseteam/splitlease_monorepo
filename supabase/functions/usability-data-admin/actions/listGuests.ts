@@ -12,12 +12,12 @@ interface ListGuestsPayload {
 }
 
 interface UserRecord {
-  _id: string;
+  id: string;
   email: string;
-  "Name - First": string;
-  "Name - Last": string;
-  "Modified Date": string;
-  "Type - User Current"?: string;
+  first_name: string;
+  last_name: string;
+  updated_at: string;
+  current_user_role?: string;
 }
 
 /**
@@ -25,12 +25,12 @@ interface UserRecord {
  */
 function formatUser(dbUser: UserRecord) {
   return {
-    id: dbUser._id,
+    id: dbUser.id,
     email: dbUser.email || '',
-    firstName: dbUser['Name - First'] || '',
-    lastName: dbUser['Name - Last'] || '',
-    fullName: `${dbUser['Name - First'] || ''} ${dbUser['Name - Last'] || ''}`.trim(),
-    modifiedDate: dbUser['Modified Date'] || null,
+    firstName: dbUser.first_name || '',
+    lastName: dbUser.last_name || '',
+    fullName: `${dbUser.first_name || ''} ${dbUser.last_name || ''}`.trim(),
+    modifiedDate: dbUser.updated_at || null,
   };
 }
 
@@ -44,14 +44,14 @@ export async function handleListGuests(
   // Column name with spaces causes issues in PostgREST filters
   let query = supabase
     .from('user')
-    .select('_id, email, "Name - First", "Name - Last", "Modified Date", "Type - User Current"', { count: 'exact' })
+    .select('id, email, first_name, last_name, updated_at, current_user_role', { count: 'exact' })
     .eq('is usability tester', true)
-    .order('"Name - First"', { ascending: true });
+    .order('first_name', { ascending: true });
 
   // Apply search filter across name and email fields
   if (search) {
     const searchPattern = `%${search}%`;
-    query = query.or(`"Name - First".ilike.${searchPattern},"Name - Last".ilike.${searchPattern},email.ilike.${searchPattern}`);
+    query = query.or(`first_name.ilike.${searchPattern},last_name.ilike.${searchPattern},email.ilike.${searchPattern}`);
   }
 
   // Apply pagination
@@ -64,7 +64,7 @@ export async function handleListGuests(
 
   // Filter guests client-side (column name with spaces causes issues in PostgREST filters)
   const guestData = (data || []).filter((user: UserRecord) =>
-    user['Type - User Current']?.toLowerCase().includes('guest')
+    user.current_user_role?.toLowerCase().includes('guest')
   );
   const guests = guestData.map(formatUser);
 

@@ -59,21 +59,21 @@ export default function SuggestionCard({
   // Handle accept click
   const handleAccept = () => {
     if (!isBeingProcessed) {
-      onAccept(suggestion._id);
+      onAccept(suggestion.id);
     }
   };
 
   // Handle ignore click
   const handleIgnore = () => {
     if (!isBeingProcessed) {
-      onIgnore(suggestion._id);
+      onIgnore(suggestion.id);
     }
   };
 
   // Handle combine click
   const handleCombine = () => {
     if (!isBeingProcessed) {
-      onCombine(suggestion._id, combineContent);
+      onCombine(suggestion.id, combineContent);
     }
   };
 

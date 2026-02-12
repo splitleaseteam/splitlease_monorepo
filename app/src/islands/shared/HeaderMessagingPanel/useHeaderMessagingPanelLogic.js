@@ -366,7 +366,7 @@ export function useHeaderMessagingPanelLogic({
   useEffect(() => {
     if (!selectedThread || !userId || !isOpen) return;
 
-    const channelName = `panel-messages-${selectedThread._id}`;
+    const channelName = `panel-messages-${selectedThread.id}`;
     console.log('[Panel Realtime] Subscribing to:', channelName);
 
     const channel = supabase.channel(channelName);
@@ -384,7 +384,7 @@ export function useHeaderMessagingPanelLogic({
         if (!newRow) return;
 
         // Client-side filter for this thread
-        if (newRow['thread_id'] !== selectedThread._id) {
+        if (newRow['thread_id'] !== selectedThread.id) {
           return;
         }
 
@@ -392,10 +392,10 @@ export function useHeaderMessagingPanelLogic({
 
         // Add message to state (avoid duplicates)
         setMessages((prev) => {
-          if (prev.some((m) => m._id === newRow.id)) return prev;
+          if (prev.some((m) => m.id === newRow.id)) return prev;
 
           const transformedMessage = {
-            _id: newRow.id,
+            id: newRow.id,
             message_body: newRow['message_body_text'],
             sender_name: newRow['is_from_split_bot']
               ? 'Split Bot'
@@ -465,7 +465,7 @@ export function useHeaderMessagingPanelLogic({
       channel.unsubscribe();
       channelRef.current = null;
     };
-  }, [selectedThread?._id, userId, isOpen]);
+  }, [selectedThread?.id, userId, isOpen]);
 
   // ============================================================================
   // TYPING INDICATOR
@@ -577,7 +577,7 @@ export function useHeaderMessagingPanelLogic({
 
       // Fetch unread message counts per thread for this user
       // Uses JSONB containment operator to check if user is in unread_by_user_ids_json array
-      const threadIds = threadsData.map((t) => t._id);
+      const threadIds = threadsData.map((t) => t.id);
       let unreadCountMap = {};
       if (threadIds.length > 0) {
         const { data: unreadData } = await supabase
@@ -604,7 +604,7 @@ export function useHeaderMessagingPanelLogic({
         // Build a map of thread -> user role (host or guest)
         const threadRoles = {};
         threadsData.forEach((thread) => {
-          threadRoles[thread._id] = thread['host_user_id'] === currentUserId ? 'host' : 'guest';
+          threadRoles[thread.id] = thread['host_user_id'] === currentUserId ? 'host' : 'guest';
         });
 
         // Fetch recent messages for all threads with visibility info
@@ -665,16 +665,16 @@ export function useHeaderMessagingPanelLogic({
         }
 
         return {
-          _id: thread._id,
+          id: thread.id,
           'host_user_id': hostId,
           'guest_user_id': guestId,
           contact_name: contact?.name || 'Split Lease',
           contact_avatar: contact?.avatar,
           property_name: thread['listing_id'] ? listingMap[thread['listing_id']] : undefined,
           // Use visibility-aware preview if available, fall back to static ~Last Message
-          last_message_preview: visiblePreviewMap[thread._id] || thread['~Last Message'] || 'No messages yet',
+          last_message_preview: visiblePreviewMap[thread.id] || thread['~Last Message'] || 'No messages yet',
           last_message_time: lastMessageTime,
-          unread_count: unreadCountMap[thread._id] || 0,
+          unread_count: unreadCountMap[thread.id] || 0,
           is_with_splitbot: false,
         };
       });
@@ -757,7 +757,7 @@ export function useHeaderMessagingPanelLogic({
         body: {
           action: 'send_message',
           payload: {
-            thread_id: selectedThread._id,
+            thread_id: selectedThread.id,
             message_body: messageInput.trim(),
             user_id: currentUserId,  // Legacy auth: pass user_id inside payload
           },
@@ -774,7 +774,7 @@ export function useHeaderMessagingPanelLogic({
 
         // Add optimistic message
         const optimisticMessage = {
-          _id: data.data.message_id,
+          id: data.data.message_id,
           message_body: messageInput.trim(),
           sender_name: 'You',
           sender_type: 'guest',
@@ -788,14 +788,14 @@ export function useHeaderMessagingPanelLogic({
         };
 
         setMessages((prev) => {
-          if (prev.some((m) => m._id === optimisticMessage._id)) return prev;
+          if (prev.some((m) => m.id === optimisticMessage.id)) return prev;
           return [...prev, optimisticMessage];
         });
 
         // Update thread's last message preview
         setThreads((prev) =>
           prev.map((t) =>
-            t._id === selectedThread._id
+            t.id === selectedThread.id
               ? { ...t, last_message_preview: messageInput.trim(), last_message_time: 'Just now' }
               : t
           )
@@ -819,21 +819,21 @@ export function useHeaderMessagingPanelLogic({
    * Handle thread selection
    */
   const handleThreadSelect = useCallback((thread) => {
-    console.log('[Panel] Thread selected:', thread._id, thread.contact_name);
+    console.log('[Panel] Thread selected:', thread.id, thread.contact_name);
     setSelectedThread(thread);
     setMessages([]);
     setThreadInfo(null);
     setViewState('thread');
     setIsOtherUserTyping(false);
     setTypingUserName(null);
-    fetchMessages(thread._id);
+    fetchMessages(thread.id);
 
     // Clear unread badge for this thread in local state
     // The backend will mark messages as read; this keeps UI in sync
     if (thread.unread_count > 0) {
       setThreads((prevThreads) =>
         prevThreads.map((t) =>
-          t._id === thread._id ? { ...t, unread_count: 0 } : t
+          t.id === thread.id ? { ...t, unread_count: 0 } : t
         )
       );
     }

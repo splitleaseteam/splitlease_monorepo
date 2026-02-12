@@ -59,7 +59,7 @@ interface UploadResult {
  *
  * @param payload - The upload payload containing file data
  * @param supabase - Supabase client (admin/service role)
- * @param userId - The user's ID (Bubble _id format)
+ * @param userId - The user's ID (legacy id format)
  */
 export async function handleUpload(
   payload: Record<string, unknown>,

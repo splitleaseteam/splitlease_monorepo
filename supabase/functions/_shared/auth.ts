@@ -10,7 +10,7 @@
  */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { ValidationError } from './errors.ts';
+import { AuthenticationError } from './errors.ts';
 
 export interface ResolvedUser {
   id: string;        // Platform user ID (primary identifier used across the platform)
@@ -35,7 +35,7 @@ const LEGACY_ID_PATTERN = /^\d+x\d+$/;
  * @param supabaseAdmin - Admin client with service role (bypasses RLS)
  * @param user - User object from JWT auth { id, email, legacyPlatformId? }
  * @returns ResolvedUser with platform ID, email, and user type
- * @throws ValidationError if user cannot be resolved
+ * @throws AuthenticationError if user cannot be resolved
  */
 export async function resolveUser(
   supabaseAdmin: SupabaseClient,
@@ -76,7 +76,7 @@ export async function resolveUser(
   else {
     if (!user.email) {
       console.error('[auth/resolveUser] No email in auth token');
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
+      throw new AuthenticationError('Invalid or expired authentication token. Please log in again.');
     }
 
     const { data: userData, error: userError } = await supabaseAdmin
@@ -87,7 +87,7 @@ export async function resolveUser(
 
     if (userError || !userData?.legacy_platform_id) {
       console.error('[auth/resolveUser] User lookup failed:', userError?.message);
-      throw new ValidationError('Could not find user profile. Please try logging in again.');
+      throw new AuthenticationError('Invalid or expired authentication token. Please log in again.');
     }
 
     platformId = userData.legacy_platform_id;
@@ -96,7 +96,7 @@ export async function resolveUser(
   }
 
   if (!platformId) {
-    throw new ValidationError('Could not find user profile. Please try logging in again.');
+    throw new AuthenticationError('Invalid or expired authentication token. Please log in again.');
   }
 
   return {

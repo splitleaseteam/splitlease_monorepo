@@ -55,7 +55,7 @@ export async function handleGetGuestHistory(
   // Fetch history entries
   const { data, error } = await supabase
     .from('guest_activity_history')
-    .select('_id, page_path, page_title, action_type, metadata, created_at')
+    .select('id, page_path, page_title, action_type, metadata, created_at')
     .eq('guest_id', guestId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -66,7 +66,7 @@ export async function handleGetGuestHistory(
   }
 
   const entries: HistoryEntry[] = (data || []).map(h => ({
-    id: h._id,
+    id: h.id,
     date: h.created_at,
     page: h.page_title || h.page_path,
     pagePath: h.page_path,

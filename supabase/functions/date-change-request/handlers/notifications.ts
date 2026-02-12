@@ -69,7 +69,7 @@ const SMS_FROM_NUMBER = '+14155692985';
 // ─────────────────────────────────────────────────────────────
 
 interface UserQueryResult {
-  _id: string;
+  id: string;
   email: string | null;
   'First Name': string | null;
   'Cell phone number': string | null;
@@ -193,22 +193,22 @@ async function fetchUsers(
   // Fetch users
   const { data: users, error: usersError } = await supabase
     .from('user')
-    .select('_id, email, "First Name", "Cell phone number", "notification preferences"')
-    .in('_id', [requesterId, receiverId]);
+    .select('id, email, "First Name", "Cell phone number", "notification preferences"')
+    .in('id', [requesterId, receiverId]);
 
   if (usersError || !users) {
     console.warn('[dcr:notifications] User fetch failed:', usersError?.message);
     return { requester: null, receiver: null };
   }
 
-  const requesterData = users.find(u => u._id === requesterId) as UserQueryResult | undefined;
-  const receiverData = users.find(u => u._id === receiverId) as UserQueryResult | undefined;
+  const requesterData = users.find(u => u.id === requesterId) as UserQueryResult | undefined;
+  const receiverData = users.find(u => u.id === receiverId) as UserQueryResult | undefined;
 
   // Fetch lease to determine roles
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
     .select('"Guest", "Host"')
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .maybeSingle();
 
   if (leaseError || !lease) {
@@ -231,7 +231,7 @@ async function fetchUsers(
  */
 function mapToRecipient(user: UserQueryResult, role: 'guest' | 'host'): NotificationRecipient {
   return {
-    userId: user._id,
+    userId: user.id,
     email: user.email,
     firstName: user['First Name'],
     phone: user['Cell phone number'],
@@ -250,7 +250,7 @@ async function fetchLease(
   const { data, error } = await supabase
     .from('bookings_leases')
     .select('"Agreement Number", "Guest", "Host"')
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .maybeSingle();
 
   if (error) {
@@ -432,7 +432,7 @@ async function sendEmailNotification(
     const { data: leaseData } = await supabase
       .from('bookings_leases')
       .select('check_in, check_out')
-      .eq('_id', context.leaseId)
+      .eq('id', context.leaseId)
       .maybeSingle();
 
     // Build full email notification context
@@ -601,7 +601,7 @@ async function sendInAppNotification(
   // Find the messaging thread for this lease
   const { data: thread, error: threadError } = await supabase
     .from('messaging_threads')
-    .select('_id')
+    .select('id')
     .eq('lease', context.leaseId)
     .maybeSingle();
 
@@ -623,7 +623,7 @@ async function sendInAppNotification(
       body: JSON.stringify({
         action: 'send_splitbot_message',
         payload: {
-          threadId: thread._id,
+          threadId: thread.id,
           ctaName: getCTANameForEvent(context.event, context.requestType),
           recipientRole: 'both',
           customMessageBody: content.inAppMessage,

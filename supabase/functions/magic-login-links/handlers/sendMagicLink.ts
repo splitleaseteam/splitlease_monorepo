@@ -112,16 +112,16 @@ export async function handleSendMagicLink(
     // Step 1: Look up user to get email and phone
     const { data: userData, error: userError } = await supabaseAdmin
       .from('user')
-      .select('_id, "email as text", "Phone Number (as text)"')
-      .eq('_id', userId)
+      .select('id, email, phone_number')
+      .eq('id', userId)
       .single();
 
     if (userError || !userData) {
       throw new ApiError(`User not found: ${userId}`, 404);
     }
 
-    const userEmail = userData['email as text'];
-    const userPhone = userData['Phone Number (as text)'];
+    const userEmail = userData.email;
+    const userPhone = userData.phone_number;
 
     if (!userEmail) {
       throw new ApiError(`User ${userId} has no email address`, 400);

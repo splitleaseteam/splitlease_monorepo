@@ -180,7 +180,7 @@ export function useFavoriteListingsPageLogic() {
     }
 
     return {
-      id: dbListing._id,
+      id: dbListing.id,
       title: dbListing.listing_title || 'Unnamed Listing',
       location: location,
       neighborhood: neighborhoodName || '',
@@ -401,10 +401,10 @@ export function useFavoriteListingsPageLogic() {
         // Extract photos per listing (handles both embedded objects and legacy IDs)
         const resolvedPhotos = {};
         listingsData.forEach(listing => {
-          resolvedPhotos[listing._id] = extractPhotos(
+          resolvedPhotos[listing.id] = extractPhotos(
             listing.photos_with_urls_captions_and_sort_order_json,
             photoMap,
-            listing._id
+            listing.id
           );
         });
 
@@ -422,7 +422,7 @@ export function useFavoriteListingsPageLogic() {
         const transformedListings = listingsData
           .map(listing => {
             const hostId = listing.host_user_id;
-            return transformListing(listing, resolvedPhotos[listing._id], hostMap[hostId] || null);
+            return transformListing(listing, resolvedPhotos[listing.id], hostMap[hostId] || null);
           })
           .filter(listing => listing.coordinates && listing.coordinates.lat && listing.coordinates.lng)
           .filter(listing => listing.images && listing.images.length > 0);
@@ -609,7 +609,7 @@ export function useFavoriteListingsPageLogic() {
       // Build payload (using 0-indexed days)
       const payload = {
         guestId: guestId,
-        listingId: selectedListingForProposal._id || selectedListingForProposal.id,
+        listingId: selectedListingForProposal.id,
         moveInStartRange: proposalData.moveInDate,
         moveInEndRange: proposalData.moveInDate, // Same as start if no flexibility
         daysSelected: daysInJsFormat,

@@ -4,9 +4,9 @@
  */
 
 export interface CreateVirtualMeetingInput {
-  proposalId: string;           // Required: FK to proposal._id
+  proposalId: string;           // Required: FK to proposal.id
   timesSelected: string[];      // Required: Array of ISO 8601 datetime strings (exactly 3)
-  requestedById: string;        // Required: FK to user._id (current user)
+  requestedById: string;        // Required: FK to user.id (current user)
   timezoneString?: string;      // Optional: default 'America/New_York'
   isAlternativeTimes?: boolean; // Optional: true if suggesting alternative times
 }
@@ -19,32 +19,34 @@ export interface CreateVirtualMeetingResponse {
 }
 
 export interface ProposalData {
-  _id: string;
+  id: string;
   Guest: string;
   Listing: string;
   'Host User': string;
 }
 
 export interface ListingData {
-  _id: string;
+  id: string;
   'Host User': string;
   'Created By': string;
 }
 
 export interface UserData {
-  _id: string;
+  id: string;
   email: string;
-  'Name - First'?: string;
-  'Name - Full'?: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  notification_preference_setting?: string;
 }
 
 export interface HostAccountData {
-  _id: string;
+  id: string;
   User: string;
 }
 
 export interface VirtualMeetingRecord {
-  _id: string;
+  id: string;
   'Created By': string;
   'Created Date': string;
   'Modified Date': string;
@@ -88,9 +90,9 @@ export interface DeleteVirtualMeetingResponse {
 
 // Accept Virtual Meeting
 export interface AcceptVirtualMeetingInput {
-  proposalId: string;           // Required: FK to proposal._id
+  proposalId: string;           // Required: FK to proposal.id
   bookedDate: string;           // Required: ISO 8601 datetime (selected time slot)
-  userAcceptingId: string;      // Required: FK to user._id (user accepting)
+  userAcceptingId: string;      // Required: FK to user.id (user accepting)
 }
 
 export interface AcceptVirtualMeetingResponse {
@@ -103,7 +105,7 @@ export interface AcceptVirtualMeetingResponse {
 
 // Decline Virtual Meeting
 export interface DeclineVirtualMeetingInput {
-  proposalId: string;           // Required: FK to proposal._id
+  proposalId: string;           // Required: FK to proposal.id
 }
 
 export interface DeclineVirtualMeetingResponse {
@@ -114,8 +116,8 @@ export interface DeclineVirtualMeetingResponse {
 
 // Send Calendar Invite
 export interface SendCalendarInviteInput {
-  proposalId: string;           // Required: FK to proposal._id
-  userId: string;               // Required: FK to user._id (recipient)
+  proposalId: string;           // Required: FK to proposal.id
+  userId: string;               // Required: FK to user.id (recipient)
 }
 
 export interface SendCalendarInviteResponse {
@@ -127,9 +129,9 @@ export interface SendCalendarInviteResponse {
 
 // Notify Participants
 export interface NotifyParticipantsInput {
-  hostId: string;               // Required: FK to user._id
-  guestId: string;              // Required: FK to user._id
-  virtualMeetingId: string;     // Required: FK to virtualmeetingschedulesandlinks._id
+  hostId: string;               // Required: FK to user.id
+  guestId: string;              // Required: FK to user.id
+  virtualMeetingId: string;     // Required: FK to virtualmeetingschedulesandlinks.id
 }
 
 export interface NotifyParticipantsResponse {

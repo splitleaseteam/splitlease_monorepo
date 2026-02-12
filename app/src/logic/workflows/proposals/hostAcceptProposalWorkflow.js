@@ -129,14 +129,14 @@ export async function hostAcceptProposalWorkflow({ proposalId, proposal }) {
     // Find the thread associated with this proposal
     const { data: thread, error: threadError } = await supabase
       .from('thread')
-      .select('_id')
+      .select('id')
       .eq('Proposal', proposalId)
       .maybeSingle();
 
     if (threadError) {
       console.warn('[hostAcceptProposalWorkflow] Could not find thread for proposal:', threadError);
     } else if (thread) {
-      console.log('[hostAcceptProposalWorkflow] Found thread:', thread._id);
+      console.log('[hostAcceptProposalWorkflow] Found thread:', thread.id);
 
       // Send SplitBot messages to both guest and host
       const messageResponse = await fetch(
@@ -149,7 +149,7 @@ export async function hostAcceptProposalWorkflow({ proposalId, proposal }) {
           body: JSON.stringify({
             action: 'send_splitbot_message',
             payload: {
-              threadId: thread._id,
+              threadId: thread.id,
               ctaName: 'proposal_accepted',
               recipientRole: 'both',
               customMessageBody: 'Great news! The proposal has been accepted. Split Lease will now draft the lease documents. Please allow up to 48 hours for completion.',

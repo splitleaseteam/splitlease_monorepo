@@ -49,7 +49,7 @@ export function transformListingData(rawListing) {
     : (typeof addressData === 'string' ? addressData : null);
 
   return {
-    id: rawListing._id,
+    id: rawListing.id,
     name: rawListing.Name,
     description: rawListing.Description,
     address: addressString,
@@ -127,7 +127,7 @@ export function transformVirtualMeetingData(rawVirtualMeeting) {
   if (!rawVirtualMeeting) return null;
 
   return {
-    id: rawVirtualMeeting._id,
+    id: rawVirtualMeeting.id,
     bookedDate: rawVirtualMeeting['booked date'],
     confirmedBySplitlease: rawVirtualMeeting.confirmedBySplitLease,
     meetingLink: rawVirtualMeeting['meeting link'],
@@ -157,7 +157,7 @@ export function transformProposalData(rawProposal) {
   const rawVirtualMeeting = rawProposal.virtualMeeting;
 
   return {
-    id: rawProposal._id,
+    id: rawProposal.id,
     status: rawProposal.Status,
     deleted: rawProposal.Deleted,
     daysSelected: rawProposal['Days Selected'],

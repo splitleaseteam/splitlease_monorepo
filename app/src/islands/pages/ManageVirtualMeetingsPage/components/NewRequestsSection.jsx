@@ -51,7 +51,7 @@ export default function NewRequestsSection({
           <div className="manage-vm__cards-grid">
             {meetings.map(meeting => (
               <MeetingCard
-                key={meeting._id || meeting.id}
+                key={meeting.id}
                 meeting={meeting}
                 type="request"
                 onConfirm={() => onConfirm(meeting)}

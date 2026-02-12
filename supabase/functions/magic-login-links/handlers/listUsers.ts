@@ -22,13 +22,13 @@ interface ListUsersPayload {
 }
 
 interface UserRecord {
-  _id: string;
-  'email as text': string | null;
-  'Name - First': string | null;
-  'Name - Last': string | null;
-  'Phone Number (as text)': string | null;
-  'Type - User Current': string | null;
-  'Profile Photo': string | null;
+  id: string;
+  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  phone_number: string | null;
+  current_user_role: string | null;
+  profile_photo_url: string | null;
 }
 
 interface UserListItem {
@@ -65,15 +65,15 @@ export async function handleListUsers(
     // Build query with optional search filtering
     let query = supabaseAdmin
       .from('user')
-      .select('_id, "email as text", "Name - First", "Name - Last", "Phone Number (as text)", "Type - User Current", "Profile Photo"')
-      .order('"Name - First"', { ascending: true })
+      .select('id, email, first_name, last_name, phone_number, current_user_role, profile_photo_url')
+      .order('first_name', { ascending: true })
       .limit(limit);
 
     // Apply search filter if provided
     if (searchText && searchText.trim().length > 0) {
       const searchPattern = `%${searchText.trim()}%`;
       query = query.or(
-        `"email as text".ilike.${searchPattern},"Name - First".ilike.${searchPattern},"Name - Last".ilike.${searchPattern},"Phone Number (as text)".ilike.${searchPattern}`
+        `email.ilike.${searchPattern},first_name.ilike.${searchPattern},last_name.ilike.${searchPattern},phone_number.ilike.${searchPattern}`
       );
     }
 
@@ -91,13 +91,13 @@ export async function handleListUsers(
 
     // Transform database records to API response format
     const users: UserListItem[] = (data as UserRecord[] || []).map(user => ({
-      id: user._id,
-      email: user['email as text'] || '',
-      firstName: user['Name - First'] || '',
-      lastName: user['Name - Last'] || '',
-      phone: user['Phone Number (as text)'] || '',
-      userType: user['Type - User Current'] || '',
-      profilePhoto: user['Profile Photo'] || '',
+      id: user.id,
+      email: user.email || '',
+      firstName: user.first_name || '',
+      lastName: user.last_name || '',
+      phone: user.phone_number || '',
+      userType: user.current_user_role || '',
+      profilePhoto: user.profile_photo_url || '',
     }));
 
     return { users };

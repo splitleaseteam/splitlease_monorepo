@@ -138,7 +138,7 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
     if (!listing) return null;
 
     return {
-      id: listing._id,
+      id: listing.id,
       firstAvailable: new Date(listing.first_available_date || Date.now()),
       lastAvailable: new Date(listing['Last Available'] || Date.now()),
       numberOfNightsAvailable: listing['# of nights available'] || 7,

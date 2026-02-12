@@ -105,7 +105,7 @@ const ListingHeader = memo(function ListingHeader({
                     </button>
 
                     <FavoriteButton
-                        listingId={listing._id}
+                        listingId={listing.id}
                         userId={userId || null}
                         initialFavorited={isFavorited}
                         onToggle={onToggleFavorite}

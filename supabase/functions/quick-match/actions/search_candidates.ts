@@ -84,9 +84,9 @@ async function fetchProposalDetails(
   const { data: proposalData, error: proposalError } = await supabase
     .from('proposal')
     .select(`
-      _id,
-      Guest,
-      Listing,
+      id,
+      guest_user_id,
+      listing_id,
       "Guest email",
       "Move in range start",
       "Move in range end",
@@ -94,9 +94,9 @@ async function fetchProposalDetails(
       "Days Selected",
       "nights per week (num)",
       "proposal nightly price",
-      Status
+      proposal_workflow_status
     `)
-    .eq('_id', proposalId)
+    .eq('id', proposalId)
     .single();
 
   if (proposalError || !proposalData) {
@@ -104,12 +104,12 @@ async function fetchProposalDetails(
   }
 
   // Fetch the proposal's listing for comparison
-  const listingInfo = await fetchListingInfo(supabase, proposalData.Listing);
+  const listingInfo = await fetchListingInfo(supabase, proposalData.listing_id);
 
   return {
-    id: proposalData._id,
+    id: proposalData.id,
     guest: {
-      id: proposalData.Guest || '',
+      id: proposalData.guest_user_id || '',
       firstName: null,
       lastName: null,
       fullName: null,
@@ -121,7 +121,7 @@ async function fetchProposalDetails(
     nightlyPrice: proposalData['proposal nightly price'] || 0,
     moveInStart: proposalData['Move in range start'],
     moveInEnd: proposalData['Move in range end'],
-    status: proposalData.Status,
+    status: proposalData.proposal_workflow_status,
     reservationWeeks: proposalData['Reservation Span (Weeks)'],
   };
 }
@@ -139,9 +139,9 @@ async function fetchAndScoreCandidates(
   let query = supabase
     .from('listing')
     .select(`
-      _id,
+      id,
       Name,
-      "Host User",
+      host_user_id,
       "Location - Borough",
       "Location - Hood",
       "Location - Address",
@@ -166,7 +166,7 @@ async function fetchAndScoreCandidates(
 
   // Exclude the proposal's original listing
   if (proposal.listing.id) {
-    query = query.neq('_id', proposal.listing.id);
+    query = query.neq('id', proposal.listing.id);
   }
 
   // Apply borough filter if specified
@@ -192,7 +192,7 @@ async function fetchAndScoreCandidates(
   // Collect unique host IDs for batch fetching
   const hostIds = [...new Set(
     listingsData
-      .map((l: ListingRow) => l['Host User'])
+      .map((l: ListingRow) => l.host_user_id)
       .filter((id): id is string => id !== null)
   )];
 
@@ -220,7 +220,7 @@ async function fetchAndScoreCandidates(
 
   for (const listingRow of listingsData as ListingRow[]) {
     const listing = transformListing(listingRow, boroughNamesMap, hoodNamesMap);
-    const host = hostsMap.get(listingRow['Host User'] || '') || createEmptyHost();
+    const host = hostsMap.get(listingRow.host_user_id || '') || createEmptyHost();
 
     const { score, breakdown } = calculateMatchScore(listing, proposal, host);
     const tier = getMatchTier(score);
@@ -285,7 +285,7 @@ async function fetchListingInfo(
   const { data, error } = await supabase
     .from('listing')
     .select(`
-      _id,
+      id,
       Name,
       "Location - Borough",
       "Location - Hood",
@@ -305,7 +305,7 @@ async function fetchListingInfo(
       "damage_deposit",
       Active
     `)
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (error || !data) {
@@ -318,7 +318,7 @@ async function fetchListingInfo(
     const { data: boroughData } = await supabase
       .from('zat_geo_borough_toplevel')
       .select('Display')
-      .eq('_id', data['Location - Borough'])
+      .eq('id', data['Location - Borough'])
       .single();
     boroughName = boroughData?.Display || data['Location - Borough'];
   }
@@ -329,7 +329,7 @@ async function fetchListingInfo(
     const { data: hoodData } = await supabase
       .from('zat_geo_hood_mediumlevel')
       .select('Display')
-      .eq('_id', data['Location - Hood'])
+      .eq('id', data['Location - Hood'])
       .single();
     hoodName = hoodData?.Display || data['Location - Hood'];
   }
@@ -353,14 +353,14 @@ async function fetchHostsMap(
   const { data, error } = await supabase
     .from('user')
     .select(`
-      _id,
-      "Name - First",
-      "Name - Full",
+      id,
+      first_name,
+      last_name,
       "Verify - Linked In ID",
       "Verify - Phone",
       "user verified?"
     `)
-    .in('_id', hostIds);
+    .in('id', hostIds);
 
   if (error || !data) {
     console.warn('[quick-match:search_candidates] Failed to fetch hosts:', error);
@@ -369,10 +369,10 @@ async function fetchHostsMap(
 
   const hostsMap = new Map<string, HostInfo>();
   for (const user of data as UserRow[]) {
-    hostsMap.set(user._id, {
-      id: user._id,
-      firstName: user['Name - First'],
-      fullName: user['Name - Full'],
+    hostsMap.set(user.id, {
+      id: user.id,
+      firstName: user.first_name,
+      fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || null,
       linkedInVerified: user['Verify - Linked In ID'] ?? false,
       phoneVerified: user['Verify - Phone'] ?? false,
       userVerified: user['user verified?'] ?? false,
@@ -393,8 +393,8 @@ async function fetchBoroughNamesMap(
 
   const { data, error } = await supabase
     .from('zat_geo_borough_toplevel')
-    .select('_id, Display')
-    .in('_id', boroughIds);
+    .select('id, Display')
+    .in('id', boroughIds);
 
   if (error || !data) {
     return new Map();
@@ -402,7 +402,7 @@ async function fetchBoroughNamesMap(
 
   const map = new Map<string, string>();
   for (const row of data) {
-    map.set(row._id, row.Display);
+    map.set(row.id, row.Display);
   }
   return map;
 }
@@ -418,8 +418,8 @@ async function fetchHoodNamesMap(
 
   const { data, error } = await supabase
     .from('zat_geo_hood_mediumlevel')
-    .select('_id, Display')
-    .in('_id', hoodIds);
+    .select('id, Display')
+    .in('id', hoodIds);
 
   if (error || !data) {
     return new Map();
@@ -427,7 +427,7 @@ async function fetchHoodNamesMap(
 
   const map = new Map<string, string>();
   for (const row of data) {
-    map.set(row._id, row.Display);
+    map.set(row.id, row.Display);
   }
   return map;
 }
@@ -451,7 +451,7 @@ function transformListing(
   };
 
   return {
-    id: row._id,
+    id: row.id,
     title: row.Name,
     borough: row['Location - Borough'],
     boroughName: boroughNamesMap.get(row['Location - Borough'] || '') || row['Location - Borough'],

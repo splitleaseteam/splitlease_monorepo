@@ -39,7 +39,7 @@ export async function handleListArticles(
   // Build query
   let query = supabase
     .from('knowledge_article')
-    .select('_id, page_headline, page_headline_subtext, category, created_at, updated_at', { count: 'exact' });
+    .select('id, page_headline, page_headline_subtext, category, created_at, updated_at', { count: 'exact' });
 
   if (category) {
     query = query.eq('category', category);
@@ -57,7 +57,7 @@ export async function handleListArticles(
 
   const total = count || 0;
   const articles: ArticleItem[] = (data || []).map(a => ({
-    id: a._id,
+    id: a.id,
     pageHeadline: a.page_headline,
     pageHeadlineSubtext: a.page_headline_subtext,
     category: a.category,

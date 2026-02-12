@@ -83,7 +83,7 @@ export default function ModifyListingsPage() {
             <div className="modify-listings-page__search-results">
               {logic.searchResults.map(result => (
                 <button
-                  key={result._id}
+                  key={result.id}
                   onClick={() => logic.selectSearchResult(result)}
                   className="modify-listings-page__search-result-item"
                 >

@@ -30,8 +30,8 @@ export const handleDelete = async (
       status: 'cancelled',
       'Modified Date': new Date().toISOString(),
     })
-    .eq('_id', payload.reminderId)
-    .select('_id')
+    .eq('id', payload.reminderId)
+    .select('id')
     .single();
 
   if (error) {

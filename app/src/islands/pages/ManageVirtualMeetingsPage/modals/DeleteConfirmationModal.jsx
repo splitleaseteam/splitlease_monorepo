@@ -14,7 +14,7 @@ export default function DeleteConfirmationModal({
   const formatted = useMemo(() => formatMeetingForDisplay(meeting), [meeting]);
 
   const handleConfirm = () => {
-    onConfirm(meeting._id || meeting.id);
+    onConfirm(meeting.id);
   };
 
   return (

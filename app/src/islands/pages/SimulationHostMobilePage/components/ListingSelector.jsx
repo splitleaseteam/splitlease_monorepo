@@ -19,13 +19,13 @@ export default function ListingSelector({ listings, selectedListing, onSelect })
 
       <div className="simulation-host-listing-selector__grid">
         {listings.map((listing) => {
-          const isSelected = selectedListing?._id === listing._id;
+          const isSelected = selectedListing?.id === listing.id;
           const name = listing.listing_title || listing['Name'] || 'Unnamed Listing';
           const address = listing['Primary Address'] || '';
 
           return (
             <button
-              key={listing._id}
+              key={listing.id}
               className={`simulation-host-listing-card ${isSelected ? 'simulation-host-listing-card--selected' : ''}`}
               onClick={() => onSelect(listing)}
             >

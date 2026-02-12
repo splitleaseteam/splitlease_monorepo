@@ -12,7 +12,7 @@
  *
  * @example
  * adaptProposalForMatching({
- *   _id: 'prop123',
+ *   id: 'prop123',
  *   'Days Selected': [1, 2, 3, 4],
  *   'nights per week (num)': 4,
  *   'proposal nightly price': 100,
@@ -59,8 +59,7 @@ export function adaptProposalForMatching(rawProposal) {
 
   return {
     // Core identifier
-    id: rawProposal._id || rawProposal.id,
-    _id: rawProposal._id || rawProposal.id,
+    id: rawProposal.id,
 
     // Schedule
     daysSelected,
@@ -82,7 +81,7 @@ export function adaptProposalForMatching(rawProposal) {
 
     // Listing context (for borough matching)
     listing: {
-      id: listingData.id || listingData._id || rawProposal.Listing || null,
+      id: listingData.id || rawProposal.Listing || null,
       boroughName: listingBorough,
       borough: listingBorough,
       'Location - Borough': listingBorough,

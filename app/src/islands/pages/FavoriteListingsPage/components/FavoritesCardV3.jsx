@@ -269,8 +269,8 @@ const FavoritesCardV3 = ({
 
   const handleViewProposal = (e) => {
     e.stopPropagation();
-    if (proposalForListing?._id) {
-      window.location.href = `/proposal?id=${proposalForListing._id}`;
+    if (proposalForListing?.id) {
+      window.location.href = `/proposal?id=${proposalForListing.id}`;
     }
   };
 
@@ -657,7 +657,7 @@ function generateAIInsight(listing) {
 export default memo(FavoritesCardV3, (prevProps, nextProps) => {
   return (
     prevProps.listing?.id === nextProps.listing?.id &&
-    prevProps.proposalForListing?._id === nextProps.proposalForListing?._id &&
+    prevProps.proposalForListing?.id === nextProps.proposalForListing?.id &&
     prevProps.userId === nextProps.userId
   );
 });

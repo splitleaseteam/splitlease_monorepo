@@ -61,8 +61,8 @@ export async function handleRequestChange(
   // Verify document exists
   const { data: document, error: docError } = await supabase
     .from('documentssent')
-    .select('_id, "Document sent title"')
-    .eq('_id', document_id)
+    .select('id, "Document sent title"')
+    .eq('id', document_id)
     .single();
 
   if (docError || !document) {
@@ -89,7 +89,7 @@ export async function handleRequestChange(
   const { data: createdRequest, error: createError } = await supabase
     .from('document_change_request')
     .insert(changeRequest)
-    .select('_id')
+    .select('id')
     .single();
 
   if (createError) {
@@ -97,7 +97,7 @@ export async function handleRequestChange(
     throw new Error(`Failed to create change request: ${createError.message}`);
   }
 
-  const requestId = createdRequest._id;
+  const requestId = createdRequest.id;
 
   console.log('[document/requestChange] Created request:', requestId);
 

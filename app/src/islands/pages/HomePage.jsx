@@ -423,12 +423,12 @@ function FeaturedSpacesSection() {
         const { data, error } = await supabase
           .schema('reference_table')
           .from('zat_geo_borough_toplevel')
-          .select('_id, "Display Borough"')
+          .select('id, "Display Borough"')
           .ilike('"Display Borough"', 'Manhattan')
           .single();
 
         if (error) throw error;
-        if (data) setManhattanId(data._id);
+        if (data) setManhattanId(data.id);
       } catch (err) {
         console.error('Failed to load Manhattan borough:', err);
       }

@@ -83,7 +83,7 @@ export default function ProposalSelector({ proposals, selectedId, onSelect, coun
       <div className="proposal-list">
         {proposals.map((proposal) => {
           // Find full proposal data for additional info
-          const fullProposal = fullProposals.find(p => p._id === proposal.id) || {};
+          const fullProposal = fullProposals.find(p => p.id === proposal.id) || {};
           const listing = fullProposal.listing || {};
           const status = fullProposal.Status || '';
           const daysSelected = fullProposal['Days Selected'] || [];

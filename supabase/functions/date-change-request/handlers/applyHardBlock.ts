@@ -54,8 +54,8 @@ export async function handleApplyHardBlock(
 
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
-    .select('_id, "Guest", "Host"')
-    .eq('_id', leaseId)
+    .select('id, "Guest", "Host"')
+    .eq('id', leaseId)
     .single();
 
   if (leaseError) {
@@ -94,7 +94,7 @@ export async function handleApplyHardBlock(
       [abilityField]: false,
       [blockedAtField]: blockedAt,
     })
-    .eq('_id', leaseId);
+    .eq('id', leaseId);
 
   if (updateError) {
     console.error(`[date-change-request:apply_hard_block] Update failed:`, updateError);

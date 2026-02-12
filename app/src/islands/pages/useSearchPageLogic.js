@@ -296,14 +296,14 @@ export function useSearchPageLogic() {
       const { data, error } = await supabase
         .from('pricing_list')
         .select('*')
-        .in('_id', pricingListIds)
+        .in('id', pricingListIds)
 
       if (error) throw error
 
       const pricingListMap = {}
-      ;(data || []).forEach((pricingList) => {
-        pricingListMap[pricingList._id] = adaptPricingListFromSupabase(pricingList)
-      })
+        ; (data || []).forEach((pricingList) => {
+          pricingListMap[pricingList.id] = adaptPricingListFromSupabase(pricingList)
+        })
 
       return pricingListMap
     } catch (error) {
@@ -345,7 +345,7 @@ export function useSearchPageLogic() {
         .from('listing')
         .select('*')
         .eq('is_listing_profile_complete', true)
-        .not('is_active', 'is', false)
+        .eq('is_active', true)
         .eq('is_deleted', false)
         .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
 
@@ -496,7 +496,7 @@ export function useSearchPageLogic() {
         .from('listing')
         .select('*')
         .eq('is_listing_profile_complete', true)
-        .not('is_active', 'is', false)
+        .eq('is_active', true)
         .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
         .not('photos_with_urls_captions_and_sort_order_json', 'is', null)
         .order('original_updated_at', { ascending: false })
@@ -643,7 +643,7 @@ export function useSearchPageLogic() {
         const boroughList = data
           .filter((b) => b['Display Borough'] && b['Display Borough'].trim())
           .map((b) => ({
-            id: b._id,
+            id: b.id,
             name: b['Display Borough'].trim(),
             value: b['Display Borough']
               .trim()
@@ -703,7 +703,7 @@ export function useSearchPageLogic() {
         const neighborhoodList = data
           .filter((n) => n.Display && n.Display.trim())
           .map((n) => ({
-            id: n._id,
+            id: n.id,
             name: n.Display.trim(),
             boroughId: n['Geo-Borough']
           }))

@@ -167,8 +167,8 @@ function _toDbColumns(jsData: Record<string, unknown>): Record<string, unknown> 
     const dbCol = COLUMN_MAP[jsKey as keyof typeof COLUMN_MAP];
     if (dbCol) {
       dbData[dbCol] = value;
-    } else if (jsKey === '_id') {
-      dbData['_id'] = value;
+    } else if (jsKey === 'id') {
+      dbData['id'] = value;
     }
   }
   return dbData;
@@ -184,7 +184,7 @@ function toJsKeys(dbRow: Record<string, unknown>): Record<string, unknown> {
     if (jsKey) {
       jsData[jsKey] = value;
     } else {
-      // Pass through unmapped columns as-is (_id, created_at, updated_at, etc.)
+      // Pass through unmapped columns as-is (id, created_at, updated_at, etc.)
       jsData[dbCol] = value;
     }
   }
@@ -254,7 +254,7 @@ async function handleGet(
   const { data, error } = await supabase
     .from('informationaltexts')
     .select('*')
-    .eq('_id', id)
+    .eq('id', id)
     .single();
 
   if (error) {
@@ -296,7 +296,7 @@ async function handleCreate(
   // Check for duplicate tag title
   const { data: existing } = await supabase
     .from('informationaltexts')
-    .select('_id')
+    .select('id')
     .eq('Information Tag-Title', tagTitle.trim())
     .maybeSingle();
 
@@ -306,7 +306,7 @@ async function handleCreate(
 
   const now = new Date().toISOString();
   const newEntry = {
-    '_id': generateId(),
+    'id': generateId(),
     'Information Tag-Title': tagTitle.trim(),
     'Desktop copy': desktop,
     'Desktop+ copy': desktopPlus || null,
@@ -370,9 +370,9 @@ async function handleUpdate(
     // Check for duplicate if changing tag title
     const { data: existing } = await supabase
       .from('informationaltexts')
-      .select('_id')
+      .select('id')
       .eq('Information Tag-Title', tagTitle.trim())
-      .neq('_id', id)
+      .neq('id', id)
       .maybeSingle();
 
     if (existing) {
@@ -411,7 +411,7 @@ async function handleUpdate(
   const { data, error } = await supabase
     .from('informationaltexts')
     .update(updateData)
-    .eq('_id', id)
+    .eq('id', id)
     .select()
     .single();
 
@@ -442,8 +442,8 @@ async function handleDelete(
   // Verify entry exists
   const { data: existing, error: fetchError } = await supabase
     .from('informationaltexts')
-    .select('_id, "Information Tag-Title"')
-    .eq('_id', id)
+    .select('id, "Information Tag-Title"')
+    .eq('id', id)
     .single();
 
   if (fetchError || !existing) {
@@ -453,7 +453,7 @@ async function handleDelete(
   const { error: deleteError } = await supabase
     .from('informationaltexts')
     .delete()
-    .eq('_id', id);
+    .eq('id', id);
 
   if (deleteError) {
     console.error('[informational-texts] Delete error:', deleteError);

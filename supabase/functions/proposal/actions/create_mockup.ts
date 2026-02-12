@@ -46,14 +46,13 @@ import { triggerProposalMessaging } from "../../_shared/queueSync.ts";
 // ─────────────────────────────────────────────────────────────
 
 interface MockGuestData {
-  _id: string;
+  id: string;
   email: string;
   "About Me / Bio"?: string;
   "need for Space"?: string;
   "special needs"?: string;
   "About - reasons to host me"?: string;
-  "Rental Application"?: string;
-  "Proposals List"?: string[];
+  rental_application_form_id?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -87,14 +86,13 @@ export async function handleCreateMockup(
       .from("user")
       .select(
         `
-        _id,
+        id,
         email,
         "About Me / Bio",
         "need for Space",
         "special needs",
         "About - reasons to host me",
-        "Rental Application",
-        "Proposals List"
+        rental_application_form_id
       `
       )
       .eq("email", MOCK_GUEST_EMAIL)
@@ -109,7 +107,7 @@ export async function handleCreateMockup(
     }
 
     const guestData = mockGuest as MockGuestData;
-    console.log("[proposal:create_mockup] Mock guest found:", guestData._id);
+    console.log("[proposal:create_mockup] Mock guest found:", guestData.id);
 
     // ─────────────────────────────────────────────────────────
     // Step 2: Fetch listing data
@@ -120,28 +118,27 @@ export async function handleCreateMockup(
       .from("listing")
       .select(
         `
-        _id,
-        "Name",
-        "rental type",
-        "Host User",
-        "Days Available (List of Days)",
-        "Nights Available (List of Nights) ",
-        "weekly_host_rate",
-        "monthly_host_rate",
-        "nightly_rate_2_nights",
-        "nightly_rate_3_nights",
-        "nightly_rate_4_nights",
-        "nightly_rate_5_nights",
-        "nightly_rate_6_nights",
-        "nightly_rate_7_nights",
-        "cleaning_fee",
-        "damage_deposit",
-        "Features - House Rules",
-        "Location - Address",
-        "Location - slightly different address"
+        id,
+        listing_title,
+        rental_type,
+        host_user_id,
+        available_days_as_day_numbers_json,
+        available_nights_as_day_numbers_json,
+        weekly_rate_paid_to_host,
+        monthly_rate_paid_to_host,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay,
+        cleaning_fee_amount,
+        damage_deposit_amount,
+        house_rule_reference_ids_json,
+        address_with_lat_lng_json,
+        map_pin_offset_address_json
       `
       )
-      .eq("_id", listingId)
+      .eq("id", listingId)
       .single();
 
     if (listingError || !listing) {
@@ -153,7 +150,7 @@ export async function handleCreateMockup(
     }
 
     const listingData = listing as unknown as ListingData;
-    const rentalType = listingData["rental type"] || "nightly";
+    const rentalType = listingData.rental_type || "nightly";
     console.log("[proposal:create_mockup] Rental type:", rentalType);
 
     // ─────────────────────────────────────────────────────────
@@ -161,8 +158,8 @@ export async function handleCreateMockup(
     // ─────────────────────────────────────────────────────────
     console.log("[proposal:create_mockup] Step 2.5: Getting host user ID...");
 
-    // Host User column contains user._id directly
-    const resolvedHostUserId = listingData["Host User"] || hostUserId;
+    // host_user_id column contains user.id directly
+    const resolvedHostUserId = listingData.host_user_id || hostUserId;
     console.log("[proposal:create_mockup] Host User ID:", resolvedHostUserId);
 
     // ─────────────────────────────────────────────────────────
@@ -229,10 +226,10 @@ export async function handleCreateMockup(
       rentalTypeLower,
       reservationSpan as ReservationSpan,
       nightsPerWeek,
-      listingData["weekly_host_rate"] || 0,
+      listingData.weekly_rate_paid_to_host || 0,
       hostNightlyRate,
       reservationSpanWeeks,
-      listingData["monthly_host_rate"] || 0,
+      listingData.monthly_rate_paid_to_host || 0,
       avgDaysPerMonth
     );
 
@@ -267,7 +264,7 @@ export async function handleCreateMockup(
 
     // Calculate complementary nights
     const availableNights = parseJsonArray<number>(
-      listingData["Nights Available (List of Nights) "],
+      listingData.available_nights_as_day_numbers_json,
       "Nights Available"
     );
     const complementaryNights = calculateComplementaryNights(
@@ -277,88 +274,88 @@ export async function handleCreateMockup(
 
     // Get available days for proposal
     const availableDays = parseJsonArray<number>(
-      listingData["Days Available (List of Days)"],
+      listingData.available_days_as_day_numbers_json,
       "Days Available"
     );
 
     const proposalData: Record<string, unknown> = {
-      _id: proposalId,
+      id: proposalId,
 
       // Core relationships
-      Listing: listingId,
-      Guest: guestData._id,
-      "Host User": resolvedHostUserId,
-      "Created By": guestData._id,
+      listing_id: listingId,
+      guest_user_id: guestData.id,
+      host_user_id: resolvedHostUserId,
+      created_by_user_id: guestData.id,
 
       // Guest info (from mock guest)
-      "Guest email": guestData.email,
-      "Guest flexibility": "Flexible",
-      "preferred gender": "any",
-      "need for space":
+      guest_email_address: guestData.email,
+      guest_schedule_flexibility_text: "Flexible",
+      preferred_roommate_gender: "any",
+      guest_stated_need_for_space:
         guestData["need for Space"] ||
         "Looking for a comfortable place to stay",
       about_yourself: guestData["About Me / Bio"] || "Split Lease Demo Guest",
       special_needs: guestData["special needs"] || null,
-      Comment: generateMockupComment(guestData["About - reasons to host me"]),
+      guest_introduction_message: generateMockupComment(guestData["About - reasons to host me"]),
 
       // Dates
-      "Move in range start": moveInStart.toISOString(),
-      "Move in range end": moveInEnd.toISOString(),
-      "Move-out": moveOutDate.toISOString(),
+      move_in_range_start_date: moveInStart.toISOString(),
+      move_in_range_end_date: moveInEnd.toISOString(),
+      planned_move_out_date: moveOutDate.toISOString(),
       "move-in range (text)": `${moveInStart.toLocaleDateString(
         "en-US"
       )} - ${moveInEnd.toLocaleDateString("en-US")}`,
 
       // Duration
-      "Reservation Span": reservationSpan,
-      "Reservation Span (Weeks)": reservationSpanWeeks,
-      "actual weeks during reservation span": reservationSpanWeeks,
-      "duration in months": compensation.duration_months,
+      reservation_span_text: reservationSpan,
+      reservation_span_in_weeks: reservationSpanWeeks,
+      actual_weeks_in_reservation_span: reservationSpanWeeks,
+      stay_duration_in_months: compensation.duration_months,
 
       // Day/Night selection (0-indexed JS format)
-      "Days Selected": daysSelected,
-      "Nights Selected (Nights list)": nightsSelected,
-      "nights per week (num)": nightsPerWeek,
-      "check in day": checkIn,
-      "check out day": checkOut,
-      "Days Available": availableDays.length > 0 ? availableDays : daysSelected,
-      "Complementary Nights": complementaryNights,
+      guest_selected_days_numbers_json: daysSelected,
+      guest_selected_nights_numbers_json: nightsSelected,
+      nights_per_week_count: nightsPerWeek,
+      checkin_day_of_week_number: checkIn,
+      checkout_day_of_week_number: checkOut,
+      available_days_of_week_numbers_json: availableDays.length > 0 ? availableDays : daysSelected,
+      complimentary_free_nights_numbers_json: complementaryNights,
 
       // Pricing - Uses shared calculateCompensation() results
       // host_compensation_per_night is the HOST'S per-period rate (monthly rate for monthly, etc.)
-      "proposal nightly price": hostNightlyRate,
-      "4 week rent": compensation.four_week_rent,
-      "Total Price for Reservation (guest)": compensation.total_compensation,
-      "Total Compensation (proposal - host)": compensation.total_compensation,
-      "host compensation": compensation.host_compensation_per_night,
-      "4 week compensation": compensation.four_week_compensation,
-      "cleaning fee":
-        listingData["cleaning_fee"] || 0,
-      "damage deposit": listingData["damage_deposit"] || 0,
-      "nightly price for map (text)": formatPriceForDisplay(hostNightlyRate),
+      calculated_nightly_price: hostNightlyRate,
+      four_week_rent_amount: compensation.four_week_rent,
+      total_reservation_price_for_guest: compensation.total_compensation,
+      total_compensation_for_host: compensation.total_compensation,
+      host_compensation_per_period: compensation.host_compensation_per_night,
+      four_week_host_compensation: compensation.four_week_compensation,
+      cleaning_fee_amount:
+        listingData.cleaning_fee_amount || 0,
+      damage_deposit_amount: listingData.damage_deposit_amount || 0,
+      nightly_price_for_map_display_text: formatPriceForDisplay(hostNightlyRate),
 
       // From listing
-      "rental type": rentalType,
-      "House Rules": listingData["Features - House Rules"],
-      "Location - Address": listingData["Location - Address"],
-      "Location - Address slightly different":
-        listingData["Location - slightly different address"],
+      rental_type: rentalType,
+      house_rules_reference_ids_json: listingData.house_rule_reference_ids_json,
+      listing_address_with_coordinates_json: listingData.address_with_lat_lng_json,
+      listing_map_pin_offset_address_json:
+        listingData.map_pin_offset_address_json,
 
       // Status & metadata
-      Status: "Host Review",
-      "Order Ranking": 1,
-      History: [historyEntry],
-      "Is Finalized": false,
-      Deleted: false,
+      proposal_workflow_status: "Host Review",
+      display_sort_order: 1,
+      proposal_event_log_json: [historyEntry],
+      is_finalized: false,
+      is_deleted: false,
 
       // Related records
-      "rental application": guestData["Rental Application"],
-      "rental app requested": false,
-      "host email": hostEmail,
+      rental_application_id: guestData.rental_application_form_id,
+      is_rental_application_requested: false,
+      host_email_address: hostEmail,
 
       // Timestamps
-      "Created Date": now,
-      "Modified Date": now,
+      created_at: now,
+      updated_at: now,
     };
 
     // ─────────────────────────────────────────────────────────
@@ -385,8 +382,8 @@ export async function handleCreateMockup(
 
     const { data: hostUser, error: hostUserError } = await supabase
       .from("user")
-      .select('_id, "Proposals List"')
-      .eq("_id", resolvedHostUserId)
+      .select('id')
+      .eq("id", resolvedHostUserId)
       .single();
 
     if (hostUserError || !hostUser) {
@@ -394,27 +391,20 @@ export async function handleCreateMockup(
         "[proposal:create_mockup] Host user not found for Proposals List update"
       );
     } else {
-      const currentProposals = parseJsonArray<string>(
-        hostUser["Proposals List"],
-        "Host Proposals List"
-      );
-      const updatedProposals = [...currentProposals, proposalId];
-
       const { error: updateError } = await supabase
         .from("user")
         .update({
-          "Proposals List": updatedProposals,
-          "Modified Date": now,
+          updated_at: now,
         })
-        .eq("_id", resolvedHostUserId);
+        .eq("id", resolvedHostUserId);
 
       if (updateError) {
         console.warn(
-          "[proposal:create_mockup] Failed to update host Proposals List:",
+          "[proposal:create_mockup] Failed to update host user:",
           updateError
         );
       } else {
-        console.log("[proposal:create_mockup] Host Proposals List updated");
+        console.log("[proposal:create_mockup] Host user updated");
       }
 
       // Dual-write to junction table
@@ -430,7 +420,7 @@ export async function handleCreateMockup(
 
     triggerProposalMessaging({
       proposalId: proposalId,
-      guestId: guestData._id,
+      guestId: guestData.id,
       hostId: resolvedHostUserId,
       listingId: listingId,
       proposalStatus: "Host Review",

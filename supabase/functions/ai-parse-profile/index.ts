@@ -162,7 +162,7 @@ async function matchBoroughId(
   const { data, error } = await supabase
     .schema('reference_table')
     .from('zat_geo_borough_toplevel')
-    .select('_id')
+    .select('id')
     .ilike('"Display Borough"', `%${firstBorough}%`)
     .limit(1)
     .maybeSingle();
@@ -172,7 +172,7 @@ async function matchBoroughId(
     return null;
   }
 
-  return data?._id || null;
+  return data?.id || null;
 }
 
 async function matchHoodIds(
@@ -187,13 +187,13 @@ async function matchHoodIds(
     const { data, error } = await supabase
       .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('_id')
+      .select('id')
       .ilike('"Display"', `%${hoodName}%`)
       .limit(1)
       .maybeSingle();
 
-    if (!error && data?._id) {
-      matchedIds.push(data._id);
+    if (!error && data?.id) {
+      matchedIds.push(data.id);
     }
   }
 
@@ -241,7 +241,7 @@ async function findAndFavoriteMatchingListings(
   // Build query based on user preferences
   let query = supabase
     .from('listing')
-    .select('_id, "Name", "Location - Borough", "Location - Hood"')
+    .select('id, "Name", "Location - Borough", "Location - Hood"')
     .eq('"Active"', true)
     .eq('"Approved"', true);
 
@@ -270,14 +270,14 @@ async function findAndFavoriteMatchingListings(
     return [];
   }
 
-  const listingIds = listings.map((l: { _id: string }) => l._id);
+  const listingIds = listings.map((l: { id: string }) => l.id);
   console.log('[ai-parse-profile] Found', listingIds.length, 'matching listings');
 
   // Get current favorites
   const { data: userData, error: userError } = await supabase
     .from('user')
     .select('"Favorited Listings"')
-    .eq('_id', userId)
+    .eq('id', userId)
     .single();
 
   if (userError) {
@@ -307,7 +307,7 @@ async function findAndFavoriteMatchingListings(
   const { error: updateError } = await supabase
     .from('user')
     .update({ 'Favorited Listings': newFavorites })
-    .eq('_id', userId);
+    .eq('id', userId);
 
   if (updateError) {
     console.error('[ai-parse-profile] Error updating favorites:', updateError);
@@ -456,7 +456,7 @@ async function processJob(
     const userUpdate: Record<string, unknown> = {
       'freeform ai signup text': job.freeform_text,
       'freeform ai signup text (chatgpt generation)': gptResponse.content,
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     if (extractedData.biography) {
@@ -475,10 +475,18 @@ async function processJob(
       userUpdate['credit score'] = extractedData.creditScore;
     }
     if (extractedData.lastName) {
-      userUpdate['Name - Last'] = extractedData.lastName;
+      userUpdate.last_name = extractedData.lastName;
     }
     if (extractedData.fullName) {
-      userUpdate['Name - Full'] = extractedData.fullName;
+      const fullNameParts = extractedData.fullName.trim().split(/\s+/).filter(Boolean);
+      if (fullNameParts.length > 1) {
+        if (!userUpdate.first_name) {
+          userUpdate.first_name = fullNameParts.slice(0, -1).join(' ');
+        }
+        if (!userUpdate.last_name) {
+          userUpdate.last_name = fullNameParts[fullNameParts.length - 1];
+        }
+      }
     }
     if (extractedData.transportationMedium) {
       userUpdate['transportation medium'] = extractedData.transportationMedium;
@@ -519,7 +527,7 @@ async function processJob(
     const { error: updateError } = await supabase
       .from('user')
       .update(userUpdate)
-      .eq('_id', job.user_id);
+      .eq('id', job.user_id);
 
     if (updateError) {
       throw new Error(`Failed to update user: ${updateError.message}`);

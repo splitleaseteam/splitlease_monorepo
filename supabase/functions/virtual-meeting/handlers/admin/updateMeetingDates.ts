@@ -38,8 +38,8 @@ export async function handleAdminUpdateMeetingDates(
   // Verify meeting exists and is still pending
   const { data: existing, error: _checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("_id, booked_date, status")
-    .eq("_id", payload.meetingId)
+    .select("id, booked_date, status")
+    .eq("id", payload.meetingId)
     .single();
 
   if (checkError || !existing) {
@@ -57,14 +57,14 @@ export async function handleAdminUpdateMeetingDates(
       suggested_dates_and_times: payload.suggestedDates,
       modified_date: new Date().toISOString()
     })
-    .eq("_id", payload.meetingId)
+    .eq("id", payload.meetingId)
     .select(`
       *,
       guest:users!virtualmeetingschedulesandlinks_guest_fkey(
-        id, _id, name_first, name_last, email, phone_number, profile_photo_url, timezone
+        id, name_first, name_last, email, phone_number, profile_photo_url, timezone
       ),
       host:users!virtualmeetingschedulesandlinks_host_fkey(
-        id, _id, name_first, name_last, email, phone_number, profile_photo_url, timezone
+        id, name_first, name_last, email, phone_number, profile_photo_url, timezone
       )
     `)
     .single();

@@ -32,7 +32,7 @@ export function useDocumentChangeRequestLogic({
         // Filter for draft/pending documents (adjust filter as needed)
         const { data, error: fetchError } = await supabase
           .from('documentssent')
-          .select('_id, "Document sent title"')
+          .select('id, "Document sent title"')
           .order('Created Date', { ascending: false });
 
         if (fetchError) {
@@ -40,7 +40,7 @@ export function useDocumentChangeRequestLogic({
         }
 
         const formattedDocs = (data || []).map((doc) => ({
-          id: doc._id,
+          id: doc.id,
           title: doc['Document sent title'] || 'Untitled Document',
         }));
 

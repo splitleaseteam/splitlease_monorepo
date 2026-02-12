@@ -42,7 +42,7 @@ async function getBoroughIdByZipCode(zipCode) {
     }
 
     logger.debug('[ListingService] ✅ Found borough:', data['Display Borough'], 'for zip:', cleanZip);
-    return data._id;
+    return data.id;
   } catch (err) {
     logger.error('[ListingService] Error looking up borough:', err);
     return null;
@@ -75,7 +75,7 @@ async function getHoodIdByZipCode(zipCode) {
     }
 
     logger.debug('[ListingService] ✅ Found hood:', data['Display'], 'for zip:', cleanZip);
-    return data._id;
+    return data.id;
   } catch (err) {
     logger.error('[ListingService] Error looking up hood:', err);
     return null;

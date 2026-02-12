@@ -105,8 +105,8 @@ export default function ZScheduleTestPage() {
             >
               <option value="">Select listing</option>
               {listings.map((listing) => (
-                <option key={listing._id} value={listing._id}>
-                  {listing.listing_title || listing._id}
+                <option key={listing.id} value={listing.id}>
+                  {listing.listing_title || listing.id}
                 </option>
               ))}
             </select>

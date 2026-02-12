@@ -46,7 +46,7 @@ function formatDistanceToNow(date) {
 function getStatusBannerConfig(proposal) {
   const status = typeof proposal?.status === 'string'
     ? proposal.status
-    : (proposal?.status?.id || proposal?.status?._id || '');
+    : (proposal?.status?.id || '');
 
   const submittedAt = proposal?.created_at || proposal?.Created_Date;
   const timeAgo = submittedAt ? formatDistanceToNow(new Date(submittedAt)) : '';

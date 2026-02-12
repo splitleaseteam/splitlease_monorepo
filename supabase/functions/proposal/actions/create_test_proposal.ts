@@ -60,23 +60,23 @@ export async function handleCreateTestProposal(
   const { data: proposal, error } = await supabase
     .from('proposal')
     .insert({
-      Guest: guestId,
-      Listing: listingId,
-      'Host User': hostId,
-      'Move in range start': moveInStart,
-      'Move in range end': moveInEnd,
-      'Move-out': moveOut,
-      'nights per week (num)': nightsPerWeek,
-      'check in day': checkInDay,
-      'check out day': checkOutDay,
-      'Days Selected': daysSelected,
-      'proposal nightly price': nightlyPrice,
-      Status: 'Host Review',
-      'Created Date': new Date().toISOString(),
+      guest_user_id: guestId,
+      listing_id: listingId,
+      host_user_id: hostId,
+      move_in_range_start_date: moveInStart,
+      move_in_range_end_date: moveInEnd,
+      planned_move_out_date: moveOut,
+      nights_per_week_count: nightsPerWeek,
+      checkin_day_of_week_number: checkInDay,
+      checkout_day_of_week_number: checkOutDay,
+      guest_selected_days_numbers_json: daysSelected,
+      calculated_nightly_price: nightlyPrice,
+      proposal_workflow_status: 'Host Review',
+      created_at: new Date().toISOString(),
       'is_usability_test': true, // Mark as test data
-      Comment: 'Test proposal created for usability simulation'
+      guest_introduction_message: 'Test proposal created for usability simulation'
     })
-    .select('_id')
+    .select('id')
     .single();
 
   if (error) {
@@ -84,7 +84,7 @@ export async function handleCreateTestProposal(
     throw new Error(`Failed to create test proposal: ${error.message}`);
   }
 
-  console.log('[create_test_proposal] Created proposal:', proposal._id);
+  console.log('[create_test_proposal] Created proposal:', proposal.id);
 
-  return { proposalId: proposal._id };
+  return { proposalId: proposal.id };
 }

@@ -125,8 +125,8 @@ export default function ZEmailsUnitPage() {
             >
               <option value="">Select a template</option>
               {templates.map((template) => (
-                <option key={template._id} value={template._id}>
-                  {template.Name || template.Description || template._id}
+                <option key={template.id} value={template.id}>
+                  {template.Name || template.Description || template.id}
                 </option>
               ))}
             </select>

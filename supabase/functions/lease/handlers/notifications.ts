@@ -19,7 +19,7 @@ import {
 } from '../../_shared/notificationHelpers.ts';
 
 interface UserData {
-  _id: string;
+  id: string;
   email: string;
   'First Name'?: string;
   'Cell phone number'?: string;
@@ -51,16 +51,16 @@ export async function sendLeaseNotifications(
   // Fetch user data (preferences are now in separate notification_preferences table)
   const { data: users, error: usersError } = await supabase
     .from('user')
-    .select('_id, email, "First Name", "Cell phone number"')
-    .in('_id', [guestId, hostId]);
+    .select('id, email, "First Name", "Cell phone number"')
+    .in('id', [guestId, hostId]);
 
   if (usersError || !users) {
     console.warn('[lease:notifications] Could not fetch user data:', usersError?.message);
     return;
   }
 
-  const guest = users.find((u) => u._id === guestId) as UserData | undefined;
-  const host = users.find((u) => u._id === hostId) as UserData | undefined;
+  const guest = users.find((u) => u.id === guestId) as UserData | undefined;
+  const host = users.find((u) => u.id === hostId) as UserData | undefined;
 
   if (!guest || !host) {
     console.warn('[lease:notifications] Could not find guest or host data');

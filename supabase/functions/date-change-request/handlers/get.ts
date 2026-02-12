@@ -78,12 +78,12 @@ export async function handleGet(
   if (userIdArray.length > 0) {
     const { data: users, error: usersError } = await supabase
       .from('user')
-      .select(`_id, "Name - First", "Profile Photo"`)
-      .in('_id', userIdArray);
+      .select('id, first_name, profile_photo_url')
+      .in('id', userIdArray);
 
     if (!usersError && users) {
       userMap = users.reduce((acc: Record<string, Record<string, unknown>>, u: Record<string, unknown>) => {
-        acc[u._id as string] = u;
+        acc[u.id as string] = u;
         return acc;
       }, {});
     }

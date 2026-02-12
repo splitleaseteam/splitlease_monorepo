@@ -142,7 +142,7 @@ export default function JingleSection({
           ) : (
             <div className="items-list">
               {jingles.map((jingle) => (
-                <div key={jingle._id} className="item-card">
+                <div key={jingle.id} className="item-card">
                   <div className="item-header">
                     <span className="melody-badge">
                       {jingle['Melody Preferences'] || 'Custom'}
@@ -174,7 +174,7 @@ export default function JingleSection({
                     {!jingle['Jingle / Narration created?'] && (
                       <button
                         className="btn btn--small btn--primary"
-                        onClick={() => onAttach(jingle._id)}
+                        onClick={() => onAttach(jingle.id)}
                         disabled={jingleStatus.loading}
                       >
                         Attach to Manual

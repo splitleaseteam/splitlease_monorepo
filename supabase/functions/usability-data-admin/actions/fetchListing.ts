@@ -1,6 +1,6 @@
 /**
  * Fetch Listing Action Handler
- * Get listing by ID (supports both _id and Unique ID)
+ * Get listing by ID (supports both id and Unique ID)
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -21,18 +21,18 @@ export async function handleFetchListing(
 
   console.log('[usability-data-admin] Fetching listing:', listingId);
 
-  // Try fetching by _id first
+  // Try fetching by id first
   let { data, error } = await supabase
     .from('listing')
-    .select('_id, "Unique ID", "Listing Name", "Price #1", photos, "Host"')
-    .eq('_id', listingId)
+    .select('id, "Unique ID", "Listing Name", "Price #1", photos, "Host"')
+    .eq('id', listingId)
     .single();
 
-  // If not found by _id, try by Unique ID
+  // If not found by id, try by Unique ID
   if (error && error.code === 'PGRST116') {
     const result = await supabase
       .from('listing')
-      .select('_id, "Unique ID", "Listing Name", "Price #1", photos, "Host"')
+      .select('id, "Unique ID", "Listing Name", "Price #1", photos, "Host"')
       .eq('Unique ID', listingId)
       .single();
 
@@ -64,7 +64,7 @@ export async function handleFetchListing(
 
   return {
     listing: {
-      id: data._id,
+      id: data.id,
       uniqueId: data['Unique ID'],
       name: data['Listing Name'] || 'Untitled Listing',
       nightlyPrice: data['Price #1'] || 0,

@@ -36,7 +36,7 @@ function ListingSearchItem({ listing, onSelect }) {
         <div className="pm-search-result-details">
           <p className="pm-search-result-name">{listing.listing_title}</p>
           <p className="pm-search-result-secondary">{listing.address}</p>
-          <p className="pm-search-result-id">ID: {listing._id}</p>
+          <p className="pm-search-result-id">ID: {listing.id}</p>
           {listing.host && (
             <p className="pm-search-result-host">
               Host: {listing.host.fullName || listing.host.email}
@@ -413,7 +413,7 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
                     <div className="pm-search-results">
                       {listingResults.map(listing => (
                         <ListingSearchItem
-                          key={listing._id}
+                          key={listing.id}
                           listing={listing}
                           onSelect={handleListingSelect}
                         />
@@ -466,7 +466,7 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
                     <div className="pm-search-results">
                       {guestResults.map(guest => (
                         <GuestSearchItem
-                          key={guest._id}
+                          key={guest.id}
                           guest={guest}
                           onSelect={handleGuestSelect}
                         />

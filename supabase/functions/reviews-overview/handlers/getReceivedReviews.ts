@@ -23,7 +23,7 @@ export async function handleGetReceivedReviews(
   // Get user record
   const { data: userData, error: userError } = await supabase
     .from("user")
-    .select("_id")
+    .select("id")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -38,13 +38,13 @@ export async function handleGetReceivedReviews(
     );
   }
 
-  const userId = userData._id;
+  const userId = userData.id;
 
   // Query reviews where current user is the reviewee
   const { data: reviews, error: queryError } = await supabase
     .from("review")
     .select(`
-      _id,
+      id,
       stay_id,
       lease_id,
       listing_id,
@@ -67,7 +67,7 @@ export async function handleGetReceivedReviews(
         cover_image_url
       ),
       reviewer:reviewer_id (
-        _id,
+        id,
         name_first,
         name_last,
         profile_image_url
@@ -106,7 +106,7 @@ export async function handleGetReceivedReviews(
     const reviewer = review.reviewer as any;
 
     return {
-      review_id: review._id,
+      review_id: review.id,
       stay_id: review.stay_id,
       lease_id: review.lease_id,
       listing_name: listing?.name || "Unknown Listing",

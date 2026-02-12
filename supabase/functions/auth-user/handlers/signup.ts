@@ -11,12 +11,12 @@
  * 6. Create Supabase Auth user (auth.users table)
  * 7. Sign in user to get session tokens
  * 8. Insert user profile into public.user table with:
- *    - _id = generated user_id (also used as host reference in listings/proposals)
+ *    - id = generated user_id (also used as host reference in listings/proposals)
  *    - Receptivity = 0 (host field migrated from account_host)
  * 9. Return session tokens and user data
  *
  * NOTE: account_host table and "Account - Host / Landlord" column have been removed
- * User._id is now used directly as the host reference in listings and proposals
+ * User.id is now used directly as the host reference in listings and proposals
  *
  * NO FALLBACK - If any operation fails, entire signup fails
  * Uses Supabase Auth natively - no Bubble dependency
@@ -114,7 +114,7 @@ export async function handleSignup(
     // Check in public.user table
     const { data: existingUser, error: userCheckError } = await supabaseAdmin
       .from('user')
-      .select('_id, email')
+      .select('id, email')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
@@ -126,7 +126,7 @@ export async function handleSignup(
     }
 
     if (existingUser) {
-      console.log('[signup] ❌ BLOCKED: Email already exists in user table:', email, 'user_id:', existingUser._id);
+      console.log('[signup] ❌ BLOCKED: Email already exists in user table:', email, 'user_id:', existingUser.id);
       throw new ApiError('This email is already in use.', 400, 'USED_EMAIL');
     }
 
@@ -141,7 +141,7 @@ export async function handleSignup(
         listError: listError?.message
       });
       if (!listError && authUsers?.users) {
-        existingAuthUser = authUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        existingAuthUser = authUsers.users.find((u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase());
         if (existingAuthUser) {
           console.log('[signup] ❌ BLOCKED: Found matching auth user:', existingAuthUser.id, existingAuthUser.email);
         }
@@ -168,7 +168,7 @@ export async function handleSignup(
       throw new ApiError('Failed to generate unique ID', 500);
     }
 
-    // User._id is now used directly as host reference - no separate host account ID needed
+    // User.id is now used directly as host reference - no separate host account ID needed
     // Keep generatedHostId for backwards compatibility with user_metadata
     const generatedHostId = generatedUserId;
 
@@ -238,26 +238,25 @@ export async function handleSignup(
     }
 
     // NOTE: account_host table and "Account - Host / Landlord" column have been removed
-    // User._id is now used directly as the host reference in listings and proposals
-    console.log('[signup] Creating user record (user._id serves as host reference)');
+    // User.id is now used directly as the host reference in listings and proposals
+    console.log('[signup] Creating user record (user.id serves as host reference)');
 
     // Insert into public.user table (includes host fields that were previously in account_host)
     console.log('[signup] Inserting into public.user table...');
 
     const userRecord = {
-      '_id': generatedUserId,
+      id: generatedUserId,
+      supabase_user_id: supabaseUserId,
       'email': email.toLowerCase(),
-      'email as text': email.toLowerCase(),
-      'Name - First': firstName || null,
-      'Name - Last': lastName || null,
-      'Name - Full': fullName,
+      first_name: firstName || null,
+      last_name: lastName || null,
       'Date of Birth': dateOfBirth,
-      'Phone Number (as text)': phoneNumber || null,
-      'Type - User Current': userTypeDisplay, // Foreign key to os_user_type.display
+      phone_number: phoneNumber || null,
+      current_user_role: userTypeDisplay, // Foreign key to os_user_type.display
       'Type - User Signup': userTypeDisplay,  // Foreign key to os_user_type.display
-      // Note: "Account - Host / Landlord" column removed - user._id is used directly as host reference
-      'Created Date': now,
-      'Modified Date': now,
+      // Note: "Account - Host / Landlord" column removed - user.id is used directly as host reference
+      created_at: now,
+      updated_at: now,
       'authentication': {}, // Required jsonb field
       'user_signed_up': true, // Required boolean field
       // Host fields (migrated from account_host table)
@@ -298,7 +297,7 @@ export async function handleSignup(
     }
 
     console.log(`[signup] ========== SIGNUP COMPLETE ==========`);
-    console.log(`[signup]    User ID (_id): ${generatedUserId}`);
+    console.log(`[signup]    User ID (id): ${generatedUserId}`);
     console.log(`[signup]    Host Account ID (legacy FK): ${generatedHostId}`);
     console.log(`[signup]    Supabase Auth ID: ${supabaseUserId}`);
     console.log(`[signup]    public.user created: yes`);
@@ -379,7 +378,7 @@ export async function handleSignup(
           }
         }
       } catch (_err) {
-        console.error('[signup] Welcome SMS error:', err);
+        console.error('[signup] Welcome SMS error:', _err);
       }
     }
 

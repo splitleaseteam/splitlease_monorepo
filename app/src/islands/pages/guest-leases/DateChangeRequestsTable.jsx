@@ -53,7 +53,7 @@ function canRespondToRequest(request, currentUserId) {
   if (request.requestStatus !== 'waiting_for_answer') return false;
   if (!currentUserId) return false;
 
-  const requesterId = request.requestedBy?._id || request.requestedById;
+  const requesterId = request.requestedBy?.id || request.requestedById;
   return requesterId !== currentUserId;
 }
 
@@ -85,7 +85,7 @@ export default function DateChangeRequestsTable({
           const showActions = canRespondToRequest(request, currentUserId);
 
           return (
-            <div key={request._id || request.id} className="date-change-requests__item">
+            <div key={request.id} className="date-change-requests__item">
               <div className="date-change-requests__header">
                 <div className={`date-change-requests__status date-change-requests__status--${statusInfo.className}`}>
                   <StatusIcon size={14} />

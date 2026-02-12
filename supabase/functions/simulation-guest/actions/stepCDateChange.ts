@@ -44,7 +44,7 @@ export async function handleStepC(
     const { data: lease } = await supabase
       .from('lease')
       .select('start_date, end_date')
-      .eq('_id', leaseId)
+      .eq('id', leaseId)
       .single();
 
     if (lease) {
@@ -92,14 +92,14 @@ export async function handleStepC(
         start_date: newStartDate.toISOString().split('T')[0],
         end_date: newEndDate.toISOString().split('T')[0]
       })
-      .eq('_id', leaseId);
+      .eq('id', leaseId);
   }
 
   console.log(`[step_c] Date change processed`);
 
   return {
     dateChangeRequest: {
-      id: request?._id || request?.id || `dcr_${Date.now()}`,
+      id: request?.id || `dcr_${Date.now()}`,
       originalStartDate,
       originalEndDate,
       newStartDate: newStartDate.toISOString().split('T')[0],

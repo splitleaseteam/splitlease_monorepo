@@ -24,13 +24,13 @@ export default function DocumentForm({
 }) {
   // Convert policy documents to dropdown options
   const policyOptions = policyDocuments.map((policy) => ({
-    value: policy.id || policy._id,
+    value: policy.id,
     label: policy.Name || policy.name || 'Unnamed Policy'
   }));
 
   // Convert host users to dropdown options
   const hostOptions = hostUsers.map((host) => ({
-    value: host._id,
+    value: host.id,
     label: host.Name ? `${host.Name} (${host.email})` : host.email
   }));
 

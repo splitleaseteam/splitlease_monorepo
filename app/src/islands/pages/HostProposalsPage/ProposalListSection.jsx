@@ -77,7 +77,7 @@ export function ProposalListSection({
 
       <div className="hp7-proposal-list">
         {proposals.map((proposal) => {
-          const proposalId = proposal?._id || proposal?.id;
+          const proposalId = proposal?.id;
           const isExpanded = expandedProposalId === proposalId;
 
           return (

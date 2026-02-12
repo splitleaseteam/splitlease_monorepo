@@ -36,7 +36,7 @@ export function canGenerateDocuments({
   if (!lease) {
     errors.push('Lease record is required');
   } else {
-    if (!lease['Agreement Number'] && !lease._id) {
+    if (!lease['Agreement Number'] && !lease.id) {
       errors.push('Lease must have an Agreement Number or ID');
     }
   }

@@ -40,7 +40,7 @@ export const handleCreate = async (
 
   // Build the reminder record
   const reminderRecord = {
-    _id: reminderId,
+    id: reminderId,
     'house manual': payload.houseManualId,
     'Created By': payload.creatorId,
     'message to send': payload.message,

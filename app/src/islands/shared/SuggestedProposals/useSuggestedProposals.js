@@ -123,11 +123,11 @@ export function useSuggestedProposals({
     setIsProcessing(true);
 
     try {
-      await markProposalInterested(currentProposal._id);
+      await markProposalInterested(currentProposal.id);
 
       // Update local state - mark as no longer suggested
       setProposals(prev => prev.map(p =>
-        p._id === currentProposal._id
+        p.id === currentProposal.id
           ? { ...p, _dismissed: true }
           : p
       ));
@@ -167,11 +167,11 @@ export function useSuggestedProposals({
     setIsProcessing(true);
 
     try {
-      await dismissProposal(currentProposal._id, feedback);
+      await dismissProposal(currentProposal.id, feedback);
 
       // Update local state
       setProposals(prev => prev.map(p =>
-        p._id === currentProposal._id
+        p.id === currentProposal.id
           ? { ...p, _dismissed: true }
           : p
       ));

@@ -180,7 +180,7 @@ export default function ProposalManagePage() {
                 <div className="pm-proposals-list">
                   {proposals.map(proposal => (
                     <ProposalItem
-                      key={proposal._id}
+                      key={proposal.id}
                       proposal={proposal}
                       onStatusChange={handleStatusChange}
                       onAction={handleAction}

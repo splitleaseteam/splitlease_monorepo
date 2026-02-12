@@ -45,8 +45,8 @@ export async function handleGuestRequest(
   // Verify lease exists and belongs to this simulation
   const { data: lease, error: fetchError } = await supabase
     .from('bookings_leases')
-    .select('_id, simulation_id, "Guest User", "Host User"')
-    .eq('_id', leaseId)
+    .select('id, simulation_id, guest_user_id, host_user_id')
+    .eq('id', leaseId)
     .single();
 
   if (fetchError || !lease) {
@@ -89,15 +89,15 @@ export async function handleGuestRequest(
   // Update host's usability step
   const { data: hostUser } = await supabase
     .from('user')
-    .select('_id')
-    .eq('supabaseUserId', user.id)
+    .select('id')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (hostUser) {
     await supabase
       .from('user')
-      .update({ 'Usability Step': 5 })
-      .eq('_id', hostUser._id);
+      .update({ onboarding_usability_step: 5 })
+      .eq('id', hostUser.id);
   }
 
   console.log('[handleGuestRequest] Completed - request processed');

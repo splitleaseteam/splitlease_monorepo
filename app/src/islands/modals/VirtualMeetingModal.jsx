@@ -43,7 +43,7 @@ export default function VirtualMeetingModal({
             'meeting declined': false,
             'Modified Date': new Date().toISOString(),
           })
-          .eq('_id', virtualMeeting._id);
+          .eq('id', virtualMeeting.id);
 
         if (error) throw error;
       } else {
@@ -51,10 +51,10 @@ export default function VirtualMeetingModal({
         const { data: newVM, error: createError } = await supabase
           .from('virtualmeetingschedulesandlinks')
           .insert({
-            proposal: proposal.id || proposal._id,
+            proposal: proposal.id,
             guest: proposal.guest_user_id || proposal['Guest'],
             host: proposal._listing?.['Created By'],
-            'requested by': currentUser._id,
+            'requested by': currentUser.id,
             'booked date': bookedDateTime,
             'meeting declined': false,
             'confirmedBySplitLease': false,
@@ -69,10 +69,10 @@ export default function VirtualMeetingModal({
         const { error: updateError } = await supabase
           .from('booking_proposal')
           .update({
-            virtual_meeting_record_id: newVM._id,
+            virtual_meeting_record_id: newVM.id,
             'Modified Date': new Date().toISOString(),
           })
-          .eq('id', proposal.id || proposal._id);
+          .eq('id', proposal.id);
 
         if (updateError) throw updateError;
       }
@@ -88,7 +88,7 @@ export default function VirtualMeetingModal({
           'confirmedBySplitLease': false, // Pending SL confirmation
           'Modified Date': new Date().toISOString(),
         })
-        .eq('_id', virtualMeeting._id);
+        .eq('id', virtualMeeting.id);
 
       if (error) throw error;
     }
@@ -102,7 +102,7 @@ export default function VirtualMeetingModal({
           'meeting declined': true,
           'Modified Date': new Date().toISOString(),
         })
-        .eq('_id', virtualMeeting._id);
+        .eq('id', virtualMeeting.id);
 
       if (error) throw error;
     }
@@ -114,7 +114,7 @@ export default function VirtualMeetingModal({
       const { error: deleteError } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .delete()
-        .eq('_id', virtualMeeting._id);
+        .eq('id', virtualMeeting.id);
 
       if (deleteError) throw deleteError;
 
@@ -125,7 +125,7 @@ export default function VirtualMeetingModal({
           virtual_meeting_record_id: null,
           'Modified Date': new Date().toISOString(),
         })
-        .eq('id', proposal.id || proposal._id);
+        .eq('id', proposal.id);
 
       if (updateError) throw updateError;
     }

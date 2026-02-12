@@ -86,7 +86,7 @@ export async function handleVerifyEmail(
       .from('user')
       .update({ email_verified: true })
       .eq('email', emailLower)
-      .select('_id, email, email_verified')
+      .select('id, email, email_verified')
       .single();
 
     if (updateError) {
@@ -110,7 +110,7 @@ export async function handleVerifyEmail(
       throw new ApiError(`Failed to update verification status: ${updateError.message}`, 500);
     }
 
-    console.log('[verifyEmail] ✅ email_verified updated for user:', updateData._id);
+    console.log('[verifyEmail] ✅ email_verified updated for user:', updateData.id);
     console.log('[verifyEmail] ========== VERIFICATION COMPLETE ==========');
 
     return {

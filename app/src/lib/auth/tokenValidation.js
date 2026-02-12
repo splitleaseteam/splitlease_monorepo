@@ -354,7 +354,7 @@ export async function validateTokenAndFetchUser({ clearOnFailure = true } = {}) 
         email: userData.email || null,
         profilePhoto: userData.profilePhoto || null,
         userType: userType,
-        accountHostId: userData.accountHostId || userData._id || null,
+        accountHostId: userData.accountHostId || userData.id || null,
         aboutMe: userData.aboutMe || null,
         needForSpace: userData.needForSpace || null,
         specialNeeds: userData.specialNeeds || null,

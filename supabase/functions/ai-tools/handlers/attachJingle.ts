@@ -23,7 +23,7 @@ export async function handleAttachJingle(context: HandlerContext) {
   const { data: jingle, error: jingleError } = await supabaseClient
     .from("narration")
     .select("*")
-    .eq("_id", jingleId)
+    .eq("id", jingleId)
     .eq("is_it_jingle", true)
     .single();
 
@@ -52,7 +52,7 @@ export async function handleAttachJingle(context: HandlerContext) {
     .update({
       House_Manual: houseManualId,
     })
-    .eq("_id", jingleId);
+    .eq("id", jingleId);
 
   if (updateError) {
     console.error("[ai-tools:attach_jingle] Failed to attach jingle:", updateError);

@@ -182,9 +182,9 @@ function UserSelect({
               ) : searchResults.length > 0 ? (
                 searchResults.map((user) => (
                   <UserDropdownItem
-                    key={user._id}
+                    key={user.id}
                     user={user}
-                    isSelected={selectedUser?._id === user._id}
+                    isSelected={selectedUser?.id === user.id}
                     onSelect={onSelectUser}
                   />
                 ))

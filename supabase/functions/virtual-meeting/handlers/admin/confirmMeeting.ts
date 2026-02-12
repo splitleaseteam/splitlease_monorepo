@@ -49,14 +49,14 @@ export async function handleAdminConfirmMeeting(
       confirmed_by_splitlease: true,
       modified_date: new Date().toISOString()
     })
-    .eq("_id", payload.meetingId)
+    .eq("id", payload.meetingId)
     .select(`
       *,
       guest:users!virtualmeetingschedulesandlinks_guest_fkey(
-        id, _id, name_first, name_last, email, phone_number, profile_photo_url, timezone
+        id, name_first, name_last, email, phone_number, profile_photo_url, timezone
       ),
       host:users!virtualmeetingschedulesandlinks_host_fkey(
-        id, _id, name_first, name_last, email, phone_number, profile_photo_url, timezone
+        id, name_first, name_last, email, phone_number, profile_photo_url, timezone
       )
     `)
     .single();

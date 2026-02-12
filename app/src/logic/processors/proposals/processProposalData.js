@@ -33,7 +33,7 @@ export function processListingData(rawListing) {
     : (typeof addressData === 'string' ? addressData : null);
 
   return {
-    id: rawListing._id,
+    id: rawListing.id,
     name: rawListing.Name || 'Untitled Listing',
     description: rawListing.Description || null,
     address: addressString,
@@ -91,7 +91,7 @@ export function processVirtualMeetingData(rawVirtualMeeting) {
   }
 
   return {
-    id: rawVirtualMeeting._id,
+    id: rawVirtualMeeting.id,
     bookedDate: rawVirtualMeeting['booked date'] || null,
     confirmedBySplitlease: rawVirtualMeeting.confirmedBySplitLease || false,
     meetingLink: rawVirtualMeeting['meeting link'] || null,
@@ -117,8 +117,8 @@ export function processProposalData(rawProposal) {
     throw new Error('processProposalData: Proposal data is required');
   }
 
-  if (!rawProposal._id) {
-    throw new Error('processProposalData: Proposal ID (_id) is required');
+  if (!rawProposal.id) {
+    throw new Error('processProposalData: Proposal ID (id) is required');
   }
 
   // Extract and transform nested data
@@ -128,8 +128,7 @@ export function processProposalData(rawProposal) {
 
   return {
     // Core identifiers
-    id: rawProposal._id,
-    _id: rawProposal._id, // Keep for compatibility
+    id: rawProposal.id,
 
     // Status and state
     status: rawProposal.Status || 'Unknown',

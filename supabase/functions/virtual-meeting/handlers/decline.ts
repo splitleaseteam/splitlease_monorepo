@@ -49,8 +49,8 @@ export async function handleDecline(
 
   const { data: proposal, error: proposalError } = await supabase
     .from("proposal")
-    .select(`_id, "virtual meeting"`)
-    .eq("_id", input.proposalId)
+    .select(`id, "virtual meeting"`)
+    .eq("id", input.proposalId)
     .single();
 
   if (proposalError || !proposal) {
@@ -71,8 +71,8 @@ export async function handleDecline(
 
   const { data: existingVM, error: vmFetchError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("_id, \"meeting declined\"")
-    .eq("_id", virtualMeetingId)
+    .select("id, \"meeting declined\"")
+    .eq("id", virtualMeetingId)
     .single();
 
   if (vmFetchError || !existingVM) {
@@ -104,7 +104,7 @@ export async function handleDecline(
   const { error: vmUpdateError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .update(vmUpdateData)
-    .eq("_id", virtualMeetingId);
+    .eq("id", virtualMeetingId);
 
   if (vmUpdateError) {
     console.error(`[virtual-meeting:decline] VM update failed:`, vmUpdateError);
@@ -123,7 +123,7 @@ export async function handleDecline(
       "request virtual meeting": null,
       "Modified Date": now,
     })
-    .eq("_id", input.proposalId);
+    .eq("id", input.proposalId);
 
   if (proposalUpdateError) {
     console.error(`[virtual-meeting:decline] Proposal update failed:`, proposalUpdateError);

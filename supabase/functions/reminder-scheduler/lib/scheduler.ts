@@ -122,7 +122,7 @@ export const processReminder = async (
   twilioMessageSid?: string;
   error?: string;
 }> => {
-  console.log('[scheduler] Processing reminder:', reminder._id);
+  console.log('[scheduler] Processing reminder:', reminder.id);
 
   let emailSent = false;
   let smsSent = false;
@@ -224,7 +224,7 @@ export const fetchGuestContactInfo = async (
   const { data, error } = await supabase
     .from('user')
     .select('email, "Phone Number - Cell", "Name - First", "Name - Last"')
-    .eq('_id', guestId)
+    .eq('id', guestId)
     .single();
 
   if (error || !data) {
@@ -294,7 +294,7 @@ export const updateReminderStatus = async (
       sendgrid_message_id: updates.sendgrid_message_id,
       twilio_message_sid: updates.twilio_message_sid,
     })
-    .eq('_id', reminderId);
+    .eq('id', reminderId);
 
   if (error) {
     console.error('[scheduler] Update error:', error);

@@ -63,7 +63,7 @@ export function useRequestActions({
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: resolvedCoTenant?._id,
+        payeeId: resolvedCoTenant?.id,
         status: 'pending'
       };
 
@@ -148,7 +148,7 @@ export function useRequestActions({
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: resolvedCoTenant?._id,
+        payeeId: resolvedCoTenant?.id,
         status: 'pending'
       };
 
@@ -277,7 +277,7 @@ export function useRequestActions({
         nights: [requestedDate, offeredDate],
         amount: 0,
         payerId: currentUserId,
-        payeeId: resolvedCoTenant?._id,
+        payeeId: resolvedCoTenant?.id,
         status: 'pending'
       };
 

@@ -71,7 +71,7 @@ export async function getUserPlatformId(
 export async function getUserProfile(
   supabase: SupabaseClient,
   userId: string
-): Promise<{ _id: string; firstName: string; lastName: string; avatar?: string } | null> {
+): Promise<{ id: string; firstName: string; lastName: string; avatar?: string } | null> {
   const { data, error } = await supabase
     .from('user')
     .select('legacy_platform_id, first_name, last_name, profile_photo_url')
@@ -83,7 +83,7 @@ export async function getUserProfile(
   }
 
   return {
-    _id: data.legacy_platform_id,
+    id: data.legacy_platform_id,
     firstName: data.first_name || '',
     lastName: data.last_name || '',
     avatar: data.profile_photo_url,
@@ -180,7 +180,7 @@ export async function findExistingThread(
 export async function getThread(
   supabase: SupabaseClient,
   threadId: string
-): Promise<{ _id: string; hostUser: string; guestUser: string; listing?: string } | null> {
+): Promise<{ id: string; hostUser: string; guestUser: string; listing?: string } | null> {
   const { data, error } = await supabase
     .from('message_thread')
     .select('id, host_user_id, guest_user_id, listing_id')
@@ -192,7 +192,7 @@ export async function getThread(
   }
 
   return {
-    _id: data.id,
+    id: data.id,
     hostUser: data.host_user_id,
     guestUser: data.guest_user_id,
     listing: data.listing_id,

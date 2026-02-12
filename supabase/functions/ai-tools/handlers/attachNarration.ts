@@ -23,7 +23,7 @@ export async function handleAttachNarration(context: HandlerContext) {
   const { data: narration, error: narrationError } = await supabaseClient
     .from("narration")
     .select("*")
-    .eq("_id", narrationId)
+    .eq("id", narrationId)
     .single();
 
   if (narrationError || !narration) {
@@ -37,8 +37,8 @@ export async function handleAttachNarration(context: HandlerContext) {
   // Verify visit exists
   const { data: visit, error: visitError } = await supabaseClient
     .from("visit")
-    .select("_id")
-    .eq("_id", visitId)
+    .select("id")
+    .eq("id", visitId)
     .single();
 
   if (visitError || !visit) {
@@ -51,7 +51,7 @@ export async function handleAttachNarration(context: HandlerContext) {
     .update({
       Visit: visitId,
     })
-    .eq("_id", narrationId);
+    .eq("id", narrationId);
 
   if (updateError) {
     console.error("[ai-tools:attach_narration] Failed to attach narration:", updateError);

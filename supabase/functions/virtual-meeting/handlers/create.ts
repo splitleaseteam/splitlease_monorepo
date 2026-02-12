@@ -29,7 +29,7 @@ import { validateCreateVirtualMeetingInput } from "../lib/validators.ts";
  * 2. Fetch proposal to get Guest, Host, Listing relationships
  * 3. Fetch host user data via account_host -> user
  * 4. Fetch guest user data
- * 5. Generate unique _id via generate_unique_id RPC
+ * 5. Generate unique id via generate_unique_id RPC
  * 6. Insert record into virtualmeetingschedulesandlinks
  * 7. Update proposal.virtual meeting field to link the new VM
  * 8. Return the created VM ID
@@ -58,12 +58,12 @@ export async function handleCreate(
   const { data: proposal, error: proposalError } = await supabase
     .from("proposal")
     .select(`
-      _id,
-      Guest,
-      Listing,
-      "Host User"
+      id,
+      guest_user_id,
+      listing_id,
+      host_user_id
     `)
-    .eq("_id", input.proposalId)
+    .eq("id", input.proposalId)
     .single();
 
   if (proposalError || !proposal) {
@@ -72,25 +72,25 @@ export async function handleCreate(
   }
 
   const proposalData = proposal as unknown as ProposalData;
-  console.log(`[virtual-meeting:create] Found proposal, guest: ${proposalData.Guest}, listing: ${proposalData.Listing}, hostUser: ${proposalData["Host User"]}`);
+  console.log(`[virtual-meeting:create] Found proposal, guest: ${proposalData.guest_user_id}, listing: ${proposalData.listing_id}, hostUser: ${proposalData.host_user_id}`);
 
-  // Fetch Host User - try proposal's "Host User" first, fallback to listing's "Host User"
-  let hostUserId = proposalData["Host User"];
+  // Fetch Host User - try proposal's host_user_id first, fallback to listing's host_user_id
+  let hostUserId = proposalData.host_user_id;
 
-  if (!hostUserId && proposalData.Listing) {
-    console.log(`[virtual-meeting:create] Proposal has no Host User, fetching from listing: ${proposalData.Listing}`);
+  if (!hostUserId && proposalData.listing_id) {
+    console.log(`[virtual-meeting:create] Proposal has no Host User, fetching from listing: ${proposalData.listing_id}`);
     const { data: listing, error: listingError } = await supabase
       .from("listing")
-      .select(`"Host User"`)
-      .eq("_id", proposalData.Listing)
+      .select(`host_user_id`)
+      .eq("id", proposalData.listing_id)
       .single();
 
     if (listingError || !listing) {
       console.error(`[virtual-meeting:create] Listing fetch failed:`, listingError);
-      throw new ValidationError(`Cannot determine host: listing not found ${proposalData.Listing}`);
+      throw new ValidationError(`Cannot determine host: listing not found ${proposalData.listing_id}`);
     }
 
-    hostUserId = listing["Host User"];
+    hostUserId = listing.host_user_id;
     console.log(`[virtual-meeting:create] Got host from listing: ${hostUserId}`);
   }
 
@@ -100,8 +100,8 @@ export async function handleCreate(
 
   const { data: hostUser, error: hostUserError } = await supabase
     .from("user")
-    .select(`_id, email, "Name - First", "Name - Full", "Phone Number (as text)", "Notification Setting"`)
-    .eq("_id", hostUserId)
+    .select('id, email, first_name, last_name, phone_number, notification_preference_setting')
+    .eq("id", hostUserId)
     .single();
 
   if (hostUserError || !hostUser) {
@@ -113,18 +113,18 @@ export async function handleCreate(
   console.log(`[virtual-meeting:create] Found host user: ${hostUserData.email}`);
 
   // hostAccountData maintained for backwards compatibility with downstream code
-  const hostAccountData = { _id: hostUserData._id, User: hostUserData._id } as HostAccountData;
+  const hostAccountData = { id: hostUserData.id, User: hostUserData.id } as HostAccountData;
 
   // Fetch Guest User
   const { data: guestUser, error: guestUserError } = await supabase
     .from("user")
-    .select(`_id, email, "Name - First", "Name - Full", "Phone Number (as text)", "Notification Setting"`)
-    .eq("_id", proposalData.Guest)
+    .select('id, email, first_name, last_name, phone_number, notification_preference_setting')
+    .eq("id", proposalData.guest_user_id)
     .single();
 
   if (guestUserError || !guestUser) {
     console.error(`[virtual-meeting:create] Guest user fetch failed:`, guestUserError);
-    throw new ValidationError(`Guest user not found: ${proposalData.Guest}`);
+    throw new ValidationError(`Guest user not found: ${proposalData.guest_user_id}`);
   }
 
   const guestUserData = guestUser as unknown as UserData;
@@ -150,14 +150,14 @@ export async function handleCreate(
 
   // Build the virtual meeting record
   const vmData = {
-    _id: virtualMeetingId,
+    id: virtualMeetingId,
 
     // Relationships
     host: hostAccountData.User,
-    guest: proposalData.Guest,
+    guest: proposalData.guest_user_id,
     proposal: input.proposalId,
     "requested by": input.requestedById,
-    "Listing (for Co-Host feature)": proposalData.Listing,
+    "Listing (for Co-Host feature)": proposalData.listing_id,
 
     // Meeting metadata
     "meeting duration": 45, // Default 45 minutes
@@ -173,9 +173,9 @@ export async function handleCreate(
 
     // Participant info
     "guest email": guestUserData.email,
-    "guest name": guestUserData["Name - Full"] || guestUserData["Name - First"] || null,
+    "guest name": `${guestUserData.first_name || ''} ${guestUserData.last_name || ''}`.trim() || null,
     "host email": hostUserData.email,
-    "host name": hostUserData["Name - Full"] || hostUserData["Name - First"] || null,
+    "host name": `${hostUserData.first_name || ''} ${hostUserData.last_name || ''}`.trim() || null,
 
     // Invitation tracking
     "invitation sent to guest?": false,
@@ -205,19 +205,19 @@ export async function handleCreate(
   // ================================================
 
   // Determine if requester is host or guest
-  const requesterIsHost = input.requestedById === hostUserData._id;
+  const requesterIsHost = input.requestedById === hostUserData.id;
   const requestVirtualMeetingValue = requesterIsHost ? "host" : "guest";
 
-  console.log(`[virtual-meeting:create] Requester: ${input.requestedById}, Host: ${hostUserData._id}, Value: ${requestVirtualMeetingValue}`);
+  console.log(`[virtual-meeting:create] Requester: ${input.requestedById}, Host: ${hostUserData.id}, Value: ${requestVirtualMeetingValue}`);
 
   const { error: proposalUpdateError } = await supabase
     .from("proposal")
     .update({
       "request virtual meeting": requestVirtualMeetingValue,
       "virtual meeting": virtualMeetingId,
-      "Modified Date": now,
+      updated_at: now,
     })
-    .eq("_id", input.proposalId);
+    .eq("id", input.proposalId);
 
   if (proposalUpdateError) {
     console.error(`[virtual-meeting:create] Proposal update failed:`, proposalUpdateError);
@@ -233,11 +233,11 @@ export async function handleCreate(
   try {
     // Fetch notification preferences
     const [hostNotifResult, guestNotifResult] = await Promise.all([
-      hostUserData["Notification Setting"]
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("_id", hostUserData["Notification Setting"]).single()
+      hostUserData.notification_preference_setting
+        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", hostUserData.notification_preference_setting).single()
         : { data: null },
-      guestUserData["Notification Setting"]
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("_id", guestUserData["Notification Setting"]).single()
+      guestUserData.notification_preference_setting
+        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", guestUserData.notification_preference_setting).single()
         : { data: null },
     ]);
 
@@ -246,27 +246,27 @@ export async function handleCreate(
 
     // Fetch listing name for context
     let listingName: string | undefined;
-    if (proposalData.Listing) {
+    if (proposalData.listing_id) {
       const { data: listing } = await supabase
         .from("listing")
         .select('"Name"')
-        .eq("_id", proposalData.Listing)
+        .eq("id", proposalData.listing_id)
         .single();
       listingName = listing?.Name;
     }
 
     const messageResult = await sendVMRequestMessages(supabase, {
       proposalId: input.proposalId,
-      hostUserId: hostUserData._id,
-      guestUserId: guestUserData._id,
-      listingId: proposalData.Listing,
+      hostUserId: hostUserData.id,
+      guestUserId: guestUserData.id,
+      listingId: proposalData.listing_id,
       listingName,
-      hostName: hostUserData["Name - First"],
-      guestName: guestUserData["Name - First"],
+      hostName: hostUserData.first_name,
+      guestName: guestUserData.first_name,
       hostEmail: hostUserData.email,
       guestEmail: guestUserData.email,
-      hostPhone: hostUserData["Phone Number (as text)"],
-      guestPhone: guestUserData["Phone Number (as text)"],
+      hostPhone: hostUserData.phone_number,
+      guestPhone: guestUserData.phone_number,
       suggestedDates: input.timesSelected,
       notifyHostSms: hostVmNotifs.includes('SMS'),
       notifyHostEmail: hostVmNotifs.includes('Email'),

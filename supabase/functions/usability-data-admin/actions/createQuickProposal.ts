@@ -67,8 +67,8 @@ export async function handleCreateQuickProposal(
   // SCHEMA NOTE: Column is "Host User" not "Host"
   const { data: listing, error: listingError } = await supabase
     .from('listing')
-    .select('_id, "Host User", "Unique ID", Name')
-    .eq('_id', listingId)
+    .select('id, host_user_id, listing_title')
+    .eq('id', listingId)
     .single();
 
   if (listingError) {
@@ -76,7 +76,7 @@ export async function handleCreateQuickProposal(
     throw new Error(`Failed to fetch listing: ${listingError.message}`);
   }
 
-  const hostId = listing['Host User'];
+  const hostId = listing.host_user_id;
   if (!hostId) {
     throw new Error('Listing does not have a host');
   }
@@ -89,11 +89,11 @@ export async function handleCreateQuickProposal(
 
   // Create the proposal
   const proposalData = {
-    _id: proposalId,
+    id: proposalId,
     'Unique ID': proposalId,
-    Guest: guestId,
-    Host: hostId,
-    Listing: listingId,
+    guest_user_id: guestId,
+    host_user_id: hostId,
+    listing_id: listingId,
     'Move in From': moveInDate,
     'Reservation Days (text)': JSON.stringify(selectedDayIndices),
     'Reservation Span': reservationWeeks,
@@ -101,11 +101,11 @@ export async function handleCreateQuickProposal(
     'Actual Reservation Price': totalPrice,
     'Nightly Rate': nightlyPrice,
     notes: notes || '',
-    Status: 'Pending',
+    proposal_workflow_status: 'Pending',
     'Status for Host': 'Pending',
     'Status for Guest': 'Pending',
-    'Created Date': timestamp,
-    'Modified Date': timestamp,
+    created_at: timestamp,
+    updated_at: timestamp,
     Thread: threadId,
   };
 
@@ -152,7 +152,7 @@ export async function handleCreateQuickProposal(
     proposal: {
       id: proposalId,
       listingId,
-      listingName: listing['Name'],
+      listingName: listing.listing_title,
       guestId,
       hostId,
       moveInDate,

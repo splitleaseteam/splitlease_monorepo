@@ -38,16 +38,16 @@ export async function generateMagicLinks(
   // Fetch user emails
   const { data: users, error: usersError } = await supabase
     .from('user')
-    .select('_id, email')
-    .in('_id', [guestId, hostId]);
+    .select('id, email')
+    .in('id', [guestId, hostId]);
 
   if (usersError || !users) {
     console.warn('[lease:magicLinks] Could not fetch users:', usersError?.message);
     return { host: '', guest: '' };
   }
 
-  const guest = users.find((u) => u._id === guestId);
-  const host = users.find((u) => u._id === hostId);
+  const guest = users.find((u) => u.id === guestId);
+  const host = users.find((u) => u.id === hostId);
 
   let guestLink = '';
   let hostLink = '';

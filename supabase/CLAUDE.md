@@ -97,7 +97,7 @@ try {
 ## CRITICAL_NOTES
 
 [DAY_INDEXING]: JavaScript 0-indexed: Sun=0 to Sat=6. Database stores 0-indexed natively.
-[UNIQUE_ID_GENERATION]: Use supabaseAdmin.rpc('generate_unique_id') for unique record IDs
+[UNIQUE_ID_GENERATION]: Use native UUID-based id columns from PostgreSQL/Supabase defaults
 [NO_FALLBACK]: Never add fallback logic, default values, or compatibility layers
 [ERROR_HANDLING]: Fail fast, let errors propagate, client can retry
 [DATA_SOURCE]: Supabase is the primary and only data source for all operations

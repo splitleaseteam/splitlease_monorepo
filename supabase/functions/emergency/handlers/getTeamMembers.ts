@@ -22,7 +22,7 @@ export async function handleGetTeamMembers(
   // Query users with admin = true
   const query = supabase
     .from('user')
-    .select('_id, email, "First name", "Last name", "Phone number", admin')
+    .select('id, email, "First name", "Last name", "Phone number", admin')
     .eq('admin', true)
     .order('"First name"', { ascending: true });
 
@@ -41,7 +41,7 @@ export async function handleGetTeamMembers(
 
   // Transform to cleaner format
   return (data || []).map(user => ({
-    _id: user._id,
+    id: user.id,
     email: user.email,
     firstName: user['First name'],
     lastName: user['Last name'],

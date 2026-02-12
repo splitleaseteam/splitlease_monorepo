@@ -30,7 +30,7 @@ export default function ReviewsSection({
   // Format safety features for checkbox group
   const formatSafetyOptions = (features) => {
     return features.map(feature => ({
-      value: feature._id || feature.value,
+      value: feature.id || feature.value,
       label: feature.name || feature.label
     }));
   };

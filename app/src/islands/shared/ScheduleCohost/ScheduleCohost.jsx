@@ -1005,8 +1005,8 @@ export default function ScheduleCohost({
               {(coHostRequest.createdDate || coHostRequest.original_created_at) && (
                 <p>Created: {formatDateForDisplay(new Date(coHostRequest.createdDate || coHostRequest.original_created_at))}</p>
               )}
-              {(coHostRequest.id || coHostRequest._id) && (
-                <p>Unique ID: {coHostRequest.id || coHostRequest._id}</p>
+              {coHostRequest.id && (
+                <p>Unique ID: {coHostRequest.id}</p>
               )}
             </div>
           </div>

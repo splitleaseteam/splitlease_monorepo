@@ -490,7 +490,7 @@ export default function Header({ autoShowLogin = false }) {
     if (!proposal) return;
 
     setIsProcessingProposal(true);
-    const result = await markProposalInterested(proposal._id);
+    const result = await markProposalInterested(proposal.id);
     setIsProcessingProposal(false);
 
     if (result.success) {
@@ -525,7 +525,7 @@ export default function Header({ autoShowLogin = false }) {
     if (!proposal) return;
 
     setIsProcessingProposal(true);
-    const result = await dismissProposal(proposal._id, feedback);
+    const result = await dismissProposal(proposal.id, feedback);
     setIsProcessingProposal(false);
 
     if (result.success) {

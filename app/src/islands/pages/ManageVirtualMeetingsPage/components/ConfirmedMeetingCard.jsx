@@ -163,7 +163,7 @@ export default function ConfirmedMeetingCard({
           {canProcessCalendar && onProcessCalendarInvites && (
             <button
               className="meeting-card__action meeting-card__action--primary"
-              onClick={() => onProcessCalendarInvites(meeting._id || meeting.id)}
+              onClick={() => onProcessCalendarInvites(meeting.id)}
               disabled={isLoading}
               title={calendarStatus === 'failed' ? 'Retry calendar automation' : 'Send Google Meet invites'}
             >

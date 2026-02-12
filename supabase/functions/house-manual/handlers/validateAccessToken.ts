@@ -64,7 +64,7 @@ export async function handleValidateAccessToken(
   const { data: visit, error: visitError } = await supabaseClient
     .from("visit")
     .select(`
-      _id,
+      id,
       "User shared with (guest)",
       "house manual",
       "access_token",
@@ -102,7 +102,7 @@ export async function handleValidateAccessToken(
     console.log(`[validateAccessToken] Token expired at ${expiresAt}`);
     return {
       isValid: false,
-      visitId: visit._id,
+      visitId: visit.id,
       guestId: visit["User shared with (guest)"],
       guestEmail: null,
       houseManualId: visit["house manual"],
@@ -119,7 +119,7 @@ export async function handleValidateAccessToken(
     console.log(`[validateAccessToken] Single-use token already used at ${usedAt}`);
     return {
       isValid: false,
-      visitId: visit._id,
+      visitId: visit.id,
       guestId: visit["User shared with (guest)"],
       guestEmail: null,
       houseManualId: visit["house manual"],
@@ -139,7 +139,7 @@ export async function handleValidateAccessToken(
     const { data: guest } = await supabaseClient
       .from("user")
       .select("email")
-      .eq("_id", guestId)
+      .eq("id", guestId)
       .single();
 
     if (guest) {
@@ -147,11 +147,11 @@ export async function handleValidateAccessToken(
     }
   }
 
-  console.log(`[validateAccessToken] Token valid for visit ${visit._id}`);
+  console.log(`[validateAccessToken] Token valid for visit ${visit.id}`);
 
   return {
     isValid: true,
-    visitId: visit._id,
+    visitId: visit.id,
     guestId,
     guestEmail,
     houseManualId: visit["house manual"],

@@ -42,7 +42,7 @@ export function ListingTabs({
   return (
     <div className="hl-listing-tabs">
       {listings.map((listing) => {
-        const listingId = listing.id || listing._id;
+        const listingId = listing.id;
         const isActive = listingId === selectedListingId;
         const count = leaseCountsByListing[listingId] ?? 0;
         const listingName = listing.title || listing.listing_title || 'Unnamed Listing';

@@ -1,3 +1,5 @@
+> [!WARNING] This file needs a full rewrite.
+
 # SuggestedProposals Component
 
 A shared island component that displays AI-suggested rental proposals to guests in a floating popup interface.
@@ -32,7 +34,7 @@ SuggestedProposals/
 This component uses **native Supabase field names** (no mapping layer). Key fields:
 
 ### Proposal Fields (from `proposal` table)
-- `_id` - Unique identifier
+- `id` - Unique identifier
 - `Status` - Proposal status string
 - `'proposal nightly price'` - Per-night cost (numeric)
 - `'Total Price for Reservation (guest)'` - Total reservation cost (numeric)
@@ -108,7 +110,7 @@ function MyPage({ currentUser }) {
     handleRemove,
     isProcessing
   } = useSuggestedProposals({
-    userId: currentUser._id,
+    userId: currentUser.id,
     onInterested: async (proposal) => {
       // Called after successful interest action
       showToast({ title: 'Interest recorded!', type: 'success' });

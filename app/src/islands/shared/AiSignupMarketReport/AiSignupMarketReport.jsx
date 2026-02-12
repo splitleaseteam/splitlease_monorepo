@@ -705,7 +705,7 @@ async function submitSignup(data) {
     // User doesn't wait for GPT-4 - it happens in background
     console.log('[AiSignupMarketReport] Step 3: Queuing profile parsing (async)...');
 
-    const userId = signupResult?.user_id || result.data?._id;
+    const userId = signupResult?.user_id || result.data?.id;
     if (userId) {
       // Queue the parsing job - this returns immediately
       queueProfileParsing({

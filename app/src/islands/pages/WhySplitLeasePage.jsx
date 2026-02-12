@@ -52,7 +52,7 @@ export default function WhySplitLeasePage() {
         const boroughList = data
           .filter(b => b['Display Borough'] && b['Display Borough'].trim())
           .map(b => ({
-            id: b._id,
+            id: b.id,
             name: b['Display Borough'].trim(),
             value: b['Display Borough'].trim().toLowerCase()
               .replace(/\s+county\s+nj/i, '')

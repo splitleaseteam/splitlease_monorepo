@@ -12,7 +12,7 @@ interface GetPrefillDataPayload {
 }
 
 interface PrefillData {
-  _id: string;
+  id: string;
   daysSelected: number[];
   reservationSpanWeeks: number;
   moveInRangeStart: string | null;
@@ -32,14 +32,14 @@ export async function handleGetPrefillData(
   const { data, error } = await supabase
     .from('proposal')
     .select(`
-      _id,
-      "Days Selected",
-      "Reservation Span (Weeks)",
-      "Move in range start"
+      id,
+      guest_selected_days_numbers_json,
+      reservation_span_in_weeks,
+      move_in_range_start_date
     `)
-    .eq('Guest', payload.guestId)
-    .neq('Deleted', true)
-    .order('"Created Date"', { ascending: false })
+    .eq('guest_user_id', payload.guestId)
+    .neq('is_deleted', true)
+    .order('created_at', { ascending: false })
     .limit(1);
 
   if (error) {
@@ -58,10 +58,10 @@ export async function handleGetPrefillData(
 
   // Transform to a cleaner format
   const prefillData: PrefillData = {
-    _id: proposal._id,
-    daysSelected: proposal['Days Selected'] || [],
-    reservationSpanWeeks: proposal['Reservation Span (Weeks)'] || 0,
-    moveInRangeStart: proposal['Move in range start'] || null,
+    id: proposal.id,
+    daysSelected: proposal.guest_selected_days_numbers_json || [],
+    reservationSpanWeeks: proposal.reservation_span_in_weeks || 0,
+    moveInRangeStart: proposal.move_in_range_start_date || null,
   };
 
   console.log('[get_prefill_data] Returning prefill data:', prefillData);

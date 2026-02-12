@@ -52,7 +52,7 @@ export async function getAllHouseRules() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from('zat_features_houserule')
-      .select('_id, Name, Icon, "pre-set?"')
+      .select('id, Name, Icon, "pre-set?"')
       .order('Name', { ascending: true });
 
     if (error) {
@@ -67,7 +67,7 @@ export async function getAllHouseRules() {
 
     // Transform to consistent format for multi-select
     const rules = data.map((rule) => ({
-      id: rule._id,
+      id: rule.id,
       name: rule.Name,
       icon: rule.Icon || null,
       isPreset: rule['pre-set?'] || false

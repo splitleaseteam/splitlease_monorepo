@@ -43,7 +43,7 @@ export async function handleCreateJingle(context: HandlerContext) {
     throw new Error("Failed to create jingle record");
   }
 
-  console.log(`[ai-tools:create_jingle] Created jingle record: ${jingle._id}`);
+  console.log(`[ai-tools:create_jingle] Created jingle record: ${jingle.id}`);
 
   // Generate jingle audio using AI music generation service
   // NOTE: This would call a music generation API (e.g., Suno AI, Mubert, etc.)
@@ -53,7 +53,7 @@ export async function handleCreateJingle(context: HandlerContext) {
   console.log("[ai-tools:create_jingle] Lyrics:", lyrics.substring(0, 100) + "...");
 
   // Mock audio URL for now (replace with real music generation API call)
-  const mockAudioUrl = `https://mock-jingle-api.com/audio/${jingle._id}.mp3`;
+  const mockAudioUrl = `https://mock-jingle-api.com/audio/${jingle.id}.mp3`;
 
   // Update jingle with audio URL
   const { error: updateError } = await supabaseClient
@@ -61,14 +61,14 @@ export async function handleCreateJingle(context: HandlerContext) {
     .update({
       Narration_Audio: mockAudioUrl,
     })
-    .eq("_id", jingle._id);
+    .eq("id", jingle.id);
 
   if (updateError) {
     console.error("[ai-tools:create_jingle] Failed to update jingle audio URL:", updateError);
   }
 
   return {
-    jingleId: jingle._id,
+    jingleId: jingle.id,
     audioUrl: mockAudioUrl,
     status: "completed",
     message: "Jingle created (AI music generation integration pending)",

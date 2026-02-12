@@ -32,12 +32,11 @@ const corsHeaders = {
 // Database uses Bubble-style column names with spaces
 const COLUMN_MAP = {
   // JS key: DB column
-  fullName: 'Name - Full',
-  firstName: 'Name - First',
-  lastName: 'Name - Last',
+  firstName: 'first_name',
+  lastName: 'last_name',
   email: 'email',
-  phoneNumber: 'Phone Number (as text)',
-  profilePhoto: 'Profile Photo',
+  phoneNumber: 'phone_number',
+  profilePhoto: 'profile_photo_url',
   selfieWithId: 'Selfie with ID',
   idFront: 'ID front',
   idBack: 'ID Back',
@@ -45,9 +44,9 @@ const COLUMN_MAP = {
   idDocumentsSubmitted: 'ID documents submitted? ',
   profileCompleteness: 'profile completeness',
   tasksCompleted: 'Tasks Completed',
-  createdDate: 'Created Date',
-  modifiedDate: 'Modified Date',
-  isAdmin: 'Toggle - Is Admin',
+  createdDate: 'created_at',
+  modifiedDate: 'updated_at',
+  isAdmin: 'is_admin',
 };
 
 // Reverse mapping for DB -> JS conversion
@@ -58,13 +57,12 @@ for (const [jsKey, dbCol] of Object.entries(COLUMN_MAP)) {
 
 // Select columns for user queries
 const USER_SELECT_COLUMNS = `
-  _id,
-  "email",
-  "Name - Full",
-  "Name - First",
-  "Name - Last",
-  "Phone Number (as text)",
-  "Profile Photo",
+  id,
+  email,
+  first_name,
+  last_name,
+  phone_number,
+  profile_photo_url,
   "Selfie with ID",
   "ID front",
   "ID Back",
@@ -72,8 +70,8 @@ const USER_SELECT_COLUMNS = `
   "ID documents submitted? ",
   "profile completeness",
   "Tasks Completed",
-  "Created Date",
-  "Modified Date"
+  created_at,
+  updated_at
 `;
 
 console.log("[identity-verification-admin] Edge Function initializing...");
@@ -203,7 +201,7 @@ async function _checkAdminStatus(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin"')
+    .select('is_admin')
     .eq('email', email)
     .single();
 
@@ -212,7 +210,7 @@ async function _checkAdminStatus(
     return false;
   }
 
-  return data['Toggle - Is Admin'] === true;
+  return data.is_admin === true;
 }
 
 /**
@@ -220,7 +218,7 @@ async function _checkAdminStatus(
  */
 function toJsUser(dbRow: Record<string, unknown>): Record<string, unknown> {
   const jsData: Record<string, unknown> = {
-    _id: dbRow._id,
+    id: dbRow.id,
   };
 
   for (const [dbCol, value] of Object.entries(dbRow)) {
@@ -234,6 +232,9 @@ function toJsUser(dbRow: Record<string, unknown>): Record<string, unknown> {
   if (!Array.isArray(jsData.tasksCompleted)) {
     jsData.tasksCompleted = jsData.tasksCompleted ? [jsData.tasksCompleted] : [];
   }
+
+  const fullName = `${jsData.firstName || ''} ${jsData.lastName || ''}`.trim();
+  jsData.fullName = fullName || null;
 
   return jsData;
 }
@@ -252,7 +253,7 @@ async function handleListUsers(
   const { data, error, count } = await supabase
     .from('user')
     .select(USER_SELECT_COLUMNS, { count: 'exact' })
-    .order('Created Date', { ascending: false })
+    .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) {
@@ -289,8 +290,8 @@ async function handleSearchUsers(
   const { data, error } = await supabase
     .from('user')
     .select(USER_SELECT_COLUMNS)
-    .or(`email.ilike.%${searchTerm}%,"Name - Full".ilike.%${searchTerm}%`)
-    .order('Created Date', { ascending: false })
+    .or(`email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`)
+    .order('created_at', { ascending: false })
     .limit(20);
 
   if (error) {
@@ -319,7 +320,7 @@ async function handleGetUser(
   const { data, error } = await supabase
     .from('user')
     .select(USER_SELECT_COLUMNS)
-    .eq('_id', userId)
+    .eq('id', userId)
     .single();
 
   if (error) {
@@ -361,14 +362,15 @@ async function handleToggleVerification(
   const { data: currentUser, error: fetchError } = await supabase
     .from('user')
     .select(`
-      _id,
-      "email",
-      "Name - Full",
+      id,
+      email,
+      first_name,
+      last_name,
       "identity_verified",
       "profile completeness",
       "Tasks Completed"
     `)
-    .eq('_id', userId)
+    .eq('id', userId)
     .single();
 
   if (fetchError || !currentUser) {
@@ -406,10 +408,9 @@ async function handleToggleVerification(
       'identity_verified': isVerified,
       'profile completeness': newCompleteness,
       'Tasks Completed': newTasks,
-      'Modified Date': now,
       'updated_at': now,
     })
-    .eq('_id', userId)
+    .eq('id', userId)
     .select(USER_SELECT_COLUMNS)
     .single();
 
@@ -422,7 +423,7 @@ async function handleToggleVerification(
   console.log('[identity-verification-admin] Verification changed:', {
     userId,
     userEmail: currentUser.email,
-    userName: currentUser['Name - Full'],
+    userName: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim(),
     isVerified,
     previousVerified: currentUser['identity_verified'],
     adminEmail: adminUser?.email || 'anonymous',

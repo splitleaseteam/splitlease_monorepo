@@ -219,10 +219,10 @@ export default function useManageInformationalTextsPageLogic() {
         showToast(`Created "${formData.tagTitle}"`, 'success');
       } else {
         const updated = await callEdgeFunction('update', {
-          id: selectedEntry._id,
+          id: selectedEntry.id,
           ...formData
         });
-        setEntries(prev => prev.map(e => e._id === updated._id ? updated : e));
+        setEntries(prev => prev.map(e => e.id === updated.id ? updated : e));
         showToast(`Updated "${formData.tagTitle}"`, 'success');
       }
 
@@ -264,12 +264,12 @@ export default function useManageInformationalTextsPageLogic() {
 
     try {
       const result = await callEdgeFunction('delete', { id: deleteConfirmId });
-      setEntries(prev => prev.filter(e => e._id !== deleteConfirmId));
+      setEntries(prev => prev.filter(e => e.id !== deleteConfirmId));
       showToast(`Deleted "${result.tagTitle}"`, 'success');
       setDeleteConfirmId(null);
 
       // If editing the deleted entry, go back to list
-      if (selectedEntry?._id === deleteConfirmId) {
+      if (selectedEntry?.id === deleteConfirmId) {
         cancelForm();
       }
     } catch (err) {

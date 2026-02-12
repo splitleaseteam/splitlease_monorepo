@@ -227,7 +227,7 @@ function ListingDashboardContent() {
       {/* Schedule Cohost Modal */}
       {showScheduleCohost && (
         <ScheduleCohost
-          userId={currentUser?.userId || currentUser?._id || currentUser?.id || ''}
+          userId={currentUser?.userId || currentUser?.id || ''}
           userEmail={currentUser?.email || ''}
           userName={currentUser?.firstName || currentUser?.name || ''}
           listingId={listing?.id}
@@ -263,7 +263,7 @@ function ListingDashboardContent() {
       <ReferralModal
         isOpen={showReferralModal}
         onClose={() => setShowReferralModal(false)}
-        referralCode={currentUser?.userId || currentUser?._id || currentUser?.id || 'user'}
+        referralCode={currentUser?.userId || currentUser?.id || 'user'}
         userType="host"
         referrerName={currentUser?.first_name || currentUser?.firstName || currentUser?.name || ''}
       />

@@ -1,0 +1,101 @@
+{
+  "pages": [
+    {
+      "url": "http://localhost:3001",
+      "label": "Search/Map Page",
+      "consoleErrors": [
+        "Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at p\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at div\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at div\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at SearchScheduleSelector (http://localhost:3001/src/islands/shared/SearchScheduleSelector.jsx:340:3)",
+        "Failed to load resource: the server responded with a status of 400 ()",
+        "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}",
+        "Failed to load resource: the server responded with a status of 400 ()",
+        "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}"
+      ],
+      "networkErrors": "None",
+      "observations": "Page loaded: Yes, has content. Console errors: 5, Warnings: 4",
+      "verdict": "FAIL",
+      "screenshot": "C:\\Users\\igor\\OneDrive\\Documents\\splitlease\\app\\screenshot-search\\map-page.png"
+    },
+    {
+      "url": "http://localhost:3001/listing/1",
+      "label": "Listing Detail Page",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "networkErrors": "None",
+      "observations": "Page loaded: No content or blank. Console errors: 1, Warnings: 0",
+      "verdict": "WARN",
+      "screenshot": "C:\\Users\\igor\\OneDrive\\Documents\\splitlease\\app\\screenshot-listing-detail-page.png"
+    },
+    {
+      "url": "http://localhost:3001/login",
+      "label": "Login Page",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "networkErrors": "None",
+      "observations": "Page loaded: No content or blank. Console errors: 1, Warnings: 0",
+      "verdict": "WARN",
+      "screenshot": "C:\\Users\\igor\\OneDrive\\Documents\\splitlease\\app\\screenshot-login-page.png"
+    },
+    {
+      "url": "http://localhost:3001/dashboard",
+      "label": "Dashboard",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "networkErrors": "None",
+      "observations": "Page loaded: No content or blank. Console errors: 1, Warnings: 0",
+      "verdict": "WARN",
+      "screenshot": "C:\\Users\\igor\\OneDrive\\Documents\\splitlease\\app\\screenshot-dashboard.png"
+    },
+    {
+      "url": "http://localhost:3001/proposals",
+      "label": "Proposals Page",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "networkErrors": "None",
+      "observations": "Page loaded: No content or blank. Console errors: 1, Warnings: 0",
+      "verdict": "WARN",
+      "screenshot": "C:\\Users\\igor\\OneDrive\\Documents\\splitlease\\app\\screenshot-proposals-page.png"
+    },
+    {
+      "url": "http://localhost:3001/messages",
+      "label": "Messages Page",
+      "consoleErrors": [
+        "[ctaConfig] Failed to fetch CTA config: {message: TypeError: Failed to fetch, details: TypeError: Failed to fetch\n    at http://localhost…lands/pages/MessagingPage/useCTAHandler.js:32:24), hint: , code: }",
+        "Error fetching ZAT price configuration: {message: TypeError: Failed to fetch, details: TypeError: Failed to fetch\n    at http://localhost…seMessagingRealtimeChannelsAndCTALogic.js:274:24), hint: , code: }",
+        "Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <div> p \n    at div\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at p\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at div\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at div\n    at O2 (http://localhost:3001/node_modules/.vite/deps/styled-components.js?v=1bb4cda5:1198:6)\n    at SearchScheduleSelector (http://localhost:3001/src/islands/shared/SearchScheduleSelector.jsx:340:3)",
+        "Failed to load resource: the server responded with a status of 400 ()",
+        "Failed to load resource: the server responded with a status of 400 ()",
+        "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}",
+        "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}"
+      ],
+      "networkErrors": "None",
+      "observations": "Page loaded: Yes, has content. Console errors: 7, Warnings: 7",
+      "verdict": "FAIL",
+      "screenshot": "C:\\Users\\igor\\OneDrive\\Documents\\splitlease\\app\\screenshot-messages-page.png"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 0,
+    "failed": 2,
+    "criticalIssues": [
+      {
+        "page": "Search/Map Page",
+        "issues": [
+          "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}",
+          "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}"
+        ]
+      },
+      {
+        "page": "Messages Page",
+        "issues": [
+          "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}",
+          "Failed to initialize amenity lookups: {code: 42703, details: null, hint: Perhaps you meant to reference the column \"zat_features_amenity.id\"., message: column zat_features_amenity._id does not exist}"
+        ]
+      }
+    ]
+  }
+}

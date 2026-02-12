@@ -35,7 +35,7 @@ function PolicyCard({ policy }) {
  */
 function transformSupabaseDocument(supabaseDoc) {
   return {
-    id: supabaseDoc._id,
+    id: supabaseDoc.id,
     name: supabaseDoc.Name,
     slug: supabaseDoc.Slug || generateSlug(supabaseDoc.Name),
     type: supabaseDoc.Type || 'policy',

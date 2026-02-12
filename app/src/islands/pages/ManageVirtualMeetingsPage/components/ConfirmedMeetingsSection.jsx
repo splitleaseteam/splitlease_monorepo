@@ -53,7 +53,7 @@ export default function ConfirmedMeetingsSection({
           <div className="manage-vm__cards-grid">
             {meetings.map(meeting => (
               <ConfirmedMeetingCard
-                key={meeting._id || meeting.id}
+                key={meeting.id}
                 meeting={meeting}
                 onEdit={() => onEdit(meeting)}
                 onReschedule={() => onReschedule(meeting)}

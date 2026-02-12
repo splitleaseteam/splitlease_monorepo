@@ -40,7 +40,7 @@ export async function handleStepB(
     const { data: lease } = await supabase
       .from('lease')
       .select('guest_id, listing_id')
-      .eq('_id', leaseId)
+      .eq('id', leaseId)
       .single();
 
     if (lease) {
@@ -81,7 +81,7 @@ export async function handleStepB(
 
   return {
     houseManual: {
-      id: visit?._id || visit?.id || `visit_${Date.now()}`,
+      id: visit?.id || `visit_${Date.now()}`,
       accessedAt: new Date().toISOString(),
       status: 'accessed'
     }

@@ -50,6 +50,7 @@ import {
 } from "../_shared/functional/orchestration.ts";
 import { createErrorLog, addError, setUserId, setAction, ErrorLog } from "../_shared/functional/errorLog.ts";
 import { reportErrorLog } from "../_shared/slack.ts";
+import { getStatusCodeFromError } from '../_shared/errors.ts';
 
 // Import handlers
 import { handleSendMessage } from './handlers/sendMessage.ts';
@@ -225,7 +226,12 @@ Deno.serve(async (req) => {
     errorLog = addError(errorLog, error as Error, 'Fatal error in main handler');
 
     // Report to Slack (side effect at boundary)
-    reportErrorLog(errorLog);
+    const statusCode = getStatusCodeFromError(error as Error);
+    if (statusCode >= 500) {
+      reportErrorLog(errorLog);
+    } else {
+      console.log(`[messages] Skipping Slack report for ${statusCode} error`);
+    }
 
     return formatErrorResponseHttp(error as Error);
   }

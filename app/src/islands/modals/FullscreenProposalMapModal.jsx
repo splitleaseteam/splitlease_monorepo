@@ -102,11 +102,11 @@ function transformProposalsForMap(proposals, currentProposalId) {
       }
 
       return {
-        id: proposal.id || proposal._id,
+        id: proposal.id,
         coordinates,
         price: getProposalPrice(proposal),
         listingName: proposal.listing?.Name || 'Listing',
-        isHighlighted: (proposal.id || proposal._id) === currentProposalId
+        isHighlighted: proposal.id === currentProposalId
       };
     })
     .filter(Boolean);
@@ -155,7 +155,7 @@ export default function FullscreenProposalMapModal({
    */
   const handlePinClick = useCallback((proposalId) => {
     // Find the proposal name for feedback
-    const proposal = activeProposals.find(p => (p.id || p._id) === proposalId);
+    const proposal = activeProposals.find(p => p.id === proposalId);
     const listingName = proposal?.listing?.Name || 'Proposal';
 
     if (onProposalSelect) {
@@ -416,7 +416,7 @@ export default function FullscreenProposalMapModal({
 
   // Get dropdown options for proposal selector
   const proposalOptions = activeProposals.map(p => ({
-    id: p.id || p._id,
+    id: p.id,
     label: p.listing?.Name || 'Listing'
   }));
 

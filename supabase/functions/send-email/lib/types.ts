@@ -20,7 +20,7 @@ export interface SendEmailPayload {
 // Schema columns: _id, "Created By", "Created Date", "Description", "Email Reference",
 //                 "Email Template JSON", "Logo", "Modified Date", "Name", "Placeholder"
 export interface EmailTemplate {
-  _id: string;
+  id: string;
   Name?: string;
   'Email Template JSON': string;  // The HTML template with {{ placeholders }}
   Description?: string;           // Template description

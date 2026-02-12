@@ -4,20 +4,12 @@
     "src/*.jsx",
     "src/*.js",
     "scripts/*.js",
-    "scripts/*.cjs",
-    "vite.config.js",
-    "eslint.config.js",
-    "postcss.config.js",
-    "tailwind.config.js"
+    "scripts/*.cjs"
   ],
   "project": [
     "src/**/*.{js,jsx,ts,tsx}"
   ],
   "ignore": [
     "src/routes.config.js"
-  ],
-  "ignoreDependencies": [
-    "@rollup/rollup-linux-x64-gnu",
-    "lightningcss-linux-x64-gnu"
   ]
 }

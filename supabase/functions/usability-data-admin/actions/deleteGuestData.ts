@@ -30,7 +30,7 @@ export async function handleDeleteGuestData(
     .from('proposal')
     .delete()
     .eq('Guest', guestId)
-    .select('_id');
+    .select('id');
 
   if (proposalError) {
     console.error('[usability-data-admin] Delete proposals error:', proposalError);

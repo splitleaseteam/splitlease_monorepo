@@ -51,7 +51,7 @@ export default function PaymentRecordsTable({ records = [], onDownloadReceipt })
             const StatusIcon = statusIcon;
 
             return (
-              <tr key={record._id || record.id}>
+              <tr key={record.id}>
                 <td className="payment-records__date">
                   {formatDate(record.scheduledDate)}
                   {record.actualDate && record.actualDate !== record.scheduledDate && (
@@ -94,7 +94,7 @@ export default function PaymentRecordsTable({ records = [], onDownloadReceipt })
           const isPaid = record.isPaid || record.actualDate;
 
           return (
-            <div key={record._id || record.id} className="payment-records__card">
+            <div key={record.id} className="payment-records__card">
               <div className="payment-records__card-header">
                 <span className="payment-records__card-date">
                   {formatDate(record.scheduledDate)}

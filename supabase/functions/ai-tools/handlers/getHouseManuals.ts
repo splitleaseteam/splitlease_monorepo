@@ -11,7 +11,7 @@ export async function handleGetHouseManuals(context: HandlerContext) {
   // First, get the user's Bubble ID from the user table
   const { data: userData, error: userError } = await supabaseClient
     .from("user")
-    .select("_id")
+    .select("id")
     .eq("supabase_user_id", userId)
     .maybeSingle();
 
@@ -19,12 +19,12 @@ export async function handleGetHouseManuals(context: HandlerContext) {
     console.error("[ai-tools:getHouseManuals] User lookup error:", userError);
   }
 
-  const hostId = userData?._id || userId;
+  const hostId = userData?.id || userId;
 
   // Fetch house manuals for this host
   const { data, error } = await supabaseClient
     .from("housemanual")
-    .select("_id, Display, Host, Audience")
+    .select("id, Display, Host, Audience")
     .eq("Host", hostId)
     .order("Created Date", { ascending: false });
 

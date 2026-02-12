@@ -43,7 +43,7 @@ export function ListingPillSelector({
   return (
     <div className="hp7-listing-selector">
       {listings.map((listing) => {
-        const listingId = listing._id || listing.id;
+        const listingId = listing.id;
         const isActive = listingId === selectedListingId;
         const count = proposalCounts[listingId] ?? 0;
         const listingName = listing.title || listing.listing_title || 'Unnamed Listing';

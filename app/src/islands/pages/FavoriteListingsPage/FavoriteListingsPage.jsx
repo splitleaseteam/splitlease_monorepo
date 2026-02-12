@@ -556,7 +556,6 @@ const FavoriteListingsPage = () => {
         <CreateProposalFlowV2
           listing={{
             ...selectedListingForProposal,
-            _id: selectedListingForProposal.id || selectedListingForProposal._id,
             Name: selectedListingForProposal.title || selectedListingForProposal.Name,
             host: selectedListingForProposal.host || null
           }}

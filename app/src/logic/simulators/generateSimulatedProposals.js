@@ -41,7 +41,6 @@ function formatDateString(date) {
 export function generateSimulatedListing() {
   return {
     id: 'sim-listing-default',
-    _id: 'sim-listing-default',
     name: 'Simulated Brooklyn Apartment',
     neighborhood: 'Williamsburg',
     address: '123 Bedford Ave, Brooklyn, NY 11249',
@@ -110,7 +109,6 @@ export function generateSimulatedProposals({ listing, hostId }) {
 
     return {
       id: `sim-proposal-${index + 1}`,
-      _id: `sim-proposal-${index + 1}`,
       proposalNumber: index + 1,
 
       // Guest info
@@ -124,7 +122,7 @@ export function generateSimulatedProposals({ listing, hostId }) {
 
       // Listing info
       listing: hostListing,
-      listingId: hostListing.id || hostListing._id,
+      listingId: hostListing.id,
       listingName: hostListing.name || hostListing.Name,
 
       // Dates

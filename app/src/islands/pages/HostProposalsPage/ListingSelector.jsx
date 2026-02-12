@@ -18,13 +18,13 @@ export default function ListingSelector({
   proposalCount = 0
 }) {
   const handleChange = (e) => {
-    const listing = listings.find(l => l._id === e.target.value || l.id === e.target.value);
+    const listing = listings.find(l => l.id === e.target.value);
     if (listing) {
       onListingChange(listing);
     }
   };
 
-  const selectedId = selectedListing?._id || selectedListing?.id || '';
+  const selectedId = selectedListing?.id || '';
 
   return (
     <div className="listing-selector">
@@ -38,7 +38,7 @@ export default function ListingSelector({
         onChange={handleChange}
       >
         {listings.map((listing) => (
-          <option key={listing._id || listing.id} value={listing._id || listing.id}>
+          <option key={listing.id} value={listing.id}>
             {listing.name || listing.listing_title || listing['Listing Name'] || 'Unnamed Listing'}
           </option>
         ))}

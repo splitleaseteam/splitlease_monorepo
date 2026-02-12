@@ -98,7 +98,7 @@ export async function handleRequestPasswordReset(
 
       const { data: legacyUser, error: legacyError } = await supabaseAdmin
         .from('user')
-        .select('_id, email, "Name - First", "Name - Last", "Type - User Current"')
+        .select('id, email, first_name, last_name, current_user_role')
         .eq('email', emailLower)
         .maybeSingle();
 
@@ -118,10 +118,10 @@ export async function handleRequestPasswordReset(
       if (legacyUser) {
         console.log('[reset-password] Step 3: Creating auth.users entry for legacy user...');
         console.log('[reset-password] Legacy user data:', JSON.stringify({
-          _id: legacyUser._id,
+          id: legacyUser.id,
           email: legacyUser.email,
-          firstName: legacyUser['Name - First'],
-          userType: legacyUser['Type - User Current']
+          firstName: legacyUser.first_name,
+          userType: legacyUser.current_user_role
         }, null, 2));
         debugInfo.steps.push('creating_auth_user_for_legacy');
 
@@ -134,12 +134,12 @@ export async function handleRequestPasswordReset(
           email_confirm: true, // Auto-confirm so reset email works
           user_metadata: {
             // Link to existing records - DO NOT create new ones
-            user_id: legacyUser._id,
-            // host_account_id is now same as user_id (user._id used directly as host reference)
-            host_account_id: legacyUser._id,
-            user_type: legacyUser['Type - User Current'] || 'Guest',
-            first_name: legacyUser['Name - First'] || '',
-            last_name: legacyUser['Name - Last'] || '',
+            user_id: legacyUser.id,
+            // host_account_id is now same as user_id (user.id used directly as host reference)
+            host_account_id: legacyUser.id,
+            user_type: legacyUser.current_user_role || 'Guest',
+            first_name: legacyUser.first_name || '',
+            last_name: legacyUser.last_name || '',
             migrated_from_legacy: true,
             migration_date: new Date().toISOString()
           }
@@ -156,9 +156,9 @@ export async function handleRequestPasswordReset(
         } else {
           console.log('[reset-password] ✅ Successfully created auth.users entry for legacy user');
           console.log('[reset-password]    New Auth ID:', newAuthUser?.user?.id);
-          console.log('[reset-password]    Linked to user._id:', legacyUser._id);
+          console.log('[reset-password]    Linked to user.id:', legacyUser.id);
           debugInfo.createdAuthUserId = newAuthUser?.user?.id;
-          debugInfo.linkedToUserId = legacyUser._id;
+          debugInfo.linkedToUserId = legacyUser.id;
           debugInfo.steps.push('create_auth_user_success');
         }
       } else {

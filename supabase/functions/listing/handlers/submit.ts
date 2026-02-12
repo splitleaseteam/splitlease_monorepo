@@ -101,7 +101,7 @@ interface SubmitListingPayload {
 }
 
 interface SubmitListingResult {
-  _id: string;
+  id: string;
   listing_id: string;
   status: string;
   name: string;
@@ -290,8 +290,8 @@ export async function handleSubmit(
     console.log('[listing:submit] Step 1/4: Verifying listing exists...');
     const { data: existingListing, error: fetchError } = await supabase
       .from('listing')
-      .select('_id, Name, Status')
-      .eq('_id', listing_id)
+      .select('id, Name, Status')
+      .eq('id', listing_id)
       .single();
 
     if (fetchError || !existingListing) {
@@ -305,14 +305,14 @@ export async function handleSubmit(
     console.log('[listing:submit] Step 2/4: Looking up user...');
     const { data: userData } = await supabase
       .from('user')
-      .select('_id')
+      .select('id')
       .eq('email', user_email.toLowerCase())
       .single();
 
     let userId: string | null = null;
 
     if (userData) {
-      userId = userData._id;
+      userId = userData.id;
       console.log('[listing:submit] ✅ Step 2 complete - User found:', userId);
     } else {
       console.log('[listing:submit] ⚠️ Step 2 warning - User not found for email:', user_email);
@@ -328,11 +328,11 @@ export async function handleSubmit(
       try {
         const geoResult = await getGeoByZipCode(supabase, zipCode as string);
         if (geoResult.borough) {
-          boroughId = geoResult.borough._id;
+          boroughId = geoResult.borough.id;
           console.log('[listing:submit] ✅ Borough found:', geoResult.borough.displayName);
         }
         if (geoResult.hood) {
-          hoodId = geoResult.hood._id;
+          hoodId = geoResult.hood.id;
           console.log('[listing:submit] ✅ Hood found:', geoResult.hood.displayName);
         }
       } catch (geoError) {
@@ -353,7 +353,7 @@ export async function handleSubmit(
     // Build update object
     const updateData: Record<string, unknown> = {
       ...mappedData,
-      'Modified Date': now,
+      updated_at: now,
       Status: listing_data['Status'] || 'Pending Review',
     };
 
@@ -367,9 +367,9 @@ export async function handleSubmit(
       console.log('[listing:submit] Setting Location - Hood:', hoodId);
     }
 
-    // Attach user if found (Host User = user._id)
+    // Attach user if found (host_user_id = user.id)
     if (userId) {
-      updateData['Host User'] = userId;
+      updateData['host_user_id'] = userId;
       updateData['Created By'] = userId;
       updateData['Host email'] = user_email.toLowerCase();
     }
@@ -377,7 +377,7 @@ export async function handleSubmit(
     const { error: updateError } = await supabase
       .from('listing')
       .update(updateData)
-      .eq('_id', listing_id);
+      .eq('id', listing_id);
 
     if (updateError) {
       console.error('[listing:submit] Update failed:', updateError);
@@ -395,8 +395,8 @@ export async function handleSubmit(
         // NOTE: We can't use user.Listings array because it may not be updated yet
         const { count: listingCount, error: countError } = await supabase
           .from('listing')
-          .select('_id', { count: 'exact', head: true })
-          .eq('Host User', userId);
+          .select('id', { count: 'exact', head: true })
+          .eq('host_user_id', userId);
 
         if (countError) {
           console.warn('[listing:submit] Failed to count listings:', countError.message);
@@ -457,7 +457,7 @@ export async function handleSubmit(
 
     // Return the updated listing data
     return {
-      _id: listing_id,
+      id: listing_id,
       listing_id: listing_id,
       status: (listing_data['Status'] as string) || 'Pending Review',
       name: (listing_data['Name'] as string) || existingListing.Name,

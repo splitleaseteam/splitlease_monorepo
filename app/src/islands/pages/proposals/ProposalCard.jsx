@@ -1032,11 +1032,11 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
   // Handler for confirming Not Interested (marks proposal as deleted with optional feedback)
   const handleNotInterestedConfirm = async (feedback) => {
-    if (!proposal?._id || isNotInterestedProcessing) return;
+    if (!proposal?.id || isNotInterestedProcessing) return;
 
     setIsNotInterestedProcessing(true);
     try {
-      await dismissProposal(proposal._id, feedback);
+      await dismissProposal(proposal.id, feedback);
       console.log('[ProposalCard] Proposal marked as not interested');
       showToast({ title: 'Proposal dismissed', type: 'info' });
 
@@ -1045,7 +1045,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
       // Update UI state without page reload
       if (onProposalDeleted) {
-        onProposalDeleted(proposal._id);
+        onProposalDeleted(proposal.id);
       }
     } catch (error) {
       console.error('[ProposalCard] Error dismissing proposal:', error);
@@ -1057,7 +1057,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
   // Handler for confirm proposal (SL-suggested proposals)
   const handleConfirmProposal = async () => {
-    if (!proposal?._id || isConfirming) return;
+    if (!proposal?.id || isConfirming) return;
 
     if (!canConfirmSuggestedProposal(proposal)) {
       showToast({ title: 'Cannot confirm this proposal', type: 'error' });
@@ -1074,7 +1074,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
           proposal_workflow_status: nextStatus,
           'Modified Date': new Date().toISOString()
         })
-        .eq('id', proposal.id || proposal._id);
+        .eq('id', proposal.id);
 
       if (error) {
         console.error('[ProposalCard] Error confirming proposal:', error);
@@ -1095,18 +1095,18 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
   // Handler for delete proposal (soft-delete for already-cancelled proposals)
   const handleDeleteProposal = async () => {
-    if (!proposal?._id || isDeleting) return;
+    if (!proposal?.id || isDeleting) return;
 
     setIsDeleting(true);
     try {
-      await executeDeleteProposal(proposal._id);
+      await executeDeleteProposal(proposal.id);
       console.log('[ProposalCard] Proposal deleted successfully');
       // Show toast notification (info type for neutral confirmation)
       showToast({ title: 'Proposal deleted', type: 'info' });
 
       // Update UI state without page reload
       if (onProposalDeleted) {
-        onProposalDeleted(proposal._id);
+        onProposalDeleted(proposal.id);
       }
     } catch (error) {
       console.error('[ProposalCard] Error deleting proposal:', error);
@@ -1165,7 +1165,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
         {/* Quick Links Row */}
         <div className="links-row">
           <a
-            href={getListingUrlWithProposalContext(listing?._id, {
+            href={getListingUrlWithProposalContext(listing?.id, {
               daysSelected: parseDaysSelectedForContext(proposal),
               reservationSpan: getEffectiveReservationSpan(proposal),
               moveInDate: proposal['Move in range start']
@@ -1184,7 +1184,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
           </button>
           <button
             className="link-item"
-            onClick={() => navigateToMessaging(host?._id, proposal._id)}
+            onClick={() => navigateToMessaging(host?.id, proposal.id)}
           >
             Message Host
           </button>
@@ -1336,7 +1336,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
                     setProposalDetailsModalInitialView('pristine');
                     setShowProposalDetailsModal(true);
                   } else if (buttonConfig.guestAction1.action === 'submit_rental_app') {
-                    goToRentalApplication(proposal._id);
+                    goToRentalApplication(proposal.id);
                   } else if (buttonConfig.guestAction1.action === 'delete_proposal') {
                     handleDeleteProposal();
                   } else if (buttonConfig.guestAction1.action === 'confirm_proposal') {
@@ -1368,7 +1368,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
                   setProposalDetailsModalInitialView('pristine');
                   setShowProposalDetailsModal(true);
                 } else if (buttonConfig.guestAction2.action === 'submit_rental_app') {
-                  goToRentalApplication(proposal._id);
+                  goToRentalApplication(proposal.id);
                 } else if (buttonConfig.guestAction2.action === 'reject_suggestion') {
                   openNotInterestedModal();
                 }
@@ -1493,7 +1493,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
         isOpen={showMapModal}
         onClose={() => setShowMapModal(false)}
         proposals={allProposals}
-        currentProposalId={proposal._id}
+        currentProposalId={proposal.id}
         onProposalSelect={onProposalSelect}
       />
     </div>

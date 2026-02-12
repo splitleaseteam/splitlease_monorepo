@@ -178,7 +178,7 @@ export default function EmergencyDetails({
             >
               <option value="">Select team member...</option>
               {teamMembers.map((member) => (
-                <option key={member._id} value={member._id}>
+                <option key={member.id} value={member.id}>
                   {member.fullName || member.email}
                 </option>
               ))}

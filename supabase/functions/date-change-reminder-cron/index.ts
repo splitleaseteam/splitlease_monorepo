@@ -21,7 +21,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Types
 interface ExpiringRequest {
-  _id: string;
+  id: string;
   'Lease': string;
   'Requested by': string;
   'Request receiver': string;
@@ -36,7 +36,7 @@ interface ExpiringRequest {
 }
 
 interface LeaseData {
-  _id: string;
+  id: string;
   'Guest': string;
   'Host': string;
   'Listing': string;
@@ -45,7 +45,7 @@ interface LeaseData {
 }
 
 interface UserData {
-  _id: string;
+  id: string;
   email: string | null;
   'First Name': string | null;
 }
@@ -134,7 +134,7 @@ function generateReminderVariables(
     host_name: requesterIsHost ? requester['First Name'] : receiver['First Name'],
 
     // Property
-    property_display: `Lease #${lease._id.slice(0, 8)}`,
+    property_display: `Lease #${lease.id.slice(0, 8)}`,
 
     // Dates
     original_dates: `${new Date(lease.check_in).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(lease.check_out).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
@@ -189,7 +189,7 @@ Deno.serve(async (_req: Request) => {
     const { data: expiringRequests, error: queryError } = await supabase
       .from('datechangerequest')
       .select(`
-        _id,
+        id,
         "Lease",
         "Requested by",
         "Request receiver",
@@ -232,40 +232,40 @@ Deno.serve(async (_req: Request) => {
       try {
         // Check if reminder was sent recently
         if (wasReminderSentRecently(request['reminder_sent_at'])) {
-          console.log(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Reminder sent recently, skipping`);
+          console.log(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Reminder sent recently, skipping`);
           continue;
         }
 
-        console.log(`[date-change-reminder-cron] Processing request ${request._id.slice(0, 8)}...`);
+        console.log(`[date-change-reminder-cron] Processing request ${request.id.slice(0, 8)}...`);
 
         // Fetch lease data
         const { data: lease, error: leaseError } = await supabase
           .from('bookings_leases')
-          .select('_id, "Guest", "Host", "Listing", check_in, check_out')
-          .eq('_id', request['Lease'])
+          .select('id, "Guest", "Host", "Listing", check_in, check_out')
+          .eq('id', request['Lease'])
           .single();
 
         if (leaseError || !lease) {
-          console.warn(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Lease not found, skipping`);
+          console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Lease not found, skipping`);
           continue;
         }
 
         // Fetch user data for both parties
         const { data: users, error: usersError } = await supabase
           .from('user')
-          .select('_id, email, "First Name"')
-          .in('_id', [request['Requested by'], request['Request receiver']]);
+          .select('id, email, "First Name"')
+          .in('id', [request['Requested by'], request['Request receiver']]);
 
         if (usersError || !users) {
-          console.warn(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Users not found, skipping`);
+          console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Users not found, skipping`);
           continue;
         }
 
-        const requester = users.find(u => u._id === request['Requested by']) as UserData;
-        const receiver = users.find(u => u._id === request['Request receiver']) as UserData;
+        const requester = users.find(u => u.id === request['Requested by']) as UserData;
+        const receiver = users.find(u => u.id === request['Request receiver']) as UserData;
 
         if (!requester || !receiver) {
-          console.warn(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Missing user data, skipping`);
+          console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Missing user data, skipping`);
           continue;
         }
 
@@ -291,9 +291,9 @@ Deno.serve(async (_req: Request) => {
 
             await sendReminderEmail(supabaseUrl, supabaseServiceKey, templateId, requester.email, requesterVars);
             sentToRequester = true;
-            console.log(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Reminder sent to requester`);
+            console.log(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Reminder sent to requester`);
           } catch (emailError) {
-            console.warn(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Failed to send to requester:`, (emailError as Error).message);
+            console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Failed to send to requester:`, (emailError as Error).message);
           }
         }
 
@@ -316,9 +316,9 @@ Deno.serve(async (_req: Request) => {
 
             await sendReminderEmail(supabaseUrl, supabaseServiceKey, templateId, receiver.email, receiverVars);
             sentToReceiver = true;
-            console.log(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Reminder sent to receiver`);
+            console.log(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Reminder sent to receiver`);
           } catch (emailError) {
-            console.warn(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Failed to send to receiver:`, (emailError as Error).message);
+            console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Failed to send to receiver:`, (emailError as Error).message);
           }
         }
 
@@ -327,21 +327,21 @@ Deno.serve(async (_req: Request) => {
           await supabase
             .from('datechangerequest')
             .update({ reminder_sent_at: now.toISOString() })
-            .eq('_id', request._id);
+            .eq('id', request.id);
 
-          console.log(`[date-change-reminder-cron] Request ${request._id.slice(0, 8)}: Updated reminder_sent_at`);
+          console.log(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Updated reminder_sent_at`);
         }
 
         results.push({
-          requestId: request._id,
+          requestId: request.id,
           sentToRequester,
           sentToReceiver,
         });
 
       } catch (requestError) {
-        console.error(`[date-change-reminder-cron] Error processing request ${request._id.slice(0, 8)}:`, (requestError as Error).message);
+        console.error(`[date-change-reminder-cron] Error processing request ${request.id.slice(0, 8)}:`, (requestError as Error).message);
         results.push({
-          requestId: request._id,
+          requestId: request.id,
           sentToRequester: false,
           sentToReceiver: false,
           error: (requestError as Error).message,

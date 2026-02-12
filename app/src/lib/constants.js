@@ -266,12 +266,12 @@ export const DATABASE = {
     CANCELLATION_REASON: 'cancellation_reasons'
   },
   BOROUGH_FIELDS: {
-    ID: '_id',
+    ID: 'id',
     NAME: 'Display',
     VALUE: 'value'
   },
   NEIGHBORHOOD_FIELDS: {
-    ID: '_id',
+    ID: 'id',
     NAME: 'Display',
     BOROUGH_ID: 'Borough',
     VALUE: 'value'

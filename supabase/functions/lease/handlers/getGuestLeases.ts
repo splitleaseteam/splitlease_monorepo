@@ -110,7 +110,7 @@ export async function handleGetGuestLeases(
         }
         // Map to names the frontend adapter expects
         staysByLease[leaseId].push({
-          _id: s.id,
+          id: s.id,
           Lease: s.lease_id,
           'Week Number': s.week_number_in_lease,
           Guest: s.guest_user_id,
@@ -134,7 +134,7 @@ export async function handleGetGuestLeases(
     const { data: payments, error: paymentsError } = await supabase
       .from('paymentrecords')
       .select(`
-        _id,
+        id,
         "Booking - Reservation",
         "Payment #",
         "Scheduled Date",
@@ -161,7 +161,7 @@ export async function handleGetGuestLeases(
         }
         // Map to names the frontend adapter expects
         paymentsByLease[leaseId].push({
-          _id: p._id,
+          id: p.id,
           'Booking - Reservation': p['Booking - Reservation'],
           'Payment #': p['Payment #'],
           'Scheduled Date': p['Scheduled Date'],
@@ -185,7 +185,7 @@ export async function handleGetGuestLeases(
     const { data: dateChanges, error: dateChangesError } = await supabase
       .from('datechangerequest')
       .select(`
-        _id,
+        id,
         "Lease",
         "Requested by",
         "Request receiver",
@@ -230,7 +230,7 @@ export async function handleGetGuestLeases(
         }
         // Map to names the frontend adapter expects
         dateChangesByLease[leaseId].push({
-          _id: dc._id,
+          id: dc.id,
           Lease: dc['Lease'],
           'Requested by': dc['Requested by'],
           'Request receiver': dc['Request receiver'],
@@ -254,7 +254,7 @@ export async function handleGetGuestLeases(
     // Pass through all lease fields (snake_case from booking_lease)
     ...lease,
     // Also provide Bubble-era aliases the adapter checks for
-    _id: lease.id,
+    id: lease.id,
     // Related entities
     host: hostMap[lease.host_user_id as string] || null,
     listing: listingMap[lease.listing_id as string] || null,

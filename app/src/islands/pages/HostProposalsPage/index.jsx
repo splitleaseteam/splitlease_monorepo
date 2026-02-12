@@ -171,7 +171,7 @@ export default function HostProposalsPage() {
   const [expandedProposalId, setExpandedProposalId] = useState(null);
 
   // Demo mode state
-  const [demoSelectedListingId, setDemoSelectedListingId] = useState(MOCK_LISTINGS[0]?._id);
+  const [demoSelectedListingId, setDemoSelectedListingId] = useState(MOCK_LISTINGS[0]?.id);
 
   // Guest profile modal state
   const [isGuestProfileModalOpen, setIsGuestProfileModalOpen] = useState(false);
@@ -243,7 +243,7 @@ export default function HostProposalsPage() {
   // ============================================================================
   const listings = DEMO_MODE ? MOCK_LISTINGS : realListings;
   const selectedListing = DEMO_MODE
-    ? MOCK_LISTINGS.find(l => l._id === demoSelectedListingId) || MOCK_LISTINGS[0]
+    ? MOCK_LISTINGS.find(l => l.id === demoSelectedListingId) || MOCK_LISTINGS[0]
     : realSelectedListing;
   const proposals = DEMO_MODE ? MOCK_PROPOSALS : realProposals;
   const isLoading = DEMO_MODE ? false : realIsLoading;
@@ -252,7 +252,7 @@ export default function HostProposalsPage() {
     ? (listingId) => setDemoSelectedListingId(listingId)
     : realHandleListingChange;
   const proposalCountsByListing = DEMO_MODE
-    ? { [MOCK_LISTINGS[0]._id]: 1, [MOCK_LISTINGS[1]._id]: 0 }
+    ? { [MOCK_LISTINGS[0].id]: 1, [MOCK_LISTINGS[1].id]: 0 }
     : realProposalCounts;
 
   // ============================================================================
@@ -272,7 +272,7 @@ export default function HostProposalsPage() {
     if (targetProposalId) {
       // Find the proposal in the list
       const matchedProposal = proposals.find(p =>
-        (p._id || p.id) === targetProposalId
+        p.id === targetProposalId
       );
 
       if (matchedProposal) {
@@ -401,7 +401,7 @@ export default function HostProposalsPage() {
   // RENDER
   // ============================================================================
 
-  const selectedListingId = selectedListing?._id || selectedListing?.id;
+  const selectedListingId = selectedListing?.id;
   const selectedListingName = selectedListing?.title || selectedListing?.name;
   const hasProposals = proposals && proposals.length > 0;
 
@@ -495,7 +495,7 @@ export default function HostProposalsPage() {
         onRemindSplitLease={handleRemindSplitLease}
         onChooseVirtualMeeting={handleChooseVirtualMeeting}
         onRequestRentalApp={handleRequestRentalApp}
-        currentUserId={user?._id || user?.userId}
+        currentUserId={user?.id || user?.userId}
       />
 
       {/* Virtual Meeting Manager Modal */}

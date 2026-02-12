@@ -50,8 +50,8 @@ export async function handleAccept(
 
   const { data: proposal, error: proposalError } = await supabase
     .from("proposal")
-    .select(`_id, "virtual meeting"`)
-    .eq("_id", input.proposalId)
+    .select(`id, "virtual meeting"`)
+    .eq("id", input.proposalId)
     .single();
 
   if (proposalError || !proposal) {
@@ -73,7 +73,7 @@ export async function handleAccept(
   const { data: existingVM, error: vmFetchError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .select(`
-      _id,
+      id,
       "meeting declined",
       "booked date",
       host,
@@ -86,7 +86,7 @@ export async function handleAccept(
       "Listing (for Co-Host feature)",
       confirmedBySplitLease
     `)
-    .eq("_id", virtualMeetingId)
+    .eq("id", virtualMeetingId)
     .single();
 
   if (vmFetchError || !existingVM) {
@@ -120,7 +120,7 @@ export async function handleAccept(
   const { error: vmUpdateError } = await supabase
     .from("virtualmeetingschedulesandlinks")
     .update(vmUpdateData)
-    .eq("_id", virtualMeetingId);
+    .eq("id", virtualMeetingId);
 
   if (vmUpdateError) {
     console.error(`[virtual-meeting:accept] VM update failed:`, vmUpdateError);
@@ -139,7 +139,7 @@ export async function handleAccept(
       "request virtual meeting": "confirmed",
       "Modified Date": now,
     })
-    .eq("_id", input.proposalId);
+    .eq("id", input.proposalId);
 
   if (proposalUpdateError) {
     console.error(`[virtual-meeting:accept] Proposal update failed:`, proposalUpdateError);
@@ -155,17 +155,17 @@ export async function handleAccept(
   try {
     // Fetch user data for phone numbers and notification settings
     const [hostData, guestData] = await Promise.all([
-      supabase.from("user").select(`_id, "Phone Number (as text)", "Notification Setting"`).eq("_id", existingVM.host).single(),
-      supabase.from("user").select(`_id, "Phone Number (as text)", "Notification Setting"`).eq("_id", existingVM.guest).single(),
+      supabase.from("user").select('id, phone_number, notification_preference_setting').eq("id", existingVM.host).single(),
+      supabase.from("user").select('id, phone_number, notification_preference_setting').eq("id", existingVM.guest).single(),
     ]);
 
     // Fetch notification preferences
     const [hostNotifSettings, guestNotifSettings] = await Promise.all([
-      hostData.data?.["Notification Setting"]
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("_id", hostData.data["Notification Setting"]).single()
+      hostData.data?.notification_preference_setting
+        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", hostData.data.notification_preference_setting).single()
         : { data: null },
-      guestData.data?.["Notification Setting"]
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("_id", guestData.data["Notification Setting"]).single()
+      guestData.data?.notification_preference_setting
+        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", guestData.data.notification_preference_setting).single()
         : { data: null },
     ]);
 
@@ -178,7 +178,7 @@ export async function handleAccept(
       const { data: listing } = await supabase
         .from("listing")
         .select('"Name"')
-        .eq("_id", existingVM["Listing (for Co-Host feature)"])
+        .eq("id", existingVM["Listing (for Co-Host feature)"])
         .single();
       listingName = listing?.Name;
     }
@@ -193,8 +193,8 @@ export async function handleAccept(
       guestName: existingVM["guest name"],
       hostEmail: existingVM["host email"],
       guestEmail: existingVM["guest email"],
-      hostPhone: hostData.data?.["Phone Number (as text)"],
-      guestPhone: guestData.data?.["Phone Number (as text)"],
+      hostPhone: hostData.data?.phone_number,
+      guestPhone: guestData.data?.phone_number,
       bookedDate: input.bookedDate,
       notifyHostSms: hostVmNotifs.includes('SMS'),
       notifyHostEmail: hostVmNotifs.includes('Email'),

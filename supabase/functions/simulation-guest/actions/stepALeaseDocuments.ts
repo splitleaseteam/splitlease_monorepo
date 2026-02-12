@@ -39,7 +39,7 @@ export async function handleStepA(
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
     .select('*')
-    .eq('_id', proposalId)
+    .eq('id', proposalId)
     .single();
 
   if (fetchError || !proposal) {
@@ -68,7 +68,7 @@ export async function handleStepA(
     console.log('[step_a] Existing lease found, returning it');
     return {
       lease: {
-        id: existingLease._id || existingLease.id,
+        id: existingLease.id,
         proposalId,
         status: existingLease.status || 'Active',
         startDate: existingLease.start_date,
@@ -117,13 +117,13 @@ export async function handleStepA(
   await supabase
     .from('proposal')
     .update({ status: 'Lease Signed' })
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
-  console.log(`[step_a] Lease created: ${newLease?._id || newLease?.id}`);
+  console.log(`[step_a] Lease created: ${newLease?.id}`);
 
   return {
     lease: {
-      id: newLease?._id || newLease?.id || `lease_${Date.now()}`,
+      id: newLease?.id || `lease_${Date.now()}`,
       proposalId,
       status: 'Active',
       startDate: proposal.start_date,

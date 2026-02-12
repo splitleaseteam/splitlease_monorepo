@@ -496,7 +496,7 @@ async function handleModalSubmission(
   const { error: updateError } = await supabase
     .from('co_hostrequest')
     .update(updateData)
-    .eq('_id', metadata.requestId);
+    .eq('id', metadata.requestId);
 
   if (updateError) {
     console.error('[slack-callback] Database update failed:', updateError);

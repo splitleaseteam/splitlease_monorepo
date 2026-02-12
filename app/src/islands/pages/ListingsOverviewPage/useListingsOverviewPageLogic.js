@@ -74,8 +74,8 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
   const errors = ensureArray(row.Errors);
 
   return {
-    id: row._id,
-    uniqueId: row['Listing Code OP'] || row._id?.slice(-8) || 'N/A',
+    id: row.id,
+    uniqueId: row['Listing Code OP'] || row.id?.slice(-8) || 'N/A',
     name: row.listing_title || 'Untitled Listing',
     description: row.Description || '',
     host: {

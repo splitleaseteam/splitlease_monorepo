@@ -273,7 +273,7 @@ const InfoContainer = styled.div`
   }
 `;
 
-const InfoText = styled.p`
+const InfoText = styled.div`
   margin: 0;
   font-size: 14.7px;
   font-weight: 400;

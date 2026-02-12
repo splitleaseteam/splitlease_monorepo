@@ -90,7 +90,7 @@ export async function handleUpdate(
   const { data: proposal, error: fetchError } = await supabase
     .from("proposal")
     .select("*")
-    .eq("_id", input.proposal_id)
+    .eq("id", input.proposal_id)
     .single();
 
   if (fetchError || !proposal) {
@@ -99,7 +99,7 @@ export async function handleUpdate(
   }
 
   const proposalData = proposal as unknown as ProposalData;
-  console.log(`[proposal:update] Found proposal with status: ${proposalData.Status}`);
+  console.log(`[proposal:update] Found proposal with status: ${proposalData.proposal_workflow_status}`);
 
   // ================================================
   // AUTHORIZATION CHECK
@@ -120,11 +120,11 @@ export async function handleUpdate(
     console.log('[proposal:update] ═══════════════════════════════════');
     console.log('[proposal:update] Checking authorization...');
     console.log('[proposal:update] User ID from auth:', user!.id);
-    console.log('[proposal:update] Proposal Guest ID:', proposalData.Guest);
-    console.log('[proposal:update] Proposal Host User ID:', proposalData["Host User"]);
+    console.log('[proposal:update] Proposal Guest ID:', proposalData.guest_user_id);
+    console.log('[proposal:update] Proposal Host User ID:', proposalData.host_user_id);
 
-    isGuest = proposalData.Guest === user!.id;
-    isHost = await checkIsHost(supabase, proposalData["Host User"], user!.id);
+    isGuest = proposalData.guest_user_id === user!.id;
+    isHost = await checkIsHost(supabase, proposalData.host_user_id, user!.id);
     isAdmin = await checkIsAdmin(supabase, user!.id);
 
     console.log('[proposal:update] Is guest?', isGuest);
@@ -145,9 +145,9 @@ export async function handleUpdate(
   // CHECK TERMINAL STATUS
   // ================================================
 
-  if (isTerminalStatus(proposalData.Status as ProposalStatusName)) {
+  if (isTerminalStatus(proposalData.proposal_workflow_status as ProposalStatusName)) {
     throw new ValidationError(
-      `Cannot update proposal in terminal status: ${proposalData.Status}`
+      `Cannot update proposal in terminal status: ${proposalData.proposal_workflow_status}`
     );
   }
 
@@ -160,21 +160,21 @@ export async function handleUpdate(
   const now = new Date().toISOString();
 
   // Status transition
-  if (input.status !== undefined && input.status !== proposalData.Status) {
+  if (input.status !== undefined && input.status !== proposalData.proposal_workflow_status) {
     if (!isValidStatus(input.status)) {
       throw new ValidationError(`Invalid status: ${input.status}`);
     }
 
     if (!isValidStatusTransition(
-      proposalData.Status as ProposalStatusName,
+      proposalData.proposal_workflow_status as ProposalStatusName,
       input.status as ProposalStatusName
     )) {
       throw new ValidationError(
-        `Invalid status transition: ${proposalData.Status} → ${input.status}`
+        `Invalid status transition: ${proposalData.proposal_workflow_status} → ${input.status}`
       );
     }
 
-    updates.Status = input.status;
+    updates.proposal_workflow_status = input.status;
     updatedFields.push("status");
 
     // Add to history
@@ -184,41 +184,41 @@ export async function handleUpdate(
     );
     // CRITICAL: Parse JSONB array - Supabase can return as stringified JSON
     const currentHistory = parseJsonArray<string>(
-      (proposalData as unknown as { History: unknown }).History,
-      "History"
+      (proposalData as unknown as { proposal_event_log_json: unknown }).proposal_event_log_json,
+      "proposal_event_log_json"
     );
-    updates.History = [...currentHistory, historyEntry];
+    updates.proposal_event_log_json = [...currentHistory, historyEntry];
   }
 
   // Pricing updates
   if (input.proposal_price !== undefined) {
-    updates["proposal nightly price"] = input.proposal_price;
+    updates.calculated_nightly_price = input.proposal_price;
     updatedFields.push("proposal_price");
   }
 
   // Date updates
   if (input.move_in_start_range !== undefined) {
-    updates["Move in range start"] = input.move_in_start_range;
+    updates.move_in_range_start_date = input.move_in_start_range;
     updatedFields.push("move_in_start_range");
   }
   if (input.move_in_end_range !== undefined) {
-    updates["Move in range end"] = input.move_in_end_range;
+    updates.move_in_range_end_date = input.move_in_end_range;
     updatedFields.push("move_in_end_range");
   }
 
   // Day/Night selection updates
   if (input.days_selected !== undefined) {
-    updates["Days Selected"] = input.days_selected;
+    updates.guest_selected_days_numbers_json = input.days_selected;
     updatedFields.push("days_selected");
   }
   if (input.nights_selected !== undefined) {
-    updates["Nights Selected (Nights list)"] = input.nights_selected;
-    updates["nights per week (num)"] = input.nights_selected.length;
+    updates.guest_selected_nights_numbers_json = input.nights_selected;
+    updates.nights_per_week_count = input.nights_selected.length;
     updatedFields.push("nights_selected");
 
     // Recalculate complementary nights
-    const availableNights = (proposalData as unknown as { "Days Available": number[] })["Days Available"] || [];
-    updates["Complementary Nights"] = calculateComplementaryNights(
+    const availableNights = (proposalData as unknown as { available_days_of_week_numbers_json: number[] }).available_days_of_week_numbers_json || [];
+    updates.complimentary_free_nights_numbers_json = calculateComplementaryNights(
       availableNights,
       input.nights_selected
     );
@@ -226,13 +226,13 @@ export async function handleUpdate(
 
   // Duration updates
   if (input.reservation_span_weeks !== undefined) {
-    updates["Reservation Span (Weeks)"] = input.reservation_span_weeks;
+    updates.reservation_span_in_weeks = input.reservation_span_weeks;
     updatedFields.push("reservation_span_weeks");
   }
 
   // Comment updates
   if (input.comment !== undefined) {
-    updates.Comment = input.comment;
+    updates.guest_introduction_message = input.comment;
     updatedFields.push("comment");
   }
 
@@ -241,62 +241,62 @@ export async function handleUpdate(
   // ================================================
 
   if (input.host_counter_offer_nightly_price !== undefined) {
-    updates["host_counter_offer_nightly_price"] = input.host_counter_offer_nightly_price;
+    updates.host_proposed_nightly_price = input.host_counter_offer_nightly_price;
     updatedFields.push("host_counter_offer_nightly_price");
   }
 
-  // Set "counter offer happened" flag when status changes to counteroffer
+  // Set "has_host_counter_offer" flag when status changes to counteroffer
   // This must be set regardless of which hc_ fields are provided
   if (input.status === "Host Counteroffer Submitted / Awaiting Guest Review") {
-    updates["counter offer happened"] = true;
+    updates.has_host_counter_offer = true;
   }
   if (input.host_counter_offer_days_selected !== undefined) {
-    updates["host_counter_offer_days_selected"] = input.host_counter_offer_days_selected;
+    updates.host_proposed_selected_days_json = input.host_counter_offer_days_selected;
     updatedFields.push("host_counter_offer_days_selected");
   }
   if (input.host_counter_offer_nights_selected !== undefined) {
-    updates["host_counter_offer_nights_selected"] = input.host_counter_offer_nights_selected;
-    updates["host_counter_offer_nights_per_week"] = input.host_counter_offer_nights_selected.length;
+    updates.host_proposed_selected_nights_json = input.host_counter_offer_nights_selected;
+    updates.host_proposed_nights_per_week = input.host_counter_offer_nights_selected.length;
     updatedFields.push("host_counter_offer_nights_selected");
   }
   if (input.host_counter_offer_nights_per_week !== undefined) {
-    updates["host_counter_offer_nights_per_week"] = input.host_counter_offer_nights_per_week;
+    updates.host_proposed_nights_per_week = input.host_counter_offer_nights_per_week;
     updatedFields.push("host_counter_offer_nights_per_week");
   }
   if (input.host_counter_offer_move_in_date !== undefined) {
-    updates["host_counter_offer_move_in_date"] = input.host_counter_offer_move_in_date;
+    updates.host_proposed_move_in_date = input.host_counter_offer_move_in_date;
     updatedFields.push("host_counter_offer_move_in_date");
   }
   if (input.host_counter_offer_reservation_span_weeks !== undefined) {
-    updates["host_counter_offer_reservation_span_weeks"] = input.host_counter_offer_reservation_span_weeks;
+    updates.host_proposed_reservation_span_weeks = input.host_counter_offer_reservation_span_weeks;
     updatedFields.push("host_counter_offer_reservation_span_weeks");
   }
   if (input.host_counter_offer_cleaning_fee !== undefined) {
-    updates["host_counter_offer_cleaning_fee"] = input.host_counter_offer_cleaning_fee;
+    updates.host_proposed_cleaning_fee = input.host_counter_offer_cleaning_fee;
     updatedFields.push("host_counter_offer_cleaning_fee");
   }
   if (input.host_counter_offer_damage_deposit !== undefined) {
-    updates["host_counter_offer_damage_deposit"] = input.host_counter_offer_damage_deposit;
+    updates.host_proposed_damage_deposit = input.host_counter_offer_damage_deposit;
     updatedFields.push("host_counter_offer_damage_deposit");
   }
   if (input.host_counter_offer_total_price !== undefined) {
-    updates["host_counter_offer_total_price"] = input.host_counter_offer_total_price;
+    updates.host_proposed_total_guest_price = input.host_counter_offer_total_price;
     updatedFields.push("host_counter_offer_total_price");
   }
   if (input.host_counter_offer_four_week_rent !== undefined) {
-    updates["host_counter_offer_4_week_rent"] = input.host_counter_offer_four_week_rent;
+    updates.host_proposed_four_week_rent = input.host_counter_offer_four_week_rent;
     updatedFields.push("host_counter_offer_four_week_rent");
   }
   if (input.host_counter_offer_check_in !== undefined) {
-    updates["host_counter_offer_check_in_day"] = input.host_counter_offer_check_in;
+    updates.host_proposed_checkin_day = input.host_counter_offer_check_in;
     updatedFields.push("host_counter_offer_check_in");
   }
   if (input.host_counter_offer_check_out !== undefined) {
-    updates["host_counter_offer_check_out_day"] = input.host_counter_offer_check_out;
+    updates.host_proposed_checkout_day = input.host_counter_offer_check_out;
     updatedFields.push("host_counter_offer_check_out");
   }
   if (input.host_counter_offer_house_rules !== undefined) {
-    updates["host_counter_offer_house_rules"] = input.host_counter_offer_house_rules;
+    updates.host_proposed_house_rules_json = input.host_counter_offer_house_rules;
     updatedFields.push("host_counter_offer_house_rules");
   }
 
@@ -320,62 +320,61 @@ export async function handleUpdate(
       .from("listing")
       .select(
         `
-        _id,
-        pricing_list,
-        "rental type",
-        weekly_host_rate,
-        monthly_host_rate,
-        nightly_rate_1_night,
-        nightly_rate_2_nights,
-        nightly_rate_3_nights,
-        nightly_rate_4_nights,
-        nightly_rate_5_nights,
-        nightly_rate_6_nights,
-        nightly_rate_7_nights
+        id,
+        pricing_configuration_id,
+        rental_type,
+        weekly_rate_paid_to_host,
+        monthly_rate_paid_to_host,
+        nightly_rate_for_1_night_stay,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay
       `
       )
-      .eq("_id", proposalData.Listing)
+      .eq("id", proposalData.listing_id)
       .single();
 
     if (listingError || !listing) {
       throw new ValidationError(
-        `Failed to load listing for pricing: ${proposalData.Listing}`
+        `Failed to load listing for pricing: ${proposalData.listing_id}`
       );
     }
 
     const reservationSpan =
-      (proposalData["Reservation Span"] as string | undefined) || "other";
+      (proposalData.reservation_span_text as string | undefined) || "other";
     const rentalType =
-      ((listing["rental type"] || proposalData["rental type"] || "nightly")
+      ((listing.rental_type || proposalData.rental_type || "nightly")
         .toString()
         .toLowerCase() as RentalType);
 
     const hcNightsSelected =
       input.host_counter_offer_nights_selected ||
-      (proposalData["host_counter_offer_nights_selected"] as number[] | undefined) ||
-      (proposalData["Nights Selected (Nights list)"] as number[] | undefined) ||
+      (proposalData.host_proposed_selected_nights_json as number[] | undefined) ||
+      (proposalData.guest_selected_nights_numbers_json as number[] | undefined) ||
       [];
 
     const hcNightsPerWeek =
       input.host_counter_offer_nights_per_week ||
       (Array.isArray(hcNightsSelected) ? hcNightsSelected.length : 0) ||
-      (proposalData["host_counter_offer_nights_per_week"] as number | undefined) ||
-      (proposalData["nights per week (num)"] as number | undefined) ||
+      (proposalData.host_proposed_nights_per_week as number | undefined) ||
+      (proposalData.nights_per_week_count as number | undefined) ||
       0;
 
     const hcReservationWeeks =
       input.host_counter_offer_reservation_span_weeks ||
-      (proposalData["host_counter_offer_reservation_span_weeks"] as number | undefined) ||
-      (proposalData["Reservation Span (Weeks)"] as number | undefined) ||
+      (proposalData.host_proposed_reservation_span_weeks as number | undefined) ||
+      (proposalData.reservation_span_in_weeks as number | undefined) ||
       0;
 
     let pricingListRates = null;
 
-    if (listing.pricing_list) {
+    if (listing.pricing_configuration_id) {
       const { data: pricingList, error: pricingListError } = await supabase
         .from("pricing_list")
         .select('"Nightly Price", "Host Compensation"')
-        .eq("_id", listing.pricing_list)
+        .eq("id", listing.pricing_configuration_id)
         .single();
 
       if (pricingListError) {
@@ -426,9 +425,9 @@ export async function handleUpdate(
 
     const hostCompPerPeriod =
       rentalType === "weekly"
-        ? (listing.weekly_host_rate || derivedWeeklyRate)
+        ? (listing.weekly_rate_paid_to_host || derivedWeeklyRate)
         : rentalType === "monthly"
-          ? (listing.monthly_host_rate || derivedMonthlyRate)
+          ? (listing.monthly_rate_paid_to_host || derivedMonthlyRate)
           : hostCompPerNight;
 
     const totalHostCompensation =
@@ -449,14 +448,14 @@ export async function handleUpdate(
           ? hostCompPerPeriod * 4
           : hostCompPerNight * hcNightsPerWeek * 4;
 
-    updates["host_counter_offer_nights_per_week"] = hcNightsPerWeek;
-    updates["host_counter_offer_nightly_price"] = roundToTwoDecimals(guestNightlyPrice);
-    updates["host_counter_offer_total_price"] = roundToTwoDecimals(totalGuestPrice);
-    updates["host_counter_offer_4_week_rent"] = roundToTwoDecimals(fourWeekRent);
-    updates["host_counter_offer_4_week_compensation"] = roundToTwoDecimals(fourWeekCompensation);
-    updates["host_counter_offer_host_compensation_per_period"] = roundToTwoDecimals(hostCompPerPeriod);
-    updates["host_counter_offer_total_host_compensation"] = roundToTwoDecimals(totalHostCompensation);
-    updates["host_counter_offer_duration_in_months"] = roundToTwoDecimals(durationMonths);
+    updates.host_proposed_nights_per_week = hcNightsPerWeek;
+    updates.host_proposed_nightly_price = roundToTwoDecimals(guestNightlyPrice);
+    updates.host_proposed_total_guest_price = roundToTwoDecimals(totalGuestPrice);
+    updates.host_proposed_four_week_rent = roundToTwoDecimals(fourWeekRent);
+    updates.host_proposed_four_week_compensation = roundToTwoDecimals(fourWeekCompensation);
+    updates.host_proposed_compensation_per_period = roundToTwoDecimals(hostCompPerPeriod);
+    updates.host_proposed_total_host_compensation = roundToTwoDecimals(totalHostCompensation);
+    updates.host_proposed_duration_months = roundToTwoDecimals(durationMonths);
 
     updatedFields.push(
       "host_counter_offer_nights_per_week",
@@ -488,14 +487,14 @@ export async function handleUpdate(
   // APPLY UPDATE
   // ================================================
 
-  updates["Modified Date"] = now;
+  updates.updated_at = now;
 
   console.log(`[proposal:update] Updating fields: ${updatedFields.join(", ")}`);
 
   const { error: updateError } = await supabase
     .from("proposal")
     .update(updates)
-    .eq("_id", input.proposal_id);
+    .eq("id", input.proposal_id);
 
   if (updateError) {
     console.error(`[proposal:update] Update failed:`, updateError);
@@ -511,7 +510,7 @@ export async function handleUpdate(
   if (input.status) {
     console.log(`[proposal:update] [ASYNC] Status changed, would trigger notifications:`, {
       proposal_id: input.proposal_id,
-      old_status: proposalData.Status,
+      old_status: proposalData.proposal_workflow_status,
       new_status: input.status,
     });
   }
@@ -533,24 +532,24 @@ export async function handleUpdate(
 
       if (threadId) {
         // Fetch host name for the intro message
-        const hostProfile = await getUserProfile(supabase, proposalData["Host User"]);
+        const hostProfile = await getUserProfile(supabase, proposalData.host_user_id);
         const hostFirstName = hostProfile?.firstName || "The host";
 
         // Build context for AI summary
-        const originalDays = proposalData["Days Selected"] as number[] || [];
+        const originalDays = proposalData.guest_selected_days_numbers_json as number[] || [];
         const counterDays = input.host_counter_offer_days_selected || originalDays;
 
         const counterSummary = await generateCounterOfferSummary(supabase, {
-          originalWeeks: proposalData["Reservation Span (Weeks)"] || 0,
-          originalMoveIn: formatDateForDisplay(proposalData["Move in range start"] || ""),
+          originalWeeks: proposalData.reservation_span_in_weeks || 0,
+          originalMoveIn: formatDateForDisplay(proposalData.move_in_range_start_date || ""),
           originalDays: formatDaysAsRange(originalDays),
-          originalNightlyPrice: proposalData["proposal nightly price"] || 0,
-          originalTotalPrice: proposalData["Total Price for Reservation (guest)"] || 0,
-          counterWeeks: input.host_counter_offer_reservation_span_weeks || proposalData["Reservation Span (Weeks)"] || 0,
-          counterMoveIn: formatDateForDisplay(input.host_counter_offer_move_in_date || proposalData["Move in range start"] || ""),
+          originalNightlyPrice: proposalData.calculated_nightly_price || 0,
+          originalTotalPrice: proposalData.total_reservation_price_for_guest || 0,
+          counterWeeks: input.host_counter_offer_reservation_span_weeks || proposalData.reservation_span_in_weeks || 0,
+          counterMoveIn: formatDateForDisplay(input.host_counter_offer_move_in_date || proposalData.move_in_range_start_date || ""),
           counterDays: formatDaysAsRange(counterDays),
-          counterNightlyPrice: input.host_counter_offer_nightly_price || proposalData["proposal nightly price"] || 0,
-          counterTotalPrice: input.host_counter_offer_total_price || proposalData["Total Price for Reservation (guest)"] || 0,
+          counterNightlyPrice: input.host_counter_offer_nightly_price || proposalData.calculated_nightly_price || 0,
+          counterTotalPrice: input.host_counter_offer_total_price || proposalData.total_reservation_price_for_guest || 0,
         });
 
         // Build the full message with intro
@@ -570,7 +569,7 @@ export async function handleUpdate(
           callToAction: "Respond to Counter Offer",
           visibleToHost: false,
           visibleToGuest: true,
-          recipientUserId: proposalData.Guest,
+          recipientUserId: proposalData.guest_user_id,
         });
 
         console.log(`[proposal:update] Counteroffer message sent to guest`);
@@ -589,7 +588,7 @@ export async function handleUpdate(
 
   return {
     proposal_id: input.proposal_id,
-    status: (input.status || proposalData.Status) as string,
+    status: (input.status || proposalData.proposal_workflow_status) as string,
     updated_fields: updatedFields,
     updated_at: now,
   };
@@ -597,7 +596,7 @@ export async function handleUpdate(
 
 /**
  * Check if user is the host of the proposal's listing
- * Host User now directly contains user._id - simple equality check
+ * Host User now directly contains user.id - simple equality check
  */
 function checkIsHost(
   _supabase: SupabaseClient,
@@ -606,7 +605,7 @@ function checkIsHost(
 ): Promise<boolean> {
   if (!hostUserId) return false;
 
-  // Host User column now contains user._id directly - just compare
+  // Host User column now contains user.id directly - just compare
   return hostUserId === userId;
 }
 
@@ -619,9 +618,9 @@ async function checkIsAdmin(
 ): Promise<boolean> {
   const { data } = await _supabase
     .from("user")
-    .select(`"Toggle - Is Admin"`)
-    .eq("_id", userId)
+    .select('is_admin')
+    .eq("id", userId)
     .single();
 
-  return data?.["Toggle - Is Admin"] === true;
+  return data?.is_admin === true;
 }

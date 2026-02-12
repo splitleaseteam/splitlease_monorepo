@@ -25,7 +25,7 @@ export async function handleGetReviewDetails(
   // Get user record
   const { data: userData, error: userError } = await supabase
     .from("user")
-    .select("_id")
+    .select("id")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -40,13 +40,13 @@ export async function handleGetReviewDetails(
     );
   }
 
-  const userId = userData._id;
+  const userId = userData.id;
 
   // Query review with all related data
   const { data: review, error: queryError } = await supabase
     .from("review")
     .select(`
-      _id,
+      id,
       stay_id,
       lease_id,
       listing_id,
@@ -72,13 +72,13 @@ export async function handleGetReviewDetails(
         address_state
       ),
       reviewer:reviewer_id (
-        _id,
+        id,
         name_first,
         name_last,
         profile_image_url
       ),
       reviewee:reviewee_id (
-        _id,
+        id,
         name_first,
         name_last,
         profile_image_url
@@ -89,7 +89,7 @@ export async function handleGetReviewDetails(
         rating
       )
     `)
-    .eq("_id", payload.reviewId)
+    .eq("id", payload.reviewId)
     .single();
 
   if (queryError || !review) {
@@ -121,7 +121,7 @@ export async function handleGetReviewDetails(
   const reviewee = review.reviewee as any;
 
   const transformedReview = {
-    review_id: review._id,
+    review_id: review.id,
     stay_id: review.stay_id,
     lease_id: review.lease_id,
     listing_id: review.listing_id,

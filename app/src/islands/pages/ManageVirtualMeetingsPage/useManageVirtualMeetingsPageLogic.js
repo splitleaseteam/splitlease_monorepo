@@ -240,7 +240,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
   // ===== MEETING ACTIONS =====
 
   const handleConfirmMeeting = useCallback(async (meetingId, bookedDate, meetingLink) => {
-    const meeting = newRequests.find(m => m._id === meetingId);
+    const meeting = newRequests.find(m => m.id === meetingId);
     if (!canConfirmMeeting(meeting)) {
       showToast({ title: 'Cannot confirm this meeting', type: 'error' });
       return;
@@ -256,7 +256,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
       });
 
       // Move from newRequests to confirmedMeetings
-      setNewRequests(prev => prev.filter(m => m._id !== meetingId));
+      setNewRequests(prev => prev.filter(m => m.id !== meetingId));
       setConfirmedMeetings(prev => [...prev, updatedMeeting]);
 
       showToast({ title: 'Meeting confirmed successfully', type: 'success' });
@@ -271,7 +271,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
   }, [newRequests, callEdgeFunction, showToast]);
 
   const handleUpdateMeetingDates = useCallback(async (meetingId, suggestedDates) => {
-    const meeting = newRequests.find(m => m._id === meetingId);
+    const meeting = newRequests.find(m => m.id === meetingId);
     if (!canEditMeetingDates(meeting)) {
       showToast({ title: 'Cannot edit dates for this meeting', type: 'error' });
       return;
@@ -287,7 +287,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
       // Update in newRequests
       setNewRequests(prev => prev.map(m =>
-        m._id === meetingId ? updatedMeeting : m
+        m.id === meetingId ? updatedMeeting : m
       ));
 
       showToast({ title: 'Meeting dates updated', type: 'success' });
@@ -302,8 +302,8 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
   }, [newRequests, callEdgeFunction, showToast]);
 
   const handleDeleteMeeting = useCallback(async (meetingId) => {
-    const meeting = newRequests.find(m => m._id === meetingId) ||
-                    confirmedMeetings.find(m => m._id === meetingId);
+    const meeting = newRequests.find(m => m.id === meetingId) ||
+                    confirmedMeetings.find(m => m.id === meetingId);
 
     if (!canDeleteMeeting(meeting)) {
       showToast({ title: 'Cannot delete this meeting', type: 'error' });
@@ -316,8 +316,8 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
       await callEdgeFunction('admin_delete_meeting', { meetingId });
 
       // Remove from appropriate list
-      setNewRequests(prev => prev.filter(m => m._id !== meetingId));
-      setConfirmedMeetings(prev => prev.filter(m => m._id !== meetingId));
+      setNewRequests(prev => prev.filter(m => m.id !== meetingId));
+      setConfirmedMeetings(prev => prev.filter(m => m.id !== meetingId));
 
       showToast({ title: 'Meeting deleted', type: 'success' });
       handleCloseDeleteModal();
@@ -332,7 +332,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
   // Process calendar automation - create Google Meet link and send invites
   const handleProcessCalendarInvites = useCallback(async (meetingId) => {
-    const meeting = confirmedMeetings.find(m => m._id === meetingId);
+    const meeting = confirmedMeetings.find(m => m.id === meetingId);
     if (!meeting) {
       showToast({ title: 'Meeting not found', type: 'error' });
       return;
@@ -347,7 +347,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
       // Update the meeting with new data
       setConfirmedMeetings(prev => prev.map(m =>
-        m._id === meetingId
+        m.id === meetingId
           ? {
               ...m,
               meeting_link: result.meetLink,
@@ -377,7 +377,7 @@ export function useManageVirtualMeetingsPageLogic({ showToast }) {
 
       // Update status to failed
       setConfirmedMeetings(prev => prev.map(m =>
-        m._id === meetingId
+        m.id === meetingId
           ? { ...m, calendar_status: 'failed', calendar_error_message: err.message }
           : m
       ));

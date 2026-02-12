@@ -25,7 +25,7 @@ export default function ConfirmMeetingModal({
     if (!selectedDate) return;
 
     const finalLink = meetingLink || generateDefaultLink(linkType);
-    onConfirm(meeting._id || meeting.id, selectedDate, finalLink);
+    onConfirm(meeting.id, selectedDate, finalLink);
   };
 
   return (

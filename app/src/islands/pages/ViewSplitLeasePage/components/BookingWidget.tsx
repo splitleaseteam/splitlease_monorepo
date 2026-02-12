@@ -87,7 +87,7 @@ const BookingWidget = memo(function BookingWidget({
                     </p>
 
                     <a
-                        href={`/guest-proposals?proposal=${existingProposal._id}`}
+                        href={`/guest-proposals?proposal=${existingProposal.id}`}
                         className={styles.viewProposalButton}
                     >
                         View Proposal

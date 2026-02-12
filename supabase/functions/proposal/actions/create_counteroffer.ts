@@ -59,7 +59,7 @@ export async function handleCreateCounteroffer(
   const { data: proposal, error: fetchError } = await supabase
     .from('proposal')
     .select('*')
-    .eq('_id', proposalId)
+    .eq('id', proposalId)
     .single();
 
   if (fetchError) {
@@ -68,17 +68,16 @@ export async function handleCreateCounteroffer(
   }
 
   // Update proposal with counteroffer data
-  // SCHEMA-VERIFIED COLUMNS ONLY (2026-01-28):
-  // - Status: text ✅
-  // - Modified Date: timestamp ✅
-  // - counter offer happened: boolean ✅ (NOT has_host_counteroffer)
-  // - hc nightly price, hc nights per week, hc check in day, hc check out day: ✅
-  // - hc move in date: timestamp ✅ (NOT hc move in start)
-  // REMOVED non-existent: last_modified_by, has_host_counteroffer, counteroffer_by_persona, hc move out
+  // SCHEMA-VERIFIED COLUMNS (migrated to snake_case 2026-02-12):
+  // - proposal_workflow_status: text
+  // - updated_at: timestamp
+  // - has_host_counter_offer: boolean
+  // - host_proposed_nightly_price, host_proposed_nights_per_week, host_proposed_checkin_day, host_proposed_checkout_day
+  // - host_proposed_move_in_date: timestamp
   const updateData: Record<string, unknown> = {
-    Status: 'Host Counteroffer Submitted / Awaiting Guest Review',
-    'Modified Date': new Date().toISOString(),
-    'counter offer happened': true
+    proposal_workflow_status: 'Host Counteroffer Submitted / Awaiting Guest Review',
+    updated_at: new Date().toISOString(),
+    has_host_counter_offer: true
   };
 
   if (proposal) {
@@ -86,50 +85,49 @@ export async function handleCreateCounteroffer(
       .from("listing")
       .select(
         `
-        _id,
-        pricing_list,
-        "rental type",
-        "Weeks offered",
-        weekly_host_rate,
-        monthly_host_rate,
-        nightly_rate_1_night,
-        nightly_rate_2_nights,
-        nightly_rate_3_nights,
-        nightly_rate_4_nights,
-        nightly_rate_5_nights,
-        nightly_rate_6_nights,
-        nightly_rate_7_nights
+        id,
+        pricing_configuration_id,
+        rental_type,
+        weeks_offered_schedule_text,
+        weekly_rate_paid_to_host,
+        monthly_rate_paid_to_host,
+        nightly_rate_for_1_night_stay,
+        nightly_rate_for_2_night_stay,
+        nightly_rate_for_3_night_stay,
+        nightly_rate_for_4_night_stay,
+        nightly_rate_for_5_night_stay,
+        nightly_rate_for_7_night_stay
       `
       )
-      .eq("_id", proposal.Listing)
+      .eq("id", proposal.listing_id)
       .single();
 
     if (listingError || !listing) {
       console.warn('[create_counteroffer] Listing lookup failed:', listingError?.message);
     } else {
       const rentalType =
-        ((listing["rental type"] || proposal["rental type"] || "nightly")
+        ((listing.rental_type || proposal.rental_type || "nightly")
           .toString()
           .toLowerCase());
-      const reservationSpan = proposal["Reservation Span"] || "other";
+      const reservationSpan = proposal.reservation_span_text || "other";
 
       const nightsPerWeek =
         counterofferData['host_counter_offer_nights_per_week'] ||
-        proposal["host_counter_offer_nights_per_week"] ||
-        proposal["nights per week (num)"] ||
+        proposal.host_proposed_nights_per_week ||
+        proposal.nights_per_week_count ||
         0;
       const reservationWeeks =
-        proposal["host_counter_offer_reservation_span_weeks"] ||
-        proposal["Reservation Span (Weeks)"] ||
+        proposal.host_proposed_reservation_span_weeks ||
+        proposal.reservation_span_in_weeks ||
         0;
 
       let pricingListRates = null;
 
-      if (listing.pricing_list) {
+      if (listing.pricing_configuration_id) {
         const { data: pricingList, error: pricingListError } = await supabase
           .from("pricing_list")
           .select('"Nightly Price", "Host Compensation"')
-          .eq("_id", listing.pricing_list)
+          .eq("id", listing.pricing_configuration_id)
           .single();
 
         if (pricingListError) {
@@ -173,13 +171,13 @@ export async function handleCreateCounteroffer(
 
         const hostCompPerPeriod =
           rentalType === "weekly"
-            ? (listing.weekly_host_rate || derivedWeeklyRate)
+            ? (listing.weekly_rate_paid_to_host || derivedWeeklyRate)
             : rentalType === "monthly"
-              ? (listing.monthly_host_rate || derivedMonthlyRate)
+              ? (listing.monthly_rate_paid_to_host || derivedMonthlyRate)
               : hostCompPerNight;
 
         // Get weeks offered pattern and calculate actual active weeks
-        const weeksOffered = (listing as Record<string, unknown>)["Weeks offered"] as string | undefined;
+        const weeksOffered = listing.weeks_offered_schedule_text as string | undefined;
         const weeklySchedulePeriod = getWeeklySchedulePeriod(weeksOffered);
         const actualActiveWeeks = calculateActualActiveWeeks(reservationWeeks, weeksOffered);
 
@@ -207,39 +205,39 @@ export async function handleCreateCounteroffer(
               ? (hostCompPerPeriod * 4) / weeklySchedulePeriod
               : (hostCompPerNight * nightsPerWeek * 4) / weeklySchedulePeriod;
 
-        updateData['host_counter_offer_nightly_price'] = roundToTwoDecimals(guestNightlyPrice);
-        updateData['host_counter_offer_total_price'] = roundToTwoDecimals(totalGuestPrice);
-        updateData['host_counter_offer_4_week_rent'] = roundToTwoDecimals(fourWeekRent);
-        updateData['host_counter_offer_4_week_compensation'] = roundToTwoDecimals(fourWeekCompensation);
-        updateData['host_counter_offer_host_compensation_per_period'] = roundToTwoDecimals(hostCompPerPeriod);
-        updateData['host_counter_offer_total_host_compensation'] = roundToTwoDecimals(totalHostCompensation);
-        updateData['host_counter_offer_duration_in_months'] = roundToTwoDecimals(durationMonths);
+        updateData['host_proposed_nightly_price'] = roundToTwoDecimals(guestNightlyPrice);
+        updateData['host_proposed_total_guest_price'] = roundToTwoDecimals(totalGuestPrice);
+        updateData['host_proposed_four_week_rent'] = roundToTwoDecimals(fourWeekRent);
+        updateData['host_proposed_four_week_compensation'] = roundToTwoDecimals(fourWeekCompensation);
+        updateData['host_proposed_compensation_per_period'] = roundToTwoDecimals(hostCompPerPeriod);
+        updateData['host_proposed_total_host_compensation'] = roundToTwoDecimals(totalHostCompensation);
+        updateData['host_proposed_duration_months'] = roundToTwoDecimals(durationMonths);
       }
     }
   }
 
   // Apply counteroffer fields (all verified to exist)
   if (counterofferData['host_counter_offer_nightly_price'] !== undefined) {
-    updateData['host_counter_offer_nightly_price'] = counterofferData['host_counter_offer_nightly_price'];
+    updateData['host_proposed_nightly_price'] = counterofferData['host_counter_offer_nightly_price'];
   }
   if (counterofferData['host_counter_offer_nights_per_week'] !== undefined) {
-    updateData['host_counter_offer_nights_per_week'] = counterofferData['host_counter_offer_nights_per_week'];
+    updateData['host_proposed_nights_per_week'] = counterofferData['host_counter_offer_nights_per_week'];
   }
   if (counterofferData['host_counter_offer_check_in_day'] !== undefined) {
-    updateData['host_counter_offer_check_in_day'] = counterofferData['host_counter_offer_check_in_day'];
+    updateData['host_proposed_checkin_day'] = counterofferData['host_counter_offer_check_in_day'];
   }
   if (counterofferData['host_counter_offer_check_out_day'] !== undefined) {
-    updateData['host_counter_offer_check_out_day'] = counterofferData['host_counter_offer_check_out_day'];
+    updateData['host_proposed_checkout_day'] = counterofferData['host_counter_offer_check_out_day'];
   }
   if (counterofferData['host_counter_offer_move_in_start']) {
     // Map to actual column name
-    updateData['host_counter_offer_move_in_date'] = counterofferData['host_counter_offer_move_in_start'];
+    updateData['host_proposed_move_in_date'] = counterofferData['host_counter_offer_move_in_start'];
   }
 
   const { error: updateError } = await supabase
     .from('proposal')
     .update(updateData)
-    .eq('_id', proposalId);
+    .eq('id', proposalId);
 
   if (updateError) {
     console.error('[create_counteroffer] Update error:', updateError);
@@ -256,27 +254,27 @@ export async function handleCreateCounteroffer(
       console.log('[create_counteroffer] Generating AI counteroffer summary...');
 
       // Extract original proposal values
-      const originalWeeks = proposal['Reservation Span (Weeks)'] || 0;
-      const originalMoveIn = formatDateForDisplay(proposal['Move in range start'] || proposal['Move In Date'] || '');
-      const originalDays = formatDaysAsRange(proposal['Days Selected'] || []);
-      const originalNightlyPrice = proposal['proposal nightly price'] || 0;
-      const originalTotalPrice = proposal['Total Price for Reservation (guest)'] || 0;
+      const originalWeeks = proposal.reservation_span_in_weeks || 0;
+      const originalMoveIn = formatDateForDisplay(proposal.move_in_range_start_date || '');
+      const originalDays = formatDaysAsRange(proposal.guest_selected_days_numbers_json || []);
+      const originalNightlyPrice = proposal.calculated_nightly_price || 0;
+      const originalTotalPrice = proposal.total_reservation_price_for_guest || 0;
 
       // Extract counteroffer values (from updateData which has the computed values)
-      const counterWeeks = proposal['host_counter_offer_reservation_span_weeks'] || proposal['Reservation Span (Weeks)'] || 0;
+      const counterWeeks = proposal.host_proposed_reservation_span_weeks || proposal.reservation_span_in_weeks || 0;
       const counterMoveIn = formatDateForDisplay(
-        (updateData['host_counter_offer_move_in_date'] as string) ||
-        proposal['host_counter_offer_move_in_date'] ||
-        proposal['Move in range start'] ||
+        (updateData['host_proposed_move_in_date'] as string) ||
+        proposal.host_proposed_move_in_date ||
+        proposal.move_in_range_start_date ||
         ''
       );
       const counterDays = formatDaysAsRange(
-        proposal['host_counter_offer_days_selected'] ||
-        proposal['Days Selected'] ||
+        proposal.host_proposed_selected_days_json ||
+        proposal.guest_selected_days_numbers_json ||
         []
       );
-      const counterNightlyPrice = (updateData['host_counter_offer_nightly_price'] as number) || proposal['host_counter_offer_nightly_price'] || 0;
-      const counterTotalPrice = (updateData['host_counter_offer_total_price'] as number) || proposal['host_counter_offer_total_price'] || 0;
+      const counterNightlyPrice = (updateData['host_proposed_nightly_price'] as number) || proposal.host_proposed_nightly_price || 0;
+      const counterTotalPrice = (updateData['host_proposed_total_guest_price'] as number) || proposal.host_proposed_total_guest_price || 0;
 
       // Call AI Gateway with 8-second timeout
       const summaryPromise = generateCounterOfferSummary(supabase, {
@@ -312,12 +310,12 @@ export async function handleCreateCounteroffer(
           const { error: summaryInsertError } = await supabase
             .from('negotiationsummary')
             .insert({
-              _id: summaryId,
+              id: summaryId,
               'Proposal associated': proposalId,
-              'Created By': proposal['Host User'],
+              'Created By': proposal.host_user_id,
               'Created Date': summaryNow,
               'Modified Date': summaryNow,
-              'To Account': proposal.Guest,
+              'To Account': proposal.guest_user_id,
               'Summary': aiCounterOfferSummary,
             });
 
@@ -357,8 +355,8 @@ export async function handleCreateCounteroffer(
     // Strategy 1: Look up thread by Proposal FK
     const { data: threadByProposal, error: threadError } = await supabase
       .from('thread')
-      .select('_id')
-      .eq('Proposal', proposalId)
+      .select('id')
+      .eq('proposal_id', proposalId)
       .limit(1)
       .maybeSingle();
 
@@ -366,7 +364,7 @@ export async function handleCreateCounteroffer(
       console.error('[create_counteroffer] Thread lookup by Proposal error:', threadError);
     }
 
-    threadId = threadByProposal?._id || null;
+    threadId = threadByProposal?.id || null;
     console.log('[create_counteroffer] Strategy 1 (Proposal FK) result:', threadId || 'none');
 
     // Strategy 2: Fallback - find thread by host+guest+listing match
@@ -375,10 +373,10 @@ export async function handleCreateCounteroffer(
 
       const { data: threadByMatch, error: matchError } = await supabase
         .from('thread')
-        .select('_id')
-        .eq('host_user_id', proposal['Host User'])
-        .eq('guest_user_id', proposal.Guest)
-        .eq('Listing', proposal.Listing)
+        .select('id')
+        .eq('host_user_id', proposal.host_user_id)
+        .eq('guest_user_id', proposal.guest_user_id)
+        .eq('listing_id', proposal.listing_id)
         .limit(1)
         .maybeSingle();
 
@@ -386,7 +384,7 @@ export async function handleCreateCounteroffer(
         console.error('[create_counteroffer] Thread lookup by match error:', matchError);
       }
 
-      threadId = threadByMatch?._id || null;
+      threadId = threadByMatch?.id || null;
       console.log('[create_counteroffer] Strategy 2 (host+guest+listing) result:', threadId || 'none');
 
       // If found via Strategy 2, update the Proposal FK for future lookups
@@ -394,10 +392,10 @@ export async function handleCreateCounteroffer(
         const { error: updateThreadError } = await supabase
           .from('thread')
           .update({
-            "Proposal": proposalId,
-            "Modified Date": new Date().toISOString()
+            proposal_id: proposalId,
+            updated_at: new Date().toISOString()
           })
-          .eq('_id', threadId);
+          .eq('id', threadId);
 
         if (updateThreadError) {
           console.error('[create_counteroffer] Failed to update thread Proposal FK:', updateThreadError);
@@ -414,11 +412,11 @@ export async function handleCreateCounteroffer(
       // Get listing name for thread subject
       const { data: listing } = await supabase
         .from('listing')
-        .select('"Name"')
-        .eq('_id', proposal.Listing)
+        .select('listing_title')
+        .eq('id', proposal.listing_id)
         .single();
 
-      const listingName = listing?.['Name'] || 'Proposal Thread';
+      const listingName = listing?.listing_title || 'Proposal Thread';
 
       // Generate new thread ID
       const { data: newId } = await supabase.rpc('generate_unique_id');
@@ -428,17 +426,17 @@ export async function handleCreateCounteroffer(
       const { error: createError } = await supabase
         .from('thread')
         .insert({
-          _id: threadId,
-          host_user_id: proposal['Host User'],
-          guest_user_id: proposal.Guest,
-          "Listing": proposal.Listing,
-          "Proposal": proposalId,
-          "Thread Subject": listingName,
-          "Created By": proposal['Host User'],
-          "Created Date": now,
-          "Modified Date": now,
-          "Participants": [proposal['Host User'], proposal.Guest],
-          "from logged out user?": false,
+          id: threadId,
+          host_user_id: proposal.host_user_id,
+          guest_user_id: proposal.guest_user_id,
+          listing_id: proposal.listing_id,
+          proposal_id: proposalId,
+          thread_subject_text: listingName,
+          created_by_user_id: proposal.host_user_id,
+          original_created_at: now,
+          original_updated_at: now,
+          participant_user_ids_json: [proposal.host_user_id, proposal.guest_user_id],
+          is_from_logged_out_user: false,
           created_at: now,
           updated_at: now,
         });
@@ -460,7 +458,7 @@ export async function handleCreateCounteroffer(
           callToAction: 'Respond to Counter Offer',
           visibleToHost: false,
           visibleToGuest: true,
-          recipientUserId: proposal.Guest
+          recipientUserId: proposal.guest_user_id
         });
         console.log('[create_counteroffer] Guest message created (AI summary:', !!aiCounterOfferSummary, ')');
       } catch (guestMsgError) {
@@ -475,7 +473,7 @@ export async function handleCreateCounteroffer(
           callToAction: 'View Proposal',
           visibleToHost: true,
           visibleToGuest: false,
-          recipientUserId: proposal['Host User']
+          recipientUserId: proposal.host_user_id
         });
         console.log('[create_counteroffer] Host message created');
       } catch (hostMsgError) {

@@ -116,7 +116,7 @@ export function useGuestExperienceReviewPageLogic() {
       const { error: insertError } = await supabase
         .from('experiencesurvey')
         .insert({
-          '_id': surveyId,
+          'id': surveyId,
           'Name': formData.name,
           'Experience': formData.experience,
           'Challenge': formData.challenge,

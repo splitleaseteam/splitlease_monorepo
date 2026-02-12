@@ -235,7 +235,7 @@ async function handleList(
   const { data: _data, error, _count } = await _supabase
     .from('bookings_leases')
     .select('*', { count: 'exact' })
-    .order('Created Date', { ascending: false })
+    .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) {
@@ -244,14 +244,14 @@ async function handleList(
   }
 
   const leases = _data || [];
-  const leaseIds = leases.map((l: { _id: string }) => l._id);
+  const leaseIds = leases.map((l: { id: string }) => l.id);
 
   // Fetch related data separately
   const [guestIds, hostIds, listingIds] = leases.reduce(
     (acc: [string[], string[], string[]], lease: Record<string, unknown>) => {
-      if (lease.Guest) acc[0].push(lease.Guest as string);
+      if (lease.guest_user_id) acc[0].push(lease.guest_user_id as string);
       if (lease.Host) acc[1].push(lease.Host as string);
-      if (lease.Listing) acc[2].push(lease.Listing as string);
+      if (lease.listing_id) acc[2].push(lease.listing_id as string);
       return acc;
     },
     [[], [], []]
@@ -263,14 +263,14 @@ async function handleList(
     const { data: guests, error: _guestsError } = await _supabase
       .from('user')
       .select('*')
-      .in('_id', guestIds);
+      .in('id', guestIds);
 
     if (_guestsError) {
       console.error('[leases-admin] Fetch guests error:', _guestsError);
     } else {
       console.log(`[leases-admin] Fetched ${guests?.length || 0} guests for ${guestIds.length} IDs`);
       (guests || []).forEach((guest: Record<string, unknown>) => {
-        guestsMap[guest._id as string] = guest;
+        guestsMap[guest.id as string] = guest;
       });
     }
   }
@@ -281,14 +281,14 @@ async function handleList(
     const { data: hosts, error: hostsError } = await _supabase
       .from('user')
       .select('*')
-      .in('_id', hostIds);
+      .in('id', hostIds);
 
     if (hostsError) {
       console.error('[leases-admin] Fetch hosts error:', hostsError);
     } else {
       console.log(`[leases-admin] Fetched ${hosts?.length || 0} hosts for ${hostIds.length} IDs`);
       (hosts || []).forEach((host: Record<string, unknown>) => {
-        hostsMap[host._id as string] = host;
+        hostsMap[host.id as string] = host;
       });
     }
   }
@@ -297,16 +297,16 @@ async function handleList(
   const listingsMap: Record<string, unknown> = {};
   if (listingIds.length > 0) {
     const { data: listings, error: listingsError } = await _supabase
-      .from('Listing')
+      .from('listing')
       .select('*')
-      .in('_id', listingIds);
+      .in('id', listingIds);
 
     if (listingsError) {
       console.error('[leases-admin] Fetch listings error:', listingsError);
     } else {
       console.log(`[leases-admin] Fetched ${listings?.length || 0} listings for ${listingIds.length} IDs`);
       (listings || []).forEach((listing: Record<string, unknown>) => {
-        listingsMap[listing._id as string] = listing;
+        listingsMap[listing.id as string] = listing;
       });
     }
   }
@@ -332,10 +332,10 @@ async function handleList(
   // Attach all related data to leases
   const leasesWithData = leases.map((lease: Record<string, unknown>) => ({
     ...lease,
-    guest: lease.Guest ? guestsMap[lease.Guest as string] : null,
+    guest: lease.guest_user_id ? guestsMap[lease.guest_user_id as string] : null,
     host: lease.Host ? hostsMap[lease.Host as string] : null,
-    listing: lease.Listing ? listingsMap[lease.Listing as string] : null,
-    stays: staysMap[lease._id as string] || [],
+    listing: lease.listing_id ? listingsMap[lease.listing_id as string] : null,
+    stays: staysMap[lease.id as string] || [],
   }));
 
   return leasesWithData;
@@ -358,7 +358,7 @@ async function handleGet(
   const { data: lease, error } = await _supabase
     .from('bookings_leases')
     .select('*')
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .single();
 
   if (error) {
@@ -371,31 +371,31 @@ async function handleGet(
 
   // Fetch related data separately (Guest/Host have no FK constraints)
   let guestData = null;
-  if (lease.Guest) {
-    const { data } = await _supabase
-      .from('user')
-      .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo"')
-      .eq('_id', lease.Guest)
-      .single();
+  if (lease.guest_user_id) {
+      const { data } = await _supabase
+        .from('user')
+        .select('id, first_name, last_name, email, profile_photo_url')
+        .eq('id', lease.guest_user_id)
+        .single();
     guestData = data;
   }
 
   let hostData = null;
   if (lease.Host) {
-    const { data } = await _supabase
-      .from('user')
-      .select('_id, "Name - Full", "Name - First", "Name - Last", email, "Profile Photo"')
-      .eq('_id', lease.Host)
-      .single();
+      const { data } = await _supabase
+        .from('user')
+        .select('id, first_name, last_name, email, profile_photo_url')
+        .eq('id', lease.Host)
+        .single();
     hostData = data;
   }
 
   let listingData = null;
-  if (lease.Listing) {
+  if (lease.listing_id) {
     const { data } = await _supabase
       .from('listing')
-      .select('_id, Name')
-      .eq('_id', lease.Listing)
+      .select('id, Name')
+      .eq('id', lease.listing_id)
       .single();
     listingData = data;
   }
@@ -404,8 +404,8 @@ async function handleGet(
   if (lease.Proposal) {
     const { data } = await _supabase
       .from('proposal')
-      .select('_id, "check in day", "check out day"')
-      .eq('_id', lease.Proposal)
+      .select('id, "check in day", "check out day"')
+      .eq('id', lease.Proposal)
       .single();
     proposalData = data;
   }
@@ -451,9 +451,9 @@ async function handleUpdateStatus(
     .from('bookings_leases')
     .update({
       'Lease Status': formattedStatus,
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .select()
     .single();
 
@@ -481,9 +481,9 @@ async function handleSoftDelete(
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .select()
     .single();
 
@@ -511,8 +511,8 @@ async function handleHardDelete(
   // Verify lease is cancelled before hard delete
   const { data: lease, error: fetchError } = await _supabase
     .from('bookings_leases')
-    .select('_id, "Lease Status"')
-    .eq('_id', leaseId)
+    .select('id, "Lease Status"')
+    .eq('id', leaseId)
     .single();
 
   if (fetchError || !lease) {
@@ -538,7 +538,7 @@ async function handleHardDelete(
   const { error: deleteError } = await _supabase
     .from('bookings_leases')
     .delete()
-    .eq('_id', leaseId);
+    .eq('id', leaseId);
 
   if (deleteError) {
     throw new Error(`Failed to delete lease: ${deleteError.message}`);
@@ -570,9 +570,9 @@ async function handleBulkUpdateStatus(
     .from('bookings_leases')
     .update({
       'Lease Status': formattedStatus,
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .in('_id', leaseIds)
+    .in('id', leaseIds)
     .select();
 
   if (error) {
@@ -599,9 +599,9 @@ async function handleBulkSoftDelete(
     .from('bookings_leases')
     .update({
       'Lease Status': 'Cancelled',
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .in('_id', leaseIds)
+    .in('id', leaseIds)
     .select();
 
   if (error) {
@@ -628,7 +628,7 @@ async function handleBulkExport(
   const { data: _data, error } = await _supabase
     .from('bookings_leases')
     .select('*')
-    .in('_id', leaseIds);
+    .in('id', leaseIds);
 
   if (error) {
     throw new Error(`Failed to fetch leases for export: ${error.message}`);
@@ -646,14 +646,14 @@ async function handleBulkExport(
 
   const rows = (data || []).map((lease: Record<string, unknown>) => {
     return [
-      lease._id,
+      lease.id,
       lease['Agreement Number'] || '',
       lease['Lease Status'] || '',
       lease['Reservation Period : Start'] || '',
       lease['Reservation Period : End'] || '',
       lease['Total Rent'] || 0,
       lease['Paid to Date from Guest'] || 0,
-      lease['Created Date'] || '',
+      lease.created_at || '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
   });
 
@@ -794,7 +794,7 @@ async function handleCreatePaymentRecord(
   const { data: _data, error } = await _supabase
     .from('bookings_payment_records')
     .insert({
-      _id: paymentId,
+      id: paymentId,
       'Booking - Reservation': leaseId,
       'Scheduled Date': recordData.scheduledDate || null,
       'Actual Date': recordData.actualDate || null,
@@ -859,7 +859,7 @@ async function handleUpdatePaymentRecord(
   const { data: _data, error } = await _supabase
     .from('bookings_payment_records')
     .update(updateData)
-    .eq('_id', paymentId)
+    .eq('id', paymentId)
     .select()
     .single();
 
@@ -887,7 +887,7 @@ async function handleDeletePaymentRecord(
   const { error } = await _supabase
     .from('bookings_payment_records')
     .delete()
-    .eq('_id', paymentId);
+    .eq('id', paymentId);
 
   if (error) {
     console.error('[leases-admin] Delete payment record error:', error);
@@ -945,8 +945,8 @@ async function handleCreateStays(
   // Get lease details
   const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
-    .select('_id, "Reservation Period : Start", "Reservation Period : End"')
-    .eq('_id', leaseId)
+    .select('id, "Reservation Period : Start", "Reservation Period : End"')
+    .eq('id', leaseId)
     .single();
 
   if (leaseError || !lease) {
@@ -976,7 +976,7 @@ async function handleCreateStays(
     }
 
     stays.push({
-      _id: crypto.randomUUID(),
+      id: crypto.randomUUID(),
       Lease: leaseId,
       'Week Number': weekNumber,
       'Check In (night)': currentStart.toISOString(),
@@ -1049,8 +1049,8 @@ async function handleUpdateBookedDates(
   // Get lease with proposal reference
   const { data: lease, error: leaseError } = await _supabase
     .from('bookings_leases')
-    .select('_id, "Reservation Period : Start", "Reservation Period : End", Proposal')
-    .eq('_id', leaseId)
+    .select('id, "Reservation Period : Start", "Reservation Period : End", Proposal')
+    .eq('id', leaseId)
     .single();
 
   if (leaseError || !lease) {
@@ -1073,7 +1073,7 @@ async function handleUpdateBookedDates(
     const { data: proposal } = await _supabase
       .from('proposal')
       .select('"check in day", "check out day"')
-      .eq('_id', proposalId)
+      .eq('id', proposalId)
       .single();
 
     if (proposal) {
@@ -1118,9 +1118,9 @@ async function handleUpdateBookedDates(
     .from('bookings_leases')
     .update({
       'List of Booked Dates': bookedDates,
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .select()
     .single();
 
@@ -1148,8 +1148,8 @@ async function handleClearBookedDates(
   // Get lease to find proposal
   const { data: lease } = await _supabase
     .from('bookings_leases')
-    .select('_id, Proposal')
-    .eq('_id', leaseId)
+    .select('id, Proposal')
+    .eq('id', leaseId)
     .single();
 
   // Clear lease booked dates
@@ -1158,9 +1158,9 @@ async function handleClearBookedDates(
     .update({
       'Booked Dates': [],
       'Booked Dates After Request': [],
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', leaseId);
+    .eq('id', leaseId);
 
   if (leaseError) {
     console.error('[leases-admin] Clear lease dates error:', leaseError);
@@ -1175,7 +1175,7 @@ async function handleClearBookedDates(
         'Booked Dates': [],
         'Modified Date': new Date().toISOString(),
       })
-      .eq('_id', lease.Proposal);
+      .eq('id', lease.Proposal);
 
     if (proposalError) {
       console.warn('[leases-admin] Clear proposal dates warning:', proposalError);
@@ -1207,9 +1207,9 @@ async function handleCancelLease(
       'Lease Status': 'Cancelled',
       'Cancellation Reason': reason || null,
       'Disagreeing Party': disagreeingParty || null,
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .select()
     .single();
 
@@ -1262,12 +1262,12 @@ async function handleGetDocumentChangeRequests(
   if (requestedByIds.length > 0) {
     const { data: users } = await _supabase
       .from('user')
-      .select('_id, email, "First Name", "Last Name"')
-      .in('_id', requestedByIds);
+      .select('id, email, first_name, last_name')
+      .in('id', requestedByIds);
 
     if (users) {
       users.forEach((user: Record<string, unknown>) => {
-        usersMap[user._id as string] = user;
+        usersMap[user.id as string] = user;
       });
     }
   }

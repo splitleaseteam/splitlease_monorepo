@@ -506,7 +506,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         guestsResult.data?.forEach(g => { guestMap[g.id] = g; });
 
         const vmMap = {};
-        vmResult.data?.forEach(vm => { vmMap[vm._id] = vm; });
+        vmResult.data?.forEach(vm => { vmMap[vm.id] = vm; });
 
         const summaryMap = {};
         if (!summariesResult.error) {
@@ -534,7 +534,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             ...(guest ? { guest } : {}),
             ...(rawVm ? {
               virtualMeeting: {
-                _id: rawVm._id,
+                id: rawVm.id,
                 requestedBy: rawVm['requested by'],
                 bookedDate: rawVm['booked date'],
                 meetingDeclined: rawVm['meeting declined'],

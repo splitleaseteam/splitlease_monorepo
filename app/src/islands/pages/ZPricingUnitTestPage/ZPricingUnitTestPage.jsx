@@ -138,12 +138,12 @@ export default function ZPricingUnitTestPage() {
               >
                 <option value="">-- Select a listing --</option>
                 {logic.filteredListings.map(listing => {
-                  const name = listing.listing_title || listing._id;
+                  const name = listing.listing_title || listing.id;
                   const rentalType = listing.rental_type || listing.rentalType || '?';
                   const pattern = listing.weeks_offered_schedule_text || listing.weeksOffered || 'Every week';
                   const email = listing['Host email'] || '-';
                   return (
-                    <option key={listing._id} value={listing._id}>
+                    <option key={listing.id} value={listing.id}>
                       {name} | {rentalType} | {pattern} | {email}
                     </option>
                   );
@@ -153,7 +153,7 @@ export default function ZPricingUnitTestPage() {
 
             {logic.selectedListing && (
               <div className="zput-listing-info">
-                <p><strong>ID:</strong> {logic.selectedListing._id}</p>
+                <p><strong>ID:</strong> {logic.selectedListing.id}</p>
                 <p><strong>Name:</strong> {logic.selectedListing.listing_title}</p>
                 <p><strong>Type:</strong> {logic.selectedListing.rental_type || 'Not set'}</p>
               </div>

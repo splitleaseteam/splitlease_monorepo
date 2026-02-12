@@ -24,6 +24,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { ApiError, SupabaseSyncError } from '../../_shared/errors.ts';
 import { validateRequiredFields } from '../../_shared/validation.ts';
 
+function isInvalidOrExpiredJwtError(message: string | undefined): boolean {
+  if (!message) return false;
+  const normalized = message.toLowerCase();
+  return normalized.includes('token is expired') ||
+    normalized.includes('invalid jwt') ||
+    (normalized.includes('jwt') && normalized.includes('expired'));
+}
+
 export async function handleValidate(
   supabaseUrl: string,
   supabaseServiceKey: string,
@@ -83,6 +91,9 @@ export async function handleValidate(
 
       if (authError) {
         console.error(`[validate] Failed to get user from token:`, authError.message);
+        if (isInvalidOrExpiredJwtError(authError.message)) {
+          throw new ApiError('Invalid or expired authentication token. Please log in again.', 401, authError);
+        }
         userError = authError;
       } else if (authUser?.email) {
         console.log(`[validate] Got email from token: ${authUser.email}, querying by email...`);
@@ -124,7 +135,7 @@ export async function handleValidate(
       const { data: rentalAppData, error: rentalAppError } = await supabase
         .from('rentalapplication')
         .select('submitted')
-        .eq('_id', rentalAppId)
+        .eq('id', rentalAppId)
         .maybeSingle();
 
       if (rentalAppError) {
@@ -200,6 +211,10 @@ export async function handleValidate(
   } catch (error) {
     if (error instanceof ApiError || error instanceof SupabaseSyncError) {
       throw error;
+    }
+
+    if (isInvalidOrExpiredJwtError((error as Error).message)) {
+      throw new ApiError('Invalid or expired authentication token. Please log in again.', 401, error);
     }
 
     console.error(`[validate] ========== VALIDATION ERROR ==========`);

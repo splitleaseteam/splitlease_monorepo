@@ -110,7 +110,7 @@ const ReminderForm = ({
           >
             <option value="">No specific visit</option>
             {visits.map(visit => (
-              <option key={visit._id || visit.id} value={visit._id || visit.id}>
+              <option key={visit.id} value={visit.id}>
                 {visit.guest?.firstName || visit.guest?.name || 'Guest'} - {visit.checkIn || 'Upcoming'}
               </option>
             ))}

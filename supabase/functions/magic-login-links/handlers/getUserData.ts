@@ -53,7 +53,7 @@ export async function handleGetUserData(
     // Fetch listings where user is owner or co-host
     const { data: listingsData, error: listingsError } = await supabaseAdmin
       .from('listing')
-      .select('_id, Title, "Street Address"')
+      .select('id, Title, "Street Address"')
       .or(`user_id.eq.${userId},co_host_id.eq.${userId}`)
       .limit(50);
 
@@ -64,7 +64,7 @@ export async function handleGetUserData(
     // Fetch proposals where user is guest or host (via listing)
     const { data: proposalsData, error: proposalsError } = await supabaseAdmin
       .from('proposal')
-      .select('_id, listing_id, "Proposal Status", listing!inner(Title)')
+      .select('id, listing_id, proposal_workflow_status, listing!inner(Title)')
       .or(`user_id.eq.${userId},listing.user_id.eq.${userId}`)
       .limit(50);
 
@@ -78,7 +78,7 @@ export async function handleGetUserData(
     try {
       const { data, error } = await supabaseAdmin
         .from('lease')
-        .select('_id, listing_id, status, listing(Title)')
+        .select('id, listing_id, status, listing(Title)')
         .or(`user_id.eq.${userId},host_id.eq.${userId}`)
         .limit(50);
 
@@ -92,8 +92,8 @@ export async function handleGetUserData(
     // Fetch message threads where user is a participant
     const { data: threadsData, error: threadsError } = await supabaseAdmin
       .from('thread')
-      .select('_id, subject, "Last Message At"')
-      .contains('participants', [userId])
+      .select('id, thread_subject_text, last_message_sent_at')
+      .contains('participant_user_ids_json', [userId])
       .limit(50);
 
     if (threadsError) {
@@ -108,27 +108,27 @@ export async function handleGetUserData(
 
     // Transform to API response format
     const listings = (listingsData || []).map(listing => ({
-      id: listing._id,
+      id: listing.id,
       title: listing.Title || 'Untitled Listing',
       address: listing['Street Address'] || '',
     }));
 
     const proposals = (proposalsData || []).map((proposal: any) => ({
-      id: proposal._id,
+      id: proposal.id,
       listingTitle: proposal.listing?.Title || 'Unknown Listing',
-      status: proposal['Proposal Status'] || 'Unknown',
+      status: proposal.proposal_workflow_status || 'Unknown',
     }));
 
     const leases = leasesData.map((lease: any) => ({
-      id: lease._id,
+      id: lease.id,
       listingTitle: lease.listing?.Title || 'Unknown Listing',
       status: lease.status || 'Unknown',
     }));
 
     const threads = (threadsData || []).map(thread => ({
-      id: thread._id,
-      subject: thread.subject || 'No Subject',
-      lastMessageAt: thread['Last Message At'] || '',
+      id: thread.id,
+      subject: thread.thread_subject_text || 'No Subject',
+      lastMessageAt: thread.last_message_sent_at || '',
     }));
 
     return {

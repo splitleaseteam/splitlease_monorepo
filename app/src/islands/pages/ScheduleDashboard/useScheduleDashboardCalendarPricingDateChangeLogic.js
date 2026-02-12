@@ -133,9 +133,9 @@ export function useScheduleDashboardLogic() {
   const pricing = usePricingStrategy();
   const { showToast } = useToast();
   const scheduleState = useScheduleState({
-    currentUserId: currentUserData._id,
-    coTenantId: roommateData._id,
-    roommateId: roommateData._id
+    currentUserId: currentUserData.id,
+    coTenantId: roommateData.id,
+    roommateId: roommateData.id
   });
 
   // -------------------------------------------------------------------------
@@ -166,7 +166,7 @@ export function useScheduleDashboardLogic() {
   // -------------------------------------------------------------------------
   // DERIVED STATE
   // -------------------------------------------------------------------------
-  const currentUserId = currentUserData?._id || 'current-user';
+  const currentUserId = currentUserData?.id || 'current-user';
   const processedTransactions = scheduleState.processedTransactions;
 
   const isNightLocked = useCallback((nightString) => {
@@ -576,7 +576,7 @@ export function useScheduleDashboardLogic() {
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: coTenant?._id,
+        payeeId: coTenant?.id,
         status: 'pending'
       };
 
@@ -645,7 +645,7 @@ export function useScheduleDashboardLogic() {
         nights: [nightDate],
         amount: finalAmount,
         payerId: currentUserId,
-        payeeId: coTenant?._id,
+        payeeId: coTenant?.id,
         status: 'pending'
       };
 
@@ -770,7 +770,7 @@ export function useScheduleDashboardLogic() {
         nights: [requestedDate, offeredDate],
         amount: 0,
         payerId: currentUserId,
-        payeeId: coTenant?._id,
+        payeeId: coTenant?.id,
         status: 'pending'
       };
 
@@ -932,7 +932,7 @@ export function useScheduleDashboardLogic() {
         nights: [giveDate, receiveDate],
         amount: 0,
         payerId: currentUserId,
-        payeeId: coTenant?._id,
+        payeeId: coTenant?.id,
         status: 'pending'
       };
 
@@ -1012,7 +1012,7 @@ export function useScheduleDashboardLogic() {
       request.setIsSubmitting(true);
 
       await createDateChangeRequest({
-        leaseId: lease?._id,
+        leaseId: lease?.id,
         ...payload
       });
 

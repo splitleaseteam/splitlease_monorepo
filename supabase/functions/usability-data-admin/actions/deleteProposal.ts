@@ -1,6 +1,6 @@
 /**
  * Delete Proposal Action Handler
- * Deletes a proposal by ID (supports both _id and Unique ID)
+ * Deletes a proposal by ID (supports both id and Unique ID)
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -25,15 +25,15 @@ export async function handleDeleteProposal(
   // First, try to find the proposal and get its thread ID
   let { data: proposal, error: fetchError } = await supabase
     .from('proposal')
-    .select('_id, Thread')
-    .eq('_id', proposalId)
+    .select('id, Thread')
+    .eq('id', proposalId)
     .single();
 
-  // If not found by _id, try by Unique ID
+  // If not found by id, try by Unique ID
   if (fetchError && fetchError.code === 'PGRST116') {
     const result = await supabase
       .from('proposal')
-      .select('_id, Thread')
+      .select('id, Thread')
       .eq('Unique ID', proposalId)
       .single();
 
@@ -49,14 +49,14 @@ export async function handleDeleteProposal(
     throw new Error(`Failed to fetch proposal: ${fetchError.message}`);
   }
 
-  const actualProposalId = proposal._id;
+  const actualProposalId = proposal.id;
   const threadId = proposal.Thread;
 
   // Delete the proposal
   const { error: deleteError } = await supabase
     .from('proposal')
     .delete()
-    .eq('_id', actualProposalId);
+    .eq('id', actualProposalId);
 
   if (deleteError) {
     console.error('[usability-data-admin] Delete proposal error:', deleteError);

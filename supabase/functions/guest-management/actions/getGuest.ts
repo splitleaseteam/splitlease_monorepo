@@ -14,7 +14,7 @@ interface GetGuestPayload {
 }
 
 interface GuestDetails {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -60,7 +60,7 @@ export async function handleGetGuest(
   const { data: user, error: userError } = await supabase
     .from('user')
     .select('*')
-    .eq('_id', guestId)
+    .eq('id', guestId)
     .single();
 
   if (userError || !user) {
@@ -69,19 +69,19 @@ export async function handleGetGuest(
   }
 
   const guest: GuestDetails = {
-    _id: user._id,
-    firstName: user['Name - First'] || '',
-    lastName: user['Name - Last'] || '',
+    id: user.id,
+    firstName: user.first_name || '',
+    lastName: user.last_name || '',
     email: user.email || '',
-    phoneNumber: user['Phone Number'] || '',
-    profilePhoto: user['Profile photo'],
-    userType: user['User Type'] || 'guest',
+    phoneNumber: user.phone_number || '',
+    profilePhoto: user.profile_photo_url,
+    userType: user.current_user_role || 'guest',
     birthDate: user['Date of Birth'],
     personalAddress: user['Personal Address'],
     notes: user.notes,
     currentTimezone: user['Current Timezone'],
-    createdAt: user['Created Date'] || new Date().toISOString(),
-    updatedAt: user['Modified Date'] || new Date().toISOString()
+    createdAt: user.created_at || new Date().toISOString(),
+    updatedAt: user.updated_at || new Date().toISOString()
   };
 
   // Fetch activity history if requested
@@ -111,7 +111,7 @@ export async function handleGetGuest(
       .select(`
         assigned_at,
         knowledge_article (
-          _id,
+          id,
           page_headline,
           page_headline_subtext
         )
@@ -127,7 +127,7 @@ export async function handleGetGuest(
       .map(a => {
         const article = a.knowledge_article as Record<string, unknown>;
         return {
-          id: article._id as string,
+          id: article.id as string,
           pageHeadline: article.page_headline as string,
           pageHeadlineSubtext: article.page_headline_subtext as string | undefined,
           assignedAt: a.assigned_at

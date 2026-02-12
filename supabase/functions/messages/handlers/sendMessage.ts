@@ -176,8 +176,8 @@ export async function handleSendMessage(
     console.log('[sendMessage] 🔍 Validating recipient user exists:', recipientId);
     const { data: recipient, error: recipientError } = await supabaseAdmin
       .from('user')
-      .select('_id')
-      .eq('_id', recipientId)
+      .select('id')
+      .eq('id', recipientId)
       .maybeSingle();
 
     console.log('[sendMessage] Recipient lookup result:', { recipient, error: recipientError });
@@ -193,8 +193,8 @@ export async function handleSendMessage(
       console.log('[sendMessage] 🔍 Validating listing exists:', typedPayload.listing_id);
       const { data: listing, error: listingError } = await supabaseAdmin
         .from('listing')
-        .select('_id')
-        .eq('_id', typedPayload.listing_id)
+        .select('id')
+        .eq('id', typedPayload.listing_id)
         .maybeSingle();
 
       console.log('[sendMessage] Listing lookup result:', { listing, error: listingError });

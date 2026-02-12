@@ -72,7 +72,7 @@
 
 ### Table: notification_preferences
 [PRIMARY_KEY]: id (UUID)
-[USER_KEY]: user_id (TEXT, NOT NULL)
+[USER_KEY]: id (TEXT, NOT NULL)
 [CREATED]: created_at (TIMESTAMPTZ)
 [UPDATED]: updated_at (TIMESTAMPTZ)
 [DEFAULT_VALUES]: All boolean columns default to false

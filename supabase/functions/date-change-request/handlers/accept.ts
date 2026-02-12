@@ -53,7 +53,7 @@ export async function handleAccept(
   const { data: request, error: requestError } = await supabase
     .from('datechangerequest')
     .select('*')
-    .eq('_id', input.requestId)
+    .eq('id', input.requestId)
     .single();
 
   if (requestError || !request) {
@@ -97,7 +97,7 @@ export async function handleAccept(
   const { error: updateError } = await supabase
     .from('datechangerequest')
     .update(updateData)
-    .eq('_id', input.requestId);
+    .eq('id', input.requestId);
 
   if (updateError) {
     console.error(`[date-change-request:accept] Update failed:`, updateError);
@@ -138,7 +138,7 @@ export async function handleAccept(
       const { data: lease, error: leaseError } = await supabase
         .from('bookings_leases')
         .select(`"List of Booked Dates"`)
-        .eq('_id', requestData['Lease'])
+        .eq('id', requestData['Lease'])
         .single();
 
       if (!leaseError && lease) {
@@ -181,7 +181,7 @@ export async function handleAccept(
             'List of Booked Dates': bookedDates,
             'Modified Date': now,
           })
-          .eq('_id', requestData['Lease']);
+          .eq('id', requestData['Lease']);
 
         if (leaseUpdateError) {
           console.error(`[date-change-request:accept] Lease update failed (non-blocking):`, leaseUpdateError);

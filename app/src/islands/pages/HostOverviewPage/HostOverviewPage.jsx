@@ -195,7 +195,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
               <div className="listings-grid">
                 {listingsToClaim.map(listing => (
                   <ClaimListingCard
-                    key={listing.id || listing._id}
+                    key={listing.id}
                     listing={listing}
                     onSeeDetails={handleSeeDetails}
                     onDelete={() => handleDeleteClick(listing, 'claim')}
@@ -219,7 +219,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
               <div className="listings-grid">
                 {myListings.map(listing => (
                   <ListingCard
-                    key={listing.id || listing._id}
+                    key={listing.id}
                     listing={listing}
                     onEdit={handleEditListing}
                     onPreview={handlePreviewListing}
@@ -250,7 +250,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
               <div className="manuals-grid">
                 {houseManuals.map(manual => (
                   <HouseManualCard
-                    key={manual.id || manual._id}
+                    key={manual.id}
                     manual={manual}
                     onEdit={handleEditManual}
                     onDelete={() => handleDeleteClick(manual, 'manual')}
@@ -268,7 +268,7 @@ export default function HostOverviewPage({ requireAuth = false, isAuthenticated 
               <div className="meetings-grid">
                 {virtualMeetings.map(meeting => (
                   <VirtualMeetingCard
-                    key={meeting.id || meeting._id}
+                    key={meeting.id}
                     meeting={meeting}
                     onRespond={handleRespondToVirtualMeeting}
                   />

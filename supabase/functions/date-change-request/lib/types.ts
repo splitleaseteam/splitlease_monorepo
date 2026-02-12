@@ -143,7 +143,7 @@ export interface RestoreThrottleAbilityResponse {
 // ─────────────────────────────────────────────────────────────
 
 export interface DateChangeRequestData {
-  _id: string;
+  id: string;
   'Lease': string | null;
   'Requested by': string | null;
   'Request receiver': string | null;
@@ -170,7 +170,7 @@ export interface DateChangeRequestData {
 }
 
 export interface LeaseData {
-  _id: string;
+  id: string;
   'Agreement Number': string | null;
   'Guest': string | null;
   'Host': string | null;
@@ -188,7 +188,7 @@ export interface LeaseData {
 }
 
 export interface UserData {
-  _id: string;
+  id: string;
   email: string | null;
   'Name - First': string | null;
   'Name - Full': string | null;
@@ -340,7 +340,7 @@ export interface EmailTemplateVariables {
  * Listing data for email template generation
  */
 export interface ListingData {
-  _id: string;
+  id: string;
   Title?: string | null;
   'Display Name'?: string | null;
   'Display Address'?: string | null;

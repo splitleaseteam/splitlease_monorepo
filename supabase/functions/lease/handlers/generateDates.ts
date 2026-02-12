@@ -79,7 +79,7 @@ export async function handleGenerateDates(
       .from('proposal')
       .select(
         `
-        _id,
+        id,
         "check in day",
         "check out day",
         "Reservation Span (Weeks)",
@@ -97,7 +97,7 @@ export async function handleGenerateDates(
         "counter offer happened"
       `
       )
-      .eq('_id', payload.proposalId)
+      .eq('id', payload.proposalId)
       .single();
 
     if (error || !proposal) {

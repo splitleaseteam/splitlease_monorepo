@@ -349,7 +349,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
             const { data: listingFavData } = await supabase
               .from('listing')
               .select('user_ids_who_favorited_json')
-              .eq('id', listing.id || listing._id)
+              .eq('id', listing.id)
               .single();
 
             const favoritedUserIds = listingFavData?.user_ids_who_favorited_json || [];
@@ -365,7 +365,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
             .from('booking_proposal')
             .select('id')
             .eq('guest_user_id', authUserId)
-            .eq('listing_id', listing.id || listing._id)
+            .eq('listing_id', listing.id)
             .limit(1);
           
           if (!proposalError && proposals && proposals.length > 0) {
@@ -486,7 +486,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       
       const result = await createProposal({
         guestId: authUserId,  // JWT-derived
-        listingId: listing._id,
+        listingId: listing.id,
         moveInDate: proposalData.moveInDate,
         daysSelectedObjects: proposalData.daysSelectedObjects,
         reservationSpanWeeks: proposalData.reservationSpan || 13,
@@ -559,7 +559,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       const { data: listingData, error: fetchError } = await supabase
         .from('listing')
         .select('user_ids_who_favorited_json')
-        .eq('id', listing.id || listing._id)
+        .eq('id', listing.id)
         .single();
 
       if (fetchError) throw fetchError;
@@ -573,7 +573,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       const { error: updateError } = await supabase
         .from('listing')
         .update({ user_ids_who_favorited_json: newFavoritedUsers })
-        .eq('id', listing.id || listing._id);
+        .eq('id', listing.id);
       
       if (updateError) throw updateError;
       

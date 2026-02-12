@@ -531,7 +531,7 @@ export function useAccountProfilePageLogic() {
         const { data: rentalAppData } = await supabase
           .from('rentalapplication')
           .select('"job title", "employment status"')
-          .eq('_id', rentalAppId)
+          .eq('id', rentalAppId)
           .single();
 
         if (rentalAppData) {
@@ -968,10 +968,10 @@ export function useAccountProfilePageLogic() {
     // Get the item name for the toast notification
     let itemName = '';
     if (field === 'goodGuestReasons') {
-      const reason = goodGuestReasonsList.find(r => r._id === id);
+      const reason = goodGuestReasonsList.find(r => r.id === id);
       itemName = reason?.name || 'Reason';
     } else if (field === 'storageItems') {
-      const item = storageItemsList.find(i => i._id === id);
+      const item = storageItemsList.find(i => i.id === id);
       itemName = item?.Name || 'Item';
     }
 
@@ -1135,7 +1135,7 @@ export function useAccountProfilePageLogic() {
         const { error: rentalAppError } = await supabase
           .from('rentalapplication')
           .update({ 'job title': formData.jobTitle.trim() })
-          .eq('_id', rentalAppId);
+          .eq('id', rentalAppId);
 
         if (rentalAppError) {
           console.error('Error saving job title to rental application:', rentalAppError);

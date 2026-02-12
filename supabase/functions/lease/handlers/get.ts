@@ -39,7 +39,7 @@ export async function handleGet(
   const { data: lease, error: leaseError } = await supabase
     .from('bookings_leases')
     .select('*')
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .single();
 
   if (leaseError) {
@@ -57,32 +57,32 @@ export async function handleGet(
     lease.Proposal
       ? supabase
           .from('proposal')
-          .select('_id, Status, "rental type", "host_counter_offer_move_in_date", "host_counter_offer_reservation_span_weeks", "host_counter_offer_nights_per_week", "host_counter_offer_nightly_price"')
-          .eq('_id', lease.Proposal)
+          .select('id, Status, "rental type", "host_counter_offer_move_in_date", "host_counter_offer_reservation_span_weeks", "host_counter_offer_nights_per_week", "host_counter_offer_nightly_price"')
+          .eq('id', lease.Proposal)
           .single()
       : Promise.resolve({ data: null, error: null }),
     // Fetch guest
     lease.Guest
       ? supabase
           .from('user')
-          .select('_id, email, "First Name", "Last Name"')
-          .eq('_id', lease.Guest)
+          .select('id, email, "First Name", "Last Name"')
+          .eq('id', lease.Guest)
           .single()
       : Promise.resolve({ data: null, error: null }),
     // Fetch host
     lease.Host
       ? supabase
           .from('user')
-          .select('_id, email, "First Name", "Last Name"')
-          .eq('_id', lease.Host)
+          .select('id, email, "First Name", "Last Name"')
+          .eq('id', lease.Host)
           .single()
       : Promise.resolve({ data: null, error: null }),
     // Fetch listing
     lease.Listing
       ? supabase
           .from('listing')
-          .select('_id, Name, "listing full address (text)", "List of Photos", "cancellation policy"')
-          .eq('_id', lease.Listing)
+          .select('id, Name, "listing full address (text)", "List of Photos", "cancellation policy"')
+          .eq('id', lease.Listing)
           .single()
       : Promise.resolve({ data: null, error: null }),
   ]);

@@ -145,7 +145,7 @@ export interface UpdateProposalResponse {
  * Full proposal data for get request
  */
 export interface ProposalData {
-  _id: string;
+  id: string;
   Listing: string;
   Guest: string;
   "Host User": string;
@@ -192,7 +192,7 @@ export interface ProposalData {
  * Supports both legacy Bubble emoji-prefixed names and new Supabase snake_case columns
  */
 export interface ListingData {
-  _id: string;
+  id: string;
   "Host User": string;
   "rental type": string;
   "Features - House Rules": string[];
@@ -229,7 +229,7 @@ export interface ListingData {
  * Guest user data fetched from database
  */
 export interface GuestData {
-  _id: string;
+  id: string;
   email: string;
   "Rental Application": string | null;
   "Proposals List": string[];  // Native text[] array from PostgreSQL (migrated from JSONB)
@@ -244,7 +244,7 @@ export interface GuestData {
  * Host account data fetched from database
  */
 export interface HostAccountData {
-  _id: string;
+  id: string;
   User: string;
 }
 
@@ -252,7 +252,7 @@ export interface HostAccountData {
  * Host user data fetched from database
  */
 export interface HostUserData {
-  _id: string;
+  id: string;
   email: string;
   "Proposals List": string[];  // Native text[] array from PostgreSQL (migrated from JSONB)
 }
@@ -261,7 +261,7 @@ export interface HostUserData {
  * Rental application data
  */
 export interface RentalApplicationData {
-  _id: string;
+  id: string;
   submitted: boolean;
 }
 

@@ -173,7 +173,7 @@ async function _checkAdminOrCorporateStatus(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin", "Toggle - Is Corporate User"')
+    .select('is_admin, is_corporate_user')
     .eq('email', email)
     .single();
 
@@ -182,7 +182,7 @@ async function _checkAdminOrCorporateStatus(
     return false;
   }
 
-  return data['Toggle - Is Admin'] === true || data['Toggle - Is Corporate User'] === true;
+  return data.is_admin === true || data.is_corporate_user === true;
 }
 
 // ===== ACTION HANDLERS =====
@@ -192,7 +192,7 @@ async function _checkAdminOrCorporateStatus(
  * Search matches on listing name, guest email, or host email
  *
  * NOTE: Uses separate queries for users/listings because the database lacks
- * FK constraints from thread.host_user_id/guest_user_id to user._id
+ * FK constraints from thread.host_user_id/guest_user_id to user.id
  */
 async function handleGetThreads(
   payload: { search?: string; limit?: number; offset?: number },
@@ -204,7 +204,7 @@ async function handleGetThreads(
   const query = supabase
     .from('thread')
     .select(`
-      _id,
+      id,
       "Created Date",
       "Modified Date",
       host_user_id,
@@ -240,14 +240,14 @@ async function handleGetThreads(
     userIds.size > 0
       ? supabase
           .from('user')
-          .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
-          .in('_id', Array.from(userIds))
+          .select('id, email, first_name, last_name, profile_photo_url')
+          .in('id', Array.from(userIds))
       : { data: [], error: null },
     listingIds.size > 0
       ? supabase
           .from('listing')
-          .select('_id, "Name"')
-          .in('_id', Array.from(listingIds))
+          .select('id, "Name"') // TODO: VERIFY listing.Name COLUMN NAME
+          .in('id', Array.from(listingIds))
       : { data: [], error: null },
   ]);
 
@@ -261,12 +261,12 @@ async function handleGetThreads(
   // Step 4: Create lookup maps
   const usersMap = new Map<string, Record<string, unknown>>();
   for (const user of (usersResult.data || [])) {
-    usersMap.set(user._id, user);
+    usersMap.set(user.id, user);
   }
 
   const listingsMap = new Map<string, Record<string, unknown>>();
   for (const listing of (listingsResult.data || [])) {
-    listingsMap.set(listing._id, listing);
+    listingsMap.set(listing.id, listing);
   }
 
   // Step 5: Enrich threads with related data
@@ -290,11 +290,11 @@ async function handleGetThreads(
 
       const listingName = (listing?.['Name'] as string || '').toLowerCase();
       const guestEmail = (guest?.email as string || '').toLowerCase();
-      const guestFirstName = (guest?.['Name - First'] as string || '').toLowerCase();
-      const guestLastName = (guest?.['Name - Last'] as string || '').toLowerCase();
+      const guestFirstName = (guest?.first_name as string || '').toLowerCase();
+      const guestLastName = (guest?.last_name as string || '').toLowerCase();
       const hostEmail = (host?.email as string || '').toLowerCase();
-      const hostFirstName = (host?.['Name - First'] as string || '').toLowerCase();
-      const hostLastName = (host?.['Name - Last'] as string || '').toLowerCase();
+      const hostFirstName = (host?.first_name as string || '').toLowerCase();
+      const hostLastName = (host?.last_name as string || '').toLowerCase();
 
       return listingName.includes(searchLower) ||
              guestEmail.includes(searchLower) ||
@@ -321,7 +321,7 @@ async function handleGetThreads(
  * Get all messages for a specific thread
  *
  * NOTE: Uses separate queries for users/listings because the database lacks
- * FK constraints from thread.host_user_id/guest_user_id to user._id
+ * FK constraints from thread.host_user_id/guest_user_id to user.id
  */
 async function handleGetThreadMessages(
   payload: { threadId: string },
@@ -337,14 +337,14 @@ async function handleGetThreadMessages(
   const { data: threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
-      _id,
+      id,
       "Created Date",
       "Modified Date",
       host_user_id,
       guest_user_id,
       "Listing"
     `)
-    .eq('_id', threadId)
+    .eq('id', threadId)
     .single();
 
   if (threadError) {
@@ -358,7 +358,7 @@ async function handleGetThreadMessages(
   const { data: messagesData, error: messagesError } = await supabase
     .from('_message')
     .select(`
-      _id,
+      id,
       "Message Body",
       "Split Bot Warning",
       "Created Date",
@@ -390,14 +390,14 @@ async function handleGetThreadMessages(
     userIds.size > 0
       ? supabase
           .from('user')
-          .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
-          .in('_id', Array.from(userIds))
+          .select('id, email, first_name, last_name, profile_photo_url')
+          .in('id', Array.from(userIds))
       : { data: [], error: null },
     threadData['Listing']
       ? supabase
           .from('listing')
-          .select('_id, "Name"')
-          .eq('_id', threadData['Listing'])
+          .select('id, "Name"') // TODO: VERIFY listing.Name COLUMN NAME
+          .eq('id', threadData['Listing'])
           .single()
       : { data: null, error: null },
   ]);
@@ -405,7 +405,7 @@ async function handleGetThreadMessages(
   // Create users lookup map
   const usersMap = new Map<string, Record<string, unknown>>();
   for (const user of (usersResult.data || [])) {
-    usersMap.set(user._id, user);
+    usersMap.set(user.id, user);
   }
 
   // Enrich thread with related data
@@ -436,7 +436,7 @@ async function handleGetThreadMessages(
  * Get single message with full details
  *
  * NOTE: Uses separate queries for users/listings because the database lacks
- * FK constraints from thread.host_user_id/guest_user_id to user._id
+ * FK constraints from thread.host_user_id/guest_user_id to user.id
  */
 async function handleGetMessage(
   payload: { messageId: string },
@@ -452,7 +452,7 @@ async function handleGetMessage(
   const { data: messageData, error: messageError } = await supabase
     .from('_message')
     .select(`
-      _id,
+      id,
       "Message Body",
       "Split Bot Warning",
       "Created Date",
@@ -462,7 +462,7 @@ async function handleGetMessage(
       "is Forwarded",
       "is deleted (is hidden)"
     `)
-    .eq('_id', messageId)
+    .eq('id', messageId)
     .single();
 
   if (messageError) {
@@ -477,14 +477,14 @@ async function handleGetMessage(
   const { data: threadData, error: threadError } = await supabase
     .from('thread')
     .select(`
-      _id,
+      id,
       "Created Date",
       "Modified Date",
       host_user_id,
       guest_user_id,
       "Listing"
     `)
-    .eq('_id', messageData.thread_id)
+    .eq('id', messageData.thread_id)
     .single();
 
   if (threadError) {
@@ -503,14 +503,14 @@ async function handleGetMessage(
     userIds.size > 0
       ? supabase
           .from('user')
-          .select('_id, email, "Name - First", "Name - Last", "Profile Photo"')
-          .in('_id', Array.from(userIds))
+          .select('id, email, first_name, last_name, profile_photo_url')
+          .in('id', Array.from(userIds))
       : { data: [], error: null },
     threadData['Listing']
       ? supabase
           .from('listing')
-          .select('_id, "Name"')
-          .eq('_id', threadData['Listing'])
+          .select('id, "Name"') // TODO: VERIFY listing.Name COLUMN NAME
+          .eq('id', threadData['Listing'])
           .single()
       : { data: null, error: null },
   ]);
@@ -518,7 +518,7 @@ async function handleGetMessage(
   // Create users lookup map
   const usersMap = new Map<string, Record<string, unknown>>();
   for (const user of (usersResult.data || [])) {
-    usersMap.set(user._id, user);
+    usersMap.set(user.id, user);
   }
 
   // Enrich thread with related data
@@ -562,8 +562,8 @@ async function handleDeleteMessage(
       'is deleted (is hidden)': true,
       'Modified Date': now,
     })
-    .eq('_id', messageId)
-    .select('_id')
+    .eq('id', messageId)
+    .select('id')
     .single();
 
   if (error) {
@@ -575,7 +575,7 @@ async function handleDeleteMessage(
 
   return {
     deleted: true,
-    messageId: data._id,
+    messageId: data.id,
   };
 }
 
@@ -603,7 +603,7 @@ async function handleDeleteThread(
     })
     .eq('thread_id', threadId)
     .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
-    .select('_id');
+    .select('id');
 
   if (error) {
     console.error('[message-curation] deleteThread error:', error);
@@ -625,7 +625,7 @@ async function handleDeleteThread(
  * TODO: Integrate with email service when available
  *
  * NOTE: Uses separate queries for users/listings because the database lacks
- * FK constraints from thread.host_user_id/guest_user_id to user._id
+ * FK constraints from thread.host_user_id/guest_user_id to user.id
  */
 async function handleForwardMessage(
   payload: { messageId: string; recipientEmail?: string },
@@ -641,13 +641,13 @@ async function handleForwardMessage(
   const { data: messageData, error: messageError } = await supabase
     .from('_message')
     .select(`
-      _id,
+      id,
       "Message Body",
       "Created Date",
       originator_user_id,
       thread_id
     `)
-    .eq('_id', messageId)
+    .eq('id', messageId)
     .single();
 
   if (messageError) {
@@ -657,8 +657,8 @@ async function handleForwardMessage(
   // Step 2: Fetch thread
   const { data: _threadData, error: threadError } = await supabase
     .from('thread')
-    .select('_id, host_user_id, guest_user_id, "Listing"')
-    .eq('_id', messageData.thread_id)
+    .select('id, host_user_id, guest_user_id, "Listing"')
+    .eq('id', messageData.thread_id)
     .single();
 
   if (threadError) {
@@ -673,7 +673,7 @@ async function handleForwardMessage(
       'is Forwarded': true,
       'Modified Date': now,
     })
-    .eq('_id', messageId);
+    .eq('id', messageId);
 
   if (updateError) {
     console.error('[message-curation] forwardMessage update error:', updateError);
@@ -718,8 +718,8 @@ async function handleSendSplitBotMessage(
   // First, find the Split Bot user
   const { data: splitBotUser, error: splitBotError } = await supabase
     .from('user')
-    .select('_id')
-    .eq('is Split Bot', true)
+    .select('id')
+    .eq('is Split Bot', true) // TODO: VERIFY COLUMN NAME
     .single();
 
   if (splitBotError || !splitBotUser) {
@@ -730,8 +730,8 @@ async function handleSendSplitBotMessage(
   // Fetch thread to get host and guest
   const { data: _threadData, error: threadError } = await supabase
     .from('thread')
-    .select('_id, "host_user_id", "guest_user_id"')
-    .eq('_id', threadId)
+    .select('id, "host_user_id", "guest_user_id"')
+    .eq('id', threadId)
     .single();
 
   if (threadError) {
@@ -750,15 +750,15 @@ async function handleSendSplitBotMessage(
   const { data: newMessage, error: createError } = await supabase
     .from('_message')
     .insert({
-      _id: newIdData,
+      id: newIdData,
       'Message Body': messageBody.trim(),
       'thread_id': threadId,
-      'originator_user_id': splitBotUser._id,
+      'originator_user_id': splitBotUser.id,
       'Created Date': now,
       'Modified Date': now,
       'Split Bot Warning': true,
     })
-    .select('_id, "Message Body", "Created Date"')
+    .select('id, "Message Body", "Created Date"')
     .single();
 
   if (createError) {
@@ -767,7 +767,7 @@ async function handleSendSplitBotMessage(
   }
 
   console.log('[message-curation] Split Bot message created:', {
-    messageId: newMessage._id,
+    messageId: newMessage.id,
     threadId,
     recipientType,
     timestamp: now,
@@ -776,7 +776,7 @@ async function handleSendSplitBotMessage(
   return {
     success: true,
     message: {
-      id: newMessage._id,
+      id: newMessage.id,
       body: newMessage['Message Body'],
       createdAt: newMessage['Created Date'],
     },
@@ -796,29 +796,29 @@ function formatThread(thread: Record<string, unknown>) {
   const listing = thread.listing as Record<string, unknown> | null;
 
   return {
-    id: thread._id,
+    id: thread.id,
     createdAt: thread['Created Date'],
     modifiedAt: thread['Modified Date'],
     hostUserId: thread['host_user_id'],
     guestUserId: thread['guest_user_id'],
     listingId: thread['Listing'],
     guest: guest ? {
-      id: guest._id,
+      id: guest.id,
       email: guest.email || '',
-      firstName: guest['Name - First'] || '',
-      lastName: guest['Name - Last'] || '',
-      profilePhoto: guest['Profile Photo'] || null,
+      firstName: guest.first_name || '',
+      lastName: guest.last_name || '',
+      profilePhoto: guest.profile_photo_url || null,
     } : null,
     host: host ? {
-      id: host._id,
+      id: host.id,
       email: host.email || '',
-      firstName: host['Name - First'] || '',
-      lastName: host['Name - Last'] || '',
-      profilePhoto: host['Profile Photo'] || null,
+      firstName: host.first_name || '',
+      lastName: host.last_name || '',
+      profilePhoto: host.profile_photo_url || null,
     } : null,
     listing: listing ? {
-      id: listing._id,
-      name: listing['Name'] || 'Unnamed Listing',
+      id: listing.id,
+      name: listing['Name'] || 'Unnamed Listing', // TODO: VERIFY listing.Name COLUMN NAME
     } : null,
   };
 }
@@ -845,7 +845,7 @@ function formatMessage(message: Record<string, unknown>, thread: Record<string, 
   }
 
   return {
-    id: message._id,
+    id: message.id,
     body: message['Message Body'] || '',
     createdAt: message['Created Date'],
     modifiedAt: message['Modified Date'],
@@ -856,11 +856,11 @@ function formatMessage(message: Record<string, unknown>, thread: Record<string, 
     isDeleted: !!message['is deleted (is hidden)'],
     senderType,
     originator: originator ? {
-      id: originator._id,
+      id: originator.id,
       email: originator.email || '',
-      firstName: originator['Name - First'] || '',
-      lastName: originator['Name - Last'] || '',
-      profilePhoto: originator['Profile Photo'] || null,
+      firstName: originator.first_name || '',
+      lastName: originator.last_name || '',
+      profilePhoto: originator.profile_photo_url || null,
     } : null,
   };
 }

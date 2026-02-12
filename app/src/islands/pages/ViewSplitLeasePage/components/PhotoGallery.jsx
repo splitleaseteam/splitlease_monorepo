@@ -42,7 +42,7 @@ export function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
       return (
         <div className="vsl-gallery" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
           {photos.map((photo, idx) => (
-            <div key={photo._id || idx} onClick={() => onPhotoClick(idx)} style={{ ...mobileImageStyle, height: '200px' }}>
+            <div key={photo.id || idx} onClick={() => onPhotoClick(idx)} style={{ ...mobileImageStyle, height: '200px' }}>
               <img
                 src={photo['Photo (thumbnail)'] || photo.Photo}
                 alt={`${listingName} - ${idx + 1}`}
@@ -194,7 +194,7 @@ export function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
     return (
       <div className="vsl-gallery" style={getGridStyle()}>
         {photos.map((photo, idx) => (
-          <div key={photo._id || idx} onClick={() => onPhotoClick(idx)} style={imageStyle}>
+          <div key={photo.id || idx} onClick={() => onPhotoClick(idx)} style={imageStyle}>
             <img
               src={photo.Photo}
               alt={`${listingName} - ${idx + 1}`}
@@ -220,7 +220,7 @@ export function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
           />
         </div>
         {photos.slice(1, 3).map((photo, idx) => (
-          <div key={photo._id || idx} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
+          <div key={photo.id || idx} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
             <img
               src={photo['Photo (thumbnail)'] || photo.Photo}
               alt={`${listingName} - ${idx + 2}`}
@@ -246,7 +246,7 @@ export function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
           />
         </div>
         {photos.slice(1, 4).map((photo, idx) => (
-          <div key={photo._id || idx} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
+          <div key={photo.id || idx} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
             <img
               src={photo['Photo (thumbnail)'] || photo.Photo}
               alt={`${listingName} - ${idx + 2}`}
@@ -274,7 +274,7 @@ export function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
         />
       </div>
       {photosToShow.map((photo, idx) => (
-        <div key={photo._id || idx} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
+        <div key={photo.id || idx} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
           <img
             src={photo['Photo (thumbnail)'] || photo.Photo}
             alt={`${listingName} - ${idx + 2}`}

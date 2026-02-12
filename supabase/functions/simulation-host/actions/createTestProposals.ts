@@ -42,7 +42,7 @@ function getProposalConfig(rentalType: string) {
     'Guest MIS': oneWeekFromNow.toISOString().split('T')[0],
     'Guest MIE': twoWeeksFromNow.toISOString().split('T')[0],
     'Guest Move-out Date': threeMonthsFromNow.toISOString().split('T')[0],
-    Status: 'Under Review',
+    proposal_workflow_status: 'Under Review',
   };
 
   switch (rentalType) {
@@ -99,14 +99,14 @@ export async function handleCreateTestProposals(
     const config = getProposalConfig(type);
 
     const proposalData = {
-      'Guest User': guestId,
-      'Host User': hostId,
-      listing: listingId,
+      guest_user_id: guestId,
+      host_user_id: hostId,
+      listing_id: listingId,
       ...config,
       'is_test_data': true,
       'simulation_id': simulationId,
-      'Created Date': new Date().toISOString(),
-      'Modified Date': new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     console.log(`[createTestProposals] Creating ${type} proposal...`);
@@ -114,7 +114,7 @@ export async function handleCreateTestProposals(
     const { data: proposal, error: createError } = await supabase
       .from('proposal')
       .insert(proposalData)
-      .select('_id, Status, "Rental Type"')
+      .select('id, proposal_workflow_status, rental_type')
       .single();
 
     if (createError) {
@@ -122,27 +122,27 @@ export async function handleCreateTestProposals(
       throw new Error(`Failed to create ${type} proposal: ${createError.message}`);
     }
 
-    console.log(`[createTestProposals] Created ${type} proposal:`, proposal._id);
+    console.log(`[createTestProposals] Created ${type} proposal:`, proposal.id);
 
     proposals.push({
-      proposalId: proposal._id,
-      rentalType: proposal['Rental Type'],
-      status: proposal.Status,
+      proposalId: proposal.id,
+      rentalType: proposal.rental_type,
+      status: proposal.proposal_workflow_status,
     });
   }
 
   // Update the host's usability step
   const { data: hostUser } = await supabase
     .from('user')
-    .select('_id')
-    .eq('supabaseUserId', user.id)
+    .select('id')
+    .eq('supabase_user_id', user.id)
     .single();
 
   if (hostUser) {
     await supabase
       .from('user')
-      .update({ 'Usability Step': 2 })
-      .eq('_id', hostUser._id);
+      .update({ onboarding_usability_step: 2 })
+      .eq('id', hostUser.id);
   }
 
   console.log('[createTestProposals] Created', proposals.length, 'proposals');

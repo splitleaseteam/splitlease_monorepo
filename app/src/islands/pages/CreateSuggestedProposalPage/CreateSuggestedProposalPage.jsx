@@ -314,8 +314,8 @@ export default function CreateSuggestedProposalPage() {
       {/* Success Modal */}
       {showSuccessModal && (
         <SuccessModal
-          proposalId={createdProposal?._id}
-          threadId={createdThread?._id}
+          proposalId={createdProposal?.id}
+          threadId={createdThread?.id}
           onCreateAnother={handleCreateAnother}
           onClose={handleCloseSuccessModal}
         />

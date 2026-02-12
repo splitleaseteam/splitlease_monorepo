@@ -212,7 +212,7 @@ export async function createCoHostRequest(data) {
     // Handle direct response format (backwards compatibility)
     return {
       success: true,
-      requestId: response?.requestId || response?._id,
+      requestId: response?.requestId || response?.id,
       virtualMeetingId: response?.virtualMeetingId,
     };
   } catch (err) {

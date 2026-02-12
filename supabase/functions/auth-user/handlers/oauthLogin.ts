@@ -58,7 +58,7 @@ export async function handleOAuthLogin(
 
     const { data: existingUser, error: userCheckError } = await supabaseAdmin
       .from('user')
-      .select('_id, email, "Name - First", "Name - Last", "Type - User Current", "Profile Photo"')
+      .select('id, email, first_name, last_name, current_user_role, profile_photo_url')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
@@ -77,12 +77,12 @@ export async function handleOAuthLogin(
       };
     }
 
-    console.log('[oauth-login] User found:', existingUser._id);
+    console.log('[oauth-login] User found:', existingUser.id);
 
     // ========== PARSE USER TYPE ==========
     // Convert display text back to simple type
     let userType = 'Guest';
-    const userTypeDisplay = existingUser['Type - User Current'];
+    const userTypeDisplay = existingUser.current_user_role;
     if (userTypeDisplay && userTypeDisplay.includes('Host')) {
       userType = 'Host';
     } else if (userTypeDisplay && userTypeDisplay.includes('Guest')) {
@@ -99,10 +99,10 @@ export async function handleOAuthLogin(
       supabaseUserId,
       {
         user_metadata: {
-          user_id: existingUser._id,
-          host_account_id: existingUser._id, // user._id is now used directly as host reference
-          first_name: existingUser['Name - First'] || '',
-          last_name: existingUser['Name - Last'] || '',
+          user_id: existingUser.id,
+          host_account_id: existingUser.id, // user.id is now used directly as host reference
+          first_name: existingUser.first_name || '',
+          last_name: existingUser.last_name || '',
           user_type: userType,
         }
       }
@@ -118,14 +118,14 @@ export async function handleOAuthLogin(
     console.log('[oauth-login] ========== OAUTH LOGIN COMPLETE ==========');
 
     return {
-      user_id: existingUser._id,
+      user_id: existingUser.id,
       supabase_user_id: supabaseUserId,
       user_type: userType,
       access_token,
       refresh_token,
-      firstName: existingUser['Name - First'] || '',
-      lastName: existingUser['Name - Last'] || '',
-      profilePhoto: existingUser['Profile Photo'] || null,
+      firstName: existingUser.first_name || '',
+      lastName: existingUser.last_name || '',
+      profilePhoto: existingUser.profile_photo_url || null,
     };
 
   } catch (error) {

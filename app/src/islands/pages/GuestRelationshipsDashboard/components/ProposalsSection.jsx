@@ -79,13 +79,13 @@ export default function ProposalsSection({
               <span>{formatCurrency(proposal.nightlyPrice)}/night</span>
             </div>
           </div>
-          <div className="grd-proposal-id">{formatProposalId(proposal.id || proposal._id)}</div>
+          <div className="grd-proposal-id">{formatProposalId(proposal.id)}</div>
         </div>
         <div className="grd-proposal-actions">
           {type === 'current' && (
             <button
               className="grd-btn grd-btn-secondary grd-btn-sm"
-              onClick={() => onConfirmPricing(proposal.id || proposal._id)}
+              onClick={() => onConfirmPricing(proposal.id)}
             >
               <DollarSign size={14} />
               Confirm Pricing
@@ -93,7 +93,7 @@ export default function ProposalsSection({
           )}
           <button
             className="grd-btn grd-btn-icon"
-            onClick={() => onRemoveProposal(proposal.id || proposal._id)}
+            onClick={() => onRemoveProposal(proposal.id)}
             title="Remove"
           >
             <Trash2 size={16} />
@@ -120,7 +120,7 @@ export default function ProposalsSection({
         <div className="grd-proposals-list">
           {currentProposals.length > 0 ? (
             currentProposals.map(proposal => (
-              <ProposalCard key={proposal.id || proposal._id} proposal={proposal} type="current" />
+              <ProposalCard key={proposal.id} proposal={proposal} type="current" />
             ))
           ) : (
             <div className="grd-empty-state">
@@ -156,7 +156,7 @@ export default function ProposalsSection({
             >
               <option value="">Select a listing...</option>
               {availableListings.map(listing => (
-                <option key={listing._id || listing.id} value={listing._id || listing.id}>
+                <option key={listing.id} value={listing.id}>
                   {listing.listing_title || listing['Listing Name']} - {listing.location?.hood || listing['Hood - Text'] || 'NYC'}
                 </option>
               ))}
@@ -174,7 +174,7 @@ export default function ProposalsSection({
         <div className="grd-proposals-list">
           {suggestedProposals.length > 0 ? (
             suggestedProposals.map(proposal => (
-              <ProposalCard key={proposal.id || proposal._id} proposal={proposal} type="suggested" />
+              <ProposalCard key={proposal.id} proposal={proposal} type="suggested" />
             ))
           ) : (
             <div className="grd-empty-state">

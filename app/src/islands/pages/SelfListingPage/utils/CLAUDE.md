@@ -73,7 +73,7 @@
 ### Amenity Interface
 ```typescript
 interface Amenity {
-  _id: string;
+  id: string;
   Name: string;
   'Type - Amenity Categories': string;
   Icon?: string;
@@ -127,7 +127,7 @@ interface Neighborhood {
 ### SafetyFeature Interface
 ```typescript
 interface SafetyFeature {
-  _id: string;
+  id: string;
   Name: string;
   Icon?: string;
   'pre-set?'?: boolean;
@@ -139,7 +139,7 @@ interface SafetyFeature {
 ## DATA_SOURCE_TABLES
 
 ### zat_features_amenity
-[COLUMNS]: _id, Name, 'Type - Amenity Categories', Icon, 'pre-set?', pending
+[COLUMNS]: id, Name, 'Type - Amenity Categories', Icon, 'pre-set?', pending
 [CATEGORIES]: "In Unit", "In Building", "In Room"
 [PRE_SET]: Boolean flag indicating common/standard amenities
 [PENDING]: Boolean flag indicating awaiting approval
@@ -150,7 +150,7 @@ interface SafetyFeature {
 [JSONB_FIELD]: Zips contains array of ZIP codes as strings
 
 ### zfut_safetyfeatures
-[COLUMNS]: _id, Name, Icon, 'pre-set?'
+[COLUMNS]: id, Name, Icon, 'pre-set?'
 [PRE_SET]: Boolean flag indicating common safety features
 
 ---

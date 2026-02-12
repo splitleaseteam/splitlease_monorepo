@@ -15,11 +15,11 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
   const mobilePriceInfoTriggerRef = useRef(null);
 
   // Get listing ID for FavoriteButton
-  const favoriteListingId = listing.id || listing._id;
+  const favoriteListingId = listing.id;
 
   // Get availability message - hardcoded variety for now
   const getAvailabilityMessage = () => {
-    const id = listing.id || listing._id || '';
+    const id = listing.id || '';
     // Use a simple hash of the listing ID to deterministically assign messages
     const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const messageIndex = hash % 4;
@@ -98,7 +98,7 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
     );
   };
 
-  const listingId = listing.id || listing._id;
+  const listingId = listing.id;
 
   // Handle click to pass days-selected parameter at click time (not render time)
   // This ensures we get the current URL parameter after SearchScheduleSelector has updated it
@@ -272,7 +272,7 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      window.location.href = `/guest-proposals?proposal=${proposalForListing._id}`;
+                      window.location.href = `/guest-proposals?proposal=${proposalForListing.id}`;
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

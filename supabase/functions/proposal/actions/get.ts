@@ -21,18 +21,18 @@ interface GetProposalResponse {
   status_display: string;
   status_stage: number;
   listing?: {
-    _id: string;
-    Name: string;
-    "Location - Address": Record<string, unknown>;
+    id: string;
+    listing_title: string;
+    address_with_lat_lng_json: Record<string, unknown>;
   };
   guest?: {
-    _id: string;
-    "Name - Full": string;
+    id: string;
+    full_name: string;
     email: string;
   };
   host?: {
-    _id: string;
-    "Name - Full": string;
+    id: string;
+    full_name: string;
     email: string;
   };
 }
@@ -93,7 +93,7 @@ export async function handleGet(
   const { data: row, error: viewError } = await supabase
     .from("proposal_detail")
     .select("*")
-    .eq("_id", input.proposal_id)
+    .eq("id", input.proposal_id)
     .single();
 
   if (viewError || !row) {
@@ -118,13 +118,13 @@ export async function handleGet(
   }
   const proposalData = proposalRecord as unknown as ProposalData;
 
-  console.log(`[proposal:get] Found proposal with status: ${proposalData.Status}`);
+  console.log(`[proposal:get] Found proposal with status: ${proposalData.proposal_workflow_status}`);
 
   // ================================================
   // BUILD RESPONSE
   // ================================================
 
-  const statusName = proposalData.Status as ProposalStatusName;
+  const statusName = proposalData.proposal_workflow_status as ProposalStatusName;
 
   const response: GetProposalResponse = {
     proposal: proposalData,
@@ -135,26 +135,26 @@ export async function handleGet(
   // Map listing join columns to the original response shape
   if (viewRow.listing_id) {
     response.listing = {
-      _id: viewRow.listing_id,
-      Name: viewRow.listing_name,
-      "Location - Address": viewRow.listing_address,
+      id: viewRow.listing_id,
+      listing_title: viewRow.listing_name,
+      address_with_lat_lng_json: viewRow.listing_address,
     };
   }
 
-  // Map guest join columns to the original response shape
+  // Map guest join columns to the response shape
   if (viewRow.guest_id) {
     response.guest = {
-      _id: viewRow.guest_id,
-      "Name - Full": viewRow.guest_full_name,
+      id: viewRow.guest_id,
+      full_name: viewRow.guest_full_name,
       email: viewRow.guest_email,
     };
   }
 
-  // Map host join columns to the original response shape
+  // Map host join columns to the response shape
   if (viewRow.host_id) {
     response.host = {
-      _id: viewRow.host_id,
-      "Name - Full": viewRow.host_full_name,
+      id: viewRow.host_id,
+      full_name: viewRow.host_full_name,
       email: viewRow.host_email_fetched,
     };
   }

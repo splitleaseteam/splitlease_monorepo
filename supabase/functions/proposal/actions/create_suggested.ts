@@ -216,10 +216,10 @@ export async function handleCreateSuggested(
 
   const { data: existingProposals, error: duplicateCheckError } = await supabase
     .from("proposal")
-    .select("_id, Status")
-    .eq('"Guest"', input.guestId)
-    .eq('"Listing"', input.listingId)
-    .eq('"Deleted"', false)
+    .select("id, proposal_workflow_status")
+    .eq('guest_user_id', input.guestId)
+    .eq('listing_id', input.listingId)
+    .eq('is_deleted', false)
     .limit(10);
 
   if (duplicateCheckError) {
@@ -227,13 +227,13 @@ export async function handleCreateSuggested(
     // Non-blocking - continue
   } else if (existingProposals && existingProposals.length > 0) {
     const activeProposals = existingProposals.filter(
-      (p) => !excludedStatuses.includes(p.Status)
+      (p) => !excludedStatuses.includes(p.proposal_workflow_status)
     );
 
     if (activeProposals.length > 0) {
       console.warn(`[proposal:create_suggested] Active proposal exists:`, {
-        existingProposalId: activeProposals[0]._id,
-        existingStatus: activeProposals[0].Status
+        existingProposalId: activeProposals[0].id,
+        existingStatus: activeProposals[0].proposal_workflow_status
       });
       // Note: For internal tool, we warn but don't block (admin may need to create anyway)
     }
@@ -247,29 +247,28 @@ export async function handleCreateSuggested(
   const { data: listing, error: listingError } = await supabase
     .from("listing")
     .select(`
-      _id,
-      "Host User",
-      "rental type",
-      "Features - House Rules",
-      "cleaning_fee",
-      "damage_deposit",
-      "Weeks offered",
-      "Days Available (List of Days)",
-      "Nights Available (List of Nights) ",
-      "Location - Address",
-      "Location - slightly different address",
-      "Location - Borough",
-      "weekly_host_rate",
-      "nightly_rate_2_nights",
-      "nightly_rate_3_nights",
-      "nightly_rate_4_nights",
-      "nightly_rate_5_nights",
-      "nightly_rate_6_nights",
-      "nightly_rate_7_nights",
-      "monthly_host_rate",
-      "Deleted"
+      id,
+      host_user_id,
+      rental_type,
+      house_rule_reference_ids_json,
+      cleaning_fee_amount,
+      damage_deposit_amount,
+      weeks_offered_schedule_text,
+      available_days_as_day_numbers_json,
+      available_nights_as_day_numbers_json,
+      address_with_lat_lng_json,
+      map_pin_offset_address_json,
+      borough,
+      weekly_rate_paid_to_host,
+      nightly_rate_for_2_night_stay,
+      nightly_rate_for_3_night_stay,
+      nightly_rate_for_4_night_stay,
+      nightly_rate_for_5_night_stay,
+      nightly_rate_for_7_night_stay,
+      monthly_rate_paid_to_host,
+      is_deleted
     `)
-    .eq("_id", input.listingId)
+    .eq("id", input.listingId)
     .single();
 
   if (listingError || !listing) {
@@ -277,27 +276,27 @@ export async function handleCreateSuggested(
     throw new ValidationError(`Listing not found: ${input.listingId}`);
   }
 
-  if ((listing as Record<string, unknown>).Deleted === true) {
+  if ((listing as Record<string, unknown>).is_deleted === true) {
     throw new ValidationError(`Cannot create proposal for deleted listing: ${input.listingId}`);
   }
 
   const listingData = listing as unknown as ListingData;
-  console.log(`[proposal:create_suggested] Found listing, host user: ${listingData["Host User"]}`);
+  console.log(`[proposal:create_suggested] Found listing, host user: ${listingData.host_user_id}`);
 
   // Fetch Guest User
   const { data: guest, error: guestError } = await supabase
     .from("user")
     .select(`
-      _id,
+      id,
       email,
-      "Rental Application",
+      rental_application_form_id,
       "Proposals List",
       "Favorited Listings",
       "Tasks Completed",
       "About Me / Bio",
       "need for Space"
     `)
-    .eq("_id", input.guestId)
+    .eq("id", input.guestId)
     .single();
 
   if (guestError || !guest) {
@@ -311,13 +310,13 @@ export async function handleCreateSuggested(
   // Fetch Host User
   const { data: hostUser, error: hostUserError } = await supabase
     .from("user")
-    .select(`_id, email, "Proposals List"`)
-    .eq("_id", listingData["Host User"])
+    .select(`id, email, "Proposals List"`)
+    .eq("id", listingData.host_user_id)
     .single();
 
   if (hostUserError || !hostUser) {
     console.error(`[proposal:create_suggested] Host user fetch failed:`, hostUserError);
-    throw new ValidationError(`Host user not found: ${listingData["Host User"]}`);
+    throw new ValidationError(`Host user not found: ${listingData.host_user_id}`);
   }
 
   const hostUserData = hostUser as unknown as HostUserData;
@@ -326,11 +325,11 @@ export async function handleCreateSuggested(
   // Fetch Rental Application (if exists)
   let rentalApp: RentalApplicationData | null = null;
   let hasRentalApp = false;
-  if (guestData["Rental Application"]) {
+  if (guestData.rental_application_form_id) {
     const { data: app } = await supabase
       .from("rentalapplication")
-      .select("_id, submitted")
-      .eq("_id", guestData["Rental Application"])
+      .select("id, submitted")
+      .eq("id", guestData.rental_application_form_id)
       .single();
     rentalApp = app as RentalApplicationData | null;
     hasRentalApp = rentalApp !== null;
@@ -347,12 +346,12 @@ export async function handleCreateSuggested(
 
   // Complementary nights
   const complementaryNights = calculateComplementaryNights(
-    listingData["Nights Available (List of Nights) "] || [],
+    listingData.available_nights_as_day_numbers_json || [],
     input.nightsSelected
   );
 
   // Compensation calculation
-  const rentalType = ((listingData["rental type"] || "nightly").toLowerCase()) as RentalType;
+  const rentalType = ((listingData.rental_type || "nightly").toLowerCase()) as RentalType;
   const nightsPerWeek = input.nightsSelected.length;
   const hostNightlyRate = getNightlyRateForNights(listingData, nightsPerWeek);
   const needsAvgDaysPerMonth =
@@ -365,10 +364,10 @@ export async function handleCreateSuggested(
     rentalType,
     (input.reservationSpan || "other") as ReservationSpan,
     nightsPerWeek,
-    listingData["weekly_host_rate"] || 0,
+    listingData.weekly_rate_paid_to_host || 0,
     hostNightlyRate,
     input.reservationSpanWeeks,
-    listingData["monthly_host_rate"] || 0,
+    listingData.monthly_rate_paid_to_host || 0,
     avgDaysPerMonth
   );
 
@@ -424,76 +423,76 @@ export async function handleCreateSuggested(
   const preferredGender = input.preferredGender || "any";
 
   const proposalData = {
-    _id: proposalId,
+    id: proposalId,
 
     // Core relationships
-    Listing: input.listingId,
-    Guest: input.guestId,
-    "Host User": hostUserData._id,
-    "Created By": "Split Lease", // Indicates internal creation
+    listing_id: input.listingId,
+    guest_user_id: input.guestId,
+    host_user_id: hostUserData.id,
+    created_by_user_id: "Split Lease", // Indicates internal creation
 
     // Guest info
-    "Guest email": guestData.email,
-    "Guest flexibility": guestFlexibility,
-    "preferred gender": preferredGender,
-    Comment: input.comment || null,
+    guest_email_address: guestData.email,
+    guest_schedule_flexibility_text: guestFlexibility,
+    preferred_roommate_gender: preferredGender,
+    guest_introduction_message: input.comment || null,
 
     // Dates
-    "Move in range start": input.moveInStartRange,
-    "Move in range end": input.moveInEndRange,
-    "Move-out": moveOutDate.toISOString(),
+    move_in_range_start_date: input.moveInStartRange,
+    move_in_range_end_date: input.moveInEndRange,
+    planned_move_out_date: moveOutDate.toISOString(),
 
     // Duration
-    "Reservation Span": input.reservationSpan,
-    "Reservation Span (Weeks)": input.reservationSpanWeeks,
-    "actual weeks during reservation span": input.reservationSpanWeeks,
-    "duration in months": compensation.duration_months,
+    reservation_span_text: input.reservationSpan,
+    reservation_span_in_weeks: input.reservationSpanWeeks,
+    actual_weeks_in_reservation_span: input.reservationSpanWeeks,
+    stay_duration_in_months: compensation.duration_months,
 
     // Day/Night selection (0-indexed)
-    "Days Selected": input.daysSelected,
-    "Nights Selected (Nights list)": input.nightsSelected,
-    "nights per week (num)": nightsPerWeek,
-    "check in day": input.checkIn,
-    "check out day": input.checkOut,
-    "Days Available": listingData["Days Available (List of Days)"],
-    "Complementary Nights": complementaryNights,
+    guest_selected_days_numbers_json: input.daysSelected,
+    guest_selected_nights_numbers_json: input.nightsSelected,
+    nights_per_week_count: nightsPerWeek,
+    checkin_day_of_week_number: input.checkIn,
+    checkout_day_of_week_number: input.checkOut,
+    available_days_of_week_numbers_json: listingData.available_days_as_day_numbers_json,
+    complimentary_free_nights_numbers_json: complementaryNights,
 
     // Pricing
-    "proposal nightly price": input.nightlyPrice,
-    "4 week rent": input.fourWeekRent || compensation.four_week_rent,
-    "Total Price for Reservation (guest)": input.totalPrice,
-    "Total Compensation (proposal - host)": input.hostCompensation || compensation.total_compensation,
-    "host compensation": compensation.host_compensation_per_night,
-    "4 week compensation": compensation.four_week_compensation,
-    "cleaning fee": input.cleaningFee || listingData["cleaning_fee"] || 0,
-    "damage deposit": input.damageDeposit || listingData["damage_deposit"] || 0,
-    "nightly price for map (text)": formatPriceForDisplay(input.nightlyPrice),
+    calculated_nightly_price: input.nightlyPrice,
+    four_week_rent_amount: input.fourWeekRent || compensation.four_week_rent,
+    total_reservation_price_for_guest: input.totalPrice,
+    total_compensation_for_host: input.hostCompensation || compensation.total_compensation,
+    host_compensation_per_period: compensation.host_compensation_per_night,
+    four_week_host_compensation: compensation.four_week_compensation,
+    cleaning_fee_amount: input.cleaningFee || listingData.cleaning_fee_amount || 0,
+    damage_deposit_amount: input.damageDeposit || listingData.damage_deposit_amount || 0,
+    nightly_price_for_map_display_text: formatPriceForDisplay(input.nightlyPrice),
 
     // From listing
-    "rental type": listingData["rental type"],
-    "House Rules": listingData["Features - House Rules"],
-    "week selection": listingData["Weeks offered"],
-    "host_counter_offer_house_rules": listingData["Features - House Rules"],
-    "Location - Address": listingData["Location - Address"],
-    "Location - Address slightly different": listingData["Location - slightly different address"],
+    rental_type: listingData.rental_type,
+    house_rules_reference_ids_json: listingData.house_rule_reference_ids_json,
+    week_pattern_selection: listingData.weeks_offered_schedule_text,
+    host_proposed_house_rules_json: listingData.house_rule_reference_ids_json,
+    listing_address_with_coordinates_json: listingData.address_with_lat_lng_json,
+    listing_map_pin_offset_address_json: listingData.map_pin_offset_address_json,
 
     // Status & metadata
-    Status: status,
-    "Order Ranking": orderRanking,
-    History: [historyEntry],
-    "Is Finalized": false,
-    Deleted: false,
+    proposal_workflow_status: status,
+    display_sort_order: orderRanking,
+    proposal_event_log_json: [historyEntry],
+    is_finalized: false,
+    is_deleted: false,
 
     // Related records
-    "rental application": guestData["Rental Application"],
-    "rental app requested": hasRentalApp,
-    "host email": hostUserData.email,
+    rental_application_id: guestData.rental_application_form_id,
+    is_rental_application_requested: hasRentalApp,
+    host_email_address: hostUserData.email,
 
     // Note: Thread relationship is managed via thread.Proposal FK, not here
 
     // Timestamps
-    "Created Date": now,
-    "Modified Date": now,
+    created_at: now,
+    updated_at: now,
   };
 
   console.log(`[proposal:create_suggested] Inserting proposal: ${proposalId}`);
@@ -514,13 +513,13 @@ export async function handleCreateSuggested(
   // ================================================
 
   const threadData = {
-    _id: threadId,
-    Proposal: proposalId,
-    Listing: input.listingId,
+    id: threadId,
+    proposal_id: proposalId,
+    listing_id: input.listingId,
     guest_user_id: input.guestId,
-    host_user_id: hostUserData._id,
-    "Created Date": now,
-    "Modified Date": now,
+    host_user_id: hostUserData.id,
+    created_at: now,
+    updated_at: now,
   };
 
   console.log(`[proposal:create_suggested] Inserting thread: ${threadId}`);
@@ -539,7 +538,7 @@ export async function handleCreateSuggested(
     // Fetch user profiles and listing name for message templates (used by SplitBot + notifications)
     const [guestProfile, hostProfile, listingName] = await Promise.all([
       getUserProfile(supabase, input.guestId),
-      getUserProfile(supabase, hostUserData._id),
+      getUserProfile(supabase, hostUserData.id),
       getListingName(supabase, input.listingId),
     ]);
 
@@ -587,7 +586,7 @@ export async function handleCreateSuggested(
             guestBio: input.aboutMe || guestData["About Me / Bio"] || "",
             needForSpace: input.needForSpace || guestData["need for Space"] || "",
             listingName: resolvedListingName,
-            listingBorough: listingData["Location - Borough"] || "NYC",
+            listingBorough: listingData.borough || "NYC",
             reservationWeeks: input.reservationSpanWeeks,
             moveInStart: input.moveInStartRange,
             moveInEnd: input.moveInEndRange,
@@ -612,7 +611,7 @@ export async function handleCreateSuggested(
               const { error: summaryInsertError } = await supabase
                 .from('negotiationsummary')
                 .insert({
-                  _id: summaryId,
+                  id: summaryId,
                   "Proposal associated": proposalId,
                   "Created By": input.guestId,
                   "Created Date": now,
@@ -674,7 +673,7 @@ export async function handleCreateSuggested(
           callToAction: hostCTA.display,
           visibleToHost: hostVisibility.visibleToHost,
           visibleToGuest: hostVisibility.visibleToGuest,
-          recipientUserId: hostUserData._id,
+          recipientUserId: hostUserData.id,
         });
         console.log(`[proposal:create_suggested] SplitBot message sent to host`);
       }
@@ -725,11 +724,11 @@ export async function handleCreateSuggested(
         // Fetch guest phone number
         const { data: guestPhone } = await supabase
           .from('user')
-          .select('"Phone Number"')
-          .eq('_id', input.guestId)
+          .select('phone_number')
+          .eq('id', input.guestId)
           .single();
 
-        const phoneNumber = guestPhone?.["Phone Number"] as string | undefined;
+        const phoneNumber = guestPhone?.phone_number as string | undefined;
 
         if (phoneNumber) {
           console.log(`[proposal:create_suggested] Guest opted-in for SMS notifications`);
@@ -782,7 +781,7 @@ export async function handleCreateSuggested(
   const guestUpdates: Record<string, unknown> = {
     "flexibility (last known)": guestFlexibility,
     "Recent Days Selected": input.daysSelected,
-    "Modified Date": now,
+    updated_at: now,
   };
 
   // Add proposal to guest's list
@@ -812,7 +811,7 @@ export async function handleCreateSuggested(
   const { error: guestUpdateError } = await supabase
     .from("user")
     .update(guestUpdates)
-    .eq("_id", input.guestId);
+    .eq("id", input.guestId);
 
   if (guestUpdateError) {
     console.error(`[proposal:create_suggested] Guest update failed:`, guestUpdateError);
@@ -837,9 +836,9 @@ export async function handleCreateSuggested(
     .from("user")
     .update({
       "Proposals List": [...hostProposals, proposalId],
-      "Modified Date": now,
+      updated_at: now,
     })
-    .eq("_id", hostUserData._id);
+    .eq("id", hostUserData.id);
 
   if (hostUpdateError) {
     console.error(`[proposal:create_suggested] Host update failed:`, hostUpdateError);
@@ -849,7 +848,7 @@ export async function handleCreateSuggested(
   }
 
   // Dual-write to junction tables
-  await addUserProposal(supabase, hostUserData._id, proposalId, 'host');
+  await addUserProposal(supabase, hostUserData.id, proposalId, 'host');
 
   // ================================================
   // RETURN RESPONSE
@@ -863,7 +862,7 @@ export async function handleCreateSuggested(
     status: status,
     listingId: input.listingId,
     guestId: input.guestId,
-    hostId: hostUserData._id,
+    hostId: hostUserData.id,
     createdAt: now,
   };
 }

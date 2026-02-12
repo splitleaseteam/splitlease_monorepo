@@ -12,6 +12,7 @@
 
 import { useState } from 'react';
 import { X, MapPin, ChevronLeft, ChevronRight, Bed, Bath, Square } from 'lucide-react';
+import { getListingDisplayPrice } from '../../../logic/calculators/pricing/getListingDisplayPrice.js';
 import FavoriteButton from '../FavoriteButton/FavoriteButton.jsx';
 import './ListingCardForMap.css';
 
@@ -41,7 +42,8 @@ export default function ListingCardForMap({
   onToggleFavorite,
   userId = null,
   onRequireAuth = null,
-  showMessageButton = true
+  showMessageButton = true,
+  selectedNightsCount = 4
 }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
@@ -62,10 +64,10 @@ export default function ListingCardForMap({
   };
 
   // Get listing ID for FavoriteButton
-  const favoriteListingId = listing.id || listing._id;
+  const favoriteListingId = listing.id;
 
   const handleViewDetails = () => {
-    const listingId = listing.id || listing._id;
+    const listingId = listing.id;
     if (!listingId) {
       console.error('[ListingCardForMap] No listing ID found', { listing });
       return;
@@ -99,7 +101,7 @@ export default function ListingCardForMap({
 
   const currentPhoto = listing.images?.[currentPhotoIndex];
 
-  const nightlyPrice = listing.price?.starting || listing['Starting nightly price'] || 0;
+  const nightlyPrice = getListingDisplayPrice(listing, selectedNightsCount, 'dynamic');
   const bedrooms = listing.bedrooms || 0;
   const bathrooms = listing.bathrooms || 0;
   const sqft = listing.squareFeet || 0;

@@ -34,7 +34,7 @@ export default function AddressSection({
     if (address.validated) {
       setShowManualInputs(false);
     }
-  }, [listing._id, listing.address_with_lat_lng_json?.validated]);
+  }, [listing.id, listing.address_with_lat_lng_json?.validated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,7 +63,7 @@ export default function AddressSection({
 
   // Debug logging to understand validated state
   console.log('[AddressSection] Current address state:', {
-    listingId: listing._id,
+    listingId: listing.id,
     address: address,
     validated: address.validated,
     hasCoordinates: !!(address.lat && address.lng),

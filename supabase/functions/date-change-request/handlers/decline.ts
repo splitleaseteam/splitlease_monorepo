@@ -51,7 +51,7 @@ export async function handleDecline(
   const { data: request, error: requestError } = await supabase
     .from('datechangerequest')
     .select('*')
-    .eq('_id', input.requestId)
+    .eq('id', input.requestId)
     .single();
 
   if (requestError || !request) {
@@ -87,7 +87,7 @@ export async function handleDecline(
   const { error: updateError } = await supabase
     .from('datechangerequest')
     .update(updateData)
-    .eq('_id', input.requestId);
+    .eq('id', input.requestId);
 
   if (updateError) {
     console.error(`[date-change-request:decline] Update failed:`, updateError);

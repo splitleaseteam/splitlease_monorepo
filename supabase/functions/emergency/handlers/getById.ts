@@ -65,7 +65,7 @@ export async function handleGetById(
   return {
     ...emergency,
     proposal: proposal ? {
-      _id: proposal._id,
+      id: proposal.id,
       agreementNumber: proposal['Agreement #'],
       guestId: proposal.Guest,
       listingId: proposal.Listing,
@@ -73,27 +73,27 @@ export async function handleGetById(
       moveOut: proposal['Move out'],
     } : null,
     listing: listing ? {
-      _id: listing._id,
+      id: listing.id,
       name: listing.Name,
       streetAddress: listing['Street address'],
       city: listing['City/Town'],
     } : null,
     guest: guest ? {
-      _id: guest._id,
+      id: guest.id,
       email: guest.email,
       firstName: guest['First name'],
       lastName: guest['Last name'],
       phone: guest['Phone number'],
     } : null,
     reportedBy: reportedBy ? {
-      _id: reportedBy._id,
+      id: reportedBy.id,
       email: reportedBy.email,
       firstName: reportedBy['First name'],
       lastName: reportedBy['Last name'],
       phone: reportedBy['Phone number'],
     } : null,
     assignedTo: assignedTo ? {
-      _id: assignedTo._id,
+      id: assignedTo.id,
       email: assignedTo.email,
       firstName: assignedTo['First name'],
       lastName: assignedTo['Last name'],
@@ -107,8 +107,8 @@ export async function handleGetById(
 async function fetchProposal(proposalId: string, supabase: SupabaseClient): Promise<Record<string, unknown> | null> {
   const { data, error } = await supabase
     .from('proposal')
-    .select('_id, "Agreement #", "Guest", "Listing", "Move in", "Move out"')
-    .eq('_id', proposalId)
+    .select('id, "Agreement #", "Guest", "Listing", "Move in", "Move out"')
+    .eq('id', proposalId)
     .single();
 
   if (error) {
@@ -121,8 +121,8 @@ async function fetchProposal(proposalId: string, supabase: SupabaseClient): Prom
 async function fetchUser(userId: string, supabase: SupabaseClient): Promise<Record<string, unknown> | null> {
   const { data, error } = await supabase
     .from('user')
-    .select('_id, email, "First name", "Last name", "Phone number", admin')
-    .eq('_id', userId)
+    .select('id, email, "First name", "Last name", "Phone number", admin')
+    .eq('id', userId)
     .single();
 
   if (error) {
@@ -135,8 +135,8 @@ async function fetchUser(userId: string, supabase: SupabaseClient): Promise<Reco
 async function fetchListing(listingId: string, supabase: SupabaseClient): Promise<Record<string, unknown> | null> {
   const { data, error } = await supabase
     .from('listing')
-    .select('_id, Name, "Street address", "City/Town"')
-    .eq('_id', listingId)
+    .select('id, Name, "Street address", "City/Town"')
+    .eq('id', listingId)
     .single();
 
   if (error) {

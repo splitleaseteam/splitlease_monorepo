@@ -48,7 +48,7 @@ function adaptListingFromSupabase(raw) {
   const host = raw.host || {};
 
   return {
-    id: raw._id,
+    id: raw.id,
     name: raw.listing_title || 'Untitled Listing',
     active: raw.is_active ?? false,
     rentalType: raw.rental_type || '',
@@ -71,7 +71,7 @@ function adaptListingFromSupabase(raw) {
     extraCharges: raw['extra_charges'],
 
     // Host info (host is fetched separately and enriched by edge function)
-    hostId: host._id || null,
+    hostId: host.id || null,
     hostEmail: host.email || '',
     hostName: `${host.name_first || ''} ${host.name_last || ''}`.trim() || 'Unknown Host',
 

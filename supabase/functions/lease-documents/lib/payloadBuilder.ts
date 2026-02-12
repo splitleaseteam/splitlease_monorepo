@@ -26,7 +26,7 @@ import type {
 // ================================================
 
 interface LeaseRecord {
-  _id: string;
+  id: string;
   'Agreement Number': string;
   'Reservation Period : Start': string | null;
   'Reservation Period : End': string | null;
@@ -39,7 +39,7 @@ interface LeaseRecord {
 }
 
 interface ProposalRecord {
-  _id: string;
+  id: string;
   'hc move in date': string | null;
   'Move-out': string | null;
   'rental type': string | null;
@@ -55,7 +55,7 @@ interface ProposalRecord {
 }
 
 interface ListingRecord {
-  _id: string;
+  id: string;
   title: string | null;
   address: string | null;
   description: string | null;
@@ -66,7 +66,7 @@ interface ListingRecord {
 }
 
 interface UserRecord {
-  _id: string;
+  id: string;
   name: string | null;
   email: string | null;
   phone: string | null;
@@ -262,7 +262,7 @@ export async function fetchFieldsForLeaseDocuments(
       Host
     `
     )
-    .eq('_id', leaseId)
+    .eq('id', leaseId)
     .single();
 
   if (leaseError) {
@@ -294,7 +294,7 @@ export async function fetchFieldsForLeaseDocuments(
       "week pattern"
     `
     )
-    .eq('_id', leaseRecord.Proposal)
+    .eq('id', leaseRecord.Proposal)
     .single();
 
   if (proposalError) {
@@ -303,7 +303,7 @@ export async function fetchFieldsForLeaseDocuments(
   }
 
   const proposalRecord = proposal as ProposalRecord;
-  console.log(`[payloadBuilder] Proposal found: ${proposalRecord._id}`);
+  console.log(`[payloadBuilder] Proposal found: ${proposalRecord.id}`);
 
   // Step 3: Fetch listing
   const { data: listing, error: listingError } = await supabase
@@ -320,7 +320,7 @@ export async function fetchFieldsForLeaseDocuments(
       images
     `
     )
-    .eq('_id', leaseRecord.Listing)
+    .eq('id', leaseRecord.Listing)
     .single();
 
   if (listingError) {
@@ -333,12 +333,12 @@ export async function fetchFieldsForLeaseDocuments(
 
   // Step 4: Fetch users (parallel)
   const [guestResult, hostResult] = await Promise.all([
-    supabase.from('user').select('_id, name, email, phone').eq('_id', leaseRecord.Guest).single(),
-    supabase.from('user').select('_id, name, email, phone').eq('_id', leaseRecord.Host).single(),
+    supabase.from('user').select('id, name, email, phone').eq('id', leaseRecord.Guest).single(),
+    supabase.from('user').select('id, name, email, phone').eq('id', leaseRecord.Host).single(),
   ]);
 
-  const guest: UserRecord = guestResult.data || { _id: '', name: '', email: '', phone: '' };
-  const host: UserRecord = hostResult.data || { _id: '', name: '', email: '', phone: '' };
+  const guest: UserRecord = guestResult.data || { id: '', name: '', email: '', phone: '' };
+  const host: UserRecord = hostResult.data || { id: '', name: '', email: '', phone: '' };
 
   if (guestResult.error) {
     console.warn('[payloadBuilder] Guest fetch warning:', guestResult.error.message);
@@ -405,7 +405,7 @@ export async function fetchFieldsForLeaseDocuments(
   const fields: FieldsForLeaseDocuments = {
     // Identifiers
     agreementNumber: leaseRecord['Agreement Number'] || '',
-    leaseId: leaseRecord._id,
+    leaseId: leaseRecord.id,
 
     // People
     guestName: guest.name || '',

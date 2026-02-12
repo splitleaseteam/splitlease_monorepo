@@ -50,7 +50,7 @@ export async function handleCancel(
   const { data: request, error: requestError } = await supabase
     .from('datechangerequest')
     .select('*')
-    .eq('_id', input.requestId)
+    .eq('id', input.requestId)
     .single();
 
   if (requestError || !request) {
@@ -84,7 +84,7 @@ export async function handleCancel(
   const { error: updateError } = await supabase
     .from('datechangerequest')
     .update(updateData)
-    .eq('_id', input.requestId);
+    .eq('id', input.requestId);
 
   if (updateError) {
     console.error(`[date-change-request:cancel] Update failed:`, updateError);

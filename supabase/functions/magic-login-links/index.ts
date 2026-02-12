@@ -13,7 +13,7 @@
  *
  * Security:
  * - Requires valid Supabase Auth session
- * - Validates user has admin privileges (Toggle - Is Admin = true)
+ * - Validates user has admin privileges (is_admin = true)
  * - Logs all magic link generations to magic_link_audit table
  *
  * FP ARCHITECTURE:
@@ -101,7 +101,7 @@ async function _validateAdminAccess(req: Request, supabaseUrl: string, supabaseS
   // Check if user is admin in public.user table
   const { data: userData, error: userError } = await supabase
     .from('user')
-    .select('"Toggle - Is Admin"')
+    .select('is_admin')
     .eq('authentication->>user_id', user.id)
     .single();
 
@@ -110,7 +110,7 @@ async function _validateAdminAccess(req: Request, supabaseUrl: string, supabaseS
   }
 
   // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // if (userData['Toggle - Is Admin'] !== true) {
+  // if (userData.is_admin !== true) {
   //   return err(new Error('Admin access required'));
   // }
 

@@ -15,12 +15,12 @@ AS $func$
 BEGIN
   IF NEW.host_user_id IS NOT NULL THEN
     INSERT INTO junctions.thread_participant (thread_id, user_id, role)
-    VALUES (NEW._id, NEW.host_user_id, 'host')
+    VALUES (NEW.id, NEW.host_user_id, 'host')
     ON CONFLICT (thread_id, user_id) DO NOTHING;
   END IF;
   IF NEW.guest_user_id IS NOT NULL THEN
     INSERT INTO junctions.thread_participant (thread_id, user_id, role)
-    VALUES (NEW._id, NEW.guest_user_id, 'guest')
+    VALUES (NEW.id, NEW.guest_user_id, 'guest')
     ON CONFLICT (thread_id, user_id) DO NOTHING;
   END IF;
   RETURN NEW;

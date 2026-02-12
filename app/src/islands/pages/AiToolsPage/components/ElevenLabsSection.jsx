@@ -118,7 +118,7 @@ export default function ElevenLabsSection({
           ) : (
             <div className="items-list">
               {narrations.map((narration) => (
-                <div key={narration._id} className="item-card">
+                <div key={narration.id} className="item-card">
                   <div className="item-header">
                     <span className="narrator-name">
                       {narration['Narrator data'] || 'Unknown Narrator'}
@@ -147,7 +147,7 @@ export default function ElevenLabsSection({
                     {selectedVisit && !narration.Visit && (
                       <button
                         className="btn btn--small btn--primary"
-                        onClick={() => onAttach(narration._id)}
+                        onClick={() => onAttach(narration.id)}
                         disabled={narrationStatus.loading}
                       >
                         Attach to Visit

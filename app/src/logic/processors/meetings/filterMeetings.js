@@ -47,7 +47,7 @@ export function filterMeetings(meetings, filters = {}) {
 
     // Host filter
     if (hostId) {
-      const meetingHostId = meeting.host?.id || meeting.host?._id;
+      const meetingHostId = meeting.host?.id;
       if (meetingHostId !== hostId) return false;
     }
 
@@ -87,12 +87,12 @@ export function extractUniqueHosts(meetings) {
 
   meetings.forEach(meeting => {
     // Use enriched host object or flat fields
-    const hasHostObject = meeting.host && (meeting.host.id || meeting.host._id);
+    const hasHostObject = meeting.host && meeting.host.id;
     const hasHostFlat = meeting.host_display_name || meeting['host email'];
 
     if (!hasHostObject && !hasHostFlat) return;
 
-    const hostId = meeting.host?.id || meeting.host?._id || meeting['host email'] || meeting.host_display_name;
+    const hostId = meeting.host?.id || meeting['host email'] || meeting.host_display_name;
     if (!hostId || hostMap.has(hostId)) return;
 
     const hostNameFromObject = getFullName(meeting.host);
@@ -127,12 +127,12 @@ export function extractUniqueGuests(meetings) {
 
   meetings.forEach(meeting => {
     // Use enriched guest object or flat fields
-    const hasGuestObject = meeting.guest && (meeting.guest.id || meeting.guest._id);
+    const hasGuestObject = meeting.guest && meeting.guest.id;
     const hasGuestFlat = meeting['guest name'] || meeting['guest email'];
 
     if (!hasGuestObject && !hasGuestFlat) return;
 
-    const guestId = meeting.guest?.id || meeting.guest?._id || meeting['guest email'] || meeting['guest name'];
+    const guestId = meeting.guest?.id || meeting['guest email'] || meeting['guest name'];
     if (!guestId || guestMap.has(guestId)) return;
 
     const guestNameFromObject = getFullName(meeting.guest);
@@ -193,7 +193,7 @@ export function formatMeetingForDisplay(meeting) {
   const hostEmail = meeting.host?.email || meeting['host email'] || '';
 
   return {
-    id: meeting._id || meeting.id,
+    id: meeting.id,
     status: meeting.status || 'unknown',
     guestName,
     guestEmail,

@@ -14,7 +14,7 @@ import type { ProposalData, ActiveTerms } from './types.ts';
 // ================================================
 
 interface UserData {
-  _id: string;
+  id: string;
   'first name'?: string;
   'last name'?: string;
   email?: string;
@@ -22,7 +22,7 @@ interface UserData {
 }
 
 interface ListingData {
-  _id: string;
+  id: string;
   Name?: string;
   Title?: string;
   Description?: string;
@@ -70,8 +70,8 @@ async function fetchUserData(
 ): Promise<UserData | null> {
   const { data, error } = await supabase
     .from('user')
-    .select('_id, "first name", "last name", email, "Phone Number"')
-    .eq('_id', userId)
+    .select('id, "first name", "last name", email, "Phone Number"')
+    .eq('id', userId)
     .single();
 
   if (error) {
@@ -94,7 +94,7 @@ async function fetchListingData(
     .select(
       '_id, Name, Title, Description, Location, "Type of Space", "Space Details", "House Rules", address, image1, image2, image3'
     )
-    .eq('_id', listingId)
+    .eq('id', listingId)
     .single();
 
   if (error) {

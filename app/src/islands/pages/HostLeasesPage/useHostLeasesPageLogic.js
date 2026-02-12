@@ -28,7 +28,7 @@ function normalizeListing(listing) {
   if (!listing) return null;
   return {
     ...listing,
-    id: listing.id || listing._id,
+    id: listing.id,
     title: listing.listing_title || listing.title || 'Unnamed Listing',
     name: listing.listing_title || listing.title || 'Unnamed Listing',
     thumbnail: listing.thumbnail || listing.cover_photo || null,
@@ -45,7 +45,7 @@ function normalizeGuest(guest) {
   if (!guest) return null;
   return {
     ...guest,
-    id: guest.id || guest._id,
+    id: guest.id,
     name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.name || 'Guest',
     firstName: guest.first_name || guest.firstName || 'Guest',
     email: guest.email || null,
@@ -66,7 +66,7 @@ function normalizeLease(lease) {
   if (!lease) return null;
   return {
     ...lease,
-    id: lease._id,
+    id: lease.id,
     agreementNumber: lease['Agreement Number'],
     leaseStatus: lease['Lease Status'],
     leaseSigned: lease['Lease signed?'],
@@ -103,7 +103,7 @@ function normalizeLease(lease) {
 function normalizeStay(stay) {
   if (!stay) return null;
   return {
-    id: stay._id,
+    id: stay.id,
     leaseId: stay.Lease,
     weekNumber: stay['Week Number'],
     checkInNight: stay['Check In (night)'],
@@ -122,7 +122,7 @@ function normalizeStay(stay) {
 function normalizePaymentRecord(payment) {
   if (!payment) return null;
   return {
-    id: payment._id,
+    id: payment.id,
     leaseId: payment['Booking - Reservation'],
     paymentNumber: payment['Payment #'],
     scheduledDate: payment['Scheduled Date'],
@@ -146,7 +146,7 @@ function normalizePaymentRecord(payment) {
 function normalizeDateChangeRequest(dcr) {
   if (!dcr) return null;
   return {
-    id: dcr._id,
+    id: dcr.id,
     leaseId: dcr.Lease,
     requestedById: dcr['Requested by'],
     requestReceiverId: dcr['Request receiver'],
