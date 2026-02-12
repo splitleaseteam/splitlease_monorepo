@@ -358,7 +358,7 @@ export function useMessagingPageLogic() {
 
           // Transform database row to UI format
           const transformedMessage = {
-            _id: newRow.id,
+            id: newRow.id,
             message_body: newRow['message_body_text'],
             sender_name: newRow['is_from_split_bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
             sender_avatar: isOwnMessage ? user?.profilePhoto : undefined,

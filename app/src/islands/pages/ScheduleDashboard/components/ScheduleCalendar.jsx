@@ -724,7 +724,7 @@ ScheduleCalendar.propTypes = {
   roommateName: PropTypes.string, // @deprecated Use coTenantName
   isLoading: PropTypes.bool,
   pendingDateChangeRequests: PropTypes.arrayOf(PropTypes.shape({
-    _id: PropTypes.string,
+    id: PropTypes.string,
     listOfOldDates: PropTypes.arrayOf(PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.instanceOf(Date)

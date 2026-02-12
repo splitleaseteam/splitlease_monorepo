@@ -213,7 +213,7 @@ export async function signupUser(email, password, retype, additionalData = null)
     setIsUserLoggedIn(true);
 
     logger.info('✅ Signup successful (Supabase Auth)');
-    logger.info('   User ID (_id):', user_id);
+    logger.info('   User ID (id):', user_id);
     logger.info('   Supabase Auth ID:', supabase_user_id);
     logger.info('   Host Account ID:', host_account_id);
     logger.info('   Guest Account ID:', guest_account_id);

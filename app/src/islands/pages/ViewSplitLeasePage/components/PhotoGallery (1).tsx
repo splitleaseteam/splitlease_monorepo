@@ -21,7 +21,7 @@ import styles from './PhotoGallery.module.css';
 
 <<<<<<<< HEAD:app/src/islands/pages/ViewSplitLeasePage/components/PhotoGallery (1).tsx
 interface Photo {
-    _id: string;
+    id: string;
     Photo: string;
     'Photo (thumbnail)'?: string;
 }
@@ -42,7 +42,7 @@ interface PhotoGalleryProps {
 // ============================================================================
 
 interface Photo {
-  _id: string;
+  id: string;
   Photo: string;
   'Photo (thumbnail)'?: string;
 }

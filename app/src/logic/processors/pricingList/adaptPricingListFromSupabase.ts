@@ -17,7 +17,7 @@
  * @example
  * ```ts
  * adaptPricingListFromSupabase({
- *   _id: 'abc123',
+ *   id: 'abc123',
  *   listing: 'listing456',
  *   'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
  *   'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
@@ -37,7 +37,7 @@
 import type { FrontendPricingList, SupabasePricingRow } from './types.js';
 
 export function adaptPricingListFromSupabase(
-  rawPricingList: Partial<SupabasePricingRow> & { _id?: string; listing?: string }
+  rawPricingList: Partial<SupabasePricingRow> & { id?: string; listing?: string }
 ): FrontendPricingList {
   if (!rawPricingList) {
     throw new Error('adaptPricingListFromSupabase: rawPricingList is required');

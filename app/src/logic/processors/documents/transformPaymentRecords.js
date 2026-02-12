@@ -5,7 +5,7 @@
  * Handles both guest and host payment records with proper discriminator filtering.
  *
  * Database Columns Used (paymentrecords table):
- * - `_id`: Payment record ID
+ * - `id`: Payment record ID
  * - `Payment #`: Sequence number (1-13)
  * - `Scheduled Date`: ISO timestamp for payment due date
  * - `Rent`: Rent amount for this period

@@ -578,12 +578,12 @@ export function useHostLeasesPageLogic() {
       const reviewId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
       // Create the review record in mainreview table
-      // Schema: _id, Reviewer, Reviewee/Target, Stay, Lease, House Manual, Visit,
+      // Schema: id, Reviewer, Reviewee/Target, Stay, Lease, House Manual, Visit,
       // Created By, type, Rating Details (JSONB), Created Date, Modified Date
       const { error: reviewError } = await supabase
         .from('mainreview')
         .insert({
-          _id: reviewId,
+          id: reviewId,
           Reviewer: userId,
           'Reviewee/Target': guestId,
           Stay: stayId,

@@ -96,7 +96,7 @@ async function initializeBoroughLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.BOROUGH)
-      .select('_id, "Display Borough"');
+      .select('id, "Display Borough"');
 
     if (error) throw error;
 
@@ -123,7 +123,7 @@ async function initializeNeighborhoodLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('_id, Display, "Zips", "Geo-Borough"');
+      .select('id, Display, "Zips", "Geo-Borough"');
 
     if (error) throw error;
 
@@ -155,7 +155,7 @@ async function initializePropertyTypeLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.LISTING_TYPE)
-      .select('_id, "Label "')
+      .select('id, "Label "')
       .limit(100);
 
     if (!error && data && Array.isArray(data)) {
@@ -219,7 +219,7 @@ async function initializeSafetyLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.SAFETY)
-      .select('_id, Name, Icon');
+      .select('id, Name, Icon');
 
     if (error) throw error;
 
@@ -246,7 +246,7 @@ async function initializeHouseRuleLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.HOUSE_RULE)
-      .select('_id, Name, Icon');
+      .select('id, Name, Icon');
 
     if (error) throw error;
 
@@ -273,7 +273,7 @@ async function initializeParkingLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.PARKING)
-      .select('_id, Label');
+      .select('id, Label');
 
     if (error) throw error;
 
@@ -299,7 +299,7 @@ async function initializeCancellationPolicyLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.CANCELLATION_POLICY)
-      .select('_id, Display, "Best Case Text", "Medium Case Text", "Worst Case Text", "Summary Texts"');
+      .select('id, Display, "Best Case Text", "Medium Case Text", "Worst Case Text", "Summary Texts"');
 
     if (error) throw error;
 
@@ -329,7 +329,7 @@ async function initializeStorageLookups() {
     const { data, error } = await supabase
       .schema('reference_table')
       .from(DATABASE.TABLES.STORAGE)
-      .select('_id, Title, "Summary - Guest"');
+      .select('id, Title, "Summary - Guest"');
 
     if (error) throw error;
 

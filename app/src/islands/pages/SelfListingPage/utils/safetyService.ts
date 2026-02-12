@@ -6,7 +6,7 @@
 import { supabase } from '../../../../lib/supabase.js';
 
 export interface SafetyFeature {
-  _id: string;
+  id: string;
   Name: string;
   Icon?: string;
   'pre-set?'?: boolean;

@@ -44,7 +44,7 @@ const CALENDAR_DATA = {
 // MOCK LEASE DATA
 // ============================================================================
 const MOCK_LEASE = {
-  _id: 'mock-lease-001',
+  id: 'mock-lease-001',
   agreementNumber: 'SL-2026-DEMO',
   status: 'active',
   leaseType: 'co_tenant',
@@ -52,19 +52,19 @@ const MOCK_LEASE = {
   endDate: '2026-03-31',
   nightlyRate: 150,
   host: {
-    _id: 'current-user',
+    id: 'current-user',
     firstName: 'Alex',
     lastName: 'Demo',
     email: 'alex@example.com'
   },
   guest: {
-    _id: 'user-456',
+    id: 'user-456',
     firstName: 'Sarah',
     lastName: 'Demo',
     email: 'sarah@example.com'
   },
   listing: {
-    _id: 'listing-001',
+    id: 'listing-001',
     name: 'Chelsea Studio',
     neighborhood: 'Chelsea, Manhattan',
     address: '123 W 23rd St, New York, NY 10011',
@@ -81,7 +81,7 @@ const MOCK_LEASE = {
 export async function fetchLeaseById(leaseId) {
   console.log('[API Stub] fetchLeaseById:', { leaseId });
   // Return mock lease data for development
-  return { ...MOCK_LEASE, _id: leaseId };
+  return { ...MOCK_LEASE, id: leaseId };
 }
 
 /**

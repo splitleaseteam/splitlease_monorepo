@@ -987,7 +987,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
   // Construct current user object for VirtualMeetingManager
   const currentUser = {
-    _id: currentUserId,
+    id: currentUserId,
     typeUserSignup: 'guest'
   };
 

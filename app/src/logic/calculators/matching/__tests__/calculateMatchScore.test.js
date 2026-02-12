@@ -39,7 +39,7 @@ import { MATCH_WEIGHTS, MAX_POSSIBLE_SCORE } from '../constants.js';
 // ============================================================================
 
 const perfectMatchListing = {
-  _id: 'listing-perfect',
+  id: 'listing-perfect',
   boroughName: 'Manhattan',
   'Location - Borough': 'Manhattan',
   'nightly_rate_for_4_night_stay': 100,
@@ -48,7 +48,7 @@ const perfectMatchListing = {
 };
 
 const perfectMatchProposal = {
-  _id: 'proposal-1',
+  id: 'proposal-1',
   nightlyPrice: 100,
   nightsPerWeek: 4,
   daysSelected: [1, 2, 3, 4],

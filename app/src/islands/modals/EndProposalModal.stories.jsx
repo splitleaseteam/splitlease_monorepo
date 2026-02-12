@@ -10,7 +10,7 @@ import EndProposalModal from './EndProposalModal';
 
 // Mock proposal data
 const mockProposal = {
-  _id: 'proposal-123',
+  id: 'proposal-123',
   guestName: 'Sarah Johnson',
   _listing: {
     Name: 'Cozy Chelsea Studio',
@@ -24,7 +24,7 @@ const mockProposal = {
 
 // Mock listing data
 const mockListing = {
-  _id: 'listing-456',
+  id: 'listing-456',
   Name: 'Sunny Williamsburg Loft',
   name: 'Sunny Williamsburg Loft',
 };

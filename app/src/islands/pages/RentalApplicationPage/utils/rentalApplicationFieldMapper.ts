@@ -11,7 +11,7 @@ import type { RentalApplicationFormData, Occupant } from '../store/rentalApplica
  * Database record type (from rentalapplication table)
  */
 interface DatabaseRentalApplication {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   DOB: string | null;

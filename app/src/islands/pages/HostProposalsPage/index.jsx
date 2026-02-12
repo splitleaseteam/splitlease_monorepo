@@ -42,7 +42,7 @@ const DEMO_MODE = false;
 // Uses real listing ID from database with enhanced demo visuals
 const MOCK_LISTINGS = [
   {
-    _id: '1766003594466x67309961278997728',
+    id: '1766003594466x67309961278997728',
     title: '1 Bedroom Entire Place in Brooklyn',
     thumbnail: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=200&h=200&fit=crop',
     neighborhood: 'Downtown Brooklyn',
@@ -52,7 +52,7 @@ const MOCK_LISTINGS = [
     monthly_rate: 3500
   },
   {
-    _id: 'demo-listing-2',
+    id: 'demo-listing-2',
     title: 'Sunny Studio in Williamsburg',
     thumbnail: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=200&h=200&fit=crop',
     neighborhood: 'Williamsburg',
@@ -65,7 +65,7 @@ const MOCK_LISTINGS = [
 
 // Leo DiCaprio (Mockup) - The official demo proposal for hosts
 const LEO_DICAPRIO_GUEST = {
-  _id: '1697550315775x613621430341750000',
+  id: '1697550315775x613621430341750000',
   name: 'Leo (Mockup) Di Caprio',
   full_name: 'Leo Di Caprio',
   first_name: 'Leo(Mockup)',
@@ -81,7 +81,7 @@ const LEO_DICAPRIO_GUEST = {
 
 const MOCK_PROPOSALS = [
   {
-    _id: '1766003595869x69815320637958696',
+    id: '1766003595869x69815320637958696',
     status: 'host_review',
     created_at: '2025-12-17T20:33:15.878+00:00',
     guest: LEO_DICAPRIO_GUEST,

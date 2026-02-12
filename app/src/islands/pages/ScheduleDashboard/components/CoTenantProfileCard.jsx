@@ -153,14 +153,14 @@ export default function CoTenantProfileCard({
 
 CoTenantProfileCard.propTypes = {
   coTenant: PropTypes.shape({
-    _id: PropTypes.string,
+    id: PropTypes.string,
     firstName: PropTypes.string,
     lastName: PropTypes.string,
     avatarUrl: PropTypes.string,
     email: PropTypes.string
   }),
   roommate: PropTypes.shape({ // @deprecated Use coTenant
-    _id: PropTypes.string,
+    id: PropTypes.string,
     firstName: PropTypes.string,
     lastName: PropTypes.string,
     avatarUrl: PropTypes.string,

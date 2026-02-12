@@ -13,8 +13,6 @@
 export interface FrontendPricingList {
   /** Primary identifier */
   id?: string;
-  /** Alternative identifier (for compatibility) */
-  _id?: string;
   /** Reference to listing */
   listingId?: string;
   /** User who created this pricing configuration */
@@ -55,7 +53,7 @@ export interface FrontendPricingList {
  */
 export interface SupabasePricingRow {
   /** Primary identifier */
-  _id?: string;
+  id?: string;
   /** Reference to listing */
   listing?: string;
   /** User who created this pricing configuration */

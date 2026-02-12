@@ -341,7 +341,6 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
 
   return {
     id: listingId,
-    _id: listingId,
 
     // Property Info
     title: dbListing.listing_title || 'Untitled Listing',
@@ -607,7 +606,7 @@ export function useListingData(listingId) {
             : String(photo);
 
           return {
-            _id: isObjectArray ? (photo.id || `inline_${index}`) : `inline_${index}`,
+            id: isObjectArray ? (photo.id || `inline_${index}`) : `inline_${index}`,
             Photo: photoUrl,
             URL: photoUrl,
             toggleMainPhoto: isObjectArray ? (photo.toggleMainPhoto ?? photo.isCover ?? (index === 0)) : (index === 0),

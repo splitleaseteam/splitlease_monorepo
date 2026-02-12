@@ -174,7 +174,7 @@ export async function getListingPhotos(listingId) {
     // Sort by sort_order and transform to match old listing_photo shape
     const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     const transformed = sorted.map((photo, index) => ({
-      _id: photo.id || `photo_${index}`,
+      id: photo.id || `photo_${index}`,
       Photo: typeof photo === 'string' ? photo : (photo.url || ''),
       'Photo (thumbnail)': typeof photo === 'string' ? photo : (photo.url || ''),
       caption: photo.caption || '',

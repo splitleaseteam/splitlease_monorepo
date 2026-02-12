@@ -131,14 +131,14 @@ function getDummyLeases() {
 
   return [
     {
-      _id: 'dummy-lease-1',
+      id: 'dummy-lease-1',
       status: 'active',
       startDate: lastWeek.toISOString(),
       endDate: nextMonth.toISOString(),
       totalPrice: 2500,
       nightlyRate: 125,
       listing: {
-        _id: 'dummy-listing-1',
+        id: 'dummy-listing-1',
         title: 'Cozy Manhattan Studio',
         address: '123 East 45th Street, New York, NY 10017',
         borough: 'Manhattan',
@@ -149,7 +149,7 @@ function getDummyLeases() {
         amenities: ['WiFi', 'Air Conditioning', 'Kitchen', 'Washer/Dryer']
       },
       host: {
-        _id: 'dummy-host-1',
+        id: 'dummy-host-1',
         firstName: 'Sarah',
         lastName: 'Johnson',
         profilePhoto: 'https://i.pravatar.cc/150?u=sarah',
@@ -158,7 +158,7 @@ function getDummyLeases() {
       },
       stays: [
         {
-          _id: 'dummy-stay-1',
+          id: 'dummy-stay-1',
           checkIn: lastWeek.toISOString(),
           checkOut: nextWeek.toISOString(),
           status: 'in_progress',
@@ -169,7 +169,7 @@ function getDummyLeases() {
       dateChangeRequests: [],
       payments: [
         {
-          _id: 'dummy-payment-1',
+          id: 'dummy-payment-1',
           amount: 1250,
           status: 'completed',
           date: lastWeek.toISOString(),
@@ -178,14 +178,14 @@ function getDummyLeases() {
       ]
     },
     {
-      _id: 'dummy-lease-2',
+      id: 'dummy-lease-2',
       status: 'upcoming',
       startDate: nextWeek.toISOString(),
       endDate: nextMonth.toISOString(),
       totalPrice: 3200,
       nightlyRate: 160,
       listing: {
-        _id: 'dummy-listing-2',
+        id: 'dummy-listing-2',
         title: 'Sunny Brooklyn 1BR with Balcony',
         address: '456 Bedford Avenue, Brooklyn, NY 11249',
         borough: 'Brooklyn',
@@ -196,7 +196,7 @@ function getDummyLeases() {
         amenities: ['WiFi', 'Balcony', 'Dishwasher', 'Pet Friendly']
       },
       host: {
-        _id: 'dummy-host-2',
+        id: 'dummy-host-2',
         firstName: 'Mike',
         lastName: 'Chen',
         profilePhoto: 'https://i.pravatar.cc/150?u=mike',
@@ -205,7 +205,7 @@ function getDummyLeases() {
       },
       stays: [
         {
-          _id: 'dummy-stay-2',
+          id: 'dummy-stay-2',
           checkIn: nextWeek.toISOString(),
           checkOut: nextMonth.toISOString(),
           status: 'pending',
@@ -215,7 +215,7 @@ function getDummyLeases() {
       ],
       dateChangeRequests: [
         {
-          _id: 'dummy-dcr-1',
+          id: 'dummy-dcr-1',
           requestedBy: 'guest',
           originalStartDate: nextWeek.toISOString(),
           originalEndDate: nextMonth.toISOString(),
@@ -228,14 +228,14 @@ function getDummyLeases() {
       payments: []
     },
     {
-      _id: 'dummy-lease-3',
+      id: 'dummy-lease-3',
       status: 'completed',
       startDate: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString(),
       endDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
       totalPrice: 1800,
       nightlyRate: 90,
       listing: {
-        _id: 'dummy-listing-3',
+        id: 'dummy-listing-3',
         title: 'Queens Garden Apartment',
         address: '789 Queens Blvd, Queens, NY 11375',
         borough: 'Queens',
@@ -246,7 +246,7 @@ function getDummyLeases() {
         amenities: ['WiFi', 'Garden Access', 'Parking', 'Laundry']
       },
       host: {
-        _id: 'dummy-host-3',
+        id: 'dummy-host-3',
         firstName: 'Emily',
         lastName: 'Rodriguez',
         profilePhoto: 'https://i.pravatar.cc/150?u=emily',
@@ -255,7 +255,7 @@ function getDummyLeases() {
       },
       stays: [
         {
-          _id: 'dummy-stay-3',
+          id: 'dummy-stay-3',
           checkIn: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString(),
           checkOut: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
           status: 'completed',
@@ -266,7 +266,7 @@ function getDummyLeases() {
       dateChangeRequests: [],
       payments: [
         {
-          _id: 'dummy-payment-2',
+          id: 'dummy-payment-2',
           amount: 1800,
           status: 'completed',
           date: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString(),

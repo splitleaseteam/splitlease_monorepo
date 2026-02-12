@@ -439,7 +439,7 @@ describe('formatPricingListForDisplay - Integration Tests', () => {
 
     it('should handle database response with Bubble-style fields', () => {
       const pricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
         'Starting Nightly Price': 76,

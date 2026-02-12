@@ -18,7 +18,7 @@ startDate.setDate(1);
 const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 6, 0);
 
 export const MOCK_LEASE = {
-  _id: 'lease-123',
+  id: 'lease-123',
   propertyName: 'Modern 2BR in Williamsburg',
   propertyAddress: '150 Bedford Ave, Brooklyn, NY 11211',
   startDate: formatDateYmd(startDate),
@@ -28,7 +28,7 @@ export const MOCK_LEASE = {
 
 // Current user mock (needed for perspective swap in dev mode)
 export const MOCK_CURRENT_USER = {
-  _id: 'current-user',
+  id: 'current-user',
   firstName: 'Alex',
   lastName: 'Morgan',
   avatarUrl: null,
@@ -48,7 +48,7 @@ export const MOCK_CURRENT_USER = {
 };
 
 export const MOCK_CO_TENANT = {
-  _id: 'user-456',
+  id: 'user-456',
   firstName: 'Sarah',
   lastName: 'Chen',
   avatarUrl: null,

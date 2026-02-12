@@ -30,7 +30,7 @@ export async function fetchInformationalTexts() {
     const { data, error } = await supabase
       .from('informationaltexts')
       .select(
-        '_id, "Information Tag-Title", "Desktop copy", "Mobile copy", "Desktop+ copy", "show more available?"'
+        'id, "Information Tag-Title", "Desktop copy", "Mobile copy", "Desktop+ copy", "show more available?"'
       )
 
     if (error) throw error

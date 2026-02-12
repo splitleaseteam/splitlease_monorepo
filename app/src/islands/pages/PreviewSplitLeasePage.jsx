@@ -822,7 +822,7 @@ export default function PreviewSplitLeasePage() {
           // Handle both object format {Photo: url} and string URLs
           if (typeof photo === 'object' && photo !== null) {
             return {
-              _id: photo.id || `photo_${index}`,
+              id: photo.id || `photo_${index}`,
               Photo: photo.Photo || photo.url || '',
               'Photo (thumbnail)': photo['Photo (thumbnail)'] || photo.Photo || photo.url || '',
               toggleMainPhoto: photo.toggleMainPhoto ?? (index === 0),
@@ -832,7 +832,7 @@ export default function PreviewSplitLeasePage() {
           } else {
             // String URL format
             return {
-              _id: `photo_${index}`,
+              id: `photo_${index}`,
               Photo: photo,
               'Photo (thumbnail)': photo,
               toggleMainPhoto: index === 0,
@@ -890,7 +890,7 @@ export default function PreviewSplitLeasePage() {
 
     if (fetchError) {
       console.warn('âš ï¸ Update succeeded but failed to fetch updated data:', fetchError);
-      return { _id: id, ...dbUpdates };
+      return { id, ...dbUpdates };
     }
 
     console.log('âœ… Listing updated:', data);

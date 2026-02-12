@@ -408,7 +408,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     const { data: vmData, error: vmError } = await supabase
       .from('virtualmeetingschedulesandlinks')
       .select(`
-        _id,
+        id,
         "booked date",
         "confirmedBySplitLease",
         "meeting link",
@@ -483,7 +483,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     // Note: Use unquoted column name for .in() filter - Supabase JS client handles quoting
     const { data: threadsData, error: threadsError } = await supabase
       .from('thread')
-      .select('_id, "Proposal"')
+      .select('id, "Proposal"')
       .in('Proposal', proposalIdsForSummaries);
 
     if (threadsError) {
@@ -528,12 +528,12 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   const hostMap = new Map(hosts.map(h => [h.id, h]));
   // Key guests by their id field
   const guestMap = new Map(guests.map(g => [g.id, g]));
-  // Key boroughs and hoods by their _id
+  // Key boroughs and hoods by their id
   const boroughMap = new Map(boroughs.map(b => [b.id, b['Display Borough']]));
   const hoodMap = new Map(hoods.map(h => [h.id, h['Display']]));
   // Key featured photos by their Listing ID
   const featuredPhotoMap = embeddedPhotoMap;
-  // Key house rules by their _id to get names
+  // Key house rules by their id to get names
   const houseRulesMap = new Map(houseRules.map(r => [r.id, r.Name]));
 
   // Step 8: Manually join the data

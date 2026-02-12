@@ -12,7 +12,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
   describe('field name mapping - Bubble-style to camelCase', () => {
     it('should map core identifiers from Bubble-style to camelCase', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Created By': 'user789'
       };
@@ -90,7 +90,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
   describe('null and undefined handling with defaults', () => {
     it('should provide default empty array for missing array fields', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456'
       };
 
@@ -105,7 +105,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should provide default values for scalar markup fields', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456'
       };
 
@@ -119,7 +119,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should provide default for rentalType field', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456'
       };
 
@@ -130,7 +130,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should preserve null for optional scalar fields', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Starting Nightly Price': null,
         'Slope': null,
@@ -148,7 +148,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should preserve null for identifier fields', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Created By': null
       };
@@ -288,7 +288,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
   describe('real-world scenarios', () => {
     it('should handle complete pricing list from database', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Created By': 'user789',
         'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
@@ -334,7 +334,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should handle minimal pricing list from legacy data', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
         'Nightly Price': [null, 117, 111, 105, 99, 94, 76]
@@ -353,7 +353,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should handle new pricing list with defaults', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456'
       };
 
@@ -371,7 +371,7 @@ describe('adaptPricingListFromSupabase - Integration Tests', () => {
 
     it('should handle pricing list with partial data', () => {
       const rawPricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Nightly Price': [null, 120, 115, 110, 105, 100, 95],
         'Combined Markup': 0.18

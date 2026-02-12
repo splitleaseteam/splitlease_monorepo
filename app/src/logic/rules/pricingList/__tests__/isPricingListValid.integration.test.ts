@@ -488,7 +488,7 @@ describe('isPricingListValid - Integration Tests', () => {
   describe('real-world scenarios', () => {
     it('should validate complete pricing list from database', () => {
       const pricingList = {
-        _id: 'abc123',
+        id: 'abc123',
         listing: 'listing456',
         'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
         'Nightly Price': [null, 117, 111, 105, 99, 94, 76],

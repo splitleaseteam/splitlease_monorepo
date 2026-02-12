@@ -165,7 +165,7 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
       }
 
       const normalizedResults = data?.map(l => ({
-        _id: l.id,
+        id: l.id,
         name: l.listing_title || 'Unnamed Listing',
         address: l['Full Address'] || '',
         rentalType: l.rental_type || '',
@@ -212,7 +212,7 @@ export default function QuickProposalCreation({ onCreateProposal, onClose }) {
       if (error) throw error;
 
       const normalizedResults = data?.map(g => ({
-        _id: g.id,
+        id: g.id,
         fullName: g.first_name && g.last_name ? `${g.first_name} ${g.last_name}` : '',
         firstName: g.first_name || '',
         lastName: g.last_name || '',

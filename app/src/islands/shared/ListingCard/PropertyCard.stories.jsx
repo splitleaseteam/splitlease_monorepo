@@ -10,7 +10,6 @@ import PropertyCard from './PropertyCard';
 // Mock listing data
 const mockListing = {
   id: 'listing-123',
-  _id: 'listing-123',
   title: 'Cozy Chelsea Studio with City Views',
   location: 'Chelsea, Manhattan',
   type: 'Entire Place',
@@ -44,7 +43,6 @@ const mockListing = {
 const newListing = {
   ...mockListing,
   id: 'listing-456',
-  _id: 'listing-456',
   title: 'Sunny Williamsburg Loft',
   location: 'Williamsburg, Brooklyn',
   isNew: true,
@@ -55,7 +53,6 @@ const newListing = {
 const studioListing = {
   ...mockListing,
   id: 'listing-789',
-  _id: 'listing-789',
   title: 'Modern Studio in Financial District',
   location: 'FiDi, Manhattan',
   type: 'Private Room',
@@ -254,7 +251,7 @@ export const WithExistingProposal = {
     isFavorited: false,
     showCreateProposalButton: true,
     proposalForListing: {
-      _id: 'proposal-123',
+      id: 'proposal-123',
       status: 'Pending',
     },
   },

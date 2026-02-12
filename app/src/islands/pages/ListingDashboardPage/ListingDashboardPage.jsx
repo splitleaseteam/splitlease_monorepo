@@ -187,7 +187,7 @@ function ListingDashboardContent() {
         <EditListingDetails
           focusField={editFocusField}
           listing={{
-            _id: listing.id,
+            id: listing.id,
             Name: listing.title,
             Description: listing.listing_description,
             'Description - Neighborhood': listing.descriptionNeighborhood,

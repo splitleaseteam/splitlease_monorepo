@@ -198,7 +198,7 @@ JingleSection.propTypes = {
   selectedHouseManual: PropTypes.string,
   selectedVisit: PropTypes.string,
   jingles: PropTypes.arrayOf(PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     'Melody Preferences': PropTypes.string,
     'Narration/Jingle Audio': PropTypes.string,
     'Narration/Jingle Script': PropTypes.string,

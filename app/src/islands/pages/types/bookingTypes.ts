@@ -14,7 +14,7 @@ import type { RefObject, Dispatch, SetStateAction } from 'react';
  * Listing Object - Complete listing data structure
  */
 export interface ListingObject {
-  _id: string;
+  id: string;
   Name: string;
   Description: string;
   'Description - Neighborhood'?: string;
@@ -48,7 +48,7 @@ export interface ListingObject {
  * Photo Object - Listing photo data
  */
 export interface PhotoObject {
-  _id: string;
+  id: string;
   Photo: string;
   'Photo (thumbnail)'?: string;
   Caption?: string;
@@ -167,7 +167,7 @@ export interface UserObject {
  * Proposal Object - Existing proposal data
  */
 export interface ProposalObject {
-  _id: string;
+  id: string;
   Guest: string;
   Listing: string;
   Status?: string;

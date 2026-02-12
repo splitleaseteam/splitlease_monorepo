@@ -57,7 +57,7 @@ function createUserPreferencesRecord(userId, overrides = {}) {
   });
 
   return {
-    _id: `pref-${userId}`,
+    id: `pref-${userId}`,
     'Created By': userId,
     ...defaults,
     ...overrides,

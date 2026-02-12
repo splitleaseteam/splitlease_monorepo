@@ -145,7 +145,7 @@ function normalizeGuest(guest) {
   if (!guest) return null;
 
   return {
-    _id: guest.id,
+    id: guest.id,
     firstName: guest.first_name || guest.firstName || '',
     lastName: guest.last_name || guest.lastName || '',
     fullName: guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : (guest.fullName || ''),
@@ -167,7 +167,7 @@ function normalizeHost(host) {
   if (!host) return null;
 
   return {
-    _id: host.id,
+    id: host.id,
     firstName: host.first_name || host.firstName || '',
     lastName: host.last_name || host.lastName || '',
     fullName: host.first_name && host.last_name ? `${host.first_name} ${host.last_name}` : (host.fullName || ''),
@@ -226,7 +226,7 @@ function normalizeListing(listing) {
   if (!listing) return null;
 
   return {
-    _id: listing.id,
+    id: listing.id,
     name: listing.listing_title || 'Unnamed Listing',
     address: extractAddressString(listing.address_with_lat_lng_json) || listing.address || '',
     rentalType: listing.rental_type || listing.rentalType || '',
@@ -269,7 +269,7 @@ function normalizeProposal(proposal, guest, host, listing) {
   }
 
   return {
-    _id: proposal.id,
+    id: proposal.id,
     status: proposal.proposal_workflow_status || proposal.status || '',
     createdDate: proposal.original_created_at || proposal.createdDate || null,
     modifiedDate: proposal.original_updated_at || proposal.modifiedDate || null,

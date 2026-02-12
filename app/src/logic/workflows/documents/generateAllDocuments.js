@@ -186,7 +186,7 @@ export async function fetchDocumentData(leaseId) {
   const { data: allPaymentsData, error: paymentsError } = await supabase
     .from('paymentrecords')
     .select(`
-      _id,
+      id,
       "Payment #",
       "Scheduled Date",
       "Rent",

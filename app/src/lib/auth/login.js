@@ -160,7 +160,7 @@ export async function loginUser(email, password) {
     setIsUserLoggedIn(true);
 
     logger.info('✅ Login successful (Supabase Auth)');
-    logger.info('   User ID (_id):', user_id);
+    logger.info('   User ID (id):', user_id);
     logger.info('   Supabase Auth ID:', supabase_user_id);
     logger.info('   User Type:', user_type);
     logger.info('   Session expires in:', expires_in, 'seconds');

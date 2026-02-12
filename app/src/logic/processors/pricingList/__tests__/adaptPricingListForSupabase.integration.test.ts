@@ -201,15 +201,13 @@ describe('adaptPricingListForSupabase - Integration Tests', () => {
       expect(result).toEqual({});
     });
 
-    it('should handle both id and _id fields (_id takes precedence when both set)', () => {
+    it('should handle id field correctly', () => {
       const pricingList = {
         id: 'abc123',
-        _id: 'xyz789'
       };
 
       const result = adaptPricingListForSupabase(pricingList);
 
-      // id field takes the value from pricingList.id
       expect(result.id).toBe('abc123');
     });
 

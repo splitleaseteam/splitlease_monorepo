@@ -11,7 +11,6 @@ import './ListingCardForMap.css';
 // Mock listing data
 const mockListing = {
   id: 'listing-123',
-  _id: 'listing-123',
   title: 'Cozy Chelsea Studio',
   location: 'Chelsea, Manhattan',
   images: [
@@ -31,7 +30,6 @@ const mockListing = {
 const mockNewListing = {
   ...mockListing,
   id: 'listing-456',
-  _id: 'listing-456',
   title: 'Sunny Williamsburg Loft',
   location: 'Williamsburg, Brooklyn',
   price: { starting: 175 },
@@ -44,7 +42,6 @@ const mockNewListing = {
 const mockStudioListing = {
   ...mockListing,
   id: 'listing-789',
-  _id: 'listing-789',
   title: 'Modern FiDi Studio',
   location: 'Financial District, Manhattan',
   price: { starting: 95 },

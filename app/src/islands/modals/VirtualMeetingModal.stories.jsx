@@ -10,7 +10,7 @@ import VirtualMeetingModal from './VirtualMeetingModal';
 
 // Mock data
 const mockProposal = {
-  _id: 'proposal-123',
+  id: 'proposal-123',
   Guest: 'guest-user-456',
   _listing: {
     'Created By': 'host-user-789',
@@ -19,13 +19,13 @@ const mockProposal = {
 };
 
 const mockCurrentUser = {
-  _id: 'guest-user-456',
+  id: 'guest-user-456',
   name: 'Sarah Johnson',
   email: 'sarah@example.com',
 };
 
 const mockVirtualMeeting = {
-  _id: 'vm-123',
+  id: 'vm-123',
   'booked date': new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
   'requested by': 'guest-user-456',
   'meeting declined': false,

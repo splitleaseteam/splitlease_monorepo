@@ -40,7 +40,7 @@ afterEach(() => {
 // ─────────────────────────────────────────────────────────────
 
 const mockPreferencesData = {
-  _id: 'pref-123',
+  id: 'pref-123',
   'Created By': 'user-123',
   'Message Forwarding': ['Email', 'SMS'],
   'Payment Reminders': ['Email'],
@@ -554,7 +554,7 @@ describe('useNotificationSettings', () => {
       // Response with missing expected fields
       setupMockFrom(
         createMockSupabaseResponse({
-          _id: 'pref-123',
+          id: 'pref-123',
           // Missing most fields
         })
       );

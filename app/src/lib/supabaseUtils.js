@@ -35,8 +35,8 @@ export async function fetchPhotoUrls(photoIds) {
 
 /**
  * Fetch host data in batch from database
- * After migration, hostIds are always user._id values (Host User column)
- * @param {Array<string>} hostIds - Array of host IDs (user._id)
+ * After migration, hostIds are always user.id values (Host User column)
+ * @param {Array<string>} hostIds - Array of host IDs (user.id)
  * @returns {Promise<Object>} Map of host ID to host data {name, image, verified}
  */
 export async function fetchHostData(hostIds) {

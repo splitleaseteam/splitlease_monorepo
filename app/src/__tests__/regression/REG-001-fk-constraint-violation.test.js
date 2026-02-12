@@ -156,7 +156,7 @@ describe('REG-001: FK Constraint Violation on Listing Update', () => {
     it('should demonstrate the correct update pattern', async () => {
       // Mock listing data (as would come from database)
       const originalListing = {
-        _id: '1234567890123456x',
+        id: '1234567890123456x',
         Name: 'Original Listing',
         Description: 'Original description',
         'Location - Borough': null, // FK that would cause 409 if sent

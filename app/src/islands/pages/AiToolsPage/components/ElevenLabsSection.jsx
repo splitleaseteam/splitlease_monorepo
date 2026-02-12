@@ -171,7 +171,7 @@ ElevenLabsSection.propTypes = {
   selectedHouseManual: PropTypes.string,
   selectedVisit: PropTypes.string,
   narrations: PropTypes.arrayOf(PropTypes.shape({
-    _id: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
     'Narrator data': PropTypes.string,
     'Narration/Jingle Audio': PropTypes.string,
     'Narration/Jingle Script': PropTypes.string,

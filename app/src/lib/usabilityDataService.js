@@ -114,7 +114,7 @@ export async function deleteGuestTestStatus(guestId) {
 
 /**
  * Fetch listing by ID
- * @param {string} listingId - The listing ID (supports _id or Unique ID)
+ * @param {string} listingId - The listing ID (supports id or Unique ID)
  * @returns {Promise<Object>} - { listing: { id, uniqueId, name, nightlyPrice, photos, hostId } }
  */
 export async function fetchListing(listingId) {
@@ -165,7 +165,7 @@ export async function createQuickProposal({
 
 /**
  * Delete a proposal by ID
- * @param {string} proposalId - The proposal ID (supports _id or Unique ID)
+ * @param {string} proposalId - The proposal ID (supports id or Unique ID)
  * @param {boolean} deleteThread - Whether to also delete the associated thread (default: true)
  * @returns {Promise<Object>} - { success, message, proposalId, threadId, threadDeleted, timestamp }
  */

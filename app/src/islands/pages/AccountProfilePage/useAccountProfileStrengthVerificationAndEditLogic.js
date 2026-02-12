@@ -624,7 +624,6 @@ export function useAccountProfilePageLogic() {
         .map(listing => {
           return {
             // listing.id is the primary identifier used for routing and URLs
-            _id: listing.id,
             id: listing.id,
             Name: listing.listing_title || 'Unnamed Listing',
             // Map location fields to match ListingsCard expectations

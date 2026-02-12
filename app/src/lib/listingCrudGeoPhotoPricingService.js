@@ -19,7 +19,7 @@ import { logger } from './logger.js';
 /**
  * Look up borough ID by zip code from reference table
  * @param {string} zipCode - The zip code to look up
- * @returns {Promise<string|null>} Borough _id or null if not found
+ * @returns {Promise<string|null>} Borough id or null if not found
  */
 async function getBoroughIdByZipCode(zipCode) {
   if (!zipCode) return null;
@@ -31,7 +31,7 @@ async function getBoroughIdByZipCode(zipCode) {
     const { data, error } = await supabase
       .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('_id, "Display Borough"')
+      .select('id, "Display Borough"')
       .contains('Zip Codes', [cleanZip])
       .limit(1)
       .maybeSingle();
@@ -52,7 +52,7 @@ async function getBoroughIdByZipCode(zipCode) {
 /**
  * Look up hood (neighborhood) ID by zip code from reference table
  * @param {string} zipCode - The zip code to look up
- * @returns {Promise<string|null>} Hood _id or null if not found
+ * @returns {Promise<string|null>} Hood id or null if not found
  */
 async function getHoodIdByZipCode(zipCode) {
   if (!zipCode) return null;
@@ -64,7 +64,7 @@ async function getHoodIdByZipCode(zipCode) {
     const { data, error } = await supabase
       .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('_id, "Display"')
+      .select('id, "Display"')
       .contains('Zips', [cleanZip])
       .limit(1)
       .maybeSingle();

@@ -62,10 +62,10 @@ export function useGuestLeasesPageLogic() {
 
   // Map hook user to the shape this component expects
   const user = isDevMode
-    ? { _id: 'dev-user-123', email: 'splitleasetesting@test.com', firstName: 'Test', lastName: 'Guest', userType: 'Guest' }
+    ? { id: 'dev-user-123', email: 'splitleasetesting@test.com', firstName: 'Test', lastName: 'Guest', userType: 'Guest' }
     : authUser
       ? {
-          _id: authUser.id,
+          id: authUser.id,
           email: authUser.email,
           firstName: authUser.firstName,
           lastName: authUser.fullName ? authUser.fullName.split(' ').slice(1).join(' ') : '',
@@ -114,7 +114,7 @@ export function useGuestLeasesPageLogic() {
 
     const mockLeases = [
       {
-        _id: 'lease-001',
+        id: 'lease-001',
         agreementNumber: 'SL-2026-001',
         status: 'active',
         startDate: '2026-01-15',
@@ -122,32 +122,32 @@ export function useGuestLeasesPageLogic() {
         currentWeekNumber: 3,
         totalWeekCount: 22,
         listing: {
-          _id: 'listing-001',
+          id: 'listing-001',
           name: 'Sunny Chelsea Studio',
           neighborhood: 'Chelsea, Manhattan',
           address: '234 W 23rd St, New York, NY 10011',
           imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
         },
         host: {
-          _id: 'host-001',
+          id: 'host-001',
           firstName: 'Sarah',
           lastName: 'Miller',
           email: 'sarah.miller@example.com'
         },
         stays: [
-          { _id: 'stay-001', weekNumber: 1, checkIn: '2026-01-15', checkOut: '2026-01-22', status: 'completed', reviewSubmittedByGuest: true, reviewSubmittedByHost: { rating: 5, comment: 'Great guest!' } },
-          { _id: 'stay-002', weekNumber: 2, checkIn: '2026-01-22', checkOut: '2026-01-29', status: 'completed', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
-          { _id: 'stay-003', weekNumber: 3, checkIn: '2026-01-29', checkOut: '2026-02-05', status: 'in_progress', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
-          { _id: 'stay-004', weekNumber: 4, checkIn: '2026-02-05', checkOut: '2026-02-12', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
-          { _id: 'stay-005', weekNumber: 5, checkIn: '2026-02-12', checkOut: '2026-02-19', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null }
+          { id: 'stay-001', weekNumber: 1, checkIn: '2026-01-15', checkOut: '2026-01-22', status: 'completed', reviewSubmittedByGuest: true, reviewSubmittedByHost: { rating: 5, comment: 'Great guest!' } },
+          { id: 'stay-002', weekNumber: 2, checkIn: '2026-01-22', checkOut: '2026-01-29', status: 'completed', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+          { id: 'stay-003', weekNumber: 3, checkIn: '2026-01-29', checkOut: '2026-02-05', status: 'in_progress', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+          { id: 'stay-004', weekNumber: 4, checkIn: '2026-02-05', checkOut: '2026-02-12', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null },
+          { id: 'stay-005', weekNumber: 5, checkIn: '2026-02-12', checkOut: '2026-02-19', status: 'not_started', reviewSubmittedByGuest: false, reviewSubmittedByHost: null }
         ],
         dateChangeRequests: [
-          { _id: 'dcr-001', requestedBy: 'host-001', originalDate: '2026-02-12', newDate: '2026-02-14', reason: 'Personal conflict', status: 'pending' }
+          { id: 'dcr-001', requestedBy: 'host-001', originalDate: '2026-02-12', newDate: '2026-02-14', reason: 'Personal conflict', status: 'pending' }
         ],
         paymentRecords: [
-          { _id: 'pay-001', date: '2026-01-10', amount: 850, status: 'paid', description: 'Week 1 rent', receiptUrl: '#' },
-          { _id: 'pay-002', date: '2026-01-17', amount: 850, status: 'paid', description: 'Week 2 rent', receiptUrl: '#' },
-          { _id: 'pay-003', date: '2026-01-24', amount: 850, status: 'pending', description: 'Week 3 rent', receiptUrl: null }
+          { id: 'pay-001', date: '2026-01-10', amount: 850, status: 'paid', description: 'Week 1 rent', receiptUrl: '#' },
+          { id: 'pay-002', date: '2026-01-17', amount: 850, status: 'paid', description: 'Week 2 rent', receiptUrl: '#' },
+          { id: 'pay-003', date: '2026-01-24', amount: 850, status: 'pending', description: 'Week 3 rent', receiptUrl: null }
         ],
         periodicTenancyAgreement: '#',
         supplementalAgreement: '#',

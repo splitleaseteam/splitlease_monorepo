@@ -159,7 +159,7 @@ export async function fetchListingComplete(listingId) {
     if (hasEmbeddedObjects) {
       // Photos are embedded objects with URLs
       sortedPhotos = embeddedPhotos.map((photo, index) => ({
-        _id: photo.id || `embedded_${index}`,
+        id: photo.id || `embedded_${index}`,
         Photo: photo.Photo || photo.url || '',
         'Photo (thumbnail)': photo['Photo (thumbnail)'] || photo.Photo || photo.url || '',
         toggleMainPhoto: photo.toggleMainPhoto ?? photo.isCover ?? (index === 0),
@@ -170,7 +170,7 @@ export async function fetchListingComplete(listingId) {
     } else if (embeddedPhotos.length > 0 && typeof embeddedPhotos[0] === 'string') {
       // Photos are embedded as string URLs (legacy format)
       sortedPhotos = embeddedPhotos.map((url, index) => ({
-        _id: `string_${index}`,
+        id: `string_${index}`,
         Photo: url,
         'Photo (thumbnail)': url,
         toggleMainPhoto: index === 0,
@@ -184,7 +184,7 @@ export async function fetchListingComplete(listingId) {
       console.log('📷 No embedded photos found');
     }
 
-    // Sort photos (main photo first, then by SortOrder, then by _id)
+    // Sort photos (main photo first, then by SortOrder, then by id)
     sortedPhotos = sortedPhotos.sort((a, b) => {
       if (a.toggleMainPhoto) return -1;
       if (b.toggleMainPhoto) return 1;

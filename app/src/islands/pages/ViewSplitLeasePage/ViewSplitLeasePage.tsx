@@ -847,7 +847,7 @@ export default function ViewSplitLeasePage() {
 
       // Update existingProposalForListing so the button disables after modal closes
       setExistingProposalForListing({
-        _id: newProposalId,
+        id: newProposalId,
         Status: 'Pending Host Review',
         'Created Date': new Date().toISOString()
       });

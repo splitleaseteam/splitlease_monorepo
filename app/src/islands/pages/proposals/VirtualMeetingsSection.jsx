@@ -527,7 +527,7 @@ export default function VirtualMeetingsSection({ proposals, currentUserId }) {
 
   // Construct current user object for VirtualMeetingManager
   const currentUser = {
-    _id: currentUserId,
+    id: currentUserId,
     typeUserSignup: 'guest'
   };
 

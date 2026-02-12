@@ -95,7 +95,7 @@ export function useReviewsOverviewPageLogic() {
 
   // Map hook user to the shape this component expects
   const user = authUser ? {
-    _id: authUser.id,
+    id: authUser.id,
     email: authUser.email,
     firstName: authUser.firstName,
     lastName: authUser.fullName ? authUser.fullName.split(' ').slice(1).join(' ') : '',

@@ -20,7 +20,7 @@
  * @example
  * // Both reviews submitted
  * isReviewVisible({
- *   review: { _id: 'review1' },
+ *   review: { id: 'review1' },
  *   stay: { checkOutDate: '2026-01-10', reviewByHostId: 'r1', reviewByGuestId: 'r2' }
  * })
  * // Returns: true
