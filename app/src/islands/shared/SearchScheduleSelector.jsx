@@ -493,7 +493,7 @@ export default function SearchScheduleSelector({
 
         const { data, error } = await supabase
           .from('user')
-          .select('"Recent Days Selected"')
+          .select('recent_days_selected_json')
           .eq('id', sessionId)
           .maybeSingle();
 
@@ -505,8 +505,8 @@ export default function SearchScheduleSelector({
           return;
         }
 
-        const recentDays = data?.['Recent Days Selected'];
-        logger.debug('📅 SearchScheduleSelector [persistence]: Recent Days Selected raw value:', recentDays);
+        const recentDays = data?.['recent_days_selected_json'];
+        logger.debug('📅 SearchScheduleSelector [persistence]: recent_days_selected_json raw value:', recentDays);
 
         if (recentDays) {
           const indices = dayNamesToIndices(recentDays);
@@ -566,7 +566,7 @@ export default function SearchScheduleSelector({
 
         const { error } = await supabase
           .from('user')
-          .update({ 'Recent Days Selected': dayNames })
+          .update({ 'recent_days_selected_json': dayNames })
           .eq('id', userId);
 
         if (error) {

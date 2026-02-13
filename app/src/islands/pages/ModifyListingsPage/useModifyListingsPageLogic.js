@@ -210,7 +210,7 @@ export default function useModifyListingsPageLogic() {
       const { data } = await supabase
         .schema('reference_table')
         .from('zat_features_houserule')
-        .select('_id, Name, Icon');
+        .select('id, Name, Icon');
 
       setHouseRules(data || []);
     } catch (err) {
@@ -223,7 +223,7 @@ export default function useModifyListingsPageLogic() {
       const { data } = await supabase
         .schema('reference_table')
         .from('zat_features_safetyfeature')
-        .select('_id, Name, Icon');
+        .select('id, Name, Icon');
 
       setSafetyFeatures(data || []);
     } catch (err) {

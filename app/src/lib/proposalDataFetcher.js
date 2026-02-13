@@ -132,7 +132,7 @@ export async function fetchLastProposalDefaults(userId) {
       .or('is_deleted.is.null,is_deleted.eq.false')
       .order('original_created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       console.log('No previous proposal found for pre-population');

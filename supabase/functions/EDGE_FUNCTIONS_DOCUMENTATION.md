@@ -86,24 +86,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-### Background Jobs (6)
+### Background Jobs (5)
 
-#### 7. archetype-recalculation-job
-**Purpose**: Scheduled job that recalculates user archetypes
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| (POST) | Admin/Service | Run recalculation job |
-
-**Configuration**:
-- `batchSize`: Number of users per batch (default: 100)
-- `maxConcurrent`: Max concurrent operations (default: 10)
-- `onlyStaleUsers`: Only process stale archetypes (default: true)
-- `staleThresholdHours`: Hours before archetype is stale (default: 24)
-
----
-
-#### 8. backfill-negotiation-summaries
+#### 7. backfill-negotiation-summaries
 **Purpose**: Backfill AI-generated negotiation summaries
 
 | Action | Auth Required | Description |
@@ -679,47 +664,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 57. urgency-pricing
-**Purpose**: Urgency-based pricing calculations
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `calculate` | No | Calculate urgency pricing |
-| `batch` | No | Batch calculate multiple requests |
-| `calendar` | No | Get pricing for multiple dates |
-| `events` | Yes | Manage event multipliers |
-| `stats` | No | Get cache statistics |
-| `health` | No | Health check endpoint |
-
----
-
-#### 58. transaction-recommendations
-**Purpose**: Personalized transaction type recommendations (Pattern 1)
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| (GET) | Yes | Get personalized recommendations |
-
-**Impact**: +204% revenue per transaction
-
----
-
-### User/Archetype Functions (2)
-
-#### 59. user-archetype
-**Purpose**: User behavioral archetype retrieval
-
-| Method | Auth Required | Description |
-|--------|---------------|-------------|
-| GET | Yes | Retrieve current archetype |
-| POST | Admin | Force recalculation |
-| PUT | Admin | Manual override |
-
-**Archetype Types**: `big_spender`, `high_flexibility`, `average_user`
-
----
-
-#### 60. identity-verification-submit
+#### 57. identity-verification-submit
 **Purpose**: User identity document submission
 
 | Action | Auth Required | Description |

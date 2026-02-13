@@ -44,7 +44,7 @@ Deno.test('ValidationError can be caught as Error', () => {
   let caught = false;
   try {
     throw new ValidationError('test');
-  } catch (_e) {
+  } catch (e) {
     if (e instanceof Error) {
       caught = true;
     }

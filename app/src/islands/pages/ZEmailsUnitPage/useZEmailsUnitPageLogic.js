@@ -24,7 +24,7 @@ export default function useZEmailsUnitPageLogic() {
     const { data, error: fetchError } = await supabase
       .schema('reference_table')
       .from('zat_email_html_template_eg_sendbasicemailwf_')
-      .select('_id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
+      .select('id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
       .order('Created Date', { ascending: false });
 
     if (fetchError) throw new Error('Unable to load email templates. Please try again later.');

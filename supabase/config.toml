@@ -392,11 +392,13 @@ entrypoint = "./functions/pricing/index.ts"
 [functions.listing]
 enabled = true
 verify_jwt = false
+import_map = "./functions/listing/deno.json"
 entrypoint = "./functions/listing/index.ts"
 
 [functions.ai-gateway]
 enabled = true
 verify_jwt = false
+import_map = "./functions/ai-gateway/deno.json"
 entrypoint = "./functions/ai-gateway/index.ts"
 
 [functions.ai-parse-profile]
@@ -464,16 +466,19 @@ entrypoint = "./functions/date-change-request/index.ts"
 [functions.guest-payment-records]
 enabled = true
 verify_jwt = false
+import_map = "./functions/guest-payment-records/deno.json"
 entrypoint = "./functions/guest-payment-records/index.ts"
 
 [functions.host-payment-records]
 enabled = true
 verify_jwt = false
+import_map = "./functions/host-payment-records/deno.json"
 entrypoint = "./functions/host-payment-records/index.ts"
 
 [functions.house-manual]
 enabled = true
 verify_jwt = false
+import_map = "./functions/house-manual/deno.json"
 entrypoint = "./functions/house-manual/index.ts"
 
 [functions.cohost-request-slack-callback]
@@ -678,26 +683,10 @@ enabled = true
 verify_jwt = false  # Public actions (calculate, select), optional auth
 entrypoint = "./functions/pricing-tiers/index.ts"
 
-[functions.transaction-recommendations]
-enabled = true
-verify_jwt = false  # Internal auth via Authorization header
-entrypoint = "./functions/transaction-recommendations/index.ts"
-
-[functions.user-archetype]
-enabled = true
-verify_jwt = false  # GET public, POST/PUT require admin (checked internally)
-entrypoint = "./functions/user-archetype/index.ts"
-
 [functions.lease-documents]
 enabled = true
 verify_jwt = false  # All actions public, called by internal workflows
 entrypoint = "./functions/lease-documents/index.ts"
-
-[functions.urgency-pricing]
-enabled = true
-verify_jwt = false  # FP orchestration, most actions public
-import_map = "./functions/urgency-pricing/deno.json"
-entrypoint = "./functions/urgency-pricing/index.ts"
 
 # P4 — Admin/Background
 
@@ -711,11 +700,6 @@ enabled = true
 verify_jwt = false  # FP orchestration, public actions skip auth
 import_map = "./functions/calendar-automation/deno.json"
 entrypoint = "./functions/calendar-automation/index.ts"
-
-[functions.archetype-recalculation-job]
-enabled = true
-verify_jwt = false  # Service role key or admin user role
-entrypoint = "./functions/archetype-recalculation-job/index.ts"
 
 [functions.date-change-reminder-cron]
 enabled = true

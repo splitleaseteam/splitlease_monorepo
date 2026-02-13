@@ -97,7 +97,7 @@ export default function AboutUsPage() {
         const { data, error: fetchError } = await supabase
           .schema('reference_table')
           .from('zat_splitleaseteam')
-          .select('_id, name, title, image, "click through link", "order"')
+          .select('id, name, title, image, "click through link", "order"')
           .order('order', { ascending: true });
 
         if (fetchError) {

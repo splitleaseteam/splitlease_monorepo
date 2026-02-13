@@ -635,7 +635,7 @@ export function useSearchPageLogic() {
         const { data, error } = await supabase
           .schema('reference_table')
           .from('zat_geo_borough_toplevel')
-          .select('_id, "Display Borough"')
+          .select('id, "Display Borough"')
           .order('"Display Borough"', { ascending: true })
 
         if (error) throw error
@@ -682,7 +682,7 @@ export function useSearchPageLogic() {
         let query = supabase
           .schema('reference_table')
           .from('zat_geo_hood_mediumlevel')
-          .select('_id, Display, "Geo-Borough"')
+          .select('id, Display, "Geo-Borough"')
           .order('Display', { ascending: true })
 
         // If boroughs are selected, filter neighborhoods to those boroughs

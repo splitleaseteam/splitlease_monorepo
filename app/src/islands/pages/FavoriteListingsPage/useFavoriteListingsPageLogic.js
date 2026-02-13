@@ -36,7 +36,7 @@ async function fetchInformationalTexts() {
   try {
     const { data, error } = await supabase
       .from('informationaltexts')
-      .select('_id, "Information Tag-Title", "Desktop copy", "Mobile copy", "Desktop+ copy", "show more available?"');
+      .select('id, "Information Tag-Title", "Desktop copy", "Mobile copy", "Desktop+ copy", "show more available?"');
 
     if (error) throw error;
 
@@ -740,7 +740,7 @@ export function useFavoriteListingsPageLogic() {
       if (data.data?.proposalId && selectedListingForProposal) {
         setProposalsByListingId(prev => {
           const newMap = new Map(prev);
-          newMap.set(selectedListingForProposal.id, { _id: data.data.proposalId });
+          newMap.set(selectedListingForProposal.id, { id: data.data.proposalId });
           return newMap;
         });
       }

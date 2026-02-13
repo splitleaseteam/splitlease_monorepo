@@ -614,7 +614,7 @@ export async function handleCreate(
 
   const guestUpdates: Record<string, unknown> = {
     "flexibility (last known)": guestFlexibility,
-    "Recent Days Selected": input.daysSelected,
+    "recent_days_selected_json": input.daysSelected,
     updated_at: now,
   };
 

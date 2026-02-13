@@ -42,7 +42,7 @@ export default function PublicView({
   const bio = profileData?.bio_text || '';
   const needForSpace = profileData?.stated_need_for_space_text || '';
   const specialNeeds = profileData?.stated_special_needs_text || '';
-  const selectedDays = dayNamesToIndices(profileData?.['Recent Days Selected'] || []);
+  const selectedDays = dayNamesToIndices(profileData?.recent_days_selected_json || []);
 
   // Parse transportation medium - stored as JSON string in text column
   const rawTransport = profileData?.['transportation medium'];

@@ -502,7 +502,7 @@ async function processJob(
     }
     if (dayNames.length > 0) {
       // Store as day name strings to match frontend format: ["Saturday", "Sunday"]
-      userUpdate['Recent Days Selected'] = dayNames;
+      userUpdate['recent_days_selected_json'] = dayNames;
     }
     if (extractedData.storedItems && extractedData.storedItems.length > 0) {
       userUpdate['About - Commonly Stored Items'] = extractedData.storedItems;

@@ -479,7 +479,7 @@ export function useAccountProfilePageLogic() {
       const { data: reasons, error: reasonsError } = await supabase
         .schema('reference_table')
         .from('zat_goodguestreasons')
-        .select('_id, name')
+        .select('id, name')
         .order('name');
 
       if (reasonsError) {
@@ -492,7 +492,7 @@ export function useAccountProfilePageLogic() {
       const { data: storage, error: storageError } = await supabase
         .schema('reference_table')
         .from('zat_storage')
-        .select('_id, Name')
+        .select('id, Name')
         .order('Name');
 
       if (storageError) {
@@ -589,7 +589,7 @@ export function useAccountProfilePageLogic() {
         bio: userData.bio_text || '',
         needForSpace: userData.stated_need_for_space_text || '',
         specialNeeds: userData.stated_special_needs_text || '',
-        selectedDays: dayNamesToIndices(userData['Recent Days Selected'] || []),
+        selectedDays: dayNamesToIndices(userData.recent_days_selected_json || []),
         transportationTypes,
         goodGuestReasons: userData['Reasons to Host me'] || [],
         storageItems: userData['About - Commonly Stored Items'] || []
@@ -1109,7 +1109,7 @@ export function useAccountProfilePageLogic() {
         bio_text: formData.bio.trim(),
         stated_need_for_space_text: formData.needForSpace.trim(),
         stated_special_needs_text: formData.specialNeeds.trim(),
-        'Recent Days Selected': indicesToDayNames(formData.selectedDays),
+        recent_days_selected_json: indicesToDayNames(formData.selectedDays),
         'transportation medium': formData.transportationTypes.length > 0
           ? JSON.stringify(formData.transportationTypes)
           : null, // Store as JSON string
