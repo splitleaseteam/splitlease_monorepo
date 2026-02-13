@@ -1,0 +1,56 @@
+=== BUBBLE PRICE TRACKER — SUMMARY ===
+Site: app.split.lease
+Listing: PW Test 02-10 03:09:04
+Listing ID: 1770693012296x997684913974804500
+Timestamp: 2026-02-10T03:19:09.779Z
+
+[LISTING_INITIAL] Initial listing page prices (no login)
+  nightlyRate: $101.79 /night
+  fourWeekRent: 4-Week Rent:$1,628.64
+  estimatedTotal: Reservation Estimated Total:$5,293.08
+
+[LISTING_GUEST] Listing prices as guest (16 weeks)
+  nightlyRate: $106.47 /night
+  fourWeekRent: 4-Week Rent:$1,277.64
+  estimatedTotal: Reservation Estimated Total:$4,152.33
+
+[LISTING] Listing page prices
+  nightlyRate: $106.47 /night
+  fourWeekRent: 4-Week Rent:$1,277.64
+
+[LISTING] Listing page prices
+  nightlyRate: $106.47 /night
+  fourWeekRent: 4-Week Rent:$1,277.64
+
+[PROPOSAL] Proposal creation prices
+  pricePerNight: Price per night$106.47
+
+[LISTING] Listing page prices
+  nightlyRate: $106.47 /night
+  fourWeekRent: 4-Week Rent:$1,277.64
+
+[PROPOSAL] Proposal creation prices
+  pricePerNight: Price per night$106.47
+
+[COUNTER] Host counter-offer prices
+  compensationPerNight: Compensation per Night•  $91.00
+  duration: Move-in 2/23/26Duration 16 weeks$4,368.00 $5,460.00
+  total: $4,368 $5,460 Total
+
+[LISTING] Listing page prices
+  nightlyRate: $106.47 /night
+  fourWeekRent: 4-Week Rent:$1,277.64
+
+[PROPOSAL] Proposal creation prices
+  pricePerNight: Price per night$106.47
+
+[COUNTER] Host counter-offer prices
+  compensationPerNight: Compensation per Night•  $91.00
+  duration: Move-in 2/23/26Duration 16 weeks$4,368.00 $5,460.00
+  total: $4,368 $5,460 Total
+
+[ACCEPTANCE] Guest acceptance prices
+  nightlyRate: $106.47 / night
+  duration: Duration 16 20 weeks
+  total: Total $5,110.56 
+$6,388.20 in total | No maintenance fee |  Damage deposit $500.00

@@ -1,0 +1,199 @@
+{
+  "run": "2026-02-07_19-34-35",
+  "timestamp": "2026-02-07T19:36:09.371Z",
+  "site": "split.lease",
+  "supabaseFound": true,
+  "supabaseProposalId": "1770492958530x75290593539792112",
+  "submittedData": {
+    "daysSelected": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "reservationSpan": "13",
+    "moveInDate": "2026-03-03",
+    "needForSpace": "I am looking for a comfortable and convenient space in this area for my work. I am a remote professi...",
+    "aboutYourself": "I am a working professional with a clean and organized lifestyle. I am respectful of shared spaces a..."
+  },
+  "fields": [
+    {
+      "field": "Reservation Span (Weeks)",
+      "expected": 16,
+      "actual": 16,
+      "match": "MATCH"
+    },
+    {
+      "field": "Days Selected",
+      "expected": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "actual": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "match": "MATCH"
+    },
+    {
+      "field": "Guest Email",
+      "expected": "splitleasetesting@test.com",
+      "actual": "splitleasetesting@test.com",
+      "match": "MATCH"
+    },
+    {
+      "field": "Status",
+      "expected": "Host Review",
+      "actual": "Host Review",
+      "match": "MATCH"
+    },
+    {
+      "field": "Nightly Price",
+      "expected": null,
+      "actual": 367.5,
+      "match": "MATCH"
+    },
+    {
+      "field": "Listing ID",
+      "expected": null,
+      "actual": "1692811003339x451849759330148900",
+      "match": "MATCH"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "match": 6,
+    "mismatch": 0
+  },
+  "rawData": {
+    "supabase": {
+      "_id": "1770492958530x75290593539792112",
+      "4 week compensation": 4200,
+      "4 week rent": 4410,
+      "Comment": null,
+      "Complementary Days": null,
+      "Complementary Nights": [
+        0,
+        6
+      ],
+      "Created By": "1764981388058x38544543907239472",
+      "Created Date": "2026-02-07T19:35:58.54+00:00",
+      "Days Available": [
+        0,
+        2,
+        6,
+        1
+      ],
+      "Days Selected": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "Deleted": false,
+      "Draft Authorization Credit Card": null,
+      "Draft Host Payout Schedule": null,
+      "Draft Periodic Tenancy Agreement": null,
+      "Draft Supplemental Agreement": null,
+      "Drafts List": null,
+      "End date": null,
+      "Guest": "1764981388058x38544543907239472",
+      "Guest email": "splitleasetesting@test.com",
+      "Guest flexibility": "Flexible",
+      "History": [
+        "Proposal created on 02/07/26, 7:35 PM"
+      ],
+      "Host User": "1706284811113x687730494517597700",
+      "House Rules": null,
+      "Is Finalized": false,
+      "Listing": "1692811003339x451849759330148900",
+      "Location - Address": "{\"address\": \"575 Lexington Ave, New York, NY 10022, USA\", \"lat\": 40.757372, \"lng\": -73.9715061}",
+      "Location - Address slightly different": "{\"address\": \"245 Park Ave 39th FL #133, New York, NY 10167, USA\", \"lat\": 40.755093566634784, \"lng\": -73.97509087851242}",
+      "Modified Date": "2026-02-07T19:35:58.54+00:00",
+      "Move in range end": "2026-02-25",
+      "Move in range start": "2026-02-25",
+      "Move-out": "2026-06-13T00:00:00.000Z",
+      "Negotiation Summary": null,
+      "Nights Selected (Nights list)": [
+        2,
+        3,
+        4
+      ],
+      "Order Ranking": 17,
+      "Reservation Span": "16 weeks",
+      "Reservation Span (Weeks)": 16,
+      "Scheduled workflow expiration": null,
+      "Scheduled workflow expiration reminder": null,
+      "Status": "Host Review",
+      "Total Compensation (proposal - host)": 16800,
+      "Total Price for Reservation (guest)": 17640,
+      "actual weeks during reservation span": 16,
+      "check in day": "2",
+      "check out day": "5",
+      "cleaning fee": 75,
+      "counter offer happened": null,
+      "damage deposit": 500,
+      "duration in months": 4,
+      "flexible move in?": null,
+      "guest documents review finalized?": null,
+      "hc 4 week compensation": null,
+      "hc 4 week rent": null,
+      "hc check in day": null,
+      "hc check out day": null,
+      "hc cleaning fee": null,
+      "hc damage deposit": null,
+      "hc days selected": null,
+      "hc duration in months": null,
+      "hc host compensation (per period)": null,
+      "hc house rules": null,
+      "hc move in date": null,
+      "hc nightly price": null,
+      "hc nights per week": null,
+      "hc nights selected": null,
+      "hc reservation span": null,
+      "hc reservation span (weeks)": null,
+      "hc total host compensation": null,
+      "hc total price": null,
+      "hc weeks schedule": null,
+      "host compensation": 350,
+      "host documents review finalized?": null,
+      "host email": "forspammers@humanai.net",
+      "list of dates (actual dates)": null,
+      "move-in range (text)": null,
+      "need for space": null,
+      "night after checkin night": null,
+      "night before checkout night": null,
+      "nightly price for map (text)": "$368",
+      "nights per week (num)": 3,
+      "other weeks": null,
+      "preferred gender": "any",
+      "proposal nightly price": 367.5,
+      "proposal update message": null,
+      "reason for cancellation": null,
+      "reminderByHost": null,
+      "remindersByGuest (number)": null,
+      "rental app requested": true,
+      "rental application": "1766516339009x92482555266690832",
+      "rental type": "Nightly",
+      "request virtual meeting": null,
+      "reviewed by frederick": null,
+      "reviewed by igor": null,
+      "reviewed by robert": null,
+      "viewed proposed proposal": null,
+      "virtual meeting": null,
+      "virtual meeting confirmed ": null,
+      "week selection": "Every week",
+      "created_at": "2026-02-07T19:35:58.553642+00:00",
+      "updated_at": "2026-02-07T19:35:58.553642+00:00",
+      "about_yourself": "test test test test tes tet",
+      "special_needs": null,
+      "pending": false,
+      "bubble_id": null,
+      "custom_schedule_description": null
+    }
+  }
+}

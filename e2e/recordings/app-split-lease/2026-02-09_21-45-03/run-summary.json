@@ -1,0 +1,33 @@
+{
+  "run": "2026-02-09_21-45-03",
+  "site": "app.split.lease",
+  "baseURL": "https://app.split.lease",
+  "credentials": {
+    "email": "rodtesthost2@test.com"
+  },
+  "listing": {
+    "title": "Test Playwright Listing",
+    "typeOfSpace": "Private Room",
+    "bedrooms": "2",
+    "kitchenType": "Kitchenette",
+    "beds": "1",
+    "parkingType": "Street Parking",
+    "bathrooms": "4.5",
+    "address": "234 W 42nd St, New York, NY 10036, USA",
+    "nightlyPrice": "100",
+    "decayRate": "0.950",
+    "damageDeposit": "500",
+    "cancellationPolicy": "Standard",
+    "preferredGender": "No Preference",
+    "numberOfGuests": "2",
+    "checkInTime": "2:00 pm",
+    "checkOutTime": "11:00 am",
+    "leaseTermMin": "6",
+    "leaseTermMax": "26",
+    "secureStorage": "In the room",
+    "description": "Experience city living in this private room in the heart of New York, set within a well-maintained building on iconic 42nd Street. Featuring a dedicated bed, 4.5 bathrooms for added convenience, and a functional kitchenette—perfect for preparing simple meals. This thoughtful setup makes it easy to unwind after a day out. Secure your spot in the city—schedule a visit today!"
+  },
+  "videoFile": "efe296f2a960867aeaec0d598e16ffb9.webm",
+  "screenshotCount": 6,
+  "outputDir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e\\recordings\\app-split-lease\\2026-02-09_21-45-03"
+}

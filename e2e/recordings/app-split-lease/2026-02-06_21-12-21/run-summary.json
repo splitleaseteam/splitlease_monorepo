@@ -1,0 +1,33 @@
+{
+  "run": "2026-02-06_21-12-21",
+  "site": "app.split.lease",
+  "baseURL": "https://app.split.lease",
+  "credentials": {
+    "email": "splitleaserod@gmail.com"
+  },
+  "listing": {
+    "name": "Playwright Test Listing",
+    "typeOfSpace": "Private Room",
+    "bedrooms": "2",
+    "kitchenType": "Full Kitchen",
+    "beds": "2",
+    "parkingType": "Street Parking",
+    "bathrooms": "1.5",
+    "address": "350 5th Avenue, New York, NY",
+    "manualAddress": {
+      "number": "350",
+      "street": "5th Avenue",
+      "city": "New York",
+      "state": "NY",
+      "zip": "10118",
+      "neighborhood": "Midtown Manhattan"
+    },
+    "description": "Cozy private room in the heart of Midtown Manhattan. Walking distance to Empire State Building, Penn Station, and countless restaurants. The room features a comfortable queen bed, ample closet space, and natural light. Shared access to a fully equipped kitchen and clean bathroom. Perfect for professionals or students looking for a convenient NYC base.",
+    "monthlyCompensation": "1850",
+    "damageDeposit": "500",
+    "cancellationPolicy": "Standard"
+  },
+  "videoFile": "081e8e30e927c858ff947e3dc856af8b.webm",
+  "screenshotCount": 2,
+  "outputDir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e\\recordings\\app-split-lease\\2026-02-06_21-12-21"
+}

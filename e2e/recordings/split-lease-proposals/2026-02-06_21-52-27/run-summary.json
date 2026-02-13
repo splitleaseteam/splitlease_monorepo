@@ -1,0 +1,25 @@
+{
+  "run": "2026-02-06_21-52-27",
+  "site": "split.lease",
+  "baseURL": "https://split.lease",
+  "credentials": {
+    "email": "splitleasetesting@test.com"
+  },
+  "targetListingId": "auto-discovered",
+  "discoveredListingId": "1586391635116x113503727348350980",
+  "capturedProposalId": null,
+  "proposal": {
+    "daysSelected": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday"
+    ],
+    "reservationSpan": "13",
+    "moveInDate": "2026-03-02"
+  },
+  "videoFile": "3312d6803f8ce83ce19bcaf1d2293f7b.webm",
+  "screenshotCount": 8,
+  "outputDir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e\\recordings\\split-lease-proposals\\2026-02-06_21-52-27"
+}

@@ -1,0 +1,202 @@
+{
+  "run": "2026-02-07_19-45-27",
+  "timestamp": "2026-02-07T19:47:53.671Z",
+  "site": "split.lease",
+  "supabaseFound": true,
+  "supabaseProposalId": "1770493632316x84497807992297552",
+  "submittedData": {
+    "daysSelected": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "adjustedReservationSpan": "16",
+    "moveInDate": "2026-03-03"
+  },
+  "fields": [
+    {
+      "field": "Reservation Span (Weeks)",
+      "expected": 16,
+      "actual": 16,
+      "match": "MATCH"
+    },
+    {
+      "field": "Days Selected",
+      "expected": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "actual": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "match": "MATCH"
+    },
+    {
+      "field": "Guest Email",
+      "expected": "splitleasetesting@test.com",
+      "actual": "splitleasetesting@test.com",
+      "match": "MATCH"
+    },
+    {
+      "field": "Status",
+      "expected": null,
+      "actual": "Host Review",
+      "match": "MATCH"
+    },
+    {
+      "field": "Nightly Price",
+      "expected": null,
+      "actual": 253.85,
+      "match": "MATCH"
+    },
+    {
+      "field": "Listing ID",
+      "expected": null,
+      "actual": "1701107772942x447054126943830000",
+      "match": "MATCH"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "match": 6,
+    "mismatch": 0
+  },
+  "rawData": {
+    "supabase": {
+      "_id": "1770493632316x84497807992297552",
+      "4 week compensation": 2901,
+      "4 week rent": 3046,
+      "Comment": null,
+      "Complementary Days": null,
+      "Complementary Nights": [
+        0,
+        1,
+        5,
+        6
+      ],
+      "Created By": "1764981388058x38544543907239472",
+      "Created Date": "2026-02-07T19:47:12.325+00:00",
+      "Days Available": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "Days Selected": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "Deleted": false,
+      "Draft Authorization Credit Card": null,
+      "Draft Host Payout Schedule": null,
+      "Draft Periodic Tenancy Agreement": null,
+      "Draft Supplemental Agreement": null,
+      "Drafts List": null,
+      "End date": null,
+      "Guest": "1764981388058x38544543907239472",
+      "Guest email": "splitleasetesting@test.com",
+      "Guest flexibility": "Flexible",
+      "History": [
+        "Proposal created on 02/07/26, 7:47 PM"
+      ],
+      "Host User": "1701107615809x412675641002828000",
+      "House Rules": null,
+      "Is Finalized": false,
+      "Listing": "1701107772942x447054126943830000",
+      "Location - Address": "{\"address\": \"33 Bank St, New York, NY 10014, USA\", \"lat\": 40.7371028, \"lng\": -74.0032266}",
+      "Location - Address slightly different": "{\"address\": \"229 W 14th St, New York, NY 10011, USA\", \"lat\": 40.73912424, \"lng\": -74.000880127}",
+      "Modified Date": "2026-02-07T19:47:12.325+00:00",
+      "Move in range end": "2026-02-25",
+      "Move in range start": "2026-02-25",
+      "Move-out": "2026-06-13T00:00:00.000Z",
+      "Negotiation Summary": null,
+      "Nights Selected (Nights list)": [
+        2,
+        3,
+        4
+      ],
+      "Order Ranking": 18,
+      "Reservation Span": "16 weeks",
+      "Reservation Span (Weeks)": 16,
+      "Scheduled workflow expiration": null,
+      "Scheduled workflow expiration reminder": null,
+      "Status": "Host Review",
+      "Total Compensation (proposal - host)": 11604.48,
+      "Total Price for Reservation (guest)": 12185,
+      "actual weeks during reservation span": 16,
+      "check in day": "2",
+      "check out day": "5",
+      "cleaning fee": 0,
+      "counter offer happened": null,
+      "damage deposit": 1000,
+      "duration in months": 4,
+      "flexible move in?": null,
+      "guest documents review finalized?": null,
+      "hc 4 week compensation": null,
+      "hc 4 week rent": null,
+      "hc check in day": null,
+      "hc check out day": null,
+      "hc cleaning fee": null,
+      "hc damage deposit": null,
+      "hc days selected": null,
+      "hc duration in months": null,
+      "hc host compensation (per period)": null,
+      "hc house rules": null,
+      "hc move in date": null,
+      "hc nightly price": null,
+      "hc nights per week": null,
+      "hc nights selected": null,
+      "hc reservation span": null,
+      "hc reservation span (weeks)": null,
+      "hc total host compensation": null,
+      "hc total price": null,
+      "hc weeks schedule": null,
+      "host compensation": 241.76,
+      "host documents review finalized?": null,
+      "host email": "scottwhite@ymail.com",
+      "list of dates (actual dates)": null,
+      "move-in range (text)": null,
+      "need for space": null,
+      "night after checkin night": null,
+      "night before checkout night": null,
+      "nightly price for map (text)": "$254",
+      "nights per week (num)": 3,
+      "other weeks": null,
+      "preferred gender": "any",
+      "proposal nightly price": 253.85,
+      "proposal update message": null,
+      "reason for cancellation": null,
+      "reminderByHost": null,
+      "remindersByGuest (number)": null,
+      "rental app requested": true,
+      "rental application": "1766516339009x92482555266690832",
+      "rental type": "Nightly",
+      "request virtual meeting": null,
+      "reviewed by frederick": null,
+      "reviewed by igor": null,
+      "reviewed by robert": null,
+      "viewed proposed proposal": null,
+      "virtual meeting": null,
+      "virtual meeting confirmed ": null,
+      "week selection": "Every week",
+      "created_at": "2026-02-07T19:47:12.352466+00:00",
+      "updated_at": "2026-02-07T19:47:12.352466+00:00",
+      "about_yourself": "test test test test tes tet",
+      "special_needs": null,
+      "pending": false,
+      "bubble_id": null,
+      "custom_schedule_description": null
+    }
+  }
+}

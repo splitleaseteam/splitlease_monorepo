@@ -1,0 +1,24 @@
+{
+  "run": "2026-02-07_20-03-35",
+  "site": "split.lease",
+  "baseURL": "https://split.lease",
+  "hostEmail": "rodtesthost2@test.com",
+  "guestEmail": "splitleasetesting@test.com",
+  "discoveredListingId": "1586391635116x113503727348350980",
+  "capturedProposalId": null,
+  "proposal": {
+    "daysSelected": [
+      "Tuesday",
+      "Wednesday",
+      "Thursday"
+    ],
+    "daysCount": 3,
+    "nightsCount": 2,
+    "initialReservationSpan": "13",
+    "adjustedReservationSpan": "16"
+  },
+  "architecture": "two-context (host browser + guest incognito)",
+  "videoFile": "12cde76950ed750f9ece35d7c10c5fec.webm",
+  "screenshotCount": 15,
+  "outputDir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e\\recordings\\split-lease-proposals\\2026-02-07_20-03-35"
+}

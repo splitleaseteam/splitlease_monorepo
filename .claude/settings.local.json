@@ -60,7 +60,13 @@
       "Bash(copy \"host-overview-current-state.png\" \"C:\\\\Users\\\\Split Lease\\\\My Drive \\(splitleaseteam@gmail.com\\)\\\\_Agent Context and Tools\\\\SL22\\\\Design\\\\2026\\\\Ongoing Projects\\\\AI Team\\\\agents\\\\orchestrator\\\\runs\\\\run-010--2026-02-04\\\\screenshots\\\\orchestrator-baseline-capture.png\")",
       "Bash(copy:*)",
       "mcp__playwright__browser_type",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "Bash(git fetch:*)",
+      "Bash(npx playwright install:*)",
+      "WebFetch(domain:www.loom.com)",
+      "Bash(explorer:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npx playwright codegen:*)"
     ],
     "deny": [],
     "ask": []

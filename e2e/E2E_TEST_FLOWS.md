@@ -240,6 +240,20 @@ npx playwright test --trace on
 
 ---
 
+## Autonomous Recorded Scripts
+
+Standalone Playwright scripts that run full user journeys against live sites with video recording and backend verification. These are **separate from the test suite** — see dedicated docs:
+
+- **[RECORDED_SCRIPTS.md](./RECORDED_SCRIPTS.md)** — Full documentation for autonomous scripts (`create-proposal-recorded.cjs`, `create-listing-recorded.cjs`)
+
+```bash
+# Quick run
+node e2e/create-proposal-recorded.cjs
+node e2e/create-listing-recorded.cjs
+```
+
+---
+
 ## CI Integration
 
 Add to `.github/workflows/e2e.yml`:

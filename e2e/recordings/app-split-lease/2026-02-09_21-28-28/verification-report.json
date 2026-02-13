@@ -1,0 +1,89 @@
+{
+  "run": "2026-02-09_21-28-28",
+  "timestamp": "2026-02-09T21:29:16.181Z",
+  "site": "app.split.lease",
+  "supabaseFound": false,
+  "supabaseListingId": null,
+  "fields": [
+    {
+      "field": "Listing Name",
+      "expected": "Test Playwright Listing",
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Type of Space",
+      "expected": "Private Room",
+      "result": "MISMATCH",
+      "isForeignKey": true
+    },
+    {
+      "field": "Bedrooms",
+      "expected": 2,
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Kitchen Type",
+      "expected": "Kitchenette",
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Beds",
+      "expected": 1,
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Parking Type",
+      "expected": "Street Parking",
+      "result": "MISMATCH",
+      "isForeignKey": true
+    },
+    {
+      "field": "Bathrooms",
+      "expected": 4.5,
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Description",
+      "expected": "Experience city living in this private room in the heart of New York, set within a well-maintained building on iconic 42nd Street. Featuring a dedicated bed, 4.5 bathrooms for added convenience, and a functional kitchenette—perfect for preparing simple meals. This thoughtful setup makes it easy to unwind after a day out. Secure your spot in the city—schedule a visit today!",
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Rental Type",
+      "expected": "Nightly",
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Damage Deposit",
+      "expected": 500,
+      "result": "MISMATCH",
+      "isForeignKey": false
+    },
+    {
+      "field": "Cancellation Policy",
+      "expected": "Standard",
+      "result": "MISMATCH",
+      "isForeignKey": true
+    },
+    {
+      "field": "Status",
+      "expected": false,
+      "result": "MISMATCH",
+      "isForeignKey": false
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "match": 0,
+    "mismatch": 12
+  },
+  "rawData": {
+    "supabase": null
+  }
+}

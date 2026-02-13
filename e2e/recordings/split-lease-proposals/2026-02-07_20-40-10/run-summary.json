@@ -1,0 +1,26 @@
+{
+  "run": "2026-02-07_20-40-10",
+  "site": "split.lease",
+  "baseURL": "https://split.lease",
+  "hostEmail": "rodtesthost2@test.com",
+  "guestEmail": "splitleasetesting@test.com",
+  "listingCreated": true,
+  "listingName": "Playwright Test Listing 2026-02-07T20-40-10",
+  "discoveredListingId": "1770496867176x77882633802885632",
+  "capturedProposalId": "1770496924517x91461090638639472",
+  "proposal": {
+    "daysSelected": [
+      "Tuesday",
+      "Wednesday",
+      "Thursday"
+    ],
+    "daysCount": 3,
+    "nightsCount": 2,
+    "initialReservationSpan": "13",
+    "adjustedReservationSpan": "16"
+  },
+  "architecture": "two-context (host browser + guest incognito)",
+  "videoFile": "3ef010bfbf3565bcb343654445c6c820.webm",
+  "screenshotCount": 38,
+  "outputDir": "C:\\Users\\Split Lease\\Documents\\Split Lease\\e2e\\recordings\\split-lease-proposals\\2026-02-07_20-40-10"
+}

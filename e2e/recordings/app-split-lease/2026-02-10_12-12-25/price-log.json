@@ -1,0 +1,33 @@
+[
+  {
+    "timestamp": "2026-02-10T12:19:44.701Z",
+    "phase": "LISTING",
+    "label": "Listing page prices",
+    "nightlyRate": "$106.47 /night",
+    "fourWeekRent": "4-Week Rent:$1,277.64"
+  },
+  {
+    "timestamp": "2026-02-10T12:20:02.544Z",
+    "phase": "PROPOSAL",
+    "label": "Proposal creation prices",
+    "pricePerNight": "Price per night$106.47",
+    "totalReservation": null,
+    "firstFourWeeks": null
+  },
+  {
+    "timestamp": "2026-02-10T12:22:18.021Z",
+    "phase": "COUNTER",
+    "label": "Host counter-offer prices",
+    "compensationPerNight": "Compensation per Night•  $91.00",
+    "duration": "Move-in 2/23/26Duration 16 weeks$4,368.00 $5,460.00",
+    "total": "$4,368 $5,460 Total"
+  },
+  {
+    "timestamp": "2026-02-10T12:23:40.059Z",
+    "phase": "ACCEPTANCE",
+    "label": "Guest acceptance prices",
+    "nightlyRate": "$106.47 / night",
+    "duration": "Duration 16 20 weeks",
+    "total": "Total $5,110.56 \n$6,388.20 in total | No maintenance fee |  Damage deposit $500.00"
+  }
+]

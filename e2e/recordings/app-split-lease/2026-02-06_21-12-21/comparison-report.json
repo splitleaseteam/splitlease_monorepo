@@ -1,0 +1,114 @@
+{
+  "run": "2026-02-06_21-12-21",
+  "timestamp": "2026-02-06T21:12:51.191Z",
+  "site": "app.split.lease",
+  "supabaseFound": false,
+  "bubbleFound": false,
+  "supabaseListingId": null,
+  "bubbleListingId": null,
+  "fields": [
+    {
+      "field": "Listing Name",
+      "expected": "Playwright Test Listing",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Type of Space",
+      "expected": "Private Room",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": true
+    },
+    {
+      "field": "Bedrooms",
+      "expected": 2,
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Kitchen Type",
+      "expected": "Full Kitchen",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Beds",
+      "expected": 2,
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Parking Type",
+      "expected": "Street Parking",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": true
+    },
+    {
+      "field": "Bathrooms",
+      "expected": 1.5,
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Description",
+      "expected": "Cozy private room in the heart of Midtown Manhattan. Walking distance to Empire State Building, Penn Station, and countless restaurants. The room features a comfortable queen bed, ample closet space, and natural light. Shared access to a fully equipped kitchen and clean bathroom. Perfect for professionals or students looking for a convenient NYC base.",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Rental Type",
+      "expected": "Monthly",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Monthly Compensation",
+      "expected": 1850,
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Damage Deposit",
+      "expected": 500,
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    },
+    {
+      "field": "Cancellation Policy",
+      "expected": "Standard",
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": true
+    },
+    {
+      "field": "Status",
+      "expected": false,
+      "supabaseMatch": "MISMATCH",
+      "bubbleMatch": "NOT_FOUND",
+      "isForeignKey": false
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "supabaseMatch": 0,
+    "supabaseMismatch": 13,
+    "bubbleMatch": 0,
+    "bubbleMismatch": 0,
+    "bubbleNotFound": 13
+  },
+  "rawData": {
+    "supabase": null,
+    "bubble": null
+  }
+}
