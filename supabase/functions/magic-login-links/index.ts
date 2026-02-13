@@ -24,10 +24,7 @@
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
-import { corsHeaders as _corsHeaders } from '../_shared/cors.ts';
-
 // FP Utilities
-import { Result, ok, err } from "../_shared/functional/result.ts";
 import {
   parseRequest,
   validateAction,
@@ -36,7 +33,6 @@ import {
   formatSuccessResponse,
   formatErrorResponseHttp,
   formatCorsResponse,
-  CorsPreflightSignal as _CorsPreflightSignal,
 } from "../_shared/functional/orchestration.ts";
 import { createErrorLog, addError, setAction, ErrorLog } from "../_shared/functional/errorLog.ts";
 import { reportErrorLog } from "../_shared/slack.ts";
@@ -71,51 +67,6 @@ const handlers: Readonly<Record<Action, (...args: unknown[]) => unknown>> = {
 // ─────────────────────────────────────────────────────────────
 // Pure Functions
 // ─────────────────────────────────────────────────────────────
-
-/**
- * Validate that the authenticated user is an admin
- */
-async function _validateAdminAccess(req: Request, supabaseUrl: string, supabaseServiceKey: string): Promise<Result<string, Error>> {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return err(new Error('Missing or invalid authorization header'));
-  }
-
-  const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
-  // Verify JWT and get user ID
-  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
-
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-
-  if (error || !user) {
-    return err(new Error('Invalid or expired auth token'));
-  }
-
-  // Check if user is admin in public.user table
-  const { data: userData, error: userError } = await supabase
-    .from('user')
-    .select('is_admin')
-    .eq('authentication->>user_id', user.id)
-    .single();
-
-  if (userError || !userData) {
-    return err(new Error('User not found in database'));
-  }
-
-  // NOTE: Admin role check removed to allow any authenticated user access for testing
-  // if (userData.is_admin !== true) {
-  //   return err(new Error('Admin access required'));
-  // }
-
-  return ok(user.id);
-}
 
 // ─────────────────────────────────────────────────────────────
 // Effect Boundary (Side Effects Isolated Here)

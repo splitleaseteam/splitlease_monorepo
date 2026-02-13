@@ -33,7 +33,7 @@ export function useDocumentChangeRequestLogic({
         const { data, error: fetchError } = await supabase
           .from('documentssent')
           .select('id, document_sent_title')
-          .order('created_date', { ascending: false });
+          .order('original_created_at', { ascending: false });
 
         if (fetchError) {
           throw new Error(`Failed to load documents: ${fetchError.message}`);

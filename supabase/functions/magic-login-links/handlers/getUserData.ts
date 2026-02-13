@@ -77,7 +77,7 @@ export async function handleGetUserData(
     try {
       const { data, error } = await supabaseAdmin
         .from('booking_lease')
-        .select('id, listing_id, lease_status, agreement_number')
+        .select('id, listing_id, lease_type, agreement_number')
         .or(`guest_user_id.eq.${userId},host_user_id.eq.${userId}`)
         .limit(50);
 
@@ -121,7 +121,7 @@ export async function handleGetUserData(
     const leases = leasesData.map((lease: any) => ({
       id: lease.id,
       listingTitle: 'Lease ' + (lease.agreement_number || lease.id),
-      status: lease.lease_status || 'Unknown',
+      status: lease.lease_type || 'Unknown',
     }));
 
     const threads = (threadsData || []).map(thread => ({

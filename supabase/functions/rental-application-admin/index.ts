@@ -79,13 +79,6 @@ Deno.serve(async (req: Request) => {
       console.log('[rental-application-admin] No auth header - proceeding as internal page request');
     }
 
-    // NOTE: Admin role check removed to allow any authenticated user access for testing
-    // const isAdmin = await checkAdminStatus(user.id, supabase);
-    // if (!isAdmin) {
-    //   console.log(`[rental-application-admin] User ${user.id} is not an admin`);
-    //   return errorResponse('Admin access required', 403);
-    // }
-
     let result: unknown;
 
     switch (action) {
@@ -175,46 +168,6 @@ async function authenticateFromHeaders(
     email: user.email ?? '',
     user_id: user.user_metadata?.legacy_platform_id
   };
-}
-
-async function _checkAdminStatus(
-  userId: string,
-  supabase: SupabaseClient
-): Promise<boolean> {
-  try {
-    // First get the user's platform user_id from auth metadata
-    const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(userId);
-
-    if (authError || !user) {
-      console.error('[rental-application-admin] Failed to get user:', authError);
-      return false;
-    }
-
-    const platformUserId = user.user_metadata?.legacy_platform_id;
-    if (!platformUserId) {
-      console.log('[rental-application-admin] No platform user_id found for user');
-      // Check user_metadata for admin flag as fallback
-      return user.user_metadata?.is_admin === true;
-    }
-
-    // Check the user table for admin status
-    const { data: userData, error: userError } = await supabase
-      .from('user')
-      .select('is_admin')
-      .eq('id', platformUserId)
-      .single();
-
-    if (userError) {
-      console.error('[rental-application-admin] Failed to check admin status:', userError);
-      // Fall back to user_metadata
-      return user.user_metadata?.is_admin === true;
-    }
-
-    return userData?.is_admin === true;
-  } catch (_err) {
-    console.error('[rental-application-admin] Admin check error:', err);
-    return false;
-  }
 }
 
 // ===== ACTION HANDLERS =====

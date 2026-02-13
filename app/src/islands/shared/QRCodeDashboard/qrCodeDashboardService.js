@@ -105,8 +105,8 @@ export async function fetchQRCodes(houseManualId) {
     const { data, error } = await supabase
       .from('qrcodes')
       .select('*')
-      .eq('House Manual', houseManualId)
-      .order('Created Date', { ascending: false });
+      .eq('house_manual', houseManualId)
+      .order('original_created_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch QR codes: ${error.message}`);

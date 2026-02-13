@@ -21,6 +21,7 @@ export async function getCommonSafetyFeatures(): Promise<string[]> {
     console.log('[safetyService] Fetching common safety features...');
 
     const { data, error } = await supabase
+      .schema('reference_table')
       .from('zat_features_safetyfeature')
       .select('name, is_preset')
       .eq('is_preset', true)

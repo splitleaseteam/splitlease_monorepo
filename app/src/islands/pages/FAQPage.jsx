@@ -20,6 +20,7 @@ export default function FAQPage() {
     execute: executeLoadFAQs,
   } = useAsyncOperation(async () => {
     const { data, error: fetchError } = await supabase
+      .schema('reference_table')
       .from('zat_faq')
       .select('id, question, answer, category, sub_category')
       .order('category', { ascending: true })

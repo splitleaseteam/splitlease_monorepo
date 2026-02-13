@@ -321,40 +321,20 @@ export async function handleCreate(
   let weeksSchedule: string;
 
   if (input.isCounteroffer) {
-    const hcCheckInDay = proposalData['host_counter_offer_check_in_day'];
-    const hcCheckOutDay = proposalData['host_counter_offer_check_out_day'];
-    const hcWeeksSchedule = proposalData['host_counter_offer_weeks_schedule'];
-
-    checkInDay =
-      (typeof hcCheckInDay === 'object' && (hcCheckInDay as { Display?: string })?.Display) ||
-      (hcCheckInDay as string);
-    checkOutDay =
-      (typeof hcCheckOutDay === 'object' && (hcCheckOutDay as { Display?: string })?.Display) ||
-      (hcCheckOutDay as string);
-    weeksSchedule =
-      (typeof hcWeeksSchedule === 'object' && hcWeeksSchedule?.Display) ||
-      (hcWeeksSchedule as string) ||
-      'Every week';
+    checkInDay = proposalData['host_proposed_checkin_day'] as string;
+    checkOutDay = proposalData['host_proposed_checkout_day'] as string;
+    weeksSchedule = (proposalData['host_proposed_week_pattern'] as string) || 'Every week';
   } else {
-    const checkInDayVal = proposalData.checkin_day_of_week_number;
-    const checkOutDayVal = proposalData.checkout_day_of_week_number;
-    const weekSelectionVal = proposalData.weeks_offered_schedule_text;
-
-    checkInDay =
-      (typeof checkInDayVal === 'object' && (checkInDayVal as { Display?: string })?.Display) ||
-      (checkInDayVal as string);
-    checkOutDay =
-      (typeof checkOutDayVal === 'object' && (checkOutDayVal as { Display?: string })?.Display) ||
-      (checkOutDayVal as string);
-    weeksSchedule =
-      (typeof weekSelectionVal === 'object' && weekSelectionVal?.Display) ||
-      (weekSelectionVal as string) ||
-      'Every week';
+    checkInDay = proposalData.checkin_day_of_week_number as string;
+    checkOutDay = proposalData.checkout_day_of_week_number as string;
+    weeksSchedule = (proposalData.weeks_offered_schedule_text as string) || 'Every week';
   }
 
   // Get nights selected
+  // TODO: BANDAID — host_proposed_selected_nights_json is the legacy column name.
+  // Migrate old proposals to populate host_proposed_selected_days_json, then remove the fallback.
   const nightsSelected = input.isCounteroffer
-    ? proposalData['host_counter_offer_days_selected'] || proposalData['host_counter_offer_nights_selected']
+    ? proposalData['host_proposed_selected_days_json'] || proposalData['host_proposed_selected_nights_json']
     : proposalData.guest_selected_days_numbers_json;
 
   // Handle full-week normalization

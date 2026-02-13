@@ -17,6 +17,7 @@ export async function getCityIdByName(cityName) {
 
   try {
     const { data, error } = await supabase
+      .schema('reference_table')
       .from('zat_location')
       .select('id, city_name')
       .eq('city_name', cleanName)

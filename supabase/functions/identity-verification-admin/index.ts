@@ -122,12 +122,6 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // NOTE: Admin role check removed to allow any authenticated user access for testing
-    // const isAdmin = await checkAdminStatus(supabase, user.email);
-    // if (!isAdmin) {
-    //   return errorResponse('Admin access required', 403);
-    // }
-
     let result: unknown;
 
     switch (action) {
@@ -189,27 +183,6 @@ async function authenticateFromHeaders(
   if (error || !user) return null;
 
   return { id: user.id, email: user.email ?? '' };
-}
-
-/**
- * Check if user has admin privileges
- */
-async function _checkAdminStatus(
-  supabase: SupabaseClient,
-  email: string
-): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('user')
-    .select('is_admin')
-    .eq('email', email)
-    .single();
-
-  if (error || !data) {
-    console.error('[identity-verification-admin] Admin check failed:', error);
-    return false;
-  }
-
-  return data.is_admin === true;
 }
 
 /**
@@ -441,11 +414,6 @@ async function handleToggleVerification(
     console.log('  1. User marked as verified');
     console.log('  2. Profile completeness updated:', newCompleteness);
     console.log('  3. Tasks completed updated:', newTasks);
-    // console.log('  4. Internal email sent to team');
-    // console.log('  5. Magic login link sent to user');
-    // console.log('  6. Confirmation email sent to user');
-    // console.log('  7. SMS confirmation sent to user');
-
     if (newCompleteness >= 80) {
       console.log('  8. Profile completeness >= 80% - Reminder cancellation would be triggered');
     }

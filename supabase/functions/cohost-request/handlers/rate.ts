@@ -73,7 +73,7 @@ export async function handleRate(
 
   const { data: existingRequest, error: fetchError } = await supabase
     .from("co_hostrequest")
-    .select("id, status")
+    .select("id, status_co_host_request")
     .eq("id", input.requestId)
     .single();
 
@@ -82,7 +82,7 @@ export async function handleRate(
     throw new ValidationError(`Co-host request not found: ${input.requestId}`);
   }
 
-  console.log(`[cohost-request:rate] Found request with status: ${existingRequest.status}`);
+  console.log(`[cohost-request:rate] Found request with status: ${existingRequest.status_co_host_request}`);
 
   // ================================================
   // UPDATE CO-HOST REQUEST
@@ -93,7 +93,7 @@ export async function handleRate(
   const updateData: Record<string, unknown> = {
     rating: input.Rating,
     rating_message_optional: input["Rating message (optional)"] || null,
-    status: "Request closed",
+    status_co_host_request: "Request closed",
     original_updated_at: now,
   };
 

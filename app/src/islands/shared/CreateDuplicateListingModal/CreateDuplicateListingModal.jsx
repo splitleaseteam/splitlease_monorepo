@@ -88,6 +88,7 @@ export default function CreateDuplicateListingModal({
     delete duplicateData.original_updated_at;
 
     const { data: newListing, error } = await supabase
+      .schema('reference_table')
       .from('zat_listings')
       .insert(duplicateData)
       .select()
@@ -207,6 +208,7 @@ export default function CreateDuplicateListingModal({
   const updateProfileCompleteness = async (userId, task) => {
     try {
       const { error } = await supabase
+        .schema('reference_table')
         .from('zat_user')
         .update({
           tasksCompleted: supabase.raw(`array_append(tasksCompleted, '${task}')`),

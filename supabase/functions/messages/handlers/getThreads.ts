@@ -55,7 +55,7 @@ export async function handleGetThreads(
   // Step 1: Single RPC call replaces 4 sequential queries:
   // threads lookup, contact name/avatar lookup, listing name lookup, unread counts
   const { data: rpcThreads, error: rpcError } = await supabaseAdmin
-    .rpc('get_threads_for_user', { p_user_id: userBubbleId, p_limit: 20 });
+    .rpc('get_user_threads', { user_id: userBubbleId });
 
   console.log('[getThreads] RPC result:', {
     threadCount: rpcThreads?.length || 0,

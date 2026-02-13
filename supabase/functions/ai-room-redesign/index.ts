@@ -76,7 +76,7 @@ const parseRequest = async (
     }
 
     return body as AIRoomRedesignRequest;
-  } catch (_e) {
+  } catch (e) {
     if (e instanceof ValidationError || e instanceof CorsPreflightSignal) {
       throw e;
     }

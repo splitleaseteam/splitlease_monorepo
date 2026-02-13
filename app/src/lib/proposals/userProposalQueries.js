@@ -270,6 +270,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (boroughIds.length > 0) {
     const { data: boroughsData, error: boroughError } = await supabase
+      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
       .select('id, display_borough')
       .in('id', boroughIds);
@@ -282,6 +283,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (hoodIds.length > 0) {
     const { data: hoodsData, error: hoodError } = await supabase
+      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
       .select('id, display')
       .in('id', hoodIds);
@@ -296,6 +298,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   let houseRules = [];
   if (allHouseRuleIds.length > 0) {
     const { data: houseRulesData, error: houseRulesError } = await supabase
+      .schema('reference_table')
       .from('zat_features_houserule')
       .select('id, name')
       .in('id', allHouseRuleIds);
@@ -495,13 +498,13 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
           .select(`
             id,
             message_body_text,
-            call_to_action,
+            call_to_action_button_label,
             thread_id,
             original_created_at
           `)
           .in('thread_id', threadIds)
           .eq('is_from_split_bot', true)
-          .eq('call_to_action', 'Respond to Counter Offer')
+          .eq('call_to_action_button_label', 'Respond to Counter Offer')
           .order('original_created_at', { ascending: false });
 
       if (counterofferError) {

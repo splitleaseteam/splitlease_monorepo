@@ -64,17 +64,17 @@ export function buildDateChangePayload(params) {
   const counterparty = getCounterpartyFromLease(lease, currentUserId);
 
   return {
-    Lease: lease?.id,
-    'Requested by': currentUserId,
-    'Request receiver': counterparty?.id,
-    'Request Type': requestType,
-    'Original Date': JSON.stringify(originalDates || []),
-    'Requested Date': JSON.stringify(newDates || []),
-    'Reason': reason,
-    'Status': 'pending',
-    'Created Date': new Date().toISOString(),
-    'visible to guest': true,
-    'Price Adjustment': calculatePriceAdjustment(lease, newDates),
+    lease: lease?.id,
+    requested_by: currentUserId,
+    request_receiver: counterparty?.id,
+    type_of_request: requestType,
+    list_of_old_dates_in_the_stay: JSON.stringify(originalDates || []),
+    list_of_new_dates_in_the_stay: JSON.stringify(newDates || []),
+    message_from_requested_by: reason,
+    request_status: 'pending',
+    original_created_at: new Date().toISOString(),
+    visible_to_the_guest: true,
+    price_rate_of_the_night: calculatePriceAdjustment(lease, newDates),
   };
 }
 
@@ -101,19 +101,19 @@ export async function fetchDateChangeRequestsForLease(leaseId) {
   const { data, error } = await supabase
     .from('datechangerequest')
     .select('*')
-    .eq('Lease', leaseId)
-    .order('Created Date', { ascending: false });
+    .eq('lease', leaseId)
+    .order('original_created_at', { ascending: false });
 
   if (error) throw error;
 
   // Step 2: Fetch requestedBy users separately
   const requests = data || [];
   for (const request of requests) {
-    if (request['Requested by']) {
+    if (request.requested_by) {
       const { data: user } = await supabase
         .from('user')
         .select('*')
-        .eq('id', request['Requested by'])
+        .eq('id', request.requested_by)
         .single();
       request.requestedByUser = user;
     }
@@ -136,7 +136,7 @@ export async function createDateChangeRequest(payload) {
 export async function updateDateChangeRequestStatus(requestId, status) {
   const { data, error } = await supabase
     .from('datechangerequest')
-    .update({ status })
+    .update({ request_status: status })
     .eq('id', requestId)
     .select()
     .single();

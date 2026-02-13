@@ -86,13 +86,6 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Verify user is admin or corporate user
-    // NOTE: Admin/corporate role check removed to allow any authenticated user access for testing
-    // const isAuthorized = await checkAdminOrCorporateStatus(supabase, user.email);
-    // if (!isAuthorized) {
-    //   return errorResponse('Admin or corporate access required', 403);
-    // }
-
     let result: unknown;
 
     switch (action) {
@@ -158,24 +151,6 @@ async function authenticateFromHeaders(
   if (error || !user) return null;
 
   return { id: user.id, email: user.email ?? '' };
-}
-
-async function _checkAdminOrCorporateStatus(
-  supabase: SupabaseClient,
-  email: string
-): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('user')
-    .select('is_admin, is_corporate_user')
-    .eq('email', email)
-    .single();
-
-  if (error || !data) {
-    console.error('[simulation-admin] Admin/corporate check failed:', error);
-    return false;
-  }
-
-  return data.is_admin === true || data.is_corporate_user === true;
 }
 
 /**

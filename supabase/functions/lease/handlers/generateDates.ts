@@ -91,7 +91,7 @@ export async function handleGenerateDates(
         host_proposed_checkout_day,
         host_proposed_reservation_span_weeks,
         host_proposed_move_in_date,
-        host_proposed_weeks_schedule,
+        host_proposed_week_pattern,
         host_proposed_selected_days_json,
         host_proposed_selected_nights_json,
         has_host_counter_offer
@@ -124,7 +124,9 @@ export async function handleGenerateDates(
       reservationSpanWeeks =
         proposal.host_proposed_reservation_span_weeks || payload.reservationSpanWeeks;
       moveInDate = proposal.host_proposed_move_in_date || payload.moveInDate;
-      weeksSchedule = proposal.host_proposed_weeks_schedule || 'Every week';
+      weeksSchedule = proposal.host_proposed_week_pattern || 'Every week';
+      // TODO: BANDAID — host_proposed_selected_nights_json is the legacy column name.
+      // Migrate old proposals to populate host_proposed_selected_days_json, then remove the fallback.
       nightsSelected = proposal.host_proposed_selected_days_json || proposal.host_proposed_selected_nights_json;
     } else {
       // Snake_case columns are simple values (no Display wrapper)

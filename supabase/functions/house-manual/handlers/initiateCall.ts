@@ -110,14 +110,6 @@ export async function handleInitiateCall(
     // Continue anyway - call tracking is non-critical
   }
 
-  // TODO: Actual Twilio API call would go here
-  // const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-  // const call = await twilioClient.calls.create({
-  //   to: phoneNumber,
-  //   from: TWILIO_PHONE_NUMBER,
-  //   url: `${WEBHOOK_BASE_URL}/twilio/house-manual-call?callId=${callId}&type=${callType}`,
-  // });
-
   console.log(`[initiateCall] Call ${callId} initiated (stub)`);
 
   return {

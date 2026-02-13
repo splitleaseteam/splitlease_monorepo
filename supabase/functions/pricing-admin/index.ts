@@ -151,14 +151,6 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // NOTE: Admin role check removed to allow any authenticated user access for testing
-    // Original code checked: const isAdmin = await checkAdminRole(supabase, user.id);
-    // To re-enable admin-only access, uncomment the check below:
-    // const isAdmin = await checkAdminRole(supabase, user.id);
-    // if (!isAdmin) {
-    //   return errorResponse('Admin access required', 403);
-    // }
-
     let result: unknown;
 
     switch (action) {
@@ -232,22 +224,6 @@ async function authenticateFromHeaders(
   if (error || !user) return null;
 
   return { id: user.id, email: user.email ?? '' };
-}
-
-async function _checkAdminRole(supabase: SupabaseClient, authUserId: string): Promise<boolean> {
-  // Look up the user record by auth_user_id to check admin toggle
-  const { data, error } = await supabase
-    .from('user')
-    .select('is_admin')
-    .eq('auth_user_id', authUserId)
-    .single();
-
-  if (error) {
-    console.error('[pricing-admin] Admin check error:', error);
-    return false;
-  }
-
-  return data?.is_admin === true;
 }
 
 // ===== ACTION HANDLERS =====

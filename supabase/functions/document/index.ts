@@ -156,50 +156,20 @@ function generateId(): string {
 async function handleListPolicies(supabase: SupabaseClient) {
   console.log('[document] Fetching policy documents...');
 
-  // Try to fetch from Supabase first (table may be named differently)
-  // Check for common table naming patterns
-  const possibleTableNames = [
-    'zatpoliciesdocuments',
-    'zat-policies-documents',
-    'ZAT-Policies Documents',
-    'policy_documents',
-    'policiesdocuments'
-  ];
+  const { data, error } = await supabase
+    .from('policy_documents')
+    .select('id, name, original_created_at')
+    .order('name', { ascending: true });
 
-  for (const tableName of possibleTableNames) {
-    try {
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('id, name, original_created_at')
-        .order('name', { ascending: true });
-
-      if (!error && data && data.length > 0) {
-        console.log(`[document] Found ${data.length} policies in table: ${tableName}`);
-        // Map to consistent format
-        return data.map((policy: Record<string, unknown>) => ({
-          id: policy.id,
-          Name: policy.name || 'Unnamed Policy',
-          createdDate: policy.original_created_at
-        }));
-      }
-    } catch (_err) {
-      // Table doesn't exist, try next
-      console.log(`[document] Table ${tableName} not found, trying next...`);
-    }
+  if (error) {
+    throw new Error(`Failed to fetch policy documents: ${error.message}`);
   }
 
-  // If no local table found, return empty array with a note
-  console.log('[document] No policy documents table found in Supabase');
-
-  // For now, return some mock data to demonstrate the UI
-  // TODO: Create and populate a policies table in Supabase
-  return [
-    { id: 'policy_lease_agreement', Name: 'Standard Lease Agreement' },
-    { id: 'policy_house_rules', Name: 'House Rules Document' },
-    { id: 'policy_cancellation', Name: 'Cancellation Policy' },
-    { id: 'policy_payment_terms', Name: 'Payment Terms & Conditions' },
-    { id: 'policy_guest_guidelines', Name: 'Guest Guidelines' }
-  ];
+  return (data || []).map((policy: Record<string, unknown>) => ({
+    id: policy.id,
+    Name: policy.name || 'Unnamed Policy',
+    createdDate: policy.original_created_at
+  }));
 }
 
 /**

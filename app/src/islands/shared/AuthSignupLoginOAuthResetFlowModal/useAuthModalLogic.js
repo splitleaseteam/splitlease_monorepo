@@ -637,6 +637,7 @@ export function useAuthModalLogic({
       console.log('[handleMagicLink] Fetching BCC email addresses from os_slack_channels');
 
       const { data: channelData, error: channelError } = await supabase
+        .schema('reference_table')
         .from('os_slack_channels')
         .select('email_address')
         .in('name', ['bots_log', 'customer_activation']);

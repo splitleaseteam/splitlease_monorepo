@@ -18,7 +18,7 @@
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
-import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import action handlers
 import { handleListHosts } from "./actions/listHosts.ts";
@@ -97,13 +97,6 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
-
-    // Verify user is admin or corporate user
-    // NOTE: Admin/corporate role check removed to allow any authenticated user access for testing
-    // const isAuthorized = await checkAdminOrCorporateStatus(supabase, user.email);
-    // if (!isAuthorized) {
-    //   return errorResponse('Admin or corporate access required', 403);
-    // }
 
     let result: unknown;
 
@@ -190,24 +183,6 @@ async function authenticateFromHeaders(
   if (error || !user) return null;
 
   return { id: user.id, email: user.email ?? '' };
-}
-
-async function _checkAdminOrCorporateStatus(
-  supabase: SupabaseClient,
-  email: string
-): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('user')
-    .select('is_admin, is_corporate_user')
-    .eq('email', email)
-    .single();
-
-  if (error || !data) {
-    console.error('[usability-data-admin] Admin/corporate check failed:', error);
-    return false;
-  }
-
-  return data.is_admin === true || data.is_corporate_user === true;
 }
 
 console.log("[usability-data-admin] Edge Function ready");

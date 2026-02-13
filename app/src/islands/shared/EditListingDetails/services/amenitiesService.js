@@ -21,8 +21,8 @@ export async function getCommonAmenitiesByType(type) {
 
     const { data, error } = await supabase
       .from('zat_features_amenity')
-      .select('name, is_preset, type_amenity_categories')
-      .eq('is_preset', true)
+      .select('name, pre_set, type_amenity_categories')
+      .eq('pre_set', true)
       .eq('type_amenity_categories', type)
       .order('name', { ascending: true });
 

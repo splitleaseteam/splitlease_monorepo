@@ -498,6 +498,7 @@ export async function fetchZatPriceConfiguration() {
 
   try {
     const { data, error } = await supabase
+      .schema('reference_table')
       .from('zat_priceconfiguration')
       .select(`
         overall_site_markup,

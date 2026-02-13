@@ -5,7 +5,7 @@ export interface Amenity {
   name: string;
   type_amenity_categories: string;
   icon?: string;
-  is_preset?: boolean;
+  pre_set?: boolean;
 }
 
 /**
@@ -81,8 +81,8 @@ export async function getCommonAmenitiesByType(type: string): Promise<string[]> 
 
     const { data, error } = await supabase
       .from('zat_features_amenity')
-      .select('name, is_preset, type_amenity_categories')
-      .eq('is_preset', true)
+      .select('name, pre_set, type_amenity_categories')
+      .eq('pre_set', true)
       .eq('type_amenity_categories', type)
       .order('name', { ascending: true });
 

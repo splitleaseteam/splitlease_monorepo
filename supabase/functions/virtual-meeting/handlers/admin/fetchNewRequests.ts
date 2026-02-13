@@ -34,7 +34,7 @@ export async function handleAdminFetchNewRequests(
 
   // Apply optional proposal filter
   if (payload.proposalId) {
-    query = query.ilike("proposal_unique_id", `%${payload.proposalId}%`);
+    query = query.ilike("proposal", `%${payload.proposalId}%`);
   }
 
   const { data: meetings, error } = await query;
@@ -73,7 +73,7 @@ export async function handleAdminFetchNewRequests(
   const listingsPromise = listingIds.size > 0
     ? supabase
         .from("listing")
-        .select("id, title, street_address, unit_apt, neighborhood_1")
+        .select("id, listing_title, address_with_lat_lng_json, neighborhood_name_entered_by_host")
         .in("id", Array.from(listingIds))
     : Promise.resolve({ data: [], error: null });
 
@@ -97,10 +97,23 @@ export async function handleAdminFetchNewRequests(
   // Enrich meetings with related data
   const enrichedMeetings = meetings.map((meeting: Record<string, unknown>) => ({
     ...meeting,
-    guest: meeting.guest ? usersMap.get(meeting.guest) || null : null,
-    host: meeting.host ? usersMap.get(meeting.host) || null : null,
+    proposal_unique_id: meeting.proposal,
+    status: 'new_request',
+    guest: meeting.guest ? usersMap.get(String(meeting.guest)) || null : null,
+    host: meeting.host ? usersMap.get(String(meeting.host)) || null : null,
     listing: meeting.listing_for_co_host_feature
-      ? listingsMap.get(meeting.listing_for_co_host_feature) || null
+      ? (() => {
+          const listing = listingsMap.get(String(meeting.listing_for_co_host_feature)) as Record<string, unknown> | null;
+          if (!listing) return null;
+          const address = listing.address_with_lat_lng_json as Record<string, unknown> | null;
+          return {
+            id: listing.id,
+            title: listing.listing_title,
+            street_address: address?.address || '',
+            unit_apt: '',
+            neighborhood_1: listing.neighborhood_name_entered_by_host || '',
+          };
+        })()
       : null,
   }));
 

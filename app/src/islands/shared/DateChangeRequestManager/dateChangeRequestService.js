@@ -7,70 +7,70 @@ import { supabase } from '../../../lib/supabase.js';
 import { toISOString } from './dateUtils.js';
 
 /**
- * Field name mapping: camelCase (component) -> Bubble column names (database)
+ * Field name mapping: camelCase (component) -> snake_case column names (database)
  */
 const FIELD_MAP = {
   // Request fields
   id: 'id',
-  lease: 'Lease',
-  requestedBy: 'Requested by',
-  requestReceiver: 'Request receiver',
-  typeOfRequest: 'type of request',
-  dateAdded: 'date added',
-  dateRemoved: 'date removed',
-  messageFromRequester: 'Message from Requested by',
-  priceRateOfNight: 'Price/Rate of the night',
-  comparedToRegularRate: '%compared to regular nightly price',
-  requestStatus: 'request status',
-  expirationDate: 'expiration date',
-  visibleToGuest: 'visible to the guest?',
-  visibleToHost: 'visible to the host?',
-  createdAt: 'Created Date',
-  answerDate: 'answer date',
-  answerToRequest: 'Answer to Request',
-  createdBy: 'Created By',
-  modifiedDate: 'Modified Date',
+  lease: 'lease',
+  requestedBy: 'requested_by',
+  requestReceiver: 'request_receiver',
+  typeOfRequest: 'type_of_request',
+  dateAdded: 'date_added',
+  dateRemoved: 'date_removed',
+  messageFromRequester: 'message_from_requested_by',
+  priceRateOfNight: 'price_rate_of_the_night',
+  comparedToRegularRate: 'compared_to_regular_nightly_price',
+  requestStatus: 'request_status',
+  expirationDate: 'expiration_date',
+  visibleToGuest: 'visible_to_the_guest',
+  visibleToHost: 'visible_to_the_host',
+  createdAt: 'original_created_at',
+  answerDate: 'answer_date',
+  answerToRequest: 'answer_to_request',
+  createdBy: 'created_by',
+  modifiedDate: 'original_updated_at',
   // Stay associations
-  stayAssociated1: 'Stay Associated 1',
-  stayAssociated2: 'Stay Associated 2',
+  stayAssociated1: 'stay_associated_1',
+  stayAssociated2: 'stay_associated_2',
   // Lists
-  listOfNewDates: 'LIST of NEW Dates in the stay',
-  listOfOldDates: 'LIST of OLD Dates in the stay',
+  listOfNewDates: 'list_of_new_dates_in_the_stay',
+  listOfOldDates: 'list_of_old_dates_in_the_stay',
 };
 
 /**
  * Transform database row to component-friendly format
- * @param {Object} row - Database row with Bubble column names
+ * @param {Object} row - Database row with snake_case column names
  * @returns {Object} - Transformed object with camelCase keys
  */
 export const transformFromDb = (row) => {
   if (!row) return null;
 
   return {
-    id: row['id'],
-    lease: row['Lease'],
-    requestedBy: row['Requested by'],
-    requestReceiver: row['Request receiver'],
-    typeOfRequest: row['type of request'],
-    dateAdded: row['date added'],
-    dateRemoved: row['date removed'],
-    messageFromRequester: row['Message from Requested by'],
-    priceRateOfNight: row['Price/Rate of the night'],
-    comparedToRegularRate: row['%compared to regular nightly price'],
-    requestStatus: row['request status'],
-    expirationDate: row['expiration date'],
-    visibleToGuest: row['visible to the guest?'],
-    visibleToHost: row['visible to the host?'],
+    id: row.id,
+    lease: row.lease,
+    requestedBy: row.requested_by,
+    requestReceiver: row.request_receiver,
+    typeOfRequest: row.type_of_request,
+    dateAdded: row.date_added,
+    dateRemoved: row.date_removed,
+    messageFromRequester: row.message_from_requested_by,
+    priceRateOfNight: row.price_rate_of_the_night,
+    comparedToRegularRate: row.compared_to_regular_nightly_price,
+    requestStatus: row.request_status,
+    expirationDate: row.expiration_date,
+    visibleToGuest: row.visible_to_the_guest,
+    visibleToHost: row.visible_to_the_host,
     createdAt: row.original_created_at,
-    answerDate: row['answer date'],
-    answerToRequest: row['Answer to Request'],
-    createdBy: row['Created By'],
+    answerDate: row.answer_date,
+    answerToRequest: row.answer_to_request,
+    createdBy: row.created_by,
     modifiedDate: row.original_updated_at,
-    stayAssociated1: row['Stay Associated 1'],
-    stayAssociated2: row['Stay Associated 2'],
-    listOfNewDates: row['LIST of NEW Dates in the stay'],
-    listOfOldDates: row['LIST of OLD Dates in the stay'],
-    pending: row['pending'],
+    stayAssociated1: row.stay_associated_1,
+    stayAssociated2: row.stay_associated_2,
+    listOfNewDates: row.list_of_new_dates_in_the_stay,
+    listOfOldDates: row.list_of_old_dates_in_the_stay,
+    pending: row.pending,
     // Include requester/receiver user data if joined
     requester: row.requester,
     receiver: row.receiver,
@@ -80,7 +80,7 @@ export const transformFromDb = (row) => {
 /**
  * Transform component data to database format
  * @param {Object} data - Component data with camelCase keys
- * @returns {Object} - Transformed object with Bubble column names
+ * @returns {Object} - Transformed object with snake_case column names
  */
 export const transformToDb = (data) => {
   const result = {};
@@ -439,13 +439,13 @@ export async function getLeaseWithDates(leaseId) {
         agreement_number,
         reservation_start_date,
         reservation_end_date,
-        "List of Booked Dates",
+        booked_dates_json,
         guest_user_id,
         host_user_id,
         listing_id,
         lease_type,
-        "total week count",
-        "current week number"
+        total_week_count,
+        current_week_number
       `)
       .eq('id', leaseId)
       .single();
@@ -459,13 +459,13 @@ export async function getLeaseWithDates(leaseId) {
         agreementNumber: data.agreement_number,
         reservationStart: data.reservation_start_date,
         reservationEnd: data.reservation_end_date,
-        bookedDates: data['List of Booked Dates'] || [],
+        bookedDates: data.booked_dates_json || [],
         guestId: data.guest_user_id,
         hostId: data.host_user_id,
         listingId: data.listing_id,
         status: data.lease_type,
-        totalWeeks: data['total week count'],
-        currentWeek: data['current week number'],
+        totalWeeks: data.total_week_count,
+        currentWeek: data.current_week_number,
       },
     };
   } catch (error) {
@@ -488,7 +488,7 @@ export async function getRoommateBookedDates(listingId, currentLeaseId) {
   try {
     const { data, error } = await supabase
       .from('booking_lease')
-      .select('list_of_booked_dates')
+      .select('booked_dates_json')
       .eq('listing_id', listingId)
       .eq('lease_type', 'Active')
       .neq('id', currentLeaseId);
@@ -497,7 +497,7 @@ export async function getRoommateBookedDates(listingId, currentLeaseId) {
 
     // Combine dates from all other active leases (usually just one roommate)
     const roommateDates = data.reduce((acc, lease) => {
-      const dates = lease.list_of_booked_dates || [];
+      const dates = lease.booked_dates_json || [];
       return [...acc, ...dates];
     }, []);
 

@@ -20,6 +20,7 @@ export default function HostGuaranteePage() {
     async function loadFaqs() {
       try {
         const { data, error } = await supabase
+          .schema('reference_table')
           .from('zat_faq')
           .select('id, question, answer')
           .in('id', FAQ_IDS);

@@ -42,6 +42,7 @@ export default function WhySplitLeasePage() {
       // Load boroughs
       try {
         const { data, error } = await supabase
+          .schema('reference_table')
           .from('zat_geo_borough_toplevel')
           .select('id, display_borough')
           .order('display_borough', { ascending: true });
