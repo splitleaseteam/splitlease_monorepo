@@ -1,0 +1,1392 @@
+/* guest-proposals: sections-responsive */
+
+/* ============================================================================
+   V7 PROPOSALS PAGE SECTIONS
+   ============================================================================ */
+
+.proposals-section {
+  margin-bottom: 32px;
+}
+
+.proposals-section:last-child {
+  margin-bottom: 0;
+}
+
+.proposals-section--suggested {
+  background: linear-gradient(135deg, rgba(109, 49, 194, 0.03) 0%, rgba(109, 49, 194, 0.08) 100%);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 32px;
+}
+
+/* ============================================================================
+   VIRTUAL MEETINGS SECTION - V5 Balanced
+   Displays proposals with active virtual meetings
+   ============================================================================ */
+
+.vm-section-wrapper {
+  margin-top: 40px;
+}
+
+.vm-section-heading {
+  font-size: var(--gp-font-size-xl);
+  font-weight: 700;
+  color: var(--gp-purple-dark);
+  margin-bottom: 20px;
+}
+
+.vm-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual VM Card - V5 Balanced */
+.vm-section-card {
+  background: var(--gp-white);
+  border: 1px solid var(--gp-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.vm-section-card-content {
+  padding: 20px;
+}
+
+/* Header row with profile icon and text */
+.vm-section-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.vm-section-profile-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--gp-border-light);
+}
+
+.vm-section-profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vm-section-text-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.vm-section-title {
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  line-height: var(--gp-line-height-normal);
+}
+
+.vm-section-subtitle {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-muted);
+  margin-top: 4px;
+}
+
+.vm-section-message-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.vm-section-message-row svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--gp-purple-action);
+}
+
+.vm-section-message-row svg rect,
+.vm-section-message-row svg line {
+  stroke: var(--gp-purple-action);
+}
+
+.vm-section-message {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  line-height: var(--gp-line-height-normal);
+}
+
+/* Date/time pills row */
+.vm-section-dates-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gp-border-light);
+}
+
+.vm-section-date-pill {
+  background: var(--gp-bg);
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text);
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--gp-border);
+}
+
+/* Action bar - V5 Balanced */
+.vm-section-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--gp-bg);
+  border-top: 1px solid var(--gp-border-light);
+}
+
+.vm-section-cancel-btn {
+  background: transparent;
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text-secondary);
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--gp-border);
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: var(--gp-min-touch-target);
+}
+
+.vm-section-cancel-btn:hover {
+  border-color: var(--gp-text-secondary);
+  color: var(--gp-text);
+}
+
+/* ============================================================================
+   VM SECTION - STATE BADGES - V5 Balanced
+   ============================================================================ */
+
+.vm-section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.vm-section-badge {
+  font-size: var(--gp-font-size-label);
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  white-space: nowrap;
+}
+
+.vm-section-badge-waiting {
+  background: var(--gp-border-light);
+  color: var(--gp-text-muted);
+}
+
+.vm-section-badge-pending {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-action);
+}
+
+.vm-section-badge-confirmed {
+  background: var(--gp-success-bg);
+  color: var(--gp-success);
+}
+
+.vm-section-badge-expired {
+  background: var(--gp-danger-bg);
+  color: var(--gp-danger);
+}
+
+/* ============================================================================
+   VM SECTION - PRIMARY ACTION BUTTONS - V5 Balanced
+   ============================================================================ */
+
+.vm-section-primary-btn {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: var(--gp-min-touch-target);
+  min-width: 100px;
+}
+
+/* Respond state - Primary purple */
+.vm-section-primary-btn--respond {
+  background: var(--gp-purple-action);
+  color: white;
+}
+
+.vm-section-primary-btn--respond:hover {
+  background: var(--gp-purple-dark);
+}
+
+/* Details state - Outline */
+.vm-section-primary-btn--details {
+  background: transparent;
+  color: var(--gp-purple-action);
+  border: 1px solid var(--gp-purple-action);
+}
+
+.vm-section-primary-btn--details:hover {
+  background: var(--gp-purple-bg);
+}
+
+/* Join state - Primary purple */
+.vm-section-primary-btn--join {
+  background: var(--gp-purple-action);
+  color: white;
+}
+
+.vm-section-primary-btn--join:hover {
+  background: var(--gp-purple-dark);
+}
+
+/* Disabled state */
+.vm-section-primary-btn--disabled {
+  background: var(--gp-border);
+  color: var(--gp-text-muted);
+  cursor: not-allowed;
+}
+
+/* Expired state - Outline danger */
+.vm-section-primary-btn--expired {
+  background: transparent;
+  color: var(--gp-purple-action);
+  border: 1px solid var(--gp-purple-action);
+}
+
+.vm-section-primary-btn--expired:hover {
+  background: var(--gp-purple-bg);
+}
+
+/* ============================================================================
+   VM SECTION - BOOKED DATE PILL - V5 Balanced
+   ============================================================================ */
+
+.vm-section-date-pill--booked {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-dark);
+  border-color: var(--gp-purple-action);
+  font-weight: 600;
+}
+
+/* Expired date pill styling */
+.vm-section-date-pill--expired {
+  background: var(--gp-danger-bg);
+  color: var(--gp-danger);
+  border-color: var(--gp-danger);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* ============================================================================
+   VM SECTION - MULTI-BUTTON ACTION BAR
+   ============================================================================ */
+
+.vm-section-action-bar--multi {
+  justify-content: flex-start;
+}
+
+/* ============================================================================
+   VM ELEGANT SECTION - Minimal inline design with video icon
+   ============================================================================ */
+
+.vm-elegant-wrapper {
+  margin-top: 24px;
+}
+
+.vm-elegant-heading {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vm-elegant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Elegant Card - Minimal rounded row */
+.vm-elegant-card {
+  background: var(--gp-white);
+  border: 1px solid var(--gp-border-light);
+  border-radius: 10px;
+  transition: all 0.15s ease;
+  width: 50%;
+  min-width: 320px;
+  max-width: 100%;
+}
+
+.vm-elegant-card:hover {
+  border-color: var(--gp-border);
+}
+
+.vm-elegant-card--expanded {
+  border-color: var(--gp-purple-action);
+  background: var(--gp-purple-bg);
+}
+
+/* Main row - inline layout */
+.vm-elegant-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vm-elegant-row:focus-visible {
+  outline: 2px solid var(--gp-purple-action);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+
+/* Video icon */
+.vm-elegant-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gp-purple-action);
+  flex-shrink: 0;
+}
+
+/* Info section: Name + Status + Times - grows to push button right */
+.vm-elegant-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  flex: 1;
+}
+
+.vm-elegant-name {
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  white-space: nowrap;
+}
+
+.vm-elegant-dot {
+  color: var(--gp-text-muted);
+  font-weight: 400;
+}
+
+.vm-elegant-status {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Status colors - inherit from badge classes */
+.vm-elegant-status.vm-section-badge-waiting {
+  color: var(--gp-text-muted);
+}
+
+.vm-elegant-status.vm-section-badge-pending {
+  color: var(--gp-purple-action);
+}
+
+.vm-elegant-status.vm-section-badge-confirmed {
+  color: var(--gp-success);
+}
+
+.vm-elegant-status.vm-section-badge-expired {
+  color: var(--gp-danger);
+}
+
+.vm-elegant-times {
+  color: var(--gp-text-muted);
+  white-space: nowrap;
+}
+
+/* Action button - small pill */
+.vm-elegant-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--gp-purple-action);
+  background: transparent;
+  color: var(--gp-purple-action);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vm-elegant-btn:hover {
+  background: var(--gp-purple-action);
+  color: white;
+}
+
+/* Chevron */
+.vm-elegant-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--gp-text-muted);
+  flex-shrink: 0;
+  margin-left: -4px;
+}
+
+.vm-compact-chevron {
+  transition: transform 0.2s ease;
+}
+
+.vm-compact-chevron--expanded {
+  transform: rotate(180deg);
+}
+
+/* Expanded details */
+.vm-elegant-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 12px 10px 38px; /* Align with text after icon */
+  animation: vm-elegant-fade 0.15s ease-out;
+}
+
+@keyframes vm-elegant-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.vm-elegant-pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--gp-white);
+  border: 1px solid var(--gp-border);
+  color: var(--gp-text);
+}
+
+.vm-elegant-pill--booked {
+  background: var(--gp-white);
+  color: var(--gp-purple-dark);
+  border-color: var(--gp-purple-action);
+  font-weight: 600;
+}
+
+.vm-elegant-pill--expired {
+  background: var(--gp-danger-bg);
+  color: var(--gp-danger);
+  border-color: transparent;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+/* ============================================================================
+   MOBILE NARRATIVE VIEW (<=640px)
+
+   Pattern: Render BOTH views, CSS handles visibility
+   - Desktop/Tablet (>640px): Show .epc-structured-body, hide .epc-narrative-body
+   - Mobile (<=640px): Show .epc-narrative-body, hide .epc-structured-body
+   ============================================================================ */
+
+/* Structured body - shown by default (desktop/tablet) */
+.epc-structured-body {
+  display: block;
+}
+
+/* Narrative body - hidden by default (desktop/tablet) */
+.epc-narrative-body {
+  display: none;
+}
+
+/* ============================================================================
+   LEASE CALENDAR SECTION (LCS)
+   Displays calendar view of lease dates for activated proposals
+   ============================================================================ */
+
+.lcs-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--gp-white);
+  border-radius: var(--gp-border-radius-md);
+  border: 1px solid var(--gp-border);
+}
+
+.lcs-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--gp-font-size-lg);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  margin: 0 0 16px 0;
+}
+
+/* Info Banner */
+.lcs-info-banner {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--gp-purple-bg);
+  border-left: 4px solid var(--gp-purple-primary);
+  border-radius: var(--gp-border-radius-sm);
+  margin-bottom: 20px;
+}
+
+.lcs-info-icon {
+  flex-shrink: 0;
+  color: var(--gp-purple-primary);
+  margin-top: 2px;
+}
+
+.lcs-info-text {
+  font-size: var(--gp-font-size-sm);
+  line-height: var(--gp-line-height-normal);
+  color: var(--gp-text-secondary);
+}
+
+.lcs-info-text strong {
+  color: var(--gp-purple-dark);
+}
+
+.lcs-info-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--gp-purple-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.lcs-info-link:hover {
+  text-decoration: underline;
+}
+
+/* Calendar Wrapper */
+.lcs-calendar-wrapper {
+  margin-bottom: 20px;
+}
+
+/* Calendar Controls */
+.lcs-calendar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.lcs-calendar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.lcs-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-border-radius-sm);
+  background: var(--gp-white);
+  color: var(--gp-text-secondary);
+  cursor: pointer;
+  transition: all var(--gp-transition-fast);
+}
+
+.lcs-btn-icon:hover {
+  background: var(--gp-purple-bg);
+  border-color: var(--gp-purple-primary);
+  color: var(--gp-purple-primary);
+}
+
+.lcs-btn-text {
+  padding: 8px 16px;
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-border-radius-sm);
+  background: var(--gp-white);
+  color: var(--gp-text-secondary);
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--gp-transition-fast);
+}
+
+.lcs-btn-text:hover {
+  background: var(--gp-purple-bg);
+  border-color: var(--gp-purple-primary);
+  color: var(--gp-purple-primary);
+}
+
+.lcs-calendar-month {
+  font-size: var(--gp-font-size-md);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+}
+
+/* Calendar Grid */
+.lcs-calendar {
+  width: 100%;
+}
+
+.lcs-calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.lcs-calendar-weekday {
+  text-align: center;
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  padding: 8px 0;
+}
+
+.lcs-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.lcs-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text);
+  border-radius: var(--gp-border-radius-sm);
+  transition: background var(--gp-transition-fast);
+}
+
+.lcs-day--other-month {
+  color: var(--gp-text-muted);
+  opacity: 0.4;
+}
+
+.lcs-day--today {
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--gp-purple-primary);
+}
+
+.lcs-day--booked {
+  background: var(--gp-purple-primary);
+  color: var(--gp-white);
+  font-weight: 600;
+}
+
+.lcs-day--booked.lcs-day--today {
+  box-shadow: inset 0 0 0 2px var(--gp-purple-dark);
+}
+
+.lcs-day--past:not(.lcs-day--booked) {
+  color: var(--gp-text-muted);
+  opacity: 0.5;
+}
+
+/* Legend */
+.lcs-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gp-border-light);
+}
+
+.lcs-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-muted);
+}
+
+.lcs-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.lcs-legend-dot--booked {
+  background: var(--gp-purple-primary);
+}
+
+.lcs-legend-dot--today {
+  background: var(--gp-white);
+  box-shadow: inset 0 0 0 2px var(--gp-purple-primary);
+}
+
+/* Stats Row */
+.lcs-stats-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.lcs-stat {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 16px;
+  background: var(--gp-bg);
+  border-radius: var(--gp-border-radius-sm);
+  text-align: center;
+}
+
+.lcs-stat--highlight {
+  background: var(--gp-purple-bg);
+}
+
+.lcs-stat-value {
+  display: block;
+  font-size: var(--gp-font-size-xl);
+  font-weight: 700;
+  color: var(--gp-purple-dark);
+  line-height: 1.2;
+}
+
+.lcs-stat-label {
+  display: block;
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-muted);
+  margin-top: 4px;
+}
+
+/* Actions */
+.lcs-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.lcs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  border-radius: var(--gp-border-radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--gp-transition-normal);
+  min-height: var(--gp-min-touch-target);
+}
+
+.lcs-btn--primary {
+  background: var(--gp-purple-action);
+  color: var(--gp-white);
+  border: none;
+}
+
+.lcs-btn--primary:hover {
+  background: var(--gp-purple-dark);
+}
+
+/* Loading State */
+.lcs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--gp-text-muted);
+  font-size: var(--gp-font-size-sm);
+}
+
+.lcs-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--gp-border);
+  border-top-color: var(--gp-purple-action);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* No Data State */
+.lcs-no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--gp-text-muted);
+  text-align: center;
+}
+
+.lcs-no-data svg {
+  color: var(--gp-border);
+}
+
+.lcs-no-data p {
+  margin: 0;
+  font-size: var(--gp-font-size-sm);
+}
+
+/* Lease Calendar Section - Pending State */
+.lcs-section--pending {
+  background: var(--gp-purple-tint);
+}
+
+.lcs-pending-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.lcs-pending-icon {
+  color: var(--gp-purple-primary);
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.lcs-pending-message p {
+  margin: 0;
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text-secondary);
+  max-width: 400px;
+}
+
+.lcs-pending-subtext {
+  margin-top: 12px !important;
+  font-size: var(--gp-font-size-sm) !important;
+  color: var(--gp-text-muted) !important;
+}
+
+/* ============================================================================
+   RESPONSIVE STYLES - V5 Balanced
+   ============================================================================ */
+
+@media (max-width: 900px) {
+  /* Info grid: 4 columns -> 2 columns */
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Days row stacks */
+  .days-row {
+    flex-wrap: wrap;
+  }
+
+  .days-info {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 12px;
+    text-align: left;
+  }
+
+  /* EPC responsive */
+  .epc-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .epc-days-row {
+    flex-wrap: wrap;
+  }
+
+  .epc-days-info {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  .epc-progress-label {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .proposals-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .selector-header h2 {
+    font-size: 20px;
+  }
+
+  /* Detail header stacks on tablet */
+  .detail-header {
+    flex-wrap: wrap;
+  }
+
+  .detail-host {
+    width: 100%;
+    text-align: left;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gp-border-light);
+  }
+
+  /* Links row scrolls horizontally */
+  .links-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 12px;
+  }
+
+  .link-item {
+    flex-shrink: 0;
+  }
+
+  /* Pricing row stacks */
+  .pricing-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .pricing-breakdown {
+    flex-wrap: wrap;
+  }
+
+  /* Progress labels hidden */
+  .progress-label {
+    display: none;
+  }
+
+  /* Actions wrap */
+  .actions-row {
+    flex-wrap: wrap;
+  }
+
+  .actions-row .btn {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  /* House rules grid responsive */
+  .house-rules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* VM section responsive */
+  .vm-section-heading {
+    font-size: var(--gp-font-size-lg);
+  }
+
+  .vm-section-card-content {
+    padding: 16px;
+  }
+
+  .vm-section-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .vm-section-action-bar {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+  }
+
+  .vm-section-primary-btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 240px;
+  }
+
+  .vm-section-cancel-btn {
+    width: 100%;
+    max-width: 240px;
+  }
+
+  /* EPC responsive */
+  .epc-house-rules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .epc-detail-header {
+    flex-wrap: wrap;
+  }
+
+  .epc-detail-host {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--gp-border-light);
+    gap: 12px;
+  }
+
+  .epc-host-photo,
+  .epc-host-photo-placeholder {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .epc-host-photo-placeholder {
+    font-size: 16px;
+  }
+
+  .epc-pricing-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .epc-pricing-total-area {
+    text-align: left;
+  }
+
+  .section-header__title {
+    font-size: var(--gp-font-size-base);
+  }
+}
+
+@media (max-width: 640px) {
+  /* Mobile narrative view swap */
+  .epc-structured-body {
+    display: none;
+  }
+
+  .epc-narrative-body {
+    display: block;
+  }
+
+  /* LCS responsive */
+  .lcs-section {
+    padding: 16px;
+    margin-top: 16px;
+  }
+
+  .lcs-heading {
+    font-size: var(--gp-font-size-md);
+  }
+
+  .lcs-info-banner {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .lcs-calendar-month {
+    font-size: var(--gp-font-size-sm);
+  }
+
+  .lcs-calendar-day {
+    font-size: 13px;
+  }
+
+  .lcs-stats-row {
+    gap: 8px;
+  }
+
+  .lcs-stat {
+    min-width: 60px;
+    padding: 10px 12px;
+  }
+
+  .lcs-stat-value {
+    font-size: var(--gp-font-size-lg);
+  }
+
+  .lcs-stat-label {
+    font-size: 12px;
+  }
+
+  .lcs-legend {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .proposals-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .selector-header h2 {
+    font-size: 18px;
+  }
+
+  /* Info grid: 2 columns -> 1 column */
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Day pills smaller */
+  .day-pill {
+    width: 38px;
+    height: 38px;
+    font-size: 12px;
+  }
+
+  .days-pills {
+    gap: 6px;
+  }
+
+  /* Proposal rows stack content */
+  .proposal-row {
+    flex-wrap: wrap;
+  }
+
+  .proposal-info {
+    flex: 1 1 calc(100% - 64px);
+  }
+
+  .proposal-status {
+    width: 100%;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* Actions stack fully */
+  .actions-row {
+    flex-direction: column;
+  }
+
+  .actions-row .btn {
+    width: 100%;
+  }
+
+  /* House rules grid responsive */
+  .house-rules-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  /* Proposal details modal responsive */
+  .proposal-details-modal {
+    max-width: 100%;
+    margin: 16px;
+    border-radius: 12px;
+  }
+
+  .proposal-details-header {
+    padding: 16px 20px;
+  }
+
+  .proposal-details-content {
+    padding: 20px;
+  }
+
+  .proposal-details-pricing {
+    padding: 16px;
+  }
+
+  .proposal-details-footer {
+    padding: 16px 20px;
+  }
+
+  /* VM section responsive */
+  .vm-section-card-content {
+    padding: 16px;
+  }
+
+  .vm-section-profile-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .vm-section-action-bar {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .vm-section-primary-btn,
+  .vm-section-cancel-btn {
+    width: 100%;
+  }
+
+  /* VM elegant responsive */
+  .vm-elegant-row {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .vm-elegant-info {
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .vm-elegant-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .vm-elegant-details {
+    padding: 0 10px 8px 32px;
+  }
+
+  .vm-elegant-pill {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  /* Negotiation summary responsive */
+  .negotiation-summary-toggle {
+    padding: 10px 14px;
+  }
+
+  .negotiation-summary-content {
+    padding: 14px;
+  }
+
+  /* Counteroffer summary responsive */
+  .counteroffer-summary-toggle {
+    padding: 10px 14px;
+  }
+
+  .counteroffer-summary-content {
+    padding: 14px;
+  }
+
+  /* EPC responsive */
+  .epc-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .epc-thumb {
+    width: 48px;
+    height: 48px;
+  }
+
+  .epc-content {
+    padding: 0 16px 16px;
+  }
+
+  .epc-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .epc-house-rules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .epc-day-pill {
+    width: 32px;
+    height: 32px;
+    font-size: var(--gp-font-size-label);
+  }
+
+  .epc-days-pills {
+    gap: 4px;
+  }
+
+  .epc-actions-row {
+    flex-direction: column;
+  }
+
+  .epc-btn {
+    width: 100%;
+  }
+
+  .proposals-section--suggested {
+    padding: 16px;
+  }
+}
+
+/* --- Small Mobile Adjustments (<=400px) --- */
+@media (max-width: 400px) {
+  .epc-narrative-body {
+    padding: 0;
+  }
+
+  .epc-narrative-listing {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .epc-narrative-host-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .epc-narrative-content {
+    padding: 16px 12px;
+  }
+
+  .epc-narrative-paragraph {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .epc-narrative-actions {
+    padding: 14px 12px;
+    gap: 14px;
+  }
+
+  .epc-narrative-total {
+    font-size: 24px;
+  }
+}
+
+/* ============================================================================
+   REDUCED MOTION - Respect user preferences
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner {
+    animation: none;
+  }
+
+  .epc-content {
+    transition: none;
+  }
+
+  .epc-chevron {
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   HIGH CONTRAST MODE - Enhanced visibility
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+  :root {
+    --gp-border: #000;
+    --gp-text-muted: #374151;
+  }
+
+  .epc-card {
+    border-width: 3px;
+  }
+
+  .epc-btn {
+    border-width: 3px;
+  }
+
+  .epc-day-pill {
+    border-width: 3px;
+  }
+
+  .proposals-section {
+    border-width: 3px;
+  }
+
+  .epc-header:focus-visible,
+  .epc-btn:focus-visible,
+  button:focus-visible,
+  a:focus-visible {
+    outline-width: 4px;
+  }
+}

@@ -1,0 +1,10 @@
+/* schedule-dashboard: barrel file */
+
+@import url('./layout.css');
+@import url('./calendar.css');
+@import url('./profile.css');
+@import url('./buyout.css');
+@import url('./chat.css');
+@import url('./transactions.css');
+@import url('./pricing.css');
+@import url('./responsive.css');

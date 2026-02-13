@@ -8,6 +8,10 @@
 
 @import url('variables.css');
 
+/* Base Styles (shared across components) */
+@import url('components/modal-base.css');
+@import url('components/button-base.css');
+
 /* Component Styles */
 @import url('components/header.css');
 @import url('components/hero.css');
@@ -34,6 +38,21 @@
 @import url('../islands/shared/ListingCard/ListingCardForMap.css');
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Global .modal-overlay alias — pages use this class name.
+   Matches .modal-overlay-base from modal-base.css so page-level
+   duplicates can be removed. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--spacing-xl);
+  animation: modalBaseFadeIn var(--transition-slow) var(--easing-ease);
+}
 
 /* ========================================
    CSS RESET & NORMALIZATION

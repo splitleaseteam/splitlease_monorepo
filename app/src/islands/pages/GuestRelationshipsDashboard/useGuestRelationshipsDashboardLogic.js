@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import {
   searchGuests,
   getGuest,
@@ -148,23 +149,12 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
   // STATE - UI
   // -------------------------------------------------------------------------
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [toast, setToast] = useState(null);
-
-  // -------------------------------------------------------------------------
-  // EFFECTS - Initial Data Load
-  // -------------------------------------------------------------------------
-
-  useEffect(() => {
-    // Load initial data on mount
-    loadInitialData();
-  }, []);
-
-  async function loadInitialData() {
-    try {
-      setIsLoading(true);
-
+  const {
+    isLoading,
+    error: rawLoadError,
+    execute: executeLoadInitialData
+  } = useAsyncOperation(
+    async () => {
       // Load articles and recent guests in parallel
       const [articlesResult, guestsResult, listingsResult] = await Promise.all([
         listArticles({ limit: 50 }).catch(() => ({ articles: [] })),
@@ -175,14 +165,24 @@ export function useGuestRelationshipsDashboardLogic() {
       setAllArticles(articlesResult.articles || []);
       setAllGuests(guestsResult || []);
       setAllListings(listingsResult || []);
-
-    } catch (err) {
-      console.error('Failed to load initial data:', err);
-      setError('Failed to load data. Please refresh the page.');
-    } finally {
-      setIsLoading(false);
     }
-  }
+  );
+
+  // Normalize error to string for consumers
+  const error = rawLoadError?.message || (rawLoadError ? 'Failed to load data. Please refresh the page.' : null);
+
+  const [toast, setToast] = useState(null);
+
+  // -------------------------------------------------------------------------
+  // EFFECTS - Initial Data Load
+  // -------------------------------------------------------------------------
+
+  useEffect(() => {
+    // Load initial data on mount
+    executeLoadInitialData().catch((err) => {
+      console.error('Failed to load initial data:', err);
+    });
+  }, [executeLoadInitialData]);
 
   // -------------------------------------------------------------------------
   // EFFECTS - Load Guest Details

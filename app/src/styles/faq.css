@@ -638,18 +638,7 @@ body {
   }
 }
 
-/* Inquiry Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--overlay-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: var(--spacing-xl);
-  animation: modalBaseFadeIn var(--transition-slow) var(--easing-ease);
-}
+/* Inquiry Modal — .modal-overlay provided by main.css (via modal-base.css) */
 
 .modal-content {
   background: white;

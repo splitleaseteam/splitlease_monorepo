@@ -1,0 +1,90 @@
+/* guest-proposals: variables */
+
+/**
+ * Guest Proposals Page Styles
+ *
+ * Design System: SPLIT_LEASE_DESIGN_SYSTEM
+ * - Monochromatic Purple (NO GREEN, NO YELLOW)
+ * - Elderly-friendly base font 17px
+ * - WCAG AAA high contrast text colors (4.5:1 minimum)
+ * - 48px minimum touch targets
+ * - Pill-shaped buttons (100px radius)
+ * - 52x52px day pills
+ * - Clear focus states (3px outline, 3px offset)
+ */
+
+/* ============================================================================
+   DESIGN SYSTEM VARIABLES - SPLIT LEASE DESIGN SYSTEM
+   STRICT RULE: NO GREEN, NO YELLOW anywhere in the UI
+   ============================================================================ */
+
+:root {
+  /* ===== PURPLE PALETTE (Monochromatic) ===== */
+  --gp-purple-dark: #31135D;       /* Primary Purple - headers, primary buttons, icons */
+  --gp-purple-primary: #6D31C2;    /* Secondary Purple - accents, focus rings */
+  --gp-purple-action: #5B5FCF;     /* Action Purple - replaces ALL success/positive states */
+  --gp-purple-bg: #F7F2FA;         /* Light Purple Background - banners, hovers */
+  --gp-purple-tint: #f8f5ff;       /* Light Purple Tint - subtle backgrounds */
+
+  /* ===== TEXT COLORS (WCAG AAA High Contrast) ===== */
+  --gp-text: #111111;              /* Primary Text - body, headings */
+  --gp-text-secondary: #374151;    /* Secondary Text - supporting content */
+  --gp-text-muted: #4b5563;        /* Muted Text - meta info, timestamps */
+  --gp-text-ghost: #49454F;        /* Ghost Text - ghost button text */
+
+  /* ===== UI COLORS ===== */
+  --gp-border: #E7E0EC;            /* Border Light - card borders, dividers */
+  --gp-border-light: #E7E0EC;
+  --gp-bg: #fafafa;
+  --gp-white: #fff;
+
+  /* ===== STATUS COLORS (NO GREEN) ===== */
+  --gp-success: #5B5FCF;           /* Use Action Purple for success (NOT green) */
+  --gp-success-bg: #F7F2FA;        /* Light purple background for success */
+  --gp-danger: #DC3545;            /* Danger/Error - OUTLINED ONLY, never filled */
+  --gp-danger-bg: transparent;     /* Danger uses transparent bg with outline */
+  --gp-warning: var(--gp-purple-dark);  /* Warning uses dark purple (NO YELLOW) */
+  --gp-warning-bg: var(--gp-purple-bg);    /* Warning background uses purple */
+
+  /* ===== TYPOGRAPHY ===== */
+  --gp-font-size-sm: 15px;         /* Minimum readable size */
+  --gp-font-size-base: 17px;       /* Comfortable reading for elderly */
+  --gp-font-size-md: 18px;
+  --gp-font-size-lg: 22px;
+  --gp-font-size-xl: 28px;
+  --gp-font-size-2xl: 36px;        /* Prominent values */
+  --gp-font-size-label: 14px;      /* Labels never below 14px */
+
+  /* ===== LINE HEIGHTS ===== */
+  --gp-line-height-tight: 1.3;
+  --gp-line-height-normal: 1.6;
+  --gp-line-height-relaxed: 1.8;
+
+  /* ===== TOUCH TARGETS ===== */
+  --gp-min-touch-target: 48px;     /* Minimum 48px for accessibility */
+  --gp-min-row-height: 88px;       /* Interactive rows/cards */
+  --gp-min-pill-size: 52px;        /* Day pills */
+
+  /* ===== BORDERS ===== */
+  --gp-border-radius-sm: 8px;
+  --gp-border-radius-md: 12px;
+  --gp-border-radius-lg: 24px;
+  --gp-border-radius-pill: 100px;  /* Pill-shaped buttons - ALWAYS */
+
+  /* ===== FOCUS STATES (3px outline, 3px offset) ===== */
+  --gp-focus-ring: 0 0 0 4px rgba(109, 49, 194, 0.5);
+  --gp-focus-outline: 3px solid var(--gp-purple-primary);
+  --gp-focus-outline-offset: 3px;
+
+  /* ===== TRANSITIONS ===== */
+  --gp-transition-fast: 150ms ease;
+  --gp-transition-normal: 200ms ease;
+  --gp-transition-slow: 250ms ease;
+
+  /* ===== SPACING (8/16/24 scale) ===== */
+  --gp-spacing-sm: 8px;
+  --gp-spacing-md: 12px;
+  --gp-spacing-lg: 16px;
+  --gp-spacing-xl: 20px;
+  --gp-spacing-2xl: 24px;
+}

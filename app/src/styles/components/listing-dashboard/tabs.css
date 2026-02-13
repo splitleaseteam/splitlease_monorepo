@@ -1,0 +1,119 @@
+/* listing-dashboard: tabs */
+
+/* Tab Panel Animation */
+.listing-dashboard-tab-panel {
+  animation: tabFadeIn 0.15s ease-out;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   Section Tabs -- Tab Bar + Inline Sections
+   ============================================ */
+.listing-dashboard-section-tabs {
+  border-top: 1px solid var(--ld-border-color);
+}
+
+.listing-dashboard-section-tabs__tablist {
+  display: flex;
+  position: sticky;
+  top: 48px;
+  z-index: 90;
+  background: var(--ld-bg);
+  border-bottom: 2px solid var(--ld-border-color);
+}
+
+.listing-dashboard-section-tabs__tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 12px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ld-text-secondary);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.listing-dashboard-section-tabs__tab:hover {
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-section-tabs__tab--active {
+  color: var(--ld-accent-purple);
+  border-bottom-color: var(--ld-accent-purple);
+  font-weight: 600;
+}
+
+.listing-dashboard-section-tabs__tab:focus-visible {
+  outline: 2px solid var(--ld-accent-purple);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Tab content wrapper */
+.listing-dashboard-tab-content {
+  padding: 8px 0;
+}
+
+/* Split layout for Pricing & Calendar tab */
+.listing-dashboard-tab-content--split {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1200px) {
+  .listing-dashboard-tab-content--split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .listing-dashboard-tab-content--split > .listing-dashboard-inline-section {
+    padding: 12px 24px;
+  }
+
+  .listing-dashboard-tab-content--split > .listing-dashboard-inline-section:first-child {
+    border-right: 1px solid var(--ld-border-color);
+  }
+}
+
+/* Desktop compact tab bar */
+@media (min-width: 1200px) {
+  .listing-dashboard-section-tabs__tablist {
+    top: 0;
+  }
+
+  .listing-dashboard-section-tabs__tab {
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+}
+
+/* Ensure tab sizing wins over legacy button styles */
+.listing-dashboard .listing-dashboard-section-tabs__tab {
+  font-size: 16px;
+}
+
+/* Big Tabs Overrides */
+.listing-dashboard-section-tabs .listing-dashboard-section-tabs__tab {
+  font-size: 16px;
+  padding: 14px 24px;
+  font-weight: 600;
+}

@@ -9,55 +9,28 @@
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
-// Type declaration for custom window property
-declare global {
-  interface Window {
-    __VSL_v9?: number;
-  }
-}
-
-// FORCE RELOAD v9 - timestamp: 1737561500000 - NUCLEAR CACHE BUST
-declare global {
-  interface Window {
-    __VSL_v9?: number;
-  }
-}
-if (typeof window !== 'undefined') {
-  window.__VSL_v9 = Date.now();
-  console.log('ðŸ”„ðŸ”„ðŸ”„ ViewSplitLeasePage v9 LOADED - NUCLEAR CACHE BUST - ' + window.__VSL_v9);
-  console.log('ðŸ”„ðŸ”„ðŸ”„ DEBUG: Module successfully re-evaluated at:', new Date().toISOString());
-}
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
 import CreateProposalFlowV2, { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
-import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
-import GoogleMap from '../../shared/GoogleMap.jsx';
 import ContactHostMessaging from '../../shared/ContactHostMessaging.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
 import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
 import ProposalSuccessModal from '../../modals/ProposalSuccessModal.jsx';
-import FavoriteButton from '../../shared/FavoriteButton/FavoriteButton.jsx';
 import { initializeLookups } from '../../../lib/dataLookups.js';
 import { checkAuthStatus, validateTokenAndFetchUser, getSessionId } from '../../../lib/auth/index.js';
 import { fetchListingComplete, getListingIdFromUrl, fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
-import {
-  calculatePricingBreakdown,
-  formatPrice,
-  getPriceDisplayMessage
-} from '../../../lib/priceCalculations.js';
+import { getPriceDisplayMessage } from '../../../lib/priceCalculations.js';
 import {
   isContiguousSelection,
   validateScheduleSelection,
   calculateCheckInOutDays,
-  getBlockedDatesList,
   calculateNightsFromDays
 } from '../../../lib/availabilityValidation.js';
-import { DAY_ABBREVIATIONS, DEFAULTS, COLORS, SCHEDULE_PATTERNS } from '../../../lib/constants.js';
+import { DEFAULTS, COLORS } from '../../../lib/constants.js';
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
 import { supabase } from '../../../lib/supabase.js';
 import { fetchInformationalTexts } from '../../../lib/informationalTextsFetcher.js';
 import { logger } from '../../../lib/logger.js';
-// NOTE: adaptDaysToBubble removed - database now uses 0-indexed days natively
 import '../../../styles/listing-schedule-selector.css';
 import '../../../styles/components/toast.css';
 import './ViewSplitLeasePage.css';
@@ -65,87 +38,19 @@ import './ViewSplitLeasePage.css';
 import { LoadingState } from './components/LoadingState.jsx';
 import { ErrorState } from './components/ErrorState.jsx';
 import { PhotoGallery } from './components/PhotoGallery.jsx';
-import { SchedulePatternHighlight } from './components/SchedulePatternHighlight.jsx';
-import CustomDatePicker from '../../shared/CustomDatePicker';
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
+// Extracted sub-components
+import { ListingDetailsSection } from './components/ListingDetailsSection';
+import { HostInfoSection } from './components/HostInfoSection';
+import { PricingSection } from './components/PricingSection';
+import { MobileBookingBar } from './components/MobileBookingBar';
 
-/**
- * Get initial schedule selection from URL parameter
- * URL format: ?days-selected=2,3,4,5,6 (0-based, where 0=Sunday, matching JS Date.getDay())
- * Returns: Array of Day objects (0-based, where 0=Sunday)
- */
-function getInitialScheduleFromUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const daysParam = urlParams.get('days-selected');
-
-  if (!daysParam) {
-    logger.debug('ViewSplitLeasePage: No days-selected URL param, using empty initial selection');
-    return [];
-  }
-
-  try {
-    // Parse 0-based indices from URL (matching SearchPage and JS Date.getDay() convention)
-    const dayIndices = daysParam.split(',').map(d => parseInt(d.trim(), 10));
-    const validDays = dayIndices.filter(d => d >= 0 && d <= 6); // Validate 0-based range (0=Sun...6=Sat)
-
-    if (validDays.length > 0) {
-      // Convert to Day objects using createDay
-      const dayObjects = validDays.map(dayIndex => createDay(dayIndex, true));
-      logger.debug('ViewSplitLeasePage: Loaded schedule from URL:', {
-        urlParam: daysParam,
-        dayIndices: validDays
-      });
-      return dayObjects;
-    }
-  } catch (e) {
-    console.warn('âš ï¸ ViewSplitLeasePage: Failed to parse days-selected URL parameter:', e);
-  }
-
-  return [];
-}
-
-/**
- * Get initial reservation span from URL parameter
- * URL format: ?reservation-span=13 (weeks)
- * Returns: Number or null if not provided/invalid
- */
-function getInitialReservationSpanFromUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const spanParam = urlParams.get('reservation-span');
-
-  if (!spanParam) return null;
-
-  const parsed = parseInt(spanParam, 10);
-  if (!isNaN(parsed) && parsed > 0) {
-    logger.debug('ViewSplitLeasePage: Loaded reservation span from URL:', parsed);
-    return parsed;
-  }
-
-  return null;
-}
-
-/**
- * Get initial move-in date from URL parameter
- * URL format: ?move-in=2025-02-15 (YYYY-MM-DD)
- * Returns: String (YYYY-MM-DD) or null if not provided/invalid
- */
-function getInitialMoveInFromUrl() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const moveInParam = urlParams.get('move-in');
-
-  if (!moveInParam) return null;
-
-  // Basic validation: YYYY-MM-DD format
-  if (/^\d{4}-\d{2}-\d{2}$/.test(moveInParam)) {
-    logger.debug('ViewSplitLeasePage: Loaded move-in date from URL:', moveInParam);
-    return moveInParam;
-  }
-
-  return null;
-}
+// Extracted helpers
+import {
+  getInitialScheduleFromUrl,
+  getInitialReservationSpanFromUrl,
+  getInitialMoveInFromUrl
+} from './helpers';
 
 // ============================================================================
 // MAIN PAGE COMPONENT
@@ -294,9 +199,7 @@ export default function ViewSplitLeasePage() {
   // ============================================================================
 
   useEffect(() => {
-    console.log('ðŸ”¥ðŸ”¥ðŸ”¥ ViewSplitLeasePage v9 COMPONENT RENDERING - useEffect running');
-    console.log('ðŸ”¥ isMobile state:', isMobile);
-    console.log('ðŸ”¥ listing state:', listing);
+    console.log('ViewSplitLeasePage COMPONENT RENDERING - useEffect running');
 
     async function initialize() {
       try {
@@ -542,7 +445,7 @@ export default function ViewSplitLeasePage() {
     maximumNights: listing.maximum_nights_per_stay || 7,
     daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
     daysNotAvailable: [],
-    // Pricing fields — keys MUST match what calculatePrice reads
+    // Pricing fields -- keys MUST match what calculatePrice reads
     rental_type: listing.rental_type || 'Nightly',
     weeks_offered_schedule_text: listing.weeks_offered_schedule_text || 'Every week',
     unit_markup_percentage: listing.unit_markup_percentage || 0,
@@ -620,12 +523,6 @@ export default function ViewSplitLeasePage() {
   const handlePriceChange = useCallback((newPriceBreakdown) => {
     console.log('=== PRICE CHANGE CALLBACK ===');
     console.log('Received price breakdown:', newPriceBreakdown);
-    console.log('💰 Price Breakdown Validated:', {
-      valid: newPriceBreakdown?.valid,
-      rent: newPriceBreakdown?.fourWeekRent,
-      total: newPriceBreakdown?.reservationTotal,
-      days: selectedDays.length
-    });
     // Only update if the values have actually changed to prevent infinite loops
     setPriceBreakdown((prev) => {
       if (!prev ||
@@ -718,7 +615,6 @@ export default function ViewSplitLeasePage() {
           checkOutDayJs = sortedJsDays[gapIndex - 1];
 
           // Reorder days to be in actual sequence (check-in to check-out)
-          // e.g., [0, 6] with gap at index 1 â†’ reorder to [6, 0] (Fri, Sat, Sun)
           const reorderedDays = [...sortedJsDays.slice(gapIndex), ...sortedJsDays.slice(0, gapIndex)];
 
           // Nights = all days except the last one (checkout day)
@@ -793,9 +689,7 @@ export default function ViewSplitLeasePage() {
       });
 
       if (error) {
-        console.error('âŒ Edge Function error:', error);
-        console.error('âŒ Error properties:', Object.keys(error));
-        console.error('âŒ Error context:', error.context);
+        console.error('Edge Function error:', error);
 
         // Extract actual error message from response context if available
         let errorMessage = error.message || 'Failed to submit proposal';
@@ -803,31 +697,27 @@ export default function ViewSplitLeasePage() {
         // FunctionsHttpError has context.json() method or context as Response
         try {
           if (error.context && typeof error.context.json === 'function') {
-            // context is a Response object
             const errorBody = await error.context.json();
-            console.error('âŒ Edge Function error body (from json()):', errorBody);
             if (errorBody?.error) {
               errorMessage = errorBody.error;
             }
           } else if (error.context?.body) {
-            // context.body might be a ReadableStream or string
             const errorBody = typeof error.context.body === 'string'
               ? JSON.parse(error.context.body)
               : error.context.body;
-            console.error('âŒ Edge Function error body (from body):', errorBody);
             if (errorBody?.error) {
               errorMessage = errorBody.error;
             }
           }
         } catch (e) {
-          console.error('âŒ Could not parse error body:', e);
+          console.error('Could not parse error body:', e);
         }
 
         throw new Error(errorMessage);
       }
 
       if (!data?.success) {
-        console.error('âŒ Proposal submission failed:', data?.error);
+        console.error('Proposal submission failed:', data?.error);
         throw new Error(data?.error || 'Failed to submit proposal');
       }
 
@@ -853,10 +743,9 @@ export default function ViewSplitLeasePage() {
       });
 
       // NOTE: SplitBot messages are now created server-side in the proposal Edge Function
-      // This ensures reliable message delivery regardless of frontend state/timing
 
     } catch (error) {
-      console.error('âŒ Error submitting proposal:', error);
+      console.error('Error submitting proposal:', error);
       showToast(error.message || 'Failed to submit proposal. Please try again.', 'error');
     } finally {
       setIsSubmittingProposal(false);
@@ -901,7 +790,7 @@ export default function ViewSplitLeasePage() {
         logger.debug('User data updated after auth:', userData.firstName);
       }
     } catch (err) {
-      console.error('âŒ Error fetching user data after auth:', err);
+      console.error('Error fetching user data after auth:', err);
     }
 
     // If there's a pending proposal, submit it now
@@ -1095,1160 +984,64 @@ export default function ViewSplitLeasePage() {
             </div>
           </section>
 
-          {/* Features Grid */}
-          <section style={{
-            marginBottom: isMobile ? '1.5rem' : '2rem',
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: isMobile ? '0.5rem' : '1rem'
-          }}>
-            {listing.kitchen_type && (
-              <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
-                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
-                  <img src="/assets/images/fridge.svg" alt="Kitchen" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
-                </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.kitchen_type}</div>
-              </div>
-            )}
-            {listing.bathroom_count !== null && (
-              <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
-                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
-                  <img src="/assets/images/bath.svg" alt="Bathroom" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
-                </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.bathroom_count} Bathroom(s)</div>
-              </div>
-            )}
-            {listing.bedroom_count !== null && (
-              <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
-                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
-                  <img src="/assets/images/sleeping.svg" alt="Bedroom" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
-                </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.bedroom_count === 0 ? 'Studio' : `${listing.bedroom_count} Bedroom${listing.bedroom_count === 1 ? '' : 's'}`}</div>
-              </div>
-            )}
-            {listing.bed_count !== null && (
-              <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem', background: COLORS.BG_LIGHT, borderRadius: isMobile ? '6px' : '8px' }}>
-                <div style={{ marginBottom: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', height: isMobile ? '1.5rem' : '2rem' }}>
-                  <img src="/assets/images/bed.svg" alt="Bed" style={{ width: isMobile ? '1.5rem' : '2rem', height: isMobile ? '1.5rem' : '2rem' }} />
-                </div>
-                <div style={{ fontSize: isMobile ? '0.8125rem' : '1rem' }}>{listing.bed_count} Bed(s)</div>
-              </div>
-            )}
-          </section>
-
-          {/* Description */}
-          <section style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-            <h2 style={{
-              fontSize: isMobile ? '1rem' : '1.125rem',
-              fontWeight: '600',
-              marginBottom: isMobile ? '0.5rem' : '0.75rem',
-              color: COLORS.TEXT_DARK
-            }}>
-              Description of Lodging
-            </h2>
-            <p style={{
-              lineHeight: '1.6',
-              color: COLORS.TEXT_LIGHT,
-              whiteSpace: 'pre-wrap'
-            }}>
-              {expandedSections.description
-                ? listing.listing_description
-                : listing.listing_description?.slice(0, 360)}
-              {listing.listing_description?.length > 360 && !expandedSections.description && '...'}
-            </p>
-            {listing.listing_description?.length > 360 && (
-              <button
-                onClick={() => toggleSection('description')}
-                style={{
-                  marginTop: '0.5rem',
-                  background: 'none',
-                  border: 'none',
-                  color: COLORS.PRIMARY,
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  textDecoration: 'underline'
-                }}
-              >
-                {expandedSections.description ? 'Read Less' : 'Read More'}
-              </button>
-            )}
-          </section>
-
-          {/* Storage Section */}
-          {listing.storageOption && (
-            <section style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                Storage
-              </h2>
-              <div style={{
-                padding: isMobile ? '1rem' : '1.5rem',
-                background: COLORS.BG_LIGHT,
-                borderRadius: isMobile ? '8px' : '12px'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'start',
-                  gap: '1rem'
-                }}>
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ minWidth: '24px', minHeight: '24px', color: COLORS.PRIMARY }}
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                  </svg>
-                  <div>
-                    <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                      {listing.storageOption.title}
-                    </div>
-                    <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem' }}>
-                      {listing.storageOption.summaryGuest ||
-                       'Store your things between stays, ready when you return.'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Neighborhood Description */}
-          {listing.neighborhood_description_by_host && (
-            <section style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                Neighborhood
-              </h2>
-              <p style={{
-                lineHeight: '1.6',
-                color: COLORS.TEXT_LIGHT,
-                whiteSpace: 'pre-wrap'
-              }}>
-                {expandedSections.neighborhood
-                  ? listing.neighborhood_description_by_host
-                  : listing.neighborhood_description_by_host?.slice(0, 500)}
-                {listing.neighborhood_description_by_host?.length > 500 &&
-                 !expandedSections.neighborhood && '...'}
-              </p>
-              {listing.neighborhood_description_by_host?.length > 500 && (
-                <button
-                  onClick={() => toggleSection('neighborhood')}
-                  style={{
-                    marginTop: '0.5rem',
-                    background: 'none',
-                    border: 'none',
-                    color: COLORS.PRIMARY,
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    textDecoration: 'underline'
-                  }}
-                >
-                  {expandedSections.neighborhood ? 'Read Less' : 'Read More'}
-                </button>
-              )}
-            </section>
-          )}
-
-          {/* Commute Section */}
-          {(listing.parkingOption || listing.commute_time_to_nearest_transit) && (
-            <section ref={commuteSectionRef} style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                Commute
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {listing.parkingOption && (
-                  <div style={{ display: 'flex', alignItems: 'start', gap: '1rem' }}>
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ minWidth: '24px', minHeight: '24px', color: COLORS.PRIMARY }}
-                    >
-                      <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"></path>
-                      <circle cx="6.5" cy="16.5" r="2.5"></circle>
-                      <circle cx="16.5" cy="16.5" r="2.5"></circle>
-                    </svg>
-                    <div>
-                      <div style={{ fontWeight: '600' }}>{listing.parkingOption.label}</div>
-                      <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.875rem' }}>
-                        Convenient parking for your car
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {listing.commute_time_to_nearest_transit && (
-                  <div style={{ display: 'flex', alignItems: 'start', gap: '1rem' }}>
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      style={{ minWidth: '24px', minHeight: '24px', color: COLORS.PRIMARY }}
-                    >
-                      <rect x="3" y="6" width="18" height="11" rx="2"></rect>
-                      <path d="M7 15h.01M17 15h.01M8 6v5M16 6v5"></path>
-                      <path d="M3 12h18"></path>
-                    </svg>
-                    <div>
-                      <div style={{ fontWeight: '600' }}>{listing.commute_time_to_nearest_transit} to Metro</div>
-                      <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.875rem' }}>
-                        Quick walk to nearest station
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Amenities Section */}
-          {(listing.amenitiesInUnit?.length > 0 || listing.safetyFeatures?.length > 0) && (
-            <section ref={amenitiesSectionRef} style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                Amenities
-              </h2>
-
-              {listing.amenitiesInUnit?.length > 0 && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: isMobile ? '0.75rem' : '0.875rem', fontWeight: '600', marginBottom: '0.5rem', color: COLORS.TEXT_LIGHT, textTransform: 'uppercase', letterSpacing: '0.5px' }}>In-Unit</h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: isMobile ? '0.5rem' : '0.75rem'
-                  }}>
-                    {listing.amenitiesInUnit.map(amenity => (
-                      <div
-                        key={amenity.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          padding: isMobile ? '0.375rem' : '0.5rem'
-                        }}
-                      >
-                        {amenity.icon && (
-                          <img src={amenity.icon} alt="" style={{ width: isMobile ? '20px' : '24px', height: isMobile ? '20px' : '24px' }} />
-                        )}
-                        <span style={{ fontSize: isMobile ? '0.8125rem' : '0.875rem' }}>{amenity.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {listing.safetyFeatures?.length > 0 && (
-                <div>
-                  <h3 style={{ fontSize: isMobile ? '0.75rem' : '0.875rem', fontWeight: '600', marginBottom: '0.5rem', color: COLORS.TEXT_LIGHT, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Safety Features</h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: isMobile ? '0.5rem' : '0.75rem'
-                  }}>
-                    {listing.safetyFeatures.map(feature => (
-                      <div
-                        key={feature.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                          padding: isMobile ? '0.375rem' : '0.5rem'
-                        }}
-                      >
-                        {feature.icon && (
-                          <img src={feature.icon} alt="" style={{ width: isMobile ? '20px' : '24px', height: isMobile ? '20px' : '24px' }} />
-                        )}
-                        <span style={{ fontSize: isMobile ? '0.8125rem' : '0.875rem' }}>{feature.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* House Rules */}
-          {listing.houseRules?.length > 0 && (
-            <section ref={houseRulesSectionRef} style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                House Rules
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {listing.houseRules.map(rule => (
-                  <div
-                    key={rule.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: isMobile ? '0.375rem' : '0.5rem'
-                    }}
-                  >
-                    {rule.icon && (
-                      <img src={rule.icon} alt="" style={{ width: isMobile ? '20px' : '24px', height: isMobile ? '20px' : '24px' }} />
-                    )}
-                    <span style={{ fontSize: isMobile ? '0.875rem' : '1rem' }}>{rule.name}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Map Section */}
-          <section ref={mapSectionRef} style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-            <h2 style={{
-              fontSize: isMobile ? '1rem' : '1.125rem',
-              fontWeight: '600',
-              marginBottom: isMobile ? '0.5rem' : '0.75rem',
-              color: COLORS.TEXT_DARK
-            }}>
-              Map
-            </h2>
-            <div style={{
-              height: isMobile ? '300px' : '400px',
-              borderRadius: isMobile ? '8px' : '12px',
-              overflow: 'hidden',
-              border: `1px solid ${COLORS.BG_LIGHT}`,
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: COLORS.BG_LIGHT
-            }}>
-              {shouldLoadMap ? (
-                <GoogleMap
-                  ref={mapRef}
-                  listings={mapListings}
-                  filteredListings={mapListings}
-                  selectedBorough={listing.resolvedBorough}
-                  simpleMode={true}
-                  initialZoom={17}
-                  disableAutoZoom={false}
-                />
-              ) : (
-                <div style={{
-                  color: COLORS.TEXT_LIGHT,
-                  fontSize: '0.9rem',
-                  textAlign: 'center'
-                }}>
-                  Loading map...
-                </div>
-              )}
-            </div>
-          </section>
+          {/* Listing Details (features, description, amenities, map, etc.) */}
+          <ListingDetailsSection
+            listing={listing}
+            isMobile={isMobile}
+            expandedSections={expandedSections}
+            toggleSection={toggleSection}
+            mapSectionRef={mapSectionRef}
+            mapRef={mapRef}
+            shouldLoadMap={shouldLoadMap}
+            mapListings={mapListings}
+            commuteSectionRef={commuteSectionRef}
+            amenitiesSectionRef={amenitiesSectionRef}
+            houseRulesSectionRef={houseRulesSectionRef}
+          />
 
           {/* Host Section */}
-          {listing.host && (
-            <section style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                Meet Your Host
-              </h2>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: isMobile ? '0.75rem' : '1rem',
-                background: COLORS.BG_LIGHT,
-                borderRadius: isMobile ? '8px' : '10px'
-              }}>
-                {listing.host.profile_photo_url && (
-                  <img
-                    src={listing.host.profile_photo_url}
-                    alt={listing.host.first_name}
-                    style={{
-                      width: isMobile ? '40px' : '48px',
-                      height: isMobile ? '40px' : '48px',
-                      borderRadius: '50%',
-                      objectFit: 'cover'
-                    }}
-                  />
-                )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: isMobile ? '0.875rem' : '0.9375rem', fontWeight: '600', marginBottom: '0.125rem' }}>
-                    {listing.host.first_name} {listing.host.last_name?.charAt(0)}.
-                  </div>
-                  <div style={{ color: COLORS.TEXT_LIGHT, fontSize: isMobile ? '0.75rem' : '0.8125rem' }}>Host</div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => setShowContactHostModal(true)}
-                    style={{
-                      padding: isMobile ? '0.375rem 0.75rem' : '0.5rem 1rem',
-                      background: COLORS.PRIMARY,
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontSize: isMobile ? '0.8125rem' : '0.875rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.375rem',
-                      boxShadow: '0 2px 6px rgba(49, 19, 93, 0.2)'
-                    }}
-                    onMouseEnter={(e) => {
-                      const target = e.target as HTMLElement;
-                      target.style.background = COLORS.PRIMARY_HOVER;
-                      target.style.transform = 'translateY(-1px)';
-                      target.style.boxShadow = '0 3px 8px rgba(49, 19, 93, 0.25)';
-                    }}
-                    onMouseLeave={(e) => {
-                      const target = e.target as HTMLElement;
-                      target.style.background = COLORS.PRIMARY;
-                      target.style.transform = '';
-                      target.style.boxShadow = '0 2px 6px rgba(49, 19, 93, 0.2)';
-                    }}
-                  >
-                    <svg
-                      width={isMobile ? '14' : '16'}
-                      height={isMobile ? '14' : '16'}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <span>Message</span>
-                  </button>
-                  {listing.host?.userId && (
-                    <button
-                      onClick={() => window.location.href = `/account-profile/${listing.host.userId}`}
-                      style={{
-                        padding: isMobile ? '0.375rem 0.75rem' : '0.5rem 1rem',
-                        background: 'transparent',
-                        color: COLORS.PRIMARY,
-                        border: `1.5px solid ${COLORS.PRIMARY}`,
-                        borderRadius: '6px',
-                        fontSize: isMobile ? '0.8125rem' : '0.875rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.375rem'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = COLORS.PRIMARY;
-                        e.currentTarget.style.color = 'white';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = COLORS.PRIMARY;
-                        e.currentTarget.style.transform = '';
-                      }}
-                    >
-                      <svg
-                        width={isMobile ? '14' : '16'}
-                        height={isMobile ? '14' : '16'}
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                      <span>Profile</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Cancellation Policy */}
-          {listing.cancellationPolicy && (
-            <section style={{ marginBottom: isMobile ? '1.25rem' : '1.5rem' }}>
-              <h2 style={{
-                fontSize: isMobile ? '1rem' : '1.125rem',
-                fontWeight: '600',
-                marginBottom: isMobile ? '0.5rem' : '0.75rem',
-                color: COLORS.TEXT_DARK
-              }}>
-                Cancellation Policy
-              </h2>
-              <div style={{
-                padding: isMobile ? '1rem' : '1.5rem',
-                background: COLORS.BG_LIGHT,
-                borderRadius: isMobile ? '8px' : '12px',
-                border: `1px solid ${COLORS.BG_LIGHT}`
-              }}>
-                <div style={{
-                  fontSize: isMobile ? '1rem' : '1.125rem',
-                  fontWeight: '600',
-                  marginBottom: isMobile ? '0.75rem' : '1rem',
-                  color: COLORS.PRIMARY
-                }}>
-                  {listing.cancellationPolicy.display}
-                </div>
-
-                {/* Best Case */}
-                {listing.cancellationPolicy.bestCaseText && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <div style={{ fontWeight: '600', color: '#16a34a', marginBottom: '0.25rem' }}>
-                      âœ“ Best Case
-                    </div>
-                    <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem', lineHeight: '1.6' }}>
-                      {listing.cancellationPolicy.bestCaseText}
-                    </div>
-                  </div>
-                )}
-
-                {/* Medium Case */}
-                {listing.cancellationPolicy.mediumCaseText && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <div style={{ fontWeight: '600', color: '#ea580c', marginBottom: '0.25rem' }}>
-                      âš  Medium Case
-                    </div>
-                    <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem', lineHeight: '1.6' }}>
-                      {listing.cancellationPolicy.mediumCaseText}
-                    </div>
-                  </div>
-                )}
-
-                {/* Worst Case */}
-                {listing.cancellationPolicy.worstCaseText && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <div style={{ fontWeight: '600', color: '#dc2626', marginBottom: '0.25rem' }}>
-                      âœ• Worst Case
-                    </div>
-                    <div style={{ color: COLORS.TEXT_LIGHT, fontSize: '0.9375rem', lineHeight: '1.6' }}>
-                      {listing.cancellationPolicy.worstCaseText}
-                    </div>
-                  </div>
-                )}
-
-                {/* Summary Texts */}
-                {listing.cancellationPolicy.summaryTexts && Array.isArray(listing.cancellationPolicy.summaryTexts) && listing.cancellationPolicy.summaryTexts.length > 0 && (
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid #e5e7eb` }}>
-                    <div style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
-                      Summary:
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: '1.25rem', color: COLORS.TEXT_LIGHT, fontSize: '0.875rem', lineHeight: '1.6' }}>
-                      {listing.cancellationPolicy.summaryTexts.map((text, idx) => (
-                        <li key={idx} style={{ marginBottom: '0.25rem' }}>{text}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Link to full policy page */}
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid #e5e7eb` }}>
-                  <a
-                    href="/policies#cancellation-and-refund-policy"
-                    style={{
-                      color: COLORS.PRIMARY,
-                      textDecoration: 'none',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.25rem'
-                    }}
-                    onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
-                    onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
-                  >
-                    View full cancellation policy â†’
-                  </a>
-                </div>
-              </div>
-            </section>
-          )}
+          <HostInfoSection
+            listing={listing}
+            isMobile={isMobile}
+            onContactHost={() => setShowContactHostModal(true)}
+          />
         </div>
 
         {/* RIGHT COLUMN - BOOKING WIDGET (hidden on mobile) */}
-        <div
-          className="booking-widget"
-          style={{
-            display: isMobile ? 'none' : 'block',
-            position: 'sticky',
-            top: 'calc(80px + 20px)',
-            alignSelf: 'flex-start',
-            height: 'fit-content',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '16px',
-            padding: '28px',
-            background: 'white',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.05)',
-            backdropFilter: 'blur(10px)',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            if (!isMobile) {
-              e.currentTarget.style.transform = 'translateY(-4px)';
-              e.currentTarget.style.boxShadow = '0 24px 70px rgba(0, 0, 0, 0.35), 0 0 1px rgba(0, 0, 0, 0.05)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isMobile) {
-              e.currentTarget.style.transform = '';
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.05)';
-            }
-          }}
-        >
-          {/* Price Display */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f8f9ff 0%, #faf5ff 100%)',
-            padding: '12px',
-            borderRadius: '12px',
-            marginBottom: '16px',
-            border: '1px solid #e9d5ff',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{
-              fontSize: '32px',
-              fontWeight: '800',
-              background: 'linear-gradient(135deg, #31135d 0%, #31135d 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              letterSpacing: '-1px',
-              display: 'inline-block'
-            }}>
-              {pricingBreakdown?.valid && pricingBreakdown?.pricePerNight
-                ? `$${Number.isInteger(pricingBreakdown.pricePerNight) ? pricingBreakdown.pricePerNight : pricingBreakdown.pricePerNight.toFixed(2)}`
-                : 'Select Days'}
-              <span style={{
-                fontSize: '16px',
-                color: '#6B7280',
-                fontWeight: '500',
-                background: 'none',
-                WebkitTextFillColor: '#6B7280'
-              }}>/night</span>
-            </div>
-            <FavoriteButton
-              listingId={listing?.id}
-              userId={loggedInUserData?.userId}
-              initialFavorited={isFavorited}
-              onToggle={(newState) => setIsFavorited(newState)}
-              onRequireAuth={() => setShowAuthModal(true)}
-              size="large"
-              variant="inline"
-            />
-          </div>
-
-          {/* Move-in Date */}
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{
-              fontSize: '12px',
-              fontWeight: '700',
-              color: '#31135d',
-              marginBottom: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Move-in text clicked, current state:', activeInfoTooltip);
-                  setActiveInfoTooltip(activeInfoTooltip === 'moveIn' ? null : 'moveIn');
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                Ideal Move-In
-              </span>
-              <svg
-                ref={moveInInfoRef}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Move-in info icon clicked, current state:', activeInfoTooltip);
-                  setActiveInfoTooltip(activeInfoTooltip === 'moveIn' ? null : 'moveIn');
-                }}
-                style={{ width: '16px', height: '16px', color: '#9CA3AF', cursor: 'pointer' }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </label>
-            <div style={{ marginBottom: '8px' }}>
-              <CustomDatePicker
-                value={moveInDate || ''}
-                onChange={setMoveInDate}
-                minDate={minMoveInDate}
-                placeholder="Select move-in date"
-              />
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: '#6B7280',
-              lineHeight: '1.4',
-              marginBottom: '10px',
-              fontWeight: '400',
-              paddingLeft: '4px'
-            }}>
-              Minimum 2 weeks from today. Date auto-updates based on selected days.
-            </div>
-          </div>
-
-          {/* Strict Mode */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-              marginBottom: '14px',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #f8f9ff 0%, #faf5ff 100%)',
-              borderRadius: '10px',
-              border: '1px solid #e9d5ff',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%)';
-              e.currentTarget.style.borderColor = '#d8b4fe';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #f8f9ff 0%, #faf5ff 100%)';
-              e.currentTarget.style.borderColor = '#e9d5ff';
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={strictMode}
-              onChange={() => setStrictMode(!strictMode)}
-              style={{
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: '#31135d',
-                marginTop: '2px',
-                flexShrink: 0
-              }}
-            />
-            <label style={{
-              fontSize: '14px',
-              color: '#111827',
-              userSelect: 'none',
-              lineHeight: '1.5',
-              fontWeight: '500'
-            }}>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveInfoTooltip(activeInfoTooltip === 'flexibility' ? null : 'flexibility');
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                Strict (no negotiation on exact move in)
-              </span>
-              <svg
-                ref={flexibilityInfoRef}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveInfoTooltip(activeInfoTooltip === 'flexibility' ? null : 'flexibility');
-                }}
-                style={{
-                  display: 'inline-block',
-                  width: '14px',
-                  height: '14px',
-                  verticalAlign: 'middle',
-                  marginLeft: '2px',
-                  opacity: 0.6,
-                  cursor: 'pointer'
-                }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </label>
-          </div>
-
-          {/* Weekly Schedule Selector - Only render on desktop to prevent race conditions with mobile instances */}
-          {!isMobile && scheduleSelectorListing && (
-            <div style={{
-              marginBottom: '14px',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-              borderRadius: '12px',
-              border: '1px solid #E5E7EB'
-            }}>
-              <ListingScheduleSelector
-                listing={scheduleSelectorListing}
-                initialSelectedDays={selectedDayObjects}
-                limitToFiveNights={false}
-                reservationSpan={reservationSpan}
-                zatConfig={zatConfig}
-                onSelectionChange={handleScheduleChange}
-                onPriceChange={handlePriceChange}
-                showPricing={false}
-              />
-            </div>
-          )}
-
-          {/* Custom schedule section - decoupled from scheduleSelectorListing to ensure visibility */}
-          {(() => {
-            const shouldRender = !isMobile && listing;
-            logger.debug(`ðŸŽ¯ Custom Schedule Conditional Check: isMobile=${isMobile}, listing=${!!listing}, shouldRender=${shouldRender}`);
-            return shouldRender;
-          })() && (
-            <div style={{
-              marginBottom: '14px',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-              borderRadius: '12px',
-              border: '1px solid #E5E7EB'
-            }}>
-              {/* Listing's weekly pattern info + custom schedule option */}
-              <div style={{
-                fontSize: '13px',
-                color: '#4B5563'
-              }}>
-                <span>This listing is </span>
-                <strong style={{ color: '#31135d' }}>
-                  {listing?.weeks_offered_schedule_text || 'Every week'}
-                </strong>
-                <span>. </span>
-                <button
-                  onClick={() => setShowCustomScheduleInput(!showCustomScheduleInput)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#7C3AED',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    padding: 0,
-                    fontSize: '13px',
-                    fontWeight: '500'
-                  }}
-                >
-                  {showCustomScheduleInput ? 'Hide custom schedule' : 'Click here if you want to specify another recurrent schedule'}
-                </button>
-              </div>
-
-              {/* Custom schedule freeform input */}
-              {showCustomScheduleInput && (
-                <div style={{ marginTop: '10px' }}>
-                  <textarea
-                    value={customScheduleDescription}
-                    onChange={(e) => setCustomScheduleDescription(e.target.value)}
-                    placeholder="Describe your preferred schedule pattern in detail (e.g., 'I need the space every other week starting January 15th' or 'Weekdays only for the first month, then full weeks')"
-                    style={{
-                      width: '100%',
-                      minHeight: '80px',
-                      padding: '10px 12px',
-                      border: '2px solid #E5E7EB',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontFamily: 'inherit',
-                      resize: 'vertical',
-                      boxSizing: 'border-box'
-                    }}
-                    onFocus={(e) => {
-                      const target = e.target as HTMLElement;
-                      target.style.borderColor = '#7C3AED';
-                      target.style.outline = 'none';
-                    }}
-                    onBlur={(e) => {
-                      (e.target as HTMLElement).style.borderColor = '#E5E7EB';
-                    }}
-                  />
-                  <p style={{
-                    marginTop: '6px',
-                    fontSize: '11px',
-                    color: '#6B7280'
-                  }}>
-                    The host will review your custom schedule request and may adjust the proposal accordingly.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Reservation Span */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{
-              fontSize: '12px',
-              fontWeight: '700',
-              color: '#31135d',
-              marginBottom: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveInfoTooltip(activeInfoTooltip === 'reservationSpan' ? null : 'reservationSpan');
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                Reservation Span
-              </span>
-              <svg
-                ref={reservationSpanInfoRef}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveInfoTooltip(activeInfoTooltip === 'reservationSpan' ? null : 'reservationSpan');
-                }}
-                style={{ width: '16px', height: '16px', color: '#9CA3AF', cursor: 'pointer' }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </label>
-            <div style={{ position: 'relative' }}>
-              <select
-                value={reservationSpan}
-                onChange={(e) => setReservationSpan(Number(e.target.value))}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  paddingRight: '40px',
-                  border: '2px solid #E5E7EB',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontWeight: '500',
-                  color: '#111827',
-                  background: 'white',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  appearance: 'none',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-                }}
-                onMouseEnter={(e) => {
-                  const target = e.target as HTMLElement;
-                  target.style.borderColor = '#31135d';
-                  target.style.boxShadow = '0 4px 6px rgba(49, 19, 93, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  if (document.activeElement !== e.target) {
-                    const target = e.target as HTMLElement;
-                    target.style.borderColor = '#E5E7EB';
-                    target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
-                  }
-                }}
-                onFocus={(e) => {
-                  const target = e.target as HTMLElement;
-                  target.style.borderColor = '#31135d';
-                  target.style.boxShadow = '0 0 0 4px rgba(49, 19, 93, 0.15)';
-                }}
-                onBlur={(e) => {
-                  const target = e.target as HTMLElement;
-                  target.style.borderColor = '#E5E7EB';
-                  target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
-                }}
-              >
-                {[6, 7, 8, 9, 10, 12, 13, 16, 17, 20, 22, 26].map(weeks => (
-                  <option key={weeks} value={weeks}>
-                    {weeks} weeks {weeks >= 12 ? `(${Math.floor(weeks / 4)} months)` : ''}
-                  </option>
-                ))}
-              </select>
-              <div style={{
-                position: 'absolute',
-                right: '14px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '0',
-                height: '0',
-                borderLeft: '5px solid transparent',
-                borderRight: '5px solid transparent',
-                borderTop: '5px solid #31135d',
-                pointerEvents: 'none'
-              }}></div>
-            </div>
-            {/* Schedule Pattern Highlight - shows actual weeks for alternating patterns */}
-            <SchedulePatternHighlight
-              reservationSpan={reservationSpan}
-              weeksOffered={listing?.weeks_offered_schedule_text}
-            />
-          </div>
-
-          {/* Price Breakdown */}
-          <div style={{
-            marginBottom: '12px',
-            padding: '12px',
-            background: 'linear-gradient(135deg, #f9fafb 0%, #ffffff 100%)',
-            borderRadius: '10px',
-            border: '1px solid #E5E7EB'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '15px'
-            }}>
-              <span style={{ color: '#111827', fontWeight: '500' }}>4-Week Rent</span>
-              <span style={{ color: '#111827', fontWeight: '700', fontSize: '16px' }}>
-                {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent != null
-                  ? formatPrice(pricingBreakdown.fourWeekRent)
-                  : priceMessage || 'Please Add More Days'}
-              </span>
-            </div>
-          </div>
-
-          {/* Total Row */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            borderTop: '2px solid #E5E7EB',
-            marginBottom: '10px'
-          }}>
-            <span style={{
-              fontSize: '16px',
-              fontWeight: '700',
-              color: '#111827'
-            }}>Reservation Estimated Total</span>
-            <span style={{
-              fontSize: '28px',
-              fontWeight: '800',
-              background: 'linear-gradient(135deg, #31135d 0%, #31135d 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal != null
-                ? formatPrice(pricingBreakdown.reservationTotal)
-                : priceMessage || 'Please Add More Days'}
-            </span>
-          </div>
-
-          {/* Create Proposal Button */}
-          <button
-            onClick={(e) => {
-              if (scheduleValidation?.valid && pricingBreakdown?.valid && !existingProposalForListing) {
-                const target = e.target as HTMLElement;
-                target.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                  target.style.transform = '';
-                }, 150);
-                handleCreateProposal();
-              }
-            }}
-            disabled={!scheduleValidation?.valid || !pricingBreakdown?.valid || !!existingProposalForListing}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: existingProposalForListing
-                ? '#D1D5DB'
-                : scheduleValidation?.valid && pricingBreakdown?.valid
-                  ? 'linear-gradient(135deg, #31135d 0%, #31135d 100%)'
-                  : '#D1D5DB',
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '16px',
-              fontWeight: '700',
-              cursor: existingProposalForListing || !scheduleValidation?.valid || !pricingBreakdown?.valid ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: !existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid
-                ? '0 4px 14px rgba(49, 19, 93, 0.4)'
-                : 'none',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              if (!existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid) {
-                const target = e.target as HTMLElement;
-                target.style.transform = 'translateY(-2px)';
-                target.style.boxShadow = '0 8px 24px rgba(49, 19, 93, 0.5)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!existingProposalForListing && scheduleValidation?.valid && pricingBreakdown?.valid) {
-                const target = e.target as HTMLElement;
-                target.style.transform = '';
-                target.style.boxShadow = '0 4px 14px rgba(49, 19, 93, 0.4)';
-              }
-            }}
-          >
-            {existingProposalForListing
-              ? 'Proposal Already Exists'
-              : pricingBreakdown?.valid && pricingBreakdown?.pricePerNight
-                ? `Create Proposal at $${Number.isInteger(pricingBreakdown.pricePerNight) ? pricingBreakdown.pricePerNight : pricingBreakdown.pricePerNight.toFixed(2)}/night`
-                : 'Update Split Schedule Above'}
-          </button>
-
-          {/* Link to existing proposal */}
-          {existingProposalForListing && loggedInUserData?.userId && (
-            <a
-              href={`/guest-proposals/${loggedInUserData.userId}?proposal=${existingProposalForListing.id}`}
-              style={{
-                display: 'block',
-                textAlign: 'center',
-                marginTop: '12px',
-                color: '#31135d',
-                fontSize: '14px',
-                fontWeight: '500',
-                textDecoration: 'none'
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.textDecoration = 'underline';
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.textDecoration = 'none';
-              }}
-            >
-              View your proposal in Dashboard
-            </a>
-          )}
-        </div>
+        <PricingSection
+          listing={listing}
+          isMobile={isMobile}
+          pricingBreakdown={pricingBreakdown}
+          priceMessage={priceMessage}
+          scheduleSelectorListing={scheduleSelectorListing}
+          selectedDayObjects={selectedDayObjects}
+          reservationSpan={reservationSpan}
+          zatConfig={zatConfig}
+          handleScheduleChange={handleScheduleChange}
+          handlePriceChange={handlePriceChange}
+          setReservationSpan={setReservationSpan}
+          moveInDate={moveInDate}
+          setMoveInDate={setMoveInDate}
+          minMoveInDate={minMoveInDate}
+          strictMode={strictMode}
+          setStrictMode={setStrictMode}
+          customScheduleDescription={customScheduleDescription}
+          setCustomScheduleDescription={setCustomScheduleDescription}
+          showCustomScheduleInput={showCustomScheduleInput}
+          setShowCustomScheduleInput={setShowCustomScheduleInput}
+          scheduleValidation={scheduleValidation}
+          existingProposalForListing={existingProposalForListing}
+          isFavorited={isFavorited}
+          setIsFavorited={setIsFavorited}
+          loggedInUserData={loggedInUserData}
+          setShowAuthModal={setShowAuthModal}
+          activeInfoTooltip={activeInfoTooltip}
+          setActiveInfoTooltip={setActiveInfoTooltip}
+          moveInInfoRef={moveInInfoRef}
+          reservationSpanInfoRef={reservationSpanInfoRef}
+          flexibilityInfoRef={flexibilityInfoRef}
+          handleCreateProposal={handleCreateProposal}
+        />
       </main>
 
       {/* Tutorial Modal */}
@@ -2289,7 +1082,7 @@ export default function ViewSplitLeasePage() {
                 color: COLORS.TEXT_LIGHT
               }}
             >
-              Ã—
+              {'\u00d7'}
             </button>
 
             <h2 style={{
@@ -2317,7 +1110,7 @@ export default function ViewSplitLeasePage() {
               marginBottom: '1.5rem',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>ðŸ¢</div>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{'\ud83c\udfe2'}</div>
               <div style={{ fontSize: '0.875rem', color: COLORS.TEXT_DARK }}>
                 Stay 2-5 nights a week, save up to 50% off of a comparable Airbnb
               </div>
@@ -2395,7 +1188,7 @@ export default function ViewSplitLeasePage() {
               zIndex: 1002
             }}
           >
-            Ã—
+            {'\u00d7'}
           </button>
 
           <img
@@ -2438,7 +1231,7 @@ export default function ViewSplitLeasePage() {
                 whiteSpace: 'nowrap'
               }}
             >
-              â† Previous
+              {'\u2190'} Previous
             </button>
 
             <span style={{
@@ -2468,7 +1261,7 @@ export default function ViewSplitLeasePage() {
                 whiteSpace: 'nowrap'
               }}
             >
-              Next â†’
+              Next {'\u2192'}
             </button>
           </div>
 
@@ -2619,449 +1412,35 @@ export default function ViewSplitLeasePage() {
 
       {/* Mobile Bottom Booking Bar - hide when proposal modal, photo gallery, or auth modal is open */}
       {isMobile && !isProposalModalOpen && !showPhotoModal && !showAuthModal && (
-        <>
-          {/* Overlay when expanded */}
-          {mobileBookingExpanded && (
-            <div
-              onClick={() => setMobileBookingExpanded(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 9998
-              }}
-            />
-          )}
-
-          {/* Bottom Bar */}
-          <div
-            className="mobile-bottom-booking-bar"
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              background: 'white',
-              boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
-              zIndex: 9999,
-              borderTopLeftRadius: mobileBookingExpanded ? '20px' : '0',
-              borderTopRightRadius: mobileBookingExpanded ? '20px' : '0',
-              transition: 'all 0.3s ease',
-              maxHeight: mobileBookingExpanded ? '80vh' : 'auto',
-              overflowY: mobileBookingExpanded ? 'auto' : 'hidden'
-            }}
-          >
-            {/* Collapsed View */}
-            {!mobileBookingExpanded ? (
-              <div style={{ padding: '12px 16px' }}>
-                {/* Schedule Selector Row */}
-                {scheduleSelectorListing && (
-                  <div style={{ marginBottom: '12px' }}>
-                    <ListingScheduleSelector
-                      listing={scheduleSelectorListing}
-                      initialSelectedDays={selectedDayObjects}
-                      limitToFiveNights={false}
-                      reservationSpan={reservationSpan}
-                      zatConfig={zatConfig}
-                      onSelectionChange={handleScheduleChange}
-                      onPriceChange={handlePriceChange}
-                      showPricing={false}
-                    />
-                  </div>
-                )}
-
-                {/* Price and Continue Row */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  {/* Price Info */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      fontSize: '18px',
-                      fontWeight: '700',
-                      color: '#31135d'
-                    }}>
-                      {pricingBreakdown?.valid && pricingBreakdown?.pricePerNight
-                        ? `$${Number.isInteger(pricingBreakdown.pricePerNight) ? pricingBreakdown.pricePerNight : pricingBreakdown.pricePerNight.toFixed(2)}`
-                        : 'Select Days'}
-                      <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: '500' }}>/night</span>
-                    </div>
-                  </div>
-
-                  {/* Continue Button */}
-                  <button
-                    onClick={() => setMobileBookingExpanded(true)}
-                    style={{
-                      padding: '12px 24px',
-                      background: '#31135d',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Expanded View */
-              <div style={{ padding: '20px 16px', paddingBottom: '24px' }}>
-                {/* Header with close button */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '16px'
-                }}>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    color: '#111827',
-                    margin: 0
-                  }}>
-                    Complete Your Booking
-                  </h3>
-                  <button
-                    onClick={() => setMobileBookingExpanded(false)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '24px',
-                      cursor: 'pointer',
-                      color: '#6B7280',
-                      padding: '4px'
-                    }}
-                  >
-                    Ã—
-                  </button>
-                </div>
-
-                {/* Price Display */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #f8f9ff 0%, #faf5ff 100%)',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  marginBottom: '16px',
-                  border: '1px solid #e9d5ff',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div style={{
-                    fontSize: '24px',
-                    fontWeight: '800',
-                    color: '#31135d'
-                  }}>
-                    {pricingBreakdown?.valid && pricingBreakdown?.pricePerNight
-                      ? `$${Number.isInteger(pricingBreakdown.pricePerNight) ? pricingBreakdown.pricePerNight : pricingBreakdown.pricePerNight.toFixed(2)}`
-                      : 'Select Days'}
-                    <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: '500' }}>/night</span>
-                  </div>
-                  <FavoriteButton
-                    listingId={listing?.id}
-                    userId={loggedInUserData?.userId}
-                    initialFavorited={isFavorited}
-                    onToggle={(newState) => setIsFavorited(newState)}
-                    onRequireAuth={() => setShowAuthModal(true)}
-                    size="medium"
-                    variant="inline"
-                  />
-                </div>
-
-                {/* Move-in Date */}
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    color: '#31135d',
-                    marginBottom: '8px',
-                    display: 'block',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    Ideal Move-In
-                  </label>
-                  <CustomDatePicker
-                    value={moveInDate || ''}
-                    onChange={setMoveInDate}
-                    minDate={minMoveInDate}
-                    placeholder="Select move-in date"
-                  />
-                </div>
-
-                {/* Strict Mode - placed directly after Move-in Date for visual grouping */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  marginBottom: '16px',
-                  padding: '12px',
-                  background: '#f8f9ff',
-                  borderRadius: '10px',
-                  border: '1px solid #e9d5ff'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={strictMode}
-                    onChange={() => setStrictMode(!strictMode)}
-                    style={{
-                      width: '20px',
-                      height: '20px',
-                      cursor: 'pointer',
-                      accentColor: '#31135d'
-                    }}
-                  />
-                  <label style={{
-                    fontSize: '14px',
-                    color: '#111827',
-                    fontWeight: '500'
-                  }}>
-                    Strict (no negotiation on exact move in)
-                  </label>
-                </div>
-
-                {/* Weekly Schedule Selector */}
-                {scheduleSelectorListing && (
-                  <div style={{
-                    marginBottom: '16px',
-                    padding: '12px',
-                    background: '#f9fafb',
-                    borderRadius: '12px',
-                    border: '1px solid #E5E7EB'
-                  }}>
-                    <ListingScheduleSelector
-                      listing={scheduleSelectorListing}
-                      initialSelectedDays={selectedDayObjects}
-                      limitToFiveNights={false}
-                      reservationSpan={reservationSpan}
-                      zatConfig={zatConfig}
-                      onSelectionChange={handleScheduleChange}
-                      onPriceChange={handlePriceChange}
-                      showPricing={false}
-                    />
-                  </div>
-                )}
-
-                {/* Custom schedule section - decoupled from scheduleSelectorListing to ensure visibility (Mobile) */}
-                {(() => {
-                  const shouldRender = !!listing;
-                  logger.debug(`ðŸŽ¯ Custom Schedule Conditional Check (MOBILE): listing=${!!listing}, shouldRender=${shouldRender}`);
-                  return shouldRender;
-                })() && (
-                  <div style={{
-                    marginBottom: '16px',
-                    padding: '12px',
-                    background: '#f9fafb',
-                    borderRadius: '12px',
-                    border: '1px solid #E5E7EB'
-                  }}>
-                    {/* Listing's weekly pattern info + custom schedule option (Mobile) */}
-                    <div style={{
-                      fontSize: '13px',
-                      color: '#4B5563'
-                    }}>
-                      <span>This listing is </span>
-                      <strong style={{ color: '#31135d' }}>
-                        {listing?.weeks_offered_schedule_text || 'Every week'}
-                      </strong>
-                      <span>. </span>
-                      <button
-                        onClick={() => setShowCustomScheduleInput(!showCustomScheduleInput)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#7C3AED',
-                          textDecoration: 'underline',
-                          cursor: 'pointer',
-                          padding: 0,
-                          fontSize: '13px',
-                          fontWeight: '500'
-                        }}
-                      >
-                        {showCustomScheduleInput ? 'Hide custom schedule' : 'Click here if you want to specify another recurrent schedule'}
-                      </button>
-                    </div>
-
-                    {/* Custom schedule freeform input (Mobile) */}
-                    {showCustomScheduleInput && (
-                      <div style={{ marginTop: '10px' }}>
-                        <textarea
-                          value={customScheduleDescription}
-                          onChange={(e) => setCustomScheduleDescription(e.target.value)}
-                          placeholder="Describe your preferred schedule pattern in detail..."
-                          style={{
-                            width: '100%',
-                            minHeight: '80px',
-                            padding: '10px 12px',
-                            border: '2px solid #E5E7EB',
-                            borderRadius: '8px',
-                            fontSize: '14px',
-                            fontFamily: 'inherit',
-                            resize: 'vertical',
-                            boxSizing: 'border-box'
-                          }}
-                          onFocus={(e) => {
-                            const target = e.target as HTMLElement;
-                            target.style.borderColor = '#7C3AED';
-                            target.style.outline = 'none';
-                          }}
-                          onBlur={(e) => {
-                            (e.target as HTMLElement).style.borderColor = '#E5E7EB';
-                          }}
-                        />
-                        <p style={{
-                          marginTop: '6px',
-                          fontSize: '11px',
-                          color: '#6B7280'
-                        }}>
-                          The host will review your custom schedule request.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Reservation Span */}
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    color: '#31135d',
-                    marginBottom: '8px',
-                    display: 'block',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    Reservation Span
-                  </label>
-                  <select
-                    value={reservationSpan}
-                    onChange={(e) => setReservationSpan(Number(e.target.value))}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '2px solid #E5E7EB',
-                      borderRadius: '10px',
-                      fontSize: '16px',
-                      fontWeight: '500',
-                      color: '#111827',
-                      background: 'white',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    {[6, 7, 8, 9, 10, 12, 13, 16, 17, 20, 22, 26].map(weeks => (
-                      <option key={weeks} value={weeks}>
-                        {weeks} weeks {weeks >= 12 ? `(${Math.floor(weeks / 4)} months)` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Price Breakdown */}
-                <div style={{
-                  marginBottom: '16px',
-                  padding: '12px',
-                  background: '#f9fafb',
-                  borderRadius: '10px',
-                  border: '1px solid #E5E7EB'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '8px',
-                    fontSize: '15px'
-                  }}>
-                    <span style={{ color: '#111827', fontWeight: '500' }}>4-Week Rent</span>
-                    <span style={{ color: '#111827', fontWeight: '700' }}>
-                      {pricingBreakdown?.valid && pricingBreakdown?.fourWeekRent != null
-                        ? formatPrice(pricingBreakdown.fourWeekRent)
-                        : 'â€"'}
-                    </span>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingTop: '8px',
-                    borderTop: '1px solid #E5E7EB'
-                  }}>
-                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#111827' }}>
-                      Reservation Total
-                    </span>
-                    <span style={{
-                      fontSize: '20px',
-                      fontWeight: '800',
-                      color: '#31135d'
-                    }}>
-                      {pricingBreakdown?.valid && pricingBreakdown?.reservationTotal != null
-                        ? formatPrice(pricingBreakdown.reservationTotal)
-                        : 'â€"'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Create Proposal Button */}
-                <button
-                  onClick={() => {
-                    if (scheduleValidation?.valid && pricingBreakdown?.valid && !existingProposalForListing) {
-                      handleCreateProposal();
-                    }
-                  }}
-                  disabled={!scheduleValidation?.valid || !pricingBreakdown?.valid || !!existingProposalForListing}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    background: existingProposalForListing
-                      ? '#D1D5DB'
-                      : scheduleValidation?.valid && pricingBreakdown?.valid
-                        ? '#31135d'
-                        : '#D1D5DB',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    cursor: existingProposalForListing || !scheduleValidation?.valid || !pricingBreakdown?.valid ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {existingProposalForListing
-                    ? 'Proposal Already Exists'
-                    : pricingBreakdown?.valid && pricingBreakdown?.pricePerNight
-                      ? `Create Proposal at $${Number.isInteger(pricingBreakdown.pricePerNight) ? pricingBreakdown.pricePerNight : pricingBreakdown.pricePerNight.toFixed(2)}/night`
-                      : 'Update Split Schedule Above'}
-                </button>
-
-                {/* Link to existing proposal */}
-                {existingProposalForListing && loggedInUserData?.userId && (
-                  <a
-                    href={`/guest-proposals/${loggedInUserData.userId}?proposal=${existingProposalForListing.id}`}
-                    style={{
-                      display: 'block',
-                      textAlign: 'center',
-                      marginTop: '12px',
-                      color: '#31135d',
-                      fontSize: '14px',
-                      fontWeight: '500'
-                    }}
-                  >
-                    View your proposal in Dashboard
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Spacer to prevent content from being hidden behind fixed bar */}
-          <div style={{ height: mobileBookingExpanded ? '0' : '140px' }} />
-        </>
+        <MobileBookingBar
+          listing={listing}
+          pricingBreakdown={pricingBreakdown}
+          scheduleSelectorListing={scheduleSelectorListing}
+          selectedDayObjects={selectedDayObjects}
+          reservationSpan={reservationSpan}
+          zatConfig={zatConfig}
+          handleScheduleChange={handleScheduleChange}
+          handlePriceChange={handlePriceChange}
+          setReservationSpan={setReservationSpan}
+          moveInDate={moveInDate}
+          setMoveInDate={setMoveInDate}
+          minMoveInDate={minMoveInDate}
+          strictMode={strictMode}
+          setStrictMode={setStrictMode}
+          customScheduleDescription={customScheduleDescription}
+          setCustomScheduleDescription={setCustomScheduleDescription}
+          showCustomScheduleInput={showCustomScheduleInput}
+          setShowCustomScheduleInput={setShowCustomScheduleInput}
+          scheduleValidation={scheduleValidation}
+          existingProposalForListing={existingProposalForListing}
+          isFavorited={isFavorited}
+          setIsFavorited={setIsFavorited}
+          loggedInUserData={loggedInUserData}
+          setShowAuthModal={setShowAuthModal}
+          mobileBookingExpanded={mobileBookingExpanded}
+          setMobileBookingExpanded={setMobileBookingExpanded}
+          handleCreateProposal={handleCreateProposal}
+        />
       )}
 
       <Footer />

@@ -27,6 +27,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import {
   fetchGuestLeases,
@@ -98,9 +99,46 @@ export function useGuestLeasesPageLogic() {
     stay: null
   });
 
-  // Loading and error state
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Loading and error state via useAsyncOperation
+  const {
+    data: fetchedLeases,
+    isLoading,
+    error: rawLoadError,
+    execute: executeLoadLeases
+  } = useAsyncOperation(
+    async () => {
+      console.log('Guest Leases: Fetching leases for user:', authUserId);
+      const leasesData = await fetchGuestLeases();
+
+      if (leasesData && Array.isArray(leasesData)) {
+        console.log(`Guest Leases: Loaded ${leasesData.length} leases`);
+        return leasesData;
+      }
+      return [];
+    },
+    { initialData: null }
+  );
+
+  // Normalize error to string for consumers (handle SESSION_EXPIRED specially)
+  const error = rawLoadError
+    ? (rawLoadError.message === 'SESSION_EXPIRED'
+        ? 'Your session has expired. Please refresh the page to log in again.'
+        : (rawLoadError.message || 'Failed to load leases. Please try again.'))
+    : null;
+
+  // Sync fetched leases into local state (leases is also mutated by other handlers)
+  useEffect(() => {
+    if (fetchedLeases !== null) {
+      setLeases(fetchedLeases);
+    }
+  }, [fetchedLeases]);
+
+  // Auto-expand first lease when leases load
+  useEffect(() => {
+    if (fetchedLeases && fetchedLeases.length > 0 && !expandedLeaseId) {
+      setExpandedLeaseId(fetchedLeases[0].id);
+    }
+  }, [fetchedLeases, expandedLeaseId]);
 
   // ============================================================================
   // DATA FETCHING
@@ -157,7 +195,6 @@ export function useGuestLeasesPageLogic() {
 
     setLeases(mockLeases);
     setExpandedLeaseId('lease-001');
-    setIsLoading(false);
   }, [isDevMode]);
 
   /**
@@ -166,46 +203,14 @@ export function useGuestLeasesPageLogic() {
    * instead of objects (authState, user) to prevent infinite re-render loops.
    */
   useEffect(() => {
-    async function loadLeases() {
-      if (authLoading || !isAuthenticated || !authUserId || isDevMode) {
-        return;
-      }
-
-      console.log('Guest Leases: Fetching leases for user:', authUserId);
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const leasesData = await fetchGuestLeases();
-
-        if (leasesData && Array.isArray(leasesData)) {
-          setLeases(leasesData);
-          console.log(`Guest Leases: Loaded ${leasesData.length} leases`);
-
-          // Auto-expand first lease if available
-          if (leasesData.length > 0 && !expandedLeaseId) {
-            setExpandedLeaseId(leasesData[0].id);
-          }
-        } else {
-          setLeases([]);
-        }
-      } catch (err) {
-        console.error('Guest Leases: Error fetching leases:', err);
-
-        // Handle session expiration - show error instead of redirecting
-        if (err.message === 'SESSION_EXPIRED') {
-          console.log('Guest Leases: Session expired');
-          setError('Your session has expired. Please refresh the page to log in again.');
-        } else {
-          setError(err.message || 'Failed to load leases. Please try again.');
-        }
-      } finally {
-        setIsLoading(false);
-      }
+    if (authLoading || !isAuthenticated || !authUserId || isDevMode) {
+      return;
     }
 
-    loadLeases();
-  }, [authLoading, isAuthenticated, authUserId, isDevMode]);
+    executeLoadLeases().catch((err) => {
+      console.error('Guest Leases: Error fetching leases:', err);
+    });
+  }, [authLoading, isAuthenticated, authUserId, isDevMode, executeLoadLeases]);
 
   // ============================================================================
   // HANDLERS - LEASE CARD
@@ -222,29 +227,12 @@ export function useGuestLeasesPageLogic() {
    * Retry loading leases after error
    */
   const handleRetry = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const leasesData = await fetchGuestLeases();
-      if (leasesData && Array.isArray(leasesData)) {
-        setLeases(leasesData);
-        if (leasesData.length > 0 && !expandedLeaseId) {
-          setExpandedLeaseId(leasesData[0].id);
-        }
-      }
+      await executeLoadLeases();
     } catch (err) {
-      // Handle session expiration - show error instead of redirecting
-      if (err.message === 'SESSION_EXPIRED') {
-        console.log('⚠️ Guest Leases: Session expired');
-        setError('Your session has expired. Please refresh the page to log in again.');
-      } else {
-        setError(err.message || 'Failed to load leases. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
+      console.error('Guest Leases: Error retrying lease fetch:', err);
     }
-  }, [expandedLeaseId]);
+  }, [executeLoadLeases]);
 
   // ============================================================================
   // HANDLERS - CHECK-IN/CHECKOUT

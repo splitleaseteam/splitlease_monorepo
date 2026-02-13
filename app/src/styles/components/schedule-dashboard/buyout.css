@@ -1,0 +1,2255 @@
+/* schedule-dashboard: buyout */
+
+/* ============================================================================
+   BUY OUT PANEL
+   ============================================================================ */
+
+.buyout-panel {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Compact/Horizontal Layout Variant */
+.buyout-panel--compact {
+  min-height: auto;
+}
+
+.buyout-panel--compact .buyout-panel__content-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.buyout-panel--compact .buyout-panel__selected {
+  margin-bottom: 0;
+}
+
+.buyout-panel--compact .buyout-panel__pricing {
+  margin-bottom: 0;
+}
+
+.buyout-panel--compact .buyout-panel__message {
+  margin-bottom: 0.75rem;
+}
+
+.buyout-panel--compact .buyout-panel__message-input {
+  min-height: 60px;
+}
+
+.buyout-panel--compact .buyout-panel__actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0;
+}
+
+.buyout-panel--compact .buyout-panel__btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+.buyout-panel--compact .buyout-panel__btn--ghost {
+  flex: 0 0 auto;
+}
+
+.buyout-panel--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.buyout-panel__empty-state {
+  text-align: center;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__empty-title {
+  margin: 0 0 0.5rem;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__empty-text {
+  margin: 0;
+  max-width: 250px;
+}
+
+.buyout-panel__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__selected {
+  padding: 0.75rem 1rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__date {
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--schedule-text);
+  margin-bottom: 0.25rem;
+}
+
+.buyout-panel__owner {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__pricing {
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__fees {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-panel__fees-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.buyout-panel__fees-toggle:hover {
+  color: var(--schedule-text);
+}
+
+.buyout-panel__fees-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--schedule-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__price-row--total {
+  border-top: 1px solid var(--schedule-border);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__price-row--note {
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+  font-style: italic;
+  padding: 0.25rem 0;
+}
+
+.buyout-panel__price-row--free {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.buyout-panel__message {
+  margin-bottom: 1rem;
+}
+
+.buyout-panel__note-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-panel__note-toggle:hover {
+  color: var(--schedule-text);
+}
+
+.buyout-panel__message-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.buyout-panel__message-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--schedule-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  resize: none;
+  font-family: inherit;
+}
+
+.buyout-panel__message-input:focus {
+  outline: none;
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buyout-panel__btn {
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__btn--primary {
+  background: var(--schedule-primary);
+  color: white;
+}
+
+.buyout-panel__btn--primary:hover {
+  background: var(--schedule-primary-light);
+}
+
+.buyout-panel__btn--secondary {
+  background: transparent;
+  color: var(--schedule-primary);
+  border: 1px solid var(--schedule-primary);
+}
+
+.buyout-panel__btn--secondary:hover {
+  background: var(--schedule-bg);
+}
+
+.buyout-panel__btn--ghost {
+  background: transparent;
+  color: var(--schedule-text-muted);
+  border: none;
+  text-decoration: underline;
+}
+
+.buyout-panel__btn--ghost:hover {
+  color: var(--schedule-text);
+}
+
+.buyout-panel__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success State */
+.buyout-panel--success {
+  justify-content: center;
+  align-items: center;
+}
+
+.buyout-panel__success-state {
+  text-align: center;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: #EFF6FF;
+  color: #2563EB;
+  border-radius: 50%;
+  font-size: 2rem;
+  margin: 0 auto 1rem;
+}
+
+.buyout-panel__success-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #2563EB;
+}
+
+.buyout-panel__success-text {
+  margin: 0 0 1.5rem;
+  color: var(--schedule-text-muted);
+  max-width: 280px;
+}
+
+/* Loading Spinner */
+.buyout-panel__spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
+
+.buyout-panel__spinner-circle {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.buyout-panel__pricing--loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  color: var(--schedule-text-muted);
+  font-size: 0.9rem;
+}
+
+.buyout-panel__pricing--loading .buyout-panel__spinner-circle {
+  border-color: var(--schedule-border);
+  border-top-color: var(--schedule-primary);
+}
+
+/* Price Row Divider */
+.buyout-panel__price-row--divider {
+  height: 1px;
+  background: var(--schedule-border);
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+/* Message Counter */
+.buyout-panel__message-counter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__message-counter--low {
+  color: var(--schedule-warning);
+}
+
+/* Error State */
+.buyout-panel__error {
+  padding: 0.75rem;
+  background: #FEF2F2;
+  color: #DC2626;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================================
+   BUYOUT SETTINGS DRAWER
+   ============================================================================ */
+
+.buyout-panel__settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  background: transparent;
+  border: 1px dashed var(--schedule-border);
+  border-radius: 8px;
+  color: var(--schedule-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.buyout-panel__settings-toggle:hover {
+  background: var(--schedule-bg);
+  border-color: var(--schedule-primary);
+  color: var(--schedule-primary);
+}
+
+.buyout-panel__settings-toggle--open {
+  background: var(--schedule-bg);
+  border-style: solid;
+  border-color: var(--schedule-primary);
+  color: var(--schedule-primary);
+}
+
+.buyout-panel__settings-icon {
+  font-size: 1rem;
+}
+
+.buyout-panel__settings-chevron {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+.buyout-panel__settings-drawer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.buyout-panel__settings-drawer--open {
+  max-height: 1000px;
+  margin-top: 1rem;
+}
+
+/* ============================================================================
+   SWAP MODE
+   ============================================================================ */
+
+.buyout-panel__swap-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Swap Visualization - Two cards with arrow */
+.buyout-panel__swap-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.buyout-panel__swap-card {
+  flex: 1;
+  max-width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: var(--schedule-bg);
+  border: 2px solid var(--schedule-border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.buyout-panel__swap-card--theirs {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-color: #81C784;
+}
+
+.buyout-panel__swap-card--yours {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  border-color: #64B5F6;
+}
+
+.buyout-panel__swap-card--yours.buyout-panel__swap-card--selected {
+  border-color: var(--schedule-primary);
+  box-shadow: 0 0 0 3px rgba(109, 49, 194, 0.15);
+}
+
+.buyout-panel__swap-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__swap-date {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  text-align: center;
+}
+
+.buyout-panel__swap-owner {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-panel__swap-placeholder {
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  font-style: italic;
+}
+
+.buyout-panel__swap-arrow {
+  font-size: 1.75rem;
+  color: var(--schedule-primary);
+  flex-shrink: 0;
+}
+
+/* Night Selection Grid */
+.buyout-panel__swap-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buyout-panel__swap-selection-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__swap-nights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.buyout-panel__swap-night-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__swap-night-btn:hover {
+  background: var(--schedule-primary-bg);
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__swap-night-btn--selected {
+  background: var(--schedule-primary);
+  color: white;
+  border-color: var(--schedule-primary);
+}
+
+.buyout-panel__swap-night-btn--selected:hover {
+  background: var(--schedule-primary-hover);
+}
+
+.buyout-panel__swap-night-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyout-panel__swap-no-nights {
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  font-style: italic;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+/* Swap Info Banner */
+.buyout-panel__swap-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+  border: 1px solid #A5D6A7;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #2E7D32;
+}
+
+.buyout-panel__swap-info-icon {
+  font-size: 1rem;
+}
+
+/* Swap Success State Variation */
+.buyout-panel__success-state--swap .buyout-panel__success-icon {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  color: #1976D2;
+}
+
+/* Share Success State Variation */
+.buyout-panel__success-state--share .buyout-panel__success-icon {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  color: #E65100;
+}
+
+/* ============================================================================
+   REQUEST TYPE TOGGLE TABS
+   ============================================================================ */
+
+.buyout-panel__type-tabs {
+  display: flex;
+  gap: 0.2rem;
+  margin-bottom: 0.75rem;
+  padding: 0.2rem;
+  background: var(--schedule-bg);
+  border-radius: 10px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-panel__type-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__type-tab:hover {
+  background: rgba(109, 49, 194, 0.08);
+  color: var(--schedule-text);
+}
+
+.buyout-panel__type-tab--active {
+  background: var(--schedule-primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(109, 49, 194, 0.2);
+}
+
+.buyout-panel__type-tab--active:hover {
+  background: var(--schedule-primary-hover);
+  color: white;
+}
+
+.buyout-panel__type-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyout-panel__type-tab-label {
+  font-weight: 600;
+}
+
+/* Mode-specific description text */
+.buyout-panel__description {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  line-height: 1.4;
+}
+
+/* ============================================================================
+   BUYOUT FORMULA SETTINGS
+   ============================================================================ */
+
+.buyout-settings {
+  background: var(--schedule-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.buyout-settings__header {
+  margin-bottom: 1.5rem;
+}
+
+.buyout-settings__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__icon {
+  font-size: 1.25rem;
+}
+
+.buyout-settings__subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-settings__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.buyout-settings__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.buyout-settings__control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.buyout-settings__control--readonly {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyout-settings__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+.buyout-settings__readonly-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__help-text {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Slider Styles */
+.buyout-settings__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--schedule-border);
+  border-radius: 3px;
+  outline: none;
+}
+
+.buyout-settings__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--schedule-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.buyout-settings__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.buyout-settings__slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--schedule-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.buyout-settings__slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Toggle Styles */
+.buyout-settings__control--toggle {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buyout-settings__toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--schedule-border);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.buyout-settings__toggle--on {
+  background: var(--schedule-primary);
+}
+
+.buyout-settings__toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.buyout-settings__toggle--on .buyout-settings__toggle-knob {
+  transform: translateX(20px);
+}
+
+/* Price Range Inputs */
+.buyout-settings__price-range {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__range-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+  margin-bottom: 0.75rem;
+}
+
+.buyout-settings__price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.buyout-settings__control--price {
+  flex: 1;
+}
+
+.buyout-settings__price-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--schedule-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.buyout-settings__currency {
+  padding: 0.5rem;
+  background: var(--schedule-bg);
+  color: var(--schedule-text-muted);
+  font-size: 0.875rem;
+}
+
+.buyout-settings__price-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  font-size: 0.9rem;
+  width: 80px;
+  outline: none;
+}
+
+.buyout-settings__price-input:focus {
+  background: #F0F9FF;
+}
+
+.buyout-settings__price-separator {
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+}
+
+/* Visualization Section */
+.buyout-settings__visualization {
+  min-height: 300px;
+}
+
+/* Actions */
+.buyout-settings__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.buyout-settings__btn--primary {
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+}
+
+.buyout-settings__btn--primary:hover {
+  background: var(--schedule-primary-dark, #1a1a2e);
+}
+
+.buyout-settings__btn--secondary {
+  background: transparent;
+  color: var(--schedule-text-muted);
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__btn--secondary:hover {
+  background: var(--schedule-bg);
+  color: var(--schedule-text);
+}
+
+.buyout-settings__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   BUYOUT PRICE VISUALIZATION
+   ============================================================================ */
+
+.buyout-viz {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+  padding: 1rem;
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.buyout-viz--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.buyout-viz__empty-state {
+  text-align: center;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-viz__empty-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.buyout-viz__header {
+  margin-bottom: 1rem;
+}
+
+.buyout-viz__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-viz__chart-container {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.buyout-viz__y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.buyout-viz__y-label {
+  font-size: 0.65rem;
+  color: var(--schedule-text-muted);
+  text-align: right;
+}
+
+.buyout-viz__y-label--ceiling,
+.buyout-viz__y-label--floor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.buyout-viz__y-indicator {
+  font-size: 0.6rem;
+  color: var(--schedule-text-muted);
+  opacity: 0.7;
+}
+
+.buyout-viz__chart {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(to bottom,
+      rgba(239, 68, 68, 0.05) 0%,
+      rgba(34, 197, 94, 0.05) 50%,
+      rgba(239, 68, 68, 0.05) 100%);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.buyout-viz__threshold-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 1;
+}
+
+.buyout-viz__threshold-line--ceiling {
+  background: rgba(239, 68, 68, 0.3);
+  border-top: 1px dashed #EF4444;
+}
+
+.buyout-viz__threshold-line--floor {
+  background: rgba(239, 68, 68, 0.3);
+  border-top: 1px dashed #EF4444;
+}
+
+.buyout-viz__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 100%;
+  padding: 0.5rem 0.25rem;
+  position: relative;
+  z-index: 2;
+}
+
+.buyout-viz__bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 40px;
+  height: 100%;
+}
+
+.buyout-viz__bar-container--weekend {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+
+.buyout-viz__price-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.buyout-viz__bar-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding: 0 2px;
+}
+
+.buyout-viz__bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+
+.buyout-viz__bar--green {
+  background: linear-gradient(to top, #3B82F6, #60A5FA);
+}
+
+.buyout-viz__bar--yellow {
+  background: linear-gradient(to top, #F59E0B, #FBBF24);
+}
+
+.buyout-viz__bar--red {
+  background: linear-gradient(to top, #EF4444, #F87171);
+}
+
+.buyout-viz__date-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.buyout-viz__day {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.buyout-viz__date {
+  font-size: 0.55rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-viz__legend {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--schedule-border);
+}
+
+.buyout-viz__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+}
+
+.buyout-viz__legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.buyout-viz__legend-color--green {
+  background: #3B82F6;
+}
+
+.buyout-viz__legend-color--yellow {
+  background: #F59E0B;
+}
+
+.buyout-viz__legend-color--red {
+  background: #EF4444;
+}
+
+/* ============================================================================
+   DON NORMAN-INSPIRED ENHANCEMENTS
+   ============================================================================ */
+
+/* Slider Footer - replaces slider-labels with semantic label in center */
+.buyout-settings__slider-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+  margin-top: 0.25rem;
+}
+
+.buyout-settings__slider-min,
+.buyout-settings__slider-max {
+  flex-shrink: 0;
+}
+
+/* Semantic Labels - contextual feedback on slider values */
+.buyout-settings__semantic-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.buyout-settings__semantic-label--neutral {
+  background: var(--schedule-bg);
+  color: var(--schedule-text-muted);
+}
+
+.buyout-settings__semantic-label--moderate {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.buyout-settings__semantic-label--standard {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.buyout-settings__semantic-label--high {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__semantic-label--aggressive {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__semantic-label--minimal {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__semantic-label--generous {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.buyout-settings__semantic-label--deep {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+/* Computed Hints - Live dollar amounts below controls */
+.buyout-settings__computed-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--schedule-bg-light);
+  border-radius: 6px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__hint-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.buyout-settings__hint-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--schedule-text-secondary);
+}
+
+/* Price Range Visualization */
+.buyout-settings__price-viz {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__price-viz-header {
+  margin-bottom: 0.75rem;
+}
+
+.buyout-settings__price-viz-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-settings__price-viz-scale {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-settings__price-viz-bound {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  min-width: 35px;
+}
+
+.buyout-settings__price-viz-bar {
+  flex: 1;
+  height: 12px;
+  background: linear-gradient(to right,
+      rgba(239, 68, 68, 0.15) 0%,
+      rgba(34, 197, 94, 0.15) 15%,
+      rgba(34, 197, 94, 0.15) 85%,
+      rgba(239, 68, 68, 0.15) 100%);
+  border-radius: 6px;
+  position: relative;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__price-viz-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.buyout-settings__price-viz-marker {
+  position: absolute;
+  top: -2px;
+  width: 4px;
+  height: 16px;
+  background: var(--schedule-primary);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.buyout-settings__price-viz-marker--min {
+  background: #2563EB;
+}
+
+.buyout-settings__price-viz-marker--max {
+  background: #2563EB;
+}
+
+.buyout-settings__price-viz-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.buyout-settings__price-viz-range {
+  font-size: 0.75rem;
+  color: var(--schedule-text);
+  font-weight: 500;
+}
+
+.buyout-settings__price-viz-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.buyout-settings__price-viz-status--ok {
+  color: #2563EB;
+}
+
+.buyout-settings__price-viz-status--warn {
+  color: #B45309;
+}
+
+/* Price Inputs Row (horizontal layout for floor/ceiling) */
+.buyout-settings__price-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.buyout-settings__price-inputs-row .buyout-settings__control--price {
+  flex: 1;
+}
+
+/* Quick Summary Box */
+.buyout-settings__quick-summary {
+  padding: 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-settings__summary-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-settings__summary-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.buyout-settings__summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.4rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.buyout-settings__summary-label {
+  color: var(--schedule-text-muted);
+}
+
+.buyout-settings__summary-value {
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+/* Wide layout adjustments for Don Norman enhancements */
+.buyout-settings--wide .buyout-settings__computed-hint {
+  padding: 0.3rem 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__hint-text {
+  font-size: 0.7rem;
+}
+
+.buyout-settings--wide .buyout-settings__semantic-label {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-viz {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-viz-label {
+  font-size: 0.8rem;
+}
+
+.buyout-settings--wide .buyout-settings__quick-summary {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__summary-items {
+  gap: 0.25rem;
+}
+
+.buyout-settings--wide .buyout-settings__summary-item {
+  padding: 0.2rem 0.35rem;
+  font-size: 0.7rem;
+}
+
+/* ============================================================================
+   WIDE BUYOUT FORMULA SETTINGS (Below Calendar in Pricing Mode)
+   ============================================================================ */
+
+.buyout-settings--wide .buyout-settings__column--actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.buyout-settings--wide .buyout-settings__actions {
+  margin-top: auto;
+  padding-top: 0;
+  border-top: none;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+/* Make controls more compact in wide layout */
+.buyout-settings--wide .buyout-settings__control--readonly {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__control--toggle {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__label {
+  font-size: 0.8rem;
+}
+
+.buyout-settings--wide .buyout-settings__help-text {
+  font-size: 0.7rem;
+}
+
+.buyout-settings--wide .buyout-settings__readonly-value {
+  font-size: 1rem;
+}
+
+.buyout-settings--wide .buyout-settings__value {
+  font-size: 0.85rem;
+}
+
+/* Price range in wide layout */
+.buyout-settings--wide .buyout-settings__price-range {
+  padding: 0.5rem 0.75rem;
+}
+
+.buyout-settings--wide .buyout-settings__range-label {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-inputs {
+  gap: 0.5rem;
+}
+
+.buyout-settings--wide .buyout-settings__price-input {
+  width: 60px;
+  padding: 0.4rem;
+  font-size: 0.85rem;
+}
+
+/* ============================================================================
+   BUYOUT PANEL - EDITABLE PRICE OFFER
+   ============================================================================ */
+
+.buyout-panel__offer-price {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem;
+  background: #F9FAFB;
+  border-radius: 10px;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-panel__stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.buyout-panel__stepper-btn {
+  appearance: none;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #4A5568;
+  border-radius: 999px;
+  padding: 8px 20px;
+  min-width: 80px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.buyout-panel__stepper-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.buyout-panel__stepper-btn:hover {
+  background: #F7FAFC;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-color: #CBD5E0;
+}
+
+.buyout-panel__stepper-btn:active {
+  background: #EDF2F7;
+  transform: translateY(0);
+}
+
+.buyout-panel__stepper-btn--ghost {
+  opacity: 0.5;
+  background: transparent;
+  border-style: dashed;
+}
+
+.buyout-panel__stepper-center {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--schedule-bg-white);
+  border: 1px solid var(--schedule-border);
+  border-radius: 10px;
+  padding: 0.35rem 0.75rem;
+}
+
+.buyout-panel__currency {
+  font-size: 1rem;
+  color: #6B7280;
+}
+
+.buyout-panel__offer-input {
+  width: 80px;
+  padding: 0.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  text-align: center;
+  background: transparent;
+}
+
+.buyout-panel__offer-input:focus {
+  outline: none;
+}
+
+.buyout-panel__offer-input:disabled {
+  background: transparent;
+  cursor: not-allowed;
+}
+
+.buyout-panel__feedback {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.buyout-panel__feedback:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.buyout-panel__feedback--fair {
+  color: #15803D;
+}
+
+.buyout-panel__feedback--low {
+  color: #B45309;
+}
+
+.buyout-panel__discount-note {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+  white-space: nowrap;
+}
+
+.buyout-panel__stepper-minus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buyout-panel__feedback--expanded {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.buyout-panel__feedback-indicator {
+  font-size: 0.9rem;
+}
+
+.buyout-panel__feedback-label {
+  flex: 1;
+}
+
+.buyout-panel__feedback-toggle {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.buyout-panel__feedback-detail {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #F3F4F6;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #4B5563;
+}
+
+.buyout-panel__feedback-detail p {
+  margin: 0;
+}
+
+.buyout-panel__flexibility-comparison {
+  margin-top: 0.4rem !important;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Smart -10% Button Styles (Flexibility Lever) */
+.buyout-panel__stepper-btn--minus.buyout-panel__stepper-btn--ghost {
+  background: transparent;
+  border-color: #D1D5DB;
+  color: #9CA3AF;
+  opacity: 0.7;
+}
+
+.buyout-panel__stepper-btn--minus.buyout-panel__stepper-btn--ghost:hover:not(:disabled) {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #92400E;
+  opacity: 1;
+}
+
+.buyout-panel__stepper-btn--minus.buyout-panel__stepper-btn--warning {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #92400E;
+  animation: pulse-warning 0.3s ease;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.buyout-panel__stepper-btn--plus:hover:not(:disabled) {
+  background: #ECFDF5;
+  border-color: #10B981;
+  color: #059669;
+}
+
+/* Discount Warning */
+.buyout-panel__discount-warning {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #92400E;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.buyout-panel__warning-icon {
+  flex-shrink: 0;
+}
+
+/* Fee Tooltip */
+.buyout-panel__tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.buyout-panel__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1F2937;
+  color: #F9FAFB;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  animation: tooltip-fade-in 0.15s ease;
+}
+
+.buyout-panel__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1F2937;
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.buyout-panel__tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.15rem 0;
+}
+
+.buyout-panel__tooltip-row--total {
+  font-weight: 600;
+}
+
+.buyout-panel__tooltip-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0.4rem 0;
+}
+
+.buyout-panel__tooltip-row--note {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  padding-top: 0.25rem;
+}
+
+.buyout-panel__tooltip-row--free {
+  color: #4ADE80;
+  font-weight: 500;
+}
+
+/* Cautious button state (low offer when less flexible) */
+.buyout-panel__btn--cautious {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.buyout-panel__btn--cautious:hover:not(:disabled) {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+}
+
+/* Close button (compact X) */
+.buyout-panel__btn--close {
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  min-width: auto;
+  background: transparent;
+  border: 1px solid var(--schedule-border);
+}
+
+.buyout-panel__btn--close:hover:not(:disabled) {
+  background: #FEE2E2;
+  border-color: #EF4444;
+  color: #DC2626;
+}
+
+/* ============================================================================
+   COMPACT BUYOUT PANEL
+   ============================================================================ */
+
+/* Compact Header */
+.buyout-panel__compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.buyout-panel__compact-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.buyout-panel__compact-close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.buyout-panel__compact-close:hover:not(:disabled) {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.buyout-panel__compact-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Compact Mode - Tighter spacing */
+.buyout-panel--compact .buyout-panel__offer-price {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+}
+
+.buyout-panel--compact .buyout-panel__stepper {
+  gap: 0.75rem;
+}
+
+.buyout-panel--compact .buyout-panel__stepper-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.buyout-panel--compact .buyout-panel__offer-input {
+  width: 70px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.buyout-panel--compact .buyout-panel__currency {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Compact Actions */
+.buyout-panel__actions--compact {
+  margin-top: 0.5rem;
+}
+
+.buyout-panel__btn--send {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Compact Note toggle */
+.buyout-panel--compact .buyout-panel__note-toggle {
+  font-size: 0.8rem;
+  padding: 0.3rem 0;
+}
+
+.buyout-panel--compact .buyout-panel__message-input {
+  font-size: 0.85rem;
+}
+
+/* Compact Feedback */
+.buyout-panel--compact .buyout-panel__feedback {
+  margin-top: 0.4rem;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.8rem;
+}
+
+.buyout-panel--compact .buyout-panel__feedback-detail {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+/* Counter-Offer Content */
+.counter-offer-content {
+  padding: 1.5rem;
+}
+
+.counter-offer-content__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.counter-offer-content__comparison {
+  background: #F9FAFB;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.counter-offer-content__price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.counter-offer-content__label {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.counter-offer-content__value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.counter-offer-content__deviation {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #E5E7EB;
+  font-size: 0.875rem;
+  color: #6B7280;
+  text-align: center;
+}
+
+.counter-offer-content__input-section {
+  margin-bottom: 1.5rem;
+}
+
+.counter-offer-content__input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.counter-offer-content__input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.counter-offer-content__currency {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #6B7280;
+}
+
+.counter-offer-content__input {
+  width: 120px;
+  padding: 0.625rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid #E5E7EB;
+  border-radius: 6px;
+  text-align: right;
+}
+
+.counter-offer-content__input:focus {
+  outline: none;
+  border-color: #3B82F6;
+}
+
+.counter-offer-content__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.counter-offer-content__btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.counter-offer-content__btn--secondary {
+  background: white;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+}
+
+.counter-offer-content__btn--secondary:hover {
+  background: #F9FAFB;
+}
+
+.counter-offer-content__btn--primary {
+  background: #3B82F6;
+  border: 1px solid #3B82F6;
+  color: white;
+}
+
+.counter-offer-content__btn--primary:hover {
+  background: #2563EB;
+}
+
+.counter-offer-content__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   INCOMING REQUEST
+   ============================================================================ */
+
+.incoming-request {
+  background: var(--schedule-bg-white);
+  border: 1px solid var(--schedule-border);
+  border-radius: var(--schedule-radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.incoming-request--resolved {
+  opacity: 0.7;
+}
+
+.incoming-request__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.incoming-request__type-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.incoming-request__type {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.incoming-request__badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.incoming-request__badge--pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.incoming-request__badge--accepted {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.incoming-request__badge--declined {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.incoming-request__badge--countered {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.incoming-request__badge--expired {
+  background: #E5E7EB;
+  color: #6B7280;
+}
+
+.incoming-request__time {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.incoming-request__content {
+  margin-bottom: 1rem;
+}
+
+.incoming-request__description {
+  font-size: 0.9rem;
+  color: var(--schedule-text);
+  line-height: 1.4;
+  margin: 0 0 0.5rem;
+}
+
+.incoming-request__message {
+  background: var(--schedule-bg);
+  border-radius: 6px;
+  padding: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+.incoming-request__message-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.incoming-request__message-text {
+  font-size: 0.85rem;
+  color: var(--schedule-text);
+  margin: 0.25rem 0 0;
+  font-style: italic;
+}
+
+.incoming-request__amount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.incoming-request__amount-label {
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+}
+
+.incoming-request__amount-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--schedule-success);
+}
+
+.incoming-request__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.incoming-request__btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.incoming-request__btn--success {
+  background: #10B981;
+  border: 1px solid #10B981;
+  color: white;
+}
+
+.incoming-request__btn--success:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.incoming-request__btn--secondary {
+  background: var(--schedule-success);
+  border: 1px solid var(--schedule-success);
+  color: white;
+}
+
+.incoming-request__btn--secondary:hover:not(:disabled) {
+  background: #2563EB;
+  border-color: #2563EB;
+}
+
+.incoming-request__btn--outline {
+  background: var(--schedule-bg-white);
+  border: 1px solid var(--schedule-border);
+  color: var(--schedule-text);
+}
+
+.incoming-request__btn--outline:hover:not(:disabled) {
+  background: var(--schedule-bg);
+  border-color: var(--schedule-text-muted);
+}
+
+.incoming-request__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.incoming-request__resolved {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--schedule-border);
+}
+
+.incoming-request__resolved-text {
+  font-size: 0.85rem;
+  margin: 0;
+  font-style: italic;
+}
+
+.incoming-request__resolved-text--success {
+  color: #059669;
+}
+
+.incoming-request__resolved-text--declined {
+  color: #DC2626;
+}
+
+.incoming-request__resolved-text--countered {
+  color: var(--schedule-success);
+}
+
+.incoming-request__resolved-text--expired {
+  color: var(--schedule-text-muted);
+}

@@ -1,0 +1,494 @@
+/* schedule-dashboard: transactions */
+
+/* ============================================================================
+   TRANSACTION HISTORY
+   ============================================================================ */
+
+.transaction-history {
+  min-height: 200px;
+}
+
+.transaction-history__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1.25rem;
+  color: var(--schedule-text);
+}
+
+.transaction-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.transaction-history__net-flow {
+  margin-left: auto;
+}
+
+.transaction-history__filter {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--schedule-border);
+  font-size: 0.85rem;
+  background: white;
+}
+
+.transaction-history__empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--schedule-text-muted);
+}
+
+.transaction-history__table-wrapper {
+  overflow-x: auto;
+}
+
+.transaction-history__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-history__th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--schedule-bg);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.transaction-history__th--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.transaction-history__th--sortable:hover {
+  color: var(--schedule-primary);
+}
+
+.transaction-history__td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--schedule-border);
+  font-size: 0.9rem;
+}
+
+.transaction-history__row {
+  cursor: pointer;
+}
+
+.transaction-history__row--expanded {
+  background: var(--schedule-bg);
+}
+
+/* Highlighted row animation when scrolled to from calendar click */
+.transaction-history__row--highlighted {
+  animation: highlightRow 2s ease-out;
+}
+
+@keyframes highlightRow {
+  0% {
+    background: #FEF3C7;
+    box-shadow: 0 0 0 2px #F59E0B;
+  }
+
+  50% {
+    background: #FEF9C3;
+    box-shadow: 0 0 0 2px #FBBF24;
+  }
+
+  100% {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+.transaction-history__detail-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--schedule-border);
+  background: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.transaction-history__td--details {
+  padding: 0;
+  border-bottom: none;
+}
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge--complete {
+  background: #DBEAFE;
+  color: #065f46;
+}
+
+.status-badge--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge--declined {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-badge--cancelled {
+  background: var(--schedule-bg);
+  color: var(--schedule-text-muted);
+}
+
+.transaction-history__amount--positive {
+  color: var(--schedule-success);
+  font-weight: 600;
+}
+
+.transaction-history__amount--negative {
+  color: var(--schedule-danger);
+  font-weight: 600;
+}
+
+.transaction-details {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--schedule-border);
+  background: white;
+}
+
+.transaction-details__section {
+  margin-bottom: 1rem;
+}
+
+.transaction-details__subheading {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--schedule-text);
+}
+
+.transaction-details__thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.transaction-details__empty {
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+}
+
+.transaction-details__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.transaction-details__timeline-item {
+  display: flex;
+  gap: 1rem;
+  color: var(--schedule-text-muted);
+}
+
+.transaction-details__timeline-date {
+  min-width: 80px;
+}
+
+.transaction-details__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.transaction-details__btn--cancel {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--schedule-border);
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.transaction-details__btn--accept {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #16a34a;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.transaction-details__btn--accept:hover {
+  background: #16a34a;
+  color: white;
+}
+
+.transaction-details__btn--decline {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #9CA3AF;
+  background: #F3F4F6;
+  color: #6B7280;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.transaction-details__btn--decline:hover {
+  background: #E5E7EB;
+  color: #4B5563;
+}
+
+.transaction-details__btn--counter {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #6D28D9;
+  background: #EDE9FE;
+  color: #6D28D9;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.transaction-details__btn--counter:hover {
+  background: #6D28D9;
+  color: white;
+}
+
+.transaction-details__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Transaction Details Pricing Section */
+.transaction-details__pricing {
+  background: #F9FAFB;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.transaction-details__pricing-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.transaction-details__pricing-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.transaction-details__pricing-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.transaction-details__pricing-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.transaction-details__pricing-deviation {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.transaction-details__deviation-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.transaction-details__deviation-badge--fair {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.transaction-details__deviation-badge--low {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.transaction-details__deviation-badge--very-low {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.transaction-details__deviation-label {
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.transaction-history__td--incoming {
+  color: var(--schedule-success);
+  font-weight: 600;
+}
+
+.transaction-history__td--outgoing {
+  color: var(--schedule-danger);
+  font-weight: 600;
+}
+
+.transaction-history__row:hover {
+  background: var(--schedule-bg);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge--complete {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.status-badge--pending {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.status-badge--declined {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* Type Badges */
+.type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.type-badge--buyout {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.type-badge--swap {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+/* ============================================================================
+   MINIMALIST TABLE COMPONENTS (Book Refactoring Style)
+   ============================================================================ */
+
+/* Status Dot - Minimal status indicator */
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-dot__indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot--complete {
+  background-color: #22C55E;
+}
+
+.status-dot--pending {
+  background-color: #F59E0B;
+}
+
+.status-dot--declined {
+  background-color: #EF4444;
+}
+
+.status-dot--cancelled {
+  background-color: #9CA3AF;
+}
+
+.status-dot__label {
+  color: #6B7280;
+  font-size: 0.85rem;
+}
+
+/* Type Label - Plain text with subtle icon */
+.type-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #374151;
+  font-size: 0.85rem;
+}
+
+.type-label__icon {
+  font-size: 0.9rem;
+}
+
+.type-label__text {
+  font-weight: 500;
+}
+
+/* Chevron indicator for expandable rows */
+.transaction-history__chevron {
+  color: #9CA3AF;
+  font-size: 1.25rem;
+  font-weight: 300;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.transaction-history__chevron--expanded {
+  transform: rotate(90deg);
+}
+
+.transaction-history__td--action {
+  width: 40px;
+  text-align: center;
+}
+
+.transaction-history__th--action {
+  width: 40px;
+}
+
+/* Row hover shows chevron more prominently */
+.transaction-history__row:hover .transaction-history__chevron {
+  color: #6B7280;
+}

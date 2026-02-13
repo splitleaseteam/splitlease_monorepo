@@ -26,6 +26,7 @@ import ListingsTable from './components/ListingsTable.jsx';
 import { PRESET_ERROR_CODES, PRICE_MULTIPLIERS } from './constants.js';
 import './ListingsOverviewPage.css';
 import AdminHeader from '../../shared/AdminHeader/AdminHeader';
+import { formatCurrency } from '../../../lib/formatting/formatCurrency.js';
 
 // ============================================================================
 // LOADING STATE COMPONENT
@@ -100,9 +101,6 @@ function DescriptionModalContent({ listing }) {
 }
 
 function PricingModalContent({ listing }) {
-  const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
-
   return (
     <div className="lo-modal-pricing">
       <div className="lo-price-row">

@@ -12,7 +12,7 @@ import Header from '../../shared/Header';
 import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
 import Toast, { useToast } from '../../shared/Toast';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
-import { createListing, getListingById } from '../../../lib/listingCrudGeoPhotoPricingService';
+import { createListing, getListingById } from '../../../lib/listing/index.js';
 import { isGuest } from '../../../logic/rules/users/isGuest.js';
 import './styles/SelfListingPage.css';
 import '../../../styles/components/toast.css';

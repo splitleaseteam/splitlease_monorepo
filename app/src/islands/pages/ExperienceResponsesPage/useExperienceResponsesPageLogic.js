@@ -20,6 +20,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useToast } from '../../shared/Toast';
 import { supabase } from '../../../lib/supabase';
+import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 
 /**
  * Adapt response data from Supabase (Bubble column names) to frontend model
@@ -55,32 +56,13 @@ export function useExperienceResponsesPageLogic() {
   const [authState, setAuthState] = useState('checking'); // 'checking' | 'authorized' | 'unauthorized'
 
   // ===== DATA STATE =====
-  const [responses, setResponses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // ===== FILTER STATE =====
-  const [filters, setFilters] = useState({
-    name: '',
-    types: ['Guest', 'Host'], // Both selected by default
-  });
-
-  // ===== SELECTION STATE =====
-  const [selectedId, setSelectedId] = useState(null);
-
-  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
-  useEffect(() => {
-    // No redirect if not authenticated - this is an internal page accessible without login
-    // Always set authorized for internal pages
-    setAuthState('authorized');
-  }, []);
-
-  // ===== FETCH RESPONSES =====
-  const fetchResponses = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
+  const {
+    data: responses,
+    isLoading,
+    error,
+    execute: executeFetchResponses
+  } = useAsyncOperation(
+    async () => {
       // Query experiencesurvey table with Bubble column names
       const { data, error: fetchError } = await supabase
         .from('experiencesurvey')
@@ -108,21 +90,43 @@ export function useExperienceResponsesPageLogic() {
         throw fetchError;
       }
 
-      const adaptedResponses = (data || []).map(adaptResponse);
-      setResponses(adaptedResponses);
+      return (data || []).map(adaptResponse);
+    },
+    { initialData: [] }
+  );
 
-      // Auto-select first response if available
-      if (adaptedResponses.length > 0 && !selectedId) {
-        setSelectedId(adaptedResponses[0].id);
-      }
+  // Wrap execute to handle toast on error
+  const fetchResponses = useCallback(async () => {
+    try {
+      await executeFetchResponses();
     } catch (err) {
       console.error('[ExperienceResponses] Fetch error:', err);
-      setError(err.message || 'Failed to load responses');
       showToast({ title: 'Failed to load responses', type: 'error' });
-    } finally {
-      setIsLoading(false);
     }
-  }, [selectedId]);
+  }, [executeFetchResponses, showToast]);
+
+  // ===== FILTER STATE =====
+  const [filters, setFilters] = useState({
+    name: '',
+    types: ['Guest', 'Host'], // Both selected by default
+  });
+
+  // ===== SELECTION STATE =====
+  const [selectedId, setSelectedId] = useState(null);
+
+  // Auto-select first response when data loads
+  useEffect(() => {
+    if (responses && responses.length > 0 && !selectedId) {
+      setSelectedId(responses[0].id);
+    }
+  }, [responses, selectedId]);
+
+  // ===== AUTH CHECK (Optional - no redirect for internal pages) =====
+  useEffect(() => {
+    // No redirect if not authenticated - this is an internal page accessible without login
+    // Always set authorized for internal pages
+    setAuthState('authorized');
+  }, []);
 
   useEffect(() => {
     if (authState === 'authorized') {
@@ -206,7 +210,7 @@ export function useExperienceResponsesPageLogic() {
 
     // Loading & Error
     isLoading,
-    error,
+    error: error?.message || (error ? 'Failed to load responses' : null),
 
     // Selection
     selectedId,

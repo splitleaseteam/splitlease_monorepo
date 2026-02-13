@@ -1,0 +1,500 @@
+/* schedule-dashboard: calendar */
+
+/* ============================================================================
+   SCHEDULE CALENDAR
+   ============================================================================ */
+
+/* 2-Month Calendar Container */
+.schedule-calendar {
+  min-height: 350px;
+}
+
+.schedule-calendar__dual-container {
+  display: flex;
+  gap: 2rem;
+}
+
+.schedule-calendar__month-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-calendar__month-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  color: var(--schedule-text);
+  text-align: center;
+}
+
+.schedule-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.schedule-calendar__month {
+  display: none;
+}
+
+.schedule-calendar__month {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--schedule-text);
+}
+
+.schedule-calendar__nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--schedule-border);
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-calendar__nav:hover {
+  background: var(--schedule-bg);
+}
+
+.schedule-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-calendar__weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  padding: 0.5rem 0;
+}
+
+.schedule-calendar__grid {
+  display: block;
+  gap: 0;
+}
+
+.schedule-calendar__week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  background: transparent;
+}
+
+.schedule-calendar__week-row--striped {
+  background: #F9FAFB;
+}
+
+.schedule-calendar__dual-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.schedule-calendar__day {
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.schedule-calendar__day:disabled {
+  cursor: default;
+}
+
+.schedule-calendar__day--empty {
+  background: transparent;
+}
+
+.schedule-calendar__day--mine {
+  background: #3B82F6;
+  color: white;
+}
+
+.schedule-calendar__day--cotenant,
+.schedule-calendar__day--roommate {
+  background: white;
+  border: 2px solid var(--schedule-border);
+}
+
+.schedule-calendar__day--cotenant:hover,
+.schedule-calendar__day--roommate:hover {
+  border-color: var(--schedule-primary);
+  background: var(--schedule-bg);
+}
+
+.schedule-calendar__day--pending {
+  background: #FEF3C7;
+  border: 2px solid #F59E0B;
+}
+
+.schedule-calendar__day--blocked {
+  background: #FEE2E2;
+  color: #991B1B;
+  text-decoration: line-through;
+}
+
+.schedule-calendar__day--outside {
+  background: #F3F4F6;
+  color: #9CA3AF;
+}
+
+.schedule-calendar__day--selected {
+  background: var(--schedule-primary) !important;
+  color: white !important;
+  border-color: var(--schedule-primary) !important;
+}
+
+/* Adjacent nights - recommended to extend stay */
+.schedule-calendar__day--adjacent {
+  background: white;
+  border: 2px dashed #3B82F6;
+  position: relative;
+}
+
+.schedule-calendar__day--adjacent:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
+}
+
+/* Pending date change request indicator */
+.schedule-calendar__day--pending-change {
+  position: relative;
+}
+
+.schedule-calendar__day--pending-change::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white;
+}
+
+/* Inline date change indicator element */
+.schedule-calendar__day-change-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white;
+}
+
+/* Pending requests badge in legend */
+.schedule-calendar__pending-badge {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #F59E0B;
+}
+
+.schedule-calendar__legend-item--badge {
+  margin-left: 8px;
+}
+
+.schedule-calendar__day--adjacent::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background: #3B82F6;
+  border-radius: 50%;
+}
+
+/* Clickable day cursor */
+.schedule-calendar__day--clickable {
+  cursor: pointer;
+}
+
+/* Day number wrapper (for stacking with transaction amount) */
+.schedule-calendar__day-number {
+  display: block;
+  line-height: 1.2;
+}
+
+/* Days with historical transactions */
+.schedule-calendar__day--has-transaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.schedule-calendar__day--has-transaction:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Transaction amount display */
+.schedule-calendar__day-transaction {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 1px;
+  opacity: 0.7;
+}
+
+/* Incoming transaction (positive) - green */
+.schedule-calendar__day--transaction-incoming {
+  background: #EFF6FF;
+  border: 1px solid #3B82F6;
+}
+
+.schedule-calendar__day--transaction-incoming .schedule-calendar__day-transaction {
+  color: #2563EB;
+}
+
+/* Outgoing transaction (negative) - red */
+.schedule-calendar__day--transaction-outgoing {
+  background: #FEF2F2;
+  border: 1px solid #EF4444;
+}
+
+.schedule-calendar__day--transaction-outgoing .schedule-calendar__day-transaction {
+  color: #DC2626;
+}
+
+/* Neutral transaction (low amount < $5, swaps) - grey */
+.schedule-calendar__day--transaction-neutral {
+  background: #F9FAFB;
+  border: 1px solid #D1D5DB;
+}
+
+.schedule-calendar__day--transaction-neutral .schedule-calendar__day-transaction {
+  color: #6B7280;
+}
+
+.schedule-calendar__legend {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 0.85rem;
+}
+
+.schedule-calendar__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--schedule-text-muted);
+}
+
+.schedule-calendar__legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.schedule-calendar__legend-color--mine {
+  background: #3B82F6;
+}
+
+.schedule-calendar__legend-color--cotenant,
+.schedule-calendar__legend-color--roommate {
+  background: white;
+  border: 2px solid var(--schedule-border);
+}
+
+.schedule-calendar__legend-color--pending {
+  background: #FEF3C7;
+  border: 2px solid #F59E0B;
+}
+
+.schedule-calendar__legend-color--adjacent {
+  background: white;
+  border: 2px dashed #3B82F6;
+}
+
+/* ============================================================================
+   SHARED NIGHTS CALENDAR INDICATOR
+   ============================================================================ */
+
+.schedule-calendar__day--shared {
+  position: relative;
+  background: linear-gradient(135deg, #E8F5E9 50%, #BBDEFB 50%) !important;
+  border: 2px solid #9575CD !important;
+}
+
+.schedule-calendar__day--shared::after {
+  content: '\1F465';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.65rem;
+}
+
+/* ============================================================================
+   CALENDAR PRICE OVERLAYS (Pricing Mode)
+   ============================================================================ */
+
+/* Day cells with price overlay */
+.schedule-calendar__day--has-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+  position: relative;
+}
+
+/* Price bar displayed on user's nights */
+.schedule-calendar__price-bar {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+/* Price overlay tooltip styling for adjacent co-tenant prices */
+.schedule-calendar__price-bar[title] {
+  cursor: help;
+  opacity: 0.85;
+}
+
+.schedule-calendar__price-bar[title]:hover {
+  opacity: 1;
+}
+
+/* Tier-based price bar colors */
+.schedule-calendar__price-bar[data-tier="within"] {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.schedule-calendar__price-bar[data-tier="near"] {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+.schedule-calendar__price-bar[data-tier="limit"] {
+  background: var(--schedule-bg-light);
+  color: var(--schedule-text-secondary);
+  border: 1px solid var(--schedule-border);
+}
+
+/* ==========================================================================
+   PRICING MODE CALENDAR - HIGH CONTRAST ACCESSIBILITY
+   WCAG AAA Target: 7:1 contrast ratio for normal text, 4.5:1 for large text
+   ========================================================================== */
+
+/* Pricing mode container */
+.schedule-dashboard__calendar--pricing {
+  border-color: var(--schedule-primary-light);
+}
+
+/* HIGH CONTRAST: User's Nights - Light background with dark text */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--mine {
+  position: relative;
+  background-color: #DBEAFE !important; /* Very light blue - high contrast base */
+  color: #1E3A5F !important;            /* Dark blue text - WCAG AAA compliant */
+  border: 2px solid #2563EB !important; /* Strong border definition */
+  font-weight: 700 !important;
+  font-size: 1.05rem;
+}
+
+/* Day number inside user's nights - extra emphasis */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--mine .schedule-calendar__day-number {
+  color: #1E3A5F;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* In pricing mode, hide borders/styling on non-user days */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--cotenant,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--roommate,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--available,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--pending,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--recommended,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day--adjacent {
+  border: none;
+  background: transparent;
+}
+
+/* Hide status dots/markers (pseudo-elements) in pricing mode */
+.schedule-dashboard__calendar--pricing .schedule-calendar__day::after,
+.schedule-dashboard__calendar--pricing .schedule-calendar__day::before {
+  display: none;
+}
+
+/* HIGH CONTRAST: Price Badge/Pill - Dark background, white text */
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar {
+  background-color: #1E3A5F !important; /* Dark blue background */
+  color: #FFFFFF !important;            /* White text for max contrast */
+  font-weight: 600;
+  font-size: 0.8rem;                    /* Larger for readability */
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-top: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Override tier-specific colors in pricing mode for consistency */
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar[data-tier="within"],
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar[data-tier="near"],
+.schedule-dashboard__calendar--pricing .schedule-calendar__price-bar[data-tier="limit"] {
+  background-color: #1E3A5F !important;
+  color: #FFFFFF !important;
+}
+
+/* Month Headers - Larger and bolder */
+.schedule-dashboard__calendar--pricing .schedule-calendar__month-header,
+.schedule-dashboard__calendar--pricing h3 {
+  font-size: 1.25rem;
+  color: #111827;
+  font-weight: 700;
+}
+
+/* Weekday Labels - Higher contrast */
+.schedule-dashboard__calendar--pricing .schedule-calendar__weekday,
+.schedule-dashboard__calendar--pricing .schedule-calendar__header {
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Hide legend in pricing mode - reduces visual clutter */
+.schedule-dashboard__calendar--pricing .schedule-calendar__legend {
+  display: none;
+}
+
+/* Remove top gap in pricing mode calendar */
+.schedule-dashboard__calendar--pricing {
+  padding-top: 0.75rem;
+}

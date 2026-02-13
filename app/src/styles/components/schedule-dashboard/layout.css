@@ -1,0 +1,695 @@
+/* schedule-dashboard: layout */
+
+/**
+ * Schedule Dashboard - Core Layout Styles
+ *
+ * Desktop-first layout with CSS Grid.
+ * Purple theme matching Split Lease design system.
+ */
+
+/* ============================================================================
+   VARIABLES
+   ============================================================================ */
+
+:root {
+  --schedule-primary: #31135D;
+  --schedule-primary-light: #6D31C2;
+  --schedule-accent: #5B5FCF;
+  --schedule-success: #3B82F6;
+  --schedule-warning: #F59E0B;
+  --schedule-danger: #EF4444;
+  --schedule-bg: #F7F2FA;
+  --schedule-bg-light: #F9FAFB;
+  --schedule-bg-white: #FFFFFF;
+  --schedule-border: #E5E7EB;
+  --schedule-text: #1F2937;
+  --schedule-text-muted: #6B7280;
+  --schedule-radius: 12px;
+  --schedule-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   MAIN LAYOUT
+   ============================================================================ */
+
+.schedule-dashboard {
+  min-height: 100vh;
+  background: var(--schedule-bg);
+  padding: 0 0 2rem;
+}
+
+.schedule-dashboard__grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.schedule-dashboard__row {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.schedule-dashboard__row--full {
+  grid-template-columns: 1fr;
+}
+
+.schedule-dashboard__section {
+  background: var(--schedule-bg-white);
+  border-radius: var(--schedule-radius);
+  box-shadow: var(--schedule-shadow);
+  padding: 1.5rem;
+}
+
+.schedule-dashboard__profile {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.schedule-dashboard__chat {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* ============================================================================
+   ASYMMETRIC TWO-COLUMN LAYOUT (2.5:1)
+   ============================================================================ */
+
+.schedule-dashboard__columns {
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 380px);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.schedule-dashboard__column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Left column - main content */
+.schedule-dashboard__column--left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Right column - sidebar (static) */
+.schedule-dashboard__column--right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Left column transaction history spacing */
+.schedule-dashboard__column--left .schedule-dashboard__history {
+  margin-top: 1.5rem;
+}
+
+/* Pricing Controls - Full Width Below Calendar */
+.schedule-dashboard__pricing-controls {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+/* Section with drawer open - remove bottom border radius for attached look */
+.schedule-dashboard__section--drawer-open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+
+/* ============================================================================
+   DRAWER HANDLE (Summary Bar)
+   ============================================================================ */
+
+.schedule-dashboard__drawer-handle {
+  cursor: pointer;
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+  border-top: none;
+  border-radius: 0 0 var(--schedule-radius) var(--schedule-radius);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.schedule-dashboard__drawer-handle:hover {
+  background: var(--schedule-border);
+}
+
+.schedule-dashboard__drawer-handle:focus-visible {
+  outline: 2px solid var(--schedule-primary);
+  outline-offset: -2px;
+}
+
+/* When drawer is open, handle becomes part of the drawer */
+.schedule-dashboard__drawer-handle--open {
+  background: var(--schedule-bg-white);
+  border-radius: 0;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.schedule-dashboard__drawer-handle-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--schedule-text);
+}
+
+.schedule-dashboard__drawer-chevron {
+  font-size: 0.7rem;
+  color: var(--schedule-text-muted);
+  transition: transform 0.2s ease;
+}
+
+/* ============================================================================
+   DRAWER CONTENT
+   ============================================================================ */
+
+.schedule-dashboard__drawer {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+.schedule-dashboard__drawer--open {
+  max-height: 800px;
+  opacity: 1;
+}
+
+/* Drawer section styling - attached to handle */
+.schedule-dashboard__drawer .schedule-dashboard__section {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: none;
+  margin-top: -1px;
+}
+
+/* ============================================================================
+   LOADING & ERROR STATES
+   ============================================================================ */
+
+.schedule-loading,
+.schedule-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.schedule-loading__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--schedule-border);
+  border-top-color: var(--schedule-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.schedule-error__icon {
+  width: 48px;
+  height: 48px;
+  background: var(--schedule-danger);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.schedule-error__retry {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ============================================================================
+   LEASE INFO BAR
+   ============================================================================ */
+
+.lease-info-bar {
+  background: var(--schedule-primary);
+  color: white;
+  padding: 1.5rem;
+}
+
+.lease-info-bar__content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.lease-info-bar__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.lease-info-bar__address {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.lease-info-bar__cotenant,
+.lease-info-bar__roommate,
+.lease-info-bar__period {
+  text-align: right;
+}
+
+.lease-info-bar__label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  margin-bottom: 0.25rem;
+}
+
+.lease-info-bar__name,
+.lease-info-bar__dates {
+  font-weight: 500;
+}
+
+/* ============================================================================
+   DASHBOARD MODE TOGGLE
+   ============================================================================ */
+
+.schedule-dashboard__mode-toggle {
+  padding: 0.75rem 1rem;
+  background: var(--schedule-bg-white);
+  border-top: 1px solid var(--schedule-border);
+  border-radius: 0;
+}
+
+.schedule-dashboard__mode-toggle--bottom {
+  margin-top: auto;
+  border-top: none;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.dashboard-mode-toggle {
+  display: flex;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.dashboard-mode-toggle__btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-mode-toggle__btn:hover {
+  color: var(--schedule-text);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.dashboard-mode-toggle__btn--active {
+  background: var(--schedule-bg-white);
+  color: var(--schedule-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.dashboard-mode-toggle__btn--active:hover {
+  background: var(--schedule-bg-white);
+  color: var(--schedule-primary);
+}
+
+.dashboard-mode-toggle__icon {
+  font-size: 1rem;
+}
+
+.dashboard-mode-toggle__label {
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   PERSPECTIVE BANNER (Dev-only)
+   ============================================================================ */
+
+.schedule-dashboard__perspective-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(90deg, #FDE68A 0%, #FCD34D 100%);
+  color: #92400E;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 0.875rem;
+  border-bottom: 2px solid #F59E0B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.schedule-dashboard__perspective-banner strong {
+  font-weight: 600;
+}
+
+.schedule-dashboard__perspective-banner a {
+  margin-left: 16px;
+  color: #92400E;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.schedule-dashboard__perspective-banner a:hover {
+  color: #78350F;
+}
+
+/* ============================================================================
+   REQUEST TYPE SELECTOR
+   ============================================================================ */
+
+.request-type-selector {
+  padding: 1rem;
+}
+
+.request-type-selector__heading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin: 0 0 1rem;
+}
+
+.request-type-selector__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.request-type-selector__button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--schedule-bg);
+  border: 2px solid var(--schedule-border);
+  border-radius: var(--schedule-radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.request-type-selector__button:hover:not(:disabled) {
+  border-color: var(--schedule-primary-light);
+  background: #F3E8FF;
+}
+
+.request-type-selector__button--selected {
+  border-color: var(--schedule-primary);
+  background: #EDE9FE;
+}
+
+.request-type-selector__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.request-type-selector__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--schedule-bg-white);
+  color: var(--schedule-primary);
+}
+
+.request-type-selector__button--selected .request-type-selector__icon {
+  background: var(--schedule-primary);
+  color: white;
+}
+
+.request-type-selector__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.request-type-selector__description {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+  line-height: 1.3;
+}
+
+/* ============================================================================
+   REQUEST CONFIRMATION DIALOG
+   ============================================================================ */
+
+.request-confirmation-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.request-confirmation {
+  background: var(--schedule-bg-white);
+  border-radius: var(--schedule-radius);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 420px;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+.request-confirmation__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin: 0 0 1rem;
+}
+
+.request-confirmation__text {
+  font-size: 0.95rem;
+  color: var(--schedule-text);
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.request-confirmation__message {
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.request-confirmation__message-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--schedule-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.request-confirmation__message-text {
+  font-size: 0.875rem;
+  color: var(--schedule-text);
+  margin: 0;
+  font-style: italic;
+}
+
+.request-confirmation__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.request-confirmation__btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.request-confirmation__btn--cancel {
+  background: var(--schedule-bg);
+  border: 1px solid var(--schedule-border);
+  color: var(--schedule-text);
+}
+
+.request-confirmation__btn--cancel:hover:not(:disabled) {
+  background: var(--schedule-border);
+}
+
+.request-confirmation__btn--confirm {
+  background: var(--schedule-primary);
+  border: 1px solid var(--schedule-primary);
+  color: white;
+}
+
+.request-confirmation__btn--confirm:hover:not(:disabled) {
+  background: var(--schedule-primary-light);
+  border-color: var(--schedule-primary-light);
+}
+
+.request-confirmation__btn--destructive {
+  background: var(--schedule-danger);
+  border-color: var(--schedule-danger);
+}
+
+.request-confirmation__btn--destructive:hover:not(:disabled) {
+  background: #DC2626;
+  border-color: #DC2626;
+}
+
+.request-confirmation__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   RESERVATION HEADER (After Reservation / In-Lease View)
+   ============================================================================ */
+
+.reservation-header {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--schedule-bg-white);
+  border-bottom: 1px solid var(--schedule-border);
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+.reservation-header__back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--schedule-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.reservation-header__back:hover {
+  text-decoration: underline;
+}
+
+.reservation-header__divider {
+  width: 1px;
+  height: 24px;
+  background: var(--schedule-border);
+  margin: 0 1rem;
+}
+
+.reservation-header__address {
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.reservation-header__cotenant,
+.reservation-header__roommate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reservation-header__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--schedule-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.reservation-header__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reservation-header__initials {
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.reservation-header__name {
+  color: var(--schedule-text);
+  font-weight: 500;
+}
+
+.reservation-header__dates {
+  color: var(--schedule-text-muted);
+  font-size: 0.85rem;
+}
+
+.reservation-header__help {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--schedule-border);
+  background: var(--schedule-bg-white);
+  color: var(--schedule-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.reservation-header__help:hover {
+  background: var(--schedule-bg);
+  border-color: var(--schedule-primary);
+  color: var(--schedule-primary);
+}

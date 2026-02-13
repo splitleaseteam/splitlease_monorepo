@@ -1,0 +1,941 @@
+/* listing-dashboard: layout */
+
+/* CSS Variables for Dashboard */
+:root {
+  --ld-primary-contrast: #f1ffff;
+  --ld-success: #31135d;
+  --ld-background: #f7f8f9;
+  --ld-bg: #ffffff;
+  --ld-surface-alt: #f4f3fb;
+  --ld-text-primary: #1c274c;
+  --ld-text-secondary: #6b7280;
+  --ld-accent-purple: #6b4fbb;
+  --ld-border-color: #e5e7eb;
+  --ld-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Container */
+.listing-dashboard {
+  min-height: 100vh;
+  background-color: var(--ld-background);
+  padding: 24px 16px;
+  padding-top: 100px; /* Account for fixed header */
+}
+
+.listing-dashboard__container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.listing-dashboard__card {
+  background-color: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--ld-card-shadow);
+}
+
+/* Loading, Error, Not Found States */
+.listing-dashboard__loading,
+.listing-dashboard__error,
+.listing-dashboard__not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  text-align: center;
+}
+
+.listing-dashboard__loading p,
+.listing-dashboard__error p,
+.listing-dashboard__not-found p {
+  font-size: 18px;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard__error button,
+.listing-dashboard__not-found button {
+  padding: 12px 24px;
+  background-color: var(--ld-accent-purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.listing-dashboard__error button:hover,
+.listing-dashboard__not-found button:hover {
+  background-color: var(--ld-success);
+}
+
+.listing-dashboard-section-loading {
+  padding: 16px;
+  color: var(--ld-text-secondary);
+  font-size: 14px;
+}
+
+/* Alert Banner */
+.listing-dashboard-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 16px;
+  padding: 12px 16px;
+  background-color: #eff6ff;
+  border: 2px dashed #93c5fd;
+  border-radius: 8px;
+  position: relative;
+  width: calc(100% - 32px);
+  text-align: left;
+  font-family: inherit;
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-alert {
+    gap: 12px;
+    margin: 16px 24px;
+    padding: 16px 20px;
+    width: calc(100% - 48px);
+  }
+}
+
+/* Clickable variant */
+.listing-dashboard-alert--clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.listing-dashboard-alert--clickable:hover {
+  background-color: #dbeafe;
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.listing-dashboard-alert--clickable:active {
+  transform: translateY(0);
+}
+
+.listing-dashboard-alert__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--ld-accent-purple);
+  border-radius: 50%;
+  color: white;
+}
+
+.listing-dashboard-alert__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.listing-dashboard-alert__text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ld-text-primary);
+  margin: 0;
+}
+
+.listing-dashboard-alert__subtext {
+  font-size: 13px;
+  color: var(--ld-text-secondary);
+  margin: 0;
+}
+
+.listing-dashboard-alert__chevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ld-accent-purple);
+  transition: transform 0.2s;
+}
+
+.listing-dashboard-alert--clickable:hover .listing-dashboard-alert__chevron {
+  transform: translateX(4px);
+}
+
+/* DEAD? Phase 14 - ActionCardGrid removed from main listing dashboard flow */
+/* Action Card Grid */
+.listing-dashboard-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px 24px;
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-action-grid {
+    gap: 20px;
+    padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .listing-dashboard-action-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* DEAD? Phase 14 - ActionCard removed with ActionCardGrid */
+/* Action Card */
+.listing-dashboard-action-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 16px;
+  background-color: white;
+  border: 1px solid var(--ld-border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-action-card {
+    gap: 16px;
+    padding: 32px;
+    border-radius: 16px;
+  }
+}
+
+.listing-dashboard-action-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.listing-dashboard-action-card__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border-radius: 50%;
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-action-card__badge {
+    top: 12px;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.listing-dashboard-action-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  color: var(--ld-accent-purple);
+}
+
+.listing-dashboard-action-card__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-action-card__icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .listing-dashboard-action-card__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.listing-dashboard-action-card__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ld-text-primary);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.listing-dashboard-action-card__tooltip {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  padding: 6px 12px;
+  background: var(--ld-text-primary);
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.listing-dashboard-action-card:hover .listing-dashboard-action-card__tooltip,
+.listing-dashboard-action-card:focus-visible .listing-dashboard-action-card__tooltip {
+  opacity: 1;
+}
+
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  background: var(--ld-text-primary);
+  color: white;
+  font-size: 11px;
+  line-height: 1.4;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-action-card__label {
+    font-size: 14px;
+  }
+}
+
+/* Secondary Actions (legacy -- kept for compatibility) */
+.listing-dashboard-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--ld-border-color);
+}
+
+/* DEAD? Phase 14 - ActionBar replaced by ListingHeader actions */
+/* Action Bar -- compact horizontal toolbar */
+.listing-dashboard-action-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--ld-border-color);
+}
+
+@media (max-width: 640px) {
+  .listing-dashboard-action-bar {
+    padding: 10px 16px;
+    gap: 6px;
+  }
+}
+
+.listing-dashboard-action-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--ld-border-color);
+  border-radius: 8px;
+  background: var(--ld-surface-alt);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--ld-text-primary);
+  position: relative;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .listing-dashboard-action-bar__btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+.listing-dashboard-action-bar__btn:hover {
+  background: white;
+  border-color: var(--ld-accent-purple);
+  color: var(--ld-accent-purple);
+}
+
+.listing-dashboard-action-bar__btn--ai {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.listing-dashboard-action-bar__btn--ai:hover {
+  opacity: 0.9;
+  color: white;
+  border-color: transparent;
+}
+
+.listing-dashboard-action-bar__badge {
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* DEAD? Phase 14 - MiniPanels removed from main listing dashboard flow */
+/* Mini Panels */
+.listing-dashboard-mini-panels {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 0 16px 16px;
+}
+
+@media (min-width: 1200px) {
+  .listing-dashboard-mini-panels {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-mini-panels {
+    padding: 0 24px 16px;
+  }
+}
+
+.listing-dashboard-mini-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  min-height: 56px;
+  flex: 1 1 200px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--ld-surface-alt);
+  border: 1px solid #e8e6f5;
+  text-decoration: none;
+  color: inherit;
+}
+
+.listing-dashboard-mini-panel__icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--ld-accent-purple);
+  background: #eeebfb;
+  flex-shrink: 0;
+}
+
+.listing-dashboard-mini-panel__content {
+  min-width: 0;
+}
+
+.listing-dashboard-mini-panel__primary,
+.listing-dashboard-mini-panel__secondary {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listing-dashboard-mini-panel__primary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-mini-panel__secondary {
+  font-size: 12px;
+  color: var(--ld-text-secondary);
+}
+
+.listing-dashboard-mini-panel--clickable {
+  cursor: pointer;
+}
+
+.listing-dashboard-mini-panel--clickable:hover {
+  border-color: #d9d2f6;
+  background: #efecfc;
+}
+
+.listing-dashboard-mini-panel--clickable:focus-visible {
+  outline: 2px solid var(--ld-accent-purple);
+  outline-offset: 2px;
+}
+
+.listing-dashboard-secondary__ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: white;
+  border: 2px solid #1f2937;
+  border-radius: 50px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listing-dashboard-secondary__ai-btn:hover {
+  background-color: #f9fafb;
+}
+
+.listing-dashboard-secondary__dropdown {
+  position: relative;
+}
+
+.listing-dashboard-secondary__dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: white;
+  border: 1px solid var(--ld-border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ld-text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.listing-dashboard-secondary__dropdown-btn:hover {
+  border-color: var(--ld-accent-purple);
+}
+
+.listing-dashboard-secondary__dropdown-btn:focus {
+  outline: none;
+  border-color: var(--ld-accent-purple);
+  box-shadow: 0 0 0 3px rgba(107, 79, 187, 0.1);
+}
+
+.listing-dashboard-secondary__dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 200px;
+  background-color: white;
+  border: 1px solid var(--ld-border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.listing-dashboard-secondary__dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: var(--ld-text-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listing-dashboard-secondary__dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+.listing-dashboard-secondary__dropdown-item:not(:last-child) {
+  border-bottom: 1px solid var(--ld-border-color);
+}
+
+.listing-dashboard-secondary__dropdown-item--active {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.listing-dashboard-secondary__dropdown-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.listing-dashboard-secondary__dropdown-dot--complete {
+  background-color: #22c55e;
+}
+
+.listing-dashboard-secondary__dropdown-dot--partial {
+  background-color: #f59e0b;
+}
+
+.listing-dashboard-secondary__dropdown-dot--missing {
+  background-color: #ef4444;
+}
+
+/* Section Common Styles */
+.listing-dashboard-section {
+  padding: 24px;
+  margin: 16px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--ld-border-color);
+}
+
+@media (max-width: 640px) {
+  .listing-dashboard-section {
+    padding: 16px;
+    margin: 12px;
+    border-radius: 12px;
+  }
+}
+
+.listing-dashboard-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--ld-border-color);
+}
+
+.listing-dashboard-section__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.listing-dashboard-section__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ld-text-primary);
+  margin: 0;
+}
+
+.listing-dashboard-section__edit {
+  background-color: var(--ld-success);
+  border: none;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 20px;
+  border-radius: 20px;
+  transition: background-color 0.2s;
+  text-decoration: none;
+}
+
+.listing-dashboard-section__edit:hover {
+  background-color: #1f0b38;
+}
+
+/* Section Footer with bottom edit button */
+.listing-dashboard-section__footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+  margin-top: 16px;
+  border-top: 1px solid var(--ld-border-color);
+}
+
+.listing-dashboard-section__edit-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: var(--ld-accent-purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.listing-dashboard-section__edit-bottom:hover {
+  background-color: #7c3aed;
+  transform: translateY(-1px);
+}
+
+.listing-dashboard-section__edit-bottom:active {
+  transform: translateY(0);
+}
+
+.listing-dashboard-section__edit-bottom svg {
+  flex-shrink: 0;
+}
+
+.listing-dashboard-section__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: var(--ld-accent-purple);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listing-dashboard-section__add-btn:hover {
+  background-color: var(--ld-success);
+}
+
+/* Collapsible Section */
+.listing-dashboard-collapsible {
+  border-top: 1px solid var(--ld-border-color);
+}
+
+.listing-dashboard-collapsible__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.listing-dashboard-collapsible__header:hover {
+  background-color: #f9fafb;
+}
+
+.listing-dashboard-collapsible__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ld-text-primary);
+}
+
+.listing-dashboard-collapsible__chevron {
+  font-size: 10px;
+  color: var(--ld-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.listing-dashboard-collapsible__chevron--expanded {
+  transform: rotate(90deg);
+}
+
+.listing-dashboard-collapsible__body {
+  transition: max-height 0.3s ease;
+}
+
+.listing-dashboard-collapsible__summary {
+  padding: 0 24px 14px;
+  font-size: 13px;
+  color: var(--ld-text-secondary);
+  margin: 0;
+}
+
+/* ===== Sections Grid -- Two-Column Desktop Layout ===== */
+.listing-dashboard-sections-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1200px) {
+  .listing-dashboard-sections-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .listing-dashboard-sections-grid > .listing-dashboard-section--full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Inline section wrapper */
+.listing-dashboard-inline-section {
+  padding: 8px 16px;
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-inline-section {
+    padding: 12px 24px;
+  }
+}
+
+/* Divider between inline sections */
+.listing-dashboard-inline-divider {
+  margin: 0 16px;
+  border: none;
+  border-top: 1px solid var(--ld-border-color);
+}
+
+@media (min-width: 768px) {
+  .listing-dashboard-inline-divider {
+    margin: 0 24px;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .listing-dashboard {
+    padding: 16px 8px;
+  }
+
+  .listing-dashboard__card {
+    border-radius: 16px;
+  }
+
+  .listing-dashboard-action-grid {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .listing-dashboard-action-bar {
+    padding: 10px 16px 8px;
+    gap: 8px;
+  }
+
+  .listing-dashboard-action-bar__btn {
+    height: 34px;
+    font-size: 13px;
+    padding: 0 10px;
+  }
+
+  .listing-dashboard-action-card {
+    padding: 16px 12px;
+    gap: 8px;
+  }
+
+  .listing-dashboard-action-card__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .listing-dashboard-action-card__icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .listing-dashboard-action-card__label {
+    font-size: 12px;
+  }
+
+  /* Hide alert banner subtext on small mobile */
+  .listing-dashboard-alert__subtext {
+    display: none;
+  }
+
+  .listing-dashboard-alert {
+    padding: 10px 14px;
+    margin: 10px 12px;
+    width: calc(100% - 24px);
+  }
+
+  .listing-dashboard-alert__icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .listing-dashboard-alert__text {
+    font-size: 13px;
+  }
+
+  .listing-dashboard-secondary {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .listing-dashboard-secondary__ai-btn,
+  .listing-dashboard-secondary__dropdown-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .listing-dashboard-secondary__dropdown-menu {
+    left: 0;
+    right: 0;
+  }
+}
+
+/* ===== Desktop Compact Spacing ===== */
+@media (min-width: 1200px) {
+  .listing-dashboard-collapsible {
+    margin-bottom: 0;
+  }
+  .listing-dashboard-collapsible__header {
+    padding: 10px 16px;
+  }
+  .listing-dashboard-collapsible__summary {
+    font-size: 12px;
+    padding: 0 16px 8px;
+    margin-top: 0;
+  }
+  .listing-dashboard-collapsible__body {
+    padding: 0;
+  }
+  .listing-dashboard-collapsible__title {
+    font-size: 14px;
+  }
+
+  /* Property info compact */
+  .listing-dashboard-property {
+    padding: 12px 16px;
+  }
+
+  /* Mini panels compact */
+  .listing-dashboard-mini-panels {
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px 16px;
+  }
+  .listing-dashboard-mini-panel {
+    padding: 8px 12px;
+  }
+
+  /* Insights compact */
+  .listing-dashboard-insights {
+    padding: 10px 16px;
+  }
+  .listing-dashboard-insights__card {
+    padding: 8px 12px;
+  }
+
+  /* Action cards compact */
+  .listing-dashboard-actions {
+    padding: 8px 16px;
+    gap: 8px;
+  }
+
+  /* Secondary actions compact */
+  .listing-dashboard-secondary {
+    padding: 4px 16px 8px;
+  }
+}

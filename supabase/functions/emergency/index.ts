@@ -53,7 +53,7 @@ function sendToSlack(channel: string, message: { text: string }): void {
   const webhookEnvMap: Record<string, string> = {
     database: 'SLACK_WEBHOOK_DATABASE_WEBHOOK',
     acquisition: 'SLACK_WEBHOOK_ACQUISITION',
-    general: 'SLACK_WEBHOOK_DB_GENERAL',
+    general: 'SLACK_WEBHOOK_GENERAL',
   };
   const webhookUrl = Deno.env.get(webhookEnvMap[channel] || '');
   if (!webhookUrl) {

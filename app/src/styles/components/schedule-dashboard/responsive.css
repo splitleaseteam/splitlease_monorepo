@@ -1,0 +1,341 @@
+/* schedule-dashboard: responsive */
+
+/* ============================================================================
+   RESPONSIVE - Buyout Settings (900px)
+   ============================================================================ */
+
+@media (max-width: 900px) {
+  .buyout-settings__content {
+    grid-template-columns: 1fr;
+  }
+
+  .buyout-settings__visualization {
+    order: -1;
+    min-height: 200px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Main Layout (Tablet/Mobile - 1000px)
+   ============================================================================ */
+
+@media (max-width: 1000px) {
+  .schedule-dashboard__row {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-dashboard__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-dashboard__column--right {
+    position: static;
+  }
+
+  /* Stack calendar months on tablet */
+  .schedule-calendar__dual-container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Revert to vertical buyout panel on mobile */
+  .buyout-panel--compact .buyout-panel__content-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .buyout-panel--compact .buyout-panel__actions {
+    flex-direction: column;
+  }
+
+  .buyout-panel--compact .buyout-panel__btn {
+    width: 100%;
+  }
+
+  .lease-info-bar__content {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .lease-info-bar__cotenant,
+  .lease-info-bar__roommate,
+  .lease-info-bar__period {
+    text-align: left;
+  }
+
+  /* Drawer responsive */
+  .schedule-dashboard__drawer-handle {
+    padding: 10px 14px;
+  }
+
+  .schedule-dashboard__drawer-handle-text {
+    font-size: 0.85rem;
+  }
+
+  /* Chat thread normal height on mobile */
+  .schedule-dashboard__column--right .chat-thread {
+    min-height: 400px;
+  }
+
+  .schedule-dashboard__column--right .chat-thread__messages {
+    max-height: 300px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Flexibility Modal (480px)
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  .flexibility-modal {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .flexibility-modal__metrics-header,
+  .flexibility-modal__metric-row {
+    grid-template-columns: 1.2fr 0.8fr auto 0.8fr;
+    font-size: 0.8rem;
+  }
+
+  .flexibility-modal__metric-value {
+    font-size: 0.8rem;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Mode Toggle (1024px)
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .dashboard-mode-toggle {
+    flex-direction: column;
+  }
+
+  .dashboard-mode-toggle__btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Mode Toggle (480px)
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  .dashboard-mode-toggle__label {
+    font-size: 0.8rem;
+  }
+
+  .dashboard-mode-toggle__icon {
+    font-size: 0.9rem;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Wide Buyout Settings (1200px)
+   ============================================================================ */
+
+@media (max-width: 1200px) {
+  .buyout-settings--wide .buyout-settings__content {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .buyout-settings--wide .buyout-settings__column--actions {
+    grid-column: span 2;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .buyout-settings--wide .buyout-settings__actions {
+    margin-top: 0;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Wide Buyout Settings + Swap Mode (768px)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .buyout-settings--wide .buyout-settings__content {
+    grid-template-columns: 1fr;
+  }
+
+  .buyout-settings--wide .buyout-settings__column--actions {
+    grid-column: span 1;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .buyout-settings--wide .buyout-settings__actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .buyout-settings--wide .buyout-settings__btn {
+    flex: 1;
+  }
+
+  /* Swap Mode Responsive */
+  .buyout-panel__swap-visual {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buyout-panel__swap-card {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .buyout-panel__swap-arrow {
+    transform: rotate(90deg);
+  }
+
+  .buyout-panel__swap-nights {
+    justify-content: center;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Don Norman Quick Summary (1200px)
+   ============================================================================ */
+
+@media (max-width: 1200px) {
+  .buyout-settings__quick-summary .buyout-settings__summary-items {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Don Norman Price Inputs (768px)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .buyout-settings__price-inputs-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buyout-settings__price-inputs-row .buyout-settings__price-separator {
+    display: none;
+  }
+
+  .buyout-settings__price-inputs-row .buyout-settings__control--price {
+    width: 100%;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Pricing Settings (1200px)
+   ============================================================================ */
+
+@media (max-width: 1200px) {
+  .pricing-settings__content {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+  }
+
+  .notice-multipliers__row {
+    grid-template-columns: minmax(100px, 1fr) 1.2fr auto;
+    gap: 8px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Pricing Settings (900px)
+   ============================================================================ */
+
+@media (max-width: 900px) {
+  .pricing-settings__content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .pricing-settings__right-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Pricing Settings (768px)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .pricing-settings__content {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  /* Notice Period Tier - reduce padding on mobile */
+  .pricing-settings__content>.pricing-tier {
+    padding: 16px;
+  }
+
+  .pricing-settings__right-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-settings__right-stack .pricing-tier {
+    padding: 12px;
+  }
+
+  .notice-multipliers__row {
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .notice-multipliers__name {
+    font-size: 12px;
+  }
+
+  .notice-multipliers__period {
+    font-size: 10px;
+  }
+
+  .notice-multipliers__value {
+    font-size: 11px;
+    min-width: 36px;
+  }
+
+  .pricing-settings__actions {
+    flex-direction: column;
+  }
+
+  .pricing-btn {
+    width: 100%;
+  }
+
+
+  .pricing-tier__header {
+    margin-bottom: 10px;
+  }
+
+  .pricing-tier__title {
+    font-size: 13px;
+  }
+
+  .pricing-settings__content>.pricing-tier .pricing-tier__title {
+    font-size: 14px;
+  }
+
+  .pricing-settings__content>.pricing-tier .pricing-tier__subtitle {
+    font-size: 12px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE - Compact Buyout Send Button (400px)
+   ============================================================================ */
+
+@media (max-width: 400px) {
+  .buyout-panel__btn--send {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+  }
+}

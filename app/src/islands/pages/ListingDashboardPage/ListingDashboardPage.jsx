@@ -14,7 +14,7 @@ import SectionTabs from './components/SectionTabs.jsx';
 import ListingDetailsTab from './components/tabs/ListingDetailsTab.jsx';
 import PricingCalendarTab from './components/tabs/PricingCalendarTab.jsx';
 import MediaPoliciesTab from './components/tabs/MediaPoliciesTab.jsx';
-import '../../../styles/components/listing-dashboard.css';
+import '../../../styles/components/listing-dashboard/index.css';
 import '../AccountProfilePage/AccountProfilePage.css'; // For ReferralModal styles
 
 const PricingEditSection = lazy(() => import('./components/PricingEditSection.jsx'));

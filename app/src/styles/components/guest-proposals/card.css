@@ -1,0 +1,2618 @@
+/* guest-proposals: card */
+
+/* ============================================================================
+   PROPOSAL CARD WRAPPER - Contains banner and card (V3)
+   ============================================================================ */
+
+.proposal-card-wrapper {
+  margin-top: 0;
+}
+
+/* ============================================================================
+   DETAIL SECTION - Main card container (V3)
+   ============================================================================ */
+
+.detail-section {
+  background: var(--gp-white);
+  border: 1px solid var(--gp-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   STATUS BANNER - V3 Style with icon
+   ============================================================================ */
+
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  background: var(--gp-purple-bg);
+  border-bottom: 1px solid var(--gp-border);
+  font-size: var(--gp-font-size-base);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.status-banner.success {
+  background: var(--gp-success-bg);
+}
+
+.status-banner.attention {
+  background: var(--gp-purple-bg);
+}
+
+.status-banner.cancelled {
+  background: var(--gp-danger-bg);
+}
+
+.status-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--gp-purple-action);
+  color: white;
+  flex-shrink: 0;
+}
+
+.status-banner.success .status-icon {
+  background: var(--gp-success);
+}
+
+.status-banner.attention .status-icon {
+  background: var(--gp-purple-action);
+}
+
+.status-banner.cancelled .status-icon {
+  background: var(--gp-danger);
+}
+
+.status-text {
+  flex: 1;
+}
+
+.status-text strong {
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+}
+
+.status-banner.success .status-text strong {
+  color: var(--gp-success);
+}
+
+.status-banner.attention .status-text strong {
+  color: var(--gp-purple-dark);
+}
+
+.status-banner.cancelled .status-text strong {
+  color: var(--gp-danger);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================================
+   DETAIL HEADER - V3 Style
+   ============================================================================ */
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.detail-image {
+  width: 88px;
+  height: 66px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.detail-title-area {
+  flex: 1;
+}
+
+.detail-title {
+  font-size: var(--gp-font-size-lg);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  margin-bottom: 4px;
+}
+
+.detail-location {
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text-secondary);
+}
+
+.detail-host {
+  text-align: right;
+}
+
+.detail-host .host-name {
+  font-weight: 600;
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text);
+}
+
+.detail-host .host-label {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-font-size-sm);
+}
+
+/* ============================================================================
+   QUICK LINKS ROW - V3 Style (pill-style buttons)
+   ============================================================================ */
+
+.links-row {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--gp-border-light);
+  background: var(--gp-bg);
+  flex-wrap: wrap;
+}
+
+.link-item {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  color: var(--gp-purple-action);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  transition: all 0.15s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+}
+
+.link-item:hover {
+  background: var(--gp-purple-bg);
+}
+
+/* ============================================================================
+   INFO GRID - V3 Style (4-column layout)
+   ============================================================================ */
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--gp-border-light);
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.info-item {
+  padding: 20px 24px;
+  background: var(--gp-white);
+}
+
+.info-label {
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.info-value {
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  color: var(--gp-text);
+}
+
+/* ============================================================================
+   DAYS ROW - Design System (52x52 pills per spec)
+   ============================================================================ */
+
+.days-row {
+  display: flex;
+  align-items: center;
+  padding: var(--gp-spacing-xl) var(--gp-spacing-2xl);
+  border-bottom: 1px solid var(--gp-border-light);
+  gap: var(--gp-spacing-lg);
+}
+
+.days-label {
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.days-pills {
+  display: flex;
+  gap: var(--gp-spacing-sm);
+}
+
+/* Day Pills - 52x52px per design system, 12px radius */
+.day-pill {
+  width: var(--gp-min-pill-size);
+  height: var(--gp-min-pill-size);
+  border-radius: var(--gp-border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--gp-font-size-base);
+  font-weight: 700;
+  background: var(--gp-white);
+  color: var(--gp-text-muted);
+  border: 2px solid var(--gp-border);
+  transition: all var(--gp-transition-fast);
+  cursor: default;
+}
+
+.day-pill:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* Selected state: Primary Purple background per design system */
+.day-pill.selected {
+  background: var(--gp-purple-dark);
+  border-color: var(--gp-purple-dark);
+  color: white;
+}
+
+.days-info {
+  margin-left: auto;
+  text-align: right;
+}
+
+.days-count {
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  color: var(--gp-text);
+}
+
+.days-range {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+}
+
+/* ============================================================================
+   PRICING ROW - V5 Style (32px balanced pricing)
+   ============================================================================ */
+
+.pricing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gp-border-light);
+  background: var(--gp-bg);
+}
+
+.pricing-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text-secondary);
+}
+
+.pricing-breakdown span {
+  padding: 4px 0;
+}
+
+.pricing-total-label {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  margin-bottom: 2px;
+}
+
+.pricing-total {
+  font-size: var(--gp-font-size-2xl);
+  font-weight: 700;
+  color: var(--gp-purple-action);
+}
+
+/* ============================================================================
+   PROGRESS ROW - V3 Style (horizontal timeline with glow)
+   ============================================================================ */
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid var(--gp-border-light);
+  gap: 4px;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gp-border);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.progress-step.completed .progress-dot {
+  background: var(--gp-purple-dark);
+}
+
+.progress-step.current .progress-dot {
+  background: var(--gp-purple-action);
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 0 0 4px rgba(109, 49, 194, 0.15);
+}
+
+.progress-step.cancelled .progress-dot {
+  background: var(--gp-danger);
+}
+
+.progress-line {
+  flex: 1;
+  height: 2px;
+  background: var(--gp-border);
+  border-radius: 1px;
+}
+
+.progress-step.completed .progress-line {
+  background: var(--gp-purple-dark);
+}
+
+.progress-label {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  white-space: nowrap;
+}
+
+.progress-step.completed .progress-label,
+.progress-step.current .progress-label {
+  color: var(--gp-text);
+}
+
+/* ============================================================================
+   ACTIONS ROW - Design System (Pill-shaped buttons, 48px touch targets)
+   ============================================================================ */
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gp-spacing-md);
+  padding: var(--gp-spacing-2xl);
+  align-items: center;
+}
+
+/* Button base styles - PILL-SHAPED (100px radius) per design system */
+.actions-row .btn {
+  min-height: var(--gp-min-touch-target);
+  min-width: 120px;
+  padding: var(--gp-spacing-lg) var(--gp-spacing-2xl);
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  border-radius: var(--gp-border-radius-pill);
+  cursor: pointer;
+  transition: all var(--gp-transition-fast);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gp-spacing-sm);
+  border: 2px solid transparent;
+  font-family: inherit;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.actions-row .btn:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* Primary Button - Solid purple */
+.actions-row .btn-primary {
+  background: var(--gp-purple-dark);
+  color: white;
+  border-color: var(--gp-purple-dark);
+}
+
+.actions-row .btn-primary:hover {
+  background: var(--gp-purple-action);
+  border-color: var(--gp-purple-action);
+}
+
+/* Secondary/Outline Button - Purple outline */
+.actions-row .btn-outline {
+  background: transparent;
+  color: var(--gp-purple-dark);
+  border: 2px solid var(--gp-purple-dark);
+}
+
+.actions-row .btn-outline:hover {
+  background: var(--gp-purple-bg);
+}
+
+/* Ghost Button - Light border, muted text */
+.actions-row .btn-ghost {
+  background: transparent;
+  color: var(--gp-text-ghost);
+  border: 1px solid var(--gp-border);
+}
+
+.actions-row .btn-ghost:hover {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-dark);
+}
+
+/* Danger Button - OUTLINED ONLY per design system (never filled) */
+.actions-row .btn-danger {
+  background: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+}
+
+.actions-row .btn-danger:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+/* VM button text states */
+.actions-row .btn-vm-text {
+  background: transparent;
+  border: none;
+  color: var(--gp-danger);
+  font-weight: 600;
+  padding: var(--gp-spacing-md) var(--gp-spacing-lg);
+  cursor: default;
+}
+
+.actions-row .btn-vm-text.waiting {
+  color: var(--gp-text-muted);
+}
+
+.actions-row .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   PROPOSAL CARD V2 - Two Column Layout (Legacy - keep for transition)
+   ============================================================================ */
+
+.proposal-card-v2 {
+  background: var(--gp-white);
+  border-radius: 16px;
+  border: 1px solid var(--gp-border);
+  overflow: hidden;
+}
+
+.proposal-content-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 15px;
+  justify-content: space-between;
+}
+
+/* Left Column - Listing Details */
+.proposal-left-column {
+  flex: 0 0 auto;
+  max-width: 542px;
+  min-width: 0;
+}
+
+.listing-title-v2 {
+  font-family: "Open Sans", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  letter-spacing: -1px;
+  line-height: 1.5;
+  margin: 0 0 0;
+}
+
+.listing-location-v2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--gp-text-muted);
+  line-height: 1.28;
+  margin: 0 0 10px 0;
+}
+
+/* Action Buttons Row */
+.listing-actions-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.btn-action {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-primary-v2 {
+  background-color: var(--gp-purple-action);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary-v2:hover {
+  background-color: var(--gp-purple-dark);
+}
+
+.btn-map {
+  background-color: rgba(255, 255, 255, 0);
+  background-size: cover;
+  background-position: center;
+  background-image: url("/assets/images/guest-proposals-bg.png");
+  border: 1px solid #6B6B6B;
+  color: #01437D;
+  font-weight: 700;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  min-width: 116px;
+}
+
+/* Schedule Info Block */
+.schedule-info-block {
+  margin-bottom: 15px;
+}
+
+.schedule-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gp-purple-action);
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+
+.schedule-text .label {
+  color: var(--gp-text);
+  font-weight: 400;
+}
+
+.schedule-text.primary {
+  color: var(--gp-purple-action);
+}
+
+/* Day Badges Row */
+.day-badges-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 15px;
+}
+
+.day-badge-v2 {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: var(--gp-border-light);
+  color: var(--gp-text-secondary);
+  transition: all 0.2s;
+}
+
+.day-badge-v2.selected {
+  background-color: var(--gp-purple-action);
+  color: white;
+}
+
+/* Check-in Times */
+.checkin-times {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+/* Move-in Date */
+.movein-date {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.movein-date .label {
+  color: #000;
+}
+
+/* House Rules Link (legacy - keep for compatibility) */
+.house-rules-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gp-purple-action);
+  text-decoration: none;
+  line-height: 1.6;
+}
+
+.house-rules-link:hover {
+  text-decoration: underline;
+}
+
+/* House Rules Section - Collapsible */
+.house-rules-section {
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.house-rules-toggle {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gp-purple-action);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1.6;
+  transition: color 300ms;
+}
+
+.house-rules-toggle:hover {
+  text-decoration: underline;
+}
+
+/* House Rules Grid - 3 columns (wider badges) */
+.house-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.house-rule-badge {
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-family: 'Open Sans', 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right Column - Photo with Host Overlay */
+.proposal-right-column {
+  flex: 0 0 379px;
+  max-width: 379px;
+}
+
+.listing-photo-container {
+  width: 100%;
+  height: 220px;
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  background-color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+}
+
+/* Host Overlay */
+.host-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.host-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50px;
+  object-fit: cover;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.host-avatar-placeholder {
+  background: var(--gp-purple-action);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.host-name-badge {
+  background-color: rgba(255, 255, 255, 0.75);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gp-text-secondary);
+}
+
+.btn-host {
+  height: 37px;
+  padding: 0 16px;
+  border-radius: var(--gp-border-radius-pill);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+  min-width: 102px;
+}
+
+.btn-host-profile {
+  background-color: var(--gp-purple-action);
+  color: white;
+}
+
+.btn-host-profile:hover {
+  background-color: var(--gp-purple-dark);
+}
+
+.btn-host-message {
+  background-color: var(--gp-purple-bg);
+  color: var(--gp-purple-dark);
+}
+
+.btn-host-message:hover {
+  background-color: var(--gp-purple-action);
+  color: white;
+}
+
+/* ============================================================================
+   PRICING BAR
+   ============================================================================ */
+
+.pricing-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  background-color: rgba(66, 66, 66, 0.1);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 0 10px 10px;
+}
+
+.pricing-details {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6B7280;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.pricing-details span {
+  display: block;
+}
+
+/* Original price with strikethrough (for counteroffers) */
+.pricing-original {
+  color: #808080;
+  display: block;
+}
+
+.pricing-original s {
+  text-decoration: line-through;
+}
+
+.pricing-total {
+  color: #6B7280;
+}
+
+.pricing-fee,
+.pricing-deposit {
+  color: #6B7280;
+}
+
+.pricing-nightly {
+  font-family: "Open Sans", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #424242;
+  text-align: center;
+  flex: 1;
+}
+
+/* ============================================================================
+   ACTION BUTTONS - Dynamic buttons based on proposal status
+   ============================================================================ */
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-action-bar {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  height: 37px;
+  min-width: 150px;
+  max-width: 250px;
+  transition: all 0.2s;
+}
+
+/* ============================================================================
+   VIRTUAL MEETING BUTTON STATES - Design System
+   NO GREEN, NO YELLOW - Use purple monochromatic palette
+   Pill-shaped (100px radius), 48px minimum height
+   ============================================================================ */
+
+/* Base button styling for all action buttons */
+.btn-action-bar {
+  min-height: var(--gp-min-touch-target);
+  border-radius: var(--gp-border-radius-pill);
+  font-weight: 600;
+  transition: all var(--gp-transition-fast);
+}
+
+.btn-action-bar:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* Virtual Meeting Request - Primary action (purple) */
+.btn-vm-request {
+  background-color: var(--gp-purple-dark);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-vm-request:hover:not(:disabled) {
+  background-color: var(--gp-purple-action);
+}
+
+/* Respond to VM Request - Action Purple */
+.btn-vm-respond {
+  background-color: var(--gp-purple-action);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-vm-respond:hover:not(:disabled) {
+  background-color: var(--gp-purple-dark);
+}
+
+/* Virtual Meeting Requested - Muted state (waiting) */
+.btn-vm-requested {
+  background-color: var(--gp-border);
+  color: var(--gp-text-muted);
+  cursor: not-allowed;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+/* Virtual Meeting Accepted - Action Purple (NO GREEN) */
+.btn-vm-accepted {
+  background-color: var(--gp-purple-action);
+  color: white;
+  cursor: not-allowed;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+/* Meeting Confirmed - Primary Purple (NO GREEN) */
+.btn-vm-confirmed {
+  background-color: var(--gp-purple-dark);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-vm-confirmed:hover:not(:disabled) {
+  background-color: var(--gp-purple-action);
+}
+
+.btn-vm-confirmed:disabled {
+  background-color: var(--gp-purple-action);
+  cursor: not-allowed;
+}
+
+/* Virtual Meeting Declined - Danger OUTLINED (never filled) */
+.btn-vm-declined {
+  background-color: transparent;
+  color: var(--gp-danger);
+  font-weight: 600;
+  border: 2px solid var(--gp-danger);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-vm-declined:hover:not(:disabled) {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Go to Leases - Action Purple (NO GREEN) */
+.btn-go-to-leases {
+  background-color: var(--gp-purple-action);
+  color: white;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-go-to-leases:hover {
+  background-color: var(--gp-purple-dark);
+}
+
+/* Remind Split Lease - Secondary Outline */
+.btn-remind {
+  background-color: transparent;
+  color: var(--gp-purple-dark);
+  border: 2px solid var(--gp-purple-dark);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-remind:hover {
+  background-color: var(--gp-purple-bg);
+}
+
+/* Modify Proposal - Primary Purple (NO GREEN) */
+.btn-modify-proposal {
+  background-color: var(--gp-purple-dark);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-modify-proposal:hover {
+  background-color: var(--gp-purple-action);
+}
+
+/* Cancel Proposal - Danger OUTLINED (never filled) */
+.btn-cancel-proposal {
+  background-color: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-cancel-proposal:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Delete Proposal - Danger OUTLINED (never filled) */
+.btn-delete-proposal {
+  background-color: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-delete-proposal:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Accept Counteroffer - Action Purple (NO GREEN) */
+.btn-accept-counteroffer {
+  background-color: var(--gp-purple-action);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-accept-counteroffer:hover {
+  background-color: var(--gp-purple-dark);
+}
+
+/* Interested - Action Purple (NO GREEN) */
+.btn-interested {
+  background-color: var(--gp-purple-action);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-interested:hover {
+  background-color: var(--gp-purple-dark);
+}
+
+/* Primary Action - Primary Purple (NO GREEN) */
+.btn-primary-action {
+  background-color: var(--gp-purple-dark);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-primary-action:hover {
+  background-color: var(--gp-purple-action);
+}
+
+/* Not Interested - Danger OUTLINED (never filled) */
+.btn-not-interested {
+  background-color: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-not-interested:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Review Host Terms - Secondary Purple outline (NO YELLOW) */
+.btn-review-terms {
+  background-color: var(--gp-purple-bg);
+  color: var(--gp-purple-dark);
+  border: 2px solid var(--gp-purple-action);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-review-terms:hover {
+  background-color: var(--gp-purple-tint);
+}
+
+/* See Details - Ghost button */
+.btn-see-details {
+  background-color: transparent;
+  color: var(--gp-purple-dark);
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-see-details:hover {
+  background-color: var(--gp-purple-bg);
+}
+
+/* Verify Identity - Action Purple */
+.btn-verify-identity {
+  background-color: var(--gp-purple-action);
+  color: white;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-verify-identity:hover {
+  background-color: var(--gp-purple-dark);
+}
+
+/* Secondary Action - Ghost style with pill shape */
+.btn-secondary-action {
+  background-color: transparent;
+  color: var(--gp-text-secondary);
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-secondary-action:hover {
+  background-color: var(--gp-purple-bg);
+}
+
+.btn-secondary-action:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* See House Manual - Secondary Purple with pill shape */
+.btn-house-manual {
+  background-color: var(--gp-purple-action);
+  color: white;
+  cursor: default;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-house-manual:disabled {
+  background-color: var(--gp-purple-action);
+  color: white;
+  opacity: 1;
+}
+
+/* Reject Modified Terms - OUTLINED ONLY (per protocol) */
+.btn-reject-terms {
+  background-color: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-reject-terms:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.btn-reject-terms:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* Reject Proposal - OUTLINED ONLY (per protocol, never filled) */
+.btn-reject-proposal {
+  background-color: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+  border-radius: var(--gp-border-radius-pill);
+}
+
+.btn-reject-proposal:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.btn-reject-proposal:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* ============================================================================
+   INLINE PROGRESS TRACKER (Horizontal Timeline)
+   ============================================================================ */
+
+.inline-progress-tracker {
+  padding: var(--gp-spacing-sm) var(--gp-spacing-md) var(--gp-spacing-lg);
+}
+
+.progress-line-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--gp-spacing-sm);
+}
+
+.progress-node-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.progress-connector {
+  width: 100px;
+  height: 7px;
+  background-color: var(--gp-border-light);
+  border-radius: 0;
+}
+
+/* Note: .active colors are now applied via inline styles for dynamic theming */
+.progress-connector.active {
+  /* Color applied via inline style based on status */
+}
+
+.progress-node {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--gp-border-radius-pill);
+  background-color: var(--gp-border-light);
+  flex-shrink: 0;
+}
+
+.progress-node.active {
+  /* Color applied via inline style based on status */
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+}
+
+.progress-label {
+  width: 120px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: var(--gp-font-size-xs);
+  font-weight: 500;
+  color: var(--gp-border-light);
+  text-align: center;
+  letter-spacing: -1px;
+  line-height: 1.5;
+}
+
+.progress-label.active {
+  /* Color applied via inline style based on status */
+}
+
+/* ============================================================================
+   HIDE OLD PROGRESS TRACKER (if still rendered separately)
+   ============================================================================ */
+
+.progress-tracker {
+  display: none;
+}
+
+/* ============================================================================
+   PROPOSAL DETAILS MODAL - V5 Balanced
+   ============================================================================ */
+
+.proposal-details-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  background-color: rgba(107, 114, 128, 0.75);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.proposal-details-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.proposal-details-modal {
+  position: relative;
+  background: var(--gp-white);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 480px;
+  width: 100%;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Header */
+.proposal-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.proposal-details-title {
+  font-size: var(--gp-font-size-lg);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  margin: 0;
+}
+
+.proposal-details-close {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--gp-text-muted);
+  border-radius: 8px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proposal-details-close:hover {
+  background: var(--gp-bg);
+  color: var(--gp-text);
+}
+
+.proposal-details-close svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Modal Content */
+.proposal-details-content {
+  padding: 24px;
+}
+
+/* Info Row */
+.proposal-details-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.proposal-details-row:last-child {
+  border-bottom: none;
+}
+
+.proposal-details-label {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  margin-bottom: 4px;
+}
+
+.proposal-details-value {
+  font-size: var(--gp-font-size-base);
+  font-weight: 500;
+  color: var(--gp-text);
+}
+
+/* House Rules Toggle */
+.proposal-details-rules-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-purple-action);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.proposal-details-rules-toggle:hover {
+  color: var(--gp-purple-dark);
+}
+
+.proposal-details-rules-count {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-action);
+  font-size: var(--gp-font-size-label);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* House Rules List */
+.proposal-details-rules-list {
+  margin-top: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.proposal-details-rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+}
+
+.proposal-details-rule-icon {
+  flex-shrink: 0;
+}
+
+.proposal-details-loading {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-muted);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* Pricing Breakdown */
+.proposal-details-pricing {
+  background: var(--gp-bg);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 8px;
+}
+
+.proposal-details-pricing-title {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text);
+  margin: 0 0 16px 0;
+}
+
+.proposal-details-pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.proposal-details-pricing-label {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+}
+
+.proposal-details-pricing-value {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text);
+}
+
+.proposal-details-pricing-divider {
+  height: 1px;
+  background: var(--gp-border);
+  margin: 8px 0;
+}
+
+.proposal-details-pricing-total {
+  padding-top: 12px;
+}
+
+.proposal-details-pricing-total .proposal-details-pricing-label {
+  font-weight: 600;
+  color: var(--gp-text);
+}
+
+.proposal-details-pricing-total .proposal-details-pricing-value {
+  font-size: var(--gp-font-size-md);
+  font-weight: 700;
+  color: var(--gp-purple-action);
+}
+
+.proposal-details-pricing-note {
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-muted);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* Modal Footer - Side by side buttons */
+.proposal-details-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--gp-bg);
+  border-top: 1px solid var(--gp-border-light);
+}
+
+.proposal-details-footer-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border-radius: 100px;
+  font-size: var(--gp-font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 48px;
+  text-align: center;
+}
+
+/* Secondary button - Outlined */
+.proposal-details-footer-btn--secondary {
+  background: transparent;
+  color: var(--gp-purple-action);
+  border: 2px solid var(--gp-purple-action);
+}
+
+.proposal-details-footer-btn--secondary:hover {
+  background: var(--gp-purple-bg, #f8f5ff);
+}
+
+/* Primary button - Solid */
+.proposal-details-footer-btn--primary {
+  background: var(--gp-purple-action);
+  color: white;
+  border: 2px solid var(--gp-purple-action);
+}
+
+.proposal-details-footer-btn--primary:hover {
+  background: var(--gp-purple-dark);
+  border-color: var(--gp-purple-dark);
+}
+
+/* ============================================================================
+   V7 GUEST PROPOSALS - EXPANDABLE PROPOSAL CARDS
+   ============================================================================ */
+
+/* ============================================================================
+   SECTION HEADERS
+   ============================================================================ */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.section-header__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.section-header--suggested .section-header__icon {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-action);
+}
+
+.section-header--user .section-header__icon {
+  background: var(--gp-border-light);
+  color: var(--gp-text-secondary);
+}
+
+.section-header__title {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--gp-font-size-lg);
+  font-weight: 700;
+  color: var(--gp-purple-dark);
+  margin: 0;
+}
+
+.section-header__count {
+  font-weight: 400;
+  color: var(--gp-text-secondary);
+  margin-left: 4px;
+}
+
+/* ============================================================================
+   MATCH REASON CARD (for SL-suggested proposals)
+   ============================================================================ */
+
+.match-reason-card {
+  background: var(--gp-purple-bg);
+  border: 1px solid rgba(109, 49, 194, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.match-reason-card__header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.match-reason-card__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--gp-purple-action);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.match-reason-card__content {
+  flex: 1;
+}
+
+.match-reason-card__title {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  margin: 0 0 4px 0;
+}
+
+.match-reason-card__text {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  margin: 0;
+  line-height: var(--gp-line-height-normal);
+}
+
+.match-reason-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(109, 49, 194, 0.15);
+}
+
+.match-tag {
+  background: white;
+  color: var(--gp-purple-action);
+  font-size: var(--gp-font-size-label);
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(109, 49, 194, 0.2);
+}
+
+/* ============================================================================
+   NEGOTIATION SUMMARY SECTION
+   ============================================================================ */
+
+.negotiation-summary-section {
+  border: 1px solid var(--gp-border-light);
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.negotiation-summary-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--gp-bg);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.negotiation-summary-toggle:hover {
+  background: var(--gp-purple-bg);
+}
+
+.negotiation-summary-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.negotiation-summary-label {
+  flex: 1;
+  text-align: left;
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-purple-action);
+}
+
+.negotiation-summary-chevron {
+  font-size: 10px;
+  color: var(--gp-text-muted);
+  transition: transform 0.2s ease-out;
+}
+
+.negotiation-summary-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.negotiation-summary-content {
+  padding: 16px;
+  background: var(--gp-white);
+  border-top: 1px solid var(--gp-border-light);
+  animation: slideDown 0.2s ease-out;
+}
+
+.negotiation-summary-content p {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  line-height: var(--gp-line-height-relaxed);
+  margin: 0;
+}
+
+.negotiation-summary-content strong {
+  color: var(--gp-text);
+  font-weight: 600;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   COUNTEROFFER SUMMARY SECTION
+   Displays AI summary explaining what changed in a host counteroffer
+   ============================================================================ */
+
+.counteroffer-summary-section {
+  border: 1px solid var(--gp-purple-action);
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--gp-purple-tint) 0%, var(--gp-purple-bg) 100%);
+}
+
+.counteroffer-summary-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.counteroffer-summary-toggle:hover {
+  background: rgba(109, 49, 194, 0.1);
+}
+
+.counteroffer-summary-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.counteroffer-summary-label {
+  flex: 1;
+  text-align: left;
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+}
+
+.counteroffer-summary-chevron {
+  font-size: 10px;
+  color: var(--gp-purple-dark);
+  transition: transform 0.2s ease-out;
+}
+
+.counteroffer-summary-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.counteroffer-summary-content {
+  padding: 16px;
+  background: var(--gp-white);
+  border-top: 1px solid var(--gp-border);
+  animation: slideDown 0.2s ease-out;
+}
+
+.counteroffer-summary-content p {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  line-height: var(--gp-line-height-relaxed);
+  margin: 0;
+}
+
+.counteroffer-summary-content strong {
+  color: var(--gp-purple-dark);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   EXPANDABLE PROPOSAL CARD (EPC) - Main Component
+   ============================================================================ */
+
+.epc-card {
+  background: var(--gp-white);
+  border: 1px solid var(--gp-border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease-out;
+  margin-bottom: 12px;
+}
+
+.epc-card:hover {
+  border-color: var(--gp-purple-light);
+}
+
+.epc-card.expanded {
+  border-color: var(--gp-purple-action);
+  box-shadow: 0 4px 20px rgba(109, 49, 194, 0.1);
+}
+
+.epc-card.suggested {
+  border-color: rgba(109, 49, 194, 0.3);
+}
+
+.epc-card.suggested.expanded {
+  border-color: var(--gp-purple-action);
+}
+
+/* ============================================================================
+   EPC HEADER (Collapsed Row)
+   ============================================================================ */
+
+.epc-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.epc-header:hover {
+  background: var(--gp-purple-bg);
+}
+
+.epc-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.epc-thumb--placeholder {
+  background-color: var(--gp-border-light);
+}
+
+.epc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.epc-name {
+  font-weight: 600;
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.epc-meta {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  margin-top: 2px;
+}
+
+.epc-status {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  padding: 5px 12px;
+  background: var(--gp-border-light);
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.epc-status.attention {
+  color: var(--gp-purple-action);
+  background: var(--gp-purple-bg);
+}
+
+.epc-status.success {
+  color: var(--gp-success);
+  background: var(--gp-success-bg);
+}
+
+.epc-status.action-required {
+  color: var(--gp-purple-dark);
+  background: var(--gp-purple-bg);
+  font-weight: 600;
+  animation: pulse-attention 2s ease-in-out infinite;
+}
+
+/* Chevron icon */
+.expand-chevron {
+  color: var(--gp-text-muted);
+  transition: transform 0.3s ease-out;
+  flex-shrink: 0;
+}
+
+.expand-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+/* ============================================================================
+   EPC CONTENT WRAPPER (Accordion Animation)
+   ============================================================================ */
+
+.epc-content-wrapper {
+  overflow: hidden;
+  transition: height 0.3s ease-out;
+}
+
+.epc-content {
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--gp-border-light);
+}
+
+/* ============================================================================
+   EPC STATUS BANNER
+   ============================================================================ */
+
+.epc-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--gp-purple-bg);
+  border-radius: 10px;
+  margin: 16px 0;
+  font-size: var(--gp-font-size-sm);
+}
+
+.epc-status-banner.success {
+  background: var(--gp-success-bg);
+}
+
+.epc-status-banner.attention {
+  background: var(--gp-purple-bg);
+}
+
+.epc-status-banner.cancelled {
+  background: var(--gp-danger-bg);
+}
+
+.epc-status-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--gp-purple-action);
+  color: white;
+  flex-shrink: 0;
+}
+
+.epc-status-banner.success .epc-status-icon {
+  background: var(--gp-success);
+}
+
+.epc-status-banner.attention .epc-status-icon {
+  background: var(--gp-purple-action);
+}
+
+.epc-status-banner.cancelled .epc-status-icon {
+  background: var(--gp-danger);
+}
+
+.epc-status-text {
+  flex: 1;
+  color: var(--gp-text);
+}
+
+.epc-status-text strong {
+  font-weight: 600;
+}
+
+/* ============================================================================
+   EPC DETAIL HEADER
+   ============================================================================ */
+
+.epc-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.epc-detail-title-area {
+  flex: 1;
+}
+
+.epc-detail-title {
+  font-size: var(--gp-font-size-md);
+  font-weight: 600;
+  color: var(--gp-purple-dark);
+  margin-bottom: 2px;
+}
+
+.epc-detail-location {
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+}
+
+.epc-detail-host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.epc-host-photo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.epc-host-photo-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--gp-purple-action);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.epc-host-name {
+  font-weight: 600;
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text);
+}
+
+.epc-host-label {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-font-size-label);
+}
+
+/* ============================================================================
+   EPC QUICK LINKS
+   ============================================================================ */
+
+.epc-links-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gp-border-light);
+  flex-wrap: wrap;
+}
+
+.epc-link-item {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 500;
+  color: var(--gp-purple-action);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  transition: all 0.15s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+}
+
+.epc-link-item:hover {
+  background: var(--gp-purple-bg);
+}
+
+/* ============================================================================
+   EPC HOUSE RULES GRID
+   ============================================================================ */
+
+.epc-house-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.epc-house-rule-badge {
+  background-color: var(--gp-border-light);
+  border-radius: 5px;
+  padding: 6px 8px;
+  font-size: var(--gp-font-size-label);
+  font-weight: 600;
+  color: var(--gp-text-secondary);
+  text-align: center;
+}
+
+/* ============================================================================
+   EPC INFO GRID
+   ============================================================================ */
+
+.epc-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--gp-border-light);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.epc-info-item {
+  padding: 14px 16px;
+  background: var(--gp-white);
+}
+
+.epc-info-label {
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.epc-info-value {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text);
+}
+
+/* ============================================================================
+   EPC DAYS ROW
+   ============================================================================ */
+
+.epc-days-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 0;
+  gap: 12px;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.epc-days-label {
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  color: var(--gp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.epc-days-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.epc-day-pill {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  background: var(--gp-bg);
+  color: var(--gp-text-muted);
+  border: 1px solid var(--gp-border);
+}
+
+.epc-day-pill.selected {
+  background: var(--gp-purple-dark);
+  border-color: var(--gp-purple-dark);
+  color: white;
+}
+
+.epc-days-info {
+  margin-left: auto;
+  text-align: right;
+}
+
+.epc-days-count {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-text);
+}
+
+.epc-nights-warning {
+  color: var(--gp-danger);
+  margin-left: 6px;
+}
+
+.epc-days-range {
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-secondary);
+  margin-top: 2px;
+}
+
+/* ============================================================================
+   EPC PRICING ROW
+   ============================================================================ */
+
+.epc-pricing-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.epc-pricing-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--gp-font-size-sm);
+  color: var(--gp-text-secondary);
+  flex-wrap: wrap;
+}
+
+.epc-pricing-total-area {
+  text-align: right;
+}
+
+.epc-pricing-total-label {
+  font-size: var(--gp-font-size-label);
+  color: var(--gp-text-secondary);
+}
+
+.epc-pricing-original {
+  margin-left: 6px;
+  color: var(--gp-text-muted);
+  text-decoration: line-through;
+}
+
+.epc-pricing-total {
+  font-size: var(--gp-font-size-xl);
+  font-weight: 700;
+  color: var(--gp-purple-action);
+}
+
+/* ============================================================================
+   EPC COUNTEROFFER VALUE COMPARISON (Strikethrough & Changed Values)
+   Shows original value struck through and new value highlighted
+   ============================================================================ */
+
+.epc-strikethrough {
+  color: var(--gp-text-muted);
+  text-decoration: line-through;
+  margin-right: 8px;
+  font-size: 0.9em;
+}
+
+.epc-changed-value {
+  color: var(--gp-purple-action);
+  font-weight: 600;
+}
+
+.epc-info-value .epc-strikethrough {
+  display: inline-block;
+}
+
+.epc-info-value .epc-changed-value {
+  display: inline-block;
+}
+
+/* Nightly price strikethrough in pricing breakdown */
+.epc-pricing-breakdown .epc-strikethrough {
+  margin-right: 4px;
+}
+
+.epc-pricing-breakdown .epc-changed-value {
+  color: var(--gp-purple-action);
+}
+
+/* Total price when changed */
+.epc-pricing-total.epc-changed-value {
+  color: var(--gp-purple-action);
+}
+
+/* ============================================================================
+   EPC PROGRESS ROW
+   ============================================================================ */
+
+.epc-progress-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  gap: 4px;
+}
+
+.epc-progress-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.epc-progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.epc-progress-label {
+  font-size: var(--gp-font-size-label);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.epc-progress-line {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  min-width: 10px;
+}
+
+/* ============================================================================
+   EPC ACTIONS ROW
+   ============================================================================ */
+
+.epc-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 16px;
+  align-items: center;
+}
+
+.epc-btn {
+  padding: 10px 18px;
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.epc-btn--primary {
+  background: var(--gp-purple-action);
+  color: white;
+}
+
+.epc-btn--primary:hover {
+  background: var(--gp-purple-dark);
+}
+
+.epc-btn--outline {
+  background: transparent;
+  color: var(--gp-purple-action);
+  border: 1px solid var(--gp-purple-action);
+}
+
+.epc-btn--outline:hover {
+  background: var(--gp-purple-bg);
+}
+
+.epc-btn--ghost {
+  background: transparent;
+  color: var(--gp-text-secondary);
+  border: 1px solid var(--gp-border);
+}
+
+.epc-btn--ghost:hover {
+  border-color: var(--gp-text-secondary);
+  color: var(--gp-text);
+}
+
+.epc-btn--danger {
+  background: transparent;
+  color: var(--gp-danger);
+  border: 1px solid var(--gp-danger);
+}
+
+.epc-btn--danger:hover {
+  background: var(--gp-danger-bg);
+}
+
+.epc-btn--not-interested {
+  background: var(--gp-border-light);
+  color: var(--gp-danger);
+  border: 1px solid var(--gp-danger);
+}
+
+.epc-btn--not-interested:hover {
+  background: var(--gp-danger-bg);
+}
+
+.epc-btn--attention {
+  background: var(--gp-purple-action);
+  color: #ffffff;
+  border: 1px solid var(--gp-purple-dark);
+}
+
+.epc-btn--attention:hover {
+  background: var(--gp-purple-dark);
+}
+
+.epc-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* VM text states */
+.epc-vm-text {
+  font-size: var(--gp-font-size-sm);
+  font-weight: 600;
+  color: var(--gp-danger);
+  padding: 10px 0;
+}
+
+.epc-vm-text.waiting {
+  color: var(--gp-text-muted);
+}
+
+/* --- Narrative Listing Context --- */
+.epc-narrative-listing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--gp-purple-tint);
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.epc-narrative-host-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gp-border);
+  flex-shrink: 0;
+}
+
+.epc-narrative-avatar-placeholder {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.epc-narrative-listing-text {
+  font-size: 15px;
+  color: var(--gp-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.epc-narrative-listing-text strong {
+  color: var(--gp-text);
+  font-weight: 600;
+}
+
+.epc-narrative-location {
+  color: var(--gp-text-muted);
+}
+
+.epc-narrative-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--gp-purple-primary);
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.epc-narrative-link:hover {
+  text-decoration: underline;
+}
+
+.epc-narrative-link:focus {
+  outline: var(--gp-focus-outline);
+  outline-offset: 2px;
+}
+
+/* --- Narrative Content --- */
+.epc-narrative-content {
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--gp-border-light);
+}
+
+.epc-narrative-paragraph {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--gp-text-secondary);
+  margin: 0 0 14px 0;
+}
+
+.epc-narrative-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.epc-narrative-paragraph strong {
+  color: var(--gp-text);
+  font-weight: 600;
+}
+
+/* Design System: Use Purple Dark for dates (NOT green) */
+.epc-highlight-purple {
+  color: var(--gp-purple-dark);
+}
+
+/* Design System: Use Action Purple for money (NOT green) */
+.epc-highlight-money {
+  color: var(--gp-purple-action);
+}
+
+/* --- Narrative Actions Row --- */
+.epc-narrative-actions {
+  padding: 16px;
+  background: var(--gp-purple-tint);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.epc-narrative-total-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Design System: Use Action Purple for total (NOT green) */
+.epc-narrative-total {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gp-purple-action);
+  line-height: 1.2;
+}
+
+.epc-narrative-total-label {
+  font-size: 13px;
+  color: var(--gp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Action Buttons in Narrative View --- */
+.epc-narrative-actions .epc-actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.epc-narrative-actions .epc-btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: var(--gp-border-radius-pill);
+}
+
+/* Design System Button Colors for Narrative */
+.epc-narrative-actions .epc-btn--primary {
+  background: var(--gp-purple-dark);
+  color: white;
+  border: none;
+}
+
+.epc-narrative-actions .epc-btn--primary:hover {
+  background: var(--gp-purple-primary);
+}
+
+.epc-narrative-actions .epc-btn--outline {
+  background: transparent;
+  color: var(--gp-purple-dark);
+  border: 2px solid var(--gp-purple-dark);
+}
+
+.epc-narrative-actions .epc-btn--outline:hover {
+  background: var(--gp-purple-bg);
+}
+
+/* Design System: Danger buttons are OUTLINED ONLY (never filled) */
+.epc-narrative-actions .epc-btn--danger {
+  background: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+}
+
+.epc-narrative-actions .epc-btn--danger:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+/* Ghost button styling */
+.epc-narrative-actions .epc-btn--ghost {
+  background: transparent;
+  color: var(--gp-text-ghost);
+  border: 1px solid var(--gp-border);
+}
+
+.epc-narrative-actions .epc-btn--ghost:hover {
+  background: var(--gp-bg);
+  border-color: var(--gp-text-muted);
+}

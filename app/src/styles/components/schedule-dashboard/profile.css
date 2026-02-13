@@ -1,0 +1,518 @@
+/* schedule-dashboard: profile */
+
+/* ============================================================================
+   CO-TENANT PROFILE CARD (alias: roommate-profile-card for backward compatibility)
+   ============================================================================ */
+
+.cotenant-profile-card,
+.roommate-profile-card {
+  padding: 1rem;
+}
+
+.cotenant-profile-card__heading,
+.roommate-profile-card__heading {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cotenant-profile-card__header,
+.roommate-profile-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cotenant-profile-card__avatar,
+.roommate-profile-card__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--schedule-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cotenant-profile-card__avatar img,
+.roommate-profile-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cotenant-profile-card__initials,
+.roommate-profile-card__initials {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.cotenant-profile-card__info,
+.roommate-profile-card__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.cotenant-profile-card__name,
+.roommate-profile-card__name {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.cotenant-profile-card__role,
+.roommate-profile-card__role {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+}
+
+.cotenant-profile-card__score,
+.roommate-profile-card__score {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  white-space: nowrap;
+}
+
+/* Flexibility Gauge */
+.flexibility-gauge {
+  margin-bottom: 1rem;
+}
+
+.flexibility-gauge__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.flexibility-gauge__label {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-gauge__score {
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+.flexibility-gauge__bar {
+  height: 8px;
+  background: var(--schedule-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.flexibility-gauge__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--schedule-primary-light), var(--schedule-success));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.flexibility-gauge__text {
+  font-size: 0.75rem;
+  color: var(--schedule-success);
+}
+
+/* Response Patterns */
+.cotenant-profile-card__patterns,
+.roommate-profile-card__patterns {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.cotenant-profile-card__pattern-icon,
+.roommate-profile-card__pattern-icon {
+  font-size: 1.25rem;
+}
+
+.cotenant-profile-card__pattern-text,
+.roommate-profile-card__pattern-text {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+}
+
+/* Net Flow Tracker */
+.net-flow-tracker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.net-flow-tracker--positive {
+  background: #EFF6FF;
+}
+
+.net-flow-tracker--negative {
+  background: #FEF2F2;
+}
+
+.net-flow-tracker--neutral {
+  background: var(--schedule-bg);
+}
+
+.net-flow-tracker__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--schedule-text-muted);
+  white-space: nowrap;
+}
+
+.net-flow-tracker__amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.net-flow-tracker--positive .net-flow-tracker__amount {
+  color: #2563EB;
+}
+
+.net-flow-tracker--negative .net-flow-tracker__amount {
+  color: #DC2626;
+}
+
+.net-flow-tracker__description {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ============================================================================
+   FLEXIBILITY GAUGE - ENHANCED STYLES
+   ============================================================================ */
+
+.flexibility-gauge__label-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.flexibility-gauge__label-wrapper:hover {
+  color: var(--schedule-primary);
+}
+
+.flexibility-gauge__label-wrapper:focus-visible {
+  outline: 2px solid var(--schedule-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.flexibility-gauge__info-icon {
+  font-size: 0.9rem;
+  color: var(--schedule-primary-light);
+  transition: color 0.15s ease;
+}
+
+.flexibility-gauge__label-wrapper:hover .flexibility-gauge__info-icon {
+  color: var(--schedule-primary);
+}
+
+/* My Score Row */
+.flexibility-gauge__my-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.flexibility-gauge__my-score-label {
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-gauge__my-score-value {
+  font-weight: 600;
+  color: var(--schedule-primary);
+}
+
+/* ============================================================================
+   FLEXIBILITY BREAKDOWN MODAL
+   ============================================================================ */
+
+.flexibility-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.flexibility-modal {
+  background: var(--schedule-bg-white);
+  border-radius: var(--schedule-radius);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal Header */
+.flexibility-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--schedule-border);
+}
+
+.flexibility-modal__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin: 0;
+}
+
+.flexibility-modal__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  color: var(--schedule-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.flexibility-modal__close:hover {
+  background: var(--schedule-bg);
+  color: var(--schedule-text);
+}
+
+/* Modal Body */
+.flexibility-modal__body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.flexibility-modal__section {
+  margin-bottom: 1.5rem;
+}
+
+.flexibility-modal__section:last-child {
+  margin-bottom: 0;
+}
+
+.flexibility-modal__section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 1rem;
+}
+
+/* Score Comparison */
+.flexibility-modal__scores {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.flexibility-modal__score-bar {
+  padding: 0.75rem;
+  background: var(--schedule-bg);
+  border-radius: 8px;
+}
+
+.flexibility-modal__score-bar--user {
+  background: linear-gradient(135deg, rgba(109, 49, 194, 0.1) 0%, rgba(91, 95, 207, 0.1) 100%);
+  border: 1px solid rgba(109, 49, 194, 0.2);
+}
+
+.flexibility-modal__score-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.flexibility-modal__score-bar-label {
+  font-weight: 600;
+  color: var(--schedule-text);
+}
+
+.flexibility-modal__score-bar-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--schedule-primary);
+}
+
+.flexibility-modal__score-bar-track {
+  height: 8px;
+  background: var(--schedule-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.flexibility-modal__score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--schedule-primary-light), var(--schedule-success));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.flexibility-modal__score-bar-text {
+  font-size: 0.8rem;
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-modal__summary {
+  padding: 0.75rem 1rem;
+  background: #EFF6FF;
+  border-radius: 8px;
+  color: #2563EB;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+}
+
+/* Metrics Table */
+.flexibility-modal__metrics {
+  background: var(--schedule-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.flexibility-modal__metrics-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--schedule-border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--schedule-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flexibility-modal__metrics-header-you {
+  text-align: center;
+}
+
+.flexibility-modal__metrics-header-cotenant,
+.flexibility-modal__metrics-header-roommate {
+  text-align: center;
+}
+
+.flexibility-modal__metric-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto 1fr;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--schedule-border);
+  align-items: center;
+}
+
+.flexibility-modal__metric-row:last-child {
+  border-bottom: none;
+}
+
+.flexibility-modal__metric-label {
+  font-size: 0.875rem;
+  color: var(--schedule-text);
+}
+
+.flexibility-modal__metric-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.flexibility-modal__metric-value--better {
+  color: var(--schedule-success);
+}
+
+.flexibility-modal__metric-value--worse {
+  color: var(--schedule-danger);
+}
+
+.flexibility-modal__metric-value--equal {
+  color: var(--schedule-text);
+}
+
+.flexibility-modal__metric-value--cotenant,
+.flexibility-modal__metric-value--roommate {
+  color: var(--schedule-text-muted);
+}
+
+.flexibility-modal__metric-vs {
+  font-size: 0.75rem;
+  color: var(--schedule-text-muted);
+  text-align: center;
+}
+
+.flexibility-modal__metric-icon {
+  font-size: 0.75rem;
+}
+
+.flexibility-modal__metric-icon--warn {
+  color: var(--schedule-warning);
+}
+
+/* Modal Footer */
+.flexibility-modal__footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--schedule-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.flexibility-modal__btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--schedule-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.flexibility-modal__btn:hover {
+  background: var(--schedule-primary-light);
+}

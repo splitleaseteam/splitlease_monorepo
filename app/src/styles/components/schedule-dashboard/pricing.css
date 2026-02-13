@@ -1,0 +1,887 @@
+/* schedule-dashboard: pricing */
+
+/* ============================================================================
+   PRICING SETTINGS MODE - LEFT COLUMN
+   ============================================================================ */
+
+.schedule-dashboard__pricing-viz {
+  min-height: 400px;
+}
+
+.schedule-dashboard__pricing-viz-header {
+  margin-bottom: 1.5rem;
+}
+
+.schedule-dashboard__pricing-viz-header h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--schedule-text);
+  margin: 0 0 0.5rem;
+}
+
+.schedule-dashboard__pricing-viz-subtitle {
+  font-size: 0.875rem;
+  color: var(--schedule-text-muted);
+  margin: 0;
+}
+
+/* ============================================================================
+   PRICING SETTINGS MODE - RIGHT COLUMN
+   ============================================================================ */
+
+.schedule-dashboard__pricing-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make the formula settings fill the available space in sidebar mode */
+.schedule-dashboard__pricing-controls .buyout-settings {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-dashboard__pricing-controls .buyout-settings__content {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Hide visualization in sidebar since it's in left column */
+.schedule-dashboard__pricing-controls .buyout-settings__visualization {
+  display: none;
+}
+
+/* ============================================================================
+   WIDE BUYOUT FORMULA SETTINGS (Below Calendar in Pricing Mode)
+   ============================================================================ */
+
+.schedule-dashboard__pricing-controls {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.pricing-settings__content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  /* 2:1 Ratio - Notice (Left) vs Stack (Right) */
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.pricing-settings__right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Ensure stacks take full width of their column */
+.pricing-settings__right-stack>* {
+  width: 100%;
+}
+
+/* ============================================================================
+   LIGHT THEME - User-Centric 3-Tier Pricing Model
+   ============================================================================ */
+
+/* Light Theme Variables */
+.pricing-settings {
+  --pricing-bg: #FFFFFF;
+  --pricing-surface: #F3F4F6;
+  --pricing-border: #E5E7EB;
+  --pricing-border-active: #5b21b6;
+  --pricing-text: #1F2937;
+  --pricing-text-muted: #6B7280;
+  --pricing-accent: #5b21b6;
+  --pricing-accent-light: rgba(91, 33, 182, 0.1);
+  --pricing-accent-hover: #4c1d95;
+  --pricing-success: #2563EB;
+  --pricing-success-light: rgba(5, 150, 105, 0.1);
+}
+
+/* Main Container - Full Width */
+.pricing-settings {
+  width: 100%;
+  background: var(--pricing-bg);
+  border-radius: 12px;
+  border: 1px solid var(--pricing-border);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  color: var(--pricing-text);
+}
+
+/* Header */
+.pricing-settings__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--pricing-border);
+}
+
+.pricing-settings__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pricing-text);
+  margin: 0;
+}
+
+.pricing-settings__subtitle {
+  font-size: 13px;
+  color: var(--pricing-text-muted);
+  margin: 4px 0 0 0;
+}
+
+.pricing-settings__explainer {
+  font-size: 0.9rem;
+  color: #6B7280;
+  margin: 0 20px 1.5rem 20px;
+  line-height: 1.5;
+}
+
+/* Content Container - 2-Column Grid (Notice Period Wide | Stacked Cost + Edge) */
+.pricing-settings__content {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Right Stack: Substitute Cost + Edge Preference vertically stacked */
+.pricing-settings__right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Pricing Tier */
+.pricing-tier {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  background: var(--pricing-surface);
+  border-radius: 12px;
+  border: 1px solid var(--pricing-border);
+}
+
+.pricing-tier--low,
+.pricing-tier--medium,
+.pricing-tier--high {
+  background: var(--schedule-bg-light);
+  border: 1px solid var(--schedule-border);
+}
+
+/* Notice Period Tier - Primary Focus (01) - Direct child of content */
+.pricing-settings__content>.pricing-tier {
+  padding: 20px 24px;
+  background: var(--pricing-bg);
+  border: 2px solid var(--pricing-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pricing-settings__content>.pricing-tier .pricing-tier__title {
+  font-size: 16px;
+}
+
+.pricing-settings__content>.pricing-tier .pricing-tier__subtitle {
+  font-size: 13px;
+}
+
+/* Right Stack Tiers - Secondary (Substitute Cost + Edge) */
+.pricing-settings__right-stack .pricing-tier {
+  padding: 14px;
+}
+
+.pricing-tier__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.pricing-tier__number {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+  padding: 2px 8px;
+  background: var(--pricing-accent-light);
+  border-radius: 4px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.pricing-tier__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pricing-text);
+  margin: 0;
+}
+
+.pricing-tier__subtitle {
+  font-size: 12px;
+  color: var(--pricing-text-muted);
+  font-style: italic;
+  margin: 4px 0 0 0;
+}
+
+.pricing-tier__hint {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+  margin: 12px 0 0 0;
+  line-height: 1.5;
+}
+
+/* Substitute Cost Cards - Horizontal Layout */
+.pricing-tier__cards {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.cost-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+  border: 2px solid var(--pricing-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 60px;
+}
+
+.cost-card:hover {
+  border-color: var(--pricing-border-active);
+  background: linear-gradient(180deg, #F3F4F6 0%, #E5E7EB 100%);
+}
+
+.cost-card--selected {
+  border-color: var(--pricing-accent);
+  background: linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 100%);
+}
+
+.cost-card__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.cost-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.cost-card--selected .cost-card__label {
+  color: var(--pricing-accent);
+}
+
+.cost-card__desc {
+  font-size: 10px;
+  color: var(--pricing-text-muted);
+  line-height: 1.3;
+}
+
+.pricing-tier__effect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--pricing-surface);
+  border-radius: 6px;
+  border: 1px solid var(--pricing-border);
+}
+
+.effect-label {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.effect-values {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pricing-accent);
+}
+
+/* Cost Cards (Tier 1) */
+.pricing-tier__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cost-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--pricing-surface);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cost-card:hover {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+}
+
+.cost-card--selected {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+  box-shadow: 0 0 0 1px var(--pricing-accent-light);
+}
+
+.cost-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cost-card__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.cost-card--selected .cost-card__label {
+  color: var(--pricing-accent);
+}
+
+.cost-card__desc {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.cost-card__percentage {
+  font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+  background: var(--pricing-accent-dim, rgba(0, 217, 255, 0.15));
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cost-card--selected .cost-card__percentage {
+  background: var(--pricing-accent);
+  color: var(--pricing-bg);
+}
+
+.cost-card__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pricing-text);
+}
+
+.cost-card--selected .cost-card__value {
+  color: var(--pricing-accent);
+}
+
+/* Custom Input */
+.pricing-tier__custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.custom-input__label {
+  font-size: 12px;
+  color: var(--pricing-text-muted);
+}
+
+.custom-input__wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--pricing-bg);
+  border: 1px solid var(--pricing-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.custom-input__currency {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pricing-text-muted);
+  margin-right: 2px;
+}
+
+.custom-input__field {
+  width: 70px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pricing-text);
+  outline: none;
+}
+
+.custom-input__field::placeholder {
+  color: var(--pricing-border);
+}
+
+.custom-input__field--active {
+  color: var(--pricing-accent);
+}
+
+/* Notice Stepper (Tier 2) */
+.notice-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notice-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--pricing-surface);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notice-step:hover {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+}
+
+.notice-step--selected {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+  box-shadow: 0 0 0 1px var(--pricing-accent-light);
+}
+
+.notice-step__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notice-step__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pricing-text);
+  min-width: 85px;
+}
+
+.notice-step--selected .notice-step__label {
+  color: var(--pricing-accent);
+}
+
+.notice-step__period {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.notice-step__multiplier {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pricing-text);
+}
+
+.notice-step--selected .notice-step__multiplier {
+  color: var(--pricing-accent);
+}
+
+/* Edge Segmented Control (Tier 3) */
+.edge-segmented {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edge-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  background: var(--pricing-surface);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edge-segment:hover {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-bg);
+}
+
+.edge-segment--selected {
+  border-color: var(--pricing-border-active);
+  background: var(--pricing-accent);
+}
+
+.edge-segment__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.edge-segment__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.edge-segment__sub-label {
+  font-size: 10px;
+  color: var(--pricing-text-muted);
+  font-weight: 400;
+  max-width: 200px;
+  line-height: 1.3;
+}
+
+.edge-segment--selected .edge-segment__label {
+  color: #FFFFFF;
+}
+
+.edge-segment--selected .edge-segment__sub-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Live Preview - Summary Bar (Full Width Below Grid) */
+.pricing-preview {
+  margin-top: 24px;
+  padding: 16px 24px;
+  background: var(--pricing-surface);
+  border-radius: 8px;
+  border: 1px solid var(--pricing-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.pricing-preview__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pricing-preview__icon {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pricing-success);
+}
+
+.pricing-preview__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.pricing-preview__grid {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--pricing-bg);
+  border-radius: 6px;
+  border: 1px solid var(--pricing-border);
+}
+
+.preview-item__day {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pricing-text-muted);
+}
+
+.preview-item__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pricing-success);
+}
+
+.pricing-preview__formula {
+  display: none;
+}
+
+.pricing-preview__range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.range-label {
+  font-size: 12px;
+  color: var(--pricing-text-muted);
+}
+
+.range-values {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+}
+
+/* Notice Slider (Tier 2 - Horizontal Slider with Steps) */
+.notice-slider {
+  position: relative;
+  padding: 0 8px;
+}
+
+/* Notice Multipliers (Tier 2 - Individual Sliders) */
+.notice-multipliers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.notice-multipliers__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 1.5fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--pricing-surface);
+  border-radius: 8px;
+  border: 1px solid var(--pricing-border);
+  transition: border-color 0.15s ease;
+}
+
+.notice-multipliers__row:hover {
+  border-color: var(--pricing-border-active);
+}
+
+.notice-multipliers__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notice-multipliers__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pricing-text);
+}
+
+.notice-multipliers__period {
+  font-size: 11px;
+  color: var(--pricing-text-muted);
+}
+
+.notice-multipliers__slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--pricing-surface);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.notice-multipliers__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--pricing-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--pricing-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.notice-multipliers__slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--pricing-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--pricing-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.notice-multipliers__slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(to right, var(--pricing-accent) 0%, var(--pricing-surface) 0%);
+  border-radius: 3px;
+}
+
+.notice-multipliers__slider:focus {
+  outline: none;
+}
+
+.notice-multipliers__slider:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--pricing-accent-light);
+}
+
+.notice-multipliers__value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pricing-accent);
+  min-width: 42px;
+  text-align: right;
+}
+
+.notice-slider__track {
+  position: relative;
+  height: 8px;
+  background: var(--pricing-surface);
+  border-radius: 4px;
+  margin: 20px 0;
+}
+
+.notice-slider__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--pricing-accent);
+  border-radius: 4px;
+  transition: width 0.15s ease;
+}
+
+.notice-slider__input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.notice-slider__thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: var(--pricing-accent);
+  border: 3px solid var(--pricing-bg);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  transition: left 0.15s ease;
+}
+
+.notice-slider__steps {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.notice-slider__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.notice-slider__step:hover {
+  background: var(--pricing-surface);
+}
+
+.notice-slider__step--active .notice-slider__step-label,
+.notice-slider__step--active .notice-slider__step-multiplier {
+  color: var(--pricing-accent);
+}
+
+.notice-slider__step-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--pricing-border);
+  border-radius: 50%;
+}
+
+.notice-slider__step--active .notice-slider__step-dot {
+  background: var(--pricing-accent);
+}
+
+.notice-slider__step-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--pricing-text-muted);
+  text-align: center;
+  max-width: 60px;
+}
+
+.notice-slider__step-multiplier {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pricing-text);
+}
+
+.notice-slider__step-period {
+  font-size: 9px;
+  color: var(--pricing-text-muted);
+}
+
+/* Action Buttons */
+.pricing-settings__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 0;
+}
+
+.pricing-btn {
+  padding: 10px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pricing-btn--secondary {
+  background: var(--pricing-bg);
+  color: var(--pricing-text-muted);
+  border: 1px solid var(--pricing-border);
+}
+
+.pricing-btn--secondary:hover {
+  border-color: var(--pricing-text-muted);
+  color: var(--pricing-text);
+}
+
+.pricing-btn--primary {
+  background: var(--pricing-accent);
+  color: #FFFFFF;
+  border: none;
+}
+
+.pricing-btn--primary:hover {
+  background: var(--pricing-accent-hover);
+}
+
+.pricing-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Footer removed - actions now in header */

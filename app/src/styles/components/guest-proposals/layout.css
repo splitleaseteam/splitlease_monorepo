@@ -1,0 +1,264 @@
+/* guest-proposals: layout */
+
+/* ============================================================================
+   MAIN CONTENT LAYOUT
+   ============================================================================ */
+
+.main-content {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: var(--gp-bg);
+  position: relative;
+  min-height: calc(100vh - 70px);
+  padding: 2rem 0;
+  padding-top: 90px;
+}
+
+.proposals-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.page-title {
+  font-size: var(--gp-font-size-xl);
+  font-weight: 700;
+  color: var(--gp-purple-dark);
+  margin-bottom: 24px;
+}
+
+/* ============================================================================
+   LOADING STATE
+   ============================================================================ */
+
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.spinner {
+  border: 4px solid var(--gp-border);
+  border-top: 4px solid var(--gp-purple-action);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+   ERROR STATE
+   ============================================================================ */
+
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.error-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--gp-purple-bg);
+  color: var(--gp-danger);
+  font-size: 2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.error-state h2 {
+  color: var(--gp-danger);
+  margin-bottom: 1rem;
+}
+
+.error-state .error-message {
+  color: var(--gp-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.retry-button {
+  padding: 0.75rem 1.5rem;
+  background: var(--gp-purple-action);
+  color: white;
+  border: none;
+  border-radius: var(--gp-border-radius-pill);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retry-button:hover {
+  background: var(--gp-purple-dark);
+}
+
+/* ============================================================================
+   EMPTY STATE - V3 Style
+   ============================================================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--gp-white);
+  border: 2px solid var(--gp-border);
+  border-radius: 20px;
+}
+
+.empty-state h2 {
+  font-size: var(--gp-font-size-lg);
+  font-weight: 700;
+  color: var(--gp-text);
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: var(--gp-font-size-base);
+  color: var(--gp-text-secondary);
+  margin-bottom: 12px;
+  line-height: var(--gp-line-height-relaxed);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-state .empty-subtext {
+  color: var(--gp-text-muted);
+  margin-bottom: 32px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: var(--gp-purple-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--gp-purple-action);
+}
+
+/* ============================================================================
+   LEGACY STYLES (kept for backward compatibility with other components)
+   ============================================================================ */
+
+.proposal-card {
+  display: none; /* Hide old card if rendered */
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background: var(--gp-purple-action);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--gp-purple-dark);
+}
+
+.btn-secondary {
+  background: var(--gp-purple-bg);
+  color: var(--gp-purple-dark);
+  border: 1px solid var(--gp-border);
+}
+
+.btn-secondary:hover {
+  background: var(--gp-border);
+}
+
+/* Danger buttons are OUTLINED ONLY per protocol */
+.btn-danger {
+  background: transparent;
+  color: var(--gp-danger);
+  border: 2px solid var(--gp-danger);
+}
+
+.btn-danger:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+/* ============================================================================
+   ACCESSIBILITY UTILITIES
+   ============================================================================ */
+
+/* Screen Reader Only - Visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip Link - Keyboard navigation bypass */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  padding: 16px 24px;
+  background: var(--gp-purple-action);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--gp-font-size-base);
+  border-radius: 12px;
+  z-index: 1000;
+  transition: top var(--gp-transition-fast);
+}
+
+.skip-link:focus {
+  top: 16px;
+  outline: none;
+  box-shadow: var(--gp-focus-ring);
+}
+
+/* ============================================================================
+   FOCUS STATES - Visible keyboard navigation
+   ============================================================================ */
+
+/* Global focus-visible styles for all interactive elements */
+.epc-header:focus-visible,
+.epc-btn:focus-visible,
+.epc-quick-link:focus-visible,
+.epc-day-pill:focus-visible,
+.retry-button:focus-visible,
+.browse-button:focus-visible,
+[role="button"]:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: var(--gp-focus-outline);
+  outline-offset: var(--gp-focus-outline-offset);
+}
+
+/* Remove default outline when using focus-visible */
+.epc-header:focus:not(:focus-visible),
+.epc-btn:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}

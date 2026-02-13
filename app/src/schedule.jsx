@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client';
 import ScheduleDashboard from './islands/pages/ScheduleDashboard/index.jsx';
 import { ToastProvider } from './islands/shared/Toast.jsx';
 import './styles/main.css';
-import './styles/components/schedule-dashboard.css';
+import './styles/components/schedule-dashboard/index.css';
 
 const root = createRoot(document.getElementById('root'));
 root.render(
