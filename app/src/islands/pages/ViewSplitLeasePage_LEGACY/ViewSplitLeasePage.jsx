@@ -843,7 +843,7 @@ export default function ViewSplitLeasePage() {
           .eq('guest_user_id', loggedInUserData.userId)
           .eq('listing_id', listing.id)
           .neq('proposal_workflow_status', 'Proposal Cancelled by Guest')
-          .or('"Deleted".is.null,"Deleted".eq.false')
+          .or('is_deleted.is.null,is_deleted.eq.false')
           .order('original_created_at', { ascending: false })
           .limit(1);
 

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * CreateProposalFlowV2 - Shared Island Component
  * Complete proposal creation flow with user details, move-in, and days selection
  * Architecture: ESM + React Islands pattern
@@ -7,7 +7,7 @@
  * No price calculations should happen outside of ListingScheduleSelector.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import ReviewSection from './CreateProposalFlowV2Components/ReviewSection.jsx';
 import UserDetailsSection from './CreateProposalFlowV2Components/UserDetailsSection.jsx';
 import MoveInSection from './CreateProposalFlowV2Components/MoveInSection.jsx';
@@ -183,6 +183,9 @@ export default function CreateProposalFlowV2({
   const [internalDaysSelected, setInternalDaysSelected] = useState(daysSelected);
   const [internalNightsSelected, setInternalNightsSelected] = useState(nightsSelected);
 
+  // Track initial mount to prevent recalculation useEffect from overwriting parent pricing
+  const isInitialMountRef = useRef(true);
+
   // Log initial data received from parent
   useEffect(() => {
     console.log('ðŸ“‹ CreateProposalFlowV2 initialized with data from View page:', {
@@ -327,7 +330,7 @@ export default function CreateProposalFlowV2({
     moveInRange: '',
 
     // Pricing (ONLY from ListingScheduleSelector - initialized from parent)
-    pricePerNight: pricingBreakdown?.pricePerNight || 0,
+    pricePerNight: pricingBreakdown?.pricePerNight || pricingBreakdown?.nightlyPrice || 0,
     numberOfNights: nightsSelected * reservationSpan,
     totalPrice: pricingBreakdown?.reservationTotal || 0,
     pricePerFourWeeks: pricingBreakdown?.fourWeekRent || 0,
@@ -344,7 +347,7 @@ export default function CreateProposalFlowV2({
   // Update pricing when internal pricing breakdown changes (from ListingScheduleSelector)
   useEffect(() => {
     if (internalPricingBreakdown && internalPricingBreakdown.valid) {
-      console.log('ðŸ’° Updating proposal data with pricing from ListingScheduleSelector:', internalPricingBreakdown);
+      console.log('💰 Updating proposal data with pricing from ListingScheduleSelector:', internalPricingBreakdown);
 
       // Calculate derived values
       const nightsPerWeek = internalDaysSelected.length - 1; // nights = days - 1
@@ -353,7 +356,7 @@ export default function CreateProposalFlowV2({
 
       setProposalData(prev => ({
         ...prev,
-        pricePerNight: internalPricingBreakdown.pricePerNight,
+        pricePerNight: internalPricingBreakdown.pricePerNight || internalPricingBreakdown.nightlyPrice,
         pricePerFourWeeks: internalPricingBreakdown.fourWeekRent,
         hostFourWeekCompensation: internalPricingBreakdown.hostFourWeekCompensation,
         totalPrice: internalPricingBreakdown.reservationTotal,
@@ -387,37 +390,21 @@ export default function CreateProposalFlowV2({
     proposalData.uniqueRequirements
   ]);
 
-  // Prepare listing data for price calculation (same structure as DaysSelectionSection)
-  const pricingListing = useMemo(() => {
-    if (!listing) return null;
-    return {
-      id: listing.id,
-      minimumNights: listing.minimum_nights_per_stay || 2,
-      maximumNights: listing.maximum_nights_per_stay || 7,
-      'rental type': listing.rental_type || 'Nightly',
-      'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
-      unit_markup: listing.unit_markup_percentage || 0,
-      nightly_rate_2_nights: listing.nightly_rate_for_2_night_stay,
-      nightly_rate_3_nights: listing.nightly_rate_for_3_night_stay,
-      nightly_rate_4_nights: listing.nightly_rate_for_4_night_stay,
-      nightly_rate_5_nights: listing.nightly_rate_for_5_night_stay,
-      nightly_rate_7_nights: listing.nightly_rate_for_7_night_stay,
-      weekly_host_rate: listing.weekly_rate_paid_to_host,
-      monthly_host_rate: listing.monthly_rate_paid_to_host,
-      price_override: listing['price_override'],
-      cleaning_fee: listing.cleaning_fee_amount,
-      damage_deposit: listing.damage_deposit_amount
-    };
-  }, [listing]);
-
   // Recalculate prices when reservationSpan changes (mirrors main page behavior)
+  // IMPORTANT: Skip on initial mount — parent already provides correct pricing via pricingBreakdown prop.
+  // Without this guard, the mount-time recalculation can overwrite correct initial values with zeros.
   useEffect(() => {
-    // Skip if no days selected or no listing data
-    if (!internalDaysSelected || internalDaysSelected.length < 2 || !pricingListing) {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
       return;
     }
 
-    console.log('ðŸ“Š Recalculating prices due to reservationSpan change:', proposalData.reservationSpan);
+    // Skip if no days selected or no listing data
+    if (!internalDaysSelected || internalDaysSelected.length < 2 || !listing) {
+      return;
+    }
+
+    console.log('Recalculating prices due to reservationSpan change:', proposalData.reservationSpan);
 
     // Calculate nights from selected days
     const selectedNights = calculateNightsFromDays(internalDaysSelected);
@@ -429,16 +416,16 @@ export default function CreateProposalFlowV2({
     // Recalculate pricing with new reservation span
     const newPriceBreakdown = calculatePrice(
       selectedNights,
-      pricingListing,
+      listing,
       proposalData.reservationSpan,
       zatConfig
     );
 
-    console.log('ðŸ’° New price breakdown after reservationSpan change:', newPriceBreakdown);
+    console.log('New price breakdown after reservationSpan change:', newPriceBreakdown);
 
     // Update internal pricing state (this triggers the existing useEffect to update proposalData)
     setInternalPricingBreakdown(newPriceBreakdown);
-  }, [proposalData.reservationSpan, pricingListing, zatConfig]);
+  }, [proposalData.reservationSpan, listing, zatConfig, internalDaysSelected]);
 
   const updateProposalData = (field, value) => {
     // Handle full pricing breakdown object from DaysSelectionSection

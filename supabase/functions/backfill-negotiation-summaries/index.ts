@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       .from("proposal")
       .select('id, "Status", "Guest", "Listing", "Created Date"')
       .like('"Status"', "%Split Lease%")
-      .eq('"Deleted"', false)
+      .eq('is_deleted', false)
       .order('"Created Date"', { ascending: false });
 
     if (proposalError) {
