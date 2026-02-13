@@ -61,7 +61,7 @@ export async function loadProposalDetailsWorkflow({
       .from('listing')
       .select('*')
       .eq('id', listingId)
-      .single()
+      .maybeSingle()
 
     if (!listingError && listingData) {
       // Process listing if processor provided
@@ -99,7 +99,7 @@ export async function loadProposalDetailsWorkflow({
         is_user_verified
       `)
       .eq('id', guestUserId)
-      .single()
+      .maybeSingle()
 
     if (!guestError && guestData) {
       // Process user if processor provided
@@ -117,7 +117,7 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 3: Fetch host user data (from proposal or listing creator)
   let processedHost = null
-  const hostUserId = rawProposal.host_user_id || rawProposal['Host User'] || (processedListing && (processedListing.host_user_id || processedListing['Created By']))
+  const hostUserId = rawProposal.host_user_id || (processedListing && (processedListing.host_user_id || processedListing.created_by_user_id))
   if (hostUserId) {
     const { data: hostData, error: hostError } = await supabase
       .from('user')
@@ -135,7 +135,7 @@ export async function loadProposalDetailsWorkflow({
         is_user_verified
       `)
       .eq('id', hostUserId)
-      .single()
+      .maybeSingle()
 
     if (!hostError && hostData) {
       // Process user if processor provided
@@ -160,7 +160,6 @@ export async function loadProposalDetailsWorkflow({
     houseRulesArray.length > 0
   ) {
     const { data: rulesData, error: rulesError } = await supabase
-      .schema('reference_table')
       .from('zat_features_houserule')
       .select('id, name, icon')
       .in('id', houseRulesArray)
@@ -178,7 +177,7 @@ export async function loadProposalDetailsWorkflow({
       .from('virtualmeetingschedulesandlinks')
       .select('*')
       .eq('id', virtualMeetingId)
-      .single()
+      .maybeSingle()
 
     if (!vmError && vmData) {
       virtualMeeting = vmData

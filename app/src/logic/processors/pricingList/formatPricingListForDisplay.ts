@@ -48,7 +48,10 @@ export function formatPricingListForDisplay(
     throw new Error('formatPricingListForDisplay: pricingList is required');
   }
 
-  const nightlyPrices = pricingList.nightlyPrice || (pricingList as Partial<SupabasePricingRow>)['Nightly Price'] || [];
+  const frontendPricing = pricingList as Partial<FrontendPricingList>;
+  const supabasePricing = pricingList as Partial<SupabasePricingRow>;
+
+  const nightlyPrices = frontendPricing.nightlyPrice || supabasePricing.nightly_price || [];
 
   // Build price tiers array
   const priceTiers: PriceTierDisplay[] = nightlyPrices.map((price, index) => {
@@ -63,17 +66,17 @@ export function formatPricingListForDisplay(
   });
 
   // Format starting price
-  const startingPrice = pricingList.startingNightlyPrice ?? (pricingList as Partial<SupabasePricingRow>)['Starting Nightly Price'];
+  const startingPrice = frontendPricing.startingNightlyPrice ?? supabasePricing.starting_nightly_price;
   const startingAt = startingPrice != null && !isNaN(startingPrice as number)
     ? `$${Math.round(startingPrice as number)}/night`
     : 'Price varies';
 
   // Format markup percentage
-  const combinedMarkup = pricingList.combinedMarkup ?? (pricingList as Partial<SupabasePricingRow>)['Combined Markup'] ?? 0.17;
+  const combinedMarkup = frontendPricing.combinedMarkup ?? supabasePricing.combined_markup ?? 0.17;
   const markupDisplay = `${Math.round(combinedMarkup * 100)}%`;
 
   // Format discount percentage
-  const fullTimeDiscount = pricingList.fullTimeDiscount ?? (pricingList as Partial<SupabasePricingRow>)['Full Time Discount'] ?? 0.13;
+  const fullTimeDiscount = frontendPricing.fullTimeDiscount ?? supabasePricing.full_time_discount ?? 0.13;
   const discountDisplay = `${Math.round(fullTimeDiscount * 100)}%`;
 
   return {
@@ -83,7 +86,7 @@ export function formatPricingListForDisplay(
     markupDisplay,
     discountDisplay,
     fullTimePrice: formatPrice(nightlyPrices[6]), // 7-night price
-    rentalType: (pricingList.rentalType ?? (pricingList as Partial<SupabasePricingRow>).rental_type ?? 'Nightly') as 'Nightly' | 'Monthly' | 'Weekly'
+    rentalType: (frontendPricing.rentalType ?? (supabasePricing as Record<string, unknown>).rental_type ?? 'Nightly') as 'Nightly' | 'Monthly' | 'Weekly'
   };
 }
 

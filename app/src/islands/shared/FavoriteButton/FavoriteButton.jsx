@@ -56,7 +56,7 @@ const FavoriteButton = ({
       .from('listing')
       .select('user_ids_who_favorited_json')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     if (fetchError) {
       throw fetchError;

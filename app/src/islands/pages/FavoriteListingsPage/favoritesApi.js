@@ -51,7 +51,7 @@ export async function isListingFavorited(userId, listingId) {
       .from('listing')
       .select('user_ids_who_favorited_json')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('[favoritesApi] Error checking if listing is favorited:', error);
@@ -82,7 +82,7 @@ export async function removeFromFavorites(userId, listingId) {
       .from('listing')
       .select('user_ids_who_favorited_json')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     if (fetchError) {
       console.error('[favoritesApi] Error fetching listing favorites:', fetchError);
@@ -132,7 +132,7 @@ export async function addToFavorites(userId, listingId) {
       .from('listing')
       .select('user_ids_who_favorited_json')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     if (fetchError) {
       console.error('[favoritesApi] Error fetching listing favorites:', fetchError);

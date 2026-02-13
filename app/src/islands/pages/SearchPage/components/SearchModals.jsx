@@ -162,7 +162,7 @@ export default function SearchModals({
       {showSuccessModal && (
         <ProposalSuccessModal
           proposalId={successProposalId}
-          listingName={selectedListingForProposal?.title || selectedListingForProposal?.Name}
+          listingName={selectedListingForProposal?.title || selectedListingForProposal?.listing_title}
           hasSubmittedRentalApp={loggedInUserData?.hasSubmittedRentalApp ?? false}
           onClose={() => {
             setShowSuccessModal(false);

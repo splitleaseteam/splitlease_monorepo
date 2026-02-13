@@ -28,7 +28,7 @@ export const handleDelete = async (
     .from('remindersfromhousemanual')
     .update({
       status: 'cancelled',
-      'Modified Date': new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
     .eq('id', payload.reminderId)
     .select('id')

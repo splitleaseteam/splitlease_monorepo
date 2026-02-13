@@ -53,12 +53,13 @@ export async function fetchDocumentData(leaseId) {
       total_week_count
     `)
     .eq('id', leaseId)
-    .single();
+    .maybeSingle();
 
   if (leaseError) {
     console.error('[fetchDocumentData] Lease fetch failed:', leaseError);
     throw new Error(`Failed to fetch lease: ${leaseError.message}`);
   }
+  if (!lease) throw new Error('Lease not found');
 
   console.log('[fetchDocumentData] Lease found:', lease.agreement_number);
 
@@ -87,7 +88,7 @@ export async function fetchDocumentData(leaseId) {
         host_proposed_house_rules_json
       `)
       .eq('id', lease.proposal_id)
-      .single();
+      .maybeSingle();
 
     if (proposalError) {
       console.warn('[fetchDocumentData] Proposal fetch failed:', proposalError.message);
@@ -126,7 +127,7 @@ export async function fetchDocumentData(leaseId) {
         cancellation_policy
       `)
       .eq('id', lease.listing_id)
-      .single();
+      .maybeSingle();
 
     if (listingError) {
       console.warn('[fetchDocumentData] Listing fetch failed:', listingError.message);
@@ -149,7 +150,7 @@ export async function fetchDocumentData(leaseId) {
             phone_number
           `)
           .eq('id', lease.guest_user_id)
-          .single()
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     lease.host_user_id
       ? supabase
@@ -162,7 +163,7 @@ export async function fetchDocumentData(leaseId) {
             phone_number
           `)
           .eq('id', lease.host_user_id)
-          .single()
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null })
   ]);
 

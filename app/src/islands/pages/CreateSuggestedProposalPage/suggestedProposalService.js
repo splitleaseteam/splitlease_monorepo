@@ -145,7 +145,7 @@ export async function getListingPhotos(listingId) {
       .from('listing')
       .select('photos_with_urls_captions_and_sort_order_json')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

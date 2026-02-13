@@ -9,14 +9,17 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ReviewsOverviewPage from './islands/pages/ReviewsOverviewPage';
 import { ToastProvider } from './islands/shared/Toast';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
 import './styles/main.css';
 
 const root = createRoot(document.getElementById('root'));
 
 root.render(
   <React.StrictMode>
-    <ToastProvider>
-      <ReviewsOverviewPage />
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <ReviewsOverviewPage />
+      </ToastProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

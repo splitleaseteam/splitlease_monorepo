@@ -130,7 +130,7 @@ export async function fetchListingComplete(listingId) {
         allows_alternating_roommates
       `)
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     if (listingError) throw listingError;
     if (!listingData) throw new Error('Listing not found');
@@ -451,7 +451,7 @@ export async function fetchListingBasic(listingId) {
       .from('listing')
       .select('id, listing_title, listing_description, is_active, is_deleted')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
 
     console.log('📊 Supabase response - data:', listingData);
     console.log('📊 Supabase response - error:', listingError);
@@ -496,7 +496,6 @@ export async function fetchZatPriceConfiguration() {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_priceconfiguration')
       .select(`
         overall_site_markup,
@@ -508,7 +507,7 @@ export async function fetchZatPriceConfiguration() {
         max_price_per_night
       `)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     if (!data) throw new Error('ZAT price configuration not found');

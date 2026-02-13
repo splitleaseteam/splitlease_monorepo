@@ -173,11 +173,13 @@ export async function handleSendMessage(
     console.log('[sendMessage] 🔍 Looking for existing thread with recipient:', recipientId);
 
     // Validate recipient exists in user table before creating thread
+    // recipient_user_id may be a Supabase UUID (id) or legacy platform ID
     console.log('[sendMessage] 🔍 Validating recipient user exists:', recipientId);
     const { data: recipient, error: recipientError } = await supabaseAdmin
       .from('user')
       .select('id')
-      .eq('id', recipientId)
+      .or(`id.eq.${recipientId},legacy_platform_id.eq.${recipientId}`)
+      .limit(1)
       .maybeSingle();
 
     console.log('[sendMessage] Recipient lookup result:', { recipient, error: recipientError });
@@ -189,12 +191,14 @@ export async function handleSendMessage(
     console.log('[sendMessage] ✅ Recipient validation passed:', recipientId);
 
     // Validate listing exists if listing_id is provided
+    // listing_id may be a Supabase UUID (id) or legacy platform ID
     if (typedPayload.listing_id) {
       console.log('[sendMessage] 🔍 Validating listing exists:', typedPayload.listing_id);
       const { data: listing, error: listingError } = await supabaseAdmin
         .from('listing')
         .select('id')
-        .eq('id', typedPayload.listing_id)
+        .or(`id.eq.${typedPayload.listing_id},legacy_platform_id.eq.${typedPayload.listing_id}`)
+        .limit(1)
         .maybeSingle();
 
       console.log('[sendMessage] Listing lookup result:', { listing, error: listingError });

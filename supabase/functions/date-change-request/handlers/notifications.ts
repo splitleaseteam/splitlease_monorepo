@@ -424,10 +424,10 @@ async function sendEmailNotification(
     // Fetch additional data needed for new email templates
     const listingData = await fetchListingFromLease(supabase, context.leaseId);
 
-    // Fetch lease data with check-in/check-out dates
+    // Fetch lease data with reservation dates
     const { data: leaseData } = await supabase
       .from('booking_lease')
-      .select('check_in, check_out')
+      .select('reservation_start_date, reservation_end_date')
       .eq('id', context.leaseId)
       .maybeSingle();
 
@@ -435,8 +435,8 @@ async function sendEmailNotification(
     const emailContext: EmailNotificationContext = {
       ...context,
       leaseData: {
-        checkIn: leaseData?.check_in || null,
-        checkOut: leaseData?.check_out || null,
+        checkIn: leaseData?.reservation_start_date || null,
+        checkOut: leaseData?.reservation_end_date || null,
         agreementNumber: context.agreementNumber,
       },
       listingData: listingData,

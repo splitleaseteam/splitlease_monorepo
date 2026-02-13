@@ -8,8 +8,16 @@
  * Auth: Admin only
  */
 
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ListingsOverviewPage from './islands/pages/ListingsOverviewPage/index.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
 
 const root = createRoot(document.getElementById('root'));
-root.render(<ListingsOverviewPage />);
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <ListingsOverviewPage />
+    </ErrorBoundary>
+  </React.StrictMode>
+);

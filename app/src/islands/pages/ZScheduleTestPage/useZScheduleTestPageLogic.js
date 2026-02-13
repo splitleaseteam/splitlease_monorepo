@@ -170,7 +170,7 @@ export function useZScheduleTestPageLogic() {
           is_approved
         `)
         .eq('id', listingId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

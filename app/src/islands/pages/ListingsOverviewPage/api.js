@@ -264,7 +264,7 @@ export async function addError(listingId, errorCode) {
     .from('listing')
     .select('errors')
     .eq('id', listingId)
-    .single();
+    .maybeSingle();
 
   if (fetchError) {
     console.error('[ListingsOverview] Failed to fetch listing for error add:', fetchError);
@@ -345,7 +345,7 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
       .from('listing')
       .select('nightly_rate_for_1_night_stay, nightly_rate_for_3_night_stay')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (fetchError) {
       results.push({ id, success: false, error: fetchError.message });

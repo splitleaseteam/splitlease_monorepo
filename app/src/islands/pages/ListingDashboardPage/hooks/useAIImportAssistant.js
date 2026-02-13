@@ -78,13 +78,13 @@ export function useAIImportAssistant(listing, updateListing, setListing, fetchLi
 
       if (generatedData.name && generatedData.name !== prev.title) {
         updates.title = generatedData.name;
-        updates.Name = generatedData.name;
+        updates.listing_title = generatedData.name;
         changedFields.add('name');
       }
 
       if (generatedData.description && generatedData.description !== prev.description) {
         updates.description = generatedData.description;
-        updates.Description = generatedData.description;
+        updates.listing_description = generatedData.description;
         changedFields.add('description');
       }
 

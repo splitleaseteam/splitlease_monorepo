@@ -626,7 +626,7 @@ export async function fetchNeighborhoodDescription(neighborhoodId) {
       .from(DATABASE.TABLES.NEIGHBORHOOD)
       .select('neighborhood_description')
       .eq('id', neighborhoodId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
@@ -662,7 +662,7 @@ export async function fetchNeighborhoodName(neighborhoodId) {
       .from(DATABASE.TABLES.NEIGHBORHOOD)
       .select('display, neighborhood_description, zips, geo_borough')
       .eq('id', neighborhoodId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
@@ -699,7 +699,7 @@ export async function fetchBoroughName(boroughId) {
       .from(DATABASE.TABLES.BOROUGH)
       .select('display_borough')
       .eq('id', boroughId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

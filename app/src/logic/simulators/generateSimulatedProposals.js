@@ -123,7 +123,7 @@ export function generateSimulatedProposals({ listing, hostId }) {
       // Listing info
       listing: hostListing,
       listingId: hostListing.id,
-      listingName: hostListing.name || hostListing.Name,
+      listingName: hostListing.name || hostListing.listing_title,
 
       // Dates
       moveInDate: formatDateString(moveInDate),

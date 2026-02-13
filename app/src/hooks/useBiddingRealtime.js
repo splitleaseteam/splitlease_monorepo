@@ -56,7 +56,7 @@ export function useBiddingRealtime(sessionId, userId) {
         .from('bidding_sessions')
         .select('*')
         .eq('id', sessionId)
-        .single();
+        .maybeSingle();
 
       if (sessionError) throw sessionError;
 

@@ -88,8 +88,7 @@ export function useMessagingPageLogic() {
   const [showVMModal, setShowVMModal] = useState(false);
   const [vmInitialView, setVMInitialView] = useState('');
 
-  // Ref to track if initial load is complete
-  const initialLoadDone = useRef(false);
+  // (initialLoadDone ref removed — threads.length === 0 guard is sufficient)
 
   // ============================================================================
   // CTA HANDLER HOOKS
@@ -115,7 +114,7 @@ export function useMessagingPageLogic() {
           .from('listing')
           .select('*')
           .eq('id', listingId)
-          .single();
+          .maybeSingle();
 
         if (listingError) {
           console.error('[MessagingPage] Error fetching listing for proposal:', listingError);
@@ -251,9 +250,7 @@ export function useMessagingPageLogic() {
     setAuthState({ isChecking: false, shouldRedirect: false });
 
     // Fetch threads after auth confirmed
-    fetchThreads().then(() => {
-      initialLoadDone.current = true;
-    }).catch(err => {
+    fetchThreads().catch(err => {
       console.error('[Messaging] Failed to fetch threads:', err);
       setError('Failed to load conversations. Please refresh the page.');
       setIsLoading(false);
@@ -295,7 +292,7 @@ export function useMessagingPageLogic() {
   // URL PARAM SYNC FOR THREAD SELECTION (runs once when threads load)
   // ============================================================================
   useEffect(() => {
-    if (!initialLoadDone.current || threads.length === 0 || hasAutoSelectedThread.current) return;
+    if (threads.length === 0 || hasAutoSelectedThread.current) return;
 
     const params = new URLSearchParams(window.location.search);
     const threadId = params.get('thread');
@@ -304,11 +301,11 @@ export function useMessagingPageLogic() {
       const thread = threads.find(t => t.id === threadId);
       if (thread) {
         hasAutoSelectedThread.current = true;
-        handleThreadSelectInternal(thread);
+        selectThread(thread);
       }
     } else if (threads.length > 0) {
       hasAutoSelectedThread.current = true;
-      handleThreadSelectInternal(threads[0]);
+      selectThread(threads[0]);
     }
   }, [threads]);
 
@@ -752,6 +749,7 @@ export function useMessagingPageLogic() {
    */
   async function fetchProposalDetails(proposalId) {
     try {
+      // proposal_id from thread may be either a Supabase UUID or legacy platform ID
       const { data, error } = await supabase
         .from('booking_proposal')
         .select(`
@@ -764,8 +762,9 @@ export function useMessagingPageLogic() {
           four_week_rent_amount,
           original_updated_at
         `)
-        .eq('id', proposalId)
-        .single();
+        .or(`id.eq.${proposalId},legacy_platform_id.eq.${proposalId}`)
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.error('[RightPanel] Error fetching proposal:', error);
@@ -794,6 +793,7 @@ export function useMessagingPageLogic() {
    */
   async function fetchListingDetails(listingId) {
     try {
+      // listing_id from thread may be either a Supabase UUID or legacy platform ID
       const { data, error } = await supabase
         .from('listing')
         .select(`
@@ -806,8 +806,9 @@ export function useMessagingPageLogic() {
           monthly_rate_paid_to_host,
           rental_type
         `)
-        .eq('id', listingId)
-        .single();
+        .or(`id.eq.${listingId},legacy_platform_id.eq.${listingId}`)
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.error('[RightPanel] Error fetching listing:', error);
@@ -950,10 +951,12 @@ export function useMessagingPageLogic() {
   // ============================================================================
 
   /**
-   * Internal thread selection (does not update URL, used by effect)
-   * Also marks the thread as read in local state
+   * Select a thread — unified handler for both auto-select and user click.
+   * @param {object} thread - The thread to select
+   * @param {object} [options] - Options
+   * @param {boolean} [options.updateUrl=false] - Whether to update the URL
    */
-  function handleThreadSelectInternal(thread) {
+  function selectThread(thread, { updateUrl = false } = {}) {
     setSelectedThread(thread);
     setMessages([]);
     setThreadInfo(null);
@@ -968,38 +971,21 @@ export function useMessagingPageLogic() {
         t.id === thread.id ? { ...t, unread_count: 0 } : t
       )
     );
+
+    if (updateUrl) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('thread', thread.id);
+      window.history.replaceState({}, '', `?${params.toString()}`);
+    }
 
     fetchMessages(thread.id);
   }
 
   /**
-   * Handle thread selection from user interaction
-   * Also marks the thread as read by setting unread_count to 0 locally
-   * (backend marks messages as read when fetchMessages is called)
+   * Handle thread selection from user interaction (updates URL)
    */
   const handleThreadSelect = useCallback((thread) => {
-    setSelectedThread(thread);
-    setMessages([]);
-    setThreadInfo(null);
-    setProposalData(null);
-    setListingData(null);
-    setIsOtherUserTyping(false);
-    setTypingUserName(null);
-
-    // Mark thread as read in local state (backend will mark messages as read)
-    setThreads(prevThreads =>
-      prevThreads.map(t =>
-        t.id === thread.id ? { ...t, unread_count: 0 } : t
-      )
-    );
-
-    // Update URL
-    const params = new URLSearchParams(window.location.search);
-    params.set('thread', thread.id);
-    window.history.replaceState({}, '', `?${params.toString()}`);
-
-    // Fetch messages for selected thread
-    fetchMessages(thread.id);
+    selectThread(thread, { updateUrl: true });
   }, []);
 
   /**

@@ -126,7 +126,7 @@ export function useHouseManualPageLogic() {
           .from('house_manual')
           .select('*')
           .eq('listing_id', selectedListingId)
-          .single();
+          .maybeSingle();
 
         if (fetchError && fetchError.code !== 'PGRST116') {
           // PGRST116 = not found, which is ok

@@ -70,7 +70,7 @@ export async function handleGetReceivedReviews(
         id,
         first_name,
         last_name,
-        profile_image_url
+        profile_photo_url
       ),
       rating_details:review_rating_detail (
         category,
@@ -118,7 +118,7 @@ export async function handleGetReceivedReviews(
       reviewer_name: reviewer
         ? `${reviewer.first_name || ""} ${reviewer.last_name || ""}`.trim()
         : "Anonymous",
-      reviewer_image_url: reviewer?.profile_image_url || null,
+      reviewer_image_url: reviewer?.profile_photo_url || null,
       overall_rating: review.overall_rating,
       comment: review.comment,
       would_recommend: review.would_recommend,

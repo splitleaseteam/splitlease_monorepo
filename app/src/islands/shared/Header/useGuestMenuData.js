@@ -302,7 +302,7 @@ export function useGuestMenuData(userId, isAuthenticated) {
           .from('user')
           .select('id, rental_application_form_id')
           .eq('id', userId)
-          .single(),
+          .maybeSingle(),
 
         // Count leases where user is guest
         supabase

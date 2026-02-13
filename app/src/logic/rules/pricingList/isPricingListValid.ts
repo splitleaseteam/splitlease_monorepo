@@ -41,24 +41,8 @@ export function isPricingListValid({ pricingList }: PricingValidationCriteria): 
     'unusedNightsDiscount'
   ];
 
-  // Map from camelCase to Bubble-style column names
-  const fieldMappings: Record<string, string[]> = {
-    hostCompensation: ['hostCompensation', 'Host Compensation'],
-    nightlyPrice: ['nightlyPrice', 'Nightly Price'],
-    markupAndDiscountMultiplier: ['markupAndDiscountMultiplier', 'Markup and Discount Multiplier'],
-    unusedNightsDiscount: ['unusedNightsDiscount', 'Unused Nights Discount']
-  };
-
   for (const field of arrayFields) {
-    const possibleNames = fieldMappings[field] || [field];
-    let foundArray: unknown = null;
-
-    for (const name of possibleNames) {
-      if ((pricingList as Record<string, unknown>)[name] !== undefined) {
-        foundArray = (pricingList as Record<string, unknown>)[name];
-        break;
-      }
-    }
+    const foundArray = (pricingList as Record<string, unknown>)[field];
 
     // Skip if field is not present (may be optional)
     if (foundArray === null || foundArray === undefined) {
@@ -76,7 +60,7 @@ export function isPricingListValid({ pricingList }: PricingValidationCriteria): 
   }
 
   // Validate at least one price exists
-  const nightlyPrices = (pricingList as Record<string, unknown>).nightlyPrice || (pricingList as Record<string, unknown>)['Nightly Price'];
+  const nightlyPrices = (pricingList as Record<string, unknown>).nightlyPrice;
   if (nightlyPrices && Array.isArray(nightlyPrices)) {
     const hasValidPrice = nightlyPrices.some(
       price => price !== null && price !== undefined && typeof price === 'number' && !isNaN(price)
@@ -87,7 +71,7 @@ export function isPricingListValid({ pricingList }: PricingValidationCriteria): 
   }
 
   // Validate scalar markups if present
-  const combinedMarkup = (pricingList as Record<string, unknown>).combinedMarkup ?? (pricingList as Record<string, unknown>)['Combined Markup'];
+  const combinedMarkup = (pricingList as Record<string, unknown>).combinedMarkup;
   if (combinedMarkup !== undefined && combinedMarkup !== null) {
     if (typeof combinedMarkup !== 'number' || isNaN(combinedMarkup as number)) {
       return false;

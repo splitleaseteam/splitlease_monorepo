@@ -77,7 +77,7 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
     id: row.id,
     uniqueId: row.id?.slice(-8) || 'N/A',
     name: row.listing_title || 'Untitled Listing',
-    description: row.Description || '',
+    description: row.listing_description || '',
     host: {
       id: row.host_user_id,
       email: row.host_email || '',

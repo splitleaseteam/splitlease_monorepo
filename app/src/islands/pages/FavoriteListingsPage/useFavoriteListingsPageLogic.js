@@ -315,7 +315,7 @@ export function useFavoriteListingsPageLogic() {
               .from('user')
               .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
               .eq('id', authUserId)
-              .single(),
+              .maybeSingle(),
             supabase.rpc('get_user_junction_counts', { p_user_id: authUserId })
           ]);
 
@@ -815,7 +815,7 @@ export function useFavoriteListingsPageLogic() {
             .from('user')
             .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
             .eq('id', sessionId)
-            .single(),
+            .maybeSingle(),
           supabase.rpc('get_user_junction_counts', { p_user_id: sessionId })
         ]);
 

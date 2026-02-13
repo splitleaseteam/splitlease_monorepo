@@ -129,7 +129,7 @@ export function formatHouseRules(rules) {
   }
 
   return rules
-    .map(rule => typeof rule === 'string' ? rule : (rule?.name || rule?.Name || ''))
+    .map(rule => typeof rule === 'string' ? rule : (rule?.name || ''))
     .filter(Boolean)
     .join(', ');
 }
@@ -145,7 +145,7 @@ export function formatHouseRulesBulleted(rules) {
   }
 
   return rules
-    .map(rule => typeof rule === 'string' ? rule : (rule?.name || rule?.Name || ''))
+    .map(rule => typeof rule === 'string' ? rule : (rule?.name || ''))
     .filter(Boolean)
     .map(rule => `- ${rule}`)
     .join('\n');

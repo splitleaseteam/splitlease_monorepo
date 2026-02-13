@@ -92,16 +92,13 @@ export async function handleCompleteStay(
       const { data: hostReview, error: hostReviewError } = await supabase
         .from('review')
         .insert({
-          reviewer: proposal.host_user_id,
-          reviewee: proposal.guest_user_id,
-          listing: proposal.listing_id,
-          proposal: proposalId,
-          lease: leaseId,
-          reviewer_type: 'host',
-          rating: 5,
-          review_text: 'Great guest! Very respectful and communicative throughout the stay.',
-          'is_test_data': true,
-          'simulation_id': simulationId,
+          reviewer_id: proposal.host_user_id,
+          reviewee_id: proposal.guest_user_id,
+          listing_id: proposal.listing_id,
+          lease_id: leaseId,
+          review_type: 'host_reviews_guest',
+          overall_rating: 5,
+          comment: 'Great guest! Very respectful and communicative throughout the stay.',
           created_at: new Date().toISOString(),
         })
         .select('id')
@@ -122,16 +119,13 @@ export async function handleCompleteStay(
       const { data: guestReview, error: guestReviewError } = await supabase
         .from('review')
         .insert({
-          reviewer: proposal.guest_user_id,
-          reviewee: proposal.host_user_id,
-          listing: proposal.listing_id,
-          proposal: proposalId,
-          lease: leaseId,
-          reviewer_type: 'guest',
-          rating: 5,
-          review_text: 'Wonderful experience! The space was exactly as described and the host was very accommodating.',
-          'is_test_data': true,
-          'simulation_id': simulationId,
+          reviewer_id: proposal.guest_user_id,
+          reviewee_id: proposal.host_user_id,
+          listing_id: proposal.listing_id,
+          lease_id: leaseId,
+          review_type: 'guest_reviews_host',
+          overall_rating: 5,
+          comment: 'Wonderful experience! The space was exactly as described and the host was very accommodating.',
           created_at: new Date().toISOString(),
         })
         .select('id')

@@ -16,6 +16,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { getUserId, getSessionId } from '../../../lib/secureStorage.js';
+import {
+  fetchThreads as fetchThreadsFromEdge,
+  fetchMessages as fetchMessagesFromEdge,
+  sendMessage as sendMessageFromEdge,
+} from '../../../lib/messagingService.js';
 import { useCTAHandler } from '../../pages/MessagingPage/useCTAHandler.js';
 import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
@@ -101,7 +106,7 @@ export function useHeaderMessagingPanelLogic({
           .from('listing')
           .select('*')
           .eq('id', listingId)
-          .single();
+          .maybeSingle();
 
         if (listingError) {
           console.error('[HeaderMessagingPanel] Error fetching listing for proposal:', listingError);
@@ -492,192 +497,16 @@ export function useHeaderMessagingPanelLogic({
   // ============================================================================
 
   /**
-   * Fetch all threads for the authenticated user
+   * Fetch all threads for the authenticated user via Edge Function.
+   * Server handles all enrichment (contacts, listings, unread counts, previews).
    */
   async function fetchThreads() {
     try {
       setIsLoading(true);
       setError(null);
 
-      const currentUserId = userId || getUserId();
-      if (!currentUserId) {
-        throw new Error('User ID not available');
-      }
-
-      // Query threads where user is host or guest
-      // Uses RPC function because PostgREST .or() doesn't handle column names
-      // with leading hyphens ("host_user_id", "guest_user_id") correctly
-      const { data: threadsData, error: threadsError } = await supabase
-        .rpc('get_user_threads', { user_id: currentUserId });
-
-      if (threadsError) {
-        throw new Error(`Failed to fetch threads: ${threadsError.message}`);
-      }
-
-      if (!threadsData || threadsData.length === 0) {
-        setThreads([]);
-        hasLoadedThreads.current = true;
-        return;
-      }
-
-      // Collect contact IDs and listing IDs for batch lookup
-      const contactIds = new Set();
-      const listingIds = new Set();
-
-      threadsData.forEach((thread) => {
-        const hostId = thread['host_user_id'];
-        const guestId = thread['guest_user_id'];
-        const contactId = hostId === currentUserId ? guestId : hostId;
-        if (contactId) contactIds.add(contactId);
-        if (thread['listing_id']) listingIds.add(thread['listing_id']);
-      });
-
-      // Batch fetch contact user data
-      let contactMap = {};
-      if (contactIds.size > 0) {
-        const { data: contacts } = await supabase
-          .from('user')
-          .select('id, first_name, last_name, profile_photo_url')
-          .in('id', Array.from(contactIds));
-
-        if (contacts) {
-          contactMap = contacts.reduce((acc, contact) => {
-            // Format name as "FirstName L." (first name + last initial)
-            const firstName = contact.first_name || '';
-            const lastName = contact.last_name || '';
-            const lastInitial = lastName ? ` ${lastName.charAt(0)}.` : '';
-            const displayName = firstName ? `${firstName}${lastInitial}` : 'Unknown User';
-
-            acc[contact.id] = {
-              name: displayName,
-              avatar: contact.profile_photo_url,
-            };
-            return acc;
-          }, {});
-        }
-      }
-
-      // Batch fetch listing data
-      let listingMap = {};
-      if (listingIds.size > 0) {
-        const { data: listings } = await supabase
-          .from('listing')
-          .select('id, listing_title')
-          .in('id', Array.from(listingIds));
-
-        if (listings) {
-          listingMap = listings.reduce((acc, listing) => {
-            acc[listing.id] = listing.listing_title || 'Unnamed Property';
-            return acc;
-          }, {});
-        }
-      }
-
-      // Fetch unread message counts per thread for this user
-      // Uses JSONB containment operator to check if user is in unread_by_user_ids_json array
-      const threadIds = threadsData.map((t) => t.id);
-      let unreadCountMap = {};
-      if (threadIds.length > 0) {
-        const { data: unreadData } = await supabase
-          .from('thread_message')
-          .select('thread_id')
-          .in('thread_id', threadIds)
-          .filter('unread_by_user_ids_json', 'cs', JSON.stringify([currentUserId]));
-
-        if (unreadData) {
-          // Count occurrences of each thread ID
-          unreadCountMap = unreadData.reduce((acc, msg) => {
-            const threadId = msg.thread_id;
-            acc[threadId] = (acc[threadId] || 0) + 1;
-            return acc;
-          }, {});
-        }
-      }
-
-      // Compute visibility-aware message previews
-      // The static ~Last Message field doesn't consider visibility, so we fetch
-      // the most recent message visible to the current user for each thread
-      const visiblePreviewMap = {};
-      if (threadIds.length > 0) {
-        // Build a map of thread -> user role (host or guest)
-        const threadRoles = {};
-        threadsData.forEach((thread) => {
-          threadRoles[thread.id] = thread['host_user_id'] === currentUserId ? 'host' : 'guest';
-        });
-
-        // Fetch recent messages for all threads with visibility info
-        const { data: messagesData } = await supabase
-          .from('thread_message')
-          .select('thread_id, message_body_text, original_created_at, is_visible_to_host, is_visible_to_guest')
-          .in('thread_id', threadIds)
-          .order('original_created_at', { ascending: false });
-
-        if (messagesData && messagesData.length > 0) {
-          // For each thread, find the most recent message visible to the user
-          for (const threadId of threadIds) {
-            const role = threadRoles[threadId];
-            const visibleMessage = messagesData.find((msg) => {
-              if (msg.thread_id !== threadId) return false;
-              return role === 'host'
-                ? msg.is_visible_to_host === true
-                : msg.is_visible_to_guest === true;
-            });
-
-            if (visibleMessage && visibleMessage.message_body_text) {
-              visiblePreviewMap[threadId] = visibleMessage.message_body_text.substring(0, 100);
-            }
-          }
-        }
-      }
-
-      // Transform threads to UI format
-      const transformedThreads = threadsData.map((thread) => {
-        const hostId = thread['host_user_id'];
-        const guestId = thread['guest_user_id'];
-        const contactId = hostId === currentUserId ? guestId : hostId;
-        const contact = contactId ? contactMap[contactId] : null;
-
-        // Format the last modified time
-        const modifiedDate = thread.original_updated_at
-          ? new Date(thread.original_updated_at)
-          : new Date();
-        const now = new Date();
-        const diffMs = now.getTime() - modifiedDate.getTime();
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        let lastMessageTime;
-        if (diffDays === 0) {
-          lastMessageTime = modifiedDate.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-          });
-        } else if (diffDays === 1) {
-          lastMessageTime = 'Yesterday';
-        } else if (diffDays < 7) {
-          lastMessageTime = modifiedDate.toLocaleDateString('en-US', { weekday: 'short' });
-        } else {
-          lastMessageTime = modifiedDate.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-          });
-        }
-
-        return {
-          id: thread.id,
-          'host_user_id': hostId,
-          'guest_user_id': guestId,
-          contact_name: contact?.name || 'Split Lease',
-          contact_avatar: contact?.avatar,
-          property_name: thread['listing_id'] ? listingMap[thread['listing_id']] : undefined,
-          // Use visibility-aware preview if available, fall back to thread preview column
-          last_message_preview: visiblePreviewMap[thread.id] || thread.last_message_preview_text || 'No messages yet',
-          last_message_time: lastMessageTime,
-          unread_count: unreadCountMap[thread.id] || 0,
-          is_with_splitbot: false,
-        };
-      });
-
-      setThreads(transformedThreads);
+      const enrichedThreads = await fetchThreadsFromEdge();
+      setThreads(enrichedThreads);
       hasLoadedThreads.current = true;
     } catch (err) {
       console.error('[Panel] Error fetching threads:', err);
@@ -688,43 +517,19 @@ export function useHeaderMessagingPanelLogic({
   }
 
   /**
-   * Fetch messages for a specific thread
+   * Fetch messages for a specific thread via shared service
    */
   async function fetchMessages(threadId) {
     try {
       setIsLoadingMessages(true);
 
-      // Include user_id in payload for legacy auth support
-      // Edge Function accepts user_id when no JWT Authorization header is present
-      const currentUserId = userId || getUserId();
+      const result = await fetchMessagesFromEdge(threadId);
+      setMessages(result.messages || []);
+      setThreadInfo(result.thread_info || null);
 
-      const { data, error } = await supabase.functions.invoke('messages', {
-        body: {
-          action: 'get_messages',
-          payload: {
-            thread_id: threadId,
-            user_id: currentUserId,  // Legacy auth: pass user_id inside payload
-          },
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to fetch messages');
-      }
-
-      if (data?.success) {
-        setMessages(data.data.messages || []);
-        setThreadInfo(data.data.thread_info || null);
-
-        // Refresh header unread count after backend marks messages as read
-        // Small delay ensures database update completes (fire-and-forget on backend)
-        if (onUnreadCountChange) {
-          setTimeout(() => {
-            onUnreadCountChange();
-          }, 500);
-        }
-      } else {
-        throw new Error(data?.error || 'Failed to fetch messages');
+      // Refresh header unread count after backend marks messages as read
+      if (onUnreadCountChange) {
+        setTimeout(() => onUnreadCountChange(), 500);
       }
     } catch (err) {
       console.error('[Panel] Error fetching messages:', err);
@@ -734,10 +539,12 @@ export function useHeaderMessagingPanelLogic({
   }
 
   /**
-   * Send a new message
+   * Send a new message via shared service
    */
   async function sendMessage() {
     if (!messageInput.trim() || !selectedThread || isSending) return;
+
+    const messageText = messageInput.trim();
 
     try {
       setIsSending(true);
@@ -748,59 +555,39 @@ export function useHeaderMessagingPanelLogic({
         clearTimeout(typingTimeoutRef.current);
       }
 
-      // Include user_id in payload for legacy auth support
-      const currentUserId = userId || getUserId();
+      const result = await sendMessageFromEdge(selectedThread.id, messageText);
 
-      const { data, error } = await supabase.functions.invoke('messages', {
-        body: {
-          action: 'send_message',
-          payload: {
-            thread_id: selectedThread.id,
-            message_body: messageInput.trim(),
-            user_id: currentUserId,  // Legacy auth: pass user_id inside payload
-          },
-        },
+      // Clear input immediately
+      setMessageInput('');
+
+      // Add optimistic message
+      const optimisticMessage = {
+        id: result.message_id,
+        message_body: messageText,
+        sender_name: 'You',
+        sender_type: 'guest',
+        is_outgoing: true,
+        timestamp: new Date().toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }),
+      };
+
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === optimisticMessage.id)) return prev;
+        return [...prev, optimisticMessage];
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to send message');
-      }
-
-      if (data?.success) {
-        // Clear input immediately
-        setMessageInput('');
-
-        // Add optimistic message
-        const optimisticMessage = {
-          id: data.data.message_id,
-          message_body: messageInput.trim(),
-          sender_name: 'You',
-          sender_type: 'guest',
-          is_outgoing: true,
-          timestamp: new Date().toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-          }),
-        };
-
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === optimisticMessage.id)) return prev;
-          return [...prev, optimisticMessage];
-        });
-
-        // Update thread's last message preview
-        setThreads((prev) =>
-          prev.map((t) =>
-            t.id === selectedThread.id
-              ? { ...t, last_message_preview: messageInput.trim(), last_message_time: 'Just now' }
-              : t
-          )
-        );
-      } else {
-        throw new Error(data?.error || 'Failed to send message');
-      }
+      // Update thread's last message preview
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === selectedThread.id
+            ? { ...t, last_message_preview: messageText, last_message_time: 'Just now' }
+            : t
+        )
+      );
     } catch (err) {
       console.error('[Panel] Error sending message:', err);
       setError(err.message || 'Failed to send message');

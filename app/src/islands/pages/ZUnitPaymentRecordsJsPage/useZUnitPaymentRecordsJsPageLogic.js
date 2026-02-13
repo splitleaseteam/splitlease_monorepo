@@ -183,7 +183,7 @@ export function useZUnitPaymentRecordsJsPageLogic() {
           damage_deposit_amount
         `)
         .eq('id', proposalId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

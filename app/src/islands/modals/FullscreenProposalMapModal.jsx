@@ -156,7 +156,7 @@ export default function FullscreenProposalMapModal({
   const handlePinClick = useCallback((proposalId) => {
     // Find the proposal name for feedback
     const proposal = activeProposals.find(p => p.id === proposalId);
-    const listingName = proposal?.listing?.Name || 'Proposal';
+    const listingName = proposal?.listing?.listing_title || 'Proposal';
 
     if (onProposalSelect) {
       onProposalSelect(proposalId);

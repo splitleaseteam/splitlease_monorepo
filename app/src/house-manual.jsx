@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import HouseManualPage from './islands/pages/HouseManualPage/HouseManualPage.jsx';
 import { ToastProvider } from './islands/shared/Toast';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 
 // Import CSS so Vite bundles it (required for production build)
 import './styles/main.css';
@@ -15,9 +16,11 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <ToastProvider>
-        <HouseManualPage />
-      </ToastProvider>
+      <ErrorBoundary>
+        <ToastProvider>
+          <HouseManualPage />
+        </ToastProvider>
+      </ErrorBoundary>
     </React.StrictMode>
   );
 }

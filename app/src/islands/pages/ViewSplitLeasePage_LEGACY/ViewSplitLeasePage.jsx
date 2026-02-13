@@ -881,7 +881,7 @@ export default function ViewSplitLeasePage() {
           .from('listing')
           .select('user_ids_who_favorited_json')
           .eq('id', listing.id)
-          .single();
+          .maybeSingle();
         if (error) {
           setIsFavorited(false);
           return;
@@ -2350,7 +2350,7 @@ return (
     {showSuccessModal && (
       <ProposalSuccessModal
         proposalId={successProposalId}
-        listingName={listing?.Name}
+        listingName={listing?.listing_title}
         hasSubmittedRentalApp={loggedInUserData?.hasSubmittedRentalApp ?? false}
         onClose={() => {
           setShowSuccessModal(false);

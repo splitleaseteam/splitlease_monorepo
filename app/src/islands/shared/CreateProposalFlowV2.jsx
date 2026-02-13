@@ -341,7 +341,7 @@ export default function CreateProposalFlowV2({
 
     // Listing reference
     listingId: listing?.id,
-    listingAddress: listing?.Name || listing?.address
+    listingAddress: listing?.listing_title || listing?.address
   });
 
   // Update pricing when internal pricing breakdown changes (from ListingScheduleSelector)

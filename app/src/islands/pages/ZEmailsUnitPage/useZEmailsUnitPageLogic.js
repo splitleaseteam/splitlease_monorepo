@@ -22,7 +22,6 @@ export default function useZEmailsUnitPageLogic() {
     execute: executeLoadTemplates,
   } = useAsyncOperation(async () => {
     const { data, error: fetchError } = await supabase
-      .schema('reference_table')
       .from('zat_email_html_template_eg_sendbasicemailwf_')
       .select('id, name, description, placeholder, email_template_json, logo, original_created_at')
       .order('original_created_at', { ascending: false });

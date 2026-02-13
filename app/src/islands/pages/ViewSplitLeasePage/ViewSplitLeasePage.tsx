@@ -317,7 +317,7 @@ export default function ViewSplitLeasePage() {
 
   useEffect(() => {
     // Update the browser tab title with the listing name
-    if (listing?.Name) {
+    if (listing?.listing_title) {
       document.title = `${listing.listing_title} | Split Lease`;
     }
   }, [listing]);
@@ -386,7 +386,7 @@ export default function ViewSplitLeasePage() {
           .from('listing')
           .select('user_ids_who_favorited_json')
           .eq('id', listing.id || listing.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           logger.debug('ViewSplitLeasePage: Error fetching listing favorites:', error);
@@ -1342,7 +1342,7 @@ export default function ViewSplitLeasePage() {
       {showSuccessModal && (
         <ProposalSuccessModal
           proposalId={successProposalId}
-          listingName={listing?.Name}
+          listingName={listing?.listing_title}
           hasSubmittedRentalApp={loggedInUserData?.hasSubmittedRentalApp ?? false}
           onClose={() => {
             setShowSuccessModal(false);

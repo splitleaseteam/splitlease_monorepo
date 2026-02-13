@@ -64,7 +64,7 @@ export async function fetchUserById(userId) {
         is_user_verified
       `)
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching user:', error);
@@ -176,7 +176,7 @@ export async function loadProposalDetails(proposal) {
         .from('listing')
         .select('*')
         .eq('id', listingId)
-        .single();
+        .maybeSingle();
 
       if (!listingError && listingData) {
         enrichedProposal._listing = listingData;
@@ -202,7 +202,7 @@ export async function loadProposalDetails(proposal) {
           is_user_verified
         `)
         .eq('id', guestUserId)
-        .single();
+        .maybeSingle();
 
       if (!guestError && guestData) {
         enrichedProposal._guest = guestData;
@@ -227,7 +227,7 @@ export async function loadProposalDetails(proposal) {
           is_user_verified
         `)
         .eq('id', enrichedProposal._listing.host_user_id)
-        .single();
+        .maybeSingle();
 
       if (!hostError && hostData) {
         enrichedProposal._host = hostData;
@@ -238,7 +238,6 @@ export async function loadProposalDetails(proposal) {
     const houseRulesIds = proposal.house_rules_reference_ids_json;
     if (houseRulesIds && Array.isArray(houseRulesIds) && houseRulesIds.length > 0) {
       const { data: rulesData, error: rulesError } = await supabase
-        .schema('reference_table')
         .from('zat_features_houserule')
         .select('id, name, icon')
         .in('id', houseRulesIds);
@@ -255,7 +254,7 @@ export async function loadProposalDetails(proposal) {
         .from('virtualmeetingschedulesandlinks')
         .select('*')
         .eq('id', virtualMeetingId)
-        .single();
+        .maybeSingle();
 
       if (!vmError && vmData) {
         enrichedProposal._virtualMeeting = vmData;

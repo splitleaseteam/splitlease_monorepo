@@ -140,7 +140,7 @@ export class BiddingService {
       .from('bidding_sessions')
       .select('*')
       .eq('session_id', sessionId)
-      .single();
+      .maybeSingle();
 
     if (error || !session) {
       throw new Error(`Session ${sessionId} not found`);
@@ -273,7 +273,7 @@ export class BiddingService {
       .eq('session_id', sessionId);
 
     // Update participant bid count
-    const { error: _updateError } = await this.supabase
+    const { error: updateError } = await this.supabase
       .from('bidding_participants')
       .update({
         current_bid_amount: amount,
@@ -281,6 +281,10 @@ export class BiddingService {
       })
       .eq('session_id', sessionId)
       .eq('user_id', userId);
+
+    if (updateError) {
+      throw new Error(`Failed to update participant bid: ${updateError.message}`);
+    }
 
     // Manually increment total_bids_placed (Supabase doesn't support SQL increment in JS client)
     const participant = participants.find(p => p.userId === userId);

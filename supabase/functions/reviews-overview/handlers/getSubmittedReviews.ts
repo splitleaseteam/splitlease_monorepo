@@ -68,7 +68,7 @@ export async function handleGetSubmittedReviews(
         id,
         first_name,
         last_name,
-        profile_image_url
+        profile_photo_url
       ),
       rating_details:review_rating_detail (
         category,
@@ -115,7 +115,7 @@ export async function handleGetSubmittedReviews(
       reviewee_name: reviewee
         ? `${reviewee.first_name || ""} ${reviewee.last_name || ""}`.trim()
         : "Unknown",
-      reviewee_image_url: reviewee?.profile_image_url || null,
+      reviewee_image_url: reviewee?.profile_photo_url || null,
       overall_rating: review.overall_rating,
       comment: review.comment,
       would_recommend: review.would_recommend,

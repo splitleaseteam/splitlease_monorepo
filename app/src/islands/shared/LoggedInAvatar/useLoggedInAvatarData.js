@@ -158,7 +158,7 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
             current_user_role
           `)
           .eq('legacy_platform_id', userId)
-          .single(),
+          .maybeSingle(),
 
         // 2. Fetch listings for this user using the same RPC as HostOverview
         supabase

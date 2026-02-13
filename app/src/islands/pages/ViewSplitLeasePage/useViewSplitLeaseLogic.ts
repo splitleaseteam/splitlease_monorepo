@@ -331,7 +331,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
           .from('user')
           .select('bio_text, stated_need_for_space_text, stated_special_needs_text')
           .eq('id', authUserId)
-          .single();
+          .maybeSingle();
 
         if (userError) throw userError;
 
@@ -350,7 +350,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
               .from('listing')
               .select('user_ids_who_favorited_json')
               .eq('id', listing.id)
-              .single();
+              .maybeSingle();
 
             const favoritedUserIds = listingFavData?.user_ids_who_favorited_json || [];
             if (Array.isArray(favoritedUserIds)) {
@@ -562,7 +562,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
         .from('listing')
         .select('user_ids_who_favorited_json')
         .eq('id', listing.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 

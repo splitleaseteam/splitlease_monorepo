@@ -196,7 +196,6 @@ async function fetchLookupTables() {
   try {
     // Fetch amenities
     const { data: amenities } = await supabase
-      .schema('reference_table')
       .from('zat_features_amenity')
       .select('id, name, icon');
     if (amenities) {
@@ -208,7 +207,6 @@ async function fetchLookupTables() {
 
     // Fetch safety features
     const { data: safety } = await supabase
-      .schema('reference_table')
       .from('zat_features_safetyfeature')
       .select('id, name, icon');
     if (safety) {
@@ -219,7 +217,6 @@ async function fetchLookupTables() {
 
     // Fetch house rules
     const { data: rules } = await supabase
-      .schema('reference_table')
       .from('zat_features_houserule')
       .select('id, name, icon');
     if (rules) {
@@ -232,7 +229,6 @@ async function fetchLookupTables() {
 
     // Fetch listing types
     const { data: types } = await supabase
-      .schema('reference_table')
       .from('zat_features_listingtype')
       .select('id, label, icon');
     if (types) {
@@ -243,7 +239,6 @@ async function fetchLookupTables() {
 
     // Fetch parking options
     const { data: parking } = await supabase
-      .schema('reference_table')
       .from('zat_features_parkingoptions')
       .select('id, label');
     if (parking) {
@@ -254,7 +249,6 @@ async function fetchLookupTables() {
 
     // Fetch storage options
     const { data: storage } = await supabase
-      .schema('reference_table')
       .from('zat_features_storageoptions')
       .select('id, title');
     if (storage) {

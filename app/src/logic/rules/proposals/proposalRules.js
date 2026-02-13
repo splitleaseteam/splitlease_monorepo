@@ -261,8 +261,8 @@ export function requiresSpecialCancellationConfirmation(proposal) {
     return false;
   }
 
-  const usualOrder = proposal['Usual Order'] || 0;
-  const houseManualNotEmpty = proposal.listing?.['House Manual'] || false;
+  const usualOrder = proposal.usual_order || proposal.sort_order || 0;
+  const houseManualNotEmpty = Boolean(proposal.listing?.house_manual_id);
 
   return usualOrder > 5 && houseManualNotEmpty;
 }

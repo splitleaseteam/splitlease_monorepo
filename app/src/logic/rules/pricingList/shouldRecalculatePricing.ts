@@ -43,7 +43,7 @@ export function shouldRecalculatePricing({ listing, pricingList }: Recalculation
   }
 
   // Compare host rates with stored compensation
-  const hostCompensation = (pricingList as Record<string, unknown>).hostCompensation || (pricingList as Record<string, unknown>)['Host Compensation'] || [];
+  const hostCompensation = (pricingList as Record<string, unknown>).hostCompensation || [];
 
   const rateFieldMapping: RateFieldMapping[] = [
     { field: 'nightly_rate_1_night', index: 0 },

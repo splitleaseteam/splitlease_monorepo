@@ -359,8 +359,9 @@ export async function getListingName(
   const { data, error } = await supabase
     .from('listing')
     .select('listing_title')
-    .eq('legacy_platform_id', listingId)
-    .single();
+    .or(`id.eq.${listingId},legacy_platform_id.eq.${listingId}`)
+    .limit(1)
+    .maybeSingle();
 
   if (error || !data) {
     console.error('[messagingHelpers] Listing lookup error:', error);

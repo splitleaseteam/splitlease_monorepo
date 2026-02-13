@@ -294,7 +294,7 @@ export async function getSuggestedProposal(proposalId) {
       .from('booking_proposal')
       .select('*')
       .eq('id', proposalId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       console.error('Error fetching proposal:', error);

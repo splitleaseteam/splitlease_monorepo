@@ -190,29 +190,31 @@ export async function handleGetMessages(
     }
   }
 
-  // Fetch listing name if present
+  // Fetch listing name if present (thread may store id or legacy_platform_id)
   let propertyName: string | undefined;
   if (thread.listing_id) {
     const { data: listing, error: listingError } = await supabaseAdmin
       .from('listing')
       .select('listing_title')
-      .eq('legacy_platform_id', thread.listing_id)
-      .single();
+      .or(`id.eq.${thread.listing_id},legacy_platform_id.eq.${thread.listing_id}`)
+      .limit(1)
+      .maybeSingle();
 
     if (!listingError && listing) {
       propertyName = listing.listing_title;
     }
   }
 
-  // Fetch proposal status if present
+  // Fetch proposal status if present (thread may store id or legacy_platform_id)
   let proposalStatus: string | undefined;
   let statusType: string | undefined;
   if (thread.proposal_id) {
     const { data: proposal, error: proposalError } = await supabaseAdmin
       .from('booking_proposal')
       .select('proposal_workflow_status')
-      .eq('legacy_platform_id', thread.proposal_id)
-      .single();
+      .or(`id.eq.${thread.proposal_id},legacy_platform_id.eq.${thread.proposal_id}`)
+      .limit(1)
+      .maybeSingle();
 
     if (!proposalError && proposal) {
       proposalStatus = proposal.proposal_workflow_status;

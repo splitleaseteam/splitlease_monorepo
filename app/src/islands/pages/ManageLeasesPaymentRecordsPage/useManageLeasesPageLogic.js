@@ -497,7 +497,7 @@ export function useManageLeasesPageLogic({ showToast }) {
         .from('listing')
         .select('photos_with_urls_captions_and_sort_order_json')
         .eq('id', listingId)
-        .single();
+        .maybeSingle();
 
       let photos = listingData?.photos_with_urls_captions_and_sort_order_json;
       // Handle double-encoded JSON string
@@ -547,7 +547,7 @@ export function useManageLeasesPageLogic({ showToast }) {
         .from('booking_lease')
         .select('*')
         .eq('id', leaseId)
-        .single();
+        .maybeSingle();
 
       // Fetch proposal if linked
       let proposalData = null;
@@ -556,7 +556,7 @@ export function useManageLeasesPageLogic({ showToast }) {
           .from('booking_proposal')
           .select('*')
           .eq('id', leaseData.proposal_id)
-          .single();
+          .maybeSingle();
         proposalData = proposal;
       }
 
@@ -567,7 +567,7 @@ export function useManageLeasesPageLogic({ showToast }) {
           .from('listing')
           .select('*')
           .eq('id', leaseData.listing_id)
-          .single();
+          .maybeSingle();
         listingData = listing;
       }
 
@@ -578,7 +578,7 @@ export function useManageLeasesPageLogic({ showToast }) {
           .from('user')
           .select('*')
           .eq('id', leaseData.guest_user_id)
-          .single();
+          .maybeSingle();
         guestData = guest;
       }
 
@@ -589,7 +589,7 @@ export function useManageLeasesPageLogic({ showToast }) {
           .from('user')
           .select('*')
           .eq('id', leaseData.host_user_id)
-          .single();
+          .maybeSingle();
         hostData = host;
       }
 

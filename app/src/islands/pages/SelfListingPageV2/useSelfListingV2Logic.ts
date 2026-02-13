@@ -325,7 +325,7 @@ export function useSelfListingV2Logic() {
             .from('listing_drafts')
             .select('form_data, current_step')
             .eq('id', draftId)
-            .single();
+            .maybeSingle();
 
           if (!error && data) {
             setFormData(data.form_data);

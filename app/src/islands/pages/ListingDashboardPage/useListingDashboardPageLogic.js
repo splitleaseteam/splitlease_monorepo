@@ -361,14 +361,14 @@ export default function useListingDashboardPageLogic() {
 
         const updates = { ...prev };
 
-        if (updatedData.Name !== undefined) {
-          updates.title = updatedData.Name;
-          updates.Name = updatedData.Name;
+        if (updatedData.listing_title !== undefined) {
+          updates.title = updatedData.listing_title;
+          updates.listing_title = updatedData.listing_title;
         }
 
-        if (updatedData.Description !== undefined) {
-          updates.description = updatedData.Description;
-          updates.Description = updatedData.Description;
+        if (updatedData.listing_description !== undefined) {
+          updates.description = updatedData.listing_description;
+          updates.listing_description = updatedData.listing_description;
         }
 
         if (updatedData.neighborhood_description_by_host !== undefined) {

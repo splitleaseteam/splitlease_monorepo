@@ -126,7 +126,7 @@ registerLoader({
 
     const { data, error } = await supabaseClient
       .from("user")
-      .select("id, email, first_name, last_name, phone, bio, profile_photo")
+      .select("id, email, first_name, last_name, phone_number, bio_text, profile_photo_url")
       .eq("id", userId)
       .single();
 
@@ -142,9 +142,9 @@ registerLoader({
       firstName: data.first_name,
       lastName: data.last_name,
       fullName: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-      phone: data.phone,
-      bio: data.bio,
-      profilePhoto: data.profile_photo,
+      phone: data.phone_number,
+      bio: data.bio_text,
+      profilePhoto: data.profile_photo_url,
       loaded: true,
     };
   },

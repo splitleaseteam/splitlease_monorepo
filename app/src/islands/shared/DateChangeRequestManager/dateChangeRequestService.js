@@ -421,7 +421,7 @@ export async function getLeaseWithDates(leaseId) {
         current_week_number
       `)
       .eq('id', leaseId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 

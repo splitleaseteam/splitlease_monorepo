@@ -134,7 +134,7 @@ async function sendReminderEmail(
 
     console.log('[adminSendReminder] Email sent successfully to:', to);
     return true;
-  } catch (_err) {
+  } catch (err) {
     console.error('[adminSendReminder] Email send failed:', err);
     return false;
   }
@@ -192,7 +192,7 @@ async function sendReminderSms(
 
     console.log('[adminSendReminder] SMS sent successfully to:', formattedPhone);
     return true;
-  } catch (_err) {
+  } catch (err) {
     console.error('[adminSendReminder] SMS send failed:', err);
     return false;
   }

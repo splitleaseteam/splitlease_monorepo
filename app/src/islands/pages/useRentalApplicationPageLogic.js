@@ -578,7 +578,7 @@ export function useRentalApplicationPageLogic() {
           .from('user')
           .select('*')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('[RentalApplication] Error fetching user data:', error);
@@ -684,7 +684,7 @@ export function useRentalApplicationPageLogic() {
           .from('user')
           .select('id, rental_application_form_id')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (userError || !userData) {
           console.log('[RentalApplication] User not found or error:', userError);

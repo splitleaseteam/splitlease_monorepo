@@ -8,8 +8,16 @@
  * Auth: Admin only
  */
 
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ProposalManagePage from './islands/pages/ProposalManagePage/index.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
 
 const root = createRoot(document.getElementById('root'));
-root.render(<ProposalManagePage />);
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <ProposalManagePage />
+    </ErrorBoundary>
+  </React.StrictMode>
+);

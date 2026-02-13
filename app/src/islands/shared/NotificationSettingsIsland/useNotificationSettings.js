@@ -33,10 +33,9 @@ export function useNotificationSettings(userId) {
         .from(TABLE_NAME)
         .select('*')
         .eq('created_by', userId)
-        .single();
+        .maybeSingle();
 
-      if (queryError && queryError.code !== 'PGRST116') {
-        // PGRST116 = no rows found, which is expected for new users
+      if (queryError) {
         throw new Error(queryError.message || 'Failed to load notification settings');
       }
 

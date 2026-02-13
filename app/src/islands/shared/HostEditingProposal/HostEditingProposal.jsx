@@ -609,7 +609,7 @@ export function HostEditingProposal({
         <label className="hep-form-label">Schedule Selection</label>
         <ScheduleSelector
           initialNightsSelected={editedNightsSelected}
-          availableNights={listing?.nightsAvailable || listing?.['Nights Available']}
+          availableNights={listing?.nightsAvailable}
           onChange={handleScheduleChange}
           disabled={isInternalUsage || listing?.rentalType === 'Weekly'}
         />

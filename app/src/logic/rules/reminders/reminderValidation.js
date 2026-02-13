@@ -34,7 +34,7 @@ export function canUpdateReminder({ reminder, userId }) {
   }
 
   // Only the creator can update
-  const creatorId = reminder['Created By'] || reminder.createdBy || reminder.creator_id;
+  const creatorId = reminder.createdBy || reminder.creator_id;
   return creatorId === userId;
 }
 
@@ -58,7 +58,7 @@ export function canDeleteReminder({ reminder, userId }) {
   }
 
   // Only the creator can delete
-  const creatorId = reminder['Created By'] || reminder.createdBy || reminder.creator_id;
+  const creatorId = reminder.createdBy || reminder.creator_id;
   return creatorId === userId;
 }
 

@@ -62,7 +62,7 @@ export async function fetchLeaseDataForProposal(proposalId) {
         lease_type
       `)
       .eq('id', proposalId)
-      .single();
+      .maybeSingle();
 
     if (error || !lease) {
       console.warn('No lease found for proposal:', proposalId);

@@ -525,7 +525,7 @@ export async function updateListing(listingId, formData, originalData = null) {
       .from('listing')
       .select('*')
       .eq('id', listingId)
-      .single();
+      .maybeSingle();
     return currentData;
   }
 
@@ -561,16 +561,16 @@ export async function getListingById(listingId) {
     .from('listing')
     .select('*')
     .eq('id', listingId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      // No rows returned
-      logger.debug('[ListingService] Listing not found:', listingId);
-      return null;
-    }
     logger.error('[ListingService] ❌ Error fetching listing:', error);
     throw new Error(error.message || 'Failed to fetch listing');
+  }
+
+  if (!data) {
+    logger.debug('[ListingService] Listing not found:', listingId);
+    return null;
   }
 
   // Check if listing is soft-deleted

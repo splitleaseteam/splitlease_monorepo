@@ -81,7 +81,7 @@ export function computeProposalButtonStates({ proposal, virtualMeeting, guest, l
 
   if (ga2Button.visible) {
     // ID docs submitted check
-    if (status === PROPOSAL_STATUS.LEASE_DOCUMENTS_SENT && !guest?.['ID documents submitted?']) {
+    if (status === PROPOSAL_STATUS.LEASE_DOCUMENTS_SENT && !guest?.has_submitted_id_documents) {
       ga2Button.visible = false;
     }
   }
@@ -109,7 +109,7 @@ export function computeProposalButtonStates({ proposal, virtualMeeting, guest, l
       cancelButton = { ...cancelButton, label: 'Delete Proposal' };
     } else if (status === PROPOSAL_STATUS.HOST_COUNTEROFFER) {
       cancelButton = { ...cancelButton, label: 'Reject Modified Terms' };
-    } else if (config.usualOrder > 5 && listing?.['House manual']) {
+    } else if (config.usualOrder > 5 && listing?.house_manual_id) {
       cancelButton = { ...cancelButton, label: 'See House Manual', backgroundColor: '#6D31C2' };
     } else if (config.usualOrder > 5) {
       cancelButton.visible = true;

@@ -477,7 +477,6 @@ export function useAccountProfilePageLogic() {
     try {
       // Fetch good guest reasons
       const { data: reasons, error: reasonsError } = await supabase
-        .schema('reference_table')
         .from('zat_goodguestreasons')
         .select('id, name')
         .order('name');
@@ -490,7 +489,6 @@ export function useAccountProfilePageLogic() {
 
       // Fetch storage items
       const { data: storage, error: storageError } = await supabase
-        .schema('reference_table')
         .from('zat_storage')
         .select('id, name')
         .order('name');
@@ -517,7 +515,7 @@ export function useAccountProfilePageLogic() {
         .from('user')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (userError) {
         throw new Error('User not found');
@@ -532,7 +530,7 @@ export function useAccountProfilePageLogic() {
           .from('rentalapplication')
           .select('job_title, employment_status')
           .eq('id', rentalAppId)
-          .single();
+          .maybeSingle();
 
         if (rentalAppData) {
           // Use job title if available, otherwise use employment status as display value
@@ -1135,7 +1133,6 @@ export function useAccountProfilePageLogic() {
     try {
       // Step 1: Fetch BCC email addresses from os_slack_channels
       const { data: channelData, error: channelError } = await supabase
-        .schema('reference_table')
         .from('os_slack_channels')
         .select('email_address')
         .in('name', ['bots_log', 'customer_activation']);

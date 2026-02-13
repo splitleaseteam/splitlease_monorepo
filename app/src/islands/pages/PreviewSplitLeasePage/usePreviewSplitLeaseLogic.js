@@ -115,12 +115,15 @@ export function usePreviewSplitLeaseLogic() {
 
         // Fetch complete listing data
         const listingData = await fetchListingComplete(listingId);
+        if (!listingData) {
+          throw new Error('Listing not found');
+        }
         setListing(listingData);
-        setLoading(false);
 
       } catch (err) {
         console.error('Error initializing preview page:', err);
         setError(err.message);
+      } finally {
         setLoading(false);
       }
     }

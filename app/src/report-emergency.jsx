@@ -8,10 +8,13 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ReportEmergencyPage from './islands/pages/ReportEmergencyPage/ReportEmergencyPage.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
 import './styles/main.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ReportEmergencyPage />
+    <ErrorBoundary>
+      <ReportEmergencyPage />
+    </ErrorBoundary>
   </React.StrictMode>
 );

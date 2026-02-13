@@ -23,7 +23,7 @@ export default function useFetchListingDetails() {
         .from('listing')
         .select('*')
         .eq('id', listingId)
-        .single();
+        .maybeSingle();
 
       if (listingError) {
         logger.error('fetchDetailedListingData: Supabase error:', listingError);
@@ -71,7 +71,7 @@ export default function useFetchListingDetails() {
             .from('pricing_list')
             .select('*')
             .eq('id', listingData.pricing_configuration_id)
-            .single();
+            .maybeSingle();
           if (pricingData) {
             pricingList = adaptPricingListFromSupabase(pricingData);
           }

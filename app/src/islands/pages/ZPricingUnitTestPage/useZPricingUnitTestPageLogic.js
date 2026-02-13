@@ -330,7 +330,7 @@ export function useZPricingUnitTestPageLogic() {
         .from('listing')
         .select('pricing_list')
         .eq('id', listingId)
-        .single();
+        .maybeSingle();
 
       if (listingError) throw listingError;
 
@@ -401,7 +401,7 @@ export function useZPricingUnitTestPageLogic() {
           is_approved
         `)
         .eq('id', listingId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

@@ -189,13 +189,11 @@ export default function useModifyListingsPageLogic() {
     try {
       // Column names with spaces need quotes in both select and filter
       const { data: inUnit } = await supabase
-        .schema('reference_table')
         .from('zat_features_amenity')
         .select('id, name, type_amenity_categories')
         .eq('type_amenity_categories', 'In Unit');
 
       const { data: inBuilding } = await supabase
-        .schema('reference_table')
         .from('zat_features_amenity')
         .select('id, name, type_amenity_categories')
         .eq('type_amenity_categories', 'In Building');
@@ -210,7 +208,6 @@ export default function useModifyListingsPageLogic() {
   async function loadHouseRules() {
     try {
       const { data } = await supabase
-        .schema('reference_table')
         .from('zat_features_houserule')
         .select('id, name, icon');
 
@@ -223,7 +220,6 @@ export default function useModifyListingsPageLogic() {
   async function loadSafetyFeatures() {
     try {
       const { data } = await supabase
-        .schema('reference_table')
         .from('zat_features_safetyfeature')
         .select('id, name, icon');
 

@@ -200,7 +200,7 @@ export async function fetchProposal(proposalId) {
       .from('booking_proposal')
       .select('*')
       .eq('id', proposalId)
-      .single()
+      .maybeSingle()
 
     if (error) {
       logger.error('[proposalService] Failed to fetch proposal:', error)

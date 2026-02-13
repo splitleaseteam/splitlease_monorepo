@@ -38,7 +38,7 @@ export async function handleSaveChoice(
   // Verify proposal exists
   const { data: proposalData, error: proposalError } = await supabase
     .from('booking_proposal')
-    .select('id, Listing, Guest')
+    .select('id, listing_id, guest_user_id')
     .eq('id', proposal_id)
     .single();
 
@@ -89,8 +89,8 @@ export async function handleSaveChoice(
     .insert({
       proposal_id,
       matched_listing_id,
-      original_listing_id: proposalData.Listing,
-      guest_id: proposalData.Guest,
+      original_listing_id: proposalData.listing_id,
+      guest_id: proposalData.guest_user_id,
       match_score,
       match_reason: match_reason || null,
       match_type: 'manual',

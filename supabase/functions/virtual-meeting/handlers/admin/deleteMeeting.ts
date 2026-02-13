@@ -31,9 +31,9 @@ export async function handleAdminDeleteMeeting(
   console.log(`[admin_delete_meeting] Deleting meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Verify meeting exists and can be deleted
-  const { data: existing, error: _checkError } = await supabase
+  const { data: existing, error: checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("id, status, booked_date")
+    .select("id, confirmedbysplitlease, booked_date")
     .eq("id", payload.meetingId)
     .single();
 
@@ -41,9 +41,9 @@ export async function handleAdminDeleteMeeting(
     throw new ValidationError("Meeting not found");
   }
 
-  // Don't allow deletion of confirmed or completed meetings
-  if (existing.status === "confirmed" || existing.status === "completed") {
-    throw new ValidationError("Cannot delete a confirmed or completed meeting");
+  // Don't allow deletion of confirmed meetings
+  if (existing.confirmedbysplitlease) {
+    throw new ValidationError("Cannot delete a confirmed meeting");
   }
 
   // Delete the meeting

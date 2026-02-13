@@ -556,7 +556,7 @@ const FavoriteListingsPage = () => {
         <CreateProposalFlowV2
           listing={{
             ...selectedListingForProposal,
-            Name: selectedListingForProposal.title || selectedListingForProposal.Name,
+            listing_title: selectedListingForProposal.title || selectedListingForProposal.listing_title,
             host: selectedListingForProposal.host || null
           }}
           moveInDate={moveInDate}
@@ -601,7 +601,7 @@ const FavoriteListingsPage = () => {
       {showSuccessModal && (
         <ProposalSuccessModal
           proposalId={successProposalId}
-          listingName={selectedListingForProposal?.title || selectedListingForProposal?.Name}
+          listingName={selectedListingForProposal?.title || selectedListingForProposal?.listing_title}
           hasSubmittedRentalApp={loggedInUserData?.hasSubmittedRentalApp ?? false}
           onClose={() => {
             setShowSuccessModal(false);

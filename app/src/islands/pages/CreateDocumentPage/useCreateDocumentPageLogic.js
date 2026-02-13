@@ -135,7 +135,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       if (selectedPolicy) {
         setFormState((prev) => ({
           ...prev,
-          documentTitle: selectedPolicy.Name || selectedPolicy.name || ''
+          documentTitle: selectedPolicy.name || selectedPolicy.Name || ''
         }));
       }
     }
@@ -183,7 +183,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       }
 
       // Create the document
-      const baseHostName = selectedHost.Name || (selectedHost.first_name && selectedHost.last_name ? `${selectedHost.first_name} ${selectedHost.last_name}` : null) || selectedHost.name || '';
+      const baseHostName = (selectedHost.first_name && selectedHost.last_name ? `${selectedHost.first_name} ${selectedHost.last_name}` : null) || selectedHost.name || selectedHost.Name || '';
       const hostName = baseHostName ? `${baseHostName} Full` : '';
 
       const result = await callDocumentApi('create', {
@@ -198,7 +198,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       setLastCreatedDocument(result);
       showToast({
         title: 'Document Created',
-        content: `Document "${formState.documentTitle}" has been assigned to ${selectedHost.Name || selectedHost.email}`,
+        content: `Document "${formState.documentTitle}" has been assigned to ${selectedHost.first_name || selectedHost.name || selectedHost.email}`,
         type: 'success'
       });
 

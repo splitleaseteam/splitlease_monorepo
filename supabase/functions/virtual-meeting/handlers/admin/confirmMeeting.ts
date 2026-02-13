@@ -45,9 +45,8 @@ export async function handleAdminConfirmMeeting(
     .update({
       booked_date: payload.bookedDate,
       meeting_link: meetingLink,
-      status: "confirmed",
-      confirmed_by_splitlease: true,
-      modified_date: new Date().toISOString()
+      confirmedbysplitlease: true,
+      original_updated_at: new Date().toISOString()
     })
     .eq("id", payload.meetingId)
     .select(`

@@ -36,9 +36,9 @@ export async function handleAdminUpdateMeetingDates(
   console.log(`[admin_update_dates] Updating dates for meeting ${payload.meetingId}${user ? ` by admin: ${user.email}` : ' (unauthenticated)'}`);
 
   // Verify meeting exists and is still pending
-  const { data: existing, error: _checkError } = await supabase
+  const { data: existing, error: checkError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("id, booked_date, status")
+    .select("id, booked_date")
     .eq("id", payload.meetingId)
     .single();
 
@@ -55,7 +55,7 @@ export async function handleAdminUpdateMeetingDates(
     .from("virtualmeetingschedulesandlinks")
     .update({
       suggested_dates_and_times: payload.suggestedDates,
-      modified_date: new Date().toISOString()
+      original_updated_at: new Date().toISOString()
     })
     .eq("id", payload.meetingId)
     .select(`

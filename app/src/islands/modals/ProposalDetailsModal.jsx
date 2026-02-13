@@ -33,7 +33,6 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
     setLoadingRules(true);
     try {
       const { data, error } = await supabase
-        .schema('reference_table')
         .from('zat_features_houserule')
         .select('id, name, icon')
         .in('id', proposal.house_rules_reference_ids_json);
@@ -166,8 +165,8 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
                     ) : houseRules.length > 0 ? (
                       houseRules.map((rule) => (
                         <li key={rule.id} className="proposal-details-rule-item">
-                          {rule.Icon && <span className="proposal-details-rule-icon">{rule.Icon}</span>}
-                          <span>{rule.Name}</span>
+                          {rule.icon && <span className="proposal-details-rule-icon">{rule.icon}</span>}
+                          <span>{rule.name}</span>
                         </li>
                       ))
                     ) : (

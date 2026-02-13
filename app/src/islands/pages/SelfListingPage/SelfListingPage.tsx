@@ -321,7 +321,7 @@ export const SelfListingPage: React.FC = () => {
           // Preload the listing name into the form
           // IMPORTANT: Get fresh data from store, not React state, to avoid race condition
           // where formData.spaceSnapshot hasn't been updated with localStorage data yet
-          if (listingData?.Name) {
+          if (listingData?.listing_title) {
             console.log('✅ Preloading listing name:', listingData.listing_title);
             const currentStoreData = listingLocalStore.getData();
             updateSpaceSnapshot({

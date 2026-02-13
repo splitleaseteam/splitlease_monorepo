@@ -155,7 +155,7 @@ export function useSimulationGuestsideDemoPageLogic() {
         .from('user')
         .select('is_usability_tester, usability_step')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.warn('[SimulationGuestsideDemo] Could not fetch user progress:', error);
@@ -274,8 +274,6 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 3. Update state
       setSimulationState(prev => ({
         ...prev,
-        isLoading: false,
-        stepInProgress: null,
         currentStep: 'B',
         completedSteps: [...prev.completedSteps, 'A']
       }));
@@ -284,6 +282,8 @@ export function useSimulationGuestsideDemoPageLogic() {
 
     } catch (error) {
       handleStepError('A', error);
+    } finally {
+      setSimulationState(prev => ({ ...prev, isLoading: false, stepInProgress: null }));
     }
   }, [currentUser, showToast, handleStepError]);
 
@@ -379,8 +379,6 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 5. Update state
       setSimulationState(prev => ({
         ...prev,
-        isLoading: false,
-        stepInProgress: null,
         currentStep: 'C',
         completedSteps: [...prev.completedSteps, 'B'],
         testListingIds: testListings.map(l => l.id),
@@ -395,6 +393,8 @@ export function useSimulationGuestsideDemoPageLogic() {
 
     } catch (error) {
       handleStepError('B', error);
+    } finally {
+      setSimulationState(prev => ({ ...prev, isLoading: false, stepInProgress: null }));
     }
   }, [currentUser, showToast, handleStepError]);
 
@@ -440,8 +440,6 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 3. Update state
       setSimulationState(prev => ({
         ...prev,
-        isLoading: false,
-        stepInProgress: null,
         currentStep: 'D',
         completedSteps: [...prev.completedSteps, 'C1']
       }));
@@ -454,6 +452,8 @@ export function useSimulationGuestsideDemoPageLogic() {
 
     } catch (error) {
       handleStepError('C1', error);
+    } finally {
+      setSimulationState(prev => ({ ...prev, isLoading: false, stepInProgress: null }));
     }
   }, [currentUser, simulationState.testProposalId, showToast, handleStepError]);
 
@@ -514,8 +514,6 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 4. Update state
       setSimulationState(prev => ({
         ...prev,
-        isLoading: false,
-        stepInProgress: null,
         currentStep: 'D',
         completedSteps: [...prev.completedSteps, 'C2']
       }));
@@ -528,6 +526,8 @@ export function useSimulationGuestsideDemoPageLogic() {
 
     } catch (error) {
       handleStepError('C2', error);
+    } finally {
+      setSimulationState(prev => ({ ...prev, isLoading: false, stepInProgress: null }));
     }
   }, [currentUser, simulationState.testProposalId, showToast, handleStepError]);
 
@@ -582,8 +582,6 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 4. Update state
       setSimulationState(prev => ({
         ...prev,
-        isLoading: false,
-        stepInProgress: null,
         currentStep: 'E',
         completedSteps: [...prev.completedSteps, stepId],
         testLeaseId: leaseId
@@ -597,6 +595,8 @@ export function useSimulationGuestsideDemoPageLogic() {
 
     } catch (error) {
       handleStepError(stepId, error);
+    } finally {
+      setSimulationState(prev => ({ ...prev, isLoading: false, stepInProgress: null }));
     }
   }, [currentUser, simulationState.testProposalId, showToast, handleStepError]);
 
@@ -664,8 +664,6 @@ export function useSimulationGuestsideDemoPageLogic() {
       // 6. Update state
       setSimulationState(prev => ({
         ...prev,
-        isLoading: false,
-        stepInProgress: null,
         currentStep: 'complete',
         completedSteps: [...prev.completedSteps, stepId]
       }));
@@ -678,6 +676,8 @@ export function useSimulationGuestsideDemoPageLogic() {
 
     } catch (error) {
       handleStepError(stepId, error);
+    } finally {
+      setSimulationState(prev => ({ ...prev, isLoading: false, stepInProgress: null }));
     }
   }, [currentUser, simulationState.testProposalId, simulationState.testLeaseId, showToast, handleStepError]);
 

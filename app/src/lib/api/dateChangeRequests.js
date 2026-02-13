@@ -114,7 +114,7 @@ export async function fetchDateChangeRequestsForLease(leaseId) {
         .from('user')
         .select('*')
         .eq('id', request.requested_by)
-        .single();
+        .maybeSingle();
       request.requestedByUser = user;
     }
   }

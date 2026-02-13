@@ -139,7 +139,7 @@ export async function fetchHouseManual(houseManualId) {
       .from('house_manual')
       .select('id, manual_title, listing_id, host_user_id, qr_code_urls_json, original_created_at, original_updated_at')
       .eq('id', houseManualId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Failed to fetch house manual: ${error.message}`);
