@@ -594,11 +594,11 @@ export function useManageLeasesPageLogic({ showToast }) {
       const { data: allPaymentsData } = await supabase
         .from('paymentrecords')
         .select('*')
-        .filter('"Booking - Reservation"', 'eq', leaseId)
+        .eq('booking_reservation', leaseId)
         .limit(30);
 
-      const guestPaymentsData = (allPaymentsData || []).filter(r => r['Payment from guest?'] === true);
-      const hostPaymentsData = (allPaymentsData || []).filter(r => r['Payment to Host?'] === true);
+      const guestPaymentsData = (allPaymentsData || []).filter(r => r.payment_from_guest === true);
+      const hostPaymentsData = (allPaymentsData || []).filter(r => r.payment_to_host === true);
 
       // Extract listing photos from embedded JSON column
       let listingPhotosData = [];

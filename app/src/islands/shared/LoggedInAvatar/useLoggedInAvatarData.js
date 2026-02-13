@@ -161,7 +161,6 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
           .single(),
 
         // 2. Fetch listings for this user using the same RPC as HostOverview
-        //    This queries the listing table by "Host User" and "Created By" fields
         supabase
           .rpc('get_host_listings', { host_user_id: userId }),
 

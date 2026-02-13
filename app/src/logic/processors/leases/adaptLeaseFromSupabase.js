@@ -9,7 +9,7 @@
  */
 
 /**
- * Map Bubble.io lease status values to normalized strings
+ * Map lease status values to normalized strings
  * @param {string} rawStatus - Raw status from database
  * @returns {string} Normalized status
  */
@@ -212,26 +212,26 @@ export function adaptLeaseFromSupabase(row) {
     // Booked dates (post-request variant for admin calendar)
     bookedDatesAfterRequest: parseJsonbArray(row.booked_dates_after_requests_json),
 
-    // Documents (column names may still be Bubble-era in DB)
+    // Document references (DB columns store IDs; keep property names for consumer compatibility)
     documents: row.documents || [],
-    periodicTenancyAgreement: row.periodic_tenancy_agreement || row['Periodic Tenancy Agreement'] || null,
-    supplementalAgreement: row.supplemental_agreement || row['supplemental agreement'] || null,
-    creditCardAuthorizationForm: row.credit_card_authorization_form || row['Form Credit Card Authorization'] || null,
+    periodicTenancyAgreement: row.periodic_tenancy_agreement_id || null,
+    supplementalAgreement: row.supplemental_agreement_id || null,
+    creditCardAuthorizationForm: row.credit_card_authorization_form_id || null,
 
     // Other fields
     thread: row.thread_id || null,
-    checkInCode: row.checkin_code || row['Check-in Code'] || null,
+    checkInCode: null,
     cancellationPolicy: row.cancellation_policy_text || null,
-    hostPayoutSchedule: row.host_payout_schedule || row['Host Payout Schedule'] || null,
+    hostPayoutSchedule: row.host_payout_schedule_document_id || null,
     wereDocumentsGenerated: row.were_legal_documents_generated || false,
-    paidToDate: parseFloat(row.paid_to_date_from_guest || row['Paid to Date from Guest']) || 0,
+    paidToDate: 0,
 
     // Throttling flags
     throttling: {
-      guestCanCreateRequests: row.throttling_guest_can_create ?? row['Throttling - guest ability to create requests?'] ?? true,
-      hostCanCreateRequests: row.throttling_host_can_create ?? row['Throttling- host ability to create requests?'] ?? true,
-      guestShowWarning: !(row.throttling_guest_no_warning ?? row['Throttling - guest NOT show warning popup']),
-      hostShowWarning: !(row.throttling_host_no_warning ?? row['Throttling - host NOT show warning popup']),
+      guestCanCreateRequests: row.guest_can_create_date_change_requests ?? true,
+      hostCanCreateRequests: row.host_can_create_date_change_requests ?? true,
+      guestShowWarning: !(row.hide_guest_throttle_warning_popup ?? false),
+      hostShowWarning: !(row.hide_host_throttle_warning_popup ?? false),
     },
 
     // Sync status
@@ -273,7 +273,7 @@ function adaptListingFromSupabase(listing) {
     city: listing.city || null,
     state: listing.state || null,
     zipCode: listing.zip_code || null,
-    imageUrl: listing['Cover Photo'] || listing['Primary Image'] || listing.image_url || null,
+    imageUrl: listing.image_url || null,
   };
 }
 

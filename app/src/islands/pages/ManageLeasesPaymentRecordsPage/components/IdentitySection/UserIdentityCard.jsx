@@ -28,13 +28,13 @@ export default function UserIdentityCard({ title, user }) {
   }
 
   const images = [
-    { label: 'Selfie with ID', url: user.selfieUrl || user['Selfie with ID'] },
-    { label: 'ID Front', url: user.frontIdUrl || user['ID front'] },
-    { label: 'ID Back', url: user.backIdUrl || user['ID Back'] },
+    { label: 'Selfie with ID', url: user.selfieUrl || user.selfie_with_id_photo_url },
+    { label: 'ID Front', url: user.frontIdUrl || user.id_document_front_photo_url },
+    { label: 'ID Back', url: user.backIdUrl || user.id_document_back_photo_url },
     { label: 'Profile Photo', url: user.avatarUrl || user.profile_photo_url },
   ];
 
-  const isVerified = user.isVerified || user.identityVerified || user['user verified?'];
+  const isVerified = user.isVerified || user.identityVerified || user.is_user_verified;
   const fullName = user.fullName ||
                    (user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : null) ||
                    `${user.firstName || ''} ${user.lastName || ''}`.trim() ||

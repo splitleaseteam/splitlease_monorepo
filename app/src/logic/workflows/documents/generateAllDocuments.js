@@ -121,8 +121,7 @@ export async function fetchDocumentData(leaseId) {
         photos_with_urls_captions_and_sort_order_json,
         kitchen_type,
         host_restrictions,
-        cancellation_policy,
-        "Cancellation Policy - Additional Restrictions"
+        cancellation_policy
       `)
       .eq('id', lease.listing_id)
       .single();
@@ -181,45 +180,41 @@ export async function fetchDocumentData(leaseId) {
   }
 
   // Step 5: Fetch payment records
-  // Note: Column name "Booking - Reservation" contains spaces and dash which PostgREST
-  // cannot handle with .eq(). Use .filter() with explicit quoting instead.
   const { data: allPaymentsData, error: paymentsError } = await supabase
     .from('paymentrecords')
     .select(`
       id,
-      "Payment #",
-      "Scheduled Date",
-      "Rent",
-      "Maintenance Fee",
-      "Total Paid by Guest",
-      "Total Paid to Host",
-      "Damage Deposit",
-      "Payment from guest?",
-      "Payment to Host?"
+      payment,
+      scheduled_date,
+      rent,
+      maintenance_fee,
+      total_paid_by_guest,
+      total_paid_to_host,
+      damage_deposit,
+      payment_from_guest,
+      payment_to_host
     `)
-    .filter('"Booking - Reservation"', 'eq', leaseId)
+    .eq('booking_reservation', leaseId)
     .limit(30);
 
   if (paymentsError) {
     console.warn('[fetchDocumentData] Payment records fetch failed:', paymentsError.message);
   }
 
-  // Sort payment records by Payment # client-side (ascending)
-  const sortByPaymentNumber = (a, b) => (a['Payment #'] || 0) - (b['Payment #'] || 0);
+  // Sort payment records by payment number client-side (ascending)
+  const sortByPaymentNumber = (a, b) => (a.payment || 0) - (b.payment || 0);
 
   // Filter and sort payment records client-side
-  // Guest payments: "Payment from guest?" === true
-  // Host payments: "Payment to Host?" === true
   const allPayments = allPaymentsData || [];
   console.log(`[fetchDocumentData] Fetched ${allPayments.length} total payment records`);
 
   const guestPayments = allPayments
-    .filter(record => record['Payment from guest?'] === true)
+    .filter(record => record.payment_from_guest === true)
     .sort(sortByPaymentNumber)
     .slice(0, 13);
 
   const hostPayments = allPayments
-    .filter(record => record['Payment to Host?'] === true)
+    .filter(record => record.payment_to_host === true)
     .sort(sortByPaymentNumber)
     .slice(0, 13);
 

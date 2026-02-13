@@ -28,19 +28,14 @@ export async function requestVirtualMeeting(proposalId, guestId) {
 
   console.log('[virtualMeetingWorkflow] Requesting virtual meeting for proposal:', proposalId);
 
-  // Generate unique ID for the meeting
-  const uniqueId = `VM-${Date.now()}-${proposalId.slice(0, 8)}`;
-
   const vmData = {
     proposal: proposalId,
-    'requested by': guestId,
-    'booked date': null,
-    'confirmedBySplitLease': false,
-    'meeting declined': false,
-    'meeting link': null,
-    'unique_id': uniqueId,
-    'Created Date': new Date().toISOString(),
-    'Modified Date': new Date().toISOString()
+    requested_by: guestId,
+    booked_date: null,
+    confirmedbysplitlease: false,
+    meeting_declined: false,
+    meeting_link: null,
+    original_updated_at: new Date().toISOString()
   };
 
   const { data, error } = await supabase
@@ -87,8 +82,8 @@ export async function requestAlternativeMeeting(existingVmId, proposalId, guestI
   await supabase
     .from('virtualmeetingschedulesandlinks')
     .update({
-      'meeting declined': true,
-      'Modified Date': new Date().toISOString()
+      meeting_declined: true,
+      original_updated_at: new Date().toISOString()
     })
     .eq('id', existingVmId);
 
@@ -114,9 +109,9 @@ export async function respondToVirtualMeeting(vmId, bookedDate) {
   const { data, error } = await supabase
     .from('virtualmeetingschedulesandlinks')
     .update({
-      'booked date': bookedDate,
-      'confirmedBySplitLease': false, // Needs admin confirmation after booking
-      'Modified Date': new Date().toISOString()
+      booked_date: bookedDate,
+      confirmedbysplitlease: false,
+      original_updated_at: new Date().toISOString()
     })
     .eq('id', vmId)
     .select()
@@ -147,8 +142,8 @@ export async function declineVirtualMeeting(vmId) {
   const { data, error } = await supabase
     .from('virtualmeetingschedulesandlinks')
     .update({
-      'meeting declined': true,
-      'Modified Date': new Date().toISOString()
+      meeting_declined: true,
+      original_updated_at: new Date().toISOString()
     })
     .eq('id', vmId)
     .select()
@@ -180,8 +175,8 @@ export async function cancelVirtualMeetingRequest(vmId) {
   const { data, error } = await supabase
     .from('virtualmeetingschedulesandlinks')
     .update({
-      'meeting declined': true,
-      'Modified Date': new Date().toISOString()
+      meeting_declined: true,
+      original_updated_at: new Date().toISOString()
     })
     .eq('id', vmId)
     .select()
@@ -211,7 +206,7 @@ export async function fetchVirtualMeetingByProposalId(proposalId) {
     .from('virtualmeetingschedulesandlinks')
     .select('*')
     .eq('proposal', proposalId)
-    .order('created_date', { ascending: false })
+    .order('original_created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 

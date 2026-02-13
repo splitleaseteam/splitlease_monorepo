@@ -5,16 +5,16 @@
  * Handles both guest and host payment records with proper discriminator filtering.
  *
  * Database Columns Used (paymentrecords table):
- * - `id`: Payment record ID
- * - `Payment #`: Sequence number (1-13)
- * - `Scheduled Date`: ISO timestamp for payment due date
- * - `Rent`: Rent amount for this period
- * - `Maintenance Fee`: Fee amount per period
- * - `Total Paid by Guest`: Guest total (only on guest records)
- * - `Total Paid to Host`: Host payout (only on host records)
- * - `Damage Deposit`: Deposit amount (first guest payment only)
- * - `Payment from guest?`: Boolean discriminator for guest records
- * - `Payment to Host?`: Boolean discriminator for host records
+ * - id: Payment record ID
+ * - payment: Sequence number (1-13)
+ * - scheduled_date: ISO timestamp for payment due date
+ * - rent: Rent amount for this period
+ * - maintenance_fee: Fee amount per period
+ * - total_paid_by_guest: Guest total (only on guest records)
+ * - total_paid_to_host: Host payout (only on host records)
+ * - damage_deposit: Deposit amount (first guest payment only)
+ * - payment_from_guest: Boolean discriminator for guest records
+ * - payment_to_host: Boolean discriminator for host records
  *
  * @module logic/processors/documents/transformPaymentRecords
  */
@@ -35,25 +35,25 @@ export function transformGuestPaymentRecords(paymentRecords) {
   // Filter for guest records using discriminator
   const guestRecords = paymentRecords
     .filter(record =>
-      record['Payment from guest?'] === true ||
-      (record['Payment from guest?'] !== false && record['Total Paid by Guest'] !== null)
+      record.payment_from_guest === true ||
+      (record.payment_from_guest !== false && record.total_paid_by_guest !== null)
     )
-    .sort((a, b) => (a['Payment #'] || 0) - (b['Payment #'] || 0))
+    .sort((a, b) => (a.payment || 0) - (b.payment || 0))
     .slice(0, 13);
 
   return guestRecords.map((record, index) => ({
-    paymentNumber: record['Payment #'] || index + 1,
-    date: formatDateForDocument(record['Scheduled Date']),
-    dateRaw: record['Scheduled Date'],
-    rent: formatCurrency(record['Rent']),
-    rentRaw: record['Rent'] || 0,
-    maintenanceFee: formatCurrency(record['Maintenance Fee']),
-    maintenanceFeeRaw: record['Maintenance Fee'] || 0,
-    total: formatCurrency(record['Total Paid by Guest']),
-    totalRaw: record['Total Paid by Guest'] || 0,
-    damageDeposit: formatCurrency(record['Damage Deposit']),
-    damageDepositRaw: record['Damage Deposit'] || 0,
-    isFirstPayment: (record['Payment #'] || index + 1) === 1
+    paymentNumber: record.payment || index + 1,
+    date: formatDateForDocument(record.scheduled_date),
+    dateRaw: record.scheduled_date,
+    rent: formatCurrency(record.rent),
+    rentRaw: record.rent || 0,
+    maintenanceFee: formatCurrency(record.maintenance_fee),
+    maintenanceFeeRaw: record.maintenance_fee || 0,
+    total: formatCurrency(record.total_paid_by_guest),
+    totalRaw: record.total_paid_by_guest || 0,
+    damageDeposit: formatCurrency(record.damage_deposit),
+    damageDepositRaw: record.damage_deposit || 0,
+    isFirstPayment: (record.payment || index + 1) === 1
   }));
 }
 
@@ -71,22 +71,22 @@ export function transformHostPaymentRecords(paymentRecords) {
   // Filter for host records using discriminator
   const hostRecords = paymentRecords
     .filter(record =>
-      record['Payment to Host?'] === true ||
-      (record['Payment to Host?'] !== false && record['Total Paid to Host'] !== null)
+      record.payment_to_host === true ||
+      (record.payment_to_host !== false && record.total_paid_to_host !== null)
     )
-    .sort((a, b) => (a['Payment #'] || 0) - (b['Payment #'] || 0))
+    .sort((a, b) => (a.payment || 0) - (b.payment || 0))
     .slice(0, 13);
 
   return hostRecords.map((record, index) => ({
-    paymentNumber: record['Payment #'] || index + 1,
-    date: formatDateForDocument(record['Scheduled Date']),
-    dateRaw: record['Scheduled Date'],
-    rent: formatCurrency(record['Rent']),
-    rentRaw: record['Rent'] || 0,
-    maintenanceFee: formatCurrency(record['Maintenance Fee']),
-    maintenanceFeeRaw: record['Maintenance Fee'] || 0,
-    total: formatCurrency(record['Total Paid to Host']),
-    totalRaw: record['Total Paid to Host'] || 0
+    paymentNumber: record.payment || index + 1,
+    date: formatDateForDocument(record.scheduled_date),
+    dateRaw: record.scheduled_date,
+    rent: formatCurrency(record.rent),
+    rentRaw: record.rent || 0,
+    maintenanceFee: formatCurrency(record.maintenance_fee),
+    maintenanceFeeRaw: record.maintenance_fee || 0,
+    total: formatCurrency(record.total_paid_to_host),
+    totalRaw: record.total_paid_to_host || 0
   }));
 }
 

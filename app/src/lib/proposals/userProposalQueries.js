@@ -324,9 +324,9 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
         last_name,
         profile_photo_url,
         bio_text,
-        "Verify - Linked In ID",
-        "Verify - Phone",
-        "user verified?"
+        linkedin_profile_id,
+        is_phone_verified,
+        is_user_verified
       `)
       .in('id', hostUserIds);
 
@@ -353,10 +353,10 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
         last_name,
         profile_photo_url,
         bio_text,
-        "Verify - Linked In ID",
-        "Verify - Phone",
-        "user verified?",
-        "ID documents submitted?"
+        linkedin_profile_id,
+        is_phone_verified,
+        is_user_verified,
+        has_submitted_id_documents
       `)
       .in('id', guestIds);
 
@@ -371,7 +371,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Step 5.6: Fetch rental application submitted status for proposals
   const rentalAppIds = [...new Set(
     validProposals
-      .map(p => p['rental application'])
+      .map(p => p.rental_application_id)
       .filter(Boolean)
   )];
 
@@ -407,7 +407,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       .select(`
         id,
         booked_date,
-        confirmed_by_split_lease,
+        confirmedbysplitlease,
         meeting_link,
         meeting_declined,
         requested_by,
@@ -441,7 +441,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       .from('negotiationsummary')
       .select('*')
       .in('proposal_associated', proposalIdsForSummaries)
-      .order('created_date', { ascending: false });
+      .order('original_created_at', { ascending: false });
 
     // Filter by "To Account" if currentUserId is provided
     if (currentUserId) {
@@ -548,7 +548,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     // Lookup virtual meeting
     const virtualMeeting = vmMap.get(proposal.id) || null;
     // Lookup rental application
-    const rentalApplication = rentalAppMap.get(proposal['rental application']) || null;
+    const rentalApplication = rentalAppMap.get(proposal.rental_application_id) || null;
     // Lookup negotiation summaries
     const negotiationSummaries = summaryMap.get(proposal.id) || [];
     // Lookup counteroffer summary (SplitBot message)

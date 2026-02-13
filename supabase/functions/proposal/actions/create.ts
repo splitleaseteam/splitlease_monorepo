@@ -307,6 +307,7 @@ export async function handleCreate(
 
   // Calculate order ranking from junction table (user_proposal)
   const { count: guestProposalCount } = await supabase
+    .schema('junctions')
     .from('user_proposal')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', input.guestId);

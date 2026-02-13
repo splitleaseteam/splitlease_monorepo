@@ -42,7 +42,7 @@ export async function handleDeleteGuestData(
 
   // Delete message threads where guest is a participant
   const { data: threadData, error: threadError } = await supabase
-    .from('message_threads')
+    .from('message_thread')
     .delete()
     .eq('guest_id', guestId)
     .select('thread_id');

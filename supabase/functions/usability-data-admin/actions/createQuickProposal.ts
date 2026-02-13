@@ -167,7 +167,7 @@ export async function handleCreateQuickProposal(
   };
 
   const { error: threadError } = await supabase
-    .from('message_threads')
+    .from('message_thread')
     .insert(threadData);
 
   if (threadError) {

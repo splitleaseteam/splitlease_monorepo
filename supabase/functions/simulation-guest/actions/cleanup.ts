@@ -70,7 +70,7 @@ export async function handleCleanup(
   // Clean up date change requests with this simulation ID
   try {
     const { data: deletedRequests } = await supabase
-      .from('date_change_request')
+      .from('datechangerequest')
       .delete()
       .eq('simulation_id', simulationId)
       .select('id');

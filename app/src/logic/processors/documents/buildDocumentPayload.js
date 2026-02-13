@@ -1,15 +1,16 @@
 /**
  * Build Document Payloads
  *
- * Constructs API payloads for all 4 lease document types using actual
- * Supabase column names from the database schema.
+ * Constructs API payloads for all 4 lease document types.
+ * Output keys are PDF template field names (Title Case).
+ * Source data uses actual Supabase snake_case column names.
  *
  * Database Tables Used:
- * - booking_lease: `Agreement Number`, `Guest`, `Host`, `Listing`, `Proposal`
- * - proposal: `hc move in date`, `Move-out`, `4 week rent`, `cleaning fee`, `damage deposit`
- * - paymentrecords: `Payment #`, `Scheduled Date`, `Rent`, `Total Paid by Guest`, `Total Paid to Host`
- * - listing: `Name`, `Description`, `Location - Address`, `Features - Photos`
- * - user: `first_name`, `last_name`, `email`, `phone_number`
+ * - booking_lease: agreement_number, reservation_start_date, reservation_end_date
+ * - booking_proposal: host_proposed_move_in_date, planned_move_out_date, reservation_span_in_weeks, etc.
+ * - paymentrecords: payment, scheduled_date, rent, maintenance_fee, total_paid_by_guest, total_paid_to_host, damage_deposit
+ * - listing: listing_title, listing_description, address_with_lat_lng_json, square_feet
+ * - user: first_name, last_name, email, phone_number
  *
  * @module logic/processors/documents/buildDocumentPayload
  */
@@ -35,7 +36,7 @@ import {
  * @returns {object} Host Payout payload for API
  */
 export function buildHostPayoutPayload({ lease, host, listing, hostPayments }) {
-  const agreementNumber = lease['Agreement Number'] || '';
+  const agreementNumber = lease.agreement_number || '';
 
   // Build base payload
   const payload = {
@@ -49,8 +50,8 @@ export function buildHostPayoutPayload({ lease, host, listing, hostPayments }) {
     'Host Phone': formatPhone(host?.phone_number || ''),
     'Address': extractAddress(listing),
     'Payout Number': `${agreementNumber}-PO`,
-    'Maintenance Fee': hostPayments?.[0]?.['Maintenance Fee']
-      ? formatCurrency(hostPayments[0]['Maintenance Fee'])
+    'Maintenance Fee': hostPayments?.[0]?.maintenance_fee
+      ? formatCurrency(hostPayments[0].maintenance_fee)
       : '$0.00'
   };
 
@@ -58,9 +59,9 @@ export function buildHostPayoutPayload({ lease, host, listing, hostPayments }) {
   if (hostPayments && Array.isArray(hostPayments)) {
     hostPayments.slice(0, 13).forEach((payment, index) => {
       const num = index + 1;
-      payload[`Date${num}`] = formatDateForDocument(payment['Scheduled Date']);
-      payload[`Rent${num}`] = formatCurrency(payment['Rent']);
-      payload[`Total${num}`] = formatCurrency(payment['Total Paid to Host']);
+      payload[`Date${num}`] = formatDateForDocument(payment.scheduled_date);
+      payload[`Rent${num}`] = formatCurrency(payment.rent);
+      payload[`Total${num}`] = formatCurrency(payment.total_paid_to_host);
     });
   }
 
@@ -79,15 +80,15 @@ export function buildHostPayoutPayload({ lease, host, listing, hostPayments }) {
  * @returns {object} Supplemental Agreement payload for API
  */
 export function buildSupplementalPayload({ lease, proposal, host, listing, listingPhotos = [] }) {
-  const agreementNumber = lease['Agreement Number'] || '';
+  const agreementNumber = lease.agreement_number || '';
 
-  // Get dates from proposal (not lease)
-  const moveInDate = proposal?.['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
-  const moveOutDate = proposal?.['Move-out'] || lease?.['Reservation Period : End'];
+  // Get dates from proposal (prefer host counter-offer, fall back to lease)
+  const moveInDate = proposal?.host_proposed_move_in_date || lease?.reservation_start_date;
+  const moveOutDate = proposal?.planned_move_out_date || lease?.reservation_end_date;
 
   // Calculate weeks
-  const numberOfWeeks = proposal?.['Reservation Span (Weeks)'] ||
-    proposal?.['host_counter_offer_reservation_span_weeks'] ||
+  const numberOfWeeks = proposal?.reservation_span_in_weeks ||
+    proposal?.host_proposed_reservation_span_weeks ||
     calculateWeeksBetween(moveInDate, moveOutDate);
 
   return {
@@ -101,8 +102,8 @@ export function buildSupplementalPayload({ lease, proposal, host, listing, listi
       host?.last_name,
       host?.first_name && host?.last_name ? `${host.first_name} ${host.last_name}` : null
     ),
-    'Listing Title': listing?.Name || listing?.title || '',
-    'Listing Description': listing?.Description || '',
+    'Listing Title': listing?.listing_title || '',
+    'Listing Description': listing?.listing_description || '',
     'Location': extractAddress(listing),
     'Type of Space': buildTypeOfSpace(listing),
     'Space Details': buildSpaceDetails(listing),
@@ -135,26 +136,26 @@ export function buildPeriodicTenancyPayload({
   guestPayments = [],
   listingPhotos = []
 }) {
-  const agreementNumber = lease['Agreement Number'] || '';
+  const agreementNumber = lease.agreement_number || '';
 
   // Get dates from proposal
-  const moveInDate = proposal?.['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
-  const moveOutDate = proposal?.['Move-out'] || lease?.['Reservation Period : End'];
+  const moveInDate = proposal?.host_proposed_move_in_date || lease?.reservation_start_date;
+  const moveOutDate = proposal?.planned_move_out_date || lease?.reservation_end_date;
 
   // Calculate weeks
-  const numberOfWeeks = proposal?.['Reservation Span (Weeks)'] ||
-    proposal?.['host_counter_offer_reservation_span_weeks'] ||
+  const numberOfWeeks = proposal?.reservation_span_in_weeks ||
+    proposal?.host_proposed_reservation_span_weeks ||
     calculateWeeksBetween(moveInDate, moveOutDate);
 
   // Get damage deposit from first guest payment or proposal
-  const damageDeposit = guestPayments[0]?.['Damage Deposit'] ||
-    proposal?.['host_counter_offer_damage_deposit'] ||
-    proposal?.['damage deposit'] ||
+  const damageDeposit = guestPayments[0]?.damage_deposit ||
+    proposal?.host_proposed_damage_deposit ||
+    proposal?.damage_deposit_amount ||
     0;
 
   // Get house rules from proposal or listing
-  const houseRules = proposal?.['host_counter_offer_house_rules'] ||
-    proposal?.['House Rules'] ||
+  const houseRules = proposal?.host_proposed_house_rules_json ||
+    proposal?.house_rules_reference_ids_json ||
     listing?.house_rule_reference_ids_json ||
     [];
 
@@ -180,12 +181,11 @@ export function buildPeriodicTenancyPayload({
     'Authorization Card Number': `${agreementNumber}-CC`,
     'Host Payout Schedule Number': `${agreementNumber}-PO`,
     'Extra Requests on Cancellation Policy': formatHouseRules(
-      listing?.['host restrictions'] ||
-      listing?.['Cancellation Policy - Additional Restrictions']
+      listing?.cancellation_policy
     ),
     'Damage Deposit': formatCurrency(damageDeposit),
-    'Listing Title': listing?.Name || listing?.title || '',
-    'Listing Description': listing?.Description || '',
+    'Listing Title': listing?.listing_title || '',
+    'Listing Description': listing?.listing_description || '',
     'Location': extractAddress(listing),
     'Type of Space': buildTypeOfSpace(listing),
     'Space Details': buildSpaceDetails(listing),
@@ -199,9 +199,9 @@ export function buildPeriodicTenancyPayload({
   if (guestPayments && Array.isArray(guestPayments)) {
     guestPayments.slice(0, 13).forEach((payment, index) => {
       const num = index + 1;
-      payload[`guest date ${num}`] = formatDateForDocument(payment['Scheduled Date']);
-      payload[`guest rent ${num}`] = formatCurrency(payment['Rent']);
-      payload[`guest total ${num}`] = formatCurrency(payment['Total Paid by Guest']);
+      payload[`guest date ${num}`] = formatDateForDocument(payment.scheduled_date);
+      payload[`guest rent ${num}`] = formatCurrency(payment.rent);
+      payload[`guest total ${num}`] = formatCurrency(payment.total_paid_by_guest);
     });
   }
 
@@ -228,28 +228,28 @@ export function buildCreditCardAuthPayload({
   listing,
   guestPayments = []
 }) {
-  const agreementNumber = lease['Agreement Number'] || '';
+  const agreementNumber = lease.agreement_number || '';
 
-  // Get financial values from proposal (use hc variants if available)
-  const fourWeekRent = proposal?.['host_counter_offer_4_week_rent'] || proposal?.['4 week rent'] || 0;
-  const maintenanceFee = proposal?.['host_counter_offer_cleaning_fee'] || proposal?.['cleaning fee'] || 0;
-  const damageDeposit = proposal?.['host_counter_offer_damage_deposit'] || proposal?.['damage deposit'] || 0;
+  // Get financial values from proposal (prefer host counter-offer)
+  const fourWeekRent = proposal?.host_proposed_four_week_rent || proposal?.four_week_rent_amount || 0;
+  const maintenanceFee = proposal?.host_proposed_cleaning_fee || proposal?.cleaning_fee_amount || 0;
+  const damageDeposit = proposal?.host_proposed_damage_deposit || proposal?.damage_deposit_amount || 0;
 
   // Get dates for week calculation
-  const moveInDate = proposal?.['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
-  const moveOutDate = proposal?.['Move-out'] || lease?.['Reservation Period : End'];
+  const moveInDate = proposal?.host_proposed_move_in_date || lease?.reservation_start_date;
+  const moveOutDate = proposal?.planned_move_out_date || lease?.reservation_end_date;
 
   // Calculate total weeks
-  const totalWeeks = proposal?.['Reservation Span (Weeks)'] ||
-    proposal?.['host_counter_offer_reservation_span_weeks'] ||
+  const totalWeeks = proposal?.reservation_span_in_weeks ||
+    proposal?.host_proposed_reservation_span_weeks ||
     calculateWeeksBetween(moveInDate, moveOutDate);
 
   // Determine proration from payment records
   const firstPayment = guestPayments[0];
   const lastPayment = guestPayments[guestPayments.length - 1];
 
-  const firstPaymentRent = firstPayment?.['Rent'] || fourWeekRent;
-  const lastPaymentRent = lastPayment?.['Rent'] || fourWeekRent;
+  const firstPaymentRent = firstPayment?.rent || fourWeekRent;
+  const lastPaymentRent = lastPayment?.rent || fourWeekRent;
 
   // Prorated if last payment rent is less than first
   const isProrated = guestPayments.length > 1 && lastPaymentRent < firstPaymentRent;
@@ -279,10 +279,10 @@ export function buildCreditCardAuthPayload({
     'Four Week Rent': formatCurrency(fourWeekRent),
     'Maintenance Fee': formatCurrency(maintenanceFee),
     'Damage Deposit': formatCurrency(damageDeposit),
-    'Splitlease Credit': formatDecimal(0), // Would come from proposal if applicable
+    'Splitlease Credit': formatDecimal(0),
     'Last Payment Rent': formatCurrency(lastPaymentRent),
     'Weeks Number': String(totalWeeks || 0),
-    'Listing Description': listing?.Description || listing?.Name || '',
+    'Listing Description': listing?.listing_description || listing?.listing_title || '',
     'Penultimate Week Number': String(penultimateWeekNumber),
     'Number of Payments': String(numberOfPayments),
     'Last Payment Weeks': String(lastPaymentWeeks),
@@ -354,7 +354,6 @@ export function buildAllDocumentPayloads({
 
 /**
  * Extract address from listing record
- * Handles both JSONB Location - Address and direct fields
  *
  * @param {object} listing - Listing record
  * @returns {string} Formatted address
@@ -362,7 +361,7 @@ export function buildAllDocumentPayloads({
 function extractAddress(listing) {
   if (!listing) return '';
 
-  // Try JSONB Location - Address field first
+  // Try JSONB address field first
   const locationAddress = listing.address_with_lat_lng_json;
   if (locationAddress) {
     if (typeof locationAddress === 'string') {
@@ -392,13 +391,12 @@ function extractAddress(listing) {
     return parts.join(', ');
   }
 
-  // Fallback to hood
+  // Fallback to neighborhood
   return listing.primary_neighborhood_reference_id || '';
 }
 
 /**
  * Build Type of Space description string
- * Replicates Bubble.io Boolean Formatting logic
  *
  * @param {object} listing - Listing record
  * @returns {string} Formatted type of space
@@ -409,16 +407,13 @@ function buildTypeOfSpace(listing) {
   const parts = [];
 
   // Type of Space Label
-  // Database may store: string label, JSONB object with label, or Bubble ID reference
   const spaceType = listing.space_type;
   if (spaceType) {
     let label = null;
 
     if (typeof spaceType === 'object' && spaceType !== null) {
-      // JSONB object - extract label
-      label = spaceType.label || spaceType.Label || spaceType.display || spaceType.Display || spaceType.name || spaceType.Name;
+      label = spaceType.label || spaceType.display || spaceType.name;
     } else if (typeof spaceType === 'string') {
-      // Check if it's a Bubble ID (17+ digits with 'x' separator) - skip it
       const isBubbleId = /^\d{13,}x\d+$/.test(spaceType);
       if (!isBubbleId) {
         label = spaceType;
@@ -431,7 +426,7 @@ function buildTypeOfSpace(listing) {
   }
 
   // SQFT Area
-  const sqft = listing.square_feet || listing['Features - SQFT of Room'];
+  const sqft = listing.square_feet;
   if (sqft) {
     parts.push(`(${Number(sqft).toLocaleString()} SQFT) -`);
   }
@@ -447,7 +442,6 @@ function buildTypeOfSpace(listing) {
 
 /**
  * Build Space Details description string
- * Replicates Bubble.io Boolean Formatting logic
  *
  * @param {object} listing - Listing record
  * @returns {string} Formatted space details
@@ -483,7 +477,7 @@ function buildSpaceDetails(listing) {
   // Kitchen Type
   const kitchenType = listing.kitchen_type;
   if (kitchenType) {
-    const display = typeof kitchenType === 'string' ? kitchenType : kitchenType?.Display || kitchenType?.display;
+    const display = typeof kitchenType === 'string' ? kitchenType : kitchenType?.display;
     if (display) {
       parts.push(`- ${display}`);
     }

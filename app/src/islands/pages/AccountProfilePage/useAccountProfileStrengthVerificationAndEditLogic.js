@@ -393,10 +393,10 @@ export function useAccountProfilePageLogic() {
     if (!profileData) return { email: false, phone: false, govId: false, linkedin: false };
 
     return {
-      email: profileData['is email confirmed'] === true,
-      phone: profileData['Verify - Phone'] === true,
+      email: profileData.is_email_confirmed === true,
+      phone: profileData.is_phone_verified === true,
       govId: profileData.is_user_verified === true,
-      linkedin: !!profileData['Verify - Linked In ID']
+      linkedin: !!profileData.linkedin_profile_id
     };
   }, [profileData]);
 
@@ -827,7 +827,7 @@ export function useAccountProfilePageLogic() {
         // Update user's email verification status in database
         const { error: updateError } = await supabase
           .from('user')
-          .update({ 'is email confirmed': true })
+          .update({ is_email_confirmed: true })
           .eq('id', profileUserId);
 
         if (updateError) {

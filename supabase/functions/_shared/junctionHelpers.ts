@@ -33,7 +33,7 @@ export async function addUserProposal(
     .insert({
       user_id: userId,
       proposal_id: proposalId,
-      role: role,
+      user_role_in_proposal: role,
     })
     .select()
     .single();
@@ -171,7 +171,7 @@ export async function setUserStorageItems(
   if (storageIds.length > 0) {
     const rows = storageIds.map(storageId => ({
       user_id: userId,
-      storage_id: storageId,
+      storage_item_id: storageId,
     }));
 
     const { error: insertError } = await supabase
@@ -217,7 +217,7 @@ export async function setUserPreferredHoods(
   if (hoodIds.length > 0) {
     const rows = hoodIds.map((hoodId, index) => ({
       user_id: userId,
-      hood_id: hoodId,
+      neighborhood_id: hoodId,
       preference_order: index + 1,
     }));
 
@@ -358,7 +358,7 @@ export async function addThreadParticipant(
     .insert({
       thread_id: threadId,
       user_id: userId,
-      role: role,
+      participant_role: role,
     });
 
   if (error) {

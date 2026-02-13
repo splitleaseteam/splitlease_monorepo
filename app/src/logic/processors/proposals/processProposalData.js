@@ -71,9 +71,9 @@ export function processHostData(rawHost) {
       : null,
     profilePhoto: rawHost.profile_photo_url || null,
     bio: rawHost.bio_text || null,
-    linkedInVerified: rawHost['Verify - Linked In ID'] || false,
-    phoneVerified: rawHost['Verify - Phone'] || false,
-    userVerified: rawHost['user verified?'] || false,
+    linkedInVerified: !!rawHost.linkedin_profile_id,
+    phoneVerified: !!rawHost.is_phone_verified,
+    userVerified: !!rawHost.is_user_verified,
     // hostUserId same as user.id after migration (Host User column contains user.id directly)
     hostUserId: rawHost.id || null
   };
@@ -92,16 +92,16 @@ export function processVirtualMeetingData(rawVirtualMeeting) {
 
   return {
     id: rawVirtualMeeting.id,
-    bookedDate: rawVirtualMeeting['booked date'] || null,
-    confirmedBySplitlease: rawVirtualMeeting.confirmedBySplitLease || false,
-    meetingLink: rawVirtualMeeting['meeting link'] || null,
-    meetingDeclined: rawVirtualMeeting['meeting declined'] || false,
-    requestedBy: rawVirtualMeeting['requested by'] || null,
-    suggestedTimeslots: rawVirtualMeeting['suggested dates and times'] || [],
-    guestName: rawVirtualMeeting['guest name'] || null,
-    hostName: rawVirtualMeeting.host_display_name || null,
+    bookedDate: rawVirtualMeeting.booked_date || null,
+    confirmedBySplitlease: rawVirtualMeeting.confirmedbysplitlease || false,
+    meetingLink: rawVirtualMeeting.meeting_link || null,
+    meetingDeclined: rawVirtualMeeting.meeting_declined || false,
+    requestedBy: rawVirtualMeeting.requested_by || null,
+    suggestedTimeslots: rawVirtualMeeting.suggested_dates_and_times || [],
+    guestName: rawVirtualMeeting.guest_name || null,
+    hostName: rawVirtualMeeting.host_name || null,
     proposalId: rawVirtualMeeting.proposal || null,
-    uniqueId: rawVirtualMeeting.unique_id || null
+    uniqueId: null
   };
 }
 

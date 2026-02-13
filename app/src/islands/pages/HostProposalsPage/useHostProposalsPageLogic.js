@@ -57,11 +57,11 @@ function normalizeGuest(guest) {
 
   // Determine verification status from database fields
   // is_user_verified is the main verification flag
-  // "Selfie with ID" indicates ID verification was completed
-  // "Verify - Linked In ID" indicates work/LinkedIn verification
+  // selfie_with_id_photo_url indicates ID verification was completed
+  // linkedin_profile_id indicates work/LinkedIn verification
   const isUserVerified = guest.is_user_verified || guest.id_verified || false;
-  const hasIdVerification = !!(guest['Selfie with ID'] || guest.id_verified);
-  const hasWorkVerification = !!(guest['Verify - Linked In ID'] || guest.work_verified);
+  const hasIdVerification = !!(guest.selfie_with_id_photo_url || guest.id_verified);
+  const hasWorkVerification = !!(guest.linkedin_profile_id || guest.work_verified);
 
   return {
     ...guest,
@@ -466,21 +466,13 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           guestIds.length > 0
             ? supabase
                 .from('user')
-                .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, "Verify - Linked In ID", "Verify - Phone", "Selfie with ID", review_count, original_created_at')
+                .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, linkedin_profile_id, is_phone_verified, selfie_with_id_photo_url, review_count, original_created_at')
                 .in('id', guestIds)
             : { data: null, error: null },
           vmIds.length > 0
             ? supabase
                 .from('virtualmeetingschedulesandlinks')
-                .select(`
-                  _id,
-                  "requested by",
-                  "booked date",
-                  "meeting declined",
-                  "confirmedBySplitLease",
-                  "suggested dates and times",
-                  "meeting link"
-                `)
+                .select('id, requested_by, booked_date, meeting_declined, confirmedbysplitlease, suggested_dates_and_times, meeting_link')
                 .in('id', vmIds)
             : { data: null, error: null },
           proposalIds.length > 0 && hostUserId
@@ -511,7 +503,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         const summaryMap = {};
         if (!summariesResult.error) {
           summariesResult.data?.forEach(summary => {
-            const proposalId = summary['Proposal associated'];
+            const proposalId = summary.proposal_associated;
             if (!summaryMap[proposalId]) {
               summaryMap[proposalId] = [];
             }
@@ -535,12 +527,12 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             ...(rawVm ? {
               virtualMeeting: {
                 id: rawVm.id,
-                requestedBy: rawVm['requested by'],
-                bookedDate: rawVm['booked date'],
-                meetingDeclined: rawVm['meeting declined'],
-                confirmedBySplitlease: rawVm['confirmedBySplitLease'],
-                suggestedTimes: rawVm['suggested dates and times'],
-                meetingLink: rawVm['meeting link']
+                requestedBy: rawVm.requested_by,
+                bookedDate: rawVm.booked_date,
+                meetingDeclined: rawVm.meeting_declined,
+                confirmedBySplitlease: rawVm.confirmedbysplitlease,
+                suggestedTimes: rawVm.suggested_dates_and_times,
+                meetingLink: rawVm.meeting_link
               }
             } : {}),
             negotiationSummaries: summaryMap[p.id] || []

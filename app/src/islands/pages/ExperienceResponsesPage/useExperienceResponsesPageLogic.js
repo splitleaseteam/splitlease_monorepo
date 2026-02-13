@@ -12,7 +12,7 @@
  *
  * Data Source:
  * - Supabase table: experiencesurvey
- * - Column names use Bubble convention with spaces (e.g., "Created Date")
+ * - Column names use snake_case (e.g., original_created_at)
  *
  * @returns {Object} All state and handlers for the page
  */
@@ -23,8 +23,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 
 /**
- * Adapt response data from Supabase (Bubble column names) to frontend model
- * Bubble columns have spaces; we map them to camelCase properties
+ * Adapt response data from Supabase to frontend model
  *
  * @param {Object} rawResponse - Raw response from Supabase
  * @returns {Object} Adapted response object
@@ -32,19 +31,19 @@ import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 function adaptResponse(rawResponse) {
   return {
     id: rawResponse.id,
-    name: rawResponse['Name'] || null,
-    type: rawResponse['Type'] || null, // 'Guest' | 'Host'
-    date: rawResponse['Created Date'] || null,
-    experience: rawResponse['Experience'] || null,
-    challenge: rawResponse['Challenge'] || null,
-    challengeExperience: rawResponse['Challenge Experience'] || null,
-    change: rawResponse['Change'] || null,
-    service: rawResponse['Service'] || null,
-    additionalService: rawResponse['Additional Service'] || null,
-    share: rawResponse['Share'] === true || rawResponse['Share'] === 'Yes',
-    recommend: rawResponse['Recommend'] ?? null, // NPS score 0-10
-    staff: rawResponse['Split Lease Staff'] || null,
-    questions: rawResponse['Questions'] || null,
+    name: rawResponse.name || null,
+    type: rawResponse.type || null, // 'Guest' | 'Host'
+    date: rawResponse.original_created_at || null,
+    experience: rawResponse.experience || null,
+    challenge: rawResponse.challenge || null,
+    challengeExperience: rawResponse.challenge_experience || null,
+    change: rawResponse.change || null,
+    service: rawResponse.service || null,
+    additionalService: rawResponse.additional_service || null,
+    share: rawResponse.share === true || rawResponse.share === 'Yes',
+    recommend: rawResponse.recommend ?? null, // NPS score 0-10
+    staff: rawResponse.split_lease_staff || null,
+    questions: rawResponse.questions || null,
   };
 }
 
@@ -63,28 +62,27 @@ export function useExperienceResponsesPageLogic() {
     execute: executeFetchResponses
   } = useAsyncOperation(
     async () => {
-      // Query experiencesurvey table with Bubble column names
       const { data, error: fetchError } = await supabase
         .from('experiencesurvey')
         .select(
           `
-          "id",
-          "Name",
-          "Type",
-          "Created Date",
-          "Experience",
-          "Challenge",
-          "Challenge Experience",
-          "Change",
-          "Service",
-          "Additional Service",
-          "Share",
-          "Recommend",
-          "Split Lease Staff",
-          "Questions"
+          id,
+          name,
+          type,
+          original_created_at,
+          experience,
+          challenge,
+          challenge_experience,
+          change,
+          service,
+          additional_service,
+          share,
+          recommend,
+          split_lease_staff,
+          questions
         `
         )
-        .order('Created Date', { ascending: false });
+        .order('original_created_at', { ascending: false });
 
       if (fetchError) {
         throw fetchError;

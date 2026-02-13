@@ -69,7 +69,7 @@ export async function handleDeleteProposal(
   let threadDeleted = false;
   if (deleteThread) {
     const { data: deletedThreads, error: threadDeleteError } = await supabase
-      .from('message_threads')
+      .from('message_thread')
       .delete()
       .eq('proposal_id', actualProposalId)
       .select('thread_id');

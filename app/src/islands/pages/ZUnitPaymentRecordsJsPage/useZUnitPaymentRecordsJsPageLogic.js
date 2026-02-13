@@ -174,11 +174,11 @@ export function useZUnitPaymentRecordsJsPageLogic() {
           stay_duration_in_months,
           rental_type,
           four_week_rent_amount,
-          "Rent per Month",
+          host_compensation_per_period,
           move_in_range_start_date,
           move_in_range_end_date,
-          "Week Pattern",
-          "Maintenance Fee",
+          week_pattern_selection,
+          cleaning_fee_amount,
           damage_deposit_amount
         `)
         .eq('id', proposalId)
@@ -206,32 +206,32 @@ export function useZUnitPaymentRecordsJsPageLogic() {
         const { data, error } = await supabase
           .from('paymentrecords')
           .select(`
-            _id,
-            "Payment #",
-            "Scheduled Date",
-            "Date payment received",
-            "rent",
-            "maintenance_fee",
-            "damage_deposit_amount",
-            "total",
-            "Bank Transaction Number",
-            "receipt_status"
+            id,
+            payment,
+            scheduled_date,
+            actual_date_of_payment,
+            rent,
+            maintenance_fee,
+            damage_deposit,
+            total_paid_by_guest,
+            bank_transaction_number,
+            payment_receipt
           `)
           .in('id', guestPaymentIds)
-          .order('"Payment #"', { ascending: true });
+          .order('payment', { ascending: true });
 
         if (!error && data) {
           data.forEach(record => {
             guestNative.push({
-              paymentNumber: record['Payment #'] || 0,
-              scheduledDate: record['Scheduled Date'],
-              actualDate: record['Date payment received'],
-              rent: parseFloat(record['rent']) || 0,
-              maintenanceFee: parseFloat(record['maintenance_fee']) || 0,
-              damageDeposit: parseFloat(record.damage_deposit_amount) || 0,
-              total: parseFloat(record['total']) || 0,
-              bankTransactionNumber: record['Bank Transaction Number'] || null,
-              receiptStatus: record['receipt_status'] || 'pending',
+              paymentNumber: record.payment || 0,
+              scheduledDate: record.scheduled_date,
+              actualDate: record.actual_date_of_payment,
+              rent: parseFloat(record.rent) || 0,
+              maintenanceFee: parseFloat(record.maintenance_fee) || 0,
+              damageDeposit: parseFloat(record.damage_deposit) || 0,
+              total: parseFloat(record.total_paid_by_guest) || 0,
+              bankTransactionNumber: record.bank_transaction_number || null,
+              receiptStatus: record.payment_receipt || 'pending',
             });
           });
         }
@@ -247,29 +247,29 @@ export function useZUnitPaymentRecordsJsPageLogic() {
           .from('paymentrecords')
           .select(`
             id,
-            "Payment #",
-            "Scheduled Date",
-            "Date payment received",
-            "ðŸ'°Rent",
-            "ðŸ'°Maintenance Fee",
-            "ðŸ'°Total",
-            "Bank Transaction Number",
-            "receipt_status"
+            payment,
+            scheduled_date,
+            actual_date_of_payment,
+            rent,
+            maintenance_fee,
+            total_paid_to_host,
+            bank_transaction_number,
+            payment_receipt
           `)
           .in('id', hostPaymentIds)
-          .order('"Payment #"', { ascending: true });
+          .order('payment', { ascending: true });
 
         if (!error && data) {
           data.forEach(record => {
             hostNative.push({
-              paymentNumber: record['Payment #'] || 0,
-              scheduledDate: record['Scheduled Date'],
-              actualDate: record['Date payment received'],
-              rent: parseFloat(record['ðŸ’°Rent']) || 0,
-              maintenanceFee: parseFloat(record['ðŸ’°Maintenance Fee']) || 0,
-              total: parseFloat(record['ðŸ’°Total']) || 0,
-              bankTransactionNumber: record['Bank Transaction Number'] || null,
-              payoutStatus: record['receipt_status'] || 'pending',
+              paymentNumber: record.payment || 0,
+              scheduledDate: record.scheduled_date,
+              actualDate: record.actual_date_of_payment,
+              rent: parseFloat(record.rent) || 0,
+              maintenanceFee: parseFloat(record.maintenance_fee) || 0,
+              total: parseFloat(record.total_paid_to_host) || 0,
+              bankTransactionNumber: record.bank_transaction_number || null,
+              payoutStatus: record.payment_receipt || 'pending',
             });
           });
         }
@@ -291,10 +291,10 @@ export function useZUnitPaymentRecordsJsPageLogic() {
     const moveInDate = proposal.move_in_range_start_date;
     const reservationSpanWeeks = parseFloat(proposal.reservation_span_in_weeks) || 0;
     const reservationSpanMonths = parseFloat(proposal.stay_duration_in_months) || 0;
-    const weekPattern = proposal['Week Pattern'] || 'Every week';
+    const weekPattern = proposal.week_pattern_selection || 'Every week';
     const fourWeekRent = parseFloat(proposal.four_week_rent_amount) || 0;
-    const rentPerMonth = parseFloat(proposal['Rent per Month']) || 0;
-    const maintenanceFee = parseFloat(proposal['Maintenance Fee']) || 0;
+    const rentPerMonth = parseFloat(proposal.host_compensation_per_period) || 0;
+    const maintenanceFee = parseFloat(proposal.cleaning_fee_amount) || 0;
     const damageDeposit = parseFloat(proposal.damage_deposit_amount) || 0;
 
     let guestSchedule = [];

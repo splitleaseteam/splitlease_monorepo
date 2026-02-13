@@ -29,8 +29,8 @@ export function shouldUseProrated({ guestPayments }) {
   const lastPayment = guestPayments[guestPayments.length - 1];
 
   // Handle both raw and transformed payment formats
-  const firstRent = firstPayment['Rent'] ?? firstPayment.rentRaw ?? firstPayment.rent ?? 0;
-  const lastRent = lastPayment['Rent'] ?? lastPayment.rentRaw ?? lastPayment.rent ?? 0;
+  const firstRent = firstPayment.rent ?? firstPayment.rentRaw ?? 0;
+  const lastRent = lastPayment.rent ?? lastPayment.rentRaw ?? 0;
 
   // Convert currency strings to numbers if needed
   const firstRentNum = typeof firstRent === 'string'

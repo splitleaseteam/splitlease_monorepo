@@ -13,14 +13,11 @@ export function normalizeGuestData(guest) {
 
   // Determine verification status from database fields
   // is_user_verified is the main verification flag
-  // "Selfie with ID" indicates ID verification was completed
-  // "Verify - Linked In ID" indicates work/LinkedIn verification
+  // selfie_with_id_photo_url indicates ID verification was completed
+  // linkedin_profile_id indicates work/LinkedIn verification
   const isUserVerified = guest.is_user_verified || guest.is_verified || guest.id_verified || false;
-  const hasIdVerification = !!(guest['Selfie with ID'] || guest.id_verified);
-  const hasWorkVerification = !!(guest['Verify - Linked In ID'] || guest.work_verified);
-  // Note: 'Selfie with ID', 'Verify - Linked In ID' are Bubble-format fields
-  // that may still exist on guest objects embedded in proposals. New user table columns use
-  // is_user_verified, id_verified, work_verified respectively.
+  const hasIdVerification = !!(guest.selfie_with_id_photo_url || guest.id_verified);
+  const hasWorkVerification = !!(guest.linkedin_profile_id || guest.work_verified);
 
   return {
     ...guest,

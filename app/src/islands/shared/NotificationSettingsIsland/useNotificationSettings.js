@@ -27,11 +27,11 @@ export function useNotificationSettings(userId) {
         return;
       }
 
-      // Query by "Created By" column (reliable user identifier)
+      // Query by created_by column (user identifier)
       const { data, error: queryError } = await supabase
         .from(TABLE_NAME)
         .select('*')
-        .eq('Created By', userId)
+        .eq('created_by', userId)
         .single();
 
       if (queryError && queryError.code !== 'PGRST116') {

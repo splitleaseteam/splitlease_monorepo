@@ -214,6 +214,7 @@ export async function handleSend(
   console.log('[send-email:send] Looking up template_id:', template_id);
 
   const { data: template, error: templateError } = await supabase
+    .schema('reference_table')
     .from('zat_email_html_template_eg_sendbasicemailwf_')
     .select('id, name, email_template_json, description, email_reference, logo, placeholder')
     .eq('id', template_id)

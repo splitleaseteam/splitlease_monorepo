@@ -39,9 +39,9 @@ export function isVerifiedHost({ host, minVerifications = MIN_HOST_VERIFICATIONS
 
   // Count verification fields
   const verifications = [
-    host['Verify - Linked In ID'] || host.linkedInVerified || false,
-    host['Verify - Phone'] || host.phoneVerified || false,
-    host['user verified?'] || host.userVerified || false
+    !!host.linkedin_profile_id || host.linkedInVerified || false,
+    !!host.is_phone_verified || host.phoneVerified || false,
+    !!host.is_user_verified || host.userVerified || false
   ];
 
   const verificationCount = verifications.filter(Boolean).length;
@@ -72,9 +72,9 @@ export function countHostVerifications({ host }) {
   }
 
   const verifications = [
-    host['Verify - Linked In ID'] || host.linkedInVerified || false,
-    host['Verify - Phone'] || host.phoneVerified || false,
-    host['user verified?'] || host.userVerified || false
+    !!host.linkedin_profile_id || host.linkedInVerified || false,
+    !!host.is_phone_verified || host.phoneVerified || false,
+    !!host.is_user_verified || host.userVerified || false
   ];
 
   return verifications.filter(Boolean).length;

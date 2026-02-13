@@ -314,22 +314,24 @@ async function fetchListingInfo(
   let boroughName: string | null = null;
   if (data.borough) {
     const { data: boroughData } = await supabase
+      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('Display')
+      .select('display_borough')
       .eq('id', data.borough)
       .single();
-    boroughName = boroughData?.Display || data.borough;
+    boroughName = boroughData?.display_borough || data.borough;
   }
 
   // Fetch hood name
   let hoodName: string | null = null;
   if (data.primary_neighborhood_reference_id) {
     const { data: hoodData } = await supabase
+      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('Display')
+      .select('display')
       .eq('id', data.primary_neighborhood_reference_id)
       .single();
-    hoodName = hoodData?.Display || data.primary_neighborhood_reference_id;
+    hoodName = hoodData?.display || data.primary_neighborhood_reference_id;
   }
 
   return transformListing(
@@ -390,8 +392,9 @@ async function fetchBoroughNamesMap(
   if (boroughIds.length === 0) return new Map();
 
   const { data, error } = await supabase
+    .schema('reference_table')
     .from('zat_geo_borough_toplevel')
-    .select('id, Display')
+    .select('id, display_borough')
     .in('id', boroughIds);
 
   if (error || !data) {
@@ -400,7 +403,7 @@ async function fetchBoroughNamesMap(
 
   const map = new Map<string, string>();
   for (const row of data) {
-    map.set(row.id, row.Display);
+    map.set(row.id, row.display_borough);
   }
   return map;
 }
@@ -415,8 +418,9 @@ async function fetchHoodNamesMap(
   if (hoodIds.length === 0) return new Map();
 
   const { data, error } = await supabase
+    .schema('reference_table')
     .from('zat_geo_hood_mediumlevel')
-    .select('id, Display')
+    .select('id, display')
     .in('id', hoodIds);
 
   if (error || !data) {
@@ -425,7 +429,7 @@ async function fetchHoodNamesMap(
 
   const map = new Map<string, string>();
   for (const row of data) {
-    map.set(row.id, row.Display);
+    map.set(row.id, row.display);
   }
   return map;
 }

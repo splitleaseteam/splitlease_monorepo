@@ -75,7 +75,7 @@ export async function handleStepC(
   };
 
   const { data: request, error: createError } = await supabase
-    .from('date_change_request')
+    .from('datechangerequest')
     .insert(requestData)
     .select()
     .single();

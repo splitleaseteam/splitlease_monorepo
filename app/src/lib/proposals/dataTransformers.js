@@ -87,9 +87,9 @@ export function transformHostData(rawHost) {
       : null,
     profilePhoto: rawHost.profile_photo_url,
     bio: rawHost.bio_text,
-    linkedInVerified: rawHost['Verify - Linked In ID'],
-    phoneVerified: rawHost['Verify - Phone'],
-    userVerified: rawHost['user verified?']
+    linkedInVerified: !!rawHost.linkedin_profile_id,
+    phoneVerified: !!rawHost.is_phone_verified,
+    userVerified: !!rawHost.is_user_verified
   };
 }
 
@@ -111,9 +111,9 @@ export function transformGuestData(rawGuest) {
       : null,
     profilePhoto: rawGuest.profile_photo_url,
     bio: rawGuest.bio_text,
-    linkedInVerified: rawGuest['Verify - Linked In ID'],
-    phoneVerified: rawGuest['Verify - Phone'],
-    userVerified: rawGuest['user verified?']
+    linkedInVerified: !!rawGuest.linkedin_profile_id,
+    phoneVerified: !!rawGuest.is_phone_verified,
+    userVerified: !!rawGuest.is_user_verified
   };
 }
 
@@ -128,14 +128,14 @@ export function transformVirtualMeetingData(rawVirtualMeeting) {
 
   return {
     id: rawVirtualMeeting.id,
-    bookedDate: rawVirtualMeeting['booked date'],
-    confirmedBySplitlease: rawVirtualMeeting.confirmedBySplitLease,
-    meetingLink: rawVirtualMeeting['meeting link'],
-    meetingDeclined: rawVirtualMeeting['meeting declined'],
-    requestedBy: rawVirtualMeeting['requested by'],
-    suggestedTimeslots: rawVirtualMeeting['suggested dates and times'], // JSONB array of ISO datetimes
-    guestName: rawVirtualMeeting['guest name'],
-    hostName: rawVirtualMeeting.host_display_name,
+    bookedDate: rawVirtualMeeting.booked_date,
+    confirmedBySplitlease: rawVirtualMeeting.confirmedbysplitlease,
+    meetingLink: rawVirtualMeeting.meeting_link,
+    meetingDeclined: rawVirtualMeeting.meeting_declined,
+    requestedBy: rawVirtualMeeting.requested_by,
+    suggestedTimeslots: rawVirtualMeeting.suggested_dates_and_times,
+    guestName: rawVirtualMeeting.guest_name,
+    hostName: rawVirtualMeeting.host_name,
     proposalId: rawVirtualMeeting.proposal
   };
 }

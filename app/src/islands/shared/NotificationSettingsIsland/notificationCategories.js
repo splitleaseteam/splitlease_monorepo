@@ -5,7 +5,7 @@
  * Each category stores an array of enum values: 'Email', 'SMS', 'In-App Message'
  */
 
-// Enum values matching PostgreSQL "Notification Preferences" enum
+// Enum values matching PostgreSQL notification channel enum
 export const NOTIFICATION_CHANNELS = {
   EMAIL: 'Email',
   SMS: 'SMS',
@@ -17,67 +17,67 @@ export const NOTIFICATION_CATEGORIES = [
     id: 'message_forwarding',
     label: 'Message Forwarding',
     description: 'Receive forwarded messages via your preferred channel',
-    dbColumn: 'Message Forwarding'
+    dbColumn: 'message_forwarding'
   },
   {
     id: 'payment_reminders',
     label: 'Payment Reminders',
     description: 'Billing and payment notifications',
-    dbColumn: 'Payment Reminders'
+    dbColumn: 'payment_reminders'
   },
   {
     id: 'promotional',
     label: 'Promotional',
     description: 'Marketing and promotional content',
-    dbColumn: 'Promotional'
+    dbColumn: 'promotional'
   },
   {
     id: 'reservation_updates',
     label: 'Reservation Updates',
     description: 'Changes to your bookings',
-    dbColumn: 'Reservation Updates'
+    dbColumn: 'reservation_updates'
   },
   {
     id: 'lease_requests',
     label: 'Lease Requests',
     description: 'Lease-related inquiries',
-    dbColumn: 'Lease Requests'
+    dbColumn: 'lease_requests'
   },
   {
     id: 'proposal_updates',
     label: 'Proposal Updates',
     description: 'Changes to proposals',
-    dbColumn: 'Proposal Updates'
+    dbColumn: 'proposal_updates'
   },
   {
     id: 'checkin_checkout',
     label: 'Check-in/Check-out Reminders',
     description: 'Guest arrival and departure alerts',
-    dbColumn: 'Check In/Out Reminders'
+    dbColumn: 'check_in_out_reminders'
   },
   {
     id: 'reviews',
     label: 'Reviews',
     description: 'Rating and feedback notifications',
-    dbColumn: 'Reviews'
+    dbColumn: 'reviews'
   },
   {
     id: 'tips_insights',
     label: 'Tips / Market Insights',
     description: 'Educational content and market analysis',
-    dbColumn: 'Tips/Insights'
+    dbColumn: 'tips_insights'
   },
   {
     id: 'account_assistance',
     label: 'Account Access Assistance',
     description: 'Help with account login and permissions',
-    dbColumn: 'Login/Signup Assistance'
+    dbColumn: 'login_signup_assistance'
   },
   {
     id: 'virtual_meetings',
     label: 'Virtual Meetings',
     description: 'Video and online meeting notifications',
-    dbColumn: 'Virtual Meetings'
+    dbColumn: 'virtual_meetings'
   }
 ];
 

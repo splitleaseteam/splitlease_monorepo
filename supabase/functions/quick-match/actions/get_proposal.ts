@@ -222,24 +222,26 @@ async function fetchListingInfo(
   let boroughName: string | null = null;
   if (listing.borough) {
     const { data: boroughData } = await supabase
+      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('Display')
+      .select('display_borough')
       .eq('id', listing.borough)
       .single();
 
-    boroughName = boroughData?.Display || listing.borough;
+    boroughName = boroughData?.display_borough || listing.borough;
   }
 
   // Fetch hood name if we have a hood ID
   let hoodName: string | null = null;
   if (listing.primary_neighborhood_reference_id) {
     const { data: hoodData } = await supabase
+      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('Display')
+      .select('display')
       .eq('id', listing.primary_neighborhood_reference_id)
       .single();
 
-    hoodName = hoodData?.Display || listing.primary_neighborhood_reference_id;
+    hoodName = hoodData?.display || listing.primary_neighborhood_reference_id;
   }
 
   const nightlyRates: NightlyRates = {

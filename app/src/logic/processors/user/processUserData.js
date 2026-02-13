@@ -38,9 +38,9 @@ export function processUserData(rawUser) {
       : null,
     profilePhoto: rawUser.profile_photo_url || null,
     bio: rawUser.bio_text || null,
-    linkedInVerified: rawUser['Verify - Linked In ID'] || false,
-    phoneVerified: rawUser['Verify - Phone'] || false,
-    userVerified: rawUser['user verified?'] || false,
+    linkedInVerified: !!rawUser.linkedin_profile_id,
+    phoneVerified: !!rawUser.is_phone_verified,
+    userVerified: !!rawUser.is_user_verified,
     proposalsList: rawUser.listings_json || []
   };
 }

@@ -93,10 +93,10 @@ export async function loadProposalDetailsWorkflow({
         bio_text,
         email,
         phone_number,
-        "Verify - Linked In ID",
-        "Verify - Phone",
-        "is email confirmed",
-        "user verified?"
+        linkedin_profile_id,
+        is_phone_verified,
+        is_email_confirmed,
+        is_user_verified
       `)
       .eq('id', guestUserId)
       .single()
@@ -129,10 +129,10 @@ export async function loadProposalDetailsWorkflow({
         bio_text,
         email,
         phone_number,
-        "Verify - Linked In ID",
-        "Verify - Phone",
-        "is email confirmed",
-        "user verified?"
+        linkedin_profile_id,
+        is_phone_verified,
+        is_email_confirmed,
+        is_user_verified
       `)
       .eq('id', hostUserId)
       .single()

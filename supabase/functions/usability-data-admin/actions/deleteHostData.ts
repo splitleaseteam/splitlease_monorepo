@@ -42,7 +42,7 @@ export async function handleDeleteHostData(
 
   // Delete message threads where host is a participant
   const { data: threadData, error: threadError } = await supabase
-    .from('message_threads')
+    .from('message_thread')
     .delete()
     .eq('host_id', hostId)
     .select('thread_id');
