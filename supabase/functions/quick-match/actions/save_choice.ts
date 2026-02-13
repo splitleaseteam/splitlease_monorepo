@@ -37,7 +37,7 @@ export async function handleSaveChoice(
 
   // Verify proposal exists
   const { data: proposalData, error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('id, Listing, Guest')
     .eq('id', proposal_id)
     .single();
@@ -50,7 +50,7 @@ export async function handleSaveChoice(
   // Verify matched listing exists and is active
   const { data: listingData, error: listingError } = await supabase
     .from('listing')
-    .select('id, Name, Active, Deleted')
+    .select('id, listing_title, is_active, is_deleted')
     .eq('id', matched_listing_id)
     .single();
 
@@ -59,12 +59,12 @@ export async function handleSaveChoice(
     throw new Error(`Listing not found: ${matched_listing_id}`);
   }
 
-  if (!listingData.Active) {
+  if (!listingData.is_active) {
     console.warn('[quick-match:save_choice] Listing is not active');
     // Don't throw - allow matching to inactive listings as they may become active
   }
 
-  if (listingData.Deleted) {
+  if (listingData.is_deleted) {
     throw new Error(`Cannot match to deleted listing: ${matched_listing_id}`);
   }
 

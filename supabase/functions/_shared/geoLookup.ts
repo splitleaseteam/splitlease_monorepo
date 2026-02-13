@@ -5,8 +5,8 @@
  * Used during listing creation to populate Location - Borough and Location - Hood FK fields.
  *
  * Reference Tables:
- * - reference_table.zat_geo_borough_toplevel: Borough data with "Zip Codes" (jsonb array)
- * - reference_table.zat_geo_hood_mediumlevel: Neighborhood data with "Zips" (jsonb array)
+ * - reference_table.zat_geo_borough_toplevel: Borough data with zip_codes (jsonb array)
+ * - reference_table.zat_geo_hood_mediumlevel: Neighborhood data with zips (jsonb array)
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -30,7 +30,7 @@ export interface GeoLookupResult {
 
 /**
  * Look up borough ID by zip code
- * Queries zat_geo_borough_toplevel where "Zip Codes" jsonb array contains the zip
+ * Queries zat_geo_borough_toplevel where zip_codes jsonb array contains the zip
  *
  * @param supabaseClient - Supabase client instance
  * @param zipCode - The zip code to look up (e.g., "11201")
@@ -53,12 +53,12 @@ export async function getBoroughByZipCode(
   }
 
   try {
-    // Query borough where "Zip Codes" jsonb array contains the zip
+    // Query borough where zip_codes jsonb array contains the zip
     const { data, error } = await supabaseClient
       .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('id, "Display Borough"')
-      .contains('Zip Codes', [cleanZip])
+      .select('id, display_borough')
+      .contains('zip_codes', [cleanZip])
       .limit(1)
       .maybeSingle();
 
@@ -72,10 +72,10 @@ export async function getBoroughByZipCode(
       return null;
     }
 
-    console.log('[geoLookup] Found borough:', data['Display Borough'], 'for zip:', cleanZip);
+    console.log('[geoLookup] Found borough:', data.display_borough, 'for zip:', cleanZip);
     return {
       id: data.id,
-      displayName: data['Display Borough']
+      displayName: data.display_borough
     };
   } catch (_err) {
     console.error('[geoLookup] Exception in getBoroughByZipCode:', err);
@@ -85,7 +85,7 @@ export async function getBoroughByZipCode(
 
 /**
  * Look up hood (neighborhood) ID by zip code
- * Queries zat_geo_hood_mediumlevel where "Zips" jsonb array contains the zip
+ * Queries zat_geo_hood_mediumlevel where zips jsonb array contains the zip
  *
  * @param supabaseClient - Supabase client instance
  * @param zipCode - The zip code to look up (e.g., "11201")
@@ -108,12 +108,12 @@ export async function getHoodByZipCode(
   }
 
   try {
-    // Query hood where "Zips" jsonb array contains the zip
+    // Query hood where zips jsonb array contains the zip
     const { data, error } = await supabaseClient
       .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('id, "Display", "Geo-Borough"')
-      .contains('Zips', [cleanZip])
+      .select('id, display, geo_borough')
+      .contains('zips', [cleanZip])
       .limit(1)
       .maybeSingle();
 
@@ -127,11 +127,11 @@ export async function getHoodByZipCode(
       return null;
     }
 
-    console.log('[geoLookup] Found hood:', data['Display'], 'for zip:', cleanZip);
+    console.log('[geoLookup] Found hood:', data.display, 'for zip:', cleanZip);
     return {
       id: data.id,
-      displayName: data['Display'],
-      boroughId: data['Geo-Borough']
+      displayName: data.display,
+      boroughId: data.geo_borough
     };
   } catch (_err) {
     console.error('[geoLookup] Exception in getHoodByZipCode:', err);
@@ -168,14 +168,14 @@ export async function getGeoByZipCode(
       const { data } = await supabaseClient
         .schema('reference_table')
         .from('zat_geo_borough_toplevel')
-        .select('id, "Display Borough"')
+        .select('id, display_borough')
         .eq('id', hood.boroughId)
         .maybeSingle();
 
       if (data) {
         finalBorough = {
           id: data.id,
-          displayName: data['Display Borough']
+          displayName: data.display_borough
         };
       }
     } catch (_err) {

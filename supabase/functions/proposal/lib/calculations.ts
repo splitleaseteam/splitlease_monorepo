@@ -135,8 +135,8 @@ export interface PricingListRates {
 }
 
 export interface PricingListRecord {
-  "Nightly Price"?: unknown;
-  "Host Compensation"?: unknown;
+  nightly_price?: unknown;
+  host_compensation?: unknown;
 }
 
 export function getPricingListRates(
@@ -147,8 +147,8 @@ export function getPricingListRates(
     return null;
   }
 
-  const nightlyPriceArray = normalizePricingArray(pricingList["Nightly Price"]);
-  const hostCompArray = normalizePricingArray(pricingList["Host Compensation"]);
+  const nightlyPriceArray = normalizePricingArray(pricingList.nightly_price);
+  const hostCompArray = normalizePricingArray(pricingList.host_compensation);
 
   const index = nightsPerWeek - 1;
   const guestNightlyPrice = nightlyPriceArray?.[index];
@@ -170,17 +170,17 @@ export async function fetchAvgDaysPerMonth(
   const { data, error } = await supabase
     .schema("reference_table")
     .from("zat_priceconfiguration")
-    .select('"Avg days per month"')
+    .select('avg_days_per_month')
     .limit(1)
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Failed to fetch Avg days per month: ${error.message}`);
+    throw new Error(`Failed to fetch avg_days_per_month: ${error.message}`);
   }
 
-  const avgDays = Number(data?.["Avg days per month"]);
+  const avgDays = Number(data?.avg_days_per_month);
   if (!isFiniteNumber(avgDays) || avgDays <= 0) {
-    throw new Error("Invalid Avg days per month configuration");
+    throw new Error("Invalid avg_days_per_month configuration");
   }
 
   return avgDays;
@@ -275,9 +275,9 @@ export function calculateTotalGuestPrice(
  * Get nightly rate based on number of nights
  * Listings have different rates for different night counts
  *
- * Supports both legacy Bubble emoji-prefixed field names and new snake_case column names:
- * - Legacy: "💰Nightly Host Rate for X nights"
- * - New: nightly_rate_X_nights
+ * Uses DB column names from the listing table:
+ * - nightly_rate_for_X_night_stay (per-night host rate)
+ * - weekly_rate_paid_to_host (weekly fallback)
  *
  * @param listing - Listing data with pricing tiers
  * @param nightsPerWeek - Number of nights per week
@@ -285,33 +285,23 @@ export function calculateTotalGuestPrice(
  */
 export function getNightlyRateForNights(
   listing: {
-    // Legacy Bubble emoji-prefixed field names
-    "💰Nightly Host Rate for 2 nights"?: number;
-    "💰Nightly Host Rate for 3 nights"?: number;
-    "💰Nightly Host Rate for 4 nights"?: number;
-    "💰Nightly Host Rate for 5 nights"?: number;
-    "💰Nightly Host Rate for 6 nights"?: number;
-    "💰Nightly Host Rate for 7 nights"?: number;
-    "💰Weekly Host Rate"?: number;
-    // New snake_case column names (from Supabase)
-    nightly_rate_2_nights?: number;
-    nightly_rate_3_nights?: number;
-    nightly_rate_4_nights?: number;
-    nightly_rate_5_nights?: number;
-    nightly_rate_6_nights?: number;
-    nightly_rate_7_nights?: number;
-    weekly_host_rate?: number;
+    nightly_rate_for_1_night_stay?: number;
+    nightly_rate_for_2_night_stay?: number;
+    nightly_rate_for_3_night_stay?: number;
+    nightly_rate_for_4_night_stay?: number;
+    nightly_rate_for_5_night_stay?: number;
+    nightly_rate_for_7_night_stay?: number;
+    weekly_rate_paid_to_host?: number;
   },
   nightsPerWeek: number
 ): number {
-  // Map nights to the appropriate rate field - try snake_case first (Supabase), then emoji (legacy Bubble)
   const rateMap: Record<number, number | undefined> = {
-    2: listing.nightly_rate_2_nights ?? listing["💰Nightly Host Rate for 2 nights"],
-    3: listing.nightly_rate_3_nights ?? listing["💰Nightly Host Rate for 3 nights"],
-    4: listing.nightly_rate_4_nights ?? listing["💰Nightly Host Rate for 4 nights"],
-    5: listing.nightly_rate_5_nights ?? listing["💰Nightly Host Rate for 5 nights"],
-    6: listing.nightly_rate_6_nights ?? listing["💰Nightly Host Rate for 6 nights"],
-    7: listing.nightly_rate_7_nights ?? listing["💰Nightly Host Rate for 7 nights"],
+    1: listing.nightly_rate_for_1_night_stay,
+    2: listing.nightly_rate_for_2_night_stay,
+    3: listing.nightly_rate_for_3_night_stay,
+    4: listing.nightly_rate_for_4_night_stay,
+    5: listing.nightly_rate_for_5_night_stay,
+    7: listing.nightly_rate_for_7_night_stay,
   };
 
   // Try exact match first
@@ -325,7 +315,7 @@ export function getNightlyRateForNights(
   }
 
   // Fallback to weekly rate divided by nights, or 0
-  const weeklyRate = listing.weekly_host_rate ?? listing["💰Weekly Host Rate"];
+  const weeklyRate = listing.weekly_rate_paid_to_host;
   if (weeklyRate && weeklyRate > 0 && nightsPerWeek > 0) {
     return roundToTwoDecimals(weeklyRate / nightsPerWeek);
   }

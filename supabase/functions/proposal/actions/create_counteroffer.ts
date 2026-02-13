@@ -57,7 +57,7 @@ export async function handleCreateCounteroffer(
 
   // Fetch current proposal to preserve existing data
   const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('*')
     .eq('id', proposalId)
     .single();
@@ -126,7 +126,7 @@ export async function handleCreateCounteroffer(
       if (listing.pricing_configuration_id) {
         const { data: pricingList, error: pricingListError } = await supabase
           .from("pricing_list")
-          .select('"Nightly Price", "Host Compensation"')
+          .select('nightly_price, host_compensation')
           .eq("id", listing.pricing_configuration_id)
           .single();
 
@@ -141,8 +141,8 @@ export async function handleCreateCounteroffer(
         const fallbackPricing = calculatePricingList({ listing });
         pricingListRates = getPricingListRates(
           {
-            "Nightly Price": fallbackPricing.nightlyPrice,
-            "Host Compensation": fallbackPricing.hostCompensation,
+            nightly_price: fallbackPricing.nightlyPrice,
+            host_compensation: fallbackPricing.hostCompensation,
           },
           nightsPerWeek
         );
@@ -235,7 +235,7 @@ export async function handleCreateCounteroffer(
   }
 
   const { error: updateError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update(updateData)
     .eq('id', proposalId);
 
@@ -311,12 +311,12 @@ export async function handleCreateCounteroffer(
             .from('negotiationsummary')
             .insert({
               id: summaryId,
-              'Proposal associated': proposalId,
-              'Created By': proposal.host_user_id,
-              'Created Date': summaryNow,
-              'Modified Date': summaryNow,
-              'To Account': proposal.guest_user_id,
-              'Summary': aiCounterOfferSummary,
+              proposal_associated: proposalId,
+              created_by: proposal.host_user_id,
+              original_created_at: summaryNow,
+              original_updated_at: summaryNow,
+              to_account: proposal.guest_user_id,
+              summary: aiCounterOfferSummary,
             });
 
           if (summaryInsertError) {
@@ -354,7 +354,7 @@ export async function handleCreateCounteroffer(
 
     // Strategy 1: Look up thread by Proposal FK
     const { data: threadByProposal, error: threadError } = await supabase
-      .from('thread')
+      .from('message_thread')
       .select('id')
       .eq('proposal_id', proposalId)
       .limit(1)
@@ -372,7 +372,7 @@ export async function handleCreateCounteroffer(
       console.log('[create_counteroffer] No thread found by Proposal FK, trying host+guest+listing match');
 
       const { data: threadByMatch, error: matchError } = await supabase
-        .from('thread')
+        .from('message_thread')
         .select('id')
         .eq('host_user_id', proposal.host_user_id)
         .eq('guest_user_id', proposal.guest_user_id)
@@ -390,7 +390,7 @@ export async function handleCreateCounteroffer(
       // If found via Strategy 2, update the Proposal FK for future lookups
       if (threadId) {
         const { error: updateThreadError } = await supabase
-          .from('thread')
+          .from('message_thread')
           .update({
             proposal_id: proposalId,
             updated_at: new Date().toISOString()
@@ -424,7 +424,7 @@ export async function handleCreateCounteroffer(
 
       const now = new Date().toISOString();
       const { error: createError } = await supabase
-        .from('thread')
+        .from('message_thread')
         .insert({
           id: threadId,
           host_user_id: proposal.host_user_id,

@@ -32,7 +32,7 @@ function normalizeListing(listing) {
     title: listing.listing_title || listing.title || 'Unnamed Listing',
     name: listing.listing_title || listing.title || 'Unnamed Listing',
     thumbnail: listing.thumbnail || listing.cover_photo || null,
-    neighborhood: listing.neighborhood || null,
+    neighborhood: listing.neighborhood_name_entered_by_host || listing.neighborhood || null,
   };
 }
 
@@ -52,8 +52,8 @@ function normalizeGuest(guest) {
     phone: guest.phone_number || guest.phone || null,
     profilePhoto: guest.profile_photo_url || guest.profilePhoto || null,
     isVerified: guest.is_user_verified || false,
-    hasIdVerification: !!(guest['Selfie with ID']),
-    hasWorkVerification: !!(guest['Verify - Linked In ID']),
+    hasIdVerification: !!guest.selfie_with_id_photo_url,
+    hasWorkVerification: !!guest.linkedin_profile_id,
   };
 }
 
@@ -67,25 +67,25 @@ function normalizeLease(lease) {
   return {
     ...lease,
     id: lease.id,
-    agreementNumber: lease['Agreement Number'],
-    leaseStatus: lease['Lease Status'],
-    leaseSigned: lease['Lease signed?'],
+    agreementNumber: lease.agreement_number,
+    leaseStatus: lease.lease_status,
+    leaseSigned: lease.lease_signed,
     listing: lease.listing ? normalizeListing(lease.listing) : null,
-    listingId: lease.Listing,
+    listingId: lease.listing_id,
     guest: lease.guest ? normalizeGuest(lease.guest) : null,
-    guestId: lease.Guest,
-    hostId: lease.Host,
-    reservationStart: lease['Reservation Period : Start'] || lease['Move In Date'],
-    reservationEnd: lease['Reservation Period : End'] || lease['Move-out'],
-    firstPaymentDate: lease['First Payment Date'],
-    nextPaymentDueDate: lease['Next Payment Due Date'],
-    totalRent: lease['Total Rent'],
-    totalCompensation: lease['Total Compensation'],
-    paidToDate: lease['Paid to Date from Guest'],
-    contract: lease.Contract,
-    supplementalAgreement: lease['supplemental agreement'],
-    hostPayoutSchedule: lease['Host Payout Schedule'] || null,
-    periodicTenancyAgreement: lease['Periodic Tenancy Agreement'] || null,
+    guestId: lease.guest_user_id,
+    hostId: lease.host_user_id,
+    reservationStart: lease.reservation_start_date,
+    reservationEnd: lease.reservation_end_date,
+    firstPaymentDate: lease.first_payment_date,
+    nextPaymentDueDate: lease.next_payment_due_date,
+    totalRent: lease.total_rent,
+    totalCompensation: lease.total_compensation,
+    paidToDate: lease.paid_to_date_from_guest,
+    contract: lease.contract,
+    supplementalAgreement: lease.supplemental_agreement,
+    hostPayoutSchedule: lease.host_payout_schedule || null,
+    periodicTenancyAgreement: lease.periodic_tenancy_agreement || null,
     createdDate: lease.original_created_at,
     modifiedDate: lease.original_updated_at,
     // Related data
@@ -104,13 +104,13 @@ function normalizeStay(stay) {
   if (!stay) return null;
   return {
     id: stay.id,
-    leaseId: stay.Lease,
-    weekNumber: stay['Week Number'],
-    checkInNight: stay['Check In (night)'],
-    lastNight: stay['Last Night (night)'],
-    stayStatus: stay['Stay Status'],
-    reviewSubmittedByHost: stay['Review Submitted by Host'] || false,
-    datesInPeriod: stay['Dates - List of dates in this period'] || [],
+    leaseId: stay.lease_id,
+    weekNumber: stay.week_number_in_lease,
+    checkInNight: stay.checkin_night_date,
+    lastNight: stay.last_night_date,
+    stayStatus: stay.stay_status,
+    reviewSubmittedByHost: stay.review_submitted_by_host || false,
+    datesInPeriod: stay.dates_in_this_stay_period_json || [],
   };
 }
 
@@ -123,18 +123,18 @@ function normalizePaymentRecord(payment) {
   if (!payment) return null;
   return {
     id: payment.id,
-    leaseId: payment['Booking - Reservation'],
-    paymentNumber: payment['Payment #'],
-    scheduledDate: payment['Scheduled Date'],
-    actualDate: payment['Actual Date'],
-    rentAmount: payment['Rent Amount'],
-    maintenanceFee: payment['Maintenance Fee'],
-    damageDeposit: payment['Damage Deposit'],
-    totalAmount: payment['Total Amount'],
-    bankTransactionNumber: payment['Bank Transaction Number'],
-    paymentReceipt: payment['Payment Receipt'],
-    isPaid: payment['Is Paid'],
-    isRefunded: payment['Is Refunded'],
+    leaseId: payment.booking_reservation,
+    paymentNumber: payment.payment,
+    scheduledDate: payment.scheduled_date,
+    actualDate: payment.actual_date_of_payment,
+    rentAmount: payment.rent,
+    maintenanceFee: payment.maintenance_fee,
+    damageDeposit: payment.damage_deposit,
+    totalAmount: payment.total_paid_to_host,
+    bankTransactionNumber: payment.bank_transaction_number,
+    paymentReceipt: payment.payment_receipt,
+    isPaid: payment.payment_to_host,
+    isRefunded: payment.is_refunded,
   };
 }
 
@@ -147,17 +147,17 @@ function normalizeDateChangeRequest(dcr) {
   if (!dcr) return null;
   return {
     id: dcr.id,
-    leaseId: dcr.Lease,
-    requestedById: dcr['Requested by'],
-    requestReceiverId: dcr['Request receiver'],
+    leaseId: dcr.lease,
+    requestedById: dcr.requested_by,
+    requestReceiverId: dcr.request_receiver,
     requestedByUser: dcr.requestedByUser ? normalizeGuest(dcr.requestedByUser) : null,
-    stayAssociated1: dcr['Stay Associated 1'],
-    stayAssociated2: dcr['Stay Associated 2'],
-    status: dcr.status,
-    requestType: dcr['Request Type'],
-    originalDate: dcr['Original Date'],
-    requestedDate: dcr['Requested Date'],
-    priceAdjustment: dcr['Price Adjustment'],
+    stayAssociated1: dcr.stay_associated_1,
+    stayAssociated2: dcr.stay_associated_2,
+    status: dcr.request_status,
+    requestType: dcr.type_of_request,
+    originalDate: dcr.list_of_old_dates_in_the_stay,
+    requestedDate: dcr.list_of_new_dates_in_the_stay,
+    priceAdjustment: dcr.price_rate_of_the_night,
     createdDate: dcr.original_created_at,
   };
 }

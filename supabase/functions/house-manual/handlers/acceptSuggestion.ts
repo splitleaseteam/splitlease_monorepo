@@ -66,9 +66,9 @@ export async function handleAcceptSuggestion(
     );
   }
 
-  const fieldName = suggestion["Field suggested house manual"];
-  const content = suggestion["Content"];
-  const houseManualId = suggestion["House Manual"];
+  const fieldName = suggestion.field_suggested_house_manual;
+  const content = suggestion.content;
+  const houseManualId = suggestion.house_manual_id;
 
   if (!fieldName || !houseManualId) {
     throw new ValidationError("Suggestion missing required field or house manual reference");
@@ -80,8 +80,8 @@ export async function handleAcceptSuggestion(
   const { error: processingError } = await supabaseClient
     .from("zat_aisuggestions")
     .update({
-      "being processed?": true,
-      "Modified Date": new Date().toISOString(),
+      being_processed: true,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", suggestionId);
 
@@ -94,11 +94,11 @@ export async function handleAcceptSuggestion(
     // Step 3: Apply content to house manual field
     const updatePayload: Record<string, unknown> = {
       [fieldName]: content,
-      "Modified Date": new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const { error: updateError } = await supabaseClient
-      .from("housemanual")
+      .from("house_manual")
       .update(updatePayload)
       .eq("id", houseManualId);
 
@@ -107,7 +107,7 @@ export async function handleAcceptSuggestion(
       // Rollback processing state
       await supabaseClient
         .from("zat_aisuggestions")
-        .update({ "being processed?": false })
+        .update({ being_processed: false })
         .eq("id", suggestionId);
       throw new Error(`Failed to apply suggestion: ${updateError.message}`);
     }
@@ -116,7 +116,7 @@ export async function handleAcceptSuggestion(
     const { error: syncError } = await supabaseClient
       .from("sync_queue")
       .insert({
-        table_name: "housemanual",
+        table_name: "house_manual",
         record_id: houseManualId,
         operation: "UPDATE",
         payload: { [fieldName]: content },
@@ -134,8 +134,8 @@ export async function handleAcceptSuggestion(
       .from("zat_aisuggestions")
       .update({
         decision: "accepted",
-        "being processed?": false,
-        "Modified Date": new Date().toISOString(),
+        being_processed: false,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", suggestionId);
 
@@ -156,7 +156,7 @@ export async function handleAcceptSuggestion(
     // Ensure processing flag is cleared on any error
     await supabaseClient
       .from("zat_aisuggestions")
-      .update({ "being processed?": false })
+      .update({ being_processed: false })
       .eq("id", suggestionId);
     throw error;
   }

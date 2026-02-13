@@ -1,15 +1,36 @@
 # Edge Functions Documentation
 
 ```
-Generated: 2026-02-11
-Total Functions: 66
+Generated: 2026-02-13
+Total Functions: 46
 Runtime: Deno 2 with JSR imports
 Architecture: FP (Functional Programming) with Result types
 ```
 
 ---
 
-### AI Functions (5)
+### Decommissioned in Round 15
+
+Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
+
+- `ai-signup-guest`
+- `ai-tools`
+- `ai-parse-profile`
+- `calendar-automation`
+- `experience-survey`
+- `guest-management`
+- `rental-application-submit`
+- `co-host-requests`
+- `pricing`
+- `pricing-list-bulk`
+- `pricing-tiers`
+- `qr-generator`
+- `create-payment-intent`
+- `process-date-change-fee`
+
+---
+
+### AI Functions (2)
 
 #### 1. ai-gateway
 **Purpose**: OpenAI proxy with prompt templating
@@ -25,16 +46,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 2. ai-parse-profile
-**Purpose**: AI-powered profile parsing during signup
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `parse` | No | Parse profile data from input |
-
----
-
-#### 3. ai-room-redesign
+#### 2. ai-room-redesign
 **Purpose**: AI-powered room redesign suggestions
 
 | Action | Auth Required | Description |
@@ -43,29 +55,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 4. ai-signup-guest
-**Purpose**: AI-powered guest signup flow
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `start` | No | Start AI signup flow |
-| `next` | No | Process next step |
-| `complete` | No | Complete signup |
-
----
-
-#### 5. ai-tools
-**Purpose**: Additional AI utility tools
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| Various | Yes | Multiple AI utility actions |
-
----
-
 ### Authentication Functions (1)
 
-#### 6. auth-user
+#### 3. auth-user
 **Purpose**: Authentication operations via Supabase Auth
 
 | Action | Auth Required | Description |
@@ -86,18 +78,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-### Background Jobs (5)
+### Background Jobs (4)
 
-#### 7. backfill-negotiation-summaries
-**Purpose**: Backfill AI-generated negotiation summaries
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `backfill` | Admin | Backfill missing summaries |
-
----
-
-#### 9. date-change-reminder-cron
+#### 4. date-change-reminder-cron
 **Purpose**: Cron job for date change request reminders
 
 | Action | Auth Required | Description |
@@ -110,7 +93,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 10. workflow-enqueue
+#### 5. workflow-enqueue
 **Purpose**: Enqueue workflow operations
 
 | Action | Auth Required | Description |
@@ -119,7 +102,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 11. workflow-orchestrator
+#### 6. workflow-orchestrator
 **Purpose**: Orchestrate complex workflows
 
 | Action | Auth Required | Description |
@@ -128,7 +111,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 12. reminder-scheduler
+#### 7. reminder-scheduler
 **Purpose**: Schedule and manage reminders
 
 | Action | Auth Required | Description |
@@ -140,7 +123,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ### Bidding Functions (3)
 
-#### 13. submit-bid
+#### 8. submit-bid
 **Purpose**: Submit bids on bidding sessions (Pattern 4: BS+BS Competitive Bidding)
 
 | Action | Auth Required | Description |
@@ -152,7 +135,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 14. withdraw-bid
+#### 9. withdraw-bid
 **Purpose**: Withdraw from bidding sessions
 
 | Action | Auth Required | Description |
@@ -162,7 +145,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 15. set-auto-bid
+#### 10. set-auto-bid
 **Purpose**: Configure auto-bidding
 
 | Action | Auth Required | Description |
@@ -175,7 +158,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ### Communication Functions (4)
 
-#### 16. send-email
+#### 11. send-email
 **Purpose**: Send templated emails via SendGrid
 
 | Action | Auth Required | Description |
@@ -187,7 +170,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 17. send-sms
+#### 12. send-sms
 **Purpose**: Send SMS via Twilio
 
 | Action | Auth Required | Description |
@@ -199,7 +182,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 18. communications
+#### 13. communications
 **Purpose**: Placeholder for future communications
 
 | Action | Auth Required | Description |
@@ -208,7 +191,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 19. slack
+#### 14. slack
 **Purpose**: Slack integration for FAQ inquiries
 
 | Action | Auth Required | Description |
@@ -218,9 +201,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-### Core Business Functions (16)
+### Core Business Functions (13)
 
-#### 20. listing
+#### 15. listing
 **Purpose**: Listing CRUD operations
 
 | Action | Auth Required | Description |
@@ -232,7 +215,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 21. proposal
+#### 16. proposal
 **Purpose**: Proposal CRUD and simulation operations
 
 | Action | Auth Required | Description |
@@ -252,7 +235,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 22. messages
+#### 17. messages
 **Purpose**: Real-time messaging operations
 
 | Action | Auth Required | Description |
@@ -270,7 +253,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 23. date-change-request
+#### 18. date-change-request
 **Purpose**: Handle date change requests
 
 | Action | Auth Required | Description |
@@ -283,7 +266,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 24. cohost-request
+#### 19. cohost-request
 **Purpose**: Co-host request operations
 
 | Action | Auth Required | Description |
@@ -295,7 +278,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 25. cohost-request-slack-callback
+#### 20. cohost-request-slack-callback
 **Purpose**: Handle Slack callbacks for co-host requests
 
 | Action | Auth Required | Description |
@@ -304,7 +287,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 26. document
+#### 21. document
 **Purpose**: Document management
 
 | Action | Auth Required | Description |
@@ -313,7 +296,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 27. emergency
+#### 22. emergency
 **Purpose**: Emergency contact/procedures
 
 | Action | Auth Required | Description |
@@ -322,7 +305,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 28. house-manual
+#### 23. house-manual
 **Purpose**: House manual management
 
 | Action | Auth Required | Description |
@@ -331,16 +314,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 29. guest-management
-**Purpose**: Guest management operations
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| CRUD | Yes | Standard CRUD operations |
-
----
-
-#### 30. guest-payment-records
+#### 24. guest-payment-records
 **Purpose**: Guest payment record management
 
 | Action | Auth Required | Description |
@@ -349,7 +323,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 31. host-payment-records
+#### 25. host-payment-records
 **Purpose**: Host payment record management
 
 | Action | Auth Required | Description |
@@ -358,16 +332,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 32. experience-survey
-**Purpose**: Experience survey management
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| CRUD | Yes | Standard CRUD operations |
-
----
-
-#### 33. lease
+#### 26. lease
 **Purpose**: Lease operations
 
 | Action | Auth Required | Description |
@@ -376,7 +341,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 34. virtual-meeting
+#### 27. virtual-meeting
 **Purpose**: Virtual meeting integration (HeyGen, ElevenLabs)
 
 | Action | Auth Required | Description |
@@ -385,22 +350,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 35. rental-application-submit
-**Purpose**: User rental application submission
+### Admin Functions (12)
 
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `submit` | No* | Submit rental application form |
-| `get` | No* | Get existing application data |
-| `upload` | No* | Upload supporting documents |
-
-*Public for legacy Bubble token users (user_id in payload)
-
----
-
-### Admin Functions (14)
-
-#### 36. leases-admin
+#### 28. leases-admin
 **Purpose**: Admin dashboard for lease management
 
 | Action | Description |
@@ -412,7 +364,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 37. rental-application-admin
+#### 29. rental-application-admin
 **Purpose**: Admin rental application management
 
 | Action | Description |
@@ -430,7 +382,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 38. identity-verification-admin
+#### 30. identity-verification-admin
 **Purpose**: Admin tool for identity verification
 
 | Action | Description |
@@ -442,7 +394,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 39. magic-login-links
+#### 31. magic-login-links
 **Purpose**: Admin tool for generating magic login links
 
 | Action | Description |
@@ -454,7 +406,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 40. message-curation
+#### 32. message-curation
 **Purpose**: Admin tool for message moderation
 
 | Action | Description |
@@ -469,7 +421,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 41. pricing-admin
+#### 33. pricing-admin
 **Purpose**: Admin dashboard for listing price management
 
 | Action | Description |
@@ -485,7 +437,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 42. pricing-list
+#### 34. pricing-list
 **Purpose**: Pricing list management
 
 | Action | Description |
@@ -494,18 +446,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 43. pricing-list-bulk
-**Purpose**: Bulk pricing list processor
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| (POST) | Admin | Bulk recalculate pricing lists |
-
-**Parameters**: `dry_run`, `limit`, `offset`
-
----
-
-#### 44. simulation-admin
+#### 35. simulation-admin
 **Purpose**: Admin tool for usability testing simulation testers
 
 | Action | Description |
@@ -518,7 +459,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 45. usability-data-admin
+#### 36. usability-data-admin
 **Purpose**: Admin tool for managing usability testing data
 
 | Action | Description |
@@ -536,16 +477,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 46. co-host-requests
-**Purpose**: Co-host request management
-
-| Action | Description |
-|--------|-------------|
-| CRUD | Standard CRUD operations |
-
----
-
-#### 47. informational-texts
+#### 37. informational-texts
 **Purpose**: Manage informational text content
 
 | Action | Description |
@@ -554,7 +486,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 48. reviews-overview
+#### 38. reviews-overview
 **Purpose**: Reviews overview and management
 
 | Action | Description |
@@ -563,7 +495,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 49. verify-users
+#### 39. verify-users
 **Purpose**: User verification management
 
 | Action | Description |
@@ -574,7 +506,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ### Document Functions (1)
 
-#### 50. lease-documents
+#### 40. lease-documents
 **Purpose**: Generate DOCX lease documents to Google Drive
 
 | Action | Auth Required | Description |
@@ -589,48 +521,11 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-### Integration Functions (1)
+### Integration Functions (0)
 
-#### 51. calendar-automation
-**Purpose**: Google Calendar integration with Meet links
+### Payment Functions (1)
 
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `process_virtual_meeting` | No | Create Google Calendar events with Meet links |
-| `health` | No | Health check endpoint |
-| `test_config` | No | Configuration verification |
-
----
-
-### Payment Functions (3)
-
-#### 52. create-payment-intent
-**Purpose**: Stripe PaymentIntent for date change fees
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| (POST) | Yes | Create/retrieve PaymentIntent |
-
-**Parameters**: `requestId`, `paymentMethodId`, `savePaymentMethod`
-
----
-
-#### 53. process-date-change-fee
-**Purpose**: Fee calculation for date change requests
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| (POST) | Yes | Calculate and store fee breakdown |
-
-**Fee Structure**:
-- Platform Rate: 0.75%
-- Landlord Rate: 0.75%
-- Total: 1.5%
-- Minimum Fee: $5.00
-
----
-
-#### 54. stripe-webhook
+#### 41. stripe-webhook
 **Purpose**: Stripe webhook handler
 
 | Event | Description |
@@ -643,28 +538,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-### Pricing Functions (4)
+### Pricing Functions (1)
 
-#### 55. pricing
-**Purpose**: Pricing calculations
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `calculate` | No | Calculate pricing |
-
----
-
-#### 56. pricing-tiers
-**Purpose**: Dynamic pricing tier generation (Pattern 3: Price Anchoring)
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `calculate` | No | Calculate pricing tiers from base price |
-| `select` | No | Record user's tier selection |
-
----
-
-#### 57. identity-verification-submit
+#### 42. identity-verification-submit
 **Purpose**: User identity document submission
 
 | Action | Auth Required | Description |
@@ -676,7 +552,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ### Simulation Functions (2)
 
-#### 61. simulation-guest
+#### 43. simulation-guest
 **Purpose**: Guest-side usability simulation flow
 
 | Action | Auth Required | Description |
@@ -685,7 +561,7 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 62. simulation-host
+#### 44. simulation-host
 **Purpose**: Host-side usability simulation flow
 
 | Action | Auth Required | Description |
@@ -694,18 +570,9 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-### Utility Functions (5)
+### Utility Functions (2)
 
-#### 63. qr-generator
-**Purpose**: Generate QR codes
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `generate` | No | Generate QR code |
-
----
-
-#### 64. qr-codes
+#### 45. qr-codes
 **Purpose**: QR code management
 
 | Action | Auth Required | Description |
@@ -714,30 +581,12 @@ Architecture: FP (Functional Programming) with Result types
 
 ---
 
-#### 65. query-leo
-**Purpose**: Query Leo (internal tool)
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| `query` | Admin | Execute query |
-
----
-
-#### 66. quick-match
+#### 46. quick-match
 **Purpose**: Quick matching algorithm for listings
 
 | Action | Auth Required | Description |
 |--------|---------------|-------------|
 | `match` | No | Find matches |
-
----
-
-#### 67. temp-fix-trigger
-**Purpose**: Temporary trigger fix utility
-
-| Action | Auth Required | Description |
-|--------|---------------|-------------|
-| (POST) | Service | Generate fix SQL |
 
 ---
 

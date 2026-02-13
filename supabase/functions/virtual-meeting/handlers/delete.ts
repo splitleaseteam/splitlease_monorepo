@@ -77,11 +77,11 @@ export async function handleDelete(
 
   const now = new Date().toISOString();
   const { error: proposalUpdateError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .update({
-      "virtual meeting": null,
-      "request virtual meeting": null,
-      "Modified Date": now,
+      virtual_meeting_record_id: null,
+      virtual_meeting_request_status: null,
+      updated_at: now,
     })
     .eq("id", input.proposalId);
 

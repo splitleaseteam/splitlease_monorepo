@@ -44,8 +44,8 @@ export async function handleSendCounteroffer(
 
   // Verify proposal exists and belongs to this simulation
   const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
-    .select('id, proposal_workflow_status, simulation_id, "Guest Nightly Price", "Guest Nights per Week"')
+    .from('booking_proposal')
+    .select('id, proposal_workflow_status, simulation_id, calculated_nightly_price, nights_per_week_count')
     .eq('id', proposalId)
     .single();
 
@@ -60,8 +60,8 @@ export async function handleSendCounteroffer(
 
   // Default counteroffer values (10% higher price)
   const defaultCounteroffer = {
-    nightlyPrice: Math.round((proposal['Guest Nightly Price'] || 100) * 1.1),
-    nightsPerWeek: (proposal['Guest Nights per Week'] || 4) - 1,
+    nightlyPrice: Math.round((proposal.calculated_nightly_price || 100) * 1.1),
+    nightsPerWeek: (proposal.nights_per_week_count || 4) - 1,
     checkInDay: 3, // Wednesday
     checkOutDay: 0, // Sunday
   };
@@ -70,7 +70,7 @@ export async function handleSendCounteroffer(
 
   // Step 1: Update proposal with host counteroffer
   const { error: counterError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
       'host_counter_offer_nightly_price': offer.nightlyPrice,
       'host_counter_offer_nights_per_week': offer.nightsPerWeek,
@@ -90,7 +90,7 @@ export async function handleSendCounteroffer(
 
   // Step 2: Simulate guest rejection (after a brief pause conceptually)
   const { error: rejectError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
       proposal_workflow_status: 'Guest Rejected Host Counteroffer',
       updated_at: new Date().toISOString(),

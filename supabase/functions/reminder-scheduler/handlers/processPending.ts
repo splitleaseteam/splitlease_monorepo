@@ -75,8 +75,8 @@ export const handleProcessPending = async (
       const deliveryStatus = determineDeliveryStatus(
         result.emailSent,
         result.smsSent,
-        reminder['is an email reminder?'],
-        reminder['is a phone reminder?']
+        reminder.is_an_email_reminder,
+        reminder.is_a_phone_reminder
       );
 
       // Update reminder status
@@ -100,7 +100,7 @@ export const handleProcessPending = async (
         error: result.error,
       });
 
-    } catch (_err) {
+    } catch (err) {
       console.error('[process-pending] Error processing reminder:', reminder.id, err);
       failed++;
 

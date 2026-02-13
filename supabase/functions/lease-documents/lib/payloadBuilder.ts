@@ -27,66 +27,67 @@ import type {
 
 interface LeaseRecord {
   id: string;
-  'Agreement Number': string;
-  'Reservation Period : Start': string | null;
-  'Reservation Period : End': string | null;
-  'Payment Records Guest-SL': string[] | null;
-  'Payment Records SL-Hosts': string[] | null;
-  Proposal: string;
-  Listing: string;
-  Guest: string;
-  Host: string;
+  agreement_number: string;
+  reservation_start_date: string | null;
+  reservation_end_date: string | null;
+  guest_to_platform_payment_records_json: string[] | null;
+  platform_to_host_payment_records_json: string[] | null;
+  proposal_id: string;
+  listing_id: string;
+  guest_user_id: string;
+  host_user_id: string;
 }
 
 interface ProposalRecord {
   id: string;
-  'hc move in date': string | null;
-  'Move-out': string | null;
-  'rental type': string | null;
-  '4 week rent': number | null;
-  'hc 4 week rent': number | null;
-  'damage deposit': number | null;
-  'hc damage deposit': number | null;
-  'cleaning fee': number | null;
-  'hc cleaning fee': number | null;
-  'Reservation Span': string | null;
-  'Reservation Span (Weeks)': number | null;
-  'week pattern': string | null;
+  host_proposed_move_in_date: string | null;
+  planned_move_out_date: string | null;
+  rental_type: string | null;
+  four_week_rent_amount: number | null;
+  host_proposed_four_week_rent: number | null;
+  damage_deposit_amount: number | null;
+  host_proposed_damage_deposit: number | null;
+  cleaning_fee_amount: number | null;
+  host_proposed_cleaning_fee: number | null;
+  reservation_span_text: string | null;
+  reservation_span_in_weeks: number | null;
+  weeks_offered_schedule_text: string | null;
 }
 
 interface ListingRecord {
   id: string;
-  title: string | null;
-  address: string | null;
-  description: string | null;
-  'type of space': string | null;
-  'guests allowed': number | null;
-  'host restrictions': string[] | null;
-  images: string[] | null;
+  listing_title: string | null;
+  address_with_lat_lng_json: Record<string, unknown> | null;
+  listing_description: string | null;
+  space_type: string | null;
+  max_guest_count: number | null;
+  house_rule_reference_ids_json: string[] | null;
+  photos_with_urls_captions_and_sort_order_json: Record<string, unknown>[] | null;
 }
 
 interface UserRecord {
   id: string;
-  name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   email: string | null;
-  phone: string | null;
+  phone_number: string | null;
 }
 
 interface GuestPaymentRecord {
-  'Payment #': number;
-  'Scheduled Date': string;
-  'Rent': number | null;
-  'Maintenance Fee': number | null;
-  'Total Paid by Guest': number | null;
-  'Damage Deposit': number | null;
+  payment: number;
+  scheduled_date: string;
+  rent: number | null;
+  maintenance_fee: number | null;
+  total_paid_by_guest: number | null;
+  damage_deposit: number | null;
 }
 
 interface HostPaymentRecord {
-  'Payment #': number;
-  'Scheduled Date': string;
-  'Rent': number | null;
-  'Maintenance Fee': number | null;
-  'Total Paid to Host': number | null;
+  payment: number;
+  scheduled_date: string;
+  rent: number | null;
+  maintenance_fee: number | null;
+  total_paid_to_host: number | null;
 }
 
 /**
@@ -203,6 +204,16 @@ function formatHouseRules(rules: string[] | null): string {
 }
 
 /**
+ * Extract image URLs from photos JSON array
+ */
+function extractImageUrls(photos: Record<string, unknown>[] | null): string[] {
+  if (!photos || photos.length === 0) return [];
+  return photos
+    .map((p) => (p.url as string) || '')
+    .filter(Boolean);
+}
+
+/**
  * Calculate weeks between two dates
  */
 function calculateWeeks(startDate: Date, endDate: Date): number {
@@ -247,19 +258,19 @@ export async function fetchFieldsForLeaseDocuments(
 
   // Step 1: Fetch lease record
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select(
       `
-      _id,
-      "Agreement Number",
-      "Reservation Period : Start",
-      "Reservation Period : End",
-      "Payment Records Guest-SL",
-      "Payment Records SL-Hosts",
-      Proposal,
-      Listing,
-      Guest,
-      Host
+      id,
+      agreement_number,
+      reservation_start_date,
+      reservation_end_date,
+      guest_to_platform_payment_records_json,
+      platform_to_host_payment_records_json,
+      proposal_id,
+      listing_id,
+      guest_user_id,
+      host_user_id
     `
     )
     .eq('id', leaseId)
@@ -271,30 +282,30 @@ export async function fetchFieldsForLeaseDocuments(
   }
 
   const leaseRecord = lease as LeaseRecord;
-  console.log(`[payloadBuilder] Lease found: ${leaseRecord['Agreement Number']}`);
+  console.log(`[payloadBuilder] Lease found: ${leaseRecord.agreement_number}`);
 
   // Step 2: Fetch proposal (financial & scheduling data)
   // CRITICAL: Financial fields are on proposal, NOT lease
   const { data: proposal, error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select(
       `
-      _id,
-      "hc move in date",
-      "Move-out",
-      "rental type",
-      "4 week rent",
-      "hc 4 week rent",
-      "damage deposit",
-      "hc damage deposit",
-      "cleaning fee",
-      "hc cleaning fee",
-      "Reservation Span",
-      "Reservation Span (Weeks)",
-      "week pattern"
+      id,
+      host_proposed_move_in_date,
+      planned_move_out_date,
+      rental_type,
+      four_week_rent_amount,
+      host_proposed_four_week_rent,
+      damage_deposit_amount,
+      host_proposed_damage_deposit,
+      cleaning_fee_amount,
+      host_proposed_cleaning_fee,
+      reservation_span_text,
+      reservation_span_in_weeks,
+      weeks_offered_schedule_text
     `
     )
-    .eq('id', leaseRecord.Proposal)
+    .eq('id', leaseRecord.proposal_id)
     .single();
 
   if (proposalError) {
@@ -310,17 +321,17 @@ export async function fetchFieldsForLeaseDocuments(
     .from('listing')
     .select(
       `
-      _id,
-      title,
-      address,
-      description,
-      "type of space",
-      "guests allowed",
-      "host restrictions",
-      images
+      id,
+      listing_title,
+      address_with_lat_lng_json,
+      listing_description,
+      space_type,
+      max_guest_count,
+      house_rule_reference_ids_json,
+      photos_with_urls_captions_and_sort_order_json
     `
     )
-    .eq('id', leaseRecord.Listing)
+    .eq('id', leaseRecord.listing_id)
     .single();
 
   if (listingError) {
@@ -329,16 +340,16 @@ export async function fetchFieldsForLeaseDocuments(
   }
 
   const listingRecord = listing as ListingRecord;
-  console.log(`[payloadBuilder] Listing found: ${listingRecord.title}`);
+  console.log(`[payloadBuilder] Listing found: ${listingRecord.listing_title}`);
 
   // Step 4: Fetch users (parallel)
   const [guestResult, hostResult] = await Promise.all([
-    supabase.from('user').select('id, name, email, phone').eq('id', leaseRecord.Guest).single(),
-    supabase.from('user').select('id, name, email, phone').eq('id', leaseRecord.Host).single(),
+    supabase.from('user').select('id, first_name, last_name, email, phone_number').eq('id', leaseRecord.guest_user_id).single(),
+    supabase.from('user').select('id, first_name, last_name, email, phone_number').eq('id', leaseRecord.host_user_id).single(),
   ]);
 
-  const guest: UserRecord = guestResult.data || { id: '', name: '', email: '', phone: '' };
-  const host: UserRecord = hostResult.data || { id: '', name: '', email: '', phone: '' };
+  const guest: UserRecord = guestResult.data || { id: '', first_name: '', last_name: '', email: '', phone_number: '' };
+  const host: UserRecord = hostResult.data || { id: '', first_name: '', last_name: '', email: '', phone_number: '' };
 
   if (guestResult.error) {
     console.warn('[payloadBuilder] Guest fetch warning:', guestResult.error.message);
@@ -351,19 +362,19 @@ export async function fetchFieldsForLeaseDocuments(
   const [guestPaymentsResult, hostPaymentsResult] = await Promise.all([
     supabase
       .from('paymentrecords')
-      .select(`"Payment #", "Scheduled Date", "Rent", "Maintenance Fee", "Total Paid by Guest", "Damage Deposit"`)
-      .eq('Booking - Reservation', leaseId)
-      .eq('Payment from guest?', true)
-      .eq('Payment to Host?', false)
-      .order('Payment #', { ascending: true })
+      .select(`payment, scheduled_date, rent, maintenance_fee, total_paid_by_guest, damage_deposit`)
+      .eq('booking_reservation', leaseId)
+      .eq('payment_from_guest', true)
+      .eq('payment_to_host', false)
+      .order('payment', { ascending: true })
       .limit(13),
     supabase
       .from('paymentrecords')
-      .select(`"Payment #", "Scheduled Date", "Rent", "Maintenance Fee", "Total Paid to Host"`)
-      .eq('Booking - Reservation', leaseId)
-      .eq('Payment to Host?', true)
-      .eq('Payment from guest?', false)
-      .order('Payment #', { ascending: true })
+      .select(`payment, scheduled_date, rent, maintenance_fee, total_paid_to_host`)
+      .eq('booking_reservation', leaseId)
+      .eq('payment_to_host', true)
+      .eq('payment_from_guest', false)
+      .order('payment', { ascending: true })
       .limit(13),
   ]);
 
@@ -375,25 +386,25 @@ export async function fetchFieldsForLeaseDocuments(
   );
 
   // Step 6: Determine values (use hc variants if available)
-  const fourWeekRent = proposalRecord['hc 4 week rent'] ?? proposalRecord['4 week rent'] ?? 0;
-  const damageDeposit = proposalRecord['hc damage deposit'] ?? proposalRecord['damage deposit'] ?? 0;
-  const cleaningFee = proposalRecord['hc cleaning fee'] ?? proposalRecord['cleaning fee'] ?? 0;
-  const rentalType = proposalRecord['rental type'] || 'Weekly';
-  const reservationSpanWeeks = proposalRecord['Reservation Span (Weeks)'] ?? 0;
-  const weekPattern = proposalRecord['week pattern'];
+  const fourWeekRent = proposalRecord.host_proposed_four_week_rent ?? proposalRecord.four_week_rent_amount ?? 0;
+  const damageDeposit = proposalRecord.host_proposed_damage_deposit ?? proposalRecord.damage_deposit_amount ?? 0;
+  const cleaningFee = proposalRecord.host_proposed_cleaning_fee ?? proposalRecord.cleaning_fee_amount ?? 0;
+  const rentalType = proposalRecord.rental_type || 'Weekly';
+  const reservationSpanWeeks = proposalRecord.reservation_span_in_weeks ?? 0;
+  const weekPattern = proposalRecord.weeks_offered_schedule_text;
 
   // Parse dates
-  const moveInDate = new Date(proposalRecord['hc move in date'] || '');
-  const moveOutDate = new Date(proposalRecord['Move-out'] || '');
+  const moveInDate = new Date(proposalRecord.host_proposed_move_in_date || '');
+  const moveOutDate = new Date(proposalRecord.planned_move_out_date || '');
 
   // Calculate derived fields
   const numberOfWeeks = reservationSpanWeeks || calculateWeeks(moveInDate, moveOutDate);
   const firstPayment = guestPayments[0];
   const lastPayment = guestPayments[guestPayments.length - 1];
-  const firstPaymentTotal = firstPayment?.['Total Paid by Guest'] ?? 0;
-  const lastPaymentRent = lastPayment?.['Rent'] ?? 0;
+  const firstPaymentTotal = firstPayment?.total_paid_by_guest ?? 0;
+  const lastPaymentRent = lastPayment?.rent ?? 0;
   const isProrated =
-    guestPayments.length > 1 && lastPaymentRent < (firstPayment?.['Rent'] ?? 0);
+    guestPayments.length > 1 && lastPaymentRent < (firstPayment?.rent ?? 0);
   const penultimateWeekNumber = Math.max(0, guestPayments.length - 1);
   const lastPaymentWeeks = calculateLastPaymentWeeks(
     numberOfWeeks,
@@ -404,26 +415,26 @@ export async function fetchFieldsForLeaseDocuments(
   // Build result
   const fields: FieldsForLeaseDocuments = {
     // Identifiers
-    agreementNumber: leaseRecord['Agreement Number'] || '',
+    agreementNumber: leaseRecord.agreement_number || '',
     leaseId: leaseRecord.id,
 
     // People
-    guestName: guest.name || '',
+    guestName: [guest.first_name, guest.last_name].filter(Boolean).join(' ') || '',
     guestEmail: guest.email || '',
-    guestPhone: guest.phone || '',
-    hostName: host.name || '',
+    guestPhone: guest.phone_number || '',
+    hostName: [host.first_name, host.last_name].filter(Boolean).join(' ') || '',
     hostEmail: host.email || '',
-    hostPhone: host.phone || '',
+    hostPhone: host.phone_number || '',
 
     // Listing
-    address: listingRecord.address || '',
-    listingTitle: listingRecord.title || '',
-    listingDescription: listingRecord.description || '',
-    typeOfSpace: listingRecord['type of space'] || '',
-    guestsAllowed: listingRecord['guests allowed'] ?? 1,
-    hostRestrictions: listingRecord['host restrictions'] || [],
-    formattedHouseRules: formatHouseRules(listingRecord['host restrictions']),
-    images: listingRecord.images || [],
+    address: (listingRecord.address_with_lat_lng_json as Record<string, unknown>)?.address as string || '',
+    listingTitle: listingRecord.listing_title || '',
+    listingDescription: listingRecord.listing_description || '',
+    typeOfSpace: listingRecord.space_type || '',
+    guestsAllowed: listingRecord.max_guest_count ?? 1,
+    hostRestrictions: listingRecord.house_rule_reference_ids_json || [],
+    formattedHouseRules: formatHouseRules(listingRecord.house_rule_reference_ids_json),
+    images: extractImageUrls(listingRecord.photos_with_urls_captions_and_sort_order_json),
 
     // Dates & Duration
     moveInDate,
@@ -489,9 +500,9 @@ export function buildHostPayoutPayload(fields: FieldsForLeaseDocuments): HostPay
   // Map up to 13 host payments
   fields.hostPayments.forEach((payment, index) => {
     const num = index + 1;
-    payload[`Date${num}`] = formatDate(payment['Scheduled Date']);
-    payload[`Rent${num}`] = formatCurrency(payment['Rent']);
-    payload[`Total${num}`] = formatCurrency(payment['Total Paid to Host']);
+    payload[`Date${num}`] = formatDate(payment.scheduled_date);
+    payload[`Rent${num}`] = formatCurrency(payment.rent);
+    payload[`Total${num}`] = formatCurrency(payment.total_paid_to_host);
   });
 
   console.log(`[payloadBuilder] Built HostPayoutPayload with ${fields.numberOfHostPayments} payments`);

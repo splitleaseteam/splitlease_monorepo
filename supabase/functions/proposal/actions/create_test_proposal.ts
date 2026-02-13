@@ -56,9 +56,19 @@ export async function handleCreateTestProposal(
     daysSelected.push(d % 7); // 0-indexed day
   }
 
+  // Fetch guest email for NOT NULL constraint
+  const { data: guestUser } = await supabase
+    .from('user')
+    .select('email')
+    .eq('id', guestId)
+    .single();
+
+  const testNow = new Date().toISOString();
+  const reservationSpanWeeks = Math.ceil((new Date(moveOut).getTime() - new Date(moveInStart).getTime()) / (7 * 24 * 60 * 60 * 1000));
+
   // Create the test proposal
   const { data: proposal, error } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .insert({
       guest_user_id: guestId,
       listing_id: listingId,
@@ -72,9 +82,25 @@ export async function handleCreateTestProposal(
       guest_selected_days_numbers_json: daysSelected,
       calculated_nightly_price: nightlyPrice,
       proposal_workflow_status: 'Host Review',
-      created_at: new Date().toISOString(),
-      'is_usability_test': true, // Mark as test data
-      guest_introduction_message: 'Test proposal created for usability simulation'
+      // NOT NULL required fields
+      guest_email_address: guestUser?.email || 'test@splitlease.com',
+      four_week_rent_amount: nightlyPrice * nightsPerWeek * 4,
+      total_reservation_price_for_guest: nightlyPrice * nightsPerWeek * reservationSpanWeeks,
+      reservation_span_text: `${reservationSpanWeeks} weeks`,
+      reservation_span_in_weeks: reservationSpanWeeks,
+      actual_weeks_in_reservation_span: reservationSpanWeeks,
+      complimentary_free_nights_numbers_json: [],
+      proposal_event_log_json: [`Test proposal created on ${new Date().toLocaleString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit", hour: "numeric", minute: "2-digit", hour12: true })}`],
+      display_sort_order: 1,
+      is_finalized: false,
+      is_rental_application_requested: false,
+      is_usability_test: true,
+      is_deleted: false,
+      guest_introduction_message: 'Test proposal created for usability simulation',
+      created_at: testNow,
+      updated_at: testNow,
+      original_created_at: testNow,
+      original_updated_at: testNow,
     })
     .select('id')
     .single();

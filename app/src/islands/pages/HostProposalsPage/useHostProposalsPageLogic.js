@@ -487,8 +487,8 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
             ? supabase
                 .from('negotiationsummary')
                 .select('*')
-                .in('"Proposal associated"', proposalIds)
-                .eq('"To Account"', hostUserId)
+                .in('proposal_associated', proposalIds)
+                .eq('to_account', hostUserId)
                 .order('original_created_at', { ascending: false })
             : { data: null, error: null }
         ]);

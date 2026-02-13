@@ -1,8 +1,8 @@
 /**
  * adaptLeaseFromSupabase - Transform raw Supabase lease data to frontend model
  *
- * Handles the mapping between Bubble.io's column naming conventions
- * (spaces, mixed case) and our frontend's camelCase conventions.
+ * Maps snake_case DB column names to frontend camelCase conventions.
+ * Stays, payments, and date change requests arrive as raw DB rows.
  *
  * @param {Object} row - Raw row from booking_lease table
  * @returns {Object} Adapted lease object for frontend use
@@ -49,12 +49,12 @@ function parseDate(dateStr) {
  * @returns {string} Lease type identifier
  */
 function deriveLeaseType(row) {
-  if (row?.['Lease Type']) {
-    return row['Lease Type'].toLowerCase().replace(/\s+/g, '_');
+  if (row?.lease_type) {
+    return row.lease_type.toLowerCase().replace(/\s+/g, '_');
   }
 
-  const hostType = row?.host?.userType || row?.Host?.userType;
-  const guestType = row?.guest?.userType || row?.Guest?.userType;
+  const hostType = row?.host?.userType;
+  const guestType = row?.guest?.userType;
 
   if (hostType === 'Guest' && guestType === 'Guest') {
     return 'co_tenant';
@@ -130,101 +130,74 @@ export function adaptLeaseFromSupabase(row) {
   return {
     // Core identifiers
     id: row.id,
-    bubbleId: row.bubble_id,
-    agreementNumber: row.agreement_number || row['Agreement Number'] || null,
-    proposalId: row.proposal_id || row.Proposal || null,
+    agreementNumber: row.agreement_number || null,
+    proposalId: row.proposal_id || null,
     leaseType,
     isCoTenant: leaseType === 'co_tenant',
     isGuestHost: leaseType === 'guest_host',
 
-    // Direct ID references (for DateChangeRequestManager compatibility)
+    // Direct ID references
     hostId: row.host_user_id || row.host?.id || null,
     guestId: row.guest_user_id || row.guest?.id || null,
     listingId: row.listing_id || row.listing?.id || null,
 
-    // Bubble-style field aliases (for backward compatibility)
-    Host: row.host_user_id || row.host?.id || null,
-    Guest: row.guest_user_id || row.guest?.id || null,
-    Listing: row.listing_id || row.listing?.id || null,
-
     // Status
-    status: mapLeaseStatus(row['Lease Status']),
-    leaseSigned: row['Lease signed?'] || false,
+    status: mapLeaseStatus(row.lease_status),
+    leaseSigned: row.is_lease_signed || false,
 
     // Dates
-    startDate: parseDate(row.reservation_start_date || row['Reservation Period : Start']),
-    endDate: parseDate(row.reservation_end_date || row['Reservation Period : End']),
-    createdAt: parseDate(row.original_created_at),
-    modifiedAt: parseDate(row.original_updated_at),
-    firstPaymentDate: parseDate(row['First Payment Date']),
+    startDate: parseDate(row.reservation_start_date),
+    endDate: parseDate(row.reservation_end_date),
+    createdAt: parseDate(row.created_at),
+    modifiedAt: parseDate(row.updated_at),
+    firstPaymentDate: parseDate(row.first_payment_date),
 
     // Date aliases (for DateChangeRequestManager compatibility)
-    reservationStart: parseDate(row.reservation_start_date || row['Reservation Period : Start']),
-    reservationEnd: parseDate(row.reservation_end_date || row['Reservation Period : End']),
-    'Reservation Period : Start': row.reservation_start_date || row['Reservation Period : Start'] || null,
-    'Reservation Period : End': row.reservation_end_date || row['Reservation Period : End'] || null,
+    reservationStart: parseDate(row.reservation_start_date),
+    reservationEnd: parseDate(row.reservation_end_date),
 
     // Financial
-    totalRent: parseFloat(row['Total Rent']) || 0,
-    totalCompensation: parseFloat(row['Total Compensation']) || 0,
-    paidToDate: parseFloat(row['Paid to Date from Guest']) || 0,
-    'Total Rent': parseFloat(row['Total Rent']) || 0,
+    totalRent: parseFloat(row.total_guest_rent_amount) || 0,
+    totalCompensation: parseFloat(row.total_host_compensation_amount) || 0,
 
     // Week tracking
-    currentWeekNumber: parseInt(row['current week number']) || null,
-    totalWeekCount: parseInt(row['total week count']) || null,
+    currentWeekNumber: parseInt(row.current_week_number) || null,
+    totalWeekCount: parseInt(row.total_week_count) || null,
 
     // Related entities (adapted from joins)
     guest: row.guest ? adaptUserFromSupabase(row.guest) : null,
     host: row.host ? adaptUserFromSupabase(row.host) : null,
     listing: row.listing ? adaptListingFromSupabase(row.listing) : null,
-    propertyName: row.listing?.listing_title || row.listing?.Name || row.listing?.name || null,
-    propertyAddress: row.listing?.Address || row.listing?.address || null,
+    propertyName: row.listing?.listing_title || null,
+    propertyAddress: row.listing?.address_with_lat_lng_json || null,
 
-    /**
-     * Get the other co-tenant in a co-tenant lease
-     * @param {string} currentUserId - Current user ID to exclude
-     * @returns {Object|null} The other co-tenant user object
-     */
     getCoTenant(currentUserId) {
       return getCoTenantForLease(this, currentUserId);
     },
-
-    /**
-     * @deprecated Use getCoTenant() instead. This method will be removed in a future release.
-     * Get the other co-tenant in a co-tenant lease (legacy alias)
-     * @param {string} currentUserId - Current user ID to exclude
-     * @returns {Object|null} The other co-tenant user object
-     */
-    getRoommate(currentUserId) {
-      return this.getCoTenant(currentUserId);
-    },
-
     getCounterparty(currentUserId) {
       return getCounterparty(this, currentUserId);
     },
     getUserRole(currentUserId) {
       return getUserRole(this, currentUserId);
     },
+
     proposal: row.proposal ? {
       id: row.proposal.id,
-      checkInDay: parseInt(row.proposal.checkin_day_of_week_number || row.proposal['check in day']) ?? null,
-      checkOutDay: parseInt(row.proposal.checkout_day_of_week_number || row.proposal['check out day']) ?? null,
+      checkInDay: parseInt(row.proposal.checkin_day_of_week_number) ?? null,
+      checkOutDay: parseInt(row.proposal.checkout_day_of_week_number) ?? null,
     } : null,
 
     // Weekly schedule (from proposal)
-    checkInDay: row.proposal ? parseInt(row.proposal.checkin_day_of_week_number || row.proposal['check in day']) ?? null : null,
-    checkOutDay: row.proposal ? parseInt(row.proposal.checkout_day_of_week_number || row.proposal['check out day']) ?? null : null,
+    checkInDay: row.proposal ? parseInt(row.proposal.checkin_day_of_week_number) ?? null : null,
+    checkOutDay: row.proposal ? parseInt(row.proposal.checkout_day_of_week_number) ?? null : null,
 
-    // Stays (from join or JSONB)
+    // Stays (from join)
     stays: Array.isArray(row.stays)
       ? row.stays.map(adaptStayFromSupabase)
-      : parseJsonbArray(row['List of Stays']),
+      : [],
 
-    // Booked dates (from JSONB)
-    bookedDates: parseJsonbArray(row['List of Booked Dates']),
-    bookedDatesAfterRequest: parseJsonbArray(row['List of Booked Dates after Requests']),
-    'List of Booked Dates': parseJsonbArray(row['List of Booked Dates']),
+    // Booked dates
+    bookedDates: parseJsonbArray(row.booked_dates_json),
 
     // Payment records (from join)
     paymentRecords: Array.isArray(row.paymentRecords)
@@ -236,30 +209,30 @@ export function adaptLeaseFromSupabase(row) {
       ? row.dateChangeRequests.map(adaptDateChangeRequestFromSupabase)
       : [],
 
-    // Documents
+    // Booked dates (post-request variant for admin calendar)
+    bookedDatesAfterRequest: parseJsonbArray(row.booked_dates_after_requests_json),
+
+    // Documents (column names may still be Bubble-era in DB)
     documents: row.documents || [],
-    periodicTenancyAgreement: row['Periodic Tenancy Agreement'] || null,
-    supplementalAgreement: row['supplemental agreement'] || row['Supplemental Agreement'] || null,
-    creditCardAuthorizationForm: row['Form Credit Card Authorization'] || null,
+    periodicTenancyAgreement: row.periodic_tenancy_agreement || row['Periodic Tenancy Agreement'] || null,
+    supplementalAgreement: row.supplemental_agreement || row['supplemental agreement'] || null,
+    creditCardAuthorizationForm: row.credit_card_authorization_form || row['Form Credit Card Authorization'] || null,
 
     // Other fields
-    thread: row.Thread || null,
-    checkInCode: row['Check-in Code'] || null,
-    cancellationPolicy: row.cancellation_policy || null,
-    hostPayoutSchedule: row['Host Payout Schedule'] || null,
-    wereDocumentsGenerated: row['were documents generated?'] || false,
+    thread: row.thread_id || null,
+    checkInCode: row.checkin_code || row['Check-in Code'] || null,
+    cancellationPolicy: row.cancellation_policy_text || null,
+    hostPayoutSchedule: row.host_payout_schedule || row['Host Payout Schedule'] || null,
+    wereDocumentsGenerated: row.were_legal_documents_generated || false,
+    paidToDate: parseFloat(row.paid_to_date_from_guest || row['Paid to Date from Guest']) || 0,
 
     // Throttling flags
     throttling: {
-      guestCanCreateRequests: row['Throttling - guest ability to create requests?'] ?? true,
-      hostCanCreateRequests: row['Throttling- host ability to create requests?'] ?? true,
-      guestShowWarning: !row['Throttling - guest NOT show warning popup'],
-      hostShowWarning: !row['Throttling - host NOT show warning popup'],
+      guestCanCreateRequests: row.throttling_guest_can_create ?? row['Throttling - guest ability to create requests?'] ?? true,
+      hostCanCreateRequests: row.throttling_host_can_create ?? row['Throttling- host ability to create requests?'] ?? true,
+      guestShowWarning: !(row.throttling_guest_no_warning ?? row['Throttling - guest NOT show warning popup']),
+      hostShowWarning: !(row.throttling_host_no_warning ?? row['Throttling - host NOT show warning popup']),
     },
-
-    // Reputation
-    guestReputationScore: parseInt(row['Reputation Score (GUEST)']) || null,
-    hostReputationScore: parseInt(row['Reputation Score (HOST)']) || null,
 
     // Sync status
     pending: row.pending || false,
@@ -282,7 +255,7 @@ function adaptUserFromSupabase(user) {
       : null,
     phone: user.phone_number || user.phone || null,
     avatarUrl: user.profile_photo_url || user.avatar_url || null,
-    isVerified: user['user verified?'] || false,
+    isVerified: user.is_user_verified || false,
   };
 }
 
@@ -305,73 +278,75 @@ function adaptListingFromSupabase(listing) {
 }
 
 /**
- * Adapt stay data from Supabase join
+ * Adapt stay data from Supabase (snake_case DB columns)
  */
 function adaptStayFromSupabase(stay) {
   if (!stay) return null;
 
   return {
     id: stay.id,
-    status: stay['Stay Status'] || 'unknown',
-    assignedTo: stay['Assigned to'] || stay.assignedTo || stay.assigned_to || null,
-    checkIn: parseDate(stay['Check In (night)']),
-    checkOut: parseDate(stay['Check-out day']),
-    lastNight: parseDate(stay['Last Night (night)']),
-    weekNumber: parseInt(stay['Week Number']) || null,
-    amount: parseFloat(stay.Amount) || 0,
-    firstIndex: parseInt(stay['first index']) || null,
-    lastIndex: parseInt(stay['last index']) || null,
-    nights: parseJsonbArray(stay.Nights),
-    dates: parseJsonbArray(stay['Dates - List of dates in this period']),
-    reviewSubmittedByGuest: stay['Review Submitted by Guest'] || null,
-    reviewSubmittedByHost: stay['Review Submitted by Host'] || null,
+    leaseId: stay.lease_id || null,
+    status: stay.stay_status || 'unknown',
+    assignedTo: stay.assigned_to || null,
+    checkIn: parseDate(stay.checkin_night_date),
+    checkOut: parseDate(stay.checkout_day_date),
+    lastNight: parseDate(stay.last_night_date),
+    weekNumber: parseInt(stay.week_number_in_lease) || null,
+    amount: parseFloat(stay.amount) || 0,
+    firstIndex: parseInt(stay.first_night_index_in_lease) || null,
+    lastIndex: parseInt(stay.last_night_index_in_lease) || null,
+    nights: parseJsonbArray(stay.night_names_in_this_week_json),
+    dates: parseJsonbArray(stay.dates_in_this_stay_period_json),
+    guestUserId: stay.guest_user_id || null,
+    hostUserId: stay.host_user_id || null,
+    listingId: stay.listing_id || null,
   };
 }
 
 /**
- * Adapt payment record from Supabase
+ * Adapt payment record from Supabase (snake_case DB columns)
  */
 function adaptPaymentRecordFromSupabase(payment) {
   if (!payment) return null;
 
   return {
     id: payment.id,
-    leaseId: payment['Booking - Reservation'],
-    paymentNumber: payment['Payment #'],
-    scheduledDate: parseDate(payment['Scheduled Date']),
-    actualDate: parseDate(payment['Actual Date']),
-    rent: parseFloat(payment['Rent Amount']) || 0,
-    maintenanceFee: parseFloat(payment['Maintenance Fee']) || 0,
-    damageDeposit: parseFloat(payment['Damage Deposit']) || 0,
-    totalAmount: parseFloat(payment['Total Amount']) || 0,
-    bankTransactionNumber: payment['Bank Transaction Number'] || null,
-    receiptUrl: payment['Payment Receipt'] || null,
-    isPaid: payment['Is Paid'] || false,
-    isRefunded: payment['Is Refunded'] || false,
+    leaseId: payment.booking_reservation,
+    paymentNumber: payment.payment,
+    scheduledDate: parseDate(payment.scheduled_date),
+    actualDate: parseDate(payment.actual_date_of_payment),
+    rent: parseFloat(payment.rent) || 0,
+    maintenanceFee: parseFloat(payment.maintenance_fee) || 0,
+    damageDeposit: parseFloat(payment.damage_deposit) || 0,
+    totalAmount: parseFloat(payment.total_paid_by_guest) || 0,
+    bankTransactionNumber: payment.bank_transaction_number || null,
+    receiptUrl: payment.payment_receipt || null,
+    isPaid: payment.payment_from_guest || false,
+    pending: payment.pending || false,
   };
 }
 
 /**
- * Adapt date change request from Supabase
+ * Adapt date change request from Supabase (snake_case DB columns)
  */
 export function adaptDateChangeRequestFromSupabase(dcr) {
   if (!dcr) return null;
 
   return {
     id: dcr.id,
-    leaseId: dcr.Lease,
-    requestedById: dcr['Requested by'],
-    requestReceiverId: dcr['Request receiver'],
+    leaseId: dcr.lease,
+    requestedById: dcr.requested_by,
+    requestReceiverId: dcr.request_receiver,
     requestedBy: dcr.requestedByUser ? adaptUserFromSupabase(dcr.requestedByUser) : null,
-    requestStatus: dcr.status,
-    stayAssociated1: dcr['Stay Associated 1'],
-    stayAssociated2: dcr['Stay Associated 2'],
-    requestType: dcr['Request Type'],
-    listOfOldDates: parseJsonbArray(dcr['Original Date']),
-    listOfNewDates: parseJsonbArray(dcr['Requested Date']),
-    priceAdjustment: dcr['Price Adjustment'],
+    requestStatus: dcr.request_status,
+    stayAssociated1: dcr.stay_associated_1,
+    stayAssociated2: dcr.stay_associated_2,
+    requestType: dcr.type_of_request,
+    listOfOldDates: parseJsonbArray(dcr.list_of_old_dates_in_the_stay),
+    listOfNewDates: parseJsonbArray(dcr.list_of_new_dates_in_the_stay),
+    priceAdjustment: dcr.price_rate_of_the_night,
     dateAdded: parseDate(dcr.original_created_at),
-    visibleToGuest: dcr['visible to guest'] ?? true,
+    visibleToGuest: dcr.visible_to_the_guest ?? true,
   };
 }
 

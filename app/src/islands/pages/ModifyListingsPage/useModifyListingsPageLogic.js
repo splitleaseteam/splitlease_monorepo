@@ -190,13 +190,13 @@ export default function useModifyListingsPageLogic() {
       // Column names with spaces need quotes in both select and filter
       const { data: inUnit } = await supabase
         .from('zat_features_amenity')
-        .select('id, Name, "Type - Amenity Categories"')
-        .eq('"Type - Amenity Categories"', 'In Unit');
+        .select('id, name, type_amenity_categories')
+        .eq('type_amenity_categories', 'In Unit');
 
       const { data: inBuilding } = await supabase
         .from('zat_features_amenity')
-        .select('id, Name, "Type - Amenity Categories"')
-        .eq('"Type - Amenity Categories"', 'In Building');
+        .select('id, name, type_amenity_categories')
+        .eq('type_amenity_categories', 'In Building');
 
       setAmenitiesInUnit(inUnit || []);
       setAmenitiesInBuilding(inBuilding || []);
@@ -208,9 +208,8 @@ export default function useModifyListingsPageLogic() {
   async function loadHouseRules() {
     try {
       const { data } = await supabase
-        .schema('reference_table')
         .from('zat_features_houserule')
-        .select('id, Name, Icon');
+        .select('id, name, icon');
 
       setHouseRules(data || []);
     } catch (err) {
@@ -221,9 +220,8 @@ export default function useModifyListingsPageLogic() {
   async function loadSafetyFeatures() {
     try {
       const { data } = await supabase
-        .schema('reference_table')
         .from('zat_features_safetyfeature')
-        .select('id, Name, Icon');
+        .select('id, name, icon');
 
       setSafetyFeatures(data || []);
     } catch (err) {

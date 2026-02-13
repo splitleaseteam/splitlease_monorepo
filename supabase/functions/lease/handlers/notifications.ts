@@ -21,8 +21,8 @@ import {
 interface UserData {
   id: string;
   email: string;
-  'First Name'?: string;
-  'Cell phone number'?: string;
+  first_name?: string;
+  phone_number?: string;
 }
 
 /**
@@ -51,7 +51,7 @@ export async function sendLeaseNotifications(
   // Fetch user data (preferences are now in separate notification_preferences table)
   const { data: users, error: usersError } = await supabase
     .from('user')
-    .select('id, email, "First Name", "Cell phone number"')
+    .select('id, email, first_name, phone_number')
     .in('id', [guestId, hostId]);
 
   if (usersError || !users) {
@@ -134,9 +134,9 @@ async function sendGuestEmail(
         payload: {
           template_id: 'LEASE_CREATED_GUEST_TEMPLATE_ID', // TODO: Get actual template ID
           to_email: guest.email,
-          to_name: guest['First Name'],
+          to_name: guest.first_name,
           variables: {
-            guest_name: guest['First Name'] || 'Guest',
+            guest_name: guest.first_name || 'Guest',
             agreement_number: agreementNumber,
             magic_link: magicLink,
           },
@@ -184,10 +184,10 @@ async function sendHostEmail(
         payload: {
           template_id: 'LEASE_CREATED_HOST_TEMPLATE_ID', // TODO: Get actual template ID
           to_email: host.email,
-          to_name: host['First Name'],
+          to_name: host.first_name,
           variables: {
-            host_name: host['First Name'] || 'Host',
-            guest_name: guest['First Name'] || 'Guest',
+            host_name: host.first_name || 'Host',
+            guest_name: guest.first_name || 'Guest',
             agreement_number: agreementNumber,
             magic_link: magicLink,
           },
@@ -211,7 +211,7 @@ async function sendGuestSms(
   agreementNumber: string,
   prefs: NotificationPreferences | null
 ): Promise<void> {
-  if (!guest['Cell phone number']) {
+  if (!guest.phone_number) {
     console.log('[lease:notifications] Skipping guest SMS (no phone)');
     return;
   }
@@ -231,7 +231,7 @@ async function sendGuestSms(
       body: JSON.stringify({
         action: 'send',
         payload: {
-          to: guest['Cell phone number'],
+          to: guest.phone_number,
           from: '+14155692985', // Split Lease Twilio number
           body: `Split Lease: Your lease (${agreementNumber}) is being drafted! Check your email for details.`,
         },
@@ -255,7 +255,7 @@ async function sendHostSms(
   agreementNumber: string,
   prefs: NotificationPreferences | null
 ): Promise<void> {
-  if (!host['Cell phone number']) {
+  if (!host.phone_number) {
     console.log('[lease:notifications] Skipping host SMS (no phone)');
     return;
   }
@@ -275,9 +275,9 @@ async function sendHostSms(
       body: JSON.stringify({
         action: 'send',
         payload: {
-          to: host['Cell phone number'],
+          to: host.phone_number,
           from: '+14155692985', // Split Lease Twilio number
-          body: `Split Lease: A lease (${agreementNumber}) with ${guest['First Name'] || 'a guest'} is being drafted!`,
+          body: `Split Lease: A lease (${agreementNumber}) with ${guest.first_name || 'a guest'} is being drafted!`,
         },
       }),
     });

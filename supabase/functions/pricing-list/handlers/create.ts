@@ -121,25 +121,25 @@ export async function handleCreate(
     // Missing columns (not in DB): listing, Overall Site Markup, Slope, rental type
     const pricingListRecord = {
       id: pricingListId,
-      'Created By': user_id || listing['host_user_id'],
+      created_by: user_id || listing['host_user_id'],
 
       // Arrays (JSONB)
-      'Host Compensation': pricingData.hostCompensation,
-      'Markup and Discount Multiplier': pricingData.markupAndDiscountMultiplier,
-      'Nightly Price': pricingData.nightlyPrice,
-      'Unused Nights Discount': pricingData.unusedNightsDiscount,
+      host_compensation: pricingData.hostCompensation,
+      markup_and_discount_multiplier: pricingData.markupAndDiscountMultiplier,
+      nightly_price: pricingData.nightlyPrice,
+      unused_nights_discount: pricingData.unusedNightsDiscount,
 
       // Scalar markups
-      'Unit Markup': pricingData.unitMarkup,
-      'Combined Markup': pricingData.combinedMarkup,
-      'Full Time Discount': pricingData.fullTimeDiscount,
+      unit_markup: pricingData.unitMarkup,
+      combined_markup: pricingData.combinedMarkup,
+      full_time_discount: pricingData.fullTimeDiscount,
 
       // Derived scalars
-      'Starting Nightly Price': pricingData.startingNightlyPrice,
+      starting_nightly_price: pricingData.startingNightlyPrice,
 
       // Metadata
-      'Modified Date': now,
-      'Created Date': now,
+      original_updated_at: now,
+      original_created_at: now,
     };
 
     const { error: insertError } = await supabase

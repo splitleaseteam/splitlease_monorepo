@@ -36,24 +36,24 @@ export async function handleGetProposal(
 
   // Fetch proposal with related data
   const { data: proposalData, error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select(`
       id,
       guest_user_id,
       listing_id,
-      "Guest email",
+      guest_email_address,
       host_user_id,
       proposal_workflow_status,
-      "Move in range start",
-      "Move in range end",
-      "Reservation Span (Weeks)",
-      "Days Selected",
-      "Nights Selected (Nights list)",
-      "nights per week (num)",
-      "proposal nightly price",
-      "cleaning fee",
-      "damage deposit",
-      Deleted
+      move_in_range_start_date,
+      move_in_range_end_date,
+      reservation_span_in_weeks,
+      guest_selected_days_numbers_json,
+      guest_selected_nights_numbers_json,
+      nights_per_week_count,
+      calculated_nightly_price,
+      cleaning_fee_amount,
+      damage_deposit_amount,
+      is_deleted
     `)
     .eq('id', proposal_id)
     .single();
@@ -83,13 +83,13 @@ export async function handleGetProposal(
     id: proposal.id,
     guest,
     listing,
-    daysSelected: normalizeJsonbArray(proposal['Days Selected']),
-    nightsPerWeek: proposal['nights per week (num)'] || 0,
-    nightlyPrice: proposal['proposal nightly price'] || 0,
-    moveInStart: proposal['Move in range start'],
-    moveInEnd: proposal['Move in range end'],
+    daysSelected: normalizeJsonbArray(proposal.guest_selected_days_numbers_json),
+    nightsPerWeek: proposal.nights_per_week_count || 0,
+    nightlyPrice: proposal.calculated_nightly_price || 0,
+    moveInStart: proposal.move_in_range_start_date,
+    moveInEnd: proposal.move_in_range_end_date,
     status: proposal.proposal_workflow_status,
-    reservationWeeks: proposal['Reservation Span (Weeks)'],
+    reservationWeeks: proposal.reservation_span_in_weeks,
   };
 
   console.log('[quick-match:get_proposal] ========== SUCCESS ==========');
@@ -188,26 +188,25 @@ async function fetchListingInfo(
     .from('listing')
     .select(`
       id,
-      Name,
+      listing_title,
       host_user_id,
-      "Location - Borough",
-      "Location - Hood",
-      "Location - Address",
-      "Days Available (List of Days)",
-      "Nights Available (List of Nights)",
-      "Minimum Nights",
-      "Maximum Nights",
-      "nightly_rate_1_night",
-      "nightly_rate_2_nights",
-      "nightly_rate_3_nights",
-      "nightly_rate_4_nights",
-      "nightly_rate_5_nights",
-      "nightly_rate_6_nights",
-      "nightly_rate_7_nights",
-      "cleaning_fee",
-      "damage_deposit",
-      Active,
-      Deleted
+      borough,
+      primary_neighborhood_reference_id,
+      address_with_lat_lng_json,
+      available_days_as_day_numbers_json,
+      available_nights_as_day_numbers_json,
+      minimum_nights_per_stay,
+      maximum_nights_per_stay,
+      nightly_rate_for_1_night_stay,
+      nightly_rate_for_2_night_stay,
+      nightly_rate_for_3_night_stay,
+      nightly_rate_for_4_night_stay,
+      nightly_rate_for_5_night_stay,
+      nightly_rate_for_7_night_stay,
+      cleaning_fee_amount,
+      damage_deposit_amount,
+      is_active,
+      is_deleted
     `)
     .eq('id', listingId)
     .single();
@@ -221,54 +220,54 @@ async function fetchListingInfo(
 
   // Fetch borough name if we have a borough ID
   let boroughName: string | null = null;
-  if (listing['Location - Borough']) {
+  if (listing.borough) {
     const { data: boroughData } = await supabase
       .from('zat_geo_borough_toplevel')
       .select('Display')
-      .eq('id', listing['Location - Borough'])
+      .eq('id', listing.borough)
       .single();
 
-    boroughName = boroughData?.Display || listing['Location - Borough'];
+    boroughName = boroughData?.Display || listing.borough;
   }
 
   // Fetch hood name if we have a hood ID
   let hoodName: string | null = null;
-  if (listing['Location - Hood']) {
+  if (listing.primary_neighborhood_reference_id) {
     const { data: hoodData } = await supabase
       .from('zat_geo_hood_mediumlevel')
       .select('Display')
-      .eq('id', listing['Location - Hood'])
+      .eq('id', listing.primary_neighborhood_reference_id)
       .single();
 
-    hoodName = hoodData?.Display || listing['Location - Hood'];
+    hoodName = hoodData?.Display || listing.primary_neighborhood_reference_id;
   }
 
   const nightlyRates: NightlyRates = {
-    rate1: listing['nightly_rate_1_night'],
-    rate2: listing['nightly_rate_2_nights'],
-    rate3: listing['nightly_rate_3_nights'],
-    rate4: listing['nightly_rate_4_nights'],
-    rate5: listing['nightly_rate_5_nights'],
-    rate6: listing['nightly_rate_6_nights'],
-    rate7: listing['nightly_rate_7_nights'],
+    rate1: listing.nightly_rate_for_1_night_stay ?? null,
+    rate2: listing.nightly_rate_for_2_night_stay ?? null,
+    rate3: listing.nightly_rate_for_3_night_stay ?? null,
+    rate4: listing.nightly_rate_for_4_night_stay ?? null,
+    rate5: listing.nightly_rate_for_5_night_stay ?? null,
+    rate6: null,
+    rate7: listing.nightly_rate_for_7_night_stay ?? null,
   };
 
   return {
     id: listing.id,
-    title: listing.Name,
-    borough: listing['Location - Borough'],
+    title: listing.listing_title,
+    borough: listing.borough,
     boroughName,
-    hood: listing['Location - Hood'],
+    hood: listing.primary_neighborhood_reference_id,
     hoodName,
-    address: listing['Location - Address'],
+    address: listing.address_with_lat_lng_json,
     nightlyRates,
-    cleaningFee: listing['cleaning_fee'],
-    damageDeposit: listing['damage_deposit'],
-    minimumNights: listing['Minimum Nights'],
-    maximumNights: listing['Maximum Nights'],
-    daysAvailable: normalizeJsonbArray(listing['Days Available (List of Days)']),
-    nightsAvailable: normalizeJsonbArray(listing['Nights Available (List of Nights)']),
-    active: listing.Active ?? false,
+    cleaningFee: listing.cleaning_fee_amount ?? null,
+    damageDeposit: listing.damage_deposit_amount ?? null,
+    minimumNights: listing.minimum_nights_per_stay,
+    maximumNights: listing.maximum_nights_per_stay,
+    daysAvailable: normalizeJsonbArray(listing.available_days_as_day_numbers_json),
+    nightsAvailable: normalizeJsonbArray(listing.available_nights_as_day_numbers_json),
+    active: listing.is_active ?? false,
   };
 }
 

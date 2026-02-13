@@ -49,8 +49,8 @@ export async function handleAccept(
   // ================================================
 
   const { data: proposal, error: proposalError } = await supabase
-    .from("proposal")
-    .select(`id, "virtual meeting"`)
+    .from("booking_proposal")
+    .select(`id, virtual_meeting_record_id`)
     .eq("id", input.proposalId)
     .single();
 
@@ -59,7 +59,7 @@ export async function handleAccept(
     throw new ValidationError(`Proposal not found: ${input.proposalId}`);
   }
 
-  const virtualMeetingId = proposal["virtual meeting"];
+  const virtualMeetingId = proposal.virtual_meeting_record_id;
   if (!virtualMeetingId) {
     throw new ValidationError(`No virtual meeting associated with proposal: ${input.proposalId}`);
   }
@@ -74,17 +74,17 @@ export async function handleAccept(
     .from("virtualmeetingschedulesandlinks")
     .select(`
       id,
-      "meeting declined",
-      "booked date",
+      meeting_declined,
+      booked_date,
       host,
       guest,
       proposal,
-      "host name",
-      "guest name",
-      "host email",
-      "guest email",
-      "Listing (for Co-Host feature)",
-      confirmedBySplitLease
+      host_name,
+      guest_name,
+      host_email,
+      guest_email,
+      listing_for_co_host_feature,
+      confirmedbysplitlease
     `)
     .eq("id", virtualMeetingId)
     .single();
@@ -95,12 +95,12 @@ export async function handleAccept(
   }
 
   // Check if already declined
-  if (existingVM["meeting declined"]) {
+  if (existingVM.meeting_declined) {
     throw new ValidationError(`Virtual meeting has already been declined`);
   }
 
   // Check if already booked
-  if (existingVM["booked date"]) {
+  if (existingVM.booked_date) {
     throw new ValidationError(`Virtual meeting already has a booked date`);
   }
 
@@ -111,10 +111,10 @@ export async function handleAccept(
   const now = new Date().toISOString();
 
   const vmUpdateData = {
-    "booked date": input.bookedDate,
-    "confirmedBySplitLease": true,
-    "pending": false,
-    "Modified Date": now,
+    booked_date: input.bookedDate,
+    confirmedbysplitlease: true,
+    pending: false,
+    original_updated_at: now,
   };
 
   const { error: vmUpdateError } = await supabase
@@ -134,10 +134,10 @@ export async function handleAccept(
   // ================================================
 
   const { error: proposalUpdateError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .update({
-      "request virtual meeting": "confirmed",
-      "Modified Date": now,
+      virtual_meeting_request_status: "confirmed",
+      updated_at: now,
     })
     .eq("id", input.proposalId);
 
@@ -162,37 +162,37 @@ export async function handleAccept(
     // Fetch notification preferences
     const [hostNotifSettings, guestNotifSettings] = await Promise.all([
       hostData.data?.notification_preference_setting
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", hostData.data.notification_preference_setting).single()
+        ? supabase.from("notificationsettingsos_lists_").select('virtual_meetings').eq("id", hostData.data.notification_preference_setting).single()
         : { data: null },
       guestData.data?.notification_preference_setting
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", guestData.data.notification_preference_setting).single()
+        ? supabase.from("notificationsettingsos_lists_").select('virtual_meetings').eq("id", guestData.data.notification_preference_setting).single()
         : { data: null },
     ]);
 
-    const hostVmNotifs: string[] = hostNotifSettings.data?.["Virtual Meetings"] || [];
-    const guestVmNotifs: string[] = guestNotifSettings.data?.["Virtual Meetings"] || [];
+    const hostVmNotifs: string[] = hostNotifSettings.data?.virtual_meetings || [];
+    const guestVmNotifs: string[] = guestNotifSettings.data?.virtual_meetings || [];
 
     // Fetch listing name for context
     let listingName: string | undefined;
-    if (existingVM["Listing (for Co-Host feature)"]) {
+    if (existingVM.listing_for_co_host_feature) {
       const { data: listing } = await supabase
         .from("listing")
-        .select('"Name"')
-        .eq("id", existingVM["Listing (for Co-Host feature)"])
+        .select('listing_title')
+        .eq("id", existingVM.listing_for_co_host_feature)
         .single();
-      listingName = listing?.Name;
+      listingName = listing?.listing_title;
     }
 
     const messageResult = await sendVMAcceptMessages(supabase, {
       proposalId: input.proposalId,
       hostUserId: existingVM.host,
       guestUserId: existingVM.guest,
-      listingId: existingVM["Listing (for Co-Host feature)"],
+      listingId: existingVM.listing_for_co_host_feature,
       listingName,
-      hostName: existingVM["host name"],
-      guestName: existingVM["guest name"],
-      hostEmail: existingVM["host email"],
-      guestEmail: existingVM["guest email"],
+      hostName: existingVM.host_name,
+      guestName: existingVM.guest_name,
+      hostEmail: existingVM.host_email,
+      guestEmail: existingVM.guest_email,
       hostPhone: hostData.data?.phone_number,
       guestPhone: guestData.data?.phone_number,
       bookedDate: input.bookedDate,
@@ -200,7 +200,7 @@ export async function handleAccept(
       notifyHostEmail: hostVmNotifs.includes('Email'),
       notifyGuestSms: guestVmNotifs.includes('SMS'),
       notifyGuestEmail: guestVmNotifs.includes('Email'),
-    }, vmUpdateData.confirmedBySplitLease);
+    }, vmUpdateData.confirmedbysplitlease);
 
     console.log(`[virtual-meeting:accept] Notifications sent:`, {
       thread: messageResult.threadId,

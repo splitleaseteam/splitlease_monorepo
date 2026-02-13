@@ -62,19 +62,19 @@ export async function handleAccept(
   }
 
   const requestData = request as unknown as DateChangeRequestData;
-  console.log(`[date-change-request:accept] Found request, status: ${requestData['request status']}`);
+  console.log(`[date-change-request:accept] Found request, status: ${requestData.request_status}`);
 
   // ================================================
   // VERIFY STATUS
   // ================================================
 
-  if (requestData['request status'] !== 'waiting_for_answer') {
-    throw new ValidationError(`Request is not pending. Current status: ${requestData['request status']}`);
+  if (requestData.request_status !== 'waiting_for_answer') {
+    throw new ValidationError(`Request is not pending. Current status: ${requestData.request_status}`);
   }
 
   // Check expiration
-  if (requestData['expiration date']) {
-    const expirationDate = new Date(requestData['expiration date']);
+  if (requestData.expiration_date) {
+    const expirationDate = new Date(requestData.expiration_date);
     if (expirationDate < new Date()) {
       throw new ValidationError('Request has expired');
     }
@@ -87,11 +87,11 @@ export async function handleAccept(
   const now = new Date().toISOString();
 
   const updateData = {
-    'request status': 'Approved',
-    'answer date': now,
-    'Answer to Request': input.message || null,
-    'Modified Date': now,
-    'pending': false,
+    request_status: 'Approved',
+    answer_date: now,
+    answer_to_request: input.message || null,
+    original_updated_at: now,
+    pending: false,
   };
 
   const { error: updateError } = await supabase
@@ -114,14 +114,14 @@ export async function handleAccept(
     await sendDateChangeRequestNotifications(supabase, {
       event: 'ACCEPTED',
       requestId: input.requestId,
-      requestType: requestData['type of request'],
-      leaseId: requestData['Lease'] || '',
-      dateAdded: requestData['date added'],
-      dateRemoved: requestData['date removed'],
-      priceRate: requestData['Price/Rate of the night'],
-      requestedById: requestData['Requested by'] || '',
-      receiverId: requestData['Request receiver'] || '',
-      message: requestData['Message from Requested by'],
+      requestType: requestData.type_of_request,
+      leaseId: requestData.lease || '',
+      dateAdded: requestData.date_added,
+      dateRemoved: requestData.date_removed,
+      priceRate: requestData.price_rate_of_the_night,
+      requestedById: requestData.requested_by || '',
+      receiverId: requestData.request_receiver || '',
+      message: requestData.message_from_requested_by,
       answerMessage: input.message || null,
     });
   } catch (notificationError) {
@@ -132,22 +132,22 @@ export async function handleAccept(
   // UPDATE LEASE BOOKED DATES
   // ================================================
 
-  if (requestData['Lease']) {
+  if (requestData.lease) {
     try {
       // Fetch current lease data
       const { data: lease, error: leaseError } = await supabase
-        .from('bookings_leases')
-        .select(`"List of Booked Dates"`)
-        .eq('id', requestData['Lease'])
+        .from('booking_lease')
+        .select(`booked_dates_json`)
+        .eq('id', requestData.lease)
         .single();
 
       if (!leaseError && lease) {
-        let bookedDates: string[] = lease['List of Booked Dates'] || [];
+        let bookedDates: string[] = lease.booked_dates_json || [];
 
         // Modify dates based on request type
-        const requestType = requestData['type of request'];
-        const dateToAdd = requestData['date added'];
-        const dateToRemove = requestData['date removed'];
+        const requestType = requestData.type_of_request;
+        const dateToAdd = requestData.date_added;
+        const dateToRemove = requestData.date_removed;
 
         if (requestType === 'adding' && dateToAdd) {
           // Add the new date
@@ -176,12 +176,12 @@ export async function handleAccept(
 
         // Update lease with new booked dates
         const { error: leaseUpdateError } = await supabase
-          .from('bookings_leases')
+          .from('booking_lease')
           .update({
-            'List of Booked Dates': bookedDates,
-            'Modified Date': now,
+            booked_dates_json: bookedDates,
+            updated_at: now,
           })
-          .eq('id', requestData['Lease']);
+          .eq('id', requestData.lease);
 
         if (leaseUpdateError) {
           console.error(`[date-change-request:accept] Lease update failed (non-blocking):`, leaseUpdateError);

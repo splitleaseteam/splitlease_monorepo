@@ -89,21 +89,21 @@ export async function generateStays(
     // Build stay record
     const stayRecord: Partial<StayData> = {
       id: stayId,
-      Lease: leaseId,
-      'Week Number': i + 1, // 1-indexed
-      Guest: guestId,
-      Host: hostId,
-      listing: listingId,
-      'Dates - List of dates in this period': stayDates.map((d) => d.toISOString().split('T')[0]),
-      'Check In (night)': checkInNight.toISOString().split('T')[0],
-      'Last Night (night)': lastNight.toISOString().split('T')[0],
-      'Stay Status': 'Upcoming',
-      'Created Date': now,
-      'Modified Date': now,
+      lease_id: leaseId,
+      week_number_in_lease: i + 1, // 1-indexed
+      guest_user_id: guestId,
+      host_user_id: hostId,
+      listing_id: listingId,
+      dates_in_this_stay_period_json: stayDates.map((d) => d.toISOString().split('T')[0]),
+      checkin_night_date: checkInNight.toISOString().split('T')[0],
+      last_night_date: lastNight.toISOString().split('T')[0],
+      stay_status: 'Upcoming',
+      created_at: now,
+      updated_at: now,
     };
 
     // Insert stay record
-    const { error: insertError } = await supabase.from('bookings_stays').insert(stayRecord);
+    const { error: insertError } = await supabase.from('lease_weekly_stay').insert(stayRecord);
 
     if (insertError) {
       console.error(`[lease:stays] Failed to create stay ${i + 1}:`, insertError.message);

@@ -61,148 +61,148 @@ function buildManualSections(dbRow: Record<string, unknown>): ManualSection[] {
   let order = 1;
 
   // WiFi Section
-  if (dbRow["WiFi Name"] || dbRow["WiFi Password"]) {
+  if (dbRow.wifi_network_name || dbRow.wifi_network_password) {
     sections.push({
       id: "wifi",
       title: "WiFi & Internet",
       type: "wifi",
       content: {
-        networkName: dbRow["WiFi Name"],
-        password: dbRow["WiFi Password"],
-        photo: dbRow["WiFi Photo"],
+        networkName: dbRow.wifi_network_name,
+        password: dbRow.wifi_network_password,
+        photo: dbRow.wifi_credentials_photo_url,
       },
       order: order++,
     });
   }
 
   // Check-In Section
-  if (dbRow["Check-In Instructions"]) {
+  if (dbRow.checkin_instructions_by_host) {
     sections.push({
       id: "checkin",
       title: "Check-In Instructions",
       type: "text",
-      content: dbRow["Check-In Instructions"],
+      content: dbRow.checkin_instructions_by_host,
       order: order++,
     });
   }
 
   // Check-Out Section
-  if (dbRow["Check-Out Instructions"]) {
+  if (dbRow.checkout_instructions_by_host) {
     sections.push({
       id: "checkout",
       title: "Check-Out Instructions",
       type: "text",
-      content: dbRow["Check-Out Instructions"],
+      content: dbRow.checkout_instructions_by_host,
       order: order++,
     });
   }
 
   // House Rules Section
-  if (dbRow["House Rules"]) {
+  if (dbRow.house_rules_reference_ids_json) {
     sections.push({
       id: "rules",
       title: "House Rules",
       type: "rules",
-      content: dbRow["House Rules"],
+      content: dbRow.house_rules_reference_ids_json,
       order: order++,
     });
   }
 
   // Departure Checklist Section
-  if (dbRow["Departure Checklist"]) {
+  if (dbRow.departure_checklist_items_json) {
     sections.push({
       id: "checklist",
       title: "Departure Checklist",
       type: "checklist",
-      content: dbRow["Departure Checklist"],
+      content: dbRow.departure_checklist_items_json,
       order: order++,
     });
   }
 
   // Parking Section
-  if (dbRow["Parking Instructions"]) {
+  if (dbRow.parking_tips_text) {
     sections.push({
       id: "parking",
       title: "Parking",
       type: "text",
-      content: dbRow["Parking Instructions"],
+      content: dbRow.parking_tips_text,
       order: order++,
     });
   }
 
   // Trash & Recycling Section
-  if (dbRow["Trash & Recycling"]) {
+  if (dbRow.waste_disposal_and_recycling_text) {
     sections.push({
       id: "trash",
       title: "Trash & Recycling",
       type: "text",
-      content: dbRow["Trash & Recycling"],
+      content: dbRow.waste_disposal_and_recycling_text,
       order: order++,
     });
   }
 
   // HVAC / Heating & Cooling Section
-  if (dbRow["HVAC Instructions"] || dbRow["Heating & Cooling"]) {
+  if (dbRow.temperature_control_instructions_text) {
     sections.push({
       id: "hvac",
       title: "Heating & Cooling",
       type: "text",
-      content: dbRow["HVAC Instructions"] || dbRow["Heating & Cooling"],
+      content: dbRow.temperature_control_instructions_text,
       order: order++,
     });
   }
 
   // Kitchen Section
-  if (dbRow["Kitchen Instructions"]) {
+  if (dbRow.kitchen_specific_tips_text) {
     sections.push({
       id: "kitchen",
       title: "Kitchen",
       type: "text",
-      content: dbRow["Kitchen Instructions"],
+      content: dbRow.kitchen_specific_tips_text,
       order: order++,
     });
   }
 
   // Laundry Section
-  if (dbRow["Laundry Instructions"]) {
+  if (dbRow.laundry_options_text) {
     sections.push({
       id: "laundry",
       title: "Laundry",
       type: "text",
-      content: dbRow["Laundry Instructions"],
+      content: dbRow.laundry_options_text,
       order: order++,
     });
   }
 
   // Emergency Contacts Section
-  if (dbRow["Emergency Contacts"]) {
+  if (dbRow.important_contact_information_other) {
     sections.push({
       id: "emergency",
       title: "Emergency Contacts",
       type: "contacts",
-      content: dbRow["Emergency Contacts"],
+      content: dbRow.important_contact_information_other,
       order: order++,
     });
   }
 
   // Local Recommendations Section
-  if (dbRow["Local Recommendations"]) {
+  if (dbRow.local_attractions_and_activities_text) {
     sections.push({
       id: "local",
       title: "Local Recommendations",
       type: "text",
-      content: dbRow["Local Recommendations"],
+      content: dbRow.local_attractions_and_activities_text,
       order: order++,
     });
   }
 
   // Additional Notes Section
-  if (dbRow["Additional Notes"]) {
+  if (dbRow.good_to_know_general_tips_text) {
     sections.push({
       id: "notes",
       title: "Additional Notes",
       type: "text",
-      content: dbRow["Additional Notes"],
+      content: dbRow.good_to_know_general_tips_text,
       order: order++,
     });
   }
@@ -250,22 +250,22 @@ export async function handleGetVisitManual(
 
   // Step 1: Fetch the visit with house manual join
   const { data: visit, error: visitError } = await supabaseClient
-    .from("visit")
+    .from("house_manual_visit")
     .select(`
       id,
-      "User shared with (guest)",
-      "Arrival/Checkin Date",
-      "Language",
-      "Short URL",
-      "Review from Guest",
-      "link saw?",
-      "map saw?",
-      "narration heard?",
-      "access_token",
-      "token_expires_at",
-      "token_used_at",
-      "review_submitted_at",
-      "house manual"
+      guest_user_id,
+      arrival_checkin_date,
+      translation_language,
+      short_url_for_sharing,
+      guest_review_text,
+      guest_opened_visit_link,
+      guest_opened_map_view,
+      guest_listened_to_narration,
+      access_token,
+      token_expires_at,
+      token_used_at,
+      review_submitted_at,
+      house_manual_id
     `)
     .eq("id", visitId)
     .single();
@@ -288,7 +288,7 @@ export async function handleGetVisitManual(
     throw new AuthenticationError("User not found");
   }
 
-  const guestId = visit["User shared with (guest)"];
+  const guestId = visit.guest_user_id;
 
   // Verify user is the guest of this visit
   if (userData.id !== guestId) {
@@ -298,8 +298,8 @@ export async function handleGetVisitManual(
 
   // Step 3: If access token provided, validate it
   if (accessToken) {
-    const storedToken = visit["access_token"];
-    const expiresAt = visit["token_expires_at"];
+    const storedToken = visit.access_token;
+    const expiresAt = visit.token_expires_at;
 
     if (!storedToken || storedToken !== accessToken) {
       throw new AuthenticationError("Invalid access token");
@@ -310,25 +310,25 @@ export async function handleGetVisitManual(
     }
 
     // Update token_used_at if not already set
-    if (!visit["token_used_at"]) {
+    if (!visit.token_used_at) {
       await supabaseClient
-        .from("visit")
+        .from("house_manual_visit")
         .update({
-          "token_used_at": new Date().toISOString(),
+          token_used_at: new Date().toISOString(),
         })
         .eq("id", visitId);
     }
   }
 
   // Step 4: Fetch the house manual
-  const houseManualId = visit["house manual"];
+  const houseManualId = visit.house_manual_id;
 
   if (!houseManualId) {
     throw new ValidationError("No house manual associated with this visit");
   }
 
   const { data: houseManual, error: hmError } = await supabaseClient
-    .from("housemanual")
+    .from("house_manual")
     .select("*")
     .eq("id", houseManualId)
     .single();
@@ -345,19 +345,19 @@ export async function handleGetVisitManual(
     visit: {
       id: visit.id,
       guestId: guestId,
-      arrivalDate: visit["Arrival/Checkin Date"],
-      language: visit["Language"],
-      shortUrl: visit["Short URL"],
-      hasReviewed: Boolean(visit["Review from Guest"] || visit["review_submitted_at"]),
-      linkSaw: Boolean(visit["link saw?"]),
-      mapSaw: Boolean(visit["map saw?"]),
-      narrationHeard: Boolean(visit["narration heard?"]),
+      arrivalDate: visit.arrival_checkin_date,
+      language: visit.translation_language,
+      shortUrl: visit.short_url_for_sharing,
+      hasReviewed: Boolean(visit.guest_review_text || visit.review_submitted_at),
+      linkSaw: Boolean(visit.guest_opened_visit_link),
+      mapSaw: Boolean(visit.guest_opened_map_view),
+      narrationHeard: Boolean(visit.guest_listened_to_narration),
     },
     houseManual: {
       id: houseManual.id,
-      title: houseManual["House manual Name"] || "House Manual",
-      hostName: houseManual["Host Name"],
-      propertyAddress: extractAddressText(houseManual["Address (geo)"]),
+      title: houseManual.manual_title || "House Manual",
+      hostName: houseManual.host_display_name,
+      propertyAddress: extractAddressText(houseManual.address_with_coordinates_json),
       sections: buildManualSections(houseManual),
     },
   };

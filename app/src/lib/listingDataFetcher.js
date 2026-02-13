@@ -498,16 +498,15 @@ export async function fetchZatPriceConfiguration() {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_priceconfiguration')
       .select(`
-        "Overall Site Markup",
-        "Weekly Markup",
-        "full time (7 nights) Discount",
-        "Unused Nights Discount Multiplier",
-        "Avg days per month",
-        "Min Price per night",
-        "Max Price per night"
+        overall_site_markup,
+        weekly_markup,
+        full_time_discount,
+        unused_nights_discount_multiplier,
+        avg_days_per_month,
+        min_price_per_night,
+        max_price_per_night
       `)
       .limit(1)
       .single();
@@ -517,13 +516,13 @@ export async function fetchZatPriceConfiguration() {
 
     // Cache the result
     zatConfigCache = {
-      overallSiteMarkup: parseFloat(data['Overall Site Markup']) || 0,
-      weeklyMarkup: parseFloat(data['Weekly Markup']) || 0,
-      fullTimeDiscount: parseFloat(data['full time (7 nights) Discount']) || 0,
-      unusedNightsDiscountMultiplier: parseFloat(data['Unused Nights Discount Multiplier']) || 0,
-      avgDaysPerMonth: parseFloat(data['Avg days per month']) || 30.4,
-      minPricePerNight: parseFloat(data['Min Price per night']) || 0,
-      maxPricePerNight: parseFloat(data['Max Price per night']) || 0
+      overallSiteMarkup: parseFloat(data.overall_site_markup) || 0,
+      weeklyMarkup: parseFloat(data.weekly_markup) || 0,
+      fullTimeDiscount: parseFloat(data.full_time_discount) || 0,
+      unusedNightsDiscountMultiplier: parseFloat(data.unused_nights_discount_multiplier) || 0,
+      avgDaysPerMonth: parseFloat(data.avg_days_per_month) || 30.4,
+      minPricePerNight: parseFloat(data.min_price_per_night) || 0,
+      maxPricePerNight: parseFloat(data.max_price_per_night) || 0
     };
 
     return zatConfigCache;

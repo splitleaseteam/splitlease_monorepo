@@ -27,9 +27,9 @@ export async function handleDeleteHostData(
 
   // Delete proposals where host is involved
   const { data: proposalData, error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .delete()
-    .eq('Host', hostId)
+    .eq('host_user_id', hostId)
     .select('id');
 
   if (proposalError) {

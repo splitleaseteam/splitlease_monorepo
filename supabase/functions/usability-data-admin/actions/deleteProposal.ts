@@ -1,6 +1,6 @@
 /**
  * Delete Proposal Action Handler
- * Deletes a proposal by ID (supports both id and Unique ID)
+ * Deletes a proposal by ID (supports both id and legacy platform ID)
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -22,19 +22,19 @@ export async function handleDeleteProposal(
 
   console.log('[usability-data-admin] Deleting proposal:', proposalId);
 
-  // First, try to find the proposal and get its thread ID
+  // First, try to find the proposal
   let { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
-    .select('id, Thread')
+    .from('booking_proposal')
+    .select('id')
     .eq('id', proposalId)
     .single();
 
-  // If not found by id, try by Unique ID
+  // If not found by id, try by legacy_platform_id
   if (fetchError && fetchError.code === 'PGRST116') {
     const result = await supabase
-      .from('proposal')
-      .select('id, Thread')
-      .eq('Unique ID', proposalId)
+      .from('booking_proposal')
+      .select('id')
+      .eq('legacy_platform_id', proposalId)
       .single();
 
     proposal = result.data;
@@ -50,11 +50,11 @@ export async function handleDeleteProposal(
   }
 
   const actualProposalId = proposal.id;
-  const threadId = proposal.Thread;
+  let threadId: string | null = null;
 
   // Delete the proposal
   const { error: deleteError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .delete()
     .eq('id', actualProposalId);
 
@@ -67,17 +67,19 @@ export async function handleDeleteProposal(
 
   // Optionally delete the associated thread
   let threadDeleted = false;
-  if (deleteThread && threadId) {
-    const { error: threadDeleteError } = await supabase
+  if (deleteThread) {
+    const { data: deletedThreads, error: threadDeleteError } = await supabase
       .from('message_threads')
       .delete()
-      .eq('thread_id', threadId);
+      .eq('proposal_id', actualProposalId)
+      .select('thread_id');
 
     if (threadDeleteError) {
       console.warn('[usability-data-admin] Failed to delete thread:', threadDeleteError);
     } else {
-      threadDeleted = true;
-      console.log('[usability-data-admin] Thread deleted:', threadId);
+      threadId = deletedThreads?.[0]?.thread_id || null;
+      threadDeleted = (deletedThreads?.length || 0) > 0;
+      console.log('[usability-data-admin] Thread deleted for proposal:', actualProposalId);
     }
   }
 

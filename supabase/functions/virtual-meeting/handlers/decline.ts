@@ -48,8 +48,8 @@ export async function handleDecline(
   // ================================================
 
   const { data: proposal, error: proposalError } = await supabase
-    .from("proposal")
-    .select(`id, "virtual meeting"`)
+    .from("booking_proposal")
+    .select(`id, virtual_meeting_record_id`)
     .eq("id", input.proposalId)
     .single();
 
@@ -58,7 +58,7 @@ export async function handleDecline(
     throw new ValidationError(`Proposal not found: ${input.proposalId}`);
   }
 
-  const virtualMeetingId = proposal["virtual meeting"];
+  const virtualMeetingId = proposal.virtual_meeting_record_id;
   if (!virtualMeetingId) {
     throw new ValidationError(`No virtual meeting associated with proposal: ${input.proposalId}`);
   }
@@ -71,7 +71,7 @@ export async function handleDecline(
 
   const { data: existingVM, error: vmFetchError } = await supabase
     .from("virtualmeetingschedulesandlinks")
-    .select("id, \"meeting declined\"")
+    .select("id, meeting_declined")
     .eq("id", virtualMeetingId)
     .single();
 
@@ -81,7 +81,7 @@ export async function handleDecline(
   }
 
   // Check if already declined
-  if (existingVM["meeting declined"]) {
+  if (existingVM.meeting_declined) {
     console.log(`[virtual-meeting:decline] VM already declined, returning success`);
     return {
       success: true,
@@ -97,8 +97,8 @@ export async function handleDecline(
   const now = new Date().toISOString();
 
   const vmUpdateData = {
-    "meeting declined": true,
-    "Modified Date": now,
+    meeting_declined: true,
+    original_updated_at: now,
   };
 
   const { error: vmUpdateError } = await supabase
@@ -118,10 +118,10 @@ export async function handleDecline(
   // ================================================
 
   const { error: proposalUpdateError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .update({
-      "request virtual meeting": null,
-      "Modified Date": now,
+      virtual_meeting_request_status: null,
+      updated_at: now,
     })
     .eq("id", input.proposalId);
 

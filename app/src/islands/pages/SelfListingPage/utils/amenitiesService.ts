@@ -2,10 +2,10 @@ import { supabase } from '../../../../lib/supabase.js';
 
 export interface Amenity {
   id: string;
-  Name: string;
-  'Type - Amenity Categories': string;
-  Icon?: string;
-  'pre-set?'?: boolean;
+  name: string;
+  type_amenity_categories: string;
+  icon?: string;
+  is_preset?: boolean;
 }
 
 /**
@@ -25,10 +25,10 @@ export async function getAllAmenitiesByType(type: string): Promise<string[]> {
 
     const { data, error } = await supabase
       .from('zat_features_amenity')
-      .select('Name, "Type - Amenity Categories"')
-      .eq('"Type - Amenity Categories"', type)
+      .select('name, type_amenity_categories')
+      .eq('type_amenity_categories', type)
       .eq('pending', false)
-      .order('Name', { ascending: true });
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('Error fetching amenities:', error);
@@ -40,7 +40,7 @@ export async function getAllAmenitiesByType(type: string): Promise<string[]> {
       return [];
     }
 
-    const names = data.map((amenity) => amenity.Name);
+    const names = data.map((amenity) => amenity.name);
     console.log(`Fetched ${names.length} amenities for type "${type}":`, names);
     return names;
   } catch (err) {
@@ -81,10 +81,10 @@ export async function getCommonAmenitiesByType(type: string): Promise<string[]> 
 
     const { data, error } = await supabase
       .from('zat_features_amenity')
-      .select('Name, "pre-set?", "Type - Amenity Categories"')
-      .eq('"pre-set?"', true)
-      .eq('"Type - Amenity Categories"', type)
-      .order('Name', { ascending: true });
+      .select('name, is_preset, type_amenity_categories')
+      .eq('is_preset', true)
+      .eq('type_amenity_categories', type)
+      .order('name', { ascending: true });
 
     console.log('Supabase response:', { data, error });
 
@@ -99,7 +99,7 @@ export async function getCommonAmenitiesByType(type: string): Promise<string[]> 
     }
 
     // Extract just the names
-    const names = data.map((amenity) => amenity.Name);
+    const names = data.map((amenity) => amenity.name);
     console.log('Fetched amenities:', names);
     return names;
   } catch (err) {

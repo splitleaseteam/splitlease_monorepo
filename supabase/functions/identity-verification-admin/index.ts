@@ -9,13 +9,13 @@
  * - toggle_verification: Update user verification status
  *
  * Database fields used (from public.user table):
- * - `user verified?` - boolean verification status
- * - `Profile Photo` - profile photo URL
- * - `Selfie with ID` - selfie with ID URL
- * - `ID front` - front of ID URL
- * - `ID Back` - back of ID URL
- * - `profile completeness` - percentage (0-100)
- * - `Tasks Completed` - JSON array of completed tasks
+ * - `is_identity_verified` - boolean verification status
+ * - `profile_photo_url` - profile photo URL
+ * - `selfie_with_id_photo_url` - selfie with ID URL
+ * - `id_document_front_photo_url` - front of ID URL
+ * - `id_document_back_photo_url` - back of ID URL
+ * - `profile_completeness_percentage` - percentage (0-100)
+ * - `onboarding_tasks_completed_list_json` - JSON array of completed tasks
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
@@ -29,7 +29,6 @@ const corsHeaders = {
 };
 
 // Column name mapping: JavaScript key <-> Database column
-// Database uses Bubble-style column names with spaces
 const COLUMN_MAP = {
   // JS key: DB column
   firstName: 'first_name',
@@ -37,13 +36,13 @@ const COLUMN_MAP = {
   email: 'email',
   phoneNumber: 'phone_number',
   profilePhoto: 'profile_photo_url',
-  selfieWithId: 'Selfie with ID',
-  idFront: 'ID front',
-  idBack: 'ID Back',
-  isVerified: 'identity_verified',
-  idDocumentsSubmitted: 'ID documents submitted? ',
-  profileCompleteness: 'profile completeness',
-  tasksCompleted: 'Tasks Completed',
+  selfieWithId: 'selfie_with_id_photo_url',
+  idFront: 'id_document_front_photo_url',
+  idBack: 'id_document_back_photo_url',
+  isVerified: 'is_identity_verified',
+  idDocumentsSubmitted: 'has_submitted_id_documents',
+  profileCompleteness: 'profile_completeness_percentage',
+  tasksCompleted: 'onboarding_tasks_completed_list_json',
   createdDate: 'created_at',
   modifiedDate: 'updated_at',
   isAdmin: 'is_admin',
@@ -63,13 +62,13 @@ const USER_SELECT_COLUMNS = `
   last_name,
   phone_number,
   profile_photo_url,
-  "Selfie with ID",
-  "ID front",
-  "ID Back",
-  "identity_verified",
-  "ID documents submitted? ",
-  "profile completeness",
-  "Tasks Completed",
+  selfie_with_id_photo_url,
+  id_document_front_photo_url,
+  id_document_back_photo_url,
+  is_identity_verified,
+  has_submitted_id_documents,
+  profile_completeness_percentage,
+  onboarding_tasks_completed_list_json,
   created_at,
   updated_at
 `;
@@ -366,9 +365,9 @@ async function handleToggleVerification(
       email,
       first_name,
       last_name,
-      "identity_verified",
-      "profile completeness",
-      "Tasks Completed"
+      is_identity_verified,
+      profile_completeness_percentage,
+      onboarding_tasks_completed_list_json
     `)
     .eq('id', userId)
     .single();
@@ -378,8 +377,8 @@ async function handleToggleVerification(
   }
 
   // Calculate new values
-  const currentCompleteness = currentUser['profile completeness'] || 0;
-  let currentTasks = currentUser['Tasks Completed'];
+  const currentCompleteness = currentUser.profile_completeness_percentage || 0;
+  let currentTasks = currentUser.onboarding_tasks_completed_list_json;
 
   // Ensure currentTasks is an array
   if (!Array.isArray(currentTasks)) {
@@ -405,10 +404,10 @@ async function handleToggleVerification(
   const { data: updatedUser, error: updateError } = await supabase
     .from('user')
     .update({
-      'identity_verified': isVerified,
-      'profile completeness': newCompleteness,
-      'Tasks Completed': newTasks,
-      'updated_at': now,
+      is_identity_verified: isVerified,
+      profile_completeness_percentage: newCompleteness,
+      onboarding_tasks_completed_list_json: newTasks,
+      updated_at: now,
     })
     .eq('id', userId)
     .select(USER_SELECT_COLUMNS)
@@ -425,7 +424,7 @@ async function handleToggleVerification(
     userEmail: currentUser.email,
     userName: `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim(),
     isVerified,
-    previousVerified: currentUser['identity_verified'],
+    previousVerified: currentUser.is_identity_verified,
     adminEmail: adminUser?.email || 'anonymous',
     timestamp: now,
     notes,

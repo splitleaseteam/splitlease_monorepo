@@ -29,7 +29,7 @@ export const handleGet = async (
 
   if (payload.houseManualId) {
     console.log('[get] Filtering by house manual:', payload.houseManualId);
-    query = query.eq('house manual', payload.houseManualId);
+    query = query.eq('house_manual', payload.houseManualId);
   }
 
   if (payload.visitId) {
@@ -43,9 +43,9 @@ export const handleGet = async (
   }
 
   // Order by scheduled date
-  query = query.order('scheduled date and time', { ascending: true });
+  query = query.order('scheduled_date_and_time', { ascending: true });
 
-  const { data, error, _count } = await query;
+  const { data, error } = await query;
 
   if (error) {
     console.error('[get] Query error:', error);
@@ -80,7 +80,7 @@ export const handleGetByVisit = async (
     .from('remindersfromhousemanual')
     .select('*')
     .eq('visit', payload.visitId)
-    .order('scheduled date and time', { ascending: true });
+    .order('scheduled_date_and_time', { ascending: true });
 
   if (error) {
     console.error('[get-by-visit] Query error:', error);

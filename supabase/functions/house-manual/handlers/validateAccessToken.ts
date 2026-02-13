@@ -62,15 +62,15 @@ export async function handleValidateAccessToken(
 
   // Find visit with this access token
   const { data: visit, error: visitError } = await supabaseClient
-    .from("visit")
+    .from("house_manual_visit")
     .select(`
       id,
-      "User shared with (guest)",
-      "house manual",
-      "access_token",
-      "token_expires_at",
-      "token_used_at",
-      "is_single_use"
+      guest_user_id,
+      house_manual_id,
+      access_token,
+      token_expires_at,
+      token_used_at,
+      is_single_use
     `)
     .eq("access_token", accessToken)
     .single();
@@ -91,9 +91,9 @@ export async function handleValidateAccessToken(
     };
   }
 
-  const expiresAt = visit["token_expires_at"];
-  const usedAt = visit["token_used_at"];
-  const isSingleUse = Boolean(visit["is_single_use"]);
+  const expiresAt = visit.token_expires_at;
+  const usedAt = visit.token_used_at;
+  const isSingleUse = Boolean(visit.is_single_use);
 
   // Check if token is expired
   const isExpired = expiresAt ? new Date(expiresAt) < new Date() : false;
@@ -103,9 +103,9 @@ export async function handleValidateAccessToken(
     return {
       isValid: false,
       visitId: visit.id,
-      guestId: visit["User shared with (guest)"],
+      guestId: visit.guest_user_id,
       guestEmail: null,
-      houseManualId: visit["house manual"],
+      houseManualId: visit.house_manual_id,
       expiresAt,
       isExpired: true,
       isUsed: Boolean(usedAt),
@@ -120,9 +120,9 @@ export async function handleValidateAccessToken(
     return {
       isValid: false,
       visitId: visit.id,
-      guestId: visit["User shared with (guest)"],
+      guestId: visit.guest_user_id,
       guestEmail: null,
-      houseManualId: visit["house manual"],
+      houseManualId: visit.house_manual_id,
       expiresAt,
       isExpired: false,
       isUsed: true,
@@ -132,7 +132,7 @@ export async function handleValidateAccessToken(
   }
 
   // Fetch guest email for frontend display/verification
-  const guestId = visit["User shared with (guest)"];
+  const guestId = visit.guest_user_id;
   let guestEmail: string | null = null;
 
   if (guestId) {
@@ -154,7 +154,7 @@ export async function handleValidateAccessToken(
     visitId: visit.id,
     guestId,
     guestEmail,
-    houseManualId: visit["house manual"],
+    houseManualId: visit.house_manual_id,
     expiresAt,
     isExpired: false,
     isUsed: Boolean(usedAt),

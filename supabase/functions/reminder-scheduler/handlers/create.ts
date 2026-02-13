@@ -41,21 +41,21 @@ export const handleCreate = async (
   // Build the reminder record
   const reminderRecord = {
     id: reminderId,
-    'house manual': payload.houseManualId,
-    'Created By': payload.creatorId,
-    'message to send': payload.message,
-    'scheduled date and time': payload.scheduledDateTime,
-    'is an email reminder?': payload.isEmailReminder,
-    'is a phone reminder?': payload.isSmsReminder,
+    house_manual: payload.houseManualId,
+    created_by: payload.creatorId,
+    message_to_send: payload.message,
+    scheduled_date_and_time: payload.scheduledDateTime,
+    is_an_email_reminder: payload.isEmailReminder,
+    is_a_phone_reminder: payload.isSmsReminder,
     guest: payload.guestId || null,
     visit: payload.visitId || null,
-    'phone number (in case no guest attached)': payload.fallbackPhone || null,
-    'fallback email': payload.fallbackEmail || null,
-    'type of reminders': payload.reminderType || 'custom',
+    phone_number_in_case_no_guest_attached: payload.fallbackPhone || null,
+    fallback_email: payload.fallbackEmail || null,
+    type_of_reminders: payload.reminderType || 'custom',
     status: 'pending',
     delivery_status: 'pending',
-    'Created Date': now,
-    'Modified Date': now,
+    created_at: now,
+    updated_at: now,
   };
 
   console.log('[create] Inserting reminder record');

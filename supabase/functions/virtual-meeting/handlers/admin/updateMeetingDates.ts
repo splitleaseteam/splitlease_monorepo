@@ -61,10 +61,10 @@ export async function handleAdminUpdateMeetingDates(
     .select(`
       *,
       guest:users!virtualmeetingschedulesandlinks_guest_fkey(
-        id, name_first, name_last, email, phone_number, profile_photo_url, timezone
+        id, first_name, last_name, email, phone_number, profile_photo_url, timezone
       ),
       host:users!virtualmeetingschedulesandlinks_host_fkey(
-        id, name_first, name_last, email, phone_number, profile_photo_url, timezone
+        id, first_name, last_name, email, phone_number, profile_photo_url, timezone
       )
     `)
     .single();

@@ -53,8 +53,8 @@ export async function handleGetUserData(
     // Fetch listings where user is owner or co-host
     const { data: listingsData, error: listingsError } = await supabaseAdmin
       .from('listing')
-      .select('id, Title, "Street Address"')
-      .or(`user_id.eq.${userId},co_host_id.eq.${userId}`)
+      .select('id, listing_title, address_with_lat_lng_json')
+      .eq('host_user_id', userId)
       .limit(50);
 
     if (listingsError) {
@@ -63,35 +63,34 @@ export async function handleGetUserData(
 
     // Fetch proposals where user is guest or host (via listing)
     const { data: proposalsData, error: proposalsError } = await supabaseAdmin
-      .from('proposal')
-      .select('id, listing_id, proposal_workflow_status, listing!inner(Title)')
-      .or(`user_id.eq.${userId},listing.user_id.eq.${userId}`)
+      .from('booking_proposal')
+      .select('id, listing_id, proposal_workflow_status, listing!inner(listing_title)')
+      .or(`guest_user_id.eq.${userId},host_user_id.eq.${userId}`)
       .limit(50);
 
     if (proposalsError) {
       console.error('[get-user-data] Proposals query error:', proposalsError.message);
     }
 
-    // Fetch leases (if table exists and has user relationships)
-    // Note: Lease structure may vary - adjust based on actual schema
+    // Fetch leases where user is guest or host
     let leasesData: any[] = [];
     try {
       const { data, error } = await supabaseAdmin
-        .from('lease')
-        .select('id, listing_id, status, listing(Title)')
-        .or(`user_id.eq.${userId},host_id.eq.${userId}`)
+        .from('booking_lease')
+        .select('id, listing_id, lease_status, agreement_number')
+        .or(`guest_user_id.eq.${userId},host_user_id.eq.${userId}`)
         .limit(50);
 
       if (!error) {
         leasesData = data || [];
       }
     } catch (_e) {
-      console.log('[get-user-data] Lease table query skipped (table may not exist)');
+      console.log('[get-user-data] Lease table query skipped');
     }
 
     // Fetch message threads where user is a participant
     const { data: threadsData, error: threadsError } = await supabaseAdmin
-      .from('thread')
+      .from('message_thread')
       .select('id, thread_subject_text, last_message_sent_at')
       .contains('participant_user_ids_json', [userId])
       .limit(50);
@@ -107,22 +106,22 @@ export async function handleGetUserData(
     console.log(`[get-user-data] Threads: ${threadsData?.length || 0}`);
 
     // Transform to API response format
-    const listings = (listingsData || []).map(listing => ({
+    const listings = (listingsData || []).map((listing: any) => ({
       id: listing.id,
-      title: listing.Title || 'Untitled Listing',
-      address: listing['Street Address'] || '',
+      title: listing.listing_title || 'Untitled Listing',
+      address: (listing.address_with_lat_lng_json as Record<string, unknown>)?.address || '',
     }));
 
     const proposals = (proposalsData || []).map((proposal: any) => ({
       id: proposal.id,
-      listingTitle: proposal.listing?.Title || 'Unknown Listing',
+      listingTitle: proposal.listing?.listing_title || 'Unknown Listing',
       status: proposal.proposal_workflow_status || 'Unknown',
     }));
 
     const leases = leasesData.map((lease: any) => ({
       id: lease.id,
-      listingTitle: lease.listing?.Title || 'Unknown Listing',
-      status: lease.status || 'Unknown',
+      listingTitle: 'Lease ' + (lease.agreement_number || lease.id),
+      status: lease.lease_status || 'Unknown',
     }));
 
     const threads = (threadsData || []).map(thread => ({

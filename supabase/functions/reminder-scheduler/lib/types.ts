@@ -35,18 +35,18 @@ export type DeliveryStatus = 'pending' | 'sent' | 'delivered' | 'bounced' | 'fai
  */
 export interface Reminder {
   readonly id: string;
-  readonly 'house manual': string;
+  readonly house_manual: string;
   readonly guest?: string;
-  readonly 'Created By': string;
-  readonly 'message to send': string;
-  readonly 'scheduled date and time': string;
-  readonly 'is an email reminder?': boolean;
-  readonly 'is a phone reminder?': boolean;
-  readonly 'phone number (in case no guest attached)'?: string;
-  readonly 'fallback email'?: string;
-  readonly 'type of reminders'?: ReminderType;
-  readonly 'API scheduled code for email'?: string;
-  readonly 'API scheduled code for sms'?: string;
+  readonly created_by: string;
+  readonly message_to_send: string;
+  readonly scheduled_date_and_time: string;
+  readonly is_an_email_reminder: boolean;
+  readonly is_a_phone_reminder: boolean;
+  readonly phone_number_in_case_no_guest_attached?: string;
+  readonly fallback_email?: string;
+  readonly type_of_reminders?: ReminderType;
+  readonly api_scheduled_code_for_email?: string;
+  readonly api_scheduled_code_for_sms?: string;
   readonly status: ReminderStatus;
   readonly visit?: string;
   readonly delivery_status: DeliveryStatus;
@@ -54,8 +54,8 @@ export interface Reminder {
   readonly opened_at?: string;
   readonly sendgrid_message_id?: string;
   readonly twilio_message_sid?: string;
-  readonly 'Created Date'?: string;
-  readonly 'Modified Date'?: string;
+  readonly created_at?: string;
+  readonly updated_at?: string;
 }
 
 // ─────────────────────────────────────────────────────────────

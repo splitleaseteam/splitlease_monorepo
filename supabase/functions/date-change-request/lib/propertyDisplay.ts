@@ -22,14 +22,11 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
  */
 export interface ListingData {
   id: string;
-  Title?: string | null;
-  'Display Name'?: string | null;
-  'Display Address'?: string | null;
-  Address?: string | null;
-  'Address Line 1'?: string | null;
-  City?: string | null;
-  State?: string | null;
-  'Zip Code'?: string | null;
+  listing_title?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
+  neighborhood_name_entered_by_host?: string | null;
 }
 
 /**
@@ -62,19 +59,17 @@ export function buildPropertyDisplay(listing: ListingData | null): PropertyDispl
     };
   }
 
-  // Extract name/title - prefer Display Name, then Title
-  const name = listing['Display Name'] || listing.Title || '';
+  // Extract name/title
+  const name = listing.listing_title || '';
 
-  // Extract address - prefer Display Address, then build from components
-  let address = listing['Display Address'] || listing.Address || '';
-
-  // If no Display Address, build from components
-  if (!address && (listing['Address Line 1'] || listing.City)) {
+  // Build address from components
+  let address = '';
+  if (listing.city || listing.neighborhood_name_entered_by_host) {
     const parts = [
-      listing['Address Line 1'],
-      listing.City,
-      listing.State,
-      listing['Zip Code'],
+      listing.neighborhood_name_entered_by_host,
+      listing.city,
+      listing.state,
+      listing.zip_code,
     ].filter(Boolean) as string[];
 
     address = parts.join(', ');
@@ -133,8 +128,8 @@ export async function fetchListingData(
 ): Promise<ListingData | null> {
   try {
     const { data, error } = await supabase
-      .from('listings')
-      .select('id, Title, "Display Name", "Display Address", Address, "Address Line 1", City, State, "Zip Code"')
+      .from('listing')
+      .select('id, listing_title, city, state, zip_code, neighborhood_name_entered_by_host')
       .eq('id', listingId)
       .maybeSingle();
 
@@ -145,7 +140,7 @@ export async function fetchListingData(
 
     return data as ListingData | null;
   } catch (_err) {
-    console.warn('[propertyDisplay] Listing fetch exception:', (err as Error).message);
+    console.warn('[propertyDisplay] Listing fetch exception:', (_err as Error).message);
     return null;
   }
 }
@@ -164,20 +159,20 @@ export async function fetchListingFromLease(
   try {
     // First get the listing ID from the lease
     const { data: lease, error: leaseError } = await supabase
-      .from('bookings_leases')
-      .select('Listing')
+      .from('booking_lease')
+      .select('listing_id')
       .eq('id', leaseId)
       .maybeSingle();
 
-    if (leaseError || !lease?.Listing) {
+    if (leaseError || !lease?.listing_id) {
       console.warn('[propertyDisplay] Lease fetch error or no listing:', leaseError?.message);
       return null;
     }
 
     // Then fetch the listing data
-    return await fetchListingData(supabase, lease.Listing);
+    return await fetchListingData(supabase, lease.listing_id);
   } catch (_err) {
-    console.warn('[propertyDisplay] Listing from lease fetch exception:', (err as Error).message);
+    console.warn('[propertyDisplay] Listing from lease fetch exception:', (_err as Error).message);
     return null;
   }
 }
@@ -196,13 +191,13 @@ export async function fetchLeaseAndListing(
 ): Promise<{ lease: Record<string, unknown> | null; listing: ListingData | null }> {
   try {
     const { data, error } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .select(`
-        _id,
-        Listing,
-        check_in,
-        check_out,
-        "Agreement Number"
+        id,
+        listing_id,
+        reservation_start_date,
+        reservation_end_date,
+        agreement_number
       `)
       .eq('id', leaseId)
       .maybeSingle();
@@ -214,8 +209,8 @@ export async function fetchLeaseAndListing(
 
     // Fetch listing data if we have a listing ID
     let listing: ListingData | null = null;
-    if (data.Listing) {
-      listing = await fetchListingData(supabase, data.Listing);
+    if (data.listing_id) {
+      listing = await fetchListingData(supabase, data.listing_id);
     }
 
     return {
@@ -223,7 +218,7 @@ export async function fetchLeaseAndListing(
       listing,
     };
   } catch (_err) {
-    console.warn('[propertyDisplay] Lease/listing fetch exception:', (err as Error).message);
+    console.warn('[propertyDisplay] Lease/listing fetch exception:', (_err as Error).message);
     return { lease: null, listing: null };
   }
 }

@@ -100,7 +100,7 @@ export async function handleCreateReview(
 
   // 3. Verify stay exists and user is authorized
   const { data: stay, error: stayError } = await supabase
-    .from("bookings_stays")
+    .from("lease_weekly_stay")
     .select(`
       id,
       lease_id,
@@ -228,7 +228,7 @@ export async function handleCreateReview(
     : { review_by_guest_id: review.id, review_by_guest_submitted_at: new Date().toISOString() };
 
   const { error: updateError } = await supabase
-    .from("bookings_stays")
+    .from("lease_weekly_stay")
     .update(stayUpdate)
     .eq("id", payload.stayId);
 

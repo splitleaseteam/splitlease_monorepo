@@ -38,7 +38,7 @@ export function PreviewPanel({ formData, previewDevice, setPreviewDevice, getPre
             <InfoIcon />
           </div>
           <h3 className="mit-preview-title">
-            {formData.tagTitle || 'Information'}
+            {formData.information_tag_title || 'Information'}
           </h3>
         </div>
         <div className="mit-preview-content">
@@ -46,7 +46,7 @@ export function PreviewPanel({ formData, previewDevice, setPreviewDevice, getPre
             {getPreviewContent()}
           </p>
         </div>
-        {formData.showMore && (
+        {formData.show_more_available && (
           <button className="mit-show-more-button">
             Show more
             <ChevronDownIcon />
@@ -58,22 +58,22 @@ export function PreviewPanel({ formData, previewDevice, setPreviewDevice, getPre
       <div className="mit-content-status">
         <StatusItem
           label="Desktop"
-          hasContent={!!formData.desktop}
+          hasContent={!!formData.desktop_copy}
           required
         />
         <StatusItem
           label="Desktop+"
-          hasContent={!!formData.desktopPlus}
+          hasContent={!!formData.desktop_copy_legacy}
           fallback="desktop"
         />
         <StatusItem
           label="iPad"
-          hasContent={!!formData.ipad}
+          hasContent={!!formData.ipad_copy}
           fallback="desktop"
         />
         <StatusItem
           label="Mobile"
-          hasContent={!!formData.mobile}
+          hasContent={!!formData.mobile_copy}
           fallback="desktop"
         />
       </div>

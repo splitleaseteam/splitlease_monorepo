@@ -20,15 +20,15 @@ export interface CreateVirtualMeetingResponse {
 
 export interface ProposalData {
   id: string;
-  Guest: string;
-  Listing: string;
-  'Host User': string;
+  guest_user_id: string;
+  listing_id: string;
+  host_user_id: string;
 }
 
 export interface ListingData {
   id: string;
-  'Host User': string;
-  'Created By': string;
+  host_user_id: string;
+  created_by_user_id: string;
 }
 
 export interface UserData {
@@ -42,32 +42,32 @@ export interface UserData {
 
 export interface HostAccountData {
   id: string;
-  User: string;
+  user_id: string;
 }
 
 export interface VirtualMeetingRecord {
   id: string;
-  'Created By': string;
-  'Created Date': string;
-  'Modified Date': string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
   host: string;
   guest: string;
   proposal: string;
-  'requested by': string;
-  'meeting duration': number;
-  'suggested dates and times': string[];
-  'booked date': string | null;
-  confirmedBySplitLease: boolean;
-  'meeting declined': boolean;
-  'meeting link': string | null;
-  'guest email': string | null;
-  'guest name': string | null;
-  'host email': string | null;
-  'host name': string | null;
-  'invitation sent to guest?': boolean;
-  'invitation sent to host?': boolean;
-  'end of meeting': string | null;
-  'Listing (for Co-Host feature)': string | null;
+  requested_by: string;
+  meeting_duration: number;
+  suggested_dates_and_times: string[];
+  booked_date: string | null;
+  confirmedbysplitlease: boolean;
+  meeting_declined: boolean;
+  meeting_link: string | null;
+  guest_email: string | null;
+  guest_name: string | null;
+  host_email: string | null;
+  host_name: string | null;
+  invitation_sent_to_guest: boolean;
+  invitation_sent_to_host: boolean;
+  end_of_meeting: string | null;
+  listing_for_co_host_feature: string | null;
   pending: boolean;
 }
 

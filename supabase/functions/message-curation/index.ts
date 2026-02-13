@@ -202,16 +202,16 @@ async function handleGetThreads(
 
   // Step 1: Fetch threads (without relationship joins - FKs don't exist)
   const query = supabase
-    .from('thread')
+    .from('message_thread')
     .select(`
       id,
-      "Created Date",
-      "Modified Date",
+      "created_at",
+      "updated_at",
       host_user_id,
       guest_user_id,
-      "Listing"
+      "listing_id"
     `, { count: 'exact' })
-    .order('"Modified Date"', { ascending: false });
+    .order('"updated_at"', { ascending: false });
 
   // Apply pagination
   const { data: threadData, error: threadError, count } = await query.range(offset, offset + limit - 1);
@@ -232,7 +232,7 @@ async function handleGetThreads(
   for (const thread of threadData) {
     if (thread.host_user_id) userIds.add(thread.host_user_id);
     if (thread.guest_user_id) userIds.add(thread.guest_user_id);
-    if (thread['Listing']) listingIds.add(thread['Listing']);
+    if (thread['listing_id']) listingIds.add(thread['listing_id']);
   }
 
   // Step 3: Fetch users and listings in parallel
@@ -246,7 +246,7 @@ async function handleGetThreads(
     listingIds.size > 0
       ? supabase
           .from('listing')
-          .select('id, "Name"') // TODO: VERIFY listing.Name COLUMN NAME
+          .select('id, listing_title')
           .in('id', Array.from(listingIds))
       : { data: [], error: null },
   ]);
@@ -274,7 +274,7 @@ async function handleGetThreads(
     ...thread,
     host: thread.host_user_id ? usersMap.get(thread.host_user_id as string) || null : null,
     guest: thread.guest_user_id ? usersMap.get(thread.guest_user_id as string) || null : null,
-    listing: thread['Listing'] ? listingsMap.get(thread['Listing'] as string) || null : null,
+    listing: thread['listing_id'] ? listingsMap.get(thread['listing_id'] as string) || null : null,
   }));
 
   // Step 6: Apply search filter if provided
@@ -288,7 +288,7 @@ async function handleGetThreads(
       const guest = thread.guest as Record<string, unknown> | null;
       const host = thread.host as Record<string, unknown> | null;
 
-      const listingName = (listing?.['Name'] as string || '').toLowerCase();
+      const listingName = (listing?.listing_title as string || '').toLowerCase();
       const guestEmail = (guest?.email as string || '').toLowerCase();
       const guestFirstName = (guest?.first_name as string || '').toLowerCase();
       const guestLastName = (guest?.last_name as string || '').toLowerCase();
@@ -335,14 +335,14 @@ async function handleGetThreadMessages(
 
   // Step 1: Fetch thread (without relationship joins - FKs don't exist)
   const { data: threadData, error: threadError } = await supabase
-    .from('thread')
+    .from('message_thread')
     .select(`
       id,
-      "Created Date",
-      "Modified Date",
+      "created_at",
+      "updated_at",
       host_user_id,
       guest_user_id,
-      "Listing"
+      "listing_id"
     `)
     .eq('id', threadId)
     .single();
@@ -356,21 +356,22 @@ async function handleGetThreadMessages(
 
   // Step 2: Fetch messages for this thread (without relationship joins)
   const { data: messagesData, error: messagesError } = await supabase
-    .from('_message')
+    .from('thread_message')
     .select(`
       id,
-      "Message Body",
-      "Split Bot Warning",
-      "Created Date",
-      "Modified Date",
-      originator_user_id,
+      message_body_text,
+      split_bot_warning_text,
+      created_at,
+      updated_at,
+      sender_user_id,
       thread_id,
-      "is Forwarded",
-      "is deleted (is hidden)"
+      is_forwarded_message,
+      is_hidden_or_deleted,
+      is_from_split_bot
     `)
     .eq('thread_id', threadId)
-    .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
-    .order('"Created Date"', { ascending: true });
+    .or('is_hidden_or_deleted.is.null,is_hidden_or_deleted.eq.false')
+    .order('created_at', { ascending: true });
 
   if (messagesError) {
     console.error('[message-curation] getThreadMessages error:', messagesError);
@@ -382,7 +383,7 @@ async function handleGetThreadMessages(
   if (threadData.host_user_id) userIds.add(threadData.host_user_id);
   if (threadData.guest_user_id) userIds.add(threadData.guest_user_id);
   for (const msg of (messagesData || [])) {
-    if (msg.originator_user_id) userIds.add(msg.originator_user_id);
+    if (msg.sender_user_id) userIds.add(msg.sender_user_id);
   }
 
   // Step 4: Fetch users and listing in parallel
@@ -393,11 +394,11 @@ async function handleGetThreadMessages(
           .select('id, email, first_name, last_name, profile_photo_url')
           .in('id', Array.from(userIds))
       : { data: [], error: null },
-    threadData['Listing']
+    threadData['listing_id']
       ? supabase
           .from('listing')
-          .select('id, "Name"') // TODO: VERIFY listing.Name COLUMN NAME
-          .eq('id', threadData['Listing'])
+          .select('id, listing_title')
+          .eq('id', threadData['listing_id'])
           .single()
       : { data: null, error: null },
   ]);
@@ -416,10 +417,10 @@ async function handleGetThreadMessages(
     listing: listingResult.data || null,
   };
 
-  // Enrich messages with originator data
+  // Enrich messages with sender data
   const enrichedMessages = (messagesData || []).map((msg: Record<string, unknown>) => ({
     ...msg,
-    originator: msg.originator_user_id ? usersMap.get(msg.originator_user_id as string) || null : null,
+    originator: msg.sender_user_id ? usersMap.get(msg.sender_user_id as string) || null : null,
   }));
 
   // Format messages
@@ -450,17 +451,18 @@ async function handleGetMessage(
 
   // Step 1: Fetch message (without relationship joins)
   const { data: messageData, error: messageError } = await supabase
-    .from('_message')
+    .from('thread_message')
     .select(`
       id,
-      "Message Body",
-      "Split Bot Warning",
-      "Created Date",
-      "Modified Date",
-      originator_user_id,
+      message_body_text,
+      split_bot_warning_text,
+      created_at,
+      updated_at,
+      sender_user_id,
       thread_id,
-      "is Forwarded",
-      "is deleted (is hidden)"
+      is_forwarded_message,
+      is_hidden_or_deleted,
+      is_from_split_bot
     `)
     .eq('id', messageId)
     .single();
@@ -475,14 +477,14 @@ async function handleGetMessage(
 
   // Step 2: Fetch thread
   const { data: threadData, error: threadError } = await supabase
-    .from('thread')
+    .from('message_thread')
     .select(`
       id,
-      "Created Date",
-      "Modified Date",
+      "created_at",
+      "updated_at",
       host_user_id,
       guest_user_id,
-      "Listing"
+      "listing_id"
     `)
     .eq('id', messageData.thread_id)
     .single();
@@ -494,7 +496,7 @@ async function handleGetMessage(
 
   // Step 3: Collect all user IDs needed
   const userIds = new Set<string>();
-  if (messageData.originator_user_id) userIds.add(messageData.originator_user_id);
+  if (messageData.sender_user_id) userIds.add(messageData.sender_user_id);
   if (threadData.host_user_id) userIds.add(threadData.host_user_id);
   if (threadData.guest_user_id) userIds.add(threadData.guest_user_id);
 
@@ -506,11 +508,11 @@ async function handleGetMessage(
           .select('id, email, first_name, last_name, profile_photo_url')
           .in('id', Array.from(userIds))
       : { data: [], error: null },
-    threadData['Listing']
+    threadData['listing_id']
       ? supabase
           .from('listing')
-          .select('id, "Name"') // TODO: VERIFY listing.Name COLUMN NAME
-          .eq('id', threadData['Listing'])
+          .select('id, listing_title')
+          .eq('id', threadData['listing_id'])
           .single()
       : { data: null, error: null },
   ]);
@@ -529,10 +531,10 @@ async function handleGetMessage(
     listing: listingResult.data || null,
   };
 
-  // Enrich message with originator
+  // Enrich message with sender
   const enrichedMessage = {
     ...messageData,
-    originator: messageData.originator_user_id ? usersMap.get(messageData.originator_user_id) || null : null,
+    originator: messageData.sender_user_id ? usersMap.get(messageData.sender_user_id) || null : null,
   };
 
   return {
@@ -557,10 +559,10 @@ async function handleDeleteMessage(
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from('_message')
+    .from('thread_message')
     .update({
-      'is deleted (is hidden)': true,
-      'Modified Date': now,
+      is_hidden_or_deleted: true,
+      updated_at: now,
     })
     .eq('id', messageId)
     .select('id')
@@ -596,13 +598,13 @@ async function handleDeleteThread(
 
   // Soft delete all messages in the thread (only non-deleted ones)
   const { data, error } = await supabase
-    .from('_message')
+    .from('thread_message')
     .update({
-      'is deleted (is hidden)': true,
-      'Modified Date': now,
+      is_hidden_or_deleted: true,
+      updated_at: now,
     })
     .eq('thread_id', threadId)
-    .or('"is deleted (is hidden)".is.null,"is deleted (is hidden)".eq.false')
+    .or('is_hidden_or_deleted.is.null,is_hidden_or_deleted.eq.false')
     .select('id');
 
   if (error) {
@@ -639,12 +641,12 @@ async function handleForwardMessage(
 
   // Step 1: Fetch the message (without relationship joins)
   const { data: messageData, error: messageError } = await supabase
-    .from('_message')
+    .from('thread_message')
     .select(`
       id,
-      "Message Body",
-      "Created Date",
-      originator_user_id,
+      message_body_text,
+      original_created_at,
+      sender_user_id,
       thread_id
     `)
     .eq('id', messageId)
@@ -656,8 +658,8 @@ async function handleForwardMessage(
 
   // Step 2: Fetch thread
   const { data: _threadData, error: threadError } = await supabase
-    .from('thread')
-    .select('id, host_user_id, guest_user_id, "Listing"')
+    .from('message_thread')
+    .select('id, host_user_id, guest_user_id, "listing_id"')
     .eq('id', messageData.thread_id)
     .single();
 
@@ -668,10 +670,10 @@ async function handleForwardMessage(
   // Mark as forwarded
   const now = new Date().toISOString();
   const { error: updateError } = await supabase
-    .from('_message')
+    .from('thread_message')
     .update({
-      'is Forwarded': true,
-      'Modified Date': now,
+      is_forwarded_message: true,
+      updated_at: now,
     })
     .eq('id', messageId);
 
@@ -715,21 +717,12 @@ async function handleSendSplitBotMessage(
     throw new Error('recipientType must be "guest" or "host"');
   }
 
-  // First, find the Split Bot user
-  const { data: splitBotUser, error: splitBotError } = await supabase
-    .from('user')
-    .select('id')
-    .eq('is Split Bot', true) // TODO: VERIFY COLUMN NAME
-    .single();
-
-  if (splitBotError || !splitBotUser) {
-    console.error('[message-curation] Split Bot user not found:', splitBotError);
-    throw new Error('Split Bot user not configured in database');
-  }
+  // SplitBot user ID - hardcoded constant (same as in messagingHelpers.ts)
+  const SPLITBOT_USER_ID = '1634177189464x117577733821174320';
 
   // Fetch thread to get host and guest
   const { data: _threadData, error: threadError } = await supabase
-    .from('thread')
+    .from('message_thread')
     .select('id, "host_user_id", "guest_user_id"')
     .eq('id', threadId)
     .single();
@@ -748,17 +741,21 @@ async function handleSendSplitBotMessage(
 
   // Create the message
   const { data: newMessage, error: createError } = await supabase
-    .from('_message')
+    .from('thread_message')
     .insert({
       id: newIdData,
-      'Message Body': messageBody.trim(),
-      'thread_id': threadId,
-      'originator_user_id': splitBotUser.id,
-      'Created Date': now,
-      'Modified Date': now,
-      'Split Bot Warning': true,
+      message_body_text: messageBody.trim(),
+      thread_id: threadId,
+      sender_user_id: SPLITBOT_USER_ID,
+      created_by_user_id: SPLITBOT_USER_ID,
+      created_at: now,
+      updated_at: now,
+      original_created_at: now,
+      original_updated_at: now,
+      is_from_split_bot: true,
+      is_hidden_or_deleted: false,
     })
-    .select('id, "Message Body", "Created Date"')
+    .select('id, message_body_text, created_at')
     .single();
 
   if (createError) {
@@ -777,8 +774,8 @@ async function handleSendSplitBotMessage(
     success: true,
     message: {
       id: newMessage.id,
-      body: newMessage['Message Body'],
-      createdAt: newMessage['Created Date'],
+      body: newMessage.message_body_text,
+      createdAt: newMessage.created_at,
     },
     threadId,
     recipientType,
@@ -797,11 +794,11 @@ function formatThread(thread: Record<string, unknown>) {
 
   return {
     id: thread.id,
-    createdAt: thread['Created Date'],
-    modifiedAt: thread['Modified Date'],
+    createdAt: thread['created_at'],
+    modifiedAt: thread['updated_at'],
     hostUserId: thread['host_user_id'],
     guestUserId: thread['guest_user_id'],
-    listingId: thread['Listing'],
+    listingId: thread['listing_id'],
     guest: guest ? {
       id: guest.id,
       email: guest.email || '',
@@ -818,7 +815,7 @@ function formatThread(thread: Record<string, unknown>) {
     } : null,
     listing: listing ? {
       id: listing.id,
-      name: listing['Name'] || 'Unnamed Listing', // TODO: VERIFY listing.Name COLUMN NAME
+      name: listing.listing_title || 'Unnamed Listing',
     } : null,
   };
 }
@@ -833,27 +830,27 @@ function formatMessage(message: Record<string, unknown>, thread: Record<string, 
 
   // Determine sender type
   let senderType: 'guest' | 'host' | 'splitbot' | 'unknown' = 'unknown';
-  const originatorId = message['originator_user_id'];
-  const isSplitBotWarning = message['Split Bot Warning'];
+  const senderUserId = message['sender_user_id'];
+  const isFromSplitBot = message['is_from_split_bot'];
 
-  if (isSplitBotWarning) {
+  if (isFromSplitBot) {
     senderType = 'splitbot';
-  } else if (originatorId === thread['guest_user_id']) {
+  } else if (senderUserId === thread['guest_user_id']) {
     senderType = 'guest';
-  } else if (originatorId === thread['host_user_id']) {
+  } else if (senderUserId === thread['host_user_id']) {
     senderType = 'host';
   }
 
   return {
     id: message.id,
-    body: message['Message Body'] || '',
-    createdAt: message['Created Date'],
-    modifiedAt: message['Modified Date'],
-    originatorUserId: originatorId,
+    body: message['message_body_text'] || '',
+    createdAt: message['created_at'],
+    modifiedAt: message['updated_at'],
+    originatorUserId: senderUserId,
     threadId: message['thread_id'],
-    isSplitBotWarning: !!isSplitBotWarning,
-    isForwarded: !!message['is Forwarded'],
-    isDeleted: !!message['is deleted (is hidden)'],
+    isSplitBotWarning: !!isFromSplitBot,
+    isForwarded: !!message['is_forwarded_message'],
+    isDeleted: !!message['is_hidden_or_deleted'],
     senderType,
     originator: originator ? {
       id: originator.id,

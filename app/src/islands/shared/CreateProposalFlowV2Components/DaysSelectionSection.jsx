@@ -157,19 +157,19 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
       daysAvailable: convertDayNamesToNumbers(listing.available_days_as_day_numbers_json),
       daysNotAvailable: [],
       // Pricing fields for calculation
-      'rental type': listing.rental_type || 'Nightly',
-      'Weeks offered': listing.weeks_offered_schedule_text || 'Every week',
-      unit_markup: listing.unit_markup_percentage || 0,
-      nightly_rate_2_nights: listing.nightly_rate_for_2_night_stay,
-      nightly_rate_3_nights: listing.nightly_rate_for_3_night_stay,
-      nightly_rate_4_nights: listing.nightly_rate_for_4_night_stay,
-      nightly_rate_5_nights: listing.nightly_rate_for_5_night_stay,
-      nightly_rate_7_nights: listing.nightly_rate_for_7_night_stay,
-      weekly_host_rate: listing.weekly_rate_paid_to_host,
-      monthly_host_rate: listing.monthly_rate_paid_to_host,
+      rental_type: listing.rental_type || 'Nightly',
+      weeks_offered_schedule_text: listing.weeks_offered_schedule_text || 'Every week',
+      unit_markup_percentage: listing.unit_markup_percentage || 0,
+      nightly_rate_for_2_night_stay: listing.nightly_rate_for_2_night_stay,
+      nightly_rate_for_3_night_stay: listing.nightly_rate_for_3_night_stay,
+      nightly_rate_for_4_night_stay: listing.nightly_rate_for_4_night_stay,
+      nightly_rate_for_5_night_stay: listing.nightly_rate_for_5_night_stay,
+      nightly_rate_for_7_night_stay: listing.nightly_rate_for_7_night_stay,
+      weekly_rate_paid_to_host: listing.weekly_rate_paid_to_host,
+      monthly_rate_paid_to_host: listing.monthly_rate_paid_to_host,
       price_override: listing['price_override'],
-      cleaning_fee: listing.cleaning_fee_amount,
-      damage_deposit: listing.damage_deposit_amount
+      cleaning_fee_amount: listing.cleaning_fee_amount,
+      damage_deposit_amount: listing.damage_deposit_amount
     };
   }, [listing]);
 

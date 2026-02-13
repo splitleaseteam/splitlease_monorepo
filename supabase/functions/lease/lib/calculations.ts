@@ -142,26 +142,26 @@ export function getActiveTerms(
 ): ActiveTerms {
   if (isCounteroffer) {
     return {
-      moveInDate: proposal['hc move in date'],
-      reservationWeeks: proposal['hc reservation span (weeks)'],
-      nightsPerWeek: proposal['hc nights per week'],
-      nightlyPrice: proposal['hc nightly price'],
-      fourWeekRent: proposal['hc 4 week rent'],
-      damageDeposit: proposal['hc damage deposit'],
-      cleaningFee: proposal['hc cleaning fee'],
-      maintenanceFee: proposal['hc maintenance fee'],
+      moveInDate: proposal.host_proposed_move_in_date!,
+      reservationWeeks: proposal.host_proposed_reservation_span_weeks!,
+      nightsPerWeek: proposal.host_proposed_nights_per_week!,
+      nightlyPrice: proposal.host_proposed_nightly_price!,
+      fourWeekRent: proposal.host_proposed_four_week_rent!,
+      damageDeposit: proposal.host_proposed_damage_deposit!,
+      cleaningFee: proposal.host_proposed_cleaning_fee!,
+      maintenanceFee: 0, // maintenance fee column does not exist on booking_proposal
     };
   }
 
   return {
-    moveInDate: proposal['Move in range start'],
-    reservationWeeks: proposal['Reservation Span (Weeks)'],
-    nightsPerWeek: proposal['nights per week (num)'],
-    nightlyPrice: proposal['proposal nightly price'],
-    fourWeekRent: proposal['4 week rent'],
-    damageDeposit: proposal['damage deposit'],
-    cleaningFee: proposal['cleaning fee'],
-    maintenanceFee: proposal['maintenance fee'],
+    moveInDate: proposal.move_in_range_start_date,
+    reservationWeeks: proposal.reservation_span_in_weeks,
+    nightsPerWeek: proposal.nights_per_week_count,
+    nightlyPrice: proposal.calculated_nightly_price,
+    fourWeekRent: proposal.four_week_rent_amount || 0,
+    damageDeposit: proposal.damage_deposit_amount,
+    cleaningFee: proposal.cleaning_fee_amount,
+    maintenanceFee: 0, // maintenance fee column does not exist on booking_proposal
   };
 }
 

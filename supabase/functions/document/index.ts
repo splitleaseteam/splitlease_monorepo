@@ -170,16 +170,16 @@ async function handleListPolicies(supabase: SupabaseClient) {
     try {
       const { data, error } = await supabase
         .from(tableName)
-        .select('id, Name, "Created Date"')
-        .order('Name', { ascending: true });
+        .select('id, name, original_created_at')
+        .order('name', { ascending: true });
 
       if (!error && data && data.length > 0) {
         console.log(`[document] Found ${data.length} policies in table: ${tableName}`);
         // Map to consistent format
         return data.map((policy: Record<string, unknown>) => ({
           id: policy.id,
-          Name: policy.Name || 'Unnamed Policy',
-          createdDate: policy['Created Date']
+          Name: policy.name || 'Unnamed Policy',
+          createdDate: policy.original_created_at
         }));
       }
     } catch (_err) {
@@ -270,18 +270,18 @@ async function handleCreate(
 
   const now = new Date().toISOString();
   const newEntry = {
-    'id': generateId(),
-    'Document on policies': document_on_policies,
-    'Document sent title': document_sent_title.trim(),
-    'Host user': host_user,
-    'Host email': host_email,
-    'Host name': host_name,
-    'Created By': user.email,
-    'Created Date': now,
-    'Modified Date': now,
-    'created_at': now,
-    'updated_at': now,
-    'pending': false,
+    id: generateId(),
+    document_on_policies: document_on_policies,
+    document_sent_title: document_sent_title.trim(),
+    host_user: host_user,
+    host_email: host_email,
+    host_name: host_name,
+    created_by: user.email,
+    original_created_at: now,
+    original_updated_at: now,
+    created_at: now,
+    updated_at: now,
+    pending: false,
   };
 
   const { data, error } = await supabase
@@ -304,8 +304,8 @@ async function handleCreate(
 
   return {
     id: data.id,
-    title: data['Document sent title'],
-    hostEmail: data['Host email'],
+    title: data.document_sent_title,
+    hostEmail: data.host_email,
     success: true
   };
 }

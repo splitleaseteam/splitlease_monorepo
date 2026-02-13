@@ -22,24 +22,24 @@ const PAGE_SIZE = 20;
 
 /**
  * Derive sender type from message fields
- * @param {Object} message - Message object with Bubble field names
+ * @param {Object} message - Message object with normalized fields
  * @param {string} hostUserId - Thread's host user ID
  * @param {string} guestUserId - Thread's guest user ID
  * @returns {'host'|'guest'|'bot-to-host'|'bot-to-guest'|'bot-to-both'|'unknown'}
  */
 function deriveSenderType(message, hostUserId, guestUserId) {
-  const isSplitBot = message['is Split Bot'];
+  const isSplitBot = message.is_from_split_bot;
 
   if (isSplitBot) {
-    const visibleToHost = message['is Visible to Host'];
-    const visibleToGuest = message['is Visible to Guest'];
+    const visibleToHost = message.is_visible_to_host;
+    const visibleToGuest = message.is_visible_to_guest;
 
     if (visibleToHost && !visibleToGuest) return 'bot-to-host';
     if (visibleToGuest && !visibleToHost) return 'bot-to-guest';
     return 'bot-to-both';
   }
 
-  const originatorId = message.originator_user_id;
+  const originatorId = message.sender_user_id;
   if (originatorId === hostUserId) return 'host';
   if (originatorId === guestUserId) return 'guest';
   return 'unknown';
@@ -53,19 +53,18 @@ function deriveSenderType(message, hostUserId, guestUserId) {
 function adaptThread(rawThread) {
   return {
     id: rawThread.id,
-    subject: rawThread['Thread Subject'] || 'No Subject',
+    subject: rawThread.thread_subject_text || 'No Subject',
     createdDate: rawThread.original_created_at,
     modifiedDate: rawThread.original_updated_at,
-    lastMessageDate: rawThread['last_message_at'],
-    callToAction: rawThread['Call to Action'],
-    proposalId: rawThread.Proposal,
-    listingId: rawThread.Listing,
-    maskedEmail: rawThread['Masked Email'],
-    fromLoggedOutUser: rawThread['from logged out user?'],
+    lastMessageDate: rawThread.last_message_sent_at,
+    proposalId: rawThread.proposal_id,
+    listingId: rawThread.listing_id,
+    maskedEmail: rawThread.logged_out_user_masked_email,
+    fromLoggedOutUser: rawThread.is_from_logged_out_user,
 
     // Host user
     host: rawThread.hostUser ? {
-      id: rawThread.hostUser.id,
+      id: rawThread.hostUser.legacy_platform_id,
       name: rawThread.hostUser.first_name && rawThread.hostUser.last_name ? `${rawThread.hostUser.first_name} ${rawThread.hostUser.last_name}` : 'Unknown Host',
       email: rawThread.hostUser.email,
       phone: rawThread.hostUser.phone_number,
@@ -74,7 +73,7 @@ function adaptThread(rawThread) {
 
     // Guest user
     guest: rawThread.guestUser ? {
-      id: rawThread.guestUser.id,
+      id: rawThread.guestUser.legacy_platform_id,
       name: rawThread.guestUser.first_name && rawThread.guestUser.last_name ? `${rawThread.guestUser.first_name} ${rawThread.guestUser.last_name}` : 'Unknown Guest',
       email: rawThread.guestUser.email,
       phone: rawThread.guestUser.phone_number,
@@ -99,16 +98,14 @@ function adaptMessage(rawMessage, rawThread) {
 
   return {
     id: rawMessage.id,
-    body: rawMessage['Message Body'] || '',
+    body: rawMessage.message_body_text || '',
     createdDate: rawMessage.original_created_at,
     senderType: deriveSenderType(rawMessage, hostUserId, guestUserId),
-    isSplitBot: rawMessage['is Split Bot'] || false,
-    isVisibleToHost: rawMessage['is Visible to Host'] ?? true,
-    isVisibleToGuest: rawMessage['is Visible to Guest'] ?? true,
-    isDeleted: rawMessage['is deleted (is hidden)'] || false,
-    callToAction: rawMessage['Call to Action'],
-    notLoggedInName: rawMessage['Not Logged In Name'],
-    notLoggedInEmail: rawMessage['Not Logged In Email'],
+    isSplitBot: rawMessage.is_from_split_bot || false,
+    isVisibleToHost: rawMessage.is_visible_to_host ?? true,
+    isVisibleToGuest: rawMessage.is_visible_to_guest ?? true,
+    isDeleted: rawMessage.is_hidden_or_deleted || false,
+    callToAction: rawMessage.call_to_action_button_label,
   };
 }
 

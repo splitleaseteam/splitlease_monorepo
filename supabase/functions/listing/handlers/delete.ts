@@ -57,7 +57,7 @@ export async function handleDelete(
   // Step 1: Verify listing exists
   const { data: existingListing, error: fetchError } = await supabase
     .from('listing')
-    .select('id, Name, "Host User"')
+    .select('id, listing_title, host_user_id')
     .eq('id', listing_id)
     .single();
 
@@ -66,15 +66,15 @@ export async function handleDelete(
     throw new ValidationError(`Listing not found: ${listing_id}`);
   }
 
-  console.log('[listing:delete] Found listing:', existingListing.Name);
+  console.log('[listing:delete] Found listing:', existingListing.listing_title);
 
-  // Step 2: Soft delete (set Deleted=true)
+  // Step 2: Soft delete (set is_deleted=true)
   const now = new Date().toISOString();
   const { error: updateError } = await supabase
     .from('listing')
     .update({
-      Deleted: true,
-      'Modified Date': now,
+      is_deleted: true,
+      updated_at: now,
     })
     .eq('id', listing_id);
 

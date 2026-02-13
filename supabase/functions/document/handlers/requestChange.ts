@@ -61,7 +61,7 @@ export async function handleRequestChange(
   // Verify document exists
   const { data: document, error: docError } = await supabase
     .from('documentssent')
-    .select('id, "Document sent title"')
+    .select('id, document_sent_title')
     .eq('id', document_id)
     .single();
 
@@ -70,7 +70,7 @@ export async function handleRequestChange(
     throw new ValidationError('Document not found');
   }
 
-  const documentTitle = document['Document sent title'] || 'Untitled Document';
+  const documentTitle = document.document_sent_title || 'Untitled Document';
 
   // Create change request record
   const now = new Date().toISOString();

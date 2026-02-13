@@ -91,10 +91,10 @@ export async function handleRate(
   const now = new Date().toISOString();
 
   const updateData: Record<string, unknown> = {
-    Rating: input.Rating,
-    "Rating message (optional)": input["Rating message (optional)"] || null,
+    rating: input.Rating,
+    rating_message_optional: input["Rating message (optional)"] || null,
     status: "Request closed",
-    "Modified Date": now,
+    original_updated_at: now,
   };
 
   const { error: updateError } = await supabase

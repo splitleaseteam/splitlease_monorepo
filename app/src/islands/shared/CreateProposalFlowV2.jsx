@@ -600,7 +600,7 @@ export default function CreateProposalFlowV2({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Convert day names back to day objects for submission
     const submissionData = {
       ...proposalData,
@@ -609,9 +609,21 @@ export default function CreateProposalFlowV2({
       listingId: listingId
     };
 
-    // NOTE: localStorage draft is NOT cleared here - parent must call clearProposalDraft(listingId)
-    // on successful submission. This ensures data is preserved if submission fails.
-    onSubmit(submissionData);
+    try {
+      // NOTE: We await the submission to handle errors and show feedback
+      await onSubmit(submissionData);
+      
+      // Clear draft on successful submission
+      clearProposalDraft(listingId);
+    } catch (error) {
+      console.error('Proposal submission failed:', error);
+      showToast({
+        title: 'Submission Failed',
+        content: error.message || 'An unexpected error occurred. Please try again.',
+        type: 'error',
+        duration: 5000
+      });
+    }
   };
 
   const renderSection = () => {

@@ -110,141 +110,158 @@ interface SubmitListingResult {
 }
 
 /**
- * Map frontend field names to Supabase column names
- * Some Supabase columns have different names or special characters
+ * Map frontend field names to Supabase listing table column names
+ * All column names use snake_case matching the listing table schema
  */
 function mapFieldsToSupabase(data: ListingSubmissionData): Record<string, unknown> {
   const mapped: Record<string, unknown> = {};
 
-  // Direct mappings (same name)
-  const directFields = [
-    'Name', 'Status', 'Active', 'Description of Lodging',
-    'Bedrooms', 'Beds', 'Bathrooms', 'Address',
-  ];
-
-  for (const field of directFields) {
-    if (data[field] !== undefined) {
-      mapped[field] = data[field];
-    }
+  // Basic info
+  if (data['Name'] !== undefined) {
+    mapped.listing_title = data['Name'];
+  }
+  if (data['Description of Lodging'] !== undefined) {
+    mapped.listing_description = data['Description of Lodging'];
+  }
+  if (data['Neighborhood Description'] !== undefined) {
+    mapped.neighborhood_description_by_host = data['Neighborhood Description'];
+  }
+  if (data['Bedrooms'] !== undefined) {
+    mapped.bedroom_count = data['Bedrooms'];
+  }
+  if (data['Beds'] !== undefined) {
+    mapped.bed_count = data['Beds'];
+  }
+  if (data['Bathrooms'] !== undefined) {
+    mapped.bathroom_count = data['Bathrooms'];
   }
 
-  // Special mappings (different column names)
+  // Space & features
   if (data['Type of Space'] !== undefined) {
-    mapped['Features - Type of Space'] = data['Type of Space'];
+    mapped.space_type = data['Type of Space'];
   }
   if (data['Type of Kitchen'] !== undefined) {
-    mapped['Features - Kitchen'] = data['Type of Kitchen'];
+    mapped.kitchen_type = data['Type of Kitchen'];
   }
   if (data['Type of Parking'] !== undefined) {
-    mapped['Features - Parking'] = data['Type of Parking'];
+    mapped.parking_type = data['Type of Parking'];
   }
+
+  // Location
   if (data['City'] !== undefined) {
-    mapped['Location - City'] = data['City'];
+    mapped.city = data['City'];
   }
   if (data['State'] !== undefined) {
-    mapped['Location - State'] = data['State'];
+    mapped.state = data['State'];
   }
   if (data['Zip'] !== undefined) {
-    mapped['Location - Zip Code'] = data['Zip'];
+    mapped.zip_code = data['Zip'];
   }
   if (data['Neighborhood'] !== undefined) {
-    mapped['Location - Hood'] = data['Neighborhood'];
-  }
-  if (data['Amenities Inside Unit'] !== undefined) {
-    mapped['Features - Amenities In-Unit'] = data['Amenities Inside Unit'];
-  }
-  if (data['Amenities Outside Unit'] !== undefined) {
-    mapped['Features - Amenities Building'] = data['Amenities Outside Unit'];
-  }
-  if (data['House Rules'] !== undefined) {
-    mapped['Features - House Rules'] = data['House Rules'];
-  }
-  if (data['Safety Features'] !== undefined) {
-    mapped['Features - Safety'] = data['Safety Features'];
-  }
-  if (data['Rental Type'] !== undefined) {
-    mapped['rental type'] = data['Rental Type'];
-  }
-  if (data['Available Nights'] !== undefined) {
-    mapped['Nights Available (List of Nights) '] = data['Available Nights'];
-    mapped['Days Available (List of Days)'] = data['Available Nights'];
-  }
-  if (data['Weekly Pattern'] !== undefined) {
-    mapped['Weeks offered'] = data['Weekly Pattern'];
-  }
-  if (data['Damage Deposit'] !== undefined) {
-    mapped['damage_deposit'] = data['Damage Deposit'];
-  }
-  if (data['Maintenance Fee'] !== undefined) {
-    mapped['cleaning_fee'] = data['Maintenance Fee'];
-  }
-  if (data['Monthly Compensation'] !== undefined) {
-    mapped['monthly_host_rate'] = data['Monthly Compensation'];
-  }
-  if (data['Weekly Compensation'] !== undefined) {
-    mapped['weekly_host_rate'] = data['Weekly Compensation'];
-  }
-  if (data['Cancellation Policy'] !== undefined) {
-    mapped['Cancellation Policy'] = data['Cancellation Policy'];
-  }
-  if (data['Preferred Gender'] !== undefined) {
-    mapped['Guest - Preferred Gender'] = data['Preferred Gender'];
-  }
-  if (data['Number of Guests'] !== undefined) {
-    mapped['Guest - Number Allowed'] = data['Number of Guests'];
-  }
-  if (data['Check-In Time'] !== undefined) {
-    mapped['Check-in Time'] = data['Check-In Time'];
-  }
-  if (data['Check-Out Time'] !== undefined) {
-    mapped['Check-out Time'] = data['Check-Out Time'];
-  }
-  if (data['Ideal Min Duration'] !== undefined) {
-    mapped['Minimum Nights'] = data['Ideal Min Duration'];
-  }
-  if (data['Ideal Max Duration'] !== undefined) {
-    mapped['Maximum Nights'] = data['Ideal Max Duration'];
-  }
-  if (data['First Day Available'] !== undefined) {
-    mapped[' First Available'] = data['First Day Available'];
-  }
-  if (data['Square Footage'] !== undefined) {
-    mapped['Square Footage'] = data['Square Footage'];
+    mapped.neighborhood_name_entered_by_host = data['Neighborhood'];
   }
   if (data['Latitude'] !== undefined && data['Longitude'] !== undefined) {
-    mapped['Location - Address'] = {
+    mapped.address_with_lat_lng_json = {
       lat: data['Latitude'],
       lng: data['Longitude'],
       address: data['Address'] || '',
     };
   }
 
-  // Map nightly prices
-  if (data['Price 1 night selected'] !== undefined) {
-    mapped['nightly_rate_1_night'] = data['Price 1 night selected'];
+  // Amenities & rules
+  if (data['Amenities Inside Unit'] !== undefined) {
+    mapped.in_unit_amenity_reference_ids_json = data['Amenities Inside Unit'];
   }
-  if (data['Price 2 nights selected'] !== undefined) {
-    mapped['nightly_rate_2_nights'] = data['Price 2 nights selected'];
+  if (data['Amenities Outside Unit'] !== undefined) {
+    mapped.in_building_amenity_reference_ids_json = data['Amenities Outside Unit'];
   }
-  if (data['Price 3 nights selected'] !== undefined) {
-    mapped['nightly_rate_3_nights'] = data['Price 3 nights selected'];
+  if (data['House Rules'] !== undefined) {
+    mapped.house_rule_reference_ids_json = data['House Rules'];
   }
-  if (data['Price 4 nights selected'] !== undefined) {
-    mapped['nightly_rate_4_nights'] = data['Price 4 nights selected'];
-  }
-  if (data['Price 5 nights selected'] !== undefined) {
-    mapped['nightly_rate_5_nights'] = data['Price 5 nights selected'];
-  }
-  if (data['Price 6 nights selected'] !== undefined) {
-    mapped['nightly_rate_6_nights'] = data['Price 6 nights selected'];
-  }
-  if (data['Price 7 nights selected'] !== undefined) {
-    mapped['nightly_rate_7_nights'] = data['Price 7 nights selected'];
+  if (data['Safety Features'] !== undefined) {
+    mapped.safety_feature_reference_ids_json = data['Safety Features'];
   }
 
-  // Blocked dates mapping
+  // Lease style
+  if (data['Rental Type'] !== undefined) {
+    mapped.rental_type = data['Rental Type'];
+  }
+  if (data['Available Nights'] !== undefined) {
+    mapped.available_nights_as_day_numbers_json = data['Available Nights'];
+    mapped.available_days_as_day_numbers_json = data['Available Nights'];
+  }
+  if (data['Weekly Pattern'] !== undefined) {
+    mapped.weeks_offered_schedule_text = data['Weekly Pattern'];
+  }
+
+  // Pricing
+  if (data['Damage Deposit'] !== undefined) {
+    mapped.damage_deposit_amount = data['Damage Deposit'];
+  }
+  if (data['Maintenance Fee'] !== undefined) {
+    mapped.cleaning_fee_amount = data['Maintenance Fee'];
+  }
+  if (data['Monthly Compensation'] !== undefined) {
+    mapped.monthly_rate_paid_to_host = data['Monthly Compensation'];
+  }
+  if (data['Weekly Compensation'] !== undefined) {
+    mapped.weekly_rate_paid_to_host = data['Weekly Compensation'];
+  }
+
+  // Guest rules
+  if (data['Cancellation Policy'] !== undefined) {
+    mapped.cancellation_policy = data['Cancellation Policy'];
+  }
+  if (data['Preferred Gender'] !== undefined) {
+    mapped.preferred_guest_gender = data['Preferred Gender'];
+  }
+  if (data['Number of Guests'] !== undefined) {
+    mapped.max_guest_count = data['Number of Guests'];
+  }
+  if (data['Check-In Time'] !== undefined) {
+    mapped.checkin_time_of_day = data['Check-In Time'];
+  }
+  if (data['Check-Out Time'] !== undefined) {
+    mapped.checkout_time_of_day = data['Check-Out Time'];
+  }
+  if (data['Ideal Min Duration'] !== undefined) {
+    mapped.minimum_nights_per_stay = data['Ideal Min Duration'];
+  }
+  if (data['Ideal Max Duration'] !== undefined) {
+    mapped.maximum_nights_per_stay = data['Ideal Max Duration'];
+  }
+
+  // Other
+  if (data['First Day Available'] !== undefined) {
+    mapped.first_available_date = data['First Day Available'];
+  }
+  if (data['Square Footage'] !== undefined) {
+    mapped.square_feet = data['Square Footage'];
+  }
+
+  // Nightly prices (no 6-night rate exists in the listing table)
+  if (data['Price 1 night selected'] !== undefined) {
+    mapped.nightly_rate_for_1_night_stay = data['Price 1 night selected'];
+  }
+  if (data['Price 2 nights selected'] !== undefined) {
+    mapped.nightly_rate_for_2_night_stay = data['Price 2 nights selected'];
+  }
+  if (data['Price 3 nights selected'] !== undefined) {
+    mapped.nightly_rate_for_3_night_stay = data['Price 3 nights selected'];
+  }
+  if (data['Price 4 nights selected'] !== undefined) {
+    mapped.nightly_rate_for_4_night_stay = data['Price 4 nights selected'];
+  }
+  if (data['Price 5 nights selected'] !== undefined) {
+    mapped.nightly_rate_for_5_night_stay = data['Price 5 nights selected'];
+  }
+  if (data['Price 7 nights selected'] !== undefined) {
+    mapped.nightly_rate_for_7_night_stay = data['Price 7 nights selected'];
+  }
+
+  // Blocked dates
   if (data['Blocked Dates'] !== undefined) {
-    mapped['Dates - Blocked'] = data['Blocked Dates'];
+    mapped.blocked_specific_dates_json = data['Blocked Dates'];
   }
 
   return mapped;
@@ -290,7 +307,7 @@ export async function handleSubmit(
     console.log('[listing:submit] Step 1/4: Verifying listing exists...');
     const { data: existingListing, error: fetchError } = await supabase
       .from('listing')
-      .select('id, Name, Status')
+      .select('id, listing_title, listing_setup_progress_stage')
       .eq('id', listing_id)
       .single();
 
@@ -299,7 +316,7 @@ export async function handleSubmit(
       throw new Error(`Listing not found: ${listing_id}`);
     }
 
-    console.log('[listing:submit] ✅ Step 1 complete - Listing exists:', existingListing.Name);
+    console.log('[listing:submit] ✅ Step 1 complete - Listing exists:', existingListing.listing_title);
 
     // Step 2: Look up user
     console.log('[listing:submit] Step 2/4: Looking up user...');
@@ -354,24 +371,24 @@ export async function handleSubmit(
     const updateData: Record<string, unknown> = {
       ...mappedData,
       updated_at: now,
-      Status: listing_data['Status'] || 'Pending Review',
+      listing_setup_progress_stage: listing_data['Status'] || 'Pending Review',
     };
 
     // Add borough and hood FK references if found
     if (boroughId) {
-      updateData['Location - Borough'] = boroughId;
-      console.log('[listing:submit] Setting Location - Borough:', boroughId);
+      updateData.borough = boroughId;
+      console.log('[listing:submit] Setting borough:', boroughId);
     }
     if (hoodId) {
-      updateData['Location - Hood'] = hoodId;
-      console.log('[listing:submit] Setting Location - Hood:', hoodId);
+      updateData.primary_neighborhood_reference_id = hoodId;
+      console.log('[listing:submit] Setting primary_neighborhood_reference_id:', hoodId);
     }
 
     // Attach user if found (host_user_id = user.id)
     if (userId) {
-      updateData['host_user_id'] = userId;
-      updateData['Created By'] = userId;
-      updateData['Host email'] = user_email.toLowerCase();
+      updateData.host_user_id = userId;
+      updateData.created_by_user_id = userId;
+      updateData.host_email = user_email.toLowerCase();
     }
 
     const { error: updateError } = await supabase
@@ -460,7 +477,7 @@ export async function handleSubmit(
       id: listing_id,
       listing_id: listing_id,
       status: (listing_data['Status'] as string) || 'Pending Review',
-      name: (listing_data['Name'] as string) || existingListing.Name,
+      name: (listing_data['Name'] as string) || existingListing.listing_title,
       message: 'Listing submitted successfully',
       ...updateData
     };

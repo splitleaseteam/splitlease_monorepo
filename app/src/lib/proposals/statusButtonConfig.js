@@ -42,7 +42,6 @@ export async function fetchStatusConfigurations() {
   fetchPromise = (async () => {
     try {
       const { data, error } = await supabase
-        .schema('reference_table')
         .from('os_proposal_status')
         .select(`
           id,

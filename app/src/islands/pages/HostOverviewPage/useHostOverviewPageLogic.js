@@ -466,20 +466,20 @@ export function useHostOverviewPageLogic() {
         .from('virtualmeetingschedulesandlinks')
         .select('*')
         .eq('host', hostAccountId)
-        .order('"booked date"', { ascending: true });
+        .order('booked_date', { ascending: true });
 
       if (fetchError) throw fetchError;
 
       return (data || []).map(meeting => ({
         id: meeting.id,
         guest: {
-          firstName: meeting['guest name'] || 'Guest'
+          firstName: meeting.guest_name || 'Guest'
         },
         listing: {
-          name: meeting['Listing (for Co-Host feature)'] || 'Listing'
+          name: meeting.listing_for_co_host_feature || 'Listing'
         },
-        bookedDate: meeting['booked date'],
-        meetingLink: meeting['meeting link'],
+        bookedDate: meeting.booked_date,
+        meetingLink: meeting.meeting_link,
         notifications: []
       }));
     } catch (err) {

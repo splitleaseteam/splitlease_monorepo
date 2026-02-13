@@ -488,7 +488,7 @@ export async function getRoommateBookedDates(listingId, currentLeaseId) {
   try {
     const { data, error } = await supabase
       .from('booking_lease')
-      .select('"List of Booked Dates"')
+      .select('list_of_booked_dates')
       .eq('listing_id', listingId)
       .eq('lease_type', 'Active')
       .neq('id', currentLeaseId);
@@ -497,7 +497,7 @@ export async function getRoommateBookedDates(listingId, currentLeaseId) {
 
     // Combine dates from all other active leases (usually just one roommate)
     const roommateDates = data.reduce((acc, lease) => {
-      const dates = lease['List of Booked Dates'] || [];
+      const dates = lease.list_of_booked_dates || [];
       return [...acc, ...dates];
     }, []);
 

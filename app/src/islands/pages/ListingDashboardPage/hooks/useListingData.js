@@ -197,68 +197,63 @@ async function fetchLookupTables() {
     // Fetch amenities
     const { data: amenities } = await supabase
       .from('zat_features_amenity')
-      .select('id, "Name", "Icon"');
+      .select('id, name, icon');
     if (amenities) {
       amenities.forEach((a) => {
-        lookups.amenities[a.id] = { name: a.Name, icon: a.Icon };
-        lookups.amenities[a.Name] = { name: a.Name, icon: a.Icon };
+        lookups.amenities[a.id] = { name: a.name, icon: a.icon };
+        lookups.amenities[a.name] = { name: a.name, icon: a.icon };
       });
     }
 
     // Fetch safety features
     const { data: safety } = await supabase
-      .schema('reference_table')
       .from('zat_features_safetyfeature')
-      .select('id, "Name", "Icon"');
+      .select('id, name, icon');
     if (safety) {
       safety.forEach((s) => {
-        lookups.safetyFeatures[s.id] = { name: s.Name, icon: s.Icon };
+        lookups.safetyFeatures[s.id] = { name: s.name, icon: s.icon };
       });
     }
 
     // Fetch house rules
     const { data: rules } = await supabase
-      .schema('reference_table')
       .from('zat_features_houserule')
-      .select('id, "Name", "Icon"');
+      .select('id, name, icon');
     if (rules) {
       rules.forEach((r) => {
-        const icon = r.Icon && r.Icon.startsWith('//') ? 'https:' + r.Icon : r.Icon;
-        lookups.houseRules[r.id] = { name: r.Name, icon };
-        lookups.houseRules[r.Name] = { name: r.Name, icon };
+        const icon = r.icon && r.icon.startsWith('//') ? 'https:' + r.icon : r.icon;
+        lookups.houseRules[r.id] = { name: r.name, icon };
+        lookups.houseRules[r.name] = { name: r.name, icon };
       });
     }
 
     // Fetch listing types
     const { data: types } = await supabase
-      .schema('reference_table')
       .from('zat_features_listingtype')
-      .select('id, "Label ", "Icon"');
+      .select('id, label, icon');
     if (types) {
       types.forEach((t) => {
-        lookups.listingTypes[t.id] = { name: t['Label '], icon: t.Icon };
+        lookups.listingTypes[t.id] = { name: t.label, icon: t.icon };
       });
     }
 
     // Fetch parking options
     const { data: parking } = await supabase
-      .schema('reference_table')
       .from('zat_features_parkingoptions')
-      .select('id, "Label"');
+      .select('id, label');
     if (parking) {
       parking.forEach((p) => {
-        lookups.parkingOptions[p.id] = { name: p.Label };
+        lookups.parkingOptions[p.id] = { name: p.label };
       });
     }
 
     // Fetch storage options
     const { data: storage } = await supabase
-      .schema('reference_table')
       .from('zat_features_storageoptions')
-      .select('id, "Title"');
+      .select('id, title');
     if (storage) {
       storage.forEach((s) => {
-        lookups.storageOptions[s.id] = { name: s.Title };
+        lookups.storageOptions[s.id] = { name: s.title };
       });
     }
 
@@ -578,8 +573,8 @@ export function useListingData(listingId) {
           .limit(5),
         // 12C: Meeting query — fixed FK from 'Listing' to 'Listing (for Co-Host feature)'
         supabase.from('virtualmeetingschedulesandlinks')
-          .select('"booked date", "guest name", "meeting link", "meeting declined"', { count: 'exact' })
-          .eq('"Listing (for Co-Host feature)"', listingId),
+          .select('booked_date, guest_name, meeting_link, meeting_declined', { count: 'exact' })
+          .eq('listing_for_co_host_feature', listingId),
         supabase.from('external_reviews').select('*', { count: 'exact', head: true }).eq('listing_id', listingId),
         // 12D: Message thread count (NEW — dashboard previously had no message query)
         supabase.from('message_thread').select('*', { count: 'exact', head: true }).eq('listing_id', listingId),

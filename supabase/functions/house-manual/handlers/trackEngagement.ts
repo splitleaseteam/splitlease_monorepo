@@ -36,9 +36,9 @@ interface TrackEngagementResult {
 
 // Map engagement types to database column names
 const ENGAGEMENT_FIELD_MAP: Record<string, string> = {
-  link_saw: "link saw?",
-  map_saw: "map saw?",
-  narration_heard: "narration heard?",
+  link_saw: "guest_opened_visit_link",
+  map_saw: "guest_opened_map_view",
+  narration_heard: "guest_listened_to_narration",
 };
 
 /**
@@ -68,13 +68,14 @@ export async function handleTrackEngagement(
 
   // Step 1: Fetch the visit and verify guest ownership
   const { data: visit, error: visitError } = await supabaseClient
-    .from("visit")
+    .from("house_manual_visit")
     .select(`
       id,
-      "User shared with (guest)",
-      "link saw?",
-      "map saw?",
-      "narration heard?"
+      guest_user_id,
+      guest_opened_visit_link,
+      guest_opened_map_view,
+      guest_listened_to_narration,
+      timestamp_guest_first_logged_in
     `)
     .eq("id", visitId)
     .single();
@@ -96,7 +97,7 @@ export async function handleTrackEngagement(
     throw new AuthenticationError("User not found");
   }
 
-  const guestId = visit["User shared with (guest)"];
+  const guestId = visit.guest_user_id;
 
   if (userData.id !== guestId) {
     console.error(`[trackEngagement] Access denied. User ${userData.id} is not guest ${guestId}`);
@@ -111,16 +112,16 @@ export async function handleTrackEngagement(
   if (!previousValue) {
     const updatePayload: Record<string, unknown> = {
       [fieldName]: true,
-      "Modified Date": new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     // Also track first login time if this is link_saw
-    if (engagementType === "link_saw" && !visit["time guest logged in"]) {
-      updatePayload["time guest logged in"] = new Date().toISOString();
+    if (engagementType === "link_saw" && !visit.timestamp_guest_first_logged_in) {
+      updatePayload.timestamp_guest_first_logged_in = new Date().toISOString();
     }
 
     const { error: updateError } = await supabaseClient
-      .from("visit")
+      .from("house_manual_visit")
       .update(updatePayload)
       .eq("id", visitId);
 

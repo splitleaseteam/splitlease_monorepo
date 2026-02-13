@@ -363,11 +363,6 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/auth-user/index.ts"
 
-[functions.ai-signup-guest]
-enabled = true
-verify_jwt = false
-entrypoint = "./functions/ai-signup-guest/index.ts"
-
 [functions.slack]
 enabled = true
 verify_jwt = false
@@ -384,11 +379,6 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/communications/index.ts"
 
-[functions.pricing]
-enabled = true
-verify_jwt = false
-entrypoint = "./functions/pricing/index.ts"
-
 [functions.listing]
 enabled = true
 verify_jwt = false
@@ -400,11 +390,6 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/ai-gateway/deno.json"
 entrypoint = "./functions/ai-gateway/index.ts"
-
-[functions.ai-parse-profile]
-enabled = true
-verify_jwt = false
-entrypoint = "./functions/ai-parse-profile/index.ts"
 
 [functions.virtual-meeting]
 enabled = true
@@ -441,22 +426,11 @@ verify_jwt = false
 import_map = "./functions/workflow-orchestrator/deno.json"
 entrypoint = "./functions/workflow-orchestrator/index.ts"
 
-[functions.qr-generator]
-enabled = true
-verify_jwt = false
-import_map = "./functions/qr-generator/deno.json"
-entrypoint = "./functions/qr-generator/index.ts"
-
 [functions.messages]
 enabled = true
 verify_jwt = false
 import_map = "./functions/messages/deno.json"
 entrypoint = "./functions/messages/index.ts"
-
-[functions.rental-application-submit]
-enabled = true
-verify_jwt = false
-entrypoint = "./functions/rental-application-submit/index.ts"
 
 [functions.date-change-request]
 enabled = true
@@ -504,23 +478,6 @@ verify_jwt = false  # Review: Should this require authentication?
 import_map = "./functions/ai-room-redesign/deno.json"
 entrypoint = "./functions/ai-room-redesign/index.ts"
 
-[functions.ai-tools]
-enabled = true
-verify_jwt = false  # Review: Should this require authentication?
-import_map = "./functions/ai-tools/deno.json"
-entrypoint = "./functions/ai-tools/index.ts"
-
-[functions.backfill-negotiation-summaries]
-enabled = true
-verify_jwt = false  # Review: Should this require authentication?
-entrypoint = "./functions/backfill-negotiation-summaries/index.ts"
-
-[functions.co-host-requests]
-enabled = true
-verify_jwt = false  # Review: Should this require authentication?
-import_map = "./functions/co-host-requests/deno.json"
-entrypoint = "./functions/co-host-requests/index.ts"
-
 [functions.document]
 enabled = true
 verify_jwt = false  # Review: Should this require authentication?
@@ -531,16 +488,6 @@ entrypoint = "./functions/document/index.ts"
 enabled = true
 verify_jwt = false  # Review: Should this require authentication?
 entrypoint = "./functions/emergency/index.ts"
-
-[functions.experience-survey]
-enabled = true
-verify_jwt = false  # Review: Should this require authentication?
-entrypoint = "./functions/experience-survey/index.ts"
-
-[functions.guest-management]
-enabled = true
-verify_jwt = false  # Review: Should this require authentication?
-entrypoint = "./functions/guest-management/index.ts"
 
 [functions.informational-texts]
 enabled = true
@@ -580,11 +527,6 @@ entrypoint = "./functions/pricing-list/index.ts"
 enabled = true
 verify_jwt = false  # Review: Should this require authentication?
 entrypoint = "./functions/qr-codes/index.ts"
-
-[functions.query-leo]
-enabled = true
-verify_jwt = false  # Review: Should this require authentication?
-entrypoint = "./functions/query-leo/index.ts"
 
 [functions.quick-match]
 enabled = true
@@ -646,18 +588,6 @@ enabled = true
 verify_jwt = false  # Stripe signature verification, not JWT
 entrypoint = "./functions/stripe-webhook/index.ts"
 
-[functions.create-payment-intent]
-enabled = true
-verify_jwt = false  # Internal auth via Authorization header + getUser()
-entrypoint = "./functions/create-payment-intent/index.ts"
-
-[functions.process-date-change-fee]
-enabled = true
-verify_jwt = false  # Internal auth via Authorization header + getUser()
-entrypoint = "./functions/process-date-change-fee/index.ts"
-
-# P2 — Bidding System
-
 [functions.submit-bid]
 enabled = true
 verify_jwt = false  # Custom authenticateFromHeaders() helper
@@ -678,28 +608,12 @@ entrypoint = "./functions/withdraw-bid/index.ts"
 
 # P3 — User-facing Features
 
-[functions.pricing-tiers]
-enabled = true
-verify_jwt = false  # Public actions (calculate, select), optional auth
-entrypoint = "./functions/pricing-tiers/index.ts"
-
 [functions.lease-documents]
 enabled = true
 verify_jwt = false  # All actions public, called by internal workflows
 entrypoint = "./functions/lease-documents/index.ts"
 
 # P4 — Admin/Background
-
-[functions.pricing-list-bulk]
-enabled = true
-verify_jwt = false  # Service role key, admin bulk operation
-entrypoint = "./functions/pricing-list-bulk/index.ts"
-
-[functions.calendar-automation]
-enabled = true
-verify_jwt = false  # FP orchestration, public actions skip auth
-import_map = "./functions/calendar-automation/deno.json"
-entrypoint = "./functions/calendar-automation/index.ts"
 
 [functions.date-change-reminder-cron]
 enabled = true
@@ -709,7 +623,3 @@ entrypoint = "./functions/date-change-reminder-cron/index.ts"
 
 # P5 — Migration Utility
 
-[functions.temp-fix-trigger]
-enabled = true
-verify_jwt = false  # One-time migration helper, no auth
-entrypoint = "./functions/temp-fix-trigger/index.ts"

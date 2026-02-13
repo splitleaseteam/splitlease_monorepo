@@ -215,7 +215,7 @@ export async function handleCreateSuggested(
   ];
 
   const { data: existingProposals, error: duplicateCheckError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .select("id, proposal_workflow_status")
     .eq('guest_user_id', input.guestId)
     .eq('listing_id', input.listingId)
@@ -290,11 +290,10 @@ export async function handleCreateSuggested(
       id,
       email,
       rental_application_form_id,
-      "Proposals List",
-      "Favorited Listings",
-      "Tasks Completed",
-      "About Me / Bio",
-      "need for Space"
+      bio_text,
+      stated_need_for_space_text,
+      stated_special_needs_text,
+      onboarding_tasks_completed_list_json
     `)
     .eq("id", input.guestId)
     .single();
@@ -310,7 +309,7 @@ export async function handleCreateSuggested(
   // Fetch Host User
   const { data: hostUser, error: hostUserError } = await supabase
     .from("user")
-    .select(`id, email, "Proposals List"`)
+    .select(`id, email`)
     .eq("id", listingData.host_user_id)
     .single();
 
@@ -340,9 +339,12 @@ export async function handleCreateSuggested(
   // CALCULATIONS
   // ================================================
 
-  // Order ranking
-  const guestProposalsList: string[] = guestData["Proposals List"] || [];
-  const orderRanking = calculateOrderRanking(guestProposalsList.length);
+  // Order ranking from junction table (user_proposal)
+  const { count: guestProposalCount } = await supabase
+    .from('user_proposal')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', input.guestId);
+  const orderRanking = calculateOrderRanking(guestProposalCount || 0);
 
   // Complementary nights
   const complementaryNights = calculateComplementaryNights(
@@ -493,12 +495,14 @@ export async function handleCreateSuggested(
     // Timestamps
     created_at: now,
     updated_at: now,
+    original_created_at: now,
+    original_updated_at: now,
   };
 
   console.log(`[proposal:create_suggested] Inserting proposal: ${proposalId}`);
 
   const { error: proposalInsertError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .insert(proposalData);
 
   if (proposalInsertError) {
@@ -525,7 +529,7 @@ export async function handleCreateSuggested(
   console.log(`[proposal:create_suggested] Inserting thread: ${threadId}`);
 
   const { error: threadInsertError } = await supabase
-    .from("thread")
+    .from('message_thread')
     .insert(threadData);
 
   if (threadInsertError) {
@@ -583,8 +587,8 @@ export async function handleCreateSuggested(
           // Generate AI-powered summary explaining why this listing was suggested
           aiGuestSummary = await generateSuggestedProposalSummary(supabase, {
             guestFirstName: guestFirstName,
-            guestBio: input.aboutMe || guestData["About Me / Bio"] || "",
-            needForSpace: input.needForSpace || guestData["need for Space"] || "",
+            guestBio: input.aboutMe || guestData.bio_text || "",
+            needForSpace: input.needForSpace || guestData.stated_need_for_space_text || "",
             listingName: resolvedListingName,
             listingBorough: listingData.borough || "NYC",
             reservationWeeks: input.reservationSpanWeeks,
@@ -612,12 +616,12 @@ export async function handleCreateSuggested(
                 .from('negotiationsummary')
                 .insert({
                   id: summaryId,
-                  "Proposal associated": proposalId,
-                  "Created By": input.guestId,
-                  "Created Date": now,
-                  "Modified Date": now,
-                  "To Account": input.guestId,
-                  "Summary": aiGuestSummary,
+                  proposal_associated: proposalId,
+                  created_by: input.guestId,
+                  original_created_at: now,
+                  original_updated_at: now,
+                  to_account: input.guestId,
+                  summary: aiGuestSummary,
                 });
 
               if (summaryInsertError) {
@@ -779,32 +783,25 @@ export async function handleCreateSuggested(
   // ================================================
 
   const guestUpdates: Record<string, unknown> = {
-    "flexibility (last known)": guestFlexibility,
-    "recent_days_selected_json": input.daysSelected,
+    schedule_flexibility_last_known: guestFlexibility,
+    recent_days_selected_json: input.daysSelected,
     updated_at: now,
   };
 
-  // Add proposal to guest's list
-  const updatedGuestProposals = [...guestProposalsList, proposalId];
-  guestUpdates["Proposals List"] = updatedGuestProposals;
-
-  // Add listing to favorites
-  const currentFavorites = parseJsonArray<string>(guestData["Favorited Listings"], "Favorited Listings");
-  if (!currentFavorites.includes(input.listingId)) {
-    guestUpdates["Favorited Listings"] = [...currentFavorites, input.listingId];
-  }
+  // NOTE: "Proposals List" and "Favorited Listings" columns removed from user table.
+  // Junction table writes (addUserProposal, addUserListingFavorite) handle these relationships.
 
   // Save guest profile fields if provided (persist to user profile)
   if (input.aboutMe !== undefined && input.aboutMe.trim() !== "") {
-    guestUpdates["About Me / Bio"] = input.aboutMe.trim();
+    guestUpdates.bio_text = input.aboutMe.trim();
     console.log(`[proposal:create_suggested] Saving aboutMe to guest profile`);
   }
   if (input.needForSpace !== undefined && input.needForSpace.trim() !== "") {
-    guestUpdates["need for Space"] = input.needForSpace.trim();
+    guestUpdates.stated_need_for_space_text = input.needForSpace.trim();
     console.log(`[proposal:create_suggested] Saving needForSpace to guest profile`);
   }
   if (input.specialNeeds !== undefined && input.specialNeeds.trim() !== "") {
-    guestUpdates["special needs"] = input.specialNeeds.trim();
+    guestUpdates.stated_special_needs_text = input.specialNeeds.trim();
     console.log(`[proposal:create_suggested] Saving specialNeeds to guest profile`);
   }
 
@@ -820,22 +817,17 @@ export async function handleCreateSuggested(
     console.log(`[proposal:create_suggested] Guest user updated`);
   }
 
-  // Dual-write to junction tables
+  // Write to junction tables
   await addUserProposal(supabase, input.guestId, proposalId, 'guest');
-  if (!currentFavorites.includes(input.listingId)) {
-    await addUserListingFavorite(supabase, input.guestId, input.listingId);
-  }
+  await addUserListingFavorite(supabase, input.guestId, input.listingId);
 
   // ================================================
   // UPDATE HOST USER
   // ================================================
 
-  const hostProposals: string[] = hostUserData["Proposals List"] || [];
-
   const { error: hostUpdateError } = await supabase
     .from("user")
     .update({
-      "Proposals List": [...hostProposals, proposalId],
       updated_at: now,
     })
     .eq("id", hostUserData.id);
@@ -847,7 +839,7 @@ export async function handleCreateSuggested(
     console.log(`[proposal:create_suggested] Host user updated`);
   }
 
-  // Dual-write to junction tables
+  // Write to junction table
   await addUserProposal(supabase, hostUserData.id, proposalId, 'host');
 
   // ================================================

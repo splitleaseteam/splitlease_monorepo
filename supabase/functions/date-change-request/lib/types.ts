@@ -144,54 +144,52 @@ export interface RestoreThrottleAbilityResponse {
 
 export interface DateChangeRequestData {
   id: string;
-  'Lease': string | null;
-  'Requested by': string | null;
-  'Request receiver': string | null;
-  'type of request': RequestType;
-  'date added': string | null;
-  'date removed': string | null;
-  'Message from Requested by': string | null;
-  'Price/Rate of the night': number | null;
-  '%compared to regular nightly price': number | null;
-  'request status': RequestStatus;
-  'expiration date': string | null;
-  'visible to the guest?': boolean;
-  'visible to the host?': boolean;
-  'Created Date': string;
-  'Created By': string | null;
-  'Modified Date': string;
-  'answer date': string | null;
-  'Answer to Request': string | null;
-  'Stay Associated 1': string | null;
-  'Stay Associated 2': string | null;
-  'LIST of NEW Dates in the stay': string[] | null;
-  'LIST of OLD Dates in the stay': string[] | null;
+  lease: string | null;
+  requested_by: string | null;
+  request_receiver: string | null;
+  type_of_request: RequestType;
+  date_added: string | null;
+  date_removed: string | null;
+  message_from_requested_by: string | null;
+  price_rate_of_the_night: number | null;
+  compared_to_regular_nightly_price: number | null;
+  request_status: RequestStatus;
+  expiration_date: string | null;
+  visible_to_the_guest: boolean;
+  visible_to_the_host: boolean;
+  created_at: string;
+  created_by: string | null;
+  updated_at: string;
+  answer_date: string | null;
+  answer_to_request: string | null;
+  stay_associated_1: string | null;
+  stay_associated_2: string | null;
+  list_of_new_dates_in_the_stay: string[] | null;
+  list_of_old_dates_in_the_stay: string[] | null;
   pending: boolean;
 }
 
 export interface LeaseData {
   id: string;
-  'Agreement Number': string | null;
-  'Guest': string | null;
-  'Host': string | null;
-  'Listing': string | null;
-  'Reservation Period : Start': string | null;
-  'Reservation Period : End': string | null;
-  'List of Booked Dates': string[] | null;
-  'Date Change Requests': string[] | null;
-  'Lease Status': string | null;
-  // Throttling fields (synced from Bubble)
-  'Throttling - guest ability to create requests?': boolean | null;
-  'Throttling - host ability to create requests?': boolean | null;
-  'Throttling - guest NOT show warning popup': boolean | null;
-  'Throttling - host NOT show warning popup': boolean | null;
+  agreement_number: string | null;
+  guest_user_id: string | null;
+  host_user_id: string | null;
+  listing_id: string | null;
+  reservation_start_date: string | null;
+  reservation_end_date: string | null;
+  booked_dates_json: string[] | null;
+  lease_type: string | null;
+  guest_can_create_date_change_requests: boolean | null;
+  host_can_create_date_change_requests: boolean | null;
+  hide_guest_throttle_warning_popup: boolean | null;
+  hide_host_throttle_warning_popup: boolean | null;
 }
 
 export interface UserData {
   id: string;
   email: string | null;
-  'Name - First': string | null;
-  'Name - Full': string | null;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -341,14 +339,12 @@ export interface EmailTemplateVariables {
  */
 export interface ListingData {
   id: string;
-  Title?: string | null;
-  'Display Name'?: string | null;
-  'Display Address'?: string | null;
-  Address?: string | null;
-  'Address Line 1'?: string | null;
-  City?: string | null;
-  State?: string | null;
-  'Zip Code'?: string | null;
+  listing_title?: string | null;
+  host_display_name?: string | null;
+  address_with_lat_lng_json?: Record<string, unknown> | null;
+  city?: string | null;
+  state?: string | null;
+  zip_code?: string | null;
 }
 
 /**

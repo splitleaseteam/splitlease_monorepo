@@ -40,7 +40,7 @@ export async function handleStepD(
   // Update lease if it exists to simulate approaching end
   if (leaseId) {
     const { error: updateError } = await supabase
-      .from('lease')
+      .from('booking_lease')
       .update({
         end_date: approachingEndDate.toISOString().split('T')[0],
         status: 'Ending Soon'

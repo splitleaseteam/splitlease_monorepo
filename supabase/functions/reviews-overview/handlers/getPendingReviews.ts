@@ -45,7 +45,7 @@ export async function handleGetPendingReviews(
   // Build query based on user type
   // Pending = completed stays without a review from this user
   let query = supabase
-    .from("bookings_stays")
+    .from("lease_weekly_stay")
     .select(`
       id,
       lease_id,
@@ -67,8 +67,8 @@ export async function handleGetPendingReviews(
         id,
         host_id,
         guest_id,
-        host:host_id ( id, name_first, name_last ),
-        guest:guest_id ( id, name_first, name_last )
+        host:host_id ( id, first_name, last_name ),
+        guest:guest_id ( id, first_name, last_name )
       )
     `)
     .eq("status", "completed")
@@ -128,14 +128,14 @@ export async function handleGetPendingReviews(
         // Host reviews Guest
         revieweeId = lease?.guest?.id || stay.guest_id;
         revieweeName = lease?.guest
-          ? `${lease.guest.name_first || ""} ${lease.guest.name_last || ""}`.trim()
+          ? `${lease.guest.first_name || ""} ${lease.guest.last_name || ""}`.trim()
           : "Guest";
         revieweeType = "guest";
       } else {
         // Guest reviews Host
         revieweeId = lease?.host?.id || stay.host_id;
         revieweeName = lease?.host
-          ? `${lease.host.name_first || ""} ${lease.host.name_last || ""}`.trim()
+          ? `${lease.host.first_name || ""} ${lease.host.last_name || ""}`.trim()
           : "Host";
         revieweeType = "host";
       }
@@ -158,7 +158,7 @@ export async function handleGetPendingReviews(
 
   // Get total count for pagination
   let countQuery = supabase
-    .from("bookings_stays")
+    .from("lease_weekly_stay")
     .select("*", { count: "exact", head: true })
     .eq("status", "completed");
 

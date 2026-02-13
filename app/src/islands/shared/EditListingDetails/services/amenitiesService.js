@@ -21,10 +21,10 @@ export async function getCommonAmenitiesByType(type) {
 
     const { data, error } = await supabase
       .from('zat_features_amenity')
-      .select('Name, "pre-set?", "Type - Amenity Categories"')
-      .eq('"pre-set?"', true)
-      .eq('"Type - Amenity Categories"', type)
-      .order('Name', { ascending: true });
+      .select('name, is_preset, type_amenity_categories')
+      .eq('is_preset', true)
+      .eq('type_amenity_categories', type)
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('[amenitiesService] Error fetching common amenities:', error);
@@ -37,7 +37,7 @@ export async function getCommonAmenitiesByType(type) {
     }
 
     // Extract just the names
-    const names = data.map((amenity) => amenity.Name);
+    const names = data.map((amenity) => amenity.name);
     console.log('[amenitiesService] Fetched amenities:', names);
     return names;
   } catch (err) {

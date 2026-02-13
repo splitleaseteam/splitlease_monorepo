@@ -73,14 +73,14 @@ export async function handleGetReviewDetails(
       ),
       reviewer:reviewer_id (
         id,
-        name_first,
-        name_last,
+        first_name,
+        last_name,
         profile_image_url
       ),
       reviewee:reviewee_id (
         id,
-        name_first,
-        name_last,
+        first_name,
+        last_name,
         profile_image_url
       ),
       rating_details:review_rating_detail (
@@ -134,12 +134,12 @@ export async function handleGetReviewDetails(
     review_type: review.review_type,
     reviewer_id: review.reviewer_id,
     reviewer_name: reviewer
-      ? `${reviewer.name_first || ""} ${reviewer.name_last || ""}`.trim()
+      ? `${reviewer.first_name || ""} ${reviewer.last_name || ""}`.trim()
       : "Anonymous",
     reviewer_image_url: reviewer?.profile_image_url || null,
     reviewee_id: review.reviewee_id,
     reviewee_name: reviewee
-      ? `${reviewee.name_first || ""} ${reviewee.name_last || ""}`.trim()
+      ? `${reviewee.first_name || ""} ${reviewee.last_name || ""}`.trim()
       : "Unknown",
     reviewee_image_url: reviewee?.profile_image_url || null,
     overall_rating: review.overall_rating,

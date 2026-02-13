@@ -20,9 +20,8 @@ export default function HostGuaranteePage() {
     async function loadFaqs() {
       try {
         const { data, error } = await supabase
-          .schema('reference_table')
           .from('zat_faq')
-          .select('id, Question, Answer')
+          .select('id, question, answer')
           .in('id', FAQ_IDS);
 
         if (error) throw error;
@@ -279,11 +278,11 @@ export default function HostGuaranteePage() {
                       onKeyPress={(e) => handleKeyPress(e, index)}
                     >
                       <span className="guarantee-accordion-icon"></span>
-                      <h3>{faq.Question}</h3>
+                      <h3>{faq.question}</h3>
                     </div>
                     <div className="guarantee-accordion-content">
                       <div className="guarantee-accordion-content-inner">
-                        <p>{faq.Answer}</p>
+                        <p>{faq.answer}</p>
                       </div>
                     </div>
                   </div>

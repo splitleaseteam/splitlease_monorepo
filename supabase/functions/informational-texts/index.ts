@@ -20,28 +20,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 };
 
-// Column name mapping: JavaScript key <-> Database column
-// Database uses Bubble-style column names with spaces
-const COLUMN_MAP = {
-  // JS key: DB column
-  tagTitle: 'Information Tag-Title',
-  desktop: 'Desktop copy',
-  desktopPlus: 'Desktop+ copy',
-  mobile: 'Mobile copy',
-  ipad: 'iPad copy',
-  showMore: 'show more available?',
-  hasLink: 'Link',
-  createdBy: 'Created By',
-  createdDate: 'Created Date',
-  modifiedDate: 'Modified Date',
-};
-
-// Reverse mapping for DB -> JS conversion
-const REVERSE_COLUMN_MAP: Record<string, string> = {};
-for (const [jsKey, dbCol] of Object.entries(COLUMN_MAP)) {
-  REVERSE_COLUMN_MAP[dbCol] = jsKey;
-}
-
 console.log("[informational-texts] Edge Function initializing...");
 
 Deno.serve(async (req: Request) => {
@@ -159,39 +137,6 @@ async function authenticateFromHeaders(
 }
 
 /**
- * Convert JS object keys to database column names
- */
-function _toDbColumns(jsData: Record<string, unknown>): Record<string, unknown> {
-  const dbData: Record<string, unknown> = {};
-  for (const [jsKey, value] of Object.entries(jsData)) {
-    const dbCol = COLUMN_MAP[jsKey as keyof typeof COLUMN_MAP];
-    if (dbCol) {
-      dbData[dbCol] = value;
-    } else if (jsKey === 'id') {
-      dbData['id'] = value;
-    }
-  }
-  return dbData;
-}
-
-/**
- * Convert database row to JS object with friendly keys
- */
-function toJsKeys(dbRow: Record<string, unknown>): Record<string, unknown> {
-  const jsData: Record<string, unknown> = {};
-  for (const [dbCol, value] of Object.entries(dbRow)) {
-    const jsKey = REVERSE_COLUMN_MAP[dbCol];
-    if (jsKey) {
-      jsData[jsKey] = value;
-    } else {
-      // Pass through unmapped columns as-is (id, created_at, updated_at, etc.)
-      jsData[dbCol] = value;
-    }
-  }
-  return jsData;
-}
-
-/**
  * Generate a unique ID for new entries
  * Format: text_YYYYMMDD_HHMMSS_XXX (matches existing Bubble-style IDs)
  */
@@ -217,12 +162,12 @@ async function handleList(
   let query = supabase
     .from('informationaltexts')
     .select('*', { count: 'exact' })
-    .order('Created Date', { ascending: false })
+    .order('original_created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   // Optional search by tag title
   if (search && search.trim()) {
-    query = query.ilike('Information Tag-Title', `%${search}%`);
+    query = query.ilike('information_tag_title', `%${search}%`);
   }
 
   const { data, error, count } = await query;
@@ -232,10 +177,7 @@ async function handleList(
     throw new Error(`Failed to fetch entries: ${error.message}`);
   }
 
-  // Convert to JS-friendly keys
-  const entries = (data || []).map(toJsKeys);
-
-  return { entries, total: count || 0, limit, offset };
+  return { entries: data || [], total: count || 0, limit, offset };
 }
 
 /**
@@ -264,7 +206,7 @@ async function handleGet(
     throw new Error(`Failed to fetch entry: ${error.message}`);
   }
 
-  return toJsKeys(data);
+  return data;
 }
 
 /**
@@ -272,51 +214,51 @@ async function handleGet(
  */
 async function handleCreate(
   payload: {
-    tagTitle: string;
-    desktop: string;
-    desktopPlus?: string;
-    mobile?: string;
-    ipad?: string;
-    showMore?: boolean;
-    hasLink?: boolean;
+    information_tag_title: string;
+    desktop_copy: string;
+    desktop_copy_legacy?: string;
+    mobile_copy?: string;
+    ipad_copy?: string;
+    show_more_available?: boolean;
+    link?: boolean;
   },
   supabase: SupabaseClient,
   user: { id: string; email: string }
 ) {
-  const { tagTitle, desktop, desktopPlus, mobile, ipad, showMore, hasLink } = payload;
+  const { information_tag_title, desktop_copy, desktop_copy_legacy, mobile_copy, ipad_copy, show_more_available, link } = payload;
 
   // Validate required fields
-  if (!tagTitle || !tagTitle.trim()) {
-    throw new Error('tagTitle is required');
+  if (!information_tag_title || !information_tag_title.trim()) {
+    throw new Error('information_tag_title is required');
   }
-  if (!desktop || !desktop.trim()) {
-    throw new Error('desktop content is required');
+  if (!desktop_copy || !desktop_copy.trim()) {
+    throw new Error('desktop_copy is required');
   }
 
   // Check for duplicate tag title
   const { data: existing } = await supabase
     .from('informationaltexts')
     .select('id')
-    .eq('Information Tag-Title', tagTitle.trim())
+    .eq('information_tag_title', information_tag_title.trim())
     .maybeSingle();
 
   if (existing) {
-    throw new Error(`Entry with tag title "${tagTitle}" already exists`);
+    throw new Error(`Entry with tag title "${information_tag_title}" already exists`);
   }
 
   const now = new Date().toISOString();
   const newEntry = {
     'id': generateId(),
-    'Information Tag-Title': tagTitle.trim(),
-    'Desktop copy': desktop,
-    'Desktop+ copy': desktopPlus || null,
-    'Mobile copy': mobile || null,
-    'iPad copy': ipad || null,
-    'show more available?': showMore || false,
-    'Link': hasLink || false,
-    'Created By': user.email,
-    'Created Date': now,
-    'Modified Date': now,
+    information_tag_title: information_tag_title.trim(),
+    desktop_copy,
+    desktop_copy_legacy: desktop_copy_legacy || null,
+    mobile_copy: mobile_copy || null,
+    ipad_copy: ipad_copy || null,
+    show_more_available: show_more_available || false,
+    link: link || false,
+    created_by: user.email,
+    original_created_at: now,
+    original_updated_at: now,
     'created_at': now,
     'updated_at': now,
   };
@@ -332,7 +274,7 @@ async function handleCreate(
     throw new Error(`Failed to create entry: ${error.message}`);
   }
 
-  return toJsKeys(data);
+  return data;
 }
 
 /**
@@ -341,17 +283,17 @@ async function handleCreate(
 async function handleUpdate(
   payload: {
     id: string;
-    tagTitle?: string;
-    desktop?: string;
-    desktopPlus?: string;
-    mobile?: string;
-    ipad?: string;
-    showMore?: boolean;
-    hasLink?: boolean;
+    information_tag_title?: string;
+    desktop_copy?: string;
+    desktop_copy_legacy?: string;
+    mobile_copy?: string;
+    ipad_copy?: string;
+    show_more_available?: boolean;
+    link?: boolean;
   },
   supabase: SupabaseClient
 ) {
-  const { id, tagTitle, ...rest } = payload;
+  const { id, information_tag_title, desktop_copy, desktop_copy_legacy, mobile_copy, ipad_copy, show_more_available, link } = payload;
 
   if (!id) {
     throw new Error('id is required');
@@ -359,53 +301,53 @@ async function handleUpdate(
 
   // Build update object with only provided fields
   const updateData: Record<string, unknown> = {
-    'Modified Date': new Date().toISOString(),
+    original_updated_at: new Date().toISOString(),
     'updated_at': new Date().toISOString(),
   };
 
-  if (tagTitle !== undefined) {
-    if (!tagTitle.trim()) {
-      throw new Error('tagTitle cannot be empty');
+  if (information_tag_title !== undefined) {
+    if (!information_tag_title.trim()) {
+      throw new Error('information_tag_title cannot be empty');
     }
     // Check for duplicate if changing tag title
     const { data: existing } = await supabase
       .from('informationaltexts')
       .select('id')
-      .eq('Information Tag-Title', tagTitle.trim())
+      .eq('information_tag_title', information_tag_title.trim())
       .neq('id', id)
       .maybeSingle();
 
     if (existing) {
-      throw new Error(`Entry with tag title "${tagTitle}" already exists`);
+      throw new Error(`Entry with tag title "${information_tag_title}" already exists`);
     }
-    updateData['Information Tag-Title'] = tagTitle.trim();
+    updateData.information_tag_title = information_tag_title.trim();
   }
 
-  if (rest.desktop !== undefined) {
-    if (!rest.desktop.trim()) {
-      throw new Error('desktop content cannot be empty');
+  if (desktop_copy !== undefined) {
+    if (!desktop_copy.trim()) {
+      throw new Error('desktop_copy cannot be empty');
     }
-    updateData['Desktop copy'] = rest.desktop;
+    updateData.desktop_copy = desktop_copy;
   }
 
-  if (rest.desktopPlus !== undefined) {
-    updateData['Desktop+ copy'] = rest.desktopPlus || null;
+  if (desktop_copy_legacy !== undefined) {
+    updateData.desktop_copy_legacy = desktop_copy_legacy || null;
   }
 
-  if (rest.mobile !== undefined) {
-    updateData['Mobile copy'] = rest.mobile || null;
+  if (mobile_copy !== undefined) {
+    updateData.mobile_copy = mobile_copy || null;
   }
 
-  if (rest.ipad !== undefined) {
-    updateData['iPad copy'] = rest.ipad || null;
+  if (ipad_copy !== undefined) {
+    updateData.ipad_copy = ipad_copy || null;
   }
 
-  if (rest.showMore !== undefined) {
-    updateData['show more available?'] = rest.showMore;
+  if (show_more_available !== undefined) {
+    updateData.show_more_available = show_more_available;
   }
 
-  if (rest.hasLink !== undefined) {
-    updateData['Link'] = rest.hasLink;
+  if (link !== undefined) {
+    updateData.link = link;
   }
 
   const { data, error } = await supabase
@@ -423,7 +365,7 @@ async function handleUpdate(
     throw new Error(`Failed to update entry: ${error.message}`);
   }
 
-  return toJsKeys(data);
+  return data;
 }
 
 /**
@@ -442,7 +384,7 @@ async function handleDelete(
   // Verify entry exists
   const { data: existing, error: fetchError } = await supabase
     .from('informationaltexts')
-    .select('id, "Information Tag-Title"')
+    .select('id, information_tag_title')
     .eq('id', id)
     .single();
 
@@ -460,7 +402,7 @@ async function handleDelete(
     throw new Error(`Failed to delete entry: ${deleteError.message}`);
   }
 
-  return { deleted: true, id, tagTitle: existing['Information Tag-Title'] };
+  return { deleted: true, id, information_tag_title: existing.information_tag_title };
 }
 
 console.log("[informational-texts] Edge Function ready");

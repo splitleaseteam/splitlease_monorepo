@@ -46,11 +46,12 @@ export async function handleCompleteStay(
   // Step 1: Update lease status to completed (if lease exists)
   if (leaseId) {
     try {
+      // NOTE: booking_lease has no status column — lease completion is tracked
+      // via the proposal workflow status and stay records
       const { error: leaseError } = await supabase
-        .from('bookings_leases')
+        .from('booking_lease')
         .update({
-          'Lease Status': 'Completed',
-          'Modified Date': new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .eq('id', leaseId);
 
@@ -66,7 +67,7 @@ export async function handleCompleteStay(
 
   // Step 2: Update proposal status
   const { error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
       proposal_workflow_status: 'Stay Completed',
       updated_at: new Date().toISOString(),
@@ -79,7 +80,7 @@ export async function handleCompleteStay(
 
   // Step 3: Get guest and host IDs from proposal
   const { data: proposal } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('guest_user_id, host_user_id, listing_id')
     .eq('id', proposalId)
     .single();

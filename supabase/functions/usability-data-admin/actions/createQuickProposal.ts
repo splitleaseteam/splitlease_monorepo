@@ -64,7 +64,6 @@ export async function handleCreateQuickProposal(
   });
 
   // Get listing details to find the host
-  // SCHEMA NOTE: Column is "Host User" not "Host"
   const { data: listing, error: listingError } = await supabase
     .from('listing')
     .select('id, host_user_id, listing_title')
@@ -81,36 +80,72 @@ export async function handleCreateQuickProposal(
     throw new Error('Listing does not have a host');
   }
 
+  const { data: guestUser, error: guestError } = await supabase
+    .from('user')
+    .select('id, email')
+    .eq('id', guestId)
+    .single();
+
+  if (guestError || !guestUser?.email) {
+    throw new Error(`Failed to fetch guest email: ${guestError?.message || 'guest email missing'}`);
+  }
+
   // Generate unique IDs for proposal and thread
   const proposalId = await generatePlatformId(supabase);
   const threadId = await generatePlatformId(supabase);
 
   const timestamp = new Date().toISOString();
+  const moveInStart = new Date(moveInDate);
+  const moveInEnd = new Date(moveInStart.getTime() + 2 * 86400000);
+  const moveOut = new Date(moveInStart.getTime() + reservationWeeks * 7 * 86400000);
+  const firstDay = Math.min(...selectedDayIndices);
+  const lastDay = Math.max(...selectedDayIndices);
 
   // Create the proposal
   const proposalData = {
     id: proposalId,
-    'Unique ID': proposalId,
+    legacy_platform_id: proposalId,
     guest_user_id: guestId,
     host_user_id: hostId,
     listing_id: listingId,
-    'Move in From': moveInDate,
-    'Reservation Days (text)': JSON.stringify(selectedDayIndices),
-    'Reservation Span': reservationWeeks,
-    'T: 4 x weeks\' rent': fourWeeksRent,
-    'Actual Reservation Price': totalPrice,
-    'Nightly Rate': nightlyPrice,
-    notes: notes || '',
+    created_by_user_id: guestId,
+    guest_email_address: guestUser.email,
+    move_in_range_start_date: moveInStart.toISOString(),
+    move_in_range_end_date: moveInEnd.toISOString(),
+    planned_move_out_date: moveOut.toISOString(),
+    reservation_span_in_weeks: reservationWeeks,
+    reservation_span_text: `${reservationWeeks} weeks`,
+    actual_weeks_in_reservation_span: reservationWeeks,
+    nights_per_week_count: selectedDayIndices.length,
+    checkin_day_of_week_number: firstDay,
+    checkout_day_of_week_number: (lastDay + 1) % 7,
+    guest_selected_days_numbers_json: selectedDayIndices,
+    guest_selected_nights_numbers_json: selectedDayIndices,
+    four_week_rent_amount: fourWeeksRent,
+    total_reservation_price_for_guest: totalPrice,
+    calculated_nightly_price: nightlyPrice,
+    display_sort_order: 1,
+    complimentary_free_nights_numbers_json: [],
+    proposal_event_log_json: [
+      {
+        event: 'quick_proposal_created',
+        timestamp,
+      },
+    ],
+    is_finalized: false,
+    is_rental_application_requested: false,
+    guest_introduction_message: notes || '[USABILITY] Quick proposal generated',
     proposal_workflow_status: 'Pending',
-    'Status for Host': 'Pending',
-    'Status for Guest': 'Pending',
+    rental_type: 'nightly',
+    is_test_data: true,
     created_at: timestamp,
     updated_at: timestamp,
-    Thread: threadId,
+    original_created_at: timestamp,
+    original_updated_at: timestamp,
   };
 
   const { error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .insert(proposalData);
 
   if (proposalError) {

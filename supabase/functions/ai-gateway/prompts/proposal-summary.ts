@@ -80,20 +80,20 @@ registerLoader({
     try {
       // Fetch proposal
       const { data: proposal, error: proposalError } = await supabaseClient
-        .from("proposal")
+        .from("booking_proposal")
         .select(`
           id,
-          "Guest",
-          "Listing",
-          "Move in range start",
-          "Move in range end",
-          "Reservation Span (Weeks)",
-          "nights per week (num)",
-          "Days Selected",
-          "proposal nightly price",
-          "Total Price for Reservation (guest)",
-          "Guest flexibility",
-          "Comment"
+          guest_user_id,
+          listing_id,
+          move_in_range_start_date,
+          move_in_range_end_date,
+          reservation_span_in_weeks,
+          nights_per_week_count,
+          guest_selected_days_numbers_json,
+          calculated_nightly_price,
+          total_reservation_price_for_guest,
+          guest_schedule_flexibility_text,
+          guest_introduction_message
         `)
         .eq("id", proposalId)
         .single();
@@ -105,11 +105,11 @@ registerLoader({
 
       // Fetch guest
       let guestName = "Guest";
-      if (proposal.Guest) {
+      if (proposal.guest_user_id) {
         const { data: guest } = await supabaseClient
           .from("user")
           .select(`first_name, last_name`)
-          .eq("id", proposal.Guest)
+          .eq("id", proposal.guest_user_id)
           .single();
 
         if (guest) {
@@ -120,21 +120,21 @@ registerLoader({
 
       // Fetch listing
       let listingName = "Property";
-      if (proposal.Listing) {
+      if (proposal.listing_id) {
         const { data: listing } = await supabaseClient
           .from("listing")
-          .select("Name")
-          .eq("id", proposal.Listing)
+          .select("listing_title")
+          .eq("id", proposal.listing_id)
           .single();
 
         if (listing) {
-          listingName = listing.Name || "Property";
+          listingName = listing.listing_title || "Property";
         }
       }
 
       // Convert day indices to names
       const dayNames = ["", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-      const daysSelected = (proposal["Days Selected"] as number[] || [])
+      const daysSelected = (proposal.guest_selected_days_numbers_json as number[] || [])
         .map((d: number) => dayNames[d] || "")
         .filter(Boolean)
         .join(", ");
@@ -144,15 +144,15 @@ registerLoader({
         proposalId: proposal.id,
         guestName,
         listingName,
-        moveInStart: proposal["Move in range start"],
-        moveInEnd: proposal["Move in range end"],
-        durationWeeks: proposal["Reservation Span (Weeks)"],
-        nightsPerWeek: proposal["nights per week (num)"],
+        moveInStart: proposal.move_in_range_start_date,
+        moveInEnd: proposal.move_in_range_end_date,
+        durationWeeks: proposal.reservation_span_in_weeks,
+        nightsPerWeek: proposal.nights_per_week_count,
         daysSelected,
-        nightlyPrice: proposal["proposal nightly price"],
-        totalPrice: proposal["Total Price for Reservation (guest)"],
-        guestFlexibility: proposal["Guest flexibility"],
-        guestComment: proposal["Comment"] || "No message provided",
+        nightlyPrice: proposal.calculated_nightly_price,
+        totalPrice: proposal.total_reservation_price_for_guest,
+        guestFlexibility: proposal.guest_schedule_flexibility_text,
+        guestComment: proposal.guest_introduction_message || "No message provided",
       };
     } catch (error) {
       console.error(`[Loader:proposal-data] Error: ${error}`);

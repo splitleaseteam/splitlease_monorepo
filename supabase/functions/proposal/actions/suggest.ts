@@ -83,11 +83,12 @@ export async function handleSuggest(
   // ================================================
 
   const { data: originProposal, error: proposalError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .select(`
       id,
       listing_id,
       guest_user_id,
+      guest_email_address,
       guest_selected_days_numbers_json,
       guest_selected_nights_numbers_json,
       move_in_range_start_date,
@@ -96,6 +97,9 @@ export async function handleSuggest(
       reservation_span_text,
       nights_per_week_count,
       calculated_nightly_price,
+      four_week_rent_amount,
+      total_reservation_price_for_guest,
+      actual_weeks_in_reservation_span,
       guest_schedule_flexibility_text,
       preferred_roommate_gender,
       checkin_day_of_week_number,
@@ -269,6 +273,7 @@ export async function handleSuggest(
   for (const listing of suggestionsToCreate) {
     try {
       // Create suggestion proposal with reference to origin
+      const now = new Date().toISOString();
       const suggestionData = {
         listing_id: listing.id,
         guest_user_id: originProposal.guest_user_id,
@@ -288,17 +293,29 @@ export async function handleSuggest(
         checkout_day_of_week_number: originProposal.checkout_day_of_week_number,
         cleaning_fee_amount: listing.cleaning_fee_amount || 0,
         damage_deposit_amount: listing.damage_deposit_amount || 0,
+        // NOT NULL required fields (carried from origin proposal)
+        guest_email_address: originProposal.guest_email_address,
+        four_week_rent_amount: originProposal.four_week_rent_amount || 0,
+        total_reservation_price_for_guest: originProposal.total_reservation_price_for_guest || 0,
+        actual_weeks_in_reservation_span: originProposal.actual_weeks_in_reservation_span || originProposal.reservation_span_in_weeks,
+        complimentary_free_nights_numbers_json: [],
+        proposal_event_log_json: [`Suggestion created on ${new Date().toLocaleString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit", hour: "numeric", minute: "2-digit", hour12: true })}`],
+        display_sort_order: 1,
+        is_finalized: false,
+        is_rental_application_requested: false,
         // Mark as suggestion
-        "Is Suggested": true,
-        "Origin Proposal": input.origin_proposal_id,
-        "Suggested Reason": input.suggestion_type,
+        is_suggested: true,
+        origin_proposal_id: input.origin_proposal_id,
+        suggested_reason: input.suggestion_type,
         is_deleted: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: now,
+        updated_at: now,
+        original_created_at: now,
+        original_updated_at: now,
       };
 
       const { data: newSuggestion, error: createError } = await supabase
-        .from("proposal")
+        .from("booking_proposal")
         .insert(suggestionData)
         .select("id")
         .single();

@@ -36,18 +36,18 @@ async function fetchInformationalTexts() {
   try {
     const { data, error } = await supabase
       .from('informationaltexts')
-      .select('id, "Information Tag-Title", "Desktop copy", "Mobile copy", "Desktop+ copy", "show more available?"');
+      .select('id, information_tag_title, desktop_copy, mobile_copy, desktop_copy_legacy, show_more_available');
 
     if (error) throw error;
 
     // Transform data into a map keyed by tag title
     const textsMap = {};
     data.forEach(item => {
-      textsMap[item['Information Tag-Title']] = {
-        desktop: item['Desktop copy'],
-        mobile: item['Mobile copy'],
-        desktopPlus: item['Desktop+ copy'],
-        showMore: item['show more available?']
+      textsMap[item.information_tag_title] = {
+        desktop: item.desktop_copy,
+        mobile: item.mobile_copy,
+        desktopPlus: item.desktop_copy_legacy,
+        showMore: item.show_more_available
       };
     });
 

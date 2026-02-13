@@ -30,7 +30,7 @@ export async function handleAcceptCounteroffer(
 
   // Fetch proposal to get counteroffer terms and user IDs
   const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('*, host_proposed_nightly_price, host_proposed_nights_per_week, host_proposed_checkin_day, host_proposed_checkout_day, guest_user_id, host_user_id')
     .eq('id', proposalId)
     .single();
@@ -79,7 +79,7 @@ export async function handleAcceptCounteroffer(
   }
 
   const { error: updateError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update(updateData)
     .eq('id', proposalId);
 
@@ -102,7 +102,7 @@ export async function handleAcceptCounteroffer(
 
     // Strategy 1: Look up thread by Proposal FK
     const { data: threadByProposal, error: threadError } = await supabase
-      .from('thread')
+      .from('message_thread')
       .select('id')
       .eq('proposal_id', proposalId)
       .limit(1)
@@ -120,7 +120,7 @@ export async function handleAcceptCounteroffer(
       console.log('[accept_counteroffer] No thread found by Proposal FK, trying host+guest+listing match');
 
       const { data: threadByMatch, error: matchError } = await supabase
-        .from('thread')
+        .from('message_thread')
         .select('id')
         .eq('host_user_id', proposal.host_user_id)
         .eq('guest_user_id', proposal.guest_user_id)
@@ -138,7 +138,7 @@ export async function handleAcceptCounteroffer(
       // If found via Strategy 2, update the Proposal FK for future lookups
       if (threadId) {
         const { error: threadUpdateError } = await supabase
-          .from('thread')
+          .from('message_thread')
           .update({
             proposal_id: proposalId,
             updated_at: new Date().toISOString()
@@ -172,7 +172,7 @@ export async function handleAcceptCounteroffer(
 
       const now = new Date().toISOString();
       const { error: createError } = await supabase
-        .from('thread')
+        .from('message_thread')
         .insert({
           id: threadId,
           host_user_id: proposal.host_user_id,

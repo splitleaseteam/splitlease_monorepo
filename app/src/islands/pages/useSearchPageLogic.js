@@ -633,19 +633,18 @@ export function useSearchPageLogic() {
     const loadBoroughs = async () => {
       try {
         const { data, error } = await supabase
-          .schema('reference_table')
           .from('zat_geo_borough_toplevel')
-          .select('id, "Display Borough"')
-          .order('"Display Borough"', { ascending: true })
+          .select('id, display_borough')
+          .order('display_borough', { ascending: true })
 
         if (error) throw error
 
         const boroughList = data
-          .filter((b) => b['Display Borough'] && b['Display Borough'].trim())
+          .filter((b) => b.display_borough && b.display_borough.trim())
           .map((b) => ({
             id: b.id,
-            name: b['Display Borough'].trim(),
-            value: b['Display Borough']
+            name: b.display_borough.trim(),
+            value: b.display_borough
               .trim()
               .toLowerCase()
               .replace(/\s+county\s+nj/i, '')
@@ -680,10 +679,9 @@ export function useSearchPageLogic() {
 
       try {
         let query = supabase
-          .schema('reference_table')
           .from('zat_geo_hood_mediumlevel')
-          .select('id, Display, "Geo-Borough"')
-          .order('Display', { ascending: true })
+          .select('id, display, geo_borough')
+          .order('display', { ascending: true })
 
         // If boroughs are selected, filter neighborhoods to those boroughs
         // If no boroughs selected (all boroughs), load all neighborhoods
@@ -692,7 +690,7 @@ export function useSearchPageLogic() {
             .map(value => boroughs.find(b => b.value === value)?.id)
             .filter(Boolean)
           if (selectedBoroughIds.length > 0) {
-            query = query.in('"Geo-Borough"', selectedBoroughIds)
+            query = query.in('geo_borough', selectedBoroughIds)
           }
         }
 
@@ -701,11 +699,11 @@ export function useSearchPageLogic() {
         if (error) throw error
 
         const neighborhoodList = data
-          .filter((n) => n.Display && n.Display.trim())
+          .filter((n) => n.display && n.display.trim())
           .map((n) => ({
             id: n.id,
-            name: n.Display.trim(),
-            boroughId: n['Geo-Borough']
+            name: n.display.trim(),
+            boroughId: n.geo_borough
           }))
 
         setNeighborhoods(neighborhoodList)

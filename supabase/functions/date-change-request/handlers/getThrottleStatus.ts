@@ -79,13 +79,13 @@ export async function handleGetThrottleStatus(
   if (leaseId) {
     // 1. Fetch lease with throttling fields and participant info
     const { data: lease, error: leaseError } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .select(`
-        id, "Guest", "Host",
-        "Throttling - guest ability to create requests?",
-        "Throttling - host ability to create requests?",
-        "Throttling - guest NOT show warning popup",
-        "Throttling - host NOT show warning popup"
+        id, guest_user_id, host_user_id,
+        guest_can_create_date_change_requests,
+        host_can_create_date_change_requests,
+        hide_guest_throttle_warning_popup,
+        hide_host_throttle_warning_popup
       `)
       .eq('id', leaseId)
       .single();
@@ -100,8 +100,8 @@ export async function handleGetThrottleStatus(
     }
 
     // 2. Determine user role
-    const isHost = userId === lease.Host;
-    const otherParticipantId = isHost ? lease.Guest : lease.Host;
+    const isHost = userId === lease.host_user_id;
+    const otherParticipantId = isHost ? lease.guest_user_id : lease.host_user_id;
 
     // 3. Fetch other participant name
     let otherParticipantName = 'the other party';
@@ -121,10 +121,10 @@ export async function handleGetThrottleStatus(
     const { count, error: countError } = await supabase
       .from('datechangerequest')
       .select('*', { count: 'exact', head: true })
-      .eq('Requested by', userId)
-      .eq('Lease', leaseId)
-      .eq('request status', 'waiting_for_answer')
-      .gte('Created Date', windowStart.toISOString());
+      .eq('requested_by', userId)
+      .eq('lease', leaseId)
+      .eq('request_status', 'waiting_for_answer')
+      .gte('original_created_at', windowStart.toISOString());
 
     if (countError) {
       console.error(`[date-change-request:get_throttle_status] Count failed:`, countError);
@@ -135,11 +135,11 @@ export async function handleGetThrottleStatus(
 
     // 5. Get throttle fields based on role
     const abilityField = isHost
-      ? 'Throttling - host ability to create requests?'
-      : 'Throttling - guest ability to create requests?';
+      ? 'host_can_create_date_change_requests'
+      : 'guest_can_create_date_change_requests';
     const dontShowField = isHost
-      ? 'Throttling - host NOT show warning popup'
-      : 'Throttling - guest NOT show warning popup';
+      ? 'hide_host_throttle_warning_popup'
+      : 'hide_guest_throttle_warning_popup';
 
     // Check if blocked (ability field is false)
     // Note: null/undefined defaults to true (can create)
@@ -174,8 +174,8 @@ export async function handleGetThrottleStatus(
   const { count, error: countError } = await supabase
     .from('datechangerequest')
     .select('*', { count: 'exact', head: true })
-    .eq('Requested by', userId)
-    .gte('Created Date', windowStart.toISOString());
+    .eq('requested_by', userId)
+    .gte('original_created_at', windowStart.toISOString());
 
   if (countError) {
     console.error(`[date-change-request:get_throttle_status] Count failed:`, countError);

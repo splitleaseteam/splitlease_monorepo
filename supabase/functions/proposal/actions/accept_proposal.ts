@@ -31,7 +31,7 @@ export async function handleAcceptProposal(
 
   // Fetch proposal to get user IDs for messaging
   const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('guest_user_id, host_user_id, listing_id')
     .eq('id', proposalId)
     .single();
@@ -48,7 +48,7 @@ export async function handleAcceptProposal(
   // - Is Finalized: boolean ✅
   // REMOVED non-existent: acceptance_date, accepted_by_persona
   const { error: updateError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
       proposal_workflow_status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
       updated_at: new Date().toISOString(),
@@ -70,7 +70,7 @@ export async function handleAcceptProposal(
 
     // Strategy 1: Look up thread by Proposal FK
     const { data: threadByProposal, error: threadError } = await supabase
-      .from('thread')
+      .from('message_thread')
       .select('id')
       .eq('proposal_id', proposalId)
       .limit(1)
@@ -88,7 +88,7 @@ export async function handleAcceptProposal(
       console.log('[accept_proposal] No thread found by Proposal FK, trying host+guest+listing match');
 
       const { data: threadByMatch, error: matchError } = await supabase
-        .from('thread')
+        .from('message_thread')
         .select('id')
         .eq('host_user_id', proposal.host_user_id)
         .eq('guest_user_id', proposal.guest_user_id)
@@ -106,7 +106,7 @@ export async function handleAcceptProposal(
       // If found via Strategy 2, update the Proposal FK for future lookups
       if (threadId) {
         const { error: updateThreadError } = await supabase
-          .from('thread')
+          .from('message_thread')
           .update({
             proposal_id: proposalId,
             updated_at: new Date().toISOString()
@@ -140,7 +140,7 @@ export async function handleAcceptProposal(
 
       const now = new Date().toISOString();
       const { error: createError } = await supabase
-        .from('thread')
+        .from('message_thread')
         .insert({
           id: threadId,
           host_user_id: proposal.host_user_id,

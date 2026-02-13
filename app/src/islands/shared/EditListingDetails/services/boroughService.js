@@ -17,10 +17,9 @@ export async function getBoroughIdByName(boroughName) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('id, "Display Borough"')
-      .eq('Display Borough', cleanName)
+      .select('id, display_borough')
+      .eq('display_borough', cleanName)
       .limit(1)
       .maybeSingle();
 
@@ -50,10 +49,9 @@ export async function getBoroughIdByZipCode(zipCode) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('id, "Display Borough"')
-      .contains('Zip Codes', [cleanZip])
+      .select('id, display_borough')
+      .contains('zip_codes', [cleanZip])
       .limit(1)
       .maybeSingle();
 
@@ -62,7 +60,7 @@ export async function getBoroughIdByZipCode(zipCode) {
       return null;
     }
 
-    console.log('[BoroughService] Found borough:', data['Display Borough'], 'for zip:', cleanZip);
+    console.log('[BoroughService] Found borough:', data.display_borough, 'for zip:', cleanZip);
     return data.id;
   } catch (err) {
     console.error('[BoroughService] Error looking up borough by zip:', err);

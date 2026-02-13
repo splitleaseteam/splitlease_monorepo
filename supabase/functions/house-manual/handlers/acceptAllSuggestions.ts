@@ -60,10 +60,10 @@ export async function handleAcceptAllSuggestions(
   const { data: suggestions, error: fetchError } = await supabaseClient
     .from("zat_aisuggestions")
     .select("*")
-    .eq("House Manual", houseManualId)
+    .eq("house_manual_id", houseManualId)
     .eq("decision", "pending")
-    .eq("being processed?", false)
-    .order("Created Date", { ascending: true });
+    .eq("being_processed", false)
+    .order("created_at", { ascending: true });
 
   if (fetchError) {
     console.error(`[acceptAllSuggestions] Failed to fetch suggestions:`, fetchError);
@@ -91,8 +91,8 @@ export async function handleAcceptAllSuggestions(
   // Process each suggestion
   for (const suggestion of suggestions) {
     const suggestionId = suggestion.id;
-    const fieldName = suggestion["Field suggested house manual"];
-    const content = suggestion.Content;
+    const fieldName = suggestion.field_suggested_house_manual;
+    const content = suggestion.content;
 
     if (!fieldName || !content) {
       results.push({
@@ -108,8 +108,8 @@ export async function handleAcceptAllSuggestions(
     const { error: processingError } = await supabaseClient
       .from("zat_aisuggestions")
       .update({
-        "being processed?": true,
-        "Modified Date": new Date().toISOString(),
+        being_processed: true,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", suggestionId);
 
@@ -131,8 +131,8 @@ export async function handleAcceptAllSuggestions(
       .from("zat_aisuggestions")
       .update({
         decision: "accepted",
-        "being processed?": false,
-        "Modified Date": new Date().toISOString(),
+        being_processed: false,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", suggestionId);
 
@@ -155,10 +155,10 @@ export async function handleAcceptAllSuggestions(
   // Apply all field updates to house manual in one operation
   if (Object.keys(fieldUpdates).length > 0) {
     const { error: applyError } = await supabaseClient
-      .from("housemanual")
+      .from("house_manual")
       .update({
         ...fieldUpdates,
-        "Modified Date": new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", houseManualId);
 
@@ -183,7 +183,7 @@ export async function handleAcceptAllSuggestions(
     const { error: syncError } = await supabaseClient
       .from("sync_queue")
       .insert({
-        table_name: "housemanual",
+        table_name: "house_manual",
         record_id: houseManualId,
         operation: "UPDATE",
         payload: fieldUpdates,

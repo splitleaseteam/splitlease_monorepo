@@ -30,8 +30,8 @@ export async function handleAdminFetchConfirmed(
   let query = supabase
     .from("virtualmeetingschedulesandlinks")
     .select("*")
-    .not("booked date", "is", null)
-    .order("booked date", { ascending: true });
+    .not("booked_date", "is", null)
+    .order("booked_date", { ascending: true });
 
   // Apply optional filters
   if (payload.proposalId) {
@@ -61,16 +61,16 @@ export async function handleAdminFetchConfirmed(
   for (const meeting of meetings) {
     if (meeting.guest) userIds.add(meeting.guest);
     if (meeting.host) userIds.add(meeting.host);
-    if (meeting["Listing (for Co-Host feature)"]) {
-      listingIds.add(meeting["Listing (for Co-Host feature)"]);
+    if (meeting.listing_for_co_host_feature) {
+      listingIds.add(meeting.listing_for_co_host_feature);
     }
   }
 
   // Fetch users in parallel
   const usersPromise = userIds.size > 0
     ? supabase
-        .from("users")
-        .select("id, name_first, name_last, email, phone_number, profile_photo_url, timezone")
+        .from("user")
+        .select("id, first_name, last_name, email, phone_number, profile_photo_url, timezone")
         .in("id", Array.from(userIds))
     : Promise.resolve({ data: [], error: null });
 
@@ -104,8 +104,8 @@ export async function handleAdminFetchConfirmed(
     ...meeting,
     guest: meeting.guest ? usersMap.get(meeting.guest) || null : null,
     host: meeting.host ? usersMap.get(meeting.host) || null : null,
-    listing: meeting["Listing (for Co-Host feature)"]
-      ? listingsMap.get(meeting["Listing (for Co-Host feature)"]) || null
+    listing: meeting.listing_for_co_host_feature
+      ? listingsMap.get(meeting.listing_for_co_host_feature) || null
       : null,
   }));
 

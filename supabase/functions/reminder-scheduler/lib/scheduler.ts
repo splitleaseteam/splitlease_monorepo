@@ -61,7 +61,7 @@ export const sendEmailNotification = async (
       success: true,
       messageId: responseData?.data?.message_id,
     };
-  } catch (_err) {
+  } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error('[scheduler] Email send exception:', errorMessage);
     return { success: false, error: errorMessage };
@@ -99,7 +99,7 @@ export const sendSmsNotification = async (
       success: true,
       messageSid: responseData?.data?.message_sid,
     };
-  } catch (_err) {
+  } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error('[scheduler] SMS send exception:', errorMessage);
     return { success: false, error: errorMessage };
@@ -131,15 +131,15 @@ export const processReminder = async (
   const errors: string[] = [];
 
   // Send email if enabled
-  if (reminder['is an email reminder?']) {
-    const toEmail = guestEmail || reminder['fallback email'];
+  if (reminder.is_an_email_reminder) {
+    const toEmail = guestEmail || reminder.fallback_email;
 
     if (toEmail) {
       const emailResult = await sendEmailNotification(supabase, {
         toEmail,
         toName: guestName,
-        subject: `Reminder: ${reminder['type of reminders'] || 'House Manual'}`,
-        message: reminder['message to send'],
+        subject: `Reminder: ${reminder.type_of_reminders || 'House Manual'}`,
+        message: reminder.message_to_send,
       });
 
       emailSent = emailResult.success;
@@ -154,13 +154,13 @@ export const processReminder = async (
   }
 
   // Send SMS if enabled
-  if (reminder['is a phone reminder?']) {
-    const toPhone = guestPhone || reminder['phone number (in case no guest attached)'];
+  if (reminder.is_a_phone_reminder) {
+    const toPhone = guestPhone || reminder.phone_number_in_case_no_guest_attached;
 
     if (toPhone) {
       const smsResult = await sendSmsNotification(supabase, {
         toPhone,
-        message: reminder['message to send'],
+        message: reminder.message_to_send,
       });
 
       smsSent = smsResult.success;
@@ -223,7 +223,7 @@ export const fetchGuestContactInfo = async (
 
   const { data, error } = await supabase
     .from('user')
-    .select('email, "Phone Number - Cell", "Name - First", "Name - Last"')
+    .select('email, phone_number, first_name, last_name')
     .eq('id', guestId)
     .single();
 
@@ -232,13 +232,13 @@ export const fetchGuestContactInfo = async (
     return {};
   }
 
-  const firstName = data['Name - First'] || '';
-  const lastName = data['Name - Last'] || '';
+  const firstName = data.first_name || '';
+  const lastName = data.last_name || '';
   const name = [firstName, lastName].filter(Boolean).join(' ');
 
   return {
     email: data.email,
-    phone: data['Phone Number - Cell'],
+    phone: data.phone_number,
     name: name || undefined,
   };
 };
@@ -258,8 +258,8 @@ export const queryPendingReminders = async (
     .from('remindersfromhousemanual')
     .select('*')
     .eq('status', 'pending')
-    .lte('scheduled date and time', now)
-    .order('scheduled date and time', { ascending: true })
+    .lte('scheduled_date_and_time', now)
+    .order('scheduled_date_and_time', { ascending: true })
     .limit(batchSize);
 
   if (error) {

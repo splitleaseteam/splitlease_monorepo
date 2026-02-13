@@ -30,7 +30,7 @@ export async function handleGetPrefillData(
 
   // Query the most recent non-deleted proposal for this guest
   const { data, error } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select(`
       id,
       guest_selected_days_numbers_json,

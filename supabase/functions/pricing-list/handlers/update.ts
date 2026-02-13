@@ -108,21 +108,21 @@ export async function handleUpdate(
 
     const updateData = {
       // Arrays (JSONB)
-      'Host Compensation': pricingData.hostCompensation,
-      'Markup and Discount Multiplier': pricingData.markupAndDiscountMultiplier,
-      'Nightly Price': pricingData.nightlyPrice,
-      'Unused Nights Discount': pricingData.unusedNightsDiscount,
+      host_compensation: pricingData.hostCompensation,
+      markup_and_discount_multiplier: pricingData.markupAndDiscountMultiplier,
+      nightly_price: pricingData.nightlyPrice,
+      unused_nights_discount: pricingData.unusedNightsDiscount,
 
       // Scalar markups
-      'Unit Markup': pricingData.unitMarkup,
-      'Combined Markup': pricingData.combinedMarkup,
-      'Full Time Discount': pricingData.fullTimeDiscount,
+      unit_markup: pricingData.unitMarkup,
+      combined_markup: pricingData.combinedMarkup,
+      full_time_discount: pricingData.fullTimeDiscount,
 
       // Derived scalars
-      'Starting Nightly Price': pricingData.startingNightlyPrice,
+      starting_nightly_price: pricingData.startingNightlyPrice,
 
       // Metadata
-      'Modified Date': now,
+      original_updated_at: now,
     };
 
     const { error: updateError } = await supabase

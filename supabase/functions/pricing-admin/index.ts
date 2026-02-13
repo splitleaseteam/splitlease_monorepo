@@ -7,7 +7,6 @@
  * - get: Single listing with all pricing fields
  * - updatePrice: Update specific pricing fields (single listing)
  * - bulkUpdate: Batch price updates with transaction
- * - setOverride: Set/clear price override
  * - toggleActive: Activate/deactivate listing
  * - getConfig: Fetch global pricing configuration (read-only)
  * - export: Export selected listings as CSV/JSON
@@ -56,11 +55,6 @@ interface BulkUpdatePayload {
   fields: Record<string, number | null>;
 }
 
-interface SetOverridePayload {
-  listingId: string;
-  priceOverride: number | null;
-}
-
 interface ToggleActivePayload {
   listingId: string;
   active: boolean;
@@ -70,6 +64,41 @@ interface ExportPayload {
   listingIds: string[];
   format?: 'csv' | 'json';
 }
+
+const LISTING_PRICING_SELECT = `
+  id,
+  listing_title,
+  is_active,
+  rental_type,
+  borough,
+  neighborhood_name_entered_by_host,
+  unit_markup_percentage,
+  weekly_rate_paid_to_host,
+  monthly_rate_paid_to_host,
+  nightly_rate_for_2_night_stay,
+  nightly_rate_for_3_night_stay,
+  nightly_rate_for_4_night_stay,
+  nightly_rate_for_5_night_stay,
+  nightly_rate_for_7_night_stay,
+  cleaning_fee_amount,
+  damage_deposit_amount,
+  created_at,
+  updated_at,
+  host_user_id
+`;
+
+const ALLOWED_PRICE_FIELDS = [
+  'unit_markup_percentage',
+  'weekly_rate_paid_to_host',
+  'monthly_rate_paid_to_host',
+  'nightly_rate_for_2_night_stay',
+  'nightly_rate_for_3_night_stay',
+  'nightly_rate_for_4_night_stay',
+  'nightly_rate_for_5_night_stay',
+  'nightly_rate_for_7_night_stay',
+  'cleaning_fee_amount',
+  'damage_deposit_amount',
+];
 
 // ===== MAIN HANDLER =====
 
@@ -92,7 +121,7 @@ Deno.serve(async (req: Request) => {
     // Validate action
     const validActions = [
       'list', 'get', 'updatePrice', 'bulkUpdate',
-      'setOverride', 'toggleActive', 'getConfig', 'export'
+      'toggleActive', 'getConfig', 'export'
     ];
 
     if (!validActions.includes(action)) {
@@ -142,19 +171,15 @@ Deno.serve(async (req: Request) => {
         break;
 
       case 'updatePrice':
-        result = await handleUpdatePrice(payload as UpdatePricePayload, supabase, user.id);
+        result = await handleUpdatePrice(payload as UpdatePricePayload, supabase, user?.id || 'system');
         break;
 
       case 'bulkUpdate':
-        result = await handleBulkUpdate(payload as BulkUpdatePayload, supabase, user.id);
-        break;
-
-      case 'setOverride':
-        result = await handleSetOverride(payload as SetOverridePayload, supabase, user.id);
+        result = await handleBulkUpdate(payload as BulkUpdatePayload, supabase, user?.id || 'system');
         break;
 
       case 'toggleActive':
-        result = await handleToggleActive(payload as ToggleActivePayload, supabase, user.id);
+        result = await handleToggleActive(payload as ToggleActivePayload, supabase, user?.id || 'system');
         break;
 
       case 'getConfig':
@@ -238,68 +263,44 @@ async function handleList(
     limit = 50,
     offset = 0,
     filters = {},
-    sortField = 'Created Date',
+    sortField = 'created_at',
     sortOrder = 'desc'
   } = payload;
 
   // Build query with pricing-related fields (no FK-based joins - fetch host separately)
-  // Column names match actual database schema
   let query = supabase
     .from('listing')
-    .select(`
-      id,
-      "Name",
-      "Active",
-      "rental type",
-      "Location - Borough",
-      "Location - Hood",
-      "unit_markup",
-      "weekly_host_rate",
-      "monthly_host_rate",
-      "nightly_rate_2_nights",
-      "nightly_rate_3_nights",
-      "nightly_rate_4_nights",
-      "nightly_rate_5_nights",
-      "nightly_rate_6_nights",
-      "nightly_rate_7_nights",
-      "cleaning_fee",
-      "damage_deposit",
-      "price_override",
-      "extra_charges",
-      "Created Date",
-      "Modified Date",
-      host_user_id
-    `, { count: 'exact' });
+    .select(LISTING_PRICING_SELECT, { count: 'exact' });
 
-  // Apply filters (using actual database column names)
+  // Apply filters
   if (filters.rentalType) {
-    query = query.eq('rental type', filters.rentalType);
+    query = query.eq('rental_type', filters.rentalType);
   }
   if (filters.borough) {
-    query = query.eq('Location - Borough', filters.borough);
+    query = query.eq('borough', filters.borough);
   }
   if (filters.neighborhood) {
-    query = query.ilike('Location - Hood', `%${filters.neighborhood}%`);
+    query = query.ilike('neighborhood_name_entered_by_host', `%${filters.neighborhood}%`);
   }
   if (filters.nameSearch) {
-    query = query.ilike('Name', `%${filters.nameSearch}%`);
+    query = query.ilike('listing_title', `%${filters.nameSearch}%`);
   }
   if (filters.activeOnly) {
-    query = query.eq('Active', true);
+    query = query.eq('is_active', true);
   }
   if (filters.dateRange?.start) {
-    query = query.gte('"Created Date"', filters.dateRange.start);
+    query = query.gte('created_at', filters.dateRange.start);
   }
   if (filters.dateRange?.end) {
-    query = query.lte('"Created Date"', filters.dateRange.end);
+    query = query.lte('created_at', filters.dateRange.end);
   }
 
-  // Apply sorting (using actual database column names)
+  // Apply sorting
   const validSortFields = [
-    'Created Date', 'Modified Date', 'Name',
-    'price_override', 'weekly_host_rate'
+    'created_at', 'updated_at', 'listing_title',
+    'weekly_rate_paid_to_host'
   ];
-  const sortBy = validSortFields.includes(sortField) ? sortField : 'Created Date';
+  const sortBy = validSortFields.includes(sortField) ? sortField : 'created_at';
   query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
   // Apply pagination
@@ -326,8 +327,8 @@ async function handleList(
   const hostsMap = new Map<string, unknown>();
   if (hostIds.size > 0) {
     const { data: hosts } = await supabase
-      .from("users")
-      .select("id, email, name_first, name_last")
+      .from("user")
+      .select("id, email, first_name, last_name")
       .in("id", Array.from(hostIds));
 
     if (hosts) {
@@ -338,7 +339,7 @@ async function handleList(
   }
 
   // Enrich listings with host data
-  const enrichedListings = listings.map((listing) => ({
+  const enrichedListings = listings.map((listing: Record<string, unknown>) => ({
     ...listing,
     host: listing.host_user_id ? hostsMap.get(listing.host_user_id) || null : null,
   }));
@@ -367,7 +368,7 @@ async function handleGet(
   // Fetch listing without embedded select (no FK relationship)
   const { data: listing, error } = await supabase
     .from('listing')
-    .select('*')
+    .select(LISTING_PRICING_SELECT)
     .eq('id', listingId)
     .single();
 
@@ -379,8 +380,8 @@ async function handleGet(
   let host = null;
   if (listing?.host_user_id) {
     const { data: hostData } = await supabase
-      .from("users")
-      .select("id, email, name_first, name_last, phone_number")
+      .from("user")
+      .select("id, email, first_name, last_name, phone_number")
       .eq("id", listing.host_user_id)
       .single();
     host = hostData;
@@ -409,25 +410,9 @@ async function handleUpdatePrice(
   }
 
   // Validate field names - only allow pricing-related fields
-  const allowedFields = [
-    'unit_markup',
-    'weekly_host_rate',
-    'monthly_host_rate',
-    'nightly_rate_2_nights',
-    'nightly_rate_3_nights',
-    'nightly_rate_4_nights',
-    'nightly_rate_5_nights',
-    'nightly_rate_6_nights',
-    'nightly_rate_7_nights',
-    'cleaning_fee',
-    'damage_deposit',
-    'price_override',
-    'extra_charges',
-  ];
-
   const updateFields: Record<string, number | null> = {};
   for (const [key, value] of Object.entries(fields)) {
-    if (!allowedFields.includes(key)) {
+    if (!ALLOWED_PRICE_FIELDS.includes(key)) {
       throw new Error(`Field not allowed: ${key}`);
     }
     updateFields[key] = value;
@@ -436,7 +421,7 @@ async function handleUpdatePrice(
   // Add modified timestamp
   const updateData = {
     ...updateFields,
-    'Modified Date': new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -478,25 +463,9 @@ async function handleBulkUpdate(
   }
 
   // Validate field names
-  const allowedFields = [
-    'unit_markup',
-    'weekly_host_rate',
-    'monthly_host_rate',
-    'nightly_rate_2_nights',
-    'nightly_rate_3_nights',
-    'nightly_rate_4_nights',
-    'nightly_rate_5_nights',
-    'nightly_rate_6_nights',
-    'nightly_rate_7_nights',
-    'cleaning_fee',
-    'damage_deposit',
-    'price_override',
-    'extra_charges',
-  ];
-
   const updateFields: Record<string, number | null> = {};
   for (const [key, value] of Object.entries(fields)) {
-    if (!allowedFields.includes(key)) {
+    if (!ALLOWED_PRICE_FIELDS.includes(key)) {
       throw new Error(`Field not allowed: ${key}`);
     }
     updateFields[key] = value;
@@ -504,7 +473,7 @@ async function handleBulkUpdate(
 
   const updateData = {
     ...updateFields,
-    'Modified Date': new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabase
@@ -524,48 +493,6 @@ async function handleBulkUpdate(
   }
 
   return { updated: data?.length || 0, listingIds };
-}
-
-/**
- * Set or clear price override for a listing
- */
-async function handleSetOverride(
-  payload: SetOverridePayload,
-  supabase: SupabaseClient,
-  _userId: string
-) {
-  const { listingId, priceOverride } = payload;
-
-  if (!listingId) {
-    throw new Error('listingId is required');
-  }
-
-  // priceOverride can be null (to clear) or a positive number
-  if (priceOverride !== null && (typeof priceOverride !== 'number' || priceOverride < 0)) {
-    throw new Error('priceOverride must be null or a positive number');
-  }
-
-  const { data, error } = await supabase
-    .from('listing')
-    .update({
-      'price_override': priceOverride,
-      'Modified Date': new Date().toISOString(),
-    })
-    .eq('id', listingId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('[pricing-admin] Set override error:', {
-      code: error.code,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-    });
-    throw new Error(`Failed to set price override: ${error.message}`);
-  }
-
-  return data;
 }
 
 /**
@@ -589,8 +516,8 @@ async function handleToggleActive(
   const { data, error } = await supabase
     .from('listing')
     .update({
-      '✅Active': active,
-      'Modified Date': new Date().toISOString(),
+      is_active: active,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', listingId)
     .select()
@@ -642,37 +569,37 @@ async function handleExport(
 
   const { data, error } = await supabase
     .from('listing')
-    .select(`
-      id,
-      "🏷Name",
-      "✅Active",
-      "🏠Rental Type",
-      "📍Borough",
-      "📍Neighborhood",
-      "unit_markup",
-      "weekly_host_rate",
-      "monthly_host_rate",
-      "nightly_rate_2_nights",
-      "nightly_rate_3_nights",
-      "nightly_rate_4_nights",
-      "nightly_rate_5_nights",
-      "nightly_rate_6_nights",
-      "nightly_rate_7_nights",
-      "cleaning_fee",
-      "damage_deposit",
-      "price_override",
-      "extra_charges",
-      "Created Date",
-      host:👤Host(email, "First Name", "Last Name")
-    `)
+    .select(LISTING_PRICING_SELECT)
     .in('id', listingIds);
 
   if (error) {
     throw new Error(`Failed to fetch listings for export: ${error.message}`);
   }
 
+  // Fetch hosts separately
+  const hostIds = new Set<string>();
+  for (const listing of (data || [])) {
+    if (listing.host_user_id) hostIds.add(listing.host_user_id);
+  }
+  const hostsMap = new Map<string, Record<string, string>>();
+  if (hostIds.size > 0) {
+    const { data: hosts } = await supabase
+      .from('user')
+      .select('id, email, first_name, last_name')
+      .in('id', Array.from(hostIds));
+    if (hosts) {
+      for (const host of hosts) {
+        hostsMap.set(host.id, host);
+      }
+    }
+  }
+
   if (format === 'json') {
-    return { content: JSON.stringify(data, null, 2), format: 'json' };
+    const enriched = (data || []).map((l: Record<string, unknown>) => ({
+      ...l,
+      host: l.host_user_id ? hostsMap.get(l.host_user_id as string) || null : null,
+    }));
+    return { content: JSON.stringify(enriched, null, 2), format: 'json' };
   }
 
   // Generate CSV
@@ -680,37 +607,34 @@ async function handleExport(
     'ID', 'Name', 'Active', 'Rental Type', 'Borough', 'Neighborhood',
     'Unit Markup', 'Weekly Host Rate', 'Monthly Host Rate',
     'Nightly Rate (2)', 'Nightly Rate (3)', 'Nightly Rate (4)',
-    'Nightly Rate (5)', 'Nightly Rate (6)', 'Nightly Rate (7)',
-    'Cleaning Cost', 'Damage Deposit', 'Price Override', 'Extra Charges',
+    'Nightly Rate (5)', 'Nightly Rate (7)',
+    'Cleaning Cost', 'Damage Deposit',
     'Host Email', 'Host Name', 'Created Date'
   ];
 
   const rows = (data || []).map((listing: Record<string, unknown>) => {
-    const host = listing.host as Record<string, string> | null;
+    const host = listing.host_user_id ? hostsMap.get(listing.host_user_id as string) || null : null;
 
     return [
       listing.id,
-      listing['🏷Name'] || '',
-      listing['✅Active'] ? 'Yes' : 'No',
-      listing['🏠Rental Type'] || '',
-      listing['📍Borough'] || '',
-      listing['📍Neighborhood'] || '',
-      listing['unit_markup'] ?? '',
-      listing['weekly_host_rate'] ?? '',
-      listing['monthly_host_rate'] ?? '',
-      listing['nightly_rate_2_nights'] ?? '',
-      listing['nightly_rate_3_nights'] ?? '',
-      listing['nightly_rate_4_nights'] ?? '',
-      listing['nightly_rate_5_nights'] ?? '',
-      listing['nightly_rate_6_nights'] ?? '',
-      listing['nightly_rate_7_nights'] ?? '',
-      listing['cleaning_fee'] ?? '',
-      listing['damage_deposit'] ?? '',
-      listing['price_override'] ?? '',
-      listing['extra_charges'] ?? '',
+      listing.listing_title || '',
+      listing.is_active ? 'Yes' : 'No',
+      listing.rental_type || '',
+      listing.borough || '',
+      listing.neighborhood_name_entered_by_host || '',
+      listing.unit_markup_percentage ?? '',
+      listing.weekly_rate_paid_to_host ?? '',
+      listing.monthly_rate_paid_to_host ?? '',
+      listing.nightly_rate_for_2_night_stay ?? '',
+      listing.nightly_rate_for_3_night_stay ?? '',
+      listing.nightly_rate_for_4_night_stay ?? '',
+      listing.nightly_rate_for_5_night_stay ?? '',
+      listing.nightly_rate_for_7_night_stay ?? '',
+      listing.cleaning_fee_amount ?? '',
+      listing.damage_deposit_amount ?? '',
       host?.email || '',
-      `${host?.['First Name'] || ''} ${host?.['Last Name'] || ''}`.trim(),
-      listing['Created Date'] || '',
+      `${host?.first_name || ''} ${host?.last_name || ''}`.trim(),
+      listing.created_at || '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
   });
 

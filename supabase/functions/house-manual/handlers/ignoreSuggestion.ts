@@ -49,7 +49,7 @@ export async function handleIgnoreSuggestion(
     .from("zat_aisuggestions")
     .update({
       decision: "ignored",
-      "Modified Date": new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
     .eq("id", suggestionId)
     .select()

@@ -32,8 +32,8 @@ export function useDocumentChangeRequestLogic({
         // Filter for draft/pending documents (adjust filter as needed)
         const { data, error: fetchError } = await supabase
           .from('documentssent')
-          .select('id, "Document sent title"')
-          .order('Created Date', { ascending: false });
+          .select('id, document_sent_title')
+          .order('created_date', { ascending: false });
 
         if (fetchError) {
           throw new Error(`Failed to load documents: ${fetchError.message}`);
@@ -41,7 +41,7 @@ export function useDocumentChangeRequestLogic({
 
         const formattedDocs = (data || []).map((doc) => ({
           id: doc.id,
-          title: doc['Document sent title'] || 'Untitled Document',
+          title: doc.document_sent_title || 'Untitled Document',
         }));
 
         setDocuments(formattedDocs);

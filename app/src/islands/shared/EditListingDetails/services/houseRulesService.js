@@ -14,11 +14,10 @@ export async function getCommonHouseRules() {
     console.log('[houseRulesService] Fetching common house rules...');
 
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_features_houserule')
-      .select('Name, "pre-set?"')
-      .eq('"pre-set?"', true)
-      .order('Name', { ascending: true });
+      .select('name, is_preset')
+      .eq('is_preset', true)
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('[houseRulesService] Error fetching common house rules:', error);
@@ -31,7 +30,7 @@ export async function getCommonHouseRules() {
     }
 
     // Extract just the names
-    const names = data.map((rule) => rule.Name);
+    const names = data.map((rule) => rule.name);
     console.log('[houseRulesService] Fetched common house rules:', names);
     return names;
   } catch (err) {
@@ -50,10 +49,9 @@ export async function getAllHouseRules() {
     console.log('[houseRulesService] Fetching all house rules...');
 
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_features_houserule')
-      .select('id, Name, Icon, "pre-set?"')
-      .order('Name', { ascending: true });
+      .select('id, name, icon, is_preset')
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('[houseRulesService] Error fetching all house rules:', error);
@@ -68,9 +66,9 @@ export async function getAllHouseRules() {
     // Transform to consistent format for multi-select
     const rules = data.map((rule) => ({
       id: rule.id,
-      name: rule.Name,
-      icon: rule.Icon || null,
-      isPreset: rule['pre-set?'] || false
+      name: rule.name,
+      icon: rule.icon || null,
+      isPreset: rule.is_preset || false
     }));
 
     console.log('[houseRulesService] Fetched all house rules:', rules.length);

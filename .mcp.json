@@ -9,17 +9,6 @@
         "@knip/mcp"
       ]
     },
-    "playwright": {
-      "command": "cmd",
-      "args": [
-        "/c",
-        "npx",
-        "-y",
-        "@playwright/mcp",
-        "--screenshot-dir",
-        "C:\\Users\\Split Lease\\splitleaseteam\\Pictures"
-      ]
-    },
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp"

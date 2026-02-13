@@ -582,14 +582,14 @@ export function useHeaderMessagingPanelLogic({
       if (threadIds.length > 0) {
         const { data: unreadData } = await supabase
           .from('thread_message')
-          .select('"thread_id"')
-          .in('"thread_id"', threadIds)
+          .select('thread_id')
+          .in('thread_id', threadIds)
           .filter('unread_by_user_ids_json', 'cs', JSON.stringify([currentUserId]));
 
         if (unreadData) {
           // Count occurrences of each thread ID
           unreadCountMap = unreadData.reduce((acc, msg) => {
-            const threadId = msg['thread_id'];
+            const threadId = msg.thread_id;
             acc[threadId] = (acc[threadId] || 0) + 1;
             return acc;
           }, {});
@@ -610,8 +610,8 @@ export function useHeaderMessagingPanelLogic({
         // Fetch recent messages for all threads with visibility info
         const { data: messagesData } = await supabase
           .from('thread_message')
-          .select('"thread_id", message_body_text, original_created_at, "is Visible to Host", "is Visible to Guest"')
-          .in('"thread_id"', threadIds)
+          .select('thread_id, message_body_text, original_created_at, is_visible_to_host, is_visible_to_guest')
+          .in('thread_id', threadIds)
           .order('original_created_at', { ascending: false });
 
         if (messagesData && messagesData.length > 0) {
@@ -619,14 +619,14 @@ export function useHeaderMessagingPanelLogic({
           for (const threadId of threadIds) {
             const role = threadRoles[threadId];
             const visibleMessage = messagesData.find((msg) => {
-              if (msg['thread_id'] !== threadId) return false;
+              if (msg.thread_id !== threadId) return false;
               return role === 'host'
-                ? msg['is Visible to Host'] === true
-                : msg['is Visible to Guest'] === true;
+                ? msg.is_visible_to_host === true
+                : msg.is_visible_to_guest === true;
             });
 
-            if (visibleMessage && visibleMessage['message_body_text']) {
-              visiblePreviewMap[threadId] = visibleMessage['message_body_text'].substring(0, 100);
+            if (visibleMessage && visibleMessage.message_body_text) {
+              visiblePreviewMap[threadId] = visibleMessage.message_body_text.substring(0, 100);
             }
           }
         }

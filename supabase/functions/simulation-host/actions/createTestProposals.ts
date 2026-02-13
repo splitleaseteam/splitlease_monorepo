@@ -38,10 +38,17 @@ function getProposalConfig(rentalType: string) {
   const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
   const threeMonthsFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
+  const moveInStart = oneWeekFromNow.toISOString();
+  const moveInEnd = twoWeeksFromNow.toISOString();
+  const moveOut = threeMonthsFromNow.toISOString();
+
   const baseConfig = {
-    'Guest MIS': oneWeekFromNow.toISOString().split('T')[0],
-    'Guest MIE': twoWeeksFromNow.toISOString().split('T')[0],
-    'Guest Move-out Date': threeMonthsFromNow.toISOString().split('T')[0],
+    move_in_range_start_date: moveInStart,
+    move_in_range_end_date: moveInEnd,
+    planned_move_out_date: moveOut,
+    reservation_span_in_weeks: 12,
+    reservation_span_text: '12 weeks',
+    actual_weeks_in_reservation_span: 12,
     proposal_workflow_status: 'Under Review',
   };
 
@@ -49,30 +56,42 @@ function getProposalConfig(rentalType: string) {
     case 'weekly':
       return {
         ...baseConfig,
-        'Rental Type': 'Weekly',
-        'Guest Nights per Week': 4,
-        'Guest check-in day': 2, // Tuesday (0-indexed)
-        'Guest check-out day': 6, // Saturday
-        'Guest Nightly Price': 125,
+        rental_type: 'weekly',
+        nights_per_week_count: 4,
+        checkin_day_of_week_number: 2, // Tuesday (0-indexed)
+        checkout_day_of_week_number: 6, // Saturday
+        calculated_nightly_price: 125,
+        four_week_rent_amount: 2000,
+        total_reservation_price_for_guest: 6000,
+        guest_selected_days_numbers_json: [2, 3, 4, 5],
+        guest_selected_nights_numbers_json: [2, 3, 4, 5],
       };
     case 'monthly':
       return {
         ...baseConfig,
-        'Rental Type': 'Monthly',
-        'Guest Nights per Week': 7,
-        'Guest check-in day': 0, // Sunday
-        'Guest check-out day': 0, // Sunday (full week)
-        'Guest Nightly Price': 100,
+        rental_type: 'monthly',
+        nights_per_week_count: 7,
+        checkin_day_of_week_number: 0, // Sunday
+        checkout_day_of_week_number: 0, // Sunday (full week)
+        calculated_nightly_price: 100,
+        four_week_rent_amount: 2800,
+        total_reservation_price_for_guest: 8400,
+        guest_selected_days_numbers_json: [0, 1, 2, 3, 4, 5, 6],
+        guest_selected_nights_numbers_json: [0, 1, 2, 3, 4, 5, 6],
       };
     case 'nightly':
     default:
       return {
         ...baseConfig,
-        'Rental Type': 'Nightly',
-        'Guest Nights per Week': 2,
-        'Guest check-in day': 5, // Friday
-        'Guest check-out day': 0, // Sunday
-        'Guest Nightly Price': 150,
+        rental_type: 'nightly',
+        nights_per_week_count: 2,
+        checkin_day_of_week_number: 5, // Friday
+        checkout_day_of_week_number: 0, // Sunday
+        calculated_nightly_price: 150,
+        four_week_rent_amount: 1200,
+        total_reservation_price_for_guest: 3600,
+        guest_selected_days_numbers_json: [5, 6],
+        guest_selected_nights_numbers_json: [5, 6],
       };
   }
 }
@@ -90,6 +109,16 @@ export async function handleCreateTestProposals(
     throw new Error('simulationId, guestId, listingId, and hostId are required');
   }
 
+  const { data: guestUser, error: guestError } = await supabase
+    .from('user')
+    .select('id, email')
+    .eq('id', guestId)
+    .single();
+
+  if (guestError || !guestUser?.email) {
+    throw new Error(`Failed to fetch guest email: ${guestError?.message || 'guest email missing'}`);
+  }
+
   const proposals: ProposalData[] = [];
 
   // Create 3 proposals with different rental types
@@ -98,21 +127,39 @@ export async function handleCreateTestProposals(
   for (const type of rentalTypes) {
     const config = getProposalConfig(type);
 
+    const now = new Date().toISOString();
     const proposalData = {
+      id: crypto.randomUUID(),
       guest_user_id: guestId,
       host_user_id: hostId,
       listing_id: listingId,
+      created_by_user_id: guestId,
+      guest_email_address: guestUser.email,
       ...config,
-      'is_test_data': true,
-      'simulation_id': simulationId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      complimentary_free_nights_numbers_json: [],
+      proposal_event_log_json: [
+        {
+          event: 'simulation_test_proposal_created',
+          simulation_id: simulationId,
+          rental_type: type,
+          timestamp: now,
+        },
+      ],
+      display_sort_order: 1,
+      is_finalized: false,
+      is_rental_application_requested: false,
+      is_test_data: true,
+      simulation_id: simulationId,
+      created_at: now,
+      updated_at: now,
+      original_created_at: now,
+      original_updated_at: now,
     };
 
     console.log(`[createTestProposals] Creating ${type} proposal...`);
 
     const { data: proposal, error: createError } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .insert(proposalData)
       .select('id, proposal_workflow_status, rental_type')
       .single();

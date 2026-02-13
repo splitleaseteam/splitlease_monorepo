@@ -22,29 +22,23 @@ interface HandlerContext {
 
 interface AISuggestion {
   id: string;
-  Content: string;
-  "Previous Content": string | null;
-  "Field suggested house manual": string;
-  "Field suggested listing": string | null;
-  "being processed?": boolean;
+  content: string;
+  previous_content: string | null;
+  field_suggested_house_manual: string;
+  field_suggested_listing: string | null;
+  being_processed: boolean;
   decision: "pending" | "accepted" | "ignored" | "combined";
-  "from call?": boolean;
-  "from audio?": boolean;
-  "from PDF?": boolean;
-  "from google doc?": boolean;
-  "from listing?": boolean;
-  "from free text form?": boolean;
-  "House Manual": string;
-  "Created Date": string;
-  "Modified Date": string;
+  house_manual_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface HouseManual {
   id: string;
-  progress_stage: string;
-  transcript: string | null;
-  transcript_source: string | null;
-  "AI suggestions creation ended?": boolean;
+  manual_creation_progress_stage: string;
+  full_transcript_text: string | null;
+  transcript_source_type: string | null;
+  is_ai_suggestion_generation_complete: boolean;
 }
 
 interface GetSuggestionsResult {
@@ -76,8 +70,8 @@ export async function handleGetSuggestions(
 
   // Fetch house manual with progress info
   const { data: houseManual, error: hmError } = await supabaseClient
-    .from("housemanual")
-    .select("id, progress_stage, transcript, transcript_source, \"AI suggestions creation ended?\"")
+    .from("house_manual")
+    .select("id, manual_creation_progress_stage, full_transcript_text, transcript_source_type, is_ai_suggestion_generation_complete")
     .eq("id", houseManualId)
     .single();
 
@@ -91,10 +85,10 @@ export async function handleGetSuggestions(
   const { data: suggestions, error: sugError } = await supabaseClient
     .from("zat_aisuggestions")
     .select("*")
-    .eq("House Manual", houseManualId)
+    .eq("house_manual", houseManualId)
     .neq("decision", "ignored")
-    .eq("being processed?", false)
-    .order("Created Date", { ascending: true });
+    .eq("being_processed", false)
+    .order("created_at", { ascending: true });
 
   if (sugError) {
     console.error(`[getSuggestions] Error fetching suggestions:`, sugError);

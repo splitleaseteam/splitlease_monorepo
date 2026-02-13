@@ -68,13 +68,13 @@ export async function handleGenerate(
   // ================================================
 
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select(`
       id,
-      Proposal,
-      Host,
-      "Payment Records SL-Hosts",
-      "Total Compensation"
+      host_user_id,
+      platform_to_host_payment_records_json,
+      total_host_compensation_amount,
+      proposal_id
     `)
     .eq('id', input.leaseId)
     .single();
@@ -85,15 +85,15 @@ export async function handleGenerate(
   }
 
   const leaseData = lease as unknown as LeaseData;
-  console.log(`[host-payment-records:generate] Found lease, proposal: ${leaseData.Proposal}, host: ${leaseData.Host}`);
+  console.log(`[host-payment-records:generate] Found lease, host: ${leaseData.host_user_id}`);
 
   // Optionally fetch proposal for damage deposit if not provided
   let damageDeposit = input.damageDeposit || 0;
-  if (!damageDeposit && leaseData.Proposal) {
+  if (!damageDeposit && lease.proposal_id) {
     const { data: proposal } = await supabase
-      .from('proposal')
+      .from("booking_proposal")
       .select(`id, "host_counter_offer_damage_deposit", "host_counter_offer_cleaning_fee"`)
-      .eq('id', leaseData.Proposal)
+      .eq('id', lease.proposal_id)
       .single();
 
     if (proposal) {
@@ -151,23 +151,23 @@ export async function handleGenerate(
 
     const record: PaymentRecord = {
       id: paymentRecordIds[i],
-      'Booking - Reservation': input.leaseId,
-      'Payment #': paymentNumber,
-      'Scheduled Date': convertDateFormat(schedule.paymentDates[i]),
-      Rent: schedule.rentList[i],
-      'Maintenance Fee': input.maintenanceFee,
-      'Total Paid to Host': schedule.totalRentList[i],
-      'Payment to Host?': true,
-      'Payment from guest?': false,
-      'source calculation': 'supabase-edge-function',
-      'Created By': leaseData.Host,
-      'Created Date': now,
-      'Modified Date': now,
+      booking_reservation: input.leaseId,
+      payment: paymentNumber,
+      scheduled_date: convertDateFormat(schedule.paymentDates[i]),
+      rent: schedule.rentList[i],
+      maintenance_fee: input.maintenanceFee,
+      total_paid_to_host: schedule.totalRentList[i],
+      payment_to_host: true,
+      payment_from_guest: false,
+      source_calculation: 'supabase-edge-function',
+      created_by: leaseData.host_user_id,
+      original_created_at: now,
+      original_updated_at: now,
     };
 
     // Add damage deposit to first payment only
     if (paymentNumber === 1 && damageDeposit > 0) {
-      record['Damage Deposit'] = damageDeposit;
+      record.damage_deposit = damageDeposit;
     }
 
     paymentRecords.push(record);
@@ -190,15 +190,15 @@ export async function handleGenerate(
   // UPDATE LEASE WITH PAYMENT RECORDS LIST & TOTAL
   // ================================================
 
-  const existingPaymentRecords = leaseData['Payment Records SL-Hosts'] || [];
+  const existingPaymentRecords = leaseData.platform_to_host_payment_records_json || [];
   const updatedPaymentRecords = [...existingPaymentRecords, ...paymentRecordIds];
 
   const { error: leaseUpdateError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .update({
-      'Payment Records SL-Hosts': updatedPaymentRecords,
-      'Total Compensation': schedule.totalCompensationAmount,
-      'Modified Date': now,
+      platform_to_host_payment_records_json: updatedPaymentRecords,
+      total_host_compensation_amount: schedule.totalCompensationAmount,
+      updated_at: now,
     })
     .eq('id', input.leaseId);
 

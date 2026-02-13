@@ -76,25 +76,25 @@ export async function handleGenerateDates(
     proposalId = payload.proposalId;
 
     const { data: proposal, error } = await supabase
-      .from('proposal')
+      .from("booking_proposal")
       .select(
         `
         id,
-        "check in day",
-        "check out day",
-        "Reservation Span (Weeks)",
-        "Move in range start",
-        "week selection",
-        "Days Selected",
-        "nights per week (num)",
-        "host_counter_offer_check_in_day",
-        "host_counter_offer_check_out_day",
-        "host_counter_offer_reservation_span_weeks",
-        "host_counter_offer_move_in_date",
-        "host_counter_offer_weeks_schedule",
-        "host_counter_offer_days_selected",
-        "host_counter_offer_nights_selected",
-        "counter offer happened"
+        checkin_day_of_week_number,
+        checkout_day_of_week_number,
+        reservation_span_in_weeks,
+        move_in_range_start_date,
+        weeks_offered_schedule_text,
+        guest_selected_days_numbers_json,
+        nights_per_week_count,
+        host_proposed_checkin_day,
+        host_proposed_checkout_day,
+        host_proposed_reservation_span_weeks,
+        host_proposed_move_in_date,
+        host_proposed_weeks_schedule,
+        host_proposed_selected_days_json,
+        host_proposed_selected_nights_json,
+        has_host_counter_offer
       `
       )
       .eq('id', payload.proposalId)
@@ -105,7 +105,7 @@ export async function handleGenerateDates(
     }
 
     // Determine if we should use HC (counteroffer) fields
-    const useHC = payload.isCounteroffer ?? proposal['counter offer happened'] === true;
+    const useHC = payload.isCounteroffer ?? proposal.has_host_counter_offer === true;
 
     console.log('[lease:generateDates] Fetched proposal, useHC:', useHC);
 
@@ -118,49 +118,23 @@ export async function handleGenerateDates(
     let nightsSelected: number[] | undefined;
 
     if (useHC) {
-      // Extract Display value from object if present, otherwise use the value directly
-      const hcCheckInDay = proposal['host_counter_offer_check_in_day'];
-      const hcCheckOutDay = proposal['host_counter_offer_check_out_day'];
-      const hcWeeksSchedule = proposal['host_counter_offer_weeks_schedule'];
-
-      checkInDay =
-        (typeof hcCheckInDay === 'object' && hcCheckInDay?.Display) ||
-        hcCheckInDay ||
-        payload.checkInDay;
-      checkOutDay =
-        (typeof hcCheckOutDay === 'object' && hcCheckOutDay?.Display) ||
-        hcCheckOutDay ||
-        payload.checkOutDay;
+      // Snake_case columns are simple values (no Display wrapper)
+      checkInDay = proposal.host_proposed_checkin_day || payload.checkInDay;
+      checkOutDay = proposal.host_proposed_checkout_day || payload.checkOutDay;
       reservationSpanWeeks =
-        proposal['host_counter_offer_reservation_span_weeks'] || payload.reservationSpanWeeks;
-      moveInDate = proposal['host_counter_offer_move_in_date'] || payload.moveInDate;
-      weeksSchedule =
-        (typeof hcWeeksSchedule === 'object' && hcWeeksSchedule?.Display) ||
-        hcWeeksSchedule ||
-        'Every week';
-      nightsSelected = proposal['host_counter_offer_days_selected'] || proposal['host_counter_offer_nights_selected'];
+        proposal.host_proposed_reservation_span_weeks || payload.reservationSpanWeeks;
+      moveInDate = proposal.host_proposed_move_in_date || payload.moveInDate;
+      weeksSchedule = proposal.host_proposed_weeks_schedule || 'Every week';
+      nightsSelected = proposal.host_proposed_selected_days_json || proposal.host_proposed_selected_nights_json;
     } else {
-      // Extract Display value from object if present, otherwise use the value directly
-      const checkInDayVal = proposal['check in day'];
-      const checkOutDayVal = proposal['check out day'];
-      const weekSelectionVal = proposal['week selection'];
-
-      checkInDay =
-        (typeof checkInDayVal === 'object' && checkInDayVal?.Display) ||
-        checkInDayVal ||
-        payload.checkInDay;
-      checkOutDay =
-        (typeof checkOutDayVal === 'object' && checkOutDayVal?.Display) ||
-        checkOutDayVal ||
-        payload.checkOutDay;
+      // Snake_case columns are simple values (no Display wrapper)
+      checkInDay = proposal.checkin_day_of_week_number || payload.checkInDay;
+      checkOutDay = proposal.checkout_day_of_week_number || payload.checkOutDay;
       reservationSpanWeeks =
-        proposal['Reservation Span (Weeks)'] || payload.reservationSpanWeeks;
-      moveInDate = proposal['Move in range start'] || payload.moveInDate;
-      weeksSchedule =
-        (typeof weekSelectionVal === 'object' && weekSelectionVal?.Display) ||
-        weekSelectionVal ||
-        'Every week';
-      nightsSelected = proposal['Days Selected'];
+        proposal.reservation_span_in_weeks || payload.reservationSpanWeeks;
+      moveInDate = proposal.move_in_range_start_date || payload.moveInDate;
+      weeksSchedule = proposal.weeks_offered_schedule_text || 'Every week';
+      nightsSelected = proposal.guest_selected_days_numbers_json;
     }
 
     // Handle full-week normalization (Step 1 from Bubble workflow)

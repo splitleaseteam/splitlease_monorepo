@@ -38,7 +38,7 @@ export async function handleStepB(
 
   if (leaseId) {
     const { data: lease } = await supabase
-      .from('lease')
+      .from('booking_lease')
       .select('guest_id, listing_id')
       .eq('id', leaseId)
       .single();

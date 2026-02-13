@@ -88,7 +88,7 @@ export async function handleUpdate(
   // ================================================
 
   const { data: proposal, error: fetchError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .select("*")
     .eq("id", input.proposal_id)
     .single();
@@ -373,7 +373,7 @@ export async function handleUpdate(
     if (listing.pricing_configuration_id) {
       const { data: pricingList, error: pricingListError } = await supabase
         .from("pricing_list")
-        .select('"Nightly Price", "Host Compensation"')
+        .select('nightly_price, host_compensation')
         .eq("id", listing.pricing_configuration_id)
         .single();
 
@@ -390,8 +390,8 @@ export async function handleUpdate(
       const fallbackPricing = calculatePricingList({ listing });
       pricingListRates = getPricingListRates(
         {
-          "Nightly Price": fallbackPricing.nightlyPrice,
-          "Host Compensation": fallbackPricing.hostCompensation,
+          nightly_price: fallbackPricing.nightlyPrice,
+          host_compensation: fallbackPricing.hostCompensation,
         },
         hcNightsPerWeek
       );
@@ -492,7 +492,7 @@ export async function handleUpdate(
   console.log(`[proposal:update] Updating fields: ${updatedFields.join(", ")}`);
 
   const { error: updateError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .update(updates)
     .eq("id", input.proposal_id);
 

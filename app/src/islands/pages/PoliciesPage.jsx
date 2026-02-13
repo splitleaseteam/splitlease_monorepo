@@ -36,15 +36,15 @@ function PolicyCard({ policy }) {
 function transformSupabaseDocument(supabaseDoc) {
   return {
     id: supabaseDoc.id,
-    name: supabaseDoc.Name,
-    slug: supabaseDoc.Slug || generateSlug(supabaseDoc.Name),
-    type: supabaseDoc.Type || 'policy',
-    pdfUrl: supabaseDoc['PDF Version'],
-    visible_on_policies_page: supabaseDoc.Active,
-    visible_on_logged_out: supabaseDoc['visible on logged out?'],
+    name: supabaseDoc.name,
+    slug: supabaseDoc.slug || generateSlug(supabaseDoc.name),
+    type: supabaseDoc.type || 'policy',
+    pdfUrl: supabaseDoc.pdf_version,
+    visible_on_policies_page: supabaseDoc.active,
+    visible_on_logged_out: supabaseDoc.visible_on_logged_out,
     createdDate: supabaseDoc.original_created_at,
     modifiedDate: supabaseDoc.original_updated_at,
-    createdBy: supabaseDoc['Created By']
+    createdBy: supabaseDoc.created_by
   };
 }
 
@@ -69,11 +69,10 @@ export default function PoliciesPage() {
       console.log('Fetching policies from Supabase...');
 
       const { data, error } = await supabase
-        .schema('reference_table')
         .from('zat_policiesdocuments')
         .select('*')
-        .eq('Active', true)
-        .order('Name', { ascending: true });
+        .eq('active', true)
+        .order('name', { ascending: true });
 
       if (error) {
         console.error('Supabase error:', error);

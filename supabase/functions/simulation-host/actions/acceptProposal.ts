@@ -37,7 +37,7 @@ export async function handleAcceptProposal(
 
   // Verify proposal exists and belongs to this simulation
   const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('id, proposal_workflow_status, simulation_id, guest_user_id, host_user_id, listing_id')
     .eq('id', proposalId)
     .single();
@@ -53,7 +53,7 @@ export async function handleAcceptProposal(
 
   // Step 1: Update proposal status to accepted
   const { error: acceptError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .update({
       proposal_workflow_status: 'Host Accepted - Lease Pending',
       updated_at: new Date().toISOString(),
@@ -70,16 +70,14 @@ export async function handleAcceptProposal(
 
   try {
     const { data: lease, error: leaseError } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .insert({
-        proposal: proposalId,
+        proposal_id: proposalId,
         guest_user_id: proposal.guest_user_id,
         host_user_id: proposal.host_user_id,
         listing_id: proposal.listing_id,
-        'Lease Status': 'Drafting',
-        'Lease signed?': false,
-        'is_test_data': true,
-        'simulation_id': simulationId,
+        lease_status: 'Drafting',
+        is_lease_signed: false,
         created_at: new Date().toISOString(),
       })
        .select('id')
@@ -91,12 +89,6 @@ export async function handleAcceptProposal(
     } else if (lease) {
       leaseId = lease.id;
       console.log('[acceptProposal] Created lease:', leaseId);
-
-      // Link lease back to proposal
-      await supabase
-        .from('proposal')
-        .update({ 'Bookings - Lease': leaseId })
-        .eq('id', proposalId);
     }
   } catch (leaseErr) {
     console.warn('[acceptProposal] Lease creation failed:', leaseErr);

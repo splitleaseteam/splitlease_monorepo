@@ -21,10 +21,9 @@ export async function getBoroughIdByZipCode(zipCode) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('id, "Display Borough"')
-      .contains('Zip Codes', [cleanZip])
+      .select('id, display_borough')
+      .contains('zip_codes', [cleanZip])
       .limit(1)
       .maybeSingle();
 
@@ -33,7 +32,7 @@ export async function getBoroughIdByZipCode(zipCode) {
       return null;
     }
 
-    logger.debug('[ListingService] ✅ Found borough:', data['Display Borough'], 'for zip:', cleanZip);
+    logger.debug('[ListingService] Found borough:', data.display_borough, 'for zip:', cleanZip);
     return data.id;
   } catch (err) {
     logger.error('[ListingService] Error looking up borough:', err);
@@ -54,10 +53,9 @@ export async function getHoodIdByZipCode(zipCode) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('id, "Display"')
-      .contains('Zips', [cleanZip])
+      .select('id, display')
+      .contains('zips', [cleanZip])
       .limit(1)
       .maybeSingle();
 
@@ -66,7 +64,7 @@ export async function getHoodIdByZipCode(zipCode) {
       return null;
     }
 
-    logger.debug('[ListingService] ✅ Found hood:', data['Display'], 'for zip:', cleanZip);
+    logger.debug('[ListingService] Found hood:', data.display, 'for zip:', cleanZip);
     return data.id;
   } catch (err) {
     logger.error('[ListingService] Error looking up hood:', err);

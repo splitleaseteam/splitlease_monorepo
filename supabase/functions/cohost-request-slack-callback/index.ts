@@ -471,26 +471,26 @@ async function handleModalSubmission(
   // Update the co-host request in database
   // Store the display name (matches os_cohost_admins.display pattern)
   const updateData: Record<string, unknown> = {
-    "Co-Host selected (OS)": cohostData.display, // Display name from os_cohost_admins
-    "Status - Co-Host Request": "Co-Host Selected",
-    "Modified Date": new Date().toISOString()
+    co_host_selected_os: cohostData.display, // Display name from os_cohost_admins
+    status_co_host_request: "Co-Host Selected",
+    original_updated_at: new Date().toISOString()
   };
 
   // Store meeting time - prefer ISO timestamp if available, otherwise store the text
   // Note: "Meeting Date Time" is a text field, so we can store either ISO or display text
   if (meetingDateTime) {
     // Custom date/time selected - store as ISO
-    updateData["Meeting Date Time"] = meetingDateTime;
+    updateData.meeting_date_time = meetingDateTime;
   } else if (meetingDisplayText) {
     // Preferred time selected - store the display text (e.g., "Monday, December 23 at 2:00 PM EST")
-    updateData["Meeting Date Time"] = meetingDisplayText;
+    updateData.meeting_date_time = meetingDisplayText;
   }
 
   if (googleMeetLink) {
-    updateData["Google Meet Link"] = googleMeetLink;
+    updateData.google_meet_link = googleMeetLink;
   }
   if (adminNotes) {
-    updateData["Admin Notes"] = adminNotes;
+    updateData.admin_notes = adminNotes;
   }
 
   const { error: updateError } = await supabase

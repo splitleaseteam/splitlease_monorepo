@@ -59,15 +59,15 @@ export async function fetchSuggestedProposals(userId) {
     const { data: summariesData } = await supabase
       .from('negotiationsummary')
       .select('*')
-      .in('"Proposal associated"', proposalIdsForSummaries)
-      .eq('"To Account"', userId)
+      .in('proposal_associated', proposalIdsForSummaries)
+      .eq('to_account', userId)
       .order('original_created_at', { ascending: false });
 
     // Attach summaries to proposals
     if (summariesData && summariesData.length > 0) {
       const summaryMap = {};
       summariesData.forEach(summary => {
-        const proposalId = summary['Proposal associated'];
+        const proposalId = summary.proposal_associated;
         if (!summaryMap[proposalId]) {
           summaryMap[proposalId] = [];
         }
@@ -252,15 +252,15 @@ export async function fetchPendingConfirmationProposals(userId) {
     const { data: summariesData } = await supabase
       .from('negotiationsummary')
       .select('*')
-      .in('"Proposal associated"', proposalIdsForSummaries)
-      .eq('"To Account"', userId)
+      .in('proposal_associated', proposalIdsForSummaries)
+      .eq('to_account', userId)
       .order('original_created_at', { ascending: false });
 
     // Attach summaries to proposals
     if (summariesData && summariesData.length > 0) {
       const summaryMap = {};
       summariesData.forEach(summary => {
-        const proposalId = summary['Proposal associated'];
+        const proposalId = summary.proposal_associated;
         if (!summaryMap[proposalId]) {
           summaryMap[proposalId] = [];
         }

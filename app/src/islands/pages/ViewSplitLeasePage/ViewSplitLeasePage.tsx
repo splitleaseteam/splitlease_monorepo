@@ -563,6 +563,7 @@ export default function ViewSplitLeasePage() {
       return;
     }
 
+    setIsSubmittingProposal(false);
     setIsProposalModalOpen(true);
   };
 
@@ -747,6 +748,7 @@ export default function ViewSplitLeasePage() {
     } catch (error) {
       console.error('Error submitting proposal:', error);
       showToast(error.message || 'Failed to submit proposal. Please try again.', 'error');
+      throw error;
     } finally {
       setIsSubmittingProposal(false);
     }
@@ -801,7 +803,12 @@ export default function ViewSplitLeasePage() {
       setPendingProposalData(null);
       // Small delay to ensure auth state is fully updated
       setTimeout(async () => {
-        await submitProposal(dataToSubmit);
+        try {
+          await submitProposal(dataToSubmit);
+        } catch (error) {
+          // Error already shown as toast inside submitProposal
+          logger.debug('Post-auth proposal submission failed:', error.message);
+        }
       }, 500);
     }
   };

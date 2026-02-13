@@ -37,7 +37,7 @@ export async function handleStepA(
 
   // Fetch the proposal
   const { data: proposal, error: fetchError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select('*')
     .eq('id', proposalId)
     .single();
@@ -59,7 +59,7 @@ export async function handleStepA(
 
   // Check if a lease already exists for this proposal
   const { data: existingLease, error: _leaseCheckError } = await supabase
-    .from('lease')
+    .from('booking_lease')
     .select('*')
     .eq('proposal_id', proposalId)
     .single();
@@ -81,19 +81,19 @@ export async function handleStepA(
   // Create a new lease (simulated)
   const leaseData = {
     proposal_id: proposalId,
-    guest_id: proposal.guest_id,
-    host_id: proposal.host_id,
+    guest_id: proposal.guest_user_id,
+    host_id: proposal.host_user_id,
     listing_id: proposal.listing_id,
     status: 'Active',
-    start_date: proposal.start_date,
-    end_date: proposal.end_date,
+    start_date: proposal.move_in_range_start_date,
+    end_date: proposal.planned_move_out_date,
     signed_at: new Date().toISOString(),
     simulation_id: simulationId,
     notes: '[SIMULATION] Test lease for usability testing'
   };
 
   const { data: newLease, error: createError } = await supabase
-    .from('lease')
+    .from('booking_lease')
     .insert(leaseData)
     .select()
     .single();
@@ -106,8 +106,8 @@ export async function handleStepA(
         id: `mock_lease_${Date.now()}`,
         proposalId,
         status: 'Active',
-        startDate: proposal.start_date,
-        endDate: proposal.end_date,
+        startDate: proposal.move_in_range_start_date,
+        endDate: proposal.planned_move_out_date,
         signedAt: new Date().toISOString()
       }
     };
@@ -115,8 +115,8 @@ export async function handleStepA(
 
   // Update proposal status
   await supabase
-    .from('proposal')
-    .update({ status: 'Lease Signed' })
+    .from('booking_proposal')
+    .update({ proposal_workflow_status: 'Lease Signed' })
     .eq('id', proposalId);
 
   console.log(`[step_a] Lease created: ${newLease?.id}`);
@@ -126,8 +126,8 @@ export async function handleStepA(
       id: newLease?.id || `lease_${Date.now()}`,
       proposalId,
       status: 'Active',
-      startDate: proposal.start_date,
-      endDate: proposal.end_date,
+      startDate: proposal.move_in_range_start_date,
+      endDate: proposal.planned_move_out_date,
       signedAt: new Date().toISOString()
     }
   };

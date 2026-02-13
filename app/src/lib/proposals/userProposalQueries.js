@@ -270,9 +270,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (boroughIds.length > 0) {
     const { data: boroughsData, error: boroughError } = await supabase
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
-      .select('id, "Display Borough"')
+      .select('id, display_borough')
       .in('id', boroughIds);
 
     if (!boroughError) {
@@ -283,9 +282,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (hoodIds.length > 0) {
     const { data: hoodsData, error: hoodError } = await supabase
-      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
-      .select('id, "Display"')
+      .select('id, display')
       .in('id', hoodIds);
 
     if (!hoodError) {
@@ -298,9 +296,8 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   let houseRules = [];
   if (allHouseRuleIds.length > 0) {
     const { data: houseRulesData, error: houseRulesError } = await supabase
-      .schema('reference_table')
       .from('zat_features_houserule')
-      .select('id, "Name"')
+      .select('id, name')
       .in('id', allHouseRuleIds);
 
     if (!houseRulesError) {
@@ -384,7 +381,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   if (rentalAppIds.length > 0) {
     const { data: rentalAppsData, error: rentalAppError } = await supabase
       .from('rentalapplication')
-      .select('id, submitted, "percentage % done"')
+      .select('id, submitted, percentage_done')
       .in('id', rentalAppIds);
 
     if (rentalAppError) {
@@ -409,15 +406,15 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       .from('virtualmeetingschedulesandlinks')
       .select(`
         id,
-        "booked date",
-        "confirmedBySplitLease",
-        "meeting link",
-        "meeting declined",
-        "requested by",
-        "suggested dates and times",
-        "guest name",
-        "host name",
-        "proposal"
+        booked_date,
+        confirmed_by_split_lease,
+        meeting_link,
+        meeting_declined,
+        requested_by,
+        suggested_dates_and_times,
+        guest_name,
+        host_name,
+        proposal
       `)
       .in('proposal', proposalIdsForVM);
 
@@ -443,12 +440,12 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     let summariesQuery = supabase
       .from('negotiationsummary')
       .select('*')
-      .in('"Proposal associated"', proposalIdsForSummaries)
-      .order('"Created Date"', { ascending: false });
+      .in('proposal_associated', proposalIdsForSummaries)
+      .order('created_date', { ascending: false });
 
     // Filter by "To Account" if currentUserId is provided
     if (currentUserId) {
-      summariesQuery = summariesQuery.eq('"To Account"', currentUserId);
+      summariesQuery = summariesQuery.eq('to_account', currentUserId);
     }
 
     const { data: summariesData, error: summariesError } = await summariesQuery;
@@ -464,7 +461,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Create summary lookup map
   const summaryMap = new Map();
   negotiationSummaries.forEach(summary => {
-    const proposalId = summary['Proposal associated'];
+    const proposalId = summary.proposal_associated;
     if (!summaryMap.has(proposalId)) {
       summaryMap.set(proposalId, []);
     }
@@ -483,29 +480,29 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     // Note: Use unquoted column name for .in() filter - Supabase JS client handles quoting
     const { data: threadsData, error: threadsError } = await supabase
       .from('thread')
-      .select('id, "Proposal"')
-      .in('Proposal', proposalIdsForSummaries);
+      .select('id, proposal')
+      .in('proposal', proposalIdsForSummaries);
 
     if (threadsError) {
       console.error('fetchProposalsByIds: Error fetching threads:', threadsError);
     } else if (threadsData && threadsData.length > 0) {
       const threadIds = threadsData.map(t => t.id);
-      const threadToProposalMap = new Map(threadsData.map(t => [t.id, t.Proposal]));
+      const threadToProposalMap = new Map(threadsData.map(t => [t.id, t.proposal]));
 
       // Fetch SplitBot counteroffer messages
-      const { data: counterofferMsgs, error: counterofferError } = await supabase
-        .from('thread_message')
-        .select(`
-          id,
-          message_body_text,
-          "Call to Action",
-          thread_id,
-          original_created_at
-        `)
-        .in('thread_id', threadIds)
-        .eq('is_from_split_bot', true)
-        .eq('"Call to Action"', 'Respond to Counter Offer')
-        .order('original_created_at', { ascending: false });
+        const { data: counterofferMsgs, error: counterofferError } = await supabase
+          .from('thread_message')
+          .select(`
+            id,
+            message_body_text,
+            call_to_action,
+            thread_id,
+            original_created_at
+          `)
+          .in('thread_id', threadIds)
+          .eq('is_from_split_bot', true)
+          .eq('call_to_action', 'Respond to Counter Offer')
+          .order('original_created_at', { ascending: false });
 
       if (counterofferError) {
         console.error('fetchProposalsByIds: Error fetching counteroffer messages:', counterofferError);
@@ -529,12 +526,12 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   // Key guests by their id field
   const guestMap = new Map(guests.map(g => [g.id, g]));
   // Key boroughs and hoods by their id
-  const boroughMap = new Map(boroughs.map(b => [b.id, b['Display Borough']]));
-  const hoodMap = new Map(hoods.map(h => [h.id, h['Display']]));
+  const boroughMap = new Map(boroughs.map(b => [b.id, b.display_borough]));
+  const hoodMap = new Map(hoods.map(h => [h.id, h.display]));
   // Key featured photos by their Listing ID
   const featuredPhotoMap = embeddedPhotoMap;
   // Key house rules by their id to get names
-  const houseRulesMap = new Map(houseRules.map(r => [r.id, r.Name]));
+  const houseRulesMap = new Map(houseRules.map(r => [r.id, r.name]));
 
   // Step 8: Manually join the data
   const enrichedProposals = validProposals.map((proposal) => {

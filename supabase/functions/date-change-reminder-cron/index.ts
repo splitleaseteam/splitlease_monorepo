@@ -22,32 +22,32 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Types
 interface ExpiringRequest {
   id: string;
-  'Lease': string;
-  'Requested by': string;
-  'Request receiver': string;
-  'expiration date': string;
-  'type of request': string;
-  'date added': string | null;
-  'date removed': string | null;
-  'Price/Rate of the night': number | null;
-  '%compared to regular nightly price': number | null;
-  'Message from Requested by': string | null;
-  'reminder_sent_at': string | null;
+  lease: string;
+  requested_by: string;
+  request_receiver: string;
+  expiration_date: string;
+  type_of_request: string;
+  date_added: string | null;
+  date_removed: string | null;
+  price_rate_of_the_night: number | null;
+  compared_to_regular_nightly_price: number | null;
+  message_from_requested_by: string | null;
+  reminder_sent_at: string | null;
 }
 
 interface LeaseData {
   id: string;
-  'Guest': string;
-  'Host': string;
-  'Listing': string;
-  check_in: string;
-  check_out: string;
+  guest_user_id: string;
+  host_user_id: string;
+  listing_id: string;
+  reservation_start_date: string;
+  reservation_end_date: string;
 }
 
 interface UserData {
   id: string;
   email: string | null;
-  'First Name': string | null;
+  first_name: string | null;
 }
 
 interface ReminderResult {
@@ -110,7 +110,7 @@ function wasReminderSentRecently(reminderSentAt: string | null): boolean {
  * Determine if requester is host or guest based on lease
  */
 function _determineRequesterRole(requesterId: string, lease: LeaseData): 'host' | 'guest' {
-  return requesterId === lease.Host ? 'host' : 'guest';
+  return requesterId === lease.host_user_id ? 'host' : 'guest';
 }
 
 /**
@@ -124,32 +124,32 @@ function generateReminderVariables(
   lease: LeaseData
 ): Record<string, unknown> {
   const now = new Date();
-  const expiry = new Date(request['expiration date']);
+  const expiry = new Date(request.expiration_date);
   const diffHours = Math.max(1, Math.round((expiry.getTime() - now.getTime()) / (1000 * 60 * 60)));
 
   return {
     // Recipient
-    first_name: requesterIsHost ? requester['First Name'] : receiver['First Name'],
-    guest_name: requesterIsHost ? requester['First Name'] : receiver['First Name'],
-    host_name: requesterIsHost ? requester['First Name'] : receiver['First Name'],
+    first_name: requesterIsHost ? requester.first_name : receiver.first_name,
+    guest_name: requesterIsHost ? requester.first_name : receiver.first_name,
+    host_name: requesterIsHost ? requester.first_name : receiver.first_name,
 
     // Property
     property_display: `Lease #${lease.id.slice(0, 8)}`,
 
     // Dates
-    original_dates: `${new Date(lease.check_in).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(lease.check_out).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-    dates_to_add: request['date added'] ? new Date(request['date added']).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null,
-    dates_to_remove: request['date removed'] ? new Date(request['date removed']).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null,
+    original_dates: `${new Date(lease.reservation_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(lease.reservation_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
+    dates_to_add: request.date_added ? new Date(request.date_added).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null,
+    dates_to_remove: request.date_removed ? new Date(request.date_removed).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null,
 
     // Price
-    price_adjustment: request['Price/Rate of the night'] ? `$${request['Price/Rate of the night']}` : 'No Change',
+    price_adjustment: request.price_rate_of_the_night ? `$${request.price_rate_of_the_night}` : 'No Change',
 
     // Time
     time_to_expiry: `${diffHours} hour${diffHours > 1 ? 's' : ''}`,
 
     // Message
-    host_message: requesterIsHost ? request['Message from Requested by'] : null,
-    guest_message: requesterIsHost ? null : request['Message from Requested by'],
+    host_message: requesterIsHost ? request.message_from_requested_by : null,
+    guest_message: requesterIsHost ? null : request.message_from_requested_by,
   };
 }
 
@@ -190,22 +190,22 @@ Deno.serve(async (_req: Request) => {
       .from('datechangerequest')
       .select(`
         id,
-        "Lease",
-        "Requested by",
-        "Request receiver",
-        "expiration date",
-        "type of request",
-        "date added",
-        "date removed",
-        "Price/Rate of the night",
-        "%compared to regular nightly price",
-        "Message from Requested by",
-        "reminder_sent_at"
+        lease,
+        requested_by,
+        request_receiver,
+        expiration_date,
+        type_of_request,
+        date_added,
+        date_removed,
+        price_rate_of_the_night,
+        compared_to_regular_nightly_price,
+        message_from_requested_by,
+        reminder_sent_at
       `)
-      .eq('request status', 'waiting_for_answer')
-      .gte('expiration date', minExpiry)
-      .lte('expiration date', maxExpiry)
-      .order('expiration date', { ascending: true });
+      .eq('request_status', 'waiting_for_answer')
+      .gte('expiration_date', minExpiry)
+      .lte('expiration_date', maxExpiry)
+      .order('expiration_date', { ascending: true });
 
     if (queryError) {
       throw new Error(`Failed to query expiring requests: ${queryError.message}`);
@@ -231,7 +231,7 @@ Deno.serve(async (_req: Request) => {
     for (const request of expiringRequests as ExpiringRequest[]) {
       try {
         // Check if reminder was sent recently
-        if (wasReminderSentRecently(request['reminder_sent_at'])) {
+        if (wasReminderSentRecently(request.reminder_sent_at)) {
           console.log(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Reminder sent recently, skipping`);
           continue;
         }
@@ -240,9 +240,9 @@ Deno.serve(async (_req: Request) => {
 
         // Fetch lease data
         const { data: lease, error: leaseError } = await supabase
-          .from('bookings_leases')
-          .select('id, "Guest", "Host", "Listing", check_in, check_out')
-          .eq('id', request['Lease'])
+          .from('booking_lease')
+          .select('id, guest_user_id, host_user_id, listing_id, reservation_start_date, reservation_end_date')
+          .eq('id', request.lease)
           .single();
 
         if (leaseError || !lease) {
@@ -253,16 +253,16 @@ Deno.serve(async (_req: Request) => {
         // Fetch user data for both parties
         const { data: users, error: usersError } = await supabase
           .from('user')
-          .select('id, email, "First Name"')
-          .in('id', [request['Requested by'], request['Request receiver']]);
+          .select('id, email, first_name')
+          .in('id', [request.requested_by, request.request_receiver]);
 
         if (usersError || !users) {
           console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Users not found, skipping`);
           continue;
         }
 
-        const requester = users.find(u => u.id === request['Requested by']) as UserData;
-        const receiver = users.find(u => u.id === request['Request receiver']) as UserData;
+        const requester = users.find(u => u.id === request.requested_by) as UserData;
+        const receiver = users.find(u => u.id === request.request_receiver) as UserData;
 
         if (!requester || !receiver) {
           console.warn(`[date-change-reminder-cron] Request ${request.id.slice(0, 8)}: Missing user data, skipping`);
@@ -270,7 +270,7 @@ Deno.serve(async (_req: Request) => {
         }
 
         // Determine roles
-        const requesterIsHost = request['Requested by'] === lease.Host;
+        const requesterIsHost = request.requested_by === lease.host_user_id;
 
         // Send reminder to requester
         let sentToRequester = false;

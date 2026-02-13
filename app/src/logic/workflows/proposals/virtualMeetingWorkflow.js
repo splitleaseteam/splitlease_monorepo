@@ -211,7 +211,7 @@ export async function fetchVirtualMeetingByProposalId(proposalId) {
     .from('virtualmeetingschedulesandlinks')
     .select('*')
     .eq('proposal', proposalId)
-    .order('"Created Date"', { ascending: false })
+    .order('created_date', { ascending: false })
     .limit(1)
     .maybeSingle();
 

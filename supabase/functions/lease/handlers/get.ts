@@ -35,9 +35,9 @@ export async function handleGet(
   const leaseId = payload.leaseId as string;
 
   // Fetch lease (without embedded joins - no FK constraints exist)
-  // SCHEMA NOTE (2026-01-28): bookings_leases has no FK to proposal, user, or listing tables
+  // SCHEMA NOTE (2026-01-28): booking_lease has no FK to proposal, user, or listing tables
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('*')
     .eq('id', leaseId)
     .single();
@@ -54,35 +54,35 @@ export async function handleGet(
   // Fetch related data separately (parallel fetches for performance)
   const [proposalResult, guestResult, hostResult, listingResult] = await Promise.all([
     // Fetch proposal
-    lease.Proposal
+    lease.proposal_id
       ? supabase
-          .from('proposal')
-          .select('id, Status, "rental type", "host_counter_offer_move_in_date", "host_counter_offer_reservation_span_weeks", "host_counter_offer_nights_per_week", "host_counter_offer_nightly_price"')
-          .eq('id', lease.Proposal)
+          .from("booking_proposal")
+          .select('id, proposal_workflow_status, rental_type, host_proposed_move_in_date, host_proposed_reservation_span_weeks, host_proposed_nights_per_week, host_proposed_nightly_price')
+          .eq('id', lease.proposal_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
     // Fetch guest
-    lease.Guest
+    lease.guest_user_id
       ? supabase
           .from('user')
-          .select('id, email, "First Name", "Last Name"')
-          .eq('id', lease.Guest)
+          .select('id, email, first_name, last_name')
+          .eq('id', lease.guest_user_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
     // Fetch host
-    lease.Host
+    lease.host_user_id
       ? supabase
           .from('user')
-          .select('id, email, "First Name", "Last Name"')
-          .eq('id', lease.Host)
+          .select('id, email, first_name, last_name')
+          .eq('id', lease.host_user_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
     // Fetch listing
-    lease.Listing
+    lease.listing_id
       ? supabase
           .from('listing')
-          .select('id, Name, "listing full address (text)", "List of Photos", "cancellation policy"')
-          .eq('id', lease.Listing)
+          .select('id, listing_title, address_with_lat_lng_json, photos_with_urls_captions_and_sort_order_json, cancellation_policy')
+          .eq('id', lease.listing_id)
           .single()
       : Promise.resolve({ data: null, error: null }),
   ]);
@@ -111,7 +111,7 @@ export async function handleGet(
   };
 
   // Check if user is a participant
-  const participants: string[] = enrichedLease.Participants || [];
+  const participants: string[] = enrichedLease.participant_user_ids_json || [];
   const isParticipant = user ? participants.includes(user.id) : false;
 
   if (user && !isParticipant) {

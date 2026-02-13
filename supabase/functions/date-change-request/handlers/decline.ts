@@ -60,14 +60,14 @@ export async function handleDecline(
   }
 
   const requestData = request as unknown as DateChangeRequestData;
-  console.log(`[date-change-request:decline] Found request, status: ${requestData['request status']}`);
+  console.log(`[date-change-request:decline] Found request, status: ${requestData.request_status}`);
 
   // ================================================
   // VERIFY STATUS
   // ================================================
 
-  if (requestData['request status'] !== 'waiting_for_answer') {
-    throw new ValidationError(`Request is not pending. Current status: ${requestData['request status']}`);
+  if (requestData.request_status !== 'waiting_for_answer') {
+    throw new ValidationError(`Request is not pending. Current status: ${requestData.request_status}`);
   }
 
   // ================================================
@@ -77,11 +77,11 @@ export async function handleDecline(
   const now = new Date().toISOString();
 
   const updateData = {
-    'request status': 'Rejected',
-    'answer date': now,
-    'Answer to Request': input.reason || null,
-    'Modified Date': now,
-    'pending': false,
+    request_status: 'Rejected',
+    answer_date: now,
+    answer_to_request: input.reason || null,
+    original_updated_at: now,
+    pending: false,
   };
 
   const { error: updateError } = await supabase
@@ -104,14 +104,14 @@ export async function handleDecline(
     await sendDateChangeRequestNotifications(supabase, {
       event: 'REJECTED',
       requestId: input.requestId,
-      requestType: requestData['type of request'],
-      leaseId: requestData['Lease'] || '',
-      dateAdded: requestData['date added'],
-      dateRemoved: requestData['date removed'],
-      priceRate: requestData['Price/Rate of the night'],
-      requestedById: requestData['Requested by'] || '',
-      receiverId: requestData['Request receiver'] || '',
-      message: requestData['Message from Requested by'],
+      requestType: requestData.type_of_request,
+      leaseId: requestData.lease || '',
+      dateAdded: requestData.date_added,
+      dateRemoved: requestData.date_removed,
+      priceRate: requestData.price_rate_of_the_night,
+      requestedById: requestData.requested_by || '',
+      receiverId: requestData.request_receiver || '',
+      message: requestData.message_from_requested_by,
       answerMessage: input.reason || null,
     });
   } catch (notificationError) {

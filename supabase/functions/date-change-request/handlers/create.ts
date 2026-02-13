@@ -58,10 +58,10 @@ export async function handleCreate(
   const { count, error: countError } = await supabase
     .from('datechangerequest')
     .select('*', { count: 'exact', head: true })
-    .eq('Requested by', input.requestedById)
-    .eq('Lease', input.leaseId)
-    .eq('request status', 'waiting_for_answer')
-    .gte('Created Date', windowStart.toISOString());
+    .eq('requested_by', input.requestedById)
+    .eq('lease', input.leaseId)
+    .eq('request_status', 'waiting_for_answer')
+    .gte('original_created_at', windowStart.toISOString());
 
   if (countError) {
     console.error(`[date-change-request:create] Throttle check failed:`, countError);
@@ -83,15 +83,14 @@ export async function handleCreate(
   // ================================================
 
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select(`
       id,
-      "Guest",
-      "Host",
-      "Listing",
-      "Lease Status",
-      "Throttling - guest ability to create requests?",
-      "Throttling - host ability to create requests?"
+      guest_user_id,
+      host_user_id,
+      listing_id,
+      guest_can_create_date_change_requests,
+      host_can_create_date_change_requests
     `)
     .eq('id', input.leaseId)
     .single();
@@ -101,19 +100,19 @@ export async function handleCreate(
     throw new ValidationError(`Lease not found: ${input.leaseId}`);
   }
 
-  console.log(`[date-change-request:create] Found lease, guest: ${lease.Guest}, host: ${lease.Host}`);
+  console.log(`[date-change-request:create] Found lease, guest: ${lease.guest_user_id}, host: ${lease.host_user_id}`);
 
   // Verify user is a participant
-  const isHost = input.requestedById === lease.Host;
-  const isGuest = input.requestedById === lease.Guest;
+  const isHost = input.requestedById === lease.host_user_id;
+  const isGuest = input.requestedById === lease.guest_user_id;
   if (!isHost && !isGuest) {
     throw new ValidationError('User is not a participant of this lease');
   }
 
   // Check if user's ability to create requests is blocked (hard block from 10+ requests)
   const abilityField = isHost
-    ? 'Throttling - host ability to create requests?'
-    : 'Throttling - guest ability to create requests?';
+    ? 'host_can_create_date_change_requests'
+    : 'guest_can_create_date_change_requests';
 
   // Note: null/undefined defaults to true (can create)
   if (lease[abilityField] === false) {
@@ -145,29 +144,29 @@ export async function handleCreate(
     id: requestId,
 
     // Relationships
-    'Lease': input.leaseId,
-    'Requested by': input.requestedById,
-    'Request receiver': input.receiverId,
+    lease: input.leaseId,
+    requested_by: input.requestedById,
+    request_receiver: input.receiverId,
 
     // Request details
-    'type of request': input.typeOfRequest,
-    'date added': input.dateAdded || null,
-    'date removed': input.dateRemoved || null,
-    'Message from Requested by': input.message || null,
-    'Price/Rate of the night': input.priceRate || null,
-    '%compared to regular nightly price': input.percentageOfRegular || null,
+    type_of_request: input.typeOfRequest,
+    date_added: input.dateAdded || null,
+    date_removed: input.dateRemoved || null,
+    message_from_requested_by: input.message || null,
+    price_rate_of_the_night: input.priceRate || null,
+    compared_to_regular_nightly_price: input.percentageOfRegular || null,
 
     // Status
-    'request status': 'waiting_for_answer',
-    'expiration date': expirationDate.toISOString(),
-    'visible to the guest?': true,
-    'visible to the host?': true,
-    'pending': true,
+    request_status: 'waiting_for_answer',
+    expiration_date: expirationDate.toISOString(),
+    visible_to_the_guest: true,
+    visible_to_the_host: true,
+    pending: true,
 
     // Audit
-    'Created By': input.requestedById,
-    'Created Date': now,
-    'Modified Date': now,
+    created_by: input.requestedById,
+    original_created_at: now,
+    original_updated_at: now,
   };
 
   console.log(`[date-change-request:create] Inserting request: ${requestId}`);

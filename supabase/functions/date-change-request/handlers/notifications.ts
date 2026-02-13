@@ -71,12 +71,8 @@ const SMS_FROM_NUMBER = '+14155692985';
 interface UserQueryResult {
   id: string;
   email: string | null;
-  'First Name': string | null;
-  'Cell phone number': string | null;
-  'notification preferences': {
-    email_notifications?: boolean;
-    sms_notifications?: boolean;
-  } | null;
+  first_name: string | null;
+  phone_number: string | null;
 }
 
 interface UsersResult {
@@ -90,9 +86,9 @@ interface MagicLinksResult {
 }
 
 interface LeaseQueryResult {
-  'Agreement Number': string | null;
-  Guest: string | null;
-  Host: string | null;
+  agreement_number: string | null;
+  guest_user_id: string | null;
+  host_user_id: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -146,7 +142,7 @@ export async function sendDateChangeRequestNotifications(
     requestId: params.requestId,
     requestType: params.requestType,
     leaseId: params.leaseId,
-    agreementNumber: lease['Agreement Number'],
+    agreementNumber: lease.agreement_number,
     dateAdded: params.dateAdded,
     dateRemoved: params.dateRemoved,
     priceRate: params.priceRate,
@@ -193,7 +189,7 @@ async function fetchUsers(
   // Fetch users
   const { data: users, error: usersError } = await supabase
     .from('user')
-    .select('id, email, "First Name", "Cell phone number", "notification preferences"')
+    .select('id, email, first_name, phone_number')
     .in('id', [requesterId, receiverId]);
 
   if (usersError || !users) {
@@ -206,8 +202,8 @@ async function fetchUsers(
 
   // Fetch lease to determine roles
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
-    .select('"Guest", "Host"')
+    .from('booking_lease')
+    .select('guest_user_id, host_user_id')
     .eq('id', leaseId)
     .maybeSingle();
 
@@ -217,7 +213,7 @@ async function fetchUsers(
   }
 
   // Determine roles based on lease participants
-  const requesterRole: 'guest' | 'host' = lease.Guest === requesterId ? 'guest' : 'host';
+  const requesterRole: 'guest' | 'host' = lease.guest_user_id === requesterId ? 'guest' : 'host';
   const receiverRole: 'guest' | 'host' = requesterRole === 'guest' ? 'host' : 'guest';
 
   return {
@@ -233,9 +229,9 @@ function mapToRecipient(user: UserQueryResult, role: 'guest' | 'host'): Notifica
   return {
     userId: user.id,
     email: user.email,
-    firstName: user['First Name'],
-    phone: user['Cell phone number'],
-    notificationPreferences: user['notification preferences'],
+    firstName: user.first_name,
+    phone: user.phone_number,
+    notificationPreferences: null,
     role,
   };
 }
@@ -248,8 +244,8 @@ async function fetchLease(
   leaseId: string
 ): Promise<LeaseQueryResult | null> {
   const { data, error } = await supabase
-    .from('bookings_leases')
-    .select('"Agreement Number", "Guest", "Host"')
+    .from('booking_lease')
+    .select('agreement_number, guest_user_id, host_user_id')
     .eq('id', leaseId)
     .maybeSingle();
 
@@ -430,7 +426,7 @@ async function sendEmailNotification(
 
     // Fetch lease data with check-in/check-out dates
     const { data: leaseData } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .select('check_in, check_out')
       .eq('id', context.leaseId)
       .maybeSingle();
@@ -600,9 +596,9 @@ async function sendInAppNotification(
 
   // Find the messaging thread for this lease
   const { data: thread, error: threadError } = await supabase
-    .from('messaging_threads')
+    .from('message_thread')
     .select('id')
-    .eq('lease', context.leaseId)
+    .eq('lease_id', context.leaseId)
     .maybeSingle();
 
   if (threadError || !thread) {

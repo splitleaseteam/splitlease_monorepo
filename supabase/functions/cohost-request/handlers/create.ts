@@ -103,15 +103,15 @@ export async function handleCreate(
   // "Co-Host User" will be assigned later via Slack notification workflow
   const coHostData: Record<string, unknown> = {
     id: coHostRequestId,
-    "Host User": input.userId,      // The host requesting co-host assistance
-    "Co-Host User": null,           // Will be assigned later by admin
-    "Created By": input.userId,
-    Listing: input.listingId || null,
-    "Status - Co-Host Request": "pending",  // Initial status from os_co_host_status
-    "Dates and times suggested": input.selectedTimes,  // JSONB array of datetime strings
-    "Request notes": requestNotes,  // Combined topics + freeform details
-    "Created Date": now,
-    "Modified Date": now,
+    host_user: input.userId,      // The host requesting co-host assistance
+    co_host_user: null,           // Will be assigned later by admin
+    created_by: input.userId,
+    listing: input.listingId || null,
+    status_co_host_request: "pending",  // Initial status from os_co_host_status
+    dates_and_times_suggested: input.selectedTimes,  // JSONB array of datetime strings
+    request_notes: requestNotes,  // Combined topics + freeform details
+    original_created_at: now,
+    original_updated_at: now,
   };
 
   // Log which columns we're attempting to insert
@@ -254,7 +254,7 @@ export async function handleCreate(
       // Store the message timestamp so we can update it later when claimed
       await supabase
         .from("co_hostrequest")
-        .update({ "Slack Message TS": slackResult.ts })
+        .update({ slack_message_ts: slackResult.ts })
         .eq("id", coHostRequestId);
 
       console.log(`[cohost-request:create] Interactive Slack message sent, ts: ${slackResult.ts}`);

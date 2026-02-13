@@ -28,16 +28,16 @@ interface GuestInfo {
   last_name: string;
   profile_photo_url: string | null;
   phone_number: string | null;
-  'user verified?': boolean;
-  'Verify - Linked In ID': string | null;
-  'Selfie with ID': string | null;
+  is_user_verified: boolean;
+  linkedin_profile_id: string | null;
+  selfie_with_id_photo_url: string | null;
 }
 
 interface ListingInfo {
   id: string;
-  Name: string;
-  'Cover Photo': string | null;
-  Neighborhood: string | null;
+  listing_title: string;
+  photos_with_urls_captions_and_sort_order_json: unknown[] | null;
+  neighborhood_name_entered_by_host: string | null;
 }
 
 interface StayWithReview extends StayData {
@@ -46,33 +46,32 @@ interface StayWithReview extends StayData {
 
 interface PaymentRecord {
   id: string;
-  'Booking - Reservation': string;
-  'Payment #': number;
-  'Scheduled Date': string;
-  'Actual Date': string | null;
-  'Rent Amount': number;
-  'Maintenance Fee': number;
-  'Damage Deposit': number;
-  'Total Amount': number;
-  'Bank Transaction Number': string | null;
-  'Payment Receipt': string | null;
-  'Is Paid': boolean;
-  'Is Refunded': boolean;
+  booking_reservation: string;
+  payment: number;
+  scheduled_date: string;
+  actual_date_of_payment: string | null;
+  rent: number;
+  maintenance_fee: number;
+  damage_deposit: number;
+  total_paid_to_host: number;
+  bank_transaction_number: string | null;
+  payment_receipt: string | null;
+  payment_to_host: boolean;
 }
 
 interface DateChangeRequest {
   id: string;
-  Lease: string;
-  'Requested by': string;
-  'Request receiver': string;
-  'Stay Associated 1': string | null;
-  'Stay Associated 2': string | null;
-  status: string;
-  'Request Type': string;
-  'Original Date': string;
-  'Requested Date': string;
-  'Price Adjustment': number | null;
-  'Created Date': string;
+  lease: string;
+  requested_by: string;
+  request_receiver: string;
+  stay_associated_1: string | null;
+  stay_associated_2: string | null;
+  request_status: string;
+  type_of_request: string;
+  list_of_old_dates_in_the_stay: string;
+  list_of_new_dates_in_the_stay: string;
+  price_rate_of_the_night: number | null;
+  original_created_at: string;
   requestedByUser?: GuestInfo | null;
 }
 
@@ -139,10 +138,10 @@ export async function handleGetHostLeases(
 
   // Step 2: Fetch leases for these listings
   const { data: leases, error: leasesError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('*')
-    .in('Listing', targetListingIds)
-    .order('"Created Date"', { ascending: false });
+    .in('listing_id', targetListingIds)
+    .order('created_at', { ascending: false });
 
   if (leasesError) {
     console.error('[lease:getHostLeases] Error fetching leases:', leasesError.message);
@@ -157,8 +156,8 @@ export async function handleGetHostLeases(
   console.log('[lease:getHostLeases] Found leases:', leases.length);
 
   // Step 3: Collect all unique IDs needed for related data
-  const guestIds = [...new Set(leases.map((l: LeaseData) => l.Guest).filter(Boolean))];
-  const leaseListingIds = [...new Set(leases.map((l: LeaseData) => l.Listing).filter(Boolean))];
+  const guestIds = [...new Set(leases.map((l: LeaseData) => l.guest_user_id).filter(Boolean))];
+  const leaseListingIds = [...new Set(leases.map((l: LeaseData) => l.listing_id).filter(Boolean))];
   const leaseIds = leases.map((l: LeaseData) => l.id);
 
   // Step 4: Fetch guests
@@ -173,9 +172,9 @@ export async function handleGetHostLeases(
         last_name,
         profile_photo_url,
         phone_number,
-        "user verified?",
-        "Verify - Linked In ID",
-        "Selfie with ID"
+        is_user_verified,
+        linkedin_profile_id,
+        selfie_with_id_photo_url
       `)
       .in('id', guestIds);
 
@@ -195,9 +194,9 @@ export async function handleGetHostLeases(
       .from('listing')
       .select(`
         id,
-        Name,
-        "Cover Photo",
-        Neighborhood
+        listing_title,
+        photos_with_urls_captions_and_sort_order_json,
+        neighborhood_name_entered_by_host
       `)
       .in('id', leaseListingIds);
 
@@ -214,33 +213,32 @@ export async function handleGetHostLeases(
   const staysByLease: Record<string, StayWithReview[]> = {};
   if (leaseIds.length > 0) {
     const { data: stays, error: staysError } = await supabase
-      .from('bookings_stays')
+      .from('lease_weekly_stay')
       .select(`
         id,
-        Lease,
-        "Week Number",
-        Guest,
-        Host,
-        listing,
-        "Dates - List of dates in this period",
-        "Check In (night)",
-        "Last Night (night)",
-        "Stay Status",
-        "Review Submitted by Host",
-        "Created Date",
-        "Modified Date"
+        lease_id,
+        week_number_in_lease,
+        guest_user_id,
+        host_user_id,
+        listing_id,
+        dates_in_this_stay_period_json,
+        checkin_night_date,
+        last_night_date,
+        stay_status,
+        created_at,
+        updated_at
       `)
-      .in('Lease', leaseIds)
-      .order('"Week Number"', { ascending: true });
+      .in('lease_id', leaseIds)
+      .order('week_number_in_lease', { ascending: true });
 
     if (staysError) {
       console.warn('[lease:getHostLeases] Error fetching stays:', staysError.message);
     } else if (stays) {
       stays.forEach((s: StayWithReview) => {
-        if (!staysByLease[s.Lease]) {
-          staysByLease[s.Lease] = [];
+        if (!staysByLease[s.lease_id]) {
+          staysByLease[s.lease_id] = [];
         }
-        staysByLease[s.Lease].push(s);
+        staysByLease[s.lease_id].push(s);
       });
     }
   }
@@ -252,27 +250,26 @@ export async function handleGetHostLeases(
       .from('paymentrecords')
       .select(`
         id,
-        "Booking - Reservation",
-        "Payment #",
-        "Scheduled Date",
-        "Actual Date",
-        "Rent Amount",
-        "Maintenance Fee",
-        "Damage Deposit",
-        "Total Amount",
-        "Bank Transaction Number",
-        "Payment Receipt",
-        "Is Paid",
-        "Is Refunded"
+        booking_reservation,
+        payment,
+        scheduled_date,
+        actual_date_of_payment,
+        rent,
+        maintenance_fee,
+        damage_deposit,
+        total_paid_to_host,
+        bank_transaction_number,
+        payment_receipt,
+        payment_to_host
       `)
-      .in('"Booking - Reservation"', leaseIds)
-      .order('"Payment #"', { ascending: true });
+      .in('booking_reservation', leaseIds)
+      .order('payment', { ascending: true });
 
     if (paymentsError) {
       console.warn('[lease:getHostLeases] Error fetching payments:', paymentsError.message);
     } else if (payments) {
       payments.forEach((p: PaymentRecord) => {
-        const leaseId = p['Booking - Reservation'];
+        const leaseId = p.booking_reservation;
         if (!paymentsByLease[leaseId]) {
           paymentsByLease[leaseId] = [];
         }
@@ -288,26 +285,26 @@ export async function handleGetHostLeases(
       .from('datechangerequest')
       .select(`
         id,
-        Lease,
-        "Requested by",
-        "Request receiver",
-        "Stay Associated 1",
-        "Stay Associated 2",
-        status,
-        "Request Type",
-        "Original Date",
-        "Requested Date",
-        "Price Adjustment",
-        "Created Date"
+        lease,
+        requested_by,
+        request_receiver,
+        stay_associated_1,
+        stay_associated_2,
+        request_status,
+        type_of_request,
+        list_of_old_dates_in_the_stay,
+        list_of_new_dates_in_the_stay,
+        price_rate_of_the_night,
+        original_created_at
       `)
-      .in('Lease', leaseIds)
-      .order('"Created Date"', { ascending: false });
+      .in('lease', leaseIds)
+      .order('original_created_at', { ascending: false });
 
     if (dateChangesError) {
       console.warn('[lease:getHostLeases] Error fetching date changes:', dateChangesError.message);
     } else if (dateChanges) {
       // Collect requestedBy user IDs for fetching names
-      const requestedByIds = [...new Set(dateChanges.map((dc: DateChangeRequest) => dc['Requested by']).filter(Boolean))];
+      const requestedByIds = [...new Set(dateChanges.map((dc: DateChangeRequest) => dc.requested_by).filter(Boolean))];
 
       // Fetch user info for requestedBy
       const requestedByMap: Record<string, GuestInfo> = {};
@@ -325,11 +322,11 @@ export async function handleGetHostLeases(
       }
 
       dateChanges.forEach((dc: DateChangeRequest) => {
-        if (!dateChangesByLease[dc.Lease]) {
-          dateChangesByLease[dc.Lease] = [];
+        if (!dateChangesByLease[dc.lease]) {
+          dateChangesByLease[dc.lease] = [];
         }
-        dc.requestedByUser = requestedByMap[dc['Requested by']] || null;
-        dateChangesByLease[dc.Lease].push(dc);
+        dc.requestedByUser = requestedByMap[dc.requested_by] || null;
+        dateChangesByLease[dc.lease].push(dc);
       });
     }
   }
@@ -337,8 +334,8 @@ export async function handleGetHostLeases(
   // Step 9: Assemble the complete lease data
   const enrichedLeases: HostLeaseData[] = leases.map((lease: LeaseData) => ({
     ...lease,
-    guest: guestMap[lease.Guest] || null,
-    listing: listingMap[lease.Listing] || null,
+    guest: guestMap[lease.guest_user_id] || null,
+    listing: listingMap[lease.listing_id] || null,
     stays: staysByLease[lease.id] || [],
     paymentRecords: paymentsByLease[lease.id] || [],
     dateChangeRequests: dateChangesByLease[lease.id] || [],

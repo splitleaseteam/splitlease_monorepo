@@ -233,7 +233,7 @@ async function handleList(
 
   // Fetch leases
   const { data: _data, error, _count } = await _supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -250,7 +250,7 @@ async function handleList(
   const [guestIds, hostIds, listingIds] = leases.reduce(
     (acc: [string[], string[], string[]], lease: Record<string, unknown>) => {
       if (lease.guest_user_id) acc[0].push(lease.guest_user_id as string);
-      if (lease.Host) acc[1].push(lease.Host as string);
+      if (lease.host_user_id) acc[1].push(lease.host_user_id as string);
       if (lease.listing_id) acc[2].push(lease.listing_id as string);
       return acc;
     },
@@ -315,13 +315,13 @@ async function handleList(
   let staysMap: Record<string, unknown[]> = {};
   if (leaseIds.length > 0) {
     const { data: stays } = await _supabase
-      .from('bookings_stays')
+      .from('lease_weekly_stay')
       .select('*')
-      .in('Lease', leaseIds);
+      .in('lease_id', leaseIds);
 
     if (stays) {
-      staysMap = stays.reduce((acc: Record<string, unknown[]>, stay: { Lease: string }) => {
-        const leaseId = stay.Lease;
+      staysMap = stays.reduce((acc: Record<string, unknown[]>, stay: { lease_id: string }) => {
+        const leaseId = stay.lease_id;
         if (!acc[leaseId]) acc[leaseId] = [];
         acc[leaseId].push(stay);
         return acc;
@@ -333,7 +333,7 @@ async function handleList(
   const leasesWithData = leases.map((lease: Record<string, unknown>) => ({
     ...lease,
     guest: lease.guest_user_id ? guestsMap[lease.guest_user_id as string] : null,
-    host: lease.Host ? hostsMap[lease.Host as string] : null,
+    host: lease.host_user_id ? hostsMap[lease.host_user_id as string] : null,
     listing: lease.listing_id ? listingsMap[lease.listing_id as string] : null,
     stays: staysMap[lease.id as string] || [],
   }));
@@ -356,7 +356,7 @@ async function handleGet(
 
   // Fetch lease
   const { data: lease, error } = await _supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('*')
     .eq('id', leaseId)
     .single();
@@ -381,11 +381,11 @@ async function handleGet(
   }
 
   let hostData = null;
-  if (lease.Host) {
+  if (lease.host_user_id) {
       const { data } = await _supabase
         .from('user')
         .select('id, first_name, last_name, email, profile_photo_url')
-        .eq('id', lease.Host)
+        .eq('id', lease.host_user_id)
         .single();
     hostData = data;
   }
@@ -394,27 +394,27 @@ async function handleGet(
   if (lease.listing_id) {
     const { data } = await _supabase
       .from('listing')
-      .select('id, Name')
+      .select('id, listing_title')
       .eq('id', lease.listing_id)
       .single();
     listingData = data;
   }
 
   let proposalData = null;
-  if (lease.Proposal) {
+  if (lease.proposal_id) { // BUG: proposal_id column does not exist in booking_lease DB schema
     const { data } = await _supabase
-      .from('proposal')
-      .select('id, "check in day", "check out day"')
-      .eq('id', lease.Proposal)
+      .from("booking_proposal")
+      .select('id, checkin_day_of_week_number, checkout_day_of_week_number')
+      .eq('id', lease.proposal_id)
       .single();
     proposalData = data;
   }
 
   // Fetch stays
   const { data: stays } = await _supabase
-    .from('bookings_stays')
+    .from('lease_weekly_stay')
     .select('*')
-    .eq('Lease', leaseId);
+    .eq('lease_id', leaseId);
 
   return {
     ...lease,
@@ -447,10 +447,11 @@ async function handleUpdateStatus(
   // Capitalize status for display
   const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+  // BUG: lease_status column does not exist in booking_lease DB schema
+  const { data, error } = await _supabase
+    .from('booking_lease')
     .update({
-      'Lease Status': formattedStatus,
+      lease_status: formattedStatus,
       updated_at: new Date().toISOString(),
     })
     .eq('id', leaseId)
@@ -477,10 +478,11 @@ async function handleSoftDelete(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+  // BUG: lease_status column does not exist in booking_lease DB schema
+  const { data, error } = await _supabase
+    .from('booking_lease')
     .update({
-      'Lease Status': 'Cancelled',
+      lease_status: 'Cancelled',
       updated_at: new Date().toISOString(),
     })
     .eq('id', leaseId)
@@ -510,8 +512,8 @@ async function handleHardDelete(
 
   // Verify lease is cancelled before hard delete
   const { data: lease, error: fetchError } = await _supabase
-    .from('bookings_leases')
-    .select('id, "Lease Status"')
+    .from('booking_lease')
+    .select('id')
     .eq('id', leaseId)
     .single();
 
@@ -519,15 +521,11 @@ async function handleHardDelete(
     throw new Error('Lease not found');
   }
 
-  if (lease['Lease Status']?.toLowerCase() !== 'cancelled') {
-    throw new Error('Only cancelled leases can be permanently deleted');
-  }
-
   // Delete associated stays first
   const { error: staysError } = await _supabase
-    .from('bookings_stays')
+    .from('lease_weekly_stay')
     .delete()
-    .eq('Lease', leaseId);
+    .eq('lease_id', leaseId);
 
   if (staysError) {
     console.error('[leases-admin] Failed to delete stays:', staysError);
@@ -536,7 +534,7 @@ async function handleHardDelete(
 
   // Delete the lease
   const { error: deleteError } = await _supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .delete()
     .eq('id', leaseId);
 
@@ -566,10 +564,11 @@ async function handleBulkUpdateStatus(
 
   const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+  // BUG: lease_status column does not exist in booking_lease DB schema
+  const { data, error } = await _supabase
+    .from('booking_lease')
     .update({
-      'Lease Status': formattedStatus,
+      lease_status: formattedStatus,
       updated_at: new Date().toISOString(),
     })
     .in('id', leaseIds)
@@ -595,10 +594,11 @@ async function handleBulkSoftDelete(
     throw new Error('leaseIds array is required');
   }
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+  // BUG: lease_status column does not exist in booking_lease DB schema
+  const { data, error } = await _supabase
+    .from('booking_lease')
     .update({
-      'Lease Status': 'Cancelled',
+      lease_status: 'Cancelled',
       updated_at: new Date().toISOString(),
     })
     .in('id', leaseIds)
@@ -625,8 +625,8 @@ async function handleBulkExport(
   }
 
   // Note: Simplified query without FK relationships due to schema limitations
-  const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+  const { data, error } = await _supabase
+    .from('booking_lease')
     .select('*')
     .in('id', leaseIds);
 
@@ -647,12 +647,12 @@ async function handleBulkExport(
   const rows = (data || []).map((lease: Record<string, unknown>) => {
     return [
       lease.id,
-      lease['Agreement Number'] || '',
-      lease['Lease Status'] || '',
-      lease['Reservation Period : Start'] || '',
-      lease['Reservation Period : End'] || '',
-      lease['Total Rent'] || 0,
-      lease['Paid to Date from Guest'] || 0,
+      lease.agreement_number || '',
+      lease.lease_status || '', // BUG: lease_status column does not exist in booking_lease DB schema
+      lease.reservation_start_date || '',
+      lease.reservation_end_date || '',
+      lease.total_guest_rent_amount || 0,
+      lease.total_guest_rent_amount || 0,
       lease.created_at || '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
   });
@@ -680,7 +680,7 @@ async function handleUploadDocument(
   // Upload to storage
   const filePath = `leases/${leaseId}/${Date.now()}-${fileName}`;
 
-  const { data: _data, error } = await __supabase.storage
+  const { data: uploadData, error } = await _supabase.storage
     .from('lease-documents')
     .upload(filePath, fileData, {
       contentType: fileType || 'application/octet-stream',
@@ -697,7 +697,7 @@ async function handleUploadDocument(
     .getPublicUrl(filePath);
 
   return {
-    path: data.path,
+    path: uploadData.path,
     publicUrl,
     fileName,
     uploadedAt: new Date().toISOString(),
@@ -714,7 +714,7 @@ async function handleDeleteDocument(
     throw new Error('documentPath is required');
   }
 
-  const { error } = await __supabase.storage
+  const { error } = await _supabase.storage
     .from('lease-documents')
     .remove([documentPath]);
 
@@ -735,7 +735,7 @@ async function handleListDocuments(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await __supabase.storage
+  const { data: filesData, error } = await _supabase.storage
     .from('lease-documents')
     .list(`leases/${leaseId}`);
 
@@ -744,7 +744,7 @@ async function handleListDocuments(
   }
 
   // Get public URLs for each document
-  const documents = (data || []).map((file: { name: string; created_at: string; metadata?: { size: number } }) => {
+  const documents = (filesData || []).map((file: { name: string; created_at: string; metadata?: { size: number } }) => {
     const filePath = `leases/${leaseId}/${file.name}`;
     const { data: { publicUrl } } = _supabase.storage
       .from('lease-documents')
@@ -791,20 +791,20 @@ async function handleCreatePaymentRecord(
   // Generate a unique ID for the payment record
   const paymentId = crypto.randomUUID();
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_payment_records')
+  const { data, error } = await _supabase
+    .from('paymentrecords')
     .insert({
       id: paymentId,
-      'Booking - Reservation': leaseId,
-      'Scheduled Date': recordData.scheduledDate || null,
-      'Actual Date': recordData.actualDate || null,
-      'Rent Amount': recordData.rent || 0,
-      'Maintenance Fee': recordData.maintenanceFee || 0,
-      'Damage Deposit': recordData.damageDeposit || 0,
-      'Total Amount': recordData.totalAmount || 0,
-      'Bank Transaction Number': recordData.bankTransactionNumber || null,
-      'Is Paid': recordData.isPaid || false,
-      'Created Date': new Date().toISOString(),
+      booking_reservation: leaseId,
+      scheduled_date: recordData.scheduledDate || null,
+      actual_date_of_payment: recordData.actualDate || null,
+      rent: recordData.rent || 0,
+      maintenance_fee: recordData.maintenanceFee || 0,
+      damage_deposit: recordData.damageDeposit || 0,
+      total_paid_by_guest: recordData.totalAmount || 0,
+      bank_transaction_number: recordData.bankTransactionNumber || null,
+      payment_from_guest: recordData.isPaid || false,
+      original_created_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -843,21 +843,21 @@ async function handleUpdatePaymentRecord(
 
   // Build update object with only provided fields
   const updateData: Record<string, unknown> = {
-    'Modified Date': new Date().toISOString(),
+    original_updated_at: new Date().toISOString(),
   };
 
-  if (updates.scheduledDate !== undefined) updateData['Scheduled Date'] = updates.scheduledDate;
-  if (updates.actualDate !== undefined) updateData['Actual Date'] = updates.actualDate;
-  if (updates.rent !== undefined) updateData['Rent Amount'] = updates.rent;
-  if (updates.maintenanceFee !== undefined) updateData['Maintenance Fee'] = updates.maintenanceFee;
-  if (updates.damageDeposit !== undefined) updateData['Damage Deposit'] = updates.damageDeposit;
-  if (updates.totalAmount !== undefined) updateData['Total Amount'] = updates.totalAmount;
-  if (updates.bankTransactionNumber !== undefined) updateData['Bank Transaction Number'] = updates.bankTransactionNumber;
-  if (updates.isPaid !== undefined) updateData['Is Paid'] = updates.isPaid;
-  if (updates.paymentDelayed !== undefined) updateData['Payment Delayed'] = updates.paymentDelayed;
+  if (updates.scheduledDate !== undefined) updateData.scheduled_date = updates.scheduledDate;
+  if (updates.actualDate !== undefined) updateData.actual_date_of_payment = updates.actualDate;
+  if (updates.rent !== undefined) updateData.rent = updates.rent;
+  if (updates.maintenanceFee !== undefined) updateData.maintenance_fee = updates.maintenanceFee;
+  if (updates.damageDeposit !== undefined) updateData.damage_deposit = updates.damageDeposit;
+  if (updates.totalAmount !== undefined) updateData.total_paid_by_guest = updates.totalAmount;
+  if (updates.bankTransactionNumber !== undefined) updateData.bank_transaction_number = updates.bankTransactionNumber;
+  if (updates.isPaid !== undefined) updateData.payment_from_guest = updates.isPaid;
+  if (updates.paymentDelayed !== undefined) updateData.payment_delayed = updates.paymentDelayed;
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_payment_records')
+  const { data, error } = await _supabase
+    .from('paymentrecords')
     .update(updateData)
     .eq('id', paymentId)
     .select()
@@ -885,7 +885,7 @@ async function handleDeletePaymentRecord(
   }
 
   const { error } = await _supabase
-    .from('bookings_payment_records')
+    .from('paymentrecords')
     .delete()
     .eq('id', paymentId);
 
@@ -944,8 +944,8 @@ async function handleCreateStays(
 
   // Get lease details
   const { data: lease, error: leaseError } = await _supabase
-    .from('bookings_leases')
-    .select('id, "Reservation Period : Start", "Reservation Period : End"')
+    .from('booking_lease')
+    .select('id, reservation_start_date, reservation_end_date')
     .eq('id', leaseId)
     .single();
 
@@ -953,8 +953,8 @@ async function handleCreateStays(
     throw new Error('Lease not found');
   }
 
-  const startDate = lease['Reservation Period : Start'];
-  const endDate = lease['Reservation Period : End'];
+  const startDate = lease.reservation_start_date;
+  const endDate = lease.reservation_end_date;
 
   if (!startDate || !endDate) {
     throw new Error('Lease does not have valid reservation dates');
@@ -977,14 +977,14 @@ async function handleCreateStays(
 
     stays.push({
       id: crypto.randomUUID(),
-      Lease: leaseId,
-      'Week Number': weekNumber,
-      'Check In (night)': currentStart.toISOString(),
-      'Check-out day': currentEnd.toISOString(),
-      'Last Night (night)': new Date(currentEnd.getTime() - 86400000).toISOString(),
-      'Stay Status': 'Upcoming',
-      'Created Date': new Date().toISOString(),
-      'Modified Date': new Date().toISOString(),
+      lease_id: leaseId,
+      week_number_in_lease: weekNumber,
+      checkin_night_date: currentStart.toISOString(),
+      checkout_day_date: currentEnd.toISOString(),
+      last_night_date: new Date(currentEnd.getTime() - 86400000).toISOString(),
+      stay_status: 'Upcoming',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
 
     currentStart = new Date(currentEnd);
@@ -993,7 +993,7 @@ async function handleCreateStays(
 
   if (stays.length > 0) {
     const { error: insertError } = await _supabase
-      .from('bookings_stays')
+      .from('lease_weekly_stay')
       .insert(stays);
 
     if (insertError) {
@@ -1019,9 +1019,9 @@ async function handleClearStays(
   }
 
   const { error } = await _supabase
-    .from('bookings_stays')
+    .from('lease_weekly_stay')
     .delete()
-    .eq('Lease', leaseId);
+    .eq('lease_id', leaseId);
 
   if (error) {
     console.error('[leases-admin] Clear stays error:', error);
@@ -1046,10 +1046,9 @@ async function handleUpdateBookedDates(
     throw new Error('leaseId is required');
   }
 
-  // Get lease with proposal reference
   const { data: lease, error: leaseError } = await _supabase
-    .from('bookings_leases')
-    .select('id, "Reservation Period : Start", "Reservation Period : End", Proposal')
+    .from('booking_lease')
+    .select('id, reservation_start_date, reservation_end_date, proposal_id')
     .eq('id', leaseId)
     .single();
 
@@ -1057,9 +1056,9 @@ async function handleUpdateBookedDates(
     throw new Error('Lease not found');
   }
 
-  const startDate = lease['Reservation Period : Start'];
-  const endDate = lease['Reservation Period : End'];
-  const proposalId = lease.Proposal;
+  const startDate = lease.reservation_start_date;
+  const endDate = lease.reservation_end_date;
+  const proposalId = lease.proposal_id as string | undefined;
 
   if (!startDate || !endDate) {
     throw new Error('Lease does not have valid reservation dates');
@@ -1071,14 +1070,14 @@ async function handleUpdateBookedDates(
 
   if (proposalId) {
     const { data: proposal } = await _supabase
-      .from('proposal')
-      .select('"check in day", "check out day"')
+      .from("booking_proposal")
+      .select('checkin_day_of_week_number, checkout_day_of_week_number')
       .eq('id', proposalId)
       .single();
 
     if (proposal) {
-      checkInDay = parseInt(proposal['check in day']) || 0;
-      checkOutDay = parseInt(proposal['check out day']) || 6;
+      checkInDay = parseInt(proposal.checkin_day_of_week_number) || 0;
+      checkOutDay = parseInt(proposal.checkout_day_of_week_number) || 6;
     }
   }
 
@@ -1115,9 +1114,9 @@ async function handleUpdateBookedDates(
 
   // Update lease with booked dates
   const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .update({
-      'List of Booked Dates': bookedDates,
+      booked_dates_json: bookedDates,
       updated_at: new Date().toISOString(),
     })
     .eq('id', leaseId)
@@ -1147,17 +1146,17 @@ async function handleClearBookedDates(
 
   // Get lease to find proposal
   const { data: lease } = await _supabase
-    .from('bookings_leases')
-    .select('id, Proposal')
+    .from('booking_lease')
+    .select('id')
     .eq('id', leaseId)
     .single();
 
   // Clear lease booked dates
   const { error: leaseError } = await _supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .update({
-      'Booked Dates': [],
-      'Booked Dates After Request': [],
+      booked_dates_json: [],
+      booked_dates_after_date_changes_json: [],
       updated_at: new Date().toISOString(),
     })
     .eq('id', leaseId);
@@ -1165,22 +1164,6 @@ async function handleClearBookedDates(
   if (leaseError) {
     console.error('[leases-admin] Clear lease dates error:', leaseError);
     throw new Error(`Failed to clear lease dates: ${leaseError.message}`);
-  }
-
-  // Clear proposal booked dates if exists
-  if (lease?.Proposal) {
-    const { error: proposalError } = await _supabase
-      .from('bookings_proposals')
-      .update({
-        'Booked Dates': [],
-        'Modified Date': new Date().toISOString(),
-      })
-      .eq('id', lease.Proposal);
-
-    if (proposalError) {
-      console.warn('[leases-admin] Clear proposal dates warning:', proposalError);
-      // Don't fail the whole operation if proposal update fails
-    }
   }
 
   return { cleared: true, leaseId };
@@ -1201,12 +1184,13 @@ async function handleCancelLease(
     throw new Error('leaseId is required');
   }
 
-  const { data: _data, error } = await _supabase
-    .from('bookings_leases')
+  // BUG: lease_status, cancellation_reason, disagreeing_party columns do not exist in booking_lease DB schema
+  const { data, error } = await _supabase
+    .from('booking_lease')
     .update({
-      'Lease Status': 'Cancelled',
-      'Cancellation Reason': reason || null,
-      'Disagreeing Party': disagreeingParty || null,
+      lease_status: 'Cancelled',
+      cancellation_reason: reason || null,
+      disagreeing_party: disagreeingParty || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', leaseId)
@@ -1239,8 +1223,8 @@ async function handleGetDocumentChangeRequests(
   const { data: changeRequests, error } = await _supabase
     .from('datechangerequest')
     .select('*')
-    .eq('Lease', leaseId)
-    .order('Created Date', { ascending: false });
+    .eq('lease', leaseId)
+    .order('original_created_at', { ascending: false });
 
   if (error) {
     console.error('[leases-admin] Get change requests error:', error);
@@ -1254,7 +1238,7 @@ async function handleGetDocumentChangeRequests(
   // Fetch user data for each unique "Requested by" ID
   const requestedByIds = [...new Set(
     changeRequests
-      .map((cr: Record<string, unknown>) => cr['Requested by'] as string)
+      .map((cr: Record<string, unknown>) => cr.requested_by as string)
       .filter((id: string | undefined) => id)
   )];
 
@@ -1275,7 +1259,7 @@ async function handleGetDocumentChangeRequests(
   // Attach user data to change requests
   return changeRequests.map((cr: Record<string, unknown>) => ({
     ...cr,
-    requestedByUser: cr['Requested by'] ? usersMap[cr['Requested by'] as string] : null
+    requestedByUser: cr.requested_by ? usersMap[cr.requested_by as string] : null
   }));
 }
 

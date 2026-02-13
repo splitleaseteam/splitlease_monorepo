@@ -20,11 +20,10 @@ export default function FAQPage() {
     execute: executeLoadFAQs,
   } = useAsyncOperation(async () => {
     const { data, error: fetchError } = await supabase
-      .schema('reference_table')
       .from('zat_faq')
-      .select('id, Question, Answer, Category, sub-category')
-      .order('Category', { ascending: true })
-      .order('sub-category', { ascending: true });
+      .select('id, question, answer, category, sub_category')
+      .order('category', { ascending: true })
+      .order('sub_category', { ascending: true });
 
     if (fetchError) throw fetchError;
 
@@ -44,7 +43,7 @@ export default function FAQPage() {
 
     data.forEach(faq => {
       for (const [tabName, dbCategory] of Object.entries(categoryMapping)) {
-        if (faq.Category === dbCategory) {
+        if (faq.category === dbCategory) {
           grouped[tabName].push(faq);
           break;
         }
@@ -326,8 +325,8 @@ function FAQContent({ faqs, openQuestionId }) {
         // First try to match by exact id
         (faq.id && faq.id.toString() === openQuestionId) ||
         // Then try to match by question text
-        faq.Question.toLowerCase().includes(openQuestionId) ||
-        faq.Question.toLowerCase().replace(/[^a-z0-9]/g, '').includes(openQuestionId.replace(/[^a-z0-9]/g, ''))
+        faq.question.toLowerCase().includes(openQuestionId) ||
+        faq.question.toLowerCase().replace(/[^a-z0-9]/g, '').includes(openQuestionId.replace(/[^a-z0-9]/g, ''))
       );
 
       if (questionIndex !== -1) {
@@ -393,12 +392,12 @@ function FAQContent({ faqs, openQuestionId }) {
                   onClick={() => toggleAccordion(currentIndex)}
                   onKeyPress={(e) => handleKeyPress(e, currentIndex)}
                 >
-                  <h3>{faq.Question}</h3>
+                  <h3>{faq.question}</h3>
                   <span className="accordion-icon"></span>
                 </div>
                 <div className="accordion-content">
                   <div className="accordion-content-inner">
-                    <p>{faq.Answer}</p>
+                    <p>{faq.answer}</p>
                   </div>
                 </div>
               </div>

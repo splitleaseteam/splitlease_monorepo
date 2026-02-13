@@ -146,41 +146,47 @@ export interface UpdateProposalResponse {
  */
 export interface ProposalData {
   id: string;
-  Listing: string;
-  Guest: string;
-  "Host User": string;
-  Status: string;
-  "proposal nightly price": number;
-  "Move in range start": string;
-  "Move in range end": string;
-  "Reservation Span (Weeks)": number;
-  "Reservation Span": string;
-  "Days Selected": number[];
-  "Nights Selected (Nights list)": number[];
-  "check in day": number;
-  "check out day": number;
-  "Total Price for Reservation (guest)": number;
-  "Total Compensation (proposal - host)": number;
-  "cleaning fee": number;
-  "damage deposit": number;
-  "Guest flexibility": string;
-  "preferred gender": string;
-  "need for space"?: string;
-  about_yourself?: string;      // snake_case column
-  special_needs?: string;       // snake_case column
-  Comment?: string;
-  "Order Ranking": number;
-  "Is Finalized": boolean;
-  Deleted: boolean;
-  "Created Date": string;
-  "Modified Date": string;
+  listing_id: string;
+  guest_user_id: string;
+  host_user_id: string;
+  proposal_workflow_status: string;
+  calculated_nightly_price: number;
+  move_in_range_start_date: string;
+  move_in_range_end_date: string;
+  reservation_span_in_weeks: number;
+  reservation_span_text: string;
+  guest_selected_days_numbers_json: number[];
+  guest_selected_nights_numbers_json: number[];
+  checkin_day_of_week_number: number;
+  checkout_day_of_week_number: number;
+  total_reservation_price_for_guest: number;
+  total_compensation_for_host: number;
+  cleaning_fee_amount: number;
+  damage_deposit_amount: number;
+  guest_schedule_flexibility_text: string;
+  preferred_roommate_gender: string;
+  guest_stated_need_for_space?: string;
+  guest_about_yourself_text?: string;
+  guest_special_needs_text?: string; // Verify column name
+  guest_introduction_message?: string;
+  display_sort_order: number;
+  is_finalized: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  
   // Host counteroffer fields
-  "hc nightly price"?: number;
-  "hc days selected"?: number[];
-  "hc nights selected"?: number[];
-  "hc move in date"?: string;
-  "hc reservation span (weeks)"?: number;
-  "counter offer happened"?: boolean;
+  host_proposed_nightly_price?: number;
+  host_proposed_selected_days_json?: number[];
+  host_proposed_selected_nights_json?: number[];
+  host_proposed_move_in_date?: string;
+  host_proposed_reservation_span_weeks?: number;
+  host_proposed_nights_per_week?: number;
+  host_proposed_total_guest_price?: number;
+  has_host_counter_offer?: boolean;
+  
+  // Cancellation
+  reason_for_cancellation?: string;
 }
 
 // ============================================
@@ -189,72 +195,58 @@ export interface ProposalData {
 
 /**
  * Listing data fetched from database
- * Supports both legacy Bubble emoji-prefixed names and new Supabase snake_case columns
+ * All columns use snake_case names matching the listing table schema
  */
 export interface ListingData {
   id: string;
-  "Host User": string;
-  "rental type": string;
-  "Features - House Rules": string[];
-  "Weeks offered": string;
-  "Days Available (List of Days)": number[];
-  "Nights Available (List of Nights) ": number[];
-  "Location - Address": Record<string, unknown>;
-  "Location - slightly different address": string;
-  // New Supabase snake_case column names (from database)
-  cleaning_fee?: number;
-  damage_deposit?: number;
-  weekly_host_rate?: number;
-  nightly_rate_2_nights?: number;
-  nightly_rate_3_nights?: number;
-  nightly_rate_4_nights?: number;
-  nightly_rate_5_nights?: number;
-  nightly_rate_6_nights?: number;
-  nightly_rate_7_nights?: number;
-  monthly_host_rate?: number;
-  // Legacy Bubble emoji-prefixed field names (for backwards compatibility)
-  "💰Cleaning Cost / Maintenance Fee"?: number;
-  "💰Damage Deposit"?: number;
-  "💰Weekly Host Rate"?: number;
-  "💰Nightly Host Rate for 2 nights"?: number;
-  "💰Nightly Host Rate for 3 nights"?: number;
-  "💰Nightly Host Rate for 4 nights"?: number;
-  "💰Nightly Host Rate for 5 nights"?: number;
-  "💰Nightly Host Rate for 6 nights"?: number;
-  "💰Nightly Host Rate for 7 nights"?: number;
-  "💰Monthly Host Rate"?: number;
+  listing_title?: string;
+  host_user_id: string;
+  rental_type: string;
+  house_rule_reference_ids_json: string[];
+  weeks_offered_schedule_text?: string;
+  available_days_as_day_numbers_json: number[];
+  available_nights_as_day_numbers_json: number[];
+  address_with_lat_lng_json: Record<string, unknown>;
+  map_pin_offset_address_json?: string;
+  borough?: string;
+  cleaning_fee_amount: number;
+  damage_deposit_amount: number;
+  weekly_rate_paid_to_host?: number;
+  nightly_rate_for_1_night_stay?: number;
+  nightly_rate_for_2_night_stay?: number;
+  nightly_rate_for_3_night_stay?: number;
+  nightly_rate_for_4_night_stay?: number;
+  nightly_rate_for_5_night_stay?: number;
+  nightly_rate_for_7_night_stay?: number;
+  monthly_rate_paid_to_host?: number;
+  pricing_configuration_id?: string;
+  unit_markup_percentage?: number;
+  is_deleted?: boolean;
 }
 
 /**
  * Guest user data fetched from database
+ * All columns use snake_case names matching the user table schema
+ * NOTE: "Proposals List" and "Favorited Listings" columns were removed;
+ * use junction tables user_proposal and user_listing_favorite instead
  */
 export interface GuestData {
   id: string;
   email: string;
-  "Rental Application": string | null;
-  "Proposals List": string[];  // Native text[] array from PostgreSQL (migrated from JSONB)
-  "Favorited Listings": string[];  // Still JSONB - requires parseJsonArray
-  "About Me / Bio"?: string;
-  "need for Space"?: string;
-  "special needs"?: string;
-  "Tasks Completed"?: string[];  // Still JSONB - requires parseJsonArray
-}
-
-/**
- * Host account data fetched from database
- */
-export interface HostAccountData {
-  id: string;
-  User: string;
+  rental_application_form_id: string | null;
+  bio_text?: string;
+  stated_need_for_space_text?: string;
+  stated_special_needs_text?: string;
+  onboarding_tasks_completed_list_json?: string[];
 }
 
 /**
  * Host user data fetched from database
+ * NOTE: "Proposals List" column was removed; use junction table user_proposal instead
  */
 export interface HostUserData {
   id: string;
   email: string;
-  "Proposals List": string[];  // Native text[] array from PostgreSQL (migrated from JSONB)
 }
 
 /**

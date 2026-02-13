@@ -44,7 +44,7 @@ export async function handleGuestRequest(
 
   // Verify lease exists and belongs to this simulation
   const { data: lease, error: fetchError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .select('id, simulation_id, guest_user_id, host_user_id')
     .eq('id', leaseId)
     .single();

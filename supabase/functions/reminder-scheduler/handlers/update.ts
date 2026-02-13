@@ -24,35 +24,35 @@ export const handleUpdate = async (
 
   // Build update object with only provided fields
   const updates: Record<string, unknown> = {
-    'Modified Date': new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
   if (payload.message !== undefined) {
-    updates['message to send'] = payload.message;
+    updates.message_to_send = payload.message;
   }
 
   if (payload.scheduledDateTime !== undefined) {
-    updates['scheduled date and time'] = payload.scheduledDateTime;
+    updates.scheduled_date_and_time = payload.scheduledDateTime;
   }
 
   if (payload.isEmailReminder !== undefined) {
-    updates['is an email reminder?'] = payload.isEmailReminder;
+    updates.is_an_email_reminder = payload.isEmailReminder;
   }
 
   if (payload.isSmsReminder !== undefined) {
-    updates['is a phone reminder?'] = payload.isSmsReminder;
+    updates.is_a_phone_reminder = payload.isSmsReminder;
   }
 
   if (payload.fallbackPhone !== undefined) {
-    updates['phone number (in case no guest attached)'] = payload.fallbackPhone;
+    updates.phone_number_in_case_no_guest_attached = payload.fallbackPhone;
   }
 
   if (payload.fallbackEmail !== undefined) {
-    updates['fallback email'] = payload.fallbackEmail;
+    updates.fallback_email = payload.fallbackEmail;
   }
 
   if (payload.reminderType !== undefined) {
-    updates['type of reminders'] = payload.reminderType;
+    updates.type_of_reminders = payload.reminderType;
   }
 
   if (payload.status !== undefined) {

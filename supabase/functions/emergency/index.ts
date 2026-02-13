@@ -313,10 +313,10 @@ async function handleGetAll(
   let query = supabase
     .from('emergencyreports')
     .select('*')
-    .order('"Created Date"', { ascending: false })
+    .order('original_created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (assignedTo) query = query.eq('"Team Member Assigned"', assignedTo);
+  if (assignedTo) query = query.eq('team_member_assigned', assignedTo);
   if (!includeHidden) query = query.eq('pending', false);
 
   const { data, error } = await query;
@@ -328,22 +328,22 @@ async function handleGetAll(
 
   console.log('[emergency:getAll] Found', data?.length || 0, 'emergencies');
 
-  // Transform legacy column names to normalized format
+  // Transform column names to normalized format
   return (data || []).map(row => ({
     id: row.id,
-    proposal_id: row['Reservation'],
-    reported_by_user_id: row['reported by'],
-    emergency_type: row['Type of emergency reported'],
-    description: row['Description of emergency'],
-    photo1_url: row['Photo 1 of emergency'],
-    photo2_url: row['Photo 2 of emergency'],
-    status: row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED',
+    proposal_id: row.reservation,
+    reported_by_user_id: row.reported_by,
+    emergency_type: row.type_of_emergency_reported,
+    description: row.description_of_emergency,
+    photo1_url: row.photo_1_of_emergency,
+    photo2_url: row.photo_2_of_emergency,
+    status: row.team_member_assigned ? 'ASSIGNED' : 'REPORTED',
     is_hidden: row.pending || false,
-    assigned_to_user_id: row['Team Member Assigned'],
-    guidance_instructions: row['Guidance / Instructions '],
-    summary: row['Our summary of the emergency'],
-    created_at: row['Created Date'],
-    updated_at: row['Modified Date'],
+    assigned_to_user_id: row.team_member_assigned,
+    guidance_instructions: row.guidance_instructions,
+    summary: row.our_summary_of_the_emergency,
+    created_at: row.original_created_at,
+    updated_at: row.original_updated_at,
   }));
 }
 
@@ -367,22 +367,22 @@ async function handleGetById(
 
   if (error) throw new Error(`Failed to fetch emergency: ${error.message}`);
 
-  // Transform legacy column names to normalized format
+  // Transform column names to normalized format
   return {
     id: row.id,
-    proposal_id: row['Reservation'],
-    reported_by_user_id: row['reported by'],
-    emergency_type: row['Type of emergency reported'],
-    description: row['Description of emergency'],
-    photo1_url: row['Photo 1 of emergency'],
-    photo2_url: row['Photo 2 of emergency'],
-    status: row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED',
+    proposal_id: row.reservation,
+    reported_by_user_id: row.reported_by,
+    emergency_type: row.type_of_emergency_reported,
+    description: row.description_of_emergency,
+    photo1_url: row.photo_1_of_emergency,
+    photo2_url: row.photo_2_of_emergency,
+    status: row.team_member_assigned ? 'ASSIGNED' : 'REPORTED',
     is_hidden: row.pending || false,
-    assigned_to_user_id: row['Team Member Assigned'],
-    guidance_instructions: row['Guidance / Instructions '],
-    summary: row['Our summary of the emergency'],
-    created_at: row['Created Date'],
-    updated_at: row['Modified Date'],
+    assigned_to_user_id: row.team_member_assigned,
+    guidance_instructions: row.guidance_instructions,
+    summary: row.our_summary_of_the_emergency,
+    created_at: row.original_created_at,
+    updated_at: row.original_updated_at,
   };
 }
 
@@ -408,14 +408,14 @@ async function handleCreate(
     .from('emergencyreports')
     .insert({
       id: recordId,
-      'Reservation': proposal_id || null,
-      'reported by': reported_by_user_id || 'no_user',
-      'Type of emergency reported': emergency_type,
-      'Description of emergency': description,
-      'Photo 1 of emergency': photo1_url || null,
-      'Photo 2 of emergency': photo2_url || null,
-      'Created Date': new Date().toISOString(),
-      'Modified Date': new Date().toISOString(),
+      reservation: proposal_id || null,
+      reported_by: reported_by_user_id || 'no_user',
+      type_of_emergency_reported: emergency_type,
+      description_of_emergency: description,
+      photo_1_of_emergency: photo1_url || null,
+      photo_2_of_emergency: photo2_url || null,
+      original_created_at: new Date().toISOString(),
+      original_updated_at: new Date().toISOString(),
       pending: false,
     })
     .select()
@@ -432,8 +432,8 @@ async function handleCreate(
 
   return {
     id: row.id,
-    emergency_type: row['Type of emergency reported'],
-    description: row['Description of emergency'],
+    emergency_type: row.type_of_emergency_reported,
+    description: row.description_of_emergency,
     status: 'REPORTED',
   };
 }
@@ -451,13 +451,13 @@ async function handleUpdate(
 
   if (!id) throw new Error('Emergency ID is required');
 
-  // Map normalized field names to legacy column names
+  // Map normalized field names to column names
   const fieldsToUpdate: Record<string, unknown> = {};
-  if (emergency_type !== undefined) fieldsToUpdate['Type of emergency reported'] = emergency_type;
-  if (description !== undefined) fieldsToUpdate['Description of emergency'] = description;
-  if (photo1_url !== undefined) fieldsToUpdate['Photo 1 of emergency'] = photo1_url;
-  if (photo2_url !== undefined) fieldsToUpdate['Photo 2 of emergency'] = photo2_url;
-  if (guidance_instructions !== undefined) fieldsToUpdate['Guidance / Instructions '] = guidance_instructions;
+  if (emergency_type !== undefined) fieldsToUpdate.type_of_emergency_reported = emergency_type;
+  if (description !== undefined) fieldsToUpdate.description_of_emergency = description;
+  if (photo1_url !== undefined) fieldsToUpdate.photo_1_of_emergency = photo1_url;
+  if (photo2_url !== undefined) fieldsToUpdate.photo_2_of_emergency = photo2_url;
+  if (guidance_instructions !== undefined) fieldsToUpdate.guidance_instructions = guidance_instructions;
 
   if (Object.keys(fieldsToUpdate).length === 0) throw new Error('No fields to update');
 
@@ -472,8 +472,8 @@ async function handleUpdate(
 
   return {
     id: row.id,
-    emergency_type: row['Type of emergency reported'],
-    description: row['Description of emergency'],
+    emergency_type: row.type_of_emergency_reported,
+    description: row.description_of_emergency,
   };
 }
 
@@ -500,12 +500,12 @@ async function handleAssignEmergency(
   if (userError || !assignedUser) throw new Error(`Assigned user not found: ${assignedToUserId}`);
   if (!assignedUser.is_admin) throw new Error('Assigned user must be an admin');
 
-  // Map to legacy column names
+  // Map to column names
   const updateData: Record<string, unknown> = {
-    'Team Member Assigned': assignedToUserId,
+    team_member_assigned: assignedToUserId,
   };
 
-  if (guidanceInstructions !== undefined) updateData['Guidance / Instructions '] = guidanceInstructions;
+  if (guidanceInstructions !== undefined) updateData.guidance_instructions = guidanceInstructions;
 
   const { data: row, error } = await supabase
     .from('emergencyreports')
@@ -519,13 +519,13 @@ async function handleAssignEmergency(
   const assignedToName = `${assignedUser.first_name || ''} ${assignedUser.last_name || ''}`.trim() || assignedUser.email;
 
   sendToSlack('database', {
-    text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${row['Type of emergency reported']}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${row.id}`,
+    text: `📋 *EMERGENCY ASSIGNED*\n\n*Type:* ${row.type_of_emergency_reported}\n*Assigned To:* ${assignedToName}\n*Assigned By:* ${user.email}\n\n*Emergency ID:* ${row.id}`,
   });
 
   return {
     id: row.id,
-    emergency_type: row['Type of emergency reported'],
-    assigned_to_user_id: row['Team Member Assigned'],
+    emergency_type: row.type_of_emergency_reported,
+    assigned_to_user_id: row.team_member_assigned,
   };
 }
 
@@ -562,7 +562,7 @@ async function handleUpdateStatus(
 
   return {
     id: row.id,
-    status: row.pending ? 'RESOLVED' : (row['Team Member Assigned'] ? 'ASSIGNED' : 'REPORTED'),
+    status: row.pending ? 'RESOLVED' : (row.team_member_assigned ? 'ASSIGNED' : 'REPORTED'),
   };
 }
 
@@ -653,7 +653,7 @@ async function handleSendSMS(
       .eq('id', messageLog.id);
 
     return { ...messageLog, twilio_sid: result.sid, status: 'SENT' };
-  } catch (_err) {
+  } catch (err) {
     await supabase
       .from('emergency_message')
       .update({ status: 'FAILED', error_message: (err as Error).message })
@@ -721,7 +721,7 @@ async function handleSendEmail(
       .eq('id', emailLog.id);
 
     return { ...emailLog, status: 'SENT' };
-  } catch (_err) {
+  } catch (err) {
     await supabase
       .from('emergency_email_log')
       .update({ status: 'FAILED', error_message: (err as Error).message })

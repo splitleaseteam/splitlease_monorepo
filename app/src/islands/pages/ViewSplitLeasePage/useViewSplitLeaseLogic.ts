@@ -446,6 +446,8 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       return;
     }
     
+    // Reset submission state when opening modal to ensure fresh state
+    setIsSubmittingProposal(false);
     setIsProposalModalOpen(true);
   }, [isBookingValid]);
   

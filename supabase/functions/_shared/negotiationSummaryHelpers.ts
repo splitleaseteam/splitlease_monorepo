@@ -148,7 +148,7 @@ export async function formatPreviousProposals(
 ): Promise<string> {
   try {
     let query = supabase
-      .from("proposal")
+      .from("booking_proposal")
       .select(`
         id,
         reservation_span_in_weeks,

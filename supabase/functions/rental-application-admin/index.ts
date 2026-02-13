@@ -261,12 +261,9 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   }
 
   if (filters.isCompleted !== undefined) {
-    // Filter by percentage % done >= 100 for completed
-    // Use quoted identifier for column name with special characters
-    const percentageColumn = '"percentage % done"';
-    query = query.gte(percentageColumn, filters.isCompleted ? 100 : 0);
+    query = query.gte('percentage_done', filters.isCompleted ? 100 : 0);
     if (!filters.isCompleted) {
-      query = query.lt(percentageColumn, 100);
+      query = query.lt('percentage_done', 100);
     }
   }
 
@@ -277,21 +274,20 @@ async function handleList(payload: ListPayload, supabase: SupabaseClient) {
   }
 
   if (filters.minIncome) {
-    query = query.gte('Monthly Income', filters.minIncome);
+    query = query.gte('monthly_income', filters.minIncome);
   }
 
   // Apply sorting - use correct column names
-  const sortField = sort?.field || 'Created Date';
+  const sortField = sort?.field || 'original_created_at';
   const sortDirection = sort?.direction === 'asc' ? { ascending: true } : { ascending: false };
 
   // Map frontend field names to actual rentalapplication table columns
-  // Column names with special characters must use quoted identifier syntax
   const fieldMapping: Record<string, string> = {
-    'created_at': 'Created Date',
+    'created_at': 'original_created_at',
     'unique_id': 'id',
-    'status': 'submitted',  // maps to boolean submitted field
-    'completion_percentage': '"percentage % done"',  // quoted for special characters
-    'total_monthly_income': 'Monthly Income'
+    'status': 'submitted',
+    'completion_percentage': 'percentage_done',
+    'total_monthly_income': 'monthly_income'
   };
 
   const dbField = fieldMapping[sortField] || sortField;
@@ -353,7 +349,7 @@ async function handleGet(
   const application = transformApplication(data);
 
   // Parse JSONB fields using correct column names from rentalapplication table
-  application.occupants = data['occupants list'] || [];
+  application.occupants = data['occupants_list'] || [];
   application.references = data['references'] || [];
   // Employment history not stored as separate array in this table schema
 
@@ -385,20 +381,20 @@ async function handleUpdate(
     const personalInfo = updates.personal_info as Record<string, unknown>;
     if (personalInfo.name !== undefined) dbUpdates['name'] = personalInfo.name;
     if (personalInfo.email !== undefined) dbUpdates['email'] = personalInfo.email;
-    if (personalInfo.phone !== undefined) dbUpdates['phone number'] = personalInfo.phone;
+    if (personalInfo.phone !== undefined) dbUpdates['phone_number'] = personalInfo.phone;
   }
 
   // Address fields
   if (updates.current_address !== undefined) {
-    dbUpdates['permanent address'] = updates.current_address;
+    dbUpdates['permanent_address'] = updates.current_address;
   }
   if (updates.apartment_number !== undefined) {
-    dbUpdates['apartment number'] = updates.apartment_number;
+    dbUpdates['apartment_number'] = updates.apartment_number;
   }
 
   // Financial fields
   if (updates.monthly_income !== undefined) {
-    dbUpdates['Monthly Income'] = updates.monthly_income;
+    dbUpdates['monthly_income'] = updates.monthly_income;
   }
 
   // Boolean flags
@@ -414,20 +410,20 @@ async function handleUpdate(
 
   // Employment fields
   if (updates.employment_status !== undefined) {
-    dbUpdates['employment status'] = updates.employment_status;
+    dbUpdates['employment_status'] = updates.employment_status;
   }
   if (updates.employer_name !== undefined) {
-    dbUpdates['employer name'] = updates.employer_name;
+    dbUpdates['employer_name'] = updates.employer_name;
   }
   if (updates.employer_phone !== undefined) {
-    dbUpdates['employer phone number'] = updates.employer_phone;
+    dbUpdates['employer_phone_number'] = updates.employer_phone;
   }
   if (updates.job_title !== undefined) {
-    dbUpdates['job title'] = updates.job_title;
+    dbUpdates['job_title'] = updates.job_title;
   }
 
   // Always update modified date
-  dbUpdates['Modified Date'] = new Date().toISOString();
+  dbUpdates['original_updated_at'] = new Date().toISOString();
 
   const { data, error } = await supabase
     .from('rentalapplication')
@@ -466,7 +462,7 @@ async function handleUpdateStatus(
     .from('rentalapplication')
     .update({
       'submitted': submittedValue,
-      'Modified Date': new Date().toISOString()
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', id)
     .select()
@@ -497,7 +493,7 @@ async function handleAddOccupant(
   // Fetch current occupants
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
-    .select('"occupants list"')
+    .select('occupants_list')
     .eq('id', applicationId)
     .single();
 
@@ -505,7 +501,7 @@ async function handleAddOccupant(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentOccupants = app?.['occupants list'] || [];
+  const currentOccupants = app?.['occupants_list'] || [];
   const newOccupant = {
     id: crypto.randomUUID(),
     ...occupant,
@@ -517,8 +513,8 @@ async function handleAddOccupant(
   const { error: updateError } = await supabase
     .from('rentalapplication')
     .update({
-      'occupants list': updatedOccupants,
-      'Modified Date': new Date().toISOString()
+      'occupants_list': updatedOccupants,
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);
 
@@ -545,7 +541,7 @@ async function handleDeleteOccupant(
   // Fetch current occupants
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
-    .select('"occupants list"')
+    .select('occupants_list')
     .eq('id', applicationId)
     .single();
 
@@ -553,7 +549,7 @@ async function handleDeleteOccupant(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentOccupants = app?.['occupants list'] || [];
+  const currentOccupants = app?.['occupants_list'] || [];
   const updatedOccupants = currentOccupants.filter(
     (o: { id: string }) => o.id !== occupantId
   );
@@ -561,8 +557,8 @@ async function handleDeleteOccupant(
   const { error: updateError } = await supabase
     .from('rentalapplication')
     .update({
-      'occupants list': updatedOccupants,
-      'Modified Date': new Date().toISOString()
+      'occupants_list': updatedOccupants,
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);
 
@@ -609,7 +605,7 @@ async function handleAddReference(
     .from('rentalapplication')
     .update({
       'references': updatedRefs,
-      'Modified Date': new Date().toISOString()
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);
 
@@ -652,7 +648,7 @@ async function handleDeleteReference(
     .from('rentalapplication')
     .update({
       'references': updatedRefs,
-      'Modified Date': new Date().toISOString()
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);
 
@@ -678,7 +674,7 @@ async function handleAddEmployment(
 
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
-    .select('"Employment History"')
+    .select('employment_history')
     .eq('id', applicationId)
     .single();
 
@@ -686,7 +682,7 @@ async function handleAddEmployment(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentEmployment = app?.['Employment History'] || [];
+  const currentEmployment = app?.['employment_history'] || [];
   const newEmployment = {
     id: crypto.randomUUID(),
     ...employment,
@@ -698,8 +694,8 @@ async function handleAddEmployment(
   const { error: updateError } = await supabase
     .from('rentalapplication')
     .update({
-      'Employment History': updatedEmployment,
-      'Modified Date': new Date().toISOString()
+      'employment_history': updatedEmployment,
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);
 
@@ -725,7 +721,7 @@ async function handleDeleteEmployment(
 
   const { data: app, error: fetchError } = await supabase
     .from('rentalapplication')
-    .select('"Employment History"')
+    .select('employment_history')
     .eq('id', applicationId)
     .single();
 
@@ -733,7 +729,7 @@ async function handleDeleteEmployment(
     throw new Error(`Failed to fetch application: ${fetchError.message}`);
   }
 
-  const currentEmployment = app?.['Employment History'] || [];
+  const currentEmployment = app?.['employment_history'] || [];
   const updatedEmployment = currentEmployment.filter(
     (e: { id: string }) => e.id !== employmentId
   );
@@ -741,8 +737,8 @@ async function handleDeleteEmployment(
   const { error: updateError } = await supabase
     .from('rentalapplication')
     .update({
-      'Employment History': updatedEmployment,
-      'Modified Date': new Date().toISOString()
+      'employment_history': updatedEmployment,
+      'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);
 
@@ -768,15 +764,15 @@ function transformApplication(record: Record<string, unknown>) {
   const isSubmitted = record['submitted'] as boolean || false;
   const status = isSubmitted ? 'submitted' : 'draft';
 
-  // Completion percentage from 'percentage % done' field
-  const completionPercentage = Number(record['percentage % done']) || 0;
+  // Completion percentage from 'percentage_done' field
+  const completionPercentage = Number(record['percentage_done']) || 0;
   const isCompleted = completionPercentage >= 100;
 
-  // Monthly income from 'Monthly Income' field
-  const monthlyIncome = Number(record['Monthly Income']) || 0;
+  // Monthly income from 'monthly_income' field
+  const monthlyIncome = Number(record['monthly_income']) || 0;
 
-  // Extract address - the 'permanent address' is JSONB with { address: string }
-  const permanentAddress = record['permanent address'] as { address?: string } | string | null;
+  // Extract address - the 'permanent_address' is JSONB with { address: string }
+  const permanentAddress = record['permanent_address'] as { address?: string } | string | null;
   const addressString = typeof permanentAddress === 'string'
     ? permanentAddress
     : (permanentAddress?.address || '');
@@ -788,8 +784,8 @@ function transformApplication(record: Record<string, unknown>) {
     // Applicant info for display
     applicant_name: applicantName,
     applicant_email: applicantEmail,
-    phone_number: record['phone number'] as string || '',
-    date_of_birth: record['DOB'] as string || '',
+    phone_number: record['phone_number'] as string || '',
+    date_of_birth: record['dob'] as string || '',
 
     // Status
     status: status,
@@ -805,27 +801,27 @@ function transformApplication(record: Record<string, unknown>) {
     personal_info: {
       name: applicantName,
       email: applicantEmail,
-      phone: record['phone number'] as string || '',
-      dateOfBirth: record['DOB'] as string || '',
+      phone: record['phone_number'] as string || '',
+      dateOfBirth: record['dob'] as string || '',
     },
 
     // Address info - provide both the raw address and structured view
     current_address: addressString,
     permanent_address_raw: permanentAddress,
-    apartment_number: record['apartment number'] as string || '',
-    length_resided: record['length resided'] as string || '',
+    apartment_number: record['apartment_number'] as string || '',
+    length_resided: record['length_resided'] as string || '',
     renting: record['renting'] as boolean || false,
 
     // Employment info
-    employment_status: record['employment status'] as string || '',
-    employer_name: record['employer name'] as string || '',
-    employer_phone: record['employer phone number'] as string || '',
-    job_title: record['job title'] as string || '',
+    employment_status: record['employment_status'] as string || '',
+    employer_name: record['employer_name'] as string || '',
+    employer_phone: record['employer_phone_number'] as string || '',
+    job_title: record['job_title'] as string || '',
 
     // Self-employed info
-    business_name: record['business legal name'] as string || '',
-    business_year: record['year business was created?'] as number || null,
-    business_state: record['state business registered'] as string || '',
+    business_name: record['business_legal_name'] as string || '',
+    business_year: record['year_business_was_created'] as number || null,
+    business_state: record['state_business_registered'] as string || '',
 
     // Additional flags
     pets: record['pets'] as boolean || false,
@@ -833,27 +829,27 @@ function transformApplication(record: Record<string, unknown>) {
     parking: record['parking'] as boolean || false,
 
     // Documents/files
-    proof_of_employment: record['proof of employment'] as string || '',
-    alternate_guarantee: record['alternate guarantee'] as string || '',
-    credit_score_file: record['credit score'] as string || '',
-    state_id_front: record['State ID - Front'] as string || '',
-    state_id_back: record['State ID - Back'] as string || '',
-    government_id: record['government ID'] as string || '',
+    proof_of_employment: record['proof_of_employment'] as string || '',
+    alternate_guarantee: record['alternate_guarantee'] as string || '',
+    credit_score_file: record['credit_score'] as string || '',
+    state_id_front: record['state_id_front'] as string || '',
+    state_id_back: record['state_id_back'] as string || '',
+    government_id: record['government_id'] as string || '',
 
     // Signature
     signature: record['signature'] as string || '',
-    signature_text: record['signature (text)'] as string || '',
+    signature_text: record['signature_text'] as string || '',
 
     // Timestamps
-    created_at: record['Created Date'] as string || '',
-    updated_at: record['Modified Date'] as string || '',
+    created_at: record['original_created_at'] as string || '',
+    updated_at: record['original_updated_at'] as string || '',
 
     // Related data (populated in handleGet)
     occupants: [],
     references: [],
 
     // Guest info (if joined)
-    guest_id: record['Created By'] as string || '',
+    guest_id: record['created_by'] as string || '',
     guest: record['guest'] || null
   };
 }

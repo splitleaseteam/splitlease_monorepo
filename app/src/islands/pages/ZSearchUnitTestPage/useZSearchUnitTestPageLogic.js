@@ -74,19 +74,18 @@ export function useZSearchUnitTestPageLogic() {
     const loadBoroughs = async () => {
       try {
         const { data, error: fetchError } = await supabase
-          .schema('reference_table')
           .from('zat_geo_borough_toplevel')
-          .select('id, "Display Borough"')
-          .order('"Display Borough"', { ascending: true });
+          .select('id, display_borough')
+          .order('display_borough', { ascending: true });
 
         if (fetchError) throw fetchError;
 
         const boroughList = data
-          .filter(b => b['Display Borough']?.trim())
+          .filter(b => b.display_borough?.trim())
           .map(b => ({
             id: b.id,
-            name: b['Display Borough'].trim(),
-            value: b['Display Borough'].trim().toLowerCase().replace(/\s+/g, '-')
+            name: b.display_borough.trim(),
+            value: b.display_borough.trim().toLowerCase().replace(/\s+/g, '-')
           }));
 
         setBoroughs(boroughList);
@@ -117,20 +116,19 @@ export function useZSearchUnitTestPageLogic() {
 
       try {
         const { data, error: fetchError } = await supabase
-          .schema('reference_table')
           .from('zat_geo_hood_mediumlevel')
-          .select('id, Display, "Geo-Borough"')
-          .eq('"Geo-Borough"', borough.id)
-          .order('Display', { ascending: true });
+          .select('id, display, geo_borough')
+          .eq('geo_borough', borough.id)
+          .order('display', { ascending: true });
 
         if (fetchError) throw fetchError;
 
         const neighborhoodList = data
-          .filter(n => n.Display?.trim())
+          .filter(n => n.display?.trim())
           .map(n => ({
             id: n.id,
-            name: n.Display.trim(),
-            boroughId: n['Geo-Borough']
+            name: n.display.trim(),
+            boroughId: n.geo_borough
           }));
 
         setNeighborhoods(neighborhoodList);

@@ -33,18 +33,18 @@ interface ReusePreviousResult {
 
 // Fields that can be reused from house manuals
 const REUSABLE_FIELDS = [
-  "Check-In Instructions",
-  "Check-Out Instructions",
-  "House Rules (jsonb)",
-  "WiFi Name",
-  "WiFi Password",
-  "Temperature Control",
-  "Security Features",
-  "Parking Tips",
-  "Local Attractions",
-  "Emergency Contacts (jsonb)",
-  "Appliance Instructions",
-  "Additional Notes",
+  "checkin_instructions_by_host",
+  "checkout_instructions_by_host",
+  "house_rules_reference_ids_json",
+  "wifi_network_name",
+  "wifi_network_password",
+  "temperature_control_instructions_text",
+  "security_features_description_text",
+  "parking_tips_text",
+  "local_attractions_and_activities_text",
+  "important_contact_information_other",
+  "amenities_usage_tips_text",
+  "good_to_know_general_tips_text",
 ];
 
 /**
@@ -92,7 +92,7 @@ export async function handleReusePrevious(
 
   // Verify target house manual exists
   const { data: targetManual, error: targetError } = await supabaseClient
-    .from("housemanual")
+    .from("house_manual")
     .select("id")
     .eq("id", targetHouseManualId)
     .single();
@@ -103,7 +103,7 @@ export async function handleReusePrevious(
 
   // Fetch source house manual with all reusable fields
   const { data: sourceManual, error: sourceError } = await supabaseClient
-    .from("housemanual")
+    .from("house_manual")
     .select("*")
     .eq("id", sourceHouseManualId)
     .single();
@@ -114,7 +114,7 @@ export async function handleReusePrevious(
 
   // Fetch existing content from target to set as "Previous Content"
   const { data: targetContent } = await supabaseClient
-    .from("housemanual")
+    .from("house_manual")
     .select("*")
     .eq("id", targetHouseManualId)
     .single();
@@ -145,21 +145,21 @@ export async function handleReusePrevious(
 
     suggestionsToCreate.push({
       id: generatePlatformId(),
-      Content: contentValue,
-      "Previous Content": previousContent,
-      "Field suggested house manual": field,
-      "House Manual": targetHouseManualId,
-      "being processed?": false,
+      content: contentValue,
+      previous_content: previousContent,
+      field_suggested_house_manual: field,
+      house_manual: targetHouseManualId,
+      being_processed: false,
       decision: "pending",
-      "from call?": false,
-      "from audio?": false,
-      "from PDF?": false,
-      "from google doc?": false,
-      "from listing?": false,
-      "from free text form?": false,
-      "Created By": userId,
-      "Created Date": now,
-      "Modified Date": now,
+      from_call: false,
+      from_audio: false,
+      from_pdf: false,
+      from_google_doc: false,
+      from_listing: false,
+      from_free_text_form: false,
+      created_by: userId,
+      created_at: now,
+      updated_at: now,
     });
   }
 
@@ -184,7 +184,7 @@ export async function handleReusePrevious(
     throw new Error(`Failed to create suggestions: ${insertError.message}`);
   }
 
-  const reusedFields = suggestionsToCreate.map(s => s["Field suggested house manual"]);
+  const reusedFields = suggestionsToCreate.map(s => s.field_suggested_house_manual);
 
   console.log(`[reusePrevious] Created ${suggestionsToCreate.length} suggestions`);
   console.log(`[reusePrevious] Fields: ${reusedFields.join(", ")}`);

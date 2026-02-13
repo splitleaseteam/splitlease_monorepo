@@ -81,40 +81,18 @@ export interface PaymentScheduleResult {
  */
 export interface GuestPaymentRecord {
   id: string;
-
-  /** Reference to the lease (Bookings-Leases) */
-  'Booking - Reservation': string;
-
-  /** Payment sequence number (1-indexed) */
-  'Payment #': number;
-
-  /** Scheduled payment date */
-  'Scheduled Date': string;
-
-  /** Rent amount for this period */
-  Rent: number;
-
-  /** Maintenance fee for this period */
-  'Maintenance Fee': number;
-
-  /** Total amount to be paid by guest */
-  'Total Paid by Guest': number;
-
-  /** Flag indicating this is NOT a host payment */
-  'Payment to Host?': boolean;
-
-  /** Flag indicating this IS from guest */
-  'Payment from guest?': boolean;
-
-  /** Damage deposit (only on first payment, if applicable) */
-  'Damage Deposit'?: number;
-
-  /** Calculation source identifier */
+  booking_reservation: string;
+  payment: number;
+  scheduled_date: string;
+  rent: number;
+  maintenance_fee: number;
+  total_paid_by_guest: number;
+  payment_to_host: boolean;
+  payment_from_guest: boolean;
+  damage_deposit?: number;
   source_calculation: string;
-
-  /** Timestamps */
-  'Created Date': string;
-  'Modified Date': string;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -122,18 +100,18 @@ export interface GuestPaymentRecord {
  */
 export interface LeaseData {
   id: string;
-  Proposal?: string;
-  'rental type'?: string;
-  'Move In Date'?: string;
-  'Reservation Span (weeks)'?: number;
-  'Reservation Span (months)'?: number;
-  'week pattern'?: string;
-  '4 week rent'?: number;
-  'rent per month'?: number;
-  'Maintenance Fee'?: number;
-  'Damage Deposit'?: number;
-  'Payment Records Guest-SL'?: string[];
-  'Total Rent'?: number;
+  proposal_id?: string;
+  rental_type?: string;
+  reservation_start_date?: string;
+  reservation_span_in_weeks?: number;
+  reservation_span_in_months?: number;
+  week_pattern?: string;
+  four_week_rent?: number;
+  rent_per_month?: number;
+  maintenance_fee?: number;
+  damage_deposit?: number;
+  guest_to_platform_payment_records_json?: string[];
+  total_guest_rent_amount?: number;
 }
 
 /**
@@ -141,13 +119,13 @@ export interface LeaseData {
  */
 export interface ProposalData {
   id: string;
-  'hc cleaning fee'?: number;
-  'hc damage deposit'?: number;
-  'hc 4 week rent'?: number;
-  'hc reservation span (weeks)'?: number;
-  'hc move in date'?: string;
-  'week selection'?: string;
-  'rental type'?: string;
+  host_proposed_cleaning_fee?: number;
+  host_proposed_damage_deposit?: number;
+  host_proposed_four_week_rent?: number;
+  host_proposed_reservation_span_weeks?: number;
+  host_proposed_move_in_date?: string;
+  week_pattern_selection?: string;
+  rental_type?: string;
 }
 
 /**

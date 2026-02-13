@@ -15,7 +15,6 @@ import {
   CreateProposalResponse,
   ListingData,
   GuestData,
-  HostAccountData,
   HostUserData,
   RentalApplicationData,
   UserContext,
@@ -123,7 +122,7 @@ export async function handleCreate(
   ];
 
   const { data: existingProposals, error: duplicateCheckError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .select("id, proposal_workflow_status")
     .eq('guest_user_id', input.guestId)
     .eq('listing_id', input.listingId)
@@ -212,12 +211,10 @@ export async function handleCreate(
       id,
       email,
       rental_application_form_id,
-      "Proposals List",
-      "Favorited Listings",
-      "About Me / Bio",
-      "need for Space",
-      "special needs",
-      "Tasks Completed"
+      bio_text,
+      stated_need_for_space_text,
+      stated_special_needs_text,
+      onboarding_tasks_completed_list_json
     `
     )
     .eq("id", input.guestId)
@@ -235,25 +232,25 @@ export async function handleCreate(
   // EARLY PROFILE SAVE: Save bio/need_for_space BEFORE proposal creation
   // This ensures user-entered data persists even if proposal creation fails
   // ================================================
-  const tasksCompletedEarly = parseJsonArray<string>(guestData["Tasks Completed"], "Tasks Completed");
+  const tasksCompletedEarly = parseJsonArray<string>(guestData.onboarding_tasks_completed_list_json, "onboarding_tasks_completed_list_json");
   const earlyProfileUpdates: Record<string, unknown> = {};
 
-  if (!guestData["About Me / Bio"] && !tasksCompletedEarly.includes("bio") && input.aboutMe) {
-    earlyProfileUpdates["About Me / Bio"] = input.aboutMe;
+  if (!guestData.bio_text && !tasksCompletedEarly.includes("bio") && input.aboutMe) {
+    earlyProfileUpdates.bio_text = input.aboutMe;
     console.log(`[proposal:create] Will save bio early (before proposal creation)`);
   }
-  if (!guestData["need for Space"] && !tasksCompletedEarly.includes("need_for_space") && input.needForSpace) {
-    earlyProfileUpdates["need for Space"] = input.needForSpace;
+  if (!guestData.stated_need_for_space_text && !tasksCompletedEarly.includes("need_for_space") && input.needForSpace) {
+    earlyProfileUpdates.stated_need_for_space_text = input.needForSpace;
     console.log(`[proposal:create] Will save need_for_space early (before proposal creation)`);
   }
-  if (!guestData["special needs"] && !tasksCompletedEarly.includes("special_needs") && input.specialNeeds) {
-    earlyProfileUpdates["special needs"] = input.specialNeeds;
+  if (!guestData.stated_special_needs_text && !tasksCompletedEarly.includes("special_needs") && input.specialNeeds) {
+    earlyProfileUpdates.stated_special_needs_text = input.specialNeeds;
     console.log(`[proposal:create] Will save special_needs early (before proposal creation)`);
   }
 
   // Save profile data immediately if there's anything to save
   if (Object.keys(earlyProfileUpdates).length > 0) {
-    earlyProfileUpdates["updated_at"] = new Date().toISOString();
+    earlyProfileUpdates.updated_at = new Date().toISOString();
     const { error: earlyUpdateError } = await supabase
       .from("user")
       .update(earlyProfileUpdates)
@@ -265,14 +262,14 @@ export async function handleCreate(
     } else {
       console.log(`[proposal:create] Early profile save succeeded - data will persist even if proposal fails`);
       // Update local guestData to reflect the save (so we don't try to save again later)
-      if (earlyProfileUpdates["About Me / Bio"]) {
-        (guestData as Record<string, unknown>)["About Me / Bio"] = earlyProfileUpdates["About Me / Bio"];
+      if (earlyProfileUpdates.bio_text) {
+        (guestData as Record<string, unknown>).bio_text = earlyProfileUpdates.bio_text;
       }
-      if (earlyProfileUpdates["need for Space"]) {
-        (guestData as Record<string, unknown>)["need for Space"] = earlyProfileUpdates["need for Space"];
+      if (earlyProfileUpdates.stated_need_for_space_text) {
+        (guestData as Record<string, unknown>).stated_need_for_space_text = earlyProfileUpdates.stated_need_for_space_text;
       }
-      if (earlyProfileUpdates["special needs"]) {
-        (guestData as Record<string, unknown>)["special needs"] = earlyProfileUpdates["special needs"];
+      if (earlyProfileUpdates.stated_special_needs_text) {
+        (guestData as Record<string, unknown>).stated_special_needs_text = earlyProfileUpdates.stated_special_needs_text;
       }
     }
   }
@@ -280,7 +277,7 @@ export async function handleCreate(
   // Fetch Host User directly (host_user_id column contains user.id)
   const { data: hostUser, error: hostUserError } = await supabase
     .from("user")
-    .select(`id, email, "Proposals List"`)
+    .select(`id, email`)
     .eq("id", listingData.host_user_id)
     .single();
 
@@ -290,8 +287,6 @@ export async function handleCreate(
   }
 
   const hostUserData = hostUser as unknown as HostUserData;
-  // hostAccountData maintained for backwards compatibility with downstream code
-  const hostAccountData = { id: hostUserData.id, User: hostUserData.id } as HostAccountData;
   console.log(`[proposal:create] Found host: ${hostUserData.email}`);
 
   // Fetch Rental Application (if exists)
@@ -310,10 +305,12 @@ export async function handleCreate(
   // CALCULATIONS
   // ================================================
 
-  // Calculate order ranking
-  // After migration, "Proposals List" is a native text[] array - no parsing needed
-  const guestProposalsList: string[] = guestData["Proposals List"] || [];
-  const orderRanking = calculateOrderRanking(guestProposalsList.length);
+  // Calculate order ranking from junction table (user_proposal)
+  const { count: guestProposalCount } = await supabase
+    .from('user_proposal')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', input.guestId);
+  const orderRanking = calculateOrderRanking(guestProposalCount || 0);
 
   // Calculate complementary nights (Step 4)
   const complementaryNights = calculateComplementaryNights(
@@ -343,7 +340,7 @@ export async function handleCreate(
   if (listingForPricing.pricing_configuration_id) {
     const { data: pricingList, error: pricingListError } = await supabase
       .from("pricing_list")
-      .select('"Nightly Price", "Host Compensation"')
+      .select('nightly_price, host_compensation')
       .eq("id", listingForPricing.pricing_configuration_id as string)
       .single();
 
@@ -360,8 +357,8 @@ export async function handleCreate(
     const fallbackPricing = calculatePricingList({ listing: listingForPricing });
     pricingListRates = getPricingListRates(
       {
-        "Nightly Price": fallbackPricing.nightlyPrice,
-        "Host Compensation": fallbackPricing.hostCompensation,
+        nightly_price: fallbackPricing.nightlyPrice,
+        host_compensation: fallbackPricing.hostCompensation,
       },
       nightsPerWeek
     );
@@ -524,15 +521,12 @@ export async function handleCreate(
     preferred_roommate_gender: preferredGender,
     guest_stated_need_for_space: input.needForSpace || null,
     guest_about_yourself_text: input.aboutMe || null,
-    special_needs: input.specialNeeds || null,    // no matching DB column found — left as-is
     guest_introduction_message: input.comment || null,
 
     // Dates
     move_in_range_start_date: input.moveInStartRange,
     move_in_range_end_date: input.moveInEndRange,
     planned_move_out_date: moveOutDate.toISOString(),
-    "move-in range (text)": input.moveInRangeText || null,  // no matching DB column found — left as-is
-
     // Duration
     reservation_span_text: input.reservationSpan,
     reservation_span_in_weeks: input.reservationSpanWeeks,
@@ -587,18 +581,17 @@ export async function handleCreate(
     // "origin proposal of this suggestion": input.originProposalId || null,
     // "number of matches": input.numberOfMatches || null,
 
-    // Custom schedule description (user's freeform schedule request)
-    custom_schedule_description: input.customScheduleDescription || null,
-
     // Timestamps
     created_at: now,
     updated_at: now,
+    original_created_at: now,
+    original_updated_at: now,
   };
 
   console.log(`[proposal:create] Inserting proposal: ${proposalId}`);
 
   const { error: insertError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .insert(proposalData);
 
   if (insertError) {
@@ -613,34 +606,25 @@ export async function handleCreate(
   // ================================================
 
   const guestUpdates: Record<string, unknown> = {
-    "flexibility (last known)": guestFlexibility,
-    "recent_days_selected_json": input.daysSelected,
+    schedule_flexibility_last_known: guestFlexibility,
+    recent_days_selected_json: input.daysSelected,
     updated_at: now,
   };
 
-  // Add proposal to guest's list
-  const updatedGuestProposals = [...guestProposalsList, proposalId];
-  guestUpdates["Proposals List"] = updatedGuestProposals;
-
-  // Add listing to favorites (Step 2)
-  // CRITICAL: Parse JSONB arrays - Supabase can return as stringified JSON
-  const currentFavorites = parseJsonArray<string>(guestData["Favorited Listings"], "Favorited Listings");
-  if (!currentFavorites.includes(input.listingId)) {
-    guestUpdates["Favorited Listings"] = [...currentFavorites, input.listingId];
-  }
+  // NOTE: "Proposals List" and "Favorited Listings" columns removed from user table.
+  // Junction table writes (addUserProposal, addUserListingFavorite) handle these relationships.
 
   // Profile enrichment (Steps 20-22) - only if empty
-  // CRITICAL: Parse JSONB arrays - Supabase can return as stringified JSON
-  const tasksCompleted = parseJsonArray<string>(guestData["Tasks Completed"], "Tasks Completed");
+  const tasksCompleted = parseJsonArray<string>(guestData.onboarding_tasks_completed_list_json, "onboarding_tasks_completed_list_json");
 
-  if (!guestData["About Me / Bio"] && !tasksCompleted.includes("bio") && input.aboutMe) {
-    guestUpdates["About Me / Bio"] = input.aboutMe;
+  if (!guestData.bio_text && !tasksCompleted.includes("bio") && input.aboutMe) {
+    guestUpdates.bio_text = input.aboutMe;
   }
-  if (!guestData["need for Space"] && !tasksCompleted.includes("need_for_space") && input.needForSpace) {
-    guestUpdates["need for Space"] = input.needForSpace;
+  if (!guestData.stated_need_for_space_text && !tasksCompleted.includes("need_for_space") && input.needForSpace) {
+    guestUpdates.stated_need_for_space_text = input.needForSpace;
   }
-  if (!guestData["special needs"] && !tasksCompleted.includes("special_needs") && input.specialNeeds) {
-    guestUpdates["special needs"] = input.specialNeeds;
+  if (!guestData.stated_special_needs_text && !tasksCompleted.includes("special_needs") && input.specialNeeds) {
+    guestUpdates.stated_special_needs_text = input.specialNeeds;
   }
 
   const { error: guestUpdateError } = await supabase
@@ -656,31 +640,25 @@ export async function handleCreate(
   }
 
   // ================================================
-  // STEP 2b: DUAL-WRITE TO JUNCTION TABLES (Guest)
+  // STEP 2b: WRITE TO JUNCTION TABLES (Guest)
   // ================================================
 
   // Add proposal to guest's junction table
   await addUserProposal(supabase, input.guestId, proposalId, 'guest');
 
-  // Add listing to favorites junction table (if newly added)
-  if (!currentFavorites.includes(input.listingId)) {
-    await addUserListingFavorite(supabase, input.guestId, input.listingId);
-  }
+  // Add listing to favorites junction table
+  await addUserListingFavorite(supabase, input.guestId, input.listingId);
 
   // ================================================
   // STEP 3: UPDATE HOST USER
   // ================================================
 
-  // After migration, "Proposals List" is a native text[] array - no parsing needed
-  const hostProposals: string[] = hostUserData["Proposals List"] || [];
-
   const { error: hostUpdateError } = await supabase
     .from("user")
     .update({
-      "Proposals List": [...hostProposals, proposalId],
       updated_at: now,
     })
-    .eq("id", hostAccountData.User);
+    .eq("id", hostUserData.id);
 
   if (hostUpdateError) {
     console.error(`[proposal:create] Host update failed:`, hostUpdateError);
@@ -690,11 +668,11 @@ export async function handleCreate(
   }
 
   // ================================================
-  // STEP 3b: DUAL-WRITE TO JUNCTION TABLES (Host)
+  // STEP 3b: WRITE TO JUNCTION TABLE (Host)
   // ================================================
 
   // Add proposal to host's junction table
-  await addUserProposal(supabase, hostAccountData.User, proposalId, 'host');
+  await addUserProposal(supabase, hostUserData.id, proposalId, 'host');
 
   // ================================================
   // CREATE OR FIND THREAD FOR PROPOSAL
@@ -780,12 +758,12 @@ export async function handleCreate(
             .from('negotiationsummary')
             .insert({
               id: summaryId,
-              "Proposal associated": proposalId,
-              "Created By": input.guestId,
-              "Created Date": summaryNow,
-              "Modified Date": summaryNow,
-              "To Account": hostAccountData.User,
-              "Summary": aiHostSummary,
+              proposal_associated: proposalId,
+              created_by: input.guestId,
+              original_created_at: summaryNow,
+              original_updated_at: summaryNow,
+              to_account: hostUserData.id,
+              summary: aiHostSummary,
             });
 
           if (summaryInsertError) {
@@ -826,7 +804,7 @@ export async function handleCreate(
       // Fetch guest and host names for message templates
       const [guestProfile, hostProfile] = await Promise.all([
         getUserProfile(supabase, input.guestId),
-        getUserProfile(supabase, hostAccountData.User),
+        getUserProfile(supabase, hostUserData.id),
       ]);
 
       // Fetch listing name if not already resolved
@@ -877,7 +855,7 @@ export async function handleCreate(
           callToAction: hostCTA.display,
           visibleToHost: hostVisibility.visibleToHost,
           visibleToGuest: hostVisibility.visibleToGuest,
-          recipientUserId: hostAccountData.User,
+          recipientUserId: hostUserData.id,
         });
         console.log(`[proposal:create] SplitBot message sent to host${aiHostSummary ? ' (with AI summary)' : ''}`);
       }
@@ -906,7 +884,7 @@ export async function handleCreate(
     orderRanking: orderRanking,
     listingId: input.listingId,
     guestId: input.guestId,
-    hostId: hostAccountData.User,
+    hostId: hostUserData.id,
     createdAt: now,
     threadId: threadId || null,
     aiHostSummary: aiHostSummary,

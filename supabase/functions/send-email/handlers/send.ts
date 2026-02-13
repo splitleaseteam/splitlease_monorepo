@@ -215,7 +215,7 @@ export async function handleSend(
 
   const { data: template, error: templateError } = await supabase
     .from('zat_email_html_template_eg_sendbasicemailwf_')
-    .select('id, "Name", "Email Template JSON", "Description", "Email Reference", "Logo", "Placeholder"')
+    .select('id, name, email_template_json, description, email_reference, logo, placeholder')
     .eq('id', template_id)
     .single();
 
@@ -228,10 +228,13 @@ export async function handleSend(
     throw new Error(`Template not found: ${template_id}. Error: ${templateError?.message || 'No data returned'}`);
   }
 
-  const emailTemplate = template as EmailTemplate;
-  console.log('[send-email:send] Template found:', emailTemplate.Name || template_id);
+  const emailTemplate = template as EmailTemplate & {
+    name?: string;
+    email_template_json?: string;
+  };
+  console.log('[send-email:send] Template found:', emailTemplate.name || template_id);
 
-  const templateJsonString = emailTemplate['Email Template JSON'];
+  const templateJsonString = emailTemplate.email_template_json;
   if (!templateJsonString) {
     throw new Error(`Template ${template_id} has no content (Email Template JSON is empty)`);
   }

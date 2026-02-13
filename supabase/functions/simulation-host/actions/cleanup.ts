@@ -84,7 +84,7 @@ export async function handleCleanup(
   // 3. Delete leases
   try {
     const { data: leases } = await supabase
-      .from('bookings_leases')
+      .from('booking_lease')
       .delete()
       .eq('simulation_id', simulationId)
       .select('id');
@@ -112,7 +112,7 @@ export async function handleCleanup(
   // 5. Delete proposals
   try {
     const { data: proposals } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .delete()
       .eq('simulation_id', simulationId)
       .select('id');

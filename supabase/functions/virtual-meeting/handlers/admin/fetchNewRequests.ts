@@ -6,7 +6,7 @@
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { AuthenticationError as _AuthenticationError, ValidationError } from "../../../_shared/errors.ts";
+import { ValidationError } from "../../../_shared/errors.ts";
 
 interface FetchFilters {
   proposalId?: string;
@@ -29,7 +29,7 @@ export async function handleAdminFetchNewRequests(
   let query = supabase
     .from("virtualmeetingschedulesandlinks")
     .select("*")
-    .is("booked date", null)
+    .is("booked_date", null)
     .order("created_at", { ascending: false });
 
   // Apply optional proposal filter
@@ -56,12 +56,12 @@ export async function handleAdminFetchNewRequests(
   for (const meeting of meetings) {
     if (meeting.guest) userIds.add(meeting.guest);
     if (meeting.host) userIds.add(meeting.host);
-    if (meeting["Listing (for Co-Host feature)"]) {
-      listingIds.add(meeting["Listing (for Co-Host feature)"]);
+    if (meeting.listing_for_co_host_feature) {
+      listingIds.add(meeting.listing_for_co_host_feature);
     }
   }
 
-  // Fetch users in parallel (table is "user" singular, columns have legacy Bubble naming)
+  // Fetch users in parallel
   const usersPromise = userIds.size > 0
     ? supabase
         .from("user")
@@ -79,19 +79,11 @@ export async function handleAdminFetchNewRequests(
 
   const [usersResult, listingsResult] = await Promise.all([usersPromise, listingsPromise]);
 
-  // Build lookup maps with normalized field names for frontend compatibility
+  // Build lookup maps
   const usersMap = new Map<string, unknown>();
   if (usersResult.data) {
     for (const user of usersResult.data) {
-      // Normalize legacy Bubble column names to frontend-expected property names
-      usersMap.set(user.id, {
-        id: user.id,
-        name_first: user.first_name || "",
-        name_last: user.last_name || "",
-        email: user.email || "",
-        phone_number: user.phone_number || "",
-        profile_photo_url: user.profile_photo_url || "",
-      });
+      usersMap.set(user.id, user);
     }
   }
 
@@ -107,8 +99,8 @@ export async function handleAdminFetchNewRequests(
     ...meeting,
     guest: meeting.guest ? usersMap.get(meeting.guest) || null : null,
     host: meeting.host ? usersMap.get(meeting.host) || null : null,
-    listing: meeting["Listing (for Co-Host feature)"]
-      ? listingsMap.get(meeting["Listing (for Co-Host feature)"]) || null
+    listing: meeting.listing_for_co_host_feature
+      ? listingsMap.get(meeting.listing_for_co_host_feature) || null
       : null,
   }));
 

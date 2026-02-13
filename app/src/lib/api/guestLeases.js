@@ -69,57 +69,6 @@ async function invokeEdgeFunction(functionName, action, payload = {}) {
   return data;
 }
 
-// ============================================================================
-// LEASE FETCHING
-// ============================================================================
-
-/**
- * Fetch all leases for the authenticated guest
- * DEV MODE: Falls back to direct DB query if no Supabase session
- * @param {string} [userIdOverride] - Optional user ID to use (for dev mode)
- * @returns {Promise<Array>} Array of normalized lease objects
- */
-export async function fetchGuestLeases(userIdOverride = null) {
-  const authToken = await getAuthToken();
-
-  // DEV MODE: If no auth token, query database directly
-  if (!authToken) {
-    console.log('[guestLeases] DEV MODE: Querying leases directly from database');
-
-    // Get user ID from parameter, localStorage, or give up
-    const userId = userIdOverride ||
-                   localStorage.getItem('sl_user_id') ||
-                   localStorage.getItem('splitlease_supabase_user_id');
-
-    if (!userId) {
-      console.log('[guestLeases] DEV MODE: No user ID found, returning empty array');
-      return [];
-    }
-
-    console.log('[guestLeases] DEV MODE: Fetching leases for user:', userId);
-
-    // Query leases directly from Supabase (RLS should allow this with anon key)
-    const { data: leases, error } = await supabase
-      .from('booking_lease')
-      .select(`
-        *,
-        listing:listing_id(*),
-        guest:guest_user_id(*),
-        host:host_user_id(*)
-      `)
-      .eq('guest_user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error || !leases || leases.length === 0) {
-      console.log('[guestLeases] DEV MODE: No leases found, returning DUMMY DATA for testing');
-      return getDummyLeases();
-    }
-
-    const normalizedLeases = (leases || []).map(lease => adaptLeaseFromSupabase(lease));
-    console.log(`[guestLeases] DEV MODE: Fetched ${normalizedLeases.length} leases directly`);
-    return normalizedLeases;
-  }
-
 /**
  * DEV MODE: Returns dummy lease data for testing UI
  */
@@ -280,6 +229,57 @@ function getDummyLeases() {
     }
   ];
 }
+
+// ============================================================================
+// LEASE FETCHING
+// ============================================================================
+
+/**
+ * Fetch all leases for the authenticated guest
+ * DEV MODE: Falls back to direct DB query if no Supabase session
+ * @param {string} [userIdOverride] - Optional user ID to use (for dev mode)
+ * @returns {Promise<Array>} Array of normalized lease objects
+ */
+export async function fetchGuestLeases(userIdOverride = null) {
+  const authToken = await getAuthToken();
+
+  // DEV MODE: If no auth token, query database directly
+  if (!authToken) {
+    console.log('[guestLeases] DEV MODE: Querying leases directly from database');
+
+    // Get user ID from parameter, localStorage, or give up
+    const userId = userIdOverride ||
+                   localStorage.getItem('sl_user_id') ||
+                   localStorage.getItem('splitlease_supabase_user_id');
+
+    if (!userId) {
+      console.log('[guestLeases] DEV MODE: No user ID found, returning empty array');
+      return [];
+    }
+
+    console.log('[guestLeases] DEV MODE: Fetching leases for user:', userId);
+
+    // Query leases directly from Supabase (RLS should allow this with anon key)
+    const { data: leases, error } = await supabase
+      .from('booking_lease')
+      .select(`
+        *,
+        listing:listing_id(*),
+        guest:guest_user_id(*),
+        host:host_user_id(*)
+      `)
+      .eq('guest_user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error || !leases || leases.length === 0) {
+      console.log('[guestLeases] DEV MODE: No leases found, returning DUMMY DATA for testing');
+      return getDummyLeases();
+    }
+
+    const normalizedLeases = (leases || []).map(lease => adaptLeaseFromSupabase(lease));
+    console.log(`[guestLeases] DEV MODE: Fetched ${normalizedLeases.length} leases directly`);
+    return normalizedLeases;
+  }
 
   // Normal path: Use edge function with JWT
   try {

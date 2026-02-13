@@ -42,7 +42,7 @@ export async function handleCleanup(
   // Clean up proposals with this simulation ID
   try {
     const { data: deletedProposals } = await supabase
-      .from('proposal')
+      .from('booking_proposal')
       .delete()
       .eq('simulation_id', simulationId)
       .select('id');
@@ -50,13 +50,13 @@ export async function handleCleanup(
     results.proposals = deletedProposals?.length || 0;
     console.log(`[cleanup] Deleted ${results.proposals} proposals`);
   } catch (_err) {
-    console.log('[cleanup] Could not clean proposals:', (err as Error).message);
+    console.log('[cleanup] Could not clean proposals:', (_err as Error).message);
   }
 
   // Clean up leases with this simulation ID
   try {
     const { data: deletedLeases } = await supabase
-      .from('lease')
+      .from('booking_lease')
       .delete()
       .eq('simulation_id', simulationId)
       .select('id');
@@ -64,7 +64,7 @@ export async function handleCleanup(
     results.leases = deletedLeases?.length || 0;
     console.log(`[cleanup] Deleted ${results.leases} leases`);
   } catch (_err) {
-    console.log('[cleanup] Could not clean leases:', (err as Error).message);
+    console.log('[cleanup] Could not clean leases:', (_err as Error).message);
   }
 
   // Clean up date change requests with this simulation ID
@@ -78,7 +78,7 @@ export async function handleCleanup(
     results.dateChangeRequests = deletedRequests?.length || 0;
     console.log(`[cleanup] Deleted ${results.dateChangeRequests} date change requests`);
   } catch (_err) {
-    console.log('[cleanup] Could not clean date change requests:', (err as Error).message);
+    console.log('[cleanup] Could not clean date change requests:', (_err as Error).message);
   }
 
   // Clean up house manual visits with this simulation ID
@@ -92,7 +92,7 @@ export async function handleCleanup(
     results.houseManualVisits = deletedVisits?.length || 0;
     console.log(`[cleanup] Deleted ${results.houseManualVisits} house manual visits`);
   } catch (_err) {
-    console.log('[cleanup] Could not clean house manual visits:', (err as Error).message);
+    console.log('[cleanup] Could not clean house manual visits:', (_err as Error).message);
   }
 
   console.log(`[cleanup] Cleanup completed for simulation: ${simulationId}`);

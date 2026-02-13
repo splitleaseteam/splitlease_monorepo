@@ -99,7 +99,7 @@ export async function handleGet(
     }
 
     console.log('[pricing-list:get] ✅ Pricing list found');
-    console.log('[pricing-list:get] Starting price:', pricingList['Starting Nightly Price']);
+    console.log('[pricing-list:get] Starting price:', pricingList['starting_nightly_price']);
 
     return {
       pricing_list: pricingList,

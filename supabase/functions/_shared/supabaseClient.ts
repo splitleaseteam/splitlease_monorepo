@@ -198,7 +198,9 @@ async function authenticateWithJWT(
     }
 
     // Look up platform user ID from public.user table
-    const { data: appUser, error: lookupError } = await authClient
+    // Use admin client to bypass RLS on the user table
+    const adminClient = createServiceClient(config);
+    const { data: appUser, error: lookupError } = await adminClient
       .from('user')
       .select('id')
       .ilike('email', user.email ?? '')

@@ -40,110 +40,98 @@ export interface GetLeasePayload {
 
 export interface LeaseData {
   id: string;
-  'Agreement Number': string;
-  // FK CONSTRAINT: proposal.id
-  Proposal: string;
-  Guest: string;
-  Host: string;
-  // FK CONSTRAINT: listing.id
-  Listing: string;
-  Participants: string[];
-  // FK CONSTRAINT: zat_features_cancellationpolicy.id (nullable - use null if no valid FK!)
-  'Cancellation Policy': string | null;
-  'First Payment Date': string;
-  // SCHEMA-VERIFIED (2026-01-28): Actual column names have space before colon
-  'Reservation Period : Start': string;
-  'Reservation Period : End': string;
-  'Total Compensation': number;
-  'Total Rent': number;
-  // Note: 'rental type' does NOT exist in bookings_leases table
-  'List of Stays': string[];
-  'Payment Records Guest-SL': string[];
-  'Payment Records SL-Hosts': string[];
-  'Lease Status': string;
-  'Lease signed?': boolean;
-  'were documents generated?': boolean;
-  Thread: string | null;
-  // SCHEMA-VERIFIED (2026-01-28): 'House Manual' column does NOT exist in bookings_leases
-  'Created Date': string;
-  'Modified Date': string;
-  // Date fields (populated by date generation)
-  'List of Booked Dates'?: string[];
-  'total week count'?: number;
-  'current week number'?: number;
+  agreement_number: string;
+  proposal_id?: string;
+  guest_user_id: string;
+  host_user_id: string;
+  listing_id: string;
+  participant_user_ids_json: string[];
+  cancellation_policy_text: string | null;
+  first_payment_date: string;
+  reservation_start_date: string;
+  reservation_end_date: string;
+  total_host_compensation_amount: number;
+  total_guest_rent_amount: number;
+  stay_ids_json: string[];
+  guest_to_platform_payment_records_json: string[];
+  platform_to_host_payment_records_json: string[];
+  lease_type?: string;
+  is_lease_signed: boolean;
+  were_legal_documents_generated: boolean;
+  thread_id: string | null;
+  created_at: string;
+  updated_at: string;
+  booked_dates_json?: string[];
+  total_week_count?: number;
+  current_week_number?: number;
 }
 
 export interface ProposalData {
   id: string;
-  Guest: string;
-  'Host User': string;
-  Listing: string;
-  Status: string;
-  'rental type': string;
-  'Move in range start': string;
-  'Move in range end': string;
-  'Reservation Span (Weeks)': number;
-  'duration in months': number;
-  'nights per week (num)': number;
-  'proposal nightly price': number;
-  'damage deposit': number;
-  'cleaning fee': number;
-  'maintenance fee': number;
-  'counter offer happened': boolean;
-  'Days Selected': number[];
-  'week selection': { Display: string } | null;
-  'host compensation': number;
-  // Check-in/check-out days (can be string or { Display: string })
-  'check in day': string | { Display: string };
-  'check out day': string | { Display: string };
-  // HC (Historical Copy) fields for counteroffers
-  'hc move in date': string;
-  'hc reservation span (weeks)': number;
-  'hc nights per week': number;
-  'hc nightly price': number;
-  'hc 4 week rent': number;
-  'hc 4 week compensation': number;
-  'hc damage deposit': number;
-  'hc cleaning fee': number;
-  'hc maintenance fee': number;
-  'hc duration in months': number;
-  'hc weeks schedule': { Display: string } | null;
-  'hc host compensation (per period)': number;
-  'hc days selected': number[];
-  'hc nights selected': number[];
-  'hc check in day': string | { Display: string };
-  'hc check out day': string | { Display: string };
-  // Computed fields
-  '4 week rent': number;
-  '4 week compensation': number;
-  // Date fields (populated by date generation)
-  'List of Booked Dates'?: string[];
-  'Check-In Dates'?: string[];
-  'Check-Out Dates'?: string[];
-  'total nights'?: number;
-  // Nested listing data
-  listing?: {
-    id: string;
-    Name: string;
-    'House manual': string | null;
-    'users with permission': string[];
-    'cancellation policy': string;
-  };
+  guest_user_id: string;
+  host_user_id: string;
+  listing_id: string;
+  proposal_workflow_status: string;
+  rental_type: string;
+  move_in_range_start_date: string;
+  move_in_range_end_date: string;
+  reservation_span_in_weeks: number;
+  stay_duration_in_months: number;
+  nights_per_week_count: number;
+  calculated_nightly_price: number;
+  damage_deposit_amount: number;
+  cleaning_fee_amount: number;
+  has_host_counter_offer: boolean;
+  guest_selected_days_numbers_json: number[];
+  guest_selected_nights_numbers_json?: number[];
+  week_pattern_selection?: string;
+  weeks_offered_schedule_text?: string;
+  host_compensation_per_period: number;
+  checkin_day_of_week_number: number | string;
+  checkout_day_of_week_number: number | string;
+  four_week_rent_amount?: number;
+  four_week_host_compensation?: number;
+  // Host counteroffer (HC) fields
+  host_proposed_move_in_date?: string;
+  host_proposed_reservation_span_weeks?: number;
+  host_proposed_nights_per_week?: number;
+  host_proposed_nightly_price?: number;
+  host_proposed_four_week_rent?: number;
+  host_proposed_four_week_compensation?: number;
+  host_proposed_damage_deposit?: number;
+  host_proposed_cleaning_fee?: number;
+  host_proposed_duration_months?: number;
+  host_proposed_week_pattern?: string;
+  host_proposed_compensation_per_period?: number;
+  host_proposed_selected_days_json?: number[];
+  host_proposed_selected_nights_json?: number[];
+  host_proposed_checkin_day?: number | string;
+  host_proposed_checkout_day?: number | string;
+  host_proposed_weeks_schedule?: string;
+  host_proposed_total_host_compensation?: number;
+  host_proposed_total_guest_price?: number;
+  // Date fields
+  booked_dates_list_json?: string[];
+  total_reservation_price_for_guest?: number;
+  total_compensation_for_host?: number;
+  // Timestamps
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StayData {
   id: string;
-  Lease: string;
-  'Week Number': number;
-  Guest: string;
-  Host: string;
-  listing: string;
-  'Dates - List of dates in this period': string[];
-  'Check In (night)': string;
-  'Last Night (night)': string;
-  'Stay Status': string;
-  'Created Date': string;
-  'Modified Date': string;
+  lease_id: string;
+  week_number_in_lease: number;
+  guest_user_id: string;
+  host_user_id: string;
+  listing_id: string;
+  dates_in_this_stay_period_json: string[];
+  checkin_night_date: string;
+  last_night_date: string;
+  stay_status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // ================================================

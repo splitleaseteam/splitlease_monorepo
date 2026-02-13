@@ -53,8 +53,8 @@ export async function handleApplyHardBlock(
   // ================================================
 
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
-    .select('id, "Guest", "Host"')
+    .from('booking_lease')
+    .select('id, guest_user_id, host_user_id')
     .eq('id', leaseId)
     .single();
 
@@ -71,28 +71,22 @@ export async function handleApplyHardBlock(
   // DETERMINE ROLE AND UPDATE FIELD
   // ================================================
 
-  const isHost = userId === lease.Host;
-  const isGuest = userId === lease.Guest;
+  const isHost = userId === lease.host_user_id;
+  const isGuest = userId === lease.guest_user_id;
 
   if (!isHost && !isGuest) {
     throw new ValidationError('User is not a participant in this lease');
   }
 
   const abilityField = isHost
-    ? 'Throttling - host ability to create requests?'
-    : 'Throttling - guest ability to create requests?';
+    ? 'host_can_create_date_change_requests'
+    : 'guest_can_create_date_change_requests';
 
-  const blockedAtField = isHost
-    ? 'Throttling - host blocked at'
-    : 'Throttling - guest blocked at';
-
-  const blockedAt = new Date().toISOString();
-
+  // NOTE: blocked_at columns not in current booking_lease schema — update only ability field
   const { error: updateError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .update({
       [abilityField]: false,
-      [blockedAtField]: blockedAt,
     })
     .eq('id', leaseId);
 

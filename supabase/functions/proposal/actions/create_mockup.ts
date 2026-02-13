@@ -48,10 +48,9 @@ import { triggerProposalMessaging } from "../../_shared/queueSync.ts";
 interface MockGuestData {
   id: string;
   email: string;
-  "About Me / Bio"?: string;
-  "need for Space"?: string;
-  "special needs"?: string;
-  "About - reasons to host me"?: string;
+  bio_text?: string;
+  stated_need_for_space_text?: string;
+  stated_special_needs_text?: string;
   rental_application_form_id?: string;
 }
 
@@ -88,10 +87,9 @@ export async function handleCreateMockup(
         `
         id,
         email,
-        "About Me / Bio",
-        "need for Space",
-        "special needs",
-        "About - reasons to host me",
+        bio_text,
+        stated_need_for_space_text,
+        stated_special_needs_text,
         rental_application_form_id
       `
       )
@@ -292,19 +290,16 @@ export async function handleCreateMockup(
       guest_schedule_flexibility_text: "Flexible",
       preferred_roommate_gender: "any",
       guest_stated_need_for_space:
-        guestData["need for Space"] ||
+        guestData.stated_need_for_space_text ||
         "Looking for a comfortable place to stay",
-      about_yourself: guestData["About Me / Bio"] || "Split Lease Demo Guest",
-      special_needs: guestData["special needs"] || null,
-      guest_introduction_message: generateMockupComment(guestData["About - reasons to host me"]),
+      about_yourself: guestData.bio_text || "Split Lease Demo Guest",
+      guest_introduction_message: generateMockupComment(undefined),
 
       // Dates
       move_in_range_start_date: moveInStart.toISOString(),
       move_in_range_end_date: moveInEnd.toISOString(),
       planned_move_out_date: moveOutDate.toISOString(),
-      "move-in range (text)": `${moveInStart.toLocaleDateString(
-        "en-US"
-      )} - ${moveInEnd.toLocaleDateString("en-US")}`,
+      // NOTE: "move-in range (text)" column doesn't exist on booking_proposal — removed
 
       // Duration
       reservation_span_text: reservationSpan,
@@ -356,6 +351,8 @@ export async function handleCreateMockup(
       // Timestamps
       created_at: now,
       updated_at: now,
+      original_created_at: now,
+      original_updated_at: now,
     };
 
     // ─────────────────────────────────────────────────────────
@@ -364,7 +361,7 @@ export async function handleCreateMockup(
     console.log("[proposal:create_mockup] Step 8: Inserting proposal...");
 
     const { error: insertError } = await supabase
-      .from("proposal")
+      .from("booking_proposal")
       .insert(proposalData);
 
     if (insertError) {

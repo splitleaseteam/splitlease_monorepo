@@ -29,7 +29,7 @@ export async function grantListingPermission(
   // Fetch current permissions
   const { data: listing, error: fetchError } = await supabase
     .from('listing')
-    .select('"users with permission"')
+    .select('users_with_edit_permission_ids_json')
     .eq('id', listingId)
     .single();
 
@@ -41,7 +41,7 @@ export async function grantListingPermission(
     return;
   }
 
-  const currentPermissions: string[] = listing?.['users with permission'] || [];
+  const currentPermissions: string[] = listing?.users_with_edit_permission_ids_json || [];
 
   // Check if guest already has permission
   if (currentPermissions.includes(guestId)) {
@@ -54,7 +54,7 @@ export async function grantListingPermission(
 
   const { error: updateError } = await supabase
     .from('listing')
-    .update({ 'users with permission': updatedPermissions })
+    .update({ users_with_edit_permission_ids_json: updatedPermissions })
     .eq('id', listingId);
 
   if (updateError) {
@@ -87,7 +87,7 @@ export async function revokeListingPermission(
   // Fetch current permissions
   const { data: listing, error: fetchError } = await supabase
     .from('listing')
-    .select('"users with permission"')
+    .select('users_with_edit_permission_ids_json')
     .eq('id', listingId)
     .single();
 
@@ -99,7 +99,7 @@ export async function revokeListingPermission(
     return;
   }
 
-  const currentPermissions: string[] = listing?.['users with permission'] || [];
+  const currentPermissions: string[] = listing?.users_with_edit_permission_ids_json || [];
 
   // Check if guest has permission
   if (!currentPermissions.includes(guestId)) {
@@ -112,7 +112,7 @@ export async function revokeListingPermission(
 
   const { error: updateError } = await supabase
     .from('listing')
-    .update({ 'users with permission': updatedPermissions })
+    .update({ users_with_edit_permission_ids_json: updatedPermissions })
     .eq('id', listingId);
 
   if (updateError) {

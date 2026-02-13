@@ -262,7 +262,7 @@ export async function addError(listingId, errorCode) {
   // First, get current errors
   const { data: listing, error: fetchError } = await supabase
     .from('listing')
-    .select('"Errors"')
+    .select('errors')
     .eq('id', listingId)
     .single();
 
@@ -271,7 +271,7 @@ export async function addError(listingId, errorCode) {
     return { data: null, error: fetchError };
   }
 
-  const currentErrors = listing?.Errors || [];
+  const currentErrors = listing?.errors || [];
 
   // Check if error already exists
   if (currentErrors.includes(errorCode)) {
@@ -284,7 +284,7 @@ export async function addError(listingId, errorCode) {
   const { data, error } = await supabase
     .from('listing')
     .update({
-      Errors: updatedErrors,
+      errors: updatedErrors,
       original_updated_at: new Date().toISOString(),
     })
     .eq('id', listingId)
@@ -309,7 +309,7 @@ export async function clearErrors(listingId) {
   const { data, error } = await supabase
     .from('listing')
     .update({
-      Errors: [],
+      errors: [],
       original_updated_at: new Date().toISOString(),
     })
     .eq('id', listingId)
@@ -343,7 +343,7 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
     // Fetch current prices (note: column names have emoji prefixes from Bubble)
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
-      .select('"nightly_rate_for_1_night_stay", "nightly_rate_for_3_night_stay"')
+      .select('nightly_rate_for_1_night_stay, nightly_rate_for_3_night_stay')
       .eq('id', id)
       .single();
 

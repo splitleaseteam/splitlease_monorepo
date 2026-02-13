@@ -42,19 +42,18 @@ export default function WhySplitLeasePage() {
       // Load boroughs
       try {
         const { data, error } = await supabase
-          .schema('reference_table')
           .from('zat_geo_borough_toplevel')
-          .select('id, "Display Borough"')
-          .order('"Display Borough"', { ascending: true });
+          .select('id, display_borough')
+          .order('display_borough', { ascending: true });
 
         if (error) throw error;
 
         const boroughList = data
-          .filter(b => b['Display Borough'] && b['Display Borough'].trim())
+          .filter(b => b.display_borough && b.display_borough.trim())
           .map(b => ({
             id: b.id,
-            name: b['Display Borough'].trim(),
-            value: b['Display Borough'].trim().toLowerCase()
+            name: b.display_borough.trim(),
+            value: b.display_borough.trim().toLowerCase()
               .replace(/\s+county\s+nj/i, '')
               .replace(/\s+/g, '-')
           }))

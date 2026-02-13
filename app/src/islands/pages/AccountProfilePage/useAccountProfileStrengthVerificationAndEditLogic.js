@@ -477,7 +477,6 @@ export function useAccountProfilePageLogic() {
     try {
       // Fetch good guest reasons
       const { data: reasons, error: reasonsError } = await supabase
-        .schema('reference_table')
         .from('zat_goodguestreasons')
         .select('id, name')
         .order('name');
@@ -490,17 +489,16 @@ export function useAccountProfilePageLogic() {
 
       // Fetch storage items
       const { data: storage, error: storageError } = await supabase
-        .schema('reference_table')
         .from('zat_storage')
-        .select('id, Name')
-        .order('Name');
+        .select('id, name')
+        .order('name');
 
       if (storageError) {
         console.error('Error fetching storage items:', storageError);
       } else {
         // Filter out deprecated storage options
         const excludedItems = ['ID / Wallet / Money', 'Luggage', 'Portable Massager', 'Protein', 'Sound System', 'TV'];
-        const filteredStorage = (storage || []).filter(item => !excludedItems.includes(item.Name));
+        const filteredStorage = (storage || []).filter(item => !excludedItems.includes(item.name));
         setStorageItemsList(filteredStorage);
       }
     } catch (err) {
@@ -530,14 +528,14 @@ export function useAccountProfilePageLogic() {
       if (rentalAppId) {
         const { data: rentalAppData } = await supabase
           .from('rentalapplication')
-          .select('"job title", "employment status"')
+          .select('job_title, employment_status')
           .eq('id', rentalAppId)
           .single();
 
         if (rentalAppData) {
           // Use job title if available, otherwise use employment status as display value
-          jobTitle = rentalAppData['job title'] || '';
-          employmentStatus = rentalAppData['employment status'] || '';
+          jobTitle = rentalAppData.job_title || '';
+          employmentStatus = rentalAppData.employment_status || '';
 
           // If no job title but has employment status, format it nicely for display
           if (!jobTitle && employmentStatus) {
@@ -1196,7 +1194,6 @@ export function useAccountProfilePageLogic() {
     try {
       // Step 1: Fetch BCC email addresses from os_slack_channels
       const { data: channelData, error: channelError } = await supabase
-        .schema('reference_table')
         .from('os_slack_channels')
         .select('email_address')
         .in('name', ['bots_log', 'customer_activation']);

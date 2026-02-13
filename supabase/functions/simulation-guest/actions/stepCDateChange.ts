@@ -42,7 +42,7 @@ export async function handleStepC(
 
   if (leaseId) {
     const { data: lease } = await supabase
-      .from('lease')
+      .from('booking_lease')
       .select('start_date, end_date')
       .eq('id', leaseId)
       .single();
@@ -87,7 +87,7 @@ export async function handleStepC(
   // Update the lease with new dates if it exists
   if (leaseId) {
     await supabase
-      .from('lease')
+      .from('booking_lease')
       .update({
         start_date: newStartDate.toISOString().split('T')[0],
         end_date: newEndDate.toISOString().split('T')[0]

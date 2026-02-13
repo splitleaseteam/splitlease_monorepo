@@ -56,10 +56,9 @@ export default function useEmailSmsUnitPageLogic() {
     execute: executeLoadTemplates,
   } = useAsyncOperation(async () => {
     const { data, error: fetchError } = await supabase
-      .schema('reference_table')
       .from('zat_email_html_template_eg_sendbasicemailwf_')
-      .select('id, Name, Description, Placeholder, "Email Template JSON", Logo, "Created Date"')
-      .order('Created Date', { ascending: false });
+      .select('id, name, description, placeholder, email_template_json, logo, original_created_at')
+      .order('original_created_at', { ascending: false });
 
     if (fetchError) throw new Error('Unable to load email templates. Please try again later.');
     return data || [];
@@ -74,7 +73,6 @@ export default function useEmailSmsUnitPageLogic() {
     execute: executeLoadTwilioNumbers,
   } = useAsyncOperation(async () => {
     const { data, error: fetchError } = await supabase
-      .schema('reference_table')
       .from('os_twilio_numbers')
       .select('id, name, display, phone_number, phone_number_international')
       .order('name', { ascending: true });

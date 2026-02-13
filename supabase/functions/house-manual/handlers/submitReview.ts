@@ -20,7 +20,7 @@ interface ReviewData {
   checkin?: number; // 1-5
   location?: number; // 1-5
   value?: number; // 1-5
-  publicReview?: string; // Public review text (legacy "Review from Guest" field)
+  publicReview?: string; // Public review text
   privateFeedback?: string; // Private feedback for host only
   wouldRecommend?: boolean;
 }
@@ -120,11 +120,11 @@ export async function handleSubmitReview(
 
   // Step 1: Fetch the visit and check ownership
   const { data: visit, error: visitError } = await supabaseClient
-    .from("visit")
+    .from("house_manual_visit")
     .select(`
       id,
-      "User shared with (guest)",
-      "review_submitted_at"
+      guest_user_id,
+      review_submitted_at
     `)
     .eq("id", visitId)
     .single();
@@ -146,7 +146,7 @@ export async function handleSubmitReview(
     throw new AuthenticationError("User not found");
   }
 
-  const guestId = visit["User shared with (guest)"];
+  const guestId = visit.guest_user_id;
 
   if (userData.id !== guestId) {
     console.error(`[submitReview] Access denied. User ${userData.id} is not guest ${guestId}`);
@@ -154,7 +154,7 @@ export async function handleSubmitReview(
   }
 
   // Step 3: Check if review already submitted
-  if (visit["review_submitted_at"]) {
+  if (visit.review_submitted_at) {
     throw new ValidationError("A review has already been submitted for this visit");
   }
 
@@ -171,12 +171,12 @@ export async function handleSubmitReview(
     review_location: locationRating,
     review_value: valueRating,
     review_would_recommend: review.wouldRecommend,
-    "Modified Date": submittedAt,
+    updated_at: submittedAt,
   };
 
-  // Handle public review text (maps to legacy "Review from Guest" field)
+  // Handle public review text
   if (review.publicReview && typeof review.publicReview === "string") {
-    updatePayload["Review from Guest"] = review.publicReview.trim();
+    updatePayload.guest_review_text = review.publicReview.trim();
   }
 
   // Handle private feedback
@@ -186,7 +186,7 @@ export async function handleSubmitReview(
 
   // Step 5: Update visit with review data
   const { error: updateError } = await supabaseClient
-    .from("visit")
+    .from("house_manual_visit")
     .update(updatePayload)
     .eq("id", visitId);
 

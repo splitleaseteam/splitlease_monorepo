@@ -682,7 +682,7 @@ export function useRentalApplicationPageLogic() {
         // Fetch user record to check for existing rental application
         const { data: userData, error: userError } = await supabase
           .from('user')
-          .select('id, "Rental Application"')
+          .select('id, rental_application_form_id')
           .eq('id', userId)
           .single();
 
@@ -693,14 +693,14 @@ export function useRentalApplicationPageLogic() {
           return;
         }
 
-        if (!userData['Rental Application']) {
+        if (!userData.rental_application_form_id) {
           console.log('[RentalApplication] User has no saved rental application');
           setIsLoadingFromDatabase(false);
           hasLoadedFromDatabase.current = true;
           return;
         }
 
-        console.log('[RentalApplication] Found saved rental application:', userData['Rental Application']);
+        console.log('[RentalApplication] Found saved rental application:', userData.rental_application_form_id);
 
         // Fetch full rental application via Edge Function
         const token = getAuthToken();

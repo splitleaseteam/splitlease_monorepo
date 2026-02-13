@@ -65,8 +65,8 @@ export async function handleCombineSuggestion(
   const { error: updateError1 } = await supabaseClient
     .from("zat_aisuggestions")
     .update({
-      "being processed?": true,
-      "Modified Date": new Date().toISOString(),
+      being_processed: true,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", suggestionId);
 
@@ -87,8 +87,8 @@ export async function handleCombineSuggestion(
     throw new ValidationError(`Suggestion not found: ${suggestionId}`);
   }
 
-  const fieldName = suggestion["Field suggested house manual"];
-  const houseManualId = suggestion["House Manual"];
+  const fieldName = suggestion.field_suggested_house_manual;
+  const houseManualId = suggestion.house_manual_id;
 
   if (!fieldName || !houseManualId) {
     throw new ValidationError("Suggestion is missing required fields");
@@ -98,8 +98,8 @@ export async function handleCombineSuggestion(
   const { error: contentUpdateError } = await supabaseClient
     .from("zat_aisuggestions")
     .update({
-      Content: combinedContent,
-      "Modified Date": new Date().toISOString(),
+      content: combinedContent,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", suggestionId);
 
@@ -108,7 +108,7 @@ export async function handleCombineSuggestion(
     // Reset processing flag
     await supabaseClient
       .from("zat_aisuggestions")
-      .update({ "being processed?": false })
+      .update({ being_processed: false })
       .eq("id", suggestionId);
     throw new Error(`Failed to update suggestion content: ${contentUpdateError.message}`);
   }
@@ -117,10 +117,10 @@ export async function handleCombineSuggestion(
 
   // Step 3: Apply combined content to house manual field
   const { error: applyError } = await supabaseClient
-    .from("housemanual")
+    .from("house_manual")
     .update({
       [fieldName]: combinedContent,
-      "Modified Date": new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
     .eq("id", houseManualId);
 
@@ -129,7 +129,7 @@ export async function handleCombineSuggestion(
     // Reset processing flag on failure
     await supabaseClient
       .from("zat_aisuggestions")
-      .update({ "being processed?": false })
+      .update({ being_processed: false })
       .eq("id", suggestionId);
     throw new Error(`Failed to apply combined content: ${applyError.message}`);
   }
@@ -138,7 +138,7 @@ export async function handleCombineSuggestion(
   const { error: syncError } = await supabaseClient
     .from("sync_queue")
     .insert({
-      table_name: "housemanual",
+        table_name: "house_manual",
       record_id: houseManualId,
       operation: "UPDATE",
       payload: { [fieldName]: combinedContent },
@@ -154,8 +154,8 @@ export async function handleCombineSuggestion(
     .from("zat_aisuggestions")
     .update({
       decision: "combined",
-      "being processed?": false,
-      "Modified Date": new Date().toISOString(),
+      being_processed: false,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", suggestionId);
 

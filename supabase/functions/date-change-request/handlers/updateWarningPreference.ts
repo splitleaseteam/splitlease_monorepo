@@ -56,8 +56,8 @@ export async function handleUpdateWarningPreference(
   // ================================================
 
   const { data: lease, error: leaseError } = await supabase
-    .from('bookings_leases')
-    .select('id, "Guest", "Host"')
+    .from('booking_lease')
+    .select('id, guest_user_id, host_user_id')
     .eq('id', leaseId)
     .single();
 
@@ -74,19 +74,19 @@ export async function handleUpdateWarningPreference(
   // DETERMINE ROLE AND UPDATE FIELD
   // ================================================
 
-  const isHost = userId === lease.Host;
-  const isGuest = userId === lease.Guest;
+  const isHost = userId === lease.host_user_id;
+  const isGuest = userId === lease.guest_user_id;
 
   if (!isHost && !isGuest) {
     throw new ValidationError('User is not a participant in this lease');
   }
 
   const preferenceField = isHost
-    ? 'Throttling - host NOT show warning popup'
-    : 'Throttling - guest NOT show warning popup';
+    ? 'hide_host_throttle_warning_popup'
+    : 'hide_guest_throttle_warning_popup';
 
   const { error: updateError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .update({ [preferenceField]: dontShowAgain })
     .eq('id', leaseId);
 

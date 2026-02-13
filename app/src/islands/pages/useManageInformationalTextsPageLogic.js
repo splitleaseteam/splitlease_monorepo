@@ -22,13 +22,13 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
  * Default form state for creating/editing entries
  */
 const EMPTY_FORM = {
-  tagTitle: '',
-  desktop: '',
-  desktopPlus: '',
-  mobile: '',
-  ipad: '',
-  showMore: false,
-  hasLink: false,
+  information_tag_title: '',
+  desktop_copy: '',
+  desktop_copy_legacy: '',
+  mobile_copy: '',
+  ipad_copy: '',
+  show_more_available: false,
+  link: false,
 };
 
 export default function useManageInformationalTextsPageLogic() {
@@ -67,19 +67,19 @@ export default function useManageInformationalTextsPageLogic() {
     if (!searchQuery.trim()) return entries;
     const query = searchQuery.toLowerCase();
     return entries.filter(entry =>
-      entry.tagTitle?.toLowerCase().includes(query) ||
-      entry.desktop?.toLowerCase().includes(query)
+      entry.information_tag_title?.toLowerCase().includes(query) ||
+      entry.desktop_copy?.toLowerCase().includes(query)
     );
   }, [entries, searchQuery]);
 
   // Check if form can be submitted
   const canSubmit = useMemo(() => {
     return (
-      formData.tagTitle?.trim() &&
-      formData.desktop?.trim() &&
+      formData.information_tag_title?.trim() &&
+      formData.desktop_copy?.trim() &&
       !isSubmitting
     );
-  }, [formData.tagTitle, formData.desktop, isSubmitting]);
+  }, [formData.information_tag_title, formData.desktop_copy, isSubmitting]);
 
   // Load entries on mount
   useEffect(() => {
@@ -152,12 +152,12 @@ export default function useManageInformationalTextsPageLogic() {
   function validateForm() {
     const errors = {};
 
-    if (!formData.tagTitle?.trim()) {
-      errors.tagTitle = 'Tag title is required';
+    if (!formData.information_tag_title?.trim()) {
+      errors.information_tag_title = 'Tag title is required';
     }
 
-    if (!formData.desktop?.trim()) {
-      errors.desktop = 'Desktop content is required';
+    if (!formData.desktop_copy?.trim()) {
+      errors.desktop_copy = 'Desktop content is required';
     }
 
     setFormErrors(errors);
@@ -181,13 +181,13 @@ export default function useManageInformationalTextsPageLogic() {
     setMode('edit');
     setSelectedEntry(entry);
     setFormData({
-      tagTitle: entry.tagTitle || '',
-      desktop: entry.desktop || '',
-      desktopPlus: entry.desktopPlus || '',
-      mobile: entry.mobile || '',
-      ipad: entry.ipad || '',
-      showMore: entry.showMore || false,
-      hasLink: entry.hasLink || false,
+      information_tag_title: entry.information_tag_title || '',
+      desktop_copy: entry.desktop_copy || '',
+      desktop_copy_legacy: entry.desktop_copy_legacy || '',
+      mobile_copy: entry.mobile_copy || '',
+      ipad_copy: entry.ipad_copy || '',
+      show_more_available: entry.show_more_available || false,
+      link: entry.link || false,
     });
     setFormErrors({});
   }
@@ -216,14 +216,14 @@ export default function useManageInformationalTextsPageLogic() {
       if (mode === 'create') {
         const created = await callEdgeFunction('create', formData);
         setEntries(prev => [created, ...prev]);
-        showToast(`Created "${formData.tagTitle}"`, 'success');
+        showToast(`Created "${formData.information_tag_title}"`, 'success');
       } else {
         const updated = await callEdgeFunction('update', {
           id: selectedEntry.id,
           ...formData
         });
         setEntries(prev => prev.map(e => e.id === updated.id ? updated : e));
-        showToast(`Updated "${formData.tagTitle}"`, 'success');
+        showToast(`Updated "${formData.information_tag_title}"`, 'success');
       }
 
       cancelForm();
@@ -233,7 +233,7 @@ export default function useManageInformationalTextsPageLogic() {
 
       // Show specific field errors if duplicate tag
       if (err.message?.includes('already exists')) {
-        setFormErrors({ tagTitle: err.message });
+        setFormErrors({ information_tag_title: err.message });
       }
     } finally {
       setIsSubmitting(false);
@@ -265,7 +265,7 @@ export default function useManageInformationalTextsPageLogic() {
     try {
       const result = await callEdgeFunction('delete', { id: deleteConfirmId });
       setEntries(prev => prev.filter(e => e.id !== deleteConfirmId));
-      showToast(`Deleted "${result.tagTitle}"`, 'success');
+      showToast(`Deleted "${result.information_tag_title}"`, 'success');
       setDeleteConfirmId(null);
 
       // If editing the deleted entry, go back to list
@@ -285,10 +285,10 @@ export default function useManageInformationalTextsPageLogic() {
    */
   const getPreviewContent = useCallback(() => {
     const content = {
-      desktop: formData.desktop || '(No desktop content)',
-      desktopPlus: formData.desktopPlus || formData.desktop || '(Falls back to desktop)',
-      mobile: formData.mobile || formData.desktop || '(Falls back to desktop)',
-      ipad: formData.ipad || formData.desktop || '(Falls back to desktop)',
+      desktop: formData.desktop_copy || '(No desktop content)',
+      desktopPlus: formData.desktop_copy_legacy || formData.desktop_copy || '(Falls back to desktop)',
+      mobile: formData.mobile_copy || formData.desktop_copy || '(Falls back to desktop)',
+      ipad: formData.ipad_copy || formData.desktop_copy || '(Falls back to desktop)',
     };
     return content[previewDevice] || content.desktop;
   }, [formData, previewDevice]);

@@ -1,6 +1,6 @@
 /**
  * Fetch Listing Action Handler
- * Get listing by ID (supports both id and Unique ID)
+ * Get listing by ID (supports both id and legacy platform ID)
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -24,16 +24,16 @@ export async function handleFetchListing(
   // Try fetching by id first
   let { data, error } = await supabase
     .from('listing')
-    .select('id, "Unique ID", "Listing Name", "Price #1", photos, "Host"')
+    .select('id, legacy_platform_id, listing_title, nightly_rate_for_1_night_stay, photos, host_user_id')
     .eq('id', listingId)
     .single();
 
-  // If not found by id, try by Unique ID
+  // If not found by id, try by legacy platform ID
   if (error && error.code === 'PGRST116') {
     const result = await supabase
       .from('listing')
-      .select('id, "Unique ID", "Listing Name", "Price #1", photos, "Host"')
-      .eq('Unique ID', listingId)
+      .select('id, legacy_platform_id, listing_title, nightly_rate_for_1_night_stay, photos, host_user_id')
+      .eq('legacy_platform_id', listingId)
       .single();
 
     data = result.data;
@@ -65,11 +65,11 @@ export async function handleFetchListing(
   return {
     listing: {
       id: data.id,
-      uniqueId: data['Unique ID'],
-      name: data['Listing Name'] || 'Untitled Listing',
-      nightlyPrice: data['Price #1'] || 0,
+      uniqueId: data.legacy_platform_id,
+      name: data.listing_title || 'Untitled Listing',
+      nightlyPrice: data.nightly_rate_for_1_night_stay || 0,
       photos,
-      hostId: data['Host'],
+      hostId: data.host_user_id,
     },
   };
 }

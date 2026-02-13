@@ -59,14 +59,14 @@ export async function handleCancel(
   }
 
   const requestData = request as unknown as DateChangeRequestData;
-  console.log(`[date-change-request:cancel] Found request, status: ${requestData['request status']}`);
+  console.log(`[date-change-request:cancel] Found request, status: ${requestData.request_status}`);
 
   // ================================================
   // VERIFY STATUS
   // ================================================
 
-  if (requestData['request status'] !== 'waiting_for_answer') {
-    throw new ValidationError(`Cannot cancel - request is not pending. Current status: ${requestData['request status']}`);
+  if (requestData.request_status !== 'waiting_for_answer') {
+    throw new ValidationError(`Cannot cancel - request is not pending. Current status: ${requestData.request_status}`);
   }
 
   // ================================================
@@ -76,9 +76,9 @@ export async function handleCancel(
   const now = new Date().toISOString();
 
   const updateData = {
-    'request status': 'cancelled',
-    'Modified Date': now,
-    'pending': false,
+    request_status: 'cancelled',
+    original_updated_at: now,
+    pending: false,
   };
 
   const { error: updateError } = await supabase

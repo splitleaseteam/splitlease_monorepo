@@ -39,8 +39,8 @@ export async function getNeighborhoodByZipCode(zipCode) {
     // Return the first matching neighborhood
     const neighborhood = data[0];
     const result = {
-      neighborhoodName: neighborhood.Display || '',
-      description: neighborhood['Neighborhood Description'] || ''
+      neighborhoodName: neighborhood.display || '',
+      description: neighborhood.neighborhood_description || ''
     };
 
     console.log('[neighborhoodService] Found neighborhood:', result.neighborhoodName);
@@ -69,8 +69,8 @@ export async function getNeighborhoodByName(neighborhoodName) {
     // Use ilike for case-insensitive matching
     const { data, error } = await supabase
       .from('zat_geo_hood_mediumlevel')
-      .select('Display, "Neighborhood Description"')
-      .ilike('Display', neighborhoodName.trim())
+      .select('display, neighborhood_description')
+      .ilike('display', neighborhoodName.trim())
       .limit(1)
       .maybeSingle();
 
@@ -85,8 +85,8 @@ export async function getNeighborhoodByName(neighborhoodName) {
     }
 
     const result = {
-      neighborhoodName: data.Display || '',
-      description: data['Neighborhood Description'] || ''
+      neighborhoodName: data.display || '',
+      description: data.neighborhood_description || ''
     };
 
     console.log('[neighborhoodService] Found neighborhood by name:', result.neighborhoodName);

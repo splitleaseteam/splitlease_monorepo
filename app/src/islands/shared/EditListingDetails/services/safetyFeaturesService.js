@@ -14,11 +14,10 @@ export async function getCommonSafetyFeatures() {
     console.log('[safetyFeaturesService] Fetching common safety features...');
 
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_features_safetyfeature')
-      .select('Name, "pre-set?"')
-      .eq('"pre-set?"', true)
-      .order('Name', { ascending: true });
+      .select('name, is_preset')
+      .eq('is_preset', true)
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('[safetyFeaturesService] Error fetching common safety features:', error);
@@ -31,7 +30,7 @@ export async function getCommonSafetyFeatures() {
     }
 
     // Extract just the names
-    const names = data.map((feature) => feature.Name);
+    const names = data.map((feature) => feature.name);
     console.log('[safetyFeaturesService] Fetched common safety features:', names);
     return names;
   } catch (err) {

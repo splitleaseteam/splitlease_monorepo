@@ -50,8 +50,8 @@ export async function handleGet(
     .select(`
       *
     `)
-    .eq('Lease', input.leaseId)
-    .order('Created Date', { ascending: false });
+    .eq('lease', input.leaseId)
+    .order('original_created_at', { ascending: false });
 
   if (requestsError) {
     console.error(`[date-change-request:get] Fetch failed:`, requestsError);
@@ -68,8 +68,8 @@ export async function handleGet(
   // Get unique user IDs
   const userIds = new Set<string>();
   requestList.forEach((req: Record<string, unknown>) => {
-    if (req['Requested by']) userIds.add(req['Requested by'] as string);
-    if (req['Request receiver']) userIds.add(req['Request receiver'] as string);
+    if (req.requested_by) userIds.add(req.requested_by as string);
+    if (req.request_receiver) userIds.add(req.request_receiver as string);
   });
 
   const userIdArray = [...userIds].filter(Boolean);
@@ -95,8 +95,8 @@ export async function handleGet(
 
   const enrichedRequests = requestList.map((req: Record<string, unknown>) => ({
     ...req,
-    requester: req['Requested by'] ? userMap[req['Requested by'] as string] || null : null,
-    receiver: req['Request receiver'] ? userMap[req['Request receiver'] as string] || null : null,
+    requester: req.requested_by ? userMap[req.requested_by as string] || null : null,
+    receiver: req.request_receiver ? userMap[req.request_receiver as string] || null : null,
   }));
 
   // ================================================

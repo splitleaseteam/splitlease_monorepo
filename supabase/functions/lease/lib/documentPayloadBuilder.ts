@@ -15,30 +15,25 @@ import type { ProposalData, ActiveTerms } from './types.ts';
 
 interface UserData {
   id: string;
-  'first name'?: string;
-  'last name'?: string;
+  first_name?: string;
+  last_name?: string;
   email?: string;
-  'Phone Number'?: string;
+  phone_number?: string;
 }
 
 interface ListingData {
   id: string;
-  Name?: string;
-  Title?: string;
-  Description?: string;
-  Location?: string;
-  'Type of Space'?: string;
-  'Space Details'?: string;
-  'House Rules'?: string[];
-  address?: string;
-  image1?: string;
-  image2?: string;
-  image3?: string;
+  listing_title?: string;
+  listing_description?: string;
+  address_with_lat_lng_json?: Record<string, unknown>;
+  space_type?: string;
+  house_rule_reference_ids_json?: string[];
+  photos_with_urls_captions_and_sort_order_json?: Array<{ url?: string; Photo?: string }>;
 }
 
 interface PaymentRecord {
-  'Payment Date': string;
-  Amount: number;
+  scheduled_date: string;
+  rent: number;
 }
 
 interface DocumentPayloadContext {
@@ -70,7 +65,7 @@ async function fetchUserData(
 ): Promise<UserData | null> {
   const { data, error } = await supabase
     .from('user')
-    .select('id, "first name", "last name", email, "Phone Number"')
+    .select('id, first_name, last_name, email, phone_number')
     .eq('id', userId)
     .single();
 
@@ -92,7 +87,7 @@ async function fetchListingData(
   const { data, error } = await supabase
     .from('listing')
     .select(
-      '_id, Name, Title, Description, Location, "Type of Space", "Space Details", "House Rules", address, image1, image2, image3'
+      'id, listing_title, listing_description, address_with_lat_lng_json, space_type, house_rule_reference_ids_json, photos_with_urls_captions_and_sort_order_json'
     )
     .eq('id', listingId)
     .single();
@@ -113,10 +108,11 @@ async function fetchHostPaymentRecords(
   leaseId: string
 ): Promise<PaymentRecord[]> {
   const { data, error } = await supabase
-    .from('host_payment_records')
-    .select('"Payment Date", Amount')
-    .eq('Lease', leaseId)
-    .order('Payment Date', { ascending: true });
+    .from('paymentrecords')
+    .select('scheduled_date, rent')
+    .eq('booking_reservation', leaseId)
+    .eq('payment_to_host', true)
+    .order('scheduled_date', { ascending: true });
 
   if (error) {
     console.warn('[documentPayloadBuilder] Could not fetch host payment records:', error.message);
@@ -135,8 +131,8 @@ async function fetchHostPaymentRecords(
  */
 function formatFullName(user: UserData | null): string {
   if (!user) return '';
-  const firstName = user['first name'] || '';
-  const lastName = user['last name'] || '';
+  const firstName = user.first_name || '';
+  const lastName = user.last_name || '';
   return `${firstName} ${lastName}`.trim();
 }
 
@@ -223,8 +219,8 @@ function buildHostPayoutPayload(
     'Agreement Number': context.agreementNumber,
     'Host Name': formatFullName(hostUser),
     'Host Email': hostUser?.email || '',
-    'Host Phone': hostUser?.['Phone Number'] || '',
-    Address: listing?.address || listing?.Location || '',
+    'Host Phone': hostUser?.phone_number || '',
+    Address: listing?.address_with_lat_lng_json?.address as string || '',
     'Payout Number': `${context.agreementNumber}-PO`,
     'Maintenance Fee': formatCurrency(context.activeTerms.maintenanceFee),
   };
@@ -233,9 +229,9 @@ function buildHostPayoutPayload(
   context.hostPaymentRecords.forEach((record, index) => {
     if (index < 13) {
       const num = index + 1;
-      payload[`Date${num}`] = formatDateForDocument(record['Payment Date']);
-      payload[`Rent${num}`] = formatCurrency(record.Amount);
-      payload[`Total${num}`] = formatCurrency(record.Amount + context.activeTerms.maintenanceFee);
+      payload[`Date${num}`] = formatDateForDocument(record.scheduled_date);
+      payload[`Rent${num}`] = formatCurrency(record.rent);
+      payload[`Total${num}`] = formatCurrency(record.rent + context.activeTerms.maintenanceFee);
     }
   });
 
@@ -257,15 +253,15 @@ function buildSupplementalPayload(
     'Number of weeks': String(context.activeTerms.reservationWeeks),
     'Guests Allowed': '1', // Default to 1, could be from listing
     'Host Name': formatFullName(hostUser),
-    'Listing Title': listing?.Title || listing?.Name || '',
-    'Listing Description': listing?.Description || '',
-    Location: listing?.Location || '',
-    'Type of Space': listing?.['Type of Space'] || '',
-    'Space Details': listing?.['Space Details'] || '',
+    'Listing Title': listing?.listing_title || '',
+    'Listing Description': listing?.listing_description || '',
+    Location: listing?.address_with_lat_lng_json?.address as string || '',
+    'Type of Space': listing?.space_type || '',
+    'Space Details': '',
     'Supplemental Number': `${context.agreementNumber}-SA`,
-    image1: listing?.image1 || '',
-    image2: listing?.image2 || '',
-    image3: listing?.image3 || '',
+    image1: listing?.photos_with_urls_captions_and_sort_order_json?.[0]?.url || listing?.photos_with_urls_captions_and_sort_order_json?.[0]?.Photo || '',
+    image2: listing?.photos_with_urls_captions_and_sort_order_json?.[1]?.url || listing?.photos_with_urls_captions_and_sort_order_json?.[1]?.Photo || '',
+    image3: listing?.photos_with_urls_captions_and_sort_order_json?.[2]?.url || listing?.photos_with_urls_captions_and_sort_order_json?.[2]?.Photo || '',
   };
 }
 
@@ -293,15 +289,15 @@ function buildPeriodicTenancyPayload(
     'Host Payout Schedule Number': `${context.agreementNumber}-PO`,
     'Extra Requests on Cancellation Policy': '',
     'Damage Deposit': formatCurrency(context.activeTerms.damageDeposit),
-    'Listing Title': listing?.Title || listing?.Name || '',
-    'Listing Description': listing?.Description || '',
-    Location: listing?.Location || '',
-    'Type of Space': listing?.['Type of Space'] || '',
-    'Space Details': listing?.['Space Details'] || '',
-    'House Rules': listing?.['House Rules'] || [],
-    image1: listing?.image1 || '',
-    image2: listing?.image2 || '',
-    image3: listing?.image3 || '',
+    'Listing Title': listing?.listing_title || '',
+    'Listing Description': listing?.listing_description || '',
+    Location: listing?.address_with_lat_lng_json?.address as string || '',
+    'Type of Space': listing?.space_type || '',
+    'Space Details': '',
+    'House Rules': listing?.house_rule_reference_ids_json || [],
+    image1: listing?.photos_with_urls_captions_and_sort_order_json?.[0]?.url || listing?.photos_with_urls_captions_and_sort_order_json?.[0]?.Photo || '',
+    image2: listing?.photos_with_urls_captions_and_sort_order_json?.[1]?.url || listing?.photos_with_urls_captions_and_sort_order_json?.[1]?.Photo || '',
+    image3: listing?.photos_with_urls_captions_and_sort_order_json?.[2]?.url || listing?.photos_with_urls_captions_and_sort_order_json?.[2]?.Photo || '',
   };
 }
 
@@ -332,7 +328,7 @@ function buildCreditCardAuthPayload(
     'Splitlease Credit': '0.00',
     'Last Payment Rent': formatCurrency(schedule.lastPaymentRent),
     'Weeks Number': String(context.activeTerms.reservationWeeks),
-    'Listing Description': listing?.Description || '',
+    'Listing Description': listing?.listing_description || '',
     'Penultimate Week Number': String(schedule.penultimateWeekNumber),
     'Number of Payments': String(schedule.numberOfPayments),
     'Last Payment Weeks': String(schedule.lastPaymentWeeks),
@@ -359,9 +355,9 @@ export async function buildDocumentPayload(
 
   // Fetch additional data in parallel
   const [hostUser, guestUser, listing, hostPayments] = await Promise.all([
-    fetchUserData(supabase, context.proposal['Host User']),
-    fetchUserData(supabase, context.proposal.Guest),
-    fetchListingData(supabase, context.proposal.Listing),
+    fetchUserData(supabase, context.proposal.host_user_id),
+    fetchUserData(supabase, context.proposal.guest_user_id),
+    fetchListingData(supabase, context.proposal.listing_id),
     fetchHostPaymentRecords(supabase, context.leaseId),
   ]);
 
@@ -371,7 +367,7 @@ export async function buildDocumentPayload(
   console.log('[documentPayloadBuilder] Fetched data:', {
     hostName: formatFullName(hostUser),
     guestName: formatFullName(guestUser),
-    listingTitle: listing?.Title || listing?.Name || 'N/A',
+    listingTitle: listing?.listing_title || 'N/A',
     paymentRecordsCount: hostPayments.length,
   });
 

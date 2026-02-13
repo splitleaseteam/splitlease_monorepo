@@ -7,9 +7,9 @@ import { supabase } from '../../../../lib/supabase.js';
 
 export interface SafetyFeature {
   id: string;
-  Name: string;
-  Icon?: string;
-  'pre-set?'?: boolean;
+  name: string;
+  icon?: string;
+  is_preset?: boolean;
 }
 
 /**
@@ -21,11 +21,10 @@ export async function getCommonSafetyFeatures(): Promise<string[]> {
     console.log('[safetyService] Fetching common safety features...');
 
     const { data, error } = await supabase
-      .schema('reference_table')
       .from('zat_features_safetyfeature')
-      .select('Name, "pre-set?"')
-      .eq('"pre-set?"', true)
-      .order('Name', { ascending: true });
+      .select('name, is_preset')
+      .eq('is_preset', true)
+      .order('name', { ascending: true });
 
     if (error) {
       console.error('[safetyService] Error fetching common safety features:', error);
@@ -38,7 +37,7 @@ export async function getCommonSafetyFeatures(): Promise<string[]> {
     }
 
     // Extract just the names
-    const names = data.map((feature: { Name: string }) => feature.Name);
+    const names = data.map((feature: { name: string }) => feature.name);
     console.log('[safetyService] Fetched common safety features:', names);
     return names;
   } catch (err) {

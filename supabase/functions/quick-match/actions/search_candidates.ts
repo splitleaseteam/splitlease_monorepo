@@ -82,18 +82,18 @@ async function fetchProposalDetails(
 ): Promise<ProposalDetails> {
   // Fetch proposal
   const { data: proposalData, error: proposalError } = await supabase
-    .from('proposal')
+    .from('booking_proposal')
     .select(`
       id,
       guest_user_id,
       listing_id,
-      "Guest email",
-      "Move in range start",
-      "Move in range end",
-      "Reservation Span (Weeks)",
-      "Days Selected",
-      "nights per week (num)",
-      "proposal nightly price",
+      guest_email_address,
+      move_in_range_start_date,
+      move_in_range_end_date,
+      reservation_span_in_weeks,
+      guest_selected_days_numbers_json,
+      nights_per_week_count,
+      calculated_nightly_price,
       proposal_workflow_status
     `)
     .eq('id', proposalId)
@@ -113,16 +113,16 @@ async function fetchProposalDetails(
       firstName: null,
       lastName: null,
       fullName: null,
-      email: proposalData['Guest email'] || null,
+      email: proposalData.guest_email_address || null,
     },
     listing: listingInfo,
-    daysSelected: normalizeJsonbArray(proposalData['Days Selected']),
-    nightsPerWeek: proposalData['nights per week (num)'] || 0,
-    nightlyPrice: proposalData['proposal nightly price'] || 0,
-    moveInStart: proposalData['Move in range start'],
-    moveInEnd: proposalData['Move in range end'],
+    daysSelected: normalizeJsonbArray(proposalData.guest_selected_days_numbers_json),
+    nightsPerWeek: proposalData.nights_per_week_count || 0,
+    nightlyPrice: proposalData.calculated_nightly_price || 0,
+    moveInStart: proposalData.move_in_range_start_date,
+    moveInEnd: proposalData.move_in_range_end_date,
     status: proposalData.proposal_workflow_status,
-    reservationWeeks: proposalData['Reservation Span (Weeks)'],
+    reservationWeeks: proposalData.reservation_span_in_weeks,
   };
 }
 
@@ -140,29 +140,28 @@ async function fetchAndScoreCandidates(
     .from('listing')
     .select(`
       id,
-      Name,
+      listing_title,
       host_user_id,
-      "Location - Borough",
-      "Location - Hood",
-      "Location - Address",
-      "Days Available (List of Days)",
-      "Nights Available (List of Nights)",
-      "Minimum Nights",
-      "Maximum Nights",
-      "nightly_rate_1_night",
-      "nightly_rate_2_nights",
-      "nightly_rate_3_nights",
-      "nightly_rate_4_nights",
-      "nightly_rate_5_nights",
-      "nightly_rate_6_nights",
-      "nightly_rate_7_nights",
-      "cleaning_fee",
-      "damage_deposit",
-      Active,
-      Deleted
+      borough,
+      primary_neighborhood_reference_id,
+      address_with_lat_lng_json,
+      available_days_as_day_numbers_json,
+      available_nights_as_day_numbers_json,
+      minimum_nights_per_stay,
+      maximum_nights_per_stay,
+      nightly_rate_for_1_night_stay,
+      nightly_rate_for_2_night_stay,
+      nightly_rate_for_3_night_stay,
+      nightly_rate_for_4_night_stay,
+      nightly_rate_for_5_night_stay,
+      nightly_rate_for_7_night_stay,
+      cleaning_fee_amount,
+      damage_deposit_amount,
+      is_active,
+      is_deleted
     `)
-    .eq('Active', true)
-    .or('Deleted.is.null,Deleted.eq.false');
+    .eq('is_active', true)
+    .or('is_deleted.is.null,is_deleted.eq.false');
 
   // Exclude the proposal's original listing
   if (proposal.listing.id) {
@@ -171,7 +170,7 @@ async function fetchAndScoreCandidates(
 
   // Apply borough filter if specified
   if (filters?.borough) {
-    query = query.eq('Location - Borough', filters.borough);
+    query = query.eq('borough', filters.borough);
   }
 
   // Fetch more candidates than needed to allow for scoring/filtering
@@ -202,7 +201,7 @@ async function fetchAndScoreCandidates(
   // Batch fetch borough names
   const boroughIds = [...new Set(
     listingsData
-      .map((l: ListingRow) => l['Location - Borough'])
+      .map((l: ListingRow) => l.borough)
       .filter((id): id is string => id !== null)
   )];
   const boroughNamesMap = await fetchBoroughNamesMap(supabase, boroughIds);
@@ -210,7 +209,7 @@ async function fetchAndScoreCandidates(
   // Batch fetch hood names
   const hoodIds = [...new Set(
     listingsData
-      .map((l: ListingRow) => l['Location - Hood'])
+      .map((l: ListingRow) => l.primary_neighborhood_reference_id)
       .filter((id): id is string => id !== null)
   )];
   const hoodNamesMap = await fetchHoodNamesMap(supabase, hoodIds);
@@ -286,24 +285,23 @@ async function fetchListingInfo(
     .from('listing')
     .select(`
       id,
-      Name,
-      "Location - Borough",
-      "Location - Hood",
-      "Location - Address",
-      "Days Available (List of Days)",
-      "Nights Available (List of Nights)",
-      "Minimum Nights",
-      "Maximum Nights",
-      "nightly_rate_1_night",
-      "nightly_rate_2_nights",
-      "nightly_rate_3_nights",
-      "nightly_rate_4_nights",
-      "nightly_rate_5_nights",
-      "nightly_rate_6_nights",
-      "nightly_rate_7_nights",
-      "cleaning_fee",
-      "damage_deposit",
-      Active
+      listing_title,
+      borough,
+      primary_neighborhood_reference_id,
+      address_with_lat_lng_json,
+      available_days_as_day_numbers_json,
+      available_nights_as_day_numbers_json,
+      minimum_nights_per_stay,
+      maximum_nights_per_stay,
+      nightly_rate_for_1_night_stay,
+      nightly_rate_for_2_night_stay,
+      nightly_rate_for_3_night_stay,
+      nightly_rate_for_4_night_stay,
+      nightly_rate_for_5_night_stay,
+      nightly_rate_for_7_night_stay,
+      cleaning_fee_amount,
+      damage_deposit_amount,
+      is_active
     `)
     .eq('id', listingId)
     .single();
@@ -314,30 +312,30 @@ async function fetchListingInfo(
 
   // Fetch borough name
   let boroughName: string | null = null;
-  if (data['Location - Borough']) {
+  if (data.borough) {
     const { data: boroughData } = await supabase
       .from('zat_geo_borough_toplevel')
       .select('Display')
-      .eq('id', data['Location - Borough'])
+      .eq('id', data.borough)
       .single();
-    boroughName = boroughData?.Display || data['Location - Borough'];
+    boroughName = boroughData?.Display || data.borough;
   }
 
   // Fetch hood name
   let hoodName: string | null = null;
-  if (data['Location - Hood']) {
+  if (data.primary_neighborhood_reference_id) {
     const { data: hoodData } = await supabase
       .from('zat_geo_hood_mediumlevel')
       .select('Display')
-      .eq('id', data['Location - Hood'])
+      .eq('id', data.primary_neighborhood_reference_id)
       .single();
-    hoodName = hoodData?.Display || data['Location - Hood'];
+    hoodName = hoodData?.Display || data.primary_neighborhood_reference_id;
   }
 
   return transformListing(
     data as ListingRow,
-    new Map([[data['Location - Borough'] || '', boroughName || '']]),
-    new Map([[data['Location - Hood'] || '', hoodName || '']])
+    new Map([[data.borough || '', boroughName || '']]),
+    new Map([[data.primary_neighborhood_reference_id || '', hoodName || '']])
   );
 }
 
@@ -356,9 +354,9 @@ async function fetchHostsMap(
       id,
       first_name,
       last_name,
-      "Verify - Linked In ID",
-      "Verify - Phone",
-      "user verified?"
+      linkedin_profile_id,
+      is_phone_verified,
+      is_user_verified
     `)
     .in('id', hostIds);
 
@@ -373,9 +371,9 @@ async function fetchHostsMap(
       id: user.id,
       firstName: user.first_name,
       fullName: `${user.first_name || ''} ${user.last_name || ''}`.trim() || null,
-      linkedInVerified: user['Verify - Linked In ID'] ?? false,
-      phoneVerified: user['Verify - Phone'] ?? false,
-      userVerified: user['user verified?'] ?? false,
+      linkedInVerified: !!user.linkedin_profile_id,
+      phoneVerified: user.is_phone_verified ?? false,
+      userVerified: user.is_user_verified ?? false,
     });
   }
 
@@ -441,31 +439,31 @@ function transformListing(
   hoodNamesMap: Map<string, string>
 ): ListingInfo {
   const nightlyRates: NightlyRates = {
-    rate1: row['nightly_rate_1_night'],
-    rate2: row['nightly_rate_2_nights'],
-    rate3: row['nightly_rate_3_nights'],
-    rate4: row['nightly_rate_4_nights'],
-    rate5: row['nightly_rate_5_nights'],
-    rate6: row['nightly_rate_6_nights'],
-    rate7: row['nightly_rate_7_nights'],
+    rate1: row.nightly_rate_for_1_night_stay ?? null,
+    rate2: row.nightly_rate_for_2_night_stay ?? null,
+    rate3: row.nightly_rate_for_3_night_stay ?? null,
+    rate4: row.nightly_rate_for_4_night_stay ?? null,
+    rate5: row.nightly_rate_for_5_night_stay ?? null,
+    rate6: null,
+    rate7: row.nightly_rate_for_7_night_stay ?? null,
   };
 
   return {
     id: row.id,
-    title: row.Name,
-    borough: row['Location - Borough'],
-    boroughName: boroughNamesMap.get(row['Location - Borough'] || '') || row['Location - Borough'],
-    hood: row['Location - Hood'],
-    hoodName: hoodNamesMap.get(row['Location - Hood'] || '') || row['Location - Hood'],
-    address: row['Location - Address'],
+    title: row.listing_title,
+    borough: row.borough,
+    boroughName: boroughNamesMap.get(row.borough || '') || row.borough,
+    hood: row.primary_neighborhood_reference_id,
+    hoodName: hoodNamesMap.get(row.primary_neighborhood_reference_id || '') || row.primary_neighborhood_reference_id,
+    address: row.address_with_lat_lng_json,
     nightlyRates,
-    cleaningFee: row['cleaning_fee'],
-    damageDeposit: row['damage_deposit'],
-    minimumNights: row['Minimum Nights'],
-    maximumNights: row['Maximum Nights'],
-    daysAvailable: normalizeJsonbArray(row['Days Available (List of Days)']),
-    nightsAvailable: normalizeJsonbArray(row['Nights Available (List of Nights)']),
-    active: row.Active ?? false,
+    cleaningFee: row.cleaning_fee_amount ?? null,
+    damageDeposit: row.damage_deposit_amount ?? null,
+    minimumNights: row.minimum_nights_per_stay,
+    maximumNights: row.maximum_nights_per_stay,
+    daysAvailable: normalizeJsonbArray(row.available_days_as_day_numbers_json),
+    nightsAvailable: normalizeJsonbArray(row.available_nights_as_day_numbers_json),
+    active: row.is_active ?? false,
   };
 }
 

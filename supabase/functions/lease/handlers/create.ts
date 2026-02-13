@@ -90,7 +90,7 @@ export async function handleCreate(
   // Fetch proposal (without embedded joins - no FK constraints exist)
   // SCHEMA NOTE (2026-01-28): proposal.Listing has no FK to listing table
   const { data: proposal, error: proposalError } = await supabase
-    .from('proposal')
+    .from("booking_proposal")
     .select('*')
     .eq('id', input.proposalId)
     .single();
@@ -101,20 +101,20 @@ export async function handleCreate(
 
   const proposalData = proposal as ProposalData;
 
-  // Fetch listing separately using proposal.Listing ID
+  // Fetch listing separately using proposal.listing_id
   let listingData: {
     id: string;
-    Name?: string;
-    'House manual'?: string;
-    'users with permission'?: string[];
-    'Cancellation Policy'?: string;
+    listing_title?: string;
+    house_manual_id?: string;
+    users_with_edit_permission_ids_json?: string[];
+    cancellation_policy?: string;
   } | null = null;
 
-  if (proposalData.Listing) {
+  if (proposalData.listing_id) {
     const { data: listing, error: listingError } = await supabase
       .from('listing')
-      .select('id, Name, "House manual", "users with permission", "Cancellation Policy"')
-      .eq('id', proposalData.Listing)
+      .select('id, listing_title, house_manual_id, users_with_edit_permission_ids_json, cancellation_policy')
+      .eq('id', proposalData.listing_id)
       .single();
 
     if (listingError) {
@@ -133,27 +133,27 @@ export async function handleCreate(
 
   // Build proposal update
   const proposalUpdate: Record<string, unknown> = {
-    Status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
-    'Modified Date': now,
-    'Is Finalized': true,
+    proposal_workflow_status: 'Proposal or Counteroffer Accepted / Drafting Lease Documents',
+    updated_at: now,
+    is_finalized: true,
   };
 
   // If NOT a counteroffer, copy original values to HC fields
   if (!input.isCounteroffer) {
-    proposalUpdate['host_counter_offer_move_in_date'] = proposalData['Move in range start'];
-    proposalUpdate['host_counter_offer_reservation_span_weeks'] = proposalData['Reservation Span (Weeks)'];
-    proposalUpdate['host_counter_offer_nights_per_week'] = proposalData['nights per week (num)'];
-    proposalUpdate['host_counter_offer_nightly_price'] = proposalData['proposal nightly price'];
-    proposalUpdate['host_counter_offer_4_week_rent'] = input.fourWeekRent;
-    proposalUpdate['host_counter_offer_4_week_compensation'] = input.fourWeekCompensation;
-    proposalUpdate['host_counter_offer_damage_deposit'] = proposalData['damage deposit'];
-    proposalUpdate['host_counter_offer_cleaning_fee'] = proposalData['cleaning fee'];
-    proposalUpdate['host_counter_offer_maintenance_fee'] = proposalData['maintenance fee'];
+    proposalUpdate['host_proposed_move_in_date'] = proposalData.move_in_range_start_date;
+    proposalUpdate['host_proposed_reservation_span_weeks'] = proposalData.reservation_span_in_weeks;
+    proposalUpdate['host_proposed_nights_per_week'] = proposalData.nights_per_week_count;
+    proposalUpdate['host_proposed_nightly_price'] = proposalData.calculated_nightly_price;
+    proposalUpdate['host_proposed_four_week_rent'] = input.fourWeekRent;
+    proposalUpdate['host_proposed_four_week_compensation'] = input.fourWeekCompensation;
+    proposalUpdate['host_proposed_damage_deposit'] = proposalData.damage_deposit_amount;
+    proposalUpdate['host_proposed_cleaning_fee'] = proposalData.cleaning_fee_amount;
+    // NOTE: maintenance fee column doesn't exist on booking_proposal - removed
   }
 
   // Update proposal
   const { error: proposalUpdateError } = await supabase
-    .from('proposal')
+    .from("booking_proposal")
     .update(proposalUpdate)
     .eq('id', input.proposalId);
 
@@ -193,37 +193,33 @@ export async function handleCreate(
   // SCHEMA-VERIFIED COLUMNS (2026-01-28):
   // - 'Reservation Period : Start' (NOT 'Move In Date')
   // - 'Reservation Period : End' (NOT 'Move-out')
-  // - 'rental type' column does NOT exist in bookings_leases
-  // FK CONSTRAINTS (2026-01-28):
-  // - 'Cancellation Policy' → zat_features_cancellationpolicy.id (use null if no valid FK, NOT text!)
-  // - 'Listing' → listing.id
-  // - 'Proposal' → proposal.id
-  // - 'Created By' → user.id
+  // - 'rental type' column does NOT exist in booking_lease
+  // SCHEMA-VERIFIED (2026-02-13): booking_lease columns are all snake_case
+  // - Proposal and Lease Status columns NOT in current schema — kept as-is pending DB migration
   const leaseRecord: Partial<LeaseData> = {
     id: leaseId,
-    'Agreement Number': agreementNumber,
-    Proposal: input.proposalId,
-    Guest: proposalData.Guest,
-    Host: proposalData['Host User'],
-    Listing: proposalData.Listing,
-    Participants: [proposalData.Guest, proposalData['Host User']],
-    // FK CONSTRAINT: Must be valid id from zat_features_cancellationpolicy or null
-    'Cancellation Policy': listingData?.['Cancellation Policy'] || null,
-    'First Payment Date': firstPaymentDate,
-    'Reservation Period : Start': activeTerms.moveInDate,
-    'Reservation Period : End': moveOutDate,
-    'Total Compensation': totalCompensation,
-    'Total Rent': totalRent,
-    'Lease Status': 'Drafting',
-    'Lease signed?': false,
-    'were documents generated?': false,
-    'Created Date': now,
-    'Modified Date': now,
+    agreement_number: agreementNumber,
+    proposal_id: input.proposalId,
+    lease_status: 'Active',
+    guest_user_id: proposalData.guest_user_id,
+    host_user_id: proposalData.host_user_id,
+    listing_id: proposalData.listing_id,
+    participant_user_ids_json: [proposalData.guest_user_id, proposalData.host_user_id],
+    cancellation_policy_text: listingData?.cancellation_policy || null,
+    first_payment_date: firstPaymentDate,
+    reservation_start_date: activeTerms.moveInDate,
+    reservation_end_date: moveOutDate,
+    total_host_compensation_amount: totalCompensation,
+    total_guest_rent_amount: totalRent,
+    is_lease_signed: false,
+    were_legal_documents_generated: false,
+    created_at: now,
+    updated_at: now,
   };
 
   // Insert lease
   const { error: leaseInsertError } = await supabase
-    .from('bookings_leases')
+    .from('booking_lease')
     .insert(leaseRecord);
 
   if (leaseInsertError) {
@@ -239,13 +235,13 @@ export async function handleCreate(
   console.log('[lease:create] Phase 3: Auxiliary setups...');
 
   // 3a: Grant guest permission to view listing address
-  await grantListingPermission(supabase, proposalData.Listing, proposalData.Guest);
+  await grantListingPermission(supabase, proposalData.listing_id, proposalData.guest_user_id);
 
   // 3b: Generate magic links for host and guest
   const magicLinks = await generateMagicLinks(
     supabase,
-    proposalData.Guest,
-    proposalData['Host User'],
+    proposalData.guest_user_id,
+    proposalData.host_user_id,
     leaseId
   );
 
@@ -259,8 +255,8 @@ export async function handleCreate(
 
   await sendLeaseNotifications(
     supabase,
-    proposalData.Guest,
-    proposalData['Host User'],
+    proposalData.guest_user_id,
+    proposalData.host_user_id,
     leaseId,
     agreementNumber,
     magicLinks
@@ -275,10 +271,10 @@ export async function handleCreate(
   console.log('[lease:create] Phase 5: User associations...');
 
   // Add lease to guest's lease list
-  await addLeaseToUser(supabase, proposalData.Guest, leaseId, 'guest');
+  await addLeaseToUser(supabase, proposalData.guest_user_id, leaseId, 'guest');
 
   // Add lease to host's lease list
-  await addLeaseToUser(supabase, proposalData['Host User'], leaseId, 'host');
+  await addLeaseToUser(supabase, proposalData.host_user_id, leaseId, 'host');
 
   console.log('[lease:create] Phase 5 complete');
 
@@ -291,16 +287,16 @@ export async function handleCreate(
   // Build payment payload from proposal data
   const paymentPayload: PaymentPayload = {
     leaseId,
-    rentalType: proposalData['rental type'],
+    rentalType: proposalData.rental_type,
     moveInDate: activeTerms.moveInDate,
     reservationSpanWeeks: activeTerms.reservationWeeks,
-    reservationSpanMonths: proposalData['host_counter_offer_duration_in_months'] || proposalData['duration in months'],
+    reservationSpanMonths: proposalData.host_proposed_duration_months || proposalData.stay_duration_in_months,
     weekPattern:
-      proposalData['host_counter_offer_weeks_schedule']?.Display ||
-      proposalData['week selection']?.Display ||
+      proposalData.host_proposed_weeks_schedule ||
+      proposalData.weeks_offered_schedule_text ||
       'Every week',
     fourWeekRent: activeTerms.fourWeekRent,
-    rentPerMonth: proposalData['host_counter_offer_host_compensation_per_period'] || proposalData['host compensation'],
+    rentPerMonth: proposalData.host_proposed_compensation_per_period || proposalData.host_compensation_per_period,
     maintenanceFee: activeTerms.maintenanceFee,
     damageDeposit: activeTerms.damageDeposit,
   };
@@ -340,9 +336,9 @@ export async function handleCreate(
       (hcWeeksSchedule as string) ||
       'Every week';
   } else {
-    const checkInDayVal = proposalData['check in day'];
-    const checkOutDayVal = proposalData['check out day'];
-    const weekSelectionVal = proposalData['week selection'];
+    const checkInDayVal = proposalData.checkin_day_of_week_number;
+    const checkOutDayVal = proposalData.checkout_day_of_week_number;
+    const weekSelectionVal = proposalData.weeks_offered_schedule_text;
 
     checkInDay =
       (typeof checkInDayVal === 'object' && (checkInDayVal as { Display?: string })?.Display) ||
@@ -359,7 +355,7 @@ export async function handleCreate(
   // Get nights selected
   const nightsSelected = input.isCounteroffer
     ? proposalData['host_counter_offer_days_selected'] || proposalData['host_counter_offer_nights_selected']
-    : proposalData['Days Selected'];
+    : proposalData.guest_selected_days_numbers_json;
 
   // Handle full-week normalization
   const nightsCount = Array.isArray(nightsSelected) ? nightsSelected.length : 0;
@@ -407,26 +403,22 @@ export async function handleCreate(
     // - 'list of dates (actual dates)' exists (NOT 'List of Booked Dates')
     // - 'Check-In Dates', 'Check-Out Dates', 'total nights' do NOT exist
     const proposalDateUpdate = {
-      'list of dates (actual dates)': dateResult.allBookedDates,
-      'Modified Date': now,
+      booked_dates_list_json: dateResult.allBookedDates,
+      updated_at: now,
     };
 
-    await supabase.from('proposal').update(proposalDateUpdate).eq('id', input.proposalId);
+    await supabase.from("booking_proposal").update(proposalDateUpdate).eq('id', input.proposalId);
 
     // Update lease with generated dates (Step 10 from Bubble workflow)
-    // SCHEMA-VERIFIED (2026-01-28): bookings_leases table columns
-    // - 'List of Booked Dates' exists ✅
-    // - 'Reservation Period : Start/End' have space BEFORE colon
-    // - 'Check-In Dates', 'Check-Out Dates', 'total nights' do NOT exist
-    // - 'total week count' exists (use this instead of total nights)
+    // SCHEMA-VERIFIED (2026-02-13): booking_lease snake_case columns
     const leaseDateUpdate = {
-      'List of Booked Dates': dateResult.allBookedDates,
-      'Reservation Period : Start': dateResult.firstCheckIn,
-      'Reservation Period : End': dateResult.lastCheckOut,
-      'total week count': dateResult.checkInDates.length,
+      booked_dates_json: dateResult.allBookedDates,
+      reservation_start_date: dateResult.firstCheckIn,
+      reservation_end_date: dateResult.lastCheckOut,
+      total_week_count: dateResult.checkInDates.length,
     };
 
-    await supabase.from('bookings_leases').update(leaseDateUpdate).eq('id', leaseId);
+    await supabase.from('booking_lease').update(leaseDateUpdate).eq('id', leaseId);
 
     // Error handling: Notify if no dates generated (Steps 11-12 from Bubble)
     if (dateResult.totalNights === 0) {
@@ -480,24 +472,24 @@ export async function handleCreate(
   const stayIds = await generateStays(
     supabase,
     leaseId,
-    proposalData.Guest,
-    proposalData['Host User'],
-    proposalData.Listing,
+    proposalData.guest_user_id,
+    proposalData.host_user_id,
+    proposalData.listing_id,
     dateResult
   );
 
   // Update lease with stay IDs
   await supabase
-    .from('bookings_leases')
-    .update({ 'List of Stays': stayIds })
+    .from('booking_lease')
+    .update({ stay_ids_json: stayIds })
     .eq('id', leaseId);
 
   // 7b: House manual linking
-  // SCHEMA-VERIFIED (2026-01-28): 'House Manual' column does NOT exist in bookings_leases
+  // SCHEMA-VERIFIED (2026-01-28): 'House Manual' column does NOT exist in booking_lease
   // House manual is accessed via listing.['House manual'] when needed at runtime
   // No lease-level storage required
-  if (listingData?.['House manual']) {
-    console.log('[lease:create] Listing has house manual:', listingData['House manual']);
+  if (listingData?.house_manual_id) {
+    console.log('[lease:create] Listing has house manual:', listingData.house_manual_id);
   }
 
   // 7c: TODO - Schedule checkout reminders (would need a scheduled task system)
@@ -574,8 +566,8 @@ export async function handleCreate(
   // Update lease with document generation status
   if (documentsGenerated) {
     await supabase
-      .from('bookings_leases')
-      .update({ 'were documents generated?': true })
+      .from('booking_lease')
+      .update({ were_legal_documents_generated: true })
       .eq('id', leaseId);
   }
 

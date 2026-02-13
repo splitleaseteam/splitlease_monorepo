@@ -89,15 +89,14 @@ export async function initializeLookups() {
  */
 async function initializeBoroughLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.BOROUGH)
-    .select('id, "Display Borough"');
+    .select('id, display_borough');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(borough => {
-      const name = borough['Display Borough'] || 'Unknown Borough';
+      const name = borough.display_borough || 'Unknown Borough';
       lookupCache.boroughs.set(borough.id, name.trim());
     });
     logger.debug(`Cached ${lookupCache.boroughs.size} boroughs`);
@@ -112,20 +111,19 @@ async function initializeBoroughLookups() {
  */
 async function initializeNeighborhoodLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.NEIGHBORHOOD)
-    .select('id, Display, "Zips", "Geo-Borough"');
+    .select('id, display, zips, geo_borough');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(neighborhood => {
-      const name = (neighborhood.Display || 'Unknown Neighborhood').trim();
+      const name = (neighborhood.display || 'Unknown Neighborhood').trim();
       lookupCache.neighborhoods.set(neighborhood.id, {
         name,
         description: null, // lazy-loaded via fetchNeighborhoodDescription()
-        zips: neighborhood.Zips || [],
-        borough: neighborhood['Geo-Borough'] || null
+        zips: neighborhood.zips || [],
+        borough: neighborhood.geo_borough || null
       });
     });
     logger.debug(`Cached ${lookupCache.neighborhoods.size} neighborhoods (descriptions deferred)`);
@@ -134,23 +132,19 @@ async function initializeNeighborhoodLookups() {
 
 /**
  * Initialize property type lookups
- * Note: Column name is "Label " with a TRAILING SPACE (database quirk)
  * @returns {Promise<void>}
  */
 async function initializePropertyTypeLookups() {
-  // IMPORTANT: Column name has trailing space: "Label "
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.LISTING_TYPE)
-    .select('id, "Label "')
+    .select('id, label')
     .limit(100);
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(type => {
-      // Access column with trailing space
-      const label = type['Label '];
+      const label = type.label;
       if (label) {
         lookupCache.propertyTypes.set(type.id, label.trim());
       }
@@ -166,16 +160,16 @@ async function initializePropertyTypeLookups() {
 async function initializeAmenityLookups() {
   const { data, error } = await supabase
     .from(DATABASE.TABLES.AMENITY)
-    .select('id, Name, Icon, "Type - Amenity Categories"');
+    .select('id, name, icon, type_amenity_categories');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(amenity => {
       lookupCache.amenities.set(amenity.id, {
-        name: amenity.Name || 'Unknown Amenity',
-        icon: amenity.Icon || '',
-        type: amenity['Type - Amenity Categories'] || ''
+        name: amenity.name || 'Unknown Amenity',
+        icon: amenity.icon || '',
+        type: amenity.type_amenity_categories || ''
       });
     });
     logger.debug(`Cached ${lookupCache.amenities.size} amenities`);
@@ -188,17 +182,16 @@ async function initializeAmenityLookups() {
  */
 async function initializeSafetyLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.SAFETY)
-    .select('id, Name, Icon');
+    .select('id, name, icon');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(safety => {
       lookupCache.safety.set(safety.id, {
-        name: safety.Name || 'Unknown Safety Feature',
-        icon: safety.Icon || ''
+        name: safety.name || 'Unknown Safety Feature',
+        icon: safety.icon || ''
       });
     });
     logger.debug(`Cached ${lookupCache.safety.size} safety features`);
@@ -211,17 +204,16 @@ async function initializeSafetyLookups() {
  */
 async function initializeHouseRuleLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.HOUSE_RULE)
-    .select('id, Name, Icon');
+    .select('id, name, icon');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(rule => {
       lookupCache.houseRules.set(rule.id, {
-        name: rule.Name || 'Unknown Rule',
-        icon: rule.Icon || ''
+        name: rule.name || 'Unknown Rule',
+        icon: rule.icon || ''
       });
     });
     logger.debug(`Cached ${lookupCache.houseRules.size} house rules`);
@@ -234,16 +226,15 @@ async function initializeHouseRuleLookups() {
  */
 async function initializeParkingLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.PARKING)
-    .select('id, Label');
+    .select('id, label');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(parking => {
       lookupCache.parking.set(parking.id, {
-        label: parking.Label || 'Unknown Parking'
+        label: parking.label || 'Unknown Parking'
       });
     });
     logger.debug(`Cached ${lookupCache.parking.size} parking options`);
@@ -256,20 +247,19 @@ async function initializeParkingLookups() {
  */
 async function initializeCancellationPolicyLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.CANCELLATION_POLICY)
-    .select('id, Display, "Best Case Text", "Medium Case Text", "Worst Case Text", "Summary Texts"');
+    .select('id, display, best_case_text, medium_case_text, worst_case_text, summary_texts');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(policy => {
       lookupCache.cancellationPolicies.set(policy.id, {
-        display: policy.Display || 'Unknown Policy',
-        bestCaseText: policy['Best Case Text'] || null,
-        mediumCaseText: policy['Medium Case Text'] || null,
-        worstCaseText: policy['Worst Case Text'] || null,
-        summaryTexts: policy['Summary Texts'] || null
+        display: policy.display || 'Unknown Policy',
+        bestCaseText: policy.best_case_text || null,
+        mediumCaseText: policy.medium_case_text || null,
+        worstCaseText: policy.worst_case_text || null,
+        summaryTexts: policy.summary_texts || null
       });
     });
     logger.debug(`Cached ${lookupCache.cancellationPolicies.size} cancellation policies`);
@@ -282,17 +272,16 @@ async function initializeCancellationPolicyLookups() {
  */
 async function initializeStorageLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.STORAGE)
-    .select('id, Title, "Summary - Guest"');
+    .select('id, title, summary_guest');
 
   if (error) throw error;
 
   if (data && Array.isArray(data)) {
     data.forEach(storage => {
       lookupCache.storage.set(storage.id, {
-        title: storage.Title || 'Unknown Storage',
-        summaryGuest: storage['Summary - Guest'] || ''
+        title: storage.title || 'Unknown Storage',
+        summaryGuest: storage.summary_guest || ''
       });
     });
     logger.debug(`Cached ${lookupCache.storage.size} storage options`);
@@ -305,7 +294,6 @@ async function initializeStorageLookups() {
  */
 async function initializeCancellationReasonLookups() {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from(DATABASE.TABLES.CANCELLATION_REASON)
     .select('id, user_type, reason, display_order')
     .eq('is_active', true)
@@ -635,15 +623,14 @@ export async function fetchNeighborhoodDescription(neighborhoodId) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('"Neighborhood Description"')
+      .select('neighborhood_description')
       .eq('id', neighborhoodId)
       .single();
 
     if (error) throw error;
 
-    const description = data?.['Neighborhood Description'] || '';
+    const description = data?.neighborhood_description || '';
 
     // Update the existing cache entry (preserves name, zips, borough)
     if (cached) {
@@ -672,21 +659,20 @@ export async function fetchNeighborhoodName(neighborhoodId) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('Display, "Neighborhood Description", "Zips", "Geo-Borough"')
+      .select('display, neighborhood_description, zips, geo_borough')
       .eq('id', neighborhoodId)
       .single();
 
     if (error) throw error;
 
-    const name = data?.Display || 'Unknown Neighborhood';
+    const name = data?.display || 'Unknown Neighborhood';
     // Cache the result as object
     lookupCache.neighborhoods.set(neighborhoodId, {
       name,
-      description: data?.['Neighborhood Description'] || '',
-      zips: data?.Zips || [],
-      borough: data?.['Geo-Borough'] || null
+      description: data?.neighborhood_description || '',
+      zips: data?.zips || [],
+      borough: data?.geo_borough || null
     });
     return name;
   } catch (error) {
@@ -710,15 +696,14 @@ export async function fetchBoroughName(boroughId) {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table')
       .from(DATABASE.TABLES.BOROUGH)
-      .select('"Display Borough"')
+      .select('display_borough')
       .eq('id', boroughId)
       .single();
 
     if (error) throw error;
 
-    const name = data?.['Display Borough'] || 'Unknown Borough';
+    const name = data?.display_borough || 'Unknown Borough';
     // Cache the result
     lookupCache.boroughs.set(boroughId, name);
     return name;

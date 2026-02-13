@@ -256,8 +256,8 @@ Request ID: ${input.requestId}
   const { error: updateError } = await supabase
     .from('co_hostrequest')
     .update({
-      "Status - Co-Host Request": "google meet scheduled",
-      "Modified Date": new Date().toISOString()
+      status_co_host_request: "google meet scheduled",
+      original_updated_at: new Date().toISOString()
     })
     .eq('id', input.requestId);
 

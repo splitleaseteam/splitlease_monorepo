@@ -16,17 +16,15 @@ export interface SendEmailPayload {
   bcc_emails?: string[];         // BCC recipients (optional)
 }
 
-// Email template from database (reference_table.zat_email_html_template_eg_sendbasicemailwf_)
-// Schema columns: _id, "Created By", "Created Date", "Description", "Email Reference",
-//                 "Email Template JSON", "Logo", "Modified Date", "Name", "Placeholder"
+// Email template from database (emailtemplate_postmark)
 export interface EmailTemplate {
   id: string;
-  Name?: string;
-  'Email Template JSON': string;  // The HTML template with {{ placeholders }}
-  Description?: string;           // Template description
-  'Email Reference'?: string;     // Reference identifier
-  Logo?: string;                  // Logo URL
-  Placeholder?: string[];         // Array of placeholder names
+  name?: string;
+  email_template_json: string;
+  description?: string;
+  email_reference?: string;
+  logo?: string;
+  placeholder?: string[];
 }
 
 // SendGrid request body structure

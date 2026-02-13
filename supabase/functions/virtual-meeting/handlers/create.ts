@@ -56,7 +56,7 @@ export async function handleCreate(
 
   // Fetch Proposal
   const { data: proposal, error: proposalError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .select(`
       id,
       guest_user_id,
@@ -113,7 +113,7 @@ export async function handleCreate(
   console.log(`[virtual-meeting:create] Found host user: ${hostUserData.email}`);
 
   // hostAccountData maintained for backwards compatibility with downstream code
-  const hostAccountData = { id: hostUserData.id, User: hostUserData.id } as HostAccountData;
+  const hostAccountData = { id: hostUserData.id, user_id: hostUserData.id } as HostAccountData;
 
   // Fetch Guest User
   const { data: guestUser, error: guestUserError } = await supabase
@@ -153,38 +153,38 @@ export async function handleCreate(
     id: virtualMeetingId,
 
     // Relationships
-    host: hostAccountData.User,
+    host: hostAccountData.user_id,
     guest: proposalData.guest_user_id,
     proposal: input.proposalId,
-    "requested by": input.requestedById,
-    "Listing (for Co-Host feature)": proposalData.listing_id,
+    requested_by: input.requestedById,
+    listing_for_co_host_feature: proposalData.listing_id,
 
     // Meeting metadata
-    "meeting duration": 45, // Default 45 minutes
-    "suggested dates and times": input.timesSelected, // Store as-is (ISO 8601 strings)
+    meeting_duration: 45, // Default 45 minutes
+    suggested_dates_and_times: input.timesSelected, // Store as-is (ISO 8601 strings)
 
     // Status fields - all false/null initially
-    "booked date": null,
-    confirmedBySplitLease: false,
-    "meeting declined": false,
-    "meeting link": null,
-    "end of meeting": null,
+    booked_date: null,
+    confirmedbysplitlease: false,
+    meeting_declined: false,
+    meeting_link: null,
+    end_of_meeting: null,
     pending: false,
 
     // Participant info
-    "guest email": guestUserData.email,
-    "guest name": `${guestUserData.first_name || ''} ${guestUserData.last_name || ''}`.trim() || null,
-    "host email": hostUserData.email,
-    "host name": `${hostUserData.first_name || ''} ${hostUserData.last_name || ''}`.trim() || null,
+    guest_email: guestUserData.email,
+    guest_name: `${guestUserData.first_name || ''} ${guestUserData.last_name || ''}`.trim() || null,
+    host_email: hostUserData.email,
+    host_name: `${hostUserData.first_name || ''} ${hostUserData.last_name || ''}`.trim() || null,
 
     // Invitation tracking
-    "invitation sent to guest?": false,
-    "invitation sent to host?": false,
+    invitation_sent_to_guest: false,
+    invitation_sent_to_host: false,
 
     // Audit fields
-    "Created By": input.requestedById,
-    "Created Date": now,
-    "Modified Date": now,
+    created_by: input.requestedById,
+    original_created_at: now,
+    original_updated_at: now,
   };
 
   console.log(`[virtual-meeting:create] Inserting virtual meeting: ${virtualMeetingId}`);
@@ -211,10 +211,10 @@ export async function handleCreate(
   console.log(`[virtual-meeting:create] Requester: ${input.requestedById}, Host: ${hostUserData.id}, Value: ${requestVirtualMeetingValue}`);
 
   const { error: proposalUpdateError } = await supabase
-    .from("proposal")
+    .from("booking_proposal")
     .update({
-      "request virtual meeting": requestVirtualMeetingValue,
-      "virtual meeting": virtualMeetingId,
+      virtual_meeting_request_status: requestVirtualMeetingValue,
+      virtual_meeting_record_id: virtualMeetingId,
       updated_at: now,
     })
     .eq("id", input.proposalId);
@@ -234,25 +234,25 @@ export async function handleCreate(
     // Fetch notification preferences
     const [hostNotifResult, guestNotifResult] = await Promise.all([
       hostUserData.notification_preference_setting
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", hostUserData.notification_preference_setting).single()
+        ? supabase.from("notificationsettingsos_lists_").select('virtual_meetings').eq("id", hostUserData.notification_preference_setting).single()
         : { data: null },
       guestUserData.notification_preference_setting
-        ? supabase.from("notification_setting").select(`"Virtual Meetings"`).eq("id", guestUserData.notification_preference_setting).single()
+        ? supabase.from("notificationsettingsos_lists_").select('virtual_meetings').eq("id", guestUserData.notification_preference_setting).single()
         : { data: null },
     ]);
 
-    const hostVmNotifs: string[] = hostNotifResult.data?.["Virtual Meetings"] || [];
-    const guestVmNotifs: string[] = guestNotifResult.data?.["Virtual Meetings"] || [];
+    const hostVmNotifs: string[] = hostNotifResult.data?.virtual_meetings || [];
+    const guestVmNotifs: string[] = guestNotifResult.data?.virtual_meetings || [];
 
     // Fetch listing name for context
     let listingName: string | undefined;
     if (proposalData.listing_id) {
       const { data: listing } = await supabase
         .from("listing")
-        .select('"Name"')
+        .select('listing_title')
         .eq("id", proposalData.listing_id)
         .single();
-      listingName = listing?.Name;
+      listingName = listing?.listing_title;
     }
 
     const messageResult = await sendVMRequestMessages(supabase, {
