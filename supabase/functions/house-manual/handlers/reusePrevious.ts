@@ -148,7 +148,7 @@ export async function handleReusePrevious(
       content: contentValue,
       previous_content: previousContent,
       field_suggested_house_manual: field,
-      house_manual: targetHouseManualId,
+      house_manual_id: targetHouseManualId,
       being_processed: false,
       decision: "pending",
       from_call: false,
