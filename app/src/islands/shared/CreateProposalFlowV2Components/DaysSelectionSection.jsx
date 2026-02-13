@@ -167,7 +167,7 @@ export default function DaysSelectionSection({ data, updateData, listing, zatCon
       nightly_rate_for_7_night_stay: listing.nightly_rate_for_7_night_stay,
       weekly_rate_paid_to_host: listing.weekly_rate_paid_to_host,
       monthly_rate_paid_to_host: listing.monthly_rate_paid_to_host,
-      price_override: listing['price_override'],
+      price_override: listing.price_override,
       cleaning_fee_amount: listing.cleaning_fee_amount,
       damage_deposit_amount: listing.damage_deposit_amount
     };
