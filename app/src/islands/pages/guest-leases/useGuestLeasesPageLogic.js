@@ -88,6 +88,7 @@ export function useGuestLeasesPageLogic() {
 
   // Data state
   const [leases, setLeases] = useState([]);
+  const [catchError, setCatchError] = useState(null);
 
   // UI state - Lease card expansion
   const [expandedLeaseId, setExpandedLeaseId] = useState(null);
@@ -120,10 +121,11 @@ export function useGuestLeasesPageLogic() {
   );
 
   // Normalize error to string for consumers (handle SESSION_EXPIRED specially)
-  const error = rawLoadError
-    ? (rawLoadError.message === 'SESSION_EXPIRED'
+  const activeError = rawLoadError || catchError;
+  const error = activeError
+    ? (activeError.message === 'SESSION_EXPIRED'
         ? 'Your session has expired. Please refresh the page to log in again.'
-        : (rawLoadError.message || 'Failed to load leases. Please try again.'))
+        : (activeError.message || 'Failed to load leases. Please try again.'))
     : null;
 
   // Sync fetched leases into local state (leases is also mutated by other handlers)
@@ -208,7 +210,8 @@ export function useGuestLeasesPageLogic() {
     }
 
     executeLoadLeases().catch((err) => {
-      console.error('Guest Leases: Error fetching leases:', err);
+      console.error('[useGuestLeasesPageLogic] Failed to load leases:', err);
+      setCatchError(err);
     });
   }, [authLoading, isAuthenticated, authUserId, isDevMode, executeLoadLeases]);
 

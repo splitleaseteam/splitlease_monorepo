@@ -153,7 +153,7 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 4: Fetch house rules (if any)
   let houseRules = null
-  const houseRulesArray = rawProposal.house_rules_json || rawProposal['House Rules']
+  const houseRulesArray = rawProposal.house_rules_reference_ids_json
   if (
     houseRulesArray &&
     Array.isArray(houseRulesArray) &&
@@ -172,7 +172,7 @@ export async function loadProposalDetailsWorkflow({
 
   // Step 5: Fetch virtual meeting data (if any)
   let virtualMeeting = null
-  const virtualMeetingId = rawProposal.virtual_meeting_record_id || rawProposal['virtual meeting']
+  const virtualMeetingId = rawProposal.virtual_meeting_record_id
   if (virtualMeetingId) {
     const { data: vmData, error: vmError } = await supabase
       .from('virtualmeetingschedulesandlinks')

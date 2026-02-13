@@ -17,7 +17,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { acceptCounteroffer, declineCounteroffer, getTermsComparison } from '../../logic/workflows/proposals/counterofferWorkflow.js';
-import { formatPrice, formatDate } from '../../lib/proposals/dataTransformers.js';
+import { formatPrice } from '../../lib/formatters.js';
+import { formatDate } from '../../lib/proposals/dataTransformers.js';
 import { DAY_NAMES } from '../../lib/dayUtils.js';
 
 /**
@@ -31,7 +32,8 @@ function parseDaysSelected(daysSelected) {
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
-    } catch (_e) {
+    } catch (e) {
+      console.error('[useCompareTermsModalLogic] Failed to parse JSON:', days, e);
       return [];
     }
   }
@@ -103,18 +105,18 @@ export function useCompareTermsModalLogic({
   const originalTerms = useMemo(() => {
     if (!proposal) return null;
 
-    const moveInStart = proposal['Move in range start'];
-    const moveInEnd = proposal['Move in range end'];
-    const daysSelected = parseDaysSelected(proposal['Days Selected']);
-    const checkInDay = proposal['check in day'];
-    const checkOutDay = proposal['check out day'];
-    const nightsPerWeek = proposal['nights per week (num)'] || daysSelected.length || 0;
-    const reservationWeeks = proposal['Reservation Span (Weeks)'] || 0;
-    const nightlyPrice = proposal['proposal nightly price'] || 0;
-    const totalPrice = proposal['Total Price for Reservation (guest)'] || 0;
-    const cleaningFee = proposal['cleaning fee'] || 0;
-    const damageDeposit = proposal['damage deposit'] || 0;
-    const maintenanceFee = proposal['maintenance fee'] || 0;
+    const moveInStart = proposal.move_in_range_start_date;
+    const moveInEnd = proposal.move_in_range_end_date;
+    const daysSelected = parseDaysSelected(proposal.guest_selected_days_numbers_json);
+    const checkInDay = proposal.checkin_day_of_week_number;
+    const checkOutDay = proposal.checkout_day_of_week_number;
+    const nightsPerWeek = proposal.nights_per_week_count || daysSelected.length || 0;
+    const reservationWeeks = proposal.reservation_span_in_weeks || 0;
+    const nightlyPrice = proposal.calculated_nightly_price || 0;
+    const totalPrice = proposal.total_reservation_price_for_guest || 0;
+    const cleaningFee = proposal.cleaning_fee_amount || 0;
+    const damageDeposit = proposal.damage_deposit_amount || 0;
+    const maintenanceFee = 0;
 
     // Calculate derived fields
     const nightsReserved = nightsPerWeek * reservationWeeks;
@@ -161,17 +163,17 @@ export function useCompareTermsModalLogic({
   const counterofferTerms = useMemo(() => {
     if (!proposal) return null;
 
-    const moveInDate = proposal['host_counter_offer_move_in_date'];
-    const daysSelected = parseDaysSelected(proposal['host_counter_offer_days_selected'] || proposal['Days Selected']);
-    const checkInDay = proposal['host_counter_offer_check_in_day'] ?? proposal['check in day'];
-    const checkOutDay = proposal['host_counter_offer_check_out_day'] ?? proposal['check out day'];
-    const nightsPerWeek = proposal['host_counter_offer_nights_per_week'] ?? proposal['nights per week (num)'] ?? daysSelected.length ?? 0;
-    const reservationWeeks = proposal['host_counter_offer_reservation_span_weeks'] ?? proposal['Reservation Span (Weeks)'] ?? 0;
-    const nightlyPrice = proposal['host_counter_offer_nightly_price'] ?? proposal['proposal nightly price'] ?? 0;
-    const totalPrice = proposal['host_counter_offer_total_price'] ?? proposal['Total Price for Reservation (guest)'] ?? 0;
-    const cleaningFee = proposal['host_counter_offer_cleaning_fee'] ?? proposal['cleaning fee'] ?? 0;
-    const damageDeposit = proposal['host_counter_offer_damage_deposit'] ?? proposal['damage deposit'] ?? 0;
-    const maintenanceFee = proposal['host_counter_offer_maintenance_fee'] ?? proposal['maintenance fee'] ?? 0;
+    const moveInDate = proposal.host_proposed_move_in_date;
+    const daysSelected = parseDaysSelected(proposal.host_proposed_selected_days_json || proposal.guest_selected_days_numbers_json);
+    const checkInDay = proposal.host_proposed_checkin_day ?? proposal.checkin_day_of_week_number;
+    const checkOutDay = proposal.host_proposed_checkout_day ?? proposal.checkout_day_of_week_number;
+    const nightsPerWeek = proposal.host_proposed_nights_per_week ?? proposal.nights_per_week_count ?? daysSelected.length ?? 0;
+    const reservationWeeks = proposal.host_proposed_reservation_span_weeks ?? proposal.reservation_span_in_weeks ?? 0;
+    const nightlyPrice = proposal.host_proposed_nightly_price ?? proposal.calculated_nightly_price ?? 0;
+    const totalPrice = proposal.host_proposed_total_guest_price ?? proposal.total_reservation_price_for_guest ?? 0;
+    const cleaningFee = proposal.host_proposed_cleaning_fee ?? proposal.cleaning_fee_amount ?? 0;
+    const damageDeposit = proposal.host_proposed_damage_deposit ?? proposal.damage_deposit_amount ?? 0;
+    const maintenanceFee = 0;
 
     // Calculate derived fields
     const nightsReserved = nightsPerWeek * reservationWeeks;
@@ -218,8 +220,8 @@ export function useCompareTermsModalLogic({
 
   // Get house rules - prioritize counteroffer values if present
   const houseRules = useMemo(() => {
-    const hasCounteroffer = proposal?.['counter offer happened'];
-    const hcRules = proposal?.['host_counter_offer_house_rules'] || proposal?.hostCounterOfferHouseRules;
+    const hasCounteroffer = proposal?.has_host_counter_offer;
+    const hcRules = proposal?.host_proposed_house_rules_json;
 
     // If counteroffer happened and has house rules, use those
     if (hasCounteroffer && Array.isArray(hcRules) && hcRules.length > 0) {
@@ -227,7 +229,7 @@ export function useCompareTermsModalLogic({
     }
 
     // Otherwise fall back to original proposal or listing house rules
-    const rules = proposal?.houseRules || proposal?.['House Rules'] || proposal?.listing?.houseRules || [];
+    const rules = proposal?.houseRules || proposal?.house_rules_reference_ids_json || proposal?.listing?.houseRules || [];
     return Array.isArray(rules) ? rules : [];
   }, [proposal]);
 
@@ -235,7 +237,7 @@ export function useCompareTermsModalLogic({
   const listingInfo = useMemo(() => {
     const listing = proposal?.listing;
     return {
-      name: listing?.listing_title || listing?.Name || 'Property',
+      name: listing?.listing_title || 'Property',
       checkInTime: listing?.checkin_time_of_day || '2:00 PM',
       checkOutTime: listing?.checkout_time_of_day || '11:00 AM'
     };
@@ -267,16 +269,16 @@ export function useCompareTermsModalLogic({
       const numberOfZeros = (leaseCount || 0) < 10 ? 4 : (leaseCount || 0) < 100 ? 3 : 2;
 
       // Step 4: Calculate 4-week compensation (from ORIGINAL proposal)
-      const originalNightsPerWeek = proposal['nights per week (num)'] || 0;
-      const originalNightlyPrice = proposal['proposal nightly price'] || 0;
+      const originalNightsPerWeek = proposal.nights_per_week_count || 0;
+      const originalNightlyPrice = proposal.calculated_nightly_price || 0;
       const fourWeekCompensation = originalNightsPerWeek * 4 * originalNightlyPrice;
 
       // Step 5: Update proposal status via workflow
       await acceptCounteroffer(proposalId);
 
       // Step 6: Calculate 4-week rent (from COUNTEROFFER terms)
-      const counterofferNightsPerWeek = proposal['host_counter_offer_nights_per_week'] || originalNightsPerWeek;
-      const counterofferNightlyPrice = proposal['host_counter_offer_nightly_price'] || originalNightlyPrice;
+      const counterofferNightsPerWeek = proposal.host_proposed_nights_per_week || originalNightsPerWeek;
+      const counterofferNightlyPrice = proposal.host_proposed_nightly_price || originalNightlyPrice;
       const fourWeekRent = counterofferNightsPerWeek * 4 * counterofferNightlyPrice;
 
       // Step 7: Call lease creation Edge Function

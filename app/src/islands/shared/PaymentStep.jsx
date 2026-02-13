@@ -19,9 +19,11 @@ import Button from './Button';
 import './PaymentStep.css';
 
 // Initialize Stripe with publishable key from environment
-const stripePromise = loadStripe(
-    import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder'
-);
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+if (!STRIPE_PUBLISHABLE_KEY) {
+  throw new Error('Missing VITE_STRIPE_PUBLISHABLE_KEY environment variable');
+}
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 // Card element styling options
 const CARD_ELEMENT_OPTIONS = {

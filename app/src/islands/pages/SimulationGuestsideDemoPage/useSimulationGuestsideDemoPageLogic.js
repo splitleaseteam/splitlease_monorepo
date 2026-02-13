@@ -346,13 +346,12 @@ export function useSimulationGuestsideDemoPageLogic() {
           .from('virtualmeetingschedulesandlinks')
           .insert({
             proposal: proposalId,
-            'requested by': testListing.host_user_id,
-            'suggested dates and times': [
+            requested_by: testListing.host_user_id,
+            suggested_dates_and_times: [
               new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
               new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
             ],
-            'is_usability_test': true,
-            'Created Date': new Date().toISOString()
+            created_at: new Date().toISOString()
           })
           .select('id')
           .single();
@@ -363,7 +362,7 @@ export function useSimulationGuestsideDemoPageLogic() {
           // Link VM to proposal
           await supabase
             .from('booking_proposal')
-            .update({ 'virtual meeting': vmData.id })
+            .update({ virtual_meeting_record_id: vmData.id })
             .eq('id', proposalId);
         }
       } catch (vmErr) {
@@ -480,10 +479,10 @@ export function useSimulationGuestsideDemoPageLogic() {
           payload: {
             proposalId: simulationState.testProposalId,
             counterofferData: {
-              'host_counter_offer_nightly_price': DEFAULT_COUNTEROFFER.nightlyPrice,
-              'host_counter_offer_nights_per_week': DEFAULT_COUNTEROFFER.nightsPerWeek,
-              'host_counter_offer_check_in_day': DEFAULT_COUNTEROFFER.checkInDay,
-              'host_counter_offer_check_out_day': DEFAULT_COUNTEROFFER.checkOutDay
+              'host_proposed_nightly_price': DEFAULT_COUNTEROFFER.nightlyPrice,
+              'host_proposed_nights_per_week': DEFAULT_COUNTEROFFER.nightsPerWeek,
+              'host_proposed_checkin_day': DEFAULT_COUNTEROFFER.checkInDay,
+              'host_proposed_checkout_day': DEFAULT_COUNTEROFFER.checkOutDay
             },
             isUsabilityTest: true,
             hostPersona: 'Host #3'
@@ -551,7 +550,7 @@ export function useSimulationGuestsideDemoPageLogic() {
           proposal_id: simulationState.testProposalId,
           guest_user_id: userId,
           lease_type: 'Drafting',
-          'Lease signed?': false,
+          is_lease_signed: false,
           'is_usability_test': true,
           original_created_at: new Date().toISOString()
         })
@@ -616,7 +615,7 @@ export function useSimulationGuestsideDemoPageLogic() {
       if (simulationState.testLeaseId) {
         await supabase
           .from('booking_lease')
-          .update({ 'Lease signed?': true })
+          .update({ is_lease_signed: true })
           .eq('id', simulationState.testLeaseId);
       }
 

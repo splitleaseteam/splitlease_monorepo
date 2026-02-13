@@ -16,9 +16,6 @@ import { formatHostName } from '../../../logic/processors/display/formatHostName
 import { getListingDisplayPrice } from '../../../logic/calculators/pricing/getListingDisplayPrice.js';
 import { logger } from '../../../lib/logger.js';
 import FavoriteButton from '../FavoriteButton/FavoriteButton.jsx';
-// NOTE: ValueAlert and MatchScore removed - components not yet implemented
-// import ValueAlert from '../ValueInsights/ValueAlert.jsx';
-// import MatchScore from '../ValueInsights/MatchScore.jsx';
 
 /**
  * PropertyCard Component - Memoized for performance

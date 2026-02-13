@@ -131,7 +131,7 @@ export function adaptLeaseFromSupabase(row) {
     // Core identifiers
     id: row.id,
     agreementNumber: row.agreement_number || null,
-    proposalId: row.proposal_id || null,
+    proposalId: null,
     leaseType,
     isCoTenant: leaseType === 'co_tenant',
     isGuestHost: leaseType === 'guest_host',
@@ -142,7 +142,7 @@ export function adaptLeaseFromSupabase(row) {
     listingId: row.listing_id || row.listing?.id || null,
 
     // Status
-    status: mapLeaseStatus(row.lease_status),
+    status: mapLeaseStatus(row.lease_type),
     leaseSigned: row.is_lease_signed || false,
 
     // Dates

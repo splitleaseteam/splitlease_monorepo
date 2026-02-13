@@ -72,7 +72,7 @@ function LeaseSelector({
             <option value="">-- Select a lease --</option>
             {leases.map(lease => (
               <option key={lease.id} value={lease.id}>
-                {lease['Agreement Number'] || lease.id} - {lease['Lease Status'] || 'Unknown'}
+                {lease.agreement_number || lease.id} - {lease.lease_type || 'Unknown'}
               </option>
             ))}
           </select>
@@ -85,27 +85,27 @@ function LeaseSelector({
           <div className="zupr-info-grid">
             <div className="zupr-info-row">
               <span className="zupr-info-label">Agreement #:</span>
-              <span className="zupr-info-value">{selectedLease['Agreement Number'] || '-'}</span>
+              <span className="zupr-info-value">{selectedLease.agreement_number || '-'}</span>
             </div>
             <div className="zupr-info-row">
               <span className="zupr-info-label">Status:</span>
-              <span className="zupr-info-value">{selectedLease['Lease Status'] || '-'}</span>
+              <span className="zupr-info-value">{selectedLease.lease_type || '-'}</span>
             </div>
             <div className="zupr-info-row">
               <span className="zupr-info-label">Start Date:</span>
-              <span className="zupr-info-value">{formatDisplayDate(selectedLease['Reservation Period : Start'])}</span>
+              <span className="zupr-info-value">{formatDisplayDate(selectedLease.reservation_start_date)}</span>
             </div>
             <div className="zupr-info-row">
               <span className="zupr-info-label">End Date:</span>
-              <span className="zupr-info-value">{formatDisplayDate(selectedLease['Reservation Period : End'])}</span>
+              <span className="zupr-info-value">{formatDisplayDate(selectedLease.reservation_end_date)}</span>
             </div>
             <div className="zupr-info-row">
               <span className="zupr-info-label">Total Rent:</span>
-              <span className="zupr-info-value">{formatCurrency(selectedLease['Total Rent'])}</span>
+              <span className="zupr-info-value">{formatCurrency(selectedLease.total_guest_rent_amount)}</span>
             </div>
             <div className="zupr-info-row">
               <span className="zupr-info-label">Total Compensation:</span>
-              <span className="zupr-info-value">{formatCurrency(selectedLease['Total Compensation'])}</span>
+              <span className="zupr-info-value">{formatCurrency(selectedLease.total_host_compensation_amount)}</span>
             </div>
           </div>
 
@@ -119,31 +119,31 @@ function LeaseSelector({
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Week Pattern:</span>
-                  <span className="zupr-info-value">{proposalData['Week Pattern'] || '-'}</span>
+                  <span className="zupr-info-value">{proposalData.week_pattern_selection || '-'}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Span (Weeks):</span>
-                  <span className="zupr-info-value">{proposalData['Reservation Span (Weeks)'] || '-'}</span>
+                  <span className="zupr-info-value">{proposalData.reservation_span_in_weeks || '-'}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Span (Months):</span>
-                  <span className="zupr-info-value">{proposalData['Reservation Span (Months)'] || '-'}</span>
+                  <span className="zupr-info-value">{proposalData.stay_duration_in_months || '-'}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">4-Week Rent:</span>
-                  <span className="zupr-info-value">{formatCurrency(proposalData['4 week rent'])}</span>
+                  <span className="zupr-info-value">{formatCurrency(proposalData.four_week_rent_amount)}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Rent/Month:</span>
-                  <span className="zupr-info-value">{formatCurrency(proposalData['Rent per Month'])}</span>
+                  <span className="zupr-info-value">{formatCurrency(proposalData.host_compensation_per_period)}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Maintenance Fee:</span>
-                  <span className="zupr-info-value">{formatCurrency(proposalData['Maintenance Fee'])}</span>
+                  <span className="zupr-info-value">{formatCurrency(proposalData.cleaning_fee_amount)}</span>
                 </div>
                 <div className="zupr-info-row">
                   <span className="zupr-info-label">Damage Deposit:</span>
-                  <span className="zupr-info-value">{formatCurrency(proposalData['Damage Deposit'])}</span>
+                  <span className="zupr-info-value">{formatCurrency(proposalData.damage_deposit_amount)}</span>
                 </div>
               </div>
             </>

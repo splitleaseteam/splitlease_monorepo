@@ -264,15 +264,21 @@ const CREDIT_CARD_AUTH_TEST_CASES = {
 // ENVIRONMENT CONFIGURATION
 // ============================================
 
-// Anon keys for Supabase Edge Functions (public, safe for client)
-const DEV_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6c21oZ3lvam13dnRqbW5yZGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTE2NDksImV4cCI6MjA4MzUyNzY0OX0.cSPOwU1wyiBorIicEGoyDEmoh34G0Hf_39bRXkwvCDc';
+// Supabase credentials from env (dev environment)
+const DEV_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const DEV_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+if (!DEV_SUPABASE_URL || !DEV_ANON_KEY) {
+  throw new Error('Missing required env vars: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set');
+}
+
+// Production anon key (different Supabase project)
 const PROD_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxd3J2a2tmaXhyb2d4b2d1bnNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTcxMjEyMDIsImV4cCI6MjAzMjY5NzIwMn0.RLdus5-mCJZGKI1UT5LvOKEIlqhq6oqLbCYWyDwIKPg';
 
 const ENVIRONMENTS = {
   development: {
     name: 'Development',
-    url: 'https://qzsmhgyojmwvtjmnrdea.supabase.co/functions/v1/lease-documents',
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || DEV_ANON_KEY,
+    url: `${DEV_SUPABASE_URL}/functions/v1/lease-documents`,
+    anonKey: DEV_ANON_KEY,
     color: '#22c55e'
   },
   production: {

@@ -187,7 +187,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
       checkin_time_of_day,
       checkout_time_of_day,
       host_user_id,
-      "House manual"
+      house_manual_id
     `)
     .in('id', listingIds);
 
@@ -223,7 +223,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
       if (typeof firstPhoto === 'object' && firstPhoto !== null) {
         const mainPhoto = sorted.find(p => p.toggleMainPhoto) || firstPhoto;
-        let photoUrl = mainPhoto.url || mainPhoto.Photo || '';
+        let photoUrl = mainPhoto.url || '';
         if (photoUrl.startsWith('//')) photoUrl = 'https:' + photoUrl;
         if (photoUrl) embeddedPhotoMap.set(listing.id, photoUrl);
       } else if (typeof firstPhoto === 'string') {
@@ -482,15 +482,15 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
     // First, fetch threads for all proposals
     // Note: Use unquoted column name for .in() filter - Supabase JS client handles quoting
     const { data: threadsData, error: threadsError } = await supabase
-      .from('thread')
-      .select('id, proposal')
-      .in('proposal', proposalIdsForSummaries);
+      .from('message_thread')
+      .select('id, proposal_id')
+      .in('proposal_id', proposalIdsForSummaries);
 
     if (threadsError) {
       console.error('fetchProposalsByIds: Error fetching threads:', threadsError);
     } else if (threadsData && threadsData.length > 0) {
       const threadIds = threadsData.map(t => t.id);
-      const threadToProposalMap = new Map(threadsData.map(t => [t.id, t.proposal]));
+      const threadToProposalMap = new Map(threadsData.map(t => [t.id, t.proposal_id]));
 
       // Fetch SplitBot counteroffer messages
         const { data: counterofferMsgs, error: counterofferError } = await supabase
@@ -584,7 +584,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
         boroughName,
         hoodName,
         featuredPhotoUrl,
-        hasHouseManual: Boolean(listing['House manual'])
+        hasHouseManual: Boolean(listing.house_manual_id)
       } : null,
       guest: guest || null,
       virtualMeeting,

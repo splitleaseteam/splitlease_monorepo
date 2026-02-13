@@ -39,14 +39,14 @@ export default function CancelVirtualMeetings({
 
   // Get the booked date from meeting object - handle different field names
   const getBookedDate = () => {
-    const dateValue = meeting.bookedDate || meeting['booked date'] || meeting.booked_date;
+    const dateValue = meeting.bookedDate || meeting.booked_date;
     if (!dateValue) return null;
     return dateValue instanceof Date ? dateValue : new Date(dateValue);
   };
 
   // Get the meeting link
   const getMeetingLink = () => {
-    return meeting.googleMeetLink || meeting['meeting link'] || meeting.meetingLink;
+    return meeting.googleMeetLink || meeting.meeting_link || meeting.meetingLink;
   };
 
   const bookedDate = getBookedDate();

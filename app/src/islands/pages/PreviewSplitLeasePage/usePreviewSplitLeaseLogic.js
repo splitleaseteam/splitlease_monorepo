@@ -183,17 +183,17 @@ export function usePreviewSplitLeaseLogic() {
   const scheduleSelectorListing = useMemo(() => listing ? {
     id: listing.id,
     firstAvailable: new Date(listing.first_available_date),
-    lastAvailable: new Date(listing['Last Available']),
-    numberOfNightsAvailable: listing['# of nights available'] || 7,
+    lastAvailable: listing.last_available_date ? new Date(listing.last_available_date) : null,
+    numberOfNightsAvailable: listing.maximum_nights_per_stay || 7,
     active: listing.is_active,
-    approved: listing.Approved,
+    approved: listing.is_active,
     datesBlocked: listing.blocked_specific_dates_json || [],
     complete: listing.is_listing_profile_complete,
-    confirmedAvailability: listing.confirmedAvailability,
+    confirmedAvailability: listing.is_active,
     checkInTime: listing.checkin_time_of_day || '3:00 pm',
     checkOutTime: listing.checkout_time_of_day || '11:00 am',
     nightsAvailableList: [],
-    nightsAvailableNumbers: listing['Nights Available (numbers)'] || [0, 1, 2, 3, 4, 5, 6],
+    nightsAvailableNumbers: listing.available_days_as_day_numbers_json || [0, 1, 2, 3, 4, 5, 6],
     nightsNotAvailable: [],
     minimumNights: listing.minimum_nights_per_stay || 2,
     maximumNights: listing.maximum_nights_per_stay || 7,
@@ -210,7 +210,7 @@ export function usePreviewSplitLeaseLogic() {
     'nightly_rate_for_7_night_stay': listing.nightly_rate_for_7_night_stay,
     'weekly_rate_paid_to_host': listing.weekly_rate_paid_to_host,
     'monthly_rate_paid_to_host': listing.monthly_rate_paid_to_host,
-    'price_override': listing['price_override'],
+    'price_override': listing.price_override,
     'cleaning_fee_amount': listing.cleaning_fee_amount,
     'damage_deposit_amount': listing.damage_deposit_amount
   } : null, [listing]);
@@ -238,13 +238,13 @@ export function usePreviewSplitLeaseLogic() {
       title: listing.listing_title,
       coordinates: listing.coordinates,
       price: {
-        starting: listing['Standarized Minimum Nightly Price (Filter)'] || 0
+        starting: listing.lowest_nightly_price_for_map_display || 0
       },
       location: listing.resolvedBorough,
       type: listing.resolvedTypeOfSpace,
       bedrooms: listing.bedroom_count || 0,
       bathrooms: listing.bathroom_count || 0,
-      images: listing.photos?.map(p => p.Photo) || [],
+      images: listing.photos?.map(p => p.url) || [],
       borough: listing.resolvedBorough
     }];
   }, [listing]);
@@ -312,8 +312,7 @@ export function usePreviewSplitLeaseLogic() {
           if (typeof photo === 'object' && photo !== null) {
             return {
               id: photo.id || `photo_${index}`,
-              Photo: photo.Photo || photo.url || '',
-              'Photo (thumbnail)': photo['Photo (thumbnail)'] || photo.Photo || photo.url || '',
+              url: photo.url || '',
               toggleMainPhoto: photo.toggleMainPhoto ?? (index === 0),
               SortOrder: photo.SortOrder ?? index,
               Caption: photo.caption || photo.Caption || ''
@@ -322,8 +321,7 @@ export function usePreviewSplitLeaseLogic() {
             // String URL format
             return {
               id: `photo_${index}`,
-              Photo: photo,
-              'Photo (thumbnail)': photo,
+              url: photo,
               toggleMainPhoto: index === 0,
               SortOrder: index,
               Caption: ''
@@ -344,17 +342,7 @@ export function usePreviewSplitLeaseLogic() {
   const handleUpdateListing = async (id, updates) => {
     console.log('\uD83D\uDD0D Updating listing:', id, updates);
 
-    // Map UI field names to database column names (handles quirky column names with leading spaces)
-    const fieldMapping = {
-      'First Available': ' First Available', // DB column has leading space
-    };
-
-    // Transform updates to use correct database column names
-    const dbUpdates = {};
-    for (const [key, value] of Object.entries(updates)) {
-      const dbColumnName = fieldMapping[key] || key;
-      dbUpdates[dbColumnName] = value;
-    }
+    const dbUpdates = { ...updates };
 
     console.log('\uD83D\uDCCB DB updates:', dbUpdates);
 

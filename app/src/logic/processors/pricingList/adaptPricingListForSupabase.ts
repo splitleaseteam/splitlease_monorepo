@@ -1,11 +1,11 @@
-﻿/**
+/**
  * Adapt a pricing list from frontend format to Supabase format.
  *
- * Transforms camelCase properties to Bubble-style column names
- * (with spaces) for database storage and Bubble sync.
+ * Transforms camelCase properties to snake_case column names
+ * for database storage in the pricing_list table.
  *
  * @intent Prepare frontend data for database insertion/update.
- * @rule Maps camelCase to Bubble-style column names.
+ * @rule Maps camelCase to snake_case column names.
  * @rule Only includes defined fields (undefined values are omitted).
  * @rule Preserves array structures without modification.
  *
@@ -17,18 +17,16 @@
  * @example
  * ```ts
  * adaptPricingListForSupabase({
- *   listingId: 'listing456',
  *   hostCompensation: [null, 100, 95, 90, 85, 80, 75],
  *   nightlyPrice: [null, 117, 111, 105, 99, 94, 76],
  *   combinedMarkup: 0.17,
  *   startingNightlyPrice: 76
  * })
  * // => {
- * //   listing: 'listing456',
- * //   'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
- * //   'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
- * //   'Combined Markup': 0.17,
- * //   'Starting Nightly Price': 76
+ * //   host_compensation: [null, 100, 95, 90, 85, 80, 75],
+ * //   nightly_price: [null, 117, 111, 105, 99, 94, 76],
+ * //   combined_markup: 0.17,
+ * //   starting_nightly_price: 76
  * // }
  * ```
  */
@@ -47,62 +45,47 @@ export function adaptPricingListForSupabase(
   if (pricingList.id !== undefined) {
     adapted.id = pricingList.id;
   }
-  if (pricingList.listingId !== undefined) {
-    adapted.listing = pricingList.listingId;
-  }
   if (pricingList.createdBy !== undefined) {
-    adapted['Created By'] = pricingList.createdBy;
+    adapted.created_by = pricingList.createdBy;
   }
 
-  // Array fields
+  // Array fields (jsonb)
   if (pricingList.hostCompensation !== undefined) {
-    adapted['Host Compensation'] = pricingList.hostCompensation;
+    adapted.host_compensation = pricingList.hostCompensation;
   }
   if (pricingList.markupAndDiscountMultiplier !== undefined) {
-    adapted['Markup and Discount Multiplier'] = pricingList.markupAndDiscountMultiplier;
+    adapted.markup_and_discount_multiplier = pricingList.markupAndDiscountMultiplier;
   }
   if (pricingList.nightlyPrice !== undefined) {
-    adapted['Nightly Price'] = pricingList.nightlyPrice;
+    adapted.nightly_price = pricingList.nightlyPrice;
   }
   if (pricingList.unusedNights !== undefined) {
-    adapted['Unused Nights'] = pricingList.unusedNights;
+    adapted.unused_nights = pricingList.unusedNights;
   }
   if (pricingList.unusedNightsDiscount !== undefined) {
-    adapted['Unused Nights Discount'] = pricingList.unusedNightsDiscount;
+    adapted.unused_nights_discount = pricingList.unusedNightsDiscount;
   }
 
   // Scalar markup fields
   if (pricingList.unitMarkup !== undefined) {
-    adapted['Unit Markup'] = pricingList.unitMarkup;
-  }
-  if (pricingList.overallSiteMarkup !== undefined) {
-    adapted['Overall Site Markup'] = pricingList.overallSiteMarkup;
+    adapted.unit_markup = pricingList.unitMarkup;
   }
   if (pricingList.combinedMarkup !== undefined) {
-    adapted['Combined Markup'] = pricingList.combinedMarkup;
+    adapted.combined_markup = pricingList.combinedMarkup;
   }
   if (pricingList.fullTimeDiscount !== undefined) {
-    adapted['Full Time Discount'] = pricingList.fullTimeDiscount;
+    adapted.full_time_discount = pricingList.fullTimeDiscount;
   }
 
   // Calculated scalar fields
   if (pricingList.startingNightlyPrice !== undefined) {
-    adapted['Starting Nightly Price'] = pricingList.startingNightlyPrice;
-  }
-  if (pricingList.slope !== undefined) {
-    adapted['Slope'] = pricingList.slope;
+    adapted.starting_nightly_price = pricingList.startingNightlyPrice;
   }
   if (pricingList.weeklyPriceAdjust !== undefined) {
-    adapted['Weekly Price Adjust'] = pricingList.weeklyPriceAdjust;
+    adapted.weekly_price_adjust = pricingList.weeklyPriceAdjust;
   }
 
-  // Metadata fields
-  if (pricingList.rentalType !== undefined) {
-    adapted.rental_type = pricingList.rentalType;
-  }
-  if (pricingList.numberSelectedNights !== undefined) {
-    adapted['Number Selected Nights'] = pricingList.numberSelectedNights;
-  }
+  // Metadata
   if (pricingList.modifiedDate !== undefined) {
     adapted.original_updated_at = pricingList.modifiedDate;
   }

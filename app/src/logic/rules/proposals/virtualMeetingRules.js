@@ -70,8 +70,8 @@ export function areAllDatesExpired(virtualMeeting) {
   if (!virtualMeeting) return false;
 
   const now = new Date();
-  const bookedDate = virtualMeeting.bookedDate || virtualMeeting['booked date'];
-  const rawSuggestedDates = virtualMeeting.suggestedDates || virtualMeeting['suggested dates and times'];
+  const bookedDate = virtualMeeting.bookedDate || virtualMeeting.booked_date;
+  const rawSuggestedDates = virtualMeeting.suggestedDates || virtualMeeting.suggested_dates_and_times;
 
   // Parse suggested dates (handles JSON string or array)
   const suggestedDates = parseSuggestedDates(rawSuggestedDates);

@@ -382,7 +382,7 @@ export function useAccountProfilePageLogic() {
    * Determine if profile belongs to a host user
    */
   const isHostUser = useMemo(() => {
-    const userType = profileData?.['Type - User Signup'];
+    const userType = profileData?.current_user_role;
     return isHost({ userType });
   }, [profileData]);
 
@@ -409,7 +409,7 @@ export function useAccountProfilePageLogic() {
     return {
       isHost: isHostUser,
       firstListingCreated: hostListings.length > 0,
-      rentalAppSubmitted: !!profileData?.['Rental Application']
+      rentalAppSubmitted: !!profileData?.rental_application_form_id
     };
   }, [isHostUser, hostListings, profileData]);
 
@@ -423,9 +423,9 @@ export function useAccountProfilePageLogic() {
       bio: formData.bio || profileData?.bio_text,
       firstName: formData.firstName || profileData?.first_name,
       lastName: formData.lastName || profileData?.last_name,
-      jobTitle: formData.jobTitle || profileData?.['Job Title'],
-      goodGuestReasons: formData.goodGuestReasons || profileData?.['Reasons to Host me'] || [],
-      storageItems: formData.storageItems || profileData?.['About - Commonly Stored Items'] || [],
+      jobTitle: formData.jobTitle || profileData?._jobTitle,
+      goodGuestReasons: formData.goodGuestReasons,
+      storageItems: formData.storageItems,
       transportationTypes: formData.transportationTypes || []
     };
     return calculateProfileStrength(profileInfo, verifications, milestones);
@@ -441,9 +441,9 @@ export function useAccountProfilePageLogic() {
       bio: formData.bio || profileData?.bio_text,
       firstName: formData.firstName || profileData?.first_name,
       lastName: formData.lastName || profileData?.last_name,
-      jobTitle: formData.jobTitle || profileData?.['Job Title'],
-      goodGuestReasons: formData.goodGuestReasons || profileData?.['Reasons to Host me'] || [],
-      storageItems: formData.storageItems || profileData?.['About - Commonly Stored Items'] || [],
+      jobTitle: formData.jobTitle || profileData?._jobTitle,
+      goodGuestReasons: formData.goodGuestReasons,
+      storageItems: formData.storageItems,
       transportationTypes: formData.transportationTypes || []
     };
     return generateNextActions(profileInfo, verifications, milestones);
@@ -453,7 +453,7 @@ export function useAccountProfilePageLogic() {
    * Display job title for sidebar
    */
   const displayJobTitle = useMemo(() => {
-    return formData.jobTitle || profileData?.['Job Title'] || '';
+    return formData.jobTitle || profileData?._jobTitle || '';
   }, [formData.jobTitle, profileData]);
 
   /**
@@ -463,7 +463,7 @@ export function useAccountProfilePageLogic() {
    * Once the user saves a DOB, this field will be hidden on subsequent visits.
    */
   const showDateOfBirthField = useMemo(() => {
-    return !profileData?.['Date of Birth'];
+    return !profileData?.date_of_birth;
   }, [profileData]);
 
   // ============================================================================
@@ -526,7 +526,7 @@ export function useAccountProfilePageLogic() {
       // Fetch job title and employment status from linked rental application (if exists)
       let jobTitle = '';
       let employmentStatus = '';
-      const rentalAppId = userData['Rental Application'];
+      const rentalAppId = userData.rental_application_form_id;
       if (rentalAppId) {
         const { data: rentalAppData } = await supabase
           .from('rentalapplication')
@@ -555,7 +555,7 @@ export function useAccountProfilePageLogic() {
       // Initialize form data from profile
       // Database columns use Bubble.io naming conventions
       // Date of Birth is stored as timestamp, convert to YYYY-MM-DD for date input
-      const dobTimestamp = userData['Date of Birth'];
+      const dobTimestamp = userData.date_of_birth;
       const dateOfBirth = dobTimestamp ? dobTimestamp.split('T')[0] : '';
 
       // Parse transportation medium - stored as JSON string in text column
@@ -591,8 +591,8 @@ export function useAccountProfilePageLogic() {
         specialNeeds: userData.stated_special_needs_text || '',
         selectedDays: dayNamesToIndices(userData.recent_days_selected_json || []),
         transportationTypes,
-        goodGuestReasons: userData['Reasons to Host me'] || [],
-        storageItems: userData['About - Commonly Stored Items'] || []
+        goodGuestReasons: [],
+        storageItems: []
       });
 
       return userData;
@@ -625,19 +625,15 @@ export function useAccountProfilePageLogic() {
           return {
             // listing.id is the primary identifier used for routing and URLs
             id: listing.id,
-            Name: listing.listing_title || 'Unnamed Listing',
-            // Map location fields to match ListingsCard expectations
-            'Borough/Region': listing.borough || '',
+            listing_title: listing.listing_title || 'Unnamed Listing',
+            borough: listing.borough || '',
             hood: listing.hood || '',
-            // Bedroom/bathroom counts (now returned by updated RPC)
-            'Qty of Bedrooms': listing.bedrooms || 0,
-            'Qty of Bathrooms': listing.bathrooms || 0,
-            // Pricing fields - pass through for rental-type-aware display
-            'Start Nightly Price': listing.min_nightly || 0,
-            min_nightly: listing.min_nightly || 0,
-            weekly_rate: listing.weekly_rate || 0,
-            monthly_rate: listing.monthly_rate || 0,
-            Complete: listing.is_listing_profile_complete,
+            bedroom_count: listing.bedrooms || 0,
+            bathroom_count: listing.bathrooms || 0,
+            lowest_nightly_price_for_map_display: listing.min_nightly || 0,
+            weekly_rate_paid_to_host: listing.weekly_rate || 0,
+            monthly_rate_paid_to_host: listing.monthly_rate || 0,
+            is_listing_profile_complete: listing.is_listing_profile_complete,
             // Pass raw JSONB photo array - ListingsCard handles extraction
             listing_photo: listing.photos_with_urls_captions_and_sort_order_json || [],
             // Rental type for proper price label (Nightly/Weekly/Monthly)
@@ -717,7 +713,7 @@ export function useAccountProfilePageLogic() {
 
         // If user is a host, fetch their listings
         if (userData) {
-          const userType = userData['Type - User Signup'];
+          const userType = userData.current_user_role;
           if (isHost({ userType })) {
             await fetchHostListings(targetUserId);
           }
@@ -749,7 +745,7 @@ export function useAccountProfilePageLogic() {
     if (!isEditorView || isHostUser) return;
 
     // Check if already submitted in database
-    if (profileData?.['Rental Application']) {
+    if (profileData?.rental_application_form_id) {
       setRentalApplicationStatus('submitted');
       setRentalApplicationProgress(100);
       return;
@@ -971,71 +967,16 @@ export function useAccountProfilePageLogic() {
       itemName = reason?.name || 'Reason';
     } else if (field === 'storageItems') {
       const item = storageItemsList.find(i => i.id === id);
-      itemName = item?.Name || 'Item';
+      itemName = item?.name || 'Item';
     }
 
-    // Map field name to database column
-    const dbColumn = field === 'goodGuestReasons'
-      ? 'Reasons to Host me'
-      : 'About - Commonly Stored Items';
-
-    // Autosave to database
-    if (!profileUserId) {
-      console.error('[handleChipToggle] Cannot autosave: no user ID');
-      return;
-    }
-
-    try {
-      const { error: updateError } = await supabase
-        .from('user')
-        .update({
-          [dbColumn]: newItems,
-          'Modified Date': new Date().toISOString()
-        })
-        .eq('id', profileUserId);
-
-      if (updateError) {
-        console.error('[handleChipToggle] Autosave error:', updateError);
-        // Revert local state on error
-        setFormData(prev => ({
-          ...prev,
-          [field]: currentItems
-        }));
-        if (window.showToast) {
-          window.showToast({
-            title: 'Save Failed',
-            content: `Could not save "${itemName}". Please try again.`,
-            type: 'error',
-            duration: 3000
-          });
-        }
-        return;
-      }
-
-      // Show success toast
-      if (window.showToast) {
-        const action = isRemoving ? 'Removed' : 'Added';
-        window.showToast({
-          title: `${action}: ${itemName}`,
-          type: 'success',
-          duration: 2000
-        });
-      }
-    } catch (err) {
-      console.error('[handleChipToggle] Unexpected error:', err);
-      // Revert local state on error
-      setFormData(prev => ({
-        ...prev,
-        [field]: currentItems
-      }));
-      if (window.showToast) {
-        window.showToast({
-          title: 'Save Failed',
-          content: 'An unexpected error occurred. Please try again.',
-          type: 'error',
-          duration: 3000
-        });
-      }
+    if (window.showToast) {
+      const action = isRemoving ? 'Removed' : 'Added';
+      window.showToast({
+        title: `${action}: ${itemName}`,
+        type: 'success',
+        duration: 2000
+      });
     }
   }, [formData, goodGuestReasonsList, storageItemsList, profileUserId]);
 
@@ -1105,7 +1046,7 @@ export function useAccountProfilePageLogic() {
       const updateData = {
         first_name: firstName,
         last_name: lastName,
-        'Date of Birth': dateOfBirthISO,
+        date_of_birth: dateOfBirthISO,
         bio_text: formData.bio.trim(),
         stated_need_for_space_text: formData.needForSpace.trim(),
         stated_special_needs_text: formData.specialNeeds.trim(),
@@ -1113,9 +1054,7 @@ export function useAccountProfilePageLogic() {
         'transportation medium': formData.transportationTypes.length > 0
           ? JSON.stringify(formData.transportationTypes)
           : null, // Store as JSON string
-        'Reasons to Host me': formData.goodGuestReasons,
-        'About - Commonly Stored Items': formData.storageItems,
-        'Modified Date': new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
 
       const { error: updateError } = await supabase
@@ -1133,7 +1072,7 @@ export function useAccountProfilePageLogic() {
       if (rentalAppId && formData.jobTitle !== undefined) {
         const { error: rentalAppError } = await supabase
           .from('rentalapplication')
-          .update({ 'job title': formData.jobTitle.trim() })
+          .update({ job_title: formData.jobTitle.trim() })
           .eq('id', rentalAppId);
 
         if (rentalAppError) {
@@ -1497,7 +1436,7 @@ export function useAccountProfilePageLogic() {
         .from('user')
         .update({
           profile_photo_url: publicUrl,
-          'Modified Date': new Date().toISOString()
+          updated_at: new Date().toISOString()
         })
         .eq('id', profileUserId);
 

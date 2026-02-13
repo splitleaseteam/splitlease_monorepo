@@ -9,9 +9,9 @@ export async function findThreadByProposal(proposalId) {
   if (!proposalId) return null;
 
   const { data, error } = await supabase
-    .from('thread')
+    .from('message_thread')
     .select('id')
-    .eq('Proposal', proposalId)
+    .eq('proposal_id', proposalId)
     .limit(1)
     .maybeSingle();
 

@@ -32,8 +32,8 @@ export async function getBoroughIdByName(boroughName) {
     console.log('[BoroughService] Found borough ID:', data.id, 'for name:', cleanName);
     return data.id;
   } catch (err) {
-    console.error('[BoroughService] Error looking up borough:', err);
-    return null;
+    console.error('[boroughService] Failed to look up borough by name:', err);
+    throw err;
   }
 }
 
@@ -65,7 +65,7 @@ export async function getBoroughIdByZipCode(zipCode) {
     console.log('[BoroughService] Found borough:', data.display_borough, 'for zip:', cleanZip);
     return data.id;
   } catch (err) {
-    console.error('[BoroughService] Error looking up borough by zip:', err);
-    return null;
+    console.error('[boroughService] Failed to look up borough by zip code:', err);
+    throw err;
   }
 }

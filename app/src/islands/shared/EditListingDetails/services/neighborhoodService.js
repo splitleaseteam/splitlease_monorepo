@@ -46,8 +46,8 @@ export async function getNeighborhoodByZipCode(zipCode) {
     console.log('[neighborhoodService] Found neighborhood:', result.neighborhoodName);
     return result;
   } catch (err) {
-    console.error('[neighborhoodService] Unexpected error:', err);
-    return null;
+    console.error('[neighborhoodService] Failed to fetch neighborhood by zip code:', err);
+    throw err;
   }
 }
 
@@ -93,8 +93,8 @@ export async function getNeighborhoodByName(neighborhoodName) {
     console.log('[neighborhoodService] Found neighborhood by name:', result.neighborhoodName);
     return result;
   } catch (err) {
-    console.error('[neighborhoodService] Unexpected error in getNeighborhoodByName:', err);
-    return null;
+    console.error('[neighborhoodService] Failed to fetch neighborhood by name:', err);
+    throw err;
   }
 }
 
@@ -142,7 +142,7 @@ export async function getNeighborhoodDescriptionWithFallback(zipCode, addressDat
 
     return null;
   } catch (error) {
-    console.error('[neighborhoodService] AI generation failed:', error);
-    return null;
+    console.error('[neighborhoodService] Failed to get neighborhood description with fallback:', error);
+    throw error;
   }
 }

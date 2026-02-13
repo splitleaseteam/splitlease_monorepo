@@ -9,8 +9,6 @@
  * - Default values for missing data
  */
 
-// Re-export formatPrice from the canonical source for backward compatibility
-export { formatPrice } from '../formatters.js';
 
 /**
  * Transform user data from Bubble.io format
@@ -50,8 +48,8 @@ export function transformListingData(rawListing) {
 
   return {
     id: rawListing.id,
-    name: rawListing.Name,
-    description: rawListing.Description,
+    name: rawListing.listing_title,
+    description: rawListing.listing_description,
     address: addressString,
     addressData: addressData, // Keep full JSONB for map coordinates
     borough: rawListing.borough,
@@ -158,34 +156,32 @@ export function transformProposalData(rawProposal) {
 
   return {
     id: rawProposal.id,
-    status: rawProposal.Status,
-    deleted: rawProposal.Deleted,
-    daysSelected: rawProposal['Days Selected'],
-    nightsSelected: rawProposal['Nights Selected (Nights list)'],
-    reservationWeeks: rawProposal['Reservation Span (Weeks)'],
-    nightsPerWeek: rawProposal['nights per week (num)'],
-    checkInDay: rawProposal['check in day'],
-    checkOutDay: rawProposal['check out day'],
-    moveInStart: rawProposal['Move in range start'],
-    moveInEnd: rawProposal['Move in range end'],
-    totalPrice: rawProposal['Total Price for Reservation (guest)'],
-    nightlyPrice: rawProposal['proposal nightly price'],
-    cleaningFee: rawProposal['cleaning fee'],
-    damageDeposit: rawProposal['damage deposit'],
-    counterOfferHappened: rawProposal['counter offer happened'],
-    hostCounterOfferDaysSelected: rawProposal['host_counter_offer_days_selected'],
-    hostCounterOfferReservationWeeks: rawProposal['host_counter_offer_reservation_span_weeks'],
-    hostCounterOfferTotalPrice: rawProposal['host_counter_offer_total_price'],
-    hostCounterOfferNightlyPrice: rawProposal['host_counter_offer_nightly_price'],
+    status: rawProposal.proposal_workflow_status,
+    deleted: rawProposal.is_deleted,
+    daysSelected: rawProposal.guest_selected_days_numbers_json,
+    nightsSelected: rawProposal.guest_selected_nights_numbers_json,
+    reservationWeeks: rawProposal.reservation_span_in_weeks,
+    nightsPerWeek: rawProposal.nights_per_week_count,
+    checkInDay: rawProposal.checkin_day_of_week_number,
+    checkOutDay: rawProposal.checkout_day_of_week_number,
+    moveInStart: rawProposal.move_in_range_start_date,
+    moveInEnd: rawProposal.move_in_range_end_date,
+    totalPrice: rawProposal.total_reservation_price_for_guest,
+    nightlyPrice: rawProposal.calculated_nightly_price,
+    cleaningFee: rawProposal.cleaning_fee_amount,
+    damageDeposit: rawProposal.damage_deposit_amount,
+    counterOfferHappened: rawProposal.has_host_counter_offer,
+    hostCounterOfferDaysSelected: rawProposal.host_proposed_selected_days_json,
+    hostCounterOfferReservationWeeks: rawProposal.host_proposed_reservation_span_weeks,
+    hostCounterOfferTotalPrice: rawProposal.host_proposed_total_guest_price,
+    hostCounterOfferNightlyPrice: rawProposal.host_proposed_nightly_price,
     createdDate: rawProposal.original_created_at,
     modifiedDate: rawProposal.original_updated_at,
-    aboutYourself: rawProposal.about_yourself,
-    specialNeeds: rawProposal.special_needs,
-    reasonForCancellation: rawProposal['reason for cancellation'],
-    proposalStage: rawProposal['Proposal Stage'],
-    rentalApplicationId: rawProposal['rental application'],
-    virtualMeetingId: rawProposal['virtual meeting'],
-    isFinalized: rawProposal['Is Finalized'],
+    aboutYourself: rawProposal.guest_about_yourself_text,
+    specialNeeds: rawProposal.guest_stated_need_for_space,
+    rentalApplicationId: rawProposal.rental_application_id,
+    virtualMeetingId: rawProposal.virtual_meeting_record_id,
+    isFinalized: rawProposal.is_finalized,
 
     // House rules (resolved from query layer)
     houseRules: rawProposal.houseRules || [],

@@ -36,7 +36,7 @@ export function canGenerateDocuments({
   if (!lease) {
     errors.push('Lease record is required');
   } else {
-    if (!lease['Agreement Number'] && !lease.id) {
+    if (!lease.agreement_number && !lease.id) {
       errors.push('Lease must have an Agreement Number or ID');
     }
   }
@@ -46,9 +46,9 @@ export function canGenerateDocuments({
     warnings.push('Proposal record not found - some fields may be missing');
   } else {
     // Check for key financial fields
-    const hasMoveInDate = proposal['host_counter_offer_move_in_date'] || lease?.['Reservation Period : Start'];
-    const hasMoveOutDate = proposal['Move-out'] || lease?.['Reservation Period : End'];
-    const hasRent = proposal['host_counter_offer_4_week_rent'] || proposal['4 week rent'];
+    const hasMoveInDate = proposal.host_proposed_move_in_date || lease?.reservation_start_date;
+    const hasMoveOutDate = proposal.planned_move_out_date || lease?.reservation_end_date;
+    const hasRent = proposal.host_proposed_four_week_rent || proposal.four_week_rent_amount;
 
     if (!hasMoveInDate) {
       errors.push('Move-in date is required (check proposal.hc move in date)');

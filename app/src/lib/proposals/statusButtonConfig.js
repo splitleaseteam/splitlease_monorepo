@@ -186,7 +186,7 @@ export function needsRentalAppFromConfig(proposal) {
   if (!proposal) return true;
 
   // No rental application linked
-  if (!proposal['rental application'] && !proposal.rentalApplication) {
+  if (!proposal.rental_application_id && !proposal.rentalApplication) {
     return true;
   }
 
@@ -252,7 +252,7 @@ export function getButtonConfigForProposal(proposal) {
   // Extract proposal-specific data
   const remindersByGuest = proposal.reminder_count_sent_by_guest || 0;
   const guestDocsFinalized = proposal.is_finalized === true;
-  const idDocsSubmitted = proposal.guest?.['ID documents submitted?'] === true;
+  const idDocsSubmitted = proposal.guest?.has_submitted_id_documents === true;
   const hasHouseManual = proposal.listing?.hasHouseManual === true;
   const isCounteroffer = status === PROPOSAL_STATUSES.COUNTEROFFER_SUBMITTED_AWAITING_GUEST_REVIEW.key;
   const isTerminal = sortOrder === -1;

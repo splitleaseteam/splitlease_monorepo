@@ -202,7 +202,7 @@ export default function LeaseReadinessModal({
     }
   };
 
-  const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
+  const agreementNumber = lease?.agreement_number || 'Unknown';
 
   // Modal overlay style
   const overlayStyle = {

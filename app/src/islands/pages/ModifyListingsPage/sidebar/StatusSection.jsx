@@ -32,10 +32,10 @@ export default function StatusSection({
       checked: Boolean(listing.is_active)
     },
     {
-      name: 'availability confirmed',
+      name: 'availability_confirmed',
       label: 'Availability Confirmed',
       description: 'Host has confirmed availability',
-      checked: Boolean(listing['availability confirmed'])
+      checked: Boolean(listing.availability_confirmed)
     },
     {
       name: 'Showcase',
@@ -44,10 +44,10 @@ export default function StatusSection({
       checked: Boolean(listing.is_showcase)
     },
     {
-      name: 'Claimable',
+      name: 'is_claimable',
       label: 'Claimable',
       description: 'Can be claimed by a host',
-      checked: Boolean(listing['Claimable'])
+      checked: Boolean(listing.is_claimable)
     }
   ];
 
@@ -77,7 +77,7 @@ export default function StatusSection({
         />
         <StatusIndicator
           label="Booking"
-          status={listing['availability confirmed'] ? 'available' : 'unavailable'}
+          status={listing.availability_confirmed ? 'available' : 'unavailable'}
         />
       </div>
     </div>

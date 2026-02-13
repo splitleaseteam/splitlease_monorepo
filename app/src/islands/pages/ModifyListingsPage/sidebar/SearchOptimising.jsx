@@ -9,22 +9,22 @@ export default function SearchOptimising({ listing }) {
   const fields = [
     {
       label: 'Search Ranking',
-      value: listing['Search Ranking'] ?? 'Not ranked',
+      value: listing.search_ranking ?? 'Not ranked',
       description: 'Position in search results'
     },
     {
       label: 'Listing Code',
-      value: listing['id'] || 'N/A',
+      value: listing.id || 'N/A',
       description: 'Unique identifier'
     },
     {
       label: 'Click Counter',
-      value: listing['Click Counter'] ?? 0,
+      value: listing.total_click_count ?? 0,
       description: 'Total listing views'
     },
     {
       label: 'Bulk Upload ID',
-      value: listing['Bulk Upload ID'] || 'None',
+      value: listing.bulk_upload_id || 'None',
       description: 'Import batch reference'
     },
     {

@@ -52,7 +52,6 @@ function isDeclined(proposal) {
  */
 function hasGuestCounteroffer(proposal) {
   if (proposal?.has_guest_counteroffer) return true;
-  if (proposal?.guest_counteroffer) return true;
   const status = typeof proposal?.status === 'string'
     ? proposal.status
     : (proposal?.status?.id || '');
@@ -80,20 +79,18 @@ export function ProposalCardBody({ proposal, handlers = {} }) {
   const guest = proposal?.guest || proposal?.user || {};
 
   // Check if counteroffer happened
-  const isCounteroffer = proposal?.['counter offer happened'] ||
-    proposal?.counterOfferHappened ||
-    proposal?.counter_offer_happened;
+  const isCounteroffer = proposal?.has_host_counter_offer;
 
   // Use nights_selected for the pill display (hosts see nights, not days)
   // Prioritize HC nights when counteroffer exists
-  let hcNightsSelected = proposal?.['host_counter_offer_nights_selected'] || [];
+  let hcNightsSelected = proposal?.host_proposed_selected_nights_json || [];
   if (typeof hcNightsSelected === 'string') {
     try { hcNightsSelected = JSON.parse(hcNightsSelected); } catch { hcNightsSelected = []; }
   }
 
   const nightsSelected = (isCounteroffer && hcNightsSelected.length > 0)
     ? hcNightsSelected
-    : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || []);
+    : (proposal?.nights_selected || []);
 
   const declined = isDeclined(proposal);
   const showCompareTerms = hasGuestCounteroffer(proposal);

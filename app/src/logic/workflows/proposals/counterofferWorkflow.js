@@ -129,27 +129,27 @@ export function getTermsComparison(proposal) {
   }
 
   const originalTerms = {
-    daysSelected: proposal.daysSelected || proposal['Days Selected'] || [],
-    nightsPerWeek: proposal.nightsPerWeek || proposal['nights per week (num)'] || 0,
-    reservationWeeks: proposal.reservationWeeks || proposal['Reservation Span (Weeks)'] || 0,
-    checkInDay: proposal.checkInDay || proposal['check in day'] || null,
-    checkOutDay: proposal.checkOutDay || proposal['check out day'] || null,
-    totalPrice: proposal.totalPrice || proposal['Total Price for Reservation (guest)'] || 0,
-    nightlyPrice: proposal.nightlyPrice || proposal['proposal nightly price'] || 0,
-    damageDeposit: proposal.damageDeposit || proposal['damage deposit'] || 0,
-    cleaningFee: proposal.cleaningFee || proposal['cleaning fee'] || 0
+    daysSelected: proposal.guest_selected_days_numbers_json || [],
+    nightsPerWeek: proposal.nights_per_week_count || 0,
+    reservationWeeks: proposal.reservation_span_in_weeks || 0,
+    checkInDay: proposal.checkin_day_of_week_number ?? null,
+    checkOutDay: proposal.checkout_day_of_week_number ?? null,
+    totalPrice: proposal.total_reservation_price_for_guest || 0,
+    nightlyPrice: proposal.calculated_nightly_price || 0,
+    damageDeposit: proposal.damage_deposit_amount || 0,
+    cleaningFee: proposal.cleaning_fee_amount || 0
   };
 
   const counterofferTerms = {
-    daysSelected: proposal.hostCounterOfferDaysSelected || proposal['host_counter_offer_days_selected'] || originalTerms.daysSelected,
-    nightsPerWeek: proposal.hostCounterOfferNightsPerWeek || proposal['host_counter_offer_nights_per_week'] || originalTerms.nightsPerWeek,
-    reservationWeeks: proposal.hostCounterOfferReservationWeeks || proposal['host_counter_offer_reservation_span_weeks'] || originalTerms.reservationWeeks,
-    checkInDay: proposal.hostCounterOfferCheckInDay || proposal['host_counter_offer_check_in_day'] || originalTerms.checkInDay,
-    checkOutDay: proposal.hostCounterOfferCheckOutDay || proposal['host_counter_offer_check_out_day'] || originalTerms.checkOutDay,
-    totalPrice: proposal.hostCounterOfferTotalPrice || proposal['host_counter_offer_total_price'] || originalTerms.totalPrice,
-    nightlyPrice: proposal.hostCounterOfferNightlyPrice || proposal['host_counter_offer_nightly_price'] || originalTerms.nightlyPrice,
-    damageDeposit: proposal.hostCounterOfferDamageDeposit || proposal['host_counter_offer_damage_deposit'] || originalTerms.damageDeposit,
-    cleaningFee: proposal.hostCounterOfferCleaningFee || proposal['host_counter_offer_cleaning_fee'] || originalTerms.cleaningFee
+    daysSelected: proposal.host_proposed_selected_days_json || originalTerms.daysSelected,
+    nightsPerWeek: proposal.host_proposed_nights_per_week ?? originalTerms.nightsPerWeek,
+    reservationWeeks: proposal.host_proposed_reservation_span_weeks ?? originalTerms.reservationWeeks,
+    checkInDay: proposal.host_proposed_checkin_day ?? originalTerms.checkInDay,
+    checkOutDay: proposal.host_proposed_checkout_day ?? originalTerms.checkOutDay,
+    totalPrice: proposal.host_proposed_total_guest_price ?? originalTerms.totalPrice,
+    nightlyPrice: proposal.host_proposed_nightly_price ?? originalTerms.nightlyPrice,
+    damageDeposit: proposal.host_proposed_damage_deposit ?? originalTerms.damageDeposit,
+    cleaningFee: proposal.host_proposed_cleaning_fee ?? originalTerms.cleaningFee
   };
 
   // Build list of changes

@@ -53,14 +53,14 @@ export async function hostAcceptProposalWorkflow({ proposalId, proposal }) {
   console.log('[hostAcceptProposalWorkflow] Is counteroffer:', isCounteroffer);
 
   // Step 3: Calculate 4-week compensation (from ORIGINAL or HC proposal terms)
-  // If guest counteroffer exists, use hc_ fields; otherwise use original fields
+  // If guest counteroffer exists, use host_proposed_ fields; otherwise use original fields
   const nightsPerWeek = hasGuestCounteroffer
-    ? (proposal['host_counter_offer_nights_per_week'] || proposal['host_counter_offer_nights_per_week'] || proposal['nights per week (num)'] || 0)
-    : (proposal['nights per week (num)'] || proposal.nights_per_week || 0);
+    ? (proposal.host_proposed_nights_per_week || proposal.nights_per_week_count || 0)
+    : (proposal.nights_per_week_count || 0);
 
   const nightlyPrice = hasGuestCounteroffer
-    ? (proposal['host_counter_offer_nightly_price'] || proposal['host_counter_offer_nightly_price'] || proposal['proposal nightly price'] || 0)
-    : (proposal['proposal nightly price'] || proposal.nightly_rate || 0);
+    ? (proposal.host_proposed_nightly_price || proposal.calculated_nightly_price || 0)
+    : (proposal.calculated_nightly_price || 0);
 
   // 4-week compensation = nights/week * 4 weeks * nightly price * 85% (host share)
   const fourWeekCompensation = nightsPerWeek * 4 * nightlyPrice * 0.85;
@@ -128,9 +128,9 @@ export async function hostAcceptProposalWorkflow({ proposalId, proposal }) {
   try {
     // Find the thread associated with this proposal
     const { data: thread, error: threadError } = await supabase
-      .from('thread')
+      .from('message_thread')
       .select('id')
-      .eq('Proposal', proposalId)
+      .eq('proposal_id', proposalId)
       .maybeSingle();
 
     if (threadError) {

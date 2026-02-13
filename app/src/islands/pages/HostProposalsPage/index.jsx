@@ -304,7 +304,7 @@ export default function HostProposalsPage() {
 
   // Handler for guest profile modal
   const handleViewGuestProfile = useCallback((proposal) => {
-    const guest = proposal?.guest || proposal?.Guest || proposal?.['Created By'] || {};
+    const guest = proposal?.guest || {};
     setSelectedGuest(guest);
     setIsGuestProfileModalOpen(true);
   }, []);

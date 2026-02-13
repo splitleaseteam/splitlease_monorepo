@@ -30,13 +30,12 @@ const BOROUGH_LOOKUP = {
 const LISTING_SELECT_FIELDS = `
   id,
   listing_title,
-  "Description",
+  listing_description,
   is_active,
   is_approved,
   host_user_id,
-  "Host email",
+  host_email,
   host_display_name,
-  "Host / Landlord",
   address_with_lat_lng_json,
   city,
   state,
@@ -62,14 +61,7 @@ const LISTING_SELECT_FIELDS = `
   nightly_rate_for_6_night_stay,
   nightly_rate_for_7_night_stay,
   cleaning_fee_amount,
-  damage_deposit_amount,
-  account_host!inner(
-    user!inner(
-      first_name,
-      last_name,
-      "email as text"
-    )
-  )
+  damage_deposit_amount
 `;
 
 /**
@@ -175,8 +167,7 @@ export async function getListingPhotos(listingId) {
     const sorted = [...photos].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
     const transformed = sorted.map((photo, index) => ({
       id: photo.id || `photo_${index}`,
-      Photo: typeof photo === 'string' ? photo : (photo.url || ''),
-      'Photo (thumbnail)': typeof photo === 'string' ? photo : (photo.url || ''),
+      url: typeof photo === 'string' ? photo : (photo.url || ''),
       caption: photo.caption || '',
       SortOrder: photo.sort_order ?? index,
       Active: true,
@@ -457,13 +448,12 @@ export async function parseCallTranscription(transcription) {
 
 /**
  * Extract URL from a photo object or return string as-is
- * Photo objects have structure: { url: "...", Photo: "...", "Photo (thumbnail)": "..." }
+ * Photo objects have structure: { url: "..." }
  */
 function extractPhotoUrl(photo) {
   if (!photo) return '';
   if (typeof photo === 'string') return photo;
-  // Photo object - prefer url, then Photo, then thumbnail
-  return photo.url || photo.Photo || photo['Photo (thumbnail)'] || '';
+  return photo.url || '';
 }
 
 /**
@@ -472,7 +462,7 @@ function extractPhotoUrl(photo) {
 export function getFirstPhoto(listing, photos = []) {
   // First try photos array passed in
   if (photos.length > 0) {
-    return photos[0]?.Photo || photos[0]?.['Photo (thumbnail)'] || '';
+    return photos[0]?.url || '';
   }
 
   // Read from listing's embedded photos JSONB column
@@ -497,7 +487,7 @@ export function getFirstPhoto(listing, photos = []) {
  */
 export function getLastPhoto(listing, photos = []) {
   if (photos.length > 0) {
-    return photos[photos.length - 1]?.Photo || photos[photos.length - 1]?.['Photo (thumbnail)'] || '';
+    return photos[photos.length - 1]?.url || '';
   }
 
   const featurePhotos = listing?.photos_with_urls_captions_and_sort_order_json;

@@ -50,7 +50,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   if (isTerminal) return PROGRESS_COLORS.red;
 
   const normalizedStatus = typeof status === 'string' ? status.trim() : status;
-  const hasRentalApp = proposal?.['rental application'] || proposal?.rental_application;
+  const hasRentalApp = proposal?.rental_application_id;
 
   // Stage 1: Submitted - Always purple (completed)
   if (stageIndex === 0) return PROGRESS_COLORS.purple;
@@ -121,7 +121,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
  */
 export function ProgressTrackerV7({ proposal }) {
   // Get status from proposal (handle different field names)
-  const rawStatus = proposal?.status || proposal?.Status;
+  const rawStatus = proposal?.status;
   const statusId = typeof rawStatus === 'string'
     ? rawStatus
     : (rawStatus?.id || '');

@@ -739,8 +739,8 @@ export default function ViewSplitLeasePage() {
       // Update existingProposalForListing so the button disables after modal closes
       setExistingProposalForListing({
         id: newProposalId,
-        Status: 'Pending Host Review',
-        'Created Date': new Date().toISOString()
+        proposal_workflow_status: 'Pending Host Review',
+        created_at: new Date().toISOString()
       });
 
       // NOTE: SplitBot messages are now created server-side in the proposal Edge Function

@@ -88,8 +88,8 @@ export default function EndProposalModal({
 
   // Determine listing/proposal info
   const listingData = listing || proposal?._listing || proposal?.listing
-  const listingName = listingData?.Name || listingData?.name || 'this property'
-  const guestName = proposal?.guestName || proposal?.guest?.name || 'this guest'
+  const listingName = listingData?.listing_title || 'this property'
+  const guestName = proposal?.guest?.first_name || proposal?.guest?.name || 'this guest'
 
   // Determine button text based on context
   const defaultButtonText = isHost ? 'Reject Proposal' : 'Cancel Proposal'

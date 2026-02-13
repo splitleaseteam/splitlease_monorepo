@@ -383,16 +383,15 @@ function getProposalStatusKey(proposal) {
 
 /**
  * Check if a proposal has a guest counteroffer
- * This is determined by having a guest_counteroffer field or
- * the most recent counteroffer being from the guest
+ * This is determined by having the has_guest_counteroffer flag set or
+ * the most recent modification being from the guest
  *
  * @param {Object} proposal - The proposal object
  * @returns {boolean} True if guest has counteroffered
  */
 function hasGuestCounteroffer(proposal) {
-  // Check for explicit guest counteroffer flag or field
+  // Check for explicit guest counteroffer flag
   if (proposal?.has_guest_counteroffer) return true;
-  if (proposal?.guest_counteroffer) return true;
 
   // Check if last_modified_by is 'guest' and status is still negotiation phase
   const statusKey = getProposalStatusKey(proposal);
@@ -550,7 +549,7 @@ export function getStatusTagConfig(proposal) {
  * @returns {boolean} True if proposal is new
  */
 export function isNewProposal(proposal, hoursThreshold = 48) {
-  const createdAt = proposal?.created_at || proposal?.Created_Date || proposal?.createdAt;
+  const createdAt = proposal?.created_at;
   if (!createdAt) return false;
 
   const createdDate = new Date(createdAt);

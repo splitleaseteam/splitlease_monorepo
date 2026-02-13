@@ -78,7 +78,7 @@ export async function handleGuestRequest(
         status: hostResponse === 'approve' ? 'Approved' : 'Denied',
         'is_test_data': true,
         'simulation_id': simulationId,
-        'Created Date': new Date().toISOString(),
+        created_at: new Date().toISOString(),
       });
     console.log('[handleGuestRequest] Created request record');
   } catch (_requestErr) {

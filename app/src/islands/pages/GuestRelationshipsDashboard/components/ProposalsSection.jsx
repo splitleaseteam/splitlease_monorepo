@@ -157,7 +157,7 @@ export default function ProposalsSection({
               <option value="">Select a listing...</option>
               {availableListings.map(listing => (
                 <option key={listing.id} value={listing.id}>
-                  {listing.listing_title || listing['Listing Name']} - {listing.location?.hood || listing['Hood - Text'] || 'NYC'}
+                  {listing.listing_title} - {listing.location?.hood || listing.neighborhood_name_entered_by_host || 'NYC'}
                 </option>
               ))}
             </select>

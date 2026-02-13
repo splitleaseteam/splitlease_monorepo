@@ -137,7 +137,7 @@ export function generateNarrativeText(proposal) {
   const durationWeeks = proposal?.duration_weeks || 0;
   const nightsPerWeek = nightsSelected.length;
   const totalNights = nightsPerWeek * durationWeeks;
-  const durationMonths = proposal?.['duration in months'] || Math.round(durationWeeks / 4);
+  const durationMonths = proposal?.host_proposed_duration_months || Math.round(durationWeeks / 4);
 
   // Use '4 week compensation' as the source of truth for host compensation
   // The database "Total Compensation (proposal - host)" field can be incorrect
@@ -151,7 +151,7 @@ export function generateNarrativeText(proposal) {
   const hostNightlyRate = nightsPerWeek > 0 ? host4WeekCompensation / (4 * nightsPerWeek) : 0;
 
   // Get rental type to determine how to display compensation
-  const rentalType = (proposal?.rental_type || proposal?.rental_type || 'nightly').toLowerCase();
+  const rentalType = (proposal?.rental_type || 'nightly').toLowerCase();
   const isMonthly = rentalType === 'monthly';
   const isWeekly = rentalType === 'weekly';
 

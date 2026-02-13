@@ -35,11 +35,15 @@ export async function handleAdminFetchConfirmed(
 
   // Apply optional filters
   if (payload.proposalId) {
-    query = query.ilike("proposal_unique_id", `%${payload.proposalId}%`);
+    query = query.ilike("proposal", `%${payload.proposalId}%`);
   }
 
   if (payload.status) {
-    query = query.eq("status", payload.status);
+    if (payload.status === 'completed') {
+      query = query.not("end_of_meeting", "is", null);
+    } else if (payload.status === 'confirmed') {
+      query = query.is("end_of_meeting", null).neq("meeting_declined", true);
+    }
   }
 
   const { data: meetings, error } = await query;
@@ -59,10 +63,10 @@ export async function handleAdminFetchConfirmed(
   const listingIds = new Set<string>();
 
   for (const meeting of meetings) {
-    if (meeting.guest) userIds.add(meeting.guest);
-    if (meeting.host) userIds.add(meeting.host);
+    if (meeting.guest) userIds.add(String(meeting.guest));
+    if (meeting.host) userIds.add(String(meeting.host));
     if (meeting.listing_for_co_host_feature) {
-      listingIds.add(meeting.listing_for_co_host_feature);
+      listingIds.add(String(meeting.listing_for_co_host_feature));
     }
   }
 
@@ -70,7 +74,7 @@ export async function handleAdminFetchConfirmed(
   const usersPromise = userIds.size > 0
     ? supabase
         .from("user")
-        .select("id, first_name, last_name, email, phone_number, profile_photo_url, timezone")
+        .select("id, first_name, last_name, email, phone_number, profile_photo_url")
         .in("id", Array.from(userIds))
     : Promise.resolve({ data: [], error: null });
 
@@ -78,7 +82,7 @@ export async function handleAdminFetchConfirmed(
   const listingsPromise = listingIds.size > 0
     ? supabase
         .from("listing")
-        .select("id, title, street_address, unit_apt, neighborhood_1")
+        .select("id, listing_title, address_with_lat_lng_json, neighborhood_name_entered_by_host")
         .in("id", Array.from(listingIds))
     : Promise.resolve({ data: [], error: null });
 
@@ -100,12 +104,25 @@ export async function handleAdminFetchConfirmed(
   }
 
   // Enrich meetings with related data
-  const enrichedMeetings = meetings.map((meeting) => ({
+  const enrichedMeetings = meetings.map((meeting: Record<string, unknown>) => ({
     ...meeting,
-    guest: meeting.guest ? usersMap.get(meeting.guest) || null : null,
-    host: meeting.host ? usersMap.get(meeting.host) || null : null,
+    proposal_unique_id: meeting.proposal,
+    status: meeting.end_of_meeting ? 'completed' : 'confirmed',
+    guest: meeting.guest ? usersMap.get(String(meeting.guest)) || null : null,
+    host: meeting.host ? usersMap.get(String(meeting.host)) || null : null,
     listing: meeting.listing_for_co_host_feature
-      ? listingsMap.get(meeting.listing_for_co_host_feature) || null
+      ? (() => {
+          const listing = listingsMap.get(String(meeting.listing_for_co_host_feature)) as Record<string, unknown> | null;
+          if (!listing) return null;
+          const address = listing.address_with_lat_lng_json as Record<string, unknown> | null;
+          return {
+            id: listing.id,
+            title: listing.listing_title,
+            street_address: address?.address || '',
+            unit_apt: '',
+            neighborhood_1: listing.neighborhood_name_entered_by_host || '',
+          };
+        })()
       : null,
   }));
 

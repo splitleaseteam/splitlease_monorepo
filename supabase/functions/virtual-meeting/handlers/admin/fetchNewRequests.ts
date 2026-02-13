@@ -54,10 +54,10 @@ export async function handleAdminFetchNewRequests(
   const listingIds = new Set<string>();
 
   for (const meeting of meetings) {
-    if (meeting.guest) userIds.add(meeting.guest);
-    if (meeting.host) userIds.add(meeting.host);
+    if (meeting.guest) userIds.add(String(meeting.guest));
+    if (meeting.host) userIds.add(String(meeting.host));
     if (meeting.listing_for_co_host_feature) {
-      listingIds.add(meeting.listing_for_co_host_feature);
+      listingIds.add(String(meeting.listing_for_co_host_feature));
     }
   }
 

@@ -9,7 +9,7 @@
  * @architecture Presentational Component - receives all data via props
  */
 
-import { formatPrice } from '../../../../lib/priceCalculations.js';
+import { formatPrice } from '../../../../lib/formatters.js';
 import { logger } from '../../../../lib/logger.js';
 import ListingScheduleSelector from '../../../shared/ListingScheduleSelector.jsx';
 import CustomDatePicker from '../../../shared/CustomDatePicker';

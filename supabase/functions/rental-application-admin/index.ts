@@ -304,7 +304,8 @@ async function handleGet(
   // Parse JSONB fields using correct column names from rentalapplication table
   application.occupants = data['occupants_list'] || [];
   application.references = data['references'] || [];
-  // Employment history not stored as separate array in this table schema
+  // Note: employment_history is not a stored array in the rentalapplication table schema
+  // Employment data is stored as individual fields: employment_status, employer_name, job_title
 
   return { data: application };
 }
@@ -614,6 +615,9 @@ async function handleDeleteReference(
 
 /**
  * Add employment history entry
+ * Note: rentalapplication table does not have employment_history column
+ * Employment data is stored as individual fields: employment_status, employer_name, job_title
+ * This function is kept for API compatibility but will not store array data
  */
 async function handleAddEmployment(
   payload: { applicationId: string; employment: Record<string, unknown> },
@@ -625,42 +629,43 @@ async function handleAddEmployment(
     throw new Error('applicationId and employment are required');
   }
 
-  const { data: app, error: fetchError } = await supabase
-    .from('rentalapplication')
-    .select('employment_history')
-    .eq('id', applicationId)
-    .single();
-
-  if (fetchError) {
-    throw new Error(`Failed to fetch application: ${fetchError.message}`);
-  }
-
-  const currentEmployment = app?.['employment_history'] || [];
-  const newEmployment = {
-    id: crypto.randomUUID(),
-    ...employment,
-    created_at: new Date().toISOString()
+  // Map employment data to available columns
+  const updateData: Record<string, unknown> = {
+    'original_updated_at': new Date().toISOString()
   };
 
-  const updatedEmployment = [...currentEmployment, newEmployment];
+  if (employment.employment_status !== undefined) {
+    updateData['employment_status'] = employment.employment_status;
+  }
+  if (employment.employer_name !== undefined) {
+    updateData['employer_name'] = employment.employer_name;
+  }
+  if (employment.job_title !== undefined) {
+    updateData['job_title'] = employment.job_title;
+  }
 
   const { error: updateError } = await supabase
     .from('rentalapplication')
-    .update({
-      'employment_history': updatedEmployment,
-      'original_updated_at': new Date().toISOString()
-    })
+    .update(updateData)
     .eq('id', applicationId);
 
   if (updateError) {
     throw new Error(`Failed to add employment: ${updateError.message}`);
   }
 
+  const newEmployment = {
+    id: crypto.randomUUID(),
+    ...employment,
+    created_at: new Date().toISOString()
+  };
+
   return { data: newEmployment };
 }
 
 /**
  * Delete employment history entry
+ * Note: rentalapplication table does not have employment_history column
+ * Employment data is stored as individual fields, so deletion clears those fields
  */
 async function handleDeleteEmployment(
   payload: { applicationId: string; employmentId: string },
@@ -672,25 +677,14 @@ async function handleDeleteEmployment(
     throw new Error('applicationId and employmentId are required');
   }
 
-  const { data: app, error: fetchError } = await supabase
-    .from('rentalapplication')
-    .select('employment_history')
-    .eq('id', applicationId)
-    .single();
-
-  if (fetchError) {
-    throw new Error(`Failed to fetch application: ${fetchError.message}`);
-  }
-
-  const currentEmployment = app?.['employment_history'] || [];
-  const updatedEmployment = currentEmployment.filter(
-    (e: { id: string }) => e.id !== employmentId
-  );
-
+  // Clear employment fields since we can't manage them as an array
   const { error: updateError } = await supabase
     .from('rentalapplication')
     .update({
-      'employment_history': updatedEmployment,
+      'employment_status': null,
+      'employer_name': null,
+      'employer_phone_number': null,
+      'job_title': null,
       'original_updated_at': new Date().toISOString()
     })
     .eq('id', applicationId);

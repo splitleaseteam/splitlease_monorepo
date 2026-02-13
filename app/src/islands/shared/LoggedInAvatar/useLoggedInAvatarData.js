@@ -411,7 +411,9 @@ export function useLoggedInAvatarData(userId, fallbackUserType = null) {
   }, [error]);
 
   const fetchData = useCallback(() => {
-    executeFetch().catch(() => {});
+    executeFetch().catch((error) => {
+      console.error('[useLoggedInAvatarData] Failed to fetch avatar data:', error);
+    });
   }, [executeFetch]);
 
   useEffect(() => {

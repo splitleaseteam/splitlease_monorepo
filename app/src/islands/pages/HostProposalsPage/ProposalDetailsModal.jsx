@@ -93,7 +93,7 @@ export default function ProposalDetailsModal({
 
   // Get status info - use unified status system for proper matching
   // Database stores full Bubble status strings like "Proposal Submitted by guest - Awaiting Rental Application"
-  const statusRaw = proposal.proposal_workflow_status || proposal.Status || proposal.status || '';
+  const statusRaw = proposal.proposal_workflow_status || proposal.status || '';
   const statusKey = typeof statusRaw === 'string' ? statusRaw : (statusRaw?.id || '');
   const statusConfig = getStatusConfig(statusKey);
   const statusInfo = getStatusTagInfo(statusRaw);
@@ -109,58 +109,58 @@ export default function ProposalDetailsModal({
                               statusConfig.key === PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_AWAITING_RENTAL_APP.key;
 
   // Check if rental application has been submitted (for "current" state on Host Review)
-  const rentalApplication = proposal.rentalApplication || proposal['rental application'] || proposal['Rental Application'];
-  const rentalAppSubmitted = rentalApplication?.submitted === 'yes' || rentalApplication?.submitted === true;
+  const rentalApplication = proposal.rental_application_id;
+  const rentalAppSubmitted = !!rentalApplication;
 
   // Get guest info
-  const guest = proposal.guest || proposal.guest_user_id || proposal.Guest || proposal.created_by_user_id || proposal['Created By'] || {};
-  const guestName = guest.firstName || guest.first_name || 'Guest';
-  const guestLastName = guest.lastName || guest.last_name || '';
-  const guestBio = guest.bio || guest.Bio || '';
-  const guestAvatar = guest.avatar || guest.Avatar || guest.profile_photo_url;
+  const guest = proposal.guest || {};
+  const guestName = guest.first_name || 'Guest';
+  const guestLastName = guest.last_name || '';
+  const guestBio = guest.bio || '';
+  const guestAvatar = guest.avatar || guest.profile_photo_url;
   const avatarUrl = guestAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName)}&background=random&size=60`;
 
   // Verification statuses
-  const linkedinVerified = guest.linkedinVerified || guest['Linkedin Verified'] || false;
-  const phoneVerified = guest.phoneVerified || guest['Phone Verified'] || false;
-  const emailVerified = guest.emailVerified || guest['Email Verified'] || false;
-  const identityVerified = guest.identityVerified || guest['Identity Verified'] || false;
+  const linkedinVerified = guest.work_verified || false;
+  const phoneVerified = guest.is_phone_verified || false;
+  const emailVerified = guest.is_verified || false;
+  const identityVerified = guest.id_verified || false;
 
   // Get schedule info
   // Use Nights Selected for the day indicator (shows which nights guest stays)
   // Use Days Selected for check-in/check-out text (matches guest-facing display)
-  const nightsSelectedRaw = proposal.host_proposed_selected_nights_json || proposal.guest_selected_nights_numbers_json || proposal['Nights Selected (Nights list)'] || proposal.nightsSelected || proposal['Nights Selected'];
-  const daysSelectedRaw = proposal.host_proposed_selected_days_json || proposal.guest_selected_days_numbers_json || proposal['Days Selected'] || proposal.daysSelected;
+  const nightsSelectedRaw = proposal.host_proposed_selected_nights_json || proposal.guest_selected_nights_numbers_json;
+  const daysSelectedRaw = proposal.host_proposed_selected_days_json || proposal.guest_selected_days_numbers_json;
 
   // Get check-in/check-out from Days Selected (matches guest-facing display)
   const { checkInDay, checkOutDay } = getCheckInOutFromDays(daysSelectedRaw);
-  const checkInTime = proposal.checkInTime || proposal['Check In Time'] || '2:00 pm';
-  const checkOutTime = proposal.checkOutTime || proposal['Check Out Time'] || '11:00 am';
-  const moveInRangeStart = proposal.moveInRangeStart || proposal.move_in_range_start_date || proposal['Move in range start'] || proposal['Move In Range Start'];
-  const moveInRangeEnd = proposal.moveInRangeEnd || proposal.move_in_range_end_date || proposal['Move in range end'] || proposal['Move In Range End'];
-  const reservationSpanWeeks = proposal.reservationSpanWeeks || proposal.reservation_span_in_weeks || proposal['Reservation Span (Weeks)'] || proposal['Reservation Span (weeks)'] || 0;
+  const checkInTime = '2:00 pm';
+  const checkOutTime = '11:00 am';
+  const moveInRangeStart = proposal.move_in_range_start_date;
+  const moveInRangeEnd = proposal.move_in_range_end_date;
+  const reservationSpanWeeks = proposal.reservation_span_in_weeks || 0;
 
   // Get pricing info
   // "host compensation" is the per-night HOST rate (from listing pricing tiers)
   // "Total Compensation (proposal - host)" is the total = per-night rate * nights * weeks
-  const hostCompensation = proposal.hostCompensation || proposal.host_compensation_per_period || proposal['Host Compensation'] || 0;
-  const totalCompensation = proposal.totalCompensation || proposal.total_compensation_for_host || proposal['Total Compensation'] || 0;
+  const hostCompensation = proposal.host_compensation_per_period || 0;
+  const totalCompensation = proposal.total_compensation_for_host || 0;
   // Use hostCompensation for per-night display - this is the HOST's rate
   // NOTE: "proposal nightly price" is the GUEST-facing rate, not host compensation
   const compensationPerNight = hostCompensation;
-  const maintenanceFee = proposal.maintenanceFee || proposal.cleaning_fee_amount || proposal['cleaning fee'] || proposal['Maintenance Fee'] || 0;
-  const damageDeposit = proposal.damageDeposit || proposal.damage_deposit_amount || proposal['damage deposit'] || proposal['Damage Deposit'] || 0;
-  const counterOfferHappened = proposal.counterOfferHappened || proposal.has_host_counter_offer || proposal['Counter Offer Happened'] || false;
-  const reasonForCancellation = proposal.reasonForCancellation || proposal['Reason For Cancellation'] || '';
+  const maintenanceFee = proposal.cleaning_fee_amount || 0;
+  const damageDeposit = proposal.damage_deposit_amount || 0;
+  const counterOfferHappened = proposal.has_host_counter_offer || false;
+  const reasonForCancellation = proposal.reason_for_cancellation || '';
 
   // Get rental type for dynamic compensation label (nightly/weekly/monthly)
-  const rentalType = (proposal.rentalType || proposal.rental_type || proposal['Rental Type'] || 'nightly').toString().toLowerCase();
+  const rentalType = (proposal.rental_type || 'nightly').toString().toLowerCase();
 
   // Custom schedule description - guest's free-form text describing preferred schedule
   const customScheduleDescription = proposal.custom_schedule_description || proposal.customScheduleDescription || '';
 
   // Virtual meeting
-  const virtualMeeting = proposal.virtualMeeting || proposal['Virtual Meeting'];
+  const virtualMeeting = proposal.virtualMeeting;
 
   // Get active nights for the day indicator (hosts see nights, not days)
   const activeDays = getNightsAsDayNames(nightsSelectedRaw);

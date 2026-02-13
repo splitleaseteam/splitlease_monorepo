@@ -48,15 +48,15 @@ function getStatusBannerConfig(proposal) {
     ? proposal.status
     : (proposal?.status?.id || '');
 
-  const submittedAt = proposal?.created_at || proposal?.Created_Date;
+  const submittedAt = proposal?.created_at;
   const timeAgo = submittedAt ? formatDistanceToNow(new Date(submittedAt)) : '';
 
   // Get guest name for personalized messages
-  const guest = proposal?.guest || proposal?.Guest || proposal?.['Created By'] || {};
-  const guestName = guest?.firstName || guest?.['First Name'] || guest?.name || 'Guest';
+  const guest = proposal?.guest || {};
+  const guestName = guest?.first_name || guest?.name || 'Guest';
 
   // Guest counteroffer
-  if (proposal?.has_guest_counteroffer || proposal?.guest_counteroffer || proposal?.last_modified_by === 'guest') {
+  if (proposal?.has_guest_counteroffer || proposal?.last_modified_by === 'guest') {
     return {
       variant: 'warning',
       icon: Repeat,

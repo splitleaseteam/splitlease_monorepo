@@ -55,7 +55,7 @@ export function PreviewPhotoModal({
       </button>
 
       <img
-        src={listing.photos[currentPhotoIndex]?.Photo}
+        src={listing.photos[currentPhotoIndex]?.url}
         alt={`${listing.listing_title} - photo ${currentPhotoIndex + 1}`}
         style={{
           maxWidth: isMobile ? '95vw' : '90vw',

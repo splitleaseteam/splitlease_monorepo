@@ -107,7 +107,7 @@ export function extractPhotos(photosField, photoMap = {}, listingId = null) {
     // New embedded format: photo is an object with url/Photo field
     if (typeof photo === 'object' && photo !== null) {
       // Extract URL from object (prefer 'url' then 'Photo')
-      let photoUrl = photo.url || photo.Photo || null;
+      let photoUrl = photo.url || null;
 
       if (photoUrl) {
         // Add https: protocol if URL starts with //

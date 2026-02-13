@@ -160,19 +160,17 @@ export async function fetchListingComplete(listingId) {
       // Photos are embedded objects with URLs
       sortedPhotos = embeddedPhotos.map((photo, index) => ({
         id: photo.id || `embedded_${index}`,
-        Photo: photo.Photo || photo.url || '',
-        'Photo (thumbnail)': photo['Photo (thumbnail)'] || photo.Photo || photo.url || '',
+        url: photo.url || '',
         toggleMainPhoto: photo.toggleMainPhoto ?? photo.isCover ?? (index === 0),
-        SortOrder: photo.SortOrder ?? photo.sortOrder ?? photo.displayOrder ?? index,
-        Caption: photo.caption || photo.Caption || ''
+        sortOrder: photo.SortOrder ?? photo.sortOrder ?? photo.displayOrder ?? index,
+        caption: photo.caption || photo.Caption || ''
       }));
       console.log('📷 Embedded photos from photos_with_urls_captions_and_sort_order_json:', sortedPhotos.length);
     } else if (embeddedPhotos.length > 0 && typeof embeddedPhotos[0] === 'string') {
       // Photos are embedded as string URLs (legacy format)
       sortedPhotos = embeddedPhotos.map((url, index) => ({
         id: `string_${index}`,
-        Photo: url,
-        'Photo (thumbnail)': url,
+        url: url,
         toggleMainPhoto: index === 0,
         SortOrder: index,
         Caption: ''
@@ -263,7 +261,7 @@ export async function fetchListingComplete(listingId) {
           first_name: userData.first_name,
           last_name: userData.last_name,
           profile_photo_url: userData.profile_photo_url,
-          Email: userData.email
+          email: userData.email
         };
         console.log('📍 Host found via user.id lookup');
       }

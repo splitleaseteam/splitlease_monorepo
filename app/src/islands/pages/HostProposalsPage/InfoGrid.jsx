@@ -44,13 +44,13 @@ function formatScheduleRange(daysSelected) {
  */
 function getNightsPerWeek(proposal) {
   // Try to get nights directly from the proposal
-  const nightsSelected = proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || [];
+  const nightsSelected = proposal?.nights_selected || [];
   if (Array.isArray(nightsSelected) && nightsSelected.length > 0) {
     return `${nightsSelected.length}/week`;
   }
 
   // Fall back to calculating from days_selected
-  const daysSelected = proposal?.days_selected || proposal?.Days_Selected || [];
+  const daysSelected = proposal?.days_selected || [];
   if (!Array.isArray(daysSelected) || daysSelected.length === 0) return 'TBD';
   // Nights = days - 1 (guest leaves on last day)
   const nights = Math.max(0, daysSelected.length - 1);
@@ -66,41 +66,39 @@ function getNightsPerWeek(proposal) {
  */
 export function InfoGrid({ proposal }) {
   // Check if counteroffer happened
-  const isCounteroffer = proposal?.['counter offer happened'] ||
-    proposal?.counterOfferHappened ||
-    proposal?.counter_offer_happened;
+  const isCounteroffer = proposal?.has_host_counter_offer;
 
   // Original values (guest's proposal)
-  const originalMoveIn = proposal?.['Move in range start'] || proposal?.move_in_range_start;
-  const originalWeeks = proposal?.['Reservation Span (Weeks)'] || proposal?.reservation_span_weeks;
-  let originalDays = proposal?.['Days Selected'] || [];
+  const originalMoveIn = proposal?.move_in_range_start;
+  const originalWeeks = proposal?.reservation_span_in_weeks;
+  let originalDays = proposal?.guest_selected_days_numbers_json || [];
   if (typeof originalDays === 'string') {
     try { originalDays = JSON.parse(originalDays); } catch { originalDays = []; }
   }
-  let originalNights = proposal?.['Nights Selected (Nights list)'] || [];
+  let originalNights = proposal?.guest_selected_nights_numbers_json || [];
   if (typeof originalNights === 'string') {
     try { originalNights = JSON.parse(originalNights); } catch { originalNights = []; }
   }
 
   // HC values (host counteroffer)
-  const hcMoveIn = proposal?.['host_counter_offer_move_in_date'];
-  const hcWeeks = proposal?.['host_counter_offer_reservation_span_weeks'];
-  let hcDays = proposal?.['host_counter_offer_days_selected'] || [];
+  const hcMoveIn = proposal?.host_proposed_move_in_date;
+  const hcWeeks = proposal?.host_proposed_reservation_span_weeks;
+  let hcDays = proposal?.host_proposed_selected_days_json || [];
   if (typeof hcDays === 'string') {
     try { hcDays = JSON.parse(hcDays); } catch { hcDays = []; }
   }
-  let hcNights = proposal?.['host_counter_offer_nights_selected'] || [];
+  let hcNights = proposal?.host_proposed_selected_nights_json || [];
   if (typeof hcNights === 'string') {
     try { hcNights = JSON.parse(hcNights); } catch { hcNights = []; }
   }
 
   // Display values: prioritize HC values when counteroffer happened
   // When counteroffer exists, show HC values as current; otherwise use normalized or original
-  const moveIn = (isCounteroffer && hcMoveIn) ? hcMoveIn : (proposal?.start_date || proposal?.move_in_date || originalMoveIn);
-  const moveOut = proposal?.end_date || proposal?.move_out_date;
-  const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
-  const daysSelected = (isCounteroffer && hcDays.length > 0) ? hcDays : (proposal?.days_selected || proposal?.Days_Selected || originalDays);
-  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.['Nights Selected (Nights list)'] || originalNights);
+  const moveIn = (isCounteroffer && hcMoveIn) ? hcMoveIn : (proposal?.start_date || originalMoveIn);
+  const moveOut = proposal?.end_date;
+  const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || originalWeeks);
+  const daysSelected = (isCounteroffer && hcDays.length > 0) ? hcDays : (proposal?.days_selected || originalDays);
+  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || originalNights);
 
   // Comparison flags - detect which values changed
   // Only show strikethrough if there's actual HC data that differs from original

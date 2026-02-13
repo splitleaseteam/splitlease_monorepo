@@ -13,8 +13,7 @@
  * @returns {string} The thumbnail URL or placeholder
  */
 function getListingThumbnail(listing) {
-  if (listing?.picture_url) return listing.picture_url;
-  if (listing?.Image) return listing.Image;
+  if (listing?.thumbnail) return listing.thumbnail;
   if (listing?.photo) return listing.photo;
   // Generate a placeholder based on listing name
   const name = listing?.title || listing?.name || 'Listing';

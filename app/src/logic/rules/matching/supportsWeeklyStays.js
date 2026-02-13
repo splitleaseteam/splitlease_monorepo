@@ -33,7 +33,7 @@ export function supportsWeeklyStays({ listing }) {
   }
 
   const minimumNights = listing.minimum_nights_per_stay;
-  const availableDays = listing['Schedule days available'];
+  const availableDays = listing.availableDays || listing.available_days_as_day_numbers_json;
 
   // Check minimum nights constraint
   // If unset (null/undefined) or <= 7, it passes

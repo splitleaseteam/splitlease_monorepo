@@ -106,13 +106,9 @@ const HostReviewGuest = ({
 
       const result = await hostReviewGuestService.submitReview(reviewData);
 
-      if (result.status === 'success') {
-        setSubmittedReview(result.data);
-        if (onSubmit) {
-          onSubmit(result.data);
-        }
-      } else {
-        throw new Error(result.message || 'Failed to submit review');
+      setSubmittedReview(result.data);
+      if (onSubmit) {
+        onSubmit(result.data);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit review');

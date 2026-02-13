@@ -342,7 +342,9 @@ export function useGuestMenuData(userId, isAuthenticated) {
   }, [error, isAuthenticated]);
 
   const refetch = useCallback(() => {
-    fetchData().catch(() => {});
+    fetchData().catch((error) => {
+      console.error('[useGuestMenuData] Failed to fetch guest menu data:', error);
+    });
   }, [fetchData]);
 
   useEffect(() => {

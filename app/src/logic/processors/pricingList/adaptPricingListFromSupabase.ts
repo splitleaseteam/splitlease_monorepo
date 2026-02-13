@@ -1,15 +1,15 @@
-﻿/**
+/**
  * Adapt a pricing list from Supabase format to frontend format.
  *
- * Transforms Bubble-style column names (with spaces) to camelCase
+ * Transforms snake_case database column names to camelCase
  * properties for consistent frontend usage.
  *
  * @intent Normalize database row format for frontend consumption.
- * @rule Maps Bubble-style names to camelCase.
+ * @rule Maps snake_case DB names to camelCase.
  * @rule Preserves array structures without modification.
  * @rule Handles both existing and new scalar fields.
  *
- * @param rawPricingList - Raw pricing list row from Supabase.
+ * @param rawPricingList - Raw pricing list row from Supabase pricing_list table.
  * @returns Adapted pricing list with camelCase properties.
  *
  * @throws Error if rawPricingList is null or undefined.
@@ -18,15 +18,13 @@
  * ```ts
  * adaptPricingListFromSupabase({
  *   id: 'abc123',
- *   listing: 'listing456',
- *   'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
- *   'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
- *   'Combined Markup': 0.17,
- *   'Starting Nightly Price': 76
+ *   host_compensation: [null, 100, 95, 90, 85, 80, 75],
+ *   nightly_price: [null, 117, 111, 105, 99, 94, 76],
+ *   combined_markup: 0.17,
+ *   starting_nightly_price: 76
  * })
  * // => {
  * //   id: 'abc123',
- * //   listingId: 'listing456',
  * //   hostCompensation: [null, 100, 95, 90, 85, 80, 75],
  * //   nightlyPrice: [null, 117, 111, 105, 99, 94, 76],
  * //   combinedMarkup: 0.17,
@@ -34,10 +32,10 @@
  * // }
  * ```
  */
-import type { FrontendPricingList, SupabasePricingRow } from './types.js';
+import type { FrontendPricingList } from './types.js';
 
 export function adaptPricingListFromSupabase(
-  rawPricingList: Partial<SupabasePricingRow> & { id?: string; listing?: string }
+  rawPricingList: Record<string, unknown>
 ): FrontendPricingList {
   if (!rawPricingList) {
     throw new Error('adaptPricingListFromSupabase: rawPricingList is required');
@@ -45,31 +43,31 @@ export function adaptPricingListFromSupabase(
 
   return {
     // Core identifiers
-    id: rawPricingList.id,
-    listingId: rawPricingList.listing,
-    createdBy: rawPricingList['Created By'],
+    id: rawPricingList.id as string | undefined,
+    listingId: rawPricingList.listing as string | undefined,
+    createdBy: rawPricingList.created_by as string | undefined,
 
-    // Array fields (preserve as-is)
-    hostCompensation: rawPricingList['Host Compensation'] || [],
-    markupAndDiscountMultiplier: rawPricingList['Markup and Discount Multiplier'] || [],
-    nightlyPrice: rawPricingList['Nightly Price'] || [],
-    unusedNights: rawPricingList['Unused Nights'] || [],
-    unusedNightsDiscount: rawPricingList['Unused Nights Discount'] || [],
+    // Array fields (jsonb in DB — preserve as-is)
+    hostCompensation: (rawPricingList.host_compensation as Array<number | null>) || [],
+    markupAndDiscountMultiplier: (rawPricingList.markup_and_discount_multiplier as Array<number | null>) || [],
+    nightlyPrice: (rawPricingList.nightly_price as Array<number | null>) || [],
+    unusedNights: (rawPricingList.unused_nights as boolean[]) || [],
+    unusedNightsDiscount: (rawPricingList.unused_nights_discount as Array<number | null>) || [],
 
-    // Scalar markup fields (new)
-    unitMarkup: rawPricingList['Unit Markup'] ?? 0,
-    overallSiteMarkup: rawPricingList['Overall Site Markup'] ?? 0.17,
-    combinedMarkup: rawPricingList['Combined Markup'] ?? 0.17,
-    fullTimeDiscount: rawPricingList['Full Time Discount'] ?? 0.13,
+    // Scalar markup fields
+    unitMarkup: (rawPricingList.unit_markup as number) ?? 0,
+    overallSiteMarkup: (rawPricingList.overall_site_markup as number) ?? 0.17,
+    combinedMarkup: (rawPricingList.combined_markup as number) ?? 0.17,
+    fullTimeDiscount: (rawPricingList.full_time_discount as number) ?? 0.13,
 
-    // Calculated scalar fields (new)
-    startingNightlyPrice: rawPricingList['Starting Nightly Price'],
-    slope: rawPricingList['Slope'],
-    weeklyPriceAdjust: rawPricingList['Weekly Price Adjust'],
+    // Calculated scalar fields
+    startingNightlyPrice: rawPricingList.starting_nightly_price as number | undefined,
+    slope: rawPricingList.slope as number | undefined,
+    weeklyPriceAdjust: rawPricingList.weekly_price_adjust as number | undefined,
 
-    // Metadata fields (new)
-    rentalType: rawPricingList.rental_type ?? 'Nightly',
-    numberSelectedNights: rawPricingList['Number Selected Nights'] || [],
-    modifiedDate: rawPricingList.original_updated_at
+    // Metadata fields
+    rentalType: (rawPricingList.rental_type as 'Nightly' | 'Monthly' | 'Weekly') ?? 'Nightly',
+    numberSelectedNights: (rawPricingList.number_selected_nights as number[]) || [],
+    modifiedDate: rawPricingList.original_updated_at as string | undefined
   };
 }

@@ -35,20 +35,16 @@ export async function handleAcceptProposal(
     throw new Error('simulationId and proposalId are required');
   }
 
-  // Verify proposal exists and belongs to this simulation
+  // Verify proposal exists
   const { data: proposal, error: fetchError } = await supabase
     .from('booking_proposal')
-    .select('id, proposal_workflow_status, simulation_id, guest_user_id, host_user_id, listing_id')
+    .select('id, proposal_workflow_status, guest_user_id, host_user_id, listing_id')
     .eq('id', proposalId)
     .single();
 
   if (fetchError || !proposal) {
     console.error('[acceptProposal] Proposal not found:', fetchError);
     throw new Error('Proposal not found');
-  }
-
-  if (proposal.simulation_id !== simulationId) {
-    throw new Error('Proposal does not belong to this simulation');
   }
 
   // Step 1: Update proposal status to accepted
@@ -66,17 +62,17 @@ export async function handleAcceptProposal(
   }
 
   // Step 2: Create lease record
+  // booking_lease columns: guest_user_id, host_user_id, listing_id, is_lease_signed, lease_type, created_at
   let leaseId: string | null = null;
 
   try {
     const { data: lease, error: leaseError } = await supabase
       .from('booking_lease')
       .insert({
-        proposal_id: proposalId,
         guest_user_id: proposal.guest_user_id,
         host_user_id: proposal.host_user_id,
         listing_id: proposal.listing_id,
-        lease_status: 'Drafting',
+        lease_type: 'Drafting',
         is_lease_signed: false,
         created_at: new Date().toISOString(),
       })
@@ -85,14 +81,12 @@ export async function handleAcceptProposal(
 
     if (leaseError) {
       console.warn('[acceptProposal] Could not create lease:', leaseError);
-      // Continue - lease table may have different schema
     } else if (lease) {
       leaseId = lease.id;
       console.log('[acceptProposal] Created lease:', leaseId);
     }
   } catch (leaseErr) {
     console.warn('[acceptProposal] Lease creation failed:', leaseErr);
-    // Continue without lease for simulation purposes
   }
 
   // Update host's usability step

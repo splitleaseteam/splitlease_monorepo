@@ -83,9 +83,9 @@ function normalizeLease(lease) {
     totalCompensation: lease.total_compensation,
     paidToDate: lease.paid_to_date_from_guest,
     contract: lease.contract,
-    supplementalAgreement: lease.supplemental_agreement,
-    hostPayoutSchedule: lease.host_payout_schedule || null,
-    periodicTenancyAgreement: lease.periodic_tenancy_agreement || null,
+    supplementalAgreement: lease.supplemental_agreement_id,
+    hostPayoutSchedule: lease.host_payout_schedule_document_id || null,
+    periodicTenancyAgreement: lease.periodic_tenancy_agreement_id || null,
     createdDate: lease.original_created_at,
     modifiedDate: lease.original_updated_at,
     // Related data

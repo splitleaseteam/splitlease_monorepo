@@ -497,7 +497,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
 
     // Validate we have the host user ID
     // The listing table has "Host / Landlord" field directly, not nested under host object
-    const hostUserId = listing['Host / Landlord'] || listing.host?.userId;
+    const hostUserId = listing.host_user_id || listing.host?.userId;
     if (!hostUserId) {
       setErrors({
         submit: 'Host information unavailable. Please try again later.'
@@ -804,7 +804,7 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
           {/* Listing Bar */}
           <div style={styles.listingBar}>
             <span className="sr-only">Regarding listing: </span>
-            About: <strong style={{ color: '#1C1B1F' }}>{listing?.title || 'Listing'}</strong>
+            About: <strong style={{ color: '#1C1B1F' }}>{listing?.listing_title || 'Listing'}</strong>
           </div>
 
           {/* Loading Auth Check */}

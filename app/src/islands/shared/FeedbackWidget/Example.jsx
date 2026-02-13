@@ -50,14 +50,6 @@ export function CustomHandlerExample() {
     // Custom logic to send feedback to your backend
     console.log('Feedback received:', feedbackData);
 
-    // Example: Send to your own API
-    // const response = await fetch('/api/feedback', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(feedbackData)
-    // });
-    // return response.ok;
-
     // Return true to indicate success
     return true;
   };

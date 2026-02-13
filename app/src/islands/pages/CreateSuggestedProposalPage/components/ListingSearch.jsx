@@ -28,8 +28,8 @@ function getHostEmail(listing) {
     return listing.account_host.user.email;
   }
   // Fallback to denormalized field
-  if (listing['Host email']) {
-    return listing['Host email'];
+  if (listing.host_email) {
+    return listing.host_email;
   }
   return null;
 }
@@ -90,7 +90,7 @@ export default function ListingSearch({
             ) : (
               searchResults.map(listing => {
                 const isInactive = !listing.is_active;
-                const isUnapproved = !listing.Approved;
+                const isUnapproved = !listing.is_approved;
                 const hasWarnings = isInactive || isUnapproved;
 
                 return (

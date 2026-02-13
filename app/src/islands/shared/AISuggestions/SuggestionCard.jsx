@@ -42,10 +42,10 @@ export default function SuggestionCard({
   onCombine,
   isProcessing = false,
 }) {
-  const fieldName = suggestion['Field suggested house manual'] || 'Unknown Field';
-  const content = suggestion['Content'] || '';
-  const previousContent = suggestion['Previous Content'];
-  const isBeingProcessed = suggestion['being processed?'] || isProcessing;
+  const fieldName = suggestion.field_suggested_house_manual || 'Unknown Field';
+  const content = suggestion.content || '';
+  const previousContent = suggestion.previous_content;
+  const isBeingProcessed = suggestion.being_processed || isProcessing;
 
   // Get source info
   const sourceIcon = getSourceIcon(suggestion);

@@ -21,7 +21,7 @@ export const HOST_PAYOUT_REQUIREMENTS = {
     {
       key: 'agreementNumber',
       label: 'Agreement Number',
-      check: (data) => !!data.lease?.['Agreement Number'],
+      check: (data) => !!data.lease?.agreement_number,
       source: 'lease',
     },
     {
@@ -70,7 +70,7 @@ export const SUPPLEMENTAL_REQUIREMENTS = {
     {
       key: 'agreementNumber',
       label: 'Agreement Number',
-      check: (data) => !!data.lease?.['Agreement Number'],
+      check: (data) => !!data.lease?.agreement_number,
       source: 'lease',
     },
     {
@@ -97,13 +97,13 @@ export const SUPPLEMENTAL_REQUIREMENTS = {
     {
       key: 'moveInDate',
       label: 'Move-in date',
-      check: (data) => !!data.proposal?.['host_counter_offer_move_in_date'] || !!data.lease?.['Reservation Period : Start'],
+      check: (data) => !!data.proposal?.host_proposed_move_in_date || !!data.lease?.reservation_start_date,
       source: 'proposal',
     },
     {
       key: 'moveOutDate',
       label: 'Move-out date',
-      check: (data) => !!data.proposal?.['Move-out'] || !!data.lease?.['Reservation Period : End'],
+      check: (data) => !!data.proposal?.planned_move_out_date || !!data.lease?.reservation_end_date,
       source: 'proposal',
     },
     {
@@ -115,7 +115,7 @@ export const SUPPLEMENTAL_REQUIREMENTS = {
     {
       key: 'listingDescription',
       label: 'Listing description',
-      check: (data) => !!data.listing?.Description,
+      check: (data) => !!data.listing?.listing_description,
       source: 'listing',
     },
   ],
@@ -131,7 +131,7 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
     {
       key: 'agreementNumber',
       label: 'Agreement Number',
-      check: (data) => !!data.lease?.['Agreement Number'],
+      check: (data) => !!data.lease?.agreement_number,
       source: 'lease',
     },
     {
@@ -171,22 +171,21 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
     {
       key: 'moveInDate',
       label: 'Move-in date',
-      check: (data) => !!data.proposal?.['host_counter_offer_move_in_date'] || !!data.lease?.['Reservation Period : Start'],
+      check: (data) => !!data.proposal?.host_proposed_move_in_date || !!data.lease?.reservation_start_date,
       source: 'proposal',
     },
     {
       key: 'moveOutDate',
       label: 'Move-out date',
-      check: (data) => !!data.proposal?.['Move-out'] || !!data.lease?.['Reservation Period : End'],
+      check: (data) => !!data.proposal?.planned_move_out_date || !!data.lease?.reservation_end_date,
       source: 'proposal',
     },
     {
       key: 'damageDeposit',
       label: 'Damage deposit amount',
       check: (data) => {
-        const deposit = data.guestPayments?.[0]?.['Damage Deposit'] ||
-          data.proposal?.['host_counter_offer_damage_deposit'] ||
-          data.proposal?.['damage deposit'];
+        const deposit = data.proposal?.host_proposed_damage_deposit ||
+          data.proposal?.damage_deposit_amount;
         return deposit !== null && deposit !== undefined;
       },
       source: 'proposal',
@@ -195,8 +194,8 @@ export const PERIODIC_TENANCY_REQUIREMENTS = {
       key: 'houseRules',
       label: 'House rules',
       check: (data) => {
-        const rules = data.proposal?.['host_counter_offer_house_rules'] ||
-          data.proposal?.['House Rules'] ||
+        const rules = data.proposal?.host_proposed_house_rules_json ||
+          data.proposal?.house_rules_reference_ids_json ||
           data.listing?.house_rule_reference_ids_json;
         return !!rules && (Array.isArray(rules) ? rules.length > 0 : true);
       },
@@ -221,7 +220,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
     {
       key: 'agreementNumber',
       label: 'Agreement Number',
-      check: (data) => !!data.lease?.['Agreement Number'],
+      check: (data) => !!data.lease?.agreement_number,
       source: 'lease',
     },
     {
@@ -254,7 +253,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
       key: 'fourWeekRent',
       label: 'Four week rent amount',
       check: (data) => {
-        const rent = data.proposal?.['host_counter_offer_4_week_rent'] || data.proposal?.['4 week rent'];
+        const rent = data.proposal?.host_proposed_four_week_rent || data.proposal?.four_week_rent_amount;
         return rent !== null && rent !== undefined && rent > 0;
       },
       source: 'proposal',
@@ -266,7 +265,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
       key: 'maintenanceFee',
       label: 'Maintenance/cleaning fee',
       check: (data) => {
-        const fee = data.proposal?.['host_counter_offer_cleaning_fee'] || data.proposal?.['cleaning fee'];
+        const fee = data.proposal?.host_proposed_cleaning_fee || data.proposal?.cleaning_fee_amount;
         return fee !== null && fee !== undefined;
       },
       source: 'proposal',
@@ -275,7 +274,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
       key: 'damageDeposit',
       label: 'Damage deposit amount',
       check: (data) => {
-        const deposit = data.proposal?.['host_counter_offer_damage_deposit'] || data.proposal?.['damage deposit'];
+        const deposit = data.proposal?.host_proposed_damage_deposit || data.proposal?.damage_deposit_amount;
         return deposit !== null && deposit !== undefined;
       },
       source: 'proposal',
@@ -283,7 +282,7 @@ export const CREDIT_CARD_AUTH_REQUIREMENTS = {
     {
       key: 'listingDescription',
       label: 'Listing description',
-      check: (data) => !!data.listing?.Description || !!data.listing?.Name,
+      check: (data) => !!data.listing?.listing_description || !!data.listing?.listing_title,
       source: 'listing',
     },
   ],
@@ -436,7 +435,7 @@ function generateReadinessSummary(results, blockingIssues) {
  */
 export function formatReadinessReport(readinessReport, lease) {
   const lines = [];
-  const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
+  const agreementNumber = lease?.agreement_number || 'Unknown';
   const leaseId = lease?.id || 'Unknown';
 
   lines.push(`📋 Lease Readiness Report`);
@@ -480,7 +479,7 @@ export function formatReadinessReport(readinessReport, lease) {
  * @returns {object} Slack-formatted message
  */
 export function formatReadinessForSlack(readinessReport, lease) {
-  const agreementNumber = lease?.['Agreement Number'] || 'Unknown';
+  const agreementNumber = lease?.agreement_number || 'Unknown';
   const leaseId = lease?.id || 'Unknown';
 
   const missingFields = readinessReport.allBlockingIssues

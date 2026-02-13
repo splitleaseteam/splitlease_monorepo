@@ -204,7 +204,7 @@ export default function VirtualMeetingManager({
    * Get virtual meeting object from proposal (handle different field names)
    */
   const getVirtualMeeting = () => {
-    return proposal.virtualMeeting || proposal['virtual meeting'] || proposal.virtual_meeting;
+    return proposal.virtualMeeting || proposal.virtual_meeting;
   };
 
   /**

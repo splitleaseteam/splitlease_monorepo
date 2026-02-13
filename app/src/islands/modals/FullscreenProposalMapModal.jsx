@@ -73,10 +73,10 @@ function getProposalCoordinates(proposal) {
  * Uses counteroffer price if applicable, otherwise original proposal price
  */
 function getProposalPrice(proposal) {
-  const isCounteroffer = proposal.has_host_counter_offer || proposal['counter offer happened'];
+  const isCounteroffer = proposal.has_host_counter_offer;
   return isCounteroffer
-    ? proposal['host_counter_offer_nightly_price']
-    : proposal.calculated_nightly_price || proposal['proposal nightly price'] || 0;
+    ? proposal.host_proposed_nightly_price
+    : proposal.calculated_nightly_price || 0;
 }
 
 /**
@@ -84,7 +84,7 @@ function getProposalPrice(proposal) {
  */
 function filterActiveProposals(proposals) {
   return proposals.filter(proposal => {
-    const status = proposal.proposal_workflow_status || proposal.Status;
+    const status = proposal.proposal_workflow_status;
     // Filter out terminal statuses (cancelled, rejected, expired)
     return !isTerminalStatus(status);
   });
@@ -105,7 +105,7 @@ function transformProposalsForMap(proposals, currentProposalId) {
         id: proposal.id,
         coordinates,
         price: getProposalPrice(proposal),
-        listingName: proposal.listing?.Name || 'Listing',
+        listingName: proposal.listing?.listing_title || 'Listing',
         isHighlighted: proposal.id === currentProposalId
       };
     })
@@ -417,7 +417,7 @@ export default function FullscreenProposalMapModal({
   // Get dropdown options for proposal selector
   const proposalOptions = activeProposals.map(p => ({
     id: p.id,
-    label: p.listing?.Name || 'Listing'
+    label: p.listing?.listing_title || 'Listing'
   }));
 
   const hasValidProposals = mapProposals.length > 0;

@@ -25,7 +25,7 @@ export function DateChangeDetailModal({ isOpen, request, onClose, onAccept, onDe
     }
   };
 
-  const isPending = request.status?.toLowerCase() === 'pending';
+  const isPending = request.status?.toLowerCase() === 'waiting_for_answer';
   const requestedByName = request.requestedByUser?.name ||
     request.requestedByUser?.firstName ||
     'Guest';
@@ -92,11 +92,11 @@ export function DateChangeDetailModal({ isOpen, request, onClose, onAccept, onDe
               </div>
               <div className="hl-dcr-dates">
                 <span className="hl-dcr-original-date">
-                  {formatFullDate(request.originalDate)}
+                  {formatFullDate(Array.isArray(request.originalDate) ? request.originalDate[0] : request.originalDate)}
                 </span>
                 <ArrowRight size={16} className="hl-dcr-arrow" />
                 <span className="hl-dcr-requested-date">
-                  {formatFullDate(request.requestedDate)}
+                  {formatFullDate(Array.isArray(request.requestedDate) ? request.requestedDate[0] : request.requestedDate)}
                 </span>
               </div>
             </div>

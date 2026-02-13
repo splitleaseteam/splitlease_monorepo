@@ -6,7 +6,7 @@
  * - Right column: Listing photo with host overlay
  * - Bottom: Pricing bar and progress tracker
  *
- * Design matches Bubble's MyProposals page layout.
+ * Design matches the MyProposals page layout.
  *
  * Dynamic UI Features:
  * - Status banner for accepted/counteroffer/cancelled states
@@ -49,8 +49,8 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
 
   // VM button configuration - memoized based on virtualMeeting state
   const virtualMeeting = proposal?.virtualMeeting;
-  const currentUserId = proposal?.Guest;
-  const status = proposal?.proposal_workflow_status || proposal?.Status;
+  const currentUserId = proposal?.guest_user_id;
+  const status = proposal?.proposal_workflow_status;
 
   const vmConfig = useMemo(() => {
     // Conditional 7-8: Check status-based hiding first
@@ -70,7 +70,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     }
 
     // Conditional 6: VM declined - can request alternative times
-    if (virtualMeeting['meeting declined'] === true) {
+    if (virtualMeeting.meeting_declined === true) {
       return {
         visible: true,
         view: 'request',
@@ -82,7 +82,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     }
 
     // Conditional 5: Meeting confirmed by Split Lease - show details
-    if (virtualMeeting['booked date'] && virtualMeeting['confirmedBySplitLease'] === true) {
+    if (virtualMeeting.booked_date && virtualMeeting.confirmedbysplitlease === true) {
       return {
         visible: true,
         view: 'details',
@@ -93,7 +93,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     }
 
     // Conditional 4: Meeting accepted but awaiting SL confirmation
-    if (virtualMeeting['booked date'] && !virtualMeeting['confirmedBySplitLease']) {
+    if (virtualMeeting.booked_date && !virtualMeeting.confirmedbysplitlease) {
       return {
         visible: true,
         view: 'details',
@@ -104,7 +104,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     }
 
     // Conditional 2: Current user requested - waiting for response
-    if (virtualMeeting['requested by'] === currentUserId) {
+    if (virtualMeeting.requested_by === currentUserId) {
       return {
         visible: true,
         view: null,
@@ -115,7 +115,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
     }
 
     // Conditional 1: Other party requested - respond
-    if (virtualMeeting['requested by'] && virtualMeeting['requested by'] !== currentUserId) {
+    if (virtualMeeting.requested_by && virtualMeeting.requested_by !== currentUserId) {
       return {
         visible: true,
         view: 'respond',
@@ -146,7 +146,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   const host = listing?.host;
 
   // Extract data
-  const listingName = listing?.Name || 'Listing';
+  const listingName = listing?.listing_title || 'Listing';
   const location = [listing?.hoodName, listing?.boroughName]
     .filter(Boolean)
     .join(', ') || 'New York';
@@ -158,42 +158,42 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   const hostName = host?.first_name || 'Host';
 
   // Schedule info
-  // Handle double-encoded JSONB: "Days Selected" may come as a JSON string that needs parsing
-  let daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
+  // Handle double-encoded JSONB: may come as a JSON string that needs parsing
+  let daysSelected = proposal.guest_selected_days_numbers_json || [];
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
     } catch (_e) {
-      console.warn('ProposalCard: Failed to parse Days Selected:', _e);
+      console.warn('ProposalCard: Failed to parse guest_selected_days_numbers_json:', _e);
       daysSelected = [];
     }
   }
   const allDays = getAllDaysWithSelection(daysSelected);
-  const nightsPerWeek = proposal['nights per week (num)'] || daysSelected.length;
-  const reservationWeeks = proposal['Reservation Span (Weeks)'] || proposal['host_counter_offer_reservation_span_weeks'] || 4;
+  const nightsPerWeek = proposal.nights_per_week_count || daysSelected.length;
+  const reservationWeeks = proposal.reservation_span_in_weeks || proposal.host_proposed_reservation_span_weeks || 4;
   const checkInOutRange = getCheckInOutRange(proposal);
 
   // Pricing
-  const isCounteroffer = proposal['counter offer happened'];
+  const isCounteroffer = proposal.has_host_counter_offer;
   const nightlyPrice = isCounteroffer
-    ? proposal['host_counter_offer_nightly_price']
-    : proposal['proposal nightly price'];
+    ? proposal.host_proposed_nightly_price
+    : proposal.calculated_nightly_price;
   const totalPrice = isCounteroffer
-    ? proposal['host_counter_offer_total_price']
-    : proposal['Total Price for Reservation (guest)'];
+    ? proposal.host_proposed_total_guest_price
+    : proposal.total_reservation_price_for_guest;
   // Original price (before counteroffer) for strikethrough display
   const originalTotalPrice = isCounteroffer
-    ? proposal['Total Price for Reservation (guest)']
+    ? proposal.total_reservation_price_for_guest
     : null;
-  const cleaningFee = proposal['cleaning fee'] || 0;
+  const cleaningFee = proposal.cleaning_fee_amount || 0;
 
   // Move-in/move-out dates
-  const moveInStart = proposal['Move in range start'];
+  const moveInStart = proposal.move_in_range_start_date;
   const anticipatedMoveIn = formatDate(moveInStart);
 
   // Check-in/out times
-  const checkInTime = listing?.['Check in time'] || '2:00 pm';
-  const checkOutTime = listing?.['Check Out time'] || '11:00 am';
+  const checkInTime = listing?.checkin_time_of_day || '2:00 pm';
+  const checkOutTime = listing?.checkout_time_of_day || '11:00 am';
 
   // House rules - use resolved names from query layer (stored on proposal, not listing)
   const houseRules = proposal.houseRules || [];
@@ -209,10 +209,10 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
   const stageLabels = getStageLabels(status, proposal);
 
   // Warning: some nights unavailable
-  const someNightsUnavailable = proposal['some nights unavailable'];
+  const someNightsUnavailable = proposal.some_nights_unavailable;
 
   // Cancel reason (for cancelled proposals)
-  const cancelReason = proposal['Cancelled Reason'] || proposal['reason for cancellation'];
+  const cancelReason = proposal.reason_for_cancellation;
 
   // Calculate days summary for display
   const selectedDaysCount = daysSelected.length;
@@ -247,7 +247,7 @@ export default function ProposalCard({ proposal, statusConfig, buttonConfig, all
             href={getListingUrlWithProposalContext(listing?.id, {
               daysSelected: parseDaysSelectedForContext(proposal),
               reservationSpan: getEffectiveReservationSpan(proposal),
-              moveInDate: proposal['Move in range start']
+              moveInDate: proposal.move_in_range_start_date
             })}
             className="link-item"
             target="_blank"

@@ -381,11 +381,9 @@ export function useGuestSimulationLogic() {
         throw new Error('No proposals found');
       }
 
-      // Set virtual meeting fields
+      // Set virtual meeting fields (simulation - mark proposal as having a VM)
       const meetingData = {
-        'virtual meeting': true,
-        'virtual meeting confirmed': true,
-        'virtual meeting date': new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Tomorrow
+        proposal_workflow_status: 'Virtual Meeting Scheduled'
       };
 
       const { error: updateError } = await supabase

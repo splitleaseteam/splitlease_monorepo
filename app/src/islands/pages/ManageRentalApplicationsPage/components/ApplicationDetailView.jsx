@@ -177,7 +177,7 @@ export default function ApplicationDetailView({
 
   const personalInfo = application.personal_info || {};
   // Note: 'permanent address' is JSONB { address: string }
-  const permanentAddress = application['permanent address'];
+  const permanentAddress = application.permanent_address;
   const currentAddressString = typeof permanentAddress === 'string'
     ? permanentAddress
     : (permanentAddress?.address || '');
@@ -242,8 +242,8 @@ export default function ApplicationDetailView({
           <div className="detail-grid">
             <DetailField label="Full Name" value={application.name || personalInfo.name} fullWidth />
             <DetailField label="Email" value={application.email || personalInfo.email} />
-            <DetailField label="Phone" value={formatPhone(application['phone number'] || personalInfo.phone)} />
-            <DetailField label="Date of Birth" value={formatDate(application.DOB || personalInfo.dateOfBirth)} />
+            <DetailField label="Phone" value={formatPhone(application.phone_number || personalInfo.phone)} />
+            <DetailField label="Date of Birth" value={formatDate(application.dob || personalInfo.dateOfBirth)} />
           </div>
         </section>
 
@@ -252,8 +252,8 @@ export default function ApplicationDetailView({
           <SectionHeader title="Current Address" onEdit={onEdit} section="address" />
           <div className="detail-grid">
             <DetailField label="Address" value={currentAddressString} fullWidth />
-            <DetailField label="Unit/Apt" value={application['apartment number']} />
-            <DetailField label="Length Resided" value={application['length resided']} />
+            <DetailField label="Unit/Apt" value={application.apartment_number} />
+            <DetailField label="Length Resided" value={application.length_resided} />
             <BooleanField label="Currently Renting" value={application.renting} />
           </div>
         </section>
@@ -262,30 +262,30 @@ export default function ApplicationDetailView({
         <section className="detail-section">
           <SectionHeader title="Employment & Income" onEdit={onEdit} section="employment" />
           <div className="detail-grid">
-            <DetailField label="Employment Status" value={application['employment status']} />
-            <DetailField label="Monthly Income" value={formatCurrency(application['Monthly Income'])} />
+            <DetailField label="Employment Status" value={application.employment_status} />
+            <DetailField label="Monthly Income" value={formatCurrency(application.monthly_income)} />
           </div>
 
           {/* Employed fields */}
-          {(application['employment status'] === 'full-time' || application['employment status'] === 'part-time') && (
+          {(application.employment_status === 'full-time' || application.employment_status === 'part-time') && (
             <div className="detail-subsection">
               <h4>Employer Details</h4>
               <div className="detail-grid">
-                <DetailField label="Employer Name" value={application['employer name']} />
-                <DetailField label="Job Title" value={application['job title']} />
-                <DetailField label="Employer Phone" value={formatPhone(application['employer phone number'])} />
+                <DetailField label="Employer Name" value={application.employer_name} />
+                <DetailField label="Job Title" value={application.job_title} />
+                <DetailField label="Employer Phone" value={formatPhone(application.employer_phone_number)} />
               </div>
             </div>
           )}
 
           {/* Self-employed fields */}
-          {(application['employment status'] === 'business-owner' || application['employment status'] === 'self-employed') && (
+          {(application.employment_status === 'business-owner' || application.employment_status === 'self-employed') && (
             <div className="detail-subsection">
               <h4>Business Details</h4>
               <div className="detail-grid">
-                <DetailField label="Business Name" value={application['business legal name']} />
-                <DetailField label="Year Established" value={application['year business was created?']} />
-                <DetailField label="State Registered" value={application['state business registered']} />
+                <DetailField label="Business Name" value={application.business_legal_name} />
+                <DetailField label="Year Established" value={application.year_business_was_created} />
+                <DetailField label="State Registered" value={application.state_business_registered} />
               </div>
             </div>
           )}
@@ -304,9 +304,9 @@ export default function ApplicationDetailView({
         {/* Occupants */}
         <section className="detail-section">
           <SectionHeader title="Occupants" onEdit={onEdit} section="occupants" />
-          {application['occupants list'] && application['occupants list'].length > 0 ? (
+          {application.occupants_list && application.occupants_list.length > 0 ? (
             <div className="occupants-list">
-              {application['occupants list'].map((occupant, index) => (
+              {application.occupants_list.map((occupant, index) => (
                 <div key={occupant.id || index} className="occupant-item">
                   <span className="occupant-name">
                     {occupant.name || '-'}

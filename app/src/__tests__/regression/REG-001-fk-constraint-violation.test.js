@@ -13,7 +13,7 @@
  *
  * Affected Files:
  * - app/src/islands/shared/EditListingDetails/useEditListingDetailsLogic.js
- * - app/src/lib/listingCrudGeoPhotoPricingService.js
+ * - app/src/lib/listing/listingCrud.js
  *
  * References:
  * - .claude/plans/Documents/20251217091827-edit-listing-409-regression-report.md

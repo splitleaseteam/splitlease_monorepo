@@ -32,7 +32,7 @@ export async function getCityIdByName(cityName) {
     console.log('[CityService] Found city ID:', data.id, 'for name:', cleanName);
     return data.id;
   } catch (err) {
-    console.error('[CityService] Error looking up city:', err);
-    return null;
+    console.error('[cityService] Failed to look up city by name:', err);
+    throw err;
   }
 }

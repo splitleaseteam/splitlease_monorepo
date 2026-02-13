@@ -62,8 +62,8 @@ export function _convertDayValueToName(dayValue) {
  */
 export function getCheckInOutRange(proposal) {
   // Priority 1: Use explicit check-in/check-out day fields if available
-  const checkInDay = proposal['check in day'] || proposal['host_counter_offer_check_in_day'];
-  const checkOutDay = proposal['check out day'] || proposal['host_counter_offer_check_out_day'];
+  const checkInDay = proposal.checkin_day_of_week_number ?? proposal.host_proposed_checkin_day;
+  const checkOutDay = proposal.checkout_day_of_week_number ?? proposal.host_proposed_checkout_day;
 
   if (checkInDay != null && checkOutDay != null) {
     const checkInIndex = typeof checkInDay === 'number' ? checkInDay : parseInt(checkInDay, 10);
@@ -76,8 +76,8 @@ export function getCheckInOutRange(proposal) {
     }
   }
 
-  // Priority 2: Derive from Days Selected array
-  let daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
+  // Priority 2: Derive from guest selected days array
+  let daysSelected = proposal.guest_selected_days_numbers_json || [];
 
   // Parse if it's a JSON string
   if (typeof daysSelected === 'string') {
@@ -183,7 +183,7 @@ export function getAllDaysWithSelection(daysSelected) {
  * @returns {number[]} Array of 0-indexed day numbers
  */
 export function parseDaysSelectedForContext(proposal) {
-  let days = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
+  let days = proposal.guest_selected_days_numbers_json || [];
 
   // Parse if JSON string
   if (typeof days === 'string') {
@@ -221,8 +221,8 @@ export function parseDaysSelectedForContext(proposal) {
  * @returns {number|null} Reservation span in weeks or null if not available
  */
 export function getEffectiveReservationSpan(proposal) {
-  const isCounteroffer = proposal['counter offer happened'];
+  const isCounteroffer = proposal.has_host_counter_offer;
   return isCounteroffer
-    ? proposal['host_counter_offer_reservation_span_weeks']
-    : proposal['Reservation Span (Weeks)'];
+    ? proposal.host_proposed_reservation_span_weeks
+    : proposal.reservation_span_in_weeks;
 }

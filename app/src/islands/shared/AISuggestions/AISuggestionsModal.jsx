@@ -109,8 +109,8 @@ export default function AISuggestionsModal({
 
   // Handle combine button click
   const handleCombine = (suggestion) => {
-    const previousContent = suggestion['Previous Content'] || '';
-    const newContent = suggestion['Content'] || '';
+    const previousContent = suggestion.previous_content || '';
+    const newContent = suggestion.content || '';
     const combinedContent = previousContent
       ? `${previousContent}\n\n${newContent}`
       : newContent;
@@ -225,7 +225,7 @@ export default function AISuggestionsModal({
                     onAccept={() => actions.acceptSuggestion(suggestion.id)}
                     onIgnore={() => actions.ignoreSuggestion(suggestion.id)}
                     onCombine={() => handleCombine(suggestion)}
-                    isProcessing={suggestion['being processed?']}
+                    isProcessing={suggestion.being_processed}
                   />
                 ))}
               </div>

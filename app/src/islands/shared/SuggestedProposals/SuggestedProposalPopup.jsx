@@ -125,15 +125,15 @@ export default function SuggestedProposalPopup({
   const latestSummary = summaries[0]?.Summary || null;
 
   // Format dates
-  const startDate = proposal['Move in range start']
-    ? new Date(proposal['Move in range start']).toLocaleDateString('en-US', {
+  const startDate = proposal.move_in_range_start_date
+    ? new Date(proposal.move_in_range_start_date).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric'
       })
     : 'TBD';
 
-  const durationWeeks = proposal['Reservation Span (Weeks)'] || 0;
+  const durationWeeks = proposal.reservation_span_in_weeks || 0;
   const durationMonths = Math.round(durationWeeks / 4);
 
   return (
@@ -264,8 +264,8 @@ export default function SuggestedProposalPopup({
               <AmenityIcons listing={listing} />
 
               <PriceDisplay
-                nightlyPrice={proposal['proposal nightly price']}
-                totalPrice={proposal['Total Price for Reservation (guest)']}
+                nightlyPrice={proposal.calculated_nightly_price}
+                totalPrice={proposal.total_reservation_price_for_guest}
               />
 
               <ActionButtons

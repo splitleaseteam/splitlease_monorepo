@@ -85,9 +85,9 @@ export default function ProposalSelector({ proposals, selectedId, onSelect, coun
           // Find full proposal data for additional info
           const fullProposal = fullProposals.find(p => p.id === proposal.id) || {};
           const listing = fullProposal.listing || {};
-          const status = fullProposal.Status || '';
-          const daysSelected = fullProposal['Days Selected'] || [];
-          const weeks = fullProposal['Reservation Span (Weeks)'] || fullProposal['host_counter_offer_reservation_span_weeks'] || '';
+          const status = fullProposal.proposal_workflow_status || '';
+          const daysSelected = fullProposal.guest_selected_days_numbers_json || [];
+          const weeks = fullProposal.reservation_span_in_weeks || fullProposal.host_proposed_reservation_span_weeks || '';
 
           // Get photo URL
           const photoUrl = listing.featuredPhotoUrl ||

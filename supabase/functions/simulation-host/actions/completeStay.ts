@@ -102,7 +102,7 @@ export async function handleCompleteStay(
           review_text: 'Great guest! Very respectful and communicative throughout the stay.',
           'is_test_data': true,
           'simulation_id': simulationId,
-          'Created Date': new Date().toISOString(),
+          created_at: new Date().toISOString(),
         })
         .select('id')
         .single();
@@ -132,7 +132,7 @@ export async function handleCompleteStay(
           review_text: 'Wonderful experience! The space was exactly as described and the host was very accommodating.',
           'is_test_data': true,
           'simulation_id': simulationId,
-          'Created Date': new Date().toISOString(),
+          created_at: new Date().toISOString(),
         })
         .select('id')
         .single();

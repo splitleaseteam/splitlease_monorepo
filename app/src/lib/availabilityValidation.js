@@ -186,9 +186,9 @@ export function validateScheduleSelection(selectedDays, listing) {
     result.warnings.push(`Host prefers at most ${listing.maximum_nights_per_stay} nights per week`);
   }
 
-  // Check against Days Not Available
-  if (listing['Days Not Available'] && Array.isArray(listing['Days Not Available'])) {
-    const unavailableDays = listing['Days Not Available'];
+  // Check against unavailable days
+  if (Array.isArray(listing.unavailable_days_json) && listing.unavailable_days_json.length > 0) {
+    const unavailableDays = listing.unavailable_days_json;
     const unavailableSelected = selectedDays.filter(day => {
       const dayName = DAY_NAMES[day];
       return unavailableDays.includes(dayName);
@@ -282,7 +282,7 @@ export function validateMoveInDate(moveInDate, listing, selectedDays) {
   }
 
   // Check if date is within available range
-  if (!isDateInRange(moveInDate, listing.first_available_date, listing['Last Available'])) {
+  if (!isDateInRange(moveInDate, listing.first_available_date, listing.last_available_date)) {
     result.valid = false;
     result.errors.push('Move-in date is outside available range');
     return result;

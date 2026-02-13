@@ -31,30 +31,30 @@ export default function GuestProfileModal({ guest, onClose }) {
   const bio = guest.bio || guest.Bio || '';
 
   // Get guest needs/special requests
-  const needForSpace = guest.needForSpace || guest.need_for_space || guest['Need for Space'] || '';
-  const specialNeeds = guest.specialNeeds || guest.special_needs || guest['Special Needs'] || '';
+  const needForSpace = guest.stated_need_for_space_text || '';
+  const specialNeeds = guest.stated_special_needs_text || '';
 
   // Verification items data - only show verified items for a positive impression
   const allVerifications = [
     {
       icon: Linkedin,
       label: 'LinkedIn',
-      verified: guest.linkedinVerified || guest['Linkedin Verified'] || guest.linkedin_verified || false
+      verified: !!guest.linkedin_profile_id
     },
     {
       icon: Phone,
       label: 'Phone',
-      verified: guest.phoneVerified || guest['Phone Verified'] || guest.phone_verified || false
+      verified: guest.is_phone_verified === true
     },
     {
       icon: Mail,
       label: 'Email',
-      verified: guest.emailVerified || guest['Email Verified'] || guest.email_verified || false
+      verified: guest.is_email_confirmed === true
     },
     {
       icon: CreditCard,
       label: 'Identity',
-      verified: guest.identityVerified || guest['Identity Verified'] || guest.identity_verified || guest.id_verified || false
+      verified: guest.is_identity_verified === true
     },
   ];
 
@@ -62,7 +62,7 @@ export default function GuestProfileModal({ guest, onClose }) {
   const verifiedItems = allVerifications.filter(item => item.verified);
 
   // Review count
-  const reviewCount = guest.reviewCount || guest.review_count || guest['Review Count'] || 0;
+  const reviewCount = guest.review_count || 0;
 
   const modalContent = (
     <div className="protocol-overlay" onClick={onClose}>

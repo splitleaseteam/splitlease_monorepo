@@ -471,7 +471,7 @@ export async function handleUpdate(
 
   // Cancellation reason
   if (input.reason_for_cancellation !== undefined) {
-    updates["reason for cancellation"] = input.reason_for_cancellation;
+    updates.reason_for_cancellation = input.reason_for_cancellation;
     updatedFields.push("reason_for_cancellation");
   }
 

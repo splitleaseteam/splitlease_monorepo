@@ -32,7 +32,7 @@ export function computeProposalButtonStates({ proposal, virtualMeeting, guest, l
   let vmButton = { visible: !vmHiddenStatuses.includes(status) };
 
   if (vmButton.visible) {
-    if (vm?.['meeting declined']) {
+    if (vm?.meeting_declined) {
       vmButton = {
         ...vmButton,
         label: 'Virtual Meeting Declined',
@@ -41,13 +41,13 @@ export function computeProposalButtonStates({ proposal, virtualMeeting, guest, l
         tooltip: 'click to request another one',
         disabled: false,
       };
-    } else if (vm?.['booked date'] && vm?.['confirmedBySplitLease']) {
+    } else if (vm?.booked_date && vm?.confirmedbysplitlease) {
       vmButton = { ...vmButton, label: 'Meeting confirmed', disabled: true };
-    } else if (vm?.['booked date']) {
+    } else if (vm?.booked_date) {
       vmButton = { ...vmButton, label: 'Virtual Meeting Accepted', disabled: true };
-    } else if (vm?.['requested by'] === currentUserId) {
+    } else if (vm?.requested_by === currentUserId) {
       vmButton = { ...vmButton, label: 'Virtual Meeting Requested', disabled: true };
-    } else if (vm?.['requested by']) {
+    } else if (vm?.requested_by) {
       vmButton = { ...vmButton, label: 'Respond to Virtual Meeting Request', disabled: false };
     } else {
       vmButton = { ...vmButton, label: 'Request Virtual Meeting', disabled: false };

@@ -42,14 +42,14 @@ export default function DetailsOfProposalAndVM({
 
   // Get booked date
   const getBookedDate = () => {
-    const dateValue = meeting.bookedDate || meeting['booked date'] || meeting.booked_date;
+    const dateValue = meeting.bookedDate || meeting.booked_date;
     if (!dateValue) return null;
     return dateValue instanceof Date ? dateValue : new Date(dateValue);
   };
 
   // Get meeting link
   const getMeetingLink = () => {
-    return meeting.googleMeetLink || meeting['meeting link'] || meeting.meetingLink;
+    return meeting.googleMeetLink || meeting.meeting_link || meeting.meetingLink;
   };
 
   // Get nights/schedule

@@ -43,7 +43,6 @@ function getStatusKey(proposal) {
  */
 function hasGuestCounteroffer(proposal) {
   if (proposal?.has_guest_counteroffer) return true;
-  if (proposal?.guest_counteroffer) return true;
   const statusKey = getStatusKey(proposal);
   if (
     proposal?.last_modified_by === 'guest' &&

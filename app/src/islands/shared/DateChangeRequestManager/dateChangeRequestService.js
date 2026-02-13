@@ -142,11 +142,8 @@ export async function createDateChangeRequest(requestData) {
       data: responseData?.data ? transformFromDb(responseData.data) : null,
     };
   } catch (error) {
-    console.error('API Error (create-date-change-request):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.createDateChangeRequest] API Error:', error);
+    throw error;
   }
 }
 
@@ -177,11 +174,8 @@ export async function getDateChangeRequests(leaseId) {
       data: requests,
     };
   } catch (error) {
-    console.error('API Error (get-date-change-requests):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.getDateChangeRequests] API Error:', error);
+    throw error;
   }
 }
 
@@ -212,11 +206,8 @@ export async function acceptDateChangeRequest(requestId, message) {
       data: responseData?.data ? transformFromDb(responseData.data) : null,
     };
   } catch (error) {
-    console.error('API Error (accept-date-change-request):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.acceptDateChangeRequest] API Error:', error);
+    throw error;
   }
 }
 
@@ -247,11 +238,8 @@ export async function declineDateChangeRequest(requestId, reason) {
       data: responseData?.data ? transformFromDb(responseData.data) : null,
     };
   } catch (error) {
-    console.error('API Error (decline-date-change-request):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.declineDateChangeRequest] API Error:', error);
+    throw error;
   }
 }
 
@@ -278,11 +266,8 @@ export async function cancelDateChangeRequest(requestId) {
       data: responseData?.data ? transformFromDb(responseData.data) : null,
     };
   } catch (error) {
-    console.error('API Error (cancel-date-change-request):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.cancelDateChangeRequest] API Error:', error);
+    throw error;
   }
 }
 
@@ -309,11 +294,8 @@ export async function getThrottleStatus(userId) {
       data: responseData?.data,
     };
   } catch (error) {
-    console.error('API Error (get-throttle-status):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.getThrottleStatus] API Error:', error);
+    throw error;
   }
 }
 
@@ -353,11 +335,8 @@ export async function getEnhancedThrottleStatus(leaseId, userId) {
       },
     };
   } catch (error) {
-    console.error('API Error (get-enhanced-throttle-status):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.getEnhancedThrottleStatus] API Error:', error);
+    throw error;
   }
 }
 
@@ -385,11 +364,8 @@ export async function updateWarningPreference(leaseId, userId, dontShowAgain) {
       status: 'success',
     };
   } catch (error) {
-    console.error('API Error (update-warning-preference):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.updateWarningPreference] API Error:', error);
+    throw error;
   }
 }
 
@@ -417,11 +393,8 @@ export async function applyHardBlock(leaseId, userId) {
       data: responseData?.data,
     };
   } catch (error) {
-    console.error('API Error (apply-hard-block):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    console.error('[dateChangeRequestService.applyHardBlock] API Error:', error);
+    throw error;
   }
 }
 
@@ -469,11 +442,8 @@ export async function getLeaseWithDates(leaseId) {
       },
     };
   } catch (error) {
-    console.error('Direct Query Error (get-lease-with-dates):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Failed to fetch lease data',
-    };
+    console.error('[dateChangeRequestService.getLeaseWithDates] API Error:', error);
+    throw error;
   }
 }
 
@@ -509,11 +479,8 @@ export async function getRoommateBookedDates(listingId, currentLeaseId) {
       data: uniqueDates,
     };
   } catch (error) {
-    console.error('API Error (get-roommate-booked-dates):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Failed to fetch roommate dates',
-    };
+    console.error('[dateChangeRequestService.getRoommateBookedDates] API Error:', error);
+    throw error;
   }
 }
 

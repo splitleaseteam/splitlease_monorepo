@@ -22,8 +22,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase.js';
 import { showToast } from '../Toast.jsx';
 import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
-// TODO: Re-add when Bubble integration is restored
-// import { createListingInCode } from '../../../lib/bubbleAPI.js';
 import '../../../styles/components/create-listing-modal.css';
 
 /**

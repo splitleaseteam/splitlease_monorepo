@@ -143,7 +143,7 @@ export default function useMapMarkers({
           logger.debug(`GoogleMap: Creating ${simpleMode ? 'simple' : 'purple'} marker for listing ${listing.id}:`, {
             position,
             displayPrice,
-            startingPrice: listing.price?.starting || listing['Starting nightly price'],
+            startingPrice: listing.price?.starting || listing.lowest_nightly_price_for_map_display,
             selectedNightsCount,
             title: listing.title,
             simpleMode
@@ -242,7 +242,7 @@ export default function useMapMarkers({
           logger.debug(`GoogleMap: Creating grey marker for listing ${listing.id}:`, {
             position,
             displayPrice,
-            startingPrice: listing.price?.starting || listing['Starting nightly price'],
+            startingPrice: listing.price?.starting || listing.lowest_nightly_price_for_map_display,
             selectedNightsCount,
             title: listing.title
           });

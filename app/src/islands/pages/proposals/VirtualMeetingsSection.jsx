@@ -4,7 +4,7 @@
  * Displays a list of proposals with active virtual meetings on the Guest Proposals page.
  * Shows below the proposal card wrapper when there are proposals with virtual meetings.
  *
- * Visibility Logic (from Bubble):
+ * Visibility Logic:
  * - Visible when: filtered proposals count > 0
  * - Filter conditions:
  *   - virtual meeting isn't empty
@@ -72,7 +72,7 @@ function formatShortDate(dateStr) {
 
 /**
  * Format a date/time string for display
- * Expected format from Bubble: ISO datetime or readable string
+ * Expected format: ISO datetime or readable string
  */
 function formatDateTime(dateTimeStr) {
   if (!dateTimeStr) return '';
@@ -154,8 +154,7 @@ function hasAnyFutureSuggestedDate(suggestedDates) {
 }
 
 /**
- * Normalize VM object field names from Bubble format to camelCase
- * Bubble uses: 'meeting declined', 'booked date', 'confirmed by splitlease'
+ * Normalize VM object field names to camelCase for virtualMeetingRules.js
  * Rules expect: meetingDeclined, bookedDate, confirmedBySplitlease
  */
 function normalizeVMObject(vm) {
@@ -165,12 +164,12 @@ function normalizeVMObject(vm) {
     // Original object preserved for any other fields
     ...vm,
     // Normalized fields for virtualMeetingRules.js
-    meetingDeclined: vm['meeting declined'] ?? vm.meetingDeclined ?? false,
-    bookedDate: vm['booked date'] ?? vm.bookedDate ?? null,
-    confirmedBySplitlease: vm['confirmedBySplitLease'] ?? vm.confirmedBySplitlease ?? false,
-    requestedBy: vm['requested by'] ?? vm.requestedBy ?? null,
-    meetingLink: vm['meeting link'] ?? vm.meetingLink ?? null,
-    suggestedDates: vm['suggested dates and times'] ?? vm.suggestedDates ?? []
+    meetingDeclined: vm.meeting_declined ?? vm.meetingDeclined ?? false,
+    bookedDate: vm.booked_date ?? vm.bookedDate ?? null,
+    confirmedBySplitlease: vm.confirmedbysplitlease ?? vm.confirmedBySplitlease ?? false,
+    requestedBy: vm.requested_by ?? vm.requestedBy ?? null,
+    meetingLink: vm.meeting_link ?? vm.meetingLink ?? null,
+    suggestedDates: vm.suggested_dates_and_times ?? vm.suggestedDates ?? []
   };
 }
 
@@ -281,7 +280,7 @@ function getPrimaryButtonConfig(vmStateInfo, vmState) {
 /**
  * Filter proposals to only those with virtual meetings (active OR expired)
  *
- * Based on Bubble's List filter conditions with modification:
+ * Filter conditions:
  * - virtual meeting isn't empty
  * - Status <> Proposal Cancelled by Guest
  * - Status <> Proposal Rejected by Host
@@ -309,13 +308,13 @@ function filterProposalsWithActiveVM(proposals) {
     }
 
     // Status must not be in excluded list
-    const status = (proposal.proposal_workflow_status || proposal.Status)?.trim();
+    const status = proposal.proposal_workflow_status?.trim();
     if (excludedStatuses.includes(status)) {
       return false;
     }
 
     // Meeting must not be declined
-    if (vm['meeting declined'] === true) {
+    if (vm.meeting_declined === true) {
       return false;
     }
 
@@ -376,7 +375,7 @@ function VirtualMeetingCard({ proposal, currentUserId, onOpenVMModal, isExpanded
   const hostName = host?.first_name || 'Host';
 
   // Get suggested dates/times
-  const suggestedDates = parseSuggestedDates(vm?.['suggested dates and times']);
+  const suggestedDates = parseSuggestedDates(vm?.suggested_dates_and_times);
   const bookedDate = normalizedVM?.bookedDate;
 
   // Calculate times count

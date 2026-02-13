@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { sanitizeNeighborhoodSearch } from '../../../../lib/sanitize.js';
 
 /**
@@ -13,8 +13,22 @@ export function NeighborhoodSearchFilter({
   onNeighborhoodsChange,
   neighborhoodSearch,
   onNeighborhoodSearchChange,
-  searchInputId
+  searchInputId,
+  isLoading = false
 }) {
+  // Detect if loading has taken too long (prevents infinite "Loading..." display)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isLoading && neighborhoods.length > 0) {
+      setLoadingTimedOut(false);
+      return undefined;
+    }
+    if (!isLoading) return undefined;
+
+    const timeout = setTimeout(() => setLoadingTimedOut(true), 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading, neighborhoods.length]);
+
   const inputId = searchInputId || 'neighborhoodSearch';
   const inputRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -129,7 +143,11 @@ export function NeighborhoodSearchFilter({
           )}
           {filteredNeighborhoods.length === 0 ? (
             <div className="neighborhood-search-empty">
-              {neighborhoods.length === 0 ? 'Loading...' : 'No matches'}
+              {isLoading && !loadingTimedOut
+                ? 'Loading...'
+                : loadingTimedOut
+                  ? 'Unable to load neighborhoods'
+                  : 'No matches'}
             </div>
           ) : (
             filteredNeighborhoods.slice(0, 8).map(neighborhood => (
@@ -161,8 +179,22 @@ export function NeighborhoodCheckboxList({
   neighborhoods,
   selectedNeighborhoods,
   onNeighborhoodsChange,
-  id
+  id,
+  isLoading = false
 }) {
+  // Detect if loading has taken too long (prevents infinite "Loading..." display)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isLoading && neighborhoods.length > 0) {
+      setLoadingTimedOut(false);
+      return undefined;
+    }
+    if (!isLoading) return undefined;
+
+    const timeout = setTimeout(() => setLoadingTimedOut(true), 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading, neighborhoods.length]);
+
   // Toggle neighborhood selection
   const handleToggleNeighborhood = (neighborhoodId) => {
     if (selectedNeighborhoods.includes(neighborhoodId)) {
@@ -179,7 +211,13 @@ export function NeighborhoodCheckboxList({
       {/* Scrollable list with checkboxes */}
       <div className="neighborhood-checkbox-list" id={id}>
         {neighborhoods.length === 0 ? (
-          <div className="neighborhood-list-empty">Loading neighborhoods...</div>
+          <div className="neighborhood-list-empty">
+            {isLoading && !loadingTimedOut
+              ? 'Loading neighborhoods...'
+              : loadingTimedOut
+                ? 'Unable to load neighborhoods'
+                : 'No neighborhoods available'}
+          </div>
         ) : (
           neighborhoods.map(neighborhood => (
             <label key={neighborhood.id} className="neighborhood-checkbox-item">
@@ -209,8 +247,22 @@ export function NeighborhoodDropdownFilter({
   onNeighborhoodsChange,
   neighborhoodSearch,
   onNeighborhoodSearchChange,
-  searchInputId
+  searchInputId,
+  isLoading = false
 }) {
+  // Detect if loading has taken too long (prevents infinite "Loading..." display)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isLoading && neighborhoods.length > 0) {
+      setLoadingTimedOut(false);
+      return undefined;
+    }
+    if (!isLoading) return undefined;
+
+    const timeout = setTimeout(() => setLoadingTimedOut(true), 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading, neighborhoods.length]);
+
   const inputId = searchInputId || 'neighborhoodSearch';
 
   const handleNeighborhoodToggle = (neighborhoodId) => {
@@ -290,7 +342,11 @@ export function NeighborhoodDropdownFilter({
       <div className="neighborhood-list">
         {filteredNeighborhoods.length === 0 ? (
           <div style={{ padding: '10px', color: '#666' }}>
-            {neighborhoods.length === 0 ? 'Loading neighborhoods...' : 'No neighborhoods found'}
+            {isLoading && !loadingTimedOut
+              ? 'Loading neighborhoods...'
+              : loadingTimedOut
+                ? 'Unable to load neighborhoods'
+                : 'No neighborhoods found'}
           </div>
         ) : (
           filteredNeighborhoods.map(neighborhood => (

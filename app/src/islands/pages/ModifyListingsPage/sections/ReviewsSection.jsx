@@ -99,8 +99,8 @@ export default function ReviewsSection({
         </p>
         <FormInput
           label="Previous Reviews Link"
-          name="Source Link"
-          value={listing['Source Link']}
+          name="previous_reviews_link"
+          value={listing.previous_reviews_link}
           onChange={handleChange}
           placeholder="https://www.airbnb.com/rooms/12345678"
           helpText="Optional - helps build trust with potential guests"
@@ -125,7 +125,7 @@ export default function ReviewsSection({
           />
           <SummaryItem
             label="External Reviews"
-            value={listing['Source Link'] ? 'Link provided' : 'None'}
+            value={listing.previous_reviews_link ? 'Link provided' : 'None'}
           />
         </div>
       </div>

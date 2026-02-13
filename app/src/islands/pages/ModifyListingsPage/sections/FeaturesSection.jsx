@@ -50,8 +50,8 @@ export default function FeaturesSection({
       {/* Description of Lodging */}
       <FormTextArea
         label="Description of Lodging"
-        name="Description"
-        value={listing['Description']}
+        name="listing_description"
+        value={listing.listing_description}
         onChange={handleChange}
         rows={6}
         maxLength={2000}

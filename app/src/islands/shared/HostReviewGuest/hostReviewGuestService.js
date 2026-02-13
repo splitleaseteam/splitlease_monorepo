@@ -29,11 +29,8 @@ export async function submitGuestReview(reviewData) {
       data: responseData?.data
     };
   } catch (error) {
-    console.error('API Error (submit-guest-review):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
+    console.error('[hostReviewGuestService.submitGuestReview] API Error:', error);
+    throw error;
   }
 }
 
@@ -62,11 +59,8 @@ export async function checkExistingReview(stayId, hostId) {
       data: responseData?.data
     };
   } catch (error) {
-    console.error('API Error (check-guest-review):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
+    console.error('[hostReviewGuestService.checkExistingReview] API Error:', error);
+    throw error;
   }
 }
 
@@ -94,11 +88,8 @@ export async function fetchReview(reviewId) {
       data: responseData?.data
     };
   } catch (error) {
-    console.error('API Error (fetch-guest-review):', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
+    console.error('[hostReviewGuestService.fetchReview] API Error:', error);
+    throw error;
   }
 }
 

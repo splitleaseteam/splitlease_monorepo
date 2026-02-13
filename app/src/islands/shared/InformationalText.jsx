@@ -131,14 +131,14 @@ export default function InformationalText({
   } else if (listing && selectedDaysCount !== null) {
     // Legacy pricing tooltip mode (only if no explicit content)
     const priceTiers = [
-      { nights: 2, price: listing['Price 2 nights selected'] },
-      { nights: 3, price: listing['Price 3 nights selected'] },
-      { nights: 4, price: listing['Price 4 nights selected'] },
-      { nights: 5, price: listing['Price 5 nights selected'] },
-      { nights: 7, price: listing['Price 7 nights selected'] }
+      { nights: 2, price: listing.nightly_rate_for_2_night_stay },
+      { nights: 3, price: listing.nightly_rate_for_3_night_stay },
+      { nights: 4, price: listing.nightly_rate_for_4_night_stay },
+      { nights: 5, price: listing.nightly_rate_for_5_night_stay },
+      { nights: 7, price: listing.nightly_rate_for_7_night_stay }
     ].filter(tier => tier.price !== null && tier.price !== undefined);
 
-    const startingPrice = listing['Starting nightly price'] || listing.price?.starting || 0;
+    const startingPrice = listing.lowest_nightly_price_for_map_display || listing.price?.starting || 0;
 
     const mainContent = `The starting nightly price is $${startingPrice.toFixed(2)}. Pricing varies based on how many nights per week you select.`;
     const expandedContentText = priceTiers.length > 0

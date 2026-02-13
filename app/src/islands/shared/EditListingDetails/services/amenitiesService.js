@@ -41,8 +41,8 @@ export async function getCommonAmenitiesByType(type) {
     console.log('[amenitiesService] Fetched amenities:', names);
     return names;
   } catch (err) {
-    console.error('[amenitiesService] Unexpected error:', err);
-    return [];
+    console.error('[amenitiesService] Failed to fetch common amenities by type:', err);
+    throw err;
   }
 }
 

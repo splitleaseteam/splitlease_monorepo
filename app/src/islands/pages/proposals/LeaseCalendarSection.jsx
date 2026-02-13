@@ -259,7 +259,7 @@ export default function LeaseCalendarSection({ proposal }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Check if this proposal has an activated lease
-  const isActivated = isLeaseActivatedStatus(proposal?.Status);
+  const isActivated = isLeaseActivatedStatus(proposal?.proposal_workflow_status);
 
   // Fetch lease data when component mounts (if activated)
   useEffect(() => {

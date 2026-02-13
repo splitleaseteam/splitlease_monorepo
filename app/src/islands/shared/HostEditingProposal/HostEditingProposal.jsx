@@ -78,15 +78,15 @@ export function HostEditingProposal({
   const [isFirstOpen, setIsFirstOpen] = useState(true)
   const [proceedButtonLocked, setProceedButtonLocked] = useState(false)
 
-  // Get guest and listing info - handle both Bubble and Supabase field formats
-  const guest = proposal?.guest || proposal?.Guest || proposal?._guest || proposal?.['Created By'] || {}
-  const listing = proposal?.listing || proposal?._listing || {}
-  const guestName = guest?.first_name || guest?.firstName || guest?.['First Name'] || 'Guest'
-  const listingTitle = listing?.title || listing?.Name || 'Listing'
+  // Get guest and listing info
+  const guest = proposal?.guest || {}
+  const listing = proposal?.listing || {}
+  const guestName = guest?.first_name || 'Guest'
+  const listingTitle = listing?.listing_title || 'Listing'
 
   // Form state - holds edited values
   const [editedMoveInDate, setEditedMoveInDate] = useState(() =>
-    getProposalDate(proposal, 'moveInRangeStart', proposal?.['Move in range start'])
+    getProposalDate(proposal, 'move_in_range_start_date')
   )
   const [editedReservationSpan, setEditedReservationSpan] = useState(() => {
     const weeks = extractReservationSpanWeeks(proposal)
@@ -109,7 +109,7 @@ export function HostEditingProposal({
     extractNightsSelected(proposal)
   )
   const [editedDaysSelected, setEditedDaysSelected] = useState(() =>
-    getProposalValue(proposal, 'daysSelected', ['Monday', 'Tuesday', 'Wednesday', 'Thursday'])
+    proposal?.guest_selected_days_numbers_json || ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
   )
   const [editedHouseRules, setEditedHouseRules] = useState([])
   const [houseRulesInitialized, setHouseRulesInitialized] = useState(false)
@@ -130,47 +130,47 @@ export function HostEditingProposal({
   // Initialize values based on proposal status (for counteroffer values)
   useEffect(() => {
     if (isFirstOpen && proposal) {
-      const status = proposal?.proposal_workflow_status || proposal?.status
+      const status = proposal?.proposal_workflow_status
       const statusInfo = PROPOSAL_STATUSES[status] || { usualOrder: 0 }
       const useCounterOfferValues = statusInfo.usualOrder >= 3
 
       if (useCounterOfferValues) {
-        const hcMoveInDate = proposal?.host_proposed_move_in_date || proposal?.hostCounterOfferMoveInDate
+        const hcMoveInDate = proposal?.host_proposed_move_in_date
         if (hcMoveInDate) {
           setEditedMoveInDate(new Date(hcMoveInDate))
         }
 
-        const hcReservationSpan = proposal?.host_proposed_reservation_span_weeks || proposal?.hostCounterOfferReservationSpan
+        const hcReservationSpan = proposal?.host_proposed_reservation_span_weeks
         if (hcReservationSpan) {
           setEditedReservationSpan(hcReservationSpan)
         }
 
-        const hcWeeks = proposal?.host_proposed_reservation_span_weeks || proposal?.hostCounterOfferReservationSpanWeeks
+        const hcWeeks = proposal?.host_proposed_reservation_span_weeks
         if (hcWeeks) {
           setEditedWeeks(hcWeeks)
         }
 
-        const hcCheckInDay = proposal?.hostCounterOfferCheckInDay
-        if (hcCheckInDay) {
+        const hcCheckInDay = proposal?.host_proposed_checkin_day
+        if (hcCheckInDay != null) {
           setEditedCheckInDay(hcCheckInDay)
         }
 
-        const hcCheckOutDay = proposal?.hostCounterOfferCheckOutDay
-        if (hcCheckOutDay) {
+        const hcCheckOutDay = proposal?.host_proposed_checkout_day
+        if (hcCheckOutDay != null) {
           setEditedCheckOutDay(hcCheckOutDay)
         }
 
-        const hcNightsSelected = proposal?.host_proposed_selected_nights_json || proposal?.hostCounterOfferNightsSelected
+        const hcNightsSelected = proposal?.host_proposed_selected_nights_json
         if (hcNightsSelected) {
           setEditedNightsSelected(hcNightsSelected)
         }
 
-        const hcDaysSelected = proposal?.host_proposed_selected_days_json || proposal?.hostCounterOfferDaysSelected
+        const hcDaysSelected = proposal?.host_proposed_selected_days_json
         if (hcDaysSelected) {
           setEditedDaysSelected(hcDaysSelected)
         }
 
-        const hcHouseRules = proposal?.host_proposed_house_rules_json || proposal?.hostCounterOfferHouseRules
+        const hcHouseRules = proposal?.host_proposed_house_rules_json
         if (hcHouseRules) {
           setEditedHouseRules(hcHouseRules)
         }

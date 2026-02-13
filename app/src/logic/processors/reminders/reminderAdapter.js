@@ -1,6 +1,7 @@
-﻿/**
+/**
  * Reminder data adapters.
  * Transform data between form, API, and database formats.
+ * DB table: remindersfromhousemanual
  */
 
 /**
@@ -11,13 +12,6 @@
  * @param {string} params.houseManualId - House manual ID.
  * @param {string} params.creatorId - Creator user ID.
  * @returns {object} Payload ready for API submission.
- *
- * @example
- * adaptReminderForSubmission({
- *   formData: { message: 'Check-in at 3pm', scheduledDate: new Date(), ... },
- *   houseManualId: 'abc123',
- *   creatorId: 'user456'
- * })
  */
 export function adaptReminderForSubmission({ formData, houseManualId, creatorId }) {
   return {
@@ -30,19 +24,17 @@ export function adaptReminderForSubmission({ formData, houseManualId, creatorId 
     isEmailReminder: Boolean(formData.isEmailReminder),
     isSmsReminder: Boolean(formData.isSmsReminder),
     guestId: formData.guestId || undefined,
-    visitId: formData.visitId || undefined,
     fallbackPhone: formData.fallbackPhone?.trim() || undefined,
-    fallbackEmail: formData.fallbackEmail?.trim() || undefined,
     reminderType: formData.reminderType || 'custom',
-    templateId: formData.templateId || undefined,
   };
 }
 
 /**
  * Adapt database record to UI format.
+ * Maps snake_case columns from remindersfromhousemanual table to camelCase.
  *
  * @param {object} params - Named parameters.
- * @param {object} params.dbRow - Database row with Bubble-style column names.
+ * @param {object} params.dbRow - Database row from remindersfromhousemanual table.
  * @returns {object} UI-friendly reminder object.
  */
 export function adaptReminderFromDatabase({ dbRow }) {
@@ -52,25 +44,18 @@ export function adaptReminderFromDatabase({ dbRow }) {
 
   return {
     id: dbRow.id,
-    houseManualId: dbRow['house manual'],
+    houseManualId: dbRow.house_manual,
     guestId: dbRow.guest,
-    creatorId: dbRow['Created By'],
-    message: dbRow['message to send'],
-    scheduledDateTime: dbRow['scheduled date and time'],
-    isEmailReminder: Boolean(dbRow['is an email reminder?']),
-    isSmsReminder: Boolean(dbRow['is a phone reminder?']),
-    fallbackPhone: dbRow['phone number (in case no guest attached)'],
-    fallbackEmail: dbRow['fallback email'],
-    reminderType: dbRow['type of reminders'] || 'custom',
-    emailSchedulerCode: dbRow['API scheduled code for email'],
-    smsSchedulerCode: dbRow['API scheduled code for sms'],
-    status: dbRow.status || 'pending',
-    visitId: dbRow.visit,
-    deliveryStatus: dbRow.delivery_status || 'pending',
-    deliveredAt: dbRow.delivered_at,
-    openedAt: dbRow.opened_at,
-    sendgridMessageId: dbRow.sendgrid_message_id,
-    twilioMessageSid: dbRow.twilio_message_sid,
+    creatorId: dbRow.created_by,
+    message: dbRow.message_to_send,
+    scheduledDateTime: dbRow.scheduled_date_and_time,
+    isEmailReminder: Boolean(dbRow.is_an_email_reminder),
+    isSmsReminder: Boolean(dbRow.is_a_phone_reminder),
+    fallbackPhone: dbRow.phone_number_in_case_no_guest_attached,
+    reminderType: dbRow.type_of_reminders || 'custom',
+    emailSchedulerCode: dbRow.api_scheduled_code_for_email,
+    smsSchedulerCode: dbRow.api_scheduled_code_for_sms,
+    pending: dbRow.pending,
     createdAt: dbRow.original_created_at,
     modifiedAt: dbRow.original_updated_at,
   };
@@ -124,16 +109,8 @@ export function adaptReminderUpdateForSubmission({ reminderId, updates }) {
     payload.fallbackPhone = updates.fallbackPhone?.trim() || undefined;
   }
 
-  if (updates.fallbackEmail !== undefined) {
-    payload.fallbackEmail = updates.fallbackEmail?.trim() || undefined;
-  }
-
   if (updates.reminderType !== undefined) {
     payload.reminderType = updates.reminderType;
-  }
-
-  if (updates.status !== undefined) {
-    payload.status = updates.status;
   }
 
   return payload;

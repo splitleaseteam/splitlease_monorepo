@@ -11,7 +11,8 @@
 export default function LeaseInfoBar({
   lease,
   coTenant,
-  roommate // @deprecated Use coTenant
+  roommate, // @deprecated Use coTenant
+  isLoading = false
 }) {
   // Resolve prop with backward compatibility
   const resolvedCoTenant = coTenant ?? roommate;
@@ -40,7 +41,9 @@ export default function LeaseInfoBar({
         <div className="lease-info-bar__cotenant">
           <span className="lease-info-bar__label">Sharing with</span>
           <span className="lease-info-bar__name">
-            {resolvedCoTenant ? `${resolvedCoTenant.firstName} ${resolvedCoTenant.lastName}` : 'Loading...'}
+            {resolvedCoTenant
+              ? `${resolvedCoTenant.firstName} ${resolvedCoTenant.lastName}`
+              : isLoading ? 'Loading...' : 'Unknown'}
           </span>
         </div>
 

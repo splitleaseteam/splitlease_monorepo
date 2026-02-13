@@ -83,11 +83,15 @@ export function sendToSlack(channel: SlackChannel, message: SlackMessage): void 
     return;
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
   fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: controller.signal,
     body: JSON.stringify(message),
-  }).catch((e) => {
+  }).then(() => clearTimeout(timeoutId)).catch((e) => {
+    clearTimeout(timeoutId);
     console.error('[slack] Failed to send message:', e.message);
   });
 }
@@ -115,18 +119,22 @@ export async function sendInteractiveMessage(
   }
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const response = await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         channel: channelId,
         blocks,
         text, // Fallback text for notifications
       }),
     });
+    clearTimeout(timeoutId);
 
     const result = await response.json();
 
@@ -159,12 +167,15 @@ export async function updateSlackMessage(
   }
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const response = await fetch('https://slack.com/api/chat.update', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         channel: channelId,
         ts: messageTs,
@@ -172,6 +183,7 @@ export async function updateSlackMessage(
         text,
       }),
     });
+    clearTimeout(timeoutId);
 
     const result = await response.json();
     return { ok: result.ok, error: result.error };

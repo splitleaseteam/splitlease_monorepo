@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 /**
  * BoroughSearchFilter - Multi-select borough filter with chip display
@@ -11,8 +11,22 @@ export function BoroughSearchFilter({
   boroughs,
   selectedBoroughs,
   onBoroughsChange,
-  searchInputId
+  searchInputId,
+  isLoading = false
 }) {
+  // Detect if loading has taken too long (prevents infinite "Loading..." display)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    if (!isLoading && boroughs.length > 0) {
+      setLoadingTimedOut(false);
+      return undefined;
+    }
+    if (!isLoading) return undefined;
+
+    const timeout = setTimeout(() => setLoadingTimedOut(true), 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading, boroughs.length]);
+
   const inputId = searchInputId || 'boroughSearch';
   const inputRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -122,7 +136,11 @@ export function BoroughSearchFilter({
           </div>
           {filteredBoroughs.length === 0 ? (
             <div className="borough-search-empty">
-              {boroughs.length === 0 ? 'Loading...' : 'No matches'}
+              {isLoading && !loadingTimedOut
+                ? 'Loading...'
+                : loadingTimedOut
+                  ? 'Unable to load boroughs'
+                  : 'No matches'}
             </div>
           ) : (
             filteredBoroughs.map(borough => (

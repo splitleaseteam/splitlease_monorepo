@@ -30,7 +30,7 @@ export function DateChangeSection({ requests = [], onAccept, onDecline, onViewDe
 
       <div className="hl-date-changes-list">
         {requests.map((request) => {
-          const isPending = request.status?.toLowerCase() === 'pending';
+          const isPending = request.status?.toLowerCase() === 'waiting_for_answer';
           const requestedByName = request.requestedByUser?.name ||
             request.requestedByUser?.firstName ||
             'Guest';
@@ -43,11 +43,11 @@ export function DateChangeSection({ requests = [], onAccept, onDecline, onViewDe
                 </div>
                 <div className="hl-date-change-dates">
                   <span className="hl-date-change-original">
-                    {formatFullDate(request.originalDate)}
+                    {formatFullDate(Array.isArray(request.originalDate) ? request.originalDate[0] : request.originalDate)}
                   </span>
                   <ArrowRight size={14} />
                   <span className="hl-date-change-requested">
-                    {formatFullDate(request.requestedDate)}
+                    {formatFullDate(Array.isArray(request.requestedDate) ? request.requestedDate[0] : request.requestedDate)}
                   </span>
                 </div>
                 {request.priceAdjustment != null && request.priceAdjustment !== 0 && (

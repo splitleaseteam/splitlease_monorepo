@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase.js';
-import { getListingById, updateListing } from '../../../lib/listingCrudGeoPhotoPricingService.js';
+import { getListingById, updateListing } from '../../../lib/listing/index.js';
 import { uploadPhoto, deletePhoto } from '../../../lib/photoUpload.js';
 import {
   initializeLookups,
@@ -495,8 +495,6 @@ export default function useModifyListingsPageLogic() {
       const newPhoto = {
         id: `photo_${Date.now()}`,
         url: result.url,
-        Photo: result.url,
-        'Photo (thumbnail)': result.url,
         storagePath: result.path,
         SortOrder: index,
         toggleMainPhoto: index === 0
@@ -577,7 +575,7 @@ export default function useModifyListingsPageLogic() {
 
     return {
       address: {
-        isComplete: Boolean(listing.listing_title && (listing.address_with_lat_lng_json?.address || listing['street_address'])),
+        isComplete: Boolean(listing.listing_title && (listing.address_with_lat_lng_json?.address || listing.street_address)),
         hasChanges: false
       },
       features: {

@@ -305,7 +305,9 @@ export function useHostMenuData(userId, isAuthenticated) {
   }, [error, isAuthenticated]);
 
   const refetch = useCallback(() => {
-    fetchData().catch(() => {});
+    fetchData().catch((error) => {
+      console.error('[useHostMenuData] Failed to fetch host menu data:', error);
+    });
   }, [fetchData]);
 
   useEffect(() => {

@@ -29,7 +29,7 @@ function getSummaryText(proposal) {
   const negotiationSummaries = proposal?.negotiationSummaries || [];
   if (negotiationSummaries.length > 0) {
     const latestSummary = negotiationSummaries[0]; // Already sorted by date desc
-    return latestSummary?.Summary || latestSummary?.summary || null;
+    return latestSummary?.summary || null;
   }
 
   // Fallback to direct fields (legacy)

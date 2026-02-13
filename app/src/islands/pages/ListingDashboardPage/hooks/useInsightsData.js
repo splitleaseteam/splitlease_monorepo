@@ -191,8 +191,8 @@ export function analyzeListingVsComparables(listing, comparables, counts, calend
   });
 
   const listingAmenityIds = new Set([
-    ...safeParseJsonArray(listing['Features - Amenities In-Unit']),
-    ...safeParseJsonArray(listing['Features - Amenities In-Building']),
+    ...safeParseJsonArray(listing.in_unit_amenity_reference_ids_json),
+    ...safeParseJsonArray(listing.in_building_amenity_reference_ids_json),
   ]);
 
   const topAmenities = Object.entries(amenityCounts)

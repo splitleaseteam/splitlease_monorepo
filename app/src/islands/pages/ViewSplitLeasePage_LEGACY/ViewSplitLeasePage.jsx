@@ -438,7 +438,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
         {photos.slice(1, 3).map((photo, idx) => (
           <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} className={styles.photoGalleryImageWrapper}>
             <img
-              src={photo['Photo (thumbnail)'] || photo.Photo}
+              src={photo.url || photo['Photo (thumbnail)'] || photo.Photo}
               alt={`${listingName} - ${idx + 2}`}
               className={styles.photoGalleryImage}
             />
@@ -461,7 +461,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
         {photos.slice(1, 4).map((photo, idx) => (
           <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} className={styles.photoGalleryImageWrapper}>
             <img
-              src={photo['Photo (thumbnail)'] || photo.Photo}
+              src={photo.url || photo['Photo (thumbnail)'] || photo.Photo}
               alt={`${listingName} - ${idx + 2}`}
               className={styles.photoGalleryImage}
             />
@@ -486,7 +486,7 @@ function PhotoGallery({ photos, listingName, onPhotoClick, isMobile }) {
       {photosToShow.map((photo, idx) => (
         <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} className={styles.photoGalleryImageWrapper}>
           <img
-            src={photo['Photo (thumbnail)'] || photo.Photo}
+            src={photo.url || photo['Photo (thumbnail)'] || photo.Photo}
             alt={`${listingName} - ${idx + 2}`}
             className={styles.photoGalleryImage}
           />

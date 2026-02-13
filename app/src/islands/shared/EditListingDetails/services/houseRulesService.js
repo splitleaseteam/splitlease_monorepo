@@ -35,8 +35,8 @@ export async function getCommonHouseRules() {
     console.log('[houseRulesService] Fetched common house rules:', names);
     return names;
   } catch (err) {
-    console.error('[houseRulesService] Unexpected error:', err);
-    return [];
+    console.error('[houseRulesService] Failed to fetch common house rules:', err);
+    throw err;
   }
 }
 
@@ -76,7 +76,7 @@ export async function getAllHouseRules() {
     console.log('[houseRulesService] Fetched all house rules:', rules.length);
     return rules;
   } catch (err) {
-    console.error('[houseRulesService] Unexpected error:', err);
-    return [];
+    console.error('[houseRulesService] Failed to fetch all house rules:', err);
+    throw err;
   }
 }

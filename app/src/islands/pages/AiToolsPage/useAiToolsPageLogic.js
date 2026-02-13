@@ -66,6 +66,9 @@ export function useAiToolsPageLogic() {
     message: null,
   });
 
+  // Error state for data fetching (surfaces errors from individual fetch functions)
+  const [fetchError, setFetchError] = useState(null);
+
   // ============================================================================
   // DATA FETCHING
   // ============================================================================
@@ -80,7 +83,8 @@ export function useAiToolsPageLogic() {
       if (fetchError) throw fetchError;
       return data || [];
     } catch (err) {
-      console.error('[AiTools] Error fetching house manuals:', err);
+      console.error('[useAiToolsPageLogic] Failed to load house manuals:', err);
+      setFetchError(err);
       return [];
     }
   }, []);
@@ -103,7 +107,8 @@ export function useAiToolsPageLogic() {
       if (fetchError) throw fetchError;
       return data || [];
     } catch (err) {
-      console.error('[AiTools] Error fetching deepfakes:', err);
+      console.error('[useAiToolsPageLogic] Failed to load deepfakes:', err);
+      setFetchError(err);
       return [];
     }
   }, []);
@@ -122,7 +127,8 @@ export function useAiToolsPageLogic() {
       if (fetchError) throw fetchError;
       return data || [];
     } catch (err) {
-      console.error('[AiTools] Error fetching narrations:', err);
+      console.error('[useAiToolsPageLogic] Failed to load narrations:', err);
+      setFetchError(err);
       return [];
     }
   }, []);
@@ -141,7 +147,8 @@ export function useAiToolsPageLogic() {
       if (fetchError) throw fetchError;
       return data || [];
     } catch (err) {
-      console.error('[AiTools] Error fetching jingles:', err);
+      console.error('[useAiToolsPageLogic] Failed to load jingles:', err);
+      setFetchError(err);
       return [];
     }
   }, []);
@@ -186,7 +193,8 @@ export function useAiToolsPageLogic() {
 
   useEffect(() => {
     executeLoadInitialData().catch((err) => {
-      console.error('[AiTools] Error loading initial data:', err);
+      console.error('[useAiToolsPageLogic] Failed to load initial data:', err);
+      setFetchError(err);
     });
   }, [executeLoadInitialData]);
 
@@ -509,7 +517,7 @@ export function useAiToolsPageLogic() {
   return {
     // Loading
     loading,
-    error: error?.message ?? null,
+    error: error?.message ?? fetchError?.message ?? null,
 
     // Data
     houseManuals,

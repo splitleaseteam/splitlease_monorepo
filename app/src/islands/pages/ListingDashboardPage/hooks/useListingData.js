@@ -521,6 +521,7 @@ export function useListingData(listingId) {
     nextMeeting: null,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState(null);
   const [existingCohostRequest, setExistingCohostRequest] = useState(null);
   const [calendarData, setCalendarData] = useState(null);
@@ -587,7 +588,7 @@ export function useListingData(listingId) {
         // 12E: Co-host request moved into Promise.all (was sequential)
         supabase.from('co_hostrequest')
           .select('*')
-          .eq('Listing', listingId)
+          .eq('listing', listingId)
           .order('original_created_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -660,11 +661,11 @@ export function useListingData(listingId) {
       }
 
       // Build next meeting from meeting data (handles sparse booked date / guest name)
-      const nextMeeting = meetingsData?.find(m => m['booked date'] && !m['meeting declined']);
+      const nextMeeting = meetingsData?.find(m => m.booked_date && !m.meeting_declined);
       const nextMeetingFormatted = nextMeeting ? {
-        date: nextMeeting['booked date'],
-        guestName: nextMeeting['guest name'] || 'Guest',
-        meetingLink: nextMeeting['meeting link'] || null,
+        date: nextMeeting.booked_date,
+        guestName: nextMeeting.guest_name || 'Guest',
+        meetingLink: nextMeeting.meeting_link || null,
       } : null;
 
       const transformedListing = transformListingData(listingData, photos || [], lookups);
@@ -682,6 +683,7 @@ export function useListingData(listingId) {
         reviews: reviewsCount || 0,
         messages: messagesCount || 0,
       });
+      setHasLoaded(true);
 
       logger.debug('✅ Listing loaded successfully');
     } catch (err) {
@@ -778,11 +780,28 @@ export function useListingData(listingId) {
     fetchListing();
   }, [fetchListing]);
 
+  // Safety timeout: if isLoading stays true for 15 seconds, force it off with an error.
+  // Prevents infinite "Loading..." if a Supabase query hangs or network stalls.
+  useEffect(() => {
+    if (!isLoading) return undefined;
+
+    const timeout = setTimeout(() => {
+      logger.warn('⚠️ Loading timeout: listing data fetch exceeded 15 seconds');
+      setIsLoading(false);
+      if (!listing && !error) {
+        setError('Loading timed out. Please refresh the page to try again.');
+      }
+    }, 15000);
+
+    return () => clearTimeout(timeout);
+  }, [isLoading, listing, error]);
+
   return {
     listing,
     setListing,
     counts,
     isLoading,
+    hasLoaded,
     error,
     existingCohostRequest,
     setExistingCohostRequest,

@@ -80,8 +80,8 @@ export async function handleCreateReview(
   // 2. Get user record
   const { data: userData, error: userError } = await supabase
     .from("user")
-    .select("id, user_type")
-    .eq("auth_user_id", user.id)
+    .select("id, current_user_role")
+    .eq("supabase_user_id", user.id)
     .single();
 
   if (userError || !userData) {
@@ -96,7 +96,7 @@ export async function handleCreateReview(
   }
 
   const reviewerId = userData.id;
-  const userType = userData.user_type;
+  const userType = userData.current_user_role;
 
   // 3. Verify stay exists and user is authorized
   const { data: stay, error: stayError } = await supabase

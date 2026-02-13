@@ -6,14 +6,14 @@
  */
 
 export default function ListingPreview({ listing }) {
-  const listingId = listing['id'];
+  const listingId = listing.id;
   const previewUrl = listingId ? `/preview-split-lease/${listingId}` : null;
   const viewUrl = listingId ? `/view-split-lease/${listingId}` : null;
 
   // Get main photo
   const photos = listing.photos_with_urls_captions_and_sort_order_json || [];
   const mainPhoto = photos.find(p => p.toggleMainPhoto) || photos[0];
-  const photoUrl = mainPhoto?.url || mainPhoto?.Photo || '/assets/images/placeholder-listing.png';
+  const photoUrl = mainPhoto?.url || '/assets/images/placeholder-listing.png';
 
   // Get price display
   const monthlyRate = listing.monthly_rate_paid_to_host;

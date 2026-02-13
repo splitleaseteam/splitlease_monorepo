@@ -148,33 +148,31 @@ export function useMessagingPageLogic() {
         // Transform listing data for the modal
         const transformedListing = {
           id: listingData.id,
-          Name: listingData.listing_title || 'Unnamed Listing',
+          listing_title: listingData.listing_title || 'Unnamed Listing',
           title: listingData.listing_title || 'Unnamed Listing',
-          'Primary Photo': listingData['Primary Photo'],
+          photos: listingData.photos_with_urls_captions_and_sort_order_json,
           host: null, // Host info not needed for proposal submission
           // Pricing fields
-          'nightly_rate_for_2_night_stay': listingData.nightly_rate_for_2_night_stay,
-          'nightly_rate_for_3_night_stay': listingData.nightly_rate_for_3_night_stay,
-          'nightly_rate_for_4_night_stay': listingData.nightly_rate_for_4_night_stay,
-          'nightly_rate_for_5_night_stay': listingData.nightly_rate_for_5_night_stay,
-          'nightly_rate_for_7_night_stay': listingData.nightly_rate_for_7_night_stay,
-          'weekly_rate_paid_to_host': listingData.weekly_rate_paid_to_host,
-          'monthly_rate_paid_to_host': listingData.monthly_rate_paid_to_host,
-          'price_override': listingData['price_override'],
-          'cleaning_fee_amount': listingData.cleaning_fee_amount,
-          'damage_deposit_amount': listingData.damage_deposit_amount,
-          'unit_markup_percentage': listingData.unit_markup_percentage,
-          'rental type': listingData.rental_type,
-          'Weeks offered': listingData.weeks_offered_schedule_text,
+          nightly_rate_for_2_night_stay: listingData.nightly_rate_for_2_night_stay,
+          nightly_rate_for_3_night_stay: listingData.nightly_rate_for_3_night_stay,
+          nightly_rate_for_4_night_stay: listingData.nightly_rate_for_4_night_stay,
+          nightly_rate_for_5_night_stay: listingData.nightly_rate_for_5_night_stay,
+          nightly_rate_for_7_night_stay: listingData.nightly_rate_for_7_night_stay,
+          weekly_rate_paid_to_host: listingData.weekly_rate_paid_to_host,
+          monthly_rate_paid_to_host: listingData.monthly_rate_paid_to_host,
+          price_override: listingData.price_override,
+          cleaning_fee_amount: listingData.cleaning_fee_amount,
+          damage_deposit_amount: listingData.damage_deposit_amount,
+          unit_markup_percentage: listingData.unit_markup_percentage,
+          rental_type: listingData.rental_type,
+          weeks_offered_schedule_text: listingData.weeks_offered_schedule_text,
           // Availability fields
-          ' First Available': listingData.first_available_date,
-          'Last Available': listingData['Last Available'],
-          '# of nights available': listingData['# of nights available'],
-          'Dates - Blocked': listingData.blocked_specific_dates_json,
-          'Nights Available (numbers)': listingData['Nights Available (numbers)'],
-          'Minimum Nights': listingData.minimum_nights_per_stay,
-          'Maximum Nights': listingData.maximum_nights_per_stay,
-          'Days Available (List of Days)': listingData.available_days_as_day_numbers_json
+          first_available_date: listingData.first_available_date,
+          last_available_date: listingData.last_available_date,
+          maximum_nights_per_stay: listingData.maximum_nights_per_stay,
+          blocked_specific_dates_json: listingData.blocked_specific_dates_json,
+          available_days_as_day_numbers_json: listingData.available_days_as_day_numbers_json,
+          minimum_nights_per_stay: listingData.minimum_nights_per_stay,
         };
 
         // Set proposal modal data
@@ -350,7 +348,7 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Message is for this thread, processing...');
 
         // Skip if this is our own message (already added optimistically)
-        const isOwnMessage = newRow.originator_user_id === user?.id;
+        const isOwnMessage = newRow.sender_user_id === user?.id;
 
         // Add message to state (avoid duplicates)
         setMessages(prev => {
@@ -363,16 +361,16 @@ export function useMessagingPageLogic() {
             sender_name: newRow['is_from_split_bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
             sender_avatar: isOwnMessage ? user?.profilePhoto : undefined,
             sender_type: newRow['is_from_split_bot'] ? 'splitbot' :
-              (newRow.originator_user_id === newRow.host_user_id ? 'host' : 'guest'),
+              (newRow.sender_user_id === newRow.host_user_id ? 'host' : 'guest'),
             is_outgoing: isOwnMessage,
             timestamp: new Date(newRow['original_created_at']).toLocaleString('en-US', {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
             }),
-            call_to_action: newRow['Call to Action'] ? {
-              type: newRow['Call to Action'],
+            call_to_action: newRow['call_to_action_button_label'] ? {
+              type: newRow['call_to_action_button_label'],
               message: 'View Details'
             } : undefined,
-            split_bot_warning: newRow['Split Bot Warning'],
+            split_bot_warning: newRow['split_bot_warning_text'],
           };
 
           return [...prev, transformedMessage];

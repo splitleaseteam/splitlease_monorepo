@@ -32,7 +32,7 @@ import {
   buildMetaText,
   getProgressStageLabels
 } from './displayUtils.js';
-import { formatPrice } from '../../../lib/proposals/dataTransformers.js';
+import { formatPrice } from '../../../lib/formatters.js';
 import { getStatusConfig, isCompletedStatus, shouldShowStatusBanner } from '../../../logic/constants/proposalStatuses.js';
 import { shouldHideVirtualMeetingButton, getButtonConfigForProposal } from '../../../lib/proposals/statusButtonConfig.js';
 import { navigateToMessaging } from '../../../logic/workflows/proposals/navigationWorkflow.js';
@@ -107,16 +107,16 @@ function getAllDaysWithSelection(daysSelected) {
  * Check-in = first day, Checkout = last day in the selection.
  */
 function getCheckInOutRange(proposal) {
-  const isCounteroffer = proposal['counter offer happened'];
+  const isCounteroffer = proposal.has_host_counter_offer;
 
-  // Priority 1: For counteroffers, prefer HC fields
+  // Priority 1: For counteroffers, prefer host-proposed fields
   // Priority 2: Use explicit check-in/check-out day fields
   const checkInDay = isCounteroffer
-    ? (proposal['host_counter_offer_check_in_day'] ?? proposal['check in day'])
-    : (proposal['check in day'] ?? proposal['host_counter_offer_check_in_day']);
+    ? (proposal.host_proposed_checkin_day ?? proposal.checkin_day_of_week_number)
+    : (proposal.checkin_day_of_week_number ?? proposal.host_proposed_checkin_day);
   const checkOutDay = isCounteroffer
-    ? (proposal['host_counter_offer_check_out_day'] ?? proposal['check out day'])
-    : (proposal['check out day'] ?? proposal['host_counter_offer_check_out_day']);
+    ? (proposal.host_proposed_checkout_day ?? proposal.checkout_day_of_week_number)
+    : (proposal.checkout_day_of_week_number ?? proposal.host_proposed_checkout_day);
 
   if (checkInDay != null && checkOutDay != null) {
     const checkInIndex = typeof checkInDay === 'number' ? checkInDay : parseInt(checkInDay, 10);
@@ -129,8 +129,8 @@ function getCheckInOutRange(proposal) {
     }
   }
 
-  // Priority 2: Derive from Days Selected array
-  let daysSelected = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
+  // Priority 2: Derive from guest selected days array
+  let daysSelected = proposal.guest_selected_days_numbers_json || [];
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
@@ -193,9 +193,9 @@ function getCheckInOutRange(proposal) {
  * Used for strikethrough comparison when a counteroffer changes the schedule
  */
 function getOriginalCheckInOutRange(proposal) {
-  // Use original check-in/check-out day fields (not HC fields)
-  const checkInDay = proposal['check in day'];
-  const checkOutDay = proposal['check out day'];
+  // Use original check-in/check-out day fields (not host-proposed fields)
+  const checkInDay = proposal.checkin_day_of_week_number;
+  const checkOutDay = proposal.checkout_day_of_week_number;
 
   if (checkInDay != null && checkOutDay != null) {
     const checkInIndex = typeof checkInDay === 'number' ? checkInDay : parseInt(checkInDay, 10);
@@ -208,8 +208,8 @@ function getOriginalCheckInOutRange(proposal) {
     }
   }
 
-  // Fall back to original Days Selected array
-  let daysSelected = proposal['Days Selected'] || [];
+  // Fall back to original guest selected days array
+  let daysSelected = proposal.guest_selected_days_numbers_json || [];
   if (typeof daysSelected === 'string') {
     try {
       daysSelected = JSON.parse(daysSelected);
@@ -268,7 +268,7 @@ function getOriginalCheckInOutRange(proposal) {
  * Parse days selected for URL context
  */
 function parseDaysSelectedForContext(proposal) {
-  let days = proposal['Days Selected'] || proposal.hostCounterOfferDaysSelected || [];
+  let days = proposal.guest_selected_days_numbers_json || [];
   if (typeof days === 'string') {
     try {
       days = JSON.parse(days);
@@ -297,10 +297,10 @@ function parseDaysSelectedForContext(proposal) {
  * Get effective reservation span
  */
 function getEffectiveReservationSpan(proposal) {
-  const isCounteroffer = proposal['counter offer happened'];
+  const isCounteroffer = proposal.has_host_counter_offer;
   return isCounteroffer
-    ? proposal['host_counter_offer_reservation_span_weeks']
-    : proposal['Reservation Span (Weeks)'];
+    ? proposal.host_proposed_reservation_span_weeks
+    : proposal.reservation_span_in_weeks;
 }
 
 /**
@@ -322,7 +322,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   if (isTerminal) return PROGRESS_COLORS.red;
 
   const normalizedStatus = typeof status === 'string' ? status.trim() : status;
-  const hasRentalApp = proposal['rental application'];
+  const hasRentalApp = proposal.rental_application;
 
   // Stage 1: Always purple (completed)
   if (stageIndex === 0) return PROGRESS_COLORS.purple;
@@ -558,41 +558,41 @@ export default function ExpandableProposalCard({
   // Extract data
   const listing = proposal?.listing;
   const host = listing?.host;
-  const status = proposal?.proposal_workflow_status || proposal?.Status;
+  const status = proposal?.proposal_workflow_status;
   const statusConfig = getStatusConfig(status);
   const buttonConfig = getButtonConfigForProposal(proposal);
 
   // Photo and name
   const photoUrl = getListingPhoto(listing);
-  const listingName = listing?.Name || 'Listing';
+  const listingName = listing?.listing_title || 'Listing';
   const location = [listing?.hoodName, listing?.boroughName].filter(Boolean).join(', ') || 'New York';
   const hostName = getHostDisplayName(host);
   const hostPhoto = getHostProfilePhoto(host);
 
   // Counteroffer flag
-  const isCounteroffer = proposal?.['counter offer happened'];
+  const isCounteroffer = proposal?.has_host_counter_offer;
 
   // Original values (guest's proposal)
-  let originalDaysSelected = proposal?.['Days Selected'] || [];
+  let originalDaysSelected = proposal?.guest_selected_days_numbers_json || [];
   if (typeof originalDaysSelected === 'string') {
     try { originalDaysSelected = JSON.parse(originalDaysSelected); } catch (_e) { originalDaysSelected = []; }
   }
-  const originalNightsPerWeek = proposal?.['nights per week (num)'] || originalDaysSelected.length;
-  const originalReservationWeeks = proposal?.['Reservation Span (Weeks)'] || 4;
-  const originalNightlyPrice = proposal?.['proposal nightly price'] || 0;
-  const originalTotalPrice = proposal?.['Total Price for Reservation (guest)'] || 0;
-  const originalMoveInStart = proposal?.['Move in range start'];
+  const originalNightsPerWeek = proposal?.nights_per_week_count || originalDaysSelected.length;
+  const originalReservationWeeks = proposal?.reservation_span_in_weeks || 4;
+  const originalNightlyPrice = proposal?.calculated_nightly_price || 0;
+  const originalTotalPrice = proposal?.total_reservation_price_for_guest || 0;
+  const originalMoveInStart = proposal?.move_in_range_start_date;
 
   // HC values (host counteroffer) - only if counteroffer happened
-  let hcDaysSelected = proposal?.['host_counter_offer_days_selected'] || [];
+  let hcDaysSelected = proposal?.host_proposed_selected_days_json || [];
   if (typeof hcDaysSelected === 'string') {
     try { hcDaysSelected = JSON.parse(hcDaysSelected); } catch (_e) { hcDaysSelected = []; }
   }
-  const hcNightsPerWeek = proposal?.['host_counter_offer_nights_per_week'] || hcDaysSelected.length;
-  const hcReservationWeeks = proposal?.['host_counter_offer_reservation_span_weeks'];
-  const hcNightlyPrice = proposal?.['host_counter_offer_nightly_price'];
-  const hcTotalPrice = proposal?.['host_counter_offer_total_price'];
-  const hcMoveInDate = proposal?.['host_counter_offer_move_in_date'];
+  const hcNightsPerWeek = proposal?.host_proposed_nights_per_week || hcDaysSelected.length;
+  const hcReservationWeeks = proposal?.host_proposed_reservation_span_weeks;
+  const hcNightlyPrice = proposal?.host_proposed_nightly_price;
+  const hcTotalPrice = proposal?.host_proposed_total_guest_price;
+  const hcMoveInDate = proposal?.host_proposed_move_in_date;
 
   // Active values (what to display as current - prefer HC if counteroffer)
   const daysSelected = isCounteroffer && hcDaysSelected.length > 0 ? hcDaysSelected : originalDaysSelected;
@@ -603,7 +603,7 @@ export default function ExpandableProposalCard({
   const totalPrice = isCounteroffer && hcTotalPrice != null ? hcTotalPrice : originalTotalPrice;
   const checkInOutRange = getCheckInOutRange(proposal);
   const originalCheckInOutRange = getOriginalCheckInOutRange(proposal);
-  const cleaningFee = proposal?.['cleaning fee'] || 0;
+  const cleaningFee = proposal?.cleaning_fee_amount || 0;
 
   // Comparison flags - detect which values changed
   const durationChanged = isCounteroffer && hcReservationWeeks != null && hcReservationWeeks !== originalReservationWeeks;
@@ -618,8 +618,8 @@ export default function ExpandableProposalCard({
   const moveInStart = isCounteroffer && hcMoveInDate ? hcMoveInDate : originalMoveInStart;
   const anticipatedMoveIn = formatDate(moveInStart);
   const originalMoveInDisplay = moveInChanged ? formatDate(originalMoveInStart) : null;
-  const checkInTime = listing?.['Check in time'] || '2:00 pm';
-  const checkOutTime = listing?.['Check Out time'] || '11:00 am';
+  const checkInTime = listing?.checkin_time_of_day || '2:00 pm';
+  const checkOutTime = listing?.checkout_time_of_day || '11:00 am';
 
   // House rules
   const houseRules = proposal?.houseRules || [];
@@ -639,12 +639,12 @@ export default function ExpandableProposalCard({
   const isPending = isPendingConfirmation(status);
   const isTerminal = isTerminalStatus(status);
   const isCompleted = isCompletedStatus(status);
-  const cancelReason = proposal?.['Cancelled Reason'] || proposal?.['reason for cancellation'];
-  const someNightsUnavailable = proposal?.['some nights unavailable'];
+  const cancelReason = proposal?.reason_for_cancellation;
+  const someNightsUnavailable = proposal?.some_nights_unavailable;
 
   // VM configuration
   const virtualMeeting = proposal?.virtualMeeting;
-  const currentUserId = proposal?.Guest;
+  const currentUserId = proposal?.guest_user_id;
 
   const vmConfig = useMemo(() => {
     if (!status || shouldHideVirtualMeetingButton(status)) {
@@ -653,19 +653,19 @@ export default function ExpandableProposalCard({
     if (!virtualMeeting) {
       return { visible: true, view: 'request', disabled: false, label: 'Request Virtual Meeting', className: 'btn-vm-request' };
     }
-    if (virtualMeeting['meeting declined'] === true) {
+    if (virtualMeeting.meeting_declined === true) {
       return { visible: true, view: 'request', disabled: false, label: 'VM Declined', className: 'btn-vm-declined' };
     }
-    if (virtualMeeting['booked date'] && virtualMeeting['confirmedBySplitLease'] === true) {
+    if (virtualMeeting.booked_date && virtualMeeting.confirmedbysplitlease === true) {
       return { visible: true, view: 'details', disabled: false, label: 'Meeting Confirmed', className: 'btn-vm-confirmed' };
     }
-    if (virtualMeeting['booked date'] && !virtualMeeting['confirmedBySplitLease']) {
+    if (virtualMeeting.booked_date && !virtualMeeting.confirmedbysplitlease) {
       return { visible: true, view: 'details', disabled: true, label: 'VM Accepted', className: 'btn-vm-accepted' };
     }
-    if (virtualMeeting['requested by'] === currentUserId) {
+    if (virtualMeeting.requested_by === currentUserId) {
       return { visible: true, view: null, disabled: true, label: 'VM Requested', className: 'btn-vm-requested' };
     }
-    if (virtualMeeting['requested by'] && virtualMeeting['requested by'] !== currentUserId) {
+    if (virtualMeeting.requested_by && virtualMeeting.requested_by !== currentUserId) {
       return { visible: true, view: 'respond', disabled: false, label: 'Respond to VM', className: 'btn-vm-respond' };
     }
     return { visible: true, view: 'request', disabled: false, label: 'Request VM', className: 'btn-vm-request' };
@@ -690,7 +690,7 @@ export default function ExpandableProposalCard({
       const nextStatus = getNextStatusAfterConfirmation(proposal);
       const { error } = await supabase
         .from('booking_proposal')
-        .update({ proposal_workflow_status: nextStatus, 'Modified Date': new Date().toISOString() })
+        .update({ proposal_workflow_status: nextStatus, original_updated_at: new Date().toISOString() })
         .eq('id', proposal.id);
       if (error) throw new Error(error.message);
       showToast({ title: 'Proposal confirmed!', type: 'success' });
@@ -794,7 +794,7 @@ export default function ExpandableProposalCard({
             onViewListing={() => window.open(getListingUrlWithProposalContext(listing?.id, {
               daysSelected: parseDaysSelectedForContext(proposal),
               reservationSpan: getEffectiveReservationSpan(proposal),
-              moveInDate: proposal['Move in range start']
+              moveInDate: proposal.move_in_range_start_date
             }), '_blank')}
           >
             {/* Action buttons for narrative view */}
@@ -889,7 +889,7 @@ export default function ExpandableProposalCard({
               href={getListingUrlWithProposalContext(listing?.id, {
                 daysSelected: parseDaysSelectedForContext(proposal),
                 reservationSpan: getEffectiveReservationSpan(proposal),
-                moveInDate: proposal['Move in range start']
+                moveInDate: proposal.move_in_range_start_date
               })}
               className="epc-link-item"
               target="_blank"
@@ -1170,7 +1170,7 @@ export default function ExpandableProposalCard({
           }}
           pricePerNight={nightlyPrice}
           totalPriceForReservation={totalPrice}
-          priceRentPer4Weeks={proposal['Price Rent per 4 weeks'] || (nightlyPrice * nightsPerWeek * 4)}
+          priceRentPer4Weeks={proposal.price_rent_per_4_weeks || (nightlyPrice * nightsPerWeek * 4)}
         />
       )}
 

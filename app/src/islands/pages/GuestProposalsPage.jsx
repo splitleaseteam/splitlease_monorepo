@@ -28,9 +28,6 @@ import { useGuestProposalsPageLogic } from './proposals/useGuestProposalsPageLog
 import SectionHeader from './proposals/SectionHeader.jsx';
 import ExpandableProposalCard from './proposals/ExpandableProposalCard.jsx';
 import VirtualMeetingsSection from './proposals/VirtualMeetingsSection.jsx';
-// Legacy imports kept for potential fallback
-// import ProposalSelector from './proposals/ProposalSelector.jsx';
-// import ProposalCard from './proposals/ProposalCard.jsx';
 
 // ============================================================================
 // LOADING STATE COMPONENT

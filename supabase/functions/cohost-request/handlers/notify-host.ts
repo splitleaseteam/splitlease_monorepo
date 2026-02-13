@@ -213,12 +213,15 @@ Request ID: ${input.requestId}
     console.log(`[cohost-request:notify-host] Sending email via Resend to: ${input.hostEmail}`);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json',
         },
+        signal: controller.signal,
         body: JSON.stringify({
           from: 'Split Lease <noreply@splitlease.com>',
           to: input.hostEmail,
@@ -227,6 +230,7 @@ Request ID: ${input.requestId}
           text: emailText
         })
       });
+      clearTimeout(timeoutId);
 
       const result = await response.json();
 

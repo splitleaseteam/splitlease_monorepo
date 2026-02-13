@@ -23,12 +23,10 @@
  */
 export function PricingRow({ proposal, isDeclined = false }) {
   // Check if counteroffer happened
-  const isCounteroffer = proposal?.['counter offer happened'] ||
-    proposal?.counterOfferHappened ||
-    proposal?.counter_offer_happened;
+  const isCounteroffer = proposal?.has_host_counter_offer;
 
   // Get rental type to determine how to display compensation
-  const rentalType = (proposal?.rental_type || proposal?.rental_type || 'nightly').toLowerCase();
+  const rentalType = (proposal?.rental_type || 'nightly').toLowerCase();
   const isMonthly = rentalType === 'monthly';
   const isWeekly = rentalType === 'weekly';
 
@@ -38,8 +36,8 @@ export function PricingRow({ proposal, isDeclined = false }) {
   // The '4 week compensation' field is calculated correctly from the pricing_list
   const host4WeekCompensation = proposal?.four_week_host_compensation || 0;
 
-  const originalWeeks = proposal?.reservation_span_in_weeks || proposal?.reservation_span_weeks || 0;
-  const durationMonths = proposal?.['duration in months'] || Math.round(originalWeeks / 4);
+  const originalWeeks = proposal?.reservation_span_in_weeks || 0;
+  const durationMonths = proposal?.host_proposed_duration_months || Math.round(originalWeeks / 4);
 
   let originalNights = proposal?.guest_selected_nights_numbers_json || [];
   if (typeof originalNights === 'string') {
@@ -56,9 +54,9 @@ export function PricingRow({ proposal, isDeclined = false }) {
   const hcNightsPerWeek = hcNights.length > 0 ? hcNights.length : null;
 
   // Display values
-  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || proposal?.guest_selected_nights_numbers_json || originalNights);
+  const nightsSelected = (isCounteroffer && hcNights.length > 0) ? hcNights : (proposal?.nights_selected || originalNights);
   const nightsPerWeek = nightsSelected.length;
-  const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || proposal?.weeks || proposal?.total_weeks || originalWeeks);
+  const weeks = (isCounteroffer && hcWeeks != null) ? hcWeeks : (proposal?.duration_weeks || originalWeeks);
 
   // Calculate total host compensation from '4 week compensation'
   // This is the source of truth, not 'Total Compensation (proposal - host)'

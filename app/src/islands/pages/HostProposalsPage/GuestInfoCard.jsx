@@ -35,7 +35,7 @@ function getGuestBio(guest) {
  * @returns {string|null} Year string or null
  */
 function getMemberSinceYear(guest) {
-  const createdAt = guest?.created_at || guest?.Created_Date || guest?.member_since;
+  const createdAt = guest?.created_at;
   if (!createdAt) return null;
   const year = new Date(createdAt).getFullYear();
   return isNaN(year) ? null : String(year);

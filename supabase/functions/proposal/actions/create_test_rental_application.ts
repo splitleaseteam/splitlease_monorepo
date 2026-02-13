@@ -71,7 +71,7 @@ export async function handleCreateTestRentalApplication(
     'Annual Income': autofillData.annualIncome || 100000,
     'Application Status': 'Completed',
     'is_usability_test': true,
-    'Created Date': new Date().toISOString()
+    created_at: new Date().toISOString()
   };
 
   // Try to insert rental application

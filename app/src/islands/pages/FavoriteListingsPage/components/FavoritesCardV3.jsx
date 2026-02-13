@@ -252,7 +252,7 @@ const FavoritesCardV3 = ({
   const hostAvatar = listing.host?.image || listing.hostAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face';
 
   // Get price as clean integer
-  const rawPrice = listing.price?.starting || listing['Starting nightly price'] || 0;
+  const rawPrice = listing.price?.starting || listing.lowest_nightly_price_for_map_display || 0;
   const price = Math.round(Number(rawPrice));
 
   // Generate AI insight

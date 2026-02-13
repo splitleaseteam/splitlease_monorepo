@@ -3,7 +3,7 @@
  */
 
 import ListingScheduleSelector from '../../shared/ListingScheduleSelector.jsx';
-import { formatPrice } from '../../../lib/priceCalculations.js';
+import { formatPrice } from '../../../lib/formatters.js';
 import { SchedulePatternHighlight } from './PreviewHelpers.jsx';
 
 export function PreviewPricing({
@@ -141,7 +141,7 @@ export function PreviewPricing({
             }}>
               {(() => {
                 // Get the host rate based on nights selected
-                const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
+                const rateKey = `nightly_rate_for_${nightsSelected}_night_stay`;
                 const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
                 return rate ? `$${rate}` : 'Select Days';
               })()}
@@ -283,7 +283,7 @@ export function PreviewPricing({
               } else if (listing?.rental_type === 'Monthly' && listing?.monthly_rate_paid_to_host) {
                 return formatPrice(listing.monthly_rate_paid_to_host);
               } else {
-                const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
+                const rateKey = `nightly_rate_for_${nightsSelected}_night_stay`;
                 const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
                 return rate ? formatPrice(rate * nightsSelected * 4) : 'Select Days';
               }
@@ -320,7 +320,7 @@ export function PreviewPricing({
             } else if (listing?.rental_type === 'Monthly' && listing?.monthly_rate_paid_to_host) {
               return formatPrice(listing.monthly_rate_paid_to_host * (reservationSpan / 4));
             } else {
-              const rateKey = `nightly_rate_${nightsSelected}_night${nightsSelected === 1 ? '' : 's'}`;
+              const rateKey = `nightly_rate_for_${nightsSelected}_night_stay`;
               const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
               return rate ? formatPrice(rate * nightsSelected * reservationSpan) : 'Select Days';
             }

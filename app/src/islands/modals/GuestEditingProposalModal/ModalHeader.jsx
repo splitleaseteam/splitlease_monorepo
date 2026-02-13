@@ -24,7 +24,7 @@ export default function ModalHeader({
             </div>
             <div>
               <h2 id="gep-modal-title" className="gep-header-title-text">Proposal Details</h2>
-              <p className="gep-header-subtitle">{listing?.title || listing?.Title || proposal?._listing?.title || 'Listing'}</p>
+              <p className="gep-header-subtitle">{listing?.listing_title || 'Listing'}</p>
             </div>
           </div>
           <button
@@ -50,7 +50,7 @@ export default function ModalHeader({
             </button>
             <div>
               <h2 id="gep-modal-title" className="gep-header-title-text">Edit Proposal</h2>
-              <p className="gep-header-subtitle">{listing?.title || listing?.Title || proposal?._listing?.title || 'Listing'}</p>
+              <p className="gep-header-subtitle">{listing?.listing_title || 'Listing'}</p>
             </div>
           </div>
           <button

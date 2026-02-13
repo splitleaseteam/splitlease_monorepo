@@ -72,11 +72,11 @@ export default function PristineDocumentView({
         </div>
         <div className="gep-fee-row">
           <span className="gep-fee-label">Refundable Damage Deposit*</span>
-          <span className="gep-fee-value">${(listing?.damageDeposit || listing?.['Damage Deposit'] || 0).toFixed(2)}</span>
+          <span className="gep-fee-value">${(listing?.damageDeposit || 0).toFixed(2)}</span>
         </div>
         <div className="gep-fee-row">
           <span className="gep-fee-label">Maintenance Fee* <span className="gep-fee-note">*see terms of use</span></span>
-          <span className="gep-fee-value">${(listing?.maintenanceFee || listing?.['Maintenance Fee'] || 0).toFixed(2)}</span>
+          <span className="gep-fee-value">${(0).toFixed(2)}</span>
         </div>
         <p className="gep-disclaimer">*Refundable Damage Deposit is held with Split Lease</p>
       </div>

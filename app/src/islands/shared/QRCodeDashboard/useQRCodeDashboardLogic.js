@@ -110,14 +110,6 @@ export function useQRCodeDashboardLogic({
         qrCodeDashboardService.fetchHouseManual(houseManualId)
       ]);
 
-      if (qrResult.status === 'error') {
-        throw new Error(qrResult.message);
-      }
-
-      if (manualResult.status === 'error') {
-        throw new Error(manualResult.message);
-      }
-
       setQRCodes(qrResult.data || []);
       setHouseManual(manualResult.data);
     } catch (err) {
@@ -193,10 +185,6 @@ export function useQRCodeDashboardLogic({
         hostId
       );
 
-      if (result.status === 'error') {
-        throw new Error(result.message);
-      }
-
       // Add to local state
       setQRCodes(prev => [result.data, ...prev]);
       setMode('view');
@@ -235,10 +223,6 @@ export function useQRCodeDashboardLogic({
 
     try {
       const result = await qrCodeDashboardService.updateQRCode(qrCodeId, updates);
-
-      if (result.status === 'error') {
-        throw new Error(result.message);
-      }
 
       // Update local state
       setQRCodes(prev => prev.map(qr =>
@@ -282,10 +266,6 @@ export function useQRCodeDashboardLogic({
     try {
       const result = await qrCodeDashboardService.deleteQRCode(qrCodeId);
 
-      if (result.status === 'error') {
-        throw new Error(result.message);
-      }
-
       // Remove from local state
       setQRCodes(prev => prev.filter(qr => qr.id !== qrCodeId));
       setSelectedIds(prev => {
@@ -328,10 +308,6 @@ export function useQRCodeDashboardLogic({
     try {
       const idsToDelete = Array.from(selectedIds);
       const result = await qrCodeDashboardService.deleteMultipleQRCodes(idsToDelete);
-
-      if (result.status === 'error') {
-        throw new Error(result.message);
-      }
 
       // Remove from local state
       setQRCodes(prev => prev.filter(qr => !selectedIds.has(qr.id)));

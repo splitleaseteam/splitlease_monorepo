@@ -6,6 +6,14 @@
 import { signupUser } from '../../../lib/auth/index.js';
 import { extractName, generatePassword } from './marketReportUtils.js';
 
+// ============ ENVIRONMENT VALIDATION ============
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables');
+}
+
 // ============ COMMUNICATION FUNCTIONS ============
 
 /**
@@ -29,9 +37,7 @@ import { extractName, generatePassword } from './marketReportUtils.js';
 function sendWelcomeEmail(data) {
   console.log('[AiSignupMarketReport] Sending welcome email to:', data.email);
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qcfifybkaddcoimjroca.supabase.co';
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-  const edgeFunctionUrl = `${supabaseUrl}/functions/v1/send-email`;
+  const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/send-email`;
 
   // Build the email body HTML (matches Bubble's CORE-Send Basic Email format)
   // Uses <br> tags for line breaks as expected by the Basic template
@@ -47,7 +53,7 @@ function sendWelcomeEmail(data) {
     keepalive: true, // Critical: keeps request alive during page navigation
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${supabaseAnonKey}`,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({
       action: 'send',
@@ -113,9 +119,7 @@ function sendWelcomeEmail(data) {
 function sendInternalNotificationEmail(data) {
   console.log('[AiSignupMarketReport] Sending internal notification email');
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qcfifybkaddcoimjroca.supabase.co';
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-  const edgeFunctionUrl = `${supabaseUrl}/functions/v1/send-email`;
+  const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/send-email`;
 
   // Build plain text body for internal notification
   const emailBody = `Name: ${data.name || 'Not extracted'}
@@ -135,7 +139,7 @@ free form text inputted: ${data.freeformText}`;
     keepalive: true, // Critical: keeps request alive during page navigation
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${supabaseAnonKey}`,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({
       action: 'send',
@@ -203,9 +207,7 @@ function sendWelcomeSms(data) {
 
   console.log('[AiSignupMarketReport] Sending welcome SMS to:', data.phone);
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qcfifybkaddcoimjroca.supabase.co';
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-  const edgeFunctionUrl = `${supabaseUrl}/functions/v1/send-sms`;
+  const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/send-sms`;
 
   // Format phone to E.164 (add +1 if needed)
   let formattedPhone = data.phone.replace(/\D/g, ''); // Remove non-digits
@@ -225,7 +227,7 @@ function sendWelcomeSms(data) {
     keepalive: true, // Critical: keeps request alive during page navigation
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${supabaseAnonKey}`,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({
       action: 'send',
@@ -322,8 +324,7 @@ export function sendWelcomeCommunications(data) {
 async function queueProfileParsing(data) {
   console.log('[AiSignupMarketReport] Queuing profile parsing (async)...');
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qcfifybkaddcoimjroca.supabase.co';
-  const edgeFunctionUrl = `${supabaseUrl}/functions/v1/ai-parse-profile`;
+  const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/ai-parse-profile`;
 
   try {
     // Use queue_and_process to both queue AND process in one call
@@ -462,9 +463,7 @@ export async function submitSignup(data) {
   // ========== STEP 2: Submit Market Research (save freeform text) ==========
   console.log('[AiSignupMarketReport] Step 2: Submitting market research...');
 
-  // Get Supabase URL from environment
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qcfifybkaddcoimjroca.supabase.co';
-  const edgeFunctionUrl = `${supabaseUrl}/functions/v1/ai-signup-guest`;
+  const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/ai-signup-guest`;
 
   console.log('[AiSignupMarketReport] Edge Function URL:', edgeFunctionUrl);
 
@@ -585,8 +584,7 @@ export async function parseProfileWithAI(data) {
   console.log('[AiSignupMarketReport] Email:', data.email);
   console.log('[AiSignupMarketReport] Text length:', data.text_inputted.length);
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qcfifybkaddcoimjroca.supabase.co';
-  const edgeFunctionUrl = `${supabaseUrl}/functions/v1/bubble-proxy`;
+  const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/bubble-proxy`;
 
   try {
     const response = await fetch(edgeFunctionUrl, {

@@ -33,8 +33,8 @@ function getValidPhotoUrl(photos) {
       continue;
     }
 
-    // Handle object format - check url, Photo, or Photo (thumbnail) properties
-    const url = photo?.url || photo?.Photo || photo?.['Photo (thumbnail)'];
+    // Handle object format from photos_with_urls_captions_and_sort_order_json
+    const url = photo?.url;
     if (url && typeof url === 'string' && !url.startsWith('blob:')) {
       return url;
     }
@@ -51,18 +51,18 @@ function getPriceDisplay(listing) {
   const rentalType = (listing.rental_type || '').toLowerCase();
 
   if (rentalType === 'monthly') {
-    const monthlyRate = listing.monthly_rate || listing['Monthly Host Rate'] || 0;
+    const monthlyRate = listing.monthly_rate_paid_to_host || 0;
     if (monthlyRate > 0) {
       return { amount: monthlyRate, label: '/month' };
     }
   } else if (rentalType === 'weekly') {
-    const weeklyRate = listing.weekly_rate || listing['Weekly Host Rate'] || 0;
+    const weeklyRate = listing.weekly_rate_paid_to_host || 0;
     if (weeklyRate > 0) {
       return { amount: weeklyRate, label: '/week' };
     }
   } else {
     // Nightly or default
-    const nightlyRate = listing['Start Nightly Price'] || listing.min_nightly || 0;
+    const nightlyRate = listing.lowest_nightly_price_for_map_display || listing.nightly_rate_for_1_night_stay || 0;
     if (nightlyRate > 0) {
       return { amount: nightlyRate, label: '/night' };
     }
@@ -90,13 +90,13 @@ function ListingItem({ listing, onClick }) {
   };
 
   // Format location display
-  const borough = listing['Borough/Region'] || '';
+  const borough = listing.borough || '';
   const hood = listing.hood || '';
   const location = [borough, hood].filter(Boolean).join(', ') || 'Location not specified';
 
   // Format bedroom/bathroom display
-  const bedrooms = listing['Qty of Bedrooms'] || 0;
-  const bathrooms = listing['Qty of Bathrooms'] || 0;
+  const bedrooms = listing.bedroom_count || 0;
+  const bathrooms = listing.bathroom_count || 0;
   const bedsText = bedrooms === 1 ? '1 bed' : `${bedrooms} beds`;
   const bathsText = bathrooms === 1 ? '1 bath' : `${bathrooms} baths`;
 

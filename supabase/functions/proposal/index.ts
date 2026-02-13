@@ -20,8 +20,18 @@ Deno.serve(async (req: Request) => {
       return new Response(null, { status: 200, headers: corsHeaders });
     }
 
-    // Parse request body
-    const body = await req.json();
+    // Parse request body — guard body parsing for GET requests
+    let body: any = {};
+    if (req.method !== 'GET') {
+      try { body = await req.json(); } catch { body = {}; }
+    } else {
+      const url = new URL(req.url);
+      body = { action: url.searchParams.get('action') };
+      // Pass all query params as payload for GET requests
+      const payload: Record<string, string> = {};
+      url.searchParams.forEach((value, key) => { if (key !== 'action') payload[key] = value; });
+      body.payload = payload;
+    }
     const action = body.action || 'unknown';
     const payload = body.payload || {};
 

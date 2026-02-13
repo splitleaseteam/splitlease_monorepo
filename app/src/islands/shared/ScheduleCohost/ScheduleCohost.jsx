@@ -892,30 +892,30 @@ export default function ScheduleCohost({
             {/* Progress Bar - shows current status in the workflow */}
             <CohostProgressBar currentStatus={
               coHostRequest.status
-              || coHostRequest['Status - Co-Host Request']
+              || coHostRequest.status_co_host_request
               || 'Co-Host Requested'
             } />
 
             {/* Assigned Co-Host Info - shown once a co-host is selected */}
-            {(coHostRequest['Co-Host selected (OS)'] || coHostRequest.cohostName) && (
+            {(coHostRequest.co_host_selected_os || coHostRequest.cohostName) && (
               <div className="schedule-cohost-assigned-info">
                 <div className="schedule-cohost-assigned-cohost">
                   <span className="schedule-cohost-assigned-label">Your Co-Host:</span>
                   <span className="schedule-cohost-assigned-value">
-                    {coHostRequest['Co-Host selected (OS)'] || coHostRequest.cohostName}
+                    {coHostRequest.co_host_selected_os || coHostRequest.cohostName}
                   </span>
                 </div>
-                {(coHostRequest['Meeting Date Time'] || coHostRequest.meetingDateTime) && (
+                {(coHostRequest.meeting_date_time || coHostRequest.meetingDateTime) && (
                   <div className="schedule-cohost-assigned-meeting">
                     <span className="schedule-cohost-assigned-label">Meeting Time:</span>
                     <span className="schedule-cohost-assigned-value">
-                      {coHostRequest['Meeting Date Time'] || coHostRequest.meetingDateTime}
+                      {coHostRequest.meeting_date_time || coHostRequest.meetingDateTime}
                     </span>
                   </div>
                 )}
-                {(coHostRequest['Google Meet Link'] || coHostRequest.googleMeetLink) && (
+                {(coHostRequest.google_meet_link || coHostRequest.googleMeetLink) && (
                   <a
-                    href={coHostRequest['Google Meet Link'] || coHostRequest.googleMeetLink}
+                     href={coHostRequest.google_meet_link || coHostRequest.googleMeetLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="schedule-cohost-meet-link"
@@ -966,7 +966,7 @@ export default function ScheduleCohost({
             </p>
 
             {/* Rating Section - only visible when meeting is completed (status >= stage 4) */}
-            {(getStatusOrder(coHostRequest.status || coHostRequest['Status - Co-Host Request']) >= 4) && (
+            {(getStatusOrder(coHostRequest.status || coHostRequest.status_co_host_request) >= 4) && (
               <div className="schedule-cohost-details-section">
                 <h4 className="schedule-cohost-details-title">How was your meeting?</h4>
                 <StarRating value={rating} onChange={setRating} disabled={isLoading} />

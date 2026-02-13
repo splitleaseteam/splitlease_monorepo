@@ -20,6 +20,7 @@ export function useNotificationSettings(userId) {
   const [preferences, setPreferences] = useState(getDefaultPreferences());
   const [recordId, setRecordId] = useState(null);
   const [pendingToggles, setPendingToggles] = useState(new Set());
+  const [catchError, setCatchError] = useState(null);
 
   const { isLoading: loading, error: fetchError, execute: executeFetch } = useAsyncOperation(
     async () => {
@@ -52,11 +53,12 @@ export function useNotificationSettings(userId) {
     }
   );
 
-  const error = fetchError?.message ?? null;
+  const error = fetchError?.message ?? catchError?.message ?? null;
 
   const fetchPreferences = useCallback(() => {
     executeFetch().catch((err) => {
-      console.error('[useNotificationSettings] Error fetching preferences:', err);
+      console.error('[useNotificationSettings] Failed to fetch settings:', err);
+      setCatchError(err);
     });
   }, [executeFetch]);
 

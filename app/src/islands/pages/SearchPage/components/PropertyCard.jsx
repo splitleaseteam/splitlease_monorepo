@@ -43,7 +43,7 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
 
     // If 0 nights, show starting price (need at least 2 days = 1 night for a valid stay)
     if (nightsCount < 1) {
-      return listing['Starting nightly price'] || listing.price?.starting || 0;
+      return listing.lowest_nightly_price_for_map_display || listing.price?.starting || 0;
     }
 
     try {
@@ -64,15 +64,15 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
       });
 
       // Return the guest-facing price per night
-      return priceBreakdown.pricePerNight || listing['Starting nightly price'] || listing.price?.starting || 0;
+      return priceBreakdown.pricePerNight || listing.lowest_nightly_price_for_map_display || listing.price?.starting || 0;
     } catch (error) {
       logger.warn(`[PropertyCard] Price calculation failed for listing ${listing.id}:`, error.message);
-      return listing['Starting nightly price'] || listing.price?.starting || 0;
+      return listing.lowest_nightly_price_for_map_display || listing.price?.starting || 0;
     }
   };
 
   const dynamicPrice = calculateDynamicPrice();
-  const startingPrice = listing['Starting nightly price'] || listing.price?.starting || 0;
+  const startingPrice = listing.lowest_nightly_price_for_map_display || listing.price?.starting || 0;
 
   // Render amenity icons
   const renderAmenityIcons = () => {

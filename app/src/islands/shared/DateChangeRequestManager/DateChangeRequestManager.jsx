@@ -85,7 +85,7 @@ export default function DateChangeRequestManager({
   const [pendingRequestId, setPendingRequestId] = useState(null);
 
   // Get monthly rent for fee calculation (use lease's Total Rent or calculate from nightly)
-  const monthlyRent = lease?.['Total Rent'] || (baseNightlyPrice * 30);
+  const monthlyRent = lease?.total_guest_rent_amount || (baseNightlyPrice * 30);
 
   // Pattern 5: Fee calculation hook
   const { feeBreakdown, isCalculating: isFeeCalculating, error: feeError } = useFeeCalculation(
@@ -108,7 +108,7 @@ export default function DateChangeRequestManager({
   useEffect(() => {
     const userId = currentUser?.id;
     const leaseId = lease?.id;
-    const listingId = lease?.Listing || lease?.listingId;
+    const listingId = lease?.listing_id || lease?.listingId;
 
     if (userId && leaseId) {
       fetchThrottleStatus(userId);
@@ -124,9 +124,11 @@ export default function DateChangeRequestManager({
    * Fetch roommate's booked dates
    */
   const fetchRoommateDates = async (listingId, currentLeaseId) => {
-    const result = await dateChangeRequestService.getRoommateBookedDates(listingId, currentLeaseId);
-    if (result.status === 'success') {
+    try {
+      const result = await dateChangeRequestService.getRoommateBookedDates(listingId, currentLeaseId);
       setRoommateDates(result.data || []);
+    } catch (err) {
+      console.error('[DateChangeRequestManager] Failed to fetch roommate dates:', err);
     }
   };
 
@@ -137,8 +139,8 @@ export default function DateChangeRequestManager({
     const leaseId = lease?.id;
     if (!leaseId) return;
 
-    const result = await dateChangeRequestService.getEnhancedThrottleStatus(leaseId, userId);
-    if (result.status === 'success') {
+    try {
+      const result = await dateChangeRequestService.getEnhancedThrottleStatus(leaseId, userId);
       setThrottleStatus(result.data);
       setOtherParticipantName(result.data?.otherParticipantName || 'the other party');
 
@@ -146,6 +148,8 @@ export default function DateChangeRequestManager({
       if (result.data?.isBlocked || result.data?.throttleLevel === 'hard_block') {
         setShowBlockPopup(true);
       }
+    } catch (err) {
+      console.error('[DateChangeRequestManager] Failed to fetch throttle status:', err);
     }
   };
 
@@ -153,9 +157,11 @@ export default function DateChangeRequestManager({
    * Fetch existing date change requests for this lease
    */
   const fetchExistingRequests = async (leaseId) => {
-    const result = await dateChangeRequestService.getAll(leaseId);
-    if (result.status === 'success') {
+    try {
+      const result = await dateChangeRequestService.getAll(leaseId);
       setExistingRequests(result.data || []);
+    } catch (err) {
+      console.error('[DateChangeRequestManager] Failed to fetch existing requests:', err);
     }
   };
 
@@ -171,7 +177,7 @@ export default function DateChangeRequestManager({
    */
   const isHost = () => {
     const userId = getUserId();
-    const hostId = lease?.hostId || lease?.['Host'];
+    const hostId = lease?.host_user_id || lease?.hostId;
     return userId === hostId;
   };
 
@@ -179,8 +185,8 @@ export default function DateChangeRequestManager({
    * Get the receiver ID (opposite of requester)
    */
   const getReceiverId = () => {
-    const hostId = lease?.hostId || lease?.['Host'];
-    const guestId = lease?.guestId || lease?.['Guest'];
+    const hostId = lease?.host_user_id || lease?.hostId;
+    const guestId = lease?.guest_user_id || lease?.guestId;
     return isHost() ? guestId : hostId;
   };
 
@@ -257,7 +263,11 @@ export default function DateChangeRequestManager({
       const userId = getUserId();
       const leaseId = lease?.id;
       if (userId && leaseId) {
-        await dateChangeRequestService.updateWarningPreference(leaseId, userId, true);
+        try {
+          await dateChangeRequestService.updateWarningPreference(leaseId, userId, true);
+        } catch (err) {
+          console.error('[DateChangeRequestManager] Failed to update warning preference:', err);
+        }
       }
     }
 
@@ -310,23 +320,21 @@ export default function DateChangeRequestManager({
         fee_breakdown: feeBreakdown, // Pattern 5: Store fee breakdown
       });
 
-      if (result.status === 'success') {
-        const requestId = result.data?.id;
-        setPendingRequestId(requestId);
+      const requestId = result.data?.id;
+      setPendingRequestId(requestId);
 
-        // Track request creation (before payment)
-        analyticsService.trackRequestSubmitted({
-          id: requestId,
-          selectedTier: selectedTier,
-          feeBreakdown: feeBreakdown,
-          transactionType: requestType,
-          isBSBS: false,
-          paymentStatus: 'pending'
-        });
+      // Track request creation (before payment)
+      analyticsService.trackRequestSubmitted({
+        id: requestId,
+        selectedTier: selectedTier,
+        feeBreakdown: feeBreakdown,
+        transactionType: requestType,
+        isBSBS: false,
+        paymentStatus: 'pending'
+      });
 
-        // Move to payment view
-        setView('payment');
-      }
+      // Move to payment view
+      setView('payment');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create request');
     } finally {
@@ -403,21 +411,19 @@ export default function DateChangeRequestManager({
         fee_breakdown: feeBreakdown, // Pattern 5: Include fee breakdown
       });
 
-      if (result.status === 'success') {
-        setSuccess('Request submitted successfully!');
-        setView('success');
+      setSuccess('Request submitted successfully!');
+      setView('success');
 
-        // Track final submission
-        analyticsService.trackRequestSubmitted({
-          id: result.data?.id,
-          selectedTier: selectedTier,
-          feeBreakdown: feeBreakdown || { totalPrice: calculateProposedPrice() },
-          transactionType: requestType,
-          isBSBS: false
-        });
+      // Track final submission
+      analyticsService.trackRequestSubmitted({
+        id: result.data?.id,
+        selectedTier: selectedTier,
+        feeBreakdown: feeBreakdown || { totalPrice: calculateProposedPrice() },
+        transactionType: requestType,
+        isBSBS: false
+      });
 
-        if (onSuccess) onSuccess(result.data);
-      }
+      if (onSuccess) onSuccess(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit request');
     } finally {
@@ -440,13 +446,9 @@ export default function DateChangeRequestManager({
         responseMessage
       );
 
-      if (result.status === 'success') {
-        setSuccess('Request accepted!');
-        setView('success');
-        if (onSuccess) onSuccess(result.data);
-      } else {
-        throw new Error(result.message || 'Failed to accept request');
-      }
+      setSuccess('Request accepted!');
+      setView('success');
+      if (onSuccess) onSuccess(result.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to accept request');
     } finally {
@@ -469,15 +471,11 @@ export default function DateChangeRequestManager({
         reason
       );
 
-      if (result.status === 'success') {
-        setSuccess('Request declined');
-        setTimeout(() => {
-          onClose();
-          if (onSuccess) onSuccess(result.data);
-        }, 1500);
-      } else {
-        throw new Error(result.message || 'Failed to decline request');
-      }
+      setSuccess('Request declined');
+      setTimeout(() => {
+        onClose();
+        if (onSuccess) onSuccess(result.data);
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to decline request');
     } finally {
@@ -535,9 +533,9 @@ export default function DateChangeRequestManager({
   };
 
   // Get booked dates from lease
-  const bookedDates = lease?.bookedDates || lease?.['List of Booked Dates'] || [];
-  const reservationStart = lease?.reservationStart || lease?.['Reservation Period : Start'];
-  const reservationEnd = lease?.reservationEnd || lease?.['Reservation Period : End'];
+  const bookedDates = lease?.bookedDates || lease?.booked_dates_json || [];
+  const reservationStart = lease?.reservationStart || lease?.reservation_start_date;
+  const reservationEnd = lease?.reservationEnd || lease?.reservation_end_date;
 
   // Don't render if no view is set
   if (!view) {

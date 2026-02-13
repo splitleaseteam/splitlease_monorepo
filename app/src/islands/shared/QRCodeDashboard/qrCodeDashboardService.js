@@ -14,7 +14,6 @@ import { getUseCaseByName } from './qrCodeUseCases.js';
 
 /**
  * Adapt a QR code row from database format to component model.
- * Database uses space-separated column names like "Long URL", "Use Case".
  *
  * @param {object} row - Raw database row from qrcodes table
  * @returns {object} Component-friendly QR code object
@@ -22,23 +21,23 @@ import { getUseCaseByName } from './qrCodeUseCases.js';
 export const adaptQRCodeFromDB = (row) => {
   if (!row) return null;
 
-  const useCaseName = row['Use Case'] || '';
+  const useCaseName = row.use_case || '';
   const useCase = getUseCaseByName(useCaseName);
 
   return {
     id: row.id,
     title: useCaseName || 'Untitled',
-    content: row['Long URL'] || '',
-    shortUrl: row['Short URL'] || null,
-    qrImageUrl: row['QR Image'] || null,
+    content: row.long_url || '',
+    shortUrl: row.short_url || null,
+    qrImageUrl: row.qr_image || null,
     useCaseId: useCase?.id || 'custom',
     useCaseName: useCaseName,
-    houseManualId: row['House Manual'] || null,
-    hostId: row['Host'] || null,
-    guestId: row['Guest'] || null,
+    houseManualId: row.house_manual || null,
+    hostId: row.host || null,
+    guestId: row.guest || null,
     createdAt: row.original_created_at ? new Date(row.original_created_at) : null,
     updatedAt: row.original_updated_at ? new Date(row.original_updated_at) : null,
-    isScanned: row['QR codes scanned?'] || false
+    isScanned: row.qr_codes_scanned || false
   };
 };
 
@@ -52,15 +51,15 @@ export const adaptQRCodeFromDB = (row) => {
  */
 export const adaptQRCodeToDB = (qrCode, houseManualId, hostId) => {
   const dbRow = {
-    'Use Case': qrCode.useCaseName || qrCode.title,
-    'Long URL': qrCode.content,
-    'House Manual': houseManualId,
-    'Modified Date': new Date().toISOString()
+    use_case: qrCode.useCaseName || qrCode.title,
+    long_url: qrCode.content,
+    house_manual: houseManualId,
+    original_updated_at: new Date().toISOString()
   };
 
   // Only include Host if provided
   if (hostId) {
-    dbRow['Host'] = hostId;
+    dbRow.host = hostId;
   }
 
   return dbRow;
@@ -119,11 +118,8 @@ export async function fetchQRCodes(houseManualId) {
       data: qrCodes
     };
   } catch (error) {
-    console.error('QRCodeDashboardService.fetchQRCodes:', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('[qrCodeDashboardService.fetchQRCodes] API Error:', error);
+    throw error;
   }
 }
 
@@ -154,11 +150,8 @@ export async function fetchHouseManual(houseManualId) {
       data: adaptHouseManualFromDB(data)
     };
   } catch (error) {
-    console.error('QRCodeDashboardService.fetchHouseManual:', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('[qrCodeDashboardService.fetchHouseManual] API Error:', error);
+    throw error;
   }
 }
 
@@ -178,7 +171,7 @@ export async function createQRCode(qrCode, houseManualId, hostId) {
 
     const row = adaptQRCodeToDB(qrCode, houseManualId, hostId);
     row.original_created_at = new Date().toISOString();
-    row['Created By'] = hostId || null;
+    row.created_by = hostId || null;
 
     const { data, error } = await supabase
       .from('qrcodes')
@@ -195,11 +188,8 @@ export async function createQRCode(qrCode, houseManualId, hostId) {
       data: adaptQRCodeFromDB(data)
     };
   } catch (error) {
-    console.error('QRCodeDashboardService.createQRCode:', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('[qrCodeDashboardService.createQRCode] API Error:', error);
+    throw error;
   }
 }
 
@@ -217,15 +207,15 @@ export async function updateQRCode(qrCodeId, updates) {
     }
 
     const dbUpdates = {
-      'Modified Date': new Date().toISOString()
+      original_updated_at: new Date().toISOString()
     };
 
     if (updates.useCaseName !== undefined) {
-      dbUpdates['Use Case'] = updates.useCaseName;
+      dbUpdates.use_case = updates.useCaseName;
     }
 
     if (updates.content !== undefined) {
-      dbUpdates['Long URL'] = updates.content;
+      dbUpdates.long_url = updates.content;
     }
 
     const { data, error } = await supabase
@@ -244,11 +234,8 @@ export async function updateQRCode(qrCodeId, updates) {
       data: adaptQRCodeFromDB(data)
     };
   } catch (error) {
-    console.error('QRCodeDashboardService.updateQRCode:', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('[qrCodeDashboardService.updateQRCode] API Error:', error);
+    throw error;
   }
 }
 
@@ -277,11 +264,8 @@ export async function deleteQRCode(qrCodeId) {
       status: 'success'
     };
   } catch (error) {
-    console.error('QRCodeDashboardService.deleteQRCode:', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('[qrCodeDashboardService.deleteQRCode] API Error:', error);
+    throw error;
   }
 }
 
@@ -311,11 +295,8 @@ export async function deleteMultipleQRCodes(qrCodeIds) {
       deletedCount: qrCodeIds.length
     };
   } catch (error) {
-    console.error('QRCodeDashboardService.deleteMultipleQRCodes:', error);
-    return {
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    };
+    console.error('[qrCodeDashboardService.deleteMultipleQRCodes] API Error:', error);
+    throw error;
   }
 }
 

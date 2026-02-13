@@ -70,21 +70,12 @@ async function handlePaymentSucceeded(
     }
   }
 
-  // Update request payment status
+  // Update request status — datechangerequest table uses request_status column
   const { data, error } = await supabaseClient
     .from('datechangerequest')
     .update({
-      payment_status: 'paid',
-      payment_processed_at: new Date().toISOString(),
-      stripe_charge_id: chargeId || null,
-      payment_metadata: {
-        stripe_payment_intent_id: paymentIntent.id,
-        amount_received: paymentIntent.amount_received,
-        currency: paymentIntent.currency,
-        payment_method: paymentIntent.payment_method,
-        receipt_url: receiptUrl,
-        paid_at: new Date().toISOString(),
-      },
+      request_status: 'paid',
+      updated_at: new Date().toISOString(),
     })
     .eq('id', requestId)
     .select();
@@ -123,14 +114,8 @@ async function handlePaymentFailed(
   const { data, error } = await supabaseClient
     .from('datechangerequest')
     .update({
-      payment_status: 'failed',
-      payment_metadata: {
-        stripe_payment_intent_id: paymentIntent.id,
-        failure_code: paymentIntent.last_payment_error?.code || null,
-        failure_message: paymentIntent.last_payment_error?.message || null,
-        decline_code: paymentIntent.last_payment_error?.decline_code || null,
-        failed_at: new Date().toISOString(),
-      },
+      request_status: 'payment_failed',
+      updated_at: new Date().toISOString(),
     })
     .eq('id', requestId)
     .select();
@@ -168,13 +153,8 @@ async function handlePaymentCanceled(
   const { data, error } = await supabaseClient
     .from('datechangerequest')
     .update({
-      payment_status: 'unpaid',
-      stripe_payment_intent_id: null, // Clear to allow new payment
-      payment_metadata: {
-        previous_payment_intent_id: paymentIntent.id,
-        canceled_at: new Date().toISOString(),
-        cancellation_reason: paymentIntent.cancellation_reason || null,
-      },
+      request_status: 'unpaid',
+      updated_at: new Date().toISOString(),
     })
     .eq('id', requestId)
     .select();
@@ -204,53 +184,16 @@ async function handleChargeRefunded(
 
   console.log('Charge refunded:', charge.id);
 
-  // Find request by payment intent ID
-  const { data: requests, error: findError } = await supabaseClient
-    .from('datechangerequest')
-    .select('id')
-    .eq('stripe_payment_intent_id', paymentIntentId);
+  // datechangerequest table does not have payment tracking columns yet
+  // Log refund for now — payment column migration needed before DB updates
+  console.log('Charge refunded:', {
+    chargeId: charge.id,
+    paymentIntentId,
+    amountRefunded: charge.amount_refunded,
+    isFullRefund: charge.amount_refunded === charge.amount,
+  });
 
-  if (findError || !requests || requests.length === 0) {
-    console.error('Request not found for payment intent:', paymentIntentId);
-    return null;
-  }
-
-  const requestId = requests[0].id;
-
-  // Determine if full or partial refund
-  const isFullRefund = charge.amount_refunded === charge.amount;
-  const refundStatus = isFullRefund ? 'refunded' : 'paid'; // Keep as paid for partial refunds
-
-  const { data, error } = await supabaseClient
-    .from('datechangerequest')
-    .update({
-      payment_status: refundStatus,
-      payment_metadata: {
-        stripe_payment_intent_id: paymentIntentId,
-        stripe_charge_id: charge.id,
-        refund_amount: charge.amount_refunded,
-        refund_amount_formatted: `$${(charge.amount_refunded / 100).toFixed(2)}`,
-        original_amount: charge.amount,
-        is_full_refund: isFullRefund,
-        refunded_at: new Date().toISOString(),
-        refund_reason: charge.refunds?.data[0]?.reason || null,
-        refund_id: charge.refunds?.data[0]?.id || null,
-      },
-    })
-    .eq('id', requestId)
-    .select();
-
-  if (error) {
-    console.error('Failed to update refund status:', error);
-    throw error;
-  }
-
-  console.log('Refund status updated:', data);
-
-  // TODO: Send refund confirmation email
-  // TODO: Revert any completed actions if needed
-
-  return data;
+  return null;
 }
 
 /**
@@ -265,44 +208,17 @@ async function handleDisputeCreated(
 
   console.log('Dispute created for charge:', chargeId);
 
-  // Find request by charge ID
-  const { data: requests, error: findError } = await supabaseClient
-    .from('datechangerequest')
-    .select('id, payment_metadata')
-    .eq('stripe_charge_id', chargeId);
+  // datechangerequest table does not have payment tracking columns yet
+  // Log dispute for now — payment column migration needed before DB updates
+  console.log('Dispute created:', {
+    disputeId: dispute.id,
+    chargeId,
+    reason: dispute.reason,
+    status: dispute.status,
+    amount: dispute.amount,
+  });
 
-  if (findError || !requests || requests.length === 0) {
-    console.error('Request not found for charge:', chargeId);
-    return null;
-  }
-
-  const requestId = requests[0].id;
-  const existingMetadata = requests[0].payment_metadata || {};
-
-  const { data, error } = await supabaseClient
-    .from('datechangerequest')
-    .update({
-      payment_metadata: {
-        ...existingMetadata,
-        dispute_id: dispute.id,
-        dispute_reason: dispute.reason,
-        dispute_status: dispute.status,
-        dispute_amount: dispute.amount,
-        dispute_created_at: new Date().toISOString(),
-      },
-    })
-    .eq('id', requestId)
-    .select();
-
-  if (error) {
-    console.error('Failed to update dispute status:', error);
-    throw error;
-  }
-
-  // TODO: Send urgent notification to admin
-  // TODO: Prepare evidence submission
-
-  return data;
+  return null;
 }
 
 // ============================================================================

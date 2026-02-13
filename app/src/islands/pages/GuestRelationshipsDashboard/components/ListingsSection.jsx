@@ -38,20 +38,20 @@ export default function ListingsSection({
   }
 
   function getListingName(listing) {
-    return listing.listing_title || listing['Listing Name'] || 'Unnamed Listing';
+    return listing.listing_title || 'Unnamed Listing';
   }
 
   function getListingHood(listing) {
-    return listing.location?.hood || listing['Hood - Text'] || 'NYC';
+    return listing.location?.hood || listing.neighborhood_name_entered_by_host || 'NYC';
   }
 
   function getListingPhoto(listing) {
-    const photos = listing.photos || listing['📷 All Photos for Display'] || [];
+    const photos = listing.photos || listing.photos_with_urls_captions_and_sort_order_json || [];
     return photos[0]?.url || photos[0] || null;
   }
 
   function getListingType(listing) {
-    return listing.rentalType?.display || listing['Rental Type'] || 'Rental';
+    return listing.rentalType?.display || listing.rental_type || 'Rental';
   }
 
   return (

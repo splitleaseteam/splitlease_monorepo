@@ -257,9 +257,7 @@ export function mapFormDataToListingTable(formData, userId, generatedId, hostAcc
     // Section 6: Photos - Store with format compatible with listing display
     photos_with_urls_captions_and_sort_order_json: formData.photos?.photos?.map((p, index) => ({
       id: p.id,
-      url: p.url || p.Photo,
-      Photo: p.url || p.Photo,
-      'Photo (thumbnail)': p['Photo (thumbnail)'] || p.url || p.Photo,
+      url: p.url || p['Photo (thumbnail)'] || p.Photo,
       caption: p.caption || '',
       displayOrder: p.displayOrder ?? index,
       SortOrder: p.SortOrder ?? p.displayOrder ?? index,
@@ -413,9 +411,7 @@ export function mapFormDataToListingTableForUpdate(formData) {
   if (formData.photos?.photos) {
     updateData.photos_with_urls_captions_and_sort_order_json = formData.photos.photos.map((p, index) => ({
       id: p.id,
-      url: p.url || p.Photo,
-      Photo: p.url || p.Photo,
-      'Photo (thumbnail)': p['Photo (thumbnail)'] || p.url || p.Photo,
+      url: p.url || p['Photo (thumbnail)'] || p.Photo,
       caption: p.caption || '',
       displayOrder: p.displayOrder ?? index,
       SortOrder: p.SortOrder ?? p.displayOrder ?? index,
@@ -608,9 +604,7 @@ export function mapDatabaseToFormData(dbRecord) {
     photos: {
       photos: (dbRecord.photos_with_urls_captions_and_sort_order_json || []).map((p, index) => ({
         id: p.id,
-        url: p.url || p.Photo,
-        Photo: p.Photo || p.url,
-        'Photo (thumbnail)': p['Photo (thumbnail)'] || p.url || p.Photo,
+        url: p.url || p['Photo (thumbnail)'] || p.Photo,
         caption: p.caption || '',
         displayOrder: p.displayOrder ?? index,
         SortOrder: p.SortOrder ?? p.displayOrder ?? index,

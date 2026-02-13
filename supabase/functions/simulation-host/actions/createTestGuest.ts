@@ -80,7 +80,7 @@ export async function handleCreateTestGuest(
         user: guestData.id,
         'is_test_data': true,
         'simulation_id': simulationId,
-        'Created Date': new Date().toISOString()
+        created_at: new Date().toISOString()
       });
     console.log('[createTestGuest] Created guest account record');
   } catch (accountError) {

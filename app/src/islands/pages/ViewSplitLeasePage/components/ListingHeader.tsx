@@ -75,12 +75,12 @@ const ListingHeader = memo(function ListingHeader({
                 <button
                     onClick={onLocationClick}
                     className={styles.locationPill}
-                    aria-label={`View ${listing.neighborhoodName} on map`}
+                    aria-label={`View ${listing.resolvedNeighborhood} on map`}
                 >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                     </svg>
-                    <span>{listing.neighborhoodName || 'Neighborhood'}, {listing.boroughName || 'NYC'}</span>
+                    <span>{listing.resolvedNeighborhood || 'Neighborhood'}, {listing.resolvedBorough || 'NYC'}</span>
                     <svg className={styles.locationArrow} width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <line x1="5" y1="12" x2="19" y2="12" />
                         <polyline points="12 5 19 12 12 19" />
@@ -118,7 +118,7 @@ const ListingHeader = memo(function ListingHeader({
             {/* Property Type & Specs */}
             <div className={styles.specsRow}>
                 <span className={styles.specItem}>
-                    <strong>{listing.space_type || 'Entire Place'}</strong>
+                    <strong>{listing.resolvedTypeOfSpace || 'Entire Place'}</strong>
                 </span>
                 <span className={styles.specDivider}>â€¢</span>
                 <span className={styles.specItem}>
@@ -140,22 +140,22 @@ const ListingHeader = memo(function ListingHeader({
             </div>
 
             {/* Host Info */}
-            {listing.hostData && (
+            {listing.host && (
                 <div className={styles.hostRow}>
-                    {listing.hostData.image ? (
+                    {listing.host.profile_photo_url ? (
                         <img
-                            src={listing.hostData.image}
-                            alt={listing.hostData.name}
+                            src={listing.host.profile_photo_url}
+                            alt={listing.host.first_name || 'Host'}
                             className={styles.hostAvatar}
                         />
                     ) : (
                         <div className={styles.hostAvatarPlaceholder}>
-                            {(listing.hostData.name || 'H').charAt(0).toUpperCase()}
+                            {(listing.host.first_name || 'H').charAt(0).toUpperCase()}
                         </div>
                     )}
                     <span className={styles.hostName}>
-                        Hosted by {formatHostName({ fullName: listing.hostData.name || 'Host' })}
-                        {listing.hostData.verified && (
+                        Hosted by {formatHostName({ fullName: listing.host.first_name && listing.host.last_name ? `${listing.host.first_name} ${listing.host.last_name}` : listing.host.first_name || 'Host' })}
+                        {listing.host.is_user_verified && (
                             <svg className={styles.verifiedBadge} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>

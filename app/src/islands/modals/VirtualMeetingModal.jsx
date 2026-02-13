@@ -39,9 +39,9 @@ export default function VirtualMeetingModal({
         const { error } = await supabase
           .from('virtualmeetingschedulesandlinks')
           .update({
-            'booked date': bookedDateTime,
-            'meeting declined': false,
-            'Modified Date': new Date().toISOString(),
+            booked_date: bookedDateTime,
+            meeting_declined: false,
+            updated_at: new Date().toISOString(),
           })
           .eq('id', virtualMeeting.id);
 
@@ -52,13 +52,13 @@ export default function VirtualMeetingModal({
           .from('virtualmeetingschedulesandlinks')
           .insert({
             proposal: proposal.id,
-            guest: proposal.guest_user_id || proposal['Guest'],
-            host: proposal._listing?.['Created By'],
-            'requested by': currentUser.id,
-            'booked date': bookedDateTime,
-            'meeting declined': false,
-            'confirmedBySplitLease': false,
-            'Created Date': new Date().toISOString(),
+            guest: proposal.guest_user_id,
+            host: proposal._listing?.created_by_user_id,
+            requested_by: currentUser.id,
+            booked_date: bookedDateTime,
+            meeting_declined: false,
+            confirmedbysplitlease: false,
+            created_at: new Date().toISOString(),
           })
           .select()
           .single();
@@ -70,7 +70,7 @@ export default function VirtualMeetingModal({
           .from('booking_proposal')
           .update({
             virtual_meeting_record_id: newVM.id,
-            'Modified Date': new Date().toISOString(),
+            original_updated_at: new Date().toISOString(),
           })
           .eq('id', proposal.id);
 
@@ -84,9 +84,9 @@ export default function VirtualMeetingModal({
       const { error } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .update({
-          'meeting declined': false,
-          'confirmedBySplitLease': false, // Pending SL confirmation
-          'Modified Date': new Date().toISOString(),
+          meeting_declined: false,
+          confirmedbysplitlease: false, // Pending SL confirmation
+          updated_at: new Date().toISOString(),
         })
         .eq('id', virtualMeeting.id);
 
@@ -99,8 +99,8 @@ export default function VirtualMeetingModal({
       const { error } = await supabase
         .from('virtualmeetingschedulesandlinks')
         .update({
-          'meeting declined': true,
-          'Modified Date': new Date().toISOString(),
+          meeting_declined: true,
+          original_updated_at: new Date().toISOString(),
         })
         .eq('id', virtualMeeting.id);
 
@@ -123,7 +123,7 @@ export default function VirtualMeetingModal({
         .from('booking_proposal')
         .update({
           virtual_meeting_record_id: null,
-          'Modified Date': new Date().toISOString(),
+          original_updated_at: new Date().toISOString(),
         })
         .eq('id', proposal.id);
 
@@ -260,13 +260,13 @@ export default function VirtualMeetingModal({
                   <div>
                     <span className="text-sm text-gray-600">Proposed Time:</span>
                     <p className="font-medium text-gray-900">
-                      {new Date(virtualMeeting?.['booked date']).toLocaleString()}
+                      {new Date(virtualMeeting?.booked_date).toLocaleString()}
                     </p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-600">Requested By:</span>
                     <p className="font-medium text-gray-900">
-                      {virtualMeeting?.['requested by'] === (proposal.guest_user_id || proposal['Guest']) ? 'Guest' : 'Host'}
+                      {virtualMeeting?.requested_by === proposal.guest_user_id ? 'Guest' : 'Host'}
                     </p>
                   </div>
                 </div>
@@ -281,19 +281,19 @@ export default function VirtualMeetingModal({
                   <div>
                     <span className="text-sm text-gray-600">Meeting Time:</span>
                     <p className="font-medium text-gray-900">
-                      {new Date(virtualMeeting?.['booked date']).toLocaleString()}
+                      {new Date(virtualMeeting?.booked_date).toLocaleString()}
                     </p>
                   </div>
-                  {virtualMeeting?.['meeting link'] && (
+                  {virtualMeeting?.meeting_link && (
                     <div>
                       <span className="text-sm text-gray-600">Meeting Link:</span>
                       <a
-                        href={virtualMeeting['meeting link']}
+                        href={virtualMeeting.meeting_link}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="block font-medium text-purple-600 hover:text-purple-700 break-all"
                       >
-                        {virtualMeeting['meeting link']}
+                        {virtualMeeting.meeting_link}
                       </a>
                     </div>
                   )}

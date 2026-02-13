@@ -228,7 +228,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
   }, []);
 
   // Don't render if no proposal or no counteroffer
-  if (!proposal || !proposal['counter offer happened']) {
+  if (!proposal || !proposal.has_host_counter_offer) {
     return null;
   }
 

@@ -186,7 +186,7 @@ export default function LeaseStylesSection({
         <FormInput
           label="Extra Charges Description"
           name="extra_charges"
-          value={listing['extra_charges']}
+          value={listing.extra_charges}
           onChange={handleChange}
           placeholder="e.g., Parking $50/month, Pet fee $25/night"
         />

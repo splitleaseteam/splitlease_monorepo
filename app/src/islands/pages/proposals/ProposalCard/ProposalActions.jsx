@@ -133,7 +133,7 @@ export default function ProposalActions({
         .from('booking_proposal')
         .update({
           proposal_workflow_status: nextStatus,
-          'Modified Date': new Date().toISOString()
+          original_updated_at: new Date().toISOString()
         })
         .eq('id', proposal.id);
 
@@ -334,7 +334,7 @@ export default function ProposalActions({
           }}
           pricePerNight={nightlyPrice}
           totalPriceForReservation={totalPrice}
-          priceRentPer4Weeks={proposal['Price Rent per 4 weeks'] || (nightlyPrice * nightsPerWeek * 4)}
+          priceRentPer4Weeks={proposal.price_rent_per_4_weeks || (nightlyPrice * nightsPerWeek * 4)}
         />
       )}
 

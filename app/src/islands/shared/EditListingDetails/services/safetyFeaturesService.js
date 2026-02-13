@@ -35,7 +35,7 @@ export async function getCommonSafetyFeatures() {
     console.log('[safetyFeaturesService] Fetched common safety features:', names);
     return names;
   } catch (err) {
-    console.error('[safetyFeaturesService] Unexpected error:', err);
-    return [];
+    console.error('[safetyFeaturesService] Failed to fetch common safety features:', err);
+    throw err;
   }
 }

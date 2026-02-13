@@ -70,7 +70,7 @@ export function validateMoveInDateWorkflow({ moveInDate, listing, selectedDayInd
   const inRange = isDateInRange({
     date: moveInDate,
     firstAvailable: listing.firstAvailable || listing.first_available_date,
-    lastAvailable: listing.lastAvailable || listing['Last Available']
+    lastAvailable: listing.lastAvailable || listing.last_available_date
   })
 
   if (!inRange) {
@@ -78,7 +78,7 @@ export function validateMoveInDateWorkflow({ moveInDate, listing, selectedDayInd
       valid: false,
       errorCode: 'MOVE_IN_DATE_OUTSIDE_RANGE',
       firstAvailable: listing.firstAvailable || listing.first_available_date,
-      lastAvailable: listing.lastAvailable || listing['Last Available']
+      lastAvailable: listing.lastAvailable || listing.last_available_date
     }
   }
 

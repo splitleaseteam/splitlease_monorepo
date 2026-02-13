@@ -75,12 +75,12 @@ function normalizeListingFromSupabase(row, boroughName, neighborhoodName) {
 
   return {
     id: row.id,
-    uniqueId: row['Listing Code OP'] || row.id?.slice(-8) || 'N/A',
+    uniqueId: row.id?.slice(-8) || 'N/A',
     name: row.listing_title || 'Untitled Listing',
     description: row.Description || '',
     host: {
       id: row.host_user_id,
-      email: row['Host email'] || '',
+      email: row.host_email || '',
       name: row.host_display_name || '',
       phone: '', // Phone is on user table, not listing table
     },

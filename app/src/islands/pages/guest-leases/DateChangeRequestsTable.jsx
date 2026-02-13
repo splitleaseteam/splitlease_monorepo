@@ -28,9 +28,9 @@ function getStatusInfo(status) {
   switch (status) {
     case 'waiting_for_answer':
       return { label: 'Pending', className: 'pending', icon: Clock };
-    case 'accepted':
+    case 'Approved':
       return { label: 'Accepted', className: 'accepted', icon: Check };
-    case 'rejected':
+    case 'Rejected':
       return { label: 'Rejected', className: 'rejected', icon: X };
     case 'expired':
       return { label: 'Expired', className: 'expired', icon: AlertCircle };

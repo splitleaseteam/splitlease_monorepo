@@ -17,7 +17,7 @@ export default function MapModal({ listing, address, onClose }) {
   const locationAddress = address || listing?.address_with_lat_lng_json || 'Address not available';
   const locationHood = listing?.primary_neighborhood_reference_id || '';
   const locationBorough = listing?.borough || '';
-  const listingName = listing?.Name || 'Listing Location';
+  const listingName = listing?.listing_title || 'Listing Location';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" onClick={onClose}>

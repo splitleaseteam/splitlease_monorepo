@@ -170,8 +170,6 @@ export async function uploadPhotos(photos, listingId) {
       uploadedPhotos.push({
         id: photo.id || `photo_${i}_${Date.now()}`,
         url: result.url,
-        Photo: result.url, // For compatibility with listing display format
-        'Photo (thumbnail)': result.url, // Use same URL for thumbnail
         storagePath: result.path,
         caption: photo.caption || '',
         displayOrder: photo.displayOrder ?? i,
@@ -184,8 +182,6 @@ export async function uploadPhotos(photos, listingId) {
       uploadedPhotos.push({
         id: photo.id || `photo_${i}_${Date.now()}`,
         url: photo.url, // Keep data URL as fallback
-        Photo: photo.url,
-        'Photo (thumbnail)': photo.url,
         caption: photo.caption || '',
         displayOrder: photo.displayOrder ?? i,
         SortOrder: photo.displayOrder ?? i,

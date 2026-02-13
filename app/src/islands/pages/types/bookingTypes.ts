@@ -49,7 +49,10 @@ export interface ListingObject {
  */
 export interface PhotoObject {
   id: string;
-  Photo: string;
+  url: string;
+  /** @deprecated Use url instead */
+  Photo?: string;
+  /** @deprecated Use url instead */
   'Photo (thumbnail)'?: string;
   Caption?: string;
   caption?: string;

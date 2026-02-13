@@ -39,8 +39,8 @@ export default function ReservationPriceBreakdown({
   const effectiveRentalType = proposal?.rentalType || listing?.rentalType || 'Nightly'
   const effectiveWeekSelection = proposal?.weekSelection
   const effectiveHostCompensation = proposal?.hostCompensation ?? 0
-  const effectiveDamageDeposit = proposal?.damageDeposit ?? proposal?.['damage deposit'] ?? 0
-  const effectiveCleaningFee = proposal?.cleaningFee ?? proposal?.['cleaning fee'] ?? 0
+  const effectiveDamageDeposit = proposal?.damage_deposit_amount ?? 0
+  const effectiveCleaningFee = proposal?.cleaning_fee_amount ?? 0
 
   const isGuest = isUserGuest(user?.watching?.type) || isUserGuest(user?.watching?.typeUserSignup) || user?.type === 'guest'
   const nightsSelectedCount = nightsSelected?.length || 0
@@ -66,7 +66,7 @@ export default function ReservationPriceBreakdown({
   const price4WeekLabel = get4WeekPriceLabel(effectiveRentalType)
 
   const getHouseRulesLabel = () => {
-    const count = houseRulesToDisplay?.length || proposal?.hostCounterOfferHouseRules?.length || 0
+    const count = houseRulesToDisplay?.length || proposal?.host_proposed_house_rules_json?.length || 0
     if (count === 0) {
       return isGuest ? 'No House Rules' : "You Don't Have any House Rules"
     }
@@ -135,7 +135,7 @@ export default function ReservationPriceBreakdown({
           {getHouseRulesLabel()}
         </span>
         <span className={`rpb-value ${isTinyScreen ? 'rpb-value--small' : ''}`}>
-          {houseRulesToDisplay?.length || proposal?.hostCounterOfferHouseRules?.length || 0}
+          {houseRulesToDisplay?.length || proposal?.host_proposed_house_rules_json?.length || 0}
         </span>
       </div>
 

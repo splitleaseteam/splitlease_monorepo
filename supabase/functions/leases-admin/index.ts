@@ -401,14 +401,8 @@ async function handleGet(
   }
 
   let proposalData = null;
-  if (lease.proposal_id) { // BUG: proposal_id column does not exist in booking_lease DB schema
-    const { data } = await _supabase
-      .from("booking_proposal")
-      .select('id, checkin_day_of_week_number, checkout_day_of_week_number')
-      .eq('id', lease.proposal_id)
-      .single();
-    proposalData = data;
-  }
+  // Note: booking_lease table has no proposal_id column
+  // Proposals are not directly linked to leases in the schema
 
   // Fetch stays
   const { data: stays } = await _supabase
@@ -447,16 +441,9 @@ async function handleUpdateStatus(
   // Capitalize status for display
   const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  // BUG: lease_status column does not exist in booking_lease DB schema
-  const { data, error } = await _supabase
-    .from('booking_lease')
-    .update({
-      lease_status: formattedStatus,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', leaseId)
-    .select()
-    .single();
+  // Note: lease_status column does not exist in booking_lease DB schema
+  // This operation cannot be completed as there is no status field
+  throw new Error('Lease status update not supported - no lease_status column in schema');
 
   if (error) {
     throw new Error(`Failed to update status: ${error.message}`);
@@ -478,16 +465,9 @@ async function handleSoftDelete(
     throw new Error('leaseId is required');
   }
 
-  // BUG: lease_status column does not exist in booking_lease DB schema
-  const { data, error } = await _supabase
-    .from('booking_lease')
-    .update({
-      lease_status: 'Cancelled',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', leaseId)
-    .select()
-    .single();
+  // Note: lease_status column does not exist in booking_lease DB schema
+  // This operation cannot be completed as there is no status field
+  throw new Error('Lease soft delete not supported - no lease_status column in schema');
 
   if (error) {
     throw new Error(`Failed to cancel lease: ${error.message}`);
@@ -564,15 +544,9 @@ async function handleBulkUpdateStatus(
 
   const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-  // BUG: lease_status column does not exist in booking_lease DB schema
-  const { data, error } = await _supabase
-    .from('booking_lease')
-    .update({
-      lease_status: formattedStatus,
-      updated_at: new Date().toISOString(),
-    })
-    .in('id', leaseIds)
-    .select();
+  // Note: lease_status column does not exist in booking_lease DB schema
+  // This operation cannot be completed as there is no status field
+  throw new Error('Bulk lease status update not supported - no lease_status column in schema');
 
   if (error) {
     throw new Error(`Failed to bulk update: ${error.message}`);
@@ -594,15 +568,9 @@ async function handleBulkSoftDelete(
     throw new Error('leaseIds array is required');
   }
 
-  // BUG: lease_status column does not exist in booking_lease DB schema
-  const { data, error } = await _supabase
-    .from('booking_lease')
-    .update({
-      lease_status: 'Cancelled',
-      updated_at: new Date().toISOString(),
-    })
-    .in('id', leaseIds)
-    .select();
+  // Note: lease_status column does not exist in booking_lease DB schema
+  // This operation cannot be completed as there is no status field
+  throw new Error('Bulk lease soft delete not supported - no lease_status column in schema');
 
   if (error) {
     throw new Error(`Failed to bulk cancel: ${error.message}`);
@@ -648,7 +616,7 @@ async function handleBulkExport(
     return [
       lease.id,
       lease.agreement_number || '',
-      lease.lease_status || '', // BUG: lease_status column does not exist in booking_lease DB schema
+      'N/A', // lease_status column does not exist in booking_lease DB schema
       lease.reservation_start_date || '',
       lease.reservation_end_date || '',
       lease.total_guest_rent_amount || 0,
@@ -1048,7 +1016,7 @@ async function handleUpdateBookedDates(
 
   const { data: lease, error: leaseError } = await _supabase
     .from('booking_lease')
-    .select('id, reservation_start_date, reservation_end_date, proposal_id')
+    .select('id, reservation_start_date, reservation_end_date')
     .eq('id', leaseId)
     .single();
 
@@ -1058,28 +1026,14 @@ async function handleUpdateBookedDates(
 
   const startDate = lease.reservation_start_date;
   const endDate = lease.reservation_end_date;
-  const proposalId = lease.proposal_id as string | undefined;
 
   if (!startDate || !endDate) {
     throw new Error('Lease does not have valid reservation dates');
   }
 
-  // Get proposal schedule (check-in/check-out days define weekly pattern)
-  let checkInDay = 0; // Default to Sunday
-  let checkOutDay = 6; // Default to Saturday (full week)
-
-  if (proposalId) {
-    const { data: proposal } = await _supabase
-      .from("booking_proposal")
-      .select('checkin_day_of_week_number, checkout_day_of_week_number')
-      .eq('id', proposalId)
-      .single();
-
-    if (proposal) {
-      checkInDay = parseInt(proposal.checkin_day_of_week_number) || 0;
-      checkOutDay = parseInt(proposal.checkout_day_of_week_number) || 6;
-    }
-  }
+  // Default weekly pattern (Sunday to Saturday, full week)
+  const checkInDay = 0; // Sunday
+  const checkOutDay = 6; // Saturday
 
   // Generate booked dates based on weekly schedule
   const bookedDates: string[] = [];
@@ -1184,18 +1138,9 @@ async function handleCancelLease(
     throw new Error('leaseId is required');
   }
 
-  // BUG: lease_status, cancellation_reason, disagreeing_party columns do not exist in booking_lease DB schema
-  const { data, error } = await _supabase
-    .from('booking_lease')
-    .update({
-      lease_status: 'Cancelled',
-      cancellation_reason: reason || null,
-      disagreeing_party: disagreeingParty || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', leaseId)
-    .select()
-    .single();
+  // Note: lease_status, cancellation_reason, disagreeing_party columns do not exist in booking_lease DB schema
+  // This operation cannot be completed as there are no status/reason fields
+  throw new Error('Lease cancellation not supported - no lease_status column in schema');
 
   if (error) {
     console.error('[leases-admin] Cancel lease error:', error);

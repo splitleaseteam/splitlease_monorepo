@@ -177,21 +177,6 @@ export function useHostOverviewPageLogic() {
         );
       }
 
-      // 3. Fetch listing IDs from user.listings_json array (with Listings fallback for legacy data)
-      if (hostAccountId) {
-        fetchPromises.push(
-          supabase
-            .from('user')
-            .select('listings_json')
-            .eq('id', hostAccountId)
-            .maybeSingle()
-            .then(result => ({ type: 'user_listings', ...result }))
-            .catch(err => {
-              console.warn('user Listings fetch failed:', err);
-              return { type: 'user_listings', data: null, error: err };
-            })
-        );
-      }
 
       const results = await Promise.all(fetchPromises);
 
@@ -207,8 +192,8 @@ export function useHostOverviewPageLogic() {
         location: {
           borough: listing.borough?.Display || listing.borough || ''
         },
-        leasesCount: listing['Leases Count'] || 0,
-        proposalsCount: listing['Proposals Count'] || 0,
+        leasesCount: 0,
+        proposalsCount: 0,
         photos: listing.photos_with_urls_captions_and_sort_order_json || [],
         // Pricing fields
         rental_type: listing.rental_type || 'Nightly',
@@ -267,8 +252,7 @@ export function useHostOverviewPageLogic() {
       }
 
       // Check if we need to fetch additional listings from user.listings_json
-      const userListingsResult = results.find(r => r?.type === 'user_listings');
-      const linkedListingIds = userListingsResult?.data?.listings_json || userListingsResult?.data?.Listings || [];
+      const linkedListingIds = [];
 
       // Fetch any linked listings that aren't already in our results
       const existingIds = new Set([

@@ -157,7 +157,7 @@ export function getListingPhoto(listing) {
 
 /**
  * Get host display name
- * @param {Object} host - Host object (Bubble.io format)
+ * @param {Object} host - Host object
  * @returns {string} Display name
  */
 export function getHostDisplayName(host) {
@@ -166,14 +166,12 @@ export function getHostDisplayName(host) {
   // User table uses first_name and last_name columns
   return host.first_name ||
     (host.first_name && host.last_name ? `${host.first_name} ${host.last_name}` : null) ||
-    host.firstName ||
-    host.name ||
     'Host';
 }
 
 /**
  * Get host profile photo URL
- * @param {Object} host - Host object (Bubble.io format)
+ * @param {Object} host - Host object
  * @returns {string|null} Photo URL or null
  */
 export function getHostProfilePhoto(host) {
@@ -336,12 +334,12 @@ function getNightRangeInfo(days) {
  * @returns {Object} - { duration, schedule, pricing, listingContext }
  */
 export function generateGuestNarrativeText(proposal) {
-  const isCounteroffer = proposal?.['counter offer happened'];
+  const isCounteroffer = proposal?.has_host_counter_offer;
 
   // Days selected (prefer counteroffer if exists)
-  let daysSelected = isCounteroffer && proposal?.['host_counter_offer_days_selected']?.length > 0
-    ? proposal['host_counter_offer_days_selected']
-    : proposal?.['Days Selected'] || [];
+  let daysSelected = isCounteroffer && proposal?.host_proposed_selected_days_json?.length > 0
+    ? proposal.host_proposed_selected_days_json
+    : proposal?.guest_selected_days_numbers_json || [];
 
   // Parse if string
   if (typeof daysSelected === 'string') {
@@ -351,25 +349,25 @@ export function generateGuestNarrativeText(proposal) {
   const nightsPerWeek = Array.isArray(daysSelected) ? daysSelected.length : 0;
 
   // Duration
-  const durationWeeks = isCounteroffer && proposal?.['host_counter_offer_reservation_span_weeks']
-    ? proposal['host_counter_offer_reservation_span_weeks']
-    : proposal?.['Reservation Span (Weeks)'] || 0;
+  const durationWeeks = isCounteroffer && proposal?.host_proposed_reservation_span_weeks
+    ? proposal.host_proposed_reservation_span_weeks
+    : proposal?.reservation_span_in_weeks || 0;
 
   // Pricing
-  const nightlyRate = isCounteroffer && proposal?.['host_counter_offer_nightly_price'] != null
-    ? proposal['host_counter_offer_nightly_price']
-    : proposal?.['proposal nightly price'] || 0;
+  const nightlyRate = isCounteroffer && proposal?.host_proposed_nightly_price != null
+    ? proposal.host_proposed_nightly_price
+    : proposal?.calculated_nightly_price || 0;
 
-  const totalPrice = isCounteroffer && proposal?.['host_counter_offer_total_price'] != null
-    ? proposal['host_counter_offer_total_price']
-    : proposal?.['Total Price for Reservation (guest)'] || 0;
+  const totalPrice = isCounteroffer && proposal?.host_proposed_total_guest_price != null
+    ? proposal.host_proposed_total_guest_price
+    : proposal?.total_reservation_price_for_guest || 0;
 
   const weeklyPrice = nightlyRate * nightsPerWeek;
 
   // Dates
-  const moveInDate = isCounteroffer && proposal?.['host_counter_offer_move_in_date']
-    ? proposal['host_counter_offer_move_in_date']
-    : proposal?.['Move in range start'];
+  const moveInDate = isCounteroffer && proposal?.host_proposed_move_in_date
+    ? proposal.host_proposed_move_in_date
+    : proposal?.move_in_range_start_date;
 
   // Format dates
   const startFormatted = moveInDate
@@ -414,13 +412,13 @@ export function generateGuestNarrativeText(proposal) {
     weeklyPrice,
     total: totalPrice,
     weeks: durationWeeks,
-    cleaningFee: proposal?.['cleaning fee'] || 0
+    cleaningFee: proposal?.cleaning_fee_amount || 0
   };
 
   // Listing context (what guest sees about the listing)
   const listing = proposal?.listing || {};
   const host = listing?.host || {};
-  const listingName = listing?.Name || 'Listing';
+  const listingName = listing?.listing_title || 'Listing';
   const location = [listing?.hoodName, listing?.boroughName].filter(Boolean).join(', ') || 'New York';
   const hostFirstName = host?.first_name || 'Host';
   const hostPhoto = host?.profile_photo_url || null;

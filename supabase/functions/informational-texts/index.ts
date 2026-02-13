@@ -31,10 +31,19 @@ Deno.serve(async (req: Request) => {
       return new Response(null, { status: 200, headers: corsHeaders });
     }
 
-    // Parse request
-    const body = await req.json();
+    // Parse request — guard body parsing for GET requests
+    let body: any = {};
+    if (req.method !== 'GET') {
+      try { body = await req.json(); } catch { body = {}; }
+    } else {
+      const url = new URL(req.url);
+      body = { action: url.searchParams.get('action'), id: url.searchParams.get('id') };
+    }
     const action = body.action || 'unknown';
-    const payload = body.payload || {};
+    // For GET requests, build payload from query params; for POST, use body.payload
+    const payload = req.method === 'GET'
+      ? { id: body.id, ...body }
+      : (body.payload || {});
 
     console.log(`[informational-texts] Action: ${action}`);
 
@@ -105,7 +114,12 @@ Deno.serve(async (req: Request) => {
 
   } catch (error) {
     console.error('[informational-texts] Error:', error);
-    return errorResponse((error as Error).message, 500);
+    const message = (error as Error).message;
+    // Return 400 for input validation errors, 404 for not found, 500 for everything else
+    const isValidation = /required|cannot be empty|already exists|Invalid action/i.test(message);
+    const isNotFound = /not found/i.test(message);
+    const status = isValidation ? 400 : isNotFound ? 404 : 500;
+    return errorResponse(message, status);
   }
 });
 

@@ -157,13 +157,13 @@ export function getDateChangeStatusClass(status) {
   if (!status) return 'hl-dcr-status-badge';
   const normalizedStatus = status.toLowerCase();
 
-  if (normalizedStatus === 'pending') {
+  if (normalizedStatus === 'waiting_for_answer') {
     return 'hl-dcr-status-badge hl-dcr-status-pending';
   }
-  if (normalizedStatus === 'accepted') {
+  if (normalizedStatus === 'approved') {
     return 'hl-dcr-status-badge hl-dcr-status-accepted';
   }
-  if (normalizedStatus === 'declined') {
+  if (normalizedStatus === 'rejected') {
     return 'hl-dcr-status-badge hl-dcr-status-declined';
   }
   if (normalizedStatus === 'cancelled') {

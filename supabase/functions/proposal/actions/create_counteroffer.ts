@@ -28,15 +28,13 @@ import {
 interface CreateCounterofferPayload {
   proposalId: string;
   counterofferData: {
-    'host_counter_offer_nightly_price'?: number;
-    'host_counter_offer_nights_per_week'?: number;
-    'host_counter_offer_check_in_day'?: number;
-    'host_counter_offer_check_out_day'?: number;
-    'host_counter_offer_move_in_start'?: string; // Maps to 'host_counter_offer_move_in_date' column
-    // Note: 'host_counter_offer_move_out' column does not exist in schema
+    host_proposed_nightly_price?: number;
+    host_proposed_nights_per_week?: number;
+    host_proposed_checkin_day?: number;
+    host_proposed_checkout_day?: number;
+    host_proposed_move_in_date?: string;
   };
   isUsabilityTest?: boolean;
-  // Note: hostPersona removed - 'counteroffer_by_persona' column does not exist
 }
 
 export async function handleCreateCounteroffer(
@@ -45,7 +43,7 @@ export async function handleCreateCounteroffer(
 ): Promise<{ success: boolean; message: string }> {
   console.log('[create_counteroffer] Starting with proposalId:', payload.proposalId);
 
-  const { proposalId, counterofferData, isUsabilityTest: _isUsabilityTest = false, hostPersona } = payload;
+  const { proposalId, counterofferData, isUsabilityTest: _isUsabilityTest = false } = payload;
 
   if (!proposalId) {
     throw new Error('proposalId is required');
@@ -112,7 +110,7 @@ export async function handleCreateCounteroffer(
       const reservationSpan = proposal.reservation_span_text || "other";
 
       const nightsPerWeek =
-        counterofferData['host_counter_offer_nights_per_week'] ||
+        counterofferData.host_proposed_nights_per_week ||
         proposal.host_proposed_nights_per_week ||
         proposal.nights_per_week_count ||
         0;
@@ -216,22 +214,21 @@ export async function handleCreateCounteroffer(
     }
   }
 
-  // Apply counteroffer fields (all verified to exist)
-  if (counterofferData['host_counter_offer_nightly_price'] !== undefined) {
-    updateData['host_proposed_nightly_price'] = counterofferData['host_counter_offer_nightly_price'];
+  // Apply counteroffer fields from payload
+  if (counterofferData.host_proposed_nightly_price !== undefined) {
+    updateData['host_proposed_nightly_price'] = counterofferData.host_proposed_nightly_price;
   }
-  if (counterofferData['host_counter_offer_nights_per_week'] !== undefined) {
-    updateData['host_proposed_nights_per_week'] = counterofferData['host_counter_offer_nights_per_week'];
+  if (counterofferData.host_proposed_nights_per_week !== undefined) {
+    updateData['host_proposed_nights_per_week'] = counterofferData.host_proposed_nights_per_week;
   }
-  if (counterofferData['host_counter_offer_check_in_day'] !== undefined) {
-    updateData['host_proposed_checkin_day'] = counterofferData['host_counter_offer_check_in_day'];
+  if (counterofferData.host_proposed_checkin_day !== undefined) {
+    updateData['host_proposed_checkin_day'] = counterofferData.host_proposed_checkin_day;
   }
-  if (counterofferData['host_counter_offer_check_out_day'] !== undefined) {
-    updateData['host_proposed_checkout_day'] = counterofferData['host_counter_offer_check_out_day'];
+  if (counterofferData.host_proposed_checkout_day !== undefined) {
+    updateData['host_proposed_checkout_day'] = counterofferData.host_proposed_checkout_day;
   }
-  if (counterofferData['host_counter_offer_move_in_start']) {
-    // Map to actual column name
-    updateData['host_proposed_move_in_date'] = counterofferData['host_counter_offer_move_in_start'];
+  if (counterofferData.host_proposed_move_in_date) {
+    updateData['host_proposed_move_in_date'] = counterofferData.host_proposed_move_in_date;
   }
 
   const { error: updateError } = await supabase
@@ -491,6 +488,6 @@ export async function handleCreateCounteroffer(
 
   return {
     success: true,
-    message: `Counteroffer created${hostPersona ? ` by ${hostPersona}` : ''}`
+    message: 'Counteroffer created'
   };
 }

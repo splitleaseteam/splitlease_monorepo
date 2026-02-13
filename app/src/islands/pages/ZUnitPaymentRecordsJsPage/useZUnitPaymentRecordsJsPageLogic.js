@@ -40,7 +40,8 @@ function parseArrayField(value) {
   if (typeof value === 'string') {
     try {
       return JSON.parse(value);
-    } catch {
+    } catch (e) {
+      console.error('[useZUnitPaymentRecordsJsPageLogic] Failed to parse JSON:', value, e);
       return [];
     }
   }

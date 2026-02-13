@@ -20,8 +20,11 @@ export default function ListingSelector({ listings, selectedListing, onSelect })
       <div className="simulation-host-listing-selector__grid">
         {listings.map((listing) => {
           const isSelected = selectedListing?.id === listing.id;
-          const name = listing.listing_title || listing['Name'] || 'Unnamed Listing';
-          const address = listing['Primary Address'] || '';
+          const name = listing.listing_title || 'Unnamed Listing';
+          const address = typeof listing.address_with_lat_lng_json === 'object'
+            ? (listing.address_with_lat_lng_json?.address || '')
+            : (listing.address_with_lat_lng_json || '');
+          const coverPhoto = listing.profile_photo_url || listing.photos_with_urls_captions_and_sort_order_json?.[0]?.url;
 
           return (
             <button
@@ -29,10 +32,10 @@ export default function ListingSelector({ listings, selectedListing, onSelect })
               className={`simulation-host-listing-card ${isSelected ? 'simulation-host-listing-card--selected' : ''}`}
               onClick={() => onSelect(listing)}
             >
-              {listing['Cover Photo'] && (
+              {coverPhoto && (
                 <div
                   className="simulation-host-listing-card__image"
-                  style={{ backgroundImage: `url(${listing['Cover Photo']})` }}
+                  style={{ backgroundImage: `url(${coverPhoto})` }}
                 />
               )}
               <div className="simulation-host-listing-card__content">

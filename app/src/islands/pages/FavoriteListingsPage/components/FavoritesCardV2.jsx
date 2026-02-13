@@ -493,7 +493,7 @@ const FavoritesCardV2 = ({
           <div>
             <div style={styles.priceLabel}>Starting at</div>
             <div style={styles.priceValue}>
-              ${listing.price?.starting || listing['Starting nightly price'] || 0} <span style={styles.pricePeriod}>/ night</span>
+              ${listing.price?.starting || listing.lowest_nightly_price_for_map_display || 0} <span style={styles.pricePeriod}>/ night</span>
             </div>
           </div>
           

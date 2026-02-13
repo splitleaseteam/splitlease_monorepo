@@ -51,7 +51,7 @@ const PROGRESS_COLORS = {
  */
 export function getStageLabels(status, proposal = {}) {
   // Check if rental application is submitted by checking the proposal and user
-  const hasRentalApp = proposal['rental application'] || proposal?.user?.['rental application'];
+  const hasRentalApp = proposal.rental_application || proposal?.user?.rental_application;
 
   const baseLabels = [
     'Proposal Submitted',
@@ -113,7 +113,7 @@ function getStageColor(stageIndex, status, usualOrder, isTerminal, proposal = {}
   }
 
   const normalizedStatus = typeof status === 'string' ? status.trim() : status;
-  const hasRentalApp = proposal['rental application'];
+  const hasRentalApp = proposal.rental_application;
   const guestDocsFinalized = proposal.is_finalized;
 
   // Stage 1: Proposal Submitted - Always purple (completed) once proposal exists

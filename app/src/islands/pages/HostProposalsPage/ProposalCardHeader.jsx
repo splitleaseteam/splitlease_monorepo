@@ -126,7 +126,7 @@ export function ProposalCardHeader({ proposal, isExpanded, onToggle, contentId }
   const statusConfig = getStatusTagConfig(proposal);
 
   // Build meta line
-  const daysSelected = proposal?.days_selected || proposal?.Days_Selected || [];
+  const daysSelected = proposal?.days_selected || [];
   const schedule = formatSchedule(daysSelected);
   const duration = formatDuration(proposal);
   const total = formatTotalHostCompensation(proposal);

@@ -98,8 +98,6 @@ export async function createListing(formData) {
       uploadedPhotos = formData.photos.photos.map((p, i) => ({
         id: p.id,
         url: p.url,
-        Photo: p.url,
-        'Photo (thumbnail)': p.url,
         storagePath: p.storagePath || null,
         caption: p.caption || '',
         displayOrder: p.displayOrder ?? i,

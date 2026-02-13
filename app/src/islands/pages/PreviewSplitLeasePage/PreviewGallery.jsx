@@ -105,47 +105,47 @@ export function PhotoGallery({ photos, listingName, onPhotoClick, onEdit }) {
       {photoCount === 1 ? (
         <div style={getGridStyle()}>
           <div onClick={() => onPhotoClick(0)} style={imageStyle}>
-            <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
+            <img src={photos[0]?.url || ''} alt={`${listingName} - main`} style={imgStyle} />
           </div>
         </div>
       ) : photoCount === 2 ? (
         <div style={getGridStyle()}>
           {photos.map((photo, idx) => (
             <div key={photo.id} onClick={() => onPhotoClick(idx)} style={imageStyle}>
-              <img src={photo.Photo} alt={`${listingName} - ${idx + 1}`} style={imgStyle} />
+              <img src={photo?.url || ''} alt={`${listingName} - ${idx + 1}`} style={imgStyle} />
             </div>
           ))}
         </div>
       ) : photoCount === 3 ? (
         <div style={getGridStyle()}>
           <div onClick={() => onPhotoClick(0)} style={{ ...imageStyle, gridRow: '1 / 3' }}>
-            <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
+            <img src={photos[0]?.url || ''} alt={`${listingName} - main`} style={imgStyle} />
           </div>
           {photos.slice(1, 3).map((photo, idx) => (
             <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
-              <img src={photo['Photo (thumbnail)'] || photo.Photo} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
+              <img src={photo?.url || ''} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
             </div>
           ))}
         </div>
       ) : photoCount === 4 ? (
         <div style={getGridStyle()}>
           <div onClick={() => onPhotoClick(0)} style={{ ...imageStyle, gridRow: '1 / 4' }}>
-            <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
+            <img src={photos[0]?.url || ''} alt={`${listingName} - main`} style={imgStyle} />
           </div>
           {photos.slice(1, 4).map((photo, idx) => (
             <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
-              <img src={photo['Photo (thumbnail)'] || photo.Photo} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
+              <img src={photo?.url || ''} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
             </div>
           ))}
         </div>
       ) : (
         <div style={getGridStyle()}>
           <div onClick={() => onPhotoClick(0)} style={{ ...imageStyle, gridRow: '1 / 3' }}>
-            <img src={photos[0].Photo} alt={`${listingName} - main`} style={imgStyle} />
+            <img src={photos[0]?.url || ''} alt={`${listingName} - main`} style={imgStyle} />
           </div>
           {photos.slice(1, 5).map((photo, idx) => (
             <div key={photo.id} onClick={() => onPhotoClick(idx + 1)} style={imageStyle}>
-              <img src={photo['Photo (thumbnail)'] || photo.Photo} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
+              <img src={photo?.url || ''} alt={`${listingName} - ${idx + 2}`} style={imgStyle} />
               {idx === 3 && photoCount > 5 && (
                 <button
                   onClick={(e) => {

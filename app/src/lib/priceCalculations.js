@@ -6,8 +6,6 @@
  *   import { calculate4WeekRent, calculateReservationTotal } from './priceCalculations.js';
  */
 
-// Re-export formatPrice from the canonical source for backward compatibility
-export { formatPrice } from './formatters.js';
 
 /**
  * Calculate 4-week rent based on nightly price and selected nights
@@ -44,8 +42,8 @@ export function getNightlyPriceForNights(listing, nightsSelected) {
   if (!listing || !nightsSelected) return null;
 
   // Price override takes precedence
-  if (listing['price_override']) {
-    return listing['price_override'];
+  if (listing.price_override) {
+    return listing.price_override;
   }
 
   // Map nights to price fields
@@ -190,7 +188,7 @@ export function calculateHostFourWeekCompensation(listing, nightsPerWeek) {
   if (rentalType === 'Weekly') {
     const weeklyRate = listing.weekly_rate_paid_to_host || 0;
     // Default to 4 weeks if not specified
-    const weeksIn4CalendarWeeks = listing['weeks_offered_num_weeks_during_4_calendar_weeks'] || 4;
+    const weeksIn4CalendarWeeks = listing.weeks_offered_num_weeks_during_4_calendar_weeks || 4;
     return weeklyRate * weeksIn4CalendarWeeks;
   }
 

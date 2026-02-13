@@ -135,10 +135,10 @@ export default function GuestEditingProposalModal({
             />
 
             {/* Guest comment section */}
-            {(proposal?.guestCommentToEditSuggestedProposal || proposal?.['Guest Comment to Edit Suggested Proposal']) && (
+            {proposal?.guestCommentToEditSuggestedProposal && (
               <div className="gep-guest-comment">
                 <p className="gep-guest-comment-text">
-                  Guest's comment to update suggested proposal: {proposal.guestCommentToEditSuggestedProposal || proposal['Guest Comment to Edit Suggested Proposal']}
+                  Guest's comment to update suggested proposal: {proposal.guestCommentToEditSuggestedProposal}
                 </p>
               </div>
             )}
@@ -176,7 +176,7 @@ export default function GuestEditingProposalModal({
             {view === 'general' && (
               <div className="gep-breakdown-details">
                 <ReservationPriceBreakdown
-                  listing={listing || proposal?._listing}
+                  listing={listing}
                   proposal={proposal}
                   moveInDate={formState.moveInDate}
                   checkInDay={formState.checkInDay}
@@ -185,9 +185,9 @@ export default function GuestEditingProposalModal({
                   weeksReservationSpanNumber={formState.numberOfWeeks}
                   nightsSelected={formState.selectedNights}
                   houseRulesToDisplay={houseRulesToDisplay}
-                  pricePerNight={pricePerNight || proposal?.['proposal nightly price'] || 0}
-                  totalPriceForReservation={totalPriceForReservation || proposal?.['Total Price for Reservation (guest)'] || 0}
-                  priceRentPer4Weeks={priceRentPer4Weeks || proposal?.['Price Rent per 4 weeks'] || 0}
+                  pricePerNight={pricePerNight || proposal?.calculated_nightly_price || 0}
+                  totalPriceForReservation={totalPriceForReservation || proposal?.total_reservation_price_for_guest || 0}
+                  priceRentPer4Weeks={priceRentPer4Weeks || 0}
                   user={userContext}
                   isVisible={true}
                   isHouseRulesVisible={isHouseRulesVisible}
@@ -217,7 +217,7 @@ export default function GuestEditingProposalModal({
         <EndProposalModal
           isOpen={view === 'cancel'}
           proposal={proposal}
-          listing={listing || proposal?._listing}
+          listing={listing}
           userType="guest"
           onClose={handleDismissCancel}
           onConfirm={handleConfirmCancel}

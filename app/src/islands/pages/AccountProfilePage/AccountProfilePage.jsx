@@ -111,7 +111,7 @@ export default function AccountProfilePage() {
   // Database columns use first_name, last_name naming convention
   const sidebarProps = {
     isEditorView: logic.isEditorView,
-    coverPhotoUrl: logic.profileData?.['Cover Photo'] || null,
+    coverPhotoUrl: null,
     avatarUrl: logic.profileData?.profile_photo_url || null,
     firstName: logic.formData.firstName || logic.profileData?.first_name || '',
     lastName: logic.formData.lastName || logic.profileData?.last_name || '',
@@ -126,7 +126,7 @@ export default function AccountProfilePage() {
     onVerifyGovId: logic.isEditorView ? logic.handleVerifyGovId : null,
     onConnectLinkedIn: logic.isEditorView ? logic.handleConnectLinkedIn : null,
     onEditPhone: logic.isEditorView ? logic.handleEditPhone : null,
-    emailAddress: logic.profileData?.email || logic.profileData?.['Email'] || '',
+    emailAddress: logic.profileData?.email || '',
     phoneNumber: logic.profileData?.phone_number || '',
     isVerifyingEmail: logic.isVerifyingEmail,
     verificationEmailSent: logic.verificationEmailSent,
@@ -141,8 +141,10 @@ export default function AccountProfilePage() {
     onOpenNotificationSettings: logic.handleOpenNotificationSettings,
     onChangePassword: logic.handleChangePassword,
     // Public view specific
-    responseTime: logic.profileData?.['Response Time'] || 'Within 24 hours',
-    responseRate: logic.profileData?.['Response Rate'] || 95,
+    responseTime: logic.profileData?.median_hours_to_reply_to_messages
+      ? `${logic.profileData.median_hours_to_reply_to_messages} hours`
+      : 'Within 24 hours',
+    responseRate: 95,
     memberSince: logic.profileData?.original_created_at || logic.profileData?.['_created_date']
   };
 
@@ -249,11 +251,11 @@ export default function AccountProfilePage() {
         <ReferralModal
           isOpen={showReferralModal}
           onClose={() => setShowReferralModal(false)}
-          referralCode={logic.profileData?.['Referral Code'] || logic.profileUserId || 'user'}
+          referralCode={logic.profileUserId || 'user'}
           stats={{
-            friendsReferred: logic.profileData?.['Friends Referred'] || 0,
-            rewardsClaimed: logic.profileData?.['Rewards Claimed'] || 0,
-            totalRewards: logic.profileData?.['Total Rewards'] || 0
+            friendsReferred: 0,
+            rewardsClaimed: 0,
+            totalRewards: 0
           }}
           userType={logic.isHostUser ? 'host' : 'guest'}
           referrerName={logic.profileData?.first_name || logic.profileData?.firstName || ''}
@@ -277,11 +279,11 @@ export default function AccountProfilePage() {
             onSuccess={logic.handleRentalWizardSuccess}
             applicationStatus={logic.rentalApplicationStatus}
             userProfileData={{
-              email: logic.profileData?.email || logic.profileData?.['Email'] || '',
+              email: logic.profileData?.email || '',
               firstName: logic.profileData?.first_name || '',
               lastName: logic.profileData?.last_name || '',
               phone: logic.profileData?.phone_number || '',
-              dob: logic.profileData?.['Date of Birth'] || '',
+              dob: logic.profileData?.date_of_birth || '',
             }}
           />
         )}

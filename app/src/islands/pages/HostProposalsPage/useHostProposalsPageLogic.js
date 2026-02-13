@@ -36,14 +36,14 @@ function normalizeListing(listing) {
     ...listing,
     // Keep original fields for backwards compatibility
     // Add normalized aliases for V7 components
-    title: listing.listing_title || listing.title || listing.listing_title || 'Unnamed Listing',
-    name: listing.listing_title || listing.title || listing.listing_title || 'Unnamed Listing',
-    thumbnail: listing['Cover Photo'] || listing.thumbnail || listing.cover_photo || null,
-    neighborhood: listing.Neighborhood || listing.neighborhood || null,
-    address: listing['Full Address'] || listing.address || listing.full_address || null,
-    bedrooms: listing['Bedrooms (number)'] || listing.bedrooms || 0,
-    bathrooms: listing['Bathrooms (number)'] || listing.bathrooms || 0,
-    monthly_rate: listing['Monthly Rate'] || listing.monthly_rate || 0
+    title: listing.listing_title || listing.title || 'Unnamed Listing',
+    name: listing.listing_title || listing.title || 'Unnamed Listing',
+    thumbnail: listing.cover_photo || listing.thumbnail || null,
+    neighborhood: listing.neighborhood || null,
+    address: listing.full_address || listing.address || null,
+    bedrooms: listing.bedrooms || 0,
+    bathrooms: listing.bathrooms || 0,
+    monthly_rate: listing.monthly_rate || 0
   };
 }
 
@@ -66,12 +66,12 @@ function normalizeGuest(guest) {
   return {
     ...guest,
     // Add normalized aliases for V7 components
-    name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.name || guest.full_name || 'Guest',
-    full_name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.full_name || guest.name || 'Guest',
-    first_name: guest.first_name || guest.firstName || 'Guest',
-    profilePhoto: guest.profile_photo_url || guest.profilePhoto || guest.profile_photo || null,
-    avatar: guest.profile_photo_url || guest.profilePhoto || guest.avatar || null,
-    bio: guest.bio_text || guest.Bio || guest.bio || guest.about || null,
+    name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.full_name || 'Guest',
+    full_name: (guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.full_name || 'Guest',
+    first_name: guest.first_name || 'Guest',
+    profilePhoto: guest.profile_photo_url || null,
+    avatar: guest.profile_photo_url || null,
+    bio: guest.bio_text || null,
     id_verified: hasIdVerification || isUserVerified,
     work_verified: hasWorkVerification,
     is_verified: isUserVerified,
@@ -103,40 +103,40 @@ function normalizeProposal(proposal, normalizedGuest = null) {
     guest: normalizedGuest || normalizeGuest(proposal.guest),
 
     // Dates
-    start_date: proposal.move_in_range_start_date || proposal.start_date || null,
-    end_date: proposal.planned_move_out_date || proposal.end_date || null,
-    move_in_range_start: proposal.move_in_range_start_date || proposal.move_in_range_start || null,
-    move_in_range_end: proposal.move_in_range_end_date || proposal.move_in_range_end || null,
+    start_date: proposal.move_in_range_start_date || null,
+    end_date: proposal.planned_move_out_date || null,
+    move_in_range_start: proposal.move_in_range_start_date || null,
+    move_in_range_end: proposal.move_in_range_end_date || null,
     created_at: proposal.original_created_at || proposal.created_at || null,
 
     // Days/Schedule
-    days_selected: proposal.guest_selected_days_numbers_json || proposal.days_selected || [],
-    days_per_week: proposal.guest_selected_days_numbers_json || proposal.days_per_week || [],
-    nights_selected: proposal.guest_selected_nights_numbers_json || proposal.nights_selected || [],
-    nights_per_week: proposal.nights_per_week_count || proposal.nights_per_week || 0,
-    check_in_day: proposal.checkin_day_of_week_number || proposal.check_in_day || null,
-    check_out_day: proposal.checkout_day_of_week_number || proposal.check_out_day || null,
+    days_selected: proposal.guest_selected_days_numbers_json || [],
+    days_per_week: proposal.guest_selected_days_numbers_json || [],
+    nights_selected: proposal.guest_selected_nights_numbers_json || [],
+    nights_per_week: proposal.nights_per_week_count || 0,
+    check_in_day: proposal.checkin_day_of_week_number ?? null,
+    check_out_day: proposal.checkout_day_of_week_number ?? null,
 
     // Duration
-    duration_weeks: proposal.reservation_span_in_weeks || proposal.duration_weeks || proposal.total_weeks || 0,
-    duration_months: proposal.reservation_span_text || proposal.duration_months || 0,
+    duration_weeks: proposal.reservation_span_in_weeks || 0,
+    duration_months: proposal.reservation_span_text || 0,
 
     // Pricing - prioritize host compensation fields
-    nightly_rate: proposal.calculated_nightly_price || proposal.nightly_rate || 0,
-    total_price: proposal.total_compensation_for_host || proposal.host_compensation_per_period || proposal.total_price || 0,
-    host_compensation: proposal.host_compensation_per_period || proposal.total_compensation_for_host || proposal.host_compensation || 0,
-    four_week_rent: proposal.four_week_rent_amount || proposal.four_week_rent || 0,
-    four_week_compensation: proposal.four_week_host_compensation || proposal.four_week_compensation || 0,
-    cleaning_fee_amount: proposal.cleaning_fee_amount || proposal.cleaning_fee || 0,
-    damage_deposit_amount: proposal.damage_deposit_amount || proposal.damage_deposit || 0,
+    nightly_rate: proposal.calculated_nightly_price || 0,
+    total_price: proposal.total_compensation_for_host || proposal.host_compensation_per_period || 0,
+    host_compensation: proposal.host_compensation_per_period || proposal.total_compensation_for_host || 0,
+    four_week_rent: proposal.four_week_rent_amount || 0,
+    four_week_compensation: proposal.four_week_host_compensation || 0,
+    cleaning_fee_amount: proposal.cleaning_fee_amount || 0,
+    damage_deposit_amount: proposal.damage_deposit_amount || 0,
 
     // Guest info/message
-    comment: proposal.guest_introduction_message || proposal.comment || null,
-    need_for_space: proposal.guest_stated_need_for_space || proposal.need_for_space || null,
+    comment: proposal.guest_introduction_message || null,
+    need_for_space: proposal.guest_stated_need_for_space || null,
     about_yourself: proposal.guest_about_yourself_text || null,
 
     // Guest counteroffer detection
-    last_modified_by: proposal['last_modified_by'] || proposal.last_modified_by || null,
+    last_modified_by: proposal.last_modified_by || null,
     has_guest_counteroffer: proposal.has_guest_counteroffer || false,
 
     // Rental type (Monthly, Weekly, Nightly)
@@ -438,7 +438,12 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
           host_proposed_checkout_day,
           host_proposed_nights_per_week,
           host_proposed_house_rules_json,
-          rental_type
+          host_proposed_duration_months,
+          rental_type,
+          has_guest_counteroffer,
+          last_modified_by,
+          reason_for_cancellation,
+          rental_application_id
         `)
         .eq('listing_id', listingId)
         .neq('is_deleted', true)
@@ -464,10 +469,10 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         // Fetch all enrichment data in parallel
         const [guestsResult, vmResult, summariesResult] = await Promise.all([
           guestIds.length > 0
-            ? supabase
-                .from('user')
-                .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, linkedin_profile_id, is_phone_verified, selfie_with_id_photo_url, review_count, original_created_at')
-                .in('id', guestIds)
+              ? supabase
+                  .from('user')
+                  .select('id, first_name, last_name, email, profile_photo_url, bio_text, is_user_verified, linkedin_profile_id, is_phone_verified, selfie_with_id_photo_url, original_created_at')
+                  .in('id', guestIds)
             : { data: null, error: null },
           vmIds.length > 0
             ? supabase
@@ -757,12 +762,12 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    *
    * Transforms frontend field names to Edge Function expected format:
    * - Frontend uses camelCase (numberOfWeeks, checkIn, etc.)
-   * - Edge Function expects host_counter_offer_ prefix snake_case (host_counter_offer_reservation_span_weeks, host_counter_offer_check_in, etc.)
+   * - Edge Function expects host_proposed_ prefix snake_case (host_proposed_reservation_span_weeks, host_proposed_checkin_day, etc.)
    * - Day/night values come as strings ('Monday', 'Monday Night') and must be converted to indices
    *
-   * IMPORTANT: ALL host_counter_offer_ fields must be populated (with either new or original values)
+   * IMPORTANT: ALL host_proposed_ fields must be populated (with either new or original values)
    * to enable strikethrough comparison in the UI. If a field wasn't changed,
-   * we copy the original value to the hc_ field.
+   * we copy the original value to the host_proposed_ field.
    */
   const handleCounteroffer = useCallback(async (counterofferData) => {
     try {
@@ -784,17 +789,17 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
 
 
       // Get original values from proposal for fields not being changed
-      const originalWeeks = originalProposal.reservation_span_in_weeks || originalProposal.duration_weeks || 0;
-      const originalCheckIn = originalProposal.checkin_day_of_week_number ?? originalProposal.check_in_day;
-      const originalCheckOut = originalProposal.checkout_day_of_week_number ?? originalProposal.check_out_day;
-      const originalNights = originalProposal.guest_selected_nights_numbers_json || originalProposal.nights_selected || [];
-      const originalDays = originalProposal.guest_selected_days_numbers_json || originalProposal.days_selected || [];
-      const originalMoveIn = originalProposal.move_in_range_start_date || originalProposal.move_in_range_start;
-      const originalNightlyPrice = originalProposal.calculated_nightly_price || originalProposal.nightly_rate || 0;
-      const originalCleaningFee = originalProposal.cleaning_fee_amount || originalProposal.cleaning_fee || 0;
-      const originalDamageDeposit = originalProposal.damage_deposit_amount || originalProposal.damage_deposit || 0;
-      const originalTotalPrice = originalProposal.total_reservation_price_for_guest || originalProposal.total_price || 0;
-      const originalFourWeekRent = originalProposal.four_week_rent_amount || originalProposal.four_week_rent || 0;
+      const originalWeeks = originalProposal.reservation_span_in_weeks || 0;
+      const originalCheckIn = originalProposal.checkin_day_of_week_number;
+      const originalCheckOut = originalProposal.checkout_day_of_week_number;
+      const originalNights = originalProposal.guest_selected_nights_numbers_json || [];
+      const originalDays = originalProposal.guest_selected_days_numbers_json || [];
+      const originalMoveIn = originalProposal.move_in_range_start_date;
+      const originalNightlyPrice = originalProposal.calculated_nightly_price || 0;
+      const originalCleaningFee = originalProposal.cleaning_fee_amount || 0;
+      const originalDamageDeposit = originalProposal.damage_deposit_amount || 0;
+      const originalTotalPrice = originalProposal.total_reservation_price_for_guest || 0;
+      const originalFourWeekRent = originalProposal.four_week_rent_amount || 0;
 
       // Convert day/night values to indices
       const convertedCheckIn = checkIn !== undefined ? dayNameToIndex(checkIn) : null;
@@ -809,7 +814,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
         ? (moveInDate instanceof Date ? moveInDate.toISOString().split('T')[0] : moveInDate)
         : null;
 
-      // Build the payload with ALL hc_ fields (new value or original)
+      // Build the payload with ALL host_proposed_ fields (new value or original)
       // This enables UI strikethrough comparison
       const hcReservationSpanWeeks = numberOfWeeks ?? originalWeeks;
       const hcNightsSelected = convertedNights ?? originalNights;
@@ -822,6 +827,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
       // Four week rent = nightly rate Ã— nights per week Ã— 4
       const hcFourWeekRent = hcNightlyPrice * hcNightsPerWeek * 4;
 
+      // API payload uses host_counter_offer_* keys to match update.ts API contract
       const payload = {
         proposal_id: originalProposal.id,
         status: 'Host Counteroffer Submitted / Awaiting Guest Review',
@@ -959,7 +965,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    */
   const handleSendMessage = useCallback(async (proposal) => {
     const guest = proposal.guest || {};
-    const guestName = guest.firstName || guest.first_name || 'Guest';
+    const guestName = guest.first_name || 'Guest';
 
     // Get proposal ID
     const proposalId = proposal.id;
@@ -1070,7 +1076,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
    */
   const handleRequestRentalApp = useCallback((proposal) => {
     const guest = proposal.guest || {};
-    const guestName = guest.firstName || guest.first_name || 'Guest';
+    const guestName = guest.first_name || 'Guest';
     showToast({ title: 'Request Sent!', content: `Rental application request sent to ${guestName}! They will be notified to complete their application.`, type: 'success' });
     // TODO: Call API to send rental app request notification to guest
   }, []);

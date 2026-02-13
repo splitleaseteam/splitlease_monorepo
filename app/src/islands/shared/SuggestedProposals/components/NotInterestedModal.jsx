@@ -72,7 +72,7 @@ export default function NotInterestedModal({
 
   // Extract listing name for display
   const listing = proposal?._listing || proposal?.listing || {};
-  const listingName = listing['Name'] || listing?.Name || 'this property';
+  const listingName = listing.listing_title || 'this property';
 
   const modalContent = (
     <div className="protocol-overlay" onClick={handleBackdropClick}>

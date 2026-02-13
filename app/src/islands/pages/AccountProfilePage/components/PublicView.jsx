@@ -64,8 +64,8 @@ export default function PublicView({
     transportationTypes = rawTransport.filter(val => validValues.includes(val));
   }
 
-  const goodGuestReasons = profileData?.['Good Guest Reasons'] || [];
-  const storageItems = profileData?.['storage'] || [];
+  const goodGuestReasons = [];
+  const storageItems = [];
   const firstName = profileData?.first_name || 'this guest';
 
   // Transportation options for display

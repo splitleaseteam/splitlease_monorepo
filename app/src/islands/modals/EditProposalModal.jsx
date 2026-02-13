@@ -113,12 +113,12 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
   }, []);
 
   // Parse Days Selected from JSON string
-  let parsedDaysSelected = proposal?.guest_selected_days_numbers_json || proposal?.['Days Selected'] || [];
+  let parsedDaysSelected = proposal?.guest_selected_days_numbers_json || [];
   if (typeof parsedDaysSelected === 'string') {
     try {
       parsedDaysSelected = JSON.parse(parsedDaysSelected);
     } catch (e) {
-      console.error('Error parsing Days Selected:', e);
+      console.error('[EditProposalModal] Failed to parse JSON:', parsedDaysSelected, e);
       parsedDaysSelected = [];
     }
   }
@@ -127,18 +127,18 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
   }
 
   const [formData, setFormData] = useState({
-    moveInStart: proposal?.move_in_range_start_date || proposal?.['Move in range start'] ? new Date(proposal?.move_in_range_start_date || proposal['Move in range start']) : new Date(),
-    moveInEnd: proposal?.move_in_range_end_date || proposal?.['Move in range end'] ? new Date(proposal?.move_in_range_end_date || proposal['Move in range end']) : new Date(),
-    reservationWeeks: proposal?.reservation_span_in_weeks || proposal?.['Reservation Span (Weeks)'] || 4,
+    moveInStart: proposal?.move_in_range_start_date ? new Date(proposal.move_in_range_start_date) : new Date(),
+    moveInEnd: proposal?.move_in_range_end_date ? new Date(proposal.move_in_range_end_date) : new Date(),
+    reservationWeeks: proposal?.reservation_span_in_weeks || 4,
     daysSelected: parsedDaysSelected,
-    nightsPerWeek: proposal?.nights_per_week_count || proposal?.['nights per week (num)'] || 1,
-    checkInDay: proposal?.checkin_day_of_week_number || proposal?.['check in day'] || 'Sunday',
-    checkOutDay: proposal?.checkout_day_of_week_number || proposal?.['check out day'] || 'Sunday',
+    nightsPerWeek: proposal?.nights_per_week_count || 1,
+    checkInDay: proposal?.checkin_day_of_week_number ?? 'Sunday',
+    checkOutDay: proposal?.checkout_day_of_week_number ?? 'Sunday',
   });
   const [errors, setErrors] = useState({});
 
   // Check if editing is allowed
-  const isEditable = ['Awaiting Host Review', 'Under Review', 'Proposal Submitted'].includes(proposal?.proposal_workflow_status || proposal?.Status);
+  const isEditable = ['Awaiting Host Review', 'Under Review', 'Proposal Submitted'].includes(proposal?.proposal_workflow_status);
 
   // Calculate reservation weeks from date range
   useEffect(() => {
@@ -161,9 +161,9 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
   useEffect(() => {
     if (formData.reservationWeeks && formData.nightsPerWeek && listing) {
       const totalNights = formData.reservationWeeks * formData.nightsPerWeek;
-      const nightlyRate = listing?.['Nightly Price'] || listing?.['nightly price'] || 0;
-      const cleaningFee = listing?.['Cleaning Fee'] || listing?.['cleaning fee'] || 0;
-      const damageDeposit = listing?.['Damage Deposit'] || listing?.['damage deposit'] || 0;
+      const nightlyRate = listing?.nightly_rate_for_1_night_stay || 0;
+      const cleaningFee = listing?.cleaning_fee_amount || 0;
+      const damageDeposit = listing?.damage_deposit_amount || 0;
 
       const subtotal = totalNights * nightlyRate;
       const total = subtotal + cleaningFee + damageDeposit;
@@ -580,7 +580,7 @@ export default function EditProposalModal({ proposal, listing, onClose, onSucces
             <h3 id="edit-proposal-title" className="edit-proposal-title" style={styles.title}>
               Edit Proposal
             </h3>
-            <p style={styles.subtitle}>{listing?.Name}</p>
+            <p style={styles.subtitle}>{listing?.listing_title}</p>
           </div>
           <button
             className="edit-proposal-close-btn"

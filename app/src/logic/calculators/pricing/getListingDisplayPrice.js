@@ -34,7 +34,7 @@ export function getListingDisplayPrice(listing, nightsCount = 0, mode = 'dynamic
     }
 
     // Last resort: standardized min from listing table
-    const standardized = Number(listing.standardized_min_nightly_price_for_search_filter ?? listing['Starting nightly price'] ?? listing.price?.starting);
+    const standardized = Number(listing.standardized_min_nightly_price_for_search_filter ?? listing.price?.starting);
     if (!Number.isNaN(standardized) && standardized > 0) {
       return standardized;
     }

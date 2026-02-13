@@ -1,8 +1,8 @@
-﻿/**
+/**
  * parseProposalData.js
  *
  * Utility functions to parse proposal data with multi-format field name support.
- * Handles both Bubble camelCase and database snake_case formats.
+ * Handles both camelCase and database snake_case formats.
  *
  * Extracted from HostEditingProposal.jsx for better separation of concerns
  * and testability.
@@ -18,7 +18,7 @@ import { nightIndicesToNames, findReservationSpanByWeeks, RESERVATION_SPANS, get
  * @returns {Date} The parsed date
  */
 export function getProposalDate(proposal, field, fallback = null) {
-  const value = proposal?.[field] || proposal?.[field.replace(/([A-Z])/g, ' $1').trim()]
+  const value = proposal?.[field]
   if (!value) return fallback ? new Date(fallback) : new Date()
   return new Date(value)
 }
@@ -31,9 +31,7 @@ export function getProposalDate(proposal, field, fallback = null) {
  * @returns {*} The field value or fallback
  */
 export function getProposalValue(proposal, field, fallback) {
-  return proposal?.[field] ??
-         proposal?.[field.replace(/([A-Z])/g, ' $1').trim()] ??
-         fallback
+  return proposal?.[field] ?? fallback
 }
 
 /**
@@ -42,7 +40,7 @@ export function getProposalValue(proposal, field, fallback) {
  * @returns {string} The check-in day name (e.g., 'Monday')
  */
 export function extractCheckInDay(proposal) {
-  const value = proposal?.['check in day'] ?? proposal?.checkInDay
+  const value = proposal?.checkin_day_of_week_number
   // If value is a number or numeric string (day index), convert to day name
   if (typeof value === 'number' || (typeof value === 'string' && /^\d$/.test(value))) {
     return getDayName(Number(value)) || 'Monday'
@@ -56,7 +54,7 @@ export function extractCheckInDay(proposal) {
  * @returns {string} The check-out day name (e.g., 'Friday')
  */
 export function extractCheckOutDay(proposal) {
-  const value = proposal?.['check out day'] ?? proposal?.checkOutDay
+  const value = proposal?.checkout_day_of_week_number
   // If value is a number or numeric string (day index), convert to day name
   if (typeof value === 'number' || (typeof value === 'string' && /^\d$/.test(value))) {
     return getDayName(Number(value)) || 'Friday'
@@ -70,19 +68,19 @@ export function extractCheckOutDay(proposal) {
  * @returns {number} The number of weeks for the reservation span
  */
 export function extractReservationSpanWeeks(proposal) {
-  return proposal?.['Reservation Span (Weeks)'] || proposal?.reservationSpanWeeks || 8
+  return proposal?.reservation_span_in_weeks || 8
 }
 
 /**
  * Extract nights selected from proposal, handling multiple formats:
- * - Database: "Nights Selected (Nights list)" = [0, 5] (indices)
+ * - Database: guest_selected_nights_numbers_json = [0, 5] (indices)
  * - Alternative: "nightsSelected" = ['Sunday Night', 'Friday Night'] (names)
  * @param {Object} proposal - The proposal object
  * @returns {string[]} Array of night names for component use
  */
 export function extractNightsSelected(proposal) {
   // Try database format first: array of indices
-  const nightIndices = proposal?.['Nights Selected (Nights list)']
+  const nightIndices = proposal?.guest_selected_nights_numbers_json
   if (Array.isArray(nightIndices) && nightIndices.length > 0 && typeof nightIndices[0] === 'number') {
     return nightIndicesToNames(nightIndices)
   }
@@ -99,7 +97,7 @@ export function extractNightsSelected(proposal) {
  * Extract and normalize house rules from proposal or listing
  * Handles multiple formats:
  * - Array of strings (rule names): ["No Smoking", "No Parties"]
- * - Array of IDs (Bubble format): ["1556151847445x748291628265310200"]
+ * - Array of IDs: ["uuid-1", "uuid-2"]
  * - Array of objects: [{id, name}, ...]
  * @param {Object} proposal - The proposal object
  * @param {Object} listing - The listing object (fallback source)
@@ -109,8 +107,7 @@ export function extractNightsSelected(proposal) {
 export function extractHouseRules(proposal, listing, availableHouseRules = []) {
   // Try proposal first, then listing
   const rawRules = proposal?.houseRules ||
-                   proposal?.['House Rules'] ||
-                   proposal?.house_rule_reference_ids_json ||
+                   proposal?.house_rules_reference_ids_json ||
                    listing?.houseRules ||
                    listing?.house_rule_reference_ids_json ||
                    []
@@ -126,8 +123,8 @@ export function extractHouseRules(proposal, listing, availableHouseRules = []) {
 
   // If array of strings, try to match with availableHouseRules
   if (typeof rawRules[0] === 'string') {
-    // Check if they look like Bubble IDs (long numeric strings with x)
-    const looksLikeIds = rawRules[0].includes('x') && rawRules[0].length > 20
+    // Check if they look like UUIDs or Bubble IDs
+    const looksLikeIds = rawRules[0].includes('-') || (rawRules[0].includes('x') && rawRules[0].length > 20)
 
     if (looksLikeIds) {
       // Match by ID
@@ -160,14 +157,14 @@ export function parseProposalData(proposal, listing = {}, availableHouseRules = 
                           RESERVATION_SPANS.find(s => s.value === 'other')
 
   return {
-    moveInDate: getProposalDate(proposal, 'moveInRangeStart', proposal?.['Move in range start']),
+    moveInDate: getProposalDate(proposal, 'move_in_range_start_date'),
     checkInDay: extractCheckInDay(proposal),
     checkOutDay: extractCheckOutDay(proposal),
     reservationSpanWeeks: weeks,
     reservationSpan,
     nightsSelected: extractNightsSelected(proposal),
     houseRules: extractHouseRules(proposal, listing, availableHouseRules),
-    daysSelected: getProposalValue(proposal, 'daysSelected', ['Monday', 'Tuesday', 'Wednesday', 'Thursday'])
+    daysSelected: proposal?.guest_selected_days_numbers_json || ['Monday', 'Tuesday', 'Wednesday', 'Thursday']
   }
 }
 

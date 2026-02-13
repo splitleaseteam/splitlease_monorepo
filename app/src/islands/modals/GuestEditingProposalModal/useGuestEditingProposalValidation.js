@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { DAYS_OF_WEEK, RESERVATION_SPAN_OPTIONS } from './constants.js'
-import { PROPOSAL_STATUSES } from '../../../logic/constants/proposalStatuses.js'
+import { PROPOSAL_STATUSES, getUsualOrder } from '../../../logic/constants/proposalStatuses.js'
 import { executeCancelProposal } from '../../../logic/workflows/proposals/cancelProposalWorkflow.js'
 
 // ============================================================================
@@ -15,9 +15,9 @@ import { executeCancelProposal } from '../../../logic/workflows/proposals/cancel
 // ============================================================================
 
 function parseDaysSelected(proposal) {
-  let days = proposal?.['Days Selected'] || proposal?.['host_counter_offer_days_selected'] || []
+  let days = proposal?.guest_selected_days_numbers_json || proposal?.host_proposed_selected_days_json || []
   if (typeof days === 'string') {
-    try { days = JSON.parse(days) } catch (_e) { days = [] }
+    try { days = JSON.parse(days) } catch (e) { console.error('[useGuestEditingProposalValidation] Failed to parse JSON:', days, e); days = [] }
   }
   if (!Array.isArray(days) || days.length === 0) return [1, 2, 3, 4, 5] // Default Mon-Fri
 
@@ -81,7 +81,7 @@ export default function useGuestEditingProposalValidation({
   const [view, setView] = useState(initialView)
 
   // Check if proposal is in a state where editing is not allowed
-  const proposalStatusText = proposal?.Status?.trim();
+  const proposalStatusText = proposal?.proposal_workflow_status?.trim();
   const isAcceptedOrDrafting = proposalStatusText === PROPOSAL_STATUSES.PROPOSAL_OR_COUNTEROFFER_ACCEPTED.key ||
     proposalStatusText?.includes('Accepted') ||
     proposalStatusText?.includes('Drafting');
@@ -92,20 +92,19 @@ export default function useGuestEditingProposalValidation({
   // Form state for editing
   const [formState, setFormState] = useState(() => {
     const daysSelected = parseDaysSelected(proposal)
-    const nightsCount = proposal?.['nights per week (num)'] || daysSelected.length - 1 || 4
+    const nightsCount = proposal?.nights_per_week_count || daysSelected.length - 1 || 4
 
     // Parse check-in and check-out days from proposal data
-    const checkInDayValue = proposal?.['check in day'] || proposal?.checkInDay
-    const checkOutDayValue = proposal?.['check out day'] || proposal?.checkOutDay
+    const checkInDayValue = proposal?.checkin_day_of_week_number
+    const checkOutDayValue = proposal?.checkout_day_of_week_number
 
     return {
-      moveInDate: proposal?.hostCounterOfferMoveInDate ? new Date(proposal.hostCounterOfferMoveInDate) :
-                  proposal?.['host_counter_offer_move_in_date'] ? new Date(proposal['host_counter_offer_move_in_date']) :
-                  proposal?.['Move in range start'] ? new Date(proposal['Move in range start']) :
+      moveInDate: proposal?.host_proposed_move_in_date ? new Date(proposal.host_proposed_move_in_date) :
+                  proposal?.move_in_range_start_date ? new Date(proposal.move_in_range_start_date) :
                   new Date(),
-      flexibleMoveInRange: proposal?.moveInRangeText || proposal?.['Move in range text'] || '',
-      reservationSpan: RESERVATION_SPAN_OPTIONS.find(s => s.weeks === (proposal?.reservationSpanWeeks || proposal?.['Reservation Span (Weeks)'])) || RESERVATION_SPAN_OPTIONS[1],
-      numberOfWeeks: proposal?.reservationSpanWeeks || proposal?.['Reservation Span (Weeks)'] || 4,
+      flexibleMoveInRange: proposal?.moveInRangeText || '',
+      reservationSpan: RESERVATION_SPAN_OPTIONS.find(s => s.weeks === proposal?.reservation_span_in_weeks) || RESERVATION_SPAN_OPTIONS[1],
+      numberOfWeeks: proposal?.reservation_span_in_weeks || 4,
       selectedDays: daysSelected,
       selectedNights: daysSelected.slice(0, nightsCount), // Nights are a subset of selected days
       checkInDay: parseDayFromProposal(checkInDayValue, 1),   // Default to Monday (index 1)
@@ -123,10 +122,7 @@ export default function useGuestEditingProposalValidation({
   const [openForFirstTime, setOpenForFirstTime] = useState(true)
 
   // Proposal status check (>= 3 means accepted/completed)
-  const proposalStatus = proposal?.status?.usualOrder ||
-                         proposal?.['Status - Usual Order'] ||
-                         proposal?.Status?.usualOrder ||
-                         0
+  const proposalStatus = getUsualOrder(proposal?.proposal_workflow_status)
   const isStatusAccepted = proposalStatus >= 3
 
   // Computed visibility conditions from Bubble conditionals
@@ -139,14 +135,14 @@ export default function useGuestEditingProposalValidation({
   // Handle initial state setup when proposal changes
   useEffect(() => {
     if (proposal && openForFirstTime) {
-      const moveInDateValue = proposal?.hostCounterOfferMoveInDate || proposal?.['host_counter_offer_move_in_date'] || proposal?.['Move in range start']
-      const weeksValue = proposal?.reservationSpanWeeks || proposal?.['Reservation Span (Weeks)'] || 4
+      const moveInDateValue = proposal?.host_proposed_move_in_date || proposal?.move_in_range_start_date
+      const weeksValue = proposal?.reservation_span_in_weeks || 4
       const daysSelected = parseDaysSelected(proposal)
-      const nightsCount = proposal?.['nights per week (num)'] || daysSelected.length - 1 || 4
+      const nightsCount = proposal?.nights_per_week_count || daysSelected.length - 1 || 4
 
       // Parse check-in and check-out days from proposal data
-      const checkInDayValue = proposal?.['check in day'] || proposal?.checkInDay
-      const checkOutDayValue = proposal?.['check out day'] || proposal?.checkOutDay
+      const checkInDayValue = proposal?.checkin_day_of_week_number
+      const checkOutDayValue = proposal?.checkout_day_of_week_number
 
       setFormState(prev => ({
         ...prev,
@@ -355,11 +351,10 @@ export default function useGuestEditingProposalValidation({
 
   // Get house rules from proposal or listing
   const houseRulesToDisplay = useMemo(() => {
-    return proposal?.hostCounterOfferHouseRules ||
-           proposal?.['host_counter_offer_house_rules'] ||
-           listing?.['House Rules'] ||
+    return proposal?.host_proposed_house_rules_json ||
+           proposal?.house_rules_reference_ids_json ||
            []
-  }, [proposal, listing])
+  }, [proposal])
 
   return {
     // View state

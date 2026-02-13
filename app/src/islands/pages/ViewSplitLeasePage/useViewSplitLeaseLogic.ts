@@ -249,8 +249,8 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   }, [priceBreakdown]);
   
   const formattedStartingPrice = useMemo(() => {
-    if (!listing || !listing['Starting nightly price']) return '$0.00';
-    return `$${parseFloat(listing['Starting nightly price']).toFixed(2)}`;
+    if (!listing || !listing.starting_nightly_price) return '$0.00';
+    return `$${parseFloat(listing.starting_nightly_price).toFixed(2)}`;
   }, [listing]);
   
   // ==========================================================================
@@ -513,7 +513,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       // Success
       setIsProposalModalOpen(false);
       setPendingProposalData(null);
-      setExistingProposalForListing({ _id: result.proposalId });
+      setExistingProposalForListing({ id: result.proposalId });
       setSuccessProposalId(result.proposalId);
       setShowSuccessModal(true);
       

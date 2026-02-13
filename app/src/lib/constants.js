@@ -115,17 +115,6 @@ export const PRICE_TIERS = {
   'all': null // No price filter
 };
 
-// Price field mappings for nights-based pricing
-// Maps number of nights to the corresponding DB column name on the listing table
-export const PRICE_FIELD_MAP = {
-  2: 'nightly_rate_for_2_night_stay',
-  3: 'nightly_rate_for_3_night_stay',
-  4: 'nightly_rate_for_4_night_stay',
-  5: 'nightly_rate_for_5_night_stay',
-  6: 'nightly_rate_for_6_night_stay',
-  7: 'nightly_rate_for_7_night_stay'
-};
-
 // ============================================================================
 // Sort Options
 // ============================================================================

@@ -7,7 +7,7 @@
  * - Pricing row with breakdown and total
  */
 
-import { formatPrice } from '../../../../lib/proposals/dataTransformers.js';
+import { formatPrice } from '../../../../lib/formatters.js';
 
 export default function ProposalInfoGrid({
   anticipatedMoveIn,

@@ -33,7 +33,7 @@ export function hasScheduleCompatibility({ candidateListing, proposal }) {
   }
 
   // Get listing's available days
-  const listingDays = candidateListing['Schedule days available'] || [];
+  const listingDays = candidateListing.availableDays || candidateListing.available_days_as_day_numbers_json || [];
 
   // Get proposal's requested days
   const proposalDays = proposal.daysSelected || [];

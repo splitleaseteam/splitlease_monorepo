@@ -103,6 +103,6 @@ export async function handleApplyHardBlock(
 
   return {
     success: true,
-    blockedAt,
+    blockedAt: new Date().toISOString(),
   };
 }

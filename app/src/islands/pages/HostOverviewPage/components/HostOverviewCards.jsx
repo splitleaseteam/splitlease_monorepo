@@ -40,7 +40,7 @@ const formatCurrency = (amount) => {
 export function ListingCard({ listing, onEdit, onPreview, onDelete, onProposals, onLeases, onCardClick, onCreateHouseManual, isMobile = false }) {
   const listingName = listing.name || listing.listing_title || 'Unnamed Listing';
   const borough = listing.location?.borough || listing.borough || 'Location not specified';
-  const proposalsCount = listing.proposalsCount || listing['Proposals Count'] || 0;
+  const proposalsCount = listing.proposalsCount || 0;
   const leasesCount = listing.leasesCount || 0;
 
   // Extract photo URLs from the photos field - only need the cover photo (first image)

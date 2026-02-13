@@ -22,13 +22,13 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
 
   // Load house rules when modal opens
   useEffect(() => {
-    if (proposal?.['House Rules'] && Array.isArray(proposal['House Rules']) && proposal['House Rules'].length > 0) {
+    if (proposal?.house_rules_reference_ids_json && Array.isArray(proposal.house_rules_reference_ids_json) && proposal.house_rules_reference_ids_json.length > 0) {
       loadHouseRules();
     }
   }, [proposal]);
 
   async function loadHouseRules() {
-    if (!proposal?.['House Rules']) return;
+    if (!proposal?.house_rules_reference_ids_json) return;
 
     setLoadingRules(true);
     try {
@@ -36,7 +36,7 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
         .schema('reference_table')
         .from('zat_features_houserule')
         .select('id, name, icon')
-        .in('id', proposal['House Rules']);
+        .in('id', proposal.house_rules_reference_ids_json);
 
       if (error) throw error;
       setHouseRules(data || []);
@@ -50,39 +50,39 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
   if (!proposal || !listing) return null;
 
   // Determine if counteroffer happened
-  const counterOfferHappened = proposal['counter offer happened'];
+  const counterOfferHappened = proposal.has_host_counter_offer;
 
-  // Get display values (use hc fields if counteroffer, otherwise original)
-  const moveInDate = counterOfferHappened && proposal['host_counter_offer_move_in_date']
-    ? new Date(proposal['host_counter_offer_move_in_date'])
-    : new Date(proposal['Move in range start']);
+  // Get display values (use host_proposed fields if counteroffer, otherwise original)
+  const moveInDate = counterOfferHappened && proposal.host_proposed_move_in_date
+    ? new Date(proposal.host_proposed_move_in_date)
+    : new Date(proposal.move_in_range_start_date);
 
-  const checkInDay = counterOfferHappened && proposal['host_counter_offer_check_in_day']
-    ? proposal['host_counter_offer_check_in_day']
-    : proposal['check in day'];
+  const checkInDay = counterOfferHappened && proposal.host_proposed_checkin_day != null
+    ? proposal.host_proposed_checkin_day
+    : proposal.checkin_day_of_week_number;
 
-  const checkOutDay = counterOfferHappened && proposal['host_counter_offer_check_out_day']
-    ? proposal['host_counter_offer_check_out_day']
-    : proposal['check out day'];
+  const checkOutDay = counterOfferHappened && proposal.host_proposed_checkout_day != null
+    ? proposal.host_proposed_checkout_day
+    : proposal.checkout_day_of_week_number;
 
-  const reservationWeeks = counterOfferHappened && proposal['host_counter_offer_reservation_span_weeks']
-    ? proposal['host_counter_offer_reservation_span_weeks']
-    : proposal['Reservation Span (Weeks)'];
+  const reservationWeeks = counterOfferHappened && proposal.host_proposed_reservation_span_weeks
+    ? proposal.host_proposed_reservation_span_weeks
+    : proposal.reservation_span_in_weeks;
 
-  const nightlyPrice = counterOfferHappened && proposal['host_counter_offer_nightly_price']
-    ? proposal['host_counter_offer_nightly_price']
-    : proposal['proposal nightly price'];
+  const nightlyPrice = counterOfferHappened && proposal.host_proposed_nightly_price
+    ? proposal.host_proposed_nightly_price
+    : proposal.calculated_nightly_price;
 
-  const nightsPerWeek = counterOfferHappened && proposal['host_counter_offer_nights_per_week']
-    ? proposal['host_counter_offer_nights_per_week']
-    : proposal['nights per week (num)'];
+  const nightsPerWeek = counterOfferHappened && proposal.host_proposed_nights_per_week
+    ? proposal.host_proposed_nights_per_week
+    : proposal.nights_per_week_count;
 
   const totalNights = reservationWeeks * nightsPerWeek;
   const subtotal = totalNights * nightlyPrice;
 
-  const damageDeposit = counterOfferHappened && proposal['host_counter_offer_damage_deposit']
-    ? proposal['host_counter_offer_damage_deposit']
-    : (proposal['damage deposit'] || 0);
+  const damageDeposit = counterOfferHappened && proposal.host_proposed_damage_deposit
+    ? proposal.host_proposed_damage_deposit
+    : (proposal.damage_deposit_amount || 0);
 
   const maintenanceFee = 0; // Appears to be 0 in most cases
 
@@ -101,7 +101,7 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
     }).format(date);
   }
 
-  const houseRulesCount = proposal['House Rules']?.length || 0;
+  const houseRulesCount = proposal.house_rules_reference_ids_json?.length || 0;
 
   return (
     <div className="proposal-details-overlay" onClick={onClose}>
