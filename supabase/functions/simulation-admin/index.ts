@@ -10,7 +10,7 @@
  * - getStatistics: Get tester distribution by step
  *
  * Database table: user (using existing columns)
- * Relevant columns: is usability tester, onboarding_usability_step, first_name, last_name, email, updated_at
+ * Relevant columns: is_usability_tester, onboarding_usability_step, first_name, last_name, email, updated_at
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
@@ -188,7 +188,7 @@ async function handleListTesters(
   let query = supabase
     .from('user')
     .select('id, email, first_name, last_name, onboarding_usability_step, updated_at', { count: 'exact' })
-    .eq('is usability tester', true)
+    .eq(is_usability_tester, true)
     .order('first_name', { ascending: true });
 
   // Apply search filter across name and email fields
@@ -323,7 +323,7 @@ async function handleGetStatistics(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from('user')
     .select('onboarding_usability_step')
-    .eq('is usability tester', true);
+    .eq(is_usability_tester, true);
 
   if (error) {
     console.error('[simulation-admin] Get statistics error:', error);

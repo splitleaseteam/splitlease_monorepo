@@ -56,7 +56,7 @@ export async function handleCreateTestGuest(
       first_name: testFirstName,
       last_name: testLastName,
       current_user_role: 'A Guest (I would like to rent a space)',
-      'is usability tester': true,
+      is_usability_tester: true,
       'is_test_data': true,
       'simulation_id': simulationId,
       created_at: new Date().toISOString(),

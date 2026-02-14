@@ -81,8 +81,8 @@ export async function handleStepA(
   // Create a new lease (simulated)
   const leaseData = {
     proposal_id: proposalId,
-    guest_id: proposal.guest_user_id,
-    host_id: proposal.host_user_id,
+    guest_user_id: proposal.guest_user_id,
+    host_user_id: proposal.host_user_id,
     listing_id: proposal.listing_id,
     status: 'Active',
     start_date: proposal.move_in_range_start_date,

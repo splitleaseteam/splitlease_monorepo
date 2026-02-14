@@ -162,7 +162,7 @@ export async function handleCleanup(
     await supabase
       .from('user')
       .update({
-        'is usability tester': false,
+        is_usability_tester: false,
         onboarding_usability_step: null,
         updated_at: new Date().toISOString(),
       })

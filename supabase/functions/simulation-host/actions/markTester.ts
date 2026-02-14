@@ -49,7 +49,7 @@ export async function handleMarkTester(
   const { error: updateError } = await supabase
     .from('user')
     .update({
-      'is usability tester': true,
+      is_usability_tester: true,
       onboarding_usability_step: 1,
       updated_at: new Date().toISOString()
     })

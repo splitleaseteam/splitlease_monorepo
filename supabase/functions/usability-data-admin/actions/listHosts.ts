@@ -40,11 +40,10 @@ export async function handleListHosts(
 ) {
   const { limit = 50, offset = 0, search = '' } = payload;
 
-  // Note: Using raw filter to handle column with spaces properly
   let query = supabase
     .from('user')
     .select('id, email, first_name, last_name, updated_at, current_user_role', { count: 'exact' })
-    .eq('is usability tester', true)
+    .eq(is_usability_tester, true)
     .order('first_name', { ascending: true });
 
   // Apply search filter across name and email fields
