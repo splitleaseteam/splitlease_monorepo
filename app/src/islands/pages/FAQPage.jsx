@@ -1,154 +1,58 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
-import { supabase } from '../../lib/supabase.js';
-import { sendFaqInquiry } from '../../lib/slackService.js';
-import { useAsyncOperation } from '../../hooks/useAsyncOperation.js';
+import { useFAQPageLogic } from './useFAQPageLogic.js';
 
-export default function FAQPage() {
-  const [activeTab, setActiveTab] = useState('general');
-  const [faqs, setFaqs] = useState({ general: [], travelers: [], hosts: [] });
-  const [openQuestionId, setOpenQuestionId] = useState(null);
-  const [showInquiryModal, setShowInquiryModal] = useState(false);
-  const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', inquiry: '' });
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+const TAB_CONFIG = [
+  { key: 'general', labelFull: 'General Questions', labelShort: 'General' },
+  { key: 'travelers', labelFull: 'For Guests', labelShort: 'Guest' },
+  { key: 'hosts', labelFull: 'For Hosts', labelShort: 'Host' },
+];
 
-  // ===== ASYNC OPERATIONS =====
-  const {
-    isLoading: loading,
-    error: faqLoadError,
-    execute: executeLoadFAQs,
-  } = useAsyncOperation(async () => {
-    const { data, error: fetchError } = await supabase
-      .from('zat_faq')
-      .select('id, question, answer, category, sub_category')
-      .order('category', { ascending: true })
-      .order('sub_category', { ascending: true });
+/**
+ * Find related questions within the same category using keyword overlap.
+ * Returns max 2 results. Returns empty array if no good match (overlap < 2).
+ */
+function findRelatedQuestions(currentFaq, sameCategoryFaqs, maxResults = 2) {
+  const currentKeywords = new Set(
+    (currentFaq.Keywords || '')
+      .toLowerCase()
+      .split(',')
+      .map(k => k.trim())
+      .filter(Boolean)
+  );
 
-    if (fetchError) throw fetchError;
+  if (currentKeywords.size === 0) return [];
 
-    // Map tab names to database Category values
-    const categoryMapping = {
-      'general': 'General',
-      'travelers': 'Guest',
-      'hosts': 'Host'
-    };
+  const scored = [];
 
-    // Group FAQs by category
-    const grouped = {
-      general: [],
-      travelers: [],
-      hosts: []
-    };
+  for (const faq of sameCategoryFaqs) {
+    if (faq._id === currentFaq._id) continue;
 
-    data.forEach(faq => {
-      for (const [tabName, dbCategory] of Object.entries(categoryMapping)) {
-        if (faq.category === dbCategory) {
-          grouped[tabName].push(faq);
-          break;
-        }
-      }
-    });
+    const faqKeywords = new Set(
+      (faq.Keywords || '')
+        .toLowerCase()
+        .split(',')
+        .map(k => k.trim())
+        .filter(Boolean)
+    );
 
-    setFaqs(grouped);
-  });
-
-  // Expose error as string for backward compatibility
-  const error = faqLoadError ? 'Unable to load FAQs. Please try again later.' : null;
-
-  const {
-    isLoading: submitting,
-    error: inquiryError,
-    execute: executeInquirySubmit,
-    reset: resetInquiry,
-  } = useAsyncOperation(async ({ name, email, inquiry }) => {
-    // Validate form
-    if (!name || !email || !inquiry) {
-      throw new Error('Please fill in all fields');
+    let overlap = 0;
+    for (const kw of currentKeywords) {
+      if (faqKeywords.has(kw)) overlap++;
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      throw new Error('Please enter a valid email address');
+    if (overlap >= 2) {
+      scored.push({ faq, overlap });
     }
-
-    // Send inquiry via Slack Edge Function
-    await sendFaqInquiry({ name, email, inquiry });
-  });
-
-  // Expose submit error as string for backward compatibility
-  const submitError = inquiryError?.message || null;
-
-  useEffect(() => {
-    // Parse URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const section = params.get('section');
-    const question = params.get('question');
-
-    // Set active tab based on section parameter
-    if (section) {
-      const sectionMap = {
-        'travelers': 'travelers',
-        'hosts': 'hosts',
-        'general': 'general',
-        'guest': 'travelers', // Alias
-        'host': 'hosts' // Alias
-      };
-      const mappedSection = sectionMap[section.toLowerCase()];
-      if (mappedSection) {
-        setActiveTab(mappedSection);
-      }
-    }
-
-    // Store question ID to open after FAQs load
-    if (question) {
-      setOpenQuestionId(question.toLowerCase());
-    }
-
-    loadFAQs();
-  }, []);
-
-  function loadFAQs() {
-    executeLoadFAQs().catch((err) => {
-      console.error('Error loading FAQs:', err);
-    });
   }
 
-  const handleTabClick = (tabName) => {
-    setActiveTab(tabName);
-  };
+  scored.sort((a, b) => b.overlap - a.overlap);
+  return scored.slice(0, maxResults).map(s => s.faq);
+}
 
-  const handleInquirySubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      await executeInquirySubmit(inquiryForm);
-      setSubmitSuccess(true);
-      setInquiryForm({ name: '', email: '', inquiry: '' });
-      // User closes modal manually after reading success message
-    } catch (err) {
-      console.error('Error sending inquiry:', err);
-    }
-  };
-
-  const handleFormChange = (field, value) => {
-    setInquiryForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const openInquiryModal = (e) => {
-    e.preventDefault();
-    setShowInquiryModal(true);
-    setSubmitSuccess(false);
-    resetInquiry();
-  };
-
-  const closeInquiryModal = () => {
-    setShowInquiryModal(false);
-    setInquiryForm({ name: '', email: '', inquiry: '' });
-    resetInquiry();
-    setSubmitSuccess(false);
-  };
+export default function FAQPage() {
+  const logic = useFAQPageLogic();
 
   return (
     <>
@@ -157,46 +61,54 @@ export default function FAQPage() {
       {/* Hero Section */}
       <section className="hero">
         <h1 className="hero-title">Hi there! How can we help you?</h1>
-        <p className="hero-subtitle">Select one of our pre-sorted categories</p>
+        {logic.searchOpen ? (
+          <SearchInput
+            query={logic.searchQuery}
+            onChange={logic.handleSearchQueryChange}
+            onClose={logic.handleSearchClose}
+          />
+        ) : (
+          <p
+            className="hero-subtitle hero-subtitle--clickable"
+            onClick={logic.handleSearchOpen}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                logic.handleSearchOpen();
+              }
+            }}
+          >
+            Select one of our pre-sorted categories
+          </p>
+        )}
       </section>
 
       {/* Tab Navigation */}
-      <div className="tabs-container">
+      <div className="tabs-container" role="tablist" aria-label="FAQ categories">
         <div className="tabs">
-          <button
-            className={`tab ${activeTab === 'general' ? 'active' : ''}`}
-            onClick={() => handleTabClick('general')}
-            role="tab"
-            aria-selected={activeTab === 'general'}
-          >
-            <span className="tab-text-full">General Questions</span>
-            <span className="tab-text-short">General</span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'travelers' ? 'active' : ''}`}
-            onClick={() => handleTabClick('travelers')}
-            role="tab"
-            aria-selected={activeTab === 'travelers'}
-          >
-            <span className="tab-text-full">For Guests</span>
-            <span className="tab-text-short">Guest</span>
-          </button>
-          <button
-            className={`tab ${activeTab === 'hosts' ? 'active' : ''}`}
-            onClick={() => handleTabClick('hosts')}
-            role="tab"
-            aria-selected={activeTab === 'hosts'}
-          >
-            <span className="tab-text-full">For Hosts</span>
-            <span className="tab-text-short">Host</span>
-          </button>
+          {TAB_CONFIG.map(({ key, labelFull, labelShort }) => (
+            <button
+              key={key}
+              className={`tab ${logic.activeTab === key ? 'active' : ''}`}
+              onClick={() => logic.handleTabClick(key)}
+              role="tab"
+              aria-selected={logic.activeTab === key}
+              id={`tab-${key}`}
+              aria-controls={`tabpanel-${key}`}
+            >
+              <span className="tab-text-full">{labelFull}</span>
+              <span className="tab-text-short">{labelShort}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* FAQ Content */}
       <main className="faq-container">
         {/* Loading State */}
-        {loading && (
+        {logic.loading && (
           <div className="loading-container">
             <div className="spinner"></div>
             <p>Loading FAQs...</p>
@@ -204,107 +116,66 @@ export default function FAQPage() {
         )}
 
         {/* Error State */}
-        {error && (
+        {logic.error && (
           <div className="error-container">
-            <p className="error-message">{error}</p>
-            <button onClick={loadFAQs} className="retry-btn">Retry</button>
+            <p className="error-message">{logic.error}</p>
+            <button onClick={logic.loadFAQs} className="retry-btn">Retry</button>
           </div>
         )}
 
         {/* FAQ Content - Only show when not loading and no error */}
-        {!loading && !error && (
-          <>
-            <div className={`tab-content ${activeTab === 'general' ? 'active' : ''}`}>
-              <FAQContent faqs={faqs.general} openQuestionId={activeTab === 'general' ? openQuestionId : null} />
-            </div>
-            <div className={`tab-content ${activeTab === 'travelers' ? 'active' : ''}`}>
-              <FAQContent faqs={faqs.travelers} openQuestionId={activeTab === 'travelers' ? openQuestionId : null} />
-            </div>
-            <div className={`tab-content ${activeTab === 'hosts' ? 'active' : ''}`}>
-              <FAQContent faqs={faqs.hosts} openQuestionId={activeTab === 'hosts' ? openQuestionId : null} />
-            </div>
-          </>
+        {!logic.loading && !logic.error && (
+          logic.searchOpen && logic.searchResults !== null ? (
+            <SearchResults
+              results={logic.searchResults}
+              onResultClick={logic.handleSearchResultClick}
+              onAskClick={logic.openInquiryModal}
+            />
+          ) : (
+            TAB_CONFIG.map(({ key }) => (
+              <div
+                key={key}
+                className={`tab-content ${logic.activeTab === key ? 'active' : ''}`}
+                role="tabpanel"
+                id={`tabpanel-${key}`}
+                aria-labelledby={`tab-${key}`}
+              >
+                <FAQContent
+                  faqs={logic.faqs[key]}
+                  activeTab={key}
+                  openQuestionId={logic.activeTab === key ? logic.openQuestionId : null}
+                  onShowToast={logic.showToast}
+                />
+              </div>
+            ))
+          )
         )}
       </main>
 
       {/* Bottom CTA */}
       <section className="bottom-cta">
-        <a href="#" className="cta-link" onClick={openInquiryModal}>
+        <a href="#" className="cta-link" onClick={logic.openInquiryModal}>
           Can&apos;t find the answer to your question?
         </a>
       </section>
 
       {/* Inquiry Modal */}
-      {showInquiryModal && (
-        <div className="modal-overlay" onClick={closeInquiryModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeInquiryModal} aria-label="Close modal">
-              &times;
-            </button>
+      {logic.showInquiryModal && (
+        <InquiryModal
+          form={logic.inquiryForm}
+          submitting={logic.submitting}
+          submitError={logic.submitError}
+          submitSuccess={logic.submitSuccess}
+          onSubmit={logic.handleInquirySubmit}
+          onFormChange={logic.handleFormChange}
+          onClose={logic.closeInquiryModal}
+        />
+      )}
 
-            <h2 className="modal-title">Ask Us a Question</h2>
-            <p className="modal-subtitle">We&apos;ll get back to you as soon as possible</p>
-
-            {submitSuccess ? (
-              <div className="success-message">
-                <div className="success-icon">✓</div>
-                <p>Thank you! Your inquiry has been sent successfully.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleInquirySubmit} className="inquiry-form">
-                <div className="form-group">
-                  <label htmlFor="inquiry-name">Name *</label>
-                  <input
-                    type="text"
-                    id="inquiry-name"
-                    value={inquiryForm.name}
-                    onChange={(e) => handleFormChange('name', e.target.value)}
-                    placeholder="Enter your name"
-                    required
-                    disabled={submitting}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="inquiry-email">Email *</label>
-                  <input
-                    type="email"
-                    id="inquiry-email"
-                    value={inquiryForm.email}
-                    onChange={(e) => handleFormChange('email', e.target.value)}
-                    placeholder="Enter your email"
-                    required
-                    disabled={submitting}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="inquiry-text">Your Question *</label>
-                  <textarea
-                    id="inquiry-text"
-                    value={inquiryForm.inquiry}
-                    onChange={(e) => handleFormChange('inquiry', e.target.value)}
-                    placeholder="Tell us what you'd like to know..."
-                    rows="5"
-                    required
-                    disabled={submitting}
-                  />
-                </div>
-
-                {submitError && (
-                  <div className="error-message-form">{submitError}</div>
-                )}
-
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  disabled={submitting}
-                >
-                  {submitting ? 'Sending...' : 'Send'}
-                </button>
-              </form>
-            )}
-          </div>
+      {/* Toast */}
+      {logic.toast && (
+        <div className="faq-toast" role="status" aria-live="polite">
+          {logic.toast}
         </div>
       )}
 
@@ -313,25 +184,262 @@ export default function FAQPage() {
   );
 }
 
+// Search Input — renders inline in the hero area
+function SearchInput({ query, onChange, onClose }) {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  return (
+    <div className="hero-search" role="search">
+      <input
+        ref={inputRef}
+        type="text"
+        className="hero-search-input"
+        placeholder="Search FAQs..."
+        value={query}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onClose();
+        }}
+        aria-label="Search frequently asked questions"
+      />
+      <button
+        className="hero-search-close"
+        onClick={onClose}
+        aria-label="Close search"
+      >
+        &times;
+      </button>
+    </div>
+  );
+}
+
+// Search Results — renders in place of tab content when search is active
+const MAX_SEARCH_RESULTS = 8;
+
+function SearchResults({ results, onResultClick, onAskClick }) {
+  const TAB_LABELS = { general: 'General', travelers: 'For Guests', hosts: 'For Hosts' };
+  const entries = Object.entries(results);
+
+  if (entries.length === 0) {
+    return (
+      <div className="search-no-results">
+        <p>No matching questions found.</p>
+        <a
+          href="#"
+          className="search-ask-link"
+          onClick={(e) => { e.preventDefault(); onAskClick(e); }}
+        >
+          Ask us instead &rarr;
+        </a>
+      </div>
+    );
+  }
+
+  // Cap total displayed results at MAX_SEARCH_RESULTS
+  const totalCount = entries.reduce((sum, [, fqs]) => sum + fqs.length, 0);
+  let remaining = MAX_SEARCH_RESULTS;
+  const cappedEntries = [];
+  for (const [tab, tabResults] of entries) {
+    if (remaining <= 0) break;
+    const capped = tabResults.slice(0, remaining);
+    cappedEntries.push([tab, capped]);
+    remaining -= capped.length;
+  }
+  const isCapped = totalCount > MAX_SEARCH_RESULTS;
+
+  return (
+    <div className="search-results" aria-live="polite">
+      <p className="search-results-count">
+        {isCapped
+          ? `Showing ${MAX_SEARCH_RESULTS} of ${totalCount} results`
+          : `${totalCount} results found`}
+      </p>
+      {cappedEntries.map(([tab, tabResults]) => (
+        <section key={tab} className="search-result-group">
+          <h3 className="search-group-title">
+            {TAB_LABELS[tab]} ({tabResults.length})
+          </h3>
+          {tabResults.map((faq) => (
+            <button
+              key={faq._id}
+              className="search-result-item"
+              onClick={() => onResultClick(faq)}
+            >
+              <strong className="search-result-question">{faq.Question}</strong>
+              <span className="search-result-preview">
+                {faq.Answer.length > 120 ? faq.Answer.substring(0, 120) + '...' : faq.Answer}
+              </span>
+            </button>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+// Inquiry Modal — with focus trap and Escape handling
+function InquiryModal({ form, submitting, submitError, submitSuccess, onSubmit, onFormChange, onClose }) {
+  const modalRef = useRef(null);
+  const previousFocusRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement;
+
+    // Focus first input (or close button if in success state)
+    const focusTarget = modalRef.current?.querySelector('input:not(:disabled), button');
+    if (focusTarget) focusTarget.focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const focusable = modalRef.current?.querySelectorAll(
+        'button:not(:disabled), input:not(:disabled), textarea:not(:disabled), [href], [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
+    };
+  }, []);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" ref={modalRef} onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="Close modal">
+          &times;
+        </button>
+
+        <h2 className="modal-title">Ask Us a Question</h2>
+        <p className="modal-subtitle">We&apos;ll get back to you as soon as possible</p>
+
+        {submitSuccess ? (
+          <div className="success-message">
+            <div className="success-icon">&#10003;</div>
+            <p>Thank you! Your inquiry has been sent successfully.</p>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="inquiry-form">
+            <div className="form-group">
+              <label htmlFor="inquiry-name">Name *</label>
+              <input
+                type="text"
+                id="inquiry-name"
+                value={form.name}
+                onChange={(e) => onFormChange('name', e.target.value)}
+                placeholder="Enter your name"
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="inquiry-email">Email *</label>
+              <input
+                type="email"
+                id="inquiry-email"
+                value={form.email}
+                onChange={(e) => onFormChange('email', e.target.value)}
+                placeholder="Enter your email"
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="inquiry-text">Your Question *</label>
+              <textarea
+                id="inquiry-text"
+                value={form.inquiry}
+                onChange={(e) => onFormChange('inquiry', e.target.value)}
+                placeholder="Tell us what you'd like to know..."
+                rows="5"
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            {submitError && (
+              <div className="error-message-form">{submitError}</div>
+            )}
+
+            <button
+              type="submit"
+              className="submit-btn"
+              disabled={submitting}
+            >
+              {submitting ? 'Sending...' : 'Send'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // FAQ Content Component - Renders grouped FAQs with accordion
-function FAQContent({ faqs, openQuestionId }) {
+function FAQContent({ faqs, activeTab, openQuestionId, onShowToast }) {
   const [activeAccordion, setActiveAccordion] = useState(null);
+
+  // Group FAQs by sub-category
+  const faqsBySubCategory = useMemo(() => {
+    if (!faqs || faqs.length === 0) return {};
+    const grouped = {};
+    faqs.forEach(faq => {
+      const subCat = faq['sub-category'] || 'General';
+      if (!grouped[subCat]) grouped[subCat] = [];
+      grouped[subCat].push(faq);
+    });
+    return grouped;
+  }, [faqs]);
+
+  // Flat FAQ list for index-to-FAQ lookup (URL sync + copy link + related questions)
+  const flatFaqs = useMemo(() => {
+    const flat = [];
+    Object.values(faqsBySubCategory).forEach(subCatFaqs => {
+      subCatFaqs.forEach(faq => flat.push(faq));
+    });
+    return flat;
+  }, [faqsBySubCategory]);
 
   // Open specific question when openQuestionId is provided
   useEffect(() => {
     if (openQuestionId && faqs && faqs.length > 0) {
-      // Find the index of the question that matches the ID or text
-      const questionIndex = faqs.findIndex(faq =>
-        // First try to match by exact id
-        (faq.id && faq.id.toString() === openQuestionId) ||
-        // Then try to match by question text
-        faq.question.toLowerCase().includes(openQuestionId) ||
-        faq.question.toLowerCase().replace(/[^a-z0-9]/g, '').includes(openQuestionId.replace(/[^a-z0-9]/g, ''))
+      const questionIndex = flatFaqs.findIndex(faq =>
+        (faq._id && faq._id.toString() === openQuestionId) ||
+        faq.Question.toLowerCase().includes(openQuestionId) ||
+        faq.Question.toLowerCase().replace(/[^a-z0-9]/g, '').includes(openQuestionId.replace(/[^a-z0-9]/g, ''))
       );
 
       if (questionIndex !== -1) {
         setActiveAccordion(questionIndex);
-        // Scroll to the question after a short delay
         setTimeout(() => {
           const element = document.querySelector(`[data-question-index="${questionIndex}"]`);
           if (element) {
@@ -340,30 +448,55 @@ function FAQContent({ faqs, openQuestionId }) {
         }, 300);
       }
     }
-  }, [openQuestionId, faqs]);
+  }, [openQuestionId, faqs, flatFaqs]);
 
   if (!faqs || faqs.length === 0) {
     return <p style={{ textAlign: 'center', padding: '40px', color: '#666' }}>No FAQs available in this category.</p>;
   }
 
-  // Group FAQs by sub-category
-  const faqsBySubCategory = {};
-  faqs.forEach(faq => {
-    const subCat = faq['sub-category'] || 'General';
-    if (!faqsBySubCategory[subCat]) {
-      faqsBySubCategory[subCat] = [];
-    }
-    faqsBySubCategory[subCat].push(faq);
-  });
-
   const toggleAccordion = (index) => {
-    setActiveAccordion(activeAccordion === index ? null : index);
+    const newActive = activeAccordion === index ? null : index;
+    setActiveAccordion(newActive);
+
+    // Sync question to URL
+    const params = new URLSearchParams(window.location.search);
+    if (newActive !== null && flatFaqs[newActive]) {
+      params.set('question', flatFaqs[newActive]._id);
+    } else {
+      params.delete('question');
+    }
+    if (!params.get('section')) {
+      params.set('section', activeTab);
+    }
+    window.history.replaceState(null, '', `?${params.toString()}`);
   };
 
-  const handleKeyPress = (e, index) => {
+  const handleKeyDown = (e, index) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       toggleAccordion(index);
+    }
+    // Arrow key navigation between accordion headers
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = document.querySelector(`[data-question-index="${index + 1}"] .accordion-header`);
+      if (next) next.focus();
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (index > 0) {
+        const prev = document.querySelector(`[data-question-index="${index - 1}"] .accordion-header`);
+        if (prev) prev.focus();
+      }
+    }
+    // Escape closes the active accordion
+    if (e.key === 'Escape' && activeAccordion !== null) {
+      e.preventDefault();
+      setActiveAccordion(null);
+      // Remove question from URL
+      const params = new URLSearchParams(window.location.search);
+      params.delete('question');
+      window.history.replaceState(null, '', `?${params.toString()}`);
     }
   };
 
@@ -372,11 +505,12 @@ function FAQContent({ faqs, openQuestionId }) {
   return (
     <>
       {Object.entries(faqsBySubCategory).map(([subCategory, subCategoryFaqs]) => (
-        <section key={subCategory} className="faq-section">
+        <section key={subCategory} className="faq-section" role="region" aria-label={subCategory}>
           <h2 className="section-title">{subCategory}</h2>
           {subCategoryFaqs.map((faq) => {
             const currentIndex = globalIndex++;
             const isActive = activeAccordion === currentIndex;
+            const panelId = `accordion-panel-${activeTab}-${currentIndex}`;
 
             return (
               <div
@@ -389,15 +523,64 @@ function FAQContent({ faqs, openQuestionId }) {
                   tabIndex="0"
                   role="button"
                   aria-expanded={isActive}
+                  aria-controls={panelId}
                   onClick={() => toggleAccordion(currentIndex)}
-                  onKeyPress={(e) => handleKeyPress(e, currentIndex)}
+                  onKeyDown={(e) => handleKeyDown(e, currentIndex)}
                 >
-                  <h3>{faq.question}</h3>
                   <span className="accordion-icon"></span>
+                  <h3>{faq.Question}</h3>
+                  {isActive && (
+                    <button
+                      className="copy-link-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = `${window.location.origin}/faq?section=${activeTab}&question=${faq._id}`;
+                        navigator.clipboard.writeText(url).then(() => {
+                          onShowToast('Link copied to clipboard!');
+                        });
+                      }}
+                      aria-label="Copy link to this question"
+                      title="Copy link"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M6.5 10.5L9.5 7.5M7 5.5H5.5A2 2 0 003.5 7.5v1A2 2 0 005.5 10.5H7M9 10.5h1.5a2 2 0 002-2v-1a2 2 0 00-2-2H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  )}
                 </div>
-                <div className="accordion-content">
+                <div className="accordion-content" id={panelId}>
                   <div className="accordion-content-inner">
-                    <p>{faq.answer}</p>
+                    <p>{faq.Answer}</p>
+                    {isActive && (() => {
+                      const related = findRelatedQuestions(faq, faqs);
+                      if (related.length === 0) return null;
+                      return (
+                        <div className="related-questions" aria-label="Related questions">
+                          <h4 className="related-title">Related Questions</h4>
+                          {related.map(relFaq => (
+                            <button
+                              key={relFaq._id}
+                              className="related-question-link"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const targetIndex = flatFaqs.findIndex(f => f._id === relFaq._id);
+                                if (targetIndex !== -1) {
+                                  toggleAccordion(targetIndex);
+                                  setTimeout(() => {
+                                    const el = document.querySelector(`[data-question-index="${targetIndex}"]`);
+                                    if (el) {
+                                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
+                                  }, 350);
+                                }
+                              }}
+                            >
+                              &rarr; {relFaq.Question}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
