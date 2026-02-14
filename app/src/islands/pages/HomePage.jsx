@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import Header from '../shared/Header.jsx';
 import Footer from '../shared/Footer.jsx';
@@ -15,32 +15,6 @@ import {
   VIEW_LISTING_URL
 } from '../../lib/constants.js';
 
-// ============================================================================
-// A/B TEST CONFIG - Market Report Popup vs Drawer
-// Set to false to disable A/B test and use drawer only (easy revert)
-// Note: Popup only shows on desktop (>768px), mobile always gets drawer
-// ============================================================================
-const AB_TEST_ENABLED = true;
-const POPUP_PERCENTAGE = 0.5; // 50% see popup, 50% see drawer
-const MOBILE_BREAKPOINT = 768; // px - below this, always show drawer
-
-
-function getMarketReportVariant() {
-  if (!AB_TEST_ENABLED) return 'drawer';
-
-  // Mobile always gets drawer
-  if (typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT) {
-    return 'drawer';
-  }
-
-  let variant = localStorage.getItem('marketReportVariant');
-  if (!variant) {
-    variant = Math.random() < POPUP_PERCENTAGE ? 'popup' : 'drawer';
-    localStorage.setItem('marketReportVariant', variant);
-    console.log('[A/B Test] Assigned variant:', variant);
-  }
-  return variant;
-}
 
 // ============================================================================
 // SHARED: Load Lottie player script only once (prevents duplicate injection)
@@ -307,7 +281,7 @@ function ScheduleSection() {
               src={schedules[activeIndex].lottieUrl}
               background="transparent"
               speed="1"
-              style={{ width: '340px', height: '240px' }}
+              style={{ width: '400px', height: '280px' }}
               loop
               autoplay
             ></lottie-player>
@@ -583,58 +557,79 @@ function FeaturedSpacesSection() {
               <p>No listings available in this area. Try selecting a different borough.</p>
             </div>
           ) : (
-            featuredListings.map(listing => (
-              <div
-                key={listing.id}
-                className="space-card"
-                onClick={() => window.location.href = `${VIEW_LISTING_URL}/${listing.id}`}
-              >
-                <div style={{ position: 'relative' }}>
-                  <img
-                    src={listing.image}
-                    alt={listing.title}
-                    className="space-image"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop';
-                    }}
-                  />
-                  <div className="space-badge">Verified</div>
-                </div>
-                <div className="space-info">
-                  <h3 className="space-title">{listing.title}</h3>
-                  <div className="space-location">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#6B7280" strokeWidth="2" />
-                      <circle cx="12" cy="9" r="2.5" stroke="#6B7280" strokeWidth="2" />
-                    </svg>
-                    {listing.location}
+            featuredListings.map((listing, cardIndex) => {
+              // Day labels: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+              const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+              // Per-card schedule overrides for showcase variety
+              const scheduleOverrides = [
+                { label: 'all nights · 2 weeks on / 2 weeks off', activeDays: [0, 1, 2, 3, 4, 5, 6] },
+                { label: 'Sun – Thu', activeDays: [0, 1, 2, 3, 4] },
+                { label: 'Thu – Sun', activeDays: [0, 4, 5, 6] },
+              ];
+              const schedule = scheduleOverrides[cardIndex] || scheduleOverrides[0];
+
+              return (
+                <div
+                  key={listing.id}
+                  className="space-card"
+                  onClick={() => window.location.href = `${VIEW_LISTING_URL}/${listing.id}`}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src={listing.image}
+                      alt={listing.title}
+                      className="space-image"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop';
+                      }}
+                    />
+                    <div className="space-badge">Verified</div>
                   </div>
-                  <div className="space-features">
-                    <span className="feature-tag">
-                      {listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed${listing.bedrooms !== 1 ? 's' : ''}`}
-                    </span>
-                    <span className="feature-tag">{listing.bathrooms} bath{listing.bathrooms !== 1 ? 's' : ''}</span>
-                    <span className="feature-tag">Storage</span>
-                  </div>
-                  <div className="space-schedule">
-                    <span className="available-days">all nights available</span>
-                    <div className="day-indicators">
-                      {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => (
-                        <span key={dayIdx} className="day-dot available" />
-                      ))}
+                  <div className="space-info">
+                    <h3 className="space-title">{listing.title}</h3>
+                    <div className="space-location">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#6B7280" strokeWidth="2" />
+                        <circle cx="12" cy="9" r="2.5" stroke="#6B7280" strokeWidth="2" />
+                      </svg>
+                      {listing.location}
+                    </div>
+                    <div className="space-features">
+                      <span className="feature-tag">
+                        {listing.bedrooms === 0 ? 'Studio' : `${listing.bedrooms} bed${listing.bedrooms !== 1 ? 's' : ''}`}
+                      </span>
+                      <span className="feature-tag">{listing.bathrooms} bath{listing.bathrooms !== 1 ? 's' : ''}</span>
+                      <span className="feature-tag">Storage</span>
+                    </div>
+                    <div className="space-schedule">
+                      <span className="available-days">{schedule.label}</span>
+                      <div className="day-indicators">
+                        {dayLabels.map((label, dayIdx) => (
+                          <span
+                            key={dayIdx}
+                            className={`day-dot ${schedule.activeDays.includes(dayIdx) ? 'available' : ''}`}
+                            title={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayIdx]}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
         <div className="spaces-cta-wrapper">
-          <a href={SEARCH_URL} className="spaces-cta-button">
-            Browse All NYC Spaces
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
+          <a href={SEARCH_URL} className="spaces-cta-button spaces-cta-button--map">
+            <svg className="spaces-cta-map-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+              <line x1="8" y1="2" x2="8" y2="18" />
+              <line x1="16" y1="6" x2="16" y2="22" />
+            </svg>
+            Explore Map
+            <svg className="spaces-cta-pin-icon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
             </svg>
           </a>
         </div>
@@ -644,37 +639,13 @@ function FeaturedSpacesSection() {
 }
 
 // ============================================================================
-// A/B TEST VARIANT: Market Report Popup (bottom-right corner)
+// INTERNAL COMPONENT: Market Report Card (bottom-right corner)
 // ============================================================================
 
-function MarketReportPopup({ onRequestClick, onDismiss, isVisible }) {
-  const [isAnimating, setIsAnimating] = useState(true);
-
-  const handleDismiss = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onDismiss?.();
-      console.log('[A/B Test] Popup dismissed - showing drawer');
-    }, 300);
-  };
-
-  const handleRequest = () => {
-    onRequestClick();
-    console.log('[A/B Test] Popup: Request clicked');
-  };
-
-  if (!isVisible) return null;
-
+function MarketReportCard({ onRequestClick }) {
   return (
-    <div className={`market-popup-container ${isAnimating ? 'animate-in' : 'animate-out'}`}>
+    <div className="market-popup-container animate-in">
       <div className="market-popup-card">
-        <button className="market-popup-close" onClick={handleDismiss} aria-label="Close">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
         <div className="market-popup-content">
           <div className="market-popup-badge">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -689,8 +660,7 @@ function MarketReportPopup({ onRequestClick, onDismiss, isVisible }) {
           <p className="market-popup-description">Market Research for Lodging, Storage, Transport, Restaurants and more</p>
 
           <div className="market-popup-buttons">
-            <button className="market-popup-btn-primary" onClick={handleRequest}>Request</button>
-            <button className="market-popup-btn-secondary" onClick={handleDismiss}>Later</button>
+            <button className="market-popup-btn-primary" onClick={onRequestClick}>Request</button>
           </div>
         </div>
 
@@ -748,13 +718,10 @@ export default function HomePage() {
   const [isAIResearchModalOpen, setIsAIResearchModalOpen] = useState(false);
   const [selectedDays, setSelectedDays] = useState([]);
   const { isAuthenticated: isLoggedIn } = useAuthenticatedUser();
-  const [isPopupDismissed, setIsPopupDismissed] = useState(false); // A/B test: when true, show drawer instead of popup
 
   // Internal routing state for password reset fallback
   const [RecoveryComponent, setRecoveryComponent] = useState(null);
 
-  // Memoize A/B test variant to avoid re-computation on each render
-  const marketReportVariant = useMemo(() => getMarketReportVariant(), []);
 
   // SAFETY NET: Check for password reset redirect
   // If user lands on home page (or via server rewrite) with recovery token
@@ -860,34 +827,20 @@ export default function HomePage() {
 
       <ValuePropositions />
 
+      <FeaturedSpacesSection />
+
       <ScheduleSection />
 
       <LocalJourneySection onExploreRentals={handleExploreRentals} />
 
-      <FeaturedSpacesSection />
-
-      <SupportSection />
-
       <Footer />
 
-      {!isLoggedIn && (
-        <>
-          {marketReportVariant === 'popup' && !isPopupDismissed ? (
-            <MarketReportPopup
-              isVisible={true}
-              onRequestClick={handleOpenAIResearchModal}
-              onDismiss={() => setIsPopupDismissed(true)}
-            />
-          ) : (
-            <FloatingBadge onClick={handleOpenAIResearchModal} />
-          )}
+      <MarketReportCard onRequestClick={handleOpenAIResearchModal} />
 
-          <AiSignupMarketReport
-            isOpen={isAIResearchModalOpen}
-            onClose={handleCloseAIResearchModal}
-          />
-        </>
-      )}
+      <AiSignupMarketReport
+        isOpen={isAIResearchModalOpen}
+        onClose={handleCloseAIResearchModal}
+      />
     </div>
   );
 }

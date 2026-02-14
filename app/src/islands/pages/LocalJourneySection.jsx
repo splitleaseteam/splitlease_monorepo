@@ -1,163 +1,4 @@
-import { useRef, useLayoutEffect, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
-
 export default function LocalJourneySection({ onExploreRentals }) {
-  const sectionRef = useRef(null);
-  const trackRef = useRef(null);
-  const headerRef = useRef(null);
-  const progressRef = useRef(null);
-  const cardRefs = useRef([]);
-  const [activeCardIndex, setActiveCardIndex] = useState(0);
-
-  useLayoutEffect(() => {
-    const section = sectionRef.current;
-    const track = trackRef.current;
-    const header = headerRef.current;
-    const progress = progressRef.current;
-    const cards = cardRefs.current.filter(Boolean);
-
-    if (!section || !track) return;
-
-    const isMobile = window.innerWidth <= 768;
-
-    const getScrollAmount = () => {
-      const trackWidth = track.scrollWidth;
-      return -(trackWidth - window.innerWidth + 100);
-    };
-
-    const ctx = gsap.context(() => {
-      // Create the main horizontal scroll timeline
-      const scrollTween = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: () => `+=${track.scrollWidth - window.innerWidth}`,
-          pin: true,
-          scrub: 0.8,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            // Update progress bar
-            if (progress) {
-              gsap.to(progress, {
-                scaleX: self.progress,
-                duration: 0.1,
-                ease: "none"
-              });
-            }
-            // Calculate and set active card based on scroll progress
-            const cardCount = cards.length;
-            const newActiveIndex = Math.min(
-              Math.floor(self.progress * cardCount),
-              cardCount - 1
-            );
-            setActiveCardIndex(newActiveIndex);
-          }
-        }
-      });
-
-      // Animate the track position
-      scrollTween.to(track, {
-        x: getScrollAmount,
-        ease: "none"
-      });
-
-      // Header parallax effect - moves up and fades slightly as user scrolls
-      gsap.to(header, {
-        y: -50,
-        opacity: 0.3,
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: () => `+=${(track.scrollWidth - window.innerWidth) * 0.3}`,
-          scrub: true
-        }
-      });
-
-      // Individual card animations - scale and opacity based on position
-      cards.forEach((card) => {
-        if (isMobile) {
-          // Mobile: Simpler animation - cards start small, scale UP when active
-          gsap.set(card, {
-            scale: 0.9,
-            opacity: 0.7
-          });
-
-          // Scale up when entering center zone
-          gsap.to(card, {
-            scale: 1.05,
-            opacity: 1,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: card,
-              containerAnimation: scrollTween,
-              start: "left 70%",
-              end: "left 50%",
-              scrub: 0.3
-            }
-          });
-
-          // Scale back down when leaving center
-          gsap.to(card, {
-            scale: 0.9,
-            opacity: 0.7,
-            ease: "power2.in",
-            scrollTrigger: {
-              trigger: card,
-              containerAnimation: scrollTween,
-              start: "left 40%",
-              end: "left 10%",
-              scrub: 0.3
-            }
-          });
-        } else {
-          // Desktop: Original animation with rotation
-          gsap.set(card, {
-            scale: 0.85,
-            opacity: 0.5,
-            rotateY: -5
-          });
-
-          // Animate each card as it enters the "active zone" (center of screen)
-          gsap.to(card, {
-            scale: 1,
-            opacity: 1,
-            rotateY: 0,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: card,
-              containerAnimation: scrollTween,
-              start: "left 80%",
-              end: "left 40%",
-              scrub: 0.5
-            }
-          });
-
-          // Animate card out as it leaves the active zone
-          gsap.to(card, {
-            scale: 0.9,
-            opacity: 0.6,
-            rotateY: 5,
-            ease: "power2.in",
-            scrollTrigger: {
-              trigger: card,
-              containerAnimation: scrollTween,
-              start: "left 30%",
-              end: "left -10%",
-              scrub: 0.5
-            }
-          });
-        }
-      });
-
-    }, section);
-
-    return () => ctx.revert();
-  }, []);
-
   const features = [
     {
       icon: (
@@ -202,42 +43,23 @@ export default function LocalJourneySection({ onExploreRentals }) {
     }
   ];
 
-  // Helper to set card refs
-  const setCardRef = (index) => (el) => {
-    cardRefs.current[index] = el;
-  };
-
   return (
-    <section className="local-journey-section" ref={sectionRef}>
-      {/* Progress indicator */}
-      <div className="local-journey-progress-container">
-        <div className="local-journey-progress-bar" ref={progressRef} />
-        <div className="local-journey-progress-dots">
-          {features.map((_, index) => (
-            <div
-              key={index}
-              className={`local-journey-progress-dot ${activeCardIndex >= index ? 'active' : ''}`}
-            />
-          ))}
-          <div className={`local-journey-progress-dot cta ${activeCardIndex >= features.length ? 'active' : ''}`} />
-        </div>
-      </div>
-
-      <div className="local-journey-wrapper">
-        <div className="local-journey-header" ref={headerRef}>
+    <section className="local-journey-section">
+      <div className="local-journey-content">
+        <div className="local-journey-header">
           <span className="local-journey-eyebrow">Flexible Living</span>
           <h2>Choose when to be a local</h2>
           <p>Enjoy a second-home lifestyle on your schedule. Stay in the city on the days you need, relax in fully-set spaces.</p>
         </div>
 
-        <div className="local-journey-track" ref={trackRef}>
+        <div className="local-journey-grid" role="list">
           {features.map((feature, index) => (
-            <div
-              key={index}
-              className={`local-journey-card ${activeCardIndex === index ? 'is-active' : ''}`}
-              ref={setCardRef(index)}
+            <article
+              key={feature.title}
+              className="local-journey-card"
+              role="listitem"
             >
-              <div className="local-journey-card-number">
+              <div className="local-journey-card-number" aria-hidden="true">
                 <span>{String(index + 1).padStart(2, '0')}</span>
               </div>
               <div className="local-journey-icon">
@@ -245,15 +67,10 @@ export default function LocalJourneySection({ onExploreRentals }) {
               </div>
               <h3>{feature.title}</h3>
               <p>{feature.description}</p>
-              <div className="local-journey-card-accent" />
-            </div>
+            </article>
           ))}
 
-          {/* Final CTA Card */}
-          <div
-            className={`local-journey-card cta-card ${activeCardIndex >= features.length ? 'is-active' : ''}`}
-            ref={setCardRef(features.length)}
-          >
+          <article className="local-journey-card cta-card" role="listitem">
             <div className="cta-card-content">
               <h3>Ready to start?</h3>
               <p>Find your perfect split lease today.</p>
@@ -264,7 +81,7 @@ export default function LocalJourneySection({ onExploreRentals }) {
                 </svg>
               </button>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </section>

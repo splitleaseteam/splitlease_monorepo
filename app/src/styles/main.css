@@ -298,6 +298,11 @@ section {
   margin-bottom: var(--spacing-4xl);
 }
 
+/* Home page sections rely on padding for spacing, not global margin */
+.home-page section {
+  margin-bottom: 0;
+}
+
 article {
   background-color: var(--bg-white);
   border-radius: var(--rounded-lg);

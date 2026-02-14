@@ -1,8 +1,65 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { COLORS } from '../../../lib/constants.js';
 import { logger } from '../../../lib/logger.js';
 import { getListingDisplayPrice } from '../../../logic/calculators/pricing/getListingDisplayPrice.js';
-import { createSimpleMarker, createPriceMarker } from './markerFactory.js';
+import { createSimpleMarker, createPriceMarker, createClusterMarker } from './markerFactory.js';
+
+// Grid cell size in pixels, adapts to zoom level
+const CELL_SIZE_BY_ZOOM = {
+  10: 120,
+  11: 110,
+  12: 95,
+  13: 82,
+  14: 70,
+  15: 58,
+  16: 46
+};
+
+function getCellSizeForZoom(zoom) {
+  if (zoom <= 10) return CELL_SIZE_BY_ZOOM[10];
+  if (zoom >= 16) return CELL_SIZE_BY_ZOOM[16];
+  return CELL_SIZE_BY_ZOOM[zoom] || 90;
+}
+
+function hasValidCoordinates(listing) {
+  return !!(listing?.coordinates?.lat && listing?.coordinates?.lng);
+}
+
+function bucketListingsByGrid({ sourceListings, cellSize, projection, bounds, layerKey }) {
+  if (!bounds) return [];
+  const buckets = new Map();
+
+  sourceListings.forEach((listing) => {
+    if (!hasValidCoordinates(listing)) return;
+
+    const latLng = new window.google.maps.LatLng(listing.coordinates.lat, listing.coordinates.lng);
+    if (!bounds.contains(latLng)) return;
+
+    const pixel = projection.fromLatLngToDivPixel(latLng);
+    if (!pixel) return;
+
+    const gridX = Math.floor(pixel.x / cellSize);
+    const gridY = Math.floor(pixel.y / cellSize);
+    const key = `${layerKey}:${gridX}:${gridY}`;
+    const displayPrice = getListingDisplayPrice(listing, 0, 'starting');
+
+    if (!buckets.has(key)) {
+      buckets.set(key, {
+        key,
+        center: { lat: listing.coordinates.lat, lng: listing.coordinates.lng },
+        minPrice: displayPrice,
+        listings: [listing]
+      });
+      return;
+    }
+
+    const bucket = buckets.get(key);
+    bucket.listings.push(listing);
+    bucket.minPrice = Math.min(bucket.minPrice, displayPrice);
+  });
+
+  return [...buckets.values()];
+}
 
 /**
  * Hook that manages marker creation and updates on the Google Map.
@@ -35,6 +92,8 @@ export default function useMapMarkers({
 }) {
   const markersRef = useRef([]);
   const lastMarkersUpdateRef = useRef(null);
+  const [viewportTick, setViewportTick] = useState(0);
+  void selectedNightsCount;
 
   /**
    * Get the starting price for map marker display.
@@ -45,7 +104,21 @@ export default function useMapMarkers({
     return getListingDisplayPrice(listing, 0, 'starting');
   }, []);
 
-  // Update markers when listings change
+  // Re-render markers when zoom/pan settles
+  useEffect(() => {
+    if (!mapLoaded || !googleMapRef.current) return;
+
+    const map = googleMapRef.current;
+    const idleListener = window.google.maps.event.addListener(map, 'idle', () => {
+      setViewportTick((prev) => prev + 1);
+    });
+
+    return () => {
+      window.google.maps.event.removeListener(idleListener);
+    };
+  }, [mapLoaded, googleMapRef]);
+
+  // Update markers when listings/filter/viewport changes
   useEffect(() => {
     if (!mapLoaded || !googleMapRef.current) {
       if (import.meta.env.DEV) {
@@ -54,266 +127,161 @@ export default function useMapMarkers({
       return;
     }
 
-    // Performance optimization: Prevent duplicate marker updates
-    const markerSignature = `${listings.map(l => l.id).join(',')}-${filteredListings.map(l => l.id).join(',')}-${showAllListings}`;
-    if (lastMarkersUpdateRef.current === markerSignature) {
-      if (import.meta.env.DEV) {
-        logger.debug('GoogleMap: Skipping duplicate marker update - same listings');
-      }
+    const markerSignature = `${listings.map((l) => l.id).join(',')}-${filteredListings.map((l) => l.id).join(',')}-${showAllListings}-${simpleMode}`;
+    const dataChanged = lastMarkersUpdateRef.current !== markerSignature;
+    if (dataChanged) {
+      lastMarkersUpdateRef.current = markerSignature;
+    }
+
+    const map = googleMapRef.current;
+    const markerRefs = { handlePinClickRef, googleMapRef };
+    const bounds = new window.google.maps.LatLngBounds();
+    let hasValidMarkers = false;
+
+    // Get projection for pixel-space bucketing
+    const projectionOverlay = new window.google.maps.OverlayView();
+    projectionOverlay.onAdd = function () {};
+    projectionOverlay.draw = function () {};
+    projectionOverlay.onRemove = function () {};
+    projectionOverlay.setMap(map);
+
+    const projection = projectionOverlay.getProjection();
+    if (!projection) {
+      projectionOverlay.setMap(null);
       return;
     }
 
-    lastMarkersUpdateRef.current = markerSignature;
+    const zoom = map.getZoom() || 12;
+    const cellSize = getCellSizeForZoom(zoom);
+    const currentBounds = map.getBounds();
 
-    // Defer marker creation to next frame to prevent blocking render
-    function createMarkers() {
-      if (import.meta.env.DEV) {
-        logger.debug('GoogleMap: Markers update triggered', {
-          mapLoaded,
-          googleMapExists: !!googleMapRef.current,
-          totalListings: listings.length,
-          filteredListings: filteredListings.length,
-          showAllListings,
-          allListingsPassedCorrectly: listings.length > 0,
-          backgroundLayerEnabled: showAllListings
-        });
-      }
+    // Clear existing markers
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
 
-      // Clear existing markers
-      markersRef.current.forEach(marker => marker.setMap(null));
-      markersRef.current = [];
-      logger.debug('GoogleMap: Cleared existing markers');
+    // --- Purple (filtered) layer ---
+    if (filteredListings && filteredListings.length > 0) {
+      const filteredBuckets = bucketListingsByGrid({
+        sourceListings: filteredListings,
+        cellSize,
+        projection,
+        bounds: currentBounds,
+        layerKey: 'filtered'
+      });
 
-      const map = googleMapRef.current;
-      const bounds = new window.google.maps.LatLngBounds();
-      let hasValidMarkers = false;
-
-      const markerRefs = { handlePinClickRef, googleMapRef };
-
-      // Create markers for filtered listings (simple or purple depending on mode)
-      if (filteredListings && filteredListings.length > 0) {
-        logger.debug(`GoogleMap: Starting ${simpleMode ? 'simple' : 'purple'} marker creation for filtered listings:`, filteredListings.length);
-        logger.debug('GoogleMap: First 3 filtered listings:', filteredListings.slice(0, 3).map(l => ({
-          id: l.id,
-          title: l.title,
-          coordinates: l.coordinates,
-          hasCoordinates: !!(l.coordinates?.lat && l.coordinates?.lng)
-        })));
-
-        let markersCreated = 0;
-        let skippedNoCoordinates = 0;
-        const skippedInvalidCoordinates = [];
-
-        filteredListings.forEach((listing, index) => {
-          logger.debug(`GoogleMap: [${index + 1}/${filteredListings.length}] Processing filtered listing:`, {
-            id: listing.id,
-            title: listing.title,
-            coordinates: listing.coordinates,
-            hasCoordinatesObject: !!listing.coordinates,
-            hasLat: listing.coordinates?.lat !== undefined,
-            hasLng: listing.coordinates?.lng !== undefined,
-            lat: listing.coordinates?.lat,
-            lng: listing.coordinates?.lng
-          });
-
-          if (!listing.coordinates || !listing.coordinates.lat || !listing.coordinates.lng) {
-            logger.error(`GoogleMap: Skipping filtered listing ${listing.id} - Missing or invalid coordinates:`, {
-              coordinates: listing.coordinates,
-              hasCoordinates: !!listing.coordinates,
-              lat: listing.coordinates?.lat,
-              lng: listing.coordinates?.lng
-            });
-            skippedNoCoordinates++;
-            skippedInvalidCoordinates.push({
-              id: listing.id,
-              title: listing.title,
-              coordinates: listing.coordinates
-            });
-            return;
-          }
-
-          const position = {
-            lat: listing.coordinates.lat,
-            lng: listing.coordinates.lng
-          };
-
-          // Calculate dynamic price based on selected nights
+      filteredBuckets.forEach((bucket) => {
+        if (bucket.listings.length === 1 || simpleMode) {
+          const listing = bucket.listings[0];
           const displayPrice = getDisplayPrice(listing);
-
-          logger.debug(`GoogleMap: Creating ${simpleMode ? 'simple' : 'purple'} marker for listing ${listing.id}:`, {
-            position,
-            displayPrice,
-            startingPrice: listing.price?.starting || listing.lowest_nightly_price_for_map_display,
-            selectedNightsCount,
-            title: listing.title,
-            simpleMode
-          });
-
-          // Create marker based on mode
           const marker = simpleMode
-            ? createSimpleMarker(map, position, listing)
-            : createPriceMarker(
-              map,
-              position,
-              displayPrice,
-              COLORS.SECONDARY, // Purple - search results
-              listing,
-              markerRefs
-            );
+            ? createSimpleMarker(map, listing.coordinates, listing)
+            : createPriceMarker(map, listing.coordinates, displayPrice, COLORS.SECONDARY, listing, markerRefs);
 
           markersRef.current.push(marker);
-          bounds.extend(position);
+          bounds.extend(listing.coordinates);
           hasValidMarkers = true;
-          markersCreated++;
-
-          logger.debug(`GoogleMap: ${simpleMode ? 'Simple' : 'Purple'} marker created successfully for ${listing.id}, total markers so far: ${markersRef.current.length}`);
-        });
-
-        logger.debug(`GoogleMap: ${simpleMode ? 'Simple' : 'Purple'} marker creation summary:`, {
-          totalFiltered: filteredListings.length,
-          markersCreated: markersCreated,
-          skippedNoCoordinates,
-          skippedInvalidCoordinates: skippedInvalidCoordinates.length,
-          invalidListings: skippedInvalidCoordinates
-        });
-      } else {
-        logger.debug('GoogleMap: No filtered listings to create purple markers for');
-      }
-
-      // Create markers for all listings (grey) - background context
-      if (showAllListings && listings && listings.length > 0) {
-        logger.debug('GoogleMap: Starting grey marker creation for all listings (background layer):', listings.length);
-        logger.debug('GoogleMap: First 3 all listings:', listings.slice(0, 3).map(l => ({
-          id: l.id,
-          title: l.title,
-          coordinates: l.coordinates,
-          hasCoordinates: !!(l.coordinates?.lat && l.coordinates?.lng)
-        })));
-
-        let greenMarkersCreated = 0;
-        let skippedAlreadyFiltered = 0;
-        let skippedNoCoordinates = 0;
-        const skippedInvalidCoordinates = [];
-
-        listings.forEach((listing, index) => {
-          // Skip if already shown as filtered listing
-          const isFiltered = filteredListings?.some(fl => fl.id === listing.id);
-          if (isFiltered) {
-            logger.debug(`GoogleMap: [${index + 1}/${listings.length}] Skipping ${listing.id} - Already shown as purple marker`);
-            skippedAlreadyFiltered++;
-            return;
-          }
-
-          logger.debug(`GoogleMap: [${index + 1}/${listings.length}] Processing all listing:`, {
-            id: listing.id,
-            title: listing.title,
-            coordinates: listing.coordinates,
-            hasCoordinatesObject: !!listing.coordinates,
-            hasLat: listing.coordinates?.lat !== undefined,
-            hasLng: listing.coordinates?.lng !== undefined,
-            lat: listing.coordinates?.lat,
-            lng: listing.coordinates?.lng
-          });
-
-          if (!listing.coordinates || !listing.coordinates.lat || !listing.coordinates.lng) {
-            logger.error(`GoogleMap: Skipping all listing ${listing.id} - Missing or invalid coordinates:`, {
-              coordinates: listing.coordinates,
-              hasCoordinates: !!listing.coordinates,
-              lat: listing.coordinates?.lat,
-              lng: listing.coordinates?.lng
-            });
-            skippedNoCoordinates++;
-            skippedInvalidCoordinates.push({
-              id: listing.id,
-              title: listing.title,
-              coordinates: listing.coordinates
-            });
-            return;
-          }
-
-          const position = {
-            lat: listing.coordinates.lat,
-            lng: listing.coordinates.lng
-          };
-
-          // Calculate dynamic price based on selected nights
-          const displayPrice = getDisplayPrice(listing);
-
-          logger.debug(`GoogleMap: Creating grey marker for listing ${listing.id}:`, {
-            position,
-            displayPrice,
-            startingPrice: listing.price?.starting || listing.lowest_nightly_price_for_map_display,
-            selectedNightsCount,
-            title: listing.title
-          });
-
-          // Create grey marker for all listings
-          const marker = createPriceMarker(
-            map,
-            position,
-            displayPrice,
-            COLORS.MUTED, // Grey - all active listings
-            listing,
-            markerRefs
-          );
-
-          markersRef.current.push(marker);
-          bounds.extend(position);
-          hasValidMarkers = true;
-          greenMarkersCreated++;
-
-          logger.debug(`GoogleMap: Grey marker created successfully for ${listing.id}, total markers so far: ${markersRef.current.length}`);
-        });
-
-        logger.debug('GoogleMap: Grey marker creation summary:', {
-          totalAllListings: listings.length,
-          markersCreated: greenMarkersCreated,
-          skippedAlreadyFiltered,
-          skippedNoCoordinates,
-          skippedInvalidCoordinates: skippedInvalidCoordinates.length,
-          invalidListings: skippedInvalidCoordinates
-        });
-      } else {
-        logger.debug('GoogleMap: No all listings to create grey markers for (showAllListings:', showAllListings, ', listings.length:', listings?.length, ')');
-      }
-
-      // Fit map to show all markers
-      if (hasValidMarkers) {
-        if (import.meta.env.DEV) {
-          logger.debug('GoogleMap: Fitting bounds to markers', {
-            markerCount: markersRef.current.length,
-            bounds: bounds.toString(),
-            disableAutoZoom,
-            initialZoom,
-            simpleMode
-          });
+          return;
         }
 
-        // In simple mode, skip auto-centering here because parent will call zoomToListing explicitly
-        // This prevents double-zooming and ensures exact same behavior as clicking "Located in" link
-        if (simpleMode && markersRef.current.length === 1) {
-          logger.debug('GoogleMap: Simple mode - Skipping auto-center, parent will call zoomToListing');
-          // Do nothing - parent component will call zoomToListing to center the map
-        } else if (!disableAutoZoom) {
-          // Normal auto-fit behavior
-          map.fitBounds(bounds);
-
-          // Prevent over-zooming on single marker (unless initial zoom is specified)
-          if (!initialZoom) {
-            const listener = window.google.maps.event.addListener(map, 'idle', () => {
-              if (map.getZoom() > 16) map.setZoom(16);
-              window.google.maps.event.removeListener(listener);
-            });
+        // Multiple listings in same grid cell -> cluster marker
+        const marker = createClusterMarker(
+          map,
+          bucket.center,
+          {
+            count: bucket.listings.length,
+            minPrice: bucket.minPrice,
+            color: COLORS.SECONDARY,
+            listings: bucket.listings
+          },
+          () => {
+            map.panTo(bucket.center);
+            map.setZoom(Math.min((map.getZoom() || 12) + 2, 16));
           }
-        }
-      } else {
-        logger.warn('GoogleMap: No valid markers to display');
-      }
+        );
+
+        markersRef.current.push(marker);
+        bounds.extend(bucket.center);
+        hasValidMarkers = true;
+      });
     }
 
-    // Render markers immediately without lazy loading
-    createMarkers();
-  }, [listings, filteredListings, mapLoaded, showAllListings, getDisplayPrice]);
+    // --- Grey (background) layer ---
+    if (showAllListings && listings && listings.length > 0) {
+      const filteredIds = new Set(filteredListings.map((l) => l.id));
+      const backgroundListings = listings.filter((l) => !filteredIds.has(l.id));
+
+      const backgroundBuckets = bucketListingsByGrid({
+        sourceListings: backgroundListings,
+        cellSize,
+        projection,
+        bounds: currentBounds,
+        layerKey: 'background'
+      });
+
+      backgroundBuckets.forEach((bucket) => {
+        if (bucket.listings.length === 1) {
+          const listing = bucket.listings[0];
+          const displayPrice = getDisplayPrice(listing);
+          const marker = createPriceMarker(map, listing.coordinates, displayPrice, COLORS.MUTED, listing, markerRefs);
+
+          markersRef.current.push(marker);
+          bounds.extend(listing.coordinates);
+          hasValidMarkers = true;
+          return;
+        }
+
+        const marker = createClusterMarker(
+          map,
+          bucket.center,
+          {
+            count: bucket.listings.length,
+            minPrice: bucket.minPrice,
+            color: COLORS.MUTED,
+            listings: bucket.listings
+          },
+          () => {
+            map.panTo(bucket.center);
+            map.setZoom(Math.min((map.getZoom() || 12) + 2, 16));
+          }
+        );
+
+        markersRef.current.push(marker);
+        bounds.extend(bucket.center);
+        hasValidMarkers = true;
+      });
+    }
+
+    // Clean up projection overlay
+    projectionOverlay.setMap(null);
+
+    // Fit map to show all markers (only on data change, not viewport change)
+    if (hasValidMarkers && dataChanged) {
+      if (simpleMode && markersRef.current.length === 1) {
+        logger.debug('GoogleMap: Simple mode - Skipping auto-center, parent will call zoomToListing');
+      } else if (!disableAutoZoom) {
+        map.fitBounds(bounds);
+
+        if (!initialZoom) {
+          const listener = window.google.maps.event.addListener(map, 'idle', () => {
+            if (map.getZoom() > 16) map.setZoom(16);
+            window.google.maps.event.removeListener(listener);
+          });
+        }
+      }
+    }
+  }, [
+    listings,
+    filteredListings,
+    mapLoaded,
+    showAllListings,
+    getDisplayPrice,
+    simpleMode,
+    disableAutoZoom,
+    initialZoom,
+    googleMapRef,
+    handlePinClickRef,
+    viewportTick
+  ]);
 
   return { markersRef, lastMarkersUpdateRef };
 }

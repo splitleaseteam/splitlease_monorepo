@@ -1,8 +1,10 @@
 /* Schedule Section - Interactive Tabs Design */
 
 .schedule-section {
-    padding: 4rem 2rem 6rem;
-    background: white;
+    padding: 3rem 2rem;
+    background: var(--bg-white);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .schedule-section-container {
@@ -13,7 +15,7 @@
 
 /* Header */
 .schedule-section-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .schedule-section-eyebrow {
@@ -57,9 +59,9 @@
 }
 
 .schedule-section-tab.active {
-    background: white;
+    background: #ffffff;
     color: #1d1d1f;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Display Area */
@@ -67,7 +69,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2.5rem;
+    gap: 1.5rem;
 }
 
 .schedule-section-lottie {
@@ -110,7 +112,7 @@
 /* Responsive */
 @media (max-width: 768px) {
     .schedule-section {
-        padding: 3rem 1.5rem;
+        padding: 2.5rem 1.5rem;
     }
 
     .schedule-section-header h2 {
@@ -131,8 +133,8 @@
     }
 
     .schedule-section-lottie lottie-player {
-        width: 220px !important;
-        height: 160px !important;
+        width: 280px !important;
+        height: 200px !important;
     }
 
     .schedule-section-cta {
