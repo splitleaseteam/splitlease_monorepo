@@ -984,6 +984,26 @@
     font-weight: 500;
 }
 
+@media (min-width: 1025px) and (max-width: 1200px) {
+    .listing-card .listing-images {
+        min-width: 220px;
+    }
+
+    .listing-price-sidebar {
+        width: 120px;
+        padding: 0.75rem;
+    }
+
+    .listing-price-sidebar .price-main {
+        font-size: 1.125rem;
+    }
+
+    .listing-main-info {
+        min-width: 0;
+        padding: 0.5rem 0.75rem;
+    }
+}
+
 /* Legacy listing-info (for compatibility) */
 .listing-info {
     flex: 0 1 auto;
@@ -2051,5 +2071,4 @@
         transform: none !important;
     }
 }
-
 

@@ -16,6 +16,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, Zap, Calendar, Coffee, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase.js';
 import { formatHostName } from '../../logic/processors/display/formatHostName.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../lib/avatarUtils.js';
 
 // CSS Module styles following Popup Redesign Protocol + Accessibility Guidelines
 const styles = {
@@ -740,27 +741,14 @@ export default function ContactHostMessaging({ isOpen, onClose, listing, onLogin
         >
           {/* Header */}
           <div style={styles.header}>
-            {listing?.host?.image ? (
-              <div style={styles.avatarContainer} aria-hidden="true">
-                <img
-                  src={listing.host.image}
-                  alt=""
-                  style={styles.avatarImage}
-                  onError={(e) => {
-                    // Hide broken image and show fallback
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div style={{ ...styles.avatar, display: 'none', position: 'absolute', top: 0, left: 0 }}>
-                  {getHostInitials()}
-                </div>
-              </div>
-            ) : (
-              <div style={styles.avatar} aria-hidden="true">
-                {getHostInitials()}
-              </div>
-            )}
+            <div style={styles.avatarContainer} aria-hidden="true">
+              <img
+                src={listing?.host?.image || getInitialsAvatarUrl(listing?.host?.name || hostName)}
+                alt=""
+                style={styles.avatarImage}
+                onError={handleAvatarError}
+              />
+            </div>
             <div style={styles.headerText}>
               <h2 id="contact-modal-title" style={styles.headerTitle}>
                 Message {hostName}

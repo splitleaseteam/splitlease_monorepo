@@ -34,6 +34,7 @@ export function CandidateCard({ candidate, onSelect, isSelected }) {
   };
 
   const nightlyRate = getNightlyRate();
+  const roundedNightlyRate = nightlyRate === null ? null : Math.round(Number(nightlyRate) || 0);
 
   return (
     <div
@@ -76,9 +77,9 @@ export function CandidateCard({ candidate, onSelect, isSelected }) {
         )}
 
         {/* Pricing */}
-        {nightlyRate !== null && (
+        {roundedNightlyRate !== null && (
           <div className="qm-candidate-price">
-            <span className="qm-price-amount">${nightlyRate}</span>
+            <span className="qm-price-amount">${roundedNightlyRate}</span>
             <span className="qm-price-per">/night</span>
           </div>
         )}

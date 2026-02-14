@@ -31,6 +31,12 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
+function formatAmount(amount) {
+  const numericAmount = Number(amount ?? 0);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+  return safeAmount.toFixed(2);
+}
+
 /**
  * Get icon for transaction type
  * @param {string} type - Transaction type
@@ -108,7 +114,7 @@ export default function TransactionRow({
           </span>
         </div>
         {amount > 0 && (
-          <span className="txn-row__amount">${amount}</span>
+          <span className="txn-row__amount">${formatAmount(amount)}</span>
         )}
         <StatusBadge status={status} />
         <span className="txn-row__chevron" aria-hidden="true">

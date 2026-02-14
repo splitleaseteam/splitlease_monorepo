@@ -11,6 +11,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useImageCarousel } from '../../../../hooks/useImageCarousel.js';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 import { getNeighborhoodInfo, fetchNeighborhoodDescription } from '../../../../lib/dataLookups.js';
 import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton.jsx';
 import './ListingDetailDrawer.css';
@@ -523,11 +524,14 @@ export default function ListingDetailDrawer({
           {/* 6. Host */}
           <div className="detail-drawer__section">
             <div className="detail-drawer__host">
-              {listing.host?.image ? (
-                <img src={listing.host.image} alt={listing.host.name} className="detail-drawer__host-avatar" loading="lazy" decoding="async" />
-              ) : (
-                <div className="detail-drawer__host-avatar-placeholder">?</div>
-              )}
+              <img
+                src={listing.host?.image || getInitialsAvatarUrl(listing.host?.name)}
+                alt={listing.host?.name || 'Host'}
+                className="detail-drawer__host-avatar"
+                loading="lazy"
+                decoding="async"
+                onError={handleAvatarError}
+              />
               <span className="detail-drawer__host-name">
                 Hosted by {formatHostName({ fullName: listing.host?.name || 'Host' })}
                 {listing.host?.verified && <span className="detail-drawer__host-verified" title="Verified">&#10003;</span>}

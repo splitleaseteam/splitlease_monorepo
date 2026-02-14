@@ -51,6 +51,12 @@ function formatTime(timestamp) {
   return `${dateStr}, ${timeStr}`;
 }
 
+function formatAmount(amount) {
+  const numericAmount = Number(amount ?? 0);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+  return safeAmount.toFixed(2);
+}
+
 /**
  * Individual message bubble
  * @param {Object} props
@@ -98,7 +104,7 @@ export default function ChatBubble({
             )}
             {(message.requestDetails?.amount || message.requestData?.amount) && (
               <span className="chat-bubble__request-amount">
-                💰 ${message.requestDetails?.amount || message.requestData?.amount}
+                💰 ${formatAmount(message.requestDetails?.amount || message.requestData?.amount)}
               </span>
             )}
           </div>

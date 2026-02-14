@@ -5,6 +5,12 @@ import React from 'react';
 import type { FormData } from '../types';
 import { HOST_TYPES, WEEKLY_PATTERNS } from '../types';
 
+function formatWholeDollar(amount: number | string | null | undefined): string {
+  const numericAmount = Number(amount ?? 0);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+  return Math.round(safeAmount).toLocaleString('en-US');
+}
+
 interface Step8Props {
   formData: FormData;
   nightlyPricesRef: React.MutableRefObject<number[]>;
@@ -33,16 +39,16 @@ export const Step8Review: React.FC<Step8Props> = ({
   if (formData.leaseStyle === 'nightly') {
     const maxPrice = nightlyPricesRef.current[0] || formData.nightlyBaseRate;
     const minPrice = nightlyPricesRef.current[6] || maxPrice;
-    priceDisplay = `$${minPrice} - $${maxPrice}`;
+    priceDisplay = `$${formatWholeDollar(minPrice)} - $${formatWholeDollar(maxPrice)}`;
     freq = 'Night';
     schedule = getScheduleText().text;
   } else if (formData.leaseStyle === 'weekly') {
-    priceDisplay = `$${formData.price}`;
+    priceDisplay = `$${formatWholeDollar(formData.price)}`;
     freq = 'Week';
     const pattern = WEEKLY_PATTERNS.find(p => p.value === formData.weeklyPattern);
     schedule = `Weekly: ${pattern?.label || formData.weeklyPattern}`;
   } else {
-    priceDisplay = `$${formData.price}`;
+    priceDisplay = `$${formatWholeDollar(formData.price)}`;
     freq = 'Month';
     schedule = 'Monthly Agreement';
   }

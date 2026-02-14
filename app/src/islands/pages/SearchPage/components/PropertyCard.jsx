@@ -3,6 +3,7 @@ import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton.jsx';
 import { useImageCarousel } from '../../../../hooks/useImageCarousel.js';
 import { calculatePrice } from '../../../../lib/scheduleSelector/priceCalculations.js';
 import { formatHostName } from '../../../../logic/processors/display/formatHostName.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 import { logger } from '../../../../lib/logger.js';
 
 /**
@@ -304,11 +305,12 @@ export function PropertyCard({ listing, onLocationClick, onOpenContactModal, onO
             </div>
             {/* Host Profile - Simple text */}
             <div className="host-profile">
-              {listing.host?.image ? (
-                <img src={listing.host.image} alt={listing.host.name} className="host-avatar" />
-              ) : (
-                <div className="host-avatar-placeholder">?</div>
-              )}
+              <img
+                src={listing.host?.image || getInitialsAvatarUrl(listing.host?.name)}
+                alt={listing.host?.name || 'Host'}
+                className="host-avatar"
+                onError={handleAvatarError}
+              />
               <span className="host-name">
                 Hosted by {formatHostName({ fullName: listing.host?.name || 'Host' })}
                 {listing.host?.verified && <span className="verified-badge" title="Verified">✓</span>}

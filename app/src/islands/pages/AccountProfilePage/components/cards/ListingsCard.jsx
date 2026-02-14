@@ -53,18 +53,18 @@ function getPriceDisplay(listing) {
   if (rentalType === 'monthly') {
     const monthlyRate = listing.monthly_rate_paid_to_host || 0;
     if (monthlyRate > 0) {
-      return { amount: monthlyRate, label: '/month' };
+      return { amount: Math.round(Number(monthlyRate)).toLocaleString('en-US'), label: '/month' };
     }
   } else if (rentalType === 'weekly') {
     const weeklyRate = listing.weekly_rate_paid_to_host || 0;
     if (weeklyRate > 0) {
-      return { amount: weeklyRate, label: '/week' };
+      return { amount: Math.round(Number(weeklyRate)).toLocaleString('en-US'), label: '/week' };
     }
   } else {
     // Nightly or default
     const nightlyRate = listing.lowest_nightly_price_for_map_display || listing.nightly_rate_for_1_night_stay || 0;
     if (nightlyRate > 0) {
-      return { amount: nightlyRate, label: '/night' };
+      return { amount: Math.round(Number(nightlyRate)).toLocaleString('en-US'), label: '/night' };
     }
   }
 

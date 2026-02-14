@@ -15,6 +15,7 @@
  */
 import React from 'react';
 import { generateGuestNarrativeText, formatCurrency } from './displayUtils.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../lib/avatarUtils.js';
 
 /**
  * NarrativeGuestProposalBody displays the expanded content in narrative format
@@ -31,17 +32,12 @@ export function NarrativeGuestProposalBody({ proposal, onViewListing, children }
     <div className="epc-narrative-body">
       {/* Listing context - simplified: host avatar + name + location + view link */}
       <div className="epc-narrative-listing">
-        {listingContext.hostPhoto ? (
-          <img
-            src={listingContext.hostPhoto}
-            alt=""
-            className="epc-narrative-host-avatar"
-          />
-        ) : (
-          <div className="epc-narrative-host-avatar epc-narrative-avatar-placeholder">
-            {listingContext.hostFirstName.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <img
+          src={listingContext.hostPhoto || getInitialsAvatarUrl(listingContext.hostFirstName)}
+          alt=""
+          className="epc-narrative-host-avatar"
+          onError={handleAvatarError}
+        />
         <p className="epc-narrative-listing-text">
           <strong>{listingContext.listingName}</strong>
           {' · '}

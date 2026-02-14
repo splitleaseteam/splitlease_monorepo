@@ -14,6 +14,7 @@ import { memo, useRef, useMemo, useCallback } from 'react';
 import { useImageCarousel } from '../../../hooks/useImageCarousel.js';
 import { formatHostName } from '../../../logic/processors/display/formatHostName.js';
 import { getListingDisplayPrice } from '../../../logic/calculators/pricing/getListingDisplayPrice.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../lib/avatarUtils.js';
 import { logger } from '../../../lib/logger.js';
 import FavoriteButton from '../FavoriteButton/FavoriteButton.jsx';
 
@@ -389,11 +390,14 @@ const PropertyCard = memo(function PropertyCard({
               </div>
               {/* Host Profile */}
               <div className="host-profile">
-                {listing.host?.image ? (
-                  <img src={listing.host.image} alt={listing.host.name} className="host-avatar" loading="lazy" decoding="async" />
-                ) : (
-                  <div className="host-avatar-placeholder">?</div>
-                )}
+                <img
+                  src={listing.host?.image || getInitialsAvatarUrl(listing.host?.name)}
+                  alt={listing.host?.name || 'Host'}
+                  className="host-avatar"
+                  loading="lazy"
+                  decoding="async"
+                  onError={handleAvatarError}
+                />
                 <span className="host-name">
                   Hosted by {formatHostName({ fullName: listing.host?.name || 'Host' })}
                   {listing.host?.verified && <span className="verified-badge" title="Verified">✓</span>}
@@ -404,11 +408,14 @@ const PropertyCard = memo(function PropertyCard({
             /* FavoriteListingsPage Host Row */
             <div className="listing-host-row">
               <div className="host">
-                {listing.host?.image ? (
-                  <img src={listing.host.image} alt={listing.host.name} className="host-avatar" loading="lazy" decoding="async" />
-                ) : (
-                  <div className="host-avatar-placeholder">?</div>
-                )}
+                <img
+                  src={listing.host?.image || getInitialsAvatarUrl(listing.host?.name)}
+                  alt={listing.host?.name || 'Host'}
+                  className="host-avatar"
+                  loading="lazy"
+                  decoding="async"
+                  onError={handleAvatarError}
+                />
                 <span className="host-name">
                   {formatHostName({ fullName: listing.host?.name || 'Host' })}
                   {listing.host?.verified && <span className="verified-badge" title="Verified">✓</span>}

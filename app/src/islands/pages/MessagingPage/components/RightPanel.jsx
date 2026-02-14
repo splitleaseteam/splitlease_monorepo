@@ -26,6 +26,13 @@ function formatShortDate(dateString) {
   }
 }
 
+function formatWholeDollar(amount) {
+  if (amount === null || amount === undefined || amount === '') return '-';
+  const numericAmount = Number(amount ?? 0);
+  if (!Number.isFinite(numericAmount)) return '-';
+  return Math.round(numericAmount).toLocaleString('en-US');
+}
+
 /**
  * Map proposal status to timeline stages
  */
@@ -230,7 +237,7 @@ export default function RightPanel({
             <div className="panel-listing-card__info-item">
               <span className="panel-listing-card__info-label">Price</span>
               <span className="panel-listing-card__info-value">
-                ${proposalData?.totalMonthlyPrice ?? listingData.monthlyRate ?? '-'}/mo
+                ${formatWholeDollar(proposalData?.totalMonthlyPrice ?? listingData.monthlyRate)}/mo
               </span>
             </div>
           </div>

@@ -4,6 +4,12 @@ import { SAFETY_FEATURES } from '../types/listing.types';
 import { getCommonSafetyFeatures } from '../utils/safetyService';
 import { useAsyncOperation } from '../../../../hooks/useAsyncOperation';
 
+function formatWholeDollar(amount: number | string | null | undefined): string {
+  const numericAmount = Number(amount ?? 0);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+  return Math.round(safeAmount).toLocaleString('en-US');
+}
+
 interface Section7Props {
   formData: ListingFormData;
   reviewData: ReviewData;
@@ -234,9 +240,9 @@ export const Section7Review: React.FC<Section7Props> = ({
             <h3>💰 Pricing</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">
-                {formData.leaseStyles.rentalType === 'Monthly' && `$${formData.pricing.monthlyCompensation}/mo`}
-                {formData.leaseStyles.rentalType === 'Weekly' && `$${formData.pricing.weeklyCompensation}/wk`}
-                {formData.leaseStyles.rentalType === 'Nightly' && formData.pricing.nightlyPricing && `$${formData.pricing.nightlyPricing.oneNightPrice}/night`}
+                {formData.leaseStyles.rentalType === 'Monthly' && `$${formatWholeDollar(formData.pricing.monthlyCompensation)}/mo`}
+                {formData.leaseStyles.rentalType === 'Weekly' && `$${formatWholeDollar(formData.pricing.weeklyCompensation)}/wk`}
+                {formData.leaseStyles.rentalType === 'Nightly' && formData.pricing.nightlyPricing && `$${formatWholeDollar(formData.pricing.nightlyPricing.oneNightPrice)}/night`}
               </span>
               <span className="expand-icon">{expandedSections['pricing'] ? '▼' : '▶'}</span>
             </div>
@@ -244,19 +250,19 @@ export const Section7Review: React.FC<Section7Props> = ({
           {expandedSections['pricing'] && (
             <div className="summary-content">
               {formData.leaseStyles.rentalType === 'Monthly' && (
-                <p><strong>Monthly Rate:</strong> ${formData.pricing.monthlyCompensation}</p>
+                <p><strong>Monthly Rate:</strong> ${formatWholeDollar(formData.pricing.monthlyCompensation)}</p>
               )}
               {formData.leaseStyles.rentalType === 'Weekly' && (
-                <p><strong>Weekly Rate:</strong> ${formData.pricing.weeklyCompensation}</p>
+                <p><strong>Weekly Rate:</strong> ${formatWholeDollar(formData.pricing.weeklyCompensation)}</p>
               )}
               {formData.leaseStyles.rentalType === 'Nightly' && formData.pricing.nightlyPricing && (
                 <div>
-                  <p><strong>1-Night Price:</strong> ${formData.pricing.nightlyPricing.oneNightPrice}</p>
-                  <p><strong>5-Night Total:</strong> ${formData.pricing.nightlyPricing.fiveNightTotal}</p>
+                  <p><strong>1-Night Price:</strong> ${formatWholeDollar(formData.pricing.nightlyPricing.oneNightPrice)}</p>
+                  <p><strong>5-Night Total:</strong> ${formatWholeDollar(formData.pricing.nightlyPricing.fiveNightTotal)}</p>
                 </div>
               )}
-              <p><strong>Damage Deposit:</strong> ${formData.pricing.damageDeposit}</p>
-              <p><strong>Monthly Maintenance Fee:</strong> ${formData.pricing.maintenanceFee}/month</p>
+              <p><strong>Damage Deposit:</strong> ${formatWholeDollar(formData.pricing.damageDeposit)}</p>
+              <p><strong>Monthly Maintenance Fee:</strong> ${formatWholeDollar(formData.pricing.maintenanceFee)}/month</p>
               <button type="button" className="btn-link" onClick={() => onNavigateToSection?.(4)}>Edit Section</button>
             </div>
           )}

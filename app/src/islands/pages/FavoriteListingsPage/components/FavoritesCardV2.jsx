@@ -199,6 +199,8 @@ const FavoritesCardV2 = ({
   const hasMultiplePhotos = photos.length > 1;
   const hasProposal = !!proposalForListing;
   const isNewListing = listing.isNew;
+  const rawPrice = listing.price?.starting || listing.lowest_nightly_price_for_map_display || 0;
+  const roundedPrice = Math.round(Number(rawPrice) || 0);
 
   // Responsive design hook
   const { isMobile, isSmallMobile, isTouchDevice } = useDeviceDetection();
@@ -493,7 +495,7 @@ const FavoritesCardV2 = ({
           <div>
             <div style={styles.priceLabel}>Starting at</div>
             <div style={styles.priceValue}>
-              ${listing.price?.starting || listing.lowest_nightly_price_for_map_display || 0} <span style={styles.pricePeriod}>/ night</span>
+              ${roundedPrice} <span style={styles.pricePeriod}>/ night</span>
             </div>
           </div>
           

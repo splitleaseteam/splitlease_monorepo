@@ -50,6 +50,12 @@ function formatCounterDate(value) {
   return '';
 }
 
+function formatAmount(amount) {
+  const numericAmount = Number(amount ?? 0);
+  const safeAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+  return `$${safeAmount.toFixed(2)}`;
+}
+
 export default function DayDetailPanel({
   date,
   status,
@@ -99,7 +105,7 @@ export default function DayDetailPanel({
 
       <div className="day-detail-panel__info">
         <span>{icon} {label}</span>
-        {typeof price === 'number' && <span> • ${price}</span>}
+        {typeof price === 'number' && <span> • {formatAmount(price)}</span>}
       </div>
 
       <div className="day-detail-panel__actions">
@@ -139,7 +145,7 @@ export default function DayDetailPanel({
                     <span className="request-type-toggle__icon">💰</span>
                     <span className="request-type-toggle__label">Buy</span>
                     <span className="request-type-toggle__value">
-                      {typeof price === 'number' ? `$${price}` : '--'}
+                      {typeof price === 'number' ? formatAmount(price) : '--'}
                     </span>
                   </button>
                   <button
@@ -159,7 +165,7 @@ export default function DayDetailPanel({
                     <span className="request-type-toggle__icon">🏠</span>
                     <span className="request-type-toggle__label">Share</span>
                     <span className="request-type-toggle__value">
-                      {typeof price === 'number' ? `$${Math.round(price / 2)}` : '--'}
+                      {typeof price === 'number' ? formatAmount(price / 2) : '--'}
                     </span>
                   </button>
                 </div>

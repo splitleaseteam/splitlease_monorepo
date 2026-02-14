@@ -414,7 +414,7 @@ export default function ProposalDetailsModal({
               </span>
               <span className="detail-value">
                 {counterOfferHappened && (
-                  <span className="original-value">${hostCompensation}</span>
+                  <span className="original-value">${formatCurrency(hostCompensation)}</span>
                 )}
                 ${formatCurrency(compensationPerNight)}/{rentalType === 'monthly' ? 'month' : rentalType === 'weekly' ? 'week' : 'night'}
               </span>

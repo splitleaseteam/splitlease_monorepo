@@ -13,6 +13,8 @@ import { memo } from 'react';
 import FavoriteButton from '../../../shared/FavoriteButton/FavoriteButton';
 // @ts-ignore - JS module without type declarations
 import { formatHostName } from '../../../../logic/processors/display/formatHostName';
+// @ts-ignore - JS module without type declarations
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils';
 import styles from './ListingHeader.module.css';
 
 // ============================================================================
@@ -142,17 +144,12 @@ const ListingHeader = memo(function ListingHeader({
             {/* Host Info */}
             {listing.host && (
                 <div className={styles.hostRow}>
-                    {listing.host.profile_photo_url ? (
-                        <img
-                            src={listing.host.profile_photo_url}
-                            alt={listing.host.first_name || 'Host'}
-                            className={styles.hostAvatar}
-                        />
-                    ) : (
-                        <div className={styles.hostAvatarPlaceholder}>
-                            {(listing.host.first_name || 'H').charAt(0).toUpperCase()}
-                        </div>
-                    )}
+                    <img
+                        src={listing.host.profile_photo_url || getInitialsAvatarUrl(listing.host.first_name || 'Host')}
+                        alt={listing.host.first_name || 'Host'}
+                        className={styles.hostAvatar}
+                        onError={handleAvatarError}
+                    />
                     <span className={styles.hostName}>
                         Hosted by {formatHostName({ fullName: listing.host.first_name && listing.host.last_name ? `${listing.host.first_name} ${listing.host.last_name}` : listing.host.first_name || 'Host' })}
                         {listing.host.is_user_verified && (

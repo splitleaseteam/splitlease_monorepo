@@ -21,6 +21,12 @@ export function PreviewPricing({
   handleScheduleChange,
   handlePriceChange
 }) {
+  const formatWholePrice = (amount) => {
+    const numericAmount = Number(amount ?? 0);
+    if (!Number.isFinite(numericAmount)) return '$0';
+    return formatPrice(Math.round(numericAmount));
+  };
+
   return (
     <div
       className="booking-widget"
@@ -89,7 +95,7 @@ export function PreviewPricing({
               letterSpacing: '-1px',
               display: 'inline-block'
             }}>
-              ${listing.weekly_rate_paid_to_host}
+              {formatWholePrice(listing.weekly_rate_paid_to_host)}
               <span style={{
                 fontSize: '16px',
                 color: '#6B7280',
@@ -114,7 +120,7 @@ export function PreviewPricing({
               letterSpacing: '-1px',
               display: 'inline-block'
             }}>
-              ${listing.monthly_rate_paid_to_host}
+              {formatWholePrice(listing.monthly_rate_paid_to_host)}
               <span style={{
                 fontSize: '16px',
                 color: '#6B7280',
@@ -143,7 +149,7 @@ export function PreviewPricing({
                 // Get the host rate based on nights selected
                 const rateKey = `nightly_rate_for_${nightsSelected}_night_stay`;
                 const rate = listing?.[rateKey] || listing?.nightly_rate_for_4_night_stay;
-                return rate ? `$${rate}` : 'Select Days';
+                return rate ? formatWholePrice(rate) : 'Select Days';
               })()}
               <span style={{
                 fontSize: '16px',
