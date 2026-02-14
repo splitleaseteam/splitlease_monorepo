@@ -8,6 +8,7 @@
  * Public View: Stats, verification badges, member since date
  */
 
+import { useState } from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
@@ -57,6 +58,7 @@ export default function ProfileSidebar({
   memberSince
 }) {
   const fullName = `${firstName} ${lastName}`.trim() || 'Your Name';
+  const [showVerifications, setShowVerifications] = useState(false);
 
   // Format member since date
   const formatMemberSince = (dateStr) => {

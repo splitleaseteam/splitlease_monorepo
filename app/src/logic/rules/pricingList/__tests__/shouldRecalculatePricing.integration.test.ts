@@ -418,7 +418,7 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
   describe('edge cases', () => {
     it('should handle empty listing with no rate fields', () => {
       const listing = {
-        Name: 'Test Listing'
+        listing_title: 'Test Listing'
       };
 
       const pricingList = {

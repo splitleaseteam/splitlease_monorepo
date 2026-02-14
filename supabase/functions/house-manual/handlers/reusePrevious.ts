@@ -113,11 +113,15 @@ export async function handleReusePrevious(
   }
 
   // Fetch existing content from target to set as "Previous Content"
-  const { data: targetContent } = await supabaseClient
+  const { data: targetContent, error: targetContentError } = await supabaseClient
     .from("house_manual")
     .select("*")
     .eq("id", targetHouseManualId)
     .single();
+
+  if (targetContentError) {
+    console.warn(`[reusePrevious] Could not fetch target content:`, targetContentError.message);
+  }
 
   // Create suggestions for fields with content
   const suggestionsToCreate = [];

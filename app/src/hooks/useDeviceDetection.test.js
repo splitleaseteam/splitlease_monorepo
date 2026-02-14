@@ -18,12 +18,43 @@ describe('useDeviceDetection Hooks', () => {
   let originalOntouchstart;
   let originalMaxTouchPoints;
   let resizeListeners;
+  let matchMediaChangeListeners;
+
+  // Helper to evaluate a CSS media query against window.innerWidth
+  const evaluateQuery = (query) => {
+    const maxMatch = query.match(/max-width:\s*(\d+)px/);
+    const minMatch = query.match(/min-width:\s*(\d+)px/);
+    const width = window.innerWidth;
+    let result = true;
+    if (maxMatch) result = result && width <= parseInt(maxMatch[1]);
+    if (minMatch) result = result && width >= parseInt(minMatch[1]);
+    return result;
+  };
 
   beforeEach(() => {
     // Save original values
     originalInnerWidth = window.innerWidth;
     originalOntouchstart = window.ontouchstart;
     originalMaxTouchPoints = navigator.maxTouchPoints;
+
+    // Track matchMedia change listeners
+    matchMediaChangeListeners = [];
+
+    // Mock window.matchMedia for JSDOM
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      get matches() { return evaluateQuery(query); },
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn((event, handler) => {
+        if (event === 'change') matchMediaChangeListeners.push({ query, handler });
+      }),
+      removeEventListener: vi.fn((event, handler) => {
+        matchMediaChangeListeners = matchMediaChangeListeners.filter(l => l.handler !== handler);
+      }),
+      dispatchEvent: vi.fn(),
+    }));
 
     // Track resize listeners
     resizeListeners = [];
@@ -52,10 +83,11 @@ describe('useDeviceDetection Hooks', () => {
       configurable: true,
       value: originalInnerWidth
     });
+    delete window.matchMedia;
     vi.restoreAllMocks();
   });
 
-  // Helper to simulate resize
+  // Helper to simulate resize — updates innerWidth, fires resize & matchMedia change listeners
   const simulateResize = (width) => {
     Object.defineProperty(window, 'innerWidth', {
       writable: true,
@@ -63,6 +95,10 @@ describe('useDeviceDetection Hooks', () => {
       value: width
     });
     resizeListeners.forEach(handler => handler());
+    // Fire matchMedia change listeners so useMediaQuery re-evaluates
+    matchMediaChangeListeners.forEach(({ query, handler }) => {
+      handler({ matches: evaluateQuery(query), media: query });
+    });
   };
 
   // ========================================
@@ -117,14 +153,14 @@ describe('useDeviceDetection Hooks', () => {
       expect(result.current).toBe(true);
     });
 
-    it('cleans up resize listener on unmount', () => {
+    it('cleans up matchMedia listener on unmount', () => {
       Object.defineProperty(window, 'innerWidth', { value: 500 });
       const { unmount } = renderHook(() => useIsMobile());
 
-      const listenerCountBefore = resizeListeners.length;
+      const listenerCountBefore = matchMediaChangeListeners.length;
       unmount();
 
-      expect(resizeListeners.length).toBeLessThan(listenerCountBefore);
+      expect(matchMediaChangeListeners.length).toBeLessThan(listenerCountBefore);
     });
   });
 
@@ -248,7 +284,7 @@ describe('useDeviceDetection Hooks', () => {
   describe('useIsTouchDevice', () => {
     it('returns true when ontouchstart is in window', () => {
       Object.defineProperty(window, 'ontouchstart', {
-        value: () => {},
+        value: () => { },
         configurable: true
       });
       Object.defineProperty(navigator, 'maxTouchPoints', {

@@ -34,15 +34,18 @@ export function isPricingListValid({ pricingList }: PricingValidationCriteria): 
   }
 
   // Validate array fields have correct length
-  const arrayFields: Array<keyof PricingList & string> = [
-    'hostCompensation',
-    'nightlyPrice',
-    'markupAndDiscountMultiplier',
-    'unusedNightsDiscount'
+  // Support both camelCase (frontend) and snake_case (database) field names
+  const arrayFieldMappings: Array<[string, string]> = [
+    ['hostCompensation', 'host_compensation'],
+    ['nightlyPrice', 'nightly_price'],
+    ['markupAndDiscountMultiplier', 'markup_and_discount_multiplier'],
+    ['unusedNightsDiscount', 'unused_nights_discount']
   ];
 
-  for (const field of arrayFields) {
-    const foundArray = (pricingList as Record<string, unknown>)[field];
+  for (const [camelField, snakeField] of arrayFieldMappings) {
+    // Check camelCase first, then snake_case
+    const foundArray = (pricingList as Record<string, unknown>)[camelField] ??
+                       (pricingList as Record<string, unknown>)[snakeField];
 
     // Skip if field is not present (may be optional)
     if (foundArray === null || foundArray === undefined) {
@@ -60,7 +63,9 @@ export function isPricingListValid({ pricingList }: PricingValidationCriteria): 
   }
 
   // Validate at least one price exists
-  const nightlyPrices = (pricingList as Record<string, unknown>).nightlyPrice;
+  // Check both camelCase and snake_case field names
+  const nightlyPrices = (pricingList as Record<string, unknown>).nightlyPrice ??
+                        (pricingList as Record<string, unknown>).nightly_price;
   if (nightlyPrices && Array.isArray(nightlyPrices)) {
     const hasValidPrice = nightlyPrices.some(
       price => price !== null && price !== undefined && typeof price === 'number' && !isNaN(price)
@@ -71,7 +76,9 @@ export function isPricingListValid({ pricingList }: PricingValidationCriteria): 
   }
 
   // Validate scalar markups if present
-  const combinedMarkup = (pricingList as Record<string, unknown>).combinedMarkup;
+  // Check both camelCase and snake_case field names
+  const combinedMarkup = (pricingList as Record<string, unknown>).combinedMarkup ??
+                         (pricingList as Record<string, unknown>).combined_markup;
   if (combinedMarkup !== undefined && combinedMarkup !== null) {
     if (typeof combinedMarkup !== 'number' || isNaN(combinedMarkup as number)) {
       return false;

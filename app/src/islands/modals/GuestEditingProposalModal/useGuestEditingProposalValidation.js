@@ -66,7 +66,6 @@ function parseDayFromProposal(dayValue, fallbackIndex = 1) {
 
 export default function useGuestEditingProposalValidation({
   proposal,
-  _listing,
   user,
   initialView = 'pristine',
   pricePerNight = 0,
@@ -111,9 +110,6 @@ export default function useGuestEditingProposalValidation({
       checkOutDay: parseDayFromProposal(checkOutDayValue, 5)  // Default to Friday (index 5)
     }
   })
-
-  // Price breakdown visibility state
-  const [_isPriceBreakdownVisible, setIsPriceBreakdownVisible] = useState(true)
 
   // House rules visibility
   const [isHouseRulesVisible, setIsHouseRulesVisible] = useState(false)
@@ -238,7 +234,6 @@ export default function useGuestEditingProposalValidation({
 
   // Handle display new terms button - transitions from editing to general (review) state
   const handleDisplayNewTerms = useCallback(() => {
-    setIsPriceBreakdownVisible(true)
     setView('general')
     onAlert?.({
       text: 'New terms calculated',

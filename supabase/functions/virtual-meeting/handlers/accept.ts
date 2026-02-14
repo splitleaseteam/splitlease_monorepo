@@ -159,15 +159,21 @@ export async function handleAccept(
       supabase.from("user").select('id, phone_number, notification_preference_setting').eq("id", existingVM.guest).single(),
     ]);
 
+    if (hostData.error) console.warn(`[virtual-meeting:accept] Failed to fetch host user:`, hostData.error.message);
+    if (guestData.error) console.warn(`[virtual-meeting:accept] Failed to fetch guest user:`, guestData.error.message);
+
     // Fetch notification preferences
     const [hostNotifSettings, guestNotifSettings] = await Promise.all([
       hostData.data?.notification_preference_setting
         ? supabase.from("notificationsettingsos_lists_").select('virtual_meetings').eq("id", hostData.data.notification_preference_setting).single()
-        : { data: null },
+        : { data: null, error: null },
       guestData.data?.notification_preference_setting
         ? supabase.from("notificationsettingsos_lists_").select('virtual_meetings').eq("id", guestData.data.notification_preference_setting).single()
-        : { data: null },
+        : { data: null, error: null },
     ]);
+
+    if (hostNotifSettings.error) console.warn(`[virtual-meeting:accept] Failed to fetch host notif settings:`, hostNotifSettings.error.message);
+    if (guestNotifSettings.error) console.warn(`[virtual-meeting:accept] Failed to fetch guest notif settings:`, guestNotifSettings.error.message);
 
     const hostVmNotifs: string[] = hostNotifSettings.data?.virtual_meetings || [];
     const guestVmNotifs: string[] = guestNotifSettings.data?.virtual_meetings || [];

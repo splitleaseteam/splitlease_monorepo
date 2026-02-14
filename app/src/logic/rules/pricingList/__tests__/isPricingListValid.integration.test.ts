@@ -26,13 +26,13 @@ describe('isPricingListValid - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true for pricing list with Bubble-style field names', () => {
+    it('should return true for pricing list with Database-style field names', () => {
       const pricingList = {
-        'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
-        'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
-        'Markup and Discount Multiplier': [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
-        'Unused Nights Discount': [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0],
-        'Combined Markup': 0.17
+        host_compensation: [null, 100, 95, 90, 85, 80, 75],
+        nightly_price: [null, 117, 111, 105, 99, 94, 76],
+        markup_and_discount_multiplier: [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
+        unused_nights_discount: [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0],
+        combined_markup: 0.17
       };
 
       const result = isPricingListValid({ pricingList });
@@ -350,7 +350,7 @@ describe('isPricingListValid - Integration Tests', () => {
     });
   });
 
-  describe('field name mapping - camelCase vs Bubble-style', () => {
+  describe('field name mapping - camelCase vs snake_case', () => {
     it('should accept camelCase field names', () => {
       const pricingList = {
         hostCompensation: [null, 100, 95, 90, 85, 80, 75],
@@ -364,12 +364,12 @@ describe('isPricingListValid - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('should accept Bubble-style field names', () => {
+    it('should accept snake_case field names', () => {
       const pricingList = {
-        'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
-        'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
-        'Markup and Discount Multiplier': [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
-        'Unused Nights Discount': [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0]
+        host_compensation: [null, 100, 95, 90, 85, 80, 75],
+        nightly_price: [null, 117, 111, 105, 99, 94, 76],
+        markup_and_discount_multiplier: [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
+        unused_nights_discount: [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0]
       };
 
       const result = isPricingListValid({ pricingList });
@@ -377,12 +377,12 @@ describe('isPricingListValid - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('should accept mixed camelCase and Bubble-style field names', () => {
+    it('should accept mixed camelCase and snake_case field names', () => {
       const pricingList = {
         hostCompensation: [null, 100, 95, 90, 85, 80, 75],
-        'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
+        nightly_price: [null, 117, 111, 105, 99, 94, 76],
         markupAndDiscountMultiplier: [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
-        'Unused Nights Discount': [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0]
+        unused_nights_discount: [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0]
       };
 
       const result = isPricingListValid({ pricingList });
@@ -393,7 +393,7 @@ describe('isPricingListValid - Integration Tests', () => {
     it('should prefer camelCase when both styles present', () => {
       const pricingList = {
         hostCompensation: [null, 100, 95, 90, 85, 80, 75],
-        'Host Compensation': [null, 200, 190, 180, 170, 160, 150], // Should be ignored
+        host_compensation: [null, 200, 190, 180, 170, 160, 150], // Should be ignored
         nightlyPrice: [null, 117, 111, 105, 99, 94, 76]
       };
 
@@ -413,10 +413,32 @@ describe('isPricingListValid - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
+    it('should validate snake_case combined_markup', () => {
+      const pricingList = {
+        nightly_price: [null, 117, 111, 105, 99, 94, 76],
+        combined_markup: 0.17
+      };
+
+      const result = isPricingListValid({ pricingList });
+
+      expect(result).toBe(true);
+    });
+
     it('should reject invalid camelCase combinedMarkup', () => {
       const pricingList = {
         nightlyPrice: [null, 117, 111, 105, 99, 94, 76],
         combinedMarkup: 1.5
+      };
+
+      const result = isPricingListValid({ pricingList });
+
+      expect(result).toBe(false);
+    });
+
+    it('should reject invalid snake_case combined_markup', () => {
+      const pricingList = {
+        nightly_price: [null, 117, 111, 105, 99, 94, 76],
+        combined_markup: 1.5
       };
 
       const result = isPricingListValid({ pricingList });
@@ -490,21 +512,21 @@ describe('isPricingListValid - Integration Tests', () => {
       const pricingList = {
         id: 'abc123',
         listing: 'listing456',
-        'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
-        'Nightly Price': [null, 117, 111, 105, 99, 94, 76],
-        'Markup and Discount Multiplier': [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
-        'Unused Nights': [false, false, false, false, false, false, true],
-        'Unused Nights Discount': [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0],
-        'Unit Markup': 0,
-        'Overall Site Markup': 0.17,
-        'Combined Markup': 0.17,
-        'Full Time Discount': 0.13,
-        'Starting Nightly Price': 76,
-        'Slope': -6.83,
-        'Weekly Price Adjust': 0.05,
-        'rental type': 'Nightly',
-        'Number Selected Nights': [true, true, true, true, true, true, true],
-        'Modified Date': '2025-01-15T10:30:00Z'
+        host_compensation: [null, 100, 95, 90, 85, 80, 75],
+        nightly_price: [null, 117, 111, 105, 99, 94, 76],
+        markup_and_discount_multiplier: [null, 1.17, 1.12, 1.08, 1.05, 1.02, 0.99],
+        unused_nights: [false, false, false, false, false, false, true],
+        unused_nights_discount: [null, 0.03, 0.03, 0.03, 0.03, 0.03, 0],
+        unit_markup: 0,
+        overall_site_markup: 0.17,
+        combined_markup: 0.17,
+        full_time_discount: 0.13,
+        starting_nightly_price: 76,
+        slope: -6.83,
+        weekly_price_adjust: 0.05,
+        rental_type: 'Nightly',
+        number_selected_nights: [true, true, true, true, true, true, true],
+        original_updated_at: '2025-01-15T10:30:00Z'
       };
 
       const result = isPricingListValid({ pricingList });

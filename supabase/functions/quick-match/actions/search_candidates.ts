@@ -313,22 +313,24 @@ async function fetchListingInfo(
   // Fetch borough name
   let boroughName: string | null = null;
   if (data.borough) {
-    const { data: boroughData } = await supabase
+    const { data: boroughData, error: boroughError } = await supabase
       .from('zat_geo_borough_toplevel')
       .select('display_borough')
       .eq('id', data.borough)
       .single();
+    if (boroughError) console.warn('[quick-match:search_candidates] Borough lookup failed:', boroughError.message);
     boroughName = boroughData?.display_borough || data.borough;
   }
 
   // Fetch hood name
   let hoodName: string | null = null;
   if (data.primary_neighborhood_reference_id) {
-    const { data: hoodData } = await supabase
+    const { data: hoodData, error: hoodError } = await supabase
       .from('zat_geo_hood_mediumlevel')
       .select('display')
       .eq('id', data.primary_neighborhood_reference_id)
       .single();
+    if (hoodError) console.warn('[quick-match:search_candidates] Hood lookup failed:', hoodError.message);
     hoodName = hoodData?.display || data.primary_neighborhood_reference_id;
   }
 
