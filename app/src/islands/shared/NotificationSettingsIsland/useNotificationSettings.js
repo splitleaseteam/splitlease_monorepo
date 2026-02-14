@@ -1,8 +1,10 @@
 /**
  * useNotificationSettings Hook
  *
- * Manages notification preferences stored in notificationsettingsos_lists_ table.
- * Each category stores an array of enabled channels: ['Email', 'SMS', 'In-App Message']
+ * Manages notification preferences stored in public.notification_preferences table.
+ * Boolean schema adapter: Converts between boolean columns (DB) and arrays (UI).
+ * DB: message_forwarding_email (boolean), message_forwarding_sms (boolean)
+ * UI: message_forwarding: ['Email', 'SMS']
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,11 +12,40 @@ import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
 import { supabase } from '../../../lib/supabase.js';
 import {
   getDefaultPreferences,
-  toggleChannelInArray,
-  NOTIFICATION_CHANNELS
+  NOTIFICATION_CHANNELS,
+  NOTIFICATION_CATEGORIES
 } from './notificationCategories.js';
 
-const TABLE_NAME = 'notificationsettingsos_lists_';
+const TABLE_NAME = 'public.notification_preferences';
+
+/**
+ * Transform database boolean columns to UI array format
+ * @param {Object} dbRow - Raw database row with boolean columns
+ * @returns {Object} UI preferences object with arrays
+ */
+function transformDbToUi(dbRow) {
+  if (!dbRow) return getDefaultPreferences();
+
+  const uiPreferences = {};
+
+  NOTIFICATION_CATEGORIES.forEach(category => {
+    const channels = [];
+
+    // Check if email channel is enabled
+    if (dbRow[`${category.dbColumn}_email`]) {
+      channels.push(NOTIFICATION_CHANNELS.EMAIL);
+    }
+
+    // Check if SMS channel is enabled
+    if (dbRow[`${category.dbColumn}_sms`]) {
+      channels.push(NOTIFICATION_CHANNELS.SMS);
+    }
+
+    uiPreferences[category.dbColumn] = channels;
+  });
+
+  return uiPreferences;
+}
 
 export function useNotificationSettings(userId) {
   const [preferences, setPreferences] = useState(getDefaultPreferences());
@@ -27,11 +58,11 @@ export function useNotificationSettings(userId) {
         return;
       }
 
-      // Query by "Created By" column (reliable user identifier)
+      // Query by user_id column in public.notification_preferences
       const { data, error: queryError } = await supabase
         .from(TABLE_NAME)
         .select('*')
-        .eq('Created By', userId)
+        .eq('user_id', userId)
         .single();
 
       if (queryError && queryError.code !== 'PGRST116') {
@@ -40,12 +71,12 @@ export function useNotificationSettings(userId) {
       }
 
       if (data) {
-        // User has existing preferences
+        // User has existing preferences - transform from boolean schema to UI arrays
         setRecordId(data.id);
-        setPreferences(data);
+        const uiPreferences = transformDbToUi(data);
+        setPreferences(uiPreferences);
       } else {
-        // No preferences found - user will need to have a record created
-        // For now, use defaults (creation should happen elsewhere in user setup)
+        // No preferences found - use defaults
         console.log('[useNotificationSettings] No preferences found for user:', userId);
         setPreferences(getDefaultPreferences());
       }
@@ -62,7 +93,7 @@ export function useNotificationSettings(userId) {
 
   /**
    * Toggle a specific channel for a category
-   * @param {string} dbColumn - The database column name (e.g., 'Message Forwarding')
+   * @param {string} dbColumn - The database column base name (e.g., 'message_forwarding')
    * @param {string} channel - The channel to toggle (e.g., 'Email', 'SMS')
    * @returns {Promise<{success: boolean, error?: string}>}
    */
@@ -78,25 +109,34 @@ export function useNotificationSettings(userId) {
     // Mark this toggle as pending
     setPendingToggles(prev => new Set([...prev, toggleKey]));
 
-    // Get current array and compute new array
+    // Get current UI state (array format)
     const currentArray = preferences[dbColumn] || [];
-    const newArray = toggleChannelInArray(currentArray, channel);
+    const isCurrentlyEnabled = currentArray.includes(channel);
+
+    // Compute new UI state
+    const newArray = isCurrentlyEnabled
+      ? currentArray.filter(c => c !== channel)
+      : [...currentArray, channel];
 
     // Store previous value for rollback
     const previousArray = currentArray;
 
-    // Optimistic update
+    // Optimistic update in UI
     setPreferences(prev => ({
       ...prev,
       [dbColumn]: newArray
     }));
 
     try {
+      // Convert channel name to lowercase for boolean column suffix
+      const channelSuffix = channel.toLowerCase(); // 'Email' -> 'email', 'SMS' -> 'sms'
+      const booleanColumn = `${dbColumn}_${channelSuffix}`;
+
+      // Update the specific boolean column in the database
       const { error: updateError } = await supabase
         .from(TABLE_NAME)
         .update({
-          [dbColumn]: newArray,
-          updated_at: new Date().toISOString()
+          [booleanColumn]: !isCurrentlyEnabled
         })
         .eq('id', recordId);
 
@@ -105,7 +145,7 @@ export function useNotificationSettings(userId) {
       }
 
       // Success
-      const action = newArray.includes(channel) ? 'enabled' : 'disabled';
+      const action = !isCurrentlyEnabled ? 'enabled' : 'disabled';
       console.log(`[useNotificationSettings] ✅ ${channel} ${action} for ${dbColumn}`);
 
       if (window.showToast) {

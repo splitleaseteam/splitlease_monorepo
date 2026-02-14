@@ -16,7 +16,6 @@ import {
   NOTIFICATION_CATEGORIES,
   NOTIFICATION_CHANNELS,
   getDefaultPreferences,
-  toggleChannelInArray,
 } from '../../islands/shared/NotificationSettingsIsland/notificationCategories.js';
 
 // Mock Supabase client
@@ -46,19 +45,29 @@ afterEach(() => {
 // Test Data Factory
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * Create mock user preferences record with boolean schema
+ * DB uses boolean columns: message_forwarding_email, message_forwarding_sms, etc.
+ */
 function createUserPreferencesRecord(userId, overrides = {}) {
-  const defaults = {};
+  const defaults = {
+    id: `pref-${userId}`,
+    user_id: userId,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  // Generate boolean columns for each category
   NOTIFICATION_CATEGORIES.forEach((cat) => {
     // Default: Email enabled for all, SMS enabled for all except Promotional
-    defaults[cat.dbColumn] =
-      cat.id === 'promotional'
-        ? [NOTIFICATION_CHANNELS.EMAIL]
-        : [NOTIFICATION_CHANNELS.EMAIL, NOTIFICATION_CHANNELS.SMS];
+    const emailEnabled = true;
+    const smsEnabled = cat.id !== 'promotional';
+
+    defaults[`${cat.dbColumn}_email`] = emailEnabled;
+    defaults[`${cat.dbColumn}_sms`] = smsEnabled;
   });
 
   return {
-    id: `pref-${userId}`,
-    'Created By': userId,
     ...defaults,
     ...overrides,
   };
@@ -151,13 +160,13 @@ describe('Notification Preferences Integration', () => {
 
       // Verify initial state
       expect(
-        result.current.isChannelEnabled('Message Forwarding', 'Email')
+        result.current.isChannelEnabled('message_forwarding', 'Email')
       ).toBe(true);
 
       // Simulate toggle
       await act(async () => {
         await result.current.toggleChannel(
-          'Message Forwarding',
+          'message_forwarding',
           NOTIFICATION_CHANNELS.SMS
         );
       });
@@ -165,10 +174,10 @@ describe('Notification Preferences Integration', () => {
       // Unmount (end session)
       unmount();
 
-      // Second session - should load updated preferences
+      // Second session - should load updated preferences with SMS disabled
       const updatedPrefs = {
         ...initialPrefs,
-        'Message Forwarding': [NOTIFICATION_CHANNELS.EMAIL], // SMS removed
+        message_forwarding_sms: false, // Boolean column updated
       };
 
       setupMockSupabaseClient({
@@ -185,20 +194,18 @@ describe('Notification Preferences Integration', () => {
 
       // Verify persisted state
       expect(
-        newResult.current.isChannelEnabled('Message Forwarding', 'SMS')
+        newResult.current.isChannelEnabled('message_forwarding', 'SMS')
       ).toBe(false);
       expect(
-        newResult.current.isChannelEnabled('Message Forwarding', 'Email')
+        newResult.current.isChannelEnabled('message_forwarding', 'Email')
       ).toBe(true);
     });
 
     it('should reflect changes in notification delivery decisions', async () => {
       const userId = 'user-with-partial-prefs';
 
-      // User with SMS disabled for Promotional
-      const prefs = createUserPreferencesRecord(userId, {
-        Promotional: [NOTIFICATION_CHANNELS.EMAIL], // SMS not included
-      });
+      // User with SMS disabled for Promotional (default behavior)
+      const prefs = createUserPreferencesRecord(userId);
 
       setupMockSupabaseClient({
         selectResponse: prefs,
@@ -210,19 +217,19 @@ describe('Notification Preferences Integration', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      // Promotional SMS should be disabled
-      expect(result.current.isChannelEnabled('Promotional', 'SMS')).toBe(false);
+      // Promotional SMS should be disabled (default)
+      expect(result.current.isChannelEnabled('promotional', 'SMS')).toBe(false);
       // Promotional Email should be enabled
-      expect(result.current.isChannelEnabled('Promotional', 'Email')).toBe(
+      expect(result.current.isChannelEnabled('promotional', 'Email')).toBe(
         true
       );
 
       // Other categories should have both enabled
       expect(
-        result.current.isChannelEnabled('Message Forwarding', 'SMS')
+        result.current.isChannelEnabled('message_forwarding', 'SMS')
       ).toBe(true);
       expect(
-        result.current.isChannelEnabled('Message Forwarding', 'Email')
+        result.current.isChannelEnabled('message_forwarding', 'Email')
       ).toBe(true);
     });
   });
@@ -235,7 +242,8 @@ describe('Notification Preferences Integration', () => {
     it('should indicate email would be skipped when preference disabled', async () => {
       const userId = 'user-email-disabled';
       const prefs = createUserPreferencesRecord(userId, {
-        'Proposal Updates': [NOTIFICATION_CHANNELS.SMS], // Email not included
+        proposal_updates_email: false, // Email disabled for Proposal Updates
+        proposal_updates_sms: true,
       });
 
       setupMockSupabaseClient({
@@ -250,10 +258,10 @@ describe('Notification Preferences Integration', () => {
 
       // Email disabled for Proposal Updates
       expect(
-        result.current.isChannelEnabled('Proposal Updates', 'Email')
+        result.current.isChannelEnabled('proposal_updates', 'Email')
       ).toBe(false);
       // SMS still enabled
-      expect(result.current.isChannelEnabled('Proposal Updates', 'SMS')).toBe(
+      expect(result.current.isChannelEnabled('proposal_updates', 'SMS')).toBe(
         true
       );
     });
@@ -261,7 +269,8 @@ describe('Notification Preferences Integration', () => {
     it('should indicate SMS would be skipped when preference disabled', async () => {
       const userId = 'user-sms-disabled';
       const prefs = createUserPreferencesRecord(userId, {
-        'Payment Reminders': [NOTIFICATION_CHANNELS.EMAIL], // SMS not included
+        payment_reminders_email: true,
+        payment_reminders_sms: false, // SMS disabled for Payment Reminders
       });
 
       setupMockSupabaseClient({
@@ -276,11 +285,11 @@ describe('Notification Preferences Integration', () => {
 
       // SMS disabled for Payment Reminders
       expect(
-        result.current.isChannelEnabled('Payment Reminders', 'SMS')
+        result.current.isChannelEnabled('payment_reminders', 'SMS')
       ).toBe(false);
       // Email still enabled
       expect(
-        result.current.isChannelEnabled('Payment Reminders', 'Email')
+        result.current.isChannelEnabled('payment_reminders', 'Email')
       ).toBe(true);
     });
 
@@ -300,10 +309,10 @@ describe('Notification Preferences Integration', () => {
 
       // Both channels enabled for most categories
       expect(
-        result.current.isChannelEnabled('Reservation Updates', 'SMS')
+        result.current.isChannelEnabled('reservation_updates', 'SMS')
       ).toBe(true);
       expect(
-        result.current.isChannelEnabled('Reservation Updates', 'Email')
+        result.current.isChannelEnabled('reservation_updates', 'Email')
       ).toBe(true);
     });
   });
@@ -329,7 +338,7 @@ describe('Notification Preferences Integration', () => {
 
       // Should have loaded preferences, not defaults
       expect(result.current.preferences).not.toEqual(getDefaultPreferences());
-      expect(result.current.preferences['Message Forwarding']).toBeDefined();
+      expect(result.current.preferences['message_forwarding']).toBeDefined();
     });
 
     it('should have correct default values', async () => {
@@ -394,7 +403,7 @@ describe('Notification Preferences Integration', () => {
       // Toggle a preference
       await act(async () => {
         await result.current.toggleChannel(
-          'Message Forwarding',
+          'message_forwarding',
           NOTIFICATION_CHANNELS.SMS
         );
       });
@@ -421,14 +430,14 @@ describe('Notification Preferences Integration', () => {
 
       // Initial state
       const initialSmsState = result.current.isChannelEnabled(
-        'Message Forwarding',
+        'message_forwarding',
         'SMS'
       );
 
       // Toggle (should fail)
       await act(async () => {
         await result.current.toggleChannel(
-          'Message Forwarding',
+          'message_forwarding',
           NOTIFICATION_CHANNELS.SMS
         );
       });
@@ -436,7 +445,7 @@ describe('Notification Preferences Integration', () => {
       // Should rollback to initial state
       await waitFor(() => {
         expect(
-          result.current.isChannelEnabled('Message Forwarding', 'SMS')
+          result.current.isChannelEnabled('message_forwarding', 'SMS')
         ).toBe(initialSmsState);
       });
     });
@@ -458,7 +467,7 @@ describe('Notification Preferences Integration', () => {
       // Toggle successfully
       await act(async () => {
         await result.current.toggleChannel(
-          'Message Forwarding',
+          'message_forwarding',
           NOTIFICATION_CHANNELS.SMS
         );
       });
@@ -487,7 +496,7 @@ describe('Notification Preferences Integration', () => {
       // Toggle (will fail)
       await act(async () => {
         await result.current.toggleChannel(
-          'Message Forwarding',
+          'message_forwarding',
           NOTIFICATION_CHANNELS.SMS
         );
       });
@@ -507,15 +516,16 @@ describe('Notification Preferences Integration', () => {
     it('should handle all categories independently', async () => {
       const userId = 'category-test-user';
 
-      // Create preferences with mixed states
+      // Create preferences with mixed boolean states
       const prefs = createUserPreferencesRecord(userId, {
-        'Message Forwarding': [NOTIFICATION_CHANNELS.EMAIL],
-        'Payment Reminders': [NOTIFICATION_CHANNELS.SMS],
-        Promotional: [],
-        'Reservation Updates': [
-          NOTIFICATION_CHANNELS.EMAIL,
-          NOTIFICATION_CHANNELS.SMS,
-        ],
+        message_forwarding_email: true,
+        message_forwarding_sms: false,
+        payment_reminders_email: false,
+        payment_reminders_sms: true,
+        promotional_email: false,
+        promotional_sms: false,
+        reservation_updates_email: true,
+        reservation_updates_sms: true,
       });
 
       setupMockSupabaseClient({
@@ -530,38 +540,38 @@ describe('Notification Preferences Integration', () => {
 
       // Verify independent states
       expect(
-        result.current.isChannelEnabled('Message Forwarding', 'Email')
+        result.current.isChannelEnabled('message_forwarding', 'Email')
       ).toBe(true);
       expect(
-        result.current.isChannelEnabled('Message Forwarding', 'SMS')
+        result.current.isChannelEnabled('message_forwarding', 'SMS')
       ).toBe(false);
 
       expect(
-        result.current.isChannelEnabled('Payment Reminders', 'Email')
+        result.current.isChannelEnabled('payment_reminders', 'Email')
       ).toBe(false);
       expect(
-        result.current.isChannelEnabled('Payment Reminders', 'SMS')
+        result.current.isChannelEnabled('payment_reminders', 'SMS')
       ).toBe(true);
 
-      expect(result.current.isChannelEnabled('Promotional', 'Email')).toBe(
+      expect(result.current.isChannelEnabled('promotional', 'Email')).toBe(
         false
       );
-      expect(result.current.isChannelEnabled('Promotional', 'SMS')).toBe(
+      expect(result.current.isChannelEnabled('promotional', 'SMS')).toBe(
         false
       );
 
       expect(
-        result.current.isChannelEnabled('Reservation Updates', 'Email')
+        result.current.isChannelEnabled('reservation_updates', 'Email')
       ).toBe(true);
       expect(
-        result.current.isChannelEnabled('Reservation Updates', 'SMS')
+        result.current.isChannelEnabled('reservation_updates', 'SMS')
       ).toBe(true);
     });
 
     it('should handle promotional category special default', () => {
       // Promotional defaults to Email only (SMS opt-in)
       const defaults = getDefaultPreferences();
-      expect(defaults.Promotional).toEqual(['Email']);
+      expect(defaults.promotional).toEqual(['Email']);
     });
   });
 
@@ -588,14 +598,14 @@ describe('Notification Preferences Integration', () => {
       await act(async () => {
         const promises = [
           result.current.toggleChannel(
-            'Message Forwarding',
+            'message_forwarding',
             NOTIFICATION_CHANNELS.SMS
           ),
           result.current.toggleChannel(
-            'Payment Reminders',
+            'payment_reminders',
             NOTIFICATION_CHANNELS.EMAIL
           ),
-          result.current.toggleChannel('Promotional', NOTIFICATION_CHANNELS.SMS),
+          result.current.toggleChannel('promotional', NOTIFICATION_CHANNELS.SMS),
         ];
 
         await Promise.all(promises);
@@ -636,25 +646,25 @@ describe('Notification Preferences Integration', () => {
       // Start toggle
       act(() => {
         result.current.toggleChannel(
-          'Message Forwarding',
+          'message_forwarding',
           NOTIFICATION_CHANNELS.SMS
         );
       });
 
       // Should be pending
       expect(
-        result.current.isTogglePending('Message Forwarding', 'SMS')
+        result.current.isTogglePending('message_forwarding', 'SMS')
       ).toBe(true);
 
       // Other toggles should not be pending
       expect(
-        result.current.isTogglePending('Payment Reminders', 'SMS')
+        result.current.isTogglePending('payment_reminders', 'SMS')
       ).toBe(false);
 
       // Wait for completion
       await waitFor(() => {
         expect(
-          result.current.isTogglePending('Message Forwarding', 'SMS')
+          result.current.isTogglePending('message_forwarding', 'SMS')
         ).toBe(false);
       });
     });
