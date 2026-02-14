@@ -71,22 +71,22 @@
   top: calc(100% + 8px);
   right: 0;
   width: 220px;
-  min-width: 220px !important;
+  min-width: 220px;
   max-height: 600px;
   background-color: #FFFFFF;
   border: 1px solid #E5E5E5;
   border-radius: var(--rounded-xl);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: visible;
-  z-index: 10000 !important;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  transform: none !important;
-  left: auto !important;
+  z-index: 10000;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  left: auto;
   padding: 8px 0;
-  /* CRITICAL: Override mobile.css pointer-events: none which blocks clicks on mobile */
-  pointer-events: auto !important;
+  /* Override header.css .dropdown-menu defaults (higher specificity wins) */
+  pointer-events: auto;
 }
 
 @keyframes dropdownFadeIn {
@@ -201,23 +201,23 @@
 }
 
 /* Responsive adjustments - Scoped to LoggedInAvatar only */
-/* IMPORTANT: Must use !important to override global mobile.css rules */
+/* Override header.css mobile .dropdown-menu rules (higher specificity wins) */
 @media (max-width: 768px) {
   .logged-in-avatar .dropdown-menu {
-    position: fixed !important;
-    top: 60px !important;
-    right: 10px !important;
-    left: auto !important;
-    width: calc(100vw - 20px) !important;
-    min-width: unset !important;
-    max-width: 300px !important;
-    padding: 8px 0 !important;
-    background-color: #FFFFFF !important;
-    border: 1px solid #E5E5E5 !important;
-    border-radius: var(--rounded-xl) !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-    /* CRITICAL: Override mobile.css pointer-events: none */
-    pointer-events: auto !important;
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    left: auto;
+    width: calc(100vw - 20px);
+    min-width: unset;
+    max-width: 300px;
+    padding: 8px 0;
+    background-color: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: var(--rounded-xl);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    /* Override header.css .dropdown-menu defaults */
+    pointer-events: auto;
   }
 
   @keyframes dropdownFadeIn {
