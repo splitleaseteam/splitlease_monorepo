@@ -14,7 +14,7 @@ export async function getCommonHouseRules() {
     console.log('[houseRulesService] Fetching common house rules...');
 
     const { data, error } = await supabase
-      .from('zat_features_houserule')
+      .schema('reference_table').from('zat_features_houserule')
       .select('name, is_preset')
       .eq('is_preset', true)
       .order('name', { ascending: true });
@@ -49,7 +49,7 @@ export async function getAllHouseRules() {
     console.log('[houseRulesService] Fetching all house rules...');
 
     const { data, error } = await supabase
-      .from('zat_features_houserule')
+      .schema('reference_table').from('zat_features_houserule')
       .select('id, name, icon, is_preset')
       .order('name', { ascending: true });
 

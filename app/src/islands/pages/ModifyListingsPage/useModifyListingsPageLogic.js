@@ -208,7 +208,7 @@ export default function useModifyListingsPageLogic() {
   async function loadHouseRules() {
     try {
       const { data } = await supabase
-        .from('zat_features_houserule')
+        .schema('reference_table').from('zat_features_houserule')
         .select('id, name, icon');
 
       setHouseRules(data || []);
@@ -220,7 +220,7 @@ export default function useModifyListingsPageLogic() {
   async function loadSafetyFeatures() {
     try {
       const { data } = await supabase
-        .from('zat_features_safetyfeature')
+        .schema('reference_table').from('zat_features_safetyfeature')
         .select('id, name, icon');
 
       setSafetyFeatures(data || []);

@@ -74,7 +74,7 @@ export function useZSearchUnitTestPageLogic() {
     const loadBoroughs = async () => {
       try {
         const { data, error: fetchError } = await supabase
-          .from('zat_geo_borough_toplevel')
+          .schema('reference_table').from('zat_geo_borough_toplevel')
           .select('id, display_borough')
           .order('display_borough', { ascending: true });
 
@@ -116,7 +116,7 @@ export function useZSearchUnitTestPageLogic() {
 
       try {
         const { data, error: fetchError } = await supabase
-          .from('zat_geo_hood_mediumlevel')
+          .schema('reference_table').from('zat_geo_hood_mediumlevel')
           .select('id, display, geo_borough')
           .eq('geo_borough', borough.id)
           .order('display', { ascending: true });

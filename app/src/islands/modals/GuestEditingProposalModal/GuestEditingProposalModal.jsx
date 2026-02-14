@@ -138,7 +138,7 @@ export default function GuestEditingProposalModal({
             {proposal?.guestCommentToEditSuggestedProposal && (
               <div className="gep-guest-comment">
                 <p className="gep-guest-comment-text">
-                  Guest's comment to update suggested proposal: {proposal.guestCommentToEditSuggestedProposal}
+                  Guest&apos;s comment to update suggested proposal: {proposal.guestCommentToEditSuggestedProposal}
                 </p>
               </div>
             )}

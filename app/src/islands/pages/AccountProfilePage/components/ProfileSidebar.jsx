@@ -8,32 +8,13 @@
  * Public View: Stats, verification badges, member since date
  */
 
-import { useState } from 'react';
 import CoverPhotoEditor from './shared/CoverPhotoEditor.jsx';
 import AvatarWithBadge from './shared/AvatarWithBadge.jsx';
 import ProfileStrengthMeter from './shared/ProfileStrengthMeter.jsx';
 import SearchScheduleSelector from '../../../shared/SearchScheduleSelector.jsx';
 import TrustVerificationCard from './cards/TrustVerificationCard.jsx';
 import AccountSettingsCard from './cards/AccountSettingsCard.jsx';
-import { Check, Calendar, Mail, Phone, ShieldCheck, Linkedin, Pencil } from 'lucide-react';
-
-// ============================================================================
-// VERIFICATION ICONS MAP
-// ============================================================================
-
-const VERIFICATION_ICONS = {
-  email: Mail,
-  phone: Phone,
-  govId: ShieldCheck,
-  linkedin: Linkedin
-};
-
-const VERIFICATION_LABELS = {
-  email: 'Email verified',
-  phone: 'Phone verified',
-  govId: 'Identity verified',
-  linkedin: 'LinkedIn connected'
-};
+import { Calendar, Pencil } from 'lucide-react';
 
 // ============================================================================
 // PROFILE SIDEBAR
@@ -76,7 +57,6 @@ export default function ProfileSidebar({
   memberSince
 }) {
   const fullName = `${firstName} ${lastName}`.trim() || 'Your Name';
-  const [showVerifications, setShowVerifications] = useState(false);
 
   // Format member since date
   const formatMemberSince = (dateStr) => {
@@ -90,13 +70,6 @@ export default function ProfileSidebar({
   };
 
   const memberSinceFormatted = formatMemberSince(memberSince);
-  const verificationOrder = ['email', 'phone', 'govId', 'linkedin'];
-  const verificationHandlers = {
-    email: onVerifyEmail,
-    phone: onVerifyPhone,
-    govId: onVerifyGovId,
-    linkedin: onConnectLinkedIn
-  };
 
   return (
     <aside className="profile-sidebar">

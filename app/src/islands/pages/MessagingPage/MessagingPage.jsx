@@ -162,7 +162,7 @@ function WelcomeState({ userType }) {
         <div className="welcome-tips-title">Getting Started</div>
         <div className="welcome-tip-cards">
           {welcomeContent.tips.map((tip, index) => (
-            <a key={index} href={tip.href} className="welcome-tip-card">
+            <a key={tip.text} href={tip.href} className="welcome-tip-card">
               <div className="welcome-tip-icon">{icons[tip.icon]}</div>
               <span className="welcome-tip-text">{tip.text}</span>
             </a>

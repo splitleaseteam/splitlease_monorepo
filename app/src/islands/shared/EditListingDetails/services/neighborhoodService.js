@@ -68,7 +68,7 @@ export async function getNeighborhoodByName(neighborhoodName) {
 
     // Use ilike for case-insensitive matching
     const { data, error } = await supabase
-      .from('zat_geo_hood_mediumlevel')
+      .schema('reference_table').from('zat_geo_hood_mediumlevel')
       .select('display, neighborhood_description')
       .ilike('display', neighborhoodName.trim())
       .limit(1)

@@ -9,7 +9,7 @@ import { X, ChevronLeft, FileText } from 'lucide-react'
 export default function ModalHeader({
   view,
   listing,
-  proposal,
+  _proposal,
   onBack,
   onClose
 }) {

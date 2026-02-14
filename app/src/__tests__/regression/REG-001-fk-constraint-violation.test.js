@@ -48,10 +48,10 @@ describe('REG-001: FK Constraint Violation on Listing Update', () => {
   describe('extractChangedFields - the core pattern', () => {
     it('should return empty object when no fields have changed', () => {
       const originalData = {
-        Name: 'Test Listing',
-        Description: 'A test listing',
-        'Location - Borough': 'Manhattan',
-        'Features - Type of Space': '1569530159044x216130979074711000',
+        listing_title: 'Test Listing',
+        listing_description: 'A test listing',
+        borough: 'Manhattan',
+        listing_type_reference_id: '1569530159044x216130979074711000',
       };
 
       const formData = { ...originalData };
@@ -63,92 +63,92 @@ describe('REG-001: FK Constraint Violation on Listing Update', () => {
 
     it('should only return fields that have actually changed', () => {
       const originalData = {
-        Name: 'Original Name',
-        Description: 'Original Description',
-        'Location - Borough': null, // FK field with null value
-        'Features - Type of Space': '1569530159044x216130979074711000',
+        listing_title: 'Original Name',
+        listing_description: 'Original Description',
+        borough: null, // FK field with null value
+        listing_type_reference_id: '1569530159044x216130979074711000',
       };
 
       const formData = {
-        Name: 'Updated Name', // Changed
-        Description: 'Original Description', // Unchanged
-        'Location - Borough': null, // Unchanged null FK - MUST NOT be sent
-        'Features - Type of Space': '1569530159044x216130979074711000', // Unchanged
+        listing_title: 'Updated Name', // Changed
+        listing_description: 'Original Description', // Unchanged
+        borough: null, // Unchanged null FK - MUST NOT be sent
+        listing_type_reference_id: '1569530159044x216130979074711000', // Unchanged
       };
 
       const result = extractChangedFields(formData, originalData);
 
       // Should only contain the changed field
-      expect(result).toEqual({ Name: 'Updated Name' });
+      expect(result).toEqual({ listing_title: 'Updated Name' });
 
       // Critical: Should NOT contain the unchanged null FK field
-      expect(result).not.toHaveProperty('Location - Borough');
+      expect(result).not.toHaveProperty('borough');
     });
 
     it('should NOT include unchanged FK fields even when they are null', () => {
       // This is the specific case that caused the 409 error
       const originalData = {
-        'Location - Borough': null,
-        'Location - City': null,
-        'Features - Type of Space': null,
-        'Cancellation Policy': null,
-        Name: 'Test',
+        borough: null,
+        city_reference_id: null,
+        listing_type_reference_id: null,
+        cancellation_policy_reference_id: null,
+        listing_title: 'Test',
       };
 
       const formData = {
-        'Location - Borough': null, // Unchanged null
-        'Location - City': null, // Unchanged null
-        'Features - Type of Space': null, // Unchanged null
-        'Cancellation Policy': null, // Unchanged null
-        Name: 'Updated Test', // Only this changed
+        borough: null, // Unchanged null
+        city_reference_id: null, // Unchanged null
+        listing_type_reference_id: null, // Unchanged null
+        cancellation_policy_reference_id: null, // Unchanged null
+        listing_title: 'Updated Test', // Only this changed
       };
 
       const result = extractChangedFields(formData, originalData);
 
       // Only the changed field should be present
-      expect(Object.keys(result)).toEqual(['Name']);
-      expect(result.Name).toBe('Updated Test');
+      expect(Object.keys(result)).toEqual(['listing_title']);
+      expect(result.listing_title).toBe('Updated Test');
 
       // All FK fields with null should NOT be in the result
-      expect(result).not.toHaveProperty('Location - Borough');
-      expect(result).not.toHaveProperty('Location - City');
-      expect(result).not.toHaveProperty('Features - Type of Space');
-      expect(result).not.toHaveProperty('Cancellation Policy');
+      expect(result).not.toHaveProperty('borough');
+      expect(result).not.toHaveProperty('city_reference_id');
+      expect(result).not.toHaveProperty('listing_type_reference_id');
+      expect(result).not.toHaveProperty('cancellation_policy_reference_id');
     });
 
     it('should correctly handle array field comparisons', () => {
       const originalData = {
-        'Features - Amenities In-Unit': ['WiFi', 'AC'],
-        'Features - House Rules': ['No smoking'],
+        amenities: ['WiFi', 'AC'],
+        house_rules: ['No smoking'],
       };
 
       const formData = {
-        'Features - Amenities In-Unit': ['WiFi', 'AC'], // Same content, same order
-        'Features - House Rules': ['No smoking', 'No pets'], // Added item
+        amenities: ['WiFi', 'AC'], // Same content, same order
+        house_rules: ['No smoking', 'No pets'], // Added item
       };
 
       const result = extractChangedFields(formData, originalData);
 
       // Only the changed array should be included
       expect(result).toEqual({
-        'Features - House Rules': ['No smoking', 'No pets'],
+        house_rules: ['No smoking', 'No pets'],
       });
-      expect(result).not.toHaveProperty('Features - Amenities In-Unit');
+      expect(result).not.toHaveProperty('amenities');
     });
 
     it('should detect array changes even with same length but different content', () => {
       const originalData = {
-        'Features - Photos': [{ id: '1', url: 'a.jpg' }, { id: '2', url: 'b.jpg' }],
+        listing_photos_json: [{ id: '1', url: 'a.jpg' }, { id: '2', url: 'b.jpg' }],
       };
 
       const formData = {
-        'Features - Photos': [{ id: '2', url: 'b.jpg' }, { id: '1', url: 'a.jpg' }], // Reordered
+        listing_photos_json: [{ id: '2', url: 'b.jpg' }, { id: '1', url: 'a.jpg' }], // Reordered
       };
 
       const result = extractChangedFields(formData, originalData);
 
       // Reordering should be detected as a change
-      expect(result).toHaveProperty('Features - Photos');
+      expect(result).toHaveProperty('listing_photos_json');
     });
   });
 
@@ -157,22 +157,22 @@ describe('REG-001: FK Constraint Violation on Listing Update', () => {
       // Mock listing data (as would come from database)
       const originalListing = {
         id: '1234567890123456x',
-        Name: 'Original Listing',
-        Description: 'Original description',
-        'Location - Borough': null, // FK that would cause 409 if sent
-        'Location - City': null,
-        'Features - Type of Space': '1569530159044x216130979074711000',
-        'Features - Amenities In-Unit': ['WiFi'],
+        listing_title: 'Original Listing',
+        listing_description: 'Original description',
+        borough: null, // FK that would cause 409 if sent
+        city_reference_id: null,
+        listing_type_reference_id: '1569530159044x216130979074711000',
+        amenities: ['WiFi'],
       };
 
       // Form data after user edits (only description changed)
       const formData = {
-        Name: 'Original Listing',
-        Description: 'Updated description',
-        'Location - Borough': null,
-        'Location - City': null,
-        'Features - Type of Space': '1569530159044x216130979074711000',
-        'Features - Amenities In-Unit': ['WiFi'],
+        listing_title: 'Original Listing',
+        listing_description: 'Updated description',
+        borough: null,
+        city_reference_id: null,
+        listing_type_reference_id: '1569530159044x216130979074711000',
+        amenities: ['WiFi'],
       };
 
       // The correct pattern: extract only changed fields
@@ -180,8 +180,9 @@ describe('REG-001: FK Constraint Violation on Listing Update', () => {
 
       // Assertion: Only the changed field should be in the update payload
       expect(changedFields).toEqual({
-        Description: 'Updated description',
+        listing_description: 'Updated description',
       });
+
 
       // This payload can now be safely sent to updateListing()
       // without triggering FK validation on unchanged null fields

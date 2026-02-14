@@ -167,7 +167,7 @@ export async function loadProposalDetails(proposal) {
     const houseRulesIds = proposal.house_rules_reference_ids_json;
     if (houseRulesIds && Array.isArray(houseRulesIds) && houseRulesIds.length > 0) {
       const { data: rulesData, error: rulesError } = await supabase
-        .from('zat_features_houserule')
+        .schema('reference_table').from('zat_features_houserule')
         .select('id, name, icon')
         .in('id', houseRulesIds);
 

@@ -66,7 +66,7 @@ function parseDayFromProposal(dayValue, fallbackIndex = 1) {
 
 export default function useGuestEditingProposalValidation({
   proposal,
-  listing,
+  _listing,
   user,
   initialView = 'pristine',
   pricePerNight = 0,
@@ -113,7 +113,7 @@ export default function useGuestEditingProposalValidation({
   })
 
   // Price breakdown visibility state
-  const [isPriceBreakdownVisible, setIsPriceBreakdownVisible] = useState(true)
+  const [_isPriceBreakdownVisible, setIsPriceBreakdownVisible] = useState(true)
 
   // House rules visibility
   const [isHouseRulesVisible, setIsHouseRulesVisible] = useState(false)

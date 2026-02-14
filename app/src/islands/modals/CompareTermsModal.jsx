@@ -189,7 +189,6 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
   // Use the logic hook (Hollow Component pattern)
   const {
     isAccepting,
-    isCancelling,
     isLoading,
     error,
     acceptanceSuccess,
@@ -197,7 +196,6 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
     counterofferTerms,
     negotiationSummaries,
     houseRules,
-    listingInfo,
     showCancelModal,
     isExpanded,
     handleAcceptCounteroffer,

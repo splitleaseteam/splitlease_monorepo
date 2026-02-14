@@ -17,23 +17,13 @@ import RentalApplicationCard from './RentalApplicationCard.jsx';
 export default function EditorView({
   formData,
   formErrors,
-  profileData,
-  verifications,
   goodGuestReasonsList,
   storageItemsList,
   transportationOptions,
   showDateOfBirthField = false,
   onFieldChange,
-  onDayToggle,
   onChipToggle,
   onTransportToggle,
-  onVerifyEmail,
-  onVerifyPhone,
-  onVerifyGovId,
-  onConnectLinkedIn,
-  onEditPhone,
-  onOpenNotificationSettings,
-  onChangePassword,
   // Host-specific props
   isHostUser = false,
   hostListings = [],
@@ -44,8 +34,6 @@ export default function EditorView({
   rentalApplicationStatus = 'not_started',
   rentalApplicationProgress = 0,
   onOpenRentalWizard,
-  // Email verification state
-  isVerifyingEmail = false,
   // Force show override
   forceShowBasicInfo = false
 }) {

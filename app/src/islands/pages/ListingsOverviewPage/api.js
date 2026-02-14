@@ -343,7 +343,7 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
     // Fetch current prices (note: column names have emoji prefixes from Bubble)
     const { data: listing, error: fetchError } = await supabase
       .from('listing')
-      .select('nightly_rate_for_1_night_stay, nightly_rate_for_3_night_stay')
+      .select('nightly_rate_for_3_night_stay')
       .eq('id', id)
       .maybeSingle();
 
@@ -352,7 +352,7 @@ export async function bulkIncrementPrices(listingIds, multiplier) {
       continue;
     }
 
-    const currentNightly = listing.nightly_rate_for_1_night_stay || 0;
+    const currentNightly = null;
     const current3Night = listing.nightly_rate_for_3_night_stay || 0;
 
     // Calculate new prices

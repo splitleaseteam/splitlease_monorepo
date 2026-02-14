@@ -209,7 +209,7 @@ export async function fetchCTAConfig() {
 
   try {
     const { data, error } = await supabase
-      .from('os_messaging_cta')
+      .schema('reference_table').from('os_messaging_cta')
       .select('*');
 
     if (error) {

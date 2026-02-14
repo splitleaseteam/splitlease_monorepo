@@ -23,23 +23,9 @@ export default function DayNightSelector({
     onNightToggle(dayIndex)
   }, [disabled, onDayToggle, onNightToggle])
 
-  const dayToDayOption = useCallback((day) => ({
-    display: day.name,
-    dayIndex: day.dayIndex,
-    first3Letters: day.shortName
-  }), [])
-
   const isDaySelected = useCallback((dayIndex) => {
     return selectedDays.includes(dayIndex)
   }, [selectedDays])
-
-  const isCheckInDay = useCallback((day) => {
-    return checkInDay?.dayIndex === day.dayIndex
-  }, [checkInDay])
-
-  const isCheckOutDay = useCallback((day) => {
-    return checkOutDay?.dayIndex === day.dayIndex
-  }, [checkOutDay])
 
   const selectedDaysCount = selectedDays.length
   const selectedNightsCount = selectedNights.length

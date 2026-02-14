@@ -438,7 +438,7 @@ export function useFavoriteListingsPageLogic() {
           }
         });
 
-        let pricingMap = {};
+        const pricingMap = {};
         if (pricingConfigIds.size > 0) {
           const { data: pricingData } = await supabase
             .from('pricing_list')
