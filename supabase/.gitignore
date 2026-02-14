@@ -2,6 +2,9 @@
 .branches
 .temp
 
+# Migrations - not source of truth (managed via Supabase MCP)
+migrations/
+
 # dotenvx
 .env.keys
 .env.local
