@@ -40,12 +40,13 @@ app/.vite/
 *.sqlite
 *.sqlite3
 
-# SQL files (scratch/temp) — migrations are tracked separately
+# SQL files (scratch/temp)
 /*.sql
 /scripts/*.sql
 /test-session/*.sql
 !app/server/db/backup.db
 supabase-migrations/
+supabase/migrations/
 
 # IDE
 .vscode/
