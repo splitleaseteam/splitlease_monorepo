@@ -102,11 +102,11 @@
 
 /* Header icon - Feather style per protocol (24px) */
 .vm-icon {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  min-height: 24px !important;
-  flex-shrink: 0 !important;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -139,11 +139,11 @@
 }
 
 .vm-close-btn svg {
-  width: 32px !important;
-  height: 32px !important;
-  min-width: 32px !important;
-  min-height: 32px !important;
-  flex-shrink: 0 !important;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  flex-shrink: 0;
 }
 
 .vm-close-btn:hover {
@@ -165,11 +165,11 @@
 }
 
 .vm-back-btn svg {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  min-height: 24px !important;
-  flex-shrink: 0 !important;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  flex-shrink: 0;
 }
 
 .vm-back-btn:hover {
@@ -460,11 +460,11 @@
 
 /* Meeting info card icon - Feather style (24px) */
 .vm-meeting-info-icon {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-  min-height: 24px !important;
-  flex-shrink: 0 !important;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  flex-shrink: 0;
   color: var(--protocol-secondary, #6D31C2);
 }
 
@@ -662,10 +662,10 @@
   }
 
   .vm-close-btn svg {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
   }
 
   .vm-button-group {

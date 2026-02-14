@@ -5,7 +5,7 @@
 
 /* Reset any existing padding from search-page */
 .search-page {
-  padding-top: 0 !important;
+  padding-top: 0;
   margin: 0;
   height: 100vh;
   width: 100%;

@@ -233,7 +233,7 @@
 .input-with-prefix input[type="text"],
 .input-with-prefix input[type="number"] {
   width: 100%;
-  padding-left: 40px !important;
+  padding-left: 40px;
   box-sizing: border-box;
 }
 
@@ -1661,31 +1661,31 @@
   border: 2px solid #c7d2fe;
   border-radius: var(--rounded-xl);
   padding: 16px 10px; /* Reduced horizontal padding */
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   display: block;
   overflow: visible;
 }
 
 .host-schedule-selector-wrapper .hss-nights-grid {
-  display: flex !important;
-  justify-content: space-between !important;
-  gap: 6px !important; /* Reduced gap for more button space */
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  flex-wrap: nowrap !important;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px; /* Reduced gap for more button space */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
 }
 
 .host-schedule-selector-wrapper .hss-night-cell {
-  flex: 1 1 0 !important;
-  min-width: 0 !important;
-  width: auto !important;
-  max-width: none !important;
-  aspect-ratio: 1 / 1 !important;
-  height: auto !important;
-  border-radius: var(--rounded-full) !important;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: var(--rounded-full);
   border: 2px solid var(--border-color);
   background: var(--bg-light-gray);
   cursor: pointer;
@@ -1697,8 +1697,8 @@
 }
 
 .host-schedule-selector-wrapper .hss-night-letter {
-  font-size: 16px !important;
-  font-weight: 700 !important;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 /* Unselected state - ensure letter is readable */
@@ -2151,39 +2151,39 @@
 
   /* Host Schedule Selector - mobile optimizations - MAXIMIZE TAP TARGET */
   #nightSelector.conditional-section {
-    padding: 8px 0 !important; /* No horizontal padding - let purple container fill width */
-    background: transparent !important;
-    border: none !important;
+    padding: 8px 0; /* No horizontal padding - let purple container fill width */
+    background: transparent;
+    border: none;
   }
 
   .host-schedule-selector-wrapper {
-    margin: 8px 0 !important; /* No negative margins needed now */
-    width: 100% !important;
+    margin: 8px 0; /* No negative margins needed now */
+    width: 100%;
   }
 
   .host-schedule-selector-wrapper .hss-host-schedule-selector {
-    padding: 12px 8px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    padding: 12px 8px;
+    width: 100%;
+    box-sizing: border-box;
     border-radius: 10px;
   }
 
   .host-schedule-selector-wrapper .hss-nights-grid {
-    gap: 5px !important; /* Minimal gap for maximum button size */
-    width: 100% !important;
-    justify-content: space-between !important;
+    gap: 5px; /* Minimal gap for maximum button size */
+    width: 100%;
+    justify-content: space-between;
   }
 
   .host-schedule-selector-wrapper .hss-night-cell {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    max-width: none !important;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
     /* Buttons will be as large as possible while fitting 7 in a row */
   }
 
   .host-schedule-selector-wrapper .hss-night-letter {
-    font-size: 14px !important;
-    font-weight: 700 !important;
+    font-size: 14px;
+    font-weight: 700;
   }
 }
 
